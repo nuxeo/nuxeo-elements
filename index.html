@@ -1,26 +1,95 @@
 <html>
 <head>
+  <title>Nuxeo Elements - Docs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="icon" href="http://0.assets.nuxeo.com/wp-content/themes/nuxeo.com_wp/favicon.ico">
 
   <script src="components/platform/platform.js"></script>
-
   <link rel="import" href="components/core-doc-viewer/core-doc-viewer.html">
 
   <style>
 
+    /* Nuxeo Fonts */
+    @font-face {
+      font-family:Aregular;
+      src:url(http://1.assets.nuxeo.com/wp-content/themes/nuxeo.com_wp/fonts/AvenirNextLTPro/AvenirNextLTPro-Regular.eot);
+      src:url(http://1.assets.nuxeo.com/wp-content/themes/nuxeo.com_wp/fonts/AvenirNextLTPro/AvenirNextLTPro-Regular.eot?#iefix) format('embedded-opentype'),url(http://1.assets.nuxeo.com/wp-content/themes/nuxeo.com_wp/fonts/AvenirNextLTPro/AvenirNextLTPro-Regular.woff) format('woff'),url(http://0.assets.nuxeo.com/wp-content/themes/nuxeo.com_wp/fonts/AvenirNextLTPro/AvenirNextLTPro-Regular.ttf) format('truetype'),url(http://0.assets.nuxeo.com/wp-content/themes/nuxeo.com_wp/fonts/AvenirNextLTPro/AvenirNextLTPro-Regular.svg#Aregular) format('svg');
+      font-weight:400;
+      font-style:normal
+    }
+
     body {
-      font-family: sans-serif;
-      margin: 0;
+      font-family: Aregular;
+      margin: 0px;
+      margin-top: 60px;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 1em 2em 0;
+      background-color: #fff;
+      z-index: 1000;
+      height: 60px;
+      box-sizing: border-box;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+
+    #logo {
+      background:transparent url('http://0.assets.nuxeo.com/wp-content/themes/nuxeo.com_wp/imgs/logo340x60.png') no-repeat;
+      background-size: cover;
+      display: inline-block;
+      height:28px;
+      width:160px;
+    }
+
+    header span {
+      color: #003f7d;
+      font-size: 1.8em;
+      vertical-align: top;
+      padding: 0 0 0 1em;
     }
 
     core-doc-viewer {
-      height: 100vh;
+      height: 100%;
+    }
+
+    core-doc-viewer /deep/ h1 {
+      color: #4e9ae1 !important;
+    }
+
+    core-doc-viewer /deep/ a {
+      color: #00adff;
+      text-decoration: none;
+    }
+
+    core-doc-viewer::shadow core-doc-toc {
+      background: #00adff;
+    }
+
+    core-doc-viewer::shadow core-doc-toc /deep/ core-menu {
+      margin-top: 30px;
+    }
+
+    core-doc-viewer::shadow core-doc-toc /deep/ core-item {
+      margin-bottom: 0.5em;
+    }
+
+    core-doc-viewer::shadow core-doc-toc /deep/ a {
+      color: white;
     }
 
   </style>
 
 </head>
 <body unresolved>
-
+  <header>
+    <a href="#" id="logo"></a>
+    <span class="">Elements</span>
+  </header>
   <core-doc-viewer sources='[
     "nx-connection.html",
     "nx-operation.html",
