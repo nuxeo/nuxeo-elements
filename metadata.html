@@ -1,0 +1,56 @@
+<x-meta id="nx-connection" label="Nuxeo Connection" group="Nuxeo">
+    <template>
+        <nx-connection></nx-connection>
+    </template>
+
+    <property name="url" kind="string"/>
+    <property name="username" kind="string"/>
+    <property name="password" kind="string"/>
+
+    <template id="imports">
+        <link rel="import" href="nx-connection.html">
+    </template>
+</x-meta>
+
+<x-meta id="nx-operation" label="Nuxeo Operation" group="Nuxeo">
+    <template>
+        <nx-operation id="operation" auto op="Document.Query" params='{"query":"select * from Document"}' on-response="{{onOpResponse}}"></nx-operation>
+    </template>
+
+    <property name="auto" kind="boolean"></property>
+    <property name="op" kind="string"/>
+    <property name="params" kind="json"/>
+
+    <template id="imports">
+        <link rel="import" href="nx-operation.html">
+    </template>
+</x-meta>
+
+<x-meta id="nx-page-provider" label="Nuxeo Page Provider" group="Nuxeo">
+    <template>
+        <nx-page-provider auto pageSize="5" query="select * from Document"></nx-page-provider>
+    </template>
+
+    <property name="auto" kind="boolean"></property>
+    <property name="page" kind="integer"/>
+    <property name="pageSize" kind="integer"/>
+
+    <template id="imports">
+        <link rel="import" href="nx-page-provider.html">
+    </template>
+</x-meta>
+
+<x-meta id="nx-content-view" label="Nuxeo Content View" group="Nuxeo">
+    <template>
+        <nx-content-view>
+            <nx-page-provider auto pageSize="5" query="select * from Document"></nx-page-provider>
+            <template>
+                {{item.title}}
+            </template>
+        </nx-content-view>
+    </template>
+
+    <template id="imports">
+        <link rel="import" href="nx-content-view.html">
+    </template>
+</x-meta>
