@@ -127,7 +127,7 @@ element.
             */
             fetch: function() {
                 this.$.operation.params = {
-                    page: this.page,
+                    page: this.page - 1,
                     pageSize: this.pageSize,
                     providerName: this.provider,
                     query: this.query,
@@ -138,6 +138,10 @@ element.
                 this.$.operation.execute();
             },
             autoFetch: function() {
+                // Reset the page if the query changes
+                if (this.$.operation.params && (this.query != this.$.operation.params.query)) {
+                    this.page = 1;
+                }
                 if (this.auto) {
                     this.fetch();
                 }
