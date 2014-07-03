@@ -1,4 +1,4 @@
-<!-- 
+<!--
 (C) Copyright 2014 Nuxeo SA (http://nuxeo.com/) and contributors.
 
 All rights reserved. This program and the accompanying materials
@@ -44,7 +44,7 @@ element.
             }
         </style>
 
-        <nx-operation id="operation" op="Document.PageProvider" on-response="{{onOpResponse}}"></nx-operation>
+        <nx-operation id="operation" connectionId="{{connectionId}}" op="Document.PageProvider" on-response="{{onOpResponse}}"></nx-operation>
 
     </template>
     <script>
@@ -52,12 +52,12 @@ element.
 
             /**
              * The id of a nx-connection to use.
-             * 
+             *
              * @attribute connectionId
              * @type string
              * @default 'nx_connection'
              */
-            connectionId: "nx_connection",
+            connectionId: "",
 
              /**
              * If true, automatically execute the operation when either `op` or `params` changes.
@@ -70,7 +70,7 @@ element.
 
             /**
              * The id of a page provider.
-             * 
+             *
              * @attribute provider
              * @type string
              * @default ''
@@ -79,7 +79,7 @@ element.
 
             /**
              * The query.
-             * 
+             *
              * @attribute query
              * @type string
              * @default null
@@ -88,7 +88,7 @@ element.
 
             /**
              * The query parameters.
-             * 
+             *
              * @attribute params
              * @type string
              * @default null
@@ -97,7 +97,7 @@ element.
 
             /**
              * The number of results per page.
-             * 
+             *
              * @attribute pageSize
              * @type number
              * @default 5
@@ -106,18 +106,15 @@ element.
 
             /**
              * The current page.
-             * 
+             *
              * @attribute page
              * @type number
              * @default 1
              */
             page: 1,
-            
+
             observe: {
                 'query pageSize page': 'autoFetch'
-            },
-            ready: function() {
-                this.connection = document.querySelector("#" + this.connectionId);
             },
 
             /**

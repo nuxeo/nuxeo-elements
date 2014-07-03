@@ -1,4 +1,4 @@
-<!-- 
+<!--
 (C) Copyright 2014 Nuxeo SA (http://nuxeo.com/) and contributors.
 
 All rights reserved. This program and the accompanying materials
@@ -45,27 +45,28 @@ element.
                 display: none;
             }
         </style>
+        <nx-connection id="nx" connectionId="{{connectionId}}"></nx-connection>
     </template>
     <script>
         Polymer('nx-operation', {
             /**
              * Fired when a response is received.
-             * 
+             *
              * @event response
              */
 
             /**
              * The id of a nx-connection to use.
-             * 
+             *
              * @attribute connectionId
              * @type string
              * @default 'nx_connection'
              */
-            connectionId: "nx_connection",
+            connectionId: "",
 
             /**
              * The id the operation to call.
-             * 
+             *
              * @attribute op
              * @type string
              * @default ''
@@ -74,7 +75,7 @@ element.
 
             /**
              * The parameters to send.
-             * 
+             *
              * @attribute params
              * @type string or Object
              * @default ''
@@ -92,7 +93,7 @@ element.
 
             /**
              * The response from the server.
-             * 
+             *
              * @property response
              * @type Object
              * @default null
@@ -104,7 +105,7 @@ element.
             },
 
             ready: function() {
-                this.client = document.querySelector("#" + this.connectionId).client;
+                this.client = this.$.nx.client;
             },
 
             /**
