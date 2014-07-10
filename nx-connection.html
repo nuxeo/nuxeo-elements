@@ -1,4 +1,4 @@
-<!-- 
+<!--
 (C) Copyright 2014 Nuxeo SA (http://nuxeo.com/) and contributors.
 
 All rights reserved. This program and the accompanying materials
@@ -46,34 +46,63 @@ Note: Elements that depend on a connectionId use `nx_connection` as default.
         Polymer('nx-connection', {
             /**
              * The base URL of the Nuxeo server.
-             * 
+             *
              * @attribute url
              * @type string
              * @default 'http://localhost:8080/nuxeo'
              */
-            url: "http://localhost:8080/nuxeo",
+            url: 'http://localhost:8080/nuxeo',
             /**
              * The username.
-             * 
+             *
              * @attribute username
              * @type string
              * @default 'Administrator'
              */
-            username: "Administrator",
+            username: 'Administrator',
             /**
              * The password.
-             * 
+             *
              * @attribute password
              * @type string
              * @default 'Administrator'
              */
-            password: "Administrator",
+            password: 'Administrator',
+
+            connected: false,
+
+            observe: {
+                'url username password': 'connect'
+            },
+
             ready: function() {
-                var connectInfo = {
-                    baseURL: this.url, username: this.username, password: this.password
-                };
-                this.client = new nuxeo.Client(connectInfo);
-            }
+                this.connect();
+            },
+
+            connect: function() {
+                // Create the client if needed
+                // If we already have a client with the same connection info just keep it
+                if (this.client &&
+                    this.client._baseURL === this.url &&
+                    this.client._username === this.username &&
+                    this.client._password === this.password) {
+                    return;
+                }
+
+                this.client = new nuxeo.Client({
+                    baseURL: this.url, username: this.username, password: this.password, schemas: '*'
+                });
+
+                this.client.connect(function(error, client) {
+                  if (error) {
+                    this.fire('error', {error: error});
+                    return;
+                  }
+                  this.connected = client.connected;
+                  this.fire('connected');
+                }.bind(this));
+            },
+
         });
     </script>
 </polymer-element>

@@ -1,4 +1,4 @@
-<!-- 
+<!--
 (C) Copyright 2014 Nuxeo SA (http://nuxeo.com/) and contributors.
 
 All rights reserved. This program and the accompanying materials
@@ -50,22 +50,22 @@ element.
         Polymer('nx-operation', {
             /**
              * Fired when a response is received.
-             * 
+             *
              * @event response
              */
 
             /**
              * The id of a nx-connection to use.
-             * 
+             *
              * @attribute connectionId
              * @type string
              * @default 'nx_connection'
              */
-            connectionId: "nx_connection",
+            connectionId: 'nx_connection',
 
             /**
              * The id the operation to call.
-             * 
+             *
              * @attribute op
              * @type string
              * @default ''
@@ -74,7 +74,7 @@ element.
 
             /**
              * The parameters to send.
-             * 
+             *
              * @attribute params
              * @type string or Object
              * @default ''
@@ -92,7 +92,7 @@ element.
 
             /**
              * The response from the server.
-             * 
+             *
              * @property response
              * @type Object
              * @default null
@@ -104,7 +104,7 @@ element.
             },
 
             ready: function() {
-                this.client = document.querySelector("#" + this.connectionId).client;
+                this.connection = document.querySelector('#' + this.connectionId);
             },
 
             /**
@@ -113,13 +113,22 @@ element.
             * @method execute
             */
             execute: function() {
-                var params = (typeof this.params == "object") ? this.params : JSON.parse(this.params);
-                var self = this;
-                this.client.operation(this.op).params(params)
+                var _callOp = function() {
+                    var params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
+                    this.connection.client
+                        .operation(this.op)
+                        .params(params)
                         .execute(function(error, data) {
-                            self.response = data;
-                            self.fire('response', {response: data});
-                        });
+                            this.response = data;
+                            this.fire('response', {response: data});
+                        }.bind(this));
+                    }.bind(this);
+
+                if (this.connection.connected) {
+                  _callOp();
+                } else {
+                  this.connection.addEventListener('connected', _callOp);
+                }
             },
 
             _autoExecute: function() {
