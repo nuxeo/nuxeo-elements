@@ -1,0 +1,111 @@
+<!--
+(C) Copyright 2014 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the GNU Lesser General Public License
+(LGPL) version 2.1 which accompanies this distribution, and is available at
+http://www.gnu.org/licenses/lgpl.html
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+Contributors:
+  Nelson Silva <nelson.silva@inevo.pt>
+-->
+
+<!--
+@group Nuxeo Elements
+
+The `nx-document` allows managing Documents on a Nuxeo server.
+
+    <nx-doc auto
+        docPath="/default-domain"></nx-doc>
+
+With `auto` set to `true`, the GET method is executed whenever
+its `docPath` or `docId` properties are changed.
+
+You can trigger a method explicitly by calling `get`, `post`, `put` or `delete` on the
+element.
+
+@element nx-document
+@extends nx-resource
+@homepage http://www.nuxeo.org
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../core-icon-button/core-icon-button.html">
+<link rel="import" href="nx-resource.html">
+<polymer-element name="nx-document" attributes="docId docPath repo doc" extends="nx-resource" on-response="{{handleResponse}}">
+    <script>
+        Polymer('nx-document', {
+
+          /**
+           * The path of the document.
+           *
+           * @attribute docPath
+           * @type string
+           * @default ''
+           */
+          docPath: '',
+
+          /**
+           * The uid of the document.
+           *
+           * @attribute docId
+           * @type string
+           * @default ''
+           */
+          docId: '',
+
+          /**
+           * The repository.
+           *
+           * @attribute repo
+           * @type string
+           * @default null
+           */
+          repo: null,
+
+          /**
+           * If true, automatically fetch the document when either `path` or `uid`.
+           *
+           * @attribute auto
+           * @type boolean
+           * @default false
+           */
+          auto: false,
+
+          /**
+           * The Document object.
+           *
+           * @property doc
+           * @type Object
+           * @default null
+           */
+          doc: null,
+
+          pathOrId: null,
+
+          observe: {
+              'docPath docId': 'updateDocPath'
+          },
+
+          ready: function() {
+              this.connection = document.querySelector('#' + this.connectionId);
+          },
+
+          updateDocPath: function() {
+            var pathOrId = (this.docId) ? '/id/' + this.docId : '/path/' + this.docPath;
+            if (this.repo) {
+              pathOrId = '/repo/' + this.repo + pathOrId;
+            }
+            this.path = pathOrId;
+          },
+
+          dataChanged: function() {
+            this.doc = this.data;
+          }
+        });
+    </script>
+</polymer-element>
