@@ -1,0 +1,127 @@
+<!--
+(C) Copyright 2014 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the GNU Lesser General Public License
+(LGPL) version 2.1 which accompanies this distribution, and is available at
+http://www.gnu.org/licenses/lgpl.html
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+Contributors:
+  Nelson Silva <nelson.silva@inevo.pt>
+-->
+
+<!--
+@group Nuxeo Elements
+
+The `nx-listing` provides a listing with pagination control and selection
+ actions supported by a `nx-page-provider` listing w..
+
+    <nx-listing>
+        <nx-page-provider auto pageSize="5"
+            query="select * from Document"></nx-page-provider>
+        <template>
+            {{item.title}}
+        </template>
+    </nx-listing>
+
+The `<template>` content will be used for rendering each item.
+Data is bound to `item`.
+
+@element nx-listing
+@homepage http://www.nuxeo.org
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../core-selection/core-selection.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
+<polymer-element name="nx-listing" on-tap="{{tapHandler}}" attributes="multi">
+    <template>
+        <style>
+            :host {
+                display: block;
+                width: 100%;
+            }
+
+            .pagination span {
+                color: #777;
+                vertical-align: middle;
+                font-weight: bold;
+                margin: 0 .5em;
+                font-size: .9em;
+            }
+
+            .pagination input {
+                vertical-align: middle;
+            }
+
+            .pagination input[disabled] {
+                opacity: .4;
+                cursor: default;
+            }
+        </style>
+
+        <core-selection id="selection" multi="{{multiSelect}}" on-core-select="{{selectedHandler}}"></core-selection>
+
+        <div layout vertical center>
+            <content></content>
+            <!-- Pagination -->
+            <div class="pagination">
+                <input disabled?="{{provider.page == 1}}" type="image" on-click="{{setPage}}" data-item="1" src="icons/navigation_first.png">
+                <input disabled?="{{provider.page == 1}}" type="image" on-click="{{setPage}}" data-item="{{provider.page - 1}}" src="icons/navigation_previous.png">
+                <span>{{provider.page}} / {{provider.numberOfPages}}</span>
+                <input disabled?="{{provider.page == provider.numberOfPages}}" type="image" on-click="{{setPage}}" data-item="{{provider.page + 1}}" src="icons/navigation_next.png">
+                <input disabled?="{{provider.page == provider.numberOfPages}}" type="image" on-click="{{setPage}}" data-item="{{provider.numberOfPages}}" src="icons/navigation_last.png">
+            </div>
+        </div>
+
+    </template>
+    <script>
+        Polymer('nx-listing', {
+            provider: null,
+
+            /**
+            *
+            * Set to true to support multiple selection.
+            *
+            * @attribute multiSelect
+            * @type boolean
+            * @default false
+            */
+            multiSelect: false,
+
+            observe: {
+                'template provider.results': 'updateData'
+            },
+
+            attached: function() {
+                this.provider = this.querySelector('nx-page-provider');
+                this.template = this.querySelector('template');
+            },
+            updateData: function() {
+                this.template.model = {items:this.provider.results};
+                this.template.setAttribute('repeat', '{{item in items}}');
+            },
+
+            setPage: function(e,d,t) {
+                this.provider.page = parseInt( t.dataset.item, 10 );
+            },
+            // list selection
+            tapHandler: function(e) {
+              if (e.target === this) {
+                return;
+              }
+              this.$.selection.select(e.target);
+            },
+
+            selectedHandler: function(e, detail) {
+              detail.item.classList.toggle('selected', detail.isSelected);
+            }
+        });
+    </script>
+
+</polymer-element>

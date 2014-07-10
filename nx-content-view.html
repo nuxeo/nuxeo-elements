@@ -38,14 +38,10 @@ Data is bound to `item`.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../core-selection/core-selection.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
-<polymer-element name="nx-content-view" on-tap="{{tapHandler}}" attributes="multi">
+<link rel="import" href="nx-layout.html">
+<polymer-element name="nx-content-view" on-tap="{{tapHandler}}" attributes="multi resultTemplates">
     <template>
         <style>
-            :host {
-                display: block;
-                width: 100%;
-            }
-            
             .pagination span {
                 color: #777;
                 vertical-align: middle;
@@ -58,24 +54,59 @@ Data is bound to `item`.
                 vertical-align: middle;
             }
 
-            .pagination input[disabled] {                
+            .pagination input[disabled] {
                 opacity: .4;
                 cursor: default;
             }
         </style>
 
+
+
         <core-selection id="selection" multi="{{multiSelect}}" on-core-select="{{selectedHandler}}"></core-selection>
 
         <div layout vertical center>
-            <content></content>
-            <!-- Pagination -->
-            <div class="pagination">
-                <input disabled?="{{provider.page == 1}}" type="image" on-click="{{setPage}}" data-item="1" src="icons/navigation_first.png">
-                <input disabled?="{{provider.page == 1}}" type="image" on-click="{{setPage}}" data-item="{{provider.page - 1}}" src="icons/navigation_previous.png">
-                <span>{{provider.page}} / {{provider.numberOfPages}}</span>
-                <input disabled?="{{provider.page == provider.numberOfPages}}" type="image" on-click="{{setPage}}" data-item="{{provider.page + 1}}" src="icons/navigation_next.png">
-                <input disabled?="{{provider.page == provider.numberOfPages}}" type="image" on-click="{{setPage}}" data-item="{{provider.numberOfPages}}" src="icons/navigation_last.png">
+            <div class="upperActions" layout horizontal>
+                <!-- content_view_page_size_selector.xhtml -->
+                <div layout horizontal>
+                  Items/page
+                  <select value="{{provider.pageSize}}">
+                    <option>5</option>
+                    <option>10</option>
+                    <option>20</option>
+                    <option>30</option>
+                    <option>40</option>
+                    <option>50</option>
+                  </select>
+                </div>
+                <!-- content_view_result_layout_actions.xhtml -->
+                <template if="{{resultLayouts.length > 1}}">
+                    <template repeat="{{layout in resultLayouts}}">
+                        <button on-click="{{setCurrentResultLayout}}" data-layout="{{layout}}" title="{{layout}}">
+                        {{layout}}
+                        </button>
+                    </template>
+                </template -->
+
+                <!-- content_view_export_actions.xhtml -->
             </div>
+
+            <!-- Entries -->
+            <div id="results" layout vertical on-tap="{{tapHandler}}">
+              <template repeat="{{doc in provider.results}}">
+                <template ref="{{currentResultLayout}}" bind="{{doc}}"></template>
+              </template>
+            </div>
+
+             <!-- Pagination -->
+            <template if="{{provider.numberOfPages > 1}}">
+              <div class="pagination">
+                  <input disabled?="{{provider.page == 1}}" type="image" on-click="{{setPage}}" data-item="1" src="icons/navigation_first.png">
+                  <input disabled?="{{provider.page == 1}}" type="image" on-click="{{setPage}}" data-item="{{provider.page - 1}}" src="icons/navigation_previous.png">
+                  <span>{{provider.page}} / {{provider.numberOfPages}}</span>
+                  <input disabled?="{{provider.page == provider.numberOfPages}}" type="image" on-click="{{setPage}}" data-item="{{provider.page + 1}}" src="icons/navigation_next.png">
+                  <input disabled?="{{provider.page == provider.numberOfPages}}" type="image" on-click="{{setPage}}" data-item="{{provider.numberOfPages}}" src="icons/navigation_last.png">
+              </div>
+            </template>
         </div>
 
     </template>
@@ -84,7 +115,7 @@ Data is bound to `item`.
             provider: null,
 
             /**
-            * 
+            *
             * Set to true to support multiple selection.
             *
             * @attribute multiSelect
@@ -98,12 +129,38 @@ Data is bound to `item`.
             },
 
             attached: function() {
+                // Get the page provider
                 this.provider = this.querySelector('nx-page-provider');
-                this.template = this.querySelector('template');
             },
-            updateData: function() {
-                this.template.model = {items:this.provider.results};
-                this.template.setAttribute('repeat', '{{item in items}}');
+
+            resultTemplatesChanged: function() {
+              this.resultLayouts = (typeof this.resultTemplates === 'string') ?
+                this.resultTemplates.split(',') : this.resultTemplates;
+
+              this.resultLayouts.forEach(function(templateId) {
+                /* copy template from content into shadow dom */
+                if(!this.shadowRoot.getElementById(templateId)){
+                  var t = this.querySelector('#'+templateId);
+                  // This template is not in the content
+                  // Assume it's an existing nuxeo layout
+                  if (!t) {
+                    // Create <nx-layout ref='templateId' value='{{doc}}'>
+                    var l = document.createElement('nx-layout');
+                    l.ref = templateId;
+                    // create <template>
+                    t = document.createElement('template');
+                    t.id = templateId;
+                    // bind the nx-layout value to the template model
+                    l.bind('value', new PathObserver(t, 'model'));
+                  }
+                  this.shadowRoot.appendChild(t);
+                }
+              },this);
+              this.currentResultLayout = this.resultLayouts[0];
+            },
+
+            setCurrentResultLayout: function(e,d,t) {
+              this.currentResultLayout = t.dataset.layout;
             },
 
             setPage: function(e,d,t) {
@@ -114,11 +171,13 @@ Data is bound to `item`.
               if (e.target === this) {
                 return;
               }
-              this.$.selection.select(e.target);
+              var doc = e.target.templateInstance.model;
+              this.$.selection.select(doc);
+              this.asyncFire('document-selected', {doc: doc, item: e.target});
             },
 
             selectedHandler: function(e, detail) {
-              detail.item.classList.toggle('selected', detail.isSelected);
+              // detail.item.classList.toggle('selected', detail.isSelected);
             }
         });
     </script>

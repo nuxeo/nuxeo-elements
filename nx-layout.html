@@ -1,0 +1,135 @@
+<!--
+(C) Copyright 2014 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the GNU Lesser General Public License
+(LGPL) version 2.1 which accompanies this distribution, and is available at
+http://www.gnu.org/licenses/lgpl.html
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+Contributors:
+  Nelson Silva <nelson.silva@inevo.pt>
+-->
+
+<!--
+@group Nuxeo Elements
+
+`nx-layout`
+
+    <nx-layout>
+    </nx-layout>
+
+@element nx-layout
+@homepage http://www.nuxeo.org
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<polymer-element name="nx-layout" attributes="ref mode value">
+    <template>
+      <content></content>
+    </template>
+    <script>
+      (function() {
+        // A global cache of layout definitions
+        var nxLayouts = {};
+
+        Polymer('nx-layout', {
+
+            /**
+             * The id of a nx-connection to use.
+             *
+             * @attribute connectionId
+             * @type string
+             * @default 'nx_connection'
+             */
+            connectionId: 'nx_connection',
+
+            /**
+             * The id of a remove layout to use.
+             *
+             * @attribute ref
+             * @type string
+             * @default null
+             */
+            ref: null,
+
+            /**
+             * The value the layout will apply to.
+             *
+             * @attribute ṽalue
+             * @type Object
+             * @default 'null'
+             */
+            value: null,
+
+            ready: function() {
+                this.connection = document.querySelector('#' + this.connectionId);
+            },
+
+            attached: function() {
+              //this.$.template.model = this.value;
+            },
+
+            refChanged: function() {
+              this._fetch(this.ref, this._updateLayoutTemplate.bind(this));
+            },
+
+            _fetch: function(layoutName, callback) {
+                if (nxLayouts[this.ref]) {
+                  callback(nxLayouts[this.ref]);
+                  return;
+                }
+                var nx = this.connection.client;
+                var request = nx.request('/site/layout-manager/layouts/json?layoutName=' + layoutName).repositoryName(undefined);
+                request._url = nx._baseURL;
+
+                request.get(function(error, data) {
+                  nxLayouts[layoutName] = data;
+                  callback(data);
+                }.bind(this));
+            },
+
+            _updateLayoutTemplate: function(def) {
+
+              var template = document.createElement('div');
+              template.setAttribute('layout', true);
+              template.setAttribute('vertical', this.hasAttribute('vertical'));
+              template.setAttribute('horizontal', this.hasAttribute('horizontal'));
+
+              this.shadowRoot.appendChild(template);
+
+              // Prepare a hashmap with the widgets
+              var widgets = {};
+              def.widgets.forEach(function(widget) {
+                widgets[widget.name] = widget;
+              });
+
+              def.rows.forEach(function(row) {
+                var nxrow = document.createElement('div');
+                row.widgets.forEach(function(widgetDef) {
+                  var widget = widgets[widgetDef.name];
+                  var nxwidget = document.createElement('nx-widget');
+                  nxwidget.setAttribute('type', widget.type);
+                  if (this.hasAttribute('vertical')) {
+                    nxwidget.setAttribute('label', widget.labels.any);
+                  }
+                  var field = widget.fields[0].fieldName;
+                  nxwidget.bind('value', new PathObserver(this, 'value.properties["' + field + '"]'));
+                  nxwidget.bind('mode', new PathObserver(this, 'mode'));
+                  nxrow.appendChild(nxwidget);
+                }, this);
+                template.appendChild(nxrow);
+              }, this);
+
+              return template;
+            },
+
+        });
+  })();
+    </script>
+
+</polymer-element>

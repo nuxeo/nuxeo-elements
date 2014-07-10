@@ -1,4 +1,4 @@
-<!-- 
+<!--
 (C) Copyright 2014 Nuxeo SA (http://nuxeo.com/) and contributors.
 
 All rights reserved. This program and the accompanying materials
@@ -52,12 +52,12 @@ element.
 
             /**
              * The id of a nx-connection to use.
-             * 
+             *
              * @attribute connectionId
              * @type string
              * @default 'nx_connection'
              */
-            connectionId: "nx_connection",
+            connectionId: 'nx_connection',
 
              /**
              * If true, automatically execute the operation when either `op` or `params` changes.
@@ -70,16 +70,16 @@ element.
 
             /**
              * The id of a page provider.
-             * 
+             *
              * @attribute provider
              * @type string
              * @default ''
              */
-            provider: "",
+            provider: '',
 
             /**
              * The query.
-             * 
+             *
              * @attribute query
              * @type string
              * @default null
@@ -88,7 +88,7 @@ element.
 
             /**
              * The query parameters.
-             * 
+             *
              * @attribute params
              * @type string
              * @default null
@@ -97,7 +97,7 @@ element.
 
             /**
              * The number of results per page.
-             * 
+             *
              * @attribute pageSize
              * @type number
              * @default 5
@@ -106,18 +106,18 @@ element.
 
             /**
              * The current page.
-             * 
+             *
              * @attribute page
              * @type number
              * @default 1
              */
             page: 1,
-            
+
             observe: {
                 'query pageSize page': 'autoFetch'
             },
             ready: function() {
-                this.connection = document.querySelector("#" + this.connectionId);
+                this.connection = document.querySelector('#' + this.connectionId);
             },
 
             /**
@@ -139,7 +139,7 @@ element.
             },
             autoFetch: function() {
                 // Reset the page if the query changes
-                if (this.$.operation.params && (this.query != this.$.operation.params.query)) {
+                if (this.$.operation.params && (this.query !== this.$.operation.params.query)) {
                     this.page = 1;
                 }
                 if (this.auto) {
