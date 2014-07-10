@@ -138,7 +138,6 @@ element.
             },
 
             put: function() {
-              debugger
               this._request().put({data: this.data}, function(error, data) {
                     this.data = data;
                     this.type = data['entity-type'];
