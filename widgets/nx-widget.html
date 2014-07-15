@@ -1,0 +1,81 @@
+<!--
+(C) Copyright 2014 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the GNU Lesser General Public License
+(LGPL) version 2.1 which accompanies this distribution, and is available at
+http://www.gnu.org/licenses/lgpl.html
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+Contributors:
+  Nelson Silva <nelson.silva@inevo.pt>
+-->
+
+<link rel="import" href="../../core-input/core-input.html">
+<link rel="import" href="../nx-operation.html">
+
+<!--
+@group Nuxeo Elements
+
+Base class for Nuxeo widgets
+
+    <nx-widget name="my_widget" type="text" mode="view" label="My Widget">
+    </nx-widget>
+
+@element nx-widget
+@homepage http://www.nuxeo.org
+-->
+<polymer-element name="nx-widget" attributes="name type mode label value validator" field>
+    <template>
+    </template>
+    <script>
+        Polymer('nx-widget', {
+
+
+            /**
+             * Name of the widget type that will be used.
+             *
+             * @attribute type
+             * @type string
+             * @default 'text'
+             */
+            type: null,
+
+
+            /**
+             * Mode in which widget must be rendered.
+             *
+             * @attribute mode
+             * @type string
+             * @default 'view'
+             */
+             mode: 'view',
+
+             /**
+             * The value on which widget will apply.
+             *
+             * @attribute ṽalue
+             * @type Object
+             * @default 'null'
+             */
+             value: null,
+
+             /**
+             * The value on which widget will apply.
+             *
+             * @attribute ṽalue
+             * @type Object
+             * @default 'null'
+             */
+             validator: null,
+
+             errorText: ''
+
+        });
+    </script>
+
+</polymer-element>

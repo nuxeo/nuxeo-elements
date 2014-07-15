@@ -10,7 +10,8 @@ module.exports = function (grunt) {
             },
             all: [
               'Gruntfile.js',
-              '*.html'
+              '*.html',
+              'widgets/*.html'
             ]
         }
 

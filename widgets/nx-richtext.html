@@ -1,0 +1,64 @@
+<!--
+(C) Copyright 2014 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the GNU Lesser General Public License
+(LGPL) version 2.1 which accompanies this distribution, and is available at
+http://www.gnu.org/licenses/lgpl.html
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+Contributors:
+  Nelson Silva <nelson.silva@inevo.pt>
+-->
+
+<!--
+@group Nuxeo Widgets
+
+`nx-richtext`
+
+    <nx-richtext name="my_widget" mode="view" label="My Widget">
+    </nx-richtext>
+
+@element nx-richtext
+@extends nx-widget
+@homepage http://www.nuxeo.org
+-->
+<link rel="import" href="nx-widget.html">
+<polymer-element name="nx-richtext" extends="nx-widget" horizontal layout>
+<template>
+  <style>
+  div[contenteditable] {
+    border: 1px dotted #ccc;
+  }
+  </style>
+
+  <template if="{{label}}"><strong>{{label}} : </strong></template>
+
+  <template if="{{mode == 'view'}}">
+    {{value}}
+  </template>
+
+  <template if="{{mode == 'edit'}}">
+    <div id="content" contenteditable="true" style="width:100%; height:100px" on-input="{{updateValue}}">
+    </div>
+  </template>
+
+</template>
+<script>
+  Polymer({
+    // TODO: Handle valueChanged
+    ready: function() {
+      if (this.value && this.mode === 'edit') {
+        this.$.content.innerHTML = this.value;
+      }
+    },
+    updateValue: function() {
+      this.value = this.$.content.innerHTML;
+    }
+  });
+</script>
+</polymer-element>
