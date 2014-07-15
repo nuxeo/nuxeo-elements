@@ -17,19 +17,40 @@ Contributors:
 
 <link rel="import" href="../../core-input/core-input.html">
 <link rel="import" href="../nx-operation.html">
+<script>
+  // Provided by platform.js
+  modularize('nx-widget', function() {
+    return {
+      widgetTypes: {}, // Mapping from Nuxeo widget types to custom nx-widget elements
+      register: function(polymerElement) {
+        var type = polymerElement.getAttribute('widget');
+        if (type) {
+          var types = type.split(","); // Workaround to allow registering a single element for multiple types
+          types.forEach(function(t) {
+            // Store the element's name and published attributes
+            var attributes = polymerElement.getAttribute("attributes");
+            this.widgetTypes[t] = {
+              name: polymerElement.name,
+              attributes: (attributes) ? attributes.split(' ') : []
+            };
+            console.log('Registered ' + polymerElement.name + ' for type ' + t);
+          }, this);
+          polymerElement.removeAttribute('widget');
+        }
+      }
+    };
+  });
+</script>
 
 <!--
 @group Nuxeo Elements
 
 Base class for Nuxeo widgets
 
-    <nx-widget name="my_widget" type="text" mode="view" label="My Widget">
-    </nx-widget>
-
 @element nx-widget
 @homepage http://www.nuxeo.org
 -->
-<polymer-element name="nx-widget" attributes="name type mode label value validator" field>
+<polymer-element name="nx-widget" attributes="name widget mode label value validator" field>
     <template>
     </template>
     <script>
@@ -37,13 +58,13 @@ Base class for Nuxeo widgets
 
 
             /**
-             * Name of the widget type that will be used.
+             * Name of the Nuxeo widget type that this element replaces.
              *
-             * @attribute type
+             * @attribute widget
              * @type string
              * @default 'text'
              */
-            type: null,
+            widget: 'text',
 
 
             /**
@@ -73,7 +94,13 @@ Base class for Nuxeo widgets
              */
              validator: null,
 
-             errorText: ''
+             errorText: '',
+
+             registerCallback: function(polymerElement) {
+                using('nx-widget', function(nxw) {
+                  nxw.register(polymerElement);
+                });
+              },
 
         });
     </script>
