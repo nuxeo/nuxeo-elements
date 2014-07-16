@@ -31,6 +31,7 @@ Contributors:
 <link rel="import" href="nx-widgets.html">
 <polymer-element name="nx-layout" attributes="ref mode value">
   <template>
+    <nx-connection id="nx" connectionId="{{connectionId}}"></nx-connection>
     <content></content>
   </template>
     <script>
@@ -45,9 +46,9 @@ Contributors:
              *
              * @attribute connectionId
              * @type string
-             * @default 'nx_connection'
+             * @default ''
              */
-            connectionId: 'nx_connection',
+            connectionId: '',
 
             /**
              * The id of a remove layout to use.
@@ -94,7 +95,7 @@ Contributors:
                   callback(nxLayouts[this.ref]);
                   return;
                 }
-                var nx = this.connection.client;
+                var nx = this.$.nx.client;
                 var request = nx.request('/site/layout-manager/layouts/json?layoutName=' + layoutName).repositoryName(undefined);
                 request._url = nx._baseURL;
 

@@ -1,4 +1,5 @@
-<x-meta id="nx-connection" label="Nuxeo Connection" group="Nuxeo">
+<!-- Nuxeo API -->
+<x-meta id="nx-connection" label="Connection" group="Nuxeo API">
     <template>
         <nx-connection></nx-connection>
     </template>
@@ -12,7 +13,7 @@
     </template>
 </x-meta>
 
-<x-meta id="nx-operation" label="Nuxeo Operation" group="Nuxeo">
+<x-meta id="nx-operation" label="Operation" group="Nuxeo API">
     <template>
         <nx-operation id="operation" auto op="Document.Query" params='{"query":"select * from Document"}' on-response="{{onOpResponse}}"></nx-operation>
     </template>
@@ -26,31 +27,52 @@
     </template>
 </x-meta>
 
-<x-meta id="nx-page-provider" label="Nuxeo Page Provider" group="Nuxeo">
+<x-meta id="nx-page-provider" label="Page Provider" group="Nuxeo API">
     <template>
         <nx-page-provider auto pageSize="5" query="select * from Document"></nx-page-provider>
     </template>
 
     <property name="auto" kind="boolean"></property>
-    <property name="page" kind="integer"/>
-    <property name="pageSize" kind="integer"/>
 
     <template id="imports">
         <link rel="import" href="nx-page-provider.html">
     </template>
 </x-meta>
 
-<x-meta id="nx-content-view" label="Nuxeo Content View" group="Nuxeo">
+<!-- Nuxeo Layouts -->
+<x-meta id="nx-layout" label="Layout" group="Nuxeo Layouts" isContainer>
+    <template>
+      <nx-layout ref="heading" value="{{doc}}" mode="view">
+      </nx-layout>
+    </template>
+
+    <template id="imports">
+        <link rel="import" href="nx-layout.html">
+    </template>
+</x-meta>
+
+<x-meta id="nx-content-view" label="Content View" group="Nuxeo Layouts" isContainer>
     <template>
         <nx-content-view>
             <nx-page-provider auto pageSize="5" query="select * from Document"></nx-page-provider>
-            <template>
-                {{item.title}}
-            </template>
+            <nx-layout class="results" name="heading" ref="heading"></nx-layout>
         </nx-content-view>
     </template>
 
     <template id="imports">
         <link rel="import" href="nx-content-view.html">
+        <link rel="import" href="nx-layout.html">
+        <link rel="import" href="nx-page-provider.html">
+    </template>
+</x-meta>
+
+<!-- Nuxeo Widgets -->
+<x-meta id="nx-checkbox" label="Checbox" group="Nuxeo Layouts">
+    <template>
+      <nx-checkbox value="{{value}}" mode="view" label="Checkbox"></nx-checkbox>
+    </template>
+
+    <template id="imports">
+        <link rel="import" href="widgets/nx-checkbox.html">
     </template>
 </x-meta>

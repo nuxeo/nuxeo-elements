@@ -55,9 +55,9 @@ element.
              *
              * @attribute connectionId
              * @type string
-             * @default 'nx_connection'
+             * @default ''
              */
-            connectionId: 'nx_connection',
+            connectionId: '',
 
              /**
              * If true, automatically execute the operation when either `op` or `params` changes.
@@ -124,9 +124,6 @@ element.
 
             observe: {
                 'ref query params pageSize page': 'autoFetch'
-            },
-            ready: function() {
-                this.connection = document.querySelector('#' + this.connectionId);
             },
 
             /**
