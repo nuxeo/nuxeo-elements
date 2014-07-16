@@ -60,11 +60,9 @@ Data is bound to `item`.
             }
         </style>
 
-
-
         <core-selection id="selection" multi="{{multiSelect}}" on-core-select="{{selectedHandler}}"></core-selection>
 
-        <div layout vertical center>
+        <div id="main" layout vertical center>
             <div class="upperActions" layout horizontal>
                 <!-- content_view_page_size_selector.xhtml -->
                 <div layout horizontal>
@@ -92,8 +90,8 @@ Data is bound to `item`.
 
             <!-- Entries -->
             <div id="results" layout vertical on-tap="{{tapHandler}}">
-              <template repeat="{{doc in provider.results}}">
-                <template ref="{{currentResultLayout}}" bind="{{doc}}"></template>
+              <template repeat="{{value in provider.currentPage}}">
+                <template ref="{{currentResultLayout}}" bind="{{value}}"></template>
               </template>
             </div>
 
@@ -124,43 +122,53 @@ Data is bound to `item`.
             */
             multiSelect: false,
 
-            observe: {
-                'template provider.results': 'updateData'
-            },
+            resultLayouts: [],
 
             attached: function() {
                 // Get the page provider
                 this.provider = this.querySelector('nx-page-provider');
             },
 
-            resultTemplatesChanged: function() {
-              this.resultLayouts = (typeof this.resultTemplates === 'string') ?
-                this.resultTemplates.split(',') : this.resultTemplates;
+            ready: function() {
+              var layouts = this.querySelectorAll('nx-layout');
 
-              this.resultLayouts.forEach(function(templateId) {
-                /* copy template from content into shadow dom */
-                if(!this.shadowRoot.getElementById(templateId)){
-                  var t = this.querySelector('#'+templateId);
-                  // This template is not in the content
-                  // Assume it's an existing nuxeo layout
-                  if (!t) {
-                    // Create <nx-layout ref='templateId' value='{{doc}}'>
-                    var l = document.createElement('nx-layout');
-                    l.ref = templateId;
-                    // create <template>
-                    t = document.createElement('template');
-                    t.id = templateId;
-                    // bind the nx-layout value to the template model
-                    l.bind('value', new PathObserver(t, 'model'));
+              for (var i = 0, l = layouts.length; i < l; i++) {
+                var layout = layouts[i];
+
+                var layoutName = layout.getAttribute('name');
+                // copy layout from content into shadow dom if needed
+                if(!this.shadowRoot.getElementById(layoutName)){
+
+                  // Store the result layout ids
+                  if (layout.classList.contains('results')) {
+                    this.resultLayouts.push(layoutName);
                   }
-                  this.shadowRoot.appendChild(t);
+
+                  // create a wrapper <template id='layoutId'>
+                  var template = document.createElement('template');
+                  template.id = layoutName;
+
+                  // TODO - Wrap the widgets
+
+                  // bind the value
+                  layout.setAttribute('value', '{{}}');
+
+                  template.content.appendChild(layout);
+                  this.shadowRoot.appendChild(template);
+
                 }
-              },this);
+              }
+
               this.currentResultLayout = this.resultLayouts[0];
             },
 
             setCurrentResultLayout: function(e,d,t) {
-              this.currentResultLayout = t.dataset.layout;
+              var layoutId = t.dataset.layout;
+              // TODO(nfgs) : Use columns and add headers
+              // var template = this.shadowRoot.querySelector('#' + layoutId);
+              // var layout = template.content.querySelector("nx-layout");
+              // layout.style.webkitColumnCount = layout.rows.length;
+              this.currentResultLayout = layoutId;
             },
 
             setPage: function(e,d,t) {
@@ -171,9 +179,9 @@ Data is bound to `item`.
               if (e.target === this) {
                 return;
               }
-              var doc = e.target.templateInstance.model;
-              this.$.selection.select(doc);
-              this.asyncFire('document-selected', {doc: doc, item: e.target});
+              var value = e.target.templateInstance.model.value;
+              this.$.selection.select(value);
+              this.asyncFire('document-selected', {value: value, item: e.target});
             },
 
             selectedHandler: function(e, detail) {

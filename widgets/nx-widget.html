@@ -25,10 +25,10 @@ Contributors:
       register: function(polymerElement) {
         var type = polymerElement.getAttribute('widget');
         if (type) {
-          var types = type.split(","); // Workaround to allow registering a single element for multiple types
+          var types = type.split(','); // Workaround to allow registering a single element for multiple types
           types.forEach(function(t) {
             // Store the element's name and published attributes
-            var attributes = polymerElement.getAttribute("attributes");
+            var attributes = polymerElement.getAttribute('attributes');
             this.widgetTypes[t] = {
               name: polymerElement.name,
               attributes: (attributes) ? attributes.split(' ') : []

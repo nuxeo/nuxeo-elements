@@ -95,7 +95,7 @@ Data is bound to `item`.
             multiSelect: false,
 
             observe: {
-                'template provider.results': 'updateData'
+                'template provider.currentPage': 'updateData'
             },
 
             attached: function() {
@@ -103,7 +103,7 @@ Data is bound to `item`.
                 this.template = this.querySelector('template');
             },
             updateData: function() {
-                this.template.model = {items:this.provider.results};
+                this.template.model = {items:this.provider.currentPage};
                 this.template.setAttribute('repeat', '{{item in items}}');
             },
 
