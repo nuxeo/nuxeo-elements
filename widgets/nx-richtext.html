@@ -28,31 +28,29 @@ Contributors:
 @homepage http://www.nuxeo.org
 -->
 <link rel="import" href="nx-widget.html">
-<polymer-element name="nx-richtext" extends="nx-widget" widget="richtext_with_mimetype" horizontal layout>
+<polymer-element name="nx-richtext" extends="nx-widget" widget="richtext_with_mimetype">
 <template>
   <style>
   div[contenteditable] {
     border: 1px dotted #ccc;
   }
+  #content {
+    overflow: overlay;
+    width:100%;
+    height:300px;
+  }
   </style>
 
   <template if="{{label}}"><strong>{{label}} : </strong></template>
 
-  <template if="{{mode == 'view'}}">
-    {{value}}
-  </template>
-
-  <template if="{{mode == 'edit'}}">
-    <div id="content" contenteditable="true" style="width:100%; height:100px" on-input="{{updateValue}}">
-    </div>
-  </template>
+  <div id="content" contenteditable?="{{mode == 'edit'}}" on-input="{{updateValue}}"/>
 
 </template>
 <script>
   Polymer({
     // TODO: Handle valueChanged
     ready: function() {
-      if (this.value && this.mode === 'edit') {
+      if (this.value) {
         this.$.content.innerHTML = this.value;
       }
     },

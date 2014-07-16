@@ -36,7 +36,7 @@ element.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../core-icon-button/core-icon-button.html">
 <link rel="import" href="nx-resource.html">
-<polymer-element name="nx-document" attributes="docId docPath repo doc" extends="nx-resource" on-response="{{handleResponse}}">
+<polymer-element name="nx-document" attributes="docId docPath repo doc" extends="nx-resource">
     <script>
         Polymer('nx-document', {
 
@@ -66,15 +66,6 @@ element.
            * @default null
            */
           repo: null,
-
-          /**
-           * If true, automatically fetch the document when either `path` or `uid`.
-           *
-           * @attribute auto
-           * @type boolean
-           * @default false
-           */
-          auto: false,
 
           /**
            * The Document object.

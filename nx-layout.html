@@ -28,10 +28,11 @@ Contributors:
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="nx-widgets.html">
 <polymer-element name="nx-layout" attributes="ref mode value">
-    <template>
-      <content></content>
-    </template>
+  <template>
+    <content></content>
+  </template>
     <script>
       (function() {
         // A global cache of layout definitions
@@ -66,16 +67,26 @@ Contributors:
              */
             value: null,
 
+            observe: {
+                'value mode': '_updateTemplateData'
+            },
+
             ready: function() {
                 this.connection = document.querySelector('#' + this.connectionId);
             },
 
-            attached: function() {
-              //this.$.template.model = this.value;
+            get rows() {
+              var container = (this.hasAttribute('vertical')) ? 'row' : 'column';
+              return this.querySelectorAll(container);
             },
 
             refChanged: function() {
-              this._fetch(this.ref, this._updateLayoutTemplate.bind(this));
+              this._fetch(this.ref,
+                function(def) {
+                  using('nx-widget', function(nxw) {
+                    this._updateLayoutTemplate(def, nxw.widgetTypes);
+                  }.bind(this));
+                }.bind(this));
             },
 
             _fetch: function(layoutName, callback) {
@@ -93,37 +104,61 @@ Contributors:
                 }.bind(this));
             },
 
-            _updateLayoutTemplate: function(def) {
+            // Updates the template model
+            _updateTemplateData: function() {
+              var template = this.querySelector('template');
+              if (template) {
+                template.model = {value: this.value, mode: this.mode};
+                template.setAttribute('bind', '{{}}');
+              }
+            },
 
-              var template = document.createElement('div');
-              template.setAttribute('layout', true);
-              template.setAttribute('vertical', this.hasAttribute('vertical'));
-              template.setAttribute('horizontal', this.hasAttribute('horizontal'));
+            // creates <template> with <nx-widget> elements
+            _updateLayoutTemplate: function(def, widgetTypes) {
 
-              this.shadowRoot.appendChild(template);
+              var template = document.createElement('template');
 
               // Prepare a hashmap with the widgets
               var widgets = {};
               def.widgets.forEach(function(widget) {
                 widgets[widget.name] = widget;
-              });
+              }, this);
 
+              var container = (this.hasAttribute('vertical')) ? 'row' : 'column';
+
+              // Create a widget for each rom
               def.rows.forEach(function(row) {
-                var nxrow = document.createElement('div');
+                var nxrow = document.createElement(container);
+                template.content.appendChild(nxrow);
                 row.widgets.forEach(function(widgetDef) {
                   var widget = widgets[widgetDef.name];
-                  var nxwidget = document.createElement('nx-widget');
-                  nxwidget.setAttribute('type', widget.type);
-                  if (this.hasAttribute('vertical')) {
-                    nxwidget.setAttribute('label', widget.labels.any);
-                  }
+                  // TODO(nfgs): Handle multiple fields
                   var field = widget.fields[0].fieldName;
-                  nxwidget.bind('value', new PathObserver(this, 'value.properties["' + field + '"]'));
-                  nxwidget.bind('mode', new PathObserver(this, 'mode'));
-                  nxrow.appendChild(nxwidget);
+
+                  // Get the corresponding widget type
+                  var widgetType = widgetTypes[widget.type] || widgetTypes['text'];
+
+                  // Get the properties for the widget and add them as attributes (if published)
+                  var properties = (widget.properties) ? widget.properties.any : {};
+                  var attributes = '';
+                  widgetType.attributes.forEach(function(k) {
+                    if (properties.hasOwnProperty(k)) {
+                      attributes += k + '="' + properties[k] + '" ';
+                    }
+                  });
+
+                  // Inject the HTML
+                  this.injectBoundHTML(
+                    '<' + widgetType.name + ' widget="' + widget.type + '" ' + attributes + ' ' +
+                      (this.hasAttribute('vertical') ? 'label="' + widget.labels.any + '" ' : '') +
+                      'value="{{value.properties[\'' + field + '\']}}" ' +
+                      'mode="{{mode}}">', nxrow);
                 }, this);
-                template.appendChild(nxrow);
+
               }, this);
+
+              this.appendChild(template);
+              this._updateTemplateData();
 
               return template;
             },

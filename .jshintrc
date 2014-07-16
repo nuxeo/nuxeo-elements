@@ -20,6 +20,8 @@
   "predef": [
     "Polymer",
     "PathObserver",
-    "nuxeo"
+    "nuxeo",
+    "modularize",
+    "using"
   ]
 }

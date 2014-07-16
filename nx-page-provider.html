@@ -36,7 +36,7 @@ element.
 -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="nx-operation.html">
-<polymer-element name="nx-page-provider" attributes="connectionId auto provider query params pageSize page sort">
+<polymer-element name="nx-page-provider" attributes="connectionId auto ref query params pageSize page sort currentPage">
     <template>
         <style>
             :host {
@@ -71,11 +71,11 @@ element.
             /**
              * The id of a page provider.
              *
-             * @attribute provider
+             * @attribute ref
              * @type string
              * @default ''
              */
-            provider: '',
+            ref: '',
 
             /**
              * The query.
@@ -113,15 +113,24 @@ element.
              */
             page: 1,
 
+            /**
+             * The current page entries.
+             *
+             * @attribute currentPage
+             * @type Object
+             * @default null
+             */
+            currentPage: null,
+
             observe: {
-                'query pageSize page': 'autoFetch'
+                'ref query params pageSize page': 'autoFetch'
             },
             ready: function() {
                 this.connection = document.querySelector('#' + this.connectionId);
             },
 
             /**
-            * Executes the operation to fetch the results.
+            * Executes the operation to fetch the currentPage.
             *
             * @method fetch
             */
@@ -129,12 +138,12 @@ element.
                 this.$.operation.params = {
                     page: this.page - 1,
                     pageSize: this.pageSize,
-                    providerName: this.provider,
+                    providerName: this.ref,
                     query: this.query,
                     queryParams: this.params,
                     sortInfo: this.sort
                 };
-                this.results = [];
+                this.currentPage = [];
                 this.$.operation.execute();
             },
             autoFetch: function() {
@@ -148,7 +157,7 @@ element.
             },
             onOpResponse: function() {
                 var response = this.$.operation.response;
-                this.results = response.entries.slice(0);
+                this.currentPage = response.entries.slice(0);
                 this.numberOfPages = response.numberOfPages;
             }
 
