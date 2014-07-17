@@ -37,6 +37,7 @@ element.
 @homepage http://www.nuxeo.org
 -->
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="nx-connection.html">
 <script src="../nuxeo/lib/jquery/nuxeo.js"></script>
 <polymer-element name="nx-operation" attributes="connectionId op params auto response">
     <template>
@@ -45,6 +46,7 @@ element.
                 display: none;
             }
         </style>
+        <nx-connection id="nx" connectionId="{{connectionId}}"></nx-connection>
     </template>
     <script>
         Polymer('nx-operation', {
@@ -59,9 +61,9 @@ element.
              *
              * @attribute connectionId
              * @type string
-             * @default 'nx_connection'
+             * @default ''
              */
-            connectionId: 'nx_connection',
+            connectionId: '',
 
             /**
              * The id the operation to call.
@@ -104,7 +106,7 @@ element.
             },
 
             ready: function() {
-                this.connection = document.querySelector('#' + this.connectionId);
+                this.client = this.$.nx.client;
             },
 
             /**
@@ -115,7 +117,7 @@ element.
             execute: function() {
                 var _callOp = function() {
                     var params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
-                    this.connection.client
+                    this.client
                         .operation(this.op)
                         .params(params)
                         .execute(function(error, data) {
@@ -124,10 +126,10 @@ element.
                         }.bind(this));
                     }.bind(this);
 
-                if (this.connection.connected) {
+                if (this.$.nx.connected) {
                   _callOp();
                 } else {
-                  this.connection.addEventListener('connected', _callOp);
+                  this.$.nx.addEventListener('connected', _callOp);
                 }
             },
 

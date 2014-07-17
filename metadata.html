@@ -1,4 +1,5 @@
-<x-meta id="nx-connection" label="Nuxeo Connection" group="Nuxeo">
+<!-- Nuxeo API -->
+<x-meta id="nx-connection" label="Connection" group="Nuxeo API">
     <template>
         <nx-connection></nx-connection>
     </template>
@@ -12,7 +13,7 @@
     </template>
 </x-meta>
 
-<x-meta id="nx-operation" label="Nuxeo Operation" group="Nuxeo">
+<x-meta id="nx-operation" label="Operation" group="Nuxeo API">
     <template>
         <nx-operation id="operation" auto op="Document.Query" params='{"query":"select * from Document"}' on-response="{{onOpResponse}}"></nx-operation>
     </template>
@@ -26,31 +27,139 @@
     </template>
 </x-meta>
 
-<x-meta id="nx-page-provider" label="Nuxeo Page Provider" group="Nuxeo">
+<x-meta id="nx-page-provider" label="Page Provider" group="Nuxeo API">
     <template>
         <nx-page-provider auto pageSize="5" query="select * from Document"></nx-page-provider>
     </template>
 
     <property name="auto" kind="boolean"></property>
-    <property name="page" kind="integer"/>
-    <property name="pageSize" kind="integer"/>
 
     <template id="imports">
         <link rel="import" href="nx-page-provider.html">
     </template>
 </x-meta>
 
-<x-meta id="nx-content-view" label="Nuxeo Content View" group="Nuxeo">
+<x-meta id="nx-resource" label="Resource" group="Nuxeo API">
+    <template>
+      <nx-resource id="nx_resource"></nx-resource>
+    </template>
+
+    <property name="auto" kind="boolean"></property>
+
+    <template id="imports">
+        <link rel="import" href="nx-resource.html">
+    </template>
+</x-meta>
+
+<x-meta id="nx-document" label="Document" group="Nuxeo API">
+    <template>
+      <nx-document docPath="/" doc="{{doc}}"></nx-resource>
+    </template>
+
+    <property name="auto" kind="boolean"></property>
+
+    <template id="imports">
+        <link rel="import" href="nx-document.html">
+    </template>
+</x-meta>
+
+<!-- Nuxeo Layouts -->
+<x-meta id="nx-layout" label="Layout" group="Nuxeo Layouts" isContainer>
+    <template>
+      <nx-layout ref="heading" value="{{doc}}" mode="view">
+      </nx-layout>
+    </template>
+
+    <template id="imports">
+        <link rel="import" href="nx-layout.html">
+    </template>
+</x-meta>
+
+<x-meta id="nx-content-view" label="Content View" group="Nuxeo Layouts" isContainer>
     <template>
         <nx-content-view>
             <nx-page-provider auto pageSize="5" query="select * from Document"></nx-page-provider>
-            <template>
-                {{item.title}}
-            </template>
+            <nx-layout class="results" name="heading" ref="heading"></nx-layout>
         </nx-content-view>
     </template>
 
     <template id="imports">
         <link rel="import" href="nx-content-view.html">
+        <link rel="import" href="nx-layout.html">
+        <link rel="import" href="nx-page-provider.html">
+    </template>
+</x-meta>
+
+<!-- Nuxeo Widgets -->
+<x-meta id="nx-checkbox" label="Checkbox" group="Nuxeo Widgets">
+    <template>
+      <nx-checkbox></nx-checkbox>
+    </template>
+
+    <property name="mode" kind="select" options="view,edit"></property>
+    <property name="value" kind="string"></property>
+
+    <template id="imports">
+        <link rel="import" href="widgets/nx-checkbox.html">
+    </template>
+</x-meta>
+
+<x-meta id="nx-datetime" label="Datetime" group="Nuxeo Widgets">
+    <template>
+      <nx-datetime></nx-datetime>
+    </template>
+
+    <template id="imports">
+        <link rel="import" href="widgets/nx-datetime.html">
+    </template>
+</x-meta>
+
+<x-meta id="nx-directory" label="Directory" group="Nuxeo Widgets">
+    <template>
+      <nx-directory></nx-directory>
+    </template>
+
+    <template id="imports">
+        <link rel="import" href="widgets/nx-directory.html">
+    </template>
+</x-meta>
+
+<x-meta id="nx-integer" label="Integer" group="Nuxeo Widgets">
+    <template>
+      <nx-integer></nx-integer>
+    </template>
+
+    <template id="imports">
+        <link rel="import" href="widgets/nx-integer.html">
+    </template>
+</x-meta>
+
+<x-meta id="nx-richtext" label="Rich Text" group="Nuxeo Widgets">
+    <template>
+      <nx-richtext></nx-richtext>
+    </template>
+
+    <template id="imports">
+        <link rel="import" href="widgets/nx-richtext.html">
+    </template>
+</x-meta>
+
+<x-meta id="nx-text" label="Text" group="Nuxeo Widgets">
+    <template>
+      <nx-text></nx-text>
+    </template>
+
+    <template id="imports">
+        <link rel="import" href="widgets/nx-text.html">
+    </template>
+</x-meta>
+
+<x-meta id="nx-textarea" label="Text Area" group="Nuxeo Widgets">
+    <template>
+      <nx-textarea></nx-textarea>
+    </template>
+
+    <template id="imports">
+        <link rel="import" href="widgets/nx-textarea.html">
     </template>
 </x-meta>
