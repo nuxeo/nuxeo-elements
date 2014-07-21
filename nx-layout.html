@@ -103,7 +103,8 @@ Contributors:
 
             // Updates the template model
             _updateTemplateData: function() {
-              var template = this.querySelector('template');
+              // Get the template from the shadow or light dom
+              var template = this.querySelector('template') || this.shadowRoot.querySelector('template');
               if (template) {
                 template.model = {value: this.value, mode: this.mode};
                 template.setAttribute('bind', '{{}}');
@@ -154,7 +155,7 @@ Contributors:
 
               }, this);
 
-              this.appendChild(template);
+              this.shadowRoot.appendChild(template);
               this._updateTemplateData();
 
               return template;
