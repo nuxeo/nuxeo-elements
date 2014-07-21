@@ -36,6 +36,7 @@ Data is bound to `item`.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../core-icon/core-icon.html">
 <link rel="import" href="../core-selection/core-selection.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
 <link rel="import" href="nx-layout.html">
@@ -58,6 +59,19 @@ Data is bound to `item`.
                 opacity: .4;
                 cursor: default;
             }
+            #results {
+              display:table;
+              margin:20px;
+            }
+            #results nx-layout {
+              display:table-row;
+            }
+            #results .selection {
+              display:inline-block;
+            }
+            #results /deep/ column {
+              display:table-cell;
+            }
         </style>
 
         <core-selection id="selection" multi="{{multiSelect}}" on-core-select="{{selectedHandler}}"></core-selection>
@@ -79,11 +93,13 @@ Data is bound to `item`.
                 <!-- content_view_result_layout_actions.xhtml -->
                 <template if="{{resultLayouts.length > 1}}">
                     <template repeat="{{layout in resultLayouts}}">
-                        <button on-click="{{setCurrentResultLayout}}" data-layout="{{layout}}" title="{{layout}}">
-                        {{layout}}
-                        </button>
+                        <core-icon-button
+                          data-layout="{{layout.name}}"
+                          title="{{layout.name}}"
+                          icon="{{layout.icon}}"
+                          on-tap="{{setCurrentResultLayout}}"></core-icon-button>
                     </template>
-                </template -->
+                </template>
 
                 <!-- content_view_export_actions.xhtml -->
             </div>
@@ -141,7 +157,7 @@ Data is bound to `item`.
 
                   // Store the result layout ids
                   if (layout.classList.contains('results')) {
-                    this.resultLayouts.push(layoutName);
+                    this.resultLayouts.push({name: layoutName, icon: layout.getAttribute('icon')});
                   }
 
                   // create a wrapper <template id='layoutId'>
@@ -159,15 +175,12 @@ Data is bound to `item`.
                 }
               }
 
-              this.currentResultLayout = this.resultLayouts[0];
+              this.currentResultLayout = this.resultLayouts[0].name;
             },
 
             setCurrentResultLayout: function(e,d,t) {
               var layoutId = t.dataset.layout;
-              // TODO(nfgs) : Use columns and add headers
-              // var template = this.shadowRoot.querySelector('#' + layoutId);
-              // var layout = template.content.querySelector("nx-layout");
-              // layout.style.webkitColumnCount = layout.rows.length;
+              // TODO(nfgs) : Add headers
               this.currentResultLayout = layoutId;
             },
 
