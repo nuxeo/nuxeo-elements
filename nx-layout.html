@@ -72,10 +72,6 @@ Contributors:
                 'value mode': '_updateTemplateData'
             },
 
-            ready: function() {
-                this.connection = document.querySelector('#' + this.connectionId);
-            },
-
             get rows() {
               var container = (this.hasAttribute('vertical')) ? 'row' : 'column';
               return this.querySelectorAll(container);

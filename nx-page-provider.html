@@ -44,7 +44,7 @@ element.
             }
         </style>
 
-        <nx-operation id="operation" op="Document.PageProvider" on-response="{{onOpResponse}}"></nx-operation>
+        <nx-operation id="operation" op="Document.PageProvider" on-response="{{onOpResponse}}" connectionId="{{connectionId}}"></nx-operation>
 
     </template>
     <script>
@@ -126,6 +126,9 @@ element.
                 'ref query params pageSize page': 'autoFetch'
             },
 
+            ready: function() {
+              this.currentPage = [];
+            },
             /**
             * Executes the operation to fetch the currentPage.
             *

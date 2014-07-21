@@ -62,9 +62,9 @@ Note: Elements that depend on a connectionId use `nx_connection` as default.
              *
              * @attribute url
              * @type string
-             * @default 'http://demo.nuxeo.com/nuxeo'
+             * @default ''
              */
-            url: 'http://demo.nuxeo.com/nuxeo',
+            url: '',
             /**
              * The username.
              *
@@ -82,8 +82,6 @@ Note: Elements that depend on a connectionId use `nx_connection` as default.
              */
             password: 'Administrator',
 
-            connected: false,
-
             observe: {
                 'url username password': 'connect',
                 'client.connected': 'handleConnected'
@@ -94,33 +92,41 @@ Note: Elements that depend on a connectionId use `nx_connection` as default.
             },
 
             connect: function() {
-                // Create the client if needed
-                // If we already have a client with the same connection info just keep it
-                var id = (this.connectionId) ?  this.connectionId : Object.keys(nxClients)[0];
-                this.client = nxClients[id];
-                if (this.client &&
-                    this.client._baseURL === this.url &&
-                    this.client._username === this.username &&
-                    this.client._password === this.password) {
-                    return;
+
+              // Create the client if needed
+              // If we already have a client with the same connection info just keep it
+              var id = (this.connectionId) ?  this.connectionId : Object.keys(nxClients)[0];
+              this.client = nxClients[id];
+              if (this.client &&
+                  this.client._baseURL === this.url &&
+                  this.client._username === this.username &&
+                  this.client._password === this.password) {
+                  return;
+              }
+
+              if (!this.url) {
+                return;
+              }
+
+              nxClients[id] = this.client = new nuxeo.Client({
+                    baseURL: this.url, username: this.username, password: this.password, schemas: '*'
+              });
+
+              this.client.connect(function(error, client) {
+                if (error) {
+                  this.fire('error', {error: error});
+                  return;
                 }
 
-                nxClients[id] = this.client = new nuxeo.Client({
-                      baseURL: this.url, username: this.username, password: this.password, schemas: '*'
-                });
+              }.bind(this));
+            },
 
-                this.client.connect(function(error, client) {
-                  if (error) {
-                    this.fire('error', {error: error});
-                    return;
-                  }
-
-                }.bind(this));
+            get connected() {
+              return this.client && this.client.connected;
             },
 
             handleConnected: function() {
-              this.connected = this.client.connected;
-              if (this.connected) {
+              if (this.client.connected) {
                 this.fire('connected');
               }
             }

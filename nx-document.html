@@ -82,10 +82,6 @@ element.
               'docPath docId': 'updateDocPath'
           },
 
-          ready: function() {
-              this.connection = document.querySelector('#' + this.connectionId);
-          },
-
           updateDocPath: function() {
             var pathOrId = (this.docId) ? '/id/' + this.docId : '/path/' + this.docPath;
             if (this.repo) {

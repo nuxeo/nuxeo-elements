@@ -44,6 +44,7 @@ element.
                 display: none;
             }
         </style>
+        <nx-connection id="nx" connectionId="{{connectionId}}"></nx-connection>
     </template>
     <script>
         Polymer('nx-resource', {
@@ -58,9 +59,9 @@ element.
              *
              * @attribute connectionId
              * @type string
-             * @default 'nx_connection'
+             * @default ''
              */
-            connectionId: 'nx_connection',
+            connectionId: '',
 
             /**
              * The path of the resource.
@@ -111,10 +112,6 @@ element.
                 'path params': '_autoGet'
             },
 
-            ready: function() {
-                this.connection = document.querySelector('#' + this.connectionId);
-            },
-
             /**
             * Executes the operation.
             *
@@ -130,10 +127,10 @@ element.
                         }.bind(this));
                     }.bind(this);
 
-                if (this.connection.connected) {
+                if (this.$.nx.connected) {
                   _call();
                 } else {
-                  this.connection.addEventListener('connected', _call);
+                  this.$.nx.addEventListener('connected', _call);
                 }
             },
 
@@ -153,7 +150,7 @@ element.
 
             _request: function() {
               var params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
-              return this.connection.client
+              return this.$.nx.client
                         .request()
                         .repositoryName(undefined)
                         .path(this.path)
