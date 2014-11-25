@@ -2,14 +2,14 @@
   "name": "nuxeo-elements",
   "version": "0.0.1",
   "authors": [
-    "Nelson Silva <nelson.silva@inevo.pt>"
+    "Nelson Silva <nsilva@nuxeo.com>"
   ],
   "description": "Nuxeo Web Components",
   "license": "LGPL",
   "private": true,
   "dependencies": {
-    "polymer": "Polymer/polymer#>=0.3.0 <1.0.0",
-    "core-elements": "Polymer/core-elements#>=0.3.0 <1.0.0",
+    "polymer": "Polymer/polymer#>=0.5.1 <1.0.0",
+    "core-elements": "Polymer/core-elements#>=0.5.1 <1.0.0",
     "nuxeo": ">=0.2.0 <1.0.0"
   }
 }

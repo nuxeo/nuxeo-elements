@@ -31,9 +31,9 @@ Contributors:
 <polymer-element name="nx-text" extends="nx-widget" widget="text" horizontal layout noscript>
 <template>
   <style>
-  core-input {
-    border-bottom: 1px dotted #ccc;
-  }
+    input[is=core-input] {
+      border-bottom: 1px dotted #ccc;
+    }
   </style>
 
   <template if="{{label}}"><strong>{{label}} : </strong></template>
@@ -43,10 +43,8 @@ Contributors:
   </template>
 
   <template if="{{mode == 'edit'}}">
-    <core-input
-      multiline?="{{type == 'textarea'}}"
-      inputValue="{{value}}"
-      rows="5"></core-input>
+    <input is="core-input"
+      value="{{value}}">
   </template>
 
 </template>

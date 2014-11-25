@@ -56,6 +56,11 @@ Contributors:
     },
     updateValue: function() {
       this.value = this.$.content.innerHTML;
+    },
+    valueChanged: function() {
+      if (this.mode !== 'edit') {
+        this.$.content.innerHTML = this.value;
+      }
     }
   });
 </script>
