@@ -1,6 +1,6 @@
 {
   "name": "nuxeo-elements",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "authors": [
     "Nelson Silva <nsilva@nuxeo.com>"
   ],
@@ -8,8 +8,9 @@
   "license": "LGPL",
   "private": true,
   "dependencies": {
-    "polymer": "Polymer/polymer#>=0.5.1 <1.0.0",
-    "core-elements": "Polymer/core-elements#>=0.5.1 <1.0.0",
-    "nuxeo": ">=0.2.0 <1.0.0"
+    "polymer": "Polymer/polymer#^0.5.1",
+    "core-elements": "Polymer/core-elements#^0.5.1",
+    "nuxeo": "^0.2.0",
+    "es6-promise": "^2.0.0"
   }
 }

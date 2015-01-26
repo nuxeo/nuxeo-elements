@@ -47,7 +47,7 @@ element.
         <nx-connection id="nx" connectionId="{{connectionId}}"></nx-connection>
     </template>
     <script>
-        Polymer('nx-resource', {
+        Polymer({
             /**
              * Fired when a response is received.
              *
@@ -117,29 +117,20 @@ element.
             *
             * @method execute
             */
-            get: function() {
-                var _call = function() {
-                    this._request()
-                        .get(function(error, data) {
-                            this.data = data;
-                            this.type = data['entity-type'];
-                            this.fire('response', {response: data});
-                        }.bind(this));
-                    }.bind(this);
-
-                if (this.$.nx.connected) {
-                  _call();
-                } else {
-                  this.$.nx.addEventListener('connected', _call);
-                }
+            get: function(data) {
+              return this._execute('get', data);
             },
 
-            put: function() {
-              this._request().put({data: this.data}, function(error, data) {
-                    this.data = data;
-                    this.type = data['entity-type'];
-                    this.fire('response', {response: data});
-                }.bind(this));
+            post: function(data) {
+              return this._execute('post', data);
+            },
+
+            put: function(data) {
+              return this._execute('put', data);
+            },
+
+            remove: function(data) {
+              return this._execute('delete', data);
             },
 
             _autoGet: function() {
@@ -148,14 +139,36 @@ element.
                 }
             },
 
-            _request: function() {
-              var params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
-              return this.$.nx.client
-                        .request()
-                        .repositoryName(undefined)
-                        .path(this.path)
-                        .query(params);
-            }
+          _execute: function(method, data) {
+            method = method || 'get';
+            data = data || this.data;
+            var options = (data) ? {data: data} : {};
+            // add support for plain text responses
+            options.headers = {'Accept': 'text/plain,application/json'};
+            var params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
+            return this.$.nx.connect()
+              .then(function() {
+                return new Promise(function (resolve, reject) {
+                  return this.$.nx.client
+                    .request(this.path)
+                    .repositoryName(undefined)
+                    .query(params) [method](options, function (error, data) {
+                      if (error) {
+                        this.fire('error', error);
+                        reject(Error(error));
+                        return;
+                      }
+                      this.fire('response', {response: data});
+                      // if we're binding to the 'data' attribute, update it
+                      if (this.hasAttribute('data')) {
+                        this.data = data;
+                      }
+                      resolve(data);
+                  }.bind(this));
+                }.bind(this));
+              }.bind(this));
+          }
+
         });
     </script>
 </polymer-element>

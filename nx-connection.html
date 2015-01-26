@@ -34,6 +34,7 @@ Note: Elements that depend on a connectionId use `nx_connection` as default.
 <link rel="import" href="../polymer/polymer.html">
 <script src="../jquery/dist/jquery.min.js"></script>
 <script src="../nuxeo/lib/jquery/nuxeo.js"></script>
+<script src="../es6-promise/promise.js"></script>
 <polymer-element name="nx-connection" attributes="connectionId url username password">
     <template>
         <style>
@@ -92,32 +93,33 @@ Note: Elements that depend on a connectionId use `nx_connection` as default.
             },
 
             connect: function() {
-
-              // Create the client if needed
-              // If we already have a client with the same connection info just keep it
-              var id = (this.connectionId) ?  this.connectionId : Object.keys(nxClients)[0];
-              this.client = nxClients[id];
-              if (this.client &&
-                  this.client._baseURL === this.url &&
-                  this.client._username === this.username &&
-                  this.client._password === this.password) {
-                  return;
-              }
-
-              if (!this.url) {
-                return;
-              }
-
-              nxClients[id] = this.client = new nuxeo.Client({
-                    baseURL: this.url, username: this.username, password: this.password, schemas: '*'
-              });
-
-              this.client.connect(function(error, client) {
-                if (error) {
-                  this.fire('error', {error: error});
+              return new Promise(function (resolve, reject) {
+                // Create the client if needed
+                // If we already have a client with the same connection info just keep it
+                var id = (this.connectionId) ? this.connectionId : Object.keys(nxClients)[0];
+                this.client = nxClients[id];
+                if (this.client &&
+                  (!this.url || (this.client._baseURL === this.url)) &&
+                  (!this.username || (this.client._username === this.username)) &&
+                  (!this.password || (this.client._password === this.password))) {
+                  resolve(this);
                   return;
                 }
 
+                nxClients[id] = this.client = new nuxeo.Client({
+                  baseURL: this.url,
+                  username: this.username,
+                  password: this.password,
+                  schemas: '*'
+                });
+
+                this.client.connect(function (error, client) {
+                  if (error) {
+                    this.fire('error', {error: error});
+                    reject(error);
+                  }
+                  resolve(this);
+                }.bind(this));
               }.bind(this));
             },
 
