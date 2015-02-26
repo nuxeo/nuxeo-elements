@@ -71,17 +71,17 @@ Note: Elements that depend on a connectionId use `nx_connection` as default.
              *
              * @attribute username
              * @type string
-             * @default 'Administrator'
+             * @default null
              */
-            username: 'Administrator',
+            username: null,
             /**
              * The password.
              *
              * @attribute password
              * @type string
-             * @default 'Administrator'
+             * @default null
              */
-            password: 'Administrator',
+            password: null,
 
             observe: {
                 'url username password': 'connect',
@@ -108,8 +108,10 @@ Note: Elements that depend on a connectionId use `nx_connection` as default.
 
                 nxClients[id] = this.client = new nuxeo.Client({
                   baseURL: this.url,
-                  username: this.username,
-                  password: this.password,
+                  auth: {
+                    username: this.username,
+                    password: this.password
+                  },
                   schemas: '*'
                 });
 
