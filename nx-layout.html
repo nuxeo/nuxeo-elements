@@ -51,7 +51,7 @@ Contributors:
             connectionId: '',
 
             /**
-             * The id of a remove layout to use.
+             * The id of a remote layout to use.
              *
              * @attribute ref
              * @type string
@@ -62,7 +62,7 @@ Contributors:
             /**
              * The value the layout will apply to.
              *
-             * @attribute ṽalue
+             * @attribute value
              * @type Object
              * @default 'null'
              */
@@ -80,7 +80,7 @@ Contributors:
             refChanged: function() {
               this._fetch(this.ref,
                 function(def) {
-                  using('nx-widget', function(nxw) {
+                  using('nx-widget-registry', function(nxw) {
                     this._updateLayoutTemplate(def, nxw.widgetTypes);
                   }.bind(this));
                 }.bind(this));

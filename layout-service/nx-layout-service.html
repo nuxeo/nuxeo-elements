@@ -1,0 +1,122 @@
+<!--
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the GNU Lesser General Public License
+(LGPL) version 2.1 which accompanies this distribution, and is available at
+http://www.gnu.org/licenses/lgpl-2.1.html
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+Contributors:
+   Anahide Tchertchian
+-->
+
+<!--
+@group Nuxeo Elements
+
+  `<nx-layout-service>` provides an API to retrieve layout instances.
+
+    <nx-layout-service>
+    </nx-layout-service>
+
+@element nx-layout-service
+@homepage http://www.nuxeo.org
+-->
+
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../core-ajax/core-ajax.html">
+
+<polymer-element name="nx-layout-service" attributes="url name mode category layout">
+  <template>
+    <style>
+      :host {
+        display: none;
+      }
+    </style>
+    <core-ajax id="ajax"
+      url="{{url}}site/webcomponent/layout/{{name}}/{{mode}}"
+      params='{"category":"{{category}}"}'
+      on-core-response="{{layoutLoaded}}"
+      withCredentials="true"
+      handleAs="json">
+    </core-ajax>
+  </template>
+  <script>
+    (function() {
+      // A global cache of layout instances per name and mode
+      var _layouts = {};
+
+      Polymer('nx-layout-service', {
+
+        /**
+         * The url of the target Nuxeo server serving layouts.
+         *
+         * @attribute url
+         * @type String
+         * @default 'http://localhost:8080/nuxeo/'
+         */
+        url: 'http://localhost:8080/nuxeo/',
+
+        /**
+         * The name of the layout to retrieve.
+         *
+         * @attribute name
+         * @type String
+         * @default 'null'
+         */
+        name: null,
+
+        /**
+         * The mode in which layout should be rendered.
+         *
+         * @attribute mode
+         * @type String
+         * @default 'view'
+         */
+        mode: null,
+
+        /**
+         * The category of the layout to retrieve.
+         *
+         * @attribute category
+         * @type String
+         * @default 'jsf'
+         */
+        category: 'jsf',
+
+        /**
+         * The current layout instance retrieved.
+         *
+         * @attribute layout
+         * @type Object
+         * @default 'null'
+         */
+        layout: null,
+
+        observe: {
+            'name mode category': '_updateCurrentLayout'
+        },
+
+        layoutLoaded: function() {
+          // Make a copy of the loaded data
+          _layouts[this.name] = _layouts[this.name] || {};
+          _layouts[this.name][this.mode] = this.$.ajax.response;
+          this.layout = _layouts[this.name][this.mode];
+        },
+
+        _updateCurrentLayout: function() {
+          if (!_layouts[this.name] || !_layouts[this.name][this.mode]) {
+            this.$.ajax.go();
+          } else {
+            this.layout = _layouts[this.name][this.mode];
+          }
+        },
+
+      });
+    })();
+  </script>
+</polymer-element>

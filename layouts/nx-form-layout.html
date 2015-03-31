@@ -1,0 +1,103 @@
+<!--
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the GNU Lesser General Public License
+(LGPL) version 2.1 which accompanies this distribution, and is available at
+http://www.gnu.org/licenses/lgpl-2.1.html
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+Contributors:
+   Anahide Tchertchian
+-->
+
+<!--
+@group Nuxeo Elements
+
+`nx-form-layout`
+
+    <nx-form-layout>
+    </nx-form-layout>
+
+@element nx-form-layout
+@homepage http://www.nuxeo.org
+-->
+
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../core-label/core-label.html">
+<link rel="import" href="../../core-input/core-input.html">
+<link rel="import" href="../../core-field/core-field.html">
+<link rel="import" href="../layout-service/nx-layout-service.html">
+<link rel="import" href="../nx-widget-instance.html">
+<polymer-element name="nx-form-layout" attributes="url name mode valueH">
+  <template>
+    <nx-layout-service url="{{url}}" name="{{name}}" mode="{{mode}}" layout="{{layout}}" valueH="{{valueH}}">
+    </nx-layout-service>
+    <div vertical layout>
+      <template repeat="{{row in layout.rows}}">
+        <div horizontal layout>
+          <template repeat="{{widget in row.widgets}}">
+            <div>
+              <core-label for=".widget">
+                {{widget.label}}
+              </core-label>
+              <nx-widget-instance widget="{{widget}}"
+                valueH="{{valueH}}">
+              </nx-widget-instance>
+          </template>
+        </div>
+      </template>
+    </div>
+  </template>
+  <script>
+    Polymer({
+
+      /**
+       * The url of the target Nuxeo server, to rerieve layouts.
+       *
+       * @attribute url
+       * @type String
+       * @default 'http://localhost:8080/nuxeo/'
+       */
+      url: 'http://localhost:8080/nuxeo/',
+
+      /**
+       * The name of the layout.
+       *
+       * @attribute name
+       * @type string
+       * @default null
+       */
+      name: null,
+
+      /**
+       * The mode of the layout.
+       *
+       * @attribute mode
+       * @type string
+       * @default 'view'
+       */
+      mode: 'view',
+
+      /**
+       * The value the layout will apply to.
+       *
+       * @attribute value
+       * @type Object
+       * @default 'null'
+       */
+      valueH: null,
+
+      get rows() {
+        var container = (this.hasAttribute('vertical')) ? 'row' : 'column';
+        return this.querySelectorAll(container);
+      },
+
+    });
+  </script>
+
+</polymer-element>

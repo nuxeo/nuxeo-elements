@@ -15,11 +15,10 @@ Contributors:
   Nelson Silva <nelson.silva@inevo.pt>
 -->
 
-<link rel="import" href="../nx-operation.html">
 <link rel="import" href="../../core-input/core-input.html">
 <script>
   // Provided by platform.js
-  modularize('nx-widget', function() {
+  modularize('nx-widget-registry', function() {
     return {
       widgetTypes: {}, // Mapping from Nuxeo widget types to custom nx-widget elements
       register: function(polymerElement) {
@@ -84,9 +83,9 @@ Base class for Nuxeo widgets
              value: null,
 
              /**
-             * The value on which widget will apply.
+             * The validator for this widget.
              *
-             * @attribute ṽalue
+             * @attribute validator
              * @type Object
              * @default 'null'
              */
@@ -95,7 +94,7 @@ Base class for Nuxeo widgets
              errorText: '',
 
              registerCallback: function(polymerElement) {
-                using('nx-widget', function(nxw) {
+                using('nx-widget-registry', function(nxw) {
                   nxw.register(polymerElement);
                 });
               },

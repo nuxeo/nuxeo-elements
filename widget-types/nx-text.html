@@ -16,31 +16,31 @@ Contributors:
 -->
 
 <!--
-@group Nuxeo Widgets
+@group Nuxeo Elements
 
-`nx-integer`
+    <nx-widget-type-text widget="{{widget}}" value="{{value}}">
+    </nx-widget-type-text>
 
-    <nx-integer name="my_widget" mode="view" label="My Widget">
-    </nx-integer>
-
-@element nx-integer
-@extends nx-widget
+@element nx-widget-type-text
 @homepage http://www.nuxeo.org
 -->
-<link rel="import" href="../nx-widget.html">
-<polymer-element name="nx-integer" extends="nx-widget" widget="int" horizontal layout noscript>
-<template>
+<link rel="import" href="nx-base-widget-type.html">
+<polymer-element name="nx-widget-type-text"
+  extends="nx-base-widget-type" widget="{{widget}}" valueH="{{valueH}}" attributes="widget valueH field"
+  type="text"
+  horizontal layout noscript>
+  <template bind="{{valueH}}">
 
-  <template if="{{label}}"><strong>{{label}} : </strong></template>
+    <template if="{{widget.label}}"><strong>{{widget.label}}: </strong></template>
 
-  <template if="{{mode == 'view'}}">
-    {{value}}
+    <template if="{{widget.mode == 'view'}}">
+      {{field}}
+    </template>
+
+    <template if="{{widget.mode == 'edit'}}">
+      <input is="core-input"
+        value="{{field}}">
+    </template>
+
   </template>
-
-  <template if="{{mode == 'edit'}}">
-    <input
-      value="{{value}}"
-      type="number">
-  </template>
-</template>
 </polymer-element>

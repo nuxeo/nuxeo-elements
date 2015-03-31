@@ -1,0 +1,77 @@
+<!--
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the GNU Lesser General Public License
+(LGPL) version 2.1 which accompanies this distribution, and is available at
+http://www.gnu.org/licenses/lgpl-2.1.html
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+Contributors:
+   Anahide Tchertchian
+-->
+
+<!--
+@group Nuxeo Elements
+
+Base class for Nuxeo widgets, working with widget instances.
+
+This is actually the same behaviour than JSF tag nxl:widget, taking a widget instance as attribute.
+
+@element nx-widget-instance
+@homepage http://www.nuxeo.org
+-->
+<link rel="import" href="nx-widget-types-registry.html">
+<link rel="import" href="nx-widget-types.html">
+<polymer-element name="nx-widget-instance" attributes="widget valueH">
+  <template id="content">
+    <nx-base-widget-type id="reg"></nx-base-widget-type>
+    <div id="content"></div>
+    <content></content>
+  </template>
+  <script>
+    Polymer({
+      /**
+       * Widget instance provided by the layout.
+       *
+       * @attribute widget
+       * @type Widget
+       * @default 'null'
+       */
+      widget: null,
+
+      /**
+      * The value on which widget will apply.
+      *
+      * @attribute value
+      * @type Object
+      * @default 'null'
+      */
+      valueH: null,
+
+      ready: function() {
+        var type = this.widget.type;
+        console.log(type);
+        var instanceEl = this.$;
+        // retrieve accurate polymer element name for this widget
+        using('nx-widget-types-registry',  function(df) {
+          var pname = df.widgetTypes[type];
+          if (!pname) {
+            // not polymer element bound to that type
+            console.warn('No polymer element for widget type '+ type);
+            return;
+          }
+          console.info('Resolved polymer element ' + pname + ' for widget type '+ type);
+          var html = '<' + pname + ' widget="{{widget}}" valueH="{{valueH}}"></' + pname + '>';
+          this.injectBoundHTML(html, instanceEl.content);
+        }.bind(this));
+      }
+
+    });
+  </script>
+
+</polymer-element>
