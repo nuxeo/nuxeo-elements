@@ -31,11 +31,9 @@ Note: Elements that depend on a connectionId use `nx_connection` as default.
 @element nx-connection
 @homepage http://www.nuxeo.org
 -->
-<link rel="import" href="../polymer/polymer.html">
-<script src="../jquery/dist/jquery.min.js"></script>
-<script src="../nuxeo/lib/jquery/nuxeo.js"></script>
-<script src="../es6-promise/promise.js"></script>
-<polymer-element name="nx-connection" attributes="connectionId url username password">
+<link rel="import" href="#{baseURL}bower_components/polymer/polymer.html">
+<script src="promise.min.js"></script>
+<dom-module id="nx-connection">
     <template>
         <style>
             :host {
@@ -43,99 +41,77 @@ Note: Elements that depend on a connectionId use `nx_connection` as default.
             }
         </style>
     </template>
-    <script>
-    (function() {
+</dom-module>
+<script>
+    (function () {
         // A global map of clients with connectionId as key.
         // This map is shared between all instances of nx-connection.
         var nxClients = {};
 
-        Polymer('nx-connection', {
-            /**
-             * A unique identifier for this connection.
-             *
-             * @attribute connectionId
-             * @type string
-             * @default 'nx'
-             */
-            connectionId: 'nx',
-            /**
-             * The base URL of the Nuxeo server.
-             *
-             * @attribute url
-             * @type string
-             * @default ''
-             */
-            url: '',
-            /**
-             * The username.
-             *
-             * @attribute username
-             * @type string
-             * @default null
-             */
-            username: null,
-            /**
-             * The password.
-             *
-             * @attribute password
-             * @type string
-             * @default null
-             */
-            password: null,
+        Polymer({
+            is: "nx-connection",
+            properties: {
+                /* A unique identifier for this connection. */
+                connectionId: {type: String, value: 'nx'},
 
-            observe: {
-                'url username password': 'connect',
-                'client.connected': 'handleConnected'
-            },
+                /* The base URL of the Nuxeo server. */
+                url: {type: String, value: ''},
 
-            ready: function() {
+                /* The username. */
+                username: {type: String, value: null},
+
+                /* The password. */
+                password: {type: String, value: null}
+            }
+            ,
+
+            ready: function () {
                 this.connect();
             },
 
-            connect: function() {
-              return new Promise(function (resolve, reject) {
-                // Create the client if needed
-                // If we already have a client with the same connection info just keep it
-                var id = (this.connectionId) ? this.connectionId : Object.keys(nxClients)[0];
-                this.client = nxClients[id];
-                if (this.client &&
-                  (!this.url || (this.client._baseURL === this.url)) &&
-                  (!this.username || (this.client._username === this.username)) &&
-                  (!this.password || (this.client._password === this.password))) {
-                  resolve(this);
-                  return;
-                }
+            connect: function () {
+                return new Promise(function (resolve, reject) {
+                    // Create the client if needed
+                    // If we already have a client with the same connection info just keep it
+                    var id = (this.connectionId) ? this.connectionId : Object.keys(nxClients)[0];
+                    this.client = nxClients[id];
+                    if (this.client &&
+                            (!this.url || (this.client._baseURL === this.url)) &&
+                            (!this.username || (this.client._username === this.username)) &&
+                            (!this.password || (this.client._password === this.password))) {
+                        resolve(this);
+                        return;
+                    }
 
-                nxClients[id] = this.client = new nuxeo.Client({
-                  baseURL: this.url,
-                  auth: {
-                    username: this.username,
-                    password: this.password
-                  },
-                  schemas: '*'
-                });
+                    nxClients[id] = this.client = new nuxeo.Client({
+                        baseURL: this.url,
+                        auth: {
+                            username: this.username,
+                            password: this.password
+                        },
+                        schemas: '*'
+                    });
 
-                this.client.connect(function (error, client) {
-                  if (error) {
-                    this.fire('error', {error: error});
-                    reject(error);
-                  }
-                  resolve(this);
+                    this.client.connect(function (error, client) {
+                        if (error) {
+                            this.fire('error', {error: error});
+                            reject(error);
+                        }
+                        resolve(this);
+                    }.bind(this));
                 }.bind(this));
-              }.bind(this));
             },
 
             get connected() {
-              return this.client && this.client.connected;
+                return this.client && this.client.connected;
             },
 
-            handleConnected: function() {
-              if (this.client.connected) {
-                this.fire('connected');
-              }
+            handleConnected: function () {
+                if (this.client.connected) {
+                    this.fire('connected');
+                }
             }
 
         });
     })();
-    </script>
-</polymer-element>
+</script>
