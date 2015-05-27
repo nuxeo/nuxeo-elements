@@ -38,7 +38,7 @@ element.
 -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="nx-connection.html">
-<polymer-element name="nx-operation" attributes="connectionId op params auto response">
+<dom-module name="nx-operation">
     <template>
         <style>
             :host {
@@ -48,95 +48,80 @@ element.
         <nx-connection id="nx" connectionId="{{connectionId}}"></nx-connection>
     </template>
     <script>
-        Polymer('nx-operation', {
-            /**
-             * Fired when a response is received.
-             *
-             * @event response
-             */
-
-            /**
-             * The id of a nx-connection to use.
-             *
-             * @attribute connectionId
-             * @type string
-             * @default ''
-             */
-            connectionId: '',
-
-            /**
-             * The id the operation to call.
-             *
-             * @attribute op
-             * @type string
-             * @default ''
-             */
-            op: '',
-
-            /**
-             * The parameters to send.
-             *
-             * @attribute params
-             * @type string or Object
-             * @default ''
-             */
-            params: '',
-
-            /**
-             * If true, automatically execute the operation when either `op` or `params` changes.
-             *
-             * @attribute auto
-             * @type boolean
-             * @default false
-             */
-            auto: false,
-
-            /**
-             * The response from the server.
-             *
-             * @property response
-             * @type Object
-             * @default null
-             */
-            response: null,
-
-            observe: {
-                'op params': '_autoExecute'
+        Polymer({
+          is: "nx-operation",
+          properties: {
+            /* The id of a nx-connection to use. */
+            connectionId: {
+              type: String,
+              value: ''
             },
 
-            ready: function() {
-                this.client = this.$.nx.client;
+            /* The id the operation to call. */
+            op: {
+              type: String,
+              value: ''
             },
 
-            /**
-            * Executes the operation.
-            *
-            * @method execute
-            */
-            execute: function() {
-                var _callOp = function() {
-                    var params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
-                    this.client
-                        .operation(this.op)
-                        .params(params)
-                        .execute(function(error, data) {
-                            this.response = data;
-                            this.fire('response', {response: data});
-                        }.bind(this));
-                    }.bind(this);
-
-                if (this.$.nx.connected) {
-                  _callOp();
-                } else {
-                  this.$.nx.addEventListener('connected', _callOp);
-                }
+            /* The parameters to send. */
+            params: {
+              type: Object,
+              value: function() {
+                return {};
+              }
             },
 
-            _autoExecute: function() {
-                if (this.auto) {
-                    this.execute();
-                }
+            /* The operation input. */
+            input: {
+              type: String,
+              value: ''
+            },
+
+            /* If true, automatically execute the operation when either `op` or `params` changes. */
+            auto: {
+              type: Boolean,
+              value: false
+            },
+
+            /* The response from the server. */
+            response: {
+              type: Object,
+              value: null
+            },
+          },
+          observers: [
+            "_autoExecute(op, params)"
+          ],
+          ready: function() {
+            this.client = this.$.nx.client;
+          },
+          execute: function() {
+            var _callOp = function() {
+              var params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
+              this.client
+                .operation(this.op)
+                .params(params)
+                .input(this.input)
+                .execute(function(error, data) {
+                  this.response = data;
+                  this.fire('response', {
+                    response: data
+                  });
+                }.bind(this));
+            }.bind(this);
+
+            if (this.$.nx.connected) {
+              _callOp();
+            } else {
+              this.$.nx.addEventListener('connected', _callOp);
             }
+          },
+
+          _autoExecute: function() {
+            if (this.auto) {
+              this.execute();
+            }
+          }
         });
     </script>
-</polymer-element>
+</dom-module>

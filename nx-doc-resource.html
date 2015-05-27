@@ -26,7 +26,7 @@ Contributors:
                 display: none;
             }
         </style>
-        <nx-resource connectionId="{{connectionId}}" auto="{{auto}}"
+        <nx-resource id="nxResource" connectionId="{{connectionId}}" method="{{method}}" auto="{{auto}}"
                      path="{{path}}" data="{{data}}" enrichers="{{enrichers}}"
                      params="{{params}}" headers="{{headers}}"
                      type="{{type}}"></nx-resource>
@@ -45,6 +45,8 @@ Contributors:
 
             /* If true, automatically execute the operation when either `path` or `params` changes. */
             auto: {type: Boolean, value: false},
+
+            method: { type: String, value: 'get'},
 
             /* The path of the resource. */
             path: {type: String, value: ''},
@@ -85,6 +87,30 @@ Contributors:
                 notify: true,
                 computed: 'inheritedRights(data)'
             }
+        },
+
+        get: function () {
+          this.method = 'get';
+          return this.execute();
+        },
+
+        post: function () {
+          this.method = 'post';
+          return this._execute();
+        },
+
+        put: function () {
+          this.method = 'put';
+          return this._execute();
+        },
+
+        remove: function () {
+          this.method = 'delete';
+          return this._execute();
+        },
+
+        execute: function() {
+            this.$.nxResource.execute();
         },
 
         localRights: function (data) {

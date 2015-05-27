@@ -59,6 +59,8 @@ element.
       /* If true, automatically execute the operation when either `path` or `params` changes. */
       auto: {type: Boolean, value: false},
 
+      method: { type: String, value: 'get'},
+
       /* The path of the resource. */
       path: {type: String, value: ''},
 
@@ -84,20 +86,24 @@ element.
       "_autoGet(connectionId, auto, path, params, type, enrichers)"
     ],
 
-    get: function (data) {
-      return this._execute('get', data);
+    get: function () {
+      this.method = 'get';
+      return this.execute();
     },
 
-    post: function (data) {
-      return this._execute('post', data);
+    post: function () {
+      this.method = 'post';
+      return this._execute();
     },
 
-    put: function (data) {
-      return this._execute('put', data);
+    put: function () {
+      this.method = 'put';
+      return this._execute();
     },
 
-    remove: function (data) {
-      return this._execute('delete', data);
+    remove: function () {
+      this.method = 'delete';
+      return this._execute();
     },
 
     _autoGet: function () {
@@ -106,9 +112,9 @@ element.
       }
     },
 
-    _execute: function (method, data) {
-      method = method || 'get';
-      data = data || this.data;
+    execute: function () {
+      method = this.method || 'get';
+      data = this.data;
       var options = (data) ? {data: data} : {};
       // Look up headers parameter
       options.headers = (!this.headers || (typeof this.headers === 'object')) ? {} : JSON.parse(this.headers);
