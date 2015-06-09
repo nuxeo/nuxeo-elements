@@ -100,13 +100,11 @@ element.
             return this.$.nx.connect()
               .then(function() {
                 return new Promise(function(resolve, reject) {
-                  console.log('salut');
                   return this.$.nx.client
                     .operation(this.op)
                     .params(params)
                     .input(this.input)
                     .execute(function(error, data) {
-                      console.log('exec?')
                       if (error) {
                         this.fire('error', error);
                         reject(Error(error));
