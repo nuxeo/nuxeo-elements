@@ -38,6 +38,7 @@ element.
 -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="nx-connection.html">
+<script src="../es6-promise/promise.min.js"></script>
 <dom-module name="nx-operation">
     <template>
         <style>
@@ -90,31 +91,36 @@ element.
             },
           },
           observers: [
-            "_autoExecute(op, params)"
+            '_autoExecute(op, params)'
           ],
-          ready: function() {
-            this.client = this.$.nx.client;
-          },
-          execute: function() {
-            var _callOp = function() {
-              var params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
-              this.client
-                .operation(this.op)
-                .params(params)
-                .input(this.input)
-                .execute(function(error, data) {
-                  this.response = data;
-                  this.fire('response', {
-                    response: data
-                  });
-                }.bind(this));
-            }.bind(this);
 
-            if (this.$.nx.connected) {
-              _callOp();
-            } else {
-              this.$.nx.addEventListener('connected', _callOp);
-            }
+          execute: function() {
+            var params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
+
+            return this.$.nx.connect()
+              .then(function() {
+                return new Promise(function(resolve, reject) {
+                  console.log('salut');
+                  return this.$.nx.client
+                    .operation(this.op)
+                    .params(params)
+                    .input(this.input)
+                    .execute(function(error, data) {
+                      console.log('exec?')
+                      if (error) {
+                        this.fire('error', error);
+                        reject(Error(error));
+                        return;
+                      }
+
+                      this.fire('response', {
+                        response: data
+                      });
+                      this.response = data;
+                      resolve(this.response);
+                    }.bind(this));
+                }.bind(this));
+              }.bind(this));
           },
 
           _autoExecute: function() {

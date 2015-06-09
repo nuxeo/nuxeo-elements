@@ -38,6 +38,7 @@ element.
 -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="nx-connection.html">
+<script src="../es6-promise/promise.min.js"></script>
 <dom-module id="nx-resource">
   <template>
     <style>
@@ -51,7 +52,7 @@ element.
 
 <script>
   Polymer({
-    is: "nx-resource",
+    is: 'nx-resource',
     properties: {
       /* The id of a nx-connection to use. */
       connectionId: {type: String, value: ''},
@@ -67,8 +68,11 @@ element.
       /* The parameters to send. */
       params: {type: Object, value: null},
 
+      /* The data to pass to the server. */
+      data: {type: Object, value: null},
+
       /* The response from the server. */
-      data: {type: Object, value: null, notify: true},
+      response: {type: Object, value: null, notify: true},
 
       /* The `entity-type` of the resource. */
       type: {type: String, value: ''},
@@ -93,17 +97,17 @@ element.
 
     post: function () {
       this.method = 'post';
-      return this._execute();
+      return this.execute();
     },
 
     put: function () {
       this.method = 'put';
-      return this._execute();
+      return this.execute();
     },
 
     remove: function () {
       this.method = 'delete';
-      return this._execute();
+      return this.execute();
     },
 
     _autoGet: function () {
@@ -113,34 +117,45 @@ element.
     },
 
     execute: function () {
-      method = this.method || 'get';
-      data = this.data;
-      var options = (data) ? {data: data} : {};
+      var options = {
+        method: this.method || 'get',
+      };
+
+      if (this.data) {
+        options.data = this.data;
+      }
+
       // Look up headers parameter
       options.headers = (!this.headers || (typeof this.headers === 'object')) ? {} : JSON.parse(this.headers);
       // add support for plain text responses by default
       options.headers.accept = 'text/plain,application/json';
       // Look up content enrichers parameter
-      if (this.enrichers) options.headers["X-NXenrichers.document"] = this.enrichers;
+      if (this.enrichers) {
+        options.headers['X-NXenrichers.document'] = this.enrichers;
+      }
+
       var params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
+
       return this.$.nx.connect()
-              .then(function () {
-                return new Promise(function (resolve, reject) {
-                  return this.$.nx.client
-                          .request(this.path)
-                          .repositoryName(undefined)
-                          .query(params) [method](options, function (error, data) {
-                    if (error) {
-                      this.fire('error', error);
-                      reject(Error(error));
-                      return;
-                    }
-                    this.fire('response', {response: data});
-                    this.data = data;
-                    resolve(data);
-                  }.bind(this));
-                }.bind(this));
-              }.bind(this));
+        .then(function () {
+          return new Promise(function (resolve, reject) {
+            return this.$.nx.client
+              .request(this.path)
+              .repositoryName(undefined)
+              .query(params)
+              .execute(options, function (error, data) {
+                if (error) {
+                  this.fire('error', error);
+                  reject(Error(error));
+                  return;
+                }
+
+                this.fire('response', {response: data});
+                this.response = data;
+                resolve(this.response);
+            }.bind(this));
+          }.bind(this));
+        }.bind(this));
     }
 
   });

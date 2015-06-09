@@ -29,7 +29,7 @@ Contributors:
         <nx-resource id="nxResource" connectionId="{{connectionId}}" method="{{method}}" auto="{{auto}}"
                      path="{{path}}" data="{{data}}" enrichers="{{enrichers}}"
                      params="{{params}}" headers="{{headers}}"
-                     type="{{type}}"></nx-resource>
+                     type="{{type}}" response="{{response}}"></nx-resource>
     </template>
 </dom-module>
 
@@ -54,8 +54,11 @@ Contributors:
             /* The parameters to send. */
             params: {type: Object, value: null},
 
+            /* The data to pass to the server. */
+            data: {type: Object, value: null},
+
             /* The response from the server. */
-            data: {type: Object, value: null, notify: true},
+            response: {type: Object, value: null, notify: true},
 
             /* The `entity-type` of the resource. */
             type: {type: String, value: ''},
@@ -73,25 +76,25 @@ Contributors:
                 type: Boolean,
                 value: false,
                 notify: true,
-                computed: 'hasLocalRightsFunction(data)'
+                computed: 'hasLocalRightsFunction(response)'
             },
             localrights: {
                 type: Array,
                 value: [],
                 notify: true,
-                computed: 'localRights(data)'
+                computed: 'localRights(response)'
             },
             inheritedrights: {
                 type: Array,
                 value: [],
                 notify: true,
-                computed: 'inheritedRights(data)'
+                computed: 'inheritedRights(response)'
             },
             haseverythingright: {
                 type: Boolean,
                 value: false,
                 notify: true,
-                computed: 'isCurrentUserHasEverything(data)'
+                computed: 'isCurrentUserHasEverything(response)'
             }
         },
 
@@ -119,30 +122,30 @@ Contributors:
             this.$.nxResource.execute();
         },
 
-        localRights: function (data) {
-            if(this.hasLocalRightsFunction(data)){
-                return data.contextParameters.acls[0].ace;
+        localRights: function (response) {
+            if(this.hasLocalRightsFunction(response)){
+                return response.contextParameters.acls[0].ace;
             }
         },
 
-        inheritedRights: function (data) {
-            if(data){
-                if(!this.hasLocalRightsFunction(data)){
-                    return data.contextParameters.acls[0].ace;
+        inheritedRights: function (response) {
+            if(response){
+                if(!this.hasLocalRightsFunction(response)){
+                    return response.contextParameters.acls[0].ace;
                 }else{
-                    return data.contextParameters.acls[1].ace;
+                    return response.contextParameters.acls[1].ace;
                 }
             }
         },
 
-        hasLocalRightsFunction: function (data) {
-            if (data) {
-                return data.contextParameters.acls[0].name == 'local';
+        hasLocalRightsFunction: function (response) {
+            if (response) {
+                return response.contextParameters.acls[0].name === 'local';
             }
         },
-        isCurrentUserHasEverything: function (data) {
-            if (data) {
-                return data.contextParameters.permissions.indexOf('Everything') != -1;
+        isCurrentUserHasEverything: function (response) {
+            if (response) {
+                return response.contextParameters.permissions.indexOf('Everything') !== -1;
             }
         }
     });
