@@ -1,5 +1,5 @@
 <!--
-(C) Copyright 2014 Nuxeo SA (http://nuxeo.com/) and contributors.
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
 
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the GNU Lesser General Public License
@@ -12,7 +12,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 Lesser General Public License for more details.
 
 Contributors:
-  Nelson Silva <nelson.silva@inevo.pt>
+  Nelson Silva <nsilva@nuxeo.com>
 -->
 
 <!--
@@ -27,17 +27,25 @@ Contributors:
 @extends nx-widget
 @homepage http://www.nuxeo.org
 -->
-<link rel="import" href="nx-widget.html">
-<polymer-element name="nx-checkbox" extends="nx-widget" widget="checkbox" noscript>
+<link rel="import" href="/components/paper-checkbox/paper-checkbox.html">
+<dom-module id="nx-checkbox">
 <template>
 
-  <template if="{{mode == 'view'}}">
-    {{value ? 'Yes' : 'No'}}
+  <template is="dom-if" if="[[isViewMode]]">
+    <span>[[checkboxValue(value)]]</span>
   </template>
 
-  <template if="{{mode == 'edit'}}">
-    <input type="checkbox" checked="{{value}}" label="{{label}}">
+  <template is="dom-if" if="[[isEditMode]]">
+    <input is="iron-input" type="checkbox" checked="{{value::change}}" label="[[label]]">
   </template>
 
 </template>
-</polymer-element>
+</dom-module>
+<script>
+  Polymer({
+    is: 'nx-checkbox',
+    widget: 'checkbox',
+    behaviors: [nuxeo.Widget],
+    checkboxValue: function(value) { return value ? 'Yes' : 'No'; }
+  });
+</script>

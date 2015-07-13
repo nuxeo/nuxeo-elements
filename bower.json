@@ -8,7 +8,8 @@
   "license": "LGPL",
   "private": true,
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.0.0",
+    "polymer": "Polymer/polymer#^1.x",
+    "iron-elements": "PolymerElements/iron-elements#^1.x",
     "nuxeo": "^0.4.1",
     "es6-promise": "^2.0.0"
   }

@@ -1,5 +1,5 @@
 <!--
-(C) Copyright 2014 Nuxeo SA (http://nuxeo.com/) and contributors.
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
 
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the GNU Lesser General Public License
@@ -12,7 +12,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 Lesser General Public License for more details.
 
 Contributors:
-  Nelson Silva <nelson.silva@inevo.pt>
+  Nelson Silva <nsilva@nuxeo.com>
 -->
 
 <!--
@@ -27,8 +27,7 @@ Contributors:
 @extends nx-widget
 @homepage http://www.nuxeo.org
 -->
-<link rel="import" href="nx-widget.html">
-<polymer-element name="nx-richtext" extends="nx-widget" widget="richtext_with_mimetype">
+<dom-module id="nx-richtext">
 <template>
   <style>
   div[contenteditable] {
@@ -41,27 +40,31 @@ Contributors:
   }
   </style>
 
-  <template if="{{label}}"><strong>{{label}} : </strong></template>
+  <template is="dom-if" if="[[label]]"><span>[[label]]</span> : </template>
 
-  <div id="content" contenteditable?="{{mode == 'edit'}}" on-input="{{updateValue}}"/>
+  <div id="content" contenteditable$="[[isEditMode]]" on-input="updateValue"/>
 
 </template>
 <script>
-  Polymer({
-    // TODO: Handle valueChanged
-    ready: function() {
-      if (this.value) {
-        this.$.content.innerHTML = this.value;
-      }
-    },
-    updateValue: function() {
-      this.value = this.$.content.innerHTML;
-    },
-    valueChanged: function() {
-      if (this.mode !== 'edit') {
-        this.$.content.innerHTML = this.value;
-      }
+Polymer({
+  is: 'nx-richtext',
+  widget: 'richtext_with_mimetype',
+  behaviors: [nuxeo.Widget],
+
+  ready: function() {
+    if (this.value) {
+      this.$.content.innerHTML = this.value;
     }
-  });
+  },
+
+  updateValue: function() {
+    this.value = this.$.content.innerHTML;
+  },
+  valueChanged: function() {
+    if (this.mode !== 'edit') {
+      this.$.content.innerHTML = this.value;
+    }
+  }
+});
 </script>
-</polymer-element>
+</dom-module>

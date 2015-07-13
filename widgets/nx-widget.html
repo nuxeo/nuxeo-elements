@@ -1,5 +1,5 @@
 <!--
-(C) Copyright 2014 Nuxeo SA (http://nuxeo.com/) and contributors.
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
 
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the GNU Lesser General Public License
@@ -12,95 +12,73 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 Lesser General Public License for more details.
 
 Contributors:
-  Nelson Silva <nelson.silva@inevo.pt>
+  Nelson Silva <nsilva@nuxeo.com>
 -->
 
-<link rel="import" href="../nx-operation.html">
-<link rel="import" href="../../core-input/core-input.html">
 <script>
-  // Provided by platform.js
-  modularize('nx-widget', function() {
-    return {
-      widgetTypes: {}, // Mapping from Nuxeo widget types to custom nx-widget elements
-      register: function(polymerElement) {
-        var type = polymerElement.getAttribute('widget');
+  var nuxeo = nuxeo || {};
+  (function(nuxeo) {
+    // Mapping from Nuxeo widget types to custom nx-widget elements
+    var widgetTypes = {};
+
+    nuxeo.Widget = nuxeo.Widget || {
+      /**
+       * Name of the Nuxeo widget type that this element replaces.
+       *
+       * @attribute widget
+       * @type string
+       * @default 'text'
+       */
+      widget: 'text',
+
+      properties: {
+        /**
+         * Mode in which widget must be rendered.
+         *
+         * @attribute mode
+         * @type string
+         * @default 'view'
+         */
+         mode: {
+           type: String,
+           value: 'edit',
+           notify: true,
+           observer: 'modeChanged'
+         },
+
+         isViewMode: { type: Boolean, computed: '_equals(mode, "view")' },
+         isEditMode: { type: Boolean, computed: '_equals(mode, "edit")' },
+
+         /**
+         * The value on which widget will apply.
+         *
+         * @attribute value
+         * @type Object
+         * @default 'null'
+         */
+         value: {
+           notify: true,
+           observer: 'valueChanged'
+         }
+      },
+
+      registered: function () {
+        var type = this.widget;
         if (type) {
-          var types = type.split(','); // Workaround to allow registering a single element for multiple types
+          var types = (type instanceof Array) ? type : [type];
           types.forEach(function(t) {
-            // Store the element's name and published attributes
-            var attributes = polymerElement.getAttribute('attributes');
-            this.widgetTypes[t] = {
-              name: polymerElement.name,
-              attributes: (attributes) ? attributes.split(' ') : []
-            };
-            console.log('Registered ' + polymerElement.name + ' for type ' + t);
+            // Store the element's name
+            widgetTypes[t] = this.is;
+            console.log('Registered ' + this.is + ' for widget type ' + t);
           }, this);
-          polymerElement.removeAttribute('widget');
         }
-      }
+      },
+
+      modeChanged: function() {},
+
+      valueChanged: function() {},
+
+      _equals: function(a, b) { return a === b; }
     };
-  });
+  })(nuxeo);
 </script>
-
-<!--
-@group Nuxeo Elements
-
-Base class for Nuxeo widgets
-
-@element nx-widget
-@homepage http://www.nuxeo.org
--->
-<polymer-element name="nx-widget" attributes="name widget mode label value validator" field>
-    <script>
-        Polymer('nx-widget', {
-
-
-            /**
-             * Name of the Nuxeo widget type that this element replaces.
-             *
-             * @attribute widget
-             * @type string
-             * @default 'text'
-             */
-            widget: 'text',
-
-
-            /**
-             * Mode in which widget must be rendered.
-             *
-             * @attribute mode
-             * @type string
-             * @default 'view'
-             */
-             mode: 'view',
-
-             /**
-             * The value on which widget will apply.
-             *
-             * @attribute value
-             * @type Object
-             * @default 'null'
-             */
-             value: null,
-
-             /**
-             * The value on which widget will apply.
-             *
-             * @attribute ṽalue
-             * @type Object
-             * @default 'null'
-             */
-             validator: null,
-
-             errorText: '',
-
-             registerCallback: function(polymerElement) {
-                using('nx-widget', function(nxw) {
-                  nxw.register(polymerElement);
-                });
-              },
-
-        });
-    </script>
-
-</polymer-element>
