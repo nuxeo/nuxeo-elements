@@ -46,6 +46,13 @@ nuxeo.Select2 = {
       value: ','
     },
 
+    idFunction: {
+      type: Function,
+      value: function() {
+        return this._idFunction.bind(this);
+      }
+    },
+
     selectionFormatter: {
       type: Function,
       value: function() {
@@ -58,8 +65,12 @@ nuxeo.Select2 = {
       value: function() {
         return this._resultFormatter.bind(this);
       }
-    },
+    }
 
+  },
+
+  _idFunction: function(item) {
+    return item.computedId || item.uid || item.id;
   },
 
   _selectionFormatter: function(item) {
@@ -77,6 +88,9 @@ nuxeo.Select2 = {
       separator: this.separator,
       width: 300,
       // Formatters
+
+      id: this.idFunction,
+
       formatSelection: this.selectionFormatter,
       formatResult: this.resultFormatter,
       // TODO: use templates for formatting, ie:
@@ -92,7 +106,7 @@ nuxeo.Select2 = {
           this._query(query);
         }.bind(this), 300);
       }.bind(this)
-    }
+    };
 
     if (this.multiple) {
       params.maximumSelectionSize = this.maximumSelectionSize;
@@ -100,7 +114,7 @@ nuxeo.Select2 = {
     }
 
     if (this.placeholder && !this.readonly) {
-      params.placeholder = params.placeholder;
+      params.placeholder = this.placeholder;
       params.allowClear = !this.required;
     }
 
