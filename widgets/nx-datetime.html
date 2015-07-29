@@ -16,18 +16,15 @@ Contributors:
 -->
 
 <!--
-@group Nuxeo Widgets
-
 `nx-datetime`
 
-    <nx-datetime name="my_widget" mode="view" label="My Widget">
-    </nx-datetime>
+    <nx-datetime></nx-datetime>
 
+@group Nuxeo Widgets
 @element nx-datetime
-@extends nx-widget
 @homepage http://www.nuxeo.org
 -->
-<link rel="import" href="/components/iron-input/iron-input.html">
+<link rel="import" href="../../iron-input/iron-input.html">
 <dom-module id="nx-datetime">
 <template>
 
@@ -48,7 +45,7 @@ Contributors:
 <script>
   Polymer({
     is: 'nx-datetime',
-    widget: 'datetime',
-    behaviors: [nuxeo.Widget]
+    _widget: 'datetime',
+    behaviors: [Nuxeo.Widget]
   });
 </script>

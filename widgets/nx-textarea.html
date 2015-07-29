@@ -16,18 +16,15 @@ Contributors:
 -->
 
 <!--
-@group Nuxeo Widgets
-
 `nx-textarea`
 
-    <nx-text name="my_widget" mode="view" label="My Widget">
-    </nx-text>
+    <nx-textarea></nx-textarea>
 
+@group Nuxeo Widgets
 @element nx-textarea
-@extends nx-widget
 @homepage http://www.nuxeo.org
 -->
-<link rel="import" href="/components/iron-input/iron-input.html">
+<link rel="import" href="../../iron-input/iron-input.html">
 <dom-module id="nx-textarea">
 <template>
 
@@ -48,8 +45,8 @@ Contributors:
 <script>
   Polymer({
     is: 'nx-textarea',
-    widget: 'textarea',
-    behaviors: [nuxeo.Widget],
+    _widget: 'textarea',
+    behaviors: [Nuxeo.Widget],
     properties: {
       /**
        * Number of rows for the textarea.
@@ -62,4 +59,3 @@ Contributors:
     }
   });
 </script>
-</polymer-element>

@@ -1,5 +1,5 @@
 <!--
-(C) Copyright 2014 Nuxeo SA (http://nuxeo.com/) and contributors.
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
 
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the GNU Lesser General Public License
@@ -12,13 +12,11 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 Lesser General Public License for more details.
 
 Contributors:
-  Nelson Silva <nelson.silva@inevo.pt>
+  Nelson Silva <nsilva@nuxeo.com>
 -->
 
 <!--
-@group Nuxeo Elements
-
-The `nx-connection` wraps a `nuxeo.Client`.
+`nx-connection` wraps a `nuxeo.Client`.
 
     <nx-connection
         id="nx_connection"
@@ -26,8 +24,9 @@ The `nx-connection` wraps a `nuxeo.Client`.
         username="Administrator"
         password="Administrator"></nx-connection>
 
-Note: Elements that depend on a connectionId use `nx_connection` as default.
+Note: Elements that depend on a connectionId use `nx` as default.
 
+@group Nuxeo Elements
 @element nx-connection
 @homepage http://www.nuxeo.org
 -->
@@ -51,7 +50,7 @@ Note: Elements that depend on a connectionId use `nx_connection` as default.
         var nxClients = {};
 
         Polymer({
-            is: "nx-connection",
+            is: 'nx-connection',
             properties: {
                 /* A unique identifier for this connection. */
                 connectionId: {type: String, value: 'nx'},
@@ -64,8 +63,7 @@ Note: Elements that depend on a connectionId use `nx_connection` as default.
 
                 /* The password. */
                 password: {type: String, value: null}
-            }
-            ,
+            },
 
             ready: function () {
                 this.connect();

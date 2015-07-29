@@ -16,15 +16,12 @@ Contributors:
 -->
 
 <!--
-@group Nuxeo Widgets
-
 `nx-richtext`
 
-    <nx-richtext name="my_widget" mode="view" label="My Widget">
-    </nx-richtext>
+    <nx-richtext></nx-richtext>
 
+@group Nuxeo Widgets
 @element nx-richtext
-@extends nx-widget
 @homepage http://www.nuxeo.org
 -->
 <dom-module id="nx-richtext">
@@ -34,7 +31,6 @@ Contributors:
     border: 1px dotted #ccc;
   }
   #content {
-    overflow: overlay;
     width:100%;
     height:300px;
   }
@@ -48,8 +44,8 @@ Contributors:
 <script>
 Polymer({
   is: 'nx-richtext',
-  widget: 'richtext_with_mimetype',
-  behaviors: [nuxeo.Widget],
+  _widget: 'richtext_with_mimetype',
+  behaviors: [Nuxeo.Widget],
 
   ready: function() {
     if (this.value) {
@@ -60,6 +56,7 @@ Polymer({
   updateValue: function() {
     this.value = this.$.content.innerHTML;
   },
+
   valueChanged: function() {
     if (this.mode !== 'edit') {
       this.$.content.innerHTML = this.value;

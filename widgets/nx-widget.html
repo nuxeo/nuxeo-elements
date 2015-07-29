@@ -16,20 +16,19 @@ Contributors:
 -->
 
 <script>
-  var nuxeo = nuxeo || {};
-  (function(nuxeo) {
+  var Nuxeo = Nuxeo || {};
+  (function(Nuxeo) {
     // Mapping from Nuxeo widget types to custom nx-widget elements
     var widgetTypes = {};
 
-    nuxeo.Widget = nuxeo.Widget || {
+    /**
+     * @polymerBehavior Nuxeo.Widget
+     */
+    Nuxeo.Widget = {
       /**
        * Name of the Nuxeo widget type that this element replaces.
-       *
-       * @attribute widget
-       * @type string
-       * @default 'text'
        */
-      widget: 'text',
+      _widget: 'text',
 
       properties: {
         /**
@@ -63,7 +62,7 @@ Contributors:
       },
 
       registered: function () {
-        var type = this.widget;
+        var type = this._widget;
         if (type) {
           var types = (type instanceof Array) ? type : [type];
           types.forEach(function(t) {
@@ -80,5 +79,5 @@ Contributors:
 
       _equals: function(a, b) { return a === b; }
     };
-  })(nuxeo);
+  })(Nuxeo);
 </script>

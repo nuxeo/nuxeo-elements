@@ -1,5 +1,5 @@
 <!--
-(C) Copyright 2014 Nuxeo SA (http://nuxeo.com/) and contributors.
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
 
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the GNU Lesser General Public License
@@ -12,13 +12,11 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 Lesser General Public License for more details.
 
 Contributors:
-  Nelson Silva <nelson.silva@inevo.pt>
+  Nelson Silva <nsilva@nuxeo.com>
 -->
 
 <!--
-@group Nuxeo Elements
-
-The `nx-operation` allows calling an operation on a Nuxeo server.
+`nx-operation` allows calling an operation on a Nuxeo server.
 
     <nx-operation auto
         op="Document.Query"
@@ -33,6 +31,7 @@ Note: The `params` attribute must be double quoted JSON.
 You can trigger an operation explicitly by calling `execute` on the
 element.
 
+@group Nuxeo Elements
 @element nx-operation
 @homepage http://www.nuxeo.org
 -->
@@ -50,7 +49,7 @@ element.
     </template>
     <script>
         Polymer({
-          is: "nx-operation",
+          is: 'nx-operation',
           properties: {
             /* The id of a nx-connection to use. */
             connectionId: {

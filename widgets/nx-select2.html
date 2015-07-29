@@ -19,127 +19,132 @@ Contributors:
 <script src="../../select2/select2.js"></script>
 <link rel="stylesheet" href="../../select2/select2.css">
 <script>
-var nuxeo = nuxeo || {};
-nuxeo.Select2 = {
+  var Nuxeo = Nuxeo || {};
 
-  properties: {
+  /**
+   * @polymerBehavior Nuxeo.Select2
+   */
+  Nuxeo.Select2 = {
 
-    multiple: {
-      type: Boolean,
-      value: false
-    },
+    properties: {
 
-    readOnly: {
-      type: Boolean,
-      value: false
-    },
+      multiple: {
+        type: Boolean,
+        value: false
+      },
 
-    minChars: {
-      type: Number,
-      value: 3
-    },
+      readOnly: {
+        type: Boolean,
+        value: false
+      },
 
-    placeholder: String,
+      minChars: {
+        type: Number,
+        value: 3
+      },
 
-    separator: {
-      type: String,
-      value: ','
-    },
+      placeholder: String,
 
-    idFunction: {
-      type: Function,
-      value: function() {
-        return this._idFunction.bind(this);
+      separator: {
+        type: String,
+        value: ','
+      },
+
+      idFunction: {
+        type: Function,
+        value: function () {
+          return this._idFunction.bind(this);
+        }
+      },
+
+      selectionFormatter: {
+        type: Function,
+        value: function () {
+          return this._selectionFormatter.bind(this);
+        }
+      },
+
+      resultFormatter: {
+        type: Function,
+        value: function () {
+          return this._resultFormatter.bind(this);
+        }
       }
+
     },
 
-    selectionFormatter: {
-      type: Function,
-      value: function() {
-        return this._selectionFormatter.bind(this);
-      }
+    _idFunction: function (item) {
+      return item.computedId || item.uid || item.id;
     },
 
-    resultFormatter: {
-      type: Function,
-      value: function() {
-        return this._resultFormatter.bind(this);
+    _selectionFormatter: function (item) {
+      return item.displayLabel || item.title;
+    },
+
+    _resultFormatter: function (item) {
+      return item.displayLabel || item.title;
+    },
+
+    _initSelect2: function (el) {
+
+      var params = {
+        minimumInputLength: this.minChars,
+        separator: this.separator,
+        width: 300,
+        // Formatters
+
+        id: this.idFunction,
+
+        formatSelection: this.selectionFormatter,
+        formatResult: this.resultFormatter,
+        // TODO: use templates for formatting, ie:
+        // var selectionTemplate = Polymer.dom(this).querySelector('.selection');
+        // this.templatize(template);
+        // var instance = this.stamp({username: 'Administrator'});
+        // return instance.root.textContent;
+
+        // Query
+        query: function (query) {
+          // debounce requests
+          this.debounce('_select2Query', function () {
+            this._query(query);
+          }.bind(this), 300);
+        }.bind(this)
+      };
+
+      if (this.multiple) {
+        params.maximumSelectionSize = this.maximumSelectionSize;
+        params.multiple = true;
       }
+
+      if (this.placeholder && !this.readonly) {
+        params.placeholder = this.placeholder;
+        params.allowClear = !this.required;
+      }
+
+      // init select2
+      $(el).select2(params);
+
+      $(el).on('change', this._updateSelection.bind(this));
+
+      // view or edit mode
+      if (this.readOnly) {
+        $(el).select2('readonly', true);
+      }
+
+    },
+
+    _updateSelection: function (e) {
+      var value = e.target.value;
+      this.value = (!this.multiple) ? value : value.split(this.separator);
+    },
+
+    valueChanged: function () {
+      // TODO: update select2
+    },
+
+    // Extension points for sub-classes
+    _query: function (query) {
     }
-
-  },
-
-  _idFunction: function(item) {
-    return item.computedId || item.uid || item.id;
-  },
-
-  _selectionFormatter: function(item) {
-    return item.displayLabel || item.title;
-  },
-
-  _resultFormatter: function(item) {
-    return item.displayLabel || item.title;
-  },
-
-  _initSelect2: function(el) {
-
-    var params = {
-      minimumInputLength: this.minChars,
-      separator: this.separator,
-      width: 300,
-      // Formatters
-
-      id: this.idFunction,
-
-      formatSelection: this.selectionFormatter,
-      formatResult: this.resultFormatter,
-      // TODO: use templates for formatting, ie:
-      // var selectionTemplate = Polymer.dom(this).querySelector('.selection');
-      // this.templatize(template);
-      // var instance = this.stamp({username: 'Administrator'});
-      // return instance.root.textContent;
-
-      // Query
-      query : function(query) {
-        // debounce requests
-        this.debounce("_select2Query", function() {
-          this._query(query);
-        }.bind(this), 300);
-      }.bind(this)
-    };
-
-    if (this.multiple) {
-      params.maximumSelectionSize = this.maximumSelectionSize;
-      params.multiple = true;
-    }
-
-    if (this.placeholder && !this.readonly) {
-      params.placeholder = this.placeholder;
-      params.allowClear = !this.required;
-    }
-
-    // init select2
-    $(el).select2(params);
-
-    $(el).on("change", this._updateSelection.bind(this));
-
-    // view or edit mode
-    if (this.readOnly) {
-      $(el).select2("readonly", true);
-    }
-
-  },
-
-  _updateSelection: function(e) {
-    var value = e.target.value;
-    this.value = (!this.multiple) ? value : value.split(this.separator);
-  },
-
-  valueChanged: function() {
-    // TODO: update select2
-  },
-
-  // Extension points for sub-classes
-  _query: function(query) { }
-};
+  };
 </script>

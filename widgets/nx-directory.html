@@ -16,18 +16,15 @@ Contributors:
 -->
 
 <!--
-@group Nuxeo Widgets
-
 `nx-directory`
 
-    <nx-directory name="my_widget" mode="view" label="My Widget">
-    </nx-directory>
+    <nx-directory></nx-directory>
 
+@group Nuxeo Widgets
 @element nx-directory
-@extends nx-widget
 @homepage http://www.nuxeo.org
 -->
-<link rel="import" href="/components/iron-input/iron-input.html">
+<link rel="import" href="../../iron-input/iron-input.html">
 <link rel="import" href="../nx-operation.html">
 <dom-module id="nx-directory">
 <template>
@@ -73,8 +70,8 @@ Contributors:
 <script>
 Polymer({
   is: 'nx-directory',
-  widget: ['suggestOneDirectory', 'suggestManyDirectory'],
-  behaviors: [nuxeo.Widget],
+  _widget: ['suggestOneDirectory', 'suggestManyDirectory'],
+  behaviors: [Nuxeo.Widget],
 
   properties: {
     /**

@@ -16,19 +16,15 @@ Contributors:
 -->
 
 <!--
-@group Nuxeo Widgets
-
 `nx-text`
 
-    <nx-text name="my_widget" mode="view" label="My Widget">
-    </nx-text>
+    <nx-text></nx-text>
 
+@group Nuxeo Widgets
 @element nx-text
-@extends nx-widget
 @homepage http://www.nuxeo.org
 -->
-
-<link rel="import" href="/components/iron-input/iron-input.html">
+<link rel="import" href="../../iron-input/iron-input.html">
 <dom-module id="nx-text">
 <template>
 
@@ -47,7 +43,7 @@ Contributors:
 <script>
   Polymer({
     is: 'nx-text',
-    widget: 'text',
-    behaviors: [nuxeo.Widget]
+    _widget: 'text',
+    behaviors: [Nuxeo.Widget]
   });
 </script>

@@ -16,15 +16,12 @@ Contributors:
 -->
 
 <!--
-@group Nuxeo Widgets
-
 `nx-document-suggestion`
 
-    <nx-document-suggestion name="my_widget" mode="view" label="My Widget">
-    </nx-document-suggestion>
+    <nx-document-suggestion></nx-document-suggestion>
 
+@group Nuxeo Widgets
 @element nx-document-suggestion
-@extends nx-widget
 @homepage http://www.nuxeo.org
 -->
 <link rel="import" href="nx-select2.html">
@@ -41,8 +38,8 @@ Contributors:
 <script>
 Polymer({
   is: 'nx-document-suggestion',
-  widget: ['singleDocumentSuggestion', 'multipleDocumentsSuggestion'],
-  behaviors: [nuxeo.Widget, nuxeo.Select2],
+  _widget: ['singleDocumentSuggestion', 'multipleDocumentsSuggestion'],
+  behaviors: [Nuxeo.Widget, nuxeo.Select2],
 
   properties: {
 
@@ -77,7 +74,7 @@ Polymer({
     this.$.op.params = {
       documentSchemas: this.schemas,
       repository: this.repository,
-      searchTerm: query.term + "%",
+      searchTerm: query.term + '%',
       query: this.query,
       providerName: this.pageProvider,
       page: 0,

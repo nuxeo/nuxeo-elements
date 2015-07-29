@@ -1,5 +1,5 @@
 <!--
-(C) Copyright 2014 Nuxeo SA (http://nuxeo.com/) and contributors.
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
 
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the GNU Lesser General Public License
@@ -12,14 +12,12 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 Lesser General Public License for more details.
 
 Contributors:
-  Nelson Silva <nelson.silva@inevo.pt>
+  Nelson Silva <nsilva@nuxeo.com>
 
 -->
 
 <!--
-@group Nuxeo Elements
-
-The `nx-resource` allows managing REST on a Nuxeo server.
+`nx-resource` allows managing REST on a Nuxeo server.
 
     <nx-resource auto
         path="Document.Query"
@@ -33,6 +31,7 @@ Note: The `params` attribute must be double quoted JSON.
 You can trigger a method explicitly by calling `get`, `post`, `put` or `delete` on the
 element.
 
+@group Nuxeo Elements
 @element nx-resource
 @homepage http://www.nuxeo.org
 -->
@@ -87,7 +86,7 @@ element.
     },
 
     observers: [
-      "_autoGet(connectionId, auto, path, params, type, enrichers)"
+      '_autoGet(connectionId, auto, path, params, type, enrichers)'
     ],
 
     get: function () {

@@ -16,18 +16,14 @@ Contributors:
 -->
 
 <!--
-@group Nuxeo Widgets
-
 `nx-checkbox`
 
-    <nx-checkbox name="my_widget" mode="view" label="My Widget">
-    </nx-checkbox>
+    <nx-checkbox></nx-checkbox>
 
+@group Nuxeo Widgets
 @element nx-checkbox
-@extends nx-widget
 @homepage http://www.nuxeo.org
 -->
-<link rel="import" href="/components/paper-checkbox/paper-checkbox.html">
 <dom-module id="nx-checkbox">
 <template>
 
@@ -44,8 +40,7 @@ Contributors:
 <script>
   Polymer({
     is: 'nx-checkbox',
-    widget: 'checkbox',
-    behaviors: [nuxeo.Widget],
-    checkboxValue: function(value) { return value ? 'Yes' : 'No'; }
+    _widget: 'checkbox',
+    behaviors: [Nuxeo.Widget]
   });
 </script>

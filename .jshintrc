@@ -17,11 +17,11 @@
   "strict": false,
   "trailing": true,
   "smarttabs": true,
-  "predef": [
-    "Polymer",
-    "PathObserver",
-    "nuxeo",
-    "modularize",
-    "using"
-  ]
+  "globals": {
+    "Polymer": false,
+    "nuxeo": false,
+    "Nuxeo": true,
+    "using": false,
+    "$": false
+  }
 }
