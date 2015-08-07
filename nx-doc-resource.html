@@ -48,8 +48,17 @@ Contributors:
 
             method: { type: String, value: 'get'},
 
+            /* The document id. Either 'docId' or 'docPath' must be defined. */
+            docId: { type: String, value: ''},
+
+            /* The document path. Either 'docId' or 'docPath' must be defined. */
+            docPath: { type: String, value: ''},
+
             /* The path of the resource. */
-            path: {type: String, value: ''},
+            path: {
+                type: String,
+                computed: 'computePath(docId, docPath)'
+            },
 
             /* The parameters to send. */
             params: {type: Object, value: null},
@@ -69,33 +78,7 @@ Contributors:
             headers: {type: Object, value: null},
 
             /* The `content enricher` of the resource. */
-            enrichers: {type: String, value: ''},
-
-            /**DOCUMENT PROPERTIES**/
-            haslocalrights: {
-                type: Boolean,
-                value: false,
-                notify: true,
-                computed: 'hasLocalRightsFunction(response)'
-            },
-            localrights: {
-                type: Array,
-                value: [],
-                notify: true,
-                computed: 'localRights(response)'
-            },
-            inheritedrights: {
-                type: Array,
-                value: [],
-                notify: true,
-                computed: 'inheritedRights(response)'
-            },
-            haseverythingright: {
-                type: Boolean,
-                value: false,
-                notify: true,
-                computed: 'isCurrentUserHasEverything(response)'
-            }
+            enrichers: {type: String, value: ''}
         },
 
         get: function () {
@@ -122,31 +105,14 @@ Contributors:
             this.$.nxResource.execute();
         },
 
-        localRights: function (response) {
-            if(this.hasLocalRightsFunction(response)){
-                return response.contextParameters.acls[0].ace;
+        computePath: function(docId, docPath) {
+            var path = '';
+            if (docId !== undefined && docId !== null) {
+                path = '/id/' + docId;
+            } else if (docPath !== undefined && docPath !== null) {
+                path = '/path/' + docPath;
             }
-        },
-
-        inheritedRights: function (response) {
-            if(response){
-                if(!this.hasLocalRightsFunction(response)){
-                    return response.contextParameters.acls[0].ace;
-                }else{
-                    return response.contextParameters.acls[1].ace;
-                }
-            }
-        },
-
-        hasLocalRightsFunction: function (response) {
-            if (response) {
-                return response.contextParameters.acls[0].name === 'local';
-            }
-        },
-        isCurrentUserHasEverything: function (response) {
-            if (response) {
-                return response.contextParameters.permissions.indexOf('Everything') !== -1;
-            }
+            return path;
         }
     });
 </script>
