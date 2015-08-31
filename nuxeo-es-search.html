@@ -1,0 +1,137 @@
+<!--
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the GNU Lesser General Public License
+(LGPL) version 2.1 which accompanies this distribution, and is available at
+http://www.gnu.org/licenses/lgpl.html
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+Contributors:
+  Nelson Silva <nsilva@nuxeo.com>
+-->
+<link rel="import" href="../nuxeo-elements/nx-connection.html">
+<link rel="import" href="../iron-ajax/iron-request.html">
+
+<!--
+An element allowing querying the Nuxeo ES passthrough.
+
+Example:
+
+    <nuxeo-es-search></nuxeo-es-search>
+
+@group Nuxeo Data Elements
+@element nuxeo-es-search
+-->
+<dom-module id="nuxeo-es-search">
+  <style>
+    :host {
+      display: none;
+    }
+  </style>
+  <template>
+    <nx-connection id="nx" connection-id="[[connectionId]]"></nx-connection>
+  </template>
+
+  <script>
+    (function() {
+      Polymer({
+        is: 'nuxeo-es-search',
+
+        properties: {
+          /**
+           * The id of a nx-connection to use.
+           */
+          connectionId: {
+            type: String,
+            value: 'nx'
+          },
+
+          /**
+           *  If true, automatically execute the operation when either `path` or `params` changes.
+           */
+          auto: {type: Boolean, value: false},
+
+          index: {
+            type: String,
+            value: 'nuxeo'
+          },
+          query:  Object,
+
+          aggregates: Object,
+
+          type: String,
+
+          aggregations: {
+            type: Object,
+            notify: true,
+            readOnly: true
+          },
+
+          hits: {
+            type: Object,
+            notify: true,
+            readOnly: true
+          }
+        },
+
+        observers: [
+          '_auto(connectionId, auto, index, query, aggregates)'
+        ],
+
+        _auto: function () {
+          if (this.auto && this.query && this.aggregates) {
+            this.execute();
+          }
+        },
+
+        execute: function () {
+          return this.$.nx.connect()
+              .then(this._send.bind(this));
+        },
+
+        _send: function() {
+            var url = [this.$.nx.client._baseURL, 'site/es', this.index, '_search'].join('/');
+            if (this.type) { url += '?search_type=' + this.type; }
+
+            return document.createElement('iron-request')
+                .send({
+                  url: url,
+                  method: 'POST',
+                  headers: {
+                    'Authorization': this.$.nx.client._headers['Authorization'],
+                    'Content-Type': 'application/json'
+                  },
+                  body: {
+                    query: this.query, aggs: this.aggregates
+                  },
+                  handleAs: 'json'
+                })
+                .then(this._handleResponse.bind(this))
+                .catch(this._handleError.bind(this));
+        },
+
+        _handleError: function(request, error) {
+          console.error(error);
+          this.fire('error', {
+            request: request,
+            error: error
+          });
+        },
+
+        _handleResponse: function(request) {
+          var response = request.response;
+          this.aggregations = response.aggregations;
+          this.hits = response.hits;
+          this.fire('results', response);
+          return response;
+        }
+      });
+    })();
+  </script>
+
+</dom-module>

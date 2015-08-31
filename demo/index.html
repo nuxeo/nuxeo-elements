@@ -1,0 +1,186 @@
+<!doctype html>
+<!--
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the GNU Lesser General Public License
+(LGPL) version 2.1 which accompanies this distribution, and is available at
+http://www.gnu.org/licenses/lgpl.html
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+Contributors:
+  Nelson Silva <nsilva@nuxeo.com>
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>Nuxeo Workflow Data Elements Demo</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../jquery/dist/jquery.min.js"></script>
+    <link rel="import" href="../nuxeo-workflow-data-elements.html">
+    <style>
+      table {
+        width: 100%;
+        background-color: transparent;
+        border-collapse: collapse;
+        border-spacing: 0;
+      }
+      th {
+        vertical-align: bottom;
+        border-bottom: 2px solid #ddd;
+        text-align: left;
+      }
+      td {
+        padding: 8px;
+        line-height: 1.5em;
+        vertical-align: top;
+        border-top: 1px solid #ddd;
+      }
+      tr:nth-child(odd)>td {
+        background-color: #f9f9f9;
+      }
+    </style>
+  </head>
+  <body unresolved>
+  <template is="dom-bind">
+
+    <nx-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nx-connection>
+
+    <input type="date" value="{{startDate::change}}">
+    <input type="date" value="{{endDate::change}}">
+
+    <!-- Workflow Duration -->
+    <h2>Workflow duration per department (#1)</h2>
+
+    <nuxeo-workflow-duration workflow="TravelExpenseValidation"
+                             aggregated-on="department" aggregated-by-metric="[[durationsMetric]]"
+                             start-date="[[startDate]]" end-date="[[endDate]]"
+                             data="{{durations}}">
+    </nuxeo-workflow-duration>
+
+    <table>
+      <tr>
+        <th>Department</th>
+        <th>Duration
+          <select value="{{durationsMetric::change}}">
+            <option>avg</option>
+            <option>min</option>
+            <option>max</option>
+          </select>
+        </th>
+      </tr>
+      <template is="dom-repeat" items="[[durations]]" as="entry">
+      <tr>
+        <td>[[entry.key]]</td>
+        <td>[[formatDuration(entry.value)]]</td>
+      </tr>
+      </template>
+    </table>
+
+    <!-- Workflow Instances Count -->
+    <h2>Workflow instance count per amount (#2)</h2>
+    <nuxeo-workflow-instances-count workflow="TravelExpenseValidation"
+                                    aggregated-on="amount"
+                                    aggregated-by-ranges='[{"key": "<= 1500", "to": 1500 },{"key": "> 1500", "from": 1500}]'
+                                    start-date="[[startDate]]" end-date="[[endDate]]"
+                                    data="{{instancesCountPerAmount}}">
+    </nuxeo-workflow-instances-count>
+
+      <template is="dom-repeat" items="[[instancesCountPerAmount]]" as="entry">
+        <tr>
+          <td>[[entry.key]]</td>
+          <td>[[entry.value]]</td>
+        </tr>
+      </template>
+    </table>
+
+    <h2>Workflow instance count per department</h2>
+    <nuxeo-workflow-instances-count workflow="TravelExpenseValidation"
+                                    aggregated-on="department"
+                                    start-date="[[startDate]]" end-date="[[endDate]]"
+                                    data="{{instancesCountPerDepartment}}">
+    </nuxeo-workflow-instances-count>
+
+    <table>
+      <tr>
+        <th>Department</th><th>Instances</th>
+      </tr>
+      <template is="dom-repeat" items="[[instancesCountPerDepartment]]" as="entry">
+        <tr>
+          <td>[[entry.key]]</td>
+          <td>[[entry.value]]</td>
+        </tr>
+      </template>
+    </table>
+
+    <h2>Workflow instance count per user per date (#3)</h2>
+    <nuxeo-workflow-instances-count workflow="TravelExpenseValidation" task="wf.travelExpenses.create"
+                                    aggregated-on="user" aggregated-by-date-interval="day"
+                                    start-date="[[startDate]]" end-date="[[endDate]]"
+                                    data="{{instancesCountPerUserPerDay}}">
+    </nuxeo-workflow-instances-count>
+
+    <table>
+      <template is="dom-repeat" items="[[instancesCountPerUserPerDay]]" as="entry">
+        <tr>
+          <td>[[entry.key]]</td>
+          <td>
+            <table>
+              <template is="dom-repeat" items="[[entry.dateIntervals]]" as="date">
+                <tr>
+                  <td>[[date.key]]</td>
+                  <td>[[date.value]]</td>
+                </tr>
+              </template>
+            </table>
+          </td>
+        </tr>
+      </template>
+    </table>
+
+    <nuxeo-workflow-data
+        workflow="TravelExpenseValidation"
+        task="wf.travelExpenses.create"
+        aggregated-on="user"
+        aggregated-by-date-interval="day"
+        metrics-on=”amount” metrics=”sum”
+        start-date="[[startDate]]" end-date="[[endDate]]"
+        data="{{instancesCountPerUserPerDay}}">
+
+  </template>
+  <script>
+    var t = document.querySelector('template');
+
+    t.durationsMetric = 'avg';
+
+    t.formatDuration = function (duration) {
+      var seconds = Math.floor(duration/1000),
+          minutes = Math.floor(seconds/60);
+          hours = Math.floor(minutes/60);
+          days = Math.floor(hours/24);
+          hours = hours-(days*24);
+          minutes = minutes-(days*24*60)-(hours*60);
+          seconds = seconds-(days*24*60*60)-(hours*60*60)-(minutes*60),
+          result = "";
+      if (days > 0) {
+        result += days + " Days ";
+      }
+      if (hours > 0) {
+        result += hours + " h ";
+      }
+      if (minutes > 0) {
+        result += minutes + " m ";
+      }
+      if (seconds > 0) {
+        result += seconds + " s ";
+      }
+      return result;
+    }
+  </script>
+  </body>
+</html>
