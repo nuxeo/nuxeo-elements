@@ -74,12 +74,22 @@ Note: Elements that depend on a connectionId use `nx` as default.
                     // If we already have a client with the same connection info just keep it
                     var id = (this.connectionId) ? this.connectionId : Object.keys(nxClients)[0];
                     this.client = nxClients[id];
-                    if (this.client &&
-                            (!this.url || (this.client._baseURL === this.url)) &&
-                            (!this.username || (this.client._username === this.username)) &&
-                            (!this.password || (this.client._password === this.password))) {
-                        resolve(this);
-                        return;
+                    if (this.client) {
+                         // if this instance does not have any properties set properties from the client
+                         if (!this.url && !this.username && !this.password) {
+                           this.url = this.client._baseURL;
+                           this.username = this.client._username;
+                           this.password = this.client._password;
+                         }
+
+                        // if properties match the existing client use it
+                        if (this.client._baseURL === this.url &&
+                            this.client._username === this.username &&
+                            this.client._password === this.password) {
+                            resolve(this);
+                            return;
+                        }
+                        // otherwise override the client with the new properties
                     }
 
                     nxClients[id] = this.client = new nuxeo.Client({
