@@ -1,0 +1,309 @@
+<!--
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the GNU Lesser General Public License
+(LGPL) version 2.1 which accompanies this distribution, and is available at
+http://www.gnu.org/licenses/lgpl.html
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+Contributors:
+  Nelson Silva <nsilva@nuxeo.com>
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="nuxeo-workflow-data-behavior.html">
+<!--
+An element providing metrics data on workflows.
+
+A `metrics` query is a configurable nested aggregation with 3 aggregation levels:
+
+- `aggregated-on`: top level term aggregation
+- `aggregated-by-*`: nested multi-bucket aggregation (aggregated-by-range | aggregated-by-date-interval)
+- `metrics`: leaf single-value metrics aggregation (max, min, avg, sum)
+
+Example:
+
+    <nuxeo-workflow-metrics workflow="worflowModelName"
+                            task="taskName"
+                            aggregated-on="action"
+                            aggregated-by="user"
+                            metrics="sum(amount)"
+                            start-date="[[startDate]]"
+                            end-date="[[endDate]]"
+                            data="{{data}}">
+    </nuxeo-workflow-metrics>
+
+If all the aggregation levels are configured it will produce a query like:
+
+    {
+      query: { bool: { must: [...] },
+      aggs: {
+        on: { // aggregated-on
+          terms: {
+            field: "extended.action"
+          },
+          aggs: {
+            by: {  // aggregated-by-range | aggregated-by-date-interval | aggregated-by
+              term : {
+                field : "extended.user",
+              },
+              aggs: {
+                metric: { // metric
+                  sum: {
+                    field : "extended.workflowVariables.amount"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+@group Nuxeo Workflow Data Elements
+@element nuxeo-workflow-metrics
+@demo demo/index.html
+-->
+<script>
+
+  Polymer({
+
+    is: 'nuxeo-workflow-metrics',
+
+    behaviors: [Nuxeo.WorkflowDataBehavior],
+
+    properties: {
+
+      /**
+       * Top level term aggregation
+       */
+      aggregatedOn: String,
+
+      /**
+       * Field to use in the nested term aggregation
+       */
+      aggregatedBy: {
+        type: String,
+        value: ''
+      },
+
+      /**
+       * An array of ranges to use in the nested range aggregation.
+       * The term to aggregate on is set with `aggregated-on`
+       */
+      aggregatedByRanges: {
+        type: Array,
+        value: function () { return []; }
+      },
+
+      /**
+       * Interval to use for the nested date histogram aggregation
+       */
+      aggregatedByDateInterval: {
+        type: String,
+        value: ''
+      },
+
+      /**
+       * The field to use in the single-value metrics aggregation.
+       * This can be just the field name or include the `metrics-op` to use as well, ex: `avg(field)`
+       */
+      metrics: {
+        type: String,
+        value: ''
+      },
+
+      /**
+       * The single-value metrics aggregation to use.
+       * Can be one of: `avg`, `min`, `max.
+       * It not set default is `count` which returns the `doc_count`
+       */
+      metricsOperator: {
+        type: String,
+        value: 'count'
+      },
+
+      startDate: {
+        type: String,
+        value: ''
+      },
+
+      endDate: {
+        type: String,
+        value: ''
+      },
+
+      query: {
+        type: Object,
+        readOnly: true,
+        computed: '_query(workflow, startDate, endDate)'
+      },
+
+      aggregates: {
+        type: Object,
+        readOnly: true,
+        computed: '_aggregates(workflow, startDate, endDate, aggregatedOn, aggregatedByRanges)'
+      }
+
+    },
+
+    _query: function () {
+      var event = this.event || (this.task ? 'afterWorkflowTaskEnded' : 'afterWorkflowFinish');
+
+      var terms = [
+        {term: {"category": 'Routing'}},
+        {term: {"eventId": event}},
+        {term: {"extended.modelName": this.workflow}}
+      ];
+
+      if (this.task) {
+        terms.push({term: { 'extended.taskName': this.task}});
+      }
+      if (this.startDate || this.endDate) {
+        var range = {};
+        if (this.startDate) { range.gte = this.startDate; }
+        if (this.endDate) { range.lte = this.endDate; }
+        terms.push({range: {eventDate: range}});
+      }
+
+      return {bool: {must: terms}};
+    },
+
+    get _metricsAggregation() {
+      var parts = this.metrics.match(/[^\(\)]+/g);
+
+      if (!parts) return;
+
+      var metricsOn, metricsOp;
+      if (parts.length == 1) {
+        metricsOn = parts[0];
+        metricsOp = this.metricsOperator;
+      } else if (parts.length == 2) {
+        metricsOn = parts[1];
+        metricsOp = parts[0];
+      } else {
+        throw("Invalid 'metrics'");
+      }
+
+      var field = this._fieldFor(metricsOn) || this._fieldFor(this.aggregatedOn);
+
+      if (metricsOp === 'count') {
+        metricsOp = 'terms';
+      }
+
+      var agg = { metrics: {}};
+      agg.metrics[metricsOp] = {
+        field: field
+      };
+      return agg;
+    },
+
+    get _nestedAggregation() {
+      if (this.aggregatedByDateInterval) {
+        var histogram = {
+          field: "eventDate",
+          interval: this.aggregatedByDateInterval,
+          min_doc_count: 0,
+          format: 'yyyy-MM-dd'
+        };
+        if (this.startDate && this.endDate) {
+          histogram.extended_bounds = {
+            min: this.startDate,
+            max: this.endDate
+          };
+        } else {
+          console.warn('A start and end date should be set when using date aggregation');
+        }
+        return {
+          date_intervals: {
+            date_histogram: histogram
+          }
+        };
+      }
+      if (this.aggregatedBy) {
+        var field = this._fieldFor(this.aggregatedBy);
+        return {
+            terms: {
+              terms: {field: field}
+            }
+        };
+      }
+    },
+
+    get _topLevelAggregation() {
+      var field = this._fieldFor(this.aggregatedOn);
+      if (!field) return;
+
+      var agg = {on: {}};
+      if (this.aggregatedByRanges.length) {
+        agg.on = {
+          range: {
+            field : field,
+            ranges : this.aggregatedByRanges
+          }
+        };
+      } else {
+        agg.on = {terms: {field: field}};
+      }
+      return agg;
+    },
+
+    _aggregates: function () {
+
+      var levels = [
+        this._topLevelAggregation,
+        this._nestedAggregation,
+        this._metricsAggregation
+      ];
+      var result = {},
+          current = result;
+      levels.forEach(function(level) {
+        if (level) {
+          var key = Object.keys(level)[0];
+          current.aggs = level;
+          current = level[key];
+        }
+      });
+
+      return result.aggs;
+    },
+
+    _onResults: function (result) {
+
+      // unwrap our aggregates
+
+      // unwrap our top level aggregate
+      this.data = result.aggregations.on.buckets.map((function (bucket) {
+        var res = {key: bucket.key, value: this._getMetricsValue(bucket)};
+        // unwrap our nested aggregate
+        if (bucket.date_intervals) {
+          res.dateIntervals = bucket.date_intervals.buckets.map((function (interval) {
+            return {key: interval.key_as_string, value: this._getMetricsValue(interval)};
+          }.bind(this)));
+        } else if (bucket.terms) {
+          res.terms = bucket.terms.buckets.map(function (term) {
+            return {key: term.key, value: this._getMetricsValue(term)};
+          }.bind(this));
+        }
+        return res;
+      }.bind(this)));
+    },
+
+    // unwrap out metrics value
+    _getMetricsValue: function(bucket) {
+      return bucket.metrics ? bucket.metrics.value : bucket.doc_count;
+    },
+
+    // Helper functions
+    _fieldFor: function(column) {
+      // TODO: limit 'exposed' fields to system field (ex: 'user', 'taskName', 'action', 'duration', etc) and 'workflowVariables.*'
+      return 'extended.' + column;
+    }
+
+  });
+
+</script>
