@@ -21,16 +21,16 @@ An element providing metrics data on workflows.
 
 A `metrics` query is a configurable nested aggregation with 3 aggregation levels:
 
-- `aggregated-on`: top level term aggregation
-- `aggregated-by-*`: nested multi-bucket aggregation (aggregated-by-range | aggregated-by-date-interval)
+- `grouped-by`: top level term aggregations (comma-separated values)
+- `with-*`: nested multi-bucket aggregation (with-ranges | with-date-intervals)
 - `metrics`: leaf single-value metrics aggregation (max, min, avg, sum)
 
 Example:
 
     <nuxeo-workflow-metrics workflow="worflowModelName"
                             task="taskName"
-                            aggregated-on="action"
-                            aggregated-by="user"
+                            grouped-by="action"
+                            with-ranges='{"duration":[{"key":"quick", "to":"1500"}, {"key":"slow", "from":"1500"}]}"
                             metrics="sum(amount)"
                             start-date="[[startDate]]"
                             end-date="[[endDate]]"
@@ -42,14 +42,15 @@ If all the aggregation levels are configured it will produce a query like:
     {
       query: { bool: { must: [...] },
       aggs: {
-        on: { // aggregated-on
+        by: { // aggregated-on
           terms: {
             field: "extended.action"
           },
           aggs: {
-            by: {  // aggregated-by-range | aggregated-by-date-interval | aggregated-by
-              term : {
-                field : "extended.user",
+            by: {  // with-ranges | with-date-intervals
+              range : {
+                field : "extended.duration",
+                ranges: [...]
               },
               aggs: {
                 metric: { // metric
@@ -79,43 +80,26 @@ If all the aggregation levels are configured it will produce a query like:
     properties: {
 
       /**
-       * Top level term aggregation
+       * Top level term aggregation(s).
+       * Comma-separated values..
        */
-      aggregatedOn: String,
+      groupedBy: String,
 
       /**
-       * Field to use in the nested term aggregation
+       * An object with the field as key and an array of ranges to use in the nested range aggregation as value.
        */
-      aggregatedBy: {
-        type: String,
-        value: ''
-      },
-
-      /**
-       * An array of ranges to use in the nested range aggregation.
-       * The term to aggregate on is set with `aggregated-on`
-       */
-      aggregatedByRanges: {
-        type: Array,
-        value: function () { return []; }
-      },
+      withRanges: Object,
 
       /**
        * Interval to use for the nested date histogram aggregation
        */
-      aggregatedByDateInterval: {
-        type: String,
-        value: ''
-      },
+      withDateIntervals: String,
 
       /**
        * The field to use in the single-value metrics aggregation.
        * This can be just the field name or include the `metrics-op` to use as well, ex: `avg(field)`
        */
-      metrics: {
-        type: String,
-        value: ''
-      },
+      metrics: String,
 
       /**
        * The single-value metrics aggregation to use.
@@ -127,28 +111,21 @@ If all the aggregation levels are configured it will produce a query like:
         value: 'count'
       },
 
-      startDate: {
-        type: String,
-        value: ''
-      },
+      startDate: String,
 
-      endDate: {
-        type: String,
-        value: ''
-      },
+      endDate: String
 
-      query: {
-        type: Object,
-        readOnly: true,
-        computed: '_query(workflow, startDate, endDate)'
-      },
+    },
 
-      aggregates: {
-        type: Object,
-        readOnly: true,
-        computed: '_aggregates(workflow, startDate, endDate, aggregatedOn, aggregatedByRanges)'
-      }
+    observers: [
+      '_query(workflow, startDate, endDate)',
+      '_aggregates(groupedBy, withRanges, withDateIntervals, metrics, metricsOperator, startDate, endDate)'
+    ],
 
+    ready: function() {
+      // build our search request
+      this._query();
+      this._aggregates();
     },
 
     _query: function () {
@@ -170,7 +147,7 @@ If all the aggregation levels are configured it will produce a query like:
         terms.push({range: {eventDate: range}});
       }
 
-      return {bool: {must: terms}};
+      this.query = {bool: {must: terms}};
     },
 
     get _metricsAggregation() {
@@ -203,10 +180,10 @@ If all the aggregation levels are configured it will produce a query like:
     },
 
     get _nestedAggregation() {
-      if (this.aggregatedByDateInterval) {
+      if (this.withDateIntervals) {
         var histogram = {
           field: "eventDate",
-          interval: this.aggregatedByDateInterval,
+          interval: this.withDateIntervals,
           min_doc_count: 0,
           format: 'yyyy-MM-dd'
         };
@@ -219,46 +196,46 @@ If all the aggregation levels are configured it will produce a query like:
           console.warn('A start and end date should be set when using date aggregation');
         }
         return {
-          date_intervals: {
+          by: {
             date_histogram: histogram
           }
         };
       }
-      if (this.aggregatedBy) {
-        var field = this._fieldFor(this.aggregatedBy);
+      if (this.withRanges) {
+        var key = Object.keys(this.withRanges)[0];
         return {
-            terms: {
-              terms: {field: field}
+          by: {
+            range: {
+              field : this._fieldFor(key),
+              ranges : this.withRanges[key]
             }
-        };
-      }
-    },
-
-    get _topLevelAggregation() {
-      var field = this._fieldFor(this.aggregatedOn);
-      if (!field) return;
-
-      var agg = {on: {}};
-      if (this.aggregatedByRanges.length) {
-        agg.on = {
-          range: {
-            field : field,
-            ranges : this.aggregatedByRanges
           }
         };
-      } else {
-        agg.on = {terms: {field: field}};
       }
-      return agg;
+
+    },
+
+    // return ordered list of top level term aggregations
+    get _topLevelAggregations() {
+      return this.groupedBy.split(',').map(function(term) {
+        return {
+          by: {
+            terms: {
+              field: this._fieldFor(term.trim())
+            }
+          }
+        };
+      }.bind(this));
     },
 
     _aggregates: function () {
 
-      var levels = [
-        this._topLevelAggregation,
-        this._nestedAggregation,
-        this._metricsAggregation
-      ];
+      var levels = [];
+
+      if (this.groupedBy) { Array.prototype.push.apply(levels, this._topLevelAggregations); }
+      if (this.withDateIntervals || this.withRanges) { levels.push(this._nestedAggregation); }
+      if (this.metrics) { levels.push(this._metricsAggregation); }
+
       var result = {},
           current = result;
       levels.forEach(function(level) {
@@ -269,28 +246,23 @@ If all the aggregation levels are configured it will produce a query like:
         }
       });
 
-      return result.aggs;
+      this.aggregates = result.aggs;
     },
 
     _onResults: function (result) {
-
       // unwrap our aggregates
+      this.data = result.aggregations.by.buckets.map(this._unwrapAggregation.bind(this));
+    },
 
-      // unwrap our top level aggregate
-      this.data = result.aggregations.on.buckets.map((function (bucket) {
-        var res = {key: bucket.key, value: this._getMetricsValue(bucket)};
-        // unwrap our nested aggregate
-        if (bucket.date_intervals) {
-          res.dateIntervals = bucket.date_intervals.buckets.map((function (interval) {
-            return {key: interval.key_as_string, value: this._getMetricsValue(interval)};
-          }.bind(this)));
-        } else if (bucket.terms) {
-          res.terms = bucket.terms.buckets.map(function (term) {
-            return {key: term.key, value: this._getMetricsValue(term)};
-          }.bind(this));
-        }
-        return res;
-      }.bind(this)));
+    _unwrapAggregation: function (bucket) {
+      var key = bucket.key_as_string || bucket.key,
+          value;
+      if (bucket.by) {
+        value = bucket.by.buckets.map(this._unwrapAggregation.bind(this));
+      } else {
+        value = this._getMetricsValue(bucket);
+      }
+      return {key: key, value: value};
     },
 
     // unwrap out metrics value

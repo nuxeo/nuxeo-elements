@@ -57,7 +57,7 @@ Contributors:
   <h2>Avg Workflow duration per department (#1)</h2>
 
   <nuxeo-workflow-metrics workflow="TravelExpenseValidation"
-                          aggregated-on="variables.department"
+                          grouped-by="variables.department"
                           metrics="avg(duration)"
                           start-date="[[startDate]]" end-date="[[endDate]]"
                           data="{{durations}}">
@@ -73,14 +73,13 @@ Contributors:
         <td>[[entry.key]]</td>
         <td>[[formatDuration(entry.value)]]</td>
       </tr>
-    </template>¬
+    </template>
   </table>
 
   <h2>Workflow instance count per amount (#2)</h2>
 
   <nuxeo-workflow-metrics workflow="TravelExpenseValidation"
-                          aggregated-on="variables.amount"
-                          aggregated-by-ranges='[{"key": "<= 1500", "to": 1500 },{"key": "> 1500", "from": 1500}]'
+                          with-ranges='{"variables.amount":[{"key": "<= 1500", "to": 1500 },{"key": "> 1500", "from": 1500}]}'
                           start-date="[[startDate]]" end-date="[[endDate]]"
                           data="{{instancesCountPerAmount}}">
   </nuxeo-workflow-metrics>
@@ -97,8 +96,8 @@ Contributors:
 
   <nuxeo-workflow-metrics workflow="TravelExpenseValidation"
                           task="wf.travelExpenses.create"
-                          aggregated-on="user"
-                          aggregated-by-date-interval="day"
+                          grouped-by="user"
+                          with-date-intervals="day"
                           start-date="[[startDate]]" end-date="[[endDate]]"
                           data="{{instancesCountPerUserPerDay}}">
   </nuxeo-workflow-metrics>
@@ -109,7 +108,7 @@ Contributors:
         <td>[[entry.key]]</td>
         <td>
           <table>
-            <template is="dom-repeat" items="[[entry.dateIntervals]]" as="date">
+            <template is="dom-repeat" items="[[entry.value]]" as="date">
               <tr>
                 <td>[[date.key]]</td>
                 <td>[[date.value]]</td>
@@ -125,8 +124,8 @@ Contributors:
 
   <nuxeo-workflow-metrics workflow="TravelExpenseValidation"
                           task="wf.travelExpenses.create"
-                          aggregated-on="user"
-                          aggregated-by-date-interval="day"
+                          grouped-by="user"
+                          with-date-intervals="day"
                           metrics="sum(workflowVariables.amount)"
                           start-date="[[startDate]]" end-date="[[endDate]]"
                           data="{{amountPerUserPerDay}}">
@@ -138,7 +137,7 @@ Contributors:
         <td>[[entry.key]]</td>
         <td>
           <table>
-            <template is="dom-repeat" items="[[entry.dateIntervals]]" as="date">
+            <template is="dom-repeat" items="[[entry.value]]" as="date">
               <tr>
                 <td>[[date.key]]</td>
                 <td>[[date.value]]</td>
@@ -154,7 +153,7 @@ Contributors:
 
   <nuxeo-workflow-metrics workflow="TravelExpenseValidation"
                           task="Accept/ Reject"
-                          aggregated-on="user"
+                          grouped-by="user"
                           metrics="avg(duration)"
                           start-date="[[startDate]]" end-date="[[endDate]]"
                           data="{{validationTimePerUser}}">
@@ -176,7 +175,7 @@ Contributors:
 
   <nuxeo-workflow-metrics workflow="TravelExpenseValidation"
                           task="Accept/ Reject"
-                          aggregated-on="action"
+                          grouped-by="action"
                           start-date="[[startDate]]" end-date="[[endDate]]"
                           data="{{numberOfActions}}">
   </nuxeo-workflow-metrics>
@@ -197,8 +196,7 @@ Contributors:
 
   <nuxeo-workflow-metrics workflow="TravelExpenseValidation"
                           task="Accept/ Reject"
-                          aggregated-on="action"
-                          aggregated-by="workflowVariables.department"
+                          grouped-by="action,workflowVariables.department"
                           start-date="[[startDate]]" end-date="[[endDate]]"
                           data="{{numberOfActionsPerDepartment}}">
   </nuxeo-workflow-metrics>
@@ -209,7 +207,7 @@ Contributors:
         <td>[[entry.key]]</td>
         <td>
           <table>
-            <template is="dom-repeat" items="[[entry.terms]]" as="department">
+            <template is="dom-repeat" items="[[entry.value]]" as="department">
               <tr>
                 <td>[[department.key]]</td>
                 <td>[[department.value]]</td>
@@ -225,8 +223,8 @@ Contributors:
 
   <nuxeo-workflow-metrics workflow="TravelExpenseValidation"
                           task="Accept/ Reject"
-                          aggregated-on="workflowVariables.department"
-                          aggregated-by-date-interval="day"
+                          grouped-by="workflowVariables.department"
+                          with-date-intervals="day"
                           metrics="sum(workflowVariables.amount)"
                           start-date="[[startDate]]" end-date="[[endDate]]"
                           data="{{amountPerDepartmentPerDay}}">
@@ -238,7 +236,7 @@ Contributors:
         <td>[[entry.key]]</td>
         <td>
           <table>
-            <template is="dom-repeat" items="[[entry.dateIntervals]]" as="date">
+            <template is="dom-repeat" items="[[entry.value]]" as="date">
               <tr>
                 <td>[[date.key]]</td>
                 <td>[[date.value]]</td>
@@ -259,13 +257,13 @@ Contributors:
 
   t.formatDuration = function (duration) {
     var seconds = Math.floor(duration/1000),
-        minutes = Math.floor(seconds/60);
-    hours = Math.floor(minutes/60);
-    days = Math.floor(hours/24);
+        minutes = Math.floor(seconds/60),
+        hours = Math.floor(minutes/60),
+        days = Math.floor(hours/24),
+        result = ";";
     hours = hours-(days*24);
     minutes = minutes-(days*24*60)-(hours*60);
-    seconds = seconds-(days*24*60*60)-(hours*60*60)-(minutes*60),
-        result = "";
+    seconds = seconds-(days*24*60*60)-(hours*60*60)-(minutes*60);
     if (days > 0) {
       result += days + " Days ";
     }
