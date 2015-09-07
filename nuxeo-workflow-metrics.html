@@ -132,7 +132,6 @@ If all the aggregation levels are configured it will produce a query like:
       var event = this.event || (this.task ? 'afterWorkflowTaskEnded' : 'afterWorkflowFinish');
 
       var terms = [
-        {term: {"category": 'Routing'}},
         {term: {"eventId": event}},
         {term: {"extended.modelName": this.workflow}}
       ];
