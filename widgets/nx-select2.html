@@ -15,10 +15,20 @@ Contributors:
   Nelson Silva <nsilva@nuxeo.com>
 -->
 <link rel="import" href="nx-widget.html">
-<script src="../../jquery/dist/jquery.min.js"></script>
-<script src="../../select2/select2.js"></script>
-<link rel="stylesheet" href="../../select2/select2.css">
+<link rel="import" href="../jquery-import.html">
+
 <script>
+
+  // load select2 if not available
+  if (!window.Select2) {
+    // document object of the imported HTML file
+    var ownerDocument = (document._currentScript || document.currentScript).ownerDocument;
+    var script = ownerDocument.createElement('script');
+    script.async = true;
+    script.src = '../../select2/select2.js';
+    ownerDocument.head.appendChild(script);
+  }
+
   var Nuxeo = Nuxeo || {};
 
   /**
@@ -123,13 +133,13 @@ Contributors:
       }
 
       // init select2
-      $(el).select2(params);
+      jQuery(el).select2(params);
 
-      $(el).on('change', this._updateSelection.bind(this));
+      jQuery(el).on('change', this._updateSelection.bind(this));
 
       // view or edit mode
       if (this.readOnly) {
-        $(el).select2('readonly', true);
+        jQuery(el).select2('readonly', true);
       }
 
     },
