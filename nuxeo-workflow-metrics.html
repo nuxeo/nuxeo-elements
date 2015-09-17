@@ -83,23 +83,35 @@ If all the aggregation levels are configured it will produce a query like:
        * Top level term aggregation(s).
        * Comma-separated values..
        */
-      groupedBy: String,
+      groupedBy: {
+        type: String,
+        value: ''
+      },
 
       /**
        * An object with the field as key and an array of ranges to use in the nested range aggregation as value.
        */
-      withRanges: Object,
+      withRanges: {
+        type: Object,
+        value: function () { return {}; }
+      },
 
       /**
        * Interval to use for the nested date histogram aggregation
        */
-      withDateIntervals: String,
+      withDateIntervals: {
+        type: String,
+        value: ''
+      },
 
       /**
        * The field to use in the single-value metrics aggregation.
        * This can be just the field name or include the `metrics-op` to use as well, ex: `avg(field)`
        */
-      metrics: String,
+      metrics: {
+        type: String,
+        value: ''
+      },
 
       /**
        * The single-value metrics aggregation to use.
@@ -111,13 +123,20 @@ If all the aggregation levels are configured it will produce a query like:
         value: 'count'
       },
 
-      startDate: String,
+      startDate: {
+        type: String,
+        value: ''
+      },
 
-      endDate: String
+      endDate: {
+        type: String,
+        value: ''
+      }
 
     },
 
     observers: [
+      '_doFetch(index, query, aggregates)',
       '_query(workflow, startDate, endDate)',
       '_aggregates(groupedBy, withRanges, withDateIntervals, metrics, metricsOperator, startDate, endDate)'
     ],
@@ -128,7 +147,11 @@ If all the aggregation levels are configured it will produce a query like:
       this._aggregates();
     },
 
-    _query: function () {
+    _doFetch: function() {
+      this.debounce('do-fetch', this.fetch.bind(this));
+    },
+
+    _query: function() {
       var event = this.event || (this.task ? 'afterWorkflowTaskEnded' : 'afterWorkflowFinish');
 
       var terms = [
@@ -200,8 +223,9 @@ If all the aggregation levels are configured it will produce a query like:
           }
         };
       }
-      if (this.withRanges) {
-        var key = Object.keys(this.withRanges)[0];
+
+      var key = Object.keys(this.withRanges)[0];
+      if (key) {
         return {
           by: {
             range: {
