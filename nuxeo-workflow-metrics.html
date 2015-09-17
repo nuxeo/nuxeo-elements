@@ -105,6 +105,14 @@ If all the aggregation levels are configured it will produce a query like:
       },
 
       /**
+       * Date format to use as key in the date intervals aggregates
+       **/
+      dateFormat: {
+        type: String,
+        value: 'yyyy-MM-dd'
+      },
+
+      /**
        * The field to use in the single-value metrics aggregation.
        * This can be just the field name or include the `metrics-op` to use as well, ex: `avg(field)`
        */
@@ -207,7 +215,7 @@ If all the aggregation levels are configured it will produce a query like:
           field: "eventDate",
           interval: this.withDateIntervals,
           min_doc_count: 0,
-          format: 'yyyy-MM-dd'
+          format: this.dateFormat
         };
         if (this.startDate && this.endDate) {
           histogram.extended_bounds = {
