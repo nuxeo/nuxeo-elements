@@ -281,8 +281,7 @@ If all the aggregation levels are configured it will produce a query like:
     },
 
     _onResults: function (result) {
-      // unwrap our aggregates
-      this.data = result.aggregations.by.buckets.map(this._unwrapAggregation.bind(this));
+      this.data = this._unwrapAggregation(result.aggregations);
     },
 
     _unwrapAggregation: function (bucket) {
@@ -293,7 +292,7 @@ If all the aggregation levels are configured it will produce a query like:
       } else {
         value = this._getMetricsValue(bucket);
       }
-      return {key: key, value: value};
+      return key ? {key: key, value: value} : value;
     },
 
     // unwrap out metrics value
