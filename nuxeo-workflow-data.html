@@ -19,7 +19,7 @@ Contributors:
 <!--
 An element providing metrics data on workflows.
 
-A `metrics` query is a configurable nested aggregation with 3 aggregation levels:
+A query is a configurable nested aggregation with 3 aggregation levels:
 
 - `grouped-by`: top level term aggregations (comma-separated values)
 - `with-*`: nested multi-bucket aggregation (with-ranges | with-date-intervals)
@@ -27,7 +27,7 @@ A `metrics` query is a configurable nested aggregation with 3 aggregation levels
 
 Example:
 
-    <nuxeo-workflow-metrics workflow="worflowModelName"
+    <nuxeo-workflow-data workflow="worflowModelName"
                             task="taskName"
                             grouped-by="action"
                             with-ranges='{"duration":[{"key":"quick", "to":"1500"}, {"key":"slow", "from":"1500"}]}"
@@ -35,7 +35,7 @@ Example:
                             start-date="[[startDate]]"
                             end-date="[[endDate]]"
                             data="{{data}}">
-    </nuxeo-workflow-metrics>
+    </nuxeo-workflow-data>
 
 If all the aggregation levels are configured it will produce a query like:
 
@@ -65,15 +65,15 @@ If all the aggregation levels are configured it will produce a query like:
       }
     }
 
-@group Nuxeo Workflow Data Elements
-@element nuxeo-workflow-metrics
+@group Nuxeo Data Visualization Elements
+@element nuxeo-workflow-data
 @demo demo/index.html
 -->
 <script>
 
   Polymer({
 
-    is: 'nuxeo-workflow-metrics',
+    is: 'nuxeo-workflow-data',
 
     behaviors: [Nuxeo.WorkflowDataBehavior],
 

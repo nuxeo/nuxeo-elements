@@ -22,7 +22,7 @@ Contributors:
   <title>Nuxeo Workflow Data Elements Demo</title>
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../jquery/dist/jquery.min.js"></script>
-  <link rel="import" href="../nuxeo-workflow-data-elements.html">
+  <link rel="import" href="../nuxeo-dataviz-elements.html">
   <style>
     table {
       width: 100%;
@@ -49,19 +49,19 @@ Contributors:
 <body unresolved>
 <template is="dom-bind">
 
-  <nx-connection url="http://192.168.1.8:8080/nuxeo" username="Administrator" password="Administrator"></nx-connection>
+  <nx-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Nuxeo2015"></nx-connection>
 
   <input type="date" value="{{startDate::change}}">
   <input type="date" value="{{endDate::change}}">
 
   <h2>Avg Workflow duration per department (#1)</h2>
 
-  <nuxeo-workflow-metrics workflow="TravelExpenseValidation"
-                          grouped-by="variables.department"
-                          metrics="avg(duration)"
-                          start-date="[[startDate]]" end-date="[[endDate]]"
-                          data="{{durations}}">
-  </nuxeo-workflow-metrics>
+  <nuxeo-workflow-data workflow="TravelExpenseValidation"
+                       grouped-by="variables.department"
+                       metrics="avg(duration)"
+                       start-date="[[startDate]]" end-date="[[endDate]]"
+                       data="{{durations}}">
+  </nuxeo-workflow-data>
 
   <table>
     <tr>
@@ -78,11 +78,11 @@ Contributors:
 
   <h2>Workflow instance count per amount (#2)</h2>
 
-  <nuxeo-workflow-metrics workflow="TravelExpenseValidation"
-                          with-ranges='{"variables.amount":[{"key": "<= 1500", "to": 1500 },{"key": "> 1500", "from": 1500}]}'
-                          start-date="[[startDate]]" end-date="[[endDate]]"
-                          data="{{instancesCountPerAmount}}">
-  </nuxeo-workflow-metrics>
+  <nuxeo-workflow-data workflow="TravelExpenseValidation"
+                       with-ranges='{"variables.amount":[{"key": "<= 1500", "to": 1500 },{"key": "> 1500", "from": 1500}]}'
+                       start-date="[[startDate]]" end-date="[[endDate]]"
+                       data="{{instancesCountPerAmount}}">
+  </nuxeo-workflow-data>
   <table>
     <template is="dom-repeat" items="[[instancesCountPerAmount]]" as="entry">
       <tr>
@@ -94,13 +94,13 @@ Contributors:
 
   <h2>Workflow instance count per user per date (#3)</h2>
 
-  <nuxeo-workflow-metrics workflow="TravelExpenseValidation"
-                          task="wf.travelExpenses.create"
-                          grouped-by="user"
-                          with-date-intervals="day"
-                          start-date="[[startDate]]" end-date="[[endDate]]"
-                          data="{{instancesCountPerUserPerDay}}">
-  </nuxeo-workflow-metrics>
+  <nuxeo-workflow-data workflow="TravelExpenseValidation"
+                       task="wf.travelExpenses.create"
+                       grouped-by="user"
+                       with-date-intervals="day"
+                       start-date="[[startDate]]" end-date="[[endDate]]"
+                       data="{{instancesCountPerUserPerDay}}">
+  </nuxeo-workflow-data>
 
   <table>
     <template is="dom-repeat" items="[[instancesCountPerUserPerDay]]" as="entry">
@@ -122,14 +122,14 @@ Contributors:
 
   <h2>Sum of amount per user per day (#5)</h2>
 
-  <nuxeo-workflow-metrics workflow="TravelExpenseValidation"
-                          task="wf.travelExpenses.create"
-                          grouped-by="user"
-                          with-date-intervals="day"
-                          metrics="sum(workflowVariables.amount)"
-                          start-date="[[startDate]]" end-date="[[endDate]]"
-                          data="{{amountPerUserPerDay}}">
-  </nuxeo-workflow-metrics>
+  <nuxeo-workflow-data workflow="TravelExpenseValidation"
+                       task="wf.travelExpenses.create"
+                       grouped-by="user"
+                       with-date-intervals="day"
+                       metrics="sum(workflowVariables.amount)"
+                       start-date="[[startDate]]" end-date="[[endDate]]"
+                       data="{{amountPerUserPerDay}}">
+  </nuxeo-workflow-data>
 
   <table>
     <template is="dom-repeat" items="[[amountPerUserPerDay]]" as="entry">
@@ -151,13 +151,13 @@ Contributors:
 
   <h2>Average validation time per user (#6)</h2>
 
-  <nuxeo-workflow-metrics workflow="TravelExpenseValidation"
-                          task="Accept/ Reject"
-                          grouped-by="user"
-                          metrics="avg(duration)"
-                          start-date="[[startDate]]" end-date="[[endDate]]"
-                          data="{{validationTimePerUser}}">
-  </nuxeo-workflow-metrics>
+  <nuxeo-workflow-data workflow="TravelExpenseValidation"
+                       task="Accept/ Reject"
+                       grouped-by="user"
+                       metrics="avg(duration)"
+                       start-date="[[startDate]]" end-date="[[endDate]]"
+                       data="{{validationTimePerUser}}">
+  </nuxeo-workflow-data>
 
   <table>
     <tr>
@@ -173,12 +173,12 @@ Contributors:
 
   <h2>Total number of actions triggered (#7)</h2>
 
-  <nuxeo-workflow-metrics workflow="TravelExpenseValidation"
-                          task="Accept/ Reject"
-                          grouped-by="action"
-                          start-date="[[startDate]]" end-date="[[endDate]]"
-                          data="{{numberOfActions}}">
-  </nuxeo-workflow-metrics>
+  <nuxeo-workflow-data workflow="TravelExpenseValidation"
+                       task="Accept/ Reject"
+                       grouped-by="action"
+                       start-date="[[startDate]]" end-date="[[endDate]]"
+                       data="{{numberOfActions}}">
+  </nuxeo-workflow-data>
 
   <table>
     <tr>
@@ -194,12 +194,12 @@ Contributors:
 
   <h2>Total number of actions by ‘department’ (#8)</h2>
 
-  <nuxeo-workflow-metrics workflow="TravelExpenseValidation"
-                          task="Accept/ Reject"
-                          grouped-by="action,workflowVariables.department"
-                          start-date="[[startDate]]" end-date="[[endDate]]"
-                          data="{{numberOfActionsPerDepartment}}">
-  </nuxeo-workflow-metrics>
+  <nuxeo-workflow-data workflow="TravelExpenseValidation"
+                       task="Accept/ Reject"
+                       grouped-by="action,workflowVariables.department"
+                       start-date="[[startDate]]" end-date="[[endDate]]"
+                       data="{{numberOfActionsPerDepartment}}">
+  </nuxeo-workflow-data>
 
   <table>
     <template is="dom-repeat" items="[[numberOfActionsPerDepartment]]" as="entry">
@@ -221,14 +221,14 @@ Contributors:
 
   <h2>Sum of expense’s registered per department per day (#9)</h2>
 
-  <nuxeo-workflow-metrics workflow="TravelExpenseValidation"
-                          task="Accept/ Reject"
-                          grouped-by="workflowVariables.department"
-                          with-date-intervals="day"
-                          metrics="sum(workflowVariables.amount)"
-                          start-date="[[startDate]]" end-date="[[endDate]]"
-                          data="{{amountPerDepartmentPerDay}}">
-  </nuxeo-workflow-metrics>
+  <nuxeo-workflow-data workflow="TravelExpenseValidation"
+                       task="Accept/ Reject"
+                       grouped-by="workflowVariables.department"
+                       with-date-intervals="day"
+                       metrics="sum(workflowVariables.amount)"
+                       start-date="[[startDate]]" end-date="[[endDate]]"
+                       data="{{amountPerDepartmentPerDay}}">
+  </nuxeo-workflow-data>
 
   <table>
     <template is="dom-repeat" items="[[amountPerDepartmentPerDay]]" as="entry">
