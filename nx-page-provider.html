@@ -1,5 +1,5 @@
 <!--
-(C) Copyright 2014 Nuxeo SA (http://nuxeo.com/) and contributors.
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
 
 All rights reserved. This program and the accompanying materials
 are made available under the terms of the GNU Lesser General Public License
@@ -12,13 +12,14 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 Lesser General Public License for more details.
 
 Contributors:
-  Nelson Silva <nelson.silva@inevo.pt>
+  Nelson Silva <nsilva@nuxeo.com>
 -->
 
-<!--
-@group Nuxeo Elements
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="nx-operation.html">
 
-The `nx-page-provider` wraps a `Document.PageProvider` operation to provide paginated results for a given `query`.
+<!--
+`nx-page-provider` wraps a `Repository.PageProvider` operation to provide paginated results for a given `query`.
 
     <nx-page-provider auto
         query="select from Document"
@@ -31,137 +32,155 @@ the `query`, `params`, `page` or `pageSize` properties are changed.
 You can fetch results explicitly by calling `fetch` on the
 element.
 
+@group Nuxeo Elements
 @element nx-page-provider
 @homepage http://www.nuxeo.org
 -->
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="nx-operation.html">
-<polymer-element name="nx-page-provider" attributes="connectionId auto ref query params pageSize page sort currentPage">
-    <template>
-        <style>
-            :host {
-                display: none;
-            }
-        </style>
+<dom-module id="nx-page-provider">
+  <template>
+    <style>
+      :host {
+        display: none;
+      }
+    </style>
 
-        <nx-operation id="operation" op="Document.PageProvider" on-response="{{onOpResponse}}" connectionId="{{connectionId}}"></nx-operation>
+    <nx-operation id="operation" op="Repository.PageProvider" on-response="_onOpResponse"
+                  connectionId="[[connectionId]]"></nx-operation>
 
-    </template>
-    <script>
-        Polymer('nx-page-provider', {
+  </template>
+  <script>
+    Polymer({
+      is: 'nx-page-provider',
+      properties: {
 
-            /**
-             * The id of a nx-connection to use.
-             *
-             * @attribute connectionId
-             * @type string
-             * @default ''
-             */
-            connectionId: '',
+        /* The id of a nx-connection to use. */
+        connectionId: {
+          type: String,
+          value: ''
+        },
 
-             /**
-             * If true, automatically execute the operation when either `op` or `params` changes.
-             *
-             * @attribute auto
-             * @type boolean
-             * @default false
-             */
-            auto: false,
+        /**
+         * If true, automatically execute the operation when either `op` or `params` changes.
+         */
+        auto: {
+          type: Boolean,
+          value: false
+        },
 
-            /**
-             * The id of a page provider.
-             *
-             * @attribute ref
-             * @type string
-             * @default ''
-             */
-            ref: '',
+        /**
+         * The id of a page provider.
+         */
+        provider: String,
 
-            /**
-             * The query.
-             *
-             * @attribute query
-             * @type string
-             * @default null
-             */
-            query: null,
+        /**
+         * The query.
+         */
+        query: String,
 
-            /**
-             * The query parameters.
-             *
-             * @attribute params
-             * @type string
-             * @default null
-             */
-            params: null,
+        /**
+         * The query parameters.
+         */
+        params: Object,
 
-            /**
-             * The number of results per page.
-             *
-             * @attribute pageSize
-             * @type number
-             * @default 5
-             */
-            pageSize: 5,
+        /**
+         * The number of results per page.
+         */
+        pageSize: {
+          type: Number,
+          value: 5
+        },
 
-            /**
-             * The current page.
-             *
-             * @attribute page
-             * @type number
-             * @default 1
-             */
-            page: 1,
+        /**
+         * The current page.
+         */
+        page: {
+          type: Number,
+          value: 1
+        },
 
-            /**
-             * The current page entries.
-             *
-             * @attribute currentPage
-             * @type Object
-             * @default null
-             */
-            currentPage: null,
+        /**
+         * The current page entries.
+         */
+        currentPage: {
+          type: Array,
+          value: [],
+          notify: true
+        },
 
-            observe: {
-                'ref query params pageSize page': 'autoFetch'
-            },
+        /**
+         * Map of properties and direction 'asc' / 'desc'
+         */
+        sort: {
+          type: Object,
+          value: {},
+          notify: true
+        },
 
-            ready: function() {
-              this.currentPage = [];
-            },
-            /**
-            * Executes the operation to fetch the currentPage.
-            *
-            * @method fetch
-            */
-            fetch: function() {
-                this.$.operation.params = {
-                    page: this.page - 1,
-                    pageSize: this.pageSize,
-                    providerName: this.ref,
-                    query: this.query,
-                    queryParams: this.params,
-                    sortInfo: this.sort
-                };
-                this.currentPage = [];
-                this.$.operation.execute();
-            },
-            autoFetch: function() {
-                // Reset the page if the query changes
-                if (this.$.operation.params && (this.query !== this.$.operation.params.query)) {
-                    this.page = 1;
-                }
-                if (this.auto) {
-                    this.fetch();
-                }
-            },
-            onOpResponse: function() {
-                var response = this.$.operation.response;
-                this.currentPage = response.entries.slice(0);
-                this.numberOfPages = response.numberOfPages;
-            }
+        numberOfPages: {
+          type: Number,
+          notify: true
+        },
 
-        });
-    </script>
+        resultsCount: {
+          type: Number,
+          notify: true
+        }
+      },
 
-</polymer-element>
+      observers: [
+        '_autoFetch(provider, query, params, pageSize, page, sort)'
+      ],
+
+      ready: function () {
+        this.currentPage = [];
+        this._autoFetch();
+      },
+
+      /**
+       * Executes the operation to fetch the currentPage.
+       *
+       * @method fetch
+       */
+      fetch: function () {
+        this.$.operation.params = {
+          page: this.page - 1,
+          pageSize: this.pageSize,
+          providerName: this.ref,
+          query: this.query,
+          queryParams: this.params,
+          sortBy: this._sortKeys.join(","),
+          sortOrder: this._sortValues.join(",")
+        };
+        this.$.operation.execute();
+      },
+
+      get _sortKeys() {
+        return Object.keys(this.sort);
+      },
+
+      get _sortValues() {
+        return this._sortKeys.map(function(k) { return this.sort[k];}.bind(this));
+      },
+
+      _autoFetch: function () {
+        // Reset the page if the query changes
+        if (this.$.operation.params && (this.query !== this.$.operation.params.query)) {
+          this.page = 1;
+        }
+        if (this.auto) {
+          this.fetch();
+        }
+      },
+
+      _onOpResponse: function (e, detail) {
+        var response = detail.response;
+        this.currentPage = response.entries.slice(0);
+        this.numberOfPages = response.numberOfPages;
+        this.resultsCount = response.resultsCount;
+        this.fire('update');
+      }
+
+    });
+  </script>
+
+</dom-module>
