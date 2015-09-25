@@ -79,6 +79,13 @@ Contributors:
         value: function () {
           return this._resultFormatter.bind(this);
         }
+      },
+
+      initSelection: {
+        type: Function,
+        value: function () {
+          return this._initSelection.bind(this);
+        }
       }
 
     },
@@ -95,7 +102,11 @@ Contributors:
       return item.displayLabel || item.title;
     },
 
+    _initSelection: function(element, callback) {
+    },
+
     _initSelect2: function (el) {
+      this._el = el;
 
       var params = {
         minimumInputLength: this.minChars,
@@ -112,6 +123,8 @@ Contributors:
         // this.templatize(template);
         // var instance = this.stamp({username: 'Administrator'});
         // return instance.root.textContent;
+
+        initSelection: this.initSelection,
 
         // Query
         query: function (query) {
@@ -149,8 +162,10 @@ Contributors:
       this.value = (!this.multiple) ? value : value.split(this.separator);
     },
 
-    valueChanged: function () {
-      // TODO: update select2
+    valueChanged: function (newValue) {
+      if (this._el) {
+        jQuery(this._el).select2("val", newValue);
+      }
     },
 
     // Extension points for sub-classes
