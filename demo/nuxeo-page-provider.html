@@ -1,0 +1,94 @@
+<!--
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the GNU Lesser General Public License
+(LGPL) version 2.1 which accompanies this distribution, and is available at
+http://www.gnu.org/licenses/lgpl.html
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+Contributors:
+  Nelson Silva <nsilva@nuxeo.com>
+-->
+<html>
+<head>
+  <title>Nuxeo elements samples</title>
+  <meta name="viewport"
+        content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../../font-roboto/roboto.html">
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../nuxeo-elements/nx-connection.html">
+  <link rel="import" href="../../nuxeo-elements/nx-page-provider.html">
+</head>
+<style>
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    background-color: #E5E5E5;
+    font-family: 'RobotoDraft', sans-serif;
+  }
+
+  .container {
+    width: 80%;
+    margin: 50px auto;
+  }
+
+  .card {
+    display: block;
+    position: relative;
+    background-color: white;
+    padding: 10px;
+    margin-bottom: 20px;
+    width: 100%;
+  }
+
+  .card h2 {
+    margin: 0;
+    font-weight: 300;
+  }
+
+  .card img {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    margin: 10px;
+  }
+
+</style>
+</head>
+<body>
+<template is="dom-bind">
+  <nx-connection id="nx" url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nx-connection>
+  <nx-page-provider auto pageSize="5" current-page="{{docs}}"
+                    query="[[query(docType)]]"></nx-page-provider>
+  <div class="container" class="layout vertical center">
+
+    <select flex two value="{{docType::change}}">
+      <option value="Note">Notes</option>
+      <option value="File">Files</option>
+    </select>
+
+    <hr/>
+
+    <template is="dom-repeat" items="{{docs}}">
+      <div class="card layout horizontal center">
+        <h2>[[item.title]]</h2>
+      </div>
+    </template>
+  </div>
+</template>
+<script>
+  var app = document.querySelector('template[is="dom-bind"]');
+  app.docType = 'File';
+  app.query = function(docType) {
+    return "select * from " + docType  + " where ecm:currentLifeCycleState != 'deleted'";
+  };
+</script>
+</body>
+</html>

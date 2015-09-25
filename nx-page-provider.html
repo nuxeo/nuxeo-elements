@@ -34,6 +34,7 @@ element.
 
 @group Nuxeo Elements
 @element nx-page-provider
+@demo demo/nuxeo-page-provider.html
 @homepage http://www.nuxeo.org
 -->
 <dom-module id="nx-page-provider">
@@ -70,7 +71,10 @@ element.
         /**
          * The id of a page provider.
          */
-        provider: String,
+        provider: {
+          type: String,
+          value: ''
+        },
 
         /**
          * The query.
@@ -80,7 +84,10 @@ element.
         /**
          * The query parameters.
          */
-        params: Object,
+        params: {
+          type: Array,
+          value: []
+        },
 
         /**
          * The number of results per page.
@@ -167,7 +174,7 @@ element.
         if (this.$.operation.params && (this.query !== this.$.operation.params.query)) {
           this.page = 1;
         }
-        if (this.auto) {
+        if (this.auto && (this.query || this.provider)) {
           this.fetch();
         }
       },
