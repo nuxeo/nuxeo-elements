@@ -30,7 +30,11 @@ Example:
     <nuxeo-workflow-data workflow="worflowModelName"
                             task="taskName"
                             grouped-by="action"
-                            with-ranges='{"duration":[{"key":"quick", "to":"1500"}, {"key":"slow", "from":"1500"}]}"
+                            with-ranges='{
+                              "duration":[
+                                {"key":"quick", "to":"1500"},
+                                {"key":"slow", "from":"1500"}
+                              ]}'
                             metrics="sum(amount)"
                             start-date="[[startDate]]"
                             end-date="[[endDate]]"
