@@ -1,6 +1,6 @@
 {
   "name": "nuxeo-dataviz-elements",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "authors": [
     "Nelson Silva <nsilva@nuxeo.com>"
   ],
@@ -19,11 +19,11 @@
     "/test/"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.0.0",
-    "nuxeo-elements": "nuxeo/nuxeo-elements#master"
+    "polymer": "Polymer/polymer#1.1.4",
+    "nuxeo-elements": "nuxeo/nuxeo-elements#0.1.0"
   },
   "devDependencies": {
-    "iron-component-page": "PolymerElements/iron-component-page#^1.0.5",
+    "iron-component-page": "PolymerElements/iron-component-page#1.0.5",
     "moment": "2.10.6"
   }
 }
