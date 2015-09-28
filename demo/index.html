@@ -22,6 +22,7 @@ Contributors:
   <title>Nuxeo Workflow Data Elements Demo</title>
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../jquery/dist/jquery.min.js"></script>
+  <script src="../../moment/min/moment-with-locales.js"></script>
   <link rel="import" href="../nuxeo-dataviz-elements.html">
   <style>
     table {
@@ -49,7 +50,7 @@ Contributors:
 <body unresolved>
 <template is="dom-bind">
 
-  <nx-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Nuxeo2015"></nx-connection>
+  <nx-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nx-connection>
 
   <input type="date" value="{{startDate::change}}">
   <input type="date" value="{{endDate::change}}">
@@ -58,7 +59,7 @@ Contributors:
 
   <nuxeo-workflow-data workflow="TravelExpenseValidation"
                        grouped-by="workflowVariables.department"
-                       metrics="avg(duration)"
+                       metrics="avg(timeSinceWfStarted)"
                        start-date="[[startDate]]" end-date="[[endDate]]"
                        data="{{durations}}">
   </nuxeo-workflow-data>
@@ -96,7 +97,7 @@ Contributors:
 
   <nuxeo-workflow-data workflow="TravelExpenseValidation"
                        task="wf.travelExpenses.create"
-                       grouped-by="user"
+                       grouped-by="taskActor"
                        with-date-intervals="day"
                        start-date="[[startDate]]" end-date="[[endDate]]"
                        data="{{instancesCountPerUserPerDay}}">
@@ -124,7 +125,7 @@ Contributors:
 
   <nuxeo-workflow-data workflow="TravelExpenseValidation"
                        task="wf.travelExpenses.create"
-                       grouped-by="user"
+                       grouped-by="taskActor"
                        with-date-intervals="day"
                        metrics="sum(workflowVariables.amount)"
                        start-date="[[startDate]]" end-date="[[endDate]]"
@@ -153,8 +154,8 @@ Contributors:
 
   <nuxeo-workflow-data workflow="TravelExpenseValidation"
                        task="Accept/ Reject"
-                       grouped-by="user"
-                       metrics="avg(duration)"
+                       grouped-by="taskActor"
+                       metrics="avg(timeSinceWfStarted)"
                        start-date="[[startDate]]" end-date="[[endDate]]"
                        data="{{validationTimePerUser}}">
   </nuxeo-workflow-data>
@@ -251,9 +252,9 @@ Contributors:
 </template>
 <script>
   var t = document.querySelector('template');
-
-  t.startDate = "2015-08-16";
-  t.endDate = "2015-08-20";
+  var currentDate = moment();
+  t.endDate = currentDate.format("YYYY-MM-DD");
+  t.startDate = currentDate.subtract(7, 'days').format("YYYY-MM-DD");
 
   t.formatDuration = function (duration) {
     var seconds = Math.floor(duration/1000),

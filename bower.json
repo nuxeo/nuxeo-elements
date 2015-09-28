@@ -19,11 +19,11 @@
     "/test/"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.0.0"
+    "polymer": "Polymer/polymer#^1.0.0",
+    "nuxeo-elements": "nuxeo/nuxeo-elements#master"
   },
   "devDependencies": {
-    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
-    "nuxeo-elements": "nuxeo/nuxeo-elements#master",
-    "web-component-tester": "*"
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.5",
+    "moment": "2.10.6"
   }
 }

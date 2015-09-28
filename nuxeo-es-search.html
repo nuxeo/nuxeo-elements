@@ -95,24 +95,25 @@ Example:
         },
 
         _send: function() {
-            var url = [this.$.nx.client._baseURL, 'site/es', this.index, '_search'].join('/');
-            if (this.type) { url += '?search_type=' + this.type; }
+          var url = [this.$.nx.client._baseURL, 'site/es', this.index, '_search'].join('/');
+          if (this.type) { url += '?search_type=' + this.type; }
 
-            return document.createElement('iron-request')
-                .send({
-                  url: url,
-                  method: 'POST',
-                  headers: {
-                    'Authorization': this.$.nx.client._headers['Authorization'],
-                    'Content-Type': 'application/json'
-                  },
-                  body: {
-                    query: this.query, aggs: this.aggregates
-                  },
-                  handleAs: 'json'
-                })
-                .then(this._handleResponse.bind(this))
-                .catch(this._handleError.bind(this));
+          // add auth headers
+          var headers = {'Content-Type': 'application/json'};
+          this.$.nx.client._computeAuthentication(headers);
+
+          return document.createElement('iron-request')
+              .send({
+                url: url,
+                method: 'POST',
+                headers: headers,
+                body: {
+                  query: this.query, aggs: this.aggregates
+                },
+                handleAs: 'json'
+              })
+              .then(this._handleResponse.bind(this))
+              .catch(this._handleError.bind(this));
         },
 
         _handleError: function(request, error) {
