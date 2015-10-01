@@ -25,8 +25,8 @@ Contributors:
 @demo demo/nuxeo-widgets.html
 @homepage http://www.nuxeo.org
 -->
-<link rel="import" href="nx-widget.html">
 <link rel="import" href="nx-select2.html">
+<link rel="import" href="../nx-operation.html">
 <dom-module id="nx-document-suggestion">
 <template>
 
@@ -40,9 +40,7 @@ Contributors:
 <script>
 Polymer({
   is: 'nx-document-suggestion',
-  _widget: ['singleDocumentSuggestion', 'multipleDocumentsSuggestion'],
-  behaviors: [Nuxeo.Widget, Nuxeo.Select2],
-
+  behaviors: [Nuxeo.Select2],
   properties: {
 
     // one of these must be used to fetch entries

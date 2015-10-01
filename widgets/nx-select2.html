@@ -14,7 +14,6 @@ Lesser General Public License for more details.
 Contributors:
   Nelson Silva <nsilva@nuxeo.com>
 -->
-<link rel="import" href="nx-widget.html">
 <link rel="import" href="../jquery-import.html">
 
 <script>
@@ -37,6 +36,10 @@ Contributors:
   Nuxeo.Select2 = {
 
     properties: {
+
+      value: {
+        notify: true
+      },
 
       multiple: {
         type: Boolean,

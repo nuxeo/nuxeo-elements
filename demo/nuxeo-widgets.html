@@ -22,7 +22,10 @@ Contributors:
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="../../font-roboto/roboto.html">
   <link rel="import" href="../../nuxeo-elements/nx-connection.html">
-  <link rel="import" href="../../nuxeo-elements/nx-widgets.html">
+  <link rel="import" href="../../nuxeo-elements/widgets/nx-directory-suggestion.html">
+  <link rel="import" href="../../nuxeo-elements/widgets/nx-user-suggestion.html">
+  <link rel="import" href="../../nuxeo-elements/widgets/nx-document-suggestion.html">
+  <link rel="import" href="../../nuxeo-elements/widgets/nx-file.html">
   <link rel="stylesheet" href="../../select2/select2.css">
   <style>
       body {
@@ -59,48 +62,8 @@ Contributors:
   <nx-connection id="nx" url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nx-connection>
   <div class="container">
     <table>
-    <thead><tr><th></th><th>View mode</th><th>Edit mode</th></tr></thead>
+    <thead><tr><th></th><th>Value</th><th>Widget</th></tr></thead>
     <tbody>
-    <tr>
-      <td>Text</td>
-      <td>[[textValue]]</td>
-      <td><nx-text value="{{textValue}}"></nx-text></td>
-    </tr>
-    <tr>
-      <td>Textarea</td>
-      <td>[[textareaValue]]</td>
-      <td><nx-textarea value="{{textareaValue}}"></nx-textarea></td>
-    </tr>
-    <tr>
-      <td>Datetime</td>
-      <td>[[datetimeValue]]</td>
-      <td><nx-datetime value="{{datetimeValue}}"></nx-datetime></td>
-    </tr>
-    <tr>
-      <td>Integer</td>
-      <td>[[intValue]]</td>
-      <td><nx-integer value="{{intValue}}"></nx-integer></td>
-    </tr>
-    <tr>
-      <td>Checkbox</td>
-      <td>[[boolValue]]</td>
-      <td><nx-checkbox value="{{boolValue}}"></nx-checkbox></td>
-    </tr>
-    <tr>
-      <td>Richtext</td>
-      <td>[[richTextValue]]</td>
-      <td><nx-richtext value="{{richTextValue}}"></nx-richtext></td>
-    </tr>
-    <tr>
-      <td>Single Directory</td>
-      <td>[[oneDirectoryValue]]</td>
-      <td><nx-directory directory-name="subject" value="{{oneDirectoryValue}}"></nx-directory></td>
-    </tr>
-    <tr>
-      <td>Multiple Directory</td>
-      <td>[[multipleDirectoryValue]]</td>
-      <td><nx-directory directory-name="subject" multiple="true" value="{{multipleDirectoryValue}}"></nx-directory></td>
-    </tr>
     <tr>
       <td>Single Directory Suggestion</td>
       <td>[[oneDirectorySuggestion]]</td>

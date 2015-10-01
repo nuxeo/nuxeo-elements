@@ -25,7 +25,6 @@ Contributors:
 @demo demo/nuxeo-widgets.html
 @homepage http://www.nuxeo.org
 -->
-<link rel="import" href="nx-widget.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
 <dom-module id="nx-file">
@@ -47,10 +46,11 @@ Contributors:
 <script>
   Polymer({
     is: 'nx-file',
-    _widget: 'file',
-    behaviors: [Nuxeo.Widget],
-
     properties: {
+      value: {
+        type: Object,
+        notify: true
+      },
       /**
        * This flags determines whether the file should be immediately uploaded or not.
        */
