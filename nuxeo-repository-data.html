@@ -209,13 +209,13 @@ The previous example would produce a query like:
 
       // push document properties terms
       if (this.ecmPrimaryType) {
-        terms.push({terms: {'ecm:primaryType': this.ecmPrimaryType.split(',') }});
+        terms.push({terms: {'ecm:primaryType': this._splitTerms(this.ecmPrimaryType) }});
       }
       if (this.ecmLifecycleState) {
-        terms.push({terms: {'ecm:lifecycleState': this.ecmLifecycleState.split(',') }});
+        terms.push({terms: {'ecm:lifecycleState': this._splitTerms(this.ecmLifecycleState) }});
       }
       if (this.ecmMixinType) {
-        terms.push({terms: {'ecm:mixinType': this.ecmMixinType.split(',') }});
+        terms.push({terms: {'ecm:mixinType': this._splitTerms(this.ecmMixinType) }});
       }
 
       this.query = query;
@@ -279,7 +279,7 @@ The previous example would produce a query like:
         return {
           by: {
             range: {
-              field : this._fieldFor(key),
+              field : key,
               ranges : this.withRanges[key]
             }
           }
@@ -340,8 +340,13 @@ The previous example would produce a query like:
     // unwrap out metrics value
     _getMetricsValue: function(bucket) {
       return bucket.metrics ? bucket.metrics.value : bucket.doc_count;
-    }
+    },
 
+    _splitTerms: function(terms) {
+      if (!terms) return;
+      var arr = terms.split(',').map(function(t) { return t.trim(); });
+      return arr.length == 1 ? arr[0] : arr;
+    }
   });
 
 </script>

@@ -27,7 +27,7 @@ Contributors:
 
     <link rel="import" href="../../polymer/polymer.html">
     <link rel="import" href="../../test-fixture/test-fixture.html">
-    <link rel="import" href="../nuxeo-workflow-data.html">
+    <link rel="import" href="../nuxeo-repository-data.html">
   </head>
   <body>
     <test-fixture id="nx">
@@ -36,47 +36,56 @@ Contributors:
       </template>
     </test-fixture>
 
-    <test-fixture id="workflow-terms">
+    <test-fixture id="ecm-terms">
       <template>
-        <nuxeo-workflow-data workflow="wf" start-date="1980-01-01" end-date="1980-12-31"></nuxeo-workflow-data>
+        <nuxeo-repository-data ecm-primary-type="Note"
+                               ecm-lifecycle-state="project"
+                               ecm-mixin-type="Versionable">
+        </nuxeo-repository-data>
       </template>
     </test-fixture>
 
-    <test-fixture id="task-terms">
+    <test-fixture id="ecm-multiple-terms">
       <template>
-        <nuxeo-workflow-data workflow="wf" task="task"></nuxeo-workflow-data>
+        <nuxeo-repository-data ecm-primary-type="File,Note"
+                               ecm-lifecycle-state="project,approved"
+                               ecm-mixin-type="Versionable, Downloadable">
+        </nuxeo-repository-data>
       </template>
     </test-fixture>
 
     <test-fixture id="grouped-by">
       <template>
-        <nuxeo-workflow-data grouped-by="variable"></nuxeo-workflow-data>
+        <nuxeo-repository-data grouped-by="schema:field"></nuxeo-repository-data>
       </template>
     </test-fixture>
 
     <test-fixture id="metrics">
       <template>
-        <nuxeo-workflow-data metrics="avg(variable)"></nuxeo-workflow-data>
+        <nuxeo-repository-data metrics="avg(schema:field)"></nuxeo-repository-data>
       </template>
     </test-fixture>
 
     <test-fixture id="ranges">
       <template>
-        <nuxeo-workflow-data with-ranges='{"variable":[{"key": "low", "to": 1500 },{"key": "high", "from": 1500}]}'>
-        </nuxeo-workflow-data>
+        <nuxeo-repository-data with-ranges='{"schema:field":[{"key": "low", "to": 1500 },{"key": "high", "from": 1500}]}'>
+        </nuxeo-repository-data>
       </template>
     </test-fixture>
 
     <test-fixture id="date-intervals">
       <template>
-        <nuxeo-workflow-data with-date-intervals="day"
-                             start-date="1980-01-01" end-date="1980-01-03">
-        </nuxeo-workflow-data>
+        <nuxeo-repository-data with-date-intervals="day"
+                               date-field="schema:field"
+                               date-format="yyyy-MM-dd"
+                               start-date="1980-01-01"
+                               end-date="1980-01-03">
+        </nuxeo-repository-data>
       </template>
     </test-fixture>
     <script>
 
-      suite('<nuxeo-workflow-data>', function() {
+      suite('<nuxeo-repository-data>', function() {
 
         var server;
 
@@ -99,27 +108,51 @@ Contributors:
           return promise;
         });
 
-        test('workflow-terms', function() {
-          var search = fixture('workflow-terms');
+        test('ecm-terms', function() {
+          var search = fixture('ecm-terms');
           assert.deepEqual(search.query.bool.must, [
-            { term: { "eventId": "afterWorkflowFinish"}},
-            { term: { "extended.modelName": "wf"}},
-            { range: { eventDate: {gte: "1980-01-01", lte: "1980-12-31"}}}
+            { terms: {"ecm:primaryType": "Note"} },
+            { terms: {"ecm:lifecycleState": "project"} },
+            { terms: {"ecm:mixinType": "Versionable"} }
           ]);
         });
 
-        test('task-terms', function() {
-          var search = fixture('task-terms');
+        test('ecm-multiple-terms', function() {
+          var search = fixture('ecm-multiple-terms');
           assert.deepEqual(search.query.bool.must, [
-            { term: { "eventId": "afterWorkflowTaskEnded"}},
-            { term: { "extended.modelName": "wf"}},
-            { term: { "extended.taskName": "task"}}
+            { terms: {"ecm:primaryType": ["File", "Note"] } },
+            { terms: {"ecm:lifecycleState": ["project", "approved"] } },
+            { terms: {"ecm:mixinType": ["Versionable", "Downloadable"] } }
           ]);
+        });
+
+        test('grouped-by', function() {
+          var search = fixture('grouped-by');
+          assert.equal(search.aggregates.by.terms.field, "schema:field");
+
+          return fakeResponse(search, {
+            "aggregations": {
+              "by": {
+                "buckets": [{
+                  "key": "group1",
+                  "doc_count":  1
+                }, {
+                  "key": "group2",
+                  "doc_count":  2
+                }]
+              }
+            }
+          }).then(function() {
+            assert.isArray(search.data);
+            assert.equal(search.data.length, 2);
+            assert.deepEqual(search.data[0], {key: "group1", value: 1});
+            assert.deepEqual(search.data[1], {key: "group2", value: 2});
+          });
         });
 
         test('metrics', function() {
           var search = fixture('metrics');
-          assert.equal(search.aggregates.metrics.avg.field, "extended.variable");
+          assert.equal(search.aggregates.metrics.avg.field, "schema:field");
 
           return fakeResponse(search, {
             "aggregations": {
@@ -132,33 +165,9 @@ Contributors:
           });
         });
 
-        test('grouped-by', function() {
-          var search = fixture('grouped-by');
-          assert.equal(search.aggregates.by.terms.field, "extended.variable");
-
-          return fakeResponse(search, {
-            "aggregations": {
-              "by": {
-                "buckets": [{
-                  "key": "bucket1",
-                  "doc_count":  1
-                }, {
-                  "key": "bucket2",
-                  "doc_count":  2
-                }]
-              }
-            }
-          }).then(function() {
-            assert.isArray(search.data);
-            assert.equal(search.data.length, 2);
-            assert.deepEqual(search.data[0], {key: "bucket1", value: 1});
-            assert.deepEqual(search.data[1], {key: "bucket2", value: 2});
-          });
-        });
-
         test('ranges', function() {
           var search = fixture('ranges');
-          assert.equal(search.aggregates.by.range.field, "extended.variable");
+          assert.equal(search.aggregates.by.range.field, "schema:field");
           assert.deepEqual(search.aggregates.by.range.ranges, [
             {"key": "low", "to": 1500 },
             {"key": "high", "from": 1500}
@@ -187,7 +196,7 @@ Contributors:
         test('date-intervals', function() {
           var search = fixture('date-intervals');
           assert.deepEqual(search.aggregates.by.date_histogram, {
-            field: "eventDate",
+            field: "schema:field",
             format: "yyyy-MM-dd",
             interval: "day",
             min_doc_count: 0,
@@ -220,7 +229,7 @@ Contributors:
         function fakeResponse(search, json) {
           server.respondWith(
               'POST',
-              '/dummy/site/es/audit_wf/_search?search_type=count',
+              '/dummy/site/es/nuxeo/_search?search_type=count',
               [
                 200,
                 {'Content-Type': 'application/json'},
