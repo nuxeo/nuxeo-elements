@@ -1,0 +1,244 @@
+<!doctype html>
+<!--
+@license
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the GNU Lesser General Public License
+(LGPL) version 2.1 which accompanies this distribution, and is available at
+http://www.gnu.org/licenses/lgpl.html
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+Contributors:
+  Nelson Silva <nsilva@nuxeo.com>
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../test-fixture/test-fixture-mocha.js"></script>
+
+    <link rel="import" href="../../polymer/polymer.html">
+    <link rel="import" href="../../test-fixture/test-fixture.html">
+    <link rel="import" href="../nuxeo-workflow-data.html">
+  </head>
+  <body>
+    <test-fixture id="nx">
+      <template>
+        <nx-connection url="/dummy"></nx-connection>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="workflow-terms">
+      <template>
+        <nuxeo-workflow-data workflow="wf" start-date="1980-01-01" end-date="1980-12-31"></nuxeo-workflow-data>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="task-terms">
+      <template>
+        <nuxeo-workflow-data workflow="wf" task="task"></nuxeo-workflow-data>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="grouped-by">
+      <template>
+        <nuxeo-workflow-data grouped-by="variable"></nuxeo-workflow-data>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="metrics">
+      <template>
+        <nuxeo-workflow-data metrics="avg(variable)"></nuxeo-workflow-data>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="ranges">
+      <template>
+        <nuxeo-workflow-data with-ranges='{"variable":[{"key": "low", "to": 1500 },{"key": "high", "from": 1500}]}'>
+        </nuxeo-workflow-data>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="date-intervals">
+      <template>
+        <nuxeo-workflow-data with-date-intervals="day"
+                             start-date="1980-01-01" end-date="1980-01-03">
+        </nuxeo-workflow-data>
+      </template>
+    </test-fixture>
+    <script>
+
+      suite('<nuxeo-workflow-metrics>', function() {
+
+        var server;
+
+        setup(function() {
+          server = sinon.fakeServer.create();
+          server.respondWith(
+              'POST',
+              '/dummy/site/api/v1/automation/login',
+              [
+                200,
+                {'Content-Type': 'application/json'},
+                '{"entity-type": "login"}'
+              ]
+          );
+
+          // login
+          var nx = fixture('nx');
+          var promise = nx.connect();
+          server.respond();
+          return promise;
+        });
+
+        test('workflow-terms', function() {
+          var search = fixture('workflow-terms');
+          assert.deepEqual(search.query.bool.must, [
+            { term: { "eventId": "afterWorkflowFinish"}},
+            { term: { "extended.modelName": "wf"}},
+            { range: { eventDate: {gte: "1980-01-01", lte: "1980-12-31"}}}
+          ]);
+        });
+
+        test('task-terms', function() {
+          var search = fixture('task-terms');
+          assert.deepEqual(search.query.bool.must, [
+            { term: { "eventId": "afterWorkflowTaskEnded"}},
+            { term: { "extended.modelName": "wf"}},
+            { term: { "extended.taskName": "task"}}
+          ]);
+        });
+
+        test('metrics', function() {
+          var search = fixture('metrics');
+          assert.equal(search.aggregates.metrics.avg.field, "extended.variable");
+
+          return fakeResponse(search, {
+            "aggregations": {
+              "metrics": {
+                "value": 1
+              }
+            }
+          }).then(function() {
+            assert.equal(search.data, 1);
+          });
+        });
+
+        test('grouped-by', function() {
+          var search = fixture('grouped-by');
+          assert.equal(search.aggregates.by.terms.field, "extended.variable");
+
+          return fakeResponse(search, {
+            "aggregations": {
+              "by": {
+                "buckets": [{
+                  "key": "bucket1",
+                  "doc_count":  1
+                }, {
+                  "key": "bucket2",
+                  "doc_count":  2
+                }]
+              }
+            }
+          }).then(function() {
+            assert.isArray(search.data);
+            assert.equal(search.data.length, 2);
+            assert.deepEqual(search.data[0], {key: "bucket1", value: 1});
+            assert.deepEqual(search.data[1], {key: "bucket2", value: 2});
+          });
+        });
+
+        test('ranges', function() {
+          var search = fixture('ranges');
+          assert.equal(search.aggregates.by.range.field, "extended.variable");
+          assert.deepEqual(search.aggregates.by.range.ranges, [
+            {"key": "low", "to": 1500 },
+            {"key": "high", "from": 1500}
+          ]);
+
+          return fakeResponse(search, {
+            "aggregations": {
+              "by": {
+                "buckets": [{
+                  "key": "low",
+                  "doc_count":  1
+                }, {
+                  "key": "high",
+                  "doc_count":  2
+                }]
+              }
+            }
+          }).then(function() {
+            assert.isArray(search.data);
+            assert.equal(search.data.length, 2);
+            assert.deepEqual(search.data[0], {key: "low", value: 1});
+            assert.deepEqual(search.data[1], {key: "high", value: 2});
+          });
+        });
+
+        test('date-intervals', function() {
+          var search = fixture('date-intervals');
+          assert.deepEqual(search.aggregates.by.date_histogram, {
+            field: "eventDate",
+            format: "yyyy-MM-dd",
+            interval: "day",
+            min_doc_count: 0,
+            extended_bounds: {
+              min: "1980-01-01",
+              max: "1980-01-03"
+            }
+          });
+
+          return fakeResponse(search, {
+            "aggregations": {
+              "by": {
+                "buckets": [
+                  {"key_as_string": "1980-01-01", "doc_count":  1},
+                  {"key_as_string": "1980-01-02", "doc_count":  2},
+                  {"key_as_string": "1980-01-03", "doc_count":  3}
+                ]
+              }
+            }
+          }).then(function() {
+            assert.isArray(search.data);
+            assert.equal(search.data.length, 3);
+            assert.deepEqual(search.data, [
+              {key: "1980-01-01", value: 1},
+              {key: "1980-01-02", value: 2},
+              {key: "1980-01-03", value: 3}]);
+          });
+        });
+
+        function fakeResponse(search, json) {
+          server.respondWith(
+              'POST',
+              '/dummy/site/es/audit_wf/_search?search_type=count',
+              [
+                200,
+                {'Content-Type': 'application/json'},
+                JSON.stringify(json)
+              ]
+          );
+
+          var promise = search.fetch();
+
+          Polymer.Base.async(function() {
+            server.respond();
+          });
+
+          return promise;
+        }
+
+      });
+    </script>
+
+  </body>
+</html>

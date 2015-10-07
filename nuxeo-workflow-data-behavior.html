@@ -83,7 +83,7 @@ Contributors:
       search.query = this.query;
       search.aggregates = this.aggregates;
       search.type = 'count';
-      search.execute().then(this._onResults.bind(this));
+      return search.execute().then(this._onResults.bind(this));
     },
 
     _onResults: function(results) {
