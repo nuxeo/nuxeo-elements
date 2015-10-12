@@ -1,0 +1,314 @@
+<!--
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the GNU Lesser General Public License
+(LGPL) version 2.1 which accompanies this distribution, and is available at
+http://www.gnu.org/licenses/lgpl.html
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+Contributors:
+  Nelson Silva <nsilva@nuxeo.com>
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="nuxeo-workflow-data-behavior.html">
+<!--
+An element providing metrics data on searches.
+
+A query is a configurable nested aggregation with 3 aggregation levels:
+
+- `grouped-by`: top level term aggregations (comma-separated values)
+- `with-*`: nested multi-bucket aggregation (with-ranges | with-date-intervals)
+- `metrics`: leaf single-value metrics aggregation (max, min, avg, sum)
+
+Example:
+
+    <nuxeo-search-data grouped-by="pageProviderName"
+                       with-ranges='{
+                         "resultsCount":[
+                           {"key":"no result", "to":"0"},
+                           {"key":"less than 50", "from" : 1, "to": 50}
+                           {"key":"more than 50", "from" : 51}
+                       ]}'
+                       metrics="avg(executionTimeMs)"
+                       start-date="[[startDate]]"
+                       end-date="[[endDate]]"
+                       data="{{data}}">
+    </nuxeo-search-data>
+
+If all the aggregation levels are configured it will produce a query like:
+
+    {
+      query: { bool: { must: [...] },
+      aggs: {
+        by: { // grouped-by
+          terms: {
+            field: "extended.resultsCount"
+          },
+          aggs: {
+            by: {  // with-ranges | with-date-intervals
+              range : {
+                field : "extended.resultsCount",
+                ranges: [...]
+              },
+              aggs: {
+                metric: { // metric
+                  avg: {
+                    field : "extended.executionTimeMs"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+@group Nuxeo Data Visualization Elements
+@element nuxeo-search-data
+@demo demo/search.html
+-->
+<script>
+
+  Polymer({
+
+    is: 'nuxeo-search-data',
+
+    behaviors: [Nuxeo.WorkflowDataBehavior],
+
+    properties: {
+
+      index: {
+        type: String,
+        value: 'audit'
+      },
+
+      /**
+       * the page provider name
+       */
+      pageProvider: String,
+
+      /**
+       * Top level term aggregation(s).
+       * Comma-separated values..
+       */
+      groupedBy: {
+        type: String,
+        value: ''
+      },
+
+      /**
+       * An object with the field as key and an array of ranges to use in the nested range aggregation as value.
+       */
+      withRanges: {
+        type: Object,
+        value: function () { return {}; }
+      },
+
+      /**
+       * Interval to use for the nested date histogram aggregation
+       */
+      withDateIntervals: {
+        type: String,
+        value: ''
+      },
+
+      /**
+       * Date format to use as key in the date intervals aggregates
+       **/
+      dateFormat: {
+        type: String,
+        value: 'yyyy-MM-dd'
+      },
+
+      /**
+       * The field to use in the single-value metrics aggregation.
+       * This can be just the field name or include the `metrics-op` to use as well, ex: `avg(field)`
+       */
+      metrics: {
+        type: String,
+        value: ''
+      },
+
+      /**
+       * The single-value metrics aggregation to use.
+       * Can be one of: `avg`, `min`, `max.
+       * It not set default is `count` which returns the `doc_count`
+       */
+      metricsOperator: {
+        type: String,
+        value: 'count'
+      },
+
+      startDate: {
+        type: String,
+        value: ''
+      },
+
+      endDate: {
+        type: String,
+        value: ''
+      }
+
+    },
+
+    observers: [
+      '_doFetch(index, query, aggregates)',
+      '_query(startDate, endDate)',
+      '_aggregates(groupedBy, withRanges, withDateIntervals, metrics, metricsOperator, startDate, endDate)'
+    ],
+
+    ready: function() {
+      // build our search request
+      this._query();
+      this._aggregates();
+    },
+
+    _doFetch: function() {
+      this.debounce('do-fetch', this.fetch.bind(this));
+    },
+
+    _query: function() {
+      var terms = [
+        {term: {"eventId": "search"}}
+      ];
+
+      if (this.pageProvider) {
+        terms.push({term: {'extended.pageProviderName': this.pageProvider}});
+      }
+
+      if (this.startDate || this.endDate) {
+        var range = {};
+        if (this.startDate) { range.gte = this.startDate; }
+        if (this.endDate) { range.lte = this.endDate; }
+        terms.push({range: {eventDate: range}});
+      }
+
+      this.query = {bool: {must: terms}};
+    },
+
+    get _metricsAggregation() {
+      var parts = this.metrics.match(/[^\(\)]+/g);
+
+      if (!parts) return;
+
+      var metricsOn, metricsOp;
+      if (parts.length == 1) {
+        metricsOn = parts[0];
+        metricsOp = this.metricsOperator;
+      } else if (parts.length == 2) {
+        metricsOn = parts[1];
+        metricsOp = parts[0];
+      } else {
+        throw("Invalid 'metrics'");
+      }
+
+      var field = this._fieldFor(metricsOn) || this._fieldFor(this.aggregatedOn);
+
+      if (metricsOp === 'count') {
+        metricsOp = 'terms';
+      }
+
+      var agg = { metrics: {}};
+      agg.metrics[metricsOp] = {
+        field: field
+      };
+      return agg;
+    },
+
+    get _nestedAggregation() {
+      if (this.withDateIntervals) {
+        var histogram = {
+          field: "eventDate",
+          interval: this.withDateIntervals,
+          format: this.dateFormat,
+          min_doc_count: 0
+        };
+
+        return {
+          by: {
+            date_histogram: histogram
+          }
+        };
+      }
+
+      var key = Object.keys(this.withRanges)[0];
+      if (key) {
+        return {
+          by: {
+            range: {
+              field : this._fieldFor(key),
+              ranges : this.withRanges[key]
+            }
+          }
+        };
+      }
+
+    },
+
+    // return ordered list of top level term aggregations
+    get _topLevelAggregations() {
+      return this.groupedBy.split(',').map(function(term) {
+        return {
+          by: {
+            terms: {
+              field: this._fieldFor(term.trim())
+            }
+          }
+        };
+      }.bind(this));
+    },
+
+    _aggregates: function () {
+
+      var levels = [];
+
+      if (this.groupedBy) { Array.prototype.push.apply(levels, this._topLevelAggregations); }
+      if (this.withDateIntervals || this.withRanges) { levels.push(this._nestedAggregation); }
+      if (this.metrics) { levels.push(this._metricsAggregation); }
+
+      var result = {},
+          current = result;
+      levels.forEach(function(level) {
+        if (level) {
+          var key = Object.keys(level)[0];
+          current.aggs = level;
+          current = level[key];
+        }
+      });
+
+      this.aggregates = result.aggs;
+    },
+
+    _onResults: function (result) {
+      this.data = this._unwrapAggregation(result.aggregations);
+    },
+
+    _unwrapAggregation: function (bucket) {
+      var key = bucket.key_as_string || bucket.key,
+          value;
+      if (bucket.by) {
+        value = bucket.by.buckets.map(this._unwrapAggregation.bind(this));
+      } else {
+        value = this._getMetricsValue(bucket);
+      }
+      return key ? {key: key, value: value} : value;
+    },
+
+    // unwrap out metrics value
+    _getMetricsValue: function(bucket) {
+      return bucket.metrics ? bucket.metrics.value : bucket.doc_count;
+    },
+
+    // Helper functions
+    _fieldFor: function(column) {
+      return 'extended.' + column;
+    }
+
+  });
+
+</script>
