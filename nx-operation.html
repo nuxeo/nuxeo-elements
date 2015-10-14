@@ -89,13 +89,22 @@ element.
               value: null,
               notify: true
             },
+
+            /* The `content enricher` of the resource. */
+            enrichers: {type: String, value: ''}
           },
           observers: [
-            '_autoExecute(op, params)'
+            '_autoExecute(op, params, enrichers)'
           ],
 
           execute: function() {
             var params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
+            var options = {};
+            options.headers = {}
+            // Look up content enrichers parameter
+            if (this.enrichers) {
+              options.headers['X-NXenrichers.document'] = this.enrichers;
+            }
 
             return this.$.nx.connect()
               .then(function() {
@@ -104,7 +113,7 @@ element.
                     .operation(this.op)
                     .params(params)
                     .input(this.input)
-                    .execute(function(error, data) {
+                    .execute(options, function(error, data) {
                       if (error) {
                         this.fire('error', error);
                         reject(Error(error));
