@@ -21,7 +21,7 @@ Contributors:
     <nx-operation auto
         op="Document.Query"
         params="{'query': 'select from Document'}"
-        on-response="{{handleResponse}}"></nx-operation>
+        on-response="{{handleResponse}}" enrichers="documentURL, preview"></nx-operation>
 
 With `auto` set to `true`, the operation is executed whenever
 its `url` or `params` properties are changed.
