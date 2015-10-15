@@ -48,7 +48,6 @@ element.
     <nx-connection id="nx" connectionId="{{connectionId}}"></nx-connection>
   </template>
 </dom-module>
-
 <script>
   Polymer({
     is: 'nx-resource',
@@ -82,7 +81,10 @@ element.
       headers: {type: Object, value: null},
 
       /* The `content enricher` of the resource. */
-      enrichers: {type: String, value: ''}
+      enrichers: {type: String, value: ''},
+
+      /* The `content enricher` entity-type of the resource. Default value for Nuxeo Document Model*/
+      enrichersEntity: {type: String, value: 'document'}
     },
 
     observers: [
@@ -130,7 +132,7 @@ element.
       options.headers.accept = 'text/plain,application/json';
       // Look up content enrichers parameter
       if (this.enrichers) {
-        options.headers['X-NXenrichers.document'] = this.enrichers;
+        options.headers['X-NXenrichers.' + this.enrichersEntity] = this.enrichers;
       }
 
       var params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);

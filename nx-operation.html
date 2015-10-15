@@ -91,7 +91,10 @@ element.
             },
 
             /* The `content enricher` of the resource. */
-            enrichers: {type: String, value: ''}
+            enrichers: {type: String, value: ''},
+
+            /* The `content enricher` entity-type of the resource. Default value for Nuxeo Document Model*/
+            enrichersEntity: {type: String, value: 'document'}
           },
           observers: [
             '_autoExecute(op, params, enrichers)'
@@ -103,7 +106,7 @@ element.
             options.headers = {}
             // Look up content enrichers parameter
             if (this.enrichers) {
-              options.headers['X-NXenrichers.document'] = this.enrichers;
+              options.headers['X-NXenrichers.' + this.enrichersEntity] = this.enrichers;
             }
 
             return this.$.nx.connect()
