@@ -54,6 +54,12 @@ Contributors:
       </template>
     </test-fixture>
 
+    <test-fixture id="multiple-groups">
+      <template>
+        <nuxeo-workflow-data grouped-by="variable1,variable2" group-limit="5"></nuxeo-workflow-data>
+      </template>
+    </test-fixture>
+
     <test-fixture id="metrics">
       <template>
         <nuxeo-workflow-data metrics="avg(variable)"></nuxeo-workflow-data>
@@ -154,6 +160,16 @@ Contributors:
             assert.deepEqual(search.data[0], {key: "bucket1", value: 1});
             assert.deepEqual(search.data[1], {key: "bucket2", value: 2});
           });
+        });
+
+        test('multiple-groups', function() {
+          var search = fixture('multiple-groups');
+          var agg1 = search.aggregates.by,
+              agg2 = agg1.aggs.by;
+          assert.equal(agg1.terms.field, "extended.variable1");
+          assert.equal(agg1.terms.size, 5);
+          assert.equal(agg2.terms.field, "extended.variable2");
+          assert.isUndefined(agg2.terms.size);
         });
 
         test('ranges', function() {

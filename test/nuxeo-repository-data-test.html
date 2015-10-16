@@ -60,6 +60,12 @@ Contributors:
       </template>
     </test-fixture>
 
+    <test-fixture id="multiple-groups">
+      <template>
+        <nuxeo-repository-data grouped-by="schema:field1,schema:field2" group-limit="5"></nuxeo-repository-data>
+      </template>
+    </test-fixture>
+
     <test-fixture id="metrics">
       <template>
         <nuxeo-repository-data metrics="avg(schema:field)"></nuxeo-repository-data>
@@ -148,6 +154,16 @@ Contributors:
             assert.deepEqual(search.data[0], {key: "group1", value: 1});
             assert.deepEqual(search.data[1], {key: "group2", value: 2});
           });
+        });
+
+        test('multiple-groups', function() {
+          var search = fixture('multiple-groups');
+          var agg1 = search.aggregates.by,
+              agg2 = agg1.aggs.by;
+          assert.equal(agg1.terms.field, "schema:field1");
+          assert.equal(agg1.terms.size, 5);
+          assert.equal(agg2.terms.field, "schema:field2");
+          assert.isUndefined(agg2.terms.size);
         });
 
         test('metrics', function() {
