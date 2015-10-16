@@ -119,6 +119,14 @@ The previous example would produce a query like:
       },
 
       /**
+       * Limit number of buckets for the top level term aggregation.
+       */
+      groupLimit: {
+        type: Number,
+        value: -1
+      },
+
+      /**
        * An object with the field as key and an array of ranges to use in the nested range aggregation as value.
        */
       withRanges: {
@@ -183,8 +191,8 @@ The previous example would produce a query like:
 
     observers: [
       '_doFetch(index, query, aggregates)',
-      '_query(where, ecmPrimaryType, ecmLifecycleState, ecmMixinType)',
-      '_aggregates(groupedBy, withRanges, withDateIntervals, metrics, metricsOperator, startDate, endDate)'
+      '_query(where, ecmPrimaryType, ecmLifecycleState, ecmMixinType, startDate, endDate)',
+      '_aggregates(groupedBy, groupLimit, withRanges, withDateIntervals, metrics, metricsOperator, startDate, endDate)'
     ],
 
     ready: function() {
@@ -216,6 +224,16 @@ The previous example would produce a query like:
       }
       if (this.ecmMixinType) {
         terms.push({terms: {'ecm:mixinType': this._splitTerms(this.ecmMixinType) }});
+      }
+
+      // filter by date (dc:created by default)
+      if (this.startDate || this.endDate) {
+        var interval = {};
+        if (this.startDate) { interval.gte = this.startDate; }
+        if (this.endDate) { interval.lte = this.endDate; }
+        var range = {};
+        range[this.dateField] = interval;
+        terms.push({range: range});
       }
 
       this.query = query;
@@ -290,7 +308,7 @@ The previous example would produce a query like:
 
     // return ordered list of top level term aggregations
     get _topLevelAggregations() {
-      return this.groupedBy.split(',').map(function(term) {
+      var aggs = this.groupedBy.split(',').map(function(term) {
         return {
           by: {
             terms: {
@@ -299,6 +317,13 @@ The previous example would produce a query like:
           }
         };
       }.bind(this));
+
+      // set max number of buckets to return
+      if (this.groupLimit != -1 && aggs.length) {
+        aggs[0].by.terms.size = this.groupLimit;
+      }
+
+      return aggs;
     },
 
     _aggregates: function () {

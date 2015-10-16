@@ -93,6 +93,14 @@ If all the aggregation levels are configured it will produce a query like:
       },
 
       /**
+       * Limit number of buckets for the top level term aggregation.
+       */
+      groupLimit: {
+        type: Number,
+        value: -1
+      },
+
+      /**
        * An object with the field as key and an array of ranges to use in the nested range aggregation as value.
        */
       withRanges: {
@@ -252,7 +260,7 @@ If all the aggregation levels are configured it will produce a query like:
 
     // return ordered list of top level term aggregations
     get _topLevelAggregations() {
-      return this.groupedBy.split(',').map(function(term) {
+      var aggs = this.groupedBy.split(',').map(function(term) {
         return {
           by: {
             terms: {
@@ -261,6 +269,13 @@ If all the aggregation levels are configured it will produce a query like:
           }
         };
       }.bind(this));
+
+      // set max number of buckets to return
+      if (this.groupLimit && aggs.length) {
+        aggs[0].by.terms.size = this.groupLimit;
+      }
+
+      return aggs;
     },
 
     _aggregates: function () {
