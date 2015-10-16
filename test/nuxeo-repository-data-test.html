@@ -111,9 +111,9 @@ Contributors:
         test('ecm-terms', function() {
           var search = fixture('ecm-terms');
           assert.deepEqual(search.query.bool.must, [
-            { terms: {"ecm:primaryType": "Note"} },
-            { terms: {"ecm:lifecycleState": "project"} },
-            { terms: {"ecm:mixinType": "Versionable"} }
+            { terms: {"ecm:primaryType": ["Note"]} },
+            { terms: {"ecm:lifecycleState": ["project"]} },
+            { terms: {"ecm:mixinType": ["Versionable"]} }
           ]);
         });
 

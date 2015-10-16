@@ -345,7 +345,7 @@ The previous example would produce a query like:
     _splitTerms: function(terms) {
       if (!terms) return;
       var arr = terms.split(',').map(function(t) { return t.trim(); });
-      return arr.length == 1 ? arr[0] : arr;
+      return arr;
     }
   });
 
