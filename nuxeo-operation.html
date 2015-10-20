@@ -16,12 +16,12 @@ Contributors:
 -->
 
 <!--
-`nx-operation` allows calling an operation on a Nuxeo server.
+`nuxeo-operation` allows calling an operation on a Nuxeo server.
 
-    <nx-operation auto
+    <nuxeo-operation auto
         op="Document.Query"
         params="{'query': 'select from Document'}"
-        on-response="{{handleResponse}}" enrichers="documentURL, preview"></nx-operation>
+        on-response="{{handleResponse}}" enrichers="documentURL, preview"></nuxeo-operation>
 
 With `auto` set to `true`, the operation is executed whenever
 its `url` or `params` properties are changed.
@@ -32,26 +32,26 @@ You can trigger an operation explicitly by calling `execute` on the
 element.
 
 @group Nuxeo Elements
-@element nx-operation
+@element nuxeo-operation
 @homepage http://www.nuxeo.org
 -->
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="nx-connection.html">
+<link rel="import" href="nuxeo-connection.html">
 <script src="../es6-promise/promise.min.js"></script>
-<dom-module name="nx-operation">
+<dom-module name="nuxeo-operation">
     <template>
         <style>
             :host {
                 display: none;
             }
         </style>
-        <nx-connection id="nx" connectionId="{{connectionId}}"></nx-connection>
+        <nuxeo-connection id="nx" connectionId="{{connectionId}}"></nuxeo-connection>
     </template>
     <script>
         Polymer({
-          is: 'nx-operation',
+          is: 'nuxeo-operation',
           properties: {
-            /* The id of a nx-connection to use. */
+            /* The id of a nuxeo-connection to use. */
             connectionId: {
               type: String,
               value: ''

@@ -16,21 +16,21 @@ Contributors:
 -->
 
 <!--
-`nx-user-suggestion`
+`nuxeo-document-suggestion`
 
-    <nx-user-suggestion></nx-user-suggestion>
+    <nuxeo-document-suggestion></nuxeo-document-suggestion>
 
 @group Nuxeo Widgets
-@element nx-user-suggestion
+@element nuxeo-document-suggestion
 @demo demo/nuxeo-widgets.html
 @homepage http://www.nuxeo.org
 -->
-<link rel="import" href="nx-select2.html">
-<link rel="import" href="../nx-operation.html">
-<dom-module id="nx-user-suggestion">
+<link rel="import" href="nuxeo-select2.html">
+<link rel="import" href="../nuxeo-operation.html">
+<dom-module id="nuxeo-document-suggestion">
 <template>
 
-  <nx-operation id="op" op="UserGroup.Suggestion"></nx-operation>
+  <nuxeo-operation id="op" op="Repository.PageProvider"></nuxeo-operation>
 
   <template is="dom-if" if="[[label]]"><span>[[label]]</span> : </template>
 
@@ -39,15 +39,29 @@ Contributors:
 </template>
 <script>
 Polymer({
-  is: 'nx-user-suggestion',
+  is: 'nuxeo-document-suggestion',
   behaviors: [Nuxeo.Select2],
   properties: {
 
-    // USER_TYPE or GROUP_TYPE or USER_GROUP_TYPE
-    searchType: {
+    // one of these must be used to fetch entries
+    query: String,
+
+    pageProvider: {
       type: String,
-      value: 'USER_GROUP_TYPE'
-    }
+      value: 'default_document_suggestion'
+    },
+
+    schemas: {
+      type: Array,
+      value: ['*']
+    },
+
+    repository: {
+      type: String,
+      value: 'default'
+    },
+
+    labelProperty: String
 
   },
 
@@ -60,11 +74,14 @@ Polymer({
     this.$.op.params = {
       documentSchemas: this.schemas,
       repository: this.repository,
-      searchTerm: query.term,
-      searchType: this.searchType
+      searchTerm: query.term + '%',
+      query: this.query,
+      providerName: this.pageProvider,
+      page: 0,
+      pageSize: 20
     };
     this.$.op.execute().then(function(response) {
-      query.callback({ results: response });
+      query.callback({ results: response.entries });
     });
   }
 

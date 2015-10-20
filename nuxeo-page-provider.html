@@ -16,15 +16,15 @@ Contributors:
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="nx-operation.html">
+<link rel="import" href="nuxeo-operation.html">
 
 <!--
-`nx-page-provider` wraps a `Repository.PageProvider` operation to provide paginated results for a given `query`.
+`nuxeo-page-provider` wraps a `Repository.PageProvider` operation to provide paginated results for a given `query`.
 
-    <nx-page-provider auto
+    <nuxeo-page-provider auto
         query="select from Document"
         pageSize="5"
-        sort="dc:modified"></nx-page-provider>
+        sort="dc:modified"></nuxeo-page-provider>
 
 With `auto` set to `true`, results are fetched whenever
 the `query`, `params`, `page` or `pageSize` properties are changed.
@@ -33,11 +33,11 @@ You can fetch results explicitly by calling `fetch` on the
 element.
 
 @group Nuxeo Elements
-@element nx-page-provider
+@element nuxeo-page-provider
 @demo demo/nuxeo-page-provider.html
 @homepage http://www.nuxeo.org
 -->
-<dom-module id="nx-page-provider">
+<dom-module id="nuxeo-page-provider">
   <template>
     <style>
       :host {
@@ -45,16 +45,16 @@ element.
       }
     </style>
 
-    <nx-operation id="operation" op="Repository.PageProvider" on-response="_onOpResponse"
-                  connectionId="[[connectionId]]"></nx-operation>
+    <nuxeo-operation id="operation" op="Repository.PageProvider" on-response="_onOpResponse"
+                  connectionId="[[connectionId]]"></nuxeo-operation>
 
   </template>
   <script>
     Polymer({
-      is: 'nx-page-provider',
+      is: 'nuxeo-page-provider',
       properties: {
 
-        /* The id of a nx-connection to use. */
+        /* The id of a nuxeo-connection to use. */
         connectionId: {
           type: String,
           value: ''

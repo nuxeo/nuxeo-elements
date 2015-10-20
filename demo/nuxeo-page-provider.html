@@ -22,8 +22,8 @@ Contributors:
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="../../font-roboto/roboto.html">
   <link rel="import" href="../../polymer/polymer.html">
-  <link rel="import" href="../../nuxeo-elements/nx-connection.html">
-  <link rel="import" href="../../nuxeo-elements/nx-page-provider.html">
+  <link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
+  <link rel="import" href="../../nuxeo-elements/nuxeo-page-provider.html">
 </head>
 <style>
 
@@ -64,9 +64,9 @@ Contributors:
 </head>
 <body>
 <template is="dom-bind">
-  <nx-connection id="nx" url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nx-connection>
-  <nx-page-provider auto pageSize="5" current-page="{{docs}}"
-                    query="[[query(docType)]]"></nx-page-provider>
+  <nuxeo-connection id="nx" url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
+  <nuxeo-page-provider auto pageSize="5" current-page="{{docs}}"
+                       query="[[query(docType)]]"></nuxeo-page-provider>
   <div class="container" class="layout vertical center">
 
     <select flex two value="{{docType::change}}">

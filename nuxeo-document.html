@@ -19,12 +19,12 @@ Contributors:
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="nx-resource.html">
+<link rel="import" href="nuxeo-resource.html">
 
 <!--
-`nx-document` allows managing Documents on a Nuxeo server.
+`nuxeo-document` allows managing Documents on a Nuxeo server.
 
-    <nx-document auto docPath="/default-domain"></nx-document>
+    <nuxeo-document auto docPath="/default-domain"></nuxeo-document>
 
 With `auto` set to `true`, the GET method is executed whenever
 its `docPath` or `docId` properties are changed.
@@ -33,31 +33,31 @@ You can trigger a method explicitly by calling `get`, `post`, `put` or `delete` 
 element.
 
 @group Nuxeo Elements
-@element nx-document
+@element nuxeo-document
 @homepage http://www.nuxeo.org
 -->
-<dom-module id="nx-document">
+<dom-module id="nuxeo-document">
   <template>
     <style>
       :host {
         display: none;
       }
     </style>
-    <nx-resource id="nxResource" connectionId="{{connectionId}}" method="{{method}}" auto="{{auto}}"
-                 path="{{path}}" data="{{data}}" enrichers="{{enrichers}}"
-                 params="{{params}}" headers="{{headers}}"
-                 type="{{type}}" response="{{response}}"></nx-resource>
+    <nuxeo-resource id="nxResource" connectionId="{{connectionId}}" method="{{method}}" auto="{{auto}}"
+                    path="{{path}}" data="{{data}}" enrichers="{{enrichers}}"
+                    params="{{params}}" headers="{{headers}}"
+                    type="{{type}}" response="{{response}}"></nuxeo-resource>
   </template>
 </dom-module>
 
 <script>
   Polymer({
-    is: 'nx-document',
+    is: 'nuxeo-document',
     properties: {
 
-      /**Inherited properties of nx-resource: TODO -> USE EXTENDS WHEN AVAILABLE**/
+      /**Inherited properties of nuxeo-resource: TODO -> USE EXTENDS WHEN AVAILABLE**/
 
-      /* The id of a nx-connection to use. */
+      /* The id of a nuxeo-connection to use. */
       connectionId: {type: String, value: ''},
 
       /* If true, automatically execute the operation when either `path` or `params` changes. */

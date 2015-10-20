@@ -16,18 +16,18 @@ Contributors:
 -->
 
 <!--
-`nx-file`
+`nuxeo-file`
 
-    <nx-file></nx-file>
+    <nuxeo-file></nuxeo-file>
 
 @group Nuxeo Widgets
-@element nx-file
+@element nuxeo-file
 @demo demo/nuxeo-widgets.html
 @homepage http://www.nuxeo.org
 -->
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
-<dom-module id="nx-file">
+<dom-module id="nuxeo-file">
 <template>
   <style>
   :host {
@@ -38,14 +38,14 @@ Contributors:
   }
   </style>
 
-  <nx-connection id="nx"></nx-connection>
+  <nuxeo-connection id="nx"></nuxeo-connection>
   <input id="input" type="file" on-change="_filesChanged">
   <iron-icon></iron-icon>
 
 </template>
 <script>
   Polymer({
-    is: 'nx-file',
+    is: 'nuxeo-file',
     properties: {
       value: {
         type: Object,

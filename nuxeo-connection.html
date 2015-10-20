@@ -21,21 +21,21 @@ Contributors:
 <script src="../es6-promise/promise.min.js"></script>
 
 <!--
-`nx-connection` wraps a `nuxeo.Client`.
+`nuxeo-connection` wraps a `nuxeo.Client`.
 
-    <nx-connection
+    <nuxeo-connection
         id="nx_connection"
         url="http://demo.nuxeo.com"
         username="Administrator"
-        password="Administrator"></nx-connection>
+        password="Administrator"></nuxeo-connection>
 
 Note: Elements that depend on a connectionId use `nx` as default.
 
 @group Nuxeo Elements
-@element nx-connection
+@element nuxeo-connection
 @homepage http://www.nuxeo.org
 -->
-<dom-module id="nx-connection">
+<dom-module id="nuxeo-connection">
     <template>
         <style>
             :host {
@@ -47,11 +47,11 @@ Note: Elements that depend on a connectionId use `nx` as default.
 <script>
     (function () {
         // A global map of clients with connectionId as key.
-        // This map is shared between all instances of nx-connection.
+        // This map is shared between all instances of nuxeo-connection.
         var nxClients = {};
 
         Polymer({
-            is: 'nx-connection',
+            is: 'nuxeo-connection',
             properties: {
                 /* A unique identifier for this connection. */
                 connectionId: {type: String, value: 'nx'},
