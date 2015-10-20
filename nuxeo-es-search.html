@@ -14,7 +14,7 @@ Lesser General Public License for more details.
 Contributors:
   Nelson Silva <nsilva@nuxeo.com>
 -->
-<link rel="import" href="../nuxeo-elements/nx-connection.html">
+<link rel="import" href="../nuxeo-elements/nuxeo-connection.html">
 <link rel="import" href="../iron-ajax/iron-request.html">
 
 <!--
@@ -34,7 +34,7 @@ Example:
     }
   </style>
   <template>
-    <nx-connection id="nx" connection-id="[[connectionId]]"></nx-connection>
+    <nuxeo-connection id="nx" connection-id="[[connectionId]]"></nuxeo-connection>
   </template>
 
   <script>
@@ -44,7 +44,7 @@ Example:
 
         properties: {
           /**
-           * The id of a nx-connection to use.
+           * The id of a nuxeo-connection to use.
            */
           connectionId: {
             type: String,
