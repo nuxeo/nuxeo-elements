@@ -56,7 +56,8 @@ Contributors:
 
   <h2>Document count</h2>
 
-  <nuxeo-repository-data metrics="cardinality(ecm:uuid)" data="{{totalCount}}">
+  <nuxeo-repository-data start-date="[[startDate]]" end-date="[[endDate]]"
+                         metrics="cardinality(ecm:uuid)" data="{{totalCount}}">
   </nuxeo-repository-data>
 
   <span>[[totalCount]]</span>
@@ -64,7 +65,8 @@ Contributors:
 
   <h2>Document count per type</h2>
 
-  <nuxeo-repository-data grouped-by="ecm:primaryType"
+  <nuxeo-repository-data start-date="[[startDate]]" end-date="[[endDate]]"
+                         grouped-by="ecm:primaryType"
                          data="{{typeCount}}">
   </nuxeo-repository-data>
 
@@ -83,8 +85,9 @@ Contributors:
 
   <h2>Top 10 creators</h2>
 
-  <nuxeo-repository-data grouped-by="dc:creator"
-                         limit="3"
+  <nuxeo-repository-data start-date="[[startDate]]" end-date="[[endDate]]"
+                         grouped-by="dc:creator"
+                         group-limit="3"
                          data="{{topCreators}}">
   </nuxeo-repository-data>
 
@@ -103,7 +106,8 @@ Contributors:
 
   <h2>Documents created per week</h2>
 
-  <nuxeo-repository-data with-date-intervals="week"
+  <nuxeo-repository-data start-date="[[startDate]]" end-date="[[endDate]]"
+                         with-date-intervals="week"
                          date-field="dc:created"
                          data="{{docsCreatedPerWeek}}">
   </nuxeo-repository-data>
@@ -123,7 +127,8 @@ Contributors:
 
   <h2>Documents modified per week</h2>
 
-  <nuxeo-repository-data with-date-intervals="week"
+  <nuxeo-repository-data start-date="[[startDate]]" end-date="[[endDate]]"
+                         with-date-intervals="week"
                          date-field="dc:modified"
                          data="{{docsModifiedPerWeek}}">
   </nuxeo-repository-data>

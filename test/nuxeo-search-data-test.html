@@ -205,10 +205,10 @@ Contributors:
             format: "yyyy-MM-dd",
             interval: "day",
             min_doc_count: 0,
-            //extended_bounds: {
-            //  min: "1980-01-01",
-            //  max: "1980-01-03"
-            //}
+            extended_bounds: {
+              min: "1980-01-01",
+              max: "1980-01-03"
+            }
           });
 
           return fakeResponse(search, {

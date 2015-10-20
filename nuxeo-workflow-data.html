@@ -15,7 +15,7 @@ Contributors:
   Nelson Silva <nsilva@nuxeo.com>
 -->
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="nuxeo-workflow-data-behavior.html">
+<link rel="import" href="nuxeo-aggregate-data-behavior.html">
 <!--
 An element providing metrics data on workflows.
 
@@ -71,7 +71,7 @@ If all the aggregation levels are configured it will produce a query like:
 
 @group Nuxeo Data Visualization Elements
 @element nuxeo-workflow-data
-@demo demo/index.html
+@demo demo/workflow.html
 -->
 <script>
 
@@ -79,97 +79,50 @@ If all the aggregation levels are configured it will produce a query like:
 
     is: 'nuxeo-workflow-data',
 
-    behaviors: [Nuxeo.WorkflowDataBehavior],
+    behaviors: [Nuxeo.AggregateDataBehavior],
 
     properties: {
 
+      index: {
+        type: String,
+        value: 'audit_wf'
+      },
+
       /**
-       * Top level term aggregation(s).
-       * Comma-separated values..
+       * the name of the event to filter by
        */
-      groupedBy: {
+      event: {
         type: String,
         value: ''
       },
 
       /**
-       * Limit number of buckets for the top level term aggregation.
+       * the workflow model name
        */
-      groupLimit: {
-        type: Number,
-        value: -1
-      },
+      workflow: String,
 
       /**
-       * An object with the field as key and an array of ranges to use in the nested range aggregation as value.
+       * the name of the task to filter by
        */
-      withRanges: {
-        type: Object,
-        value: function () { return {}; }
-      },
-
-      /**
-       * Interval to use for the nested date histogram aggregation
-       */
-      withDateIntervals: {
+      task: {
         type: String,
         value: ''
       },
 
       /**
-       * Date format to use as key in the date intervals aggregates
+       * Date field to use
        **/
-      dateFormat: {
+      dateField: {
         type: String,
-        value: 'yyyy-MM-dd'
-      },
-
-      /**
-       * The field to use in the single-value metrics aggregation.
-       * This can be just the field name or include the `metrics-op` to use as well, ex: `avg(field)`
-       */
-      metrics: {
-        type: String,
-        value: ''
-      },
-
-      /**
-       * The single-value metrics aggregation to use.
-       * Can be one of: `avg`, `min`, `max.
-       * It not set default is `count` which returns the `doc_count`
-       */
-      metricsOperator: {
-        type: String,
-        value: 'count'
-      },
-
-      startDate: {
-        type: String,
-        value: ''
-      },
-
-      endDate: {
-        type: String,
-        value: ''
+        value: 'eventDate'
       }
 
     },
 
     observers: [
-      '_doFetch(index, query, aggregates)',
       '_query(workflow, startDate, endDate)',
       '_aggregates(groupedBy, withRanges, withDateIntervals, metrics, metricsOperator, startDate, endDate)'
     ],
-
-    ready: function() {
-      // build our search request
-      this._query();
-      this._aggregates();
-    },
-
-    _doFetch: function() {
-      this.debounce('do-fetch', this.fetch.bind(this));
-    },
 
     _query: function() {
       var event = this.event || (this.task ? 'afterWorkflowTaskEnded' : 'afterWorkflowFinish');
@@ -182,144 +135,14 @@ If all the aggregation levels are configured it will produce a query like:
       if (this.task) {
         terms.push({term: { 'extended.taskName': this.task}});
       }
-      if (this.startDate || this.endDate) {
-        var range = {};
-        if (this.startDate) { range.gte = this.startDate; }
-        if (this.endDate) { range.lte = this.endDate; }
-        terms.push({range: {eventDate: range}});
+      if (this._dateRange) {
+        terms.push(this._dateRange);
       }
 
       this.query = {bool: {must: terms}};
     },
 
-    get _metricsAggregation() {
-      var parts = this.metrics.match(/[^\(\)]+/g);
-
-      if (!parts) return;
-
-      var metricsOn, metricsOp;
-      if (parts.length == 1) {
-        metricsOn = parts[0];
-        metricsOp = this.metricsOperator;
-      } else if (parts.length == 2) {
-        metricsOn = parts[1];
-        metricsOp = parts[0];
-      } else {
-        throw("Invalid 'metrics'");
-      }
-
-      var field = this._fieldFor(metricsOn) || this._fieldFor(this.aggregatedOn);
-
-      if (metricsOp === 'count') {
-        metricsOp = 'terms';
-      }
-
-      var agg = { metrics: {}};
-      agg.metrics[metricsOp] = {
-        field: field
-      };
-      return agg;
-    },
-
-    get _nestedAggregation() {
-      if (this.withDateIntervals) {
-        var histogram = {
-          field: "eventDate",
-          interval: this.withDateIntervals,
-          min_doc_count: 0,
-          format: this.dateFormat
-        };
-        if (this.startDate && this.endDate) {
-          histogram.extended_bounds = {
-            min: this.startDate,
-            max: this.endDate
-          };
-        } else {
-          console.warn('A start and end date should be set when using date aggregation');
-        }
-        return {
-          by: {
-            date_histogram: histogram
-          }
-        };
-      }
-
-      var key = Object.keys(this.withRanges)[0];
-      if (key) {
-        return {
-          by: {
-            range: {
-              field : this._fieldFor(key),
-              ranges : this.withRanges[key]
-            }
-          }
-        };
-      }
-
-    },
-
-    // return ordered list of top level term aggregations
-    get _topLevelAggregations() {
-      var aggs = this.groupedBy.split(',').map(function(term) {
-        return {
-          by: {
-            terms: {
-              field: this._fieldFor(term.trim())
-            }
-          }
-        };
-      }.bind(this));
-
-      // set max number of buckets to return
-      if (this.groupLimit && aggs.length) {
-        aggs[0].by.terms.size = this.groupLimit;
-      }
-
-      return aggs;
-    },
-
-    _aggregates: function () {
-
-      var levels = [];
-
-      if (this.groupedBy) { Array.prototype.push.apply(levels, this._topLevelAggregations); }
-      if (this.withDateIntervals || this.withRanges) { levels.push(this._nestedAggregation); }
-      if (this.metrics) { levels.push(this._metricsAggregation); }
-
-      var result = {},
-          current = result;
-      levels.forEach(function(level) {
-        if (level) {
-          var key = Object.keys(level)[0];
-          current.aggs = level;
-          current = level[key];
-        }
-      });
-
-      this.aggregates = result.aggs;
-    },
-
-    _onResults: function (result) {
-      this.data = this._unwrapAggregation(result.aggregations);
-    },
-
-    _unwrapAggregation: function (bucket) {
-      var key = bucket.key_as_string || bucket.key,
-          value;
-      if (bucket.by) {
-        value = bucket.by.buckets.map(this._unwrapAggregation.bind(this));
-      } else {
-        value = this._getMetricsValue(bucket);
-      }
-      return key ? {key: key, value: value} : value;
-    },
-
-    // unwrap out metrics value
-    _getMetricsValue: function(bucket) {
-      return bucket.metrics ? bucket.metrics.value : bucket.doc_count;
-    },
-
-    // Helper functions
+    // @override
     _fieldFor: function(column) {
       // TODO: limit 'exposed' fields to system field (ex: 'user', 'taskName', 'action', 'duration', etc) and 'workflowVariables.*'
       return 'extended.' + column;

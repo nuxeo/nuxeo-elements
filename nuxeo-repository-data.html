@@ -15,7 +15,7 @@ Contributors:
   Nelson Silva <nsilva@nuxeo.com>
 -->
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="nuxeo-workflow-data-behavior.html">
+<link rel="import" href="nuxeo-aggregate-data-behavior.html">
 <!--
 An element providing metrics on repository data.
 
@@ -67,7 +67,7 @@ The previous example would produce a query like:
 
     is: 'nuxeo-repository-data',
 
-    behaviors: [Nuxeo.WorkflowDataBehavior],
+    behaviors: [Nuxeo.AggregateDataBehavior],
 
     properties: {
 
@@ -77,12 +77,13 @@ The previous example would produce a query like:
       },
 
       /**
-       * Filter terms
-       */
-      where: {
-        type: Array,
-        value: function () { return []; }
+       * Date field to use
+       **/
+      dateField: {
+        type: String,
+        value: 'dc:created'
       },
+
 
       // Document property filter terms helpers
       /**
@@ -107,103 +108,14 @@ The previous example would produce a query like:
       ecmMixinType: {
         type: String,
         value: ''
-      },
-
-      /**
-       * Top level term aggregation(s).
-       * Comma-separated values..
-       */
-      groupedBy: {
-        type: String,
-        value: ''
-      },
-
-      /**
-       * Limit number of buckets for the top level term aggregation.
-       */
-      groupLimit: {
-        type: Number,
-        value: -1
-      },
-
-      /**
-       * An object with the field as key and an array of ranges to use in the nested range aggregation as value.
-       */
-      withRanges: {
-        type: Object,
-        value: function () { return {}; }
-      },
-
-      /**
-       * Interval to use for the nested date histogram aggregation
-       */
-      withDateIntervals: {
-        type: String,
-        value: ''
-      },
-
-      /**
-       * Date format to use as key in the date intervals aggregates
-       **/
-      dateField: {
-        type: String,
-        value: 'dc:created'
-      },
-
-      /**
-       * Date format to use as key in the date intervals aggregates
-       **/
-      dateFormat: {
-        type: String,
-        value: 'yyyy-MM-dd'
-      },
-
-      /**
-       * The field to use in the single-value metrics aggregation.
-       * This can be just the field name or include the `metrics-op` to use as well, ex: `avg(field)`
-       */
-      metrics: {
-        type: String,
-        value: ''
-      },
-
-      /**
-       * The single-value metrics aggregation to use.
-       * Can be one of: `avg`, `min`, `max.
-       * It not set default is `count` which returns the `doc_count`
-       */
-      metricsOperator: {
-        type: String,
-        value: 'count'
-      },
-
-      startDate: {
-        type: String,
-        value: ''
-      },
-
-      endDate: {
-        type: String,
-        value: ''
       }
 
     },
 
     observers: [
-      '_doFetch(index, query, aggregates)',
-      '_query(where, ecmPrimaryType, ecmLifecycleState, ecmMixinType, startDate, endDate)',
+      '_query(ecmPrimaryType, ecmLifecycleState, ecmMixinType, where, startDate, endDate)',
       '_aggregates(groupedBy, groupLimit, withRanges, withDateIntervals, metrics, metricsOperator, startDate, endDate)'
     ],
-
-    ready: function() {
-      // build our search request
-      this._query();
-      this._aggregates();
-    },
-
-    _doFetch: function() {
-      this.debounce('do-fetch', this.fetch.bind(this));
-    },
 
     _query: function () {
       // TODO: clone our query to allow setting it explicitly as well
@@ -227,150 +139,17 @@ The previous example would produce a query like:
       }
 
       // filter by date (dc:created by default)
-      if (this.startDate || this.endDate) {
-        var interval = {};
-        if (this.startDate) { interval.gte = this.startDate; }
-        if (this.endDate) { interval.lte = this.endDate; }
-        var range = {};
-        range[this.dateField] = interval;
-        terms.push({range: range});
+      if (this._dateRange) {
+        terms.push(this._dateRange);
       }
 
       this.query = query;
     },
 
-    get _metricsAggregation() {
-      var parts = this.metrics.match(/[^\(\)]+/g);
-
-      if (!parts) return;
-
-      var metricsOn, metricsOp;
-      if (parts.length == 1) {
-        metricsOn = parts[0];
-        metricsOp = this.metricsOperator;
-      } else if (parts.length == 2) {
-        metricsOn = parts[1];
-        metricsOp = parts[0];
-      } else {
-        throw("Invalid 'metrics'");
-      }
-
-      var field = metricsOn || this.aggregatedOn;
-
-      if (metricsOp === 'count') {
-        metricsOp = 'terms';
-      }
-
-      var agg = { metrics: {}};
-      agg.metrics[metricsOp] = {
-        field: field
-        // TODO: add min_doc_count: 0 for term aggregation
-      };
-      return agg;
-    },
-
-    get _nestedAggregation() {
-      if (this.withDateIntervals) {
-        var histogram = {
-          field: this.dateField,
-          interval: this.withDateIntervals,
-          min_doc_count: 0,
-          format: this.dateFormat
-        };
-        if (this.startDate && this.endDate) {
-          histogram.extended_bounds = {
-            min: this.startDate,
-            max: this.endDate
-          };
-        } else {
-          console.warn('A start and end date should be set when using date aggregation');
-        }
-        return {
-          by: {
-            date_histogram: histogram
-          }
-        };
-      }
-
-      var key = Object.keys(this.withRanges)[0];
-      if (key) {
-        return {
-          by: {
-            range: {
-              field : key,
-              ranges : this.withRanges[key]
-            }
-          }
-        };
-      }
-
-    },
-
-    // return ordered list of top level term aggregations
-    get _topLevelAggregations() {
-      var aggs = this.groupedBy.split(',').map(function(term) {
-        return {
-          by: {
-            terms: {
-              field: term.trim()
-            }
-          }
-        };
-      }.bind(this));
-
-      // set max number of buckets to return
-      if (this.groupLimit != -1 && aggs.length) {
-        aggs[0].by.terms.size = this.groupLimit;
-      }
-
-      return aggs;
-    },
-
-    _aggregates: function () {
-
-      var levels = [];
-
-      if (this.groupedBy) { Array.prototype.push.apply(levels, this._topLevelAggregations); }
-      if (this.withDateIntervals || this.withRanges) { levels.push(this._nestedAggregation); }
-      if (this.metrics) { levels.push(this._metricsAggregation); }
-
-      var result = {},
-          current = result;
-      levels.forEach(function(level) {
-        if (level) {
-          var key = Object.keys(level)[0];
-          current.aggs = level;
-          current = level[key];
-        }
-      });
-
-      this.aggregates = result.aggs;
-    },
-
-    _onResults: function (result) {
-      this.data = this._unwrapAggregation(result.aggregations);
-    },
-
-    _unwrapAggregation: function (bucket) {
-      var key = bucket.key_as_string || bucket.key,
-          value;
-      if (bucket.by) {
-        value = bucket.by.buckets.map(this._unwrapAggregation.bind(this));
-      } else {
-        value = this._getMetricsValue(bucket);
-      }
-      return key ? {key: key, value: value} : value;
-    },
-
-    // unwrap out metrics value
-    _getMetricsValue: function(bucket) {
-      return bucket.metrics ? bucket.metrics.value : bucket.doc_count;
-    },
-
     _splitTerms: function(terms) {
-      if (!terms) return;
-      var arr = terms.split(',').map(function(t) { return t.trim(); });
-      return arr;
+      if (terms) {
+        return terms.split(',').map(function (t) { return t.trim(); });
+      }
     }
   });
 
