@@ -100,8 +100,14 @@ Example:
           if (this.type) { url += '?search_type=' + this.type; }
 
           // add auth headers
-          var headers = {'Content-Type': 'application/json'};
-          this.$.nx.client._computeAuthentication(headers);
+          var auth = {'Content-Type': 'application/json'};
+          this.$.nx.client._computeAuthentication(auth);
+
+          // Normalize headers in lower case
+          var headers = {};
+          for (var header in auth) {
+            headers[header.toLowerCase()] = auth[header].toString();
+          }
 
           return document.createElement('iron-request')
               .send({
