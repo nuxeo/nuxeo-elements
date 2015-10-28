@@ -38,7 +38,8 @@ Contributors:
     properties: {
 
       value: {
-        notify: true
+        notify: true,
+        observer: 'valueChanged'
       },
 
       multiple: {
@@ -167,7 +168,7 @@ Contributors:
 
     valueChanged: function (newValue) {
       if (this._el) {
-        jQuery(this._el).select2('data', newValue);
+        jQuery(this._el).select2('val', newValue);
       }
     },
 
