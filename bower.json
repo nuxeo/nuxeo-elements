@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^1.1.4",
-    "nuxeo-elements": "nuxeo/nuxeo-elements#0.2.0"
+    "nuxeo-elements": "nuxeo/nuxeo-elements#^0.2.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#1.0.5",
