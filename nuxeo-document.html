@@ -124,9 +124,9 @@ element.
 
     computePath: function(docId, docPath) {
       var path = '';
-      if (docId !== undefined && docId !== null) {
+      if (docId) {
         path = '/id/' + docId;
-      } else if (docPath !== undefined && docPath !== null) {
+      } else if (docPath) {
         path = '/path/' + docPath;
       }
       return path;
