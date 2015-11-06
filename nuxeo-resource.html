@@ -55,6 +55,9 @@ element.
       /* The id of a nuxeo-connection to use. */
       connectionId: {type: String, value: ''},
 
+      /* The success connection status */
+      success: {type: Boolean, notify: true},
+
       /* If true, automatically execute the operation when either `path` or `params` changes. */
       auto: {type: Boolean, value: false},
 
@@ -148,15 +151,19 @@ element.
                 if (error) {
                   this.fire('error', error);
                   reject(Error(error));
+                  this.success = false;
                   return;
                 }
-
                 this.fire('response', {response: data});
                 this.response = data;
                 resolve(this.response);
+                this.success = true;
             }.bind(this));
           }.bind(this));
-        }.bind(this));
+        }.bind(this))
+        .catch(function(reason){
+          console.log("Nuxeo connection refused: " + reason);
+        });
     }
 
   });

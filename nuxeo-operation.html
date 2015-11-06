@@ -57,6 +57,9 @@ element.
               value: ''
             },
 
+            /* The success connection status */
+            success: {type: Boolean, notify: true},
+
             /* The id the operation to call. */
             op: {
               type: String,
@@ -120,6 +123,7 @@ element.
                       if (error) {
                         this.fire('error', error);
                         reject(Error(error));
+                        this.success = false;
                         return;
                       }
 
@@ -128,9 +132,13 @@ element.
                       });
                       this.response = data;
                       resolve(this.response);
+                      this.success = true;
                     }.bind(this));
                 }.bind(this));
-              }.bind(this));
+              }.bind(this))
+              .catch(function(reason){
+                console.log("Nuxeo connection refused: " + reason);
+              });
           },
 
           _autoExecute: function() {
