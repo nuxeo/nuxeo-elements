@@ -22,9 +22,10 @@ Contributors:
 `nuxeo-page-provider` wraps a `Repository.PageProvider` operation to provide paginated results for a given `query`.
 
     <nuxeo-page-provider auto
-        query="select from Document"
-        pageSize="5"
-        sort="dc:modified"></nuxeo-page-provider>
+                         query="select * from Document"
+                         page-size="5"
+                         sort="dc:modified">
+    </nuxeo-page-provider>
 
 With `auto` set to `true`, results are fetched whenever
 the `query`, `params`, `page` or `pageSize` properties are changed.
@@ -45,8 +46,11 @@ element.
       }
     </style>
 
-    <nuxeo-operation id="operation" op="Repository.PageProvider" on-response="_onOpResponse"
-                  connectionId="[[connectionId]]"></nuxeo-operation>
+    <nuxeo-operation id="operation"
+                     op="Repository.PageProvider"
+                     on-response="_onOpResponse"
+                     connection-id="[[connectionId]]">
+    </nuxeo-operation>
 
   </template>
   <script>
