@@ -1,0 +1,143 @@
+<!--
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the GNU Lesser General Public License
+(LGPL) version 2.1 which accompanies this distribution, and is available at
+http://www.gnu.org/licenses/lgpl.html
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+Contributors:
+  Nelson Silva <nsilva@nuxeo.com>
+  Joshua Fletcher <jfletcher@nuxeo.com>
+  Andre Justo <ajusto@nuxeo.com>
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="nuxeo-aggregate-data-behavior.html">
+<!--
+An element providing data from the audit index.
+
+The possible values for `event-id` are available as contributions to the `event` extension point of the `org.nuxeo.ecm.platform.audit.service.NXAuditEventsService` service.
+
+A query supports additional terms:
+
+- `where`: array of additional terms for the `must` clause
+
+A query is a configurable nested aggregation with 2 aggregation levels:
+
+- `grouped-by`: top level term aggregations (comma-separated values)
+- `metrics`: leaf single-value metrics aggregation (max, min, avg, sum)
+
+Example:
+
+    <nuxeo-audit-data event-id="eventId"
+                      where='[{"term": {"downloadReason": "download"}},{"term": {"blobXPath": "blobholder:0"}}]'
+                      grouped-by="field"
+                      group-limit=[[groupLimit]]
+                      metrics="sum(amount)"
+                      start-date="[[startDate]]"
+                      end-date="[[endDate]]"
+                      data="{{data}}">
+    </nuxeo-audit-data>
+
+If all the aggregation levels are configured it will produce a query like:
+
+    {
+      query: { bool: { must: [...] },
+      aggs: {
+        by: { // aggregated-on
+          terms: {
+            field: "extended.action"
+          },
+          aggs: {
+            by: {  // with-ranges | with-date-intervals
+              range : {
+                field : "extended.duration",
+                ranges: [...]
+              },
+              aggs: {
+                metric: { // metric
+                  sum: {
+                    field : "extended.workflowVariables.amount"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+@group Nuxeo Data Visualization Elements
+@element nuxeo-audit-data
+@demo demo/audit.html
+-->
+<script>
+  Polymer({
+
+    is: 'nuxeo-audit-data',
+
+    behaviors: [Nuxeo.AggregateDataBehavior],
+
+    properties: {
+
+      /**
+       * the name of the index
+       */
+      index: {
+        type: String,
+        value: 'audit'
+      },
+
+      /**
+       * the name of the event to filter by
+       */
+      eventId: {
+        type: String,
+        value: ''
+      },
+
+      /**
+       * Date field to use
+       **/
+      // @override
+      dateField: {
+        type: String,
+        value: 'eventDate'
+      }
+
+    },
+
+    observers: [
+      '_query(eventId, where, startDate, endDate)',
+      '_aggregates(groupedBy, withRanges, withDateIntervals, metrics, metricsOperator, startDate, endDate)'
+    ],
+
+    _query: function () {
+      var eventId = this.eventId;
+
+      var terms = [
+        {
+          term: {
+            "eventId": eventId
+          }
+        }
+      ];
+
+      if (this._dateRange) {
+        terms.push(this._dateRange);
+      }
+
+      this.query = {
+        bool: {
+          must: terms
+        }
+      };
+    }
+
+  });
+</script>
