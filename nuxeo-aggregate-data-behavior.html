@@ -193,8 +193,17 @@ Contributors:
         metricsOp = 'terms';
       }
 
-      var agg = { metrics: {}};
-      agg.metrics[metricsOp] = {
+      var agg = {},
+          metrics;
+
+      // make the count/terms work as a regular aggregation
+      if (metricsOp == 'terms') {
+        metrics = agg.by = {};
+      } else {
+        metrics = agg.metrics = {};
+      }
+
+      metrics[metricsOp] = {
         field: field
       };
       return agg;
