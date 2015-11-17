@@ -47,8 +47,8 @@ Contributors:
        * Filter terms
        */
       where: {
-        type: Array,
-        value: function () { return []; }
+        type: Object,
+        value: function () { return {}; }
       },
 
 
@@ -340,6 +340,21 @@ Contributors:
 
     _fieldFor: function(column) {
       return column;
+    },
+
+    _buildTerms: function(terms) {
+      if (Array.isArray(this.where)) {
+        this.where.forEach(function(term) {
+          terms.push(term);
+        });
+      } else {
+        Object.keys(this.where).forEach(function(key) {
+          var term = {};
+          term[key] = this.where[key];
+          terms.push({term : term});
+        }, this);
+      }
+      return {bool: {must: terms}};
     }
   };
 </script>

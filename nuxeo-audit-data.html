@@ -118,25 +118,15 @@ If all the aggregation levels are configured it will produce a query like:
     ],
 
     _query: function () {
-      var eventId = this.eventId;
-
       var terms = [
-        {
-          term: {
-            "eventId": eventId
-          }
-        }
+        {term: {"eventId": this.eventId}}
       ];
 
       if (this._dateRange) {
         terms.push(this._dateRange);
       }
 
-      this.query = {
-        bool: {
-          must: terms
-        }
-      };
+      this.query = this._buildTerms(terms);
     }
 
   });

@@ -119,13 +119,7 @@ The previous example would produce a query like:
 
     _query: function () {
       // TODO: clone our query to allow setting it explicitly as well
-      var query = {};
-      if (!query.bool) { query.bool = {}; }
-      if (!query.bool.must) { query.bool.must = []; }
-      var terms = query.bool.must;
-
-      // push our terms
-      this.where.forEach(function(term) { terms.push(term); });
+      var terms = [];
 
       // push document properties terms
       if (this.ecmPrimaryType) {
@@ -143,7 +137,7 @@ The previous example would produce a query like:
         terms.push(this._dateRange);
       }
 
-      this.query = query;
+      this.query = this._buildTerms(terms);
     },
 
     _splitTerms: function(terms) {

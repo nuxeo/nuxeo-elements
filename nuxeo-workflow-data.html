@@ -139,7 +139,7 @@ If all the aggregation levels are configured it will produce a query like:
         terms.push(this._dateRange);
       }
 
-      this.query = {bool: {must: terms}};
+      this.query = this._buildTerms(terms);
     },
 
     // @override
