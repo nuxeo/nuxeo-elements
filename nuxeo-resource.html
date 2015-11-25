@@ -55,8 +55,11 @@ element.
       /* The id of a nuxeo-connection to use. */
       connectionId: {type: String, value: ''},
 
-      /* The success connection status */
+      /* The success response status */
       success: {type: Boolean, notify: true},
+
+      /* The error response status */
+      error: {type: String, notify: true},
 
       /* If true, automatically execute the operation when either `path` or `params` changes. */
       auto: {type: Boolean, value: false},
@@ -152,6 +155,7 @@ element.
                   this.fire('error', error);
                   reject(Error(error));
                   this.success = false;
+                  this.error = error;
                   return;
                 }
                 this.fire('response', {response: data});
