@@ -68,7 +68,8 @@ Polymer({
     this.$.op.params = {
       directoryName: this.directoryName,
       dbl10n: this.dbl10n,
-      localize : true
+      localize : true,
+      searchTerm: query.term
     };
     this.$.op.execute().then(function(response) {
       query.callback({ results: response });
