@@ -107,6 +107,20 @@ Contributors:
     },
 
     _initSelection: function(element, callback) {
+      if (!this.multiple) {
+        return callback({
+          id: this.value,
+          displayLabel: this.value
+        });
+      }
+      return callback(
+        this.value.map(function(entry) {
+          return {
+            id: entry,
+            displayLabel: entry
+          };
+        })
+      );
     },
 
     _initSelect2: function (el) {
@@ -115,7 +129,7 @@ Contributors:
       var params = {
         minimumInputLength: this.minChars,
         separator: this.separator,
-        width: 300,
+        width: "100%",
         // Formatters
 
         id: this.idFunction,
@@ -150,7 +164,7 @@ Contributors:
       }
 
       // init select2
-      jQuery(el).select2(params);
+      jQuery(el).val(this.value).select2(params);
 
       jQuery(el).on('change', this._updateSelection.bind(this));
 
