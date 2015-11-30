@@ -13,6 +13,10 @@ Then, go ahead and download the element's dependencies:
 
     bower install
 
+## Reference nuxeo-elements in your Bower dependencies
+
+    bower install -S nuxeo/nuxeo-elements
+
 ## Quickstart
 
 We recommend that you use [Polyserve](https://github.com/PolymerLabs/polyserve) which you can install via:
