@@ -138,7 +138,7 @@ element.
       options.headers.accept = 'text/plain,application/json';
       // Look up content enrichers parameter
       if (this.enrichers) {
-        options.headers['X-NXenrichers.' + this.enrichersEntity] = this.enrichers;
+        options.headers['enrichers-' + this.enrichersEntity] = this.enrichers;
       }
 
       var params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
