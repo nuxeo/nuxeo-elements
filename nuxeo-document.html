@@ -105,17 +105,17 @@ element.
 
     post: function () {
       this.method = 'post';
-      return this._execute();
+      return this.execute();
     },
 
     put: function () {
       this.method = 'put';
-      return this._execute();
+      return this.execute();
     },
 
     remove: function () {
       this.method = 'delete';
-      return this._execute();
+      return this.execute();
     },
 
     execute: function() {
