@@ -90,7 +90,10 @@ element.
       enrichers: {type: String, value: ''},
 
       /* The `content enricher` entity-type of the resource. Default value for Nuxeo Document Model*/
-      enrichersEntity: {type: String, value: 'document'}
+      enrichersEntity: {type: String, value: 'document'},
+
+      /* The `content type` of the request */
+      contentType: {type: String, value: 'application/json'}
     },
 
     observers: [
@@ -136,6 +139,8 @@ element.
       options.headers = (!this.headers || (typeof this.headers === 'object')) ? {} : JSON.parse(this.headers);
       // add support for plain text responses by default
       options.headers.accept = 'text/plain,application/json';
+      // set default content-type
+      options.headers['Content-Type'] = this.contentType;
       // Look up content enrichers parameter
       if (this.enrichers) {
         options.headers['enrichers-' + this.enrichersEntity] = this.enrichers;
