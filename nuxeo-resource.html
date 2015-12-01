@@ -118,7 +118,7 @@ element.
     },
 
     _autoGet: function () {
-      if (this.auto) {
+      if (this.auto && this.path) {
         this.get();
       }
     },
