@@ -40,7 +40,7 @@ Once running, you can checkout the docs and demo at `http://localhost:3000/compo
 
 We are glad to welcome new developers on this initiative, and even simple usage feedback is great.
 - Ask your questions on [Nuxeo Answers](http://answers.nuxeo.com)
-- Report issues on our [JIRA](https://jira.nuxeo.com/browse)
+- Report issues on our [JIRA](https://jira.nuxeo.com/browse/ELEMENTS)
 - Contribute: Send pull requests!
 
 ##About Nuxeo
