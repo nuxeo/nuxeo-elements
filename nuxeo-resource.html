@@ -144,6 +144,8 @@ element.
       // Look up content enrichers parameter
       if (this.enrichers) {
         options.headers['enrichers-' + this.enrichersEntity] = this.enrichers;
+        // NXP-18425: send also header with dot separator for compat with < 7.10-HF01
+        options.headers['X-NXenrichers.' + this.enrichersEntity] = this.enrichers;
       }
 
       var params = this.params || {};
