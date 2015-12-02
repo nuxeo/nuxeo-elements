@@ -136,7 +136,7 @@ element.
       }
 
       // Look up headers parameter
-      options.headers = (!this.headers || (typeof this.headers === 'object')) ? {} : JSON.parse(this.headers);
+      options.headers = this.headers || {};
       // add support for plain text responses by default
       options.headers.accept = 'text/plain,application/json';
       // set default content-type
@@ -146,7 +146,7 @@ element.
         options.headers['enrichers-' + this.enrichersEntity] = this.enrichers;
       }
 
-      var params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
+      var params = this.params || {};
 
       return this.$.nx.connect()
         .then(function () {
