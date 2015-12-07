@@ -171,9 +171,9 @@ element.
                 this.success = true;
             }.bind(this));
           }.bind(this));
-        }.bind(this))
-        .catch(function(reason){
+        }.bind(this), function(reason) {
           console.log("Nuxeo connection refused: " + reason);
+          throw reason;
         });
     }
 
