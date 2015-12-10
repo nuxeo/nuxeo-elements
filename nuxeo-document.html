@@ -43,7 +43,7 @@ element.
         display: none;
       }
     </style>
-    <nuxeo-resource id="nxResource" connectionId="{{connectionId}}" method="{{method}}" auto="{{auto}}"
+    <nuxeo-resource id="nxResource" connection-id="{{connectionId}}" method="{{method}}" auto="{{auto}}"
                     path="{{path}}" data="{{data}}" enrichers="{{enrichers}}"
                     params="{{params}}" headers="{{headers}}"
                     type="{{type}}" response="{{response}}"></nuxeo-resource>
@@ -119,7 +119,7 @@ element.
     },
 
     execute: function() {
-      this.$.nxResource.execute();
+      return this.$.nxResource.execute();
     },
 
     computePath: function(docId, docPath) {
