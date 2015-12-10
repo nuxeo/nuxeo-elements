@@ -88,13 +88,18 @@ Note: Elements that depend on a connectionId use `nx` as default.
                         if (this.client._baseURL === this.url &&
                             this.client._username === this.username &&
                             this.client._password === this.password) {
-                            resolve(this);
-                            return;
+                            // if client is already connected resolve it
+                            if (this.client.connected) {
+                                resolve(this);
+                                return;
+                            }
+                        } else {
+                          // otherwise override the client with the new properties
+                          this.client = null;
                         }
-                        // otherwise override the client with the new properties
                     }
 
-                    nxClients[id] = this.client = new nuxeo.Client({
+                    nxClients[id] = this.client = this.client || new nuxeo.Client({
                         baseURL: this.url,
                         auth: {
                             username: this.username,
@@ -106,9 +111,10 @@ Note: Elements that depend on a connectionId use `nx` as default.
                     this.client.connect(function (error, client) {
                         if (error) {
                             this.fire('error', {error: error});
-                            reject(error);
+                            reject(Error(error));
+                        } else {
+                            resolve(this);
                         }
-                        resolve(this);
                     }.bind(this));
                 }.bind(this));
             },
