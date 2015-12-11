@@ -13,13 +13,14 @@ Lesser General Public License for more details.
 
 Contributors:
   Nelson Silva <nsilva@nuxeo.com>
+  Andre Justo <ajusto@nuxeo.com>
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="nuxeo-operation.html">
+<link rel="import" href="nuxeo-resource.html">
 
 <!--
-`nuxeo-page-provider` wraps a `Repository.PageProvider` operation to provide paginated results for a given `query`.
+`nuxeo-page-provider` performs queries on the repository and provides paginated results.
 
     <nuxeo-page-provider auto
                          query="select * from Document"
@@ -27,8 +28,13 @@ Contributors:
                          sort="dc:modified">
     </nuxeo-page-provider>
 
+    <nuxeo-page-provider auto
+                         provider="default_search"
+                         page-size="25">
+    </nuxeo-page-provider>
+
 With `auto` set to `true`, results are fetched whenever
-the `query`, `params`, `page` or `pageSize` properties are changed.
+the `provider`, `query`, `params`, `page` or `pageSize` properties are changed.
 
 You can fetch results explicitly by calling `fetch` on the
 element.
@@ -46,11 +52,12 @@ element.
       }
     </style>
 
-    <nuxeo-operation id="operation"
-                     op="Repository.PageProvider"
-                     on-response="_onOpResponse"
-                     connection-id="[[connectionId]]">
-    </nuxeo-operation>
+    <nuxeo-resource id="nxResource"
+                    connection-id="[[connectionId]]"
+                    path="{{path}}"
+                    enrichers="{{enrichers}}"
+                    on-response="_onResponse">
+    </nuxeo-resource>
 
   </template>
   <script>
@@ -65,7 +72,7 @@ element.
         },
 
         /**
-         * If true, automatically execute the operation when either `op` or `params` changes.
+         * If true, automatically execute the operation when either `provider` or `params` changes.
          */
         auto: {
           type: Boolean,
@@ -83,14 +90,22 @@ element.
         /**
          * The query.
          */
-        query: String,
+        query: {
+          type: String,
+          value: ''
+        },
+
+        path: {
+          type: String,
+          computed: 'computePath(provider, query)'
+        },
 
         /**
          * The query parameters.
          */
         params: {
-          type: Array,
-          value: []
+          type: Object,
+          value: {}
         },
 
         /**
@@ -135,6 +150,17 @@ element.
         resultsCount: {
           type: Number,
           notify: true
+        },
+
+        aggregations: {
+          type: Object,
+          value: {},
+          notify: true
+        },
+
+        enrichers: {
+          type: String,
+          value: ''
         }
       },
 
@@ -142,27 +168,32 @@ element.
         '_autoFetch(provider, query, params, pageSize, page, sort)'
       ],
 
-      ready: function () {
-        this.currentPage = [];
-        this._autoFetch();
-      },
-
       /**
-       * Executes the operation to fetch the currentPage.
+       * Fetch the currentPage.
        *
        * @method fetch
        */
-      fetch: function () {
-        this.$.operation.params = {
-          page: this.page - 1,
+      fetch: function() {
+        var params = {
+          currentPageIndex: this.page - 1,
           pageSize: this.pageSize,
-          providerName: this.ref,
-          query: this.query,
-          queryParams: this.params,
           sortBy: this._sortKeys.join(","),
           sortOrder: this._sortValues.join(",")
         };
-        this.$.operation.execute();
+
+        if (this.query) {
+          params.query = this.query;
+        }
+
+        if (Array.isArray(this.params)) {
+          params.queryParams = this.params.join(",");
+        } else {
+          Object.keys(this.params).forEach(function(key) {
+             params[key] = JSON.stringify(this.params[key]);
+          }, this);
+        }
+        this.$.nxResource.params = params;
+        this.$.nxResource.execute();
       },
 
       get _sortKeys() {
@@ -175,7 +206,7 @@ element.
 
       _autoFetch: function () {
         // Reset the page if the query changes
-        if (this.$.operation.params && (this.query !== this.$.operation.params.query)) {
+        if (this.$.nxResource.params && (this.query !== this.$.nxResource.params.query)) {
           this.page = 1;
         }
         if (this.auto && (this.query || this.provider)) {
@@ -183,14 +214,24 @@ element.
         }
       },
 
-      _onOpResponse: function (e, detail) {
+      _onResponse: function (e, detail) {
         var response = detail.response;
         this.currentPage = response.entries.slice(0);
         this.numberOfPages = response.numberOfPages;
         this.resultsCount = response.resultsCount;
+        this.aggregations = response.aggregations;
         this.fire('update');
-      }
+      },
 
+      computePath: function(provider, query) {
+        var path = '';
+        if (query) {
+          path = '/query';
+        } else if (provider) {
+          path = '/query/' + provider;
+        }
+        return path;
+      }
     });
   </script>
 
