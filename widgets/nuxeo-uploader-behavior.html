@@ -1,0 +1,178 @@
+<!--
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the GNU Lesser General Public License
+(LGPL) version 2.1 which accompanies this distribution, and is available at
+http://www.gnu.org/licenses/lgpl.html
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+Contributors:
+  Nelson Silva <nsilva@nuxeo.com>
+-->
+<script>
+  var Nuxeo = Nuxeo || {};
+
+  /**
+   * @polymerBehavior Nuxeo.UploaderBehavior
+   */
+  Nuxeo.UploaderBehavior = {
+
+    properties: {
+      /**
+       * Accepted file extensions or mime types (comma separated values).
+       */
+      accept: String,
+
+      /**
+       * This flag determines whether the file should be immediately uploaded or not.
+       */
+      immediate: {
+        type: Boolean,
+        value: true
+      },
+
+      /**
+       * Current batch id.
+       */
+      batchId: String,
+
+      /**
+       * List of files in the current batch.
+       */
+      files: {
+        type: Array,
+        value: []
+      },
+
+      /**
+       * Flag that indicates if an upload is in progress.
+       */
+      uploading: {
+        type: Boolean,
+        value: false
+      }
+    },
+
+    setupDropZone: function(el) {
+      this._dropZone = el;
+      this._dropZone.addEventListener('dragover', this._dragover.bind(this));
+      this._dropZone.addEventListener('dragleave', this._dragleave.bind(this));
+      this._dropZone.addEventListener('drop', this._drop.bind(this));
+    },
+
+    uploadFiles: function(files) {
+      if (!this.connection) {
+        throw "Missing connection";
+      }
+      return this.connection.connect()
+        .then(function() {
+          this.files = [];
+          this._newBatch();
+          for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            file.progress = 0;
+            file.error = false;
+            file.complete = false;
+            this.push("files", file);
+            this.uploader.uploadFile(file, {});
+          }
+        }.bind(this));
+    },
+
+    batchExecute: function(operationId, params) {
+        this.uploader._operationId = operationId;
+        this.uploader._automationParams = params;
+        return new Promise(function (resolve, reject) {
+          this.uploader.execute(params, function (error, data) {
+            if (error) {
+              this.fire('error', error);
+              reject(Error(error));
+              return;
+            }
+            this.fire('response', {response: data});
+            this.response = data;
+            resolve(this.response);
+          }.bind(this));
+        }.bind(this));
+    },
+
+    _newBatch: function() {
+      var client = this.connection.client;
+      var options = {
+        url: client._restURL,
+        directUpload: this.immediate,
+        batchStartedCallback: this._batchStarted.bind(this),
+        batchFinishedCallback: this._batchFinished.bind(this),
+        uploadStartedCallback: this._uploadStarted.bind(this),
+        uploadFinishedCallback: this._uploadFinished.bind(this),
+        uploadProgressUpdatedCallback: this._uploadProgressUpdated.bind(this),
+        uploadSpeedUpdatedCallback: this._uploadSpeedUpdated.bind(this)
+      };
+      this.uploader = client.uploader(options);
+    },
+
+    _accepts: function(file) {
+      var mimeType = ((file.type !== '') ? file.type.match(/^[^\/]*\//)[0] : null);
+      var fileType = file.name.match(/\.[^\.]*$/)[0];
+      if (this.accept && !(this.accept.indexOf(mimeType) > -1 || this.accept.indexOf(fileType) > -1)) {
+        return;
+      }
+    },
+
+    _updateFile: function(index, values) {
+      Object.keys(values).forEach(function (k) {
+        this.set(['files', index, k].join('.'), values[k]);
+      }.bind(this));
+    },
+
+    // JS client callbacks
+    _batchStarted: function(batchId) {
+      this.batchId = batchId;
+    },
+
+    _batchFinished: function(batchId) {
+      this.uploading = false;
+      this.fire("batchFinished", {batchId: batchId});
+    },
+
+    _uploadStarted: function(fileIndex, file) {
+      this.uploading = true;
+    },
+
+    _uploadFinished: function(index, file, time) {
+      this._updateFile(index, {
+        progress: 100,
+        complete: true
+      });
+    },
+
+    _uploadProgressUpdated: function(index, file, progress) {
+      this._updateFile(index, {progress: progress}); // in percentage
+    },
+
+    _uploadSpeedUpdated: function(index, file, speed) {
+      this._updateFile(index, {speed: speed}); // in KB/sec
+    },
+
+    // DnD
+    _dragover: function(e) {
+      e.preventDefault();
+      this.toggleClass("hover", true, this._dropZone);
+    },
+
+    _dragleave: function() {
+      this.toggleClass("hover", false, this._dropZone);
+    },
+
+    _drop: function(e) {
+      this.toggleClass("hover", false, this._dropZone);
+      e.preventDefault();
+      this.uploadFiles(e.dataTransfer.files);
+    }
+  };
+</script>
