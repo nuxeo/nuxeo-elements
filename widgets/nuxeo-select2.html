@@ -1,0 +1,75 @@
+<!--
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the GNU Lesser General Public License
+(LGPL) version 2.1 which accompanies this distribution, and is available at
+http://www.gnu.org/licenses/lgpl.html
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+Contributors:
+  Andre Justo <ajusto@nuxeo.com>
+-->
+<link rel="import" href="nuxeo-select2-behavior.html">
+<link rel="import" href="../nuxeo-operation.html">
+
+<!--
+`nuxeo-select2`
+@group Nuxeo Widgets
+@element nuxeo-select2
+-->
+
+<dom-module id="nuxeo-select2">
+ <template>
+   <style>
+     :host {
+       display: block;
+     }
+   </style>
+
+   <nuxeo-operation id="op" op="[[operation]]"></nuxeo-operation>
+
+   <input type="hidden" id="select2">
+
+ </template>
+ <script>
+   (function() {
+     'use strict';
+
+     Polymer({
+       is: 'nuxeo-select2',
+       behaviors: [Nuxeo.Select2Behavior],
+
+       properties: {
+
+        operation: String,
+
+        params: {
+          type: Object
+        }
+       },
+
+       ready: function() {
+         this._initSelect2(this.$.select2);
+       },
+
+      // Implements abstract Nuxeo.Select2 methods
+      _query: function(query) {
+        var params = this.params || {};
+        params.searchTerm = query.term;
+        this.$.op.params = params;
+
+        this.$.op.execute().then(function(response) {
+          query.callback({
+            results: Array.isArray(response.entries) ? response.entries : response
+          });
+        });
+      }
+     });
+   })();
+ </script>
+</dom-module>

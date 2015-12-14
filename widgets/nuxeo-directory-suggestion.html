@@ -13,7 +13,9 @@ Lesser General Public License for more details.
 
 Contributors:
   Nelson Silva <nsilva@nuxeo.com>
+  Andre Justo <ajusto@nuxeo.com>
 -->
+<link rel="import" href="nuxeo-select2.html">
 
 <!--
 `nuxeo-directory-suggestion`
@@ -25,22 +27,23 @@ Contributors:
 @demo demo/nuxeo-widgets.html
 @homepage http://www.nuxeo.org
 -->
-<link rel="import" href="nuxeo-select2-behavior.html">
-<link rel="import" href="../nuxeo-operation.html">
 <dom-module id="nuxeo-directory-suggestion">
 <template>
-
-  <nuxeo-operation id="op" op="Directory.SuggestEntries"></nuxeo-operation>
+  <nuxeo-select2 operation="Directory.SuggestEntries"
+                 min-chars="[[minChars]]"
+                 multiple="[[multiple]]"
+                 params="[[params]]"
+                 placeholder="[[placeholder]]"
+                 read-only="[[readOnly]]"
+                 value="{{value}}">
+  </nuxeo-select2>
 
   <template is="dom-if" if="[[label]]"><span>[[label]]</span> : </template>
-
-  <input id="select2" type="hidden">
 
 </template>
 <script>
 Polymer({
   is: 'nuxeo-directory-suggestion',
-  behaviors: [Nuxeo.Select2],
   properties: {
 
     /**
@@ -55,25 +58,44 @@ Polymer({
      * in the directory itself (i.e. in fields). Otherwise labels are translated as usual
      * picking values in messages*.properties files.
      */
-    dbl10n: {type: Boolean, value: false}
+    dbl10n: {type: Boolean, value: false},
 
+    label: String,
+
+    params: {
+      type: Object,
+      computed: 'computeParams(directoryName, dbl10n)'
+    },
+
+    value: {
+      type: String,
+      notify: true
+    },
+
+    multiple: {
+      type: Boolean,
+      value: false
+    },
+
+    readOnly: {
+      type: Boolean,
+      value: false
+    },
+
+    minChars: {
+      type: Number,
+      value: 3
+    },
+
+    placeholder: String
   },
 
-  ready: function() {
-    this._initSelect2(this.$.select2);
-  },
-
-  // Implements abstract Nuxeo.Select2 methods
-  _query: function(query) {
-    this.$.op.params = {
+  computeParams: function() {
+    return this.params = {
       directoryName: this.directoryName,
       dbl10n: this.dbl10n,
-      localize : true,
-      searchTerm: query.term
+      localize : true
     };
-    this.$.op.execute().then(function(response) {
-      query.callback({ results: response });
-    });
   }
 
 });

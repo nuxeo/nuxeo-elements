@@ -13,7 +13,9 @@ Lesser General Public License for more details.
 
 Contributors:
   Nelson Silva <nsilva@nuxeo.com>
+  Andre Justo <ajusto@nuxeo.com>
 -->
+<link rel="import" href="nuxeo-select2.html">
 
 <!--
 `nuxeo-user-suggestion`
@@ -25,47 +27,65 @@ Contributors:
 @demo demo/nuxeo-widgets.html
 @homepage http://www.nuxeo.org
 -->
-<link rel="import" href="nuxeo-select2-behavior.html">
-<link rel="import" href="../nuxeo-operation.html">
 <dom-module id="nuxeo-user-suggestion">
 <template>
-
-  <nuxeo-operation id="op" op="UserGroup.Suggestion"></nuxeo-operation>
+  <nuxeo-select2 operation="UserGroup.Suggestion"
+                 min-chars="[[minChars]]"
+                 multiple="[[multiple]]"
+                 params="[[params]]"
+                 placeholder="[[placeholder]]"
+                 read-only="[[readOnly]]"
+                 value="{{value}}">
+  </nuxeo-select2>
 
   <template is="dom-if" if="[[label]]"><span>[[label]]</span> : </template>
-
-  <input id="select2" type="hidden">
 
 </template>
 <script>
 Polymer({
   is: 'nuxeo-user-suggestion',
-  behaviors: [Nuxeo.Select2],
   properties: {
 
     // USER_TYPE or GROUP_TYPE or USER_GROUP_TYPE
     searchType: {
       type: String,
       value: 'USER_GROUP_TYPE'
-    }
+    },
 
+    label: String,
+
+    params: {
+      type: Object,
+      computed: 'computeParams(searchType)'
+    },
+
+    value: {
+      type: String,
+      notify: true
+    },
+
+    multiple: {
+      type: Boolean,
+      value: false
+    },
+
+    readOnly: {
+      type: Boolean,
+      value: false
+    },
+
+    minChars: {
+      type: Number,
+      value: 3
+    },
+
+    placeholder: String
   },
 
-  ready: function() {
-    this._initSelect2(this.$.select2);
-  },
-
-  // Implements abstract Nuxeo.Select2 methods
-  _query: function(query) {
-    this.$.op.params = {
-      documentSchemas: this.schemas,
-      repository: this.repository,
-      searchTerm: query.term,
+  computeParams: function() {
+    return this.params = {
       searchType: this.searchType
     };
-    this.$.op.execute().then(function(response) {
-      query.callback({ results: response });
-    });
   }
 
 });

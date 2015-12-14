@@ -13,7 +13,9 @@ Lesser General Public License for more details.
 
 Contributors:
   Nelson Silva <nsilva@nuxeo.com>
+  Andre Justo <ajusto@nuxeo.com>
 -->
+<link rel="import" href="nuxeo-select2.html">
 
 <!--
 `nuxeo-document-suggestion`
@@ -25,26 +27,24 @@ Contributors:
 @demo demo/nuxeo-widgets.html
 @homepage http://www.nuxeo.org
 -->
-<link rel="import" href="nuxeo-select2-behavior.html">
-<link rel="import" href="../nuxeo-operation.html">
 <dom-module id="nuxeo-document-suggestion">
 <template>
-
-  <nuxeo-operation id="op" op="Repository.PageProvider"></nuxeo-operation>
+  <nuxeo-select2 operation="Repository.PageProvider"
+                 min-chars="[[minChars]]"
+                 multiple="[[multiple]]"
+                 params="[[params]]"
+                 placeholder="[[placeholder]]"
+                 read-only="[[readOnly]]"
+                 value="{{value}}">
+  </nuxeo-select2>
 
   <template is="dom-if" if="[[label]]"><span>[[label]]</span> : </template>
-
-  <input id="select2" type="hidden">
 
 </template>
 <script>
 Polymer({
   is: 'nuxeo-document-suggestion',
-  behaviors: [Nuxeo.Select2],
   properties: {
-
-    // one of these must be used to fetch entries
-    query: String,
 
     pageProvider: {
       type: String,
@@ -61,28 +61,45 @@ Polymer({
       value: 'default'
     },
 
-    labelProperty: String
+    label: String,
 
+    params: {
+      type: Object,
+      computed: 'computeParams(pageProvider, schemas, repository)'
+    },
+
+    value: {
+      type: String,
+      notify: true
+    },
+
+    multiple: {
+      type: Boolean,
+      value: false
+    },
+
+    readOnly: {
+      type: Boolean,
+      value: false
+    },
+
+    minChars: {
+      type: Number,
+      value: 3
+    },
+
+    placeholder: String
   },
 
-  ready: function() {
-    this._initSelect2(this.$.select2);
-  },
-
-  // Implements abstract Nuxeo.Select2 methods
-  _query: function(query) {
-    this.$.op.params = {
+  computeParams: function() {
+    return this.params = {
       documentSchemas: this.schemas,
       repository: this.repository,
-      searchTerm: query.term + '%',
-      query: this.query,
       providerName: this.pageProvider,
+      pageProviderName: this.pageProvider,
       page: 0,
       pageSize: 20
     };
-    this.$.op.execute().then(function(response) {
-      query.callback({ results: response.entries });
-    });
   }
 
 });
