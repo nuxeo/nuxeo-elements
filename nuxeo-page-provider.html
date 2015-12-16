@@ -206,7 +206,10 @@ element.
 
       _autoFetch: function () {
         // Reset the page if the query changes
-        if (this.$.nxResource.params && (this.query !== this.$.nxResource.params.query)) {
+        if (this.$.nxResource.params
+            && this.query
+            && this.query.length === 0
+            && (this.query !== this.$.nxResource.params.query)) {
           this.page = 1;
         }
         if (this.auto && (this.query || this.provider)) {
