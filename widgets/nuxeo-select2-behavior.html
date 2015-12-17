@@ -177,7 +177,11 @@ Contributors:
 
     _updateSelection: function (e) {
       var value = e.target.value;
-      this.value = (!this.multiple) ? value : value.split(this.separator);
+      if (!this.multiple) {
+        this.value = value;
+      } else {
+        this.value = value.length > 0 ? value.split(this.separator) : [];
+      }
     },
 
     valueChanged: function (newValue) {
