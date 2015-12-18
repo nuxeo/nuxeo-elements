@@ -90,6 +90,11 @@ Contributors:
         value: function () {
           return this._initSelection.bind(this);
         }
+      },
+
+      data: {
+        type: Object,
+        observer: 'dataChanged'
       }
 
     },
@@ -124,6 +129,10 @@ Contributors:
     },
 
     _initSelect2: function (el) {
+      if (this._el) {
+        jQuery(el).off('change');
+        jQuery(el).select2('destroy');
+      }
       this._el = el;
 
       var params = {
@@ -135,22 +144,13 @@ Contributors:
         id: this.idFunction,
 
         formatSelection: this.selectionFormatter,
-        formatResult: this.resultFormatter,
         // TODO: use templates for formatting, ie:
         // var selectionTemplate = Polymer.dom(this).querySelector('.selection');
         // this.templatize(template);
         // var instance = this.stamp({username: 'Administrator'});
         // return instance.root.textContent;
 
-        initSelection: this.initSelection,
-
-        // Query
-        query: function (query) {
-          // debounce requests
-          this.debounce('_select2Query', function () {
-            this._query(query);
-          }.bind(this), 300);
-        }.bind(this)
+        initSelection: this.initSelection
       };
 
       if (this.multiple) {
@@ -161,6 +161,18 @@ Contributors:
       if (this.placeholder && !this.readonly) {
         params.placeholder = this.placeholder;
         params.allowClear = !this.required;
+      }
+
+      if (this.data) {
+        params.data = this.data;
+      } else {
+        params.formatResult = this.resultFormatter;
+        params.query = function (query) {
+          // debounce requests
+          this.debounce('_select2Query', function () {
+            this._query(query);
+          }.bind(this), 300);
+        }.bind(this);
       }
 
       // init select2
@@ -188,6 +200,10 @@ Contributors:
       if (this._el) {
         jQuery(this._el).select2('val', newValue);
       }
+    },
+
+    dataChanged: function() {
+      this._initSelect2(this._el);
     },
 
     // Extension points for sub-classes
