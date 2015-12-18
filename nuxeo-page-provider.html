@@ -80,6 +80,14 @@ element.
         },
 
         /**
+         * The delay in milliseconds to debounce the auto fetch call when provider, params, etc. changes.
+         */
+        autoDelay: {
+          type: Number,
+          value: 100
+        },
+
+        /**
          * The id of a page provider.
          */
         provider: {
@@ -213,7 +221,10 @@ element.
           this.page = 1;
         }
         if (this.auto && (this.query || this.provider)) {
-          this.fetch();
+          // debounce in case of multiple param changes
+          this.debounce('_autoFetch', function() {
+            this.fetch();
+          }.bind(this), this.autoDelay);
         }
       },
 
