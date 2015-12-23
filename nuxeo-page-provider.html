@@ -197,7 +197,9 @@ element.
           params.queryParams = this.params.join(",");
         } else {
           Object.keys(this.params).forEach(function(key) {
-             params[key] = JSON.stringify(this.params[key]);
+            if (typeof this.params[key] !== "string") {
+              params[key] = JSON.stringify(this.params[key]);
+            }
           }, this);
         }
         this.$.nxResource.params = params;
