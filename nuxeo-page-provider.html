@@ -197,7 +197,9 @@ element.
           params.queryParams = this.params.join(",");
         } else {
           Object.keys(this.params).forEach(function(key) {
-            if (typeof this.params[key] !== "string") {
+            if (typeof this.params[key] === "string") {
+              params[key] = this.params[key];
+            } else {
               params[key] = JSON.stringify(this.params[key]);
             }
           }, this);
