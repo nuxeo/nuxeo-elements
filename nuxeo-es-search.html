@@ -135,8 +135,8 @@ Example:
 
         _handleResponse: function(request) {
           var response = request.response;
-          this.aggregations = response.aggregations;
-          this.hits = response.hits;
+          this._setHits(response.hits);
+          this._setAggregations(response.aggregations);
           this.fire('results', response);
           return response;
         }
