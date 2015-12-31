@@ -205,7 +205,7 @@ element.
           }, this);
         }
         this.$.nxResource.params = params;
-        this.$.nxResource.execute();
+        return this.$.nxResource.execute();
       },
 
       get _sortKeys() {
