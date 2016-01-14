@@ -166,6 +166,11 @@ element.
           notify: true
         },
 
+        isNextPageAvailable: {
+          type: Boolean,
+          value: false
+        },
+
         enrichers: {
           type: String,
           value: ''
@@ -238,6 +243,7 @@ element.
         this.numberOfPages = response.numberOfPages;
         this.resultsCount = response.resultsCount;
         this.aggregations = response.aggregations;
+        this.isNextPageAvailable = response.isNextPageAvailable;
         this.fire('update');
       },
 
