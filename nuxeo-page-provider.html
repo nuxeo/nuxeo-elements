@@ -168,7 +168,13 @@ element.
 
         isNextPageAvailable: {
           type: Boolean,
-          value: false
+          value: false,
+          notify: true
+        },
+
+        currentPageSize: {
+          type: Number,
+          notify: true
         },
 
         enrichers: {
@@ -244,6 +250,7 @@ element.
         this.resultsCount = response.resultsCount;
         this.aggregations = response.aggregations;
         this.isNextPageAvailable = response.isNextPageAvailable;
+        this.currentPageSize = response.currentPageSize;
         this.fire('update');
       },
 
