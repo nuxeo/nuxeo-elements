@@ -1,0 +1,25 @@
+{
+  "name": "nuxeo-ui-elements",
+  "authors": [
+    "Nelson Silva <nsilva@nuxeo.com>"
+  ],
+  "description": "Nuxeo UI Web Components.",
+  "keywords": [
+    "nuxeo",
+    "web-component",
+    "polymer"
+  ],
+  "license": "Apache 2.0",
+  "homepage": "https://github.com/nuxeo/nuxeo-ui-elements/",
+  "ignore": [
+    "/.*",
+    "/test/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.1.0",
+    "videojs": "~5.5.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0"
+  }
+}
