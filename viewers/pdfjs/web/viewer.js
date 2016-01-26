@@ -7365,7 +7365,7 @@ function webViewerInitialized() {
   }
 
   if (file) {
-    PDFViewerApplication.open(file);
+    PDFViewerApplication.open(file, {withCredentials: true});
   }
 }
 
