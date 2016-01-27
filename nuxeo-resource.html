@@ -159,7 +159,9 @@ element.
               .query(params)
               .execute(options, function (error, data) {
                 if (error) {
-                  this.fire('error', error);
+                  // 'error' event is reserved in firefox
+                  // https://github.com/webcomponents/webcomponentsjs/issues/138
+                  this.fire('request-error', error);
                   reject(Error(error));
                   this.success = false;
                   this.error = error;

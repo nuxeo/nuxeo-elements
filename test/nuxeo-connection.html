@@ -27,12 +27,22 @@ Contributors:
 <body>
 <test-fixture id="nxc-ok">
   <template>
-    <nuxeo-connection id="nxc-ok" connection-id="nxc-ok"></nuxeo-connection>
+    <nuxeo-connection connection-id="nxc-ok"></nuxeo-connection>
   </template>
 </test-fixture>
 <test-fixture id="nxc-ko">
   <template>
-    <nuxeo-connection id="nxc-ko" connection-id="nxc-ko"></nuxeo-connection>
+    <nuxeo-connection connection-id="nxc-ko"></nuxeo-connection>
+  </template>
+</test-fixture>
+<test-fixture id="nxc">
+  <template>
+    <nuxeo-connection></nuxeo-connection>
+  </template>
+</test-fixture>
+<test-fixture id="nxc-dup">
+  <template>
+    <nuxeo-connection></nuxeo-connection>
   </template>
 </test-fixture>
 <script>
@@ -105,8 +115,6 @@ Contributors:
         );
       });
 
-      // This test fails on firefox due to the 'error' event fired in component
-      // https://github.com/webcomponents/webcomponentsjs/issues/138
       test('should not run the next', function() {
         var connection = fixture('nxc-ko');
         return timePasses(10).then(function() {
@@ -124,6 +132,45 @@ Contributors:
         });
       });
 
+    });
+
+    suite('when using multiple connections', function() {
+
+      setup(function() {
+        server.respondWith(
+          'POST',
+          'site/api/v1/automation/login',
+          [
+            200,
+            responseHeaders.json,
+            '{"success":true,"entity-type":"login"}'
+          ]
+        );
+      });
+
+      test('first connection should succeed', function() {
+        var connection = fixture('nxc');
+        return timePasses(10).then(function() {
+          // Ensure only one request as done so far
+          expect(server.requests.length).to.be.equal(1);
+          // Test if component succeeded to log in
+          expect(connection.connected).to.be.equal(true);
+          // Return current connection
+          return connection.connect();
+        })
+      });
+
+      test('similar connections should not issue requests', function() {
+        var connection = fixture('nxc-dup');
+        return timePasses(10).then(function() {
+          // Ensure only one request as done
+          expect(server.requests.length).to.be.equal(0);
+          // Test if component succeeded to log in
+          expect(connection.connected).to.be.equal(true);
+          // Return current connection
+          return connection.connect();
+        })
+      });
     });
 
   });
