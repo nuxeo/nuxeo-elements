@@ -17,8 +17,7 @@ Contributors:
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="jquery-import.html">
-<script src="../nuxeo/lib/jquery/nuxeo.js"></script>
-<script src="../es6-promise/promise.min.js"></script>
+<script src="../nuxeo/dist/nuxeo.js"></script>
 
 <!--
 `nuxeo-connection` wraps a `nuxeo.Client`.
@@ -82,7 +81,6 @@ Note: Elements that depend on a connectionId use `nx` as default.
                         this.username = this.client._username;
                         this.password = this.client._password;
                     }
-
                     // if properties match the existing client use it
                     if (this.client._baseURL === this.url &&
                         this.client._username === this.username &&
@@ -94,29 +92,19 @@ Note: Elements that depend on a connectionId use `nx` as default.
                         this.client = null;
                     }
                 }
-
-                nxClients[id] = this.client = this.client || new nuxeo.Client({
+                nxClients[id] = this.client = this.client || new Nuxeo({
                     baseURL: this.url,
                     auth: {
                         username: this.username,
                         password: this.password
                     },
-                    schemas: '*'
+                    schemas: ['*']
                 });
-
-                // store the connection request promise
-                return this.client._promise = new Promise(function (resolve, reject) {
-                    this.client.connect(function (error, client) {
-                        if (error) {
-                            // 'error' event is reserved in firefox
-                            // https://github.com/webcomponents/webcomponentsjs/issues/138
-                            this.fire('connection-error', {error: error});
-                            reject(Error(error));
-                        } else {
-                            resolve(this);
-                        }
-                    }.bind(this));
-                }.bind(this));
+                return this.client._promise = this.client.login()
+                  .catch(function(error) {
+                    console.log("Nuxeo connection refused: " + error);
+                    throw error;
+                  });
             },
 
             get connected() {

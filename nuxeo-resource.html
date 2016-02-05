@@ -37,7 +37,6 @@ element.
 -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="nuxeo-connection.html">
-<script src="../es6-promise/promise.min.js"></script>
 <dom-module id="nuxeo-resource">
   <template>
     <style>
@@ -120,12 +119,6 @@ element.
       return this.execute();
     },
 
-    _autoGet: function () {
-      if (this.auto && this.path) {
-        this.get();
-      }
-    },
-
     execute: function () {
       var options = {
         method: this.method || 'get',
@@ -149,34 +142,36 @@ element.
       }
 
       var params = this.params || {};
-
       return this.$.nx.connect()
-        .then(function () {
-          return new Promise(function (resolve, reject) {
-            return this.$.nx.client
-              .request(this.path)
-              .repositoryName(undefined)
-              .query(params)
-              .execute(options, function (error, data) {
-                if (error) {
-                  // 'error' event is reserved in firefox
-                  // https://github.com/webcomponents/webcomponentsjs/issues/138
-                  this.fire('request-error', error);
-                  reject(Error(error));
-                  this.success = false;
-                  this.error = error;
-                  return;
-                }
-                this.fire('response', {response: data});
-                this.response = data;
-                resolve(this.response);
-                this.success = true;
-            }.bind(this));
-          }.bind(this));
-        }.bind(this), function(reason) {
-          console.log("Nuxeo connection refused: " + reason);
-          throw reason;
-        });
+        .then(function() {
+          return this._doExecute(params, options);
+        }.bind(this));
+    },
+
+    _autoGet: function () {
+      if (this.auto && this.path) {
+        this.get();
+      }
+    },
+
+    _doExecute: function(params, options) {
+      return this.$.nx.client
+        .request(this.path)
+        .queryParams(params)
+        .repositoryName(undefined)
+        .execute(options)
+        .then(function(data) {
+          this.fire('response', {response: data});
+          this.response = data;
+          this.success = true;
+          return this.response;
+        }.bind(this))
+        .catch(function(error) {
+          this.success = false;
+          this.error = error;
+          console.log("Resource request failed: " + error);
+          throw error;
+        }.bind(this));
     }
 
   });

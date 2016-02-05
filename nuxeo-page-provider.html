@@ -55,8 +55,7 @@ element.
     <nuxeo-resource id="nxResource"
                     connection-id="[[connectionId]]"
                     path="{{path}}"
-                    enrichers="{{enrichers}}"
-                    on-response="_onResponse">
+                    enrichers="{{enrichers}}">
     </nuxeo-resource>
 
   </template>
@@ -216,7 +215,16 @@ element.
           }, this);
         }
         this.$.nxResource.params = params;
-        return this.$.nxResource.execute();
+        return this.$.nxResource.execute()
+          .then(function(response) {
+            this.currentPage = response.entries.slice(0);
+            this.numberOfPages = response.numberOfPages;
+            this.resultsCount = response.resultsCount;
+            this.aggregations = response.aggregations;
+            this.isNextPageAvailable = response.isNextPageAvailable;
+            this.currentPageSize = response.currentPageSize;
+            this.fire('update');
+          }.bind(this));
       },
 
       get _sortKeys() {
@@ -241,17 +249,6 @@ element.
             this.fetch();
           }.bind(this), this.autoDelay);
         }
-      },
-
-      _onResponse: function (e, detail) {
-        var response = detail.response;
-        this.currentPage = response.entries.slice(0);
-        this.numberOfPages = response.numberOfPages;
-        this.resultsCount = response.resultsCount;
-        this.aggregations = response.aggregations;
-        this.isNextPageAvailable = response.isNextPageAvailable;
-        this.currentPageSize = response.currentPageSize;
-        this.fire('update');
       },
 
       computePath: function(provider, query) {
