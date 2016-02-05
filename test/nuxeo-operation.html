@@ -22,6 +22,9 @@ Contributors:
   <script src="../../es6-promise/promise.min.js"></script>
   <script src="../../jquery/dist/jquery.min.js"></script>
   <link rel="import" href="../../polymer/polymer.html">
+  <script>
+    window.fetch = null;
+  </script>
   <link rel="import" href="../nuxeo-operation.html">
 </head>
 <body>
@@ -66,11 +69,20 @@ Contributors:
       setup(function() {
         server.respondWith(
           'POST',
-          'site/api/v1/automation/login',
+          '/api/v1/automation/login',
           [
             200,
             responseHeaders.json,
-            '{"success":true,"entity-type":"login"}'
+            '{"entity-type":"login","username":"Administrator"}'
+          ]
+        );
+        server.respondWith(
+          'GET',
+          '/api/v1/repo/default/user/Administrator?',
+          [
+            200,
+            responseHeaders.json,
+            '{"entity-type":"user","username":"Administrator"}'
           ]
         );
       });
@@ -78,7 +90,7 @@ Contributors:
       test('should retrieve something valid', function() {
         server.respondWith(
           'POST',
-          'site/api/v1/automation/something',
+          '/api/v1/automation/something',
           [
             200,
             responseHeaders.json,
@@ -97,7 +109,7 @@ Contributors:
       test('shouldn\'t retrieve something invalid', function() {
         server.respondWith(
           'POST',
-          'site/api/v1/automation/something',
+          '/api/v1/automation/something',
           [
             500,
             responseHeaders.json,
@@ -108,7 +120,7 @@ Contributors:
         var operation = fixture('nxc-ok');
         return operation.execute().then(function() {
           throw new Error('Expected to an invalid response!');
-        }, function(error) {
+        }).catch(function(error) {
           expect(error).to.be.instanceof(Error);
           expect(error.message).to.be.eq('Internal Server Error');
         });
@@ -121,7 +133,7 @@ Contributors:
       setup(function() {
         server.respondWith(
           'POST',
-          'site/api/v1/automation/login',
+          '/api/v1/automation/login',
           [
             401,
             responseHeaders.json,
@@ -133,7 +145,7 @@ Contributors:
       test('should\'t retrieve something valid', function() {
         server.respondWith(
           'POST',
-          'site/api/v1/automation/something',
+          '/api/v1/automation/something',
           [
             200,
             responseHeaders.json,
@@ -144,7 +156,7 @@ Contributors:
         var operation = fixture('nxc-ko');
         return operation.execute().then(function() {
           throw new Error('Expected to fail the login!');
-        }, function(error) {
+        }).catch(function(error) {
           expect(error).to.be.instanceof(Error);
           expect(error.message).to.be.eq('Unauthorized');
         });
@@ -153,7 +165,7 @@ Contributors:
       test('should\'t retrieve something invalid', function() {
         server.respondWith(
           'POST',
-          'site/api/v1/automation/something',
+          '/api/v1/automation/something',
           [
             500,
             responseHeaders.json,
@@ -164,7 +176,7 @@ Contributors:
         var operation = fixture('nxc-ko');
         return operation.execute().then(function() {
           throw new Error('Expected to fail the login!');
-        }, function(error) {
+        }).catch(function(error) {
           expect(error).to.be.instanceof(Error);
           expect(error.message).to.be.eq('Unauthorized');
         });

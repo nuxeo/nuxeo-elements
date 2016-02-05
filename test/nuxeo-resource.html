@@ -19,9 +19,11 @@ Contributors:
   <meta charset="utf-8">
   <script src="../../webcomponentsjs/webcomponents.min.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
-  <script src="../../es6-promise/promise.min.js"></script>
   <script src="../../jquery/dist/jquery.min.js"></script>
   <link rel="import" href="../../polymer/polymer.html">
+  <script>
+    window.fetch = null;
+  </script>
   <link rel="import" href="../nuxeo-resource.html">
 </head>
 <body>
@@ -58,11 +60,20 @@ Contributors:
       setup(function() {
         server.respondWith(
           'POST',
-          'site/api/v1/automation/login',
+          '/api/v1/automation/login',
           [
             200,
             responseHeaders.json,
-            '{"success":true,"entity-type":"login"}'
+            '{"entity-type":"login","username":"Administrator"}'
+          ]
+        );
+        server.respondWith(
+          'GET',
+          '/api/v1/repo/default/user/Administrator?',
+          [
+            200,
+            responseHeaders.json,
+            '{"entity-type":"user","username":"Administrator"}'
           ]
         );
       });
@@ -70,7 +81,7 @@ Contributors:
       test('should retrieve something valid', function() {
         server.respondWith(
           'GET',
-          'site/api/v1/something',
+          '/api/v1/something?',
           [
             200,
             responseHeaders.json,
@@ -86,25 +97,25 @@ Contributors:
 
       // This test fails on firefox due to the 'error' event fired in component
       // https://github.com/webcomponents/webcomponentsjs/issues/138
-      test('shouldn\'t retrieve something invalid', function() {
-        server.respondWith(
-          'GET',
-          'site/api/v1/something',
-          [
-            500,
-            responseHeaders.json,
-            '{"error":"Internal Error"}'
-          ]
-        );
+       test('shouldn\'t retrieve something invalid', function() {
+         server.respondWith(
+           'GET',
+           '/api/v1/something?',
+           [
+             500,
+             responseHeaders.json,
+             '{"error":"Internal Error"}'
+           ]
+         );
 
-        var resource = fixture('nxc-ok');
-        return resource.get().then(function() {
-          throw new Error('Expected to an invalid response!');
-        }, function(error) {
-          expect(error).to.be.instanceof(Error);
-          expect(error.message).to.be.eq('Internal Server Error');
-        });
-      });
+         var resource = fixture('nxc-ok');
+         return resource.get().then(function() {
+           throw new Error('Expected to an invalid response!');
+         }).catch(function(error) {
+           expect(error).to.be.instanceof(Error);
+           expect(error.message).to.be.eq('Internal Server Error');
+         });
+       });
 
     });
 
@@ -113,7 +124,7 @@ Contributors:
       setup(function() {
         server.respondWith(
           'POST',
-          'site/api/v1/automation/login',
+          '/api/v1/automation/login',
           [
             401,
             responseHeaders.json,
@@ -125,7 +136,7 @@ Contributors:
       test('should\'t retrieve something valid', function() {
         server.respondWith(
           'GET',
-          'site/api/v1/something',
+          '/api/v1/something?',
           [
             200,
             responseHeaders.json,
@@ -136,7 +147,7 @@ Contributors:
         var resource = fixture('nxc-ko');
         return resource.get().then(function() {
           throw new Error('Expected to fail the login!');
-        }, function(error) {
+        }).catch(function(error) {
           expect(error).to.be.instanceof(Error);
           expect(error.message).to.be.eq('Unauthorized');
         });
@@ -145,7 +156,7 @@ Contributors:
       test('should\'t retrieve something invalid', function() {
         server.respondWith(
           'GET',
-          'site/api/v1/something',
+          '/api/v1/something?',
           [
             500,
             responseHeaders.json,
@@ -156,7 +167,7 @@ Contributors:
         var resource = fixture('nxc-ko');
         return resource.get().then(function() {
           throw new Error('Expected to fail the login!');
-        }, function(error) {
+        }).catch(function(error) {
           expect(error).to.be.instanceof(Error);
           expect(error.message).to.be.eq('Unauthorized');
         });
