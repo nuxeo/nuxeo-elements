@@ -67,53 +67,54 @@ Contributors:
 
     uploadFiles: function(files) {
       if (!this.connection) {
-        throw "Missing connection";
+        throw 'Missing connection';
       }
-      return this.connection.connect()
-        .then(function() {
-          this.files = [];
-          this._newBatch();
-          for (var i = 0; i < files.length; i++) {
-            var file = files[i];
-            file.progress = 0;
-            file.error = false;
-            file.complete = false;
-            this.push("files", file);
-            this.uploader.uploadFile(file, {});
-          }
+      this.files = [];
+      this._newBatch().then(function() {
+        for (var i = 0; i < files.length; i++) {
+          var file = files[i];
+          file.progress = 0;
+          file.error = false;
+          file.complete = false;
+          this.push('files', file);
+          var blob = new Nuxeo.Blob({ content: file });
+          this._uploadStarted(i, file);
+          this.uploader.upload(blob)
+            .then(function(result) {
+              this._uploadFinished(result.blob.fileIdx);
+            }.bind(this));
+        }
+        this.uploader.done().then(function(result) {
+          this._batchFinished(result.batch._batchId);
         }.bind(this));
+      }.bind(this));
     },
 
     batchExecute: function(operationId, params) {
-        this.uploader._operationId = operationId;
-        this.uploader._automationParams = params;
-        return new Promise(function (resolve, reject) {
-          this.uploader.execute(params, function (error, data) {
-            if (error) {
-              this.fire('error', error);
-              reject(Error(error));
-              return;
-            }
+      return this.$.nx.operation(operationId).then(function(operation) {
+        if (params.context) {
+          operation = operation.context(params.context);
+        }
+        return operation.input(this.uploader)
+          .params(params)
+          .execute()
+          .then(function(data) {
             this.fire('response', {response: data});
             this.response = data;
-            resolve(this.response);
+            return this.response;
+          }.bind(this))
+          .catch(function(error) {
+            this.fire('error', error);
+            console.log('Batch Execute operation failed: ' + error);
+            throw error;
           }.bind(this));
-        }.bind(this));
+      }.bind(this));
     },
 
     _newBatch: function() {
-      var client = this.connection.client;
-      var options = {
-        url: client._restURL,
-        directUpload: this.immediate,
-        batchStartedCallback: this._batchStarted.bind(this),
-        batchFinishedCallback: this._batchFinished.bind(this),
-        uploadStartedCallback: this._uploadStarted.bind(this),
-        uploadFinishedCallback: this._uploadFinished.bind(this),
-        uploadProgressUpdatedCallback: this._uploadProgressUpdated.bind(this),
-        uploadSpeedUpdatedCallback: this._uploadSpeedUpdated.bind(this)
-      };
-      this.uploader = client.uploader(options);
+      return this.$.nx.batchUpload().then(function(uploader) {
+        this.uploader = uploader;
+      }.bind(this));
     },
 
     _accepts: function(file) {
@@ -130,21 +131,17 @@ Contributors:
       }.bind(this));
     },
 
-    // JS client callbacks
-    _batchStarted: function(batchId) {
-      this.batchId = batchId;
-    },
-
     _batchFinished: function(batchId) {
       this.uploading = false;
-      this.fire("batchFinished", {batchId: batchId});
+      this.batchId = batchId;
+      this.fire('batchFinished', {batchId: batchId});
     },
 
     _uploadStarted: function(fileIndex, file) {
       this.uploading = true;
     },
 
-    _uploadFinished: function(index, file, time) {
+    _uploadFinished: function(index) {
       this._updateFile(index, {
         progress: 100,
         complete: true
@@ -162,15 +159,15 @@ Contributors:
     // DnD
     _dragover: function(e) {
       e.preventDefault();
-      this.toggleClass("hover", true, this._dropZone);
+      this.toggleClass('hover', true, this._dropZone);
     },
 
     _dragleave: function() {
-      this.toggleClass("hover", false, this._dropZone);
+      this.toggleClass('hover', false, this._dropZone);
     },
 
     _drop: function(e) {
-      this.toggleClass("hover", false, this._dropZone);
+      this.toggleClass('hover', false, this._dropZone);
       e.preventDefault();
       this.uploadFiles(e.dataTransfer.files);
     }
