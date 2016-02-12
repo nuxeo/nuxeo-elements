@@ -125,7 +125,7 @@ element.
       };
 
       if (this.data) {
-        options.data = this.data;
+        options.body = this.data;
       }
 
       // Look up headers parameter
@@ -142,10 +142,10 @@ element.
       }
 
       var params = this.params || {};
-      return this.$.nx.connect()
-        .then(function() {
-          return this._doExecute(params, options);
-        }.bind(this));
+      return this.$.nx.request().then(function(request) {
+        this._request = request;
+        return this._doExecute(params, options);
+      }.bind(this));
     },
 
     _autoGet: function () {
@@ -155,8 +155,8 @@ element.
     },
 
     _doExecute: function(params, options) {
-      return this.$.nx.client
-        .request(this.path)
+      return this._request
+        .path(this.path)
         .queryParams(params)
         .repositoryName(undefined)
         .execute(options)

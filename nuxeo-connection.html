@@ -115,8 +115,25 @@ Note: Elements that depend on a connectionId use `nx` as default.
                 if (this.client.connected) {
                     this.fire('connected');
                 }
-            }
+            },
 
+            request: function() {
+                return this.connect().then(function() {
+                    return this.client.request();
+                }.bind(this));
+            },
+
+            operation: function(op) {
+                return this.connect().then(function() {
+                    return this.client.operation(op);
+                }.bind(this));
+            },
+
+            batchUpload: function() {
+                return this.connect().then(function() {
+                    return this.client.batchUpload();
+                }.bind(this));
+            },
         });
     })();
 </script>

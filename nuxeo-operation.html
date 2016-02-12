@@ -113,10 +113,10 @@ element.
             if (this.enrichers) {
               options.headers['X-NXenrichers.' + this.enrichersEntity] = this.enrichers;
             }
-            return this.$.nx.connect()
-              .then(function() {
-                return this._doExecute(params, options);
-              }.bind(this));
+            return this.$.nx.operation(this.op).then(function(operation) {
+              this._operation = operation;
+              return this._doExecute(params, options);
+            }.bind(this));
           },
 
           _autoExecute: function() {
@@ -126,8 +126,7 @@ element.
           },
 
           _doExecute: function(params, options) {
-            return this.$.nx.client
-              .operation(this.op)
+            return this._operation
               .params(params)
               .input(this.input)
               .execute(options)
