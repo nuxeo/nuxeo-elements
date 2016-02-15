@@ -189,6 +189,7 @@ Contributors:
 
     _updateSelection: function (e) {
       var value = e.target.value;
+      this._inUpdateSelection = true;
       if (!this.multiple) {
         this.value = value;
       } else {
@@ -197,8 +198,9 @@ Contributors:
     },
 
     valueChanged: function (newValue) {
-      if (this._el) {
+      if (this._el && !this._inUpdateSelection) {
         jQuery(this._el).select2('val', newValue);
+        this._inUpdateSelection = false;
       }
     },
 
