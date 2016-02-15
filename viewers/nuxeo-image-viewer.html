@@ -66,7 +66,7 @@ Custom property | Description | Default
         left: 50%;
         margin-left: -90px;
         position: absolute;
-        width: 180px;
+        width: 140px;
         z-index: 25;
       }
 
@@ -89,7 +89,6 @@ Custom property | Description | Default
     <div id="canvas">
       <template is="dom-if" if="[[controls]]">
         <div id="toolbar">
-          <paper-icon-button on-click="_click" icon="open-with" data-action="move" toggles></paper-icon-button>
           <paper-icon-button on-click="_click" icon="zoom-out" data-action="zoom-out"></paper-icon-button>
           <paper-icon-button on-click="_click" icon="zoom-in" data-action="zoom-in"></paper-icon-button>
           <paper-icon-button on-click="_click" icon="image:rotate-left" data-action="rotate-left"></paper-icon-button>
@@ -150,7 +149,7 @@ Custom property | Description | Default
               autoCrop: false,
               background: false,
               checkCrossOrigin: false,
-              dragMode: 'none',
+              dragMode: 'move',
               responsive: false,
               restore: false,
               toggleDragModeOnDblclick: false,
@@ -164,11 +163,6 @@ Custom property | Description | Default
           var target = event.target;
           var action = target.dataset.action || target.parentNode.dataset.action;
           switch (action) {
-            case 'move':
-              this._isDragging = !this._isDragging;
-              var dragMode = this._isDragging ? 'move' : 'none';
-              this._el.setDragMode(dragMode);
-              break;
             case 'zoom-in':
               this._el.zoom(0.1);
               break;
