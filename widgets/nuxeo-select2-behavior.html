@@ -64,6 +64,11 @@ Contributors:
         value: ','
       },
 
+      tagging: {
+        type: Boolean,
+        value: false
+      },
+
       idFunction: {
         type: Function,
         value: function () {
@@ -82,6 +87,13 @@ Contributors:
         type: Function,
         value: function () {
           return this._resultFormatter.bind(this);
+        }
+      },
+
+      newEntryFormatter: {
+        type: Function,
+        value: function () {
+          return this._newEntryFormatter.bind(this);
         }
       },
 
@@ -109,6 +121,10 @@ Contributors:
 
     _resultFormatter: function (item) {
       return item.displayLabel || item.title;
+    },
+
+    _newEntryFormatter: function (term) {
+      return { id: term, displayLabel: term };
     },
 
     _initSelection: function(element, callback) {
@@ -175,6 +191,16 @@ Contributors:
         }.bind(this);
       }
 
+      if (this.tagging) {
+        params.createSearchChoice = function (term, data) {
+          if (jQuery(data).filter(function() {
+            return this.displayLabel === term;
+          }).length === 0) {
+            return this.newEntryFormatter(term);
+          }
+        }.bind(this);
+      }
+
       // init select2
       jQuery(el).val(this.value).select2(params);
 
@@ -200,8 +226,8 @@ Contributors:
     valueChanged: function (newValue) {
       if (this._el && !this._inUpdateSelection) {
         jQuery(this._el).select2('val', newValue);
-        this._inUpdateSelection = false;
       }
+      this._inUpdateSelection = false;
     },
 
     dataChanged: function() {

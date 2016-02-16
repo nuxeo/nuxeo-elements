@@ -50,7 +50,9 @@ Contributors:
 
         params: {
           type: Object
-        }
+        },
+
+        queryResultsFilter: Function
        },
 
        ready: function() {
@@ -64,10 +66,14 @@ Contributors:
         this.$.op.params = params;
 
         this.$.op.execute().then(function(response) {
+          var results = Array.isArray(response.entries) ? response.entries : response;
+          if (this.queryResultsFilter) {
+            results = results.filter(this.queryResultsFilter);
+          }
           query.callback({
-            results: Array.isArray(response.entries) ? response.entries : response
+            results: results
           });
-        });
+        }.bind(this));
       }
      });
    })();
