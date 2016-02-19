@@ -1,0 +1,248 @@
+<!--
+(C) Copyright 2016 Nuxeo SA (http://nuxeo.com/) and others.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contributors:
+    Gabriel Barata <gbarata@nuxeo.com>
+-->
+
+<html>
+<head>
+  <title>nuxeo-user-management tests</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="test-helpers.js"></script>
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../iron-test-helpers/mock-interactions.html">
+  <link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
+  <link rel="import" href="../../nuxeo-ui-elements/nuxeo-user-management.html">
+
+</head>
+<body>
+
+<test-fixture id="nx">
+  <template>
+    <nuxeo-connection url="/dummy"></nuxeo-connection>
+  </template>
+</test-fixture>
+
+<test-fixture id="management">
+  <template>
+    <nuxeo-user-management></nuxeo-user-management>
+  </template>
+</test-fixture>
+
+<script>
+  suite('<nuxeo-pageable-widget>', function() {
+    var server;
+
+    setup(function() {
+      server = sinon.fakeServer.create();
+      server.autoRespond = true;
+
+      server.respondWith(
+          'POST',
+          '/dummy/site/api/v1/automation/login',
+          [
+            200,
+            {'Content-Type': 'application/json'},
+            '{"entity-type": "login"}'
+          ]
+      );
+
+      // login
+      var nx = fixture('nx');
+      var promise = nx.connect();
+      return promise;
+    });
+
+    suite('create group', function() {
+      var management;
+      var suggestResponses = [{
+        'firstName': '',
+        'lastName': '',
+        'groups': [],
+        'company': '',
+        'email': 'devnull@nuxeo.com',
+        'username': 'Administrator',
+        'id': 'Administrator',
+        'type': 'USER_TYPE',
+        'prefixed_id': 'user:Administrator',
+        'displayLabel': 'Administrator',
+        'displayIcon': true
+      }];
+      var creationResponse = {
+        "entity-type": 'group',
+        'groupname': 'test',
+        'grouplabel': 'Test',
+        "memberUsers": [],
+        "memberGroups": []
+      };
+      var creationData = {
+        "entity-type": "group",
+        "groupname": 'test',
+        "grouplabel": 'Test',
+        "memberUsers": ['Administrator'],
+        "memberGroups": []
+      };
+
+      setup(function() {
+        management = fixture('management');
+        server.respondWith(
+            'POST',
+            '/dummy/site/api/v1/group',
+            [
+              200,
+              {'Content-Type': 'application/json'},
+              JSON.stringify(creationResponse)
+            ]
+        );
+        /*server.respondWith(
+            'POST',
+            '/dummy/site/api/v1/automation/UserGroup.Suggestion',
+            [
+              200,
+              {'Content-Type': 'application/json'},
+              JSON.stringify(suggestResponses)
+            ]
+        );*/
+        Polymer.dom.flush(management);
+      });
+
+      test('create a group with one user', function() {
+        return testCreateGroup(false).then(function() {
+          expect(management.page).to.be.equal('search');
+        });
+      });
+
+      test('create an group with "Create another" turned on', function() {
+        /*clearManagement();*/
+        return testCreateGroup(true).then(function() {
+          expect(management.page).to.be.equal('create-group');
+        });
+      });
+
+      test('try to create a group with no name', function() {
+        // Go to the create group screen
+        var searchEl = management.$$('nuxeo-user-group-search');
+        expect(searchEl).to.not.be.null;
+        var createButton = searchEl.$$('#createButton');
+        expect(createButton).to.not.be.null;
+        expect(createButton.textContent.trim()).to.be.equal("New User");
+        var createDropdown = searchEl.$$('#createDropdown');
+        expect(createDropdown).to.not.be.null;
+        MockInteractions.tap(createDropdown);
+        var items = createDropdown.querySelectorAll('paper-icon-item');
+        expect(items.length).to.be.equal(2);
+        expect(items[1].textContent.trim()).to.be.equal("New Group");
+        MockInteractions.tap(items[1]);
+        expect(createButton.textContent.trim()).to.be.equal("New Group");
+        MockInteractions.tap(createButton);
+
+        // try to create right away
+        var createGroupEl = management.$$('nuxeo-create-group');
+        expect(createGroupEl).to.not.be.null;
+        createButton = createGroupEl.$$('#createButton');
+        expect(createButton).to.not.be.null;
+        MockInteractions.tap(createButton);
+        var required = createGroupEl.$.form.querySelectorAll('input[required]');
+        for (var i = 0; i < required.length; i++) {
+          expect(required[0].validate()).to.be.false;
+        }
+        expect(createGroupEl.groupName).to.be.equal('');
+        expect(createGroupEl.groupLabel).to.be.equal('');
+        expect(createGroupEl.selectedUsers).to.be.empty;
+        expect(management.page).to.be.equal('create-group');
+      });
+
+      function testCreateGroup(createAnother) {
+        // Go to the create group screen
+        var searchEl = management.$$('nuxeo-user-group-search');
+        expect(searchEl).to.not.be.null;
+        var createButton = searchEl.$$('#createButton');
+        expect(createButton).to.not.be.null;
+        expect(createButton.textContent.trim()).to.be.equal("New User");
+        var createDropdown = searchEl.$$('#createDropdown');
+        expect(createDropdown).to.not.be.null;
+        MockInteractions.tap(createDropdown);
+        var items = createDropdown.querySelectorAll('paper-icon-item');
+        expect(items.length).to.be.equal(2);
+        expect(items[1].textContent.trim()).to.be.equal("New Group");
+        MockInteractions.tap(items[1]);
+        expect(createButton.textContent.trim()).to.be.equal("New Group");
+        MockInteractions.tap(createButton);
+
+        // type in group name and label
+        var createGroupEl = management.$$('nuxeo-create-group');
+        expect(createGroupEl).to.not.be.null;
+        var groupName = createGroupEl.$$('#groupName');
+        expect(groupName.value).to.not.be.null;
+        var groupLabel = createGroupEl.$$('#groupLabel');
+        expect(groupLabel.value).to.be.not.be.null;
+        groupName.bindValue = 'test';
+        Polymer.dom.flush(groupName);
+        expect(createGroupEl.groupName).to.be.equal('test');
+        groupLabel.bindValue = 'Test';
+        Polymer.dom.flush(groupLabel);
+        expect(createGroupEl.groupLabel).to.be.equal('Test');
+
+        // select one user: Administrator
+        /*var select2 = createGroupEl.$.picker.querySelector('nuxeo-select2 a');
+        expect(select2).to.not.be.null;
+        MockInteractions.tap(select2);
+        var select2op = createGroupEl.$.picker.$$('nuxeo-select2').$.op;
+        expect(select2op).to.not.be.null;
+        var select2input = document.querySelector('.select2-search > input');
+        expect(select2input).to.not.be.null;
+        select2input.value = 'Administrator';
+        var select2results = management.querySelectorAll('.select2-results > li');
+        expect(select2results.length).to.be.equal(1);
+        MockInteractions.tap(select2results[0]);
+        Polymer.dom.flush(select2);*/
+
+        createGroupEl.selectedUsers = suggestResponses;
+        Polymer.dom.flush(createGroupEl);
+
+        var searchEntries = createGroupEl.querySelectorAll('.search-entry');
+        expect(searchEntries.length).to.be.equal(1);
+        Polymer.dom.flush(searchEntries[0]);
+        var label = searchEntries[0].querySelector('.label > span').textContent;
+        var uname = searchEntries[0].querySelector('.username:not([hidden])').textContent;
+        var email = searchEntries[0].querySelector('.email').textContent;
+        var expected = suggestResponses[0];
+        expect(label).to.be.equal(expected.displayLabel);
+        expect(uname).to.be.equal(expected.username ? expected.username : expected.groupname);
+        expect(email).to.be.equal(expected.email ? expected.email : '');
+
+        // tick "create another" (or not)
+        if (createAnother) {
+          createGroupEl.$.another.checked = true;
+        }
+
+        // hit the create button
+        expect(createGroupEl.data).to.be.deep.equal(creationData);
+        createButton = createGroupEl.$$('#createButton');
+        expect(createButton).to.not.be.null;
+        MockInteractions.tap(createButton);
+        return waitChanged(createGroupEl, 'group-name').then(function() {
+          expect(createGroupEl.groupName).to.be.equal('');
+          expect(createGroupEl.groupLabel).to.be.equal('');
+          expect(createGroupEl.selectedUsers).to.be.empty;
+        });
+      }
+    });
+  });
+</script>

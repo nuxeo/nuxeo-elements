@@ -31,6 +31,16 @@ And you can run it via:
 
 Once running, you can checkout the docs and demos at `http://localhost:3000/components/nuxeo-ui-elements/`.
 
+## Tests
+
+Install Web Component Tester via:
+
+    npm install -g web-component-tester
+    
+Execute the tests by running:
+
+    wct
+
 ## Documentation
 
 - [Nuxeo Elements](https://doc.nuxeo.com/x/XJCRAQ) in our Developer Documentation Center.

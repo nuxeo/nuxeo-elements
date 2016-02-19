@@ -1,0 +1,355 @@
+<!--
+(C) Copyright 2016 Nuxeo SA (http://nuxeo.com/) and others.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contributors:
+    Gabriel Barata <gbarata@nuxeo.com>
+-->
+<link rel="import" href="../../polymer/polymer.html">
+
+<!--
+Used by `nuxeo-user-management`
+@group Nuxeo Elements
+@element nuxeo-create-group
+-->
+<dom-module id="nuxeo-create-group">
+
+  <template>
+    <style is="custom-style">
+      :host {
+        display: block;
+        @apply(--nuxeo-create-group-layout);
+      }
+
+      nuxeo-user-suggestion {
+      @apply(--layout-flex);
+      }
+
+      .backButton {
+        color: #00adff;
+      }
+
+      .header > iron-icon {
+        padding: 8px;
+      }
+
+      .footer {
+        margin-top: 48px;
+      }
+
+      .label-container {
+        position: relative;
+        width: 150px;
+        font-weight: bold;
+      }
+
+      .required {
+        color: red;
+        position: absolute;
+        right: 10px;
+      }
+
+      .row {
+        margin-bottom: 12px;
+      }
+
+      input,
+      textarea {
+        background: none #fff;
+        border: 1px solid #c6c6c6;
+        border-radius: 3px;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.07) inset;
+        box-sizing: border-box;
+        display: inline-block;
+        font-size: 1em;
+        margin-bottom: 0.5em;
+        padding: 0.5em;
+      }
+
+      form {
+        padding: 8px;
+        margin-top: 24px;
+      }
+
+      paper-button.primary {
+        background-color: var(--nuxeo-button-primary, #00adff);
+        color: #fff;
+      }
+
+      paper-button.primary:hover,
+      paper-button.primary:focus {
+        background-color: var(--nuxeo-button-primary-focus, #0079b3);
+        font-weight: inherit;
+        color: #fff !important;
+      }
+
+      .label-container > paper-checkbox#another {
+        margin-left: 8px;
+      }
+
+      .form-buttons > paper-button.primary {
+        margin-left: 0px;
+      }
+
+      .search-entry {
+        border: 1px solid #aaa;
+        padding: 4px;
+        font-size: 0.8em;
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+      }
+
+      .search-entry + .search-entry {
+        margin-top: 8px;
+      }
+
+      .search-entry .user-info {
+        padding: 0.2em 0.6em;
+        text-align: center;
+        width: 30%;
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+      @apply(--layout-center-justified);
+      }
+
+      .search-entry .label {
+        background-color: var(--nuxeo-tag-background, #edf1f5);
+        color: var(--nuxeo-tag-text, #6d7684);
+        border-radius: 2.5em;
+        color: var(--nuxeo-link-color, #434343);
+        padding: .2rem .6rem;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .search-entry .username {
+      }
+
+      .search-entry .email {
+      }
+
+      .search-entry iron-icon {
+        --iron-icon-height: 14px;
+        --iron-icon-width: 14px;
+      }
+
+      .search-entry paper-icon-button {
+        width: 32px;
+        height: 32px;
+      }
+    </style>
+
+    <nuxeo-resource id="request"
+                    path="/group"
+                    data="[[data]]"
+                    headers='{"Content-Type":"application/json"}'></nuxeo-resource>
+
+    <div class="card-content">
+      <div class="header horizontal layout center">
+        <paper-icon-button class="backButton" icon="icons:arrow-back" on-tap="_goHome"></paper-icon-button>
+        <iron-icon icon="social:people"></iron-icon>
+        <h3>New Group</h3>
+      </div>
+      <form is="iron-form"
+            id="form"
+            on-submit="_create" class="vertical layout">
+
+        <div class="row layout horizontal">
+          <div class="label-container">
+            <label>Group Name</label>
+            <span class="required">*</span>
+          </div>
+          <input id="groupName" is="iron-input" bind-value="{{groupName}}" class="flex" required>
+        </div>
+
+        <div class="row layout horizontal">
+          <div class="label-container">
+            <label>Group Label</label>
+          </div>
+          <input id="groupLabel" is="iron-input" bind-value="{{groupLabel}}" class="flex">
+        </div>
+
+        <div class="row layout horizontal">
+          <div class="label-container">
+            <label>Members</label>
+          </div>
+          <nuxeo-user-suggestion id="picker"
+                                 search-type="USER_GROUP_TYPE"
+                                 placeholder="Search for users and groups..."
+                                 value="{{selectedUser}}"></nuxeo-user-suggestion>
+        </div>
+
+        <div class="row layout horizontal">
+          <div class="label-container"></div>
+          <div class="vertical layout flex">
+            <template is="dom-repeat" items="[[selectedUsers]]">
+              <div class="search-entry">
+                <div class="user-info">
+                  <div class="label">
+                    <iron-icon icon="social:person" hidden="[[item.groupname]]"></iron-icon>
+                    <iron-icon icon="social:people" hidden="[[item.username]]"></iron-icon>
+                    <span>[[item.displayLabel]]</span>
+                  </div>
+                </div>
+                <div class="user-info">
+                  <span class="username" hidden="[[item.groupname]]">[[item.username]]</span>
+                  <span class="username" hidden="[[item.username]]">[[item.groupname]]</span>
+                </div>
+                <div class="user-info">
+                  <span class="email">[[item.email]]</span>
+                </div>
+                <paper-icon-button icon="icons:clear"
+                                   title="remove"
+                                   on-tap="_remove"></paper-icon-button>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <div class="footer horizontal layout center">
+          <div class="label-container">
+            Create another
+            <paper-checkbox id="another"></paper-checkbox>
+          </div>
+          <div class="form-buttons">
+            <paper-button id="createButton" class="primary" on-tap="_submit">Create</paper-button>
+            <paper-button id="cancelButton" on-tap="_cancel">Cancel</paper-button>
+          </div>
+        </div>
+
+        <button id="submitButton" style="display:none;">Submit</button>
+      </form>
+
+    </div>
+
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'nuxeo-create-group',
+
+    properties: {
+      groupName: {
+        type: String,
+        notify: true
+      },
+      groupLabel: {
+        type: String,
+        notify: true
+      },
+      selectedUser: {
+        type: Object,
+        notify: true
+      },
+      selectedUsers: {
+        type: Array,
+        value: [],
+        notify: true
+      },
+      data: {
+        type: Object,
+        computed: '_computeData(groupName,groupLabel,selectedUsers.*)'
+      },
+      resultsFilter: {
+        type: Function,
+        value: function() {
+          return this._resultsFilter.bind(this);
+        }
+      }
+    },
+    observers: [
+      '_observeSelectedUser(selectedUser)'
+    ],
+
+    ready: function() {
+      this.$.picker.$$('nuxeo-select2').queryResultsFilter = this.resultsFilter;
+    },
+
+    _goHome: function() {
+      this.fire('goHome');
+    },
+
+    _observeSelectedUser: function(selectedUser) {
+      var obj = jQuery(this.$.picker.$$('nuxeo-select2')._el).select2('data');
+      if (obj && this.selectedUsers.indexOf(obj) === -1) {
+        this.push('selectedUsers', obj);
+      }
+      this.selectedUser = '';
+    },
+
+    _remove: function(e) {
+      if (e.model.item) {
+        this.splice('selectedUsers', this.selectedUsers.indexOf(e.model.item), 1);
+      }
+    },
+
+    _submit: function() {
+      document.getElementById('submitButton').click();
+    },
+
+    _create: function(event) {
+      event.preventDefault();
+      this.$.request.post().then(function(response) {
+        this.fire('toast', 'Group ' + response.groupname + ' created');
+        this._resetFields();
+        if (!this.$.another.checked) {
+          this._goHome();
+        }
+      }.bind(this));
+    },
+
+    _cancel: function() {
+      this._goHome();
+    },
+
+    _resetFields: function() {
+      this.groupName = '';
+      this.groupLabel = '';
+      this.selectedUsers = [];
+    },
+
+    _computeData: function() {
+      return {
+        "entity-type": "group",
+        "groupname": this.groupName,
+        "grouplabel": this.groupLabel,
+        "memberUsers": this.selectedUsers.filter(function(record) {
+          return record.type === 'USER_TYPE';
+        })
+            .map(function(record) {
+              return record.username;
+            }),
+        "memberGroups": this.selectedUsers.filter(function(record) {
+          return record.type === 'GROUP_TYPE';
+        })
+            .map(function(record) {
+              return record.groupname;
+            })
+      };
+    },
+
+    _resultsFilter: function(entry) {
+      for (var i = 0; i < this.selectedUsers.length; i++) {
+        if (entry.id === this.selectedUsers[i].id) {
+          return false;
+        }
+      }
+      return true;
+    }
+  });
+
+</script>
