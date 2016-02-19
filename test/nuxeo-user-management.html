@@ -132,7 +132,9 @@ Contributors:
         expect(searchEl).to.not.be.null;
         var createButton = searchEl.$$('#createButton');
         expect(createButton).to.not.be.null;
-        expect(createButton.textContent.trim()).to.be.equal("New User");
+        var span = createButton.querySelector('span');
+        expect(span).to.not.be.null;
+        expect(span.textContent.trim()).to.be.equal("New User");
         var createDropdown = searchEl.$$('#createDropdown');
         expect(createDropdown).to.not.be.null;
         MockInteractions.tap(createDropdown);
@@ -165,7 +167,9 @@ Contributors:
         expect(searchEl).to.not.be.null;
         var createButton = searchEl.$$('#createButton');
         expect(createButton).to.not.be.null;
-        expect(createButton.textContent.trim()).to.be.equal("New User");
+        var span = createButton.querySelector('span');
+        expect(span).to.not.be.null;
+        expect(span.textContent.trim()).to.be.equal("New User");
         var createDropdown = searchEl.$$('#createDropdown');
         expect(createDropdown).to.not.be.null;
         MockInteractions.tap(createDropdown);

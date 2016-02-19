@@ -139,6 +139,12 @@ Used by `nuxeo-user-management`
         width: 32px;
         height: 32px;
       }
+
+      .search-entry .username {
+      }
+
+      .search-entry .email {
+      }
     </style>
 
     <nuxeo-resource id="request"
@@ -194,11 +200,11 @@ Used by `nuxeo-user-management`
                 </div>
               </div>
               <div class="user-info">
-                <span hidden="[[item.groupname]]">[[item.username]]</span>
-                <span hidden="[[item.username]]">[[item.groupname]]</span>
+                <span class="username" hidden="[[item.groupname]]">[[item.username]]</span>
+                <span class="username" hidden="[[item.username]]">[[item.groupname]]</span>
               </div>
               <div class="user-info">
-                <span>[[item.email]]</span>
+                <span class="email">[[item.email]]</span>
               </div>
               <paper-icon-button icon="icons:clear"
                                  title="remove"
@@ -303,6 +309,7 @@ Used by `nuxeo-user-management`
     },
 
     _cancel: function() {
+      this._resetFields();
       this._goHome();
     },
 
