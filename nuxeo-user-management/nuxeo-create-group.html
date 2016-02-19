@@ -32,7 +32,7 @@ Used by `nuxeo-user-management`
       }
 
       nuxeo-user-suggestion {
-      @apply(--layout-flex);
+        @apply(--layout-flex);
       }
 
       .backButton {
@@ -105,8 +105,8 @@ Used by `nuxeo-user-management`
         border: 1px solid #aaa;
         padding: 4px;
         font-size: 0.8em;
-      @apply(--layout-horizontal);
-      @apply(--layout-center);
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
       }
 
       .search-entry + .search-entry {
@@ -117,30 +117,22 @@ Used by `nuxeo-user-management`
         padding: 0.2em 0.6em;
         text-align: center;
         width: 30%;
-      @apply(--layout-horizontal);
-      @apply(--layout-center);
-      @apply(--layout-center-justified);
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        @apply(--layout-center-justified);
       }
 
-      .search-entry .label {
-        background-color: var(--nuxeo-tag-background, #edf1f5);
-        color: var(--nuxeo-tag-text, #6d7684);
-        border-radius: 2.5em;
-        color: var(--nuxeo-link-color, #434343);
-        padding: .2rem .6rem;
+      .search-entry .user-info .label {
         text-align: center;
         font-weight: bold;
-      }
-
-      .search-entry .username {
-      }
-
-      .search-entry .email {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
       }
 
       .search-entry iron-icon {
         --iron-icon-height: 14px;
         --iron-icon-width: 14px;
+        margin-right: 4px;
       }
 
       .search-entry paper-icon-button {
@@ -154,83 +146,81 @@ Used by `nuxeo-user-management`
                     data="[[data]]"
                     headers='{"Content-Type":"application/json"}'></nuxeo-resource>
 
-    <div class="card-content">
-      <div class="header horizontal layout center">
-        <paper-icon-button class="backButton" icon="icons:arrow-back" on-tap="_goHome"></paper-icon-button>
-        <iron-icon icon="social:people"></iron-icon>
-        <h3>New Group</h3>
-      </div>
-      <form is="iron-form"
-            id="form"
-            on-submit="_create" class="vertical layout">
 
-        <div class="row layout horizontal">
-          <div class="label-container">
-            <label>Group Name</label>
-            <span class="required">*</span>
-          </div>
-          <input id="groupName" is="iron-input" bind-value="{{groupName}}" class="flex" required>
-        </div>
-
-        <div class="row layout horizontal">
-          <div class="label-container">
-            <label>Group Label</label>
-          </div>
-          <input id="groupLabel" is="iron-input" bind-value="{{groupLabel}}" class="flex">
-        </div>
-
-        <div class="row layout horizontal">
-          <div class="label-container">
-            <label>Members</label>
-          </div>
-          <nuxeo-user-suggestion id="picker"
-                                 search-type="USER_GROUP_TYPE"
-                                 placeholder="Search for users and groups..."
-                                 value="{{selectedUser}}"></nuxeo-user-suggestion>
-        </div>
-
-        <div class="row layout horizontal">
-          <div class="label-container"></div>
-          <div class="vertical layout flex">
-            <template is="dom-repeat" items="[[selectedUsers]]">
-              <div class="search-entry">
-                <div class="user-info">
-                  <div class="label">
-                    <iron-icon icon="social:person" hidden="[[item.groupname]]"></iron-icon>
-                    <iron-icon icon="social:people" hidden="[[item.username]]"></iron-icon>
-                    <span>[[item.displayLabel]]</span>
-                  </div>
-                </div>
-                <div class="user-info">
-                  <span class="username" hidden="[[item.groupname]]">[[item.username]]</span>
-                  <span class="username" hidden="[[item.username]]">[[item.groupname]]</span>
-                </div>
-                <div class="user-info">
-                  <span class="email">[[item.email]]</span>
-                </div>
-                <paper-icon-button icon="icons:clear"
-                                   title="remove"
-                                   on-tap="_remove"></paper-icon-button>
-              </div>
-            </template>
-          </div>
-        </div>
-
-        <div class="footer horizontal layout center">
-          <div class="label-container">
-            Create another
-            <paper-checkbox id="another"></paper-checkbox>
-          </div>
-          <div class="form-buttons">
-            <paper-button id="createButton" class="primary" on-tap="_submit">Create</paper-button>
-            <paper-button id="cancelButton" on-tap="_cancel">Cancel</paper-button>
-          </div>
-        </div>
-
-        <button id="submitButton" style="display:none;">Submit</button>
-      </form>
-
+    <div class="header horizontal layout center">
+      <paper-icon-button class="backButton" icon="icons:arrow-back" on-tap="_goHome"></paper-icon-button>
+      <iron-icon icon="social:people"></iron-icon>
+      <h3>New Group</h3>
     </div>
+    <form is="iron-form"
+          id="form"
+          on-submit="_create" class="vertical layout">
+
+      <div class="row layout horizontal">
+        <div class="label-container">
+          <label>Group Name</label>
+          <span class="required">*</span>
+        </div>
+        <input id="groupName" is="iron-input" bind-value="{{groupName}}" class="flex" required>
+      </div>
+
+      <div class="row layout horizontal">
+        <div class="label-container">
+          <label>Group Label</label>
+        </div>
+        <input id="groupLabel" is="iron-input" bind-value="{{groupLabel}}" class="flex">
+      </div>
+
+      <div class="row layout horizontal">
+        <div class="label-container">
+          <label>Members</label>
+        </div>
+        <nuxeo-user-suggestion id="picker"
+                               search-type="USER_GROUP_TYPE"
+                               placeholder="Search for users and groups..."
+                               value="{{selectedUser}}"></nuxeo-user-suggestion>
+      </div>
+
+      <div class="row layout horizontal">
+        <div class="label-container"></div>
+        <div class="vertical layout flex">
+          <template is="dom-repeat" items="[[selectedUsers]]">
+            <div class="search-entry">
+              <div class="user-info">
+                <div class="label">
+                  <iron-icon icon="social:person" hidden="[[item.groupname]]"></iron-icon>
+                  <iron-icon icon="social:people" hidden="[[item.username]]"></iron-icon>
+                  <span>[[item.displayLabel]]</span>
+                </div>
+              </div>
+              <div class="user-info">
+                <span hidden="[[item.groupname]]">[[item.username]]</span>
+                <span hidden="[[item.username]]">[[item.groupname]]</span>
+              </div>
+              <div class="user-info">
+                <span>[[item.email]]</span>
+              </div>
+              <paper-icon-button icon="icons:clear"
+                                 title="remove"
+                                 on-tap="_remove"></paper-icon-button>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <div class="footer horizontal layout center">
+        <div class="label-container">
+          Create another
+          <paper-checkbox id="another"></paper-checkbox>
+        </div>
+        <div class="form-buttons">
+          <paper-button id="createButton" class="primary" on-tap="_submit">Create</paper-button>
+          <paper-button id="cancelButton" on-tap="_cancel">Cancel</paper-button>
+        </div>
+      </div>
+
+      <button id="submitButton" style="display:none;">Submit</button>
+    </form>
 
   </template>
 

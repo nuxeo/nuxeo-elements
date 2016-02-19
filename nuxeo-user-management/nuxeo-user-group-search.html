@@ -28,11 +28,11 @@ Used by `nuxeo-user-management`
     <style is="custom-style">
       :host {
         display: block;
-      @apply(--nuxeo-user-group-search-layout);
+        @apply(--nuxeo-user-group-search-layout);
       }
 
       nuxeo-user-suggestion {
-      @apply(--layout-flex);
+        @apply(--layout-flex);
       }
 
       #createButton {
@@ -52,32 +52,30 @@ Used by `nuxeo-user-management`
       }
     </style>
 
-    <div class="card-content">
-      <div class="horizontal layout center">
-        <div class="flex">
-          <nuxeo-user-suggestion search-type="USER_GROUP_TYPE"
-                                 multiple="true"></nuxeo-user-suggestion>
-        </div>
-        <paper-button id="createButton" on-tap="_create">
-          <iron-icon icon="[[selectedCreateOpt.icon]]"></iron-icon>
-          [[selectedCreateOpt.value]]
-        </paper-button>
-        <paper-menu-button id="createDropdown" horizontal-align="right">
-          <paper-icon-button class="dropdown-trigger"
-                             icon="icons:arrow-drop-down"></paper-icon-button>
-          <paper-menu class="dropdown-content"
-                      selected="{{selectedCreateOptIndex}}">
-            <template is="dom-repeat" items="[[createOperations]]">
-              <paper-icon-item key="[[item.key]]">
-                <iron-icon icon="[[item.icon]]" item-icon></iron-icon>
-                [[item.value]]
-              </paper-icon-item>
-            </template>
-          </paper-menu>
-        </paper-menu-button>
+    <div class="horizontal layout center">
+      <div class="flex">
+        <nuxeo-user-suggestion search-type="USER_GROUP_TYPE"
+                               multiple="true"></nuxeo-user-suggestion>
       </div>
-      <h3>Recently created users and groups</h3>
+      <paper-button id="createButton" on-tap="_create">
+        <iron-icon icon="[[selectedCreateOpt.icon]]"></iron-icon>
+        <span>[[selectedCreateOpt.value]]<span>
+      </paper-button>
+      <paper-menu-button id="createDropdown" horizontal-align="right">
+        <paper-icon-button class="dropdown-trigger"
+                           icon="icons:arrow-drop-down"></paper-icon-button>
+        <paper-menu class="dropdown-content"
+                    selected="{{selectedCreateOptIndex}}">
+          <template is="dom-repeat" items="[[createOperations]]">
+            <paper-icon-item key="[[item.key]]">
+              <iron-icon icon="[[item.icon]]" item-icon></iron-icon>
+              [[item.value]]
+            </paper-icon-item>
+          </template>
+        </paper-menu>
+      </paper-menu-button>
     </div>
+    <h3>Recently created users and groups</h3>
 
   </template>
 
