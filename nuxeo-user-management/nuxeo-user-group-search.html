@@ -56,8 +56,7 @@ Used by `nuxeo-user-management`
       <div class="horizontal layout center">
         <div class="flex">
           <nuxeo-user-suggestion search-type="USER_GROUP_TYPE"
-                                 multiple="true"
-                                 value="{{selectedParticipants}}"></nuxeo-user-suggestion>
+                                 multiple="true"></nuxeo-user-suggestion>
         </div>
         <paper-button id="createButton" on-tap="_create">
           <iron-icon icon="[[selectedCreateOpt.icon]]"></iron-icon>
@@ -103,6 +102,10 @@ Used by `nuxeo-user-management`
       selectedCreateOpt: {
         type: Object,
         notify: true
+      },
+
+      selectedCreateOptIndex: {
+        type: Number
       }
     },
     observers: ['_observeSelected(selectedCreateOptIndex)'],

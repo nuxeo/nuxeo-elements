@@ -200,19 +200,6 @@ Contributors:
         expect(createGroupEl.groupLabel).to.be.equal('Test');
 
         // select one user: Administrator
-        /*var select2 = createGroupEl.$.picker.querySelector('nuxeo-select2 a');
-        expect(select2).to.not.be.null;
-        MockInteractions.tap(select2);
-        var select2op = createGroupEl.$.picker.$$('nuxeo-select2').$.op;
-        expect(select2op).to.not.be.null;
-        var select2input = document.querySelector('.select2-search > input');
-        expect(select2input).to.not.be.null;
-        select2input.value = 'Administrator';
-        var select2results = management.querySelectorAll('.select2-results > li');
-        expect(select2results.length).to.be.equal(1);
-        MockInteractions.tap(select2results[0]);
-        Polymer.dom.flush(select2);*/
-
         createGroupEl.selectedUsers = suggestResponses;
         Polymer.dom.flush(createGroupEl);
 
