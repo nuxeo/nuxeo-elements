@@ -94,16 +94,20 @@ Contributors:
 
     },
 
+    escapeHTML: function (markup) {
+      return markup && window.Select2.util.escapeMarkup(markup);
+    },
+
     _idFunction: function (item) {
       return item.computedId || item.uid || item.id;
     },
 
     _selectionFormatter: function (item) {
-      return item.displayLabel || item.title;
+      return this.escapeHTML(item.displayLabel || item.title);
     },
 
     _resultFormatter: function (item) {
-      return item.displayLabel || item.title;
+      return this.escapeHTML(item.displayLabel || item.title);
     },
 
     _initSelection: function(element, callback) {
