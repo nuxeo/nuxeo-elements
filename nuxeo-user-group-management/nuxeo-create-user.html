@@ -17,6 +17,13 @@ Contributors:
     Andre Justo <ajusto@nuxeo.com>
 -->
 <link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
+<link rel="import" href="../../nuxeo-elements/widgets/nuxeo-user-suggestion.html">
+<link rel="import" href="../../paper-button/paper-button.html">
+<link rel="import" href="../../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../paper-radio-button/paper-radio-button.html">
+<link rel="import" href="../../paper-radio-group/paper-radio-group.html">
 
 <!--
 Used by `nuxeo-user-management`
@@ -169,7 +176,7 @@ Used by `nuxeo-user-management`
               <paper-radio-button name="yes" checked="{{usePassword}}">Yes</paper-radio-button>
             </paper-radio-group>
           </div>
-          <div hidden="{{!usePassword}}">
+          <div hidden$="{{!usePassword}}">
             <div class="row layout vertical">
               <label>Password</label>
               <input id="password"
@@ -209,7 +216,7 @@ Used by `nuxeo-user-management`
             <paper-button id="createButton" class="primary" on-click="_submit">Create</paper-button>
             <paper-button id="cancelButton" on-tap="_cancel">Cancel</paper-button>
           </div>
-          <span id="errors" hidden="[[!_hasErrors(errors)]]">[[errors]]</span>
+          <span id="errors" hidden$="[[!_hasErrors(errors)]]">[[errors]]</span>
         </div>
       </div>
     </form>
