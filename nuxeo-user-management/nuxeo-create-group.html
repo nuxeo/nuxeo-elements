@@ -23,7 +23,6 @@ Used by `nuxeo-user-management`
 @element nuxeo-create-group
 -->
 <dom-module id="nuxeo-create-group">
-
   <template>
     <style is="custom-style">
       :host {
@@ -139,44 +138,33 @@ Used by `nuxeo-user-management`
         width: 32px;
         height: 32px;
       }
-
-      .search-entry .username {
-      }
-
-      .search-entry .email {
-      }
     </style>
 
     <nuxeo-resource id="request"
                     path="/group"
                     data="[[data]]"
-                    headers='{"Content-Type":"application/json"}'></nuxeo-resource>
-
+                    headers='{"Content-Type":"application/json"}'>
+    </nuxeo-resource>
 
     <div class="header horizontal layout center">
       <paper-icon-button class="backButton" icon="icons:arrow-back" on-tap="_goHome"></paper-icon-button>
       <iron-icon icon="social:people"></iron-icon>
       <h3>New Group</h3>
     </div>
-    <form is="iron-form"
-          id="form"
-          on-submit="_create" class="vertical layout">
-
+    <form is="iron-form" id="form" class="vertical layout">
       <div class="row layout horizontal">
         <div class="label-container">
           <label>Group Name</label>
           <span class="required">*</span>
         </div>
-        <input id="groupName" is="iron-input" bind-value="{{groupName}}" class="flex" required>
+        <input id="groupName" value="{{groupName::input}}" class="flex" required>
       </div>
-
       <div class="row layout horizontal">
         <div class="label-container">
           <label>Group Label</label>
         </div>
-        <input id="groupLabel" is="iron-input" bind-value="{{groupLabel}}" class="flex">
+        <input id="groupLabel" value="{{groupLabel::input}}" class="flex">
       </div>
-
       <div class="row layout horizontal">
         <div class="label-container">
           <label>Members</label>
@@ -184,9 +172,9 @@ Used by `nuxeo-user-management`
         <nuxeo-user-suggestion id="picker"
                                search-type="USER_GROUP_TYPE"
                                placeholder="Search for users and groups..."
-                               value="{{selectedUser}}"></nuxeo-user-suggestion>
+                               value="{{selectedUser}}">
+        </nuxeo-user-suggestion>
       </div>
-
       <div class="row layout horizontal">
         <div class="label-container"></div>
         <div class="vertical layout flex">
@@ -208,12 +196,12 @@ Used by `nuxeo-user-management`
               </div>
               <paper-icon-button icon="icons:clear"
                                  title="remove"
-                                 on-tap="_remove"></paper-icon-button>
+                                 on-tap="_remove">
+              </paper-icon-button>
             </div>
           </template>
         </div>
       </div>
-
       <div class="footer horizontal layout center">
         <div class="label-container">
           Create another
@@ -224,18 +212,11 @@ Used by `nuxeo-user-management`
           <paper-button id="cancelButton" on-tap="_cancel">Cancel</paper-button>
         </div>
       </div>
-
-      <button id="submitButton" style="display:none;">Submit</button>
     </form>
-
   </template>
-
 </dom-module>
-
 <script>
-
   Polymer({
-
     is: 'nuxeo-create-group',
 
     properties: {
@@ -273,6 +254,10 @@ Used by `nuxeo-user-management`
 
     ready: function() {
       this.$.picker.$$('nuxeo-select2').queryResultsFilter = this.resultsFilter;
+      this.$.form.addEventListener('iron-form-presubmit', function(event) {
+        event.preventDefault();
+        this._create();
+      }.bind(this));
     },
 
     _goHome: function() {
@@ -293,12 +278,17 @@ Used by `nuxeo-user-management`
       }
     },
 
+    /**
+     * Submits the form.
+     */
     _submit: function() {
-      document.getElementById('submitButton').click();
+      this.$.form.submit();
     },
 
-    _create: function(event) {
-      event.preventDefault();
+    /**
+     * Creates a new group if the form was successfully submitted.
+     */
+    _create: function() {
       this.$.request.post().then(function(response) {
         this.fire('toast', 'Group ' + response.groupname + ' created');
         this._resetFields();
@@ -348,5 +338,4 @@ Used by `nuxeo-user-management`
       return true;
     }
   });
-
 </script>
