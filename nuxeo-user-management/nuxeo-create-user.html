@@ -14,6 +14,7 @@ limitations under the License.
 
 Contributors:
     Gabriel Barata <gbarata@nuxeo.com>
+    Andre Justo <ajusto@nuxeo.com>
 -->
 <link rel="import" href="../../polymer/polymer.html">
 
@@ -23,7 +24,6 @@ Used by `nuxeo-user-management`
 @element nuxeo-create-user
 -->
 <dom-module id="nuxeo-create-user">
-
   <template>
     <style is="custom-style">
       :host {
@@ -31,33 +31,271 @@ Used by `nuxeo-user-management`
         @apply(--nuxeo-create-user-layout);
       }
 
+      nuxeo-user-suggestion {
+        @apply(--layout-flex);
+      }
+
       .backButton {
         color: #00adff;
       }
+
+      .header > iron-icon {
+        padding: 8px;
+      }
+
+      .footer {
+        margin-top: 48px;
+      }
+
+      .label-container {
+        position: relative;
+        width: 200px;
+        font-weight: bold;
+      }
+      .required {
+        color: red;
+        position: absolute;
+        right: 10px;
+      }
+
+      .row {
+        margin-bottom: 12px;
+      }
+
+      input {
+        background: none #fff;
+        border: 1px solid #c6c6c6;
+        border-radius: 3px;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.07) inset;
+        box-sizing: border-box;
+        display: inline-block;
+        font-size: 1em;
+        margin-bottom: 0.5em;
+        padding: 0.5em;
+      }
+
+      form {
+        padding: 8px;
+        margin-top: 24px;
+      }
+
+      paper-button.primary {
+        background-color: var(--nuxeo-button-primary, #00adff);
+        color: #fff;
+      }
+
+      paper-button.primary:hover,
+      paper-button.primary:focus {
+        background-color: var(--nuxeo-button-primary-focus, #0079b3);
+        font-weight: inherit;
+        color: #fff !important;
+      }
+
+      .label-container > paper-checkbox#another {
+        margin-left: 8px;
+      }
+
+      .form-buttons > paper-button.primary {
+        margin-left: 0px;
+      }
+
+      paper-radio-group {
+        outline: none;
+      }
+
+      paper-radio-button {
+        margin-right: 10px;
+        padding: 0;
+      }
+
+      #errors {
+        color: red;
+        margin-top: 20px;
+      }
     </style>
+
+    <nuxeo-resource id="request"
+                     path="/user"
+                     headers='{"Content-Type":"application/json"}'>
+    </nuxeo-resource>
 
     <div class="header horizontal layout center">
       <paper-icon-button class="backButton" icon="icons:arrow-back" on-tap="_goHome"></paper-icon-button>
       <iron-icon icon="social:person"></iron-icon>
       <h3>New User</h3>
     </div>
-
+    <form is="iron-form" id="form" class="vertical layout">
+      <div class="row layout horizontal">
+        <div class="label-container">
+          <label>Username</label>
+          <span class="required">*</span>
+        </div>
+        <input value="{{user.username::input}}" class="flex" required>
+      </div>
+      <div class="row layout horizontal">
+        <div class="label-container">
+          <label>First Name</label>
+        </div>
+        <input value="{{user.firstName::input}}" class="flex">
+      </div>
+      <div class="row layout horizontal">
+        <div class="label-container">
+          <label>Last Name</label>
+        </div>
+        <input value="{{user.lastName::input}}" class="flex">
+      </div>
+      <div class="row layout horizontal">
+        <div class="label-container">
+          <label>Company</label>
+        </div>
+        <input value="{{user.company::input}}" class="flex">
+      </div>
+      <div class="row layout horizontal">
+        <div class="label-container">
+          <label>Email</label>
+          <span class="required">*</span>
+        </div>
+        <input value="{{user.email::input}}" type="email" class="flex" required>
+      </div>
+      <div class="row layout horizontal">
+        <div class="label-container">
+          <label>Set User Password</label>
+          <span class="required">*</span>
+        </div>
+        <div class="flex">
+          <div class="row layout horizontal">
+            <paper-radio-group selected="no">
+              <paper-radio-button name="no">No</paper-radio-button>
+              <paper-radio-button name="yes" checked="{{usePassword}}">Yes</paper-radio-button>
+            </paper-radio-group>
+          </div>
+          <div hidden="{{!usePassword}}">
+            <div class="row layout vertical">
+              <label>Password</label>
+              <input id="password"
+                     value="{{user.password::input}}"
+                     type="password"
+                     class="flex"
+                     required disabled="{{!usePassword}}">
+            </div>
+            <div class="row layout vertical">
+              <label>Password (verify)</label>
+              <input id="passwordConfirmation"
+                     type="password"
+                     class="flex"
+                     required disabled="{{!usePassword}}">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row layout horizontal">
+        <div class="label-container">
+          <label>Groups</label>
+        </div>
+        <nuxeo-user-suggestion id="picker"
+                               search-type="GROUP_TYPE"
+                               placeholder="Search for groups"
+                               value="{{user.groups}}"
+                               multiple>
+        </nuxeo-user-suggestion>
+      </div>
+      <div class="footer horizontal layout">
+        <div class="label-container">
+          Create another
+          <paper-checkbox id="another"></paper-checkbox>
+        </div>
+        <div class="layout vertical">
+          <div class="form-buttons">
+            <paper-button id="createButton" class="primary" on-click="_submit">Create</paper-button>
+            <paper-button id="cancelButton" on-tap="_cancel">Cancel</paper-button>
+          </div>
+          <span id="errors" hidden="[[!_hasErrors(errors)]]">[[errors]]</span>
+        </div>
+      </div>
+    </form>
   </template>
-
 </dom-module>
-
 <script>
-
   Polymer({
-
     is: 'nuxeo-create-user',
 
-    properties: {},
+    properties: {
+      user: {
+        type: Object,
+        value: {}
+      },
+
+      usePassword: {
+        type: Boolean,
+        value: false
+      },
+
+      errors: {
+        type: String,
+        value: ''
+      }
+    },
+
+    ready: function() {
+      this.$.form.addEventListener('iron-form-presubmit', function(event) {
+        event.preventDefault();
+        this._create();
+      }.bind(this));
+    },
 
     _goHome: function() {
       this.fire('goHome');
+    },
+
+    /**
+     * Submits the form.
+     */
+    _submit: function() {
+      var passwordConfirmation = this.$.passwordConfirmation;
+      if (passwordConfirmation.value !== this.user.password) {
+        passwordConfirmation.setCustomValidity('Passwords don\'t match.');
+      } else {
+        passwordConfirmation.setCustomValidity('');
+      }
+      this.$.form.submit();
+    },
+
+    /**
+     * Creates a new user if the form was successfully submitted.
+     */
+    _create: function() {
+      var data = {
+        "entity-type": "user",
+        "properties": this.user
+      };
+      this.$.request.data = data;
+      this.$.request.post()
+        .then(function(response) {
+          this.fire('toast', 'User ' + response.id + ' created');
+          this._resetFields();
+          if (!this.$.another.checked) {
+            this._goHome();
+          }
+        }.bind(this))
+        .catch(function(error) {
+          this.errors = error.message;
+        }.bind(this));
+    },
+
+    _cancel: function() {
+      this._resetFields();
+      this._goHome();
+    },
+
+    _resetFields: function() {
+      this.user = {};
+      this.$.passwordConfirmation.value = '';
+      this.$$('paper-radio-group').select('no');
+      this.usePassword = false;
+    },
+
+    _hasErrors: function() {
+      return this.errors !== '';
     }
-
   });
-
 </script>
