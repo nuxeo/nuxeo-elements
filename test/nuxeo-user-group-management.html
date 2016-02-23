@@ -28,7 +28,7 @@ Contributors:
   <link rel="import" href="../../polymer/polymer.html">
   <link rel="import" href="../../iron-test-helpers/mock-interactions.html">
   <link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
-  <link rel="import" href="../../nuxeo-ui-elements/nuxeo-user-management.html">
+  <link rel="import" href="../../nuxeo-ui-elements/nuxeo-user-group-management.html">
 
 </head>
 <body>
@@ -41,12 +41,12 @@ Contributors:
 
 <test-fixture id="management">
   <template>
-    <nuxeo-user-management></nuxeo-user-management>
+    <nuxeo-user-group-management></nuxeo-user-group-management>
   </template>
 </test-fixture>
 
 <script>
-  suite('<nuxeo-pageable-widget>', function() {
+  suite('<nuxeo-user-group-management>', function() {
     var server;
 
     setup(function() {
@@ -120,7 +120,6 @@ Contributors:
       });
 
       test('create an group with "Create another" turned on', function() {
-        /*clearManagement();*/
         return testCreateGroup(true).then(function() {
           expect(management.page).to.be.equal('create-group');
         });
@@ -151,12 +150,9 @@ Contributors:
         createButton = createGroupEl.$$('#createButton');
         expect(createButton).to.not.be.null;
         MockInteractions.tap(createButton);
-        var required = createGroupEl.$.form.querySelectorAll('input[required]');
-        for (var i = 0; i < required.length; i++) {
-          expect(required[0].validate()).to.be.false;
-        }
-        expect(createGroupEl.groupName).to.be.equal('');
-        expect(createGroupEl.groupLabel).to.be.equal('');
+        expect(createGroupEl.$.form.validate()).to.be.false;
+        expect(createGroupEl.groupName).to.be.undefined;
+        expect(createGroupEl.groupLabel).to.be.undefined;
         expect(createGroupEl.selectedUsers).to.be.empty;
         expect(management.page).to.be.equal('create-group');
       });
@@ -187,10 +183,10 @@ Contributors:
         expect(groupName.value).to.not.be.null;
         var groupLabel = createGroupEl.$$('#groupLabel');
         expect(groupLabel.value).to.be.not.be.null;
-        groupName.bindValue = 'test';
+        groupName.value = createGroupEl.groupName = 'test';
         Polymer.dom.flush(groupName);
         expect(createGroupEl.groupName).to.be.equal('test');
-        groupLabel.bindValue = 'Test';
+        groupLabel.value = createGroupEl.groupLabel = 'Test';
         Polymer.dom.flush(groupLabel);
         expect(createGroupEl.groupLabel).to.be.equal('Test');
 

@@ -36,22 +36,22 @@ Contributors:
 <link rel="import" href="../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../nuxeo-elements/widgets/nuxeo-user-suggestion.html">
 
-<link rel="import" href="nuxeo-user-management/nuxeo-user-group-search.html">
-<link rel="import" href="nuxeo-user-management/nuxeo-create-user.html">
-<link rel="import" href="nuxeo-user-management/nuxeo-create-group.html">
+<link rel="import" href="nuxeo-user-group-management/nuxeo-user-group-search.html">
+<link rel="import" href="nuxeo-user-group-management/nuxeo-create-user.html">
+<link rel="import" href="nuxeo-user-group-management/nuxeo-create-group.html">
 
 <!--
 An element for managing users and groups in Nuxeo.
 
 Example:
 
-    <nuxeo-user-management></nuxeo-user-management>
+    <nuxeo-user-group-management></nuxeo-user-group-management>
 
 @group Nuxeo UI Elements
-@element nuxeo-user-management
-@demo demo/nuxeo-user-management/index.html
+@element nuxeo-user-group-management
+@demo demo/nuxeo-user-group-management/index.html
 -->
-<dom-module id="nuxeo-user-management">
+<dom-module id="nuxeo-user-group-management">
 
   <template>
     <style is="custom-style">
@@ -87,11 +87,11 @@ Example:
 
   Polymer({
 
-    is: 'nuxeo-user-management',
+    is: 'nuxeo-user-group-management',
 
     properties: {
       /**
-       * The user-management page to be displayed. Possible values are 'search', 'create-user' and 'create-group'
+       * The user-group-management page to be displayed. Possible values are 'search', 'create-user' and 'create-group'
        */
       page: {
         type: String,
