@@ -15,7 +15,6 @@ Contributors:
   Nelson Silva <nsilva@nuxeo.com>
 -->
 <link rel="import" href="../nuxeo-elements/nuxeo-connection.html">
-<link rel="import" href="../iron-ajax/iron-request.html">
 
 <!--
 An element allowing querying the Nuxeo ES passthrough.
@@ -100,29 +99,20 @@ Example:
           url = url.replace(/(^\/+)|([^:])\/\/+/g, '$2/');
 
           if (this.type) { url += '?search_type=' + this.type; }
-
-          // add auth headers
-          var auth = {'Content-Type': 'application/json'};
-          this.$.nx.client._computeAuthentication(auth);
-
-          // Normalize headers in lower case
-          var headers = {};
-          for (var header in auth) {
-            headers[header.toLowerCase()] = auth[header].toString();
-          }
-
-          return document.createElement('iron-request')
-              .send({
-                url: url,
-                method: 'POST',
-                headers: headers,
-                body: {
-                  query: this.query, aggs: this.aggregates
-                },
-                handleAs: 'json'
-              })
+           var options = {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: {
+              query: this.query, aggs: this.aggregates
+            },
+            url: url
+          };
+          return this.$.nx.request().then(function(request) {
+            return request
+              .execute(options)
               .then(this._handleResponse.bind(this))
-              .catch(this._handleError.bind(this));
+              .catch(this._handleError.bind(this))
+          }.bind(this));
         },
 
         _handleError: function(request, error) {
@@ -133,8 +123,7 @@ Example:
           });
         },
 
-        _handleResponse: function(request) {
-          var response = request.response;
+        _handleResponse: function(response) {
           this._setHits(response.hits);
           this._setAggregations(response.aggregations);
           this.fire('results', response);
