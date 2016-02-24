@@ -20,7 +20,10 @@ Contributors:
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-
+    <script>
+      // force use of polyfill: see ELEMENTS-56
+      window.fetch = null;
+    </script>
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
     <script src="../../test-fixture/test-fixture-mocha.js"></script>
@@ -88,14 +91,24 @@ Contributors:
 
         setup(function() {
           server = sinon.fakeServer.create();
+          server.autoRespond = true;
           server.respondWith(
-              'POST',
-              '/dummy/site/api/v1/automation/login',
-              [
-                200,
-                {'Content-Type': 'application/json'},
-                '{"entity-type": "login"}'
-              ]
+            'POST',
+            '/dummy/api/v1/automation/login',
+            [
+              200,
+              {'Content-Type': 'application/json'},
+              '{"entity-type":"login","username":"Administrator"}'
+            ]
+          );
+          server.respondWith(
+            'GET',
+            '/dummy/api/v1/repo/default/user/Administrator?',
+            [
+              200,
+              {'Content-Type': 'application/json'},
+              '{"entity-type":"user","username":"Administrator"}'
+            ]
           );
 
           // login
