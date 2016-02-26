@@ -92,7 +92,15 @@ element.
       enrichersEntity: {type: String, value: 'document'},
 
       /* The `content type` of the request */
-      contentType: {type: String, value: 'application/json'}
+      contentType: {type: String, value: 'application/json'},
+
+      /**
+       * The delay in milliseconds to debounce the auto get call when path, params, etc. changes.
+       */
+      autoDelay: {
+        type: Number,
+        value: 300
+      },
     },
 
     observers: [
@@ -150,7 +158,9 @@ element.
 
     _autoGet: function () {
       if (this.auto && this.path) {
-        this.get();
+        this.debounce('_autoGet', function() {
+          this.get();
+        }.bind(this), this.autoDelay);
       }
     },
 
