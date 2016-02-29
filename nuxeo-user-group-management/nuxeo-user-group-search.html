@@ -13,9 +13,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 Contributors:
+    Andre Justo <ajusto@nuxeo.com>
     Gabriel Barata <gbarata@nuxeo.com>
 -->
 <link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
+<link rel="import" href="../../iron-icon/iron-icon.html">
+<link rel="import" href="../../iron-icons/editor-icons.html">
+<link rel="import" href="../../paper-button/paper-button.html">
+<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../paper-item/paper-icon-item.html">
+<link rel="import" href="../../paper-input/paper-input.html">
+<link rel="import" href="../../paper-menu/paper-menu.html">
+<link rel="import" href="../../paper-menu-button/paper-menu-button.html">
 
 <!--
 Used by `nuxeo-user-management`
@@ -36,94 +46,248 @@ Used by `nuxeo-user-management`
       }
 
       #createButton {
-        margin-right: 0px;
-        padding-right: 0px;
-        width: 140px;
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
-        @apply(--layout-end-justified);
+        background: #4285f4;
+        color: #fff;
+        padding: 0.4em 0.7em;
         @apply(--nuxeo-user-management-create-button-layout);
       }
 
-      #createDropdown {
-        margin-left: 0px;
-        padding-left: 0px;
-        @apply(--nuxeo-user-management-create-dropdown-layout);
+      .manage-btn {
+        padding: 0.2em 0.7em;
+      }
+
+      paper-icon-item {
+        cursor: pointer;
+      }
+
+      paper-icon-item:hover {
+        background: #f4f4f4;
+      }
+
+      .table {
+        border: 1px solid #e7e7e7;
+        margin-top: 2em;
+      }
+
+      .table-row {
+        @apply(--layout-horizontal);
+      }
+
+      .table-row > div {
+        padding: 0.6em 1em;
+      }
+
+      .table-headers > div {
+        background-color: #f8f9fb;
+        font-weight: bold;
+      }
+
+      .table-actions {
+        width: 100px;
+      }
+
+      /* tags */
+      .acl-permission-tag {
+        background-color: #7e90a5;
+        border-radius: 3px;
+        color: #fff;
+        margin: 0 0.2em 0.2em 0;
+        padding: 0.06em 0.3em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .tag {
+        background: none #f3f6f9;
+        border-radius: 16px;
+        font-size: .8em;
+        margin: 0;
+        padding: 0.1em 0.8em 0.2em;
+      }
+
+      .counter {
+        margin-right: 2em;
       }
     </style>
 
+    <nuxeo-resource id="userSearch" auto path="/user/search" response="{{users}}"></nuxeo-resource>
+    <nuxeo-resource id="groupSearch" auto path="/group/search" response="{{groups}}"></nuxeo-resource>
+
     <div class="horizontal layout center">
       <div class="flex">
-        <nuxeo-user-suggestion search-type="USER_GROUP_TYPE"
-                               multiple="true"></nuxeo-user-suggestion>
+        <paper-input id="searchInput" autofocus="true" value="{{searchTerm}}" type="search" placeholder="Search for users and groups">
+          <iron-icon icon="search" prefix></iron-icon>
+        </paper-input>
       </div>
-      <paper-button id="createButton" on-tap="_create">
-        <iron-icon icon="[[selectedCreateOpt.icon]]"></iron-icon>
-        <span>[[selectedCreateOpt.value]]<span>
-      </paper-button>
-      <paper-menu-button id="createDropdown" horizontal-align="right">
-        <paper-icon-button class="dropdown-trigger"
-                           icon="icons:arrow-drop-down"></paper-icon-button>
-        <paper-menu class="dropdown-content"
-                    selected="{{selectedCreateOptIndex}}">
-          <template is="dom-repeat" items="[[createOperations]]">
-            <paper-icon-item key="[[item.key]]">
-              <iron-icon icon="[[item.icon]]" item-icon></iron-icon>
-              [[item.value]]
-            </paper-icon-item>
-          </template>
+      <paper-menu-button>
+        <paper-button class="dropdown-trigger" raised id="createButton">
+          <iron-icon icon="add-circle-outline"></iron-icon>
+          <span>NEW</span>
+        </paper-button>
+        <paper-menu class="dropdown-content" selectable="item">
+          <paper-icon-item on-tap="_createUser">
+            <iron-icon icon="social:person" item-icon></iron-icon>
+            <span>User</span>
+          </paper-icon-item>
+          <paper-icon-item on-tap="_createGroup">
+            <iron-icon icon="social:people" item-icon></iron-icon>
+            <span>Group</span>
+          </paper-icon-item>
         </paper-menu>
       </paper-menu-button>
     </div>
-    <h3>Recently created users and groups</h3>
 
-  </template>
+    <template is="dom-if" if="[[!_showRecents(searchTerm)]]">
+      <div class="table">
+        <div class="table-headers table-row">
+          <div class="flex">Name</div>
+          <div class="flex-2">Identifier</div>
+          <div class="flex-4">Contains</div>
+          <div class="table-actions"></div>
+        </div>
+        <template is="dom-repeat" items="[[groups.entries]]" as="item">
+           <div class="table-row">
+            <div class="flex">
+              <span class="tag">
+                <iron-icon icon="social:people"></iron-icon>
+                [[item.grouplabel]]
+              </span>
+            </div>
+            <div class="flex-2">[[item.groupname]]</div>
+            <div class="flex-4">
+              <span class="counter">[[_countUsers(item.memberUsers)]]</span>
+              <span class="counter">[[_countGroups(item.memberGroups)]]</span>
+            </div>
+            <div class="table-actions layout horizontal">
+              <paper-icon-button icon="editor:mode-edit"
+                                 on-tap="_manageGroup">
+              </paper-icon-button>
+              <paper-icon-button icon="icons:delete"
+                                 on-tap="_deleteGroup">
+              </paper-icon-button>
+            </div>
+          </div>
+        </template>
+        <template is="dom-if" if=[[_empty(groups.entries)]]>
+          <div class="table-row">
+            <div>No group matches the entered criteria.</div>
+          </div>
+        </template>
+      </div>
 
+      <div class="table">
+        <div class="table-row table-headers">
+          <div class="flex">Name</div>
+          <div class="flex-2">Identifier</div>
+          <div class="flex-4">Email</div>
+          <div class="table-actions"></div>
+        </div>
+        <template is="dom-repeat" items="[[users.entries]]" as="item">
+           <div class="table-row">
+            <div class="flex">
+              <template is="dom-if" if="[[_userHasName(item)]]">
+                <span class="tag">
+                  <iron-icon icon="social:person"></iron-icon>
+                  [[item.properties.firstName]] [[item.properties.lastName]]
+                </span>
+              </template>
+            </div>
+            <div class="flex-2">[[item.id]]</div>
+            <div class="flex-4">[[item.properties.email]]</div>
+            <div class="table-actions layout horizontal">
+              <paper-icon-button icon="editor:mode-edit"
+                                 on-tap="_manageUser">
+              </paper-icon-button>
+              <paper-icon-button icon="icons:delete"
+                                 on-tap="_deleteUser">
+              </paper-icon-button>
+            </div>
+          </div>
+        </template>
+        <template is="dom-if" if=[[_empty(users.entries)]]>
+          <div class="table-row">
+            <div>No user matches the entered criteria.</div>
+          </div>
+        </template>
+      </div>
+    </template>
+    <template is="dom-if" if="[[_showRecents(searchTerm)]]">
+      <h3>Recently created users and groups</h3>
+    </template>
+ </template>
 </dom-module>
-
 <script>
-
   Polymer({
-
     is: 'nuxeo-user-group-search',
 
     properties: {
-      createOperations: {
-        type: Array,
-        value: [
-          {key: 'user', value: 'New User', icon: 'social:person'},
-          {key: 'group', value: 'New Group', icon: 'social:people'}
-        ],
-        notify: true
+      searchTerm: {
+        type: String,
+        value: '',
+        observer: '_searchTermChanged'
       },
 
-      selectedCreateOpt: {
-        type: Object,
-        notify: true
-      },
-
-      selectedCreateOptIndex: {
-        type: Number
-      }
-    },
-    observers: ['_observeSelected(selectedCreateOptIndex)'],
-
-    ready: function() {
-      this.selectedCreateOptIndex = 0;
+      users: Object,
+      groups: Object
     },
 
-    _create: function() {
-      if (this.selectedCreateOpt.key === 'user') {
-        this.fire('goCreateUser');
+    _searchTermChanged: function() {
+      if (this.searchTerm !== '') {
+        var params = {
+          q: this.searchTerm
+        };
+        this.$.userSearch.params = this.$.groupSearch.params = params;
       } else {
-        this.fire('goCreateGroup');
+        this.users = this.groups = {};
       }
     },
 
-    _observeSelected: function(selectedCreateOptIndex) {
-      this.selectedCreateOpt = this.createOperations[selectedCreateOptIndex];
+    _manageUser: function(e) {
+      this.fire('manageUser', {user: e.model.item.id});
+    },
+
+    _manageGroup: function(e) {
+      this.fire('manageGroup', {user: e.model.item.id});
+    },
+
+    _createUser: function() {
+      this.fire('goCreateUser');
+    },
+
+    _createGroup: function() {
+      this.fire('goCreateGroup');
+    },
+
+    _deleteUser: function() {
+    },
+
+    _deleteGroup: function() {
+    },
+
+    _empty: function(entries) {
+      return entries && entries.length === 0;
+    },
+
+    _countUsers: function(users) {
+      if (users.length > 0) {
+        var label = users.length === 1 ? ' user' : ' users'
+        return users.length + label;
+      }
+    },
+
+    _countGroups: function(groups) {
+      if (groups.length > 0) {
+        var label = groups.length === 1 ? ' sub-group' : ' sub-groups'
+        return groups.length + label;
+      }
+    },
+
+    _userHasName: function(user) {
+      return user.properties.firstName || user.properties.lastName;
+    },
+
+    _showRecents: function() {
+      return this.searchTerm.length === 0;
     }
-
   });
-
 </script>
