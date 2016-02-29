@@ -24,7 +24,7 @@
     "iron-elements": "PolymerElements/iron-elements#^1.0.0",
     "paper-elements": "PolymerElements/paper-elements#^1.0.1",
     "nuxeo-elements": "nuxeo/nuxeo-elements#master",
-    "moment": "^2.11.2"
+    "moment": "~2.10.6"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
