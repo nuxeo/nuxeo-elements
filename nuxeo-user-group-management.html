@@ -39,6 +39,7 @@ Contributors:
 <link rel="import" href="nuxeo-user-group-management/nuxeo-user-group-search.html">
 <link rel="import" href="nuxeo-user-group-management/nuxeo-create-user.html">
 <link rel="import" href="nuxeo-user-group-management/nuxeo-create-group.html">
+<link rel="import" href="nuxeo-user-group-management/nuxeo-user-management.html">
 
 <!--
 An element for managing users and groups in Nuxeo.
@@ -73,6 +74,10 @@ Example:
         <nuxeo-create-user></nuxeo-create-user>
       </section>
 
+      <section name="manage-user">
+        <nuxeo-user-management username="[[selectedUser]]"></nuxeo-user-management>
+      </section>
+
       <section name="create-group">
         <nuxeo-create-group></nuxeo-create-group>
       </section>
@@ -97,12 +102,15 @@ Example:
         type: String,
         value: 'search',
         notify: true
-      }
+      },
+
+      selectedUser: String
     },
     listeners: {
       'goHome': '_goSearch',
       'goCreateUser': '_goCreateUser',
       'goCreateGroup': '_goCreateGroup',
+      'manageUser': '_manageUser',
       'toast': '_toast'
     },
 
@@ -125,6 +133,11 @@ Example:
      */
     _goCreateGroup: function() {
       this.page = 'create-group';
+    },
+
+    _manageUser: function(e) {
+      this.selectedUser = e.detail.user;
+      this.page = 'manage-user';
     },
 
     /**
