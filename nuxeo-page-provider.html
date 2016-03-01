@@ -224,6 +224,7 @@ element.
             this.isNextPageAvailable = response.isNextPageAvailable;
             this.currentPageSize = response.currentPageSize;
             this.fire('update');
+            return response;
           }.bind(this));
       },
 
