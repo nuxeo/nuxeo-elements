@@ -99,6 +99,7 @@ Used by `nuxeo-user-management`
 
       .label-container > paper-checkbox#another {
         margin-left: 8px;
+        margin-top: 12px;
       }
 
       .form-buttons > paper-button.primary {
@@ -143,11 +144,15 @@ Used by `nuxeo-user-management`
         width: 32px;
         height: 32px;
       }
+
+      #errors {
+        color: red;
+        margin-top: 20px;
+      }
     </style>
 
     <nuxeo-resource id="request"
                     path="/group"
-                    data="[[data]]"
                     headers='{"Content-Type":"application/json"}'>
     </nuxeo-resource>
 
@@ -207,14 +212,17 @@ Used by `nuxeo-user-management`
           </template>
         </div>
       </div>
-      <div class="footer horizontal layout center">
+      <div class="footer horizontal layout">
         <div class="label-container">
           Create another
           <paper-checkbox id="another"></paper-checkbox>
         </div>
-        <div class="form-buttons">
-          <paper-button id="createButton" class="primary" on-tap="_submit">Create</paper-button>
-          <paper-button id="cancelButton" on-tap="_cancel">Cancel</paper-button>
+        <div class="layout vertical">
+          <div class="form-buttons">
+            <paper-button id="createButton" class="primary" on-tap="_submit">Create</paper-button>
+            <paper-button id="cancelButton" on-tap="_cancel">Cancel</paper-button>
+          </div>
+          <span id="errors" hidden$="[[!_hasErrors(errors)]]">[[errors]]</span>
         </div>
       </div>
     </form>
@@ -229,28 +237,33 @@ Used by `nuxeo-user-management`
         type: String,
         notify: true
       },
+
       groupLabel: {
         type: String,
         notify: true
       },
+
       selectedUser: {
         type: Object,
         notify: true
       },
+
       selectedUsers: {
         type: Array,
         value: [],
         notify: true
       },
-      data: {
-        type: Object,
-        computed: '_computeData(groupName,groupLabel,selectedUsers.*)'
-      },
+
       resultsFilter: {
         type: Function,
         value: function() {
           return this._resultsFilter.bind(this);
         }
+      },
+
+      errors: {
+        type: String,
+        value: ''
       }
     },
     observers: [
@@ -294,13 +307,17 @@ Used by `nuxeo-user-management`
      * Creates a new group if the form was successfully submitted.
      */
     _create: function() {
+      this.$.request.data = this._computeData();
       this.$.request.post().then(function(response) {
         this.fire('toast', 'Group ' + response.groupname + ' created');
         this._resetFields();
         if (!this.$.another.checked) {
           this._goHome();
         }
-      }.bind(this));
+      }.bind(this))
+      .catch(function(error) {
+        this.errors = error.message;
+      }.bind(this));;
     },
 
     _cancel: function() {
@@ -341,6 +358,10 @@ Used by `nuxeo-user-management`
         }
       }
       return true;
+    },
+
+    _hasErrors: function() {
+      return this.errors !== '';
     }
   });
 </script>
