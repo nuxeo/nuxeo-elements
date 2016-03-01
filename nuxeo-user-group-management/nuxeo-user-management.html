@@ -354,7 +354,9 @@ Used by `nuxeo-user-group-management`
           principals.push('"' + this.user.id + '"');
           principals.join();
           this.$.permissions.params = {
-            query: 'SELECT * FROM Document WHERE ecm:acl/*1/principal IN (' + principals + ')'
+            query: 'SELECT * FROM Document WHERE ecm:mixinType != "HiddenInNavigation"'
+                  + 'AND ecm:isProxy = 0 AND ecm:isCheckedInVersion = 0 '
+                  + 'AND ecm:currentLifeCycleState != "deleted" AND ecm:acl/*1/principal IN (' + principals + ')'
           };
           this.$.permissions.execute().then(function(response) {
             this._computePermissions(response.entries);
