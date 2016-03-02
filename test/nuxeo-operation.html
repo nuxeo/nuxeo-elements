@@ -113,7 +113,7 @@ Contributors:
           [
             500,
             responseHeaders.json,
-            '{"error":"Internal Error"}'
+            '{"message":"Internal Server Error"}'
           ]
         );
 
@@ -121,7 +121,6 @@ Contributors:
         return operation.execute().then(function() {
           throw new Error('Expected to an invalid response!');
         }).catch(function(error) {
-          expect(error).to.be.instanceof(Error);
           expect(error.message).to.be.eq('Internal Server Error');
         });
       });

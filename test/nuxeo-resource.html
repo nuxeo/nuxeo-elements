@@ -104,7 +104,7 @@ Contributors:
            [
              500,
              responseHeaders.json,
-             '{"error":"Internal Error"}'
+             '{"message":"Internal Server Error"}'
            ]
          );
 
@@ -112,7 +112,6 @@ Contributors:
          return resource.get().then(function() {
            throw new Error('Expected to an invalid response!');
          }).catch(function(error) {
-           expect(error).to.be.instanceof(Error);
            expect(error.message).to.be.eq('Internal Server Error');
          });
        });
@@ -148,7 +147,6 @@ Contributors:
         return resource.get().then(function() {
           throw new Error('Expected to fail the login!');
         }).catch(function(error) {
-          expect(error).to.be.instanceof(Error);
           expect(error.message).to.be.eq('Unauthorized');
         });
       });
@@ -160,7 +158,7 @@ Contributors:
           [
             500,
             responseHeaders.json,
-            '{"error":"Internal Error"}'
+            '{"message":"Unauthorized"}'
           ]
         );
 
@@ -168,7 +166,6 @@ Contributors:
         return resource.get().then(function() {
           throw new Error('Expected to fail the login!');
         }).catch(function(error) {
-          expect(error).to.be.instanceof(Error);
           expect(error.message).to.be.eq('Unauthorized');
         });
       });
