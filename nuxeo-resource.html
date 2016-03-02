@@ -57,8 +57,8 @@ element.
       /* The success response status */
       success: {type: Boolean, notify: true},
 
-      /* The error response status */
-      error: {type: String, notify: true},
+      /* The error response */
+      error: {type: Object, notify: true},
 
       /* If true, automatically execute the operation when either `path` or `params` changes. */
       auto: {type: Boolean, value: false},
@@ -178,9 +178,11 @@ element.
         }.bind(this))
         .catch(function(error) {
           this.success = false;
-          this.error = error;
-          console.log("Resource request failed: " + error);
-          throw error;
+          return error.response.json().then(function(e) {
+            this.error = e;
+            console.log("Resource request failed: " + e.message);
+            throw e;
+          }.bind(this));
         }.bind(this));
     }
 
