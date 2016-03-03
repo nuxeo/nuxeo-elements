@@ -234,7 +234,8 @@ Used by `nuxeo-user-management`
     _searchTermChanged: function() {
       if (this.searchTerm !== '') {
         var params = {
-          q: this.searchTerm
+          q: this.searchTerm,
+          pageSize: 5
         };
         this.$.userSearch.params = this.$.groupSearch.params = params;
       } else {
