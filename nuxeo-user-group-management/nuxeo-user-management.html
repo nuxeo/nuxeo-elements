@@ -17,13 +17,11 @@ Contributors:
   Andre Justo <ajusto@nuxeo.com>
 -->
 <link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="nuxeo-user-group-permissions-table.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
-<link rel="import" href="../../nuxeo-elements/nuxeo-page-provider.html">
-<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../../nuxeo-elements/widgets/nuxeo-user-suggestion.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
-<script src="../../moment/moment.js"></script>
 
 <!--
 An element for managing a user.
@@ -50,6 +48,7 @@ Used by `nuxeo-user-group-management`
       }
 
       h1 {
+        color: #213f7d;
         margin: 0;
       }
 
@@ -98,11 +97,6 @@ Used by `nuxeo-user-group-management`
         text-decoration: underline;
       }
 
-      .title {
-        color: #213f7d;
-        margin: 3em 1em 0 1em;
-      }
-
       /* Table */
       .table-wrapper {
         padding: 1em;
@@ -110,6 +104,7 @@ Used by `nuxeo-user-group-management`
 
       .table {
         border: 1px solid #e7e7e7;
+        margin-top: 1em;
       }
 
       .table-row {
@@ -129,15 +124,8 @@ Used by `nuxeo-user-group-management`
         width: 50px;
       }
 
-      /* tags */
-      .acl-permission-tag {
-        background-color: #7e90a5;
-        border-radius: 3px;
-        color: #fff;
-        margin: 0 0.2em 0.2em 0;
-        padding: 0.06em 0.3em;
-        text-transform: uppercase;
-        white-space: nowrap;
+      nuxeo-user-group-permissions-table {
+        margin-top: 1em;
       }
 
       .tag {
@@ -147,22 +135,13 @@ Used by `nuxeo-user-group-management`
         margin: 0;
         padding: 0.1em 0.8em 0.2em;
       }
-
-      .acl-permission-path {
-        color: #213f7d;
-        font-size: 0.8em;
-        margin-top: 5px;
-      }
     </style>
 
     <nuxeo-resource id="request"
                     path="user/[[username]]"
-                    headers='{"Content-Type":"application/json"}'
                     enrichers="userprofile"
                     enrichers-entity="user">
     </nuxeo-resource>
-    <nuxeo-operation id="permissions" op="Repository.PageProvider" enrichers="acls"></nuxeo-operation>
-    <nuxeo-operation id="rmPermission" op="Document.RemovePermission"></nuxeo-operation>
 
     <div class="header horizontal layout">
       <paper-icon-button class="backButton" icon="icons:arrow-back" on-tap="_goHome"></paper-icon-button>
@@ -182,30 +161,30 @@ Used by `nuxeo-user-group-management`
         <span>[[user.properties.company]]</span>
       </div>
     </div>
-    <div class="title layout horizontal">
-      <h1 class="flex">Groups</h1>
-      <paper-button class="flex-end" on-tap="_toggleEditGroups">
-        <iron-icon icon="add"></iron-icon>
-        Add to Group
-      </paper-button>
-    </div>
-    <div class="card layout vertical" hidden$="[[!showEditGroups]]">
-      <nuxeo-user-suggestion id="picker" class="flex"
-                             search-type="GROUP_TYPE"
-                             placeholder="Search for groups..."
-                             value="{{selectedGroup}}">
-      </nuxeo-user-suggestion>
-      <template is="dom-repeat" items="[[activity]]">
-        <div class="activity-entry">
-          [[user.id]] is now member of
-          <span class="tag">
-            <iron-icon icon="social:people"></iron-icon>[[item.displayLabel]]
-          </span>
-          <span class="remove" on-tap="_removeRecent">Remove</span>
-        </div>
-      </template>
-    </div>
     <div class="table-wrapper">
+      <div class="layout horizontal">
+        <h1 class="flex">Groups</h1>
+        <paper-button class="flex-end" on-tap="_toggleEditGroups">
+          <iron-icon icon="add"></iron-icon>
+          Add to Group
+        </paper-button>
+      </div>
+      <div class="card layout vertical" hidden$="[[!showEditGroups]]">
+        <nuxeo-user-suggestion id="picker" class="flex"
+                               search-type="GROUP_TYPE"
+                               placeholder="Search for groups..."
+                               value="{{selectedGroup}}">
+        </nuxeo-user-suggestion>
+        <template is="dom-repeat" items="[[activity]]">
+          <div class="activity-entry">
+            [[user.id]] is now member of
+            <span class="tag">
+              <iron-icon icon="social:people"></iron-icon> [[item.displayLabel]]
+            </span>
+            <span class="remove" on-tap="_removeRecent">Remove</span>
+          </div>
+        </template>
+      </div>
       <div class="table">
         <div class="table-row table-headers">
           <div class="flex">Name</div>
@@ -224,7 +203,7 @@ Used by `nuxeo-user-group-management`
               <div class="flex-4">[[item.name]]</div>
               <div class="table-actions">
                 <paper-icon-button icon="icons:clear"
-                                   title="remove"
+                                   title="Remove from [[item.label]]"
                                    on-tap="_removeFromGroup">
                 </paper-icon-button>
               </div>
@@ -238,54 +217,9 @@ Used by `nuxeo-user-group-management`
         </template>
       </div>
     </div>
-    <div class="title">
-      <h1 class="flex">Local Permissions</h1>
-    </div>
     <div class="table-wrapper">
-      <div class="table">
-        <div class="table-row table-headers">
-          <div class="flex-2">Right</div>
-          <div class="flex-6">On</div>
-          <div class="flex-2">Time Frame</div>
-          <div class="flex-2">Granted by</div>
-          <div class="table-actions"></div>
-        </div>
-        <template is="dom-if" if=[[!_empty(permissions)]]>
-          <template is="dom-repeat" items="[[permissions]]" as="permission">
-            <div class="table-row">
-              <div class="flex-2">
-                <span class="acl-permission-tag">[[permission.permission]]</span>
-              </div>
-              <div class="flex-6">
-                <div>[[permission.docTitle]]</div>
-                <div class="acl-permission-path">[[permission.docPath]]</div>
-              </div>
-              <div class="flex-2">
-                <span>[[permission.timeFrame]]</span>
-              </div>
-              <div class="flex-2">
-                <template is="dom-if" if=[[permission.creator]]>
-                  <span class="tag flex">
-                    <iron-icon icon="social:people"></iron-icon>
-                    [[permission.creator]]
-                  </span>
-                </template>
-              </div>
-              <div class="table-actions">
-                <paper-icon-button icon="icons:delete"
-                                   title="remove"
-                                   on-tap="_deleteAce">
-                </paper-icon-button>
-              </div>
-            </div>
-          </template>
-        </template>
-        <template is="dom-if" if=[[_empty(permissions)]]>
-          <div class="doctable-row">
-            User does not have permissions.
-          </div>
-        </template>
-      </div>
+      <h1>Local Permissions</h1>
+      <nuxeo-user-group-permissions-table entity="[[username]]"></nuxeo-user-group-permissions-table>
     </div>
   </template>
   <script>
@@ -302,8 +236,6 @@ Used by `nuxeo-user-group-management`
           },
 
           user: Object,
-
-          permissions: Object,
 
           selectedGroup: {
             type: Object,
@@ -328,10 +260,6 @@ Used by `nuxeo-user-group-management`
           }
         },
 
-        observers: [
-          '_fetchPermissions(user)'
-        ],
-
         ready: function() {
           this.$.picker.$$('nuxeo-select2').queryResultsFilter = this.resultsFilter;
         },
@@ -345,22 +273,6 @@ Used by `nuxeo-user-group-management`
               this.selectedGroup = null;
             }.bind(this));
           }
-        },
-
-        _fetchPermissions: function() {
-          var principals = this.user.extendedGroups.map(function(item) {
-            return '"' + item.name + '"';
-          });
-          principals.push('"' + this.user.id + '"');
-          principals.join();
-          this.$.permissions.params = {
-            query: 'SELECT * FROM Document WHERE ecm:mixinType != "HiddenInNavigation"'
-                  + 'AND ecm:isProxy = 0 AND ecm:isCheckedInVersion = 0 '
-                  + 'AND ecm:currentLifeCycleState != "deleted" AND ecm:acl/*1/principal IN (' + principals + ')'
-          };
-          this.$.permissions.execute().then(function(response) {
-            this._computePermissions(response.entries);
-          }.bind(this));
         },
 
         _groupSelected: function() {
@@ -389,7 +301,6 @@ Used by `nuxeo-user-group-management`
               }
             }
             this.notifyPath('user.extendedGroups', this.user.extendedGroups);
-            this._fetchPermissions();
           }.bind(this));
         },
 
@@ -405,65 +316,12 @@ Used by `nuxeo-user-group-management`
               }
             }
             this.notifyPath('user.extendedGroups', this.user.extendedGroups);
-            this._fetchPermissions();
           }.bind(this));
         },
 
         _remove: function(groupName) {
           this.$.request.path = 'user/' + this.user.id + '/group/' + groupName;
           return this.$.request.remove();
-        },
-
-        _formatTimeFrame: function(ace) {
-          var now = moment();
-          var begin = ace.begin;
-          var end = ace.end;
-          var format = 'D MMM YYYY';
-          var sinceStr = 'Since ';
-          var fromStr = 'From ';
-          var untilStr = 'Until '
-          var untilMiddleStr = ' until ';
-          if (begin !== null && end === null) {
-            return (now.isAfter(begin) ? sinceStr : fromStr) + moment(begin).format(format);
-          } else if (begin === null && end !== null) {
-            return untilStr + moment(end).format(format);
-          } else if (begin !== null && end !== null) {
-            return (now.isAfter(begin) ? sinceStr : fromStr) + moment(begin).format(format) + untilMiddleStr + moment(end).format(format);
-          } else {
-            return 'Permanent';
-          }
-        },
-
-        _computePermissions: function(entries) {
-          var permissions = [];
-          entries.map(function(entry) {
-            entry.contextParameters.acls.map(function(acl) {
-              return acl.aces.map(function(ace) {
-                if (this._aceBelongsToUser(ace)) {
-                  ace.docId = entry.uid;
-                  ace.docTitle = entry.title;
-                  ace.docPath = entry.path;
-                  ace.timeFrame = this._formatTimeFrame(ace);
-                  permissions.push(ace);
-                }
-              }.bind(this));
-            }.bind(this));
-          }.bind(this));
-          this.permissions = permissions;
-        },
-
-        _aceBelongsToUser: function(ace) {
-          return ace.username === this.user.id || this.user.properties.groups.indexOf(ace.username) > -1;
-        },
-
-        _deleteAce: function(e) {
-          this.$.rmPermission.input = e.model.permission.docId;
-          this.$.rmPermission.params = {
-            id: e.model.permission.id
-          };
-          this.$.rmPermission.execute().then(function() {
-            this.splice('permissions', this.permissions.indexOf(e.model.permission), 1);
-          }.bind(this));
         },
 
         _empty: function(entries) {
