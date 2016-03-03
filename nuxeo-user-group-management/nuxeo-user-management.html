@@ -221,6 +221,12 @@ Used by `nuxeo-user-group-management`
       <h1>Local Permissions</h1>
       <nuxeo-user-group-permissions-table entity="[[username]]"></nuxeo-user-group-permissions-table>
     </div>
+    <template is="dom-repeat" items="[[user.extendedGroups]]" as="item">
+      <div class="table-wrapper">
+      <h1>[[item.name]] permissions</h1>
+      <nuxeo-user-group-permissions-table entity="[[item.name]]"></nuxeo-user-group-permissions-table>
+    </div>
+    </template>
   </template>
   <script>
     (function() {
