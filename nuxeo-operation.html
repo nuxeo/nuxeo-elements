@@ -95,6 +95,9 @@ element.
               notify: true
             },
 
+            /* The headers of the request. */
+            headers: {type: Object, value: null},
+
             /* The `content enricher` of the resource. */
             enrichers: {type: String, value: ''},
 
@@ -108,7 +111,7 @@ element.
           execute: function() {
             var params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
             var options = {};
-            options.headers = {}
+            options.headers = this.headers || {};
             // Look up content enrichers parameter
             if (this.enrichers) {
               options.headers['X-NXenrichers.' + this.enrichersEntity] = this.enrichers;
