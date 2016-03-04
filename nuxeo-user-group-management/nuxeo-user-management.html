@@ -21,6 +21,7 @@ Contributors:
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../../nuxeo-elements/widgets/nuxeo-user-suggestion.html">
 <link rel="import" href="../../paper-button/paper-button.html">
+<link rel="import" href="../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 
 <!--
@@ -52,7 +53,7 @@ Used by `nuxeo-user-group-management`
         margin: 0;
       }
 
-      paper-button {
+      #addGroup {
         border: 1px solid #213f7d;
         padding: 0.2em 0.5em;
       }
@@ -164,7 +165,7 @@ Used by `nuxeo-user-group-management`
     <div class="table-wrapper">
       <div class="layout horizontal">
         <h1 class="flex">Groups</h1>
-        <paper-button class="flex-end" on-tap="_toggleEditGroups">
+        <paper-button id="addGroup" class="flex-end" on-tap="_toggleEditGroups">
           <iron-icon icon="add"></iron-icon>
           Add to Group
         </paper-button>
@@ -179,9 +180,9 @@ Used by `nuxeo-user-group-management`
           <div class="activity-entry">
             [[user.id]] is now member of
             <span class="tag">
-              <iron-icon icon="social:people"></iron-icon> [[item.displayLabel]]
+              <iron-icon icon="social:people"></iron-icon> [[item.label]]
             </span>
-            <span class="remove" on-tap="_removeRecent">Remove</span>
+            <span class="remove" on-tap="_toggleDialog">Remove</span>
           </div>
         </template>
       </div>
@@ -191,8 +192,8 @@ Used by `nuxeo-user-group-management`
           <div class="flex-4">Identifier</div>
           <div class="table-actions"></div>
         </div>
-        <template is="dom-if" if=[[!_empty(user.extendedGroups)]]>
-          <template is="dom-repeat" items="[[user.extendedGroups]]" as="item">
+        <template is="dom-if" if=[[!empty]]>
+          <template is="dom-repeat" items="[[user.extendedGroups]]">
             <div class="table-row">
               <div class="flex">
                 <span class="tag">
@@ -204,13 +205,13 @@ Used by `nuxeo-user-group-management`
               <div class="table-actions">
                 <paper-icon-button icon="icons:clear"
                                    title="Remove from [[item.label]]"
-                                   on-tap="_removeFromGroup">
+                                   on-tap="_toggleDialog">
                 </paper-icon-button>
               </div>
             </div>
           </template>
         </template>
-        <template is="dom-if" if=[[_empty(user.extendedGroups)]]>
+        <template is="dom-if" if=[[empty]]>
           <div class="table-row">
             <div>User does not belong to any group yet.</div>
           </div>
@@ -221,12 +222,22 @@ Used by `nuxeo-user-group-management`
       <h1>Local Permissions</h1>
       <nuxeo-user-group-permissions-table entity="[[username]]"></nuxeo-user-group-permissions-table>
     </div>
-    <template is="dom-repeat" items="[[user.extendedGroups]]" as="item">
+    <template is="dom-repeat" items="[[user.extendedGroups]]">
       <div class="table-wrapper">
       <h1>[[item.name]] permissions</h1>
       <nuxeo-user-group-permissions-table entity="[[item.name]]"></nuxeo-user-group-permissions-table>
     </div>
     </template>
+
+    <paper-dialog id="dialog" modal class="vertical layout">
+      <div class="horizontal layout">
+        <p>Do you really want to remove [[user.id]] from [[_removedGroup.name]]?</p>
+      </div>
+      <div class="buttons horizontal end-justified layout">
+        <paper-button dialog-dismiss>No</paper-button>
+        <paper-button dialog-confirm on-tap="_remove">Yes</paper-button>
+      </div>
+    </paper-dialog>
   </template>
   <script>
     (function() {
@@ -263,8 +274,16 @@ Used by `nuxeo-user-group-management`
           showEditGroups: {
             type: Boolean,
             value: false
-          }
+          },
+
+          empty: Boolean,
+
+          _removedGroup: Object
         },
+
+        observers: [
+          '_userRemovedFromGroup(user.extendedGroups.splices)'
+        ],
 
         ready: function() {
           this.$.picker.$$('nuxeo-select2').queryResultsFilter = this.resultsFilter;
@@ -284,58 +303,62 @@ Used by `nuxeo-user-group-management`
         _groupSelected: function() {
           if (this.selectedGroup) {
             var obj = jQuery(this.$.picker.$$('nuxeo-select2')._el).select2('data');
-            this.push('activity', obj);
-            this.$.request.path = 'user/' + this.user.id + '/group/' + this.selectedGroup;
+            var group = {
+              'name': obj.groupname,
+              'label': obj.grouplabel
+            };
+            this.push('activity', group);
+            this.$.request.path = 'user/' + this.user.id + '/group/' + group.name;
             this.$.request.post().then(function(response) {
               this.user = response;
-              this.fire('toast', this.user.id + ' was added to ' + obj.displayLabel);
+              this.fire('toast', this.user.id + ' was added to ' + group.name);
             }.bind(this));
           }
           this.selectedGroup = null;
         },
 
-        _removeRecent: function(e) {
-          this._remove(e.model.item.id).then(function() {
-            this.splice('activity', this.activity.indexOf(e.model.item), 1);
-            this.fire('toast', this.user.id + ' was removed from ' + e.model.item.displayLabel);
-            // DELETE request does not return the user object, so when we remove
-            // from recents, we need to update the user model too
-            for (var i = 0; i < this.user.extendedGroups.length; i++) {
-              if (this.user.extendedGroups[i].name === e.model.item.id) {
-                this.splice('user.extendedGroups', i, 1);
-                break;
-              }
-            }
-            this.notifyPath('user.extendedGroups', this.user.extendedGroups);
+        _remove: function() {
+          var group = this._removedGroup;
+          this.$.request.path = 'user/' + this.user.id + '/group/' + group.name;
+          return this.$.request.remove().then(function() {
+            this._removeRecent(group.name);
+            this._removeFromGroup(group.name);
+            this.fire('toast', this.user.id + ' was removed from ' + group.name);
           }.bind(this));
         },
 
-        _removeFromGroup: function(e) {
-          this._remove(e.model.item.name).then(function() {
-            this.splice('user.extendedGroups', this.user.extendedGroups.indexOf(e.model.item), 1);
-            this.fire('toast', this.user.id + ' was removed from ' + e.model.item.label);
-            // remove from 'recent', if it exists
-            for (var i = 0; i < this.activity.length; i++) {
-              if (this.activity[i].id === e.model.item.name) {
-                this.splice('activity', i, 1);
-                break;
-              }
+        _removeRecent: function(group) {
+          // remove from 'recent', if it exists
+          for (var i = 0; i < this.activity.length; i++) {
+            if (this.activity[i].name === group) {
+              this.splice('activity', i, 1);
+              return;
             }
-            this.notifyPath('user.extendedGroups', this.user.extendedGroups);
-          }.bind(this));
+          }
         },
 
-        _remove: function(groupName) {
-          this.$.request.path = 'user/' + this.user.id + '/group/' + groupName;
-          return this.$.request.remove();
+        _removeFromGroup: function(group) {
+          // DELETE request does not return the user object, so when we remove
+          // from recents, we need to update the extendedGroups model too
+          for (var i = 0; i < this.user.extendedGroups.length; i++) {
+            if (this.user.extendedGroups[i].name === group) {
+              this.splice('user.extendedGroups', i, 1);
+              return;
+            }
+          }
         },
 
-        _empty: function(entries) {
-          return entries && entries.length === 0;
+        _userRemovedFromGroup: function() {
+          this.empty = this.user.extendedGroups.length === 0;
         },
 
         _toggleEditGroups: function() {
           this.showEditGroups = !this.showEditGroups;
+        },
+
+        _toggleDialog: function(e) {
+          this._removedGroup = e.model.item;
+          this.$.dialog.toggle();
         },
 
         _goHome: function() {
