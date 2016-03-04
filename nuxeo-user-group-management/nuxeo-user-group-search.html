@@ -67,7 +67,11 @@ Used by `nuxeo-user-management`
 
       .table {
         border: 1px solid #e7e7e7;
-        margin-top: 2em;
+      }
+
+      .table-title {
+        color: #213f7d;
+        margin: 1em 0;
       }
 
       .table-row {
@@ -139,6 +143,7 @@ Used by `nuxeo-user-management`
     </div>
 
     <template is="dom-if" if="[[!_showRecents(searchTerm)]]">
+      <h3 class="table-title">Groups</h3>
       <div class="table">
         <div class="table-headers table-row">
           <div class="flex">Name</div>
@@ -176,6 +181,7 @@ Used by `nuxeo-user-management`
         </template>
       </div>
       <nuxeo-pagination-controls page="{{groupsCurrentPage}}" number-of-pages="[[groups.numberOfPages]]"></nuxeo-pagination-controls>
+      <h3 class="table-title">Users</h3>
       <div class="table">
         <div class="table-row table-headers">
           <div class="flex">Name</div>
