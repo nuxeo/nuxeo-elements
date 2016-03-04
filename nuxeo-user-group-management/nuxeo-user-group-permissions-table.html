@@ -85,8 +85,7 @@ Used by `nuxeo-user-group-management`
 
     <nuxeo-operation id="permissions"
                      op="Document.PageProvider"
-                     enrichers="acls"
-                     headers='{"X-NXContext-Category" : "acls"}'>
+                     enrichers="acls">
     </nuxeo-operation>
     <nuxeo-operation id="rmPermission" op="Document.RemovePermission"></nuxeo-operation>
 
@@ -120,10 +119,12 @@ Used by `nuxeo-user-group-management`
               </template>
             </div>
             <div class="table-actions">
-              <paper-icon-button icon="icons:delete"
+              <template is="dom-if" if="[[ace.id]]">
+                <paper-icon-button icon="icons:delete"
                                  title="Delete permission"
                                  on-tap="_toggleDialog">
-              </paper-icon-button>
+                </paper-icon-button>
+              </template>
             </div>
           </div>
         </template>
@@ -181,6 +182,10 @@ Used by `nuxeo-user-group-management`
                    'AND ecm:isProxy = 0 AND ecm:isCheckedInVersion = 0 ' +
                    'AND ecm:currentLifeCycleState != "deleted" ' +
                    'AND ecm:acl/*1/principal = "' + this.entity + '"'
+          };
+          // header for compat with 6.0
+          this.$.permissions.headers = {
+            'X-NXContext-Category': 'acls'
           };
           this.$.permissions.execute().then(function(response) {
             this._computePermissions(response.entries);
