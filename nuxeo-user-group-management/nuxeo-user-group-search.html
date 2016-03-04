@@ -18,6 +18,7 @@ Contributors:
 -->
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
+<link rel="import" href="../nuxeo-pagination-controls.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-icons/editor-icons.html">
 <link rel="import" href="../../paper-button/paper-button.html">
@@ -174,7 +175,7 @@ Used by `nuxeo-user-management`
           </div>
         </template>
       </div>
-
+      <nuxeo-pagination-controls page="{{groupsCurrentPage}}" number-of-pages="[[groups.numberOfPages]]"></nuxeo-pagination-controls>
       <div class="table">
         <div class="table-row table-headers">
           <div class="flex">Name</div>
@@ -210,6 +211,7 @@ Used by `nuxeo-user-management`
           </div>
         </template>
       </div>
+      <nuxeo-pagination-controls page="{{usersCurrentPage}}" number-of-pages="[[users.numberOfPages]]"></nuxeo-pagination-controls>
     </template>
     <template is="dom-if" if="[[_showRecents(searchTerm)]]">
       <h3>Recently created users and groups</h3>
@@ -228,19 +230,48 @@ Used by `nuxeo-user-management`
       },
 
       users: Object,
-      groups: Object
+      groups: Object,
+
+      groupsCurrentPage: {
+        type: Number
+      },
+
+      usersCurrentPage: {
+        type: Number
+      }
     },
+
+    observers: [
+      '_searchGroups(groupsCurrentPage)',
+      '_searchUsers(usersCurrentPage)'
+    ],
 
     _searchTermChanged: function() {
       if (this.searchTerm !== '') {
-        var params = {
-          q: this.searchTerm,
-          pageSize: 5
-        };
-        this.$.userSearch.params = this.$.groupSearch.params = params;
+        this.groupsCurrentPage = this.usersCurrentPage = 1;
+        this._searchGroups();
+        this._searchUsers();
       } else {
         this.users = this.groups = {};
       }
+    },
+
+    _searchGroups: function() {
+      var params = {
+        q: this.searchTerm,
+        pageSize: 5,
+        currentPageIndex: this.groupsCurrentPage - 1
+      };
+      this.$.groupSearch.params = params;
+    },
+
+    _searchUsers: function() {
+      var params = {
+        q: this.searchTerm,
+        pageSize: 5,
+        currentPageIndex: this.usersCurrentPage - 1
+      };
+      this.$.userSearch.params = params;
     },
 
     _manageUser: function(e) {
