@@ -119,12 +119,11 @@ Used by `nuxeo-user-group-management`
               </template>
             </div>
             <div class="table-actions">
-              <template is="dom-if" if="[[ace.id]]">
-                <paper-icon-button icon="icons:delete"
-                                 title="Delete permission"
-                                 on-tap="_toggleDialog">
-                </paper-icon-button>
-              </template>
+              <paper-icon-button icon="icons:delete"
+                               title="Delete permission"
+                               on-tap="_toggleDialog"
+                               hidden$="[[!_canDelete(ace)]]">
+              </paper-icon-button>
             </div>
           </div>
         </template>
@@ -168,7 +167,9 @@ Used by `nuxeo-user-group-management`
             value: false
           },
 
-          empty: Boolean
+          empty: Boolean,
+
+          _deletedAce: Object
         },
 
         observers: [
@@ -239,8 +240,8 @@ Used by `nuxeo-user-group-management`
           }
         },
 
-        _deleteAce: function(e) {
-          var ace = this.$.dialog.ace;
+        _deleteAce: function() {
+          var ace = this._deletedAce;
           this.$.rmPermission.input = ace.docId;
           this.$.rmPermission.params = {
             id: ace.id
@@ -259,9 +260,13 @@ Used by `nuxeo-user-group-management`
         },
 
         _toggleDialog: function(e) {
-          this.$.dialog.ace = e.model.ace;
+          this._deletedAce = e.model.ace;
           this.$.dialog.toggle();
         },
+
+        _canDelete: function(ace) {
+          return ace && ace.id.length > 0;
+        }
       });
     })();
   </script>
