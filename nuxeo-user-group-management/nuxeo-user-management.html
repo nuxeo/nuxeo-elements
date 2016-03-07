@@ -504,7 +504,7 @@ Used by `nuxeo-user-group-management`
 
         _savePassword: function() {
           this.$.changePasswordDialog.toggle();
-          this.$.editRequest.data = _.cloneDeep(this.user);
+          this.$.editRequest.data = JSON.parse(JSON.stringify(this.user));
           this.$.editRequest.data.properties.password = this.$.passwordEditor.password;
           this.$.editRequest.put().then(function(response) {
             this.user = response;
@@ -516,7 +516,7 @@ Used by `nuxeo-user-group-management`
         },
 
         _toggleEditUser: function() {
-          this.$.userEditor.user = _.cloneDeep(this.user.properties);
+          this.$.userEditor.user = JSON.parse(JSON.stringify(this.user.properties));
           this.$.editUserDialog.toggle();
         },
 
@@ -526,7 +526,7 @@ Used by `nuxeo-user-group-management`
 
         _saveUser: function() {
           this.$.editUserDialog.toggle();
-          var editedUser = _.cloneDeep(this.user);
+          var editedUser = JSON.parse(JSON.stringify(this.user));
           editedUser.properties = this.$.userEditor.user;
           if (editedUser.properties.password === '') {
             delete editedUser.properties.password;
