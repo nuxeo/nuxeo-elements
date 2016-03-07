@@ -42,27 +42,8 @@ Used by `nuxeo-user-management`
         @apply(--nuxeo-user-group-search-layout);
       }
 
-      nuxeo-user-suggestion {
-        @apply(--layout-flex);
-      }
-
-      #createButton {
-        background: #4285f4;
-        color: #fff;
-        padding: 0.4em 0.7em;
-        @apply(--nuxeo-user-management-create-button-layout);
-      }
-
-      .manage-btn {
-        padding: 0.2em 0.7em;
-      }
-
-      paper-icon-item {
-        cursor: pointer;
-      }
-
-      paper-icon-item:hover {
-        background: #f4f4f4;
+      .search {
+        width: calc(100% - 100px);
       }
 
       .table {
@@ -92,16 +73,6 @@ Used by `nuxeo-user-management`
       }
 
       /* tags */
-      .acl-permission-tag {
-        background-color: #7e90a5;
-        border-radius: 3px;
-        color: #fff;
-        margin: 0 0.2em 0.2em 0;
-        padding: 0.06em 0.3em;
-        text-transform: uppercase;
-        white-space: nowrap;
-      }
-
       .tag {
         background: none #f3f6f9;
         border-radius: 16px;
@@ -118,32 +89,16 @@ Used by `nuxeo-user-management`
     <nuxeo-resource id="userSearch" auto path="/user/search" response="{{users}}"></nuxeo-resource>
     <nuxeo-resource id="groupSearch" auto path="/group/search" response="{{groups}}"></nuxeo-resource>
 
-    <div class="horizontal layout center">
-      <div class="flex">
-        <paper-input id="searchInput" autofocus="true" value="{{searchTerm}}" type="search" placeholder="Search for users and groups">
-          <iron-icon icon="search" prefix></iron-icon>
-        </paper-input>
-      </div>
-      <paper-menu-button id="createDropdown">
-        <paper-button class="dropdown-trigger" raised id="createButton">
-          <iron-icon icon="add-circle-outline"></iron-icon>
-          <span>NEW</span>
-        </paper-button>
-        <paper-menu class="dropdown-content" selectable="item">
-          <paper-icon-item on-tap="_createUser">
-            <iron-icon icon="social:person" item-icon></iron-icon>
-            <span>User</span>
-          </paper-icon-item>
-          <paper-icon-item on-tap="_createGroup">
-            <iron-icon icon="social:people" item-icon></iron-icon>
-            <span>Group</span>
-          </paper-icon-item>
-        </paper-menu>
-      </paper-menu-button>
+    <div class="search">
+      <paper-input autofocus="true" value="{{searchTerm}}" type="search" placeholder="Search for users and groups">
+        <iron-icon icon="search" prefix></iron-icon>
+      </paper-input>
     </div>
 
     <template is="dom-if" if="[[!_showRecents(searchTerm)]]">
-      <h3 class="table-title">Groups</h3>
+      <h3 class="table-title">
+        <iron-icon icon="social:people"></iron-icon> Groups
+      </h3>
       <div class="table">
         <div class="table-headers table-row">
           <div class="flex">Name</div>
@@ -165,12 +120,7 @@ Used by `nuxeo-user-management`
               <span class="counter">[[_countGroups(item.memberGroups)]]</span>
             </div>
             <div class="table-actions layout horizontal">
-              <paper-icon-button icon="editor:mode-edit"
-                                 on-tap="_manageGroup">
-              </paper-icon-button>
-              <paper-icon-button icon="icons:delete"
-                                 on-tap="_deleteGroup">
-              </paper-icon-button>
+              <paper-icon-button icon="editor:mode-edit" on-tap="_manageGroup"></paper-icon-button>
             </div>
           </div>
         </template>
@@ -181,7 +131,9 @@ Used by `nuxeo-user-management`
         </template>
       </div>
       <nuxeo-pagination-controls page="{{groupsCurrentPage}}" number-of-pages="[[groups.numberOfPages]]"></nuxeo-pagination-controls>
-      <h3 class="table-title">Users</h3>
+      <h3 class="table-title">
+        <iron-icon icon="social:person"></iron-icon> Users
+      </h3>
       <div class="table">
         <div class="table-row table-headers">
           <div class="flex">Name</div>
@@ -202,12 +154,7 @@ Used by `nuxeo-user-management`
             <div class="flex-2">[[item.id]]</div>
             <div class="flex-4">[[item.properties.email]]</div>
             <div class="table-actions layout horizontal">
-              <paper-icon-button icon="editor:mode-edit"
-                                 on-tap="_manageUser">
-              </paper-icon-button>
-              <paper-icon-button icon="icons:delete"
-                                 on-tap="_deleteUser">
-              </paper-icon-button>
+              <paper-icon-button icon="editor:mode-edit" on-tap="_manageUser"></paper-icon-button>
             </div>
           </div>
         </template>
@@ -285,21 +232,7 @@ Used by `nuxeo-user-management`
     },
 
     _manageGroup: function(e) {
-      this.fire('manageGroup', {user: e.model.item.id});
-    },
-
-    _createUser: function() {
-      this.fire('goCreateUser');
-    },
-
-    _createGroup: function() {
-      this.fire('goCreateGroup');
-    },
-
-    _deleteUser: function() {
-    },
-
-    _deleteGroup: function() {
+      this.fire('manageGroup', {group: e.model.item.groupname});
     },
 
     _empty: function(entries) {
@@ -308,14 +241,14 @@ Used by `nuxeo-user-management`
 
     _countUsers: function(users) {
       if (users.length > 0) {
-        var label = users.length === 1 ? ' user' : ' users'
+        var label = users.length === 1 ? ' user' : ' users';
         return users.length + label;
       }
     },
 
     _countGroups: function(groups) {
       if (groups.length > 0) {
-        var label = groups.length === 1 ? ' sub-group' : ' sub-groups'
+        var label = groups.length === 1 ? ' sub-group' : ' sub-groups';
         return groups.length + label;
       }
     },
