@@ -288,27 +288,21 @@ Used by `nuxeo-user-management`
     },
 
     _doCreate: function(user) {
+      var entity = {
+        'entity-type': 'user',
+        'id': '', // empty id for compat with NuxeoPrincipalReader deprecated on 7.10
+        'properties': user
+      };
       if (this.usePassword) {
-        this.$.request.data = {
-          'entity-type': 'user',
-          'id': '', // empty id for compat with NuxeoPrincipalReader deprecated on 7.10
-          'properties': user
-        };
+        this.$.request.data = entity;
         return this.$.request.post().then(function(user) {
           this.fire('nuxeo-user-created', user);
         }.bind(this))
       } else {
-        // TODO: avoid having to prepend 'user' schema prefix for invitation
-        var properties = {};
-        for (var field in user) {
-          properties['user:' + field] = user[field];
-        }
-        this.$.invite.input = {
-          'entity-type': 'document',
-          'properties': properties
-        };
+        this.$.invite.input = entity;
         return this.$.invite.execute().then(function(id) {
-          this.fire('nuxeo-user-invited', {id: user.username, properties: user});
+          entity.id = user.username;
+          this.fire('nuxeo-user-invited', entity);
         }.bind(this));
       }
     },
