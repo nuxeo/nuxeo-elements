@@ -23,6 +23,8 @@ Contributors:
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="nuxeo-edit-user.html">
+<link rel="import" href="nuxeo-edit-password.html">
 
 <!--
 Used by `nuxeo-user-management`
@@ -59,12 +61,6 @@ Used by `nuxeo-user-management`
         font-weight: bold;
       }
 
-      .required {
-        color: red;
-        position: absolute;
-        right: 10px;
-      }
-
       .row {
         margin-bottom: 12px;
       }
@@ -79,10 +75,6 @@ Used by `nuxeo-user-management`
         font-size: 1em;
         margin-bottom: 0.5em;
         padding: 0.5em;
-      }
-
-      input[type='password'] {
-        line-height: 2em;
       }
 
       form {
@@ -124,6 +116,19 @@ Used by `nuxeo-user-management`
         color: red;
         margin-top: 20px;
       }
+
+      .required {
+        position: relative;
+      }
+
+      .required:before {
+        content:"*";
+        color: red;
+        display: block;
+        position: absolute;
+        left: -1em;
+        top: 0;
+      }
     </style>
 
     <nuxeo-resource id="request"
@@ -142,35 +147,12 @@ Used by `nuxeo-user-management`
       <div class="row layout horizontal">
         <div class="label-container">
           <label>Username</label>
-          <span class="required">*</span>
         </div>
-        <input value="{{user.username::input}}" class="flex" required>
-      </div>
-      <div class="row layout horizontal">
-        <div class="label-container">
-          <label>First Name</label>
+        <div class="horizontal layout flex required">
+          <input value="{{user.username::input}}" class="flex" required disabled$="[[!new]]">
         </div>
-        <input value="{{user.firstName::input}}" class="flex">
       </div>
-      <div class="row layout horizontal">
-        <div class="label-container">
-          <label>Last Name</label>
-        </div>
-        <input value="{{user.lastName::input}}" class="flex">
-      </div>
-      <div class="row layout horizontal">
-        <div class="label-container">
-          <label>Company</label>
-        </div>
-        <input value="{{user.company::input}}" class="flex">
-      </div>
-      <div class="row layout horizontal">
-        <div class="label-container">
-          <label>Email</label>
-          <span class="required">*</span>
-        </div>
-        <input value="{{user.email::input}}" type="email" class="flex" required>
-      </div>
+      <nuxeo-edit-user id="propertyEditor" user="{{user}}" new></nuxeo-edit-user>
       <div class="row layout horizontal">
         <div class="label-container">
           <label>Set User Password</label>
@@ -180,36 +162,9 @@ Used by `nuxeo-user-management`
             <paper-toggle-button checked="{{usePassword}}"></paper-toggle-button>
           </div>
           <div hidden$="{{!usePassword}}">
-            <div class="row layout vertical">
-              <label>Password</label>
-              <input id="password"
-                     value="{{user.password::input}}"
-                     type="password"
-                     class="flex"
-                     required disabled="{{!usePassword}}">
-              <span class="required">*</span>
-            </div>
-            <div class="row layout vertical">
-              <label>Password (verify)</label>
-              <input id="passwordConfirmation"
-                     type="password"
-                     class="flex"
-                     required disabled="{{!usePassword}}">
-              <span class="required">*</span>
-            </div>
+            <nuxeo-edit-password id="passwordEditor" password="{{user.password}}" required="{{usePassword}}"></nuxeo-edit-password>
           </div>
         </div>
-      </div>
-      <div class="row layout horizontal">
-        <div class="label-container">
-          <label>Groups</label>
-        </div>
-        <nuxeo-user-suggestion id="picker"
-                               search-type="GROUP_TYPE"
-                               placeholder="Search for groups"
-                               value="{{user.groups}}"
-                               multiple>
-        </nuxeo-user-suggestion>
       </div>
       <div class="footer horizontal layout">
         <div class="label-container">
@@ -263,12 +218,6 @@ Used by `nuxeo-user-management`
      * Submits the form.
      */
     _submit: function() {
-      var passwordConfirmation = this.$.passwordConfirmation;
-      if (passwordConfirmation.value !== this.user.password) {
-        passwordConfirmation.setCustomValidity('Passwords don\'t match.');
-      } else {
-        passwordConfirmation.setCustomValidity('');
-      }
       this.$.form.submit();
     },
 
@@ -313,8 +262,8 @@ Used by `nuxeo-user-management`
     },
 
     _resetFields: function() {
-      this.user = {};
-      this.$.passwordConfirmation.value = '';
+      this.$.propertyEditor.resetFields();
+      this.$.passwordEditor.resetFields();
       this.usePassword = false;
     },
 

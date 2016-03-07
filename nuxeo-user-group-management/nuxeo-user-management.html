@@ -15,14 +15,18 @@ limitations under the License.
 
 Contributors:
   Andre Justo <ajusto@nuxeo.com>
+  Gabriel Barata <gbarata@nuxeo.com>
 -->
 <link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="nuxeo-edit-user.html">
+<link rel="import" href="nuxeo-edit-password.html">
 <link rel="import" href="nuxeo-user-group-permissions-table.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../../nuxeo-elements/widgets/nuxeo-user-suggestion.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+<script src="../../lodash/lodash.js"></script>
 
 <!--
 An element for managing a user.
@@ -53,7 +57,10 @@ Used by `nuxeo-user-group-management`
         margin: 0;
       }
 
-      #addGroup {
+      #addGroup,
+      #changePasswordButton,
+      #editUserButton,
+      #deleteUserButton {
         border: 1px solid #213f7d;
         padding: 0.2em 0.5em;
       }
@@ -67,6 +74,10 @@ Used by `nuxeo-user-group-management`
         border: 1px solid #e6e9ef;
         margin: 2em 1em;
         padding: 2em 1.5em;
+      }
+
+      .header {
+        margin-right: 16px;
       }
 
       .username {
@@ -136,6 +147,66 @@ Used by `nuxeo-user-group-management`
         margin: 0;
         padding: 0.1em 0.8em 0.2em;
       }
+
+      paper-dialog[id="editUserDialog"] {
+        width: 80%;
+      }
+
+      paper-dialog paper-button {
+        border: 0;
+        padding: 0.7em 0.57em;
+      }
+
+      paper-dialog paper-button.primary {
+        background-color: var(--nuxeo-button-primary, #00adff);
+        color: #fff;
+      }
+
+      paper-dialog paper-button.primary:hover,
+      paper-dialog paper-button.primary:focus {
+        background-color: var(--nuxeo-button-primary-focus, #0079b3);
+        font-weight: inherit;
+        color: #fff !important;
+      }
+
+      form > h1 {
+        margin-bottom: 3em;
+      }
+
+      .required {
+        position: relative;
+      }
+
+      .required:before {
+        content:"*";
+        color: red;
+        display: block;
+        position: absolute;
+        left: -1em;
+        top: 0;
+      }
+
+      .label-container {
+        position: relative;
+        width: 200px;
+        font-weight: bold;
+      }
+
+      .row {
+        margin-bottom: 12px;
+      }
+
+      input {
+        background: none #fff;
+        border: 1px solid #c6c6c6;
+        border-radius: 3px;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.07) inset;
+        box-sizing: border-box;
+        display: inline-block;
+        font-size: 1em;
+        margin-bottom: 0.5em;
+        padding: 0.5em;
+      }
     </style>
 
     <nuxeo-resource id="request"
@@ -143,6 +214,8 @@ Used by `nuxeo-user-group-management`
                     enrichers="userprofile"
                     enrichers-entity="user">
     </nuxeo-resource>
+    <nuxeo-resource id="editRequest"
+                    path="user/[[username]]"></nuxeo-resource>
 
     <div class="header horizontal layout">
       <paper-icon-button class="backButton" icon="icons:arrow-back" on-tap="_goHome"></paper-icon-button>
@@ -150,6 +223,58 @@ Used by `nuxeo-user-group-management`
       <div class="layout vertical">
         <h3 class="username">[[user.id]]</h3>
         <h4 class="name">[[user.properties.firstName]] [[user.properties.lastName]]</h4>
+      </div>
+      <div class="horizontal layout flex center end-justified">
+        <paper-button id="changePasswordButton" class="horizontal layout center" on-tap="_toggleChangePassword">
+          <iron-icon icon="icons:lock"></iron-icon>
+          Change Password
+        </paper-button>
+        <paper-dialog id="changePasswordDialog" modal>
+          <form is="iron-form" id="changePasswordForm" class="vertical layout">
+            <h1>Change Password</h1>
+            <nuxeo-edit-password required id="passwordEditor"></nuxeo-edit-password>
+          </form>
+          <div class="buttons">
+            <paper-button dialog-dismiss>Cancel</paper-button>
+            <paper-button class="primary" on-tap="_submitChangePassword">Save Changes</paper-button>
+          </div>
+        </paper-dialog>
+
+        <paper-button id="editUserButton" class="horizontal layout center" on-tap="_toggleEditUser">
+          <iron-icon icon="editor:mode-edit"></iron-icon>
+          Edit
+        </paper-button>
+        <paper-dialog id="editUserDialog" modal>
+          <form is="iron-form" id="editUserForm" class="vertical layout">
+            <h1>Edit User</h1>
+            <div class="row layout horizontal">
+              <div class="label-container">
+                <label>Username</label>
+              </div>
+              <div class="horizontal layout flex required">
+                <input value="[[user.properties.username]]" class="flex" required disabled>
+              </div>
+            </div>
+            <nuxeo-edit-user id="userEditor"></nuxeo-edit-user>
+          </form>
+          <div class="buttons">
+            <paper-button dialog-dismiss>Cancel</paper-button>
+            <paper-button class="primary" on-tap="_submitEditUser">Save Changes</paper-button>
+          </div>
+        </paper-dialog>
+        <paper-button id="deleteUserButton" class="horizontal layout center" on-tap="_toggleDeleteUser">
+          <iron-icon icon="icons:delete"></iron-icon>
+          Delete
+        </paper-button>
+        <paper-dialog id="deleteUserDialog" modal>
+          <div class="horizontal layout center">
+            Do you really want to delete this user?
+          </div>
+          <div class="buttons">
+            <paper-button dialog-dismiss>No</paper-button>
+            <paper-button class="primary" on-tap="_deleteUser">Yes</paper-button>
+          </div>
+        </paper-dialog>
       </div>
     </div>
     <div class="card layout horizontal">
@@ -287,6 +412,14 @@ Used by `nuxeo-user-group-management`
 
         ready: function() {
           this.$.picker.$$('nuxeo-select2').queryResultsFilter = this.resultsFilter;
+          this.$.editUserForm.addEventListener('iron-form-presubmit', function(event) {
+            event.preventDefault();
+            this._saveUser();
+          }.bind(this));
+          this.$.changePasswordForm.addEventListener('iron-form-presubmit', function(event) {
+            event.preventDefault();
+            this._savePassword();
+          }.bind(this));
         },
 
         _fetch: function() {
@@ -359,6 +492,60 @@ Used by `nuxeo-user-group-management`
         _toggleDialog: function(e) {
           this._removedGroup = e.model.item;
           this.$.dialog.toggle();
+        },
+
+        _toggleChangePassword: function() {
+          this.$.changePasswordDialog.toggle();
+        },
+
+        _submitChangePassword: function() {
+          this.$.changePasswordForm.submit();
+        },
+
+        _savePassword: function() {
+          this.$.changePasswordDialog.toggle();
+          this.$.editRequest.data = _.cloneDeep(this.user);
+          this.$.editRequest.data.properties.password = this.$.passwordEditor.password;
+          this.$.editRequest.put().then(function(response) {
+            this.user = response;
+            this.fire('toast', 'Password for user ' + response.id + ' changed');
+            if (!!this.$.passwordEditor.resetFields) {
+              this.$.passwordEditor.resetFields();
+            }
+          }.bind(this));
+        },
+
+        _toggleEditUser: function() {
+          this.$.userEditor.user = _.cloneDeep(this.user.properties);
+          this.$.editUserDialog.toggle();
+        },
+
+        _submitEditUser: function() {
+          this.$.editUserForm.submit();
+        },
+
+        _saveUser: function() {
+          this.$.editUserDialog.toggle();
+          var editedUser = _.cloneDeep(this.user);
+          editedUser.properties = this.$.userEditor.user;
+          if (editedUser.properties.password === '') {
+            delete editedUser.properties.password;
+          }
+          this.$.editRequest.data = editedUser;
+          this.$.editRequest.put().then(function(response) {
+            this.user = response;
+            this.fire('toast', 'User ' + response.id + ' updated');
+          }.bind(this));
+        },
+
+        _toggleDeleteUser: function() {
+          this.$.deleteUserDialog.toggle();
+        },
+
+        _deleteUser: function() {
+          this.$.deleteUserDialog.toggle();
+          this.$.editRequest.remove();
+          this._goHome();
         },
 
         _goHome: function() {

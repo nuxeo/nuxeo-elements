@@ -58,9 +58,16 @@ Used by `nuxeo-user-management`
       }
 
       .required {
+        position: relative;
+      }
+
+      .required:before {
+        content:"*";
         color: red;
+        display: block;
         position: absolute;
-        right: 10px;
+        left: -1em;
+        top: 0;
       }
 
       .row {
@@ -165,9 +172,10 @@ Used by `nuxeo-user-management`
       <div class="row layout horizontal">
         <div class="label-container">
           <label>Group Name</label>
-          <span class="required">*</span>
         </div>
-        <input id="groupName" value="{{groupName::input}}" class="flex" required>
+        <div class="horizontal layout flex required">
+          <input id="groupName" value="{{groupName::input}}" class="flex" required>
+        </div>
       </div>
       <div class="row layout horizontal">
         <div class="label-container">
