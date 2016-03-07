@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 Contributors:
+    Andre Justo <ajusto@nuxeo.com>
     Gabriel Barata <gbarata@nuxeo.com>
 -->
-
 <html>
 <head>
   <title>nuxeo-user-management tests</title>
@@ -31,8 +31,7 @@ Contributors:
   <link rel="import" href="../../polymer/polymer.html">
   <link rel="import" href="../../iron-test-helpers/mock-interactions.html">
   <link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
-  <link rel="import" href="../../nuxeo-ui-elements/nuxeo-user-group-management.html">
-
+  <link rel="import" href="../../nuxeo-ui-elements/nuxeo-user-group-management/nuxeo-create-group.html">
 </head>
 <body>
 
@@ -42,14 +41,14 @@ Contributors:
   </template>
 </test-fixture>
 
-<test-fixture id="management">
+<test-fixture id="createGroup">
   <template>
-    <nuxeo-user-group-management></nuxeo-user-group-management>
+    <nuxeo-create-group></nuxeo-create-group>
   </template>
 </test-fixture>
 
 <script>
-  suite('<nuxeo-user-group-management>', function() {
+  suite('<nuxeo-create-group>', function() {
     var server;
 
     setup(function() {
@@ -57,23 +56,23 @@ Contributors:
       server.autoRespond = true;
 
       server.respondWith(
-          'POST',
-          '/dummy/api/v1/automation/login',
-          [
-            200,
-            {'Content-Type': 'application/json'},
-            '{"entity-type":"login","username":"Administrator"}'
-          ]
+        'POST',
+        '/dummy/api/v1/automation/login',
+        [
+          200,
+          {'Content-Type': 'application/json'},
+          '{"entity-type":"login","username":"Administrator"}'
+        ]
       );
       server.respondWith(
-          'GET',
-          '/dummy/api/v1/repo/default/user/Administrator?',
-          [
-            200,
-            {'Content-Type': 'application/json'},
-            '{"entity-type":"login","username":"Administrator"}'
-          ]
-        );
+        'GET',
+        '/dummy/api/v1/repo/default/user/Administrator?',
+        [
+          200,
+          {'Content-Type': 'application/json'},
+          '{"entity-type":"login","username":"Administrator"}'
+        ]
+      );
       // login
       var nx = fixture('nx');
       var promise = nx.connect();
@@ -81,7 +80,7 @@ Contributors:
     });
 
     suite('create group', function() {
-      var management;
+      var createGroupEl;
       var suggestResponses = [{
         'firstName': '',
         'lastName': '',
@@ -96,22 +95,22 @@ Contributors:
         'displayIcon': true
       }];
       var creationResponse = {
-        "entity-type": 'group',
-        'groupname': 'test',
-        'grouplabel': 'Test',
+        "entity-type": "group",
+        "groupname": "test",
+        "grouplabel": "Test",
         "memberUsers": [],
         "memberGroups": []
       };
       var creationData = {
         "entity-type": "group",
-        "groupname": 'test',
-        "grouplabel": 'Test',
-        "memberUsers": ['Administrator'],
+        "groupname": "test",
+        "grouplabel": "Test",
+        "memberUsers": ["Administrator"],
         "memberGroups": []
       };
 
       setup(function() {
-        management = fixture('management');
+        createGroupEl = fixture('createGroup');
         server.respondWith(
             'POST',
             '/dummy/api/v1/group?',
@@ -121,42 +120,19 @@ Contributors:
               JSON.stringify(creationResponse)
             ]
         );
-        Polymer.dom.flush(management);
+        Polymer.dom.flush(createGroupEl);
       });
 
       test('create a group with one user', function() {
-        return testCreateGroup(false).then(function() {
-          expect(management.page).to.be.equal('search');
-        });
+        return testCreateGroup(false);
       });
 
       test('create an group with "Create another" turned on', function() {
-        return testCreateGroup(true).then(function() {
-          expect(management.page).to.be.equal('create-group');
-        });
+        return testCreateGroup(true);
       });
 
       test('try to create a group with no name', function() {
-        // Go to the create group screen
-        var searchEl = management.$$('nuxeo-user-group-search');
-        expect(searchEl).to.not.be.null;
-        var createButton = searchEl.$$('#createButton');
-        expect(createButton).to.not.be.null;
-        var span = createButton.querySelector('span');
-        expect(span).to.not.be.null;
-        expect(span.textContent.trim()).to.be.equal("NEW");
-        var createDropdown = searchEl.$$('#createDropdown');
-        expect(createDropdown).to.not.be.null;
-        MockInteractions.tap(createDropdown);
-        var items = createDropdown.querySelectorAll('paper-icon-item');
-        expect(items.length).to.be.equal(2);
-        expect(items[1].textContent.trim()).to.be.equal("Group");
-        MockInteractions.tap(items[1]);
-        expect(createButton.textContent.trim()).to.be.equal("NEW");
-        MockInteractions.tap(createButton);
-
         // try to create right away
-        var createGroupEl = management.$$('nuxeo-create-group');
         expect(createGroupEl).to.not.be.null;
         createButton = createGroupEl.$$('#createButton');
         expect(createButton).to.not.be.null;
@@ -165,30 +141,10 @@ Contributors:
         expect(createGroupEl.groupName).to.be.undefined;
         expect(createGroupEl.groupLabel).to.be.undefined;
         expect(createGroupEl.selectedUsers).to.be.empty;
-        expect(management.page).to.be.equal('create-group');
       });
 
       function testCreateGroup(createAnother) {
-        // Go to the create group screen
-        var searchEl = management.$$('nuxeo-user-group-search');
-        expect(searchEl).to.not.be.null;
-        var createButton = searchEl.$$('#createButton');
-        expect(createButton).to.not.be.null;
-        var span = createButton.querySelector('span');
-        expect(span).to.not.be.null;
-        expect(span.textContent.trim()).to.be.equal("NEW");
-        var createDropdown = searchEl.$$('#createDropdown');
-        expect(createDropdown).to.not.be.null;
-        MockInteractions.tap(createDropdown);
-        var items = createDropdown.querySelectorAll('paper-icon-item');
-        expect(items.length).to.be.equal(2);
-        expect(items[1].textContent.trim()).to.be.equal("Group");
-        MockInteractions.tap(items[1]);
-        expect(createButton.textContent.trim()).to.be.equal("NEW");
-        MockInteractions.tap(createButton);
-
         // type in group name and label
-        var createGroupEl = management.$$('nuxeo-create-group');
         expect(createGroupEl).to.not.be.null;
         var groupName = createGroupEl.$$('#groupName');
         expect(groupName.value).to.not.be.null;
