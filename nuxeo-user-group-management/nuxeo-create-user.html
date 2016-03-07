@@ -22,8 +22,7 @@ Contributors:
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../paper-radio-button/paper-radio-button.html">
-<link rel="import" href="../../paper-radio-group/paper-radio-group.html">
+<link rel="import" href="../../paper-toggle-button/paper-toggle-button.html">
 
 <!--
 Used by `nuxeo-user-management`
@@ -132,6 +131,8 @@ Used by `nuxeo-user-management`
                      headers='{"Content-Type":"application/json"}'>
     </nuxeo-resource>
 
+    <nuxeo-operation id="invite" op="User.Invite"></nuxeo-operation>
+
     <div class="header horizontal layout center">
       <paper-icon-button class="backButton" icon="icons:arrow-back" on-tap="_goHome"></paper-icon-button>
       <iron-icon icon="social:person"></iron-icon>
@@ -173,14 +174,10 @@ Used by `nuxeo-user-management`
       <div class="row layout horizontal">
         <div class="label-container">
           <label>Set User Password</label>
-          <span class="required">*</span>
         </div>
         <div class="flex">
           <div class="row layout horizontal">
-            <paper-radio-group selected="no">
-              <paper-radio-button name="no">No</paper-radio-button>
-              <paper-radio-button name="yes" checked="{{usePassword}}">Yes</paper-radio-button>
-            </paper-radio-group>
+            <paper-toggle-button checked="{{usePassword}}"></paper-toggle-button>
           </div>
           <div hidden$="{{!usePassword}}">
             <div class="row layout vertical">
@@ -190,6 +187,7 @@ Used by `nuxeo-user-management`
                      type="password"
                      class="flex"
                      required disabled="{{!usePassword}}">
+              <span class="required">*</span>
             </div>
             <div class="row layout vertical">
               <label>Password (verify)</label>
@@ -197,6 +195,7 @@ Used by `nuxeo-user-management`
                      type="password"
                      class="flex"
                      required disabled="{{!usePassword}}">
+              <span class="required">*</span>
             </div>
           </div>
         </div>
@@ -277,14 +276,7 @@ Used by `nuxeo-user-management`
      * Creates a new user if the form was successfully submitted.
      */
     _create: function() {
-      var data = {
-        "entity-type": "user",
-        "properties": this.user
-      };
-      this.$.request.data = data;
-      this.$.request.post()
-        .then(function(response) {
-          this.fire('toast', 'User ' + response.id + ' created');
+      this._doCreate(this.user).then(function(user) {
           this._resetFields();
           if (!this.$.another.checked) {
             this._goHome();
@@ -295,6 +287,32 @@ Used by `nuxeo-user-management`
         }.bind(this));
     },
 
+    _doCreate: function(user) {
+      if (this.usePassword) {
+        this.$.request.data = {
+          'entity-type': 'user',
+          'id': '', // empty id for compat with NuxeoPrincipalReader deprecated on 7.10
+          'properties': user
+        };
+        return this.$.request.post().then(function(user) {
+          this.fire('nuxeo-user-created', user);
+        }.bind(this))
+      } else {
+        // TODO: avoid having to prepend 'user' schema prefix for invitation
+        var properties = {};
+        for (var field in user) {
+          properties['user:' + field] = user[field];
+        }
+        this.$.invite.input = {
+          'entity-type': 'document',
+          'properties': properties
+        };
+        return this.$.invite.execute().then(function(id) {
+          this.fire('nuxeo-user-invited', {id: user.username, properties: user});
+        }.bind(this));
+      }
+    },
+
     _cancel: function() {
       this._resetFields();
       this._goHome();
@@ -303,7 +321,6 @@ Used by `nuxeo-user-management`
     _resetFields: function() {
       this.user = {};
       this.$.passwordConfirmation.value = '';
-      this.$$('paper-radio-group').select('no');
       this.usePassword = false;
     },
 

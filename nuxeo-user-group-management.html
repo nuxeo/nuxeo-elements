@@ -111,7 +111,8 @@ Example:
       'goCreateUser': '_goCreateUser',
       'goCreateGroup': '_goCreateGroup',
       'manageUser': '_manageUser',
-      'toast': '_toast'
+      'nuxeo-user-created': '_toast',
+      'nuxeo-user-invited': '_toast',
     },
 
     /**
@@ -142,11 +143,19 @@ Example:
 
     /**
      * Displays a message.
-     * @param event Event containing the message to be displayed.
      */
     _toast: function(event) {
-      this.$.toast.text = event.detail;
-      this.$.toast.open();
+      var msg;
+      switch (event.type) {
+        case 'nuxeo-user-created':
+        case 'nuxeo-user-invited':
+          msg = 'User ' + event.detail.id + ' created';
+          break;
+      }
+      if (msg) {
+        this.$.toast.text = msg;
+        this.$.toast.open();
+      }
     }
 
   });
