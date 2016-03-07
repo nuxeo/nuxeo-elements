@@ -317,7 +317,7 @@ Used by `nuxeo-user-management`
     _create: function() {
       this.$.request.data = this._computeData();
       this.$.request.post().then(function(response) {
-        this.fire('toast', 'Group ' + response.groupname + ' created');
+        this.fire('nuxeo-group-created', response);
         this._resetFields();
         if (!this.$.another.checked) {
           this._goHome();

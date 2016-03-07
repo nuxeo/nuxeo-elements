@@ -138,6 +138,7 @@ Example:
       'manageUser': '_manageUser',
       'nuxeo-user-created': '_toast',
       'nuxeo-user-invited': '_toast',
+      'nuxeo-group-created': '_toast'
     },
 
     /**
@@ -176,6 +177,9 @@ Example:
         case 'nuxeo-user-created':
         case 'nuxeo-user-invited':
           msg = 'User ' + event.detail.id + ' created';
+          break;
+        case 'nuxeo-group-created':
+          msg = 'Group ' + event.detail.groupname + ' created';
           break;
       }
       if (msg) {
