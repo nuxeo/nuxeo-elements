@@ -227,7 +227,7 @@ Used by `nuxeo-user-group-management`
           var format = 'D MMM YYYY';
           var sinceStr = 'Since ';
           var fromStr = 'From ';
-          var untilStr = 'Until '
+          var untilStr = 'Until ';
           var untilMiddleStr = ' until ';
           if (begin !== null && end === null) {
             return (now.isAfter(begin) ? sinceStr : fromStr) + moment(begin).format(format);
@@ -265,7 +265,7 @@ Used by `nuxeo-user-group-management`
         },
 
         _canDelete: function(ace) {
-          return ace && ace.id.length > 0;
+          return ace.id ? true : false;
         }
       });
     })();
