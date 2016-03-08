@@ -298,7 +298,8 @@ Used by `nuxeo-user-group-management`
         <nuxeo-user-suggestion id="picker" class="flex"
                                search-type="GROUP_TYPE"
                                placeholder="Search for groups..."
-                               value="{{selectedGroup}}">
+                               value="{{selectedGroup}}"
+                               selected-items="{{selectedGroup}}">
         </nuxeo-user-suggestion>
         <template is="dom-repeat" items="[[activity]]">
           <div class="activity-entry">
@@ -434,10 +435,9 @@ Used by `nuxeo-user-group-management`
 
         _groupSelected: function() {
           if (this.selectedGroup) {
-            var obj = jQuery(this.$.picker.$$('nuxeo-select2')._el).select2('data');
             var group = {
-              'name': obj.groupname,
-              'label': obj.grouplabel
+              'name': this.selectedGroup.groupname,
+              'label': this.selectedGroup.grouplabel
             };
             this.push('activity', group);
             this.$.request.path = 'user/' + this.user.id + '/group/' + group.name;

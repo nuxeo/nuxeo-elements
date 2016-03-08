@@ -190,7 +190,8 @@ Used by `nuxeo-user-management`
         <nuxeo-user-suggestion id="picker"
                                search-type="USER_GROUP_TYPE"
                                placeholder="Search for users and groups..."
-                               value="{{selectedUser}}">
+                               value="[[selectedUser]]"
+                               selected-items="{{selectedUser}}">
         </nuxeo-user-suggestion>
       </div>
       <div class="row layout horizontal">
@@ -291,11 +292,10 @@ Used by `nuxeo-user-management`
     },
 
     _observeSelectedUser: function(selectedUser) {
-      var obj = jQuery(this.$.picker.$$('nuxeo-select2')._el).select2('data');
-      if (obj && this.selectedUsers.indexOf(obj) === -1) {
-        this.push('selectedUsers', obj);
+      if (this.selectedUser && this.selectedUsers.indexOf(this.selectedUser) === -1) {
+        this.push('selectedUsers', this.selectedUser);
       }
-      this.selectedUser = '';
+      this.selectedUser = null;
     },
 
     _remove: function(e) {
