@@ -107,8 +107,12 @@ Contributors:
       data: {
         type: Object,
         observer: 'dataChanged'
-      }
+      },
 
+      selectedItems: {
+        type: Object,
+        notify: true
+      }
     },
 
     escapeHTML: function (markup) {
@@ -218,6 +222,7 @@ Contributors:
     },
 
     _updateSelection: function (e) {
+      this.selectedItems = jQuery(this._el).select2('data');
       var value = e.target.value;
       this._inUpdateSelection = true;
       if (!this.multiple) {
