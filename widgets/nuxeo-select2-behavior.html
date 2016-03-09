@@ -248,7 +248,12 @@ Contributors:
 
     placeholderChanged: function() {
       if (this._el) {
-        jQuery(this._el).attr('placeholder', this.placeholder).data('select2').setPlaceholder();
+        var obj = jQuery(this._el).attr('data-placeholder', this.placeholder).data('select2');
+        if (obj.setPlaceholder && typeof obj.setPlaceholder === 'function') {
+          obj.setPlaceholder();
+        } else {
+          obj.val(this.value);
+        }
       }
     },
 
