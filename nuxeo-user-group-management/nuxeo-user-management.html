@@ -23,9 +23,11 @@ Contributors:
 <link rel="import" href="nuxeo-user-group-permissions-table.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../../nuxeo-elements/widgets/nuxeo-user-suggestion.html">
+<link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../paper-toast/paper-toast.html">
 
 <!--
 An element for managing a user.
@@ -60,7 +62,6 @@ Used by `nuxeo-user-group-management`
       #changePasswordButton,
       #editUserButton,
       #deleteUserButton {
-        border: 1px solid #213f7d;
         padding: 0.2em 0.5em;
       }
 
@@ -216,6 +217,8 @@ Used by `nuxeo-user-group-management`
     <nuxeo-resource id="editRequest"
                     path="user/[[username]]"></nuxeo-resource>
 
+    <paper-toast id="toast"></paper-toast>
+
     <div class="header horizontal layout">
       <paper-icon-button class="backButton" icon="icons:arrow-back" on-tap="_goHome"></paper-icon-button>
       <iron-icon icon="social:person" class="avatar"></iron-icon>
@@ -225,8 +228,7 @@ Used by `nuxeo-user-group-management`
       </div>
       <div class="horizontal layout flex center end-justified">
         <paper-button id="changePasswordButton" class="horizontal layout center" on-tap="_toggleChangePassword">
-          <iron-icon icon="icons:lock"></iron-icon>
-          Change Password
+          <iron-icon icon="icons:lock"></iron-icon> Change Password
         </paper-button>
         <paper-dialog id="changePasswordDialog" modal>
           <form is="iron-form" id="changePasswordForm" class="vertical layout">
@@ -240,8 +242,7 @@ Used by `nuxeo-user-group-management`
         </paper-dialog>
 
         <paper-button id="editUserButton" class="horizontal layout center" on-tap="_toggleEditUser">
-          <iron-icon icon="editor:mode-edit"></iron-icon>
-          Edit
+          <iron-icon icon="editor:mode-edit"></iron-icon> Edit
         </paper-button>
         <paper-dialog id="editUserDialog" modal>
           <form is="iron-form" id="editUserForm" class="vertical layout">
@@ -262,8 +263,7 @@ Used by `nuxeo-user-group-management`
           </div>
         </paper-dialog>
         <paper-button id="deleteUserButton" class="horizontal layout center" on-tap="_toggleDeleteUser">
-          <iron-icon icon="icons:delete"></iron-icon>
-          Delete
+          <iron-icon icon="icons:delete"></iron-icon> Delete
         </paper-button>
         <paper-dialog id="deleteUserDialog" modal>
           <div class="horizontal layout center">
@@ -443,7 +443,7 @@ Used by `nuxeo-user-group-management`
             this.$.request.path = 'user/' + this.user.id + '/group/' + group.name;
             this.$.request.post().then(function(response) {
               this.user = response;
-              this.fire('toast', this.user.id + ' was added to ' + group.name);
+              this._toast(this.user.id + ' was added to ' + group.name);
             }.bind(this));
           }
           this.selectedGroup = null;
@@ -455,7 +455,7 @@ Used by `nuxeo-user-group-management`
           return this.$.request.remove().then(function() {
             this._removeRecent(group.name);
             this._removeFromGroup(group.name);
-            this.fire('toast', this.user.id + ' was removed from ' + group.name);
+            this._toast(this.user.id + ' was removed from ' + group.name);
           }.bind(this));
         },
 
@@ -507,7 +507,7 @@ Used by `nuxeo-user-group-management`
           this.$.editRequest.data.properties.password = this.$.passwordEditor.password;
           this.$.editRequest.put().then(function(response) {
             this.user = response;
-            this.fire('toast', 'Password for user ' + response.id + ' changed');
+            this._toast('Password for user ' + response.id + ' changed');
             if (!!this.$.passwordEditor.resetFields) {
               this.$.passwordEditor.resetFields();
             }
@@ -533,7 +533,7 @@ Used by `nuxeo-user-group-management`
           this.$.editRequest.data = editedUser;
           this.$.editRequest.put().then(function(response) {
             this.user = response;
-            this.fire('toast', 'User ' + response.id + ' updated');
+            this._toast('User ' + response.id + ' updated');
           }.bind(this));
         },
 
@@ -559,6 +559,11 @@ Used by `nuxeo-user-group-management`
             }
           }
           return true;
+        },
+
+        _toast: function(msg) {
+          this.$.toast.text = msg;
+          this.$.toast.open();
         }
       });
     })();
