@@ -69,7 +69,7 @@ Used by `nuxeo-user-management`
       }
 
       .table-actions {
-        width: 100px;
+        width: 3em;
       }
 
       /* tags */
@@ -87,7 +87,11 @@ Used by `nuxeo-user-management`
     </style>
 
     <nuxeo-resource id="userSearch" auto path="/user/search" response="{{users}}"></nuxeo-resource>
-    <nuxeo-resource id="groupSearch" auto path="/group/search" response="{{groups}}"></nuxeo-resource>
+    <nuxeo-resource id="groupSearch" auto
+                    path="/group/search"
+                    response="{{groups}}"
+                    headers='{"fetch.group": "memberUsers"}'>
+    </nuxeo-resource>
 
     <div class="search">
       <paper-input autofocus="true" value="{{searchTerm}}" type="search" placeholder="Search for users and groups">
@@ -185,13 +189,9 @@ Used by `nuxeo-user-management`
       users: Object,
       groups: Object,
 
-      groupsCurrentPage: {
-        type: Number
-      },
+      groupsCurrentPage: Number,
 
-      usersCurrentPage: {
-        type: Number
-      }
+      usersCurrentPage: Number
     },
 
     observers: [
@@ -240,15 +240,13 @@ Used by `nuxeo-user-management`
     },
 
     _countUsers: function(users) {
-      if (users.length > 0) {
-        var label = users.length === 1 ? ' user' : ' users';
-        return users.length + label;
-      }
+      var label = users.length === 1 ? ' member' : ' members';
+      return users.length + label;
     },
 
     _countGroups: function(groups) {
       if (groups.length > 0) {
-        var label = groups.length === 1 ? ' sub-group' : ' sub-groups';
+        var label = groups.length === 1 ? ' nested group' : ' nested groups';
         return groups.length + label;
       }
     },
