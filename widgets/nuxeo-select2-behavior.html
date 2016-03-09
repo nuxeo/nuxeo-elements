@@ -57,7 +57,10 @@ Contributors:
         value: 3
       },
 
-      placeholder: String,
+      placeholder: {
+        type: String,
+        observer: 'placeholderChanged'
+      },
 
       separator: {
         type: String,
@@ -241,6 +244,12 @@ Contributors:
 
     dataChanged: function() {
       this._initSelect2(this._el);
+    },
+
+    placeholderChanged: function() {
+      if (this._el) {
+        jQuery(this._el).attr('placeholder', this.placeholder).data('select2').setPlaceholder();
+      }
     },
 
     // Extension points for sub-classes
