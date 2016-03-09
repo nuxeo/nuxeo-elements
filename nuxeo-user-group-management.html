@@ -41,6 +41,7 @@ Contributors:
 <link rel="import" href="nuxeo-user-group-management/nuxeo-create-user.html">
 <link rel="import" href="nuxeo-user-group-management/nuxeo-create-group.html">
 <link rel="import" href="nuxeo-user-group-management/nuxeo-user-management.html">
+<link rel="import" href="nuxeo-user-group-management/nuxeo-group-management.html">
 
 <!--
 An element for managing users and groups in Nuxeo.
@@ -114,6 +115,9 @@ Example:
         <nuxeo-create-group></nuxeo-create-group>
       </section>
 
+      <section name="manage-group">
+        <nuxeo-group-management groupname="[[selectedGroup]]"></nuxeo-group-management>
+      </section>
     </iron-pages>
   </template>
 </dom-module>
@@ -123,7 +127,7 @@ Example:
 
     properties: {
       /**
-       * The user-group-management page to be displayed. Possible values are 'search', 'create-user' and 'create-group'
+       * The user-group-management page to be displayed.
        */
       page: {
         type: String,
@@ -131,13 +135,14 @@ Example:
         notify: true
       },
 
-      selectedUser: String
+      selectedUser: String,
+
+      selectedGroup: String
     },
     listeners: {
       'goHome': '_goSearch',
-      'goCreateUser': '_goCreateUser',
-      'goCreateGroup': '_goCreateGroup',
       'manageUser': '_manageUser',
+      'manageGroup': '_manageGroup',
       'nuxeo-user-created': '_toast',
       'nuxeo-user-invited': '_toast',
       'nuxeo-group-created': '_toast'
@@ -168,6 +173,11 @@ Example:
     _manageUser: function(e) {
       this.selectedUser = e.detail.user;
       this.page = 'manage-user';
+    },
+
+    _manageGroup: function(e) {
+      this.selectedGroup = e.detail.group;
+      this.page = 'manage-group';
     },
 
     /**

@@ -1,0 +1,552 @@
+<!--
+(C) Copyright 2016 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contributors:
+  Andre Justo <ajusto@nuxeo.com>
+-->
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="nuxeo-user-group-permissions-table.html">
+<link rel="import" href="../nuxeo-pagination-controls.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
+<link rel="import" href="../../nuxeo-elements/widgets/nuxeo-user-suggestion.html">
+<link rel="import" href="../../iron-icon/iron-icon.html">
+<link rel="import" href="../../iron-icons/editor-icons.html">
+<link rel="import" href="../../paper-button/paper-button.html">
+<link rel="import" href="../../paper-dialog/paper-dialog.html">
+<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../paper-toast/paper-toast.html">
+
+<!--
+An element for managing a group.
+
+Example:
+
+    <nuxeo-group-management group="administrators"></nuxeo-group-management>
+
+Used by `nuxeo-user-group-management`
+@group Nuxeo Elements
+@element nuxeo-group-management
+-->
+<dom-module id="nuxeo-group-management">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      paper-button {
+        padding: 0.2em 0.5em;
+      }
+
+      h1 {
+        color: #213f7d;
+        margin: 0;
+      }
+
+      nuxeo-user-group-permissions-table {
+        margin-top: 1em;
+      }
+
+      .backButton {
+        color: #00adff;
+      }
+
+      .card {
+        background: none #fff;
+        border: 1px solid #e6e9ef;
+        margin: 2em 1em;
+        padding: 2em 1.5em;
+      }
+
+      .groupname {
+        margin: 0.3em 0.1em 0 0.1em;
+        padding: 0.2em;
+      }
+
+      .grouplabel,
+      .counter {
+        font-weight: normal;
+        margin: 0.1 0.2em;
+        padding: 0.2em;
+      }
+
+      .avatar {
+        margin-top: 10px;
+      }
+
+      .header-actions {
+        height: 2em;
+        margin-top: 0.5em;
+      }
+
+      .activity-entry:nth-of-type(1) {
+        margin-top: 20px;
+      }
+
+      .activity-entry {
+        margin-top: 15px;
+      }
+
+      .remove {
+        color: red;
+        cursor: pointer;
+        font-size: 0.8em;
+        margin-left: 10px;
+        text-decoration: underline;
+      }
+
+      /* Table */
+      .table-wrapper {
+        padding: 1em;
+      }
+
+      .table {
+        border: 1px solid #e7e7e7;
+        margin-top: 1em;
+      }
+
+      .table-title {
+        color: #213f7d;
+        margin: 0;
+      }
+
+      .table-row {
+        @apply(--layout-horizontal);
+      }
+
+      .table-row > div {
+        padding: 0.6em 1em;
+      }
+
+      .table-headers > div {
+        background-color: #f8f9fb;
+        font-weight: bold;
+      }
+
+      .table-actions {
+        width: 50px;
+      }
+
+      .tag {
+        background: none #f3f6f9;
+        border-radius: 16px;
+        font-size: .8em;
+        margin: 0;
+        padding: 0.1em 0.8em 0.2em;
+      }
+
+      .editable-field:hover {
+        background: #f8f9fb;
+        border: 1px solid #e7e7e7;
+        border-radius: 3px;
+      }
+
+      .edit-field {
+        background: #fff;
+        cursor: pointer;
+        display: none;
+        margin-left: 1em;
+      }
+
+      .editable-field:hover .edit-field {
+        display: inline-block;
+      }
+    </style>
+
+    <nuxeo-resource id="request" path="group/[[groupname]]" headers='{"fetch.group": "memberUsers"}'></nuxeo-resource>
+    <nuxeo-resource id="users" path="group/[[groupname]]/@users" response="{{memberUsers}}"></nuxeo-resource>
+    <nuxeo-resource id="groups" path="group/[[groupname]]/@groups" response="{{memberGroups}}"></nuxeo-resource>
+    <nuxeo-resource id="editRequest"
+                    path="group/[[groupname]]"
+                    data="[[group]]"
+                    response="{{group}}">
+    </nuxeo-resource>
+
+    <paper-toast id="toast"></paper-toast>
+
+    <paper-dialog id="deleteGroupDialog" modal>
+      <div class="horizontal layout center">
+        Do you really want to delete this group?
+      </div>
+      <div class="buttons">
+        <paper-button dialog-dismiss>No</paper-button>
+        <paper-button class="primary" on-tap="_deleteGroup">Yes</paper-button>
+      </div>
+    </paper-dialog>
+
+    <paper-dialog id="rmFromGroupDialog" modal class="vertical layout">
+      <div class="horizontal layout">
+        <p>Do you really want to remove [[_removedMember.id]] from this group?</p>
+      </div>
+      <div class="buttons horizontal end-justified layout">
+        <paper-button dialog-dismiss>No</paper-button>
+        <paper-button dialog-confirm on-tap="_removeMember">Yes</paper-button>
+      </div>
+    </paper-dialog>
+
+    <div class="header horizontal layout">
+      <paper-icon-button class="backButton" icon="icons:arrow-back" on-tap="_goHome"></paper-icon-button>
+      <iron-icon icon="social:people" class="avatar"></iron-icon>
+      <div class="layout vertical flex">
+        <h3 class="groupname">[[group.groupname]]</h3>
+        <h4 class="grouplabel">[[group.grouplabel]]</h4>
+        <h5 class="counter">[[_countUsers(group.memberUsers)]] + [[_countGroups(group.memberGroups)]]</h5>
+      </div>
+      <div class="layout horizontal header-actions">
+        <paper-button class="flex-end" on-tap="_toggleEditMembers">
+          <iron-icon icon="add"></iron-icon>
+          Add Members
+        </paper-button>
+        <paper-button class="flex-end" on-tap="_toggleDeleteGroup">
+          <iron-icon icon="icons:delete"></iron-icon>
+          Delete
+        </paper-button>
+      </div>
+    </div>
+
+    <div class="card layout vertical" hidden$="[[!showEditMembers]]">
+      <nuxeo-user-suggestion id="picker" class="flex"
+                             search-type="USER_GROUP_TYPE"
+                             placeholder="Add a user or a group"
+                             value="[[selectedMember]]"
+                             selected-items="{{selectedMember}}">
+      </nuxeo-user-suggestion>
+      <template is="dom-repeat" items="[[activity]]">
+        <div class="activity-entry">
+          <span class="tag">
+            <iron-icon icon="[[_icon(item)]]"></iron-icon> [[item.displayLabel]]
+          </span>
+          [[user.id]] has been added to the group
+          <span class="remove" on-tap="_toggleDeleteDialog">Remove</span>
+        </div>
+      </template>
+    </div>
+
+    <div class="table-wrapper">
+      <h3 class="table-title">
+        <iron-icon icon="social:person"></iron-icon> Users
+      </h3>
+      <div class="table">
+        <div class="table-row table-headers">
+          <div class="flex">Name</div>
+          <div class="flex-4">Identifier</div>
+          <div class="table-actions"></div>
+        </div>
+        <template is="dom-if" if=[[!_empty(memberUsers.entries)]]>
+          <template is="dom-repeat" items="[[memberUsers.entries]]">
+            <div class="table-row">
+              <div class="flex">
+                <span class="tag">
+                  <iron-icon icon="social:person"></iron-icon>
+                  [[item.properties.firstName]] [[item.properties.lastName]]
+                </span>
+              </div>
+              <div class="flex-4">[[item.id]]</div>
+              <div class="table-actions">
+                <paper-icon-button icon="icons:clear"
+                                   title="Remove from [[item.label]]"
+                                   on-tap="_toggleDeleteDialog">
+                </paper-icon-button>
+              </div>
+            </div>
+          </template>
+        </template>
+        <template is="dom-if" if=[[_empty(memberUsers.entries)]]>
+          <div class="table-row">
+            <div>Group does not have any user yet.</div>
+          </div>
+        </template>
+      </div>
+      <nuxeo-pagination-controls page="{{usersCurrentPage}}" number-of-pages="[[memberUsers.numberOfPages]]"></nuxeo-pagination-controls>
+    </div>
+
+    <div class="table-wrapper">
+      <h3 class="table-title">
+        <iron-icon icon="social:people"></iron-icon> Nested groups
+      </h3>
+      <div class="table">
+        <div class="table-row table-headers">
+          <div class="flex">Name</div>
+          <div class="flex-4">Identifier</div>
+          <div class="table-actions"></div>
+        </div>
+        <template is="dom-if" if=[[!_empty(memberGroups.entries)]]>
+          <template is="dom-repeat" items="[[memberGroups.entries]]">
+            <div class="table-row">
+              <div class="flex">
+                <span class="tag">
+                  <iron-icon icon="social:people"></iron-icon>
+                  [[item.groupname]]
+                </span>
+              </div>
+              <div class="flex-4">[[item.grouplabel]]</div>
+              <div class="table-actions">
+                <paper-icon-button icon="icons:clear"
+                                   title="Remove from [[item.label]]"
+                                   on-tap="_toggleDeleteDialog">
+                </paper-icon-button>
+              </div>
+            </div>
+          </template>
+        </template>
+        <template is="dom-if" if=[[_empty(memberGroups.entries)]]>
+          <div class="table-row">
+            <div>Group does not have any nested group.</div>
+          </div>
+        </template>
+      </div>
+      <nuxeo-pagination-controls page="{{groupsCurrentPage}}" number-of-pages="[[memberGroups.numberOfPages]]"></nuxeo-pagination-controls>
+    </div>
+
+    <div class="table-wrapper">
+      <h1>Permissions</h1>
+      <nuxeo-user-group-permissions-table entity="[[groupname]]"></nuxeo-user-group-permissions-table>
+    </div>
+  </template>
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'nuxeo-group-management',
+
+        properties: {
+          groupname: {
+            type: String,
+            observer: '_fetch'
+          },
+
+          group: Object,
+
+          selectedMember: {
+            type: Object,
+            observer: '_memberSelected'
+          },
+
+          memberUsers: Object,
+
+          memberGroups: Object,
+
+          activity: {
+            type: Array,
+            value: []
+          },
+
+          resultsFilter: {
+            type: Function,
+            value: function() {
+              return this._resultsFilter.bind(this);
+            }
+          },
+
+          showEditMembers: {
+            type: Boolean,
+            value: false
+          },
+
+          usersCurrentPage: Number,
+
+          groupsCurrentPage: Number,
+
+          _removedMember: Object,
+
+          _fromDelete: {
+            type: Boolean,
+            value: false
+          }
+        },
+
+        observers: [
+          '_fetchUsers(usersCurrentPage)',
+          '_fetchGroups(groupsCurrentPage)'
+        ],
+
+        ready: function() {
+          this.$.picker.$$('nuxeo-select2').queryResultsFilter = this.resultsFilter;
+        },
+
+        _fetch: function() {
+          this.$.request.get().then(function(response) {
+            this.group = response;
+            this.activity = [];
+            this.showEditMembers = false;
+            this.selectedMember = null;
+            this._fetchGroups();
+            this._fetchUsers();
+          }.bind(this));
+        },
+
+        _fetchGroups: function() {
+          if (this.groupname) {
+            // if there's only one entry left in the current page, we should go to prev page
+            if (this._fromDelete && this.memberGroups.currentPageSize === 1) {
+              this._fromDelete = false;
+              this.groupsCurrentPage--;
+              return;
+            }
+            var params = {
+              q: this.searchTerm,
+              pageSize: 5,
+              currentPageIndex: this.groupsCurrentPage - 1
+            };
+            this.$.groups.params = params;
+            this.$.groups.get();
+          }
+        },
+
+        _fetchUsers: function() {
+          if (this.groupname) {
+            // if there's only one entry left in the current page, we should go to prev page
+            if (this._fromDelete && this.memberUsers.currentPageSize === 1) {
+              this._fromDelete = false;
+              this.usersCurrentPage--;
+              return;
+            }
+            var params = {
+              q: this.searchTerm,
+              pageSize: 5,
+              currentPageIndex: this.usersCurrentPage - 1
+            };
+            this.$.users.params = params;
+            this.$.users.get();
+          }
+        },
+
+        _memberSelected: function() {
+          if (this.selectedMember) {
+            var member = this.selectedMember;
+            switch (member.type) {
+              case 'USER_TYPE':
+                var users = this.group.memberUsers || [];
+                users.push(member.id);
+                member['entity-type'] = 'user';
+                this.group.memberUsers = users;
+                break;
+              case 'GROUP_TYPE':
+                var groups = this.group.memberGroups || [];
+                groups.push(member.id);
+                member['entity-type'] = 'group';
+                this.group.memberGroups = groups;
+                break;
+            }
+            this.push('activity', member);
+            this.$.editRequest.put().then(function(response) {
+              if (member['entity-type'] === 'user') {
+                this._fetchUsers();
+              } else {
+                this._fetchGroups();
+              }
+              this._toast(member.displayLabel + ' was added to ' + this.group.groupname);
+            }.bind(this));
+          }
+          this.selectedMember = null;
+        },
+
+        _removeMember: function() {
+          var member = this._removedMember;
+          var idx;
+          switch (member['entity-type']) {
+            case 'user':
+              idx = this.group.memberUsers.indexOf(this._removedMember.id);
+              this.group.memberUsers.splice(idx, 1);
+              break;
+            case 'group':
+              idx = this.group.memberGroups.indexOf(this._removedMember.id);
+              this.group.memberGroups.splice(idx, 1);
+              break;
+          }
+          this.$.editRequest.put().then(function(response) {
+            this._fromDelete = true;
+            if (member['entity-type'] === 'user') {
+              this._fetchUsers();
+            } else {
+              this._fetchGroups();
+            }
+            this._removeRecent(this._removedMember.id);
+            this._toast(this._removedMember.id + ' was removed from the group.');
+          }.bind(this));
+        },
+
+        _removeRecent: function(group) {
+          // remove from 'recent', if it exists
+          for (var i = 0; i < this.activity.length; i++) {
+            if (this.activity[i].id === group) {
+              this.splice('activity', i, 1);
+              return;
+            }
+          }
+        },
+
+        _deleteGroup: function() {
+          this.$.deleteGroupDialog.toggle();
+          this.$.editRequest.remove();
+          this._goHome();
+        },
+
+        _toggleEditMembers: function() {
+          this.showEditMembers = !this.showEditMembers;
+        },
+
+        _toggleDeleteDialog: function(e) {
+          var type = e.model.item['entity-type'];
+          this._removedMember = e.model.item;
+          this._removedMember.id = type === 'user' ? e.model.item.id : e.model.item.groupname;
+          this.$.rmFromGroupDialog.toggle();
+        },
+
+        _toggleDeleteGroup: function() {
+          this.$.deleteGroupDialog.toggle();
+        },
+
+        _empty: function(entries) {
+          return entries && entries.length === 0;
+        },
+
+        _goHome: function() {
+          this.fire('goHome');
+        },
+
+        _resultsFilter: function(entry) {
+          var userInGroup = this.group.memberUsers.indexOf(entry.id) >= 0;
+          var groupInGroup = this.group.memberGroups.indexOf(entry.id) >= 0;
+          return !userInGroup && !groupInGroup && entry.id !== this.group.groupname;
+        },
+
+        _icon: function(entry) {
+          return entry.type === 'GROUP_TYPE' ? 'social:people' : 'social:person';
+        },
+
+        _countUsers: function(users) {
+          if (users) {
+            var label = users.length === 1 ? ' member' : ' members';
+            return users.length + label;
+          }
+        },
+
+        _countGroups: function(groups) {
+          if (groups) {
+            var label = groups.length === 1 ? ' nested group' : ' nested groups';
+            return groups.length + label;
+          }
+        },
+
+        _toast: function(msg) {
+          this.$.toast.text = msg;
+          this.$.toast.open();
+        }
+      });
+    })();
+  </script>
+</dom-module>
