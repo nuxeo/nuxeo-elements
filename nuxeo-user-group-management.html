@@ -58,6 +58,7 @@ Example:
     <style is="custom-style">
       :host {
         display: block;
+        position: relative;
         @apply(--layout-flex);
         @apply(--nuxeo-user-management-layout);
       }
@@ -65,7 +66,8 @@ Example:
       #createDropdown {
         position: absolute;
         right: 0;
-        top: 1.5em;
+        padding: 0;
+        top: 15px;
       }
 
       #createButton {
