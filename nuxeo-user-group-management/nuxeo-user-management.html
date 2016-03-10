@@ -290,8 +290,7 @@ Used by `nuxeo-user-group-management`
       <div class="layout horizontal">
         <h1 class="flex">Groups</h1>
         <paper-button id="addGroup" class="flex-end" on-tap="_toggleEditGroups">
-          <iron-icon icon="add"></iron-icon>
-          Add to Group
+          <iron-icon icon="add"></iron-icon> Add to Group
         </paper-button>
       </div>
       <div class="card layout vertical" hidden$="[[!showEditGroups]]">
@@ -338,7 +337,7 @@ Used by `nuxeo-user-group-management`
         </template>
         <template is="dom-if" if=[[empty]]>
           <div class="table-row">
-            <div>User does not belong to any group yet.</div>
+            <div>No results.</div>
           </div>
         </template>
       </div>
@@ -425,6 +424,7 @@ Used by `nuxeo-user-group-management`
         _fetch: function() {
           if (this.username) {
             this.$.request.get().then(function(response) {
+              delete response.properties.password;
               this.user = response;
               this.activity = [];
               this.showEditGroups = false;
@@ -527,9 +527,6 @@ Used by `nuxeo-user-group-management`
           this.$.editUserDialog.toggle();
           var editedUser = JSON.parse(JSON.stringify(this.user));
           editedUser.properties = this.$.userEditor.user;
-          if (editedUser.properties.password === '') {
-            delete editedUser.properties.password;
-          }
           this.$.editRequest.data = editedUser;
           this.$.editRequest.put().then(function(response) {
             this.user = response;
