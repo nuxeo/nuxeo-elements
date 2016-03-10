@@ -22,7 +22,6 @@ Contributors:
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../../nuxeo-elements/widgets/nuxeo-user-suggestion.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
-<link rel="import" href="../../iron-icons/editor-icons.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
@@ -52,7 +51,6 @@ Used by `nuxeo-user-group-management`
 
       h1 {
         color: #213f7d;
-        margin: 0;
       }
 
       nuxeo-user-group-permissions-table {
@@ -82,6 +80,10 @@ Used by `nuxeo-user-group-management`
         padding: 0.2em;
       }
 
+      .counter {
+        margin-bottom: 3em;
+      }
+
       .avatar {
         margin-top: 10px;
       }
@@ -89,10 +91,6 @@ Used by `nuxeo-user-group-management`
       .header-actions {
         height: 2em;
         margin-top: 0.5em;
-      }
-
-      .activity-entry:nth-of-type(1) {
-        margin-top: 20px;
       }
 
       .activity-entry {
@@ -109,12 +107,12 @@ Used by `nuxeo-user-group-management`
 
       /* Table */
       .table-wrapper {
-        padding: 1em;
+        padding: 0 1em;
       }
 
       .table {
         border: 1px solid #e7e7e7;
-        margin-top: 1em;
+        margin-top: 0.5em;
       }
 
       .table-title {
@@ -147,37 +145,57 @@ Used by `nuxeo-user-group-management`
         padding: 0.1em 0.8em 0.2em;
       }
 
-      .editable-field:hover {
-        background: #f8f9fb;
-        border: 1px solid #e7e7e7;
+      .filter-wrapper {
+        margin-top: 1em;
+      }
+
+      input {
+        border: 1px solid #c6c6c6;
         border-radius: 3px;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.07) inset;
+        font-size: 1em;
+        margin-bottom: 0.5em;
+        padding: 0.5em;
       }
 
-      .edit-field {
-        background: #fff;
-        cursor: pointer;
-        display: none;
-        margin-left: 1em;
+      .label-container {
+        font-weight: bold;
+        width: 150px;
       }
 
-      .editable-field:hover .edit-field {
-        display: inline-block;
+      paper-dialog[id="editGroupDialog"] {
+        width: 40%;
+      }
+
+      paper-dialog paper-button {
+        padding: 0.7em 0.57em;
+      }
+
+      paper-dialog paper-button.primary {
+        background-color: var(--nuxeo-button-primary, #00adff);
+        color: #fff;
+      }
+
+      paper-dialog paper-button.primary:hover,
+      paper-dialog paper-button.primary:focus {
+        background-color: var(--nuxeo-button-primary-focus, #0079b3);
+        font-weight: inherit;
+        color: #fff !important;
       }
     </style>
 
-    <nuxeo-resource id="request" path="group/[[groupname]]" headers='{"fetch.group": "memberUsers"}'></nuxeo-resource>
-    <nuxeo-resource id="users" path="group/[[groupname]]/@users" response="{{memberUsers}}"></nuxeo-resource>
-    <nuxeo-resource id="groups" path="group/[[groupname]]/@groups" response="{{memberGroups}}"></nuxeo-resource>
-    <nuxeo-resource id="editRequest"
-                    path="group/[[groupname]]"
-                    data="[[group]]"
-                    response="{{group}}">
+    <nuxeo-resource id="request"
+                    path="group/[[groupname]]" response="{{group}}"
+                    headers='{"fetch.group": "memberUsers"}'>
     </nuxeo-resource>
+    <nuxeo-resource id="users" path="[[_usersPath(groupname)]]" response="{{memberUsers}}" auto></nuxeo-resource>
+    <nuxeo-resource id="groups" path="[[_groupsPath(groupname)]]" response="{{memberGroups}}" auto></nuxeo-resource>
+    <nuxeo-resource id="editRequest" path="group/[[groupname]]" response="{{group}}"></nuxeo-resource>
 
     <paper-toast id="toast"></paper-toast>
 
     <paper-dialog id="deleteGroupDialog" modal>
-      <div class="horizontal layout center">
+      <div class="horizontal layout">
         Do you really want to delete this group?
       </div>
       <div class="buttons">
@@ -188,11 +206,29 @@ Used by `nuxeo-user-group-management`
 
     <paper-dialog id="rmFromGroupDialog" modal class="vertical layout">
       <div class="horizontal layout">
-        <p>Do you really want to remove [[_removedMember.id]] from this group?</p>
+        Do you really want to remove [[_removedMember.id]] from this group?
       </div>
       <div class="buttons horizontal end-justified layout">
         <paper-button dialog-dismiss>No</paper-button>
         <paper-button dialog-confirm on-tap="_removeMember">Yes</paper-button>
+      </div>
+    </paper-dialog>
+
+    <paper-dialog id="editGroupDialog" modal>
+      <h1>Edit Group</h1>
+      <form is="iron-form" id="editForm" class="vertical layout">
+        <div class="layout horizontal">
+          <div class="label-container">
+            <label>Group Label</label>
+          </div>
+          <div class="horizontal layout flex">
+            <input value="{{_editableGroup.grouplabel::input}}" class="flex">
+          </div>
+        </div>
+      </form>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button class="primary" on-tap="_submitEditForm">Save Changes</paper-button>
       </div>
     </paper-dialog>
 
@@ -206,12 +242,13 @@ Used by `nuxeo-user-group-management`
       </div>
       <div class="layout horizontal header-actions">
         <paper-button class="flex-end" on-tap="_toggleEditMembers">
-          <iron-icon icon="add"></iron-icon>
-          Add Members
+          <iron-icon icon="add"></iron-icon> Add Members
+        </paper-button>
+        <paper-button on-tap="_toggleEditGroup">
+          <iron-icon icon="editor:mode-edit"></iron-icon> Edit
         </paper-button>
         <paper-button class="flex-end" on-tap="_toggleDeleteGroup">
-          <iron-icon icon="icons:delete"></iron-icon>
-          Delete
+          <iron-icon icon="icons:delete"></iron-icon> Delete
         </paper-button>
       </div>
     </div>
@@ -228,7 +265,7 @@ Used by `nuxeo-user-group-management`
           <span class="tag">
             <iron-icon icon="[[_icon(item)]]"></iron-icon> [[item.displayLabel]]
           </span>
-          [[user.id]] has been added to the group
+          <span>[[user.id]] has been added to the group</span>
           <span class="remove" on-tap="_toggleDeleteDialog">Remove</span>
         </div>
       </template>
@@ -238,6 +275,11 @@ Used by `nuxeo-user-group-management`
       <h3 class="table-title">
         <iron-icon icon="social:person"></iron-icon> Users
       </h3>
+      <div class="filter-wrapper">
+        <paper-input autofocus="true" value="{{usersFilter}}" type="search" placeholder="Type to filter users" no-label-float>
+          <iron-icon icon="search" prefix></iron-icon>
+        </paper-input>
+      </div>
       <div class="table">
         <div class="table-row table-headers">
           <div class="flex">Name</div>
@@ -265,7 +307,7 @@ Used by `nuxeo-user-group-management`
         </template>
         <template is="dom-if" if=[[_empty(memberUsers.entries)]]>
           <div class="table-row">
-            <div>Group does not have any user yet.</div>
+            <div>No results.</div>
           </div>
         </template>
       </div>
@@ -276,6 +318,11 @@ Used by `nuxeo-user-group-management`
       <h3 class="table-title">
         <iron-icon icon="social:people"></iron-icon> Nested groups
       </h3>
+      <div class="filter-wrapper">
+        <paper-input autofocus="true" value="{{groupsFilter}}" type="search" placeholder="Type to filter groups" no-label-float>
+          <iron-icon icon="search" prefix></iron-icon>
+        </paper-input>
+      </div>
       <div class="table">
         <div class="table-row table-headers">
           <div class="flex">Name</div>
@@ -303,7 +350,7 @@ Used by `nuxeo-user-group-management`
         </template>
         <template is="dom-if" if=[[_empty(memberGroups.entries)]]>
           <div class="table-row">
-            <div>Group does not have any nested group.</div>
+            <div>No results.</div>
           </div>
         </template>
       </div>
@@ -311,7 +358,7 @@ Used by `nuxeo-user-group-management`
     </div>
 
     <div class="table-wrapper">
-      <h1>Permissions</h1>
+      <h1 class="table-title">Permissions</h1>
       <nuxeo-user-group-permissions-table entity="[[groupname]]"></nuxeo-user-group-permissions-table>
     </div>
   </template>
@@ -325,7 +372,7 @@ Used by `nuxeo-user-group-management`
         properties: {
           groupname: {
             type: String,
-            observer: '_fetch'
+            observer: '_fetch',
           },
 
           group: Object,
@@ -358,7 +405,13 @@ Used by `nuxeo-user-group-management`
 
           usersCurrentPage: Number,
 
+          usersFilter: String,
+
           groupsCurrentPage: Number,
+
+          groupsFilter: String,
+
+          _editableGroup: Object,
 
           _removedMember: Object,
 
@@ -370,16 +423,21 @@ Used by `nuxeo-user-group-management`
 
         observers: [
           '_fetchUsers(usersCurrentPage)',
-          '_fetchGroups(groupsCurrentPage)'
+          '_filterUsers(usersFilter)',
+          '_fetchGroups(groupsCurrentPage)',
+          '_filterGroups(groupsFilter)'
         ],
 
         ready: function() {
           this.$.picker.$$('nuxeo-select2').queryResultsFilter = this.resultsFilter;
+          this.$.editForm.addEventListener('iron-form-presubmit', function(event) {
+            event.preventDefault();
+            this._saveGroup();
+          }.bind(this));
         },
 
         _fetch: function() {
           this.$.request.get().then(function(response) {
-            this.group = response;
             this.activity = [];
             this.showEditMembers = false;
             this.selectedMember = null;
@@ -388,39 +446,45 @@ Used by `nuxeo-user-group-management`
           }.bind(this));
         },
 
+        _saveGroup: function() {
+          this.$.editRequest.data = this._editableGroup;
+          this.$.editRequest.put().then(function(response) {
+            this._toast('Group updated');
+            this.$.editGroupDialog.toggle();
+          }.bind(this));
+        },
+
         _fetchGroups: function() {
-          if (this.groupname) {
-            // if there's only one entry left in the current page, we should go to prev page
+          if (this.group) {
+            // if there's only one entry left in the current page and we delete it, we should go to prev page
             if (this._fromDelete && this.memberGroups.currentPageSize === 1) {
               this._fromDelete = false;
               this.groupsCurrentPage--;
               return;
             }
             var params = {
-              q: this.searchTerm,
+              q: this.groupsFilter,
               pageSize: 5,
               currentPageIndex: this.groupsCurrentPage - 1
             };
             this.$.groups.params = params;
-            this.$.groups.get();
           }
         },
 
         _fetchUsers: function() {
-          if (this.groupname) {
-            // if there's only one entry left in the current page, we should go to prev page
+          if (this.group) {
+            // if there's only one entry left in the current page and we delete it, we should go to prev page
             if (this._fromDelete && this.memberUsers.currentPageSize === 1) {
               this._fromDelete = false;
               this.usersCurrentPage--;
               return;
             }
             var params = {
-              q: this.searchTerm,
+              q: this.usersFilter,
               pageSize: 5,
               currentPageIndex: this.usersCurrentPage - 1
             };
             this.$.users.params = params;
-            this.$.users.get();
           }
         },
 
@@ -442,6 +506,7 @@ Used by `nuxeo-user-group-management`
                 break;
             }
             this.push('activity', member);
+            this.$.editRequest.data = this.group;
             this.$.editRequest.put().then(function(response) {
               if (member['entity-type'] === 'user') {
                 this._fetchUsers();
@@ -467,6 +532,7 @@ Used by `nuxeo-user-group-management`
               this.group.memberGroups.splice(idx, 1);
               break;
           }
+          this.$.editRequest.data = this.group;
           this.$.editRequest.put().then(function(response) {
             this._fromDelete = true;
             if (member['entity-type'] === 'user') {
@@ -489,8 +555,27 @@ Used by `nuxeo-user-group-management`
           }
         },
 
+        _submitEditForm: function() {
+          this.$.editForm.submit();
+        },
+
+        _filterUsers: function() {
+          if (this.group) {
+            this.usersCurrentPage = 1;
+            this._fetchUsers();
+          }
+        },
+
+        _filterGroups: function() {
+          if (this.group) {
+            this.groupsCurrentPage = 1;
+            this._fetchGroups();
+          }
+        },
+
         _deleteGroup: function() {
           this.$.deleteGroupDialog.toggle();
+          this.$.editRequest.data = this.group;
           this.$.editRequest.remove();
           this._goHome();
         },
@@ -504,6 +589,11 @@ Used by `nuxeo-user-group-management`
           this._removedMember = e.model.item;
           this._removedMember.id = type === 'user' ? e.model.item.id : e.model.item.groupname;
           this.$.rmFromGroupDialog.toggle();
+        },
+
+        _toggleEditGroup: function() {
+          this._clone();
+          this.$.editGroupDialog.toggle();
         },
 
         _toggleDeleteGroup: function() {
@@ -545,6 +635,22 @@ Used by `nuxeo-user-group-management`
         _toast: function(msg) {
           this.$.toast.text = msg;
           this.$.toast.open();
+        },
+
+        _clone: function() {
+          this._editableGroup = JSON.parse(JSON.stringify(this.group));
+        },
+
+        _usersPath: function() {
+          if (this.groupname) {
+            return 'group/' + this.groupname + '/@users';
+          }
+        },
+
+        _groupsPath: function() {
+          if (this.groupname) {
+            return 'group/' + this.groupname + '/@groups';
+          }
         }
       });
     })();
