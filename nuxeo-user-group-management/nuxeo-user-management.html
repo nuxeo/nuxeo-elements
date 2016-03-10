@@ -228,28 +228,30 @@ Used by `nuxeo-user-group-management`
       </div>
       <div class="horizontal layout flex center end-justified">
         <paper-button id="changePasswordButton" class="horizontal layout center" on-tap="_toggleChangePassword">
-          <iron-icon icon="icons:lock"></iron-icon> Change Password
+          <iron-icon icon="icons:lock"></iron-icon> [[i18n('command.change.password', 'Change Password')]]
         </paper-button>
         <paper-dialog id="changePasswordDialog" modal>
           <form is="iron-form" id="changePasswordForm" class="vertical layout">
-            <h1>Change Password</h1>
+            <h1>[[i18n('command.change.password', 'Change Password')]]</h1>
             <nuxeo-edit-password required id="passwordEditor"></nuxeo-edit-password>
           </form>
           <div class="buttons">
-            <paper-button dialog-dismiss>Cancel</paper-button>
-            <paper-button class="primary" on-tap="_submitChangePassword">Save Changes</paper-button>
+            <paper-button dialog-dismiss>[[i18n('command.cancel', 'Cancel')]]</paper-button>
+            <paper-button class="primary" on-tap="_submitChangePassword">
+              [[i18n('command.saveChanges', 'Save Changes')]]
+            </paper-button>
           </div>
         </paper-dialog>
 
         <paper-button id="editUserButton" class="horizontal layout center" on-tap="_toggleEditUser">
-          <iron-icon icon="editor:mode-edit"></iron-icon> Edit
+          <iron-icon icon="editor:mode-edit"></iron-icon> [[i18n('label.userManager.editUser', 'Edit')]]
         </paper-button>
         <paper-dialog id="editUserDialog" modal>
           <form is="iron-form" id="editUserForm" class="vertical layout">
-            <h1>Edit User</h1>
+            <h1>[[i18n('label.userManager.editUserTitle', 'Edit User')]]</h1>
             <div class="row layout horizontal">
               <div class="label-container">
-                <label>Username</label>
+                <label>[[i18n('username', 'Username')]]</label>
               </div>
               <div class="horizontal layout flex required">
                 <input value="[[user.properties.username]]" class="flex" required disabled>
@@ -258,62 +260,64 @@ Used by `nuxeo-user-group-management`
             <nuxeo-edit-user id="userEditor"></nuxeo-edit-user>
           </form>
           <div class="buttons">
-            <paper-button dialog-dismiss>Cancel</paper-button>
-            <paper-button class="primary" on-tap="_submitEditUser">Save Changes</paper-button>
+            <paper-button dialog-dismiss>[[i18n('command.cancel', 'Cancel')]]</paper-button>
+            <paper-button class="primary" on-tap="_submitEditUser">
+              [[i18n('command.saveChanges', 'Save Changes')]]
+            </paper-button>
           </div>
         </paper-dialog>
         <paper-button id="deleteUserButton" class="horizontal layout center" on-tap="_toggleDeleteUser">
-          <iron-icon icon="icons:delete"></iron-icon> Delete
+          <iron-icon icon="icons:delete"></iron-icon> [[i18n('command.delete', 'Delete')]]
         </paper-button>
         <paper-dialog id="deleteUserDialog" modal>
           <div class="horizontal layout center">
-            Do you really want to delete this user?
+            [[i18n('label.userManager.deleteConfirm', 'Do you really want to delete this user?')]]
           </div>
           <div class="buttons">
-            <paper-button dialog-dismiss>No</paper-button>
-            <paper-button class="primary" on-tap="_deleteUser">Yes</paper-button>
+            <paper-button dialog-dismiss>[[i18n('label.no', 'No')]]</paper-button>
+            <paper-button class="primary" on-tap="_deleteUser">[[i18n('label.yes', 'Yes')]]</paper-button>
           </div>
         </paper-dialog>
       </div>
     </div>
     <div class="card layout horizontal">
       <div class="layout vertical flex center">
-        <label>Email</label>
+        <label>[[i18n('email', 'Email')]]</label>
         <span>[[user.properties.email]]</span>
       </div>
       <div class="layout vertical flex center">
-        <label>Company</label>
+        <label>[[i18n('company', 'Company')]]</label>
         <span>[[user.properties.company]]</span>
       </div>
     </div>
     <div class="table-wrapper">
       <div class="layout horizontal">
-        <h1 class="flex">Groups</h1>
+        <h1 class="flex">[[i18n('label.groupManager.groups', 'Groups')]]</h1>
         <paper-button id="addGroup" class="flex-end" on-tap="_toggleEditGroups">
-          <iron-icon icon="add"></iron-icon> Add to Group
+          <iron-icon icon="add"></iron-icon> [[i18n('label.security.addToGroup', 'Add to Group')]]
         </paper-button>
       </div>
       <div class="card layout vertical" hidden$="[[!showEditGroups]]">
         <nuxeo-user-suggestion id="picker" class="flex"
                                search-type="GROUP_TYPE"
-                               placeholder="Search for groups..."
+                               placeholder="[[i18n('label.security.searchGroups', 'Search for Groups')]]"
                                value="{{selectedGroup}}"
                                selected-items="{{selectedGroup}}">
         </nuxeo-user-suggestion>
         <template is="dom-repeat" items="[[activity]]">
           <div class="activity-entry">
-            [[user.id]] is now member of
+            [[i18n('label.userManager.memberOf', '{0} is now member of', user.id)]]
             <span class="tag">
               <iron-icon icon="social:people"></iron-icon> [[item.label]]
             </span>
-            <span class="remove" on-tap="_toggleDialog">Remove</span>
+            <span class="remove" on-tap="_toggleDialog">[[i18n('label.userManager.remove', 'Remove')]]</span>
           </div>
         </template>
       </div>
       <div class="table">
         <div class="table-row table-headers">
-          <div class="flex">Name</div>
-          <div class="flex-4">Identifier</div>
+          <div class="flex">[[i18n('label.name', 'Name')]]</div>
+          <div class="flex-4">[[i18n('label.security.identifier', 'Identifier')]]</div>
           <div class="table-actions"></div>
         </div>
         <template is="dom-if" if=[[!empty]]>
@@ -328,7 +332,7 @@ Used by `nuxeo-user-group-management`
               <div class="flex-4">[[item.name]]</div>
               <div class="table-actions">
                 <paper-icon-button icon="icons:clear"
-                                   title="Remove from [[item.label]]"
+                                   title="[[i18n('label.userManager.removeFrom', 'Remove from {0}', item.label)]]"
                                    on-tap="_toggleDialog">
                 </paper-icon-button>
               </div>
@@ -337,29 +341,29 @@ Used by `nuxeo-user-group-management`
         </template>
         <template is="dom-if" if=[[empty]]>
           <div class="table-row">
-            <div>No results.</div>
+            <div>[[i18n('label.userManager.noSearchResults', 'No results.')]]</div>
           </div>
         </template>
       </div>
     </div>
     <div class="table-wrapper">
-      <h1>Local Permissions</h1>
+      <h1>[[i18n('label.permissions.localPermissions', 'Local Permissions')]]</h1>
       <nuxeo-user-group-permissions-table entity="[[username]]"></nuxeo-user-group-permissions-table>
     </div>
     <template is="dom-repeat" items="[[user.extendedGroups]]">
       <div class="table-wrapper">
-      <h1>[[item.name]] permissions</h1>
+      <h1>[[i18n('label.permissions.entityPermissions', '{0} permissions', item.name)]]</h1>
       <nuxeo-user-group-permissions-table entity="[[item.name]]"></nuxeo-user-group-permissions-table>
     </div>
     </template>
 
     <paper-dialog id="dialog" modal class="vertical layout">
       <div class="horizontal layout">
-        <p>Do you really want to remove [[user.id]] from [[_removedGroup.name]]?</p>
+        <p>[[i18n('label.userManager.removeUserFromGroupConfirm', 'Do you really want to remove {0} from {1}?', user.id, _removedGroup.name)]]</p>
       </div>
       <div class="buttons horizontal end-justified layout">
-        <paper-button dialog-dismiss>No</paper-button>
-        <paper-button dialog-confirm on-tap="_remove">Yes</paper-button>
+        <paper-button dialog-dismiss>[[i18n('label.no', 'No')]]</paper-button>
+        <paper-button dialog-confirm on-tap="_remove">[[i18n('label.yes', 'Yes')]]</paper-button>
       </div>
     </paper-dialog>
   </template>
@@ -443,7 +447,8 @@ Used by `nuxeo-user-group-management`
             this.$.request.path = 'user/' + this.user.id + '/group/' + group.name;
             this.$.request.post().then(function(response) {
               this.user = response;
-              this._toast(this.user.id + ' was added to ' + group.name);
+              this._toast(this.i18n('label.userManager.addedUserToGroup', '{0} was added to {1}',
+                                    this.user.id, group.name));
             }.bind(this));
           }
           this.selectedGroup = null;
@@ -455,7 +460,8 @@ Used by `nuxeo-user-group-management`
           return this.$.request.remove().then(function() {
             this._removeRecent(group.name);
             this._removeFromGroup(group.name);
-            this._toast(this.user.id + ' was removed from ' + group.name);
+            this._toast(this.i18n('label.userManager.removeUserFromGroup', '{0} was removed from {1}',
+                                  this.user.id, group.name));
           }.bind(this));
         },
 
@@ -507,7 +513,7 @@ Used by `nuxeo-user-group-management`
           this.$.editRequest.data.properties.password = this.$.passwordEditor.password;
           this.$.editRequest.put().then(function(response) {
             this.user = response;
-            this._toast('Password for user ' + response.id + ' changed');
+            this._toast(this.i18n('label.userManager.password.changed', 'Password changed'));
             if (!!this.$.passwordEditor.resetFields) {
               this.$.passwordEditor.resetFields();
             }
@@ -530,7 +536,7 @@ Used by `nuxeo-user-group-management`
           this.$.editRequest.data = editedUser;
           this.$.editRequest.put().then(function(response) {
             this.user = response;
-            this._toast('User ' + response.id + ' updated');
+            this._toast(this.i18n('label.userManager.user.updated', 'User updated'));
           }.bind(this));
         },
 

@@ -77,25 +77,25 @@ Used by `nuxeo-edit-user`
 
     <div class="row layout horizontal">
       <div class="label-container">
-        <label>First Name</label>
+        <label>[[i18n('firstName', 'First Name')]]</label>
       </div>
       <input value="{{user.firstName::input}}" class="flex">
     </div>
     <div class="row layout horizontal">
       <div class="label-container">
-        <label>Last Name</label>
+        <label>[[i18n('lastName', 'Last Name')]]</label>
       </div>
       <input value="{{user.lastName::input}}" class="flex">
     </div>
     <div class="row layout horizontal">
       <div class="label-container">
-        <label>Company</label>
+        <label>[[i18n('company', 'Company')]]</label>
       </div>
       <input value="{{user.company::input}}" class="flex">
     </div>
     <div class="row layout horizontal">
       <div class="label-container">
-        <label>Email</label>
+        <label>[[i18n('email', 'Email')]]</label>
       </div>
       <div class="horizontal layout flex required">
         <input value="{{user.email::input}}" type="email" class="flex" required>
@@ -103,11 +103,11 @@ Used by `nuxeo-edit-user`
     </div>
     <div class="row layout horizontal">
       <div class="label-container">
-        <label>Groups</label>
+        <label>[[i18n('label.groupManager.groups', 'Groups')]]</label>
       </div>
       <nuxeo-user-suggestion id="picker"
                              search-type="GROUP_TYPE"
-                             placeholder="Search for groups"
+                             placeholder="[[i18n('label.security.searchGroups', 'Search for Groups')]]"
                              value="{{user.groups}}"
                              multiple>
       </nuxeo-user-suggestion>

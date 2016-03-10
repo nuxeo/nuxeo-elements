@@ -34,6 +34,8 @@ Contributors:
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icons/social-icons.html">
 
+<link rel="import" href="nuxeo-i18n.html">
+
 <link rel="import" href="../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../nuxeo-elements/widgets/nuxeo-user-suggestion.html">
 
@@ -86,16 +88,16 @@ Example:
           <paper-menu-button id="createDropdown">
             <paper-button class="dropdown-trigger" raised id="createButton">
               <iron-icon icon="add-circle-outline"></iron-icon>
-              <span>NEW</span>
+              <span>[[i18n('action.new.usergroup', 'NEW')]]</span>
             </paper-button>
             <paper-menu id="menu" class="dropdown-content" selectable="item">
               <paper-icon-item on-tap="_createUser">
                 <iron-icon icon="social:person" item-icon></iron-icon>
-                <span>User</span>
+                <span>[[i18n('action.new.user', 'User')]]</span>
               </paper-icon-item>
               <paper-icon-item on-tap="_createGroup">
                 <iron-icon icon="social:people" item-icon></iron-icon>
-                <span>Group</span>
+                <span>[[i18n('action.new.group', 'Group')]]</span>
               </paper-icon-item>
             </paper-menu>
           </paper-menu-button>

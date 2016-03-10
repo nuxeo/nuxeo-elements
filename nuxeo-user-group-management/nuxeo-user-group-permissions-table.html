@@ -91,10 +91,10 @@ Used by `nuxeo-user-group-management`
 
     <div class="table">
       <div class="table-row table-headers">
-        <div class="flex-2">Right</div>
-        <div class="flex-6">On</div>
-        <div class="flex-2">Time Frame</div>
-        <div class="flex-2">Granted by</div>
+        <div class="flex-2">[[i18n('label.permissions.right', 'Right')]]</div>
+        <div class="flex-6">[[i18n('label.permissions.on', 'On')]]</div>
+        <div class="flex-2">[[i18n('label.permissions.timeFrame', 'Time Frame')]]</div>
+        <div class="flex-2">[[i18n('label.permissions.grantedBy', 'Granted by')]]</div>
         <div class="table-actions"></div>
       </div>
       <template is="dom-if" if=[[!empty]]>
@@ -120,7 +120,7 @@ Used by `nuxeo-user-group-management`
             </div>
             <div class="table-actions">
               <paper-icon-button icon="icons:delete"
-                               title="Delete permission"
+                               title="[[i18n('label.permissions.delete', 'Delete permission')]]"
                                on-tap="_toggleDialog"
                                hidden$="[[!_canDelete(ace)]]">
               </paper-icon-button>
@@ -131,7 +131,7 @@ Used by `nuxeo-user-group-management`
       <template is="dom-if" if=[[empty]]>
         <div class="table-row">
           <div>
-            [[entity]] does not have permissions.
+            [[i18n('label.permissions.noPermissions', '{0} does not have permissions.', entity)]]
           </div>
         </div>
       </template>
@@ -139,11 +139,11 @@ Used by `nuxeo-user-group-management`
 
     <paper-dialog id="dialog" modal class="vertical layout">
       <div class="horizontal layout">
-        <p>Do you really want to delete this permission?</p>
+        <p>[[i18n('label.permissions.deleteConfirm', 'Do you really want to delete this permission?')]]</p>
       </div>
       <div class="buttons horizontal end-justified layout">
-        <paper-button dialog-dismiss>No</paper-button>
-        <paper-button dialog-confirm on-tap="_deleteAce">Yes</paper-button>
+        <paper-button dialog-dismiss>[[i18n('label.no', 'No')]]</paper-button>
+        <paper-button dialog-confirm on-tap="_deleteAce">[[i18n('label.yes', 'Yes')]]</paper-button>
       </div>
     </paper-dialog>
   </template>
@@ -225,10 +225,10 @@ Used by `nuxeo-user-group-management`
           var begin = ace.begin || null;
           var end = ace.end || null;
           var format = 'D MMM YYYY';
-          var sinceStr = 'Since ';
-          var fromStr = 'From ';
-          var untilStr = 'Until ';
-          var untilMiddleStr = ' until ';
+          var sinceStr = this.i18n('label.permissions.since', 'Since') + ' ';
+          var fromStr = this.i18n('label.permissions.from', 'From') + ' ';
+          var untilStr = this.i18n('label.permissions.until', 'Until') + ' ';
+          var untilMiddleStr = ' ' + this.i18n('label.permissions.untilMiddle', 'until') + ' ';
           if (begin !== null && end === null) {
             return (now.isAfter(begin) ? sinceStr : fromStr) + moment(begin).format(format);
           } else if (begin === null && end !== null) {
@@ -236,7 +236,7 @@ Used by `nuxeo-user-group-management`
           } else if (begin !== null && end !== null) {
             return (now.isAfter(begin) ? sinceStr : fromStr) + moment(begin).format(format) + untilMiddleStr + moment(end).format(format);
           } else {
-            return 'Permanent';
+            return this.i18n('label.permissions.permanent', 'Permanent');
           }
         },
 

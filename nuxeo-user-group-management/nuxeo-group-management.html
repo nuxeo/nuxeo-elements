@@ -196,30 +196,30 @@ Used by `nuxeo-user-group-management`
 
     <paper-dialog id="deleteGroupDialog" modal>
       <div class="horizontal layout">
-        Do you really want to delete this group?
+        [[i18n('label.groupManager.deleteConfirm', 'Do you really want to delete this group?')]]
       </div>
       <div class="buttons">
-        <paper-button dialog-dismiss>No</paper-button>
-        <paper-button class="primary" on-tap="_deleteGroup">Yes</paper-button>
+        <paper-button dialog-dismiss>[[i18n('label.no', 'No')]]</paper-button>
+        <paper-button class="primary" on-tap="_deleteGroup">[[i18n('label.yes', 'Yes')]]</paper-button>
       </div>
     </paper-dialog>
 
     <paper-dialog id="rmFromGroupDialog" modal class="vertical layout">
       <div class="horizontal layout">
-        Do you really want to remove [[_removedMember.id]] from this group?
+        [[i18n('label.groupManager.removeUserFromGroupConfirm', 'Do you really want to remove {0} from this group?', _removedMember.id)]]
       </div>
       <div class="buttons horizontal end-justified layout">
-        <paper-button dialog-dismiss>No</paper-button>
-        <paper-button dialog-confirm on-tap="_removeMember">Yes</paper-button>
+        <paper-button dialog-dismiss>[[i18n('label.no', 'No')]]</paper-button>
+        <paper-button dialog-confirm on-tap="_removeMember">[[i18n('label.yes', 'Yes')]]</paper-button>
       </div>
     </paper-dialog>
 
     <paper-dialog id="editGroupDialog" modal>
-      <h1>Edit Group</h1>
+      <h1>[[i18n('label.groupManager.editGroupTitle', 'Edit Group')]]</h1>
       <form is="iron-form" id="editForm" class="vertical layout">
         <div class="layout horizontal">
           <div class="label-container">
-            <label>Group Label</label>
+            <label>[[i18n('label.groupManager.groupLabel', 'Group Label')]]</label>
           </div>
           <div class="horizontal layout flex">
             <input value="{{_editableGroup.grouplabel::input}}" class="flex">
@@ -227,8 +227,8 @@ Used by `nuxeo-user-group-management`
         </div>
       </form>
       <div class="buttons">
-        <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button class="primary" on-tap="_submitEditForm">Save Changes</paper-button>
+        <paper-button dialog-dismiss>[[i18n('command.cancel', 'Cancel')]]</paper-button>
+        <paper-button class="primary" on-tap="_submitEditForm">[[i18n('command.saveChanges', 'Save Changes')]]</paper-button>
       </div>
     </paper-dialog>
 
@@ -242,13 +242,13 @@ Used by `nuxeo-user-group-management`
       </div>
       <div class="layout horizontal header-actions">
         <paper-button class="flex-end" on-tap="_toggleEditMembers">
-          <iron-icon icon="add"></iron-icon> Add Members
+          <iron-icon icon="add"></iron-icon> [[i18n('label.groupManager.addMembers', 'Add Members')]]
         </paper-button>
         <paper-button on-tap="_toggleEditGroup">
-          <iron-icon icon="editor:mode-edit"></iron-icon> Edit
+          <iron-icon icon="editor:mode-edit"></iron-icon> [[i18n('label.groupManager.editGroup', 'Edit')]]
         </paper-button>
         <paper-button class="flex-end" on-tap="_toggleDeleteGroup">
-          <iron-icon icon="icons:delete"></iron-icon> Delete
+          <iron-icon icon="icons:delete"></iron-icon> [[i18n('command.delete', 'Delete')]]
         </paper-button>
       </div>
     </div>
@@ -256,7 +256,7 @@ Used by `nuxeo-user-group-management`
     <div class="card layout vertical" hidden$="[[!showEditMembers]]">
       <nuxeo-user-suggestion id="picker" class="flex"
                              search-type="USER_GROUP_TYPE"
-                             placeholder="Add a user or a group"
+                             placeholder="[[i18n('label.groupManager.addEntity', 'Add a user or a group')]]"
                              value="[[selectedMember]]"
                              selected-items="{{selectedMember}}">
       </nuxeo-user-suggestion>
@@ -265,25 +265,26 @@ Used by `nuxeo-user-group-management`
           <span class="tag">
             <iron-icon icon="[[_icon(item)]]"></iron-icon> [[item.displayLabel]]
           </span>
-          <span>[[user.id]] has been added to the group</span>
-          <span class="remove" on-tap="_toggleDeleteDialog">Remove</span>
+          <span>[[i18n('label.groupManager.addedToGroup', '{0} has been added to the group', user.id)]]</span>
+          <span class="remove" on-tap="_toggleDeleteDialog">[[i18n('label.userManager.remove', 'Remove')]]</span>
         </div>
       </template>
     </div>
 
     <div class="table-wrapper">
       <h3 class="table-title">
-        <iron-icon icon="social:person"></iron-icon> Users
+        <iron-icon icon="social:person"></iron-icon> [[i18n('label.userManager.users', 'Users')]]
       </h3>
       <div class="filter-wrapper">
-        <paper-input autofocus="true" value="{{usersFilter}}" type="search" placeholder="Type to filter users" no-label-float>
+        <paper-input autofocus="true" value="{{usersFilter}}" type="search"
+                     placeholder="[[i18n('label.groupManager.filterUsers', 'Type to filter users')]]" no-label-float>
           <iron-icon icon="search" prefix></iron-icon>
         </paper-input>
       </div>
       <div class="table">
         <div class="table-row table-headers">
-          <div class="flex">Name</div>
-          <div class="flex-4">Identifier</div>
+          <div class="flex">[[i18n('label.name', 'Name')]]</div>
+          <div class="flex-4">[[i18n('label.security.identifier', 'Identifier')]]</div>
           <div class="table-actions"></div>
         </div>
         <template is="dom-if" if=[[!_empty(memberUsers.entries)]]>
@@ -298,7 +299,7 @@ Used by `nuxeo-user-group-management`
               <div class="flex-4">[[item.id]]</div>
               <div class="table-actions">
                 <paper-icon-button icon="icons:clear"
-                                   title="Remove from [[item.label]]"
+                                   title="[[i18n('label.userManager.removeFrom', 'Remove from {0}', item.label)]]"
                                    on-tap="_toggleDeleteDialog">
                 </paper-icon-button>
               </div>
@@ -307,7 +308,7 @@ Used by `nuxeo-user-group-management`
         </template>
         <template is="dom-if" if=[[_empty(memberUsers.entries)]]>
           <div class="table-row">
-            <div>No results.</div>
+            <div>[[i18n('label.userManager.noSearchResults', 'No results.')]]</div>
           </div>
         </template>
       </div>
@@ -316,17 +317,18 @@ Used by `nuxeo-user-group-management`
 
     <div class="table-wrapper">
       <h3 class="table-title">
-        <iron-icon icon="social:people"></iron-icon> Nested groups
+        <iron-icon icon="social:people"></iron-icon> [[i18n('label.groupManager.nesteGroups', 'Nested groups')]]
       </h3>
       <div class="filter-wrapper">
-        <paper-input autofocus="true" value="{{groupsFilter}}" type="search" placeholder="Type to filter groups" no-label-float>
+        <paper-input autofocus="true" value="{{groupsFilter}}" type="search"
+                     placeholder="[[i18n('label.groupManager.filterGroups', 'Type to filter groups')]]" no-label-float>
           <iron-icon icon="search" prefix></iron-icon>
         </paper-input>
       </div>
       <div class="table">
         <div class="table-row table-headers">
-          <div class="flex">Name</div>
-          <div class="flex-4">Identifier</div>
+          <div class="flex">[[i18n('label.name', 'Name')]]</div>
+          <div class="flex-4">[[i18n('label.security.identifier', 'Identifier')]]</div>
           <div class="table-actions"></div>
         </div>
         <template is="dom-if" if=[[!_empty(memberGroups.entries)]]>
@@ -341,7 +343,7 @@ Used by `nuxeo-user-group-management`
               <div class="flex-4">[[item.grouplabel]]</div>
               <div class="table-actions">
                 <paper-icon-button icon="icons:clear"
-                                   title="Remove from [[item.label]]"
+                                   title="[[i18n('label.userManager.removeFrom', 'Remove from {0}', item.label)]]"
                                    on-tap="_toggleDeleteDialog">
                 </paper-icon-button>
               </div>
@@ -350,7 +352,7 @@ Used by `nuxeo-user-group-management`
         </template>
         <template is="dom-if" if=[[_empty(memberGroups.entries)]]>
           <div class="table-row">
-            <div>No results.</div>
+            <div>[[i18n('label.userManager.noSearchResults', 'No results.')]]</div>
           </div>
         </template>
       </div>
@@ -358,7 +360,7 @@ Used by `nuxeo-user-group-management`
     </div>
 
     <div class="table-wrapper">
-      <h1 class="table-title">Permissions</h1>
+      <h1 class="table-title">[[i18n('label.security.permissions', 'Permissions')]]</h1>
       <nuxeo-user-group-permissions-table entity="[[groupname]]"></nuxeo-user-group-permissions-table>
     </div>
   </template>
@@ -372,7 +374,7 @@ Used by `nuxeo-user-group-management`
         properties: {
           groupname: {
             type: String,
-            observer: '_fetch',
+            observer: '_fetch'
           },
 
           group: Object,
@@ -449,7 +451,7 @@ Used by `nuxeo-user-group-management`
         _saveGroup: function() {
           this.$.editRequest.data = this._editableGroup;
           this.$.editRequest.put().then(function(response) {
-            this._toast('Group updated');
+            this._toast(this.i18n('label.groupManager.updated', 'Group updated'));
             this.$.editGroupDialog.toggle();
           }.bind(this));
         },
@@ -513,7 +515,8 @@ Used by `nuxeo-user-group-management`
               } else {
                 this._fetchGroups();
               }
-              this._toast(member.displayLabel + ' was added to ' + this.group.groupname);
+              this._toast(this.i18n('label.userManager.addedUserToGroup', '{0} was added to {1}',
+                                    member.displayLabel, this.group.groupname));
             }.bind(this));
           }
           this.selectedMember = null;
@@ -541,7 +544,8 @@ Used by `nuxeo-user-group-management`
               this._fetchGroups();
             }
             this._removeRecent(this._removedMember.id);
-            this._toast(this._removedMember.id + ' was removed from the group.');
+            this._toast(this.i18n('label.groupManager.removeUserFromGroup', '{0} was removed from the group',
+                                  this._removedMember.id));
           }.bind(this));
         },
 
@@ -620,14 +624,16 @@ Used by `nuxeo-user-group-management`
 
         _countUsers: function(users) {
           if (users) {
-            var label = users.length === 1 ? ' member' : ' members';
+            var label = ' ' + (users.length === 1 ? this.i18n('label.security.member', 'member') :
+                                                    this.i18n('label.security.members', 'members'));
             return users.length + label;
           }
         },
 
         _countGroups: function(groups) {
           if (groups) {
-            var label = groups.length === 1 ? ' nested group' : ' nested groups';
+            var label = ' ' + (groups.length === 1 ? this.i18n('label.security.nesteGroup', 'nested group') :
+                                                     this.i18n('label.security.nesteGroups', 'nested groups'));
             return groups.length + label;
           }
         },

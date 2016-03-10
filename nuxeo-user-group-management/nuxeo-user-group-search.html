@@ -94,20 +94,21 @@ Used by `nuxeo-user-management`
     </nuxeo-resource>
 
     <div class="search">
-      <paper-input autofocus="true" value="{{searchTerm}}" type="search" placeholder="Search for users and groups">
+      <paper-input autofocus="true" value="{{searchTerm}}" type="search"
+                   placeholder="[[i18n('label.security.search', 'Search for users and groups')]]">
         <iron-icon icon="search" prefix></iron-icon>
       </paper-input>
     </div>
 
     <template is="dom-if" if="[[!_showRecents(searchTerm)]]">
       <h3 class="table-title">
-        <iron-icon icon="social:people"></iron-icon> Groups
+        <iron-icon icon="social:people"></iron-icon> [[i18n('label.groupManager.groups', 'Groups')]]
       </h3>
       <div class="table">
         <div class="table-headers table-row">
-          <div class="flex">Name</div>
-          <div class="flex-2">Identifier</div>
-          <div class="flex-4">Contains</div>
+          <div class="flex">[[i18n('label.name', 'Name')]]</div>
+          <div class="flex-2">[[i18n('label.security.identifier', 'Identifier')]]</div>
+          <div class="flex-4">[[i18n('label.security.contains', 'Contains')]]</div>
           <div class="table-actions"></div>
         </div>
         <template is="dom-repeat" items="[[groups.entries]]" as="item">
@@ -130,19 +131,19 @@ Used by `nuxeo-user-management`
         </template>
         <template is="dom-if" if=[[_empty(groups.entries)]]>
           <div class="table-row">
-            <div>No group matches the entered criteria.</div>
+            <div>[[i18n('label.security.emptyGroupSearchResults', 'No group matches the entered criteria.')]]</div>
           </div>
         </template>
       </div>
       <nuxeo-pagination-controls page="{{groupsCurrentPage}}" number-of-pages="[[groups.numberOfPages]]"></nuxeo-pagination-controls>
       <h3 class="table-title">
-        <iron-icon icon="social:person"></iron-icon> Users
+        <iron-icon icon="social:person"></iron-icon> [[i18n('label.userManager.users', 'Users')]]
       </h3>
       <div class="table">
         <div class="table-row table-headers">
-          <div class="flex">Name</div>
-          <div class="flex-2">Identifier</div>
-          <div class="flex-4">Email</div>
+          <div class="flex">[[i18n('label.name', 'Name')]]</div>
+          <div class="flex-2">[[i18n('label.security.identifier', 'Identifier')]]</div>
+          <div class="flex-4">[[i18n('email', 'Email')]]</div>
           <div class="table-actions"></div>
         </div>
         <template is="dom-repeat" items="[[users.entries]]" as="item">
@@ -164,14 +165,14 @@ Used by `nuxeo-user-management`
         </template>
         <template is="dom-if" if=[[_empty(users.entries)]]>
           <div class="table-row">
-            <div>No user matches the entered criteria.</div>
+            <div>[[i18n('label.security.emptyUserSearchResults', 'No user matches the entered criteria.')]]</div>
           </div>
         </template>
       </div>
       <nuxeo-pagination-controls page="{{usersCurrentPage}}" number-of-pages="[[users.numberOfPages]]"></nuxeo-pagination-controls>
     </template>
     <template is="dom-if" if="[[_showRecents(searchTerm)]]">
-      <h3>Recently created users and groups</h3>
+      <h3>[[i18n('label.security.recentUsersAndGroups', 'Recently created users and groups')]]</h3>
     </template>
  </template>
 </dom-module>
@@ -240,13 +241,15 @@ Used by `nuxeo-user-management`
     },
 
     _countUsers: function(users) {
-      var label = users.length === 1 ? ' member' : ' members';
+      var label = ' ' + (users.length === 1 ? this.i18n('label.security.member', 'member') :
+                                              this.i18n('label.security.members', 'members'));
       return users.length + label;
     },
 
     _countGroups: function(groups) {
       if (groups.length > 0) {
-        var label = groups.length === 1 ? ' nested group' : ' nested groups';
+        var label = ' ' + (groups.length === 1 ? this.i18n('label.security.nesteGroup', 'nested group') :
+                                                 this.i18n('label.security.nesteGroups', 'nested groups'));
         return groups.length + label;
       }
     },
