@@ -211,15 +211,6 @@ Used by `nuxeo-user-group-management`
         margin-bottom: 0.5em;
         padding: 0.5em;
       }
-
-      .paper-dialog > * {
-        margin-top: 20px !important;
-        padding: 0 24px !important;
-      }
-
-      .paper-dialog > *:last-child {
-        margin-bottom: 24px !important;
-      }
     </style>
 
     <nuxeo-resource id="request"
@@ -284,7 +275,7 @@ Used by `nuxeo-user-group-management`
         </paper-button>
         <paper-dialog id="deleteUserDialog" modal>
           <div class="horizontal layout center">
-            <p>[[i18n('label.userManager.deleteConfirm', 'Do you really want to delete this user?')]]</p>
+            [[i18n('label.userManager.deleteConfirm', 'Do you really want to delete this user?')]]
           </div>
           <div class="buttons">
             <paper-button dialog-dismiss>[[i18n('label.no', 'No')]]</paper-button>
@@ -372,7 +363,7 @@ Used by `nuxeo-user-group-management`
 
     <paper-dialog id="dialog" modal class="vertical layout">
       <div class="horizontal layout">
-        <p>[[i18n('label.userManager.removeUserFromGroupConfirm', 'Do you really want to remove {0} from {1}?', user.id, _removedGroup.name)]]</p>
+        [[i18n('label.userManager.removeUserFromGroupConfirm', 'Do you really want to remove {0} from {1}?', user.id, _removedGroup.name)]]
       </div>
       <div class="buttons horizontal end-justified layout">
         <paper-button dialog-dismiss>[[i18n('label.no', 'No')]]</paper-button>
