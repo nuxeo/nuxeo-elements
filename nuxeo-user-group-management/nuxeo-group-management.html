@@ -210,7 +210,7 @@ Used by `nuxeo-user-group-management`
       </div>
       <div class="buttons horizontal end-justified layout">
         <paper-button dialog-dismiss>[[i18n('label.no', 'No')]]</paper-button>
-        <paper-button dialog-confirm on-tap="_removeMember">[[i18n('label.yes', 'Yes')]]</paper-button>
+        <paper-button class="primary" dialog-confirm on-tap="_removeMember">[[i18n('label.yes', 'Yes')]]</paper-button>
       </div>
     </paper-dialog>
 
@@ -265,7 +265,7 @@ Used by `nuxeo-user-group-management`
           <span class="tag">
             <iron-icon icon="[[_icon(item)]]"></iron-icon> [[item.displayLabel]]
           </span>
-          <span>[[i18n('label.groupManager.addedToGroup', '{0} has been added to the group', user.id)]]</span>
+          <span>[[i18n('label.groupManager.addedToGroup', 'has been added to the group')]]</span>
           <span class="remove" on-tap="_toggleDeleteDialog">[[i18n('label.userManager.remove', 'Remove')]]</span>
         </div>
       </template>
