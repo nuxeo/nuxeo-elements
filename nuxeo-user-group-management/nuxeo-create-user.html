@@ -262,6 +262,7 @@ Used by `nuxeo-user-management`
     },
 
     _resetFields: function() {
+      this.user = {};
       this.$.propertyEditor.resetFields();
       this.$.passwordEditor.resetFields();
       this.errors = '';
