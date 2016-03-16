@@ -73,6 +73,15 @@ Example:
         top: 15px;
       }
 
+      paper-menu {
+        padding: 0;
+      }
+
+      paper-menu paper-icon-item:hover {
+        background: #fafafa;
+        cursor: pointer;
+      }
+
       #createButton {
         background: #4285f4;
         color: #fff;
@@ -85,7 +94,7 @@ Example:
     <iron-pages selected="[[page]]" attr-for-selected="name">
       <section name="search">
         <div class="horizontal layout center">
-          <paper-menu-button id="createDropdown">
+          <paper-menu-button id="createDropdown" horizontal-align="right">
             <paper-button class="dropdown-trigger" raised id="createButton">
               <iron-icon icon="add-circle-outline"></iron-icon>
               <span>[[i18n('action.new.usergroup', 'NEW')]]</span>
