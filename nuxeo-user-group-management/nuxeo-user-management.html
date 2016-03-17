@@ -325,7 +325,7 @@ Used by `nuxeo-user-group-management`
           <div class="table-actions"></div>
         </div>
         <template is="dom-if" if=[[!empty]]>
-          <template is="dom-repeat" items="[[user.extendedGroups]]">
+          <template is="dom-repeat" items="[[groups]]">
             <div class="table-row">
               <div class="flex">
                 <span class="tag">
@@ -354,7 +354,7 @@ Used by `nuxeo-user-group-management`
       <h1>[[i18n('label.permissions.localPermissions', 'Local Permissions')]]</h1>
       <nuxeo-user-group-permissions-table entity="[[username]]"></nuxeo-user-group-permissions-table>
     </div>
-    <template is="dom-repeat" items="[[user.extendedGroups]]">
+    <template is="dom-repeat" items="[[groups]]">
       <div class="table-wrapper">
       <h1>[[i18n('label.permissions.entityPermissions', '{0} permissions', item.name)]]</h1>
       <nuxeo-user-group-permissions-table entity="[[item.name]]"></nuxeo-user-group-permissions-table>
@@ -386,6 +386,11 @@ Used by `nuxeo-user-group-management`
 
           user: Object,
 
+          groups: {
+            type: Object,
+            computed: '_computeGroups(user)'
+          },
+
           selectedGroup: {
             type: Object,
             observer: '_groupSelected'
@@ -414,7 +419,7 @@ Used by `nuxeo-user-group-management`
         },
 
         observers: [
-          '_userRemovedFromGroup(user.extendedGroups.splices)'
+          '_userRemovedFromGroup(groups.splices)'
         ],
 
         ready: function() {
@@ -439,6 +444,14 @@ Used by `nuxeo-user-group-management`
               this.selectedGroup = null;
             }.bind(this));
           }
+        },
+
+        _computeGroups: function() {
+          return this.user.extendedGroups.filter(function(group) {
+            if (this.user.properties.groups.indexOf(group.name) > -1) {
+              return group;
+            }
+          }.bind(this));
         },
 
         _groupSelected: function() {
@@ -481,17 +494,19 @@ Used by `nuxeo-user-group-management`
 
         _removeFromGroup: function(group) {
           // DELETE request does not return the user object, so when we remove
-          // from recents, we need to update the extendedGroups model too
-          for (var i = 0; i < this.user.extendedGroups.length; i++) {
-            if (this.user.extendedGroups[i].name === group) {
-              this.splice('user.extendedGroups', i, 1);
+          // we need to manually update the user model and the list of groups
+          var idx = this.user.properties.groups.indexOf(group);
+          this.user.properties.groups.splice(idx, 1);
+          for (var i = 0; i < this.groups.length; i++) {
+            if (this.groups[i].name === group) {
+              this.splice('groups', i, 1);
               return;
             }
           }
         },
 
         _userRemovedFromGroup: function() {
-          this.empty = this.user.extendedGroups.length === 0;
+          this.empty = this.groups.length === 0;
         },
 
         _toggleEditGroups: function() {
@@ -559,9 +574,8 @@ Used by `nuxeo-user-group-management`
         },
 
         _resultsFilter: function(entry) {
-          var userGroups = this.user.extendedGroups;
-          for (var i = 0; i < userGroups.length; i++) {
-            if (entry.id === userGroups[i].name) {
+          for (var i = 0; i < this.groups.length; i++) {
+            if (entry.id === this.groups[i].name) {
               return false;
             }
           }
