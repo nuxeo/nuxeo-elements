@@ -92,14 +92,19 @@ Note: Elements that depend on a connectionId use `nx` as default.
                         this.client = null;
                     }
                 }
-                nxClients[id] = this.client = this.client || new Nuxeo({
-                    baseURL: this.url,
-                    auth: {
-                        username: this.username,
-                        password: this.password
-                    },
-                    schemas: ['*']
-                });
+                var options = {
+                  baseURL: this.url,
+                  schemas: ['*']
+                };
+
+                if (this.username) {
+                  options.auth = {
+                    username: this.username,
+                    password: this.password
+                  };
+                }
+
+                nxClients[id] = this.client = this.client || new Nuxeo(options);
                 return this.client._promise = this.client.login()
                   .catch(function(error) {
                     console.log("Nuxeo connection refused: " + error);
