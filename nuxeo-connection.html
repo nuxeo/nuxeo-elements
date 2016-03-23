@@ -99,6 +99,7 @@ Note: Elements that depend on a connectionId use `nx` as default.
 
                 if (this.username) {
                   options.auth = {
+                    method: 'basic',
                     username: this.username,
                     password: this.password
                   };
