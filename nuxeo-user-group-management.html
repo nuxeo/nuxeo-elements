@@ -209,6 +209,13 @@ Example:
         this.$.toast.text = msg;
         this.$.toast.open();
       }
+      setTimeout(function() {
+        // audit is on es backend -> async
+        // Let's give it 1 sec to index
+        // (dirty, I know ..)
+        this.$$('nuxeo-user-group-search')._refreshLatest();
+
+      }.bind(this), 1000);
     }
   });
 </script>

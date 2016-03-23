@@ -183,7 +183,9 @@ Used by `nuxeo-user-management`
         <div class="table-row table-headers">
           <div class="flex">[[i18n('label.name', 'Name')]]</div>
           <div class="flex-2">[[i18n('label.security.identifier', 'Identifier')]]</div>
-          <div class="table-actions"></div>
+          <div class="table-actions">
+            <paper-icon-button icon="refresh" on-tap="_refreshLatest"></paper-icon-button>
+          </div>
         </div>
         <template is="dom-repeat" items="[[latestCreatedUsersGroups.entries]]" as="item">
            <div class="table-row">
@@ -311,7 +313,17 @@ Used by `nuxeo-user-management`
 
     _displayLCUserGroup: function(docModel) {
       if (this._isUser(docModel)) {
-        return docModel.properties['user:firstName'] + ' ' + docModel.properties['user:lastName'];
+        var result = '';
+        if (docModel.properties['user:firstName']) {
+          result += docModel.properties['user:firstName'];
+        }
+        if (docModel.properties['user:lastName']) {
+          if (result.length > 0) {
+            result != ' ';
+          }
+          result += docModel.properties['user:lastName'];
+        }
+        return result;
       } else if (this._isGroup(docModel)) {
         return docModel.properties['group:grouplabel'];
       }
@@ -319,10 +331,14 @@ Used by `nuxeo-user-management`
 
     _manageUserOrGroup: function(e) {
       if (this._isUser(e.model.item)) {
-         this.fire('manageUser', {user: e.model.item.uid});
+        this.fire('manageUser', {user: e.model.item.uid});
       } else if (this._isGroup(e.model.item)) {
         this.fire('manageGroup', {user: e.model.item.uid});
       }
+    },
+
+    _refreshLatest: function() {
+      this.$.latestCreatedUsersGroups.execute();
     }
 
   });
