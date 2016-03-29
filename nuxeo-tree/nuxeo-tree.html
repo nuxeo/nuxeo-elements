@@ -21,9 +21,11 @@ Contributors:
 <link rel="import" href="nuxeo-tree-node.html">
 
 <!--
-An element to display a tree. The template represents the DOM to create for the nodes.
-The `data` property specifies the model of the node. The `controller` provides helpers
-to render a given node, and these methods __must__ be implemented.
+An element to display a tree.
+
++ The template represents the DOM to create for the nodes
++ The `data` property specifies the model of a node
++ The `controller` provides helpers to render a given node, and these methods __must__ be implemented.
 
 ### Template model
 
@@ -69,13 +71,13 @@ and `isLeaf` which are added to the binding scope):
 </nuxeo-tree>
 ```
 
-The attribute [toggle] should be used to open/close a node.
+The attribute `[toggle]` can be added to any element in the template to toggle a node between opened and closed.
 
-In addition to the template, you must also provide a controller.
+In addition to the template, you must also provide a `controller`.
 For example, for the previous sample:
 
 ```js
-var controller = {
+controller = {
   // How to get children of a node. Returns a promise.
   getChildren: function(node) {
     return Promise.resolve(node.children);
@@ -94,8 +96,9 @@ var controller = {
 ```
 
 `nuxeo-tree`
-@group Nuxeo Elements
+@group Nuxeo UI Elements
 @element nuxeo-tree
+@demo demo/nuxeo-tree/index.html
 -->
 <dom-module id="nuxeo-tree">
   <template>
@@ -138,6 +141,9 @@ var controller = {
           'init(data, controller)'
         ],
 
+        /**
+        * Initializes the tree whenever the data and/or controller changes.
+        */
         init: function() {
           if (this.data && this.controller) {
             this.template = Polymer.dom(this).querySelector('template');
