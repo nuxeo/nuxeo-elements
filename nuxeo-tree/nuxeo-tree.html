@@ -1,0 +1,153 @@
+<!--
+(C) Copyright 2016 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contributors:
+  Andre Justo <ajusto@nuxeo.com>
+-->
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-icons/iron-icons.html">
+<link rel="import" href="nuxeo-tree-node.html">
+
+<!--
+An element to display a tree. The template represents the DOM to create for the nodes.
+The `data` property specifies the model of the node. The `controller` provides helpers
+to render a given node, and these methods __must__ be implemented.
+
+### Template model
+
+Given the following `data` array:
+
+##### data.json
+
+```js
+[
+  title: 'root',
+  children: [
+    {
+      title: 'a',
+      children: []
+    },
+    {
+      title: 'b',
+      children: [
+        {title: 'x'},
+        {title: 'y'}
+      ]
+    }
+  ]
+]
+```
+
+The following code would render the tree (note the `title` property is bound from the model
+object provided to the template scope, and there are also other properties such as `opened`
+and `isLeaf` which are added to the binding scope):
+
+```html
+<nuxeo-tree data="[[data]]" controller="[[controller]]">
+  <template>
+    <template is="dom-if" if="[[!opened]]">
+      <iron-icon icon="hardware:keyboard-arrow-right" toggle></iron-icon>
+    </template>
+    <template is="dom-if" if="[[opened]]">
+      <iron-icon icon="hardware:keyboard-arrow-down" toggle></iron-icon>
+    </template>
+    <span>My title is: [[item.title]]</span>
+    <span>Am I a leaf? [[isLeaf]]</span>
+  </template>
+</nuxeo-tree>
+```
+
+The attribute [toggle] should be used to open/close a node.
+
+In addition to the template, you must also provide a controller.
+For example, for the previous sample:
+
+```js
+var controller = {
+  // How to get children of a node. Returns a promise.
+  getChildren: function(node) {
+    return Promise.resolve(node.children);
+  },
+
+  // Logics you may want to have to control if a node should be expanded when created.
+  shouldExpand: function() {
+    return false;
+  },
+
+  // Logics you may want to have to control if a node is a leaf.
+  isLeaf: function(node) {
+    return node.children.length === 0;
+  }
+};
+```
+
+`nuxeo-tree`
+@group Nuxeo Elements
+@element nuxeo-tree
+-->
+<dom-module id="nuxeo-tree">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+    <nuxeo-tree-node id="root"></nuxeo-tree-node>
+
+  </template>
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'nuxeo-tree',
+
+        properties: {
+
+          data: Object,
+
+          /**
+           * An object for accessing information for rendering a tree item.
+           *
+           * getChildren(node) : Promise<Array<Object>>
+           * shouldExpand(node) : Boolean
+           * isLeaf(node) : Boolean
+           */
+          controller: Object,
+
+          /**
+          * Template used to render each tree item.
+          */
+          template: Object
+        },
+
+        observers: [
+          'init(data, controller)'
+        ],
+
+        init: function() {
+          if (this.data && this.controller) {
+            this.template = Polymer.dom(this).querySelector('template');
+            this.$.root.dataHost = this.dataHost;
+            this.$.root.controller = this.controller;
+            this.$.root.template = this.template;
+            this.$.root.data = this.data;
+          }
+        },
+      });
+    })();
+  </script>
+</dom-module>
