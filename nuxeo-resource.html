@@ -132,7 +132,7 @@ element.
         method: this.method || 'get',
       };
 
-      if (this.data) {
+      if (this.data && this.method != 'get') {
         options.body = this.data;
       }
 
