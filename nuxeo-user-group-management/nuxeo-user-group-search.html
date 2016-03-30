@@ -93,12 +93,6 @@ Used by `nuxeo-user-management`
                     headers='{"fetch.group": "memberUsers,memberGroups"}'>
     </nuxeo-resource>
 
-    <nuxeo-resource id="latestCreatedUsersGroups" auto
-                    path="/query/LATEST_CREATED_USERS_OR_GROUPS_PROVIDER"
-                    response="{{latestCreatedUsersGroups}}"
-                    headers='{"properties": "*"}'>
-    </nuxeo-resource>
-
     <div class="search">
       <paper-input autofocus="true" value="{{searchTerm}}" type="search"
                    placeholder="[[i18n('label.security.search', 'Search for users and groups')]]">
@@ -106,7 +100,7 @@ Used by `nuxeo-user-management`
       </paper-input>
     </div>
 
-    <template is="dom-if" if="[[!_showRecents(searchTerm)]]">
+    <template is="dom-if" if="[[!_showResults(searchTerm)]]">
       <h3 class="table-title">
         <iron-icon icon="social:people"></iron-icon> [[i18n('label.groupManager.groups', 'Groups')]]
       </h3>
@@ -177,43 +171,7 @@ Used by `nuxeo-user-management`
       </div>
       <nuxeo-pagination-controls page="{{usersCurrentPage}}" number-of-pages="[[users.numberOfPages]]"></nuxeo-pagination-controls>
     </template>
-    <template is="dom-if" if="[[_showRecents(searchTerm)]]">
-      <h3>[[i18n('label.security.recentUsersAndGroups', 'Recently created users and groups')]]</h3>
-      <div class="table">
-        <div class="table-row table-headers">
-          <div class="flex">[[i18n('label.name', 'Name')]]</div>
-          <div class="flex-2">[[i18n('label.security.identifier', 'Identifier')]]</div>
-          <div class="table-actions">
-            <paper-icon-button icon="refresh" on-tap="_refreshLatest"></paper-icon-button>
-          </div>
-        </div>
-        <template is="dom-repeat" items="[[latestCreatedUsersGroups.entries]]" as="item">
-           <div class="table-row">
-            <div class="flex">
-              <span class="tag">
-                <template is="dom-if" if="[[_isUser(item)]]">
-                  <iron-icon icon="social:person"></iron-icon>
-                </template>
-                <template is="dom-if" if="[[_isGroup(item)]]">
-                  <iron-icon icon="social:people"></iron-icon>
-                </template>
-                [[_displayLCUserGroup(item)]]
-              </span>
-            </div>
-            <div class="flex-2">[[item.uid]]</div>
-            <div class="table-actions layout horizontal">
-              <paper-icon-button icon="editor:mode-edit" on-tap="_manageUserOrGroup"></paper-icon-button>
-            </div>
-          </div>
-        </template>
-        <template is="dom-if" if=[[_empty(latestCreatedUsersGroups.entries)]]>
-          <div class="table-row">
-            <div>[[i18n('label.security.emptyRecentUserOrGroup', 'No recent user or group.')]]</div>
-          </div>
-        </template>
-      </div>
-    </template>
- </template>
+  </template>
 </dom-module>
 <script>
   Polymer({
@@ -223,7 +181,8 @@ Used by `nuxeo-user-management`
       searchTerm: {
         type: String,
         value: '',
-        observer: '_searchTermChanged'
+        observer: '_searchTermChanged',
+        notify: true
       },
 
       users: Object,
@@ -299,46 +258,8 @@ Used by `nuxeo-user-management`
       return user.properties.firstName || user.properties.lastName;
     },
 
-    _showRecents: function() {
+    _showResults: function() {
       return this.searchTerm.length === 0;
-    },
-
-    _isUser: function(docModel) {
-      return docModel.type === 'user';
-    },
-
-    _isGroup: function(docModel) {
-      return docModel.type === 'group';
-    },
-
-    _displayLCUserGroup: function(docModel) {
-      if (this._isUser(docModel)) {
-        var result = '';
-        if (docModel.properties['user:firstName']) {
-          result += docModel.properties['user:firstName'];
-        }
-        if (docModel.properties['user:lastName']) {
-          if (result.length > 0) {
-            result += ' ';
-          }
-          result += docModel.properties['user:lastName'];
-        }
-        return result;
-      } else if (this._isGroup(docModel)) {
-        return docModel.properties['group:grouplabel'];
-      }
-    },
-
-    _manageUserOrGroup: function(e) {
-      if (this._isUser(e.model.item)) {
-        this.fire('manageUser', {user: e.model.item.uid});
-      } else if (this._isGroup(e.model.item)) {
-        this.fire('manageGroup', {group: e.model.item.uid});
-      }
-    },
-
-    _refreshLatest: function() {
-      this.$.latestCreatedUsersGroups.execute();
     }
 
   });

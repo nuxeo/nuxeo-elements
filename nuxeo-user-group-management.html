@@ -152,8 +152,6 @@ Example:
     },
     listeners: {
       'goHome': '_goSearch',
-      'manageUser': '_manageUser',
-      'manageGroup': '_manageGroup',
       'nuxeo-user-created': '_toast',
       'nuxeo-user-invited': '_toast',
       'nuxeo-group-created': '_toast'
@@ -209,13 +207,16 @@ Example:
         this.$.toast.text = msg;
         this.$.toast.open();
       }
-      setTimeout(function() {
-        // audit is on es backend -> async
-        // Let's give it 1 sec to index
-        // (dirty, I know ..)
-        this.$$('nuxeo-user-group-search')._refreshLatest();
+    },
 
-      }.bind(this), 1000);
+    ready: function() {
+      window.addEventListener('manageUser', function(e) {
+        this._manageUser(e);
+      }.bind(this));
+      window.addEventListener('manageGroup', function(e) {
+        this._manageGroup(e);
+      }.bind(this));
     }
+
   });
 </script>
