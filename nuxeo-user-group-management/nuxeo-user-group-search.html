@@ -333,7 +333,7 @@ Used by `nuxeo-user-management`
       if (this._isUser(e.model.item)) {
         this.fire('manageUser', {user: e.model.item.uid});
       } else if (this._isGroup(e.model.item)) {
-        this.fire('manageGroup', {user: e.model.item.uid});
+        this.fire('manageGroup', {group: e.model.item.uid});
       }
     },
 
