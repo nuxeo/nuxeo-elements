@@ -190,7 +190,8 @@ Used by `nuxeo-user-group-management`
     </nuxeo-resource>
     <nuxeo-resource id="users" path="[[_usersPath(groupname)]]" response="{{memberUsers}}" auto></nuxeo-resource>
     <nuxeo-resource id="groups" path="[[_groupsPath(groupname)]]" response="{{memberGroups}}" auto></nuxeo-resource>
-    <nuxeo-resource id="editRequest" path="group/[[groupname]]" response="{{group}}"></nuxeo-resource>
+    <nuxeo-resource id="editRequest" path="group/[[groupname]]" response="{{group}}"
+      headers='{"fetch.group": "memberUsers,memberGroups"}'></nuxeo-resource>
 
     <paper-toast id="toast"></paper-toast>
 
@@ -527,13 +528,17 @@ Used by `nuxeo-user-group-management`
           var idx;
           switch (member['entity-type']) {
             case 'user':
-              idx = this.group.memberUsers.indexOf(this._removedMember.id);
-              this.group.memberUsers.splice(idx, 1);
+              if (this.group.memberUsers) {
+                idx = this.group.memberUsers.indexOf(this._removedMember.id);
+                this.group.memberUsers.splice(idx, 1);
+              }
               break;
             case 'group':
-              idx = this.group.memberGroups.indexOf(this._removedMember.id);
-              this.group.memberGroups.splice(idx, 1);
-              break;
+              if (this.group.memberGroups) {
+                idx = this.group.memberGroups.indexOf(this._removedMember.id);
+                this.group.memberGroups.splice(idx, 1);
+                break;
+              }
           }
           this.$.editRequest.data = this.group;
           this.$.editRequest.put().then(function(response) {
@@ -613,8 +618,12 @@ Used by `nuxeo-user-group-management`
         },
 
         _resultsFilter: function(entry) {
-          var userInGroup = this.group.memberUsers.indexOf(entry.id) >= 0;
-          var groupInGroup = this.group.memberGroups.indexOf(entry.id) >= 0;
+          if (this.group.memberUsers) {
+            var userInGroup = this.group.memberUsers.indexOf(entry.id) >= 0;
+          }
+          if (this.group.memberGroups) {
+            var groupInGroup = this.group.memberGroups.indexOf(entry.id) >= 0;
+          }
           return !userInGroup && !groupInGroup && entry.id !== this.group.groupname;
         },
 
