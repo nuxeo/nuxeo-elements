@@ -186,7 +186,7 @@ Used by `nuxeo-user-group-management`
 
     <nuxeo-resource id="request"
                     path="group/[[groupname]]" response="{{group}}"
-                    headers='{"fetch.group": "memberUsers"}'>
+                    headers='{"fetch.group": "memberUsers,memberGroups"}'>
     </nuxeo-resource>
     <nuxeo-resource id="users" path="[[_usersPath(groupname)]]" response="{{memberUsers}}" auto></nuxeo-resource>
     <nuxeo-resource id="groups" path="[[_groupsPath(groupname)]]" response="{{memberGroups}}" auto></nuxeo-resource>
