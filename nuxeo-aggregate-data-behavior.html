@@ -317,7 +317,7 @@ Contributors:
       } else {
         value = this._getMetricsValue(bucket);
       }
-      return key ? {key: key, value: value} : value;
+      return key !== undefined ? {key: key, value: value} : value;
     },
 
     // unwrap out metrics value
