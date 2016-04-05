@@ -210,6 +210,10 @@ Example:
     },
 
     ready: function() {
+      // dynamic loading of user layouts
+      Polymer.Base.importHref(this.resolveUrl('nuxeo-user-group-management/nuxeo-edit-user.html'));
+      Polymer.Base.importHref(this.resolveUrl('nuxeo-user-group-management/nuxeo-view-user.html'));
+
       window.addEventListener('manageUser', function(e) {
         this._manageUser(e);
       }.bind(this));

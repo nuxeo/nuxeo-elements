@@ -18,7 +18,6 @@ Contributors:
   Gabriel Barata <gbarata@nuxeo.com>
 -->
 <link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="nuxeo-edit-user.html">
 <link rel="import" href="nuxeo-edit-password.html">
 <link rel="import" href="nuxeo-user-group-permissions-table.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
@@ -290,16 +289,7 @@ Used by `nuxeo-user-group-management`
         </paper-dialog>
       </div>
     </div>
-    <div class="card layout horizontal">
-      <div class="layout vertical flex center">
-        <label>[[i18n('email', 'Email')]]</label>
-        <span>[[user.properties.email]]</span>
-      </div>
-      <div class="layout vertical flex center">
-        <label>[[i18n('company', 'Company')]]</label>
-        <span>[[user.properties.company]]</span>
-      </div>
-    </div>
+    <nuxeo-view-user id="userViewer" user="[[user]]"></nuxeo-view-user>
     <div class="table-wrapper">
       <div class="layout horizontal">
         <h1 class="flex">[[i18n('label.groupManager.groups', 'Groups')]]</h1>
