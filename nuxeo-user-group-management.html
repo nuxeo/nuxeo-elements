@@ -211,8 +211,12 @@ Example:
 
     ready: function() {
       // dynamic loading of user layouts
-      Polymer.Base.importHref(this.resolveUrl('nuxeo-user-group-management/nuxeo-edit-user.html'));
-      Polymer.Base.importHref(this.resolveUrl('nuxeo-user-group-management/nuxeo-view-user.html'));
+      if (!this._isRegistered('nuxeo-view-user')) {
+        Polymer.Base.importHref(this.resolveUrl('nuxeo-user-group-management/nuxeo-view-user.html'));
+      }
+      if (!this._isRegistered('nuxeo-edit-user')) {
+        Polymer.Base.importHref(this.resolveUrl('nuxeo-user-group-management/nuxeo-edit-user.html'));
+      }
 
       window.addEventListener('manageUser', function(e) {
         this._manageUser(e);
@@ -220,6 +224,13 @@ Example:
       window.addEventListener('manageGroup', function(e) {
         this._manageGroup(e);
       }.bind(this));
+    },
+
+    /**
+     * Determines whether a custom element is registered
+     */
+    _isRegistered: function(tag) {
+      return document.createElement(tag).constructor !== HTMLElement;
     }
 
   });
