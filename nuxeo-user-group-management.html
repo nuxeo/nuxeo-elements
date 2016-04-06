@@ -230,7 +230,7 @@ Example:
      * Determines whether a custom element is registered
      */
     _isRegistered: function(tag) {
-      return document.createElement(tag).constructor !== HTMLElement;
+      return Polymer.isInstance(document.createElement(tag));
     }
 
   });
