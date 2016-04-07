@@ -1,0 +1,296 @@
+<!doctype html>
+<!--
+(C) Copyright 2016 Nuxeo SA (http://nuxeo.com/) and others.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contributors:
+    Guillaume Renard <grenard@nuxeo.com>
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script>
+      // force use of polyfill: see ELEMENTS-56
+      window.fetch = null;
+    </script>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../test-fixture/test-fixture-mocha.js"></script>
+
+    <link rel="import" href="../../polymer/polymer.html">
+    <link rel="import" href="../../test-fixture/test-fixture.html">
+    <link rel="import" href="../dataviz/nuxeo-document-distribution-chart.html">
+  </head>
+  <body>
+    <test-fixture id="nx">
+      <template>
+        <nuxeo-connection url="/dummy"></nuxeo-connection>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="includeAllCount">
+      <template>
+        <nuxeo-document-distribution-chart index="nuxeo"
+          path="/default-domain" mode="count" max-depth="2"
+          chart-hue="blue" chart-lumonisity="light"
+          include-version include-hidden
+          include-deleted>
+        </nuxeo-document-distribution-chart>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="includeAllSize">
+      <template>
+        <nuxeo-document-distribution-chart index="nuxeo"
+          path="/default-domain" mode="size" max-depth="2"
+          chart-hue="blue" chart-lumonisity="light"
+          include-version include-hidden
+          include-deleted>
+        </nuxeo-document-distribution-chart>
+      </template>
+    </test-fixture>
+
+    <script>
+
+      suite('<nuxeo-document-distribution-chart>', function() {
+
+        var server;
+
+        var includeAllCountResp = {
+          "aggregations": {
+            "subLevel": {
+              "buckets": [
+                {
+                  "doc_count": 62,
+                  "key": "workspaces",
+                  "subLevel": {
+                    "buckets": [
+                      {
+                        "doc_count": 35,
+                        "key": "Media"
+                      },
+                      {
+                        "doc_count": 19,
+                        "key": "Deep"
+                      },
+                      {
+                        "doc_count": 7,
+                        "key": "Small"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "doc_count": 9,
+                  "key": "UserWorkspaces",
+                  "subLevel": {
+                    "buckets": [
+                      {
+                        "doc_count": 5,
+                        "key": "Administrator"
+                      },
+                      {
+                        "doc_count": 3,
+                        "key": "jdoe"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "doc_count": 1,
+                  "key": "sections",
+                  "subLevel": {
+                    "buckets": [],
+                  }
+                },
+                {
+                  "doc_count": 1,
+                  "key": "templates",
+                  "subLevel": {
+                    "buckets": []
+                  }
+                }
+              ]
+            }
+          }
+        };
+
+        var includeAllCountResp = {
+          "aggregations": {
+            "subLevel": {
+              "buckets": [
+                {
+                  "doc_count": 62,
+                  "key": "workspaces",
+                  "size": {
+                    "value": 28650901.0
+                  },
+                  "subLevel": {
+                    "buckets": [
+                      {
+                        "doc_count": 35,
+                        "key": "Media",
+                        "size": {
+                          "value": 19544488.0
+                        }
+                      },
+                      {
+                        "doc_count": 19,
+                        "key": "Deep",
+                        "size": {
+                          "value": 6625895.0
+                        }
+                      },
+                      {
+                        "doc_count": 7,
+                        "key": "Small",
+                        "size": {
+                          "value": 2480518.0
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "doc_count": 9,
+                  "key": "UserWorkspaces",
+                  "size": {
+                    "value": 0.0
+                  },
+                  "subLevel": {
+                    "buckets": [
+                      {
+                        "doc_count": 5,
+                        "key": "Administrator",
+                        "size": {
+                          "value": 0.0
+                        }
+                      },
+                      {
+                        "doc_count": 3,
+                        "key": "jdoe",
+                        "size": {
+                          "value": 0.0
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "doc_count": 1,
+                  "key": "sections",
+                  "size": {
+                    "value": 0.0
+                  },
+                  "subLevel": {
+                    "buckets": []
+                  }
+                },
+                {
+                  "doc_count": 1,
+                  "key": "templates",
+                  "size": {
+                    "value": 0.0
+                  },
+                  "subLevel": {
+                    "buckets": []
+                  }
+                }
+              ]
+            }
+          }
+        };
+
+        setup(function() {
+          server = sinon.fakeServer.create();
+          server.autoRespond = true;
+          server.respondWith(
+            'POST',
+            '/dummy/api/v1/automation/login',
+            [
+              200,
+              {'Content-Type': 'application/json'},
+              '{"entity-type":"login","username":"Administrator"}'
+            ]
+          );
+          server.respondWith(
+            'GET',
+            '/dummy/api/v1/repo/default/user/Administrator?',
+            [
+              200,
+              {'Content-Type': 'application/json'},
+              '{"entity-type":"user","username":"Administrator"}'
+            ]
+          );
+
+          // login
+          var nx = fixture('nx');
+          var promise = nx.connect();
+          return promise;
+        });
+
+        test('includeAllCount', function() {
+          var distribution = fixture('includeAllCount');
+
+           return fakeResponse(distribution, includeAllCountResp).then(function() {
+            // check data transformation
+            assert.equal(4, distribution._chartData.children.length);
+            assert.equal(71, distribution._chartData.value);
+            assert.equal('root', distribution._chartData.name);
+            assert.equal(3, distribution._chartData.children[0].children.length);
+            assert.equal(61, distribution._chartData.children[0].value);
+            assert.equal('workspaces', distribution._chartData.children[0].name);
+
+            // check chart
+            assert.equal(10, $(distribution.$.chart).find("path").size());
+          });
+        });
+
+        test('includeAllSize', function() {
+          var distribution = fixture('includeAllSize');
+
+           return fakeResponse(distribution, includeAllCountResp).then(function() {
+            debugger
+            // check data transformation
+            assert.equal(4, distribution._chartData.children.length);
+            assert.equal(28650901, distribution._chartData.value);
+            assert.equal('root', distribution._chartData.name);
+            assert.equal(3, distribution._chartData.children[0].children.length);
+            assert.equal(28650901, distribution._chartData.children[0].value);
+            assert.equal('workspaces', distribution._chartData.children[0].name);
+
+            // check chart
+            assert.equal(5, $(distribution.$.chart).find("path").size());
+          });
+        });
+
+        function fakeResponse(distribution, json) {
+          server.respondWith(
+              'POST',
+              '/dummy/site/es/nuxeo/_search?',
+              [
+                200,
+                {'Content-Type': 'application/json'},
+                JSON.stringify(json)
+              ]
+          );
+          return distribution.execute();
+        }
+
+      });
+    </script>
+
+  </body>
+</html>

@@ -1,13 +1,16 @@
 {
   "name": "nuxeo-ui-elements",
   "authors": [
-    "Nelson Silva <nsilva@nuxeo.com>"
+    "Nelson Silva <nsilva@nuxeo.com>",
+    "Guillaume Renard <grenard@nuxeo.com>"
   ],
   "description": "Nuxeo UI Web Components.",
   "keywords": [
     "nuxeo",
     "web-component",
-    "polymer"
+    "polymer",
+    "metrics",
+    "d3js"
   ],
   "license": "Apache 2.0",
   "homepage": "https://github.com/nuxeo/nuxeo-ui-elements/",
@@ -24,7 +27,9 @@
     "iron-elements": "PolymerElements/iron-elements#^1.0.0",
     "paper-elements": "PolymerElements/paper-elements#^1.0.1",
     "nuxeo-elements": "nuxeo/nuxeo-elements#master",
-    "moment": "~2.10.6"
+    "moment": "~2.10.6",
+    "d3": "~3.5.12",
+    "randomcolor": "~0.4.2"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
