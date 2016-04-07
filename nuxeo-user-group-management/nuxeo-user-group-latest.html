@@ -29,7 +29,12 @@ Contributors:
 <link rel="import" href="../../paper-menu-button/paper-menu-button.html">
 
 <!--
-Used by `nuxeo-user-management`
+An element for displaying the most recently created users and groups.
+
+Example:
+
+    <nuxeo-user-group-latest></nnuxeo-user-group-latest>
+
 @group Nuxeo Elements
 @element nuxeo-user-group-latest
 -->
@@ -129,7 +134,7 @@ Used by `nuxeo-user-management`
     is: 'nuxeo-user-group-latest',
 
     properties: {
-      latestCreatedUsersGroups: Object,
+      latestCreatedUsersGroups: Object
     },
 
     _empty: function(entries) {
@@ -191,7 +196,7 @@ Used by `nuxeo-user-management`
       window.addEventListener('nuxeo-group-created', function() {
         this._refreshLatestWithDelay();
       }.bind(this));
-    },
+    }
 
   });
 </script>

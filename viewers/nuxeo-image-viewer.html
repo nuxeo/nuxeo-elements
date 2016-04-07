@@ -108,11 +108,17 @@ Custom property | Description | Default
 
         properties: {
 
+          /**
+           * The URL of an image.
+           */
           src: {
             type: String,
             observer: 'init'
           },
 
+          /**
+           * If true, controls for the user to interact with are displayed.
+           */
           controls: {
             type: Boolean,
             value: false
@@ -126,6 +132,9 @@ Custom property | Description | Default
             value: false
           },
 
+          /**
+           * If true, the element exhibits responsive resize behavior.
+           */
           responsive: {
             type: Boolean,
             value: false

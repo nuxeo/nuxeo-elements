@@ -17,7 +17,14 @@ Contributors:
 -->
 
 <!--
-Used by `nuxeo-view-user`
+An element for displaying user data, which is dynamically loaded by `nuxeo-user-group-management`.
+This element can be overridden with custom fields.
+
+Example:
+
+    <nuxeo-edit-user user=[[user]] new></nuxeo-edit-user>
+
+Used by `nuxeo-user-management`
 @group Nuxeo Elements
 @element nuxeo-view-user
 -->
@@ -60,6 +67,9 @@ Used by `nuxeo-view-user`
     is: 'nuxeo-view-user',
 
     properties: {
+      /**
+       * The user object to be displayed.
+       */
       user: {
         type: Object,
         value: {}

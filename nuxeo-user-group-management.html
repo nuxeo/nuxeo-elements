@@ -52,6 +52,15 @@ Example:
 
     <nuxeo-user-group-management></nuxeo-user-group-management>
 
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--nuxeo-user-management-layout` | Mixin applied to the host element | `{}`
+`--nuxeo-user-management-create-button-layout` | Mixin applied to the create button | `{}`
+
 @group Nuxeo UI Elements
 @element nuxeo-user-group-management
 @demo demo/nuxeo-user-group-management/index.html
@@ -138,7 +147,8 @@ Example:
 
     properties: {
       /**
-       * The user-group-management page to be displayed.
+       * The user-group-management page to be displayed. Possible values are:
+       * `search`, `create-user`, `manage-user`, `create-group` and `manage-group`.
        */
       page: {
         type: String,

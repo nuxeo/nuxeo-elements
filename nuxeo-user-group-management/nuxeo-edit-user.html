@@ -17,7 +17,14 @@ Contributors:
 -->
 
 <!--
-Used by `nuxeo-edit-user`
+An element for creating and editing user data, which is dynamically loaded by `nuxeo-user-group-management`.
+This element can be overridden with custom fields.
+
+Example:
+
+    <nuxeo-edit-user user=[[user]] new></nuxeo-edit-user>
+
+Used by `nuxeo-user-management` and `nuxeo-create-user`
 @group Nuxeo Elements
 @element nuxeo-edit-user
 -->
@@ -122,16 +129,25 @@ Used by `nuxeo-edit-user`
     is: 'nuxeo-edit-user',
 
     properties: {
+      /**
+       * The user object to be edited or created.
+       */
       user: {
         type: Object,
         value: {}
       },
+      /**
+       * If true, a new user is being created; if false, an already existing user is being edited.
+       */
       new: {
         type: Boolean,
         value: false
       }
     },
 
+    /**
+     * Resets the form fields to empty values.
+     */
     resetFields: function() {
       this.user = {};
     }
