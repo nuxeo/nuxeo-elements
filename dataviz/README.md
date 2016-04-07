@@ -1,5 +1,3 @@
-[![Build Status](https://qa.nuxeo.org/jenkins/buildStatus/icon?job=nuxeo-document-distribution-chart-master)](https://qa.nuxeo.org/jenkins/job/nuxeo-document-distribution-chart-master/)
-
 # About nuxeo-document-distribution-chart
 
 **Nuxeo Document Distribution Chart** is a Polymer element for displaying Document distribution of a Nuxeo repository within a sunurst chart built upon d3js.
