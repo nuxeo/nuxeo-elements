@@ -129,7 +129,7 @@ element.
 
     execute: function () {
       var options = {
-        method: this.method || 'get',
+        method: this.method || 'get'
       };
 
       if (this.data && this.method != 'get') {
@@ -168,7 +168,7 @@ element.
       return this._request
         .path(this.path)
         .queryParams(params)
-        .repositoryName(undefined)
+        .repositoryName(this._request._baseOptions.repositoryName === 'default' ? undefined : this._request._baseOptions.repositoryName)
         .execute(options)
         .then(function(data) {
           this.fire('response', {response: data});
