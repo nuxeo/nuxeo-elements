@@ -13,7 +13,7 @@ Lesser General Public License for more details.
 
 Contributors:
   Nelson Silva <nsilva@nuxeo.com>
-
+  Gabriel Barata <gbarata@nuxeo.com>
 -->
 
 <!--
@@ -128,7 +128,7 @@ element.
 
     execute: function () {
       var options = {
-        method: this.method || 'get',
+        method: this.method || 'get'
       };
 
       if (this.data) {
@@ -155,7 +155,7 @@ element.
           return new Promise(function (resolve, reject) {
             return this.$.nx.client
               .request(this.path)
-              .repositoryName(undefined)
+              .repositoryName(this.$.nx.client._repositoryName === 'default' ? undefined : this.$.nx.client._repositoryName)
               .query(params)
               .execute(options, function (error, data) {
                 if (error) {

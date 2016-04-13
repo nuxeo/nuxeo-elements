@@ -13,6 +13,7 @@ Lesser General Public License for more details.
 
 Contributors:
   Nelson Silva <nsilva@nuxeo.com>
+  Gabriel Barata <gbarata@nuxeo.com>
 -->
 
 <link rel="import" href="../polymer/polymer.html">
@@ -59,6 +60,9 @@ Note: Elements that depend on a connectionId use `nx` as default.
                 /* The base URL of the Nuxeo server. */
                 url: {type: String, value: ''},
 
+                /* The repository name. */
+                repositoryName: {type: String, value: null},
+
                 /* The username. */
                 username: {type: String, value: null},
 
@@ -77,16 +81,18 @@ Note: Elements that depend on a connectionId use `nx` as default.
                 this.client = nxClients[id];
                 if (this.client) {
                     // if this instance does not have any properties set properties from the client
-                    if (!this.url && !this.username && !this.password) {
+                    if (!this.url && !this.username && !this.password && !this.repositoryName) {
                         this.url = this.client._baseURL;
                         this.username = this.client._username;
                         this.password = this.client._password;
+                        this.repositoryName = this.client._repositoryName;
                     }
 
                     // if properties match the existing client use it
                     if (this.client._baseURL === this.url &&
                         this.client._username === this.username &&
-                        this.client._password === this.password) {
+                        this.client._password === this.password &&
+                        this.client._repositoryName === this.repositoryName) {
                         // return the stored connection request promise
                         return this.client._promise;
                     } else {
@@ -95,14 +101,20 @@ Note: Elements that depend on a connectionId use `nx` as default.
                     }
                 }
 
-                nxClients[id] = this.client = this.client || new nuxeo.Client({
-                    baseURL: this.url,
-                    auth: {
-                        username: this.username,
-                        password: this.password
-                    },
-                    schemas: '*'
-                });
+                options = {
+                  baseURL: this.url,
+                  auth: {
+                    username: this.username,
+                    password: this.password
+                  },
+                  schemas: '*'
+                };
+
+                if (this.repositoryName) {
+                  options.repositoryName = this.repositoryName;
+                }
+
+                nxClients[id] = this.client = this.client || new nuxeo.Client(options);
 
                 // store the connection request promise
                 return this.client._promise = new Promise(function (resolve, reject) {
