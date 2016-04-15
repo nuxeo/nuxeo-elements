@@ -204,7 +204,7 @@ element.
         }
 
         if (Array.isArray(this.params)) {
-          params.queryParams = this.params.join(",");
+          params.queryParams = this.params;
         } else {
           Object.keys(this.params).forEach(function(key) {
             if (typeof this.params[key] === "string") {
