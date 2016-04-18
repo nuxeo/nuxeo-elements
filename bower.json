@@ -23,5 +23,9 @@
     "iron-component-page": "PolymerElements/iron-component-page#1.0.5",
     "test-fixture": "PolymerElements/test-fixture#^1.0.0",
     "web-component-tester": "^4.0.0"
+  },
+  "resolutions": {
+    "paper-styles": "^1.1.0",
+    "polymer": "^1.2.4"
   }
 }
