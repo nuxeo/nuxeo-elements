@@ -12,8 +12,7 @@
     "nuxeo": "^0.25.0",
     "es6-promise": "2.2.0",
     "select2": "3.5.2",
-    "paper-progress": "PolymerElements/paper-progress#^1.0.4",
-    "paper-typeahead": "^0.2.0"
+    "paper-progress": "PolymerElements/paper-progress#^1.0.4"
   },
   "ignore": [
     "/.*",
@@ -23,9 +22,5 @@
     "iron-component-page": "PolymerElements/iron-component-page#1.0.5",
     "test-fixture": "PolymerElements/test-fixture#^1.0.0",
     "web-component-tester": "^4.0.0"
-  },
-  "resolutions": {
-    "paper-styles": "^1.1.0",
-    "polymer": "^1.2.4"
   }
 }
