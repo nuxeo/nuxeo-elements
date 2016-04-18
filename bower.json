@@ -12,7 +12,8 @@
     "nuxeo": "^0.25.0",
     "es6-promise": "2.2.0",
     "select2": "3.5.2",
-    "paper-progress": "PolymerElements/paper-progress#^1.0.4"
+    "paper-progress": "PolymerElements/paper-progress#^1.0.4",
+    "paper-typeahead": "^0.2.0"
   },
   "ignore": [
     "/.*",
