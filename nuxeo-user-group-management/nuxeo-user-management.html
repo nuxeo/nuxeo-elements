@@ -45,6 +45,7 @@ Used by `nuxeo-user-group-management`
     <style>
       :host {
         display: block;
+        padding: 1em;
       }
 
       label {
@@ -71,7 +72,7 @@ Used by `nuxeo-user-group-management`
       .card {
         background: none #fff;
         border: 1px solid #e6e9ef;
-        margin: 2em 1em;
+        margin: 2em 0;
         padding: 2em 1.5em;
       }
 
@@ -110,7 +111,12 @@ Used by `nuxeo-user-group-management`
 
       /* Table */
       .table-wrapper {
-        padding: 1em;
+        margin-bottom: 3em;
+        position: relative;
+      }
+
+      .table-wrapper .floating-header {
+        position: absolute;
       }
 
       .table {
@@ -347,14 +353,14 @@ Used by `nuxeo-user-group-management`
       </div>
     </div>
     <div class="table-wrapper">
-      <h1>[[i18n('label.permissions.localPermissions', 'Local Permissions')]]</h1>
+      <h1 class="floating-header">[[i18n('label.permissions.localPermissions', 'Local Permissions')]]</h1>
       <nuxeo-user-group-permissions-table entity="[[username]]"></nuxeo-user-group-permissions-table>
     </div>
     <template is="dom-repeat" items="[[groups]]">
       <div class="table-wrapper">
-      <h1>[[i18n('label.permissions.entityPermissions', '{0} permissions', item.name)]]</h1>
-      <nuxeo-user-group-permissions-table entity="[[item.name]]"></nuxeo-user-group-permissions-table>
-    </div>
+        <h1 class="floating-header">[[i18n('label.permissions.entityPermissions', '{0} permissions', item.name)]]</h1>
+        <nuxeo-user-group-permissions-table entity="[[item.name]]"></nuxeo-user-group-permissions-table>
+      </div>
     </template>
 
     <paper-dialog id="dialog" modal class="vertical layout">

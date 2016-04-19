@@ -43,6 +43,7 @@ Used by `nuxeo-user-group-management`
     <style>
       :host {
         display: block;
+        padding: 1em;
       }
 
       paper-button {
@@ -64,7 +65,7 @@ Used by `nuxeo-user-group-management`
       .card {
         background: none #fff;
         border: 1px solid #e6e9ef;
-        margin: 2em 1em;
+        margin: 2em 0;
         padding: 2em 1.5em;
       }
 
@@ -107,7 +108,11 @@ Used by `nuxeo-user-group-management`
 
       /* Table */
       .table-wrapper {
-        padding: 0 1em;
+        position: relative;
+      }
+
+      .table-wrapper .floating-header {
+        position: absolute;
       }
 
       .table {
@@ -361,7 +366,7 @@ Used by `nuxeo-user-group-management`
     </div>
 
     <div class="table-wrapper">
-      <h1 class="table-title">[[i18n('label.security.permissions', 'Permissions')]]</h1>
+      <h1 class="table-title floating-header">[[i18n('label.security.permissions', 'Permissions')]]</h1>
       <nuxeo-user-group-permissions-table entity="[[groupname]]"></nuxeo-user-group-permissions-table>
     </div>
   </template>
