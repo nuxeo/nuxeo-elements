@@ -51,10 +51,19 @@ Used by `nuxeo-user-group-management`
 
       .table-row {
         @apply(--layout-horizontal);
+        border-bottom: 1px solid #e7e7e7;
+      }
+
+      .table-row:last-of-type {
+        border-bottom: none;
       }
 
       .table-row > div {
         padding: 0.6em 1em;
+      }
+
+      .ace-row > div {
+        padding: .2em 0;
       }
 
       .table-headers > div {
@@ -89,41 +98,50 @@ Used by `nuxeo-user-group-management`
     </nuxeo-operation>
     <nuxeo-operation id="rmPermission" op="Document.RemovePermission"></nuxeo-operation>
 
+    <nuxeo-pagination-controls page="{{_currentPage}}" number-of-pages="[[_numberOfPages]]"></nuxeo-pagination-controls>
     <div class="table">
       <div class="table-row table-headers">
-        <div class="flex-2">[[i18n('label.permissions.right', 'Right')]]</div>
-        <div class="flex-6">[[i18n('label.permissions.on', 'On')]]</div>
-        <div class="flex-2">[[i18n('label.permissions.timeFrame', 'Time Frame')]]</div>
-        <div class="flex-2">[[i18n('label.permissions.grantedBy', 'Granted by')]]</div>
-        <div class="table-actions"></div>
+        <div class="flex-3">[[i18n('label.permissions.on', 'On')]]</div>
+        <div class="flex-6 layout horizontal">
+          <div class="flex-2">[[i18n('label.permissions.right', 'Right')]]</div>
+          <div class="flex-2">[[i18n('label.permissions.timeFrame', 'Time Frame')]]</div>
+          <div class="flex-2">[[i18n('label.permissions.grantedBy', 'Granted by')]]</div>
+          <div class="table-actions"></div>
+        </div>
       </div>
       <template is="dom-if" if=[[!empty]]>
-        <template is="dom-repeat" items="[[aces]]" as="ace">
+        <template is="dom-repeat" items="[[documents]]" as="document">
           <div class="table-row">
-            <div class="flex-2">
-              <span class="ace-permission-tag">[[ace.permission]]</span>
+            <div class="flex-3">
+              <div>[[document.title]]</div>
+              <div class="ace-permission-path">[[document.path]]</div>
             </div>
-            <div class="flex-6">
-              <div>[[ace.docTitle]]</div>
-              <div class="ace-permission-path">[[ace.docPath]]</div>
-            </div>
-            <div class="flex-2">
-              <span>[[ace.timeFrame]]</span>
-            </div>
-            <div class="flex-2">
-              <template is="dom-if" if=[[ace.creator]]>
-                <span class="tag flex">
-                  <iron-icon icon="social:people"></iron-icon>
-                  [[ace.creator]]
-                </span>
+            <div class="layout vertical flex-6 ace-row">
+              <template is="dom-repeat" items="[[document.aces]]" as="ace">
+                <div class="layout horizontal center">
+                  <div class="flex-2">
+                    <span class="ace-permission-tag">[[ace.permission]]</span>
+                  </div>
+                  <div class="flex-2">
+                    <span>[[ace.timeFrame]]</span>
+                  </div>
+                  <div class="flex-2">
+                    <template is="dom-if" if=[[ace.creator]]>
+                      <span class="tag flex">
+                        <iron-icon icon="social:people"></iron-icon>
+                        [[ace.creator]]
+                      </span>
+                    </template>
+                  </div>
+                  <div class="table-actions">
+                    <paper-icon-button icon="icons:delete"
+                                     title="[[i18n('label.permissions.delete', 'Delete permission')]]"
+                                     on-tap="_toggleDialog"
+                                     hidden$="[[!_canDelete(ace)]]">
+                    </paper-icon-button>
+                  </div>
+                </div>
               </template>
-            </div>
-            <div class="table-actions">
-              <paper-icon-button icon="icons:delete"
-                               title="[[i18n('label.permissions.delete', 'Delete permission')]]"
-                               on-tap="_toggleDialog"
-                               hidden$="[[!_canDelete(ace)]]">
-              </paper-icon-button>
             </div>
           </div>
         </template>
@@ -136,6 +154,7 @@ Used by `nuxeo-user-group-management`
         </div>
       </template>
     </div>
+    <nuxeo-pagination-controls page="{{_currentPage}}" number-of-pages="[[_numberOfPages]]"></nuxeo-pagination-controls>
 
     <paper-dialog id="dialog" modal class="vertical layout">
       <div class="horizontal layout">
@@ -157,7 +176,7 @@ Used by `nuxeo-user-group-management`
         properties: {
           entity: String,
 
-          aces: Array,
+          documents: Array,
 
           /**
            * If true, also displays inherited permissions. Otherwise, only displays local permissions.
@@ -169,12 +188,23 @@ Used by `nuxeo-user-group-management`
 
           empty: Boolean,
 
-          _deletedAce: Object
+          _deletedAce: Object,
+
+          _currentPage: {
+            type: Number,
+            value: 1
+          },
+
+          pageSize: {
+            type: Number,
+            value: 25
+          },
+
+          _numberOfPages: Number
         },
 
         observers: [
-          '_fetchPermissions(entity)',
-          '_aceRemoved(aces.splices)'
+          '_fetchPermissions(entity, _currentPage)'
         ],
 
         _fetchPermissions: function() {
@@ -182,20 +212,23 @@ Used by `nuxeo-user-group-management`
             query: 'SELECT * FROM Document WHERE ecm:mixinType != "HiddenInNavigation"' +
                    'AND ecm:isProxy = 0 AND ecm:isCheckedInVersion = 0 ' +
                    'AND ecm:currentLifeCycleState != "deleted" ' +
-                   'AND ecm:acl/*1/principal = "' + this.entity + '"'
+                   'AND ecm:acl/*1/principal = "' + this.entity + '"',
+            page: this._currentPage - 1,
+            pageSize: this.pageSize
           };
           // header for compat with 6.0
           this.$.permissions.headers = {
             'X-NXContext-Category': 'acls'
           };
           this.$.permissions.execute().then(function(response) {
+            this._numberOfPages = response.numberOfPages;
             this._computePermissions(response.entries);
           }.bind(this));
         },
 
         _computePermissions: function(entries) {
-          var aces = [];
           entries.map(function(entry) {
+            entry.aces = [];
             entry.contextParameters.acls.map(function(acl) {
               // in 6.0 the ace object is called 'ace' while in > 7.10 its called 'aces'
               var entryAces = acl.aces || acl.ace;
@@ -208,12 +241,13 @@ Used by `nuxeo-user-group-management`
                   ace.docTitle = entry.title;
                   ace.docPath = entry.path;
                   ace.timeFrame = this._formatTimeFrame(ace);
-                  aces.push(ace);
+                  entry.aces.push(ace);
                 }
               }.bind(this));
             }.bind(this));
           }.bind(this));
-          this.aces = aces;
+          this.documents = entries;
+          this.empty = this.documents.length === 0;
         },
 
         _aceBelongsToEntity: function(ace) {
@@ -247,12 +281,8 @@ Used by `nuxeo-user-group-management`
             id: ace.id
           };
           this.$.rmPermission.execute().then(function() {
-            this.splice('aces', this.aces.indexOf(ace), 1);
+            this._fetchPermissions();
           }.bind(this));
-        },
-
-        _aceRemoved: function() {
-          this.empty = this.aces.length === 0;
         },
 
         _isInherited: function(acl) {
