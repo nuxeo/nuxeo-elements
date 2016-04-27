@@ -191,7 +191,8 @@ Used by `nuxeo-user-group-management`
                                search-type="USER_GROUP_TYPE"
                                placeholder="[[i18n('label.security.search', 'Search for users and groups')]]"
                                value="[[selectedUser]]"
-                               selected-items="{{selectedUser}}">
+                               selected-items="{{selectedUser}}"
+                               result-formatter="[[resultFormatter]]">
         </nuxeo-user-suggestion>
       </div>
       <div class="row layout horizontal">
@@ -267,6 +268,13 @@ Used by `nuxeo-user-group-management`
         type: Function,
         value: function() {
           return this._resultsFilter.bind(this);
+        }
+      },
+
+      resultFormatter: {
+        type: Function,
+        value: function() {
+          return this._resultFormatter.bind(this);
         }
       },
 
@@ -367,6 +375,10 @@ Used by `nuxeo-user-group-management`
         }
       }
       return true;
+    },
+
+    _resultFormatter: function(item) {
+      return item.displayLabel + ' (' + (item.groupname || item.username) + ')';
     },
 
     _hasErrors: function() {

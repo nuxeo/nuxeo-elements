@@ -264,7 +264,8 @@ Used by `nuxeo-user-group-management`
                              search-type="USER_GROUP_TYPE"
                              placeholder="[[i18n('label.groupManager.addEntity', 'Add a user or a group')]]"
                              value="[[selectedMember]]"
-                             selected-items="{{selectedMember}}">
+                             selected-items="{{selectedMember}}"
+                             result-formatter="[[resultFormatter]]">
       </nuxeo-user-suggestion>
       <template is="dom-repeat" items="[[activity]]">
         <div class="activity-entry">
@@ -403,6 +404,13 @@ Used by `nuxeo-user-group-management`
             type: Function,
             value: function() {
               return this._resultsFilter.bind(this);
+            }
+          },
+
+          resultFormatter: {
+            type: Function,
+            value: function() {
+              return this._resultFormatter.bind(this);
             }
           },
 
@@ -630,6 +638,10 @@ Used by `nuxeo-user-group-management`
             var groupInGroup = this.group.memberGroups.indexOf(entry.id) >= 0;
           }
           return !userInGroup && !groupInGroup && entry.id !== this.group.groupname;
+        },
+
+        _resultFormatter: function(item) {
+          return item.displayLabel + ' (' + (item.groupname || item.username) + ')';
         },
 
         _icon: function(entry) {

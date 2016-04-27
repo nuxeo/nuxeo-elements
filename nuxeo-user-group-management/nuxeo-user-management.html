@@ -308,7 +308,8 @@ Used by `nuxeo-user-group-management`
                                search-type="GROUP_TYPE"
                                placeholder="[[i18n('label.security.searchGroups', 'Search for Groups')]]"
                                value="{{selectedGroup}}"
-                               selected-items="{{selectedGroup}}">
+                               selected-items="{{selectedGroup}}"
+                               result-formatter="[[resultFormatter]]">
         </nuxeo-user-suggestion>
         <template is="dom-repeat" items="[[activity]]">
           <div class="activity-entry">
@@ -407,6 +408,13 @@ Used by `nuxeo-user-group-management`
             type: Function,
             value: function() {
               return this._resultsFilter.bind(this);
+            }
+          },
+
+          resultFormatter: {
+            type: Function,
+            value: function() {
+              return this._resultFormatter.bind(this);
             }
           },
 
@@ -582,6 +590,10 @@ Used by `nuxeo-user-group-management`
             }
           }
           return true;
+        },
+
+        _resultFormatter: function(item) {
+          return item.displayLabel + ' (' + (item.groupname || item.username) + ')';
         },
 
         _toast: function(msg) {
