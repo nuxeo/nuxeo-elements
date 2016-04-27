@@ -36,7 +36,8 @@ Contributors:
                  placeholder="[[placeholder]]"
                  read-only="[[readOnly]]"
                  value="{{value}}"
-                 selected-items="{{selectedItems}}">
+                 selected-items="{{selectedItems}}"
+                 result-formatter="[[resultFormatter]]">
   </nuxeo-select2>
 
   <template is="dom-if" if="[[label]]"><span>[[label]]</span> : </template>
@@ -85,7 +86,9 @@ Polymer({
     selectedItems: {
       type: Object,
       notify: true
-    }
+    },
+
+    resultFormatter: Function
   },
 
   computeParams: function() {
