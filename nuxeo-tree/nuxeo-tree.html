@@ -83,11 +83,6 @@ controller = {
     return Promise.resolve(node.children);
   },
 
-  // Logics you may want to have to control if a node should be expanded when created.
-  shouldExpand: function() {
-    return false;
-  },
-
   // Logics you may want to have to control if a node is a leaf.
   isLeaf: function(node) {
     return node.children.length === 0;
@@ -126,7 +121,6 @@ controller = {
            * An object for accessing information for rendering a tree item.
            *
            * getChildren(node) : Promise<Array<Object>>
-           * shouldExpand(node) : Boolean
            * isLeaf(node) : Boolean
            */
           controller: Object,
@@ -134,7 +128,12 @@ controller = {
           /**
           * Template used to render each tree item.
           */
-          template: Object
+          template: Object,
+
+          nodeKey: {
+            type: String,
+            value: 'id'
+          }
         },
 
         observers: [
@@ -150,8 +149,41 @@ controller = {
             this.$.root.dataHost = this.dataHost;
             this.$.root.controller = this.controller;
             this.$.root.template = this.template;
+            this.$.root.nodeKey = this.nodeKey;
             this.$.root.data = this.data;
+            this.$.root.dataset[this.nodeKey] = this.data[this.nodeKey];
           }
+        },
+
+        /**
+        * Find and open a set of nodes given a set of keys.
+        * Nodes keys must be sorted in terms of hierarchy, otherwise some nodes
+        * might not be rendered yet.
+        */
+        open: function() {
+          this._openNodes(arguments);
+        },
+
+        /**
+        * Recursively opens a set of nodes.
+        */
+        _openNodes: function(keys) {
+          if (!keys || keys.length === 0) {
+            return;
+          }
+          var node = this._find(keys[0]);
+          if (node) {
+            node.open().then(function() {
+              this._openNodes(Array.prototype.slice.call(keys, 1));
+            }.bind(this));
+          }
+        },
+
+        /**
+        * Find a node by key.
+        */
+        _find: function(key) {
+          return this.querySelector('[data-' + this.nodeKey + '="' + key + '"]');
         },
       });
     })();

@@ -48,16 +48,14 @@ Contributors:
 
           data: Object,
 
-          children: {
-            type: Array,
-            observer: '_renderChildNodes'
+          _children: {
+            type: Array
           },
 
           /**
            * An object for accessing information for rendering a tree node.
            *
            * getChildren(node) : Promise<Array<Object>>
-           * shouldExpand(node) : Boolean
            * isLeaf(node) : Boolean
            */
           controller: Object,
@@ -65,13 +63,18 @@ Contributors:
           opened: {
             type: Boolean,
             value: false,
-            notify: true
+            observer: '_openedChanged'
           },
 
           /**
           * Template used to render each tree node.
           */
-          template: Object
+          template: Object,
+
+          nodeKey: {
+            type: String,
+            value: 'id'
+          }
         },
 
         observers: [
@@ -85,8 +88,18 @@ Contributors:
             this._fetchChildren();
             this.opened = true;
           }
-          this._instance.notifyPath('opened', this.opened);
-          this._setupToggleListener();
+        },
+
+        open: function() {
+          this.opened = true;
+          if (!this._updated) {
+            return this._fetchChildren();
+          }
+          return Promise.resolve();
+        },
+
+        close: function() {
+          this.opened = false;
         },
 
         _renderNodeContent: function() {
@@ -104,45 +117,44 @@ Contributors:
             this._instance.item = this.data;
             this._instance.opened = this.opened;
             this._instance.isLeaf = this.controller.isLeaf(this.data);
+            this.dataset[this.nodeKey] = this.data[this.nodeKey];
 
             // append node content
             this.$.content.appendChild(this._instance.root);
             this._setupToggleListener();
-
-            if (this.controller.shouldExpand(this.data)) {
-              this._fetchChildren();
-              this.opened = true;
-            }
           }
         },
 
         _renderChildNodes: function() {
           if (this.template) {
-            // clear <iron-collapse> content in case we are re-rendering
-            var children = this.$.children;
-            while (children.hasChildNodes()) {
-              children.removeChild(children.lastChild);
-            }
+            return new Promise(function(resolve) {
+              // clear <iron-collapse> content in case we are re-rendering
+              var children = this.$.children;
+              while (children.hasChildNodes()) {
+                children.removeChild(children.lastChild);
+              }
 
-            var items = this.children || [];
-            for (var i = 0; i < items.length; i++) {
-              var el = document.createElement('nuxeo-tree-node');
-              el.controller = this.controller;
-              el.template = this.template;
-              el.dataHost = this._instance._rootDataHost;
-              el.data = items[i];
-              children.appendChild(el);
-            }
+              var items = this._children || [];
+              for (var i = 0; i < items.length; i++) {
+                var el = document.createElement('nuxeo-tree-node');
+                el.controller = this.controller;
+                el.template = this.template;
+                el.nodeKey = this.nodeKey;
+                el.dataHost = this._instance._rootDataHost;
+                el.data = items[i];
+                children.appendChild(el);
+              }
+              resolve();
+            }.bind(this));
           }
         },
 
         _fetchChildren: function() {
-          if (!this._updated) {
-            this.controller.getChildren(this.data).then(function(results) {
-              this.children = results;
-              this._updated = true;
-            }.bind(this));
-          }
+          return this.controller.getChildren(this.data).then(function(results) {
+            this._children = results;
+            this._updated = true;
+            return this._renderChildNodes();
+          }.bind(this));
         },
 
         _setupToggleListener: function() {
@@ -172,6 +184,13 @@ Contributors:
           }
           this._instance = null;
           this._updated = false;
+        },
+
+        _openedChanged: function() {
+          if (this._instance) {
+            this._instance.notifyPath('opened', this.opened);
+            this._setupToggleListener();
+          }
         }
       });
     })();
