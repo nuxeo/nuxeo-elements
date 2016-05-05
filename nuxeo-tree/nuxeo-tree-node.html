@@ -26,8 +26,16 @@ Contributors:
 -->
 <dom-module id="nuxeo-tree-node">
   <style>
+    :host {
+      display: block;
+    }
+
     iron-collapse {
       padding-left: 1em;
+    }
+
+    #content {
+      position: relative;
     }
   </style>
   <template>
