@@ -25,29 +25,59 @@ Contributors:
 -->
 <script>
   var Nuxeo = Nuxeo || {};
-
-  /**
-  * @polymerBehavior Nuxeo.RoutingBehavior
-  */
-  Nuxeo.RoutingBehavior = {
-    properties: {
-      router: Object,
-      baseUrl: String
-    },
-
-    urlFor: function() {
-      if (this.router) {
-        var route = arguments[0];
-        if (route.startsWith('/')) {
-          return this.baseUrl + route;
+  (function () {
+    var generateUrl = function() {
+       return function() {
+        if (this.router) {
+          var route = arguments[0];
+          if (route.startsWith('/')) {
+            return this.baseUrl + route;
+          }
+          if (!this.router[route]) {
+            console.error('Could not generate a url for route ' + route);
+            return;
+          }
+          var params = Array.prototype.slice.call(arguments, 1);
+          return this.router[route].apply(this, params);
         }
-        if (!this.router[route]) {
-          console.error('Could not generate a url for route ' + route);
-          return;
+      };
+    };
+
+    /**
+    * @polymerBehavior Nuxeo.RoutingBehavior
+    */
+    Nuxeo.RoutingBehavior = {
+      properties: {
+
+        router: {
+          type: Object
+        },
+
+        baseUrl: {
+          type: String,
+          value: '',
+          notify: true,
+        },
+
+        urlFor: {
+          type: Function,
+          notify: true,
+          value: function() {
+            return generateUrl();
+          }
         }
-        var params = Array.prototype.slice.call(arguments, 1);
-        return this.router[route].apply(this, params);
+      },
+
+      ready: function() {
+        this.routerChangedHandler = function() {
+          this.urlFor = generateUrl();
+        }.bind(this);
+        document.addEventListener('router-changed', this.routerChangedHandler);
+      },
+
+      detached: function() {
+        document.removeEventListener('router-changed', this.routerChangedHandler);
       }
-    }
-  };
+    };
+  })();
 </script>
