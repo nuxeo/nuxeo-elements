@@ -4,8 +4,12 @@
     "Nelson Silva <nsilva@nuxeo.com>"
   ],
   "description": "Nuxeo Web Components",
-  "license": "LGPL",
-  "private": true,
+  "keywords": [
+    "nuxeo",
+    "web-components",
+    "polymer"
+  ],
+  "license": "Apache 2.0",
   "dependencies": {
     "polymer": "Polymer/polymer#^1.1.4",
     "iron-elements": "PolymerElements/iron-elements#^1.0.4",
