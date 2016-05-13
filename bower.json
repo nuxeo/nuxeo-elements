@@ -9,6 +9,7 @@
     "web-components",
     "polymer"
   ],
+  "main": "nuxeo-elements.html",
   "license": "Apache 2.0",
   "dependencies": {
     "polymer": "Polymer/polymer#^1.1.4",
