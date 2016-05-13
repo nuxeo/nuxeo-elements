@@ -1,0 +1,455 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-list/iron-list.html">
+<link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
+<link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../../paper-spinner/paper-spinner-lite.html">
+
+<link rel="import" href="nuxeo-data-table-column.html">
+<link rel="import" href="nuxeo-data-table-column-sort.html">
+<link rel="import" href="nuxeo-data-table-column-filter.html">
+<link rel="import" href="nuxeo-data-table-cell.html">
+<link rel="import" href="nuxeo-data-table-row.html">
+<link rel="import" href="nuxeo-table-styles.html">
+
+<!--
+An element to display a page provider result within a table with infinite scrolling.
+
+`nuxeo-data-table`
+@group Nuxeo UI Elements
+@element nuxeo-data-table
+@demo demo/nuxeo-data-table/index.html
+-->
+<dom-module id="nuxeo-data-table">
+  <template>
+    <style is="custom-style">
+      :host {
+        @apply(--layout-vertical);
+        @apply(--layout-flex);
+        display: block;
+        position: relative;
+        -webkit-overflow-scrolling: touch;
+
+        @apply(--nuxeo-data-table);
+      }
+
+      #scrollTheshold {
+      }
+
+      #container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #header {
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+        transition: box-shadow 200ms;
+        -webkit-transition: box-shadow 200ms;
+        z-index: 1;
+        @apply(--nuxeo-data-table-header);
+      }
+
+      #header.scrolled {
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06), 0 2px 0 rgba(0, 0, 0, 0.075), 0 3px 0 rgba(0, 0, 0, 0.05), 0 4px 0 rgba(0, 0, 0, 0.015);
+      }
+
+      #list {
+        transition: opacity 200ms;
+        -webkit-transition: opacity 200ms;
+      }
+
+      :host[loading] #list {
+        opacity: 0.25;
+      }
+
+      :host[loading] paper-spinner-lite {
+        position: absolute;
+        top: 45%;
+        left: 50%;
+        --paper-spinner-color: var(--default-primary-color);
+      }
+    </style>
+
+    <div id="container">
+      <div id="header">
+        <nuxeo-data-table-row header>
+          <template is="dom-repeat" items="[[columns]]" as="column">
+            <nuxeo-data-table-cell header column="[[column]]" bind="[[_bind(column)]]">
+              <nuxeo-data-table-column-sort sort-order="[[sortOrder]]" path="[[column.sortBy]]"
+                on-sort-direction-changed="_sortDirectionChanged"
+                hidden$="[[!column.sortBy]]">
+              </nuxeo-data-table-column-sort>
+            </nuxeo-data-table-cell>
+          </template>
+        </nuxeo-data-table-row>
+      </div>
+
+      <iron-scroll-threshold id="scrollThreshold"
+        lower-threshold="1000"
+        on-lower-threshold="_loadMoreData">
+        <iron-list id="list" as="item" items="[[items]]"
+          scroll-target="scrollThreshold">
+          <template>
+            <div class="item">
+              <nuxeo-data-table-row tabindex$="[[tabIndex]]"
+                              bind="[[_bind(item, index)]]"
+                              before-bind="[[beforeRowBind]]"
+                              even$="[[!_isEven(index)]]">
+                <template is="dom-repeat" items="[[columns]]" as="column" index-as="colIndex">
+                  <nuxeo-data-table-cell column="[[column]]" bind="[[_bind(item, index)]]"
+                    before-bind="[[beforeCellBind]]">
+                  </nuxeo-data-table-cell>
+                </template>
+              </nuxeo-data-table-row>
+            </div>
+          </template>
+        </iron-list>
+      </iron-scroll-threshold>
+    </div>
+    <paper-spinner-lite active hidden=[[!loading]]></paper-spinner-lite>
+    <content select="nuxeo-data-table-column"></content>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-data-table',
+
+      behaviors: [
+        Polymer.IronResizableBehavior
+      ],
+
+      listeners: {
+        'column-filter-changed': '_onColumnFilterChanged',
+        'iron-resize': '_resizeCellContainers',
+        'scroll': '_onHorizontalScroll'
+      },
+
+      properties: {
+
+        /**
+         * A function that is called before data is bound to a row cell.
+         * Can be used to customize the cell element depending on the data.
+         * #### Example:
+         * ```js
+         * function(data, cell) {
+         *   cell.toggleClass('custom', data.useCustomClass);
+         * }
+         * ```
+         */
+        beforeCellBind: {
+          type: Object,
+          value: function() {
+            return function(/*data, cell*/) {
+            };
+          }
+        },
+
+        /**
+         * A function that is called before data is bound to a row.
+         * Can be used to customize the row element depending on the data.
+         * #### Example:
+         * ```js
+         * function(data, row) {
+         *   row.toggleClass('custom', data.useCustomClass);
+         * }
+         * ```
+         */
+        beforeRowBind: Object,
+
+        /**
+         * An array containing the items which will be stamped to the column template
+         * instances.
+         */
+        items: {
+          type: Array
+        },
+
+        /**
+         * An array containing path/filter value pairs that are used to filter the items
+         */
+        filter: {
+          type: Array,
+          notify: true,
+          value: function() {
+            return [];
+          }
+        },
+
+        /**
+         * An array with a path/sortorder ('asc' or 'desc') pairs that are used to sort the items.
+         */
+        sortOrder: {
+          type: Array,
+          notify: true,
+          value: function() {
+            return [];
+          }
+        },
+
+        /**
+         * An array of `data-table-column` elements which contain the templates
+         * to be stamped with items.
+         */
+        columns: {
+          type: Array,
+          notify: true,
+          observer: '_columnsChanged'
+        },
+
+        _pagesLoading: {
+          type: Number,
+          observer: '_pagesLoadingChanged',
+          value: 0
+        },
+
+        /**
+         * `true` if the table is currently loading data from the data source.
+         */
+        loading: {
+          type: Boolean,
+          notify: true,
+          reflectToAttribute: true,
+          value: false
+        },
+
+        /* nuxeo attributes */
+        _initParams: {
+          type: Object,
+          value: {},
+          notify: true
+        },
+        _ppSort: {
+          type: Object,
+          value: {},
+          notify: true
+        },
+        _ppFilters: {
+          type: Object,
+          value: {}
+        },
+        nxProvider: {
+          type: HTMLElement
+        }
+      },
+
+      observers: [
+        '_resetResults(_ppFilters.*, _ppSort.*)',
+        '_nxProviderChanged(nxProvider)'
+      ],
+
+      _nxProviderChanged: function(nxProvider) {
+        if (typeof nxProvider === 'string') {
+          this.nxProvider = this.domHost ? this.domHost.$[nxProvider] :
+            Polymer.dom(this.ownerDocument).querySelector('#' + nxProvider);
+          if (this.nxProvider === null) {
+            var parentNode = Polymer.dom(this).parentNode;
+            this.nxProvider = parentNode.querySelector('#' + nxProvider);
+          }
+          this._initParams = this.nxProvider.params;
+          this.listen(this.nxProvider, 'update', '_updateResults');
+        }
+      },
+
+      _loadMoreData: function(e) {
+        if (!this._isPPLoaded()) {
+          return;
+        }
+        if ((e.currentTarget.id === 'scrollThreshold' ? !this.manualLoading : this.manualLoading) &&
+            this.nxProvider &&
+            this.nxProvider.isNextPageAvailable) {
+          this._pagesLoading++;
+          this.nxProvider.page = this.nxProvider.page + 1;
+        }
+      },
+
+      _updateResults: function() {
+        if (!this._isPPLoaded()) {
+          return;
+        }
+        if (this.nxProvider.page === 1) {
+          this.items = [];
+        }
+        var docs = this.nxProvider.currentPage;
+        docs.forEach(function(doc) {
+          this.push('items', doc);
+        }.bind(this));
+        this.$.list.notifyResize();
+        this.notifyResize();
+        this.$.scrollThreshold.clearTriggers();
+
+        this._pagesLoading = Math.max(0, this._pagesLoading -1);
+      },
+
+      _resetResults: function() {
+        if (!this._isPPLoaded()) {
+          return;
+        }
+        this._pagesLoading++;
+        this.nxProvider.page = 1;
+        this.docItems = [];
+        this.nxProvider.isNextPageAvailable = false;
+      },
+
+      _isPPLoaded: function() {
+        return (this.nxProvider && typeof this.nxProvider !== 'string');
+      },
+
+      created: function() {
+        this._observer = Polymer.dom(this).observeNodes(function(info) {
+          var hasColumns = function(node) {
+            return (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'NUXEO-DATA-TABLE-COLUMN');
+          };
+
+          if (info.addedNodes.filter(hasColumns).length > 0 ||
+            info.removedNodes.filter(hasColumns).length > 0) {
+            this.set('columns', this.getContentChildren('[select=nuxeo-data-table-column]'));
+            this.notifyResize();
+          }
+
+        }.bind(this));
+      },
+
+      ready: function() {
+        this.$.list._selectionHandler = function(e) {
+          var first = Polymer.dom(e).event.path.filter(function(p) {
+            return this.modelForElement(p);
+          }.bind(this))[0];
+
+          var model = this.modelForElement(first);
+          if (model) {
+            this.toggleSelectionForItem(model[this.as]);
+          }
+        };
+      },
+
+      _bind: function(item, index) {
+        if (index !== undefined) {
+          return {
+            item: item,
+            index: index
+          };
+        } else {
+          return {
+            column: item
+          };
+        }
+      },
+
+      _isEven: function(index) {
+        return index % 2 === 0;
+      },
+
+      _sortDirectionChanged: function(e) {
+        var notFound = true;
+        for (var i = 0; i < this.sortOrder.length; i++) {
+          if (this.sortOrder[i].path === e.detail.path) {
+            if (e.detail.direction) {
+              this.set('sortOrder.' + i + '.direction', e.detail.direction);
+            } else {
+              this.splice('sortOrder', i, 1);
+            }
+            notFound = false;
+            break;
+          }
+        }
+        if (notFound) {
+          this.push('sortOrder', {
+            path: e.detail.path,
+            direction: e.detail.direction
+          });
+        }
+
+        // TODO make it simpler
+        var tmpSort = {};
+        if (this.sortOrder && this.sortOrder.length > 0) {
+          this.sortOrder.forEach(function(sortItem) {
+            tmpSort[sortItem.path] = sortItem.direction;
+          });
+        }
+        if (JSON.stringify(this._ppSort) !== JSON.stringify(tmpSort)) {
+          this._ppSort = tmpSort;
+          this.nxProvider.sort = this._ppSort;
+        }
+      },
+
+      _columnsChanged: function(columns, oldColumns) {
+        if (oldColumns) {
+          oldColumns.forEach(function(column) {
+            this.unlisten(column, 'filter-value-changed');
+          }.bind(this));
+        }
+
+        if (columns) {
+          columns.forEach(function(column) {
+            this.listen(column, 'filter-value-changed', '_onColumnFilterChanged');
+          }.bind(this));
+        }
+      },
+
+      _onColumnFilterChanged: function(e) {
+        var notFound = true;
+        for (var i = 0; i < this.filter.length; i++) {
+          if (this.filter[i].path === e.detail.filterBy) {
+            this.set('filter.' + i + '.filter', e.detail.value);
+            notFound = false;
+            break;
+          }
+        }
+
+        if (notFound) {
+          this.push('filter', {
+            path: e.detail.filterBy,
+            filter: e.detail.value
+          });
+        }
+
+        var tmpFilters = {};
+        if (this.filter && this.filter.length > 0) {
+          this.filter.forEach(function(filterItem) {
+            if (filterItem.filter.length > 0) {
+              if (filterItem.path === 'title') {
+                tmpFilters[filterItem.path] = filterItem.filter + '*';
+              } else {
+                tmpFilters[filterItem.path] = filterItem.filter;
+              }
+            }
+          });
+        }
+        if (JSON.stringify(this._ppFilters) !== JSON.stringify(tmpFilters)) {
+          this._ppFilters = tmpFilters;
+          var result = {};
+          jQuery().extend(result, this._initParams, this._ppFilters);
+          this.nxProvider.params = result;
+        }
+
+      },
+
+      _resizeCellContainers: function() {
+        // reset header width first to make the cells and scroll width to reset their widths.
+        this.$.container.style.width = '';
+
+        this.async(function() {
+          this.$.container.style.width = Math.min(this.scrollWidth, this.clientWidth + this.scrollLeft) + 'px';
+        }.bind(this));
+      },
+
+      _onHorizontalScroll: function() {
+        if (!this.isDebouncerActive('scrolling')) {
+          this.$.container.style.width = this.scrollWidth + 'px';
+          this.debounce('scrolling', function() {
+            this.$.container.style.width = Math.min(this.scrollWidth, this.clientWidth + this.scrollLeft) + 'px';
+            // long timeout here to prevent jerkiness with the rubberband effect on iOS especially.
+          }, 1000);
+        }
+      },
+
+      _pagesLoadingChanged: function(pagesLoading) {
+        this.loading = pagesLoading > 0;
+      }
+
+    });
+  </script>
+</dom-module>
