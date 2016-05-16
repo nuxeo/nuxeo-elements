@@ -5,13 +5,14 @@
   ],
   "description": "A set of elements for Nuxeo Data Visualization.",
   "keywords": [
-    "web-component",
+    "web-components",
     "polymer",
     "nuxeo",
     "workflow",
     "metrics"
   ],
-  "license": "LGPL",
+  "main": "nuxeo-dataviz-elements.html",
+  "license": "Apache 2.0",
   "homepage": "https://github.com/nuxeo/nuxeo-dataviz-elements/",
   "ignore": [
     "/.*",
