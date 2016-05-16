@@ -5,6 +5,7 @@
 <link rel="import" href="../../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
+<link rel="import" href="../../paper-input/paper-input.html">
 <link rel="import" href="../../paper-styles/paper-styles-classes.html">
 
 <link rel="import" href="nuxeo-data-table-column.html">
@@ -418,7 +419,7 @@ An element to display a page provider result within a table with infinite scroll
         if (this.filter && this.filter.length > 0) {
           this.filter.forEach(function(filterItem) {
             if (filterItem.filter.length > 0) {
-              if (filterItem.path === 'title') {
+              if (filterItem.path === 'title' || filterItem.path === 'ecm_fulltext') {
                 tmpFilters[filterItem.path] = filterItem.filter + '*';
               } else {
                 tmpFilters[filterItem.path] = filterItem.filter;
