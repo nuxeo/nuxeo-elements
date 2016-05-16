@@ -202,12 +202,6 @@ An element to display a page provider result within a table with infinite scroll
           observer: '_columnsChanged'
         },
 
-        _pagesLoading: {
-          type: Number,
-          observer: '_pagesLoadingChanged',
-          value: 0
-        },
-
         /**
          * `true` if the table is currently loading data from the data source.
          */
@@ -266,7 +260,7 @@ An element to display a page provider result within a table with infinite scroll
         if ((e.currentTarget.id === 'scrollThreshold' ? !this.manualLoading : this.manualLoading) &&
             this.nxProvider &&
             this.nxProvider.isNextPageAvailable) {
-          this._pagesLoading++;
+          this.loading = true;
           this.nxProvider.page = this.nxProvider.page + 1;
         }
       },
@@ -286,14 +280,14 @@ An element to display a page provider result within a table with infinite scroll
         this.notifyResize();
         this.$.scrollThreshold.clearTriggers();
 
-        this._pagesLoading = Math.max(0, this._pagesLoading - 1);
+        this.loading = false;
       },
 
       _resetResults: function() {
         if (!this._isPPLoaded()) {
           return;
         }
-        this._pagesLoading++;
+        this.loading = true;
         this.nxProvider.page = 1;
         this.items = [];
         this.nxProvider.isNextPageAvailable = false;
@@ -453,10 +447,6 @@ An element to display a page provider result within a table with infinite scroll
             // long timeout here to prevent jerkiness with the rubberband effect on iOS especially.
           }, 1000);
         }
-      },
-
-      _pagesLoadingChanged: function(pagesLoading) {
-        this.loading = pagesLoading > 0;
       }
 
     });
