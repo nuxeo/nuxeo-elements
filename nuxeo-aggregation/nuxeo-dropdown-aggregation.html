@@ -31,7 +31,7 @@ Contributors:
    </style>
 
   <div class="layout vertical">
-    <nuxeo-select2 data="[[data]]"
+    <nuxeo-select2 data="[[_computedData]]"
                    min-chars="[[minChars]]"
                    multiple="[[multiple]]"
                    placeholder="[[placeholder]]"
@@ -49,9 +49,7 @@ Contributors:
 
        properties: {
 
-         aggregations: Object,
-
-         name: String,
+         data: Object,
 
          value: {
            type: Array,
@@ -71,15 +69,15 @@ Contributors:
 
          placeholder: String,
 
-         data: {
+         _computedData: {
            type: Object,
-           computed: '_computeData(aggregations)'
+           computed: '_computeData(data)'
          }
        },
 
        _computeData: function() {
-         if (this.aggregations && this.aggregations[this.name]) {
-           return this.aggregations[this.name].extendedBuckets.map(function(item) {
+         if (this.data) {
+           return this.data.extendedBuckets.map(function(item) {
              return {
                id: item.key,
                text: item.key + ' (' + item.docCount + ')'

@@ -116,9 +116,9 @@ Contributors:
         </nuxeo-data-table-column>
         <nuxeo-data-table-column filter-by="dc_modified_agg" flex="50" sort-by="dc:modified">
           <template is="header">
-              <nuxeo-dropdown-aggregation name="dc_modified_agg"
+              <nuxeo-dropdown-aggregation
                   placeholder="Modified"
-                  aggregations="[[aggregations]]"
+                  data="[[aggregations.dc_modified_agg]]"
                   value="{{column.filterValue}}" multiple>
               </nuxeo-dropdown-aggregation>
           </template>
@@ -128,9 +128,9 @@ Contributors:
         </nuxeo-data-table-column>
         <nuxeo-data-table-column filter-by="dc_creator_agg" flex="50">
                 <template is="header">
-                  <nuxeo-dropdown-aggregation name="dc_creator_agg"
+                  <nuxeo-dropdown-aggregation
                       placeholder="Author"
-                      aggregations="[[aggregations]]"
+                      data="[[aggregations.dc_creator_agg]]"
                       value="{{column.filterValue}}" multiple>
                   </nuxeo-dropdown-aggregation>
               </template>
