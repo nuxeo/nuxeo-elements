@@ -3,6 +3,9 @@
 <link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
 <link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../../paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../iron-icons/iron-icons.html">
+<link rel="import" href="../../paper-styles/paper-styles-classes.html">
 
 <link rel="import" href="nuxeo-data-table-column.html">
 <link rel="import" href="nuxeo-data-table-column-sort.html">
@@ -23,12 +26,10 @@ An element to display a page provider result within a table with infinite scroll
   <template>
     <style is="custom-style">
       :host {
-        @apply(--layout-vertical);
-        @apply(--layout-flex);
         display: block;
-        position: relative;
+        overflow-x: auto;
+        overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
-
         @apply(--nuxeo-data-table);
       }
 
@@ -96,11 +97,11 @@ An element to display a page provider result within a table with infinite scroll
             <div class="item">
               <nuxeo-data-table-row tabindex$="[[tabIndex]]"
                               bind="[[_bind(item, index)]]"
-                              before-bind="[[beforeRowBind]]"
+                              before-bind="[[_beforeRowBind]]"
                               even$="[[!_isEven(index)]]">
                 <template is="dom-repeat" items="[[columns]]" as="column" index-as="colIndex">
                   <nuxeo-data-table-cell column="[[column]]" bind="[[_bind(item, index)]]"
-                    before-bind="[[beforeCellBind]]">
+                    before-bind="[[_beforeCellBind]]">
                   </nuxeo-data-table-cell>
                 </template>
               </nuxeo-data-table-row>
@@ -139,7 +140,7 @@ An element to display a page provider result within a table with infinite scroll
          * }
          * ```
          */
-        beforeCellBind: {
+        _beforeCellBind: {
           type: Object,
           value: function() {
             return function(/*data, cell*/) {
@@ -157,14 +158,15 @@ An element to display a page provider result within a table with infinite scroll
          * }
          * ```
          */
-        beforeRowBind: Object,
+        _beforeRowBind: Object,
 
         /**
          * An array containing the items which will be stamped to the column template
          * instances.
          */
         items: {
-          type: Array
+          type: Array,
+          value: []
         },
 
         /**
@@ -250,6 +252,9 @@ An element to display a page provider result within a table with infinite scroll
           }
           this._initParams = this.nxProvider.params;
           this.listen(this.nxProvider, 'update', '_updateResults');
+        } else if (nxProvider) {
+          this._initParams = this.nxProvider.params;
+          this.listen(this.nxProvider, 'update', '_updateResults');
         }
       },
 
@@ -280,7 +285,7 @@ An element to display a page provider result within a table with infinite scroll
         this.notifyResize();
         this.$.scrollThreshold.clearTriggers();
 
-        this._pagesLoading = Math.max(0, this._pagesLoading -1);
+        this._pagesLoading = Math.max(0, this._pagesLoading - 1);
       },
 
       _resetResults: function() {
@@ -289,8 +294,11 @@ An element to display a page provider result within a table with infinite scroll
         }
         this._pagesLoading++;
         this.nxProvider.page = 1;
-        this.docItems = [];
+        this.items = [];
         this.nxProvider.isNextPageAvailable = false;
+        this.$.list.notifyResize();
+        this.notifyResize();
+        this.$.scrollThreshold.clearTriggers();
       },
 
       _isPPLoaded: function() {

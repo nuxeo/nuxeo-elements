@@ -32,13 +32,11 @@ Contributors:
 
   <style>
       :host {
-        @apply(--layout-horizontal);
-        @apply(--layout-flex);
+        @apply(--layout-vertical);
+        @apply(--layout-fit);
       }
 
       .content-view  {
-        @apply(--layout-vertical);
-        @apply(--layout-fit);
       }
 
       nuxeo-data-table {
@@ -50,7 +48,7 @@ Contributors:
         width: 100%;
       }
 
-	  .thumbnail {
+       .thumbnail {
         height: 32px;
         width: 32px;
         border-radius: 20px;
@@ -91,63 +89,63 @@ Contributors:
   </style>
 </head>
 <body unresolved>
-	<template is="dom-bind">
+  <template is="dom-bind">
 
-		<div class="content-view">
+    <div class="content-view">
 
-		    <nuxeo-connection url="http://webui.demo.nuxeo.com/nuxeo" username="Administrator" password="Administrator">
-			</nuxeo-connection>
+        <nuxeo-connection url="http://webui.demo.nuxeo.com/nuxeo" username="Administrator" password="Administrator">
+      </nuxeo-connection>
 
-			<nuxeo-page-provider id="cvProvider" auto
-				provider="default_search"
-				page-size="40"
-				aggregations="{{aggregations}}"
-				enrichers="thumbnail"
-				params='{"ecm_path": ["/default-domain/workspaces"]}'>
-			</nuxeo-page-provider>
+      <nuxeo-page-provider id="cvProvider" auto
+        provider="default_search"
+        page-size="40"
+        aggregations="{{aggregations}}"
+        enrichers="thumbnail"
+        params='{"ecm_path": ["/default-domain/workspaces"]}'>
+      </nuxeo-page-provider>
 
-			<nuxeo-data-table id="datatable"
-				nx-provider="cvProvider">
-				<nuxeo-data-table-column name="Title" flex="100" sort-by="dc:title">
-				  <template>
-				    <img class="thumbnail" src="[[_thumbnail(item)]]">
-				    <a class="title ellipsis">[[item.title]]</a>
-				  </template>
-				</nuxeo-data-table-column>
-				<nuxeo-data-table-column filter-by="dc_modified_agg" flex="50" sort-by="dc:modified">
-			  <template is="header">
-		              <nuxeo-dropdown-aggregation name="dc_modified_agg"
-		                  placeholder="Modified"
-		                  aggregations="[[aggregations]]"
-		                  value="{{column.filterValue}}" multiple>
-		              </nuxeo-dropdown-aggregation>
-		          </template>
-				  <template>
-				    [[_formatDate(item.properties.dc:modified)]]
-				  </template>
-				</nuxeo-data-table-column>
-				<nuxeo-data-table-column filter-by="dc_creator_agg" flex="50" sort-by="dc:creator">
-	              <template is="header">
-		              <nuxeo-dropdown-aggregation name="dc_creator_agg"
-		                  placeholder="Author"
-		                  aggregations="[[aggregations]]"
-		                  value="{{column.filterValue}}" multiple>
-		              </nuxeo-dropdown-aggregation>
-		          </template>
-				  <template>
-				    <span class="tag user">[[item.properties.dc:creator]]</span>
-				  </template>
-				</nuxeo-data-table-column>
-				<nuxeo-data-table-column name="Version">
-				  <template>[[_displayVersion(item)]]</template>
-				</nuxeo-data-table-column>
-				<nuxeo-data-table-column name="State">
-				  <template>[[item.state]]</template>
-				</nuxeo-data-table-column>
-			</nuxeo-data-table>
-		</div>
+      <nuxeo-data-table id="datatable"
+        nx-provider="cvProvider">
+        <nuxeo-data-table-column name="Title" flex="100" sort-by="dc:title">
+          <template>
+            <img class="thumbnail" src="[[_thumbnail(item)]]">
+            <a class="title ellipsis">[[item.title]]</a>
+          </template>
+        </nuxeo-data-table-column>
+        <nuxeo-data-table-column filter-by="dc_modified_agg" flex="50">
+          <template is="header">
+              <nuxeo-dropdown-aggregation name="dc_modified_agg"
+                  placeholder="Modified"
+                  aggregations="[[aggregations]]"
+                  value="{{column.filterValue}}" multiple>
+              </nuxeo-dropdown-aggregation>
+          </template>
+          <template>
+            [[_formatDate(item.properties.dc:modified)]]
+          </template>
+        </nuxeo-data-table-column>
+        <nuxeo-data-table-column filter-by="dc_creator_agg" flex="50">
+                <template is="header">
+                  <nuxeo-dropdown-aggregation name="dc_creator_agg"
+                      placeholder="Author"
+                      aggregations="[[aggregations]]"
+                      value="{{column.filterValue}}" multiple>
+                  </nuxeo-dropdown-aggregation>
+              </template>
+          <template>
+            <span class="tag user">[[item.properties.dc:creator]]</span>
+          </template>
+        </nuxeo-data-table-column>
+        <nuxeo-data-table-column name="Version">
+          <template>[[_displayVersion(item)]]</template>
+        </nuxeo-data-table-column>
+        <nuxeo-data-table-column name="State">
+          <template>[[item.state]]</template>
+        </nuxeo-data-table-column>
+      </nuxeo-data-table>
+    </div>
 
-	</template>
+  </template>
 
   <script>
     var t = document.querySelector('template');
