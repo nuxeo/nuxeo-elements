@@ -7,11 +7,12 @@
   "description": "Nuxeo UI Web Components.",
   "keywords": [
     "nuxeo",
-    "web-component",
+    "web-components",
     "polymer",
     "metrics",
     "d3js"
   ],
+  "main": "nuxeo-ui-elements.html",
   "license": "Apache 2.0",
   "homepage": "https://github.com/nuxeo/nuxeo-ui-elements/",
   "ignore": [
