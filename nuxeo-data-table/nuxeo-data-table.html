@@ -262,6 +262,9 @@ An element to display a page provider result within a table with infinite scroll
             this.nxProvider.isNextPageAvailable) {
           this.loading = true;
           this.nxProvider.page = this.nxProvider.page + 1;
+          if (!this.nxProvider.auto) {
+            this.nxProvider.fetch();
+          }
         }
       },
 
