@@ -66,15 +66,6 @@ Example:
         height: 70px;
       }
 
-      #legend {
-        padding: 10px 0 0 3px;
-      }
-
-      #sequence text, #legend text {
-        font-weight: 600;
-        fill: #fff;
-      }
-
       #chart {
         position: relative;
       }
@@ -125,8 +116,6 @@ Example:
         <p/>
         <paper-checkbox on-change="execute" checked="{{onlyFolder}}" disabled="[[_chechFolderDisabled(mode)]]">Only Folders</paper-checkbox>
         <p/>
-        <paper-checkbox on-tap="_toggleLegend">Legend</paper-checkbox>
-        <div id="legend" style="visibility: hidden;"></div>
       </div>
     </div>
 
@@ -583,7 +572,13 @@ Example:
               .attr("y", b.h / 2)
               .attr("dy", "0.35em")
               .attr("text-anchor", "middle")
-              .text(function(d) { return d.name; });
+              .text(function(d) {
+                if(d.name.length > 10) {
+                  return d.name.substring(0, 9) + "...";
+                } else {
+                  return d.name;
+                }
+              });
 
           // Set position for entering and updating nodes.
           g.attr("transform", function(d, i) {
@@ -611,7 +606,6 @@ Example:
         _createVisualization: function() {
 
           this._initializeBreadcrumbTrail();
-          this._drawLegend();
 
           // Bounding circle underneath the sunburst, to make it easier to detect
           // when the mouse leaves the parent g.
@@ -724,50 +718,6 @@ Example:
             points.push(b.t + "," + (b.h / 2));
           }
           return points.join(" ");
-        },
-
-        _drawLegend: function() {
-
-          $(this.$.legend).empty();
-
-          // Dimensions of legend item: width, height, spacing, radius of rounded rect.
-          var li = {
-            w: 100, h: 30, s: 3, r: 3
-          };
-
-          var legend = d3.select("#legend").append("svg:svg")
-              .attr("width", li.w)
-              .attr("height", d3.keys(colors).length * (li.h + li.s));
-
-          var g = legend.selectAll("g")
-              .data(d3.entries(colors))
-              .enter().append("svg:g")
-              .attr("transform", function(d, i) {
-                      return "translate(0," + i * (li.h + li.s) + ")";
-                   });
-
-          g.append("svg:rect")
-              .attr("rx", li.r)
-              .attr("ry", li.r)
-              .attr("width", li.w)
-              .attr("height", li.h)
-              .style("fill", function(d) { return d.value; });
-
-          g.append("svg:text")
-              .attr("x", li.w / 2)
-              .attr("y", li.h / 2)
-              .attr("dy", "0.35em")
-              .attr("text-anchor", "middle")
-              .text(function(d) { return d.key; });
-        },
-
-        _toggleLegend: function() {
-          var legend = d3.select("#legend");
-          if (legend.style("visibility") == "hidden") {
-            legend.style("visibility", "");
-          } else {
-            legend.style("visibility", "hidden");
-          }
         },
 
         _formatValue: function(value, si) {
