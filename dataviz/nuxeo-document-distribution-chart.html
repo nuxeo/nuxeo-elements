@@ -518,7 +518,7 @@ Example:
           var totalSize = 0;
           $(this.$.chart).find('svg').remove();
 
-          vis = d3.select("#chart").append("svg:svg")
+          vis = d3.select(this.$.chart).append("svg:svg")
               .attr("width", this.width)
               .attr("height", this.height)
               .append("svg:g")
