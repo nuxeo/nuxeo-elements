@@ -18,7 +18,47 @@
 <!--
 An element to display a page provider result within a table with infinite scrolling.
 
-`nuxeo-data-table`
+Example:
+
+    <nuxeo-page-provider id="cvProvider" auto
+      provider="default_search"
+      page-size="40"
+      aggregations="{{aggregations}}">
+    </nuxeo-page-provider>
+
+    <nuxeo-data-table id="datatable"
+      nx-provider="cvProvider">
+      <nuxeo-data-table-column name="Full text search" flex="100" filter-by="ecm_fulltext" sort-by="dc:title">
+        <template>
+          <a class="title ellipsis">[[item.title]]</a>
+        </template>
+      </nuxeo-data-table-column>
+      <nuxeo-data-table-column filter-by="dc_modified_agg" flex="50" sort-by="dc:modified">
+        <template is="header">
+            <nuxeo-dropdown-aggregation
+                placeholder="Modified"
+                data="[[aggregations.dc_modified_agg]]"
+                value="{{column.filterValue}}" multiple>
+            </nuxeo-dropdown-aggregation>
+        </template>
+        <template>
+          [[item.properties.dc:modified]]
+        </template>
+      </nuxeo-data-table-column>
+      <nuxeo-data-table-column filter-by="dc_creator_agg" flex="50">
+              <template is="header">
+                <nuxeo-dropdown-aggregation
+                    placeholder="Author"
+                    data="[[aggregations.dc_creator_agg]]"
+                    value="{{column.filterValue}}" multiple>
+                </nuxeo-dropdown-aggregation>
+            </template>
+        <template>
+          <span class="tag user">[[item.properties.dc:creator]]</span>
+        </template>
+      </nuxeo-data-table-column>
+    </nuxeo-data-table>
+
 @group Nuxeo UI Elements
 @element nuxeo-data-table
 @demo demo/nuxeo-data-table/index.html
@@ -92,7 +132,7 @@ An element to display a page provider result within a table with infinite scroll
       <iron-scroll-threshold id="scrollThreshold"
         lower-threshold="1000"
         on-lower-threshold="_loadMoreData">
-        <iron-list id="list" as="item" items="[[items]]"
+        <iron-list id="list" as="item" items="[[_items]]"
           scroll-target="scrollThreshold">
           <template>
             <div class="item">
@@ -165,7 +205,7 @@ An element to display a page provider result within a table with infinite scroll
          * An array containing the items which will be stamped to the column template
          * instances.
          */
-        items: {
+        _items: {
           type: Array,
           value: []
         },
@@ -227,6 +267,11 @@ An element to display a page provider result within a table with infinite scroll
           type: Object,
           value: {}
         },
+        /**
+         * The id of the page provider or the page provider
+         * element itself which will be used to feed the
+         * table.
+         */
         nxProvider: {
           type: HTMLElement
         }
@@ -273,11 +318,11 @@ An element to display a page provider result within a table with infinite scroll
           return;
         }
         if (this.nxProvider.page === 1) {
-          this.items = [];
+          this._items = [];
         }
         var docs = this.nxProvider.currentPage;
         docs.forEach(function(doc) {
-          this.push('items', doc);
+          this.push('_items', doc);
         }.bind(this));
         this.$.list.notifyResize();
         this.notifyResize();
@@ -292,7 +337,7 @@ An element to display a page provider result within a table with infinite scroll
         }
         this.loading = true;
         this.nxProvider.page = 1;
-        this.items = [];
+        this._items = [];
         this.nxProvider.isNextPageAvailable = false;
         this.$.list.notifyResize();
         this.notifyResize();
