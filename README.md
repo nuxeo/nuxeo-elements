@@ -1,4 +1,4 @@
-[![Build Status](https://qa.nuxeo.org/jenkins/buildStatus/icon?job=nuxeo-ui-elements-master)](https://qa.nuxeo.org/jenkins/job/nuxeo-ui-elements-master/)
+[![Build Status](https://qa.nuxeo.org/jenkins/buildStatus/icon?job=master/nuxeo-ui-elements-master)](https://qa.nuxeo.org/jenkins/job/master/job/nuxeo-ui-elements-master/)
 
 # About nuxeo-ui-elements
 
