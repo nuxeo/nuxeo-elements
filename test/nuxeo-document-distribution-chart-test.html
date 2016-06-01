@@ -262,7 +262,6 @@ Contributors:
           var distribution = fixture('includeAllSize');
 
            return fakeResponse(distribution, includeAllCountResp).then(function() {
-            debugger
             // check data transformation
             assert.equal(4, distribution._chartData.children.length);
             assert.equal(28650901, distribution._chartData.value);

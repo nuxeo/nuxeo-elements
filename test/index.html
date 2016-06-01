@@ -23,10 +23,13 @@ Contributors:
 </head>
 <body>
 <script>
-  WCT.loadSuites([
+  var tests = [
     'nuxeo-create-group.html',
     'nuxeo-document-distribution-chart-test.html'
-  ]);
+  ];
+  WCT.loadSuites(tests.concat(tests.map(function (test) {
+    return test + '?dom=shadow'
+  })));
 </script>
 </body>
 </html>

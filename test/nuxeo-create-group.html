@@ -161,7 +161,7 @@ Contributors:
         createGroupEl.selectedUsers = suggestResponses;
         Polymer.dom.flush(createGroupEl);
 
-        var searchEntries = createGroupEl.querySelectorAll('.search-entry');
+        var searchEntries = Polymer.dom(createGroupEl.root).querySelectorAll('.search-entry');
         expect(searchEntries.length).to.be.equal(1);
         Polymer.dom.flush(searchEntries[0]);
         var label = searchEntries[0].querySelector('.label > span').textContent;
