@@ -556,7 +556,7 @@ Example:
         _updateBreadcrumbs: function(nodeArray, percentageString) {
 
           // Data join; key function combines name and depth (= position in sequence).
-          var g = d3.select("#trail")
+          var g = d3.select(Polymer.dom(this.root).querySelector('#trail'))
               .selectAll("g")
               .data(nodeArray, function(d) { return d.name + d.depth; });
 
@@ -589,7 +589,7 @@ Example:
           g.exit().remove();
 
           // Now move and update the percentage at the end.
-          d3.select("#trail").select("#endlabel")
+          d3.select(Polymer.dom(this.root).querySelector('#trail').querySelector('#endlabel'))
               .attr("x", (nodeArray.length + 0.5) * (b.w + b.s))
               .attr("y", b.h / 2)
               .attr("dy", "0.35em")
@@ -597,7 +597,7 @@ Example:
               .text(percentageString);
 
           // Make the breadcrumb trail visible, if it's hidden.
-          d3.select("#trail")
+          d3.select(Polymer.dom(this.root).querySelector('#trail'))
               .style("visibility", "");
 
         },
@@ -632,7 +632,7 @@ Example:
               .on("mouseover", this._mouseover.bind(this));
 
           // Add the mouseleave handler to the bounding circle.
-          d3.select("#container").on("mouseleave", this._mouseleave);
+          d3.select(Polymer.dom(this.root).querySelector('#container')).on("mouseleave", this._mouseleave);
 
           // Get total size of the tree = value of root node from partition.
           totalSize = path.node().__data__.value;
@@ -647,19 +647,19 @@ Example:
             percentageString = "< 0.1%";
           }
 
-          d3.select("#cl")
+          d3.select(this.$.cl)
               .text(this._formatValue(d.value, true));
-          d3.select("#clb")
+          d3.select(this.$.clb)
               .text('(' + percentageString + ')');
 
-          d3.select("#ex")
+          d3.select(this.$.ex)
               .style("visibility", "");
 
           var sequenceArray = this._getAncestors(d);
           this._updateBreadcrumbs(sequenceArray, percentageString);
 
           // Fade all the segments.
-          d3.selectAll("#chart path")
+          d3.selectAll(Polymer.dom(this.root).querySelectorAll('#chart path'))
               .style("opacity", 0.3);
 
           // Then highlight only those that are an ancestor of the current segment.
@@ -674,14 +674,15 @@ Example:
         _mouseleave: function(d) {
           return;
           // Hide the breadcrumb trail
-          d3.select("#trail")
+          d3.select(Polymer.dom(this.root).querySelector('#trail'))
               .style("visibility", "hidden");
 
           // Deactivate all segments during transition.
-          d3.selectAll("#chart path").on("mouseover", null);
+          d3.selectAll(Polymer.dom(this.root).querySelectorAll('#chart path'))
+          .on("mouseover", null);
 
           // Transition each segment to full opacity and then reactivate it.
-          d3.selectAll("#chart path")
+          d3.selectAll(Polymer.dom(this.root).querySelectorAll('#chart path'))
               .transition()
               .duration(1000)
               .style("opacity", 1)
@@ -689,14 +690,14 @@ Example:
                       d3.select(this).on("mouseover", this._mouseover.bind(this));
                     });
 
-          d3.select("#ex")
+          d3.select(this.$.ex)
               .style("visibility", "hidden");
         },
 
         _initializeBreadcrumbTrail: function() {
           $(this.$.sequence).empty()
           // Add the svg area.
-          var trail = d3.select("#sequence").append("svg:svg")
+          var trail = d3.select(this.$.sequence).append("svg:svg")
               .attr("width", this.width)
               .attr("height", 50)
               .attr("id", "trail");
