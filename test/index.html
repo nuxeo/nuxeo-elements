@@ -23,12 +23,15 @@ Contributors:
 </head>
 <body>
 <script>
-  WCT.loadSuites([
+  var tests = [
     'nuxeo-connection.html',
     'nuxeo-document.html',
     'nuxeo-operation.html',
     'nuxeo-resource.html'
-  ]);
+  ];
+  WCT.loadSuites(tests.concat(tests.map(function (test) {
+    return test + '?dom=shadow'
+  })));
 </script>
 </body>
 </html>
