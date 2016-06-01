@@ -97,13 +97,14 @@ controller = {
 -->
 <dom-module id="nuxeo-tree">
   <template>
-    <style>
+    <style  is="custom-style">
       :host {
         display: block;
+        @apply(--nuxeo-tree-theme);
       }
     </style>
 
-    <nuxeo-tree-node id="root"></nuxeo-tree-node>
+    <content></content>
 
   </template>
   <script>
@@ -146,12 +147,16 @@ controller = {
         init: function() {
           if (this.data && this.controller) {
             this.template = Polymer.dom(this).querySelector('template');
-            this.$.root.dataHost = this.dataHost;
-            this.$.root.controller = this.controller;
-            this.$.root.template = this.template;
-            this.$.root.nodeKey = this.nodeKey;
-            this.$.root.data = this.data;
-            this.$.root.dataset[this.nodeKey] = this.data[this.nodeKey];
+            var root = document.createElement('nuxeo-tree-node');
+            root.id = 'root';
+            root.dataHost = this.dataHost;
+            root.controller = this.controller;
+            root.template = this.template;
+            root.nodeKey = this.nodeKey;
+            root.data = this.data;
+            root.dataset[this.nodeKey] = this.data[this.nodeKey];
+            Polymer.dom(this).appendChild(root);
+            Polymer.dom.flush();
           }
         },
 
@@ -184,7 +189,7 @@ controller = {
         */
         _find: function(key) {
           return this.querySelector('[data-' + this.nodeKey + '="' + key + '"]');
-        },
+        }
       });
     })();
   </script>

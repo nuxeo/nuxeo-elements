@@ -25,23 +25,25 @@ Contributors:
 @element nuxeo-tree-node
 -->
 <dom-module id="nuxeo-tree-node">
-  <style>
-    :host {
-      display: block;
-    }
-
-    iron-collapse {
-      padding-left: 1em;
-    }
-
-    #content {
-      position: relative;
-    }
-  </style>
   <template>
-    <div id="content"></div>
-    <iron-collapse id="children" opened="[[opened]]" no-animation="true"></iron-collapse>
+    <style is="custom-style">
+      :host {
+        display: block;
+        @apply(--nuxeo-tree-node-theme);
+      }
+
+      ::content iron-collapse {
+        padding-left: 1em;
+        @apply(--nuxeo-tree-children-theme);
+      }
+
+      ::content #content {
+        position: relative;
+      }
+    </style>
+
     <content></content>
+
   </template>
   <script>
     (function() {
@@ -127,8 +129,20 @@ Contributors:
             this._instance.isLeaf = this.controller.isLeaf(this.data);
             this.dataset[this.nodeKey] = this.data[this.nodeKey];
 
+            var content = document.createElement('div');
+            content.id = 'content';
+            Polymer.dom(content).appendChild(this._instance.root);
+            Polymer.dom(this).appendChild(content);
+
+            var children = document.createElement('iron-collapse');
+            children.id = 'children';
+            children.opened = this.opened;
+            children.noAnimation = 'true';
+            Polymer.dom(this).appendChild(children);
+
+            Polymer.dom.flush();
             // append node content
-            this.$.content.appendChild(this._instance.root);
+            //this.$.content.appendChild(this._instance.root);
             this._setupToggleListener();
           }
         },
@@ -137,7 +151,7 @@ Contributors:
           if (this.template) {
             return new Promise(function(resolve) {
               // clear <iron-collapse> content in case we are re-rendering
-              var children = this.$.children;
+              var children = Polymer.dom(this).querySelector('#children');
               while (children.hasChildNodes()) {
                 children.removeChild(children.lastChild);
               }
@@ -167,7 +181,7 @@ Contributors:
 
         _setupToggleListener: function() {
           this._flushTemplates();
-          var toggleEls = this.$.content.querySelectorAll('[toggle]');
+          var toggleEls = Polymer.dom(this).querySelector('#content').querySelectorAll('[toggle]');
           for (var i = 0; i < toggleEls.length; i++) {
             this.listen(toggleEls[i], 'tap', 'toggle');
           }
@@ -196,6 +210,7 @@ Contributors:
 
         _openedChanged: function() {
           if (this._instance) {
+            Polymer.dom(this).querySelector('#children').opened = this.opened;
             this._instance.notifyPath('opened', this.opened);
             this._setupToggleListener();
           }
