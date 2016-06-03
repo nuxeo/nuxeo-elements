@@ -1,4 +1,4 @@
-[![Build Status](https://qa.nuxeo.org/jenkins/buildStatus/icon?job=nuxeo-dataviz-elements-master)](https://qa.nuxeo.org/jenkins/job/nuxeo-dataviz-elements-master/)
+[![Build Status](https://qa.nuxeo.org/jenkins/buildStatus/icon?job=master/nuxeo-dataviz-elements-master)](https://qa.nuxeo.org/jenkins/job/master/job/nuxeo-dataviz-elements-master/)
 
 # About nuxeo-dataviz-elements
 

@@ -25,11 +25,14 @@ Contributors:
   </head>
   <body>
     <script>
-      WCT.loadSuites([
+      var tests = [
         'nuxeo-workflow-data-test.html',
         'nuxeo-repository-data-test.html',
         'nuxeo-search-data-test.html'
-      ]);
+      ];
+      WCT.loadSuites(tests.concat(tests.map(function (test) {
+        return test + '?dom=shadow'
+      })));
     </script>
   </body>
 </html>
