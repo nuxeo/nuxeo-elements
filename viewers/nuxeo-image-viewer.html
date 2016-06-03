@@ -47,6 +47,7 @@ Custom property | Description | Default
 @demo demo/viewers/nuxeo-image-viewer/index.html
 -->
 <dom-module id="nuxeo-image-viewer">
+  <link rel="import" type="css" href="../../cropperjs/dist/cropper.css">
   <template>
     <style>
       :host {
@@ -80,9 +81,12 @@ Custom property | Description | Default
       }
 
       img {
-        visibility: hidden;
         max-height: 100%;
         max-width: 100%;
+      }
+
+      .image {
+        visibility: hidden;
       }
     </style>
 

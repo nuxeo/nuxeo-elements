@@ -17,8 +17,11 @@ Contributors:
 -->
 <link rel="import" href="../../polymer/polymer.html">
 
-<script src="../../videojs/dist/video.js"></script>
+<script>
+  var VIDEOJS_NO_DYNAMIC_STYLE = true;
+</script>
 <link rel="stylesheet" href="../../videojs/dist/video-js.css">
+<script src="../../videojs/dist/video.js"></script>
 
 <!--
 An element for viewing videos.
@@ -37,6 +40,7 @@ Example:
 -->
 <dom-module id="nuxeo-video-viewer">
 
+  <link rel="import" type="css" href="../../videojs/dist/video-js.css">
   <template>
     <style>
       :host {
@@ -44,7 +48,7 @@ Example:
       }
     </style>
     <video id="video" class="video-js vjs-default-skin" controls$="[[controls]]" width="[[width]]" height="[[height]]" preload="[[preload]]" poster="[[poster]]">
-       <content></content>
+      <content></content>
     </video>
   </template>
 
@@ -63,7 +67,8 @@ Example:
        */
       width: {
         type: Number,
-        value: 550
+        value: 550,
+        observer: '_widthChanged'
       },
 
       /**
@@ -71,7 +76,8 @@ Example:
        */
       height: {
         type: Number,
-        value: 310
+        value: 310,
+        observer: '_heightChanged'
       },
 
       /**
@@ -97,12 +103,34 @@ Example:
 
     },
 
+    ready: function() {
+      Polymer.dom(this).children.forEach(function(child) {
+        Polymer.dom(this.$.video).appendChild(child);
+      }.bind(this));
+      this.updateStyles();
+    },
+
     attached: function() {
-      videojs(this.$.video);
+      this.scopeSubtree(this.$.video, true);
+      this.videojs = videojs(this.$.video);
+      this.videojs.el().style.width = this.width;
+      this.videojs.el().style.height = this.height;
     },
 
     detached: function() {
       videojs(this.$.video).dispose();
+    },
+
+    _widthChanged: function() {
+      if (this.videojs) {
+        this.videojs.el().style.width = this.width;
+      }
+    },
+
+    _heightChanged: function() {
+      if (this.videojs) {
+        this.videojs.el().style.height = this.height;
+      }
     }
 
   });
