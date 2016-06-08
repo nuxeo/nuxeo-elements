@@ -13,6 +13,7 @@
 <link rel="import" href="nuxeo-data-table-column-filter.html">
 <link rel="import" href="nuxeo-data-table-cell.html">
 <link rel="import" href="nuxeo-data-table-row.html">
+<link rel="import" href="nuxeo-data-table-checkbox.html">
 <link rel="import" href="nuxeo-table-styles.html">
 
 <!--
@@ -118,6 +119,10 @@ Example:
     <div id="container">
       <div id="header">
         <nuxeo-data-table-row header>
+          <nuxeo-data-table-checkbox header hidden$="[[!multiSelection]]"
+            on-tap="_toggleSelectAll"
+            checked="[[_isSelectAllChecked(selectedItems.length, selectedItems.inverted)]]" indeterminate="[[_isSelectAllIndeterminate(selectedItems.length)]]">
+          </nuxeo-data-table-checkbox>
           <template is="dom-repeat" items="[[columns]]" as="column">
             <nuxeo-data-table-cell header column="[[column]]" bind="[[_bind(column)]]">
               <nuxeo-data-table-column-sort sort-order="[[sortOrder]]" path="[[column.sortBy]]"
@@ -140,6 +145,10 @@ Example:
                               bind="[[_bind(item, index)]]"
                               before-bind="[[_beforeRowBind]]"
                               even$="[[!_isEven(index)]]">
+                <nuxeo-data-table-checkbox hidden$="[[!multiSelection]]" tabindex="-1"
+                  checked="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                  on-tap="_onCheckBoxTap">
+                </nuxeo-data-table-checkbox>
                 <template is="dom-repeat" items="[[columns]]" as="column" index-as="colIndex">
                   <nuxeo-data-table-cell column="[[column]]" bind="[[_bind(item, index)]]"
                     before-bind="[[_beforeCellBind]]">
@@ -218,6 +227,50 @@ Example:
           notify: true,
           value: function() {
             return [];
+          }
+        },
+
+        /**
+         * When `true`, multiple items may be selected at once (in this case,
+         * `selected` is an array of currently selected items).  When `false`,
+         * only one item may be selected at a time.
+         */
+        multiSelection: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * If `true`, tapping a row will select the item.
+         */
+        selectionEnabled: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * This is the currently selected item, or `null`
+         * if no item is selected.
+         */
+        selectedItem: {
+          type: Object,
+          readOnly: true,
+          notify: true
+        },
+
+        /**
+         * When `multiSelection` is true, this is an array that contains the selected items.
+         * If `selectedItems.inverted` is `true`, the array contains deselected items instead.
+         * `selectedItems.filters` contains an array of filters that were active when the selection changed.
+         */
+        selectedItems: {
+          type: Object,
+          notify: true,
+          readOnly: true,
+          value: function() {
+            var items = [];
+            items.filters = [];
+            return items;
           }
         },
 
@@ -376,6 +429,125 @@ Example:
         };
       },
 
+      /**
+       * Select the list item at the given index.
+       *
+       * @method selectItem
+       * @param {(Object|number)} item The item object or its index
+       */
+      selectItem: function(item) {
+        if (this.selectionEnabled) {
+          if (typeof item === 'number' && item >= 0 && this.items && this.items.length > item) {
+            this._selectItem(this.items[item]);
+          } else {
+            this._selectItem(item);
+          }
+        }
+      },
+
+      _selectItem: function(item) {
+        this._setSelectedItem(item);
+        if (this.multiSelection) {
+          if (this.selectedItems.inverted) {
+            if ((index = this.selectedItems.indexOf(item)) > -1) {
+              this.splice('selectedItems', index, 1);
+            }
+          } else {
+            this.push('selectedItems', item);
+          }
+        } else {
+          this.splice('selectedItems', 0, this.selectedItems.length, item);
+        }
+      },
+
+      /**
+       * Deselects the given item list if it is already selected.
+       *
+       * @method deselect
+       * @param {(Object|number)} item The item object or its index
+       */
+      deselectItem: function(item) {
+        if (typeof item === 'number' && item >= 0 && this.items && this.items.length > item) {
+          this._deselectItem(this.items[item]);
+        } else {
+          this._deselectItem(item);
+        }
+      },
+
+      _deselectItem: function(item) {
+        this._setSelectedItem(null);
+        var index = this.selectedItems.indexOf(item);
+        if (this.selectedItems.inverted) {
+          if (index === -1) {
+            this.push('selectedItems', item);
+          }
+        } else {
+          if (index > -1) {
+            this.splice('selectedItems', index, 1);
+          }
+        }
+      },
+
+      _isSelected: function(item, selectedItems) {
+        var selected = selectedItems.indexOf(item) > -1;
+        return selectedItems.inverted ? !selected : selected;
+      },
+
+      /**
+       * Multi-Selection
+       */
+      _selectedItemsChanged: function(e) {
+        if (e.path === 'selectedItems.splices') {
+          var splices = e.value.indexSplices[0];
+          Array.prototype.forEach.call(splices.object, function(item) {
+            this._templatesForItem(item).forEach(function(t) {
+              t.selected = e.base.inverted ? false : true;
+            });
+          }.bind(this));
+          Array.prototype.forEach.call(splices.removed, function(item) {
+            this._templatesForItem(item).forEach(function(t) {
+              t.selected = e.base.inverted ? true : false;
+            });
+          }.bind(this));
+        }
+      },
+
+      /*
+       * Selects all the items in the list.
+       */
+      selectAll: function() {
+        var selectedItems = [];
+        selectedItems.inverted = true;
+        selectedItems.filters = this.filters || [];
+        this._setSelectedItems(selectedItems);
+      },
+
+      /**
+       * Clears the current selection state.
+       */
+      clearSelection: function() {
+        var selectedItems = [];
+        selectedItems.inverted = false;
+        selectedItems.filters = this.filters || [];
+        this._setSelectedItems(selectedItems);
+      },
+
+      _toggleSelectAll: function() {
+        if (this._isSelectAllChecked(this.selectedItems.length, this.selectedItems.inverted)) {
+          this.clearSelection();
+        } else {
+          this.selectAll();
+        }
+      },
+
+      _isSelectAllChecked: function(selectedItemsLength, inverted) {
+        return selectedItemsLength === (inverted ? 0 : this.size);
+      },
+
+      _isSelectAllIndeterminate: function(selectedItemsLength) {
+        return selectedItemsLength > 0;
+      },
+
       _bind: function(item, index) {
         if (index !== undefined) {
           return {
@@ -494,6 +666,12 @@ Example:
             this.$.container.style.width = Math.min(this.scrollWidth, this.clientWidth + this.scrollLeft) + 'px';
             // long timeout here to prevent jerkiness with the rubberband effect on iOS especially.
           }, 1000);
+        }
+      },
+
+      _onCheckBoxTap: function(e) {
+        if (this.selectionEnabled) {
+          this._isSelected(e.model.item, this.selectedItems) ? this.deselectItem(e.model.item) : this.selectItem(e.model.item);
         }
       }
 
