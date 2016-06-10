@@ -1,0 +1,64 @@
+<dom-module id="nuxeo-data-table-settings">
+  <template>
+    <style is="custom-style">
+      paper-icon-button {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 1000;
+      }
+    </style>
+
+    <paper-dialog id="columnsSettingsPopup"
+      no-auto-focus>
+      <h1>Columns Settings</h1>
+      <div class="paper-content layout horizontal">
+        <div class="layout vertical">
+          <div class="row layout horizontal">
+            <div class="label-container">
+              <label></label>
+            </div>
+            <table>
+              <template is="dom-repeat" items="[[columns]]" as="column">
+                <tr>
+                  <td>
+                    <paper-checkbox checked="{{!column.hidden}}">
+                    </paper-checkbox>
+                  </td>
+                  <td>
+                    [[column.name]]
+                  </td>
+                </tr>
+              </template>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="buttons sep">
+       <paper-button dialog-dismiss>Close</paper-button>
+      </div>
+    </paper-dialog>
+
+    <paper-icon-button noink icon="icons:settings" id="toggleColSettings"
+      on-tap="toggleColsSettingsPopup">
+    </paper-icon-button>
+
+  </template>
+  <script>
+    Polymer({
+      is: 'nuxeo-data-table-settings',
+
+      properties: {
+        columns: {
+          type: Array,
+          notify: true,
+        },
+      },
+
+      toggleColsSettingsPopup: function() {
+        this.$$('#columnsSettingsPopup').toggle();
+      }
+
+    });
+  </script>
+</dom-module>

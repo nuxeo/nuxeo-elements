@@ -6,6 +6,8 @@
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
 <link rel="import" href="../../paper-input/paper-input.html">
+<link rel="import" href="../../paper-dialog/paper-dialog.html">
+<link rel="import" href="../../paper-dialog/paper-checkbox.html">
 <link rel="import" href="../../paper-styles/paper-styles-classes.html">
 
 <link rel="import" href="nuxeo-data-table-column.html">
@@ -14,6 +16,7 @@
 <link rel="import" href="nuxeo-data-table-cell.html">
 <link rel="import" href="nuxeo-data-table-row.html">
 <link rel="import" href="nuxeo-data-table-checkbox.html">
+<link rel="import" href="nuxeo-data-table-settings.html">
 <link rel="import" href="nuxeo-table-styles.html">
 
 <!--
@@ -117,6 +120,7 @@ Example:
     </style>
 
     <div id="container">
+
       <div id="header">
         <nuxeo-data-table-row header>
           <nuxeo-data-table-checkbox header hidden$="[[!multiSelection]]"
@@ -131,6 +135,8 @@ Example:
               </nuxeo-data-table-column-sort>
             </nuxeo-data-table-cell>
           </template>
+          <nuxeo-data-table-settings columns="[[columns]]" hidden$="[[!settingsEnabled]]">
+          </nuxeo-data-table-settings>
         </nuxeo-data-table-row>
       </div>
 
@@ -327,6 +333,11 @@ Example:
          */
         nxProvider: {
           type: HTMLElement
+        },
+
+        settingsEnabled: {
+          type: Boolean,
+          value: false
         }
       },
 
@@ -666,6 +677,30 @@ Example:
             this.$.container.style.width = Math.min(this.scrollWidth, this.clientWidth + this.scrollLeft) + 'px';
             // long timeout here to prevent jerkiness with the rubberband effect on iOS especially.
           }, 1000);
+        }
+      },
+
+      // we need to listen to click instead of tap because on mobile safari, the
+      // document.activeElement has not been updated (focus has not been shifted)
+      // yet at the point when tap event is being executed.
+      _onRowClick: function(e) {
+        // Prevent item selection if row itself is not focused. This means that
+        // an element inside the row has been focused.
+        // Mobile devices don't move focus from body unless it's an input element that is focused, so this element will never get focused.
+        if (document.activeElement !== document.body &&
+            Polymer.dom(e).localTarget.contains(Polymer.dom(document.activeElement).node)) {
+          return;
+        } else {
+          if (this.rowDetail && this.detailsEnabled) {
+            if (this._isExpanded(e.model.item, this._expandedItems)) {
+              this.collapseItem(e.model.item);
+            } else {
+              this.expandItem(e.model.item);
+            }
+          }
+          if (this.selectionEnabled) {
+            this._isSelected(e.model.item, this.selectedItems) ? this.deselectItem(e.model.item) : this.selectItem(e.model.item);
+          }
         }
       },
 
