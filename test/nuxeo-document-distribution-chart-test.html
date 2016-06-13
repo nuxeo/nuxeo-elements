@@ -254,7 +254,7 @@ Contributors:
             assert.equal('workspaces', distribution._chartData.children[0].name);
 
             // check chart
-            assert.equal(10, $(distribution.$.chart).find("path").size());
+            assert.equal(10, Polymer.dom(distribution.root).querySelectorAll('path').length);
           });
         });
 
@@ -271,7 +271,7 @@ Contributors:
             assert.equal('workspaces', distribution._chartData.children[0].name);
 
             // check chart
-            assert.equal(5, $(distribution.$.chart).find("path").size());
+            assert.equal(5, Polymer.dom(distribution.root).querySelectorAll('path').length);
           });
         });
 
