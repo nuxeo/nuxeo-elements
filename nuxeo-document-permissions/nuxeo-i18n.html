@@ -1,0 +1,9 @@
+<script>
+  (function (nuxeo) {
+    nuxeo.elements = nuxeo.elements || {};
+    nuxeo.elements.labels = nuxeo.elements.labels || {};
+    Polymer.Base.i18n = function (key, defaultValue) {
+      return nuxeo.elements.labels[key] || defaultValue || key;
+    };
+  })(window.nuxeo = window.nuxeo || {});
+</script>
