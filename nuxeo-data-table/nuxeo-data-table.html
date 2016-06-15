@@ -125,7 +125,7 @@ Example:
 
       <div id="header">
         <nuxeo-data-table-row header>
-          <nuxeo-data-table-checkbox header hidden$="[[!multiSelection]]"
+          <nuxeo-data-table-checkbox header hidden$="[[!selectionEnabled]]"
             on-tap="_toggleSelectAll"
             checked="[[_isSelectAllChecked]]" indeterminate="[[_isSelectAllIndeterminate]]">
           </nuxeo-data-table-checkbox>
@@ -153,7 +153,7 @@ Example:
                               bind="[[_bind(item, index)]]"
                               before-bind="[[_beforeRowBind]]"
                               even$="[[!_isEven(index)]]">
-                <nuxeo-data-table-checkbox hidden$="[[!multiSelection]]" tabindex="-1"
+                <nuxeo-data-table-checkbox hidden$="[[!selectionEnabled]]" tabindex="-1"
                   checked="[[_isSelected(item, selectedItems, selectedItems.*)]]"
                   on-tap="_onCheckBoxTap">
                 </nuxeo-data-table-checkbox>
@@ -231,24 +231,6 @@ Example:
           value: function() {
             return [];
           }
-        },
-
-        /**
-         * When `true`, multiple items may be selected at once (in this case,
-         * `selected` is an array of currently selected items).  When `false`,
-         * only one item may be selected at a time.
-         */
-        multiSelection: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * If `true`, tapping a row will select the item.
-         */
-        selectionEnabled: {
-          type: Boolean,
-          value: false
         },
 
         /**

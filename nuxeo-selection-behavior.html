@@ -34,14 +34,9 @@ Contributors:
 
       properties: {
 
-        /**
-         * When `multiSelection` is true, this is an array that contains the selected items.
-         * If `selectedItems.inverted` is `true`, the array contains deselected items instead.
-         * `selectedItems.filters` contains an array of filters that were active when the selection changed.
-         */
         selectedItems: {
-          type: Array,
-          value: []
+          type: Object,
+          notify: true
         },
 
         size: {
@@ -60,14 +55,6 @@ Contributors:
           type: Boolean,
           value: false,
           notify: true,
-        },
-
-        /**
-         * If `true`, tapping a row will select the item.
-         */
-        selectionEnabled: {
-          type: Boolean,
-          value: false
         },
 
         /**
@@ -93,7 +80,12 @@ Contributors:
           notify: true,
           reflectToAttribute: true,
           value: false
-        }
+        },
+
+        selectionEnabled: {
+          type: Boolean,
+          value: false
+        },
       },
 
 
@@ -182,13 +174,13 @@ Contributors:
           } else {
             this.push('selectedItems', item);
           }
+          this._updateFlags();
         }
-        this._updateFlags();
       },
 
       _updateFlags: function() {
-        this._isSelectAllIndeterminate = this.selectedItems.length > 0 && this.selectedItems.length < this.size;
-        this._isSelectAllChecked = this.selectedItems.length > 0 && this.selectedItems.length === this.size;
+        this._isSelectAllIndeterminate = this.selectedItems && this.selectedItems.length > 0 && this.selectedItems.length < this.size;
+        this._isSelectAllChecked = this.selectedItems && this.selectedItems.length > 0 && this.selectedItems.length === this.size;
       },
 
       _deselectItem: function(item) {
