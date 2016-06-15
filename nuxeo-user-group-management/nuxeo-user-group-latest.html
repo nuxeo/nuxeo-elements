@@ -132,6 +132,8 @@ Example:
 <script>
   Polymer({
     is: 'nuxeo-user-group-latest',
+    
+    behaviors: [Nuxeo.I18nBehavior],
 
     properties: {
       latestCreatedUsersGroups: Object

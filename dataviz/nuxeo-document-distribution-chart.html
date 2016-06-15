@@ -21,6 +21,7 @@ Contributors:
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
 <script src="../../d3/d3.min.js"></script>
 <script src="../../randomcolor/randomColor.js"></script>
+<link rel="import" href="../nuxeo-i18n-behavior.html">
 
 <!--
 A sunburst chart presenting Nuxeo Document Distribution.
@@ -104,17 +105,17 @@ Example:
       </div>
       <div id="sb">
         <paper-radio-group selected="{{mode}}" on-paper-radio-group-changed="execute">
-          <paper-radio-button name="size">Size</paper-radio-button>
-          <paper-radio-button name="count">Document Count</paper-radio-button>
+          <paper-radio-button name="size">[[i18n('label.docdistribution.size', 'Size')]]</paper-radio-button>
+          <paper-radio-button name="count">[[i18n('label.docdistribution.count', 'Document Count')]]</paper-radio-button>
         </paper-radio-group>
         <p/>
-        <paper-checkbox on-change="execute" checked="{{includeHidden}}">Include Hidden Documents</paper-checkbox>
+        <paper-checkbox on-change="execute" checked="{{includeHidden}}">[[i18n('label.docdistribution.include_hidden', 'Include Hidden Documents')]]</paper-checkbox>
         <p/>
-        <paper-checkbox on-change="execute" checked="{{includeDeleted}}">Include Deleted Documents</paper-checkbox>
+        <paper-checkbox on-change="execute" checked="{{includeDeleted}}">[[i18n('label.docdistribution.include_deleted', 'Include Deleted Documents')]]</paper-checkbox>
         <p/>
-        <paper-checkbox on-change="execute" checked="{{includeVersion}}">Include Versions</paper-checkbox>
+        <paper-checkbox on-change="execute" checked="{{includeVersion}}">[[i18n('label.docdistribution.include_versions', 'Include Versions')]]</paper-checkbox>
         <p/>
-        <paper-checkbox on-change="execute" checked="{{onlyFolder}}" disabled="[[_chechFolderDisabled(mode)]]">Only Folders</paper-checkbox>
+        <paper-checkbox on-change="execute" checked="{{onlyFolder}}" disabled="[[_chechFolderDisabled(mode)]]">[[i18n('label.docdistribution.folders_only', 'Only Folders')]]</paper-checkbox>
         <p/>
       </div>
     </div>
@@ -126,6 +127,8 @@ Example:
 
       Polymer({
         is: 'nuxeo-document-distribution-chart',
+
+        behaviors: [Nuxeo.I18nBehavior],
 
         properties: {
           /**
@@ -737,9 +740,11 @@ Example:
             } while(Math.abs(value) >= thresh && u < units.length - 1);
             return value.toFixed(1)+' '+units[u];
           } else if (this.mode === 'count') {
-            var result = value + ' Document';
+            var result = value + ' ';
             if (value > 1) {
-              result += 's';
+              result += this.i18n('label.docdistribution.documents', 'Documents');
+            } else {
+              result += this.i18n('label.docdistribution.document', 'Document');
             }
             return result;
           } else {

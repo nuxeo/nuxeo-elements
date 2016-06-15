@@ -378,6 +378,8 @@ Used by `nuxeo-user-group-management`
       Polymer({
         is: 'nuxeo-group-management',
 
+        behaviors: [Nuxeo.I18nBehavior],
+
         properties: {
           groupname: {
             type: String,

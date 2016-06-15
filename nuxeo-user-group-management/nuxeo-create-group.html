@@ -242,6 +242,8 @@ Used by `nuxeo-user-group-management`
   Polymer({
     is: 'nuxeo-create-group',
 
+    behaviors: [Nuxeo.I18nBehavior],
+
     properties: {
       groupName: {
         type: String,

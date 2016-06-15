@@ -33,9 +33,10 @@ Contributors:
 <link rel="import" href="better-dateinput-polyfill.html">
 
 <link rel="import" href="nuxeo-document-acl-table.html">
-<link rel="import" href="nuxeo-i18n.html">
 <link rel="import" href="nuxeo-popup-permission.html">
 <link rel="import" href="nuxeo-popup-confirm.html">
+
+<link rel="import" href="../nuxeo-i18n-behavior.html">
 
 <!--
 An element providing document permissions management
@@ -129,6 +130,8 @@ An element providing document permissions management
 <script>
   Polymer({
     is: 'nuxeo-document-permissions',
+
+    behaviors: [Nuxeo.I18nBehavior],
 
     properties: {
       doc: {

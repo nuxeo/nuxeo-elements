@@ -1,3 +1,5 @@
+<link rel="import" href="../nuxeo-i18n-behavior.html">
+
 <dom-module id="nuxeo-data-table-settings">
   <template>
     <style is="custom-style">
@@ -11,7 +13,7 @@
 
     <paper-dialog id="columnsSettingsPopup"
       no-auto-focus>
-      <h1>Columns Settings</h1>
+      <h1>[[i18n('label.datatable.column_settings', 'Columns Settings')]]</h1>
       <div class="paper-content layout horizontal">
         <div class="layout vertical">
           <div class="row layout horizontal">
@@ -47,6 +49,8 @@
   <script>
     Polymer({
       is: 'nuxeo-data-table-settings',
+
+      behaviors: [Nuxeo.I18nBehavior],
 
       properties: {
         columns: {

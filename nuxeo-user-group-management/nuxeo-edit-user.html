@@ -129,6 +129,8 @@ Used by `nuxeo-user-management` and `nuxeo-create-user`
   Polymer({
     is: 'nuxeo-edit-user',
 
+    behaviors: [Nuxeo.I18nBehavior],
+
     properties: {
       /**
        * The user object to be edited or created.
@@ -150,7 +152,7 @@ Used by `nuxeo-user-management` and `nuxeo-create-user`
         value: function() {
           return this._resultFormatter.bind(this);
         }
-      },
+      }
     },
 
     /**

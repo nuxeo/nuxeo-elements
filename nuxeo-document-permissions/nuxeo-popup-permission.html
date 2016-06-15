@@ -31,7 +31,7 @@ Contributors:
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../../nuxeo-elements/widgets/nuxeo-user-suggestion.html">
 
-<link rel="import" href="nuxeo-i18n.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
 <!--
 `nuxeo-popup-permission`
 @group Nuxeo UI
@@ -166,6 +166,8 @@ Contributors:
 <script>
   Polymer({
     is: 'nuxeo-popup-permission',
+
+    behaviors: [Nuxeo.I18nBehavior],
 
     properties: {
       docId: {

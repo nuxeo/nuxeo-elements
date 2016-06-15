@@ -16,6 +16,7 @@ Contributors:
 -->
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
 
 <!--
 `nuxeo-checkbox-aggregation`
@@ -37,7 +38,7 @@ Contributors:
       <paper-checkbox checked="{{item.checked}}" on-change="_computeValues">[[item.key]] ([[item.docCount]])</paper-checkbox>
     </template>
     <template is="dom-if" if="[[_isEmpty(data)]]">
-      <label class="empty">No available result</label>
+      <label class="empty">[[i18n('label.aggregate.no_results', 'No available result')]]</label>
     </template>
   </div>
 
@@ -48,6 +49,8 @@ Contributors:
 
      Polymer({
        is: 'nuxeo-checkbox-aggregation',
+
+       behaviors: [Nuxeo.I18nBehavior],
 
        properties: {
 

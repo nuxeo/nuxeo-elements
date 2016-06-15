@@ -34,11 +34,10 @@ Contributors:
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icons/social-icons.html">
 
-<link rel="import" href="nuxeo-i18n.html">
-
 <link rel="import" href="../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../nuxeo-elements/widgets/nuxeo-user-suggestion.html">
 
+<link rel="import" href="nuxeo-i18n-behavior.html">
 <link rel="import" href="nuxeo-user-group-management/nuxeo-user-group-search.html">
 <link rel="import" href="nuxeo-user-group-management/nuxeo-create-user.html">
 <link rel="import" href="nuxeo-user-group-management/nuxeo-create-group.html">
@@ -144,6 +143,8 @@ Custom property | Description | Default
 <script>
   Polymer({
     is: 'nuxeo-user-group-management',
+
+    behaviors: [Nuxeo.I18nBehavior],
 
     properties: {
       /**

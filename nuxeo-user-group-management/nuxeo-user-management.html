@@ -381,6 +381,8 @@ Used by `nuxeo-user-group-management`
       Polymer({
         is: 'nuxeo-user-management',
 
+        behaviors: [Nuxeo.I18nBehavior],
+
         properties: {
           username: {
             type: String,

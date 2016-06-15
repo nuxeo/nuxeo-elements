@@ -185,6 +185,8 @@ Used by `nuxeo-user-group-management`
   Polymer({
     is: 'nuxeo-create-user',
 
+    behaviors: [Nuxeo.I18nBehavior],
+
     properties: {
       user: {
         type: Object,
