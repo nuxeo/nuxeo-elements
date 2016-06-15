@@ -134,8 +134,8 @@ Contributors:
           </iron-list>
         </div>
       </iron-scroll-threshold>
-      <div hidden$="[[hasResults]]" class="noResult">
-        <span class="empty">[[empytLabel]]</span>
+      <div hidden$="[[size]]" class="noResult">
+        <span class="empty">No Results</span>
       </div>
     </div>
     <paper-spinner-lite active hidden=[[!loading]]></paper-spinner-lite>
@@ -148,74 +148,15 @@ Contributors:
         is: 'nuxeo-data-grid',
 
         behaviors: [
-          Polymer.IronResizableBehavior
+          Polymer.IronResizableBehavior,
+          Nuxeo.SelectionBehavior
         ],
 
         properties: {
-          nxProvider: {
-            type: HTMLElement
-          },
-          hasResults: {
-            type: Boolean,
-            value: true
-          },
-          loading: {
-            type: Boolean,
-            notify: true,
-            reflectToAttribute: true,
-            value: false
-          },
-          as: {
-            type: String,
-            value: 'item'
-          },
-          selectedItems: {
-            type: Object,
-            notify: true
-          }
+
         },
 
-        observers: [
-          '_nxProviderChanged(nxProvider)'
-        ],
-
-        _nxProviderChanged: function(nxProvider) {
-          if (typeof nxProvider === 'string') {
-            this.nxProvider = this.domHost ? this.domHost.$[nxProvider] :
-              Polymer.dom(this.ownerDocument).querySelector('#' + nxProvider);
-            if (this.nxProvider === null) {
-              var parentNode = Polymer.dom(this).parentNode;
-              this.nxProvider = parentNode.querySelector('#' + nxProvider);
-            }
-            this.listen(this.nxProvider, 'update', '_updateResults');
-          } else if (nxProvider) {
-            this.listen(this.nxProvider, 'update', '_updateResults');
-          }
-        },
-
-        _loadMoreData: function(e) {
-          if (!this._isPPLoaded()) {
-            return;
-          }
-          if ((e.currentTarget.id === 'scrollThreshold' ? !this.manualLoading : this.manualLoading) &&
-              this.nxProvider &&
-              this.nxProvider.isNextPageAvailable) {
-            this.loading = true;
-            this.nxProvider.page = this.nxProvider.page + 1;
-            if (!this.nxProvider.auto) {
-              this.nxProvider.fetch();
-            }
-          }
-        },
-
-        _isPPLoaded: function() {
-          return (this.nxProvider && typeof this.nxProvider !== 'string');
-        },
-
-        _updateResults: function() {
-          if (!this._isPPLoaded()) {
-            return;
-          }
+        ready: function() {
           if (!this._templateStamped) {
             // use nuxeo-data-grid parent's datahost in the iron-list
             // functions used in the template should be declared
@@ -230,32 +171,9 @@ Contributors:
             this.$.list.items = [];
             this._templateStamped = true;
           }
-          if (this.nxProvider.page === 1) {
-            this.$.list.items = [];
-          }
-          var docs = this.nxProvider.currentPage;
-          docs.forEach(function(doc) {
-            this.$.list.push('items', doc);
-          }.bind(this));
-          this.$.list.notifyResize();
-          this.$.scrollThreshold.clearTriggers();
-          this.loading = false;
-        },
-
-        _resetResults: function() {
-          if (!this._isPPLoaded()) {
-            return;
-          }
-          this.loading = true;
-          this.nxProvider.page = 1;
-          this.$.list.items = [];
-          this.nxProvider.isNextPageAvailable = false;
-          this.$.list.notifyResize();
-          this.notifyResize();
-          this.$.scrollThreshold.clearTriggers();
         }
 
-      });
+        });
     })();
   </script>
 

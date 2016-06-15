@@ -19,6 +19,8 @@
 <link rel="import" href="nuxeo-data-table-settings.html">
 <link rel="import" href="nuxeo-table-styles.html">
 
+<link rel="import" href="../nuxeo-selection-behavior.html">
+
 <!--
 An element to display a page provider result within a table with infinite scrolling.
 
@@ -125,7 +127,7 @@ Example:
         <nuxeo-data-table-row header>
           <nuxeo-data-table-checkbox header hidden$="[[!multiSelection]]"
             on-tap="_toggleSelectAll"
-            checked="[[_isSelectAllChecked(selectedItems.length, selectedItems.inverted)]]" indeterminate="[[_isSelectAllIndeterminate(selectedItems.length)]]">
+            checked="[[_isSelectAllChecked]]" indeterminate="[[_isSelectAllIndeterminate]]">
           </nuxeo-data-table-checkbox>
           <template is="dom-repeat" items="[[columns]]" as="column">
             <nuxeo-data-table-cell header column="[[column]]" bind="[[_bind(column)]]">
@@ -165,6 +167,9 @@ Example:
           </template>
         </iron-list>
       </iron-scroll-threshold>
+      <div hidden$="[[size]]" class="noResult">
+        <span class="empty">No Results</span>
+      </div>
     </div>
     <paper-spinner-lite active hidden=[[!loading]]></paper-spinner-lite>
     <content select="nuxeo-data-table-column"></content>
@@ -175,7 +180,8 @@ Example:
       is: 'nuxeo-data-table',
 
       behaviors: [
-        Polymer.IronResizableBehavior
+        Polymer.IronResizableBehavior,
+        Nuxeo.SelectionBehavior
       ],
 
       listeners: {
@@ -217,15 +223,6 @@ Example:
         _beforeRowBind: Object,
 
         /**
-         * An array containing the items which will be stamped to the column template
-         * instances.
-         */
-        _items: {
-          type: Array,
-          value: []
-        },
-
-        /**
          * An array containing path/filter value pairs that are used to filter the items
          */
         filter: {
@@ -252,32 +249,6 @@ Example:
         selectionEnabled: {
           type: Boolean,
           value: false
-        },
-
-        /**
-         * This is the currently selected item, or `null`
-         * if no item is selected.
-         */
-        selectedItem: {
-          type: Object,
-          readOnly: true,
-          notify: true
-        },
-
-        /**
-         * When `multiSelection` is true, this is an array that contains the selected items.
-         * If `selectedItems.inverted` is `true`, the array contains deselected items instead.
-         * `selectedItems.filters` contains an array of filters that were active when the selection changed.
-         */
-        selectedItems: {
-          type: Object,
-          notify: true,
-          readOnly: true,
-          value: function() {
-            var items = [];
-            items.filters = [];
-            return items;
-          }
         },
 
         /**
@@ -311,12 +282,6 @@ Example:
           value: false
         },
 
-        /* nuxeo attributes */
-        _initParams: {
-          type: Object,
-          value: {},
-          notify: true
-        },
         _ppSort: {
           type: Object,
           value: {},
@@ -326,15 +291,6 @@ Example:
           type: Object,
           value: {}
         },
-        /**
-         * The id of the page provider or the page provider
-         * element itself which will be used to feed the
-         * table.
-         */
-        nxProvider: {
-          type: HTMLElement
-        },
-
         settingsEnabled: {
           type: Boolean,
           value: false
@@ -342,75 +298,8 @@ Example:
       },
 
       observers: [
-        '_resetResults(_ppFilters.*, _ppSort.*)',
-        '_nxProviderChanged(nxProvider)'
+        '_resetResults(_ppFilters.*, _ppSort.*)'
       ],
-
-      _nxProviderChanged: function(nxProvider) {
-        if (typeof nxProvider === 'string') {
-          this.nxProvider = this.domHost ? this.domHost.$[nxProvider] :
-            Polymer.dom(this.ownerDocument).querySelector('#' + nxProvider);
-          if (this.nxProvider === null) {
-            var parentNode = Polymer.dom(this).parentNode;
-            this.nxProvider = parentNode.querySelector('#' + nxProvider);
-          }
-          this._initParams = this.nxProvider.params;
-          this.listen(this.nxProvider, 'update', '_updateResults');
-        } else if (nxProvider) {
-          this._initParams = this.nxProvider.params;
-          this.listen(this.nxProvider, 'update', '_updateResults');
-        }
-      },
-
-      _loadMoreData: function(e) {
-        if (!this._isPPLoaded()) {
-          return;
-        }
-        if ((e.currentTarget.id === 'scrollThreshold' ? !this.manualLoading : this.manualLoading) &&
-            this.nxProvider &&
-            this.nxProvider.isNextPageAvailable) {
-          this.loading = true;
-          this.nxProvider.page = this.nxProvider.page + 1;
-          if (!this.nxProvider.auto) {
-            this.nxProvider.fetch();
-          }
-        }
-      },
-
-      _updateResults: function() {
-        if (!this._isPPLoaded()) {
-          return;
-        }
-        if (this.nxProvider.page === 1) {
-          this._items = [];
-        }
-        var docs = this.nxProvider.currentPage;
-        docs.forEach(function(doc) {
-          this.push('_items', doc);
-        }.bind(this));
-        this.$.list.notifyResize();
-        this.notifyResize();
-        this.$.scrollThreshold.clearTriggers();
-
-        this.loading = false;
-      },
-
-      _resetResults: function() {
-        if (!this._isPPLoaded()) {
-          return;
-        }
-        this.loading = true;
-        this.nxProvider.page = 1;
-        this._items = [];
-        this.nxProvider.isNextPageAvailable = false;
-        this.$.list.notifyResize();
-        this.notifyResize();
-        this.$.scrollThreshold.clearTriggers();
-      },
-
-      _isPPLoaded: function() {
-        return (this.nxProvider && typeof this.nxProvider !== 'string');
-      },
 
       created: function() {
         this._observer = Polymer.dom(this).observeNodes(function(info) {
@@ -438,125 +327,6 @@ Example:
             this.toggleSelectionForItem(model[this.as]);
           }
         };
-      },
-
-      /**
-       * Select the list item at the given index.
-       *
-       * @method selectItem
-       * @param {(Object|number)} item The item object or its index
-       */
-      selectItem: function(item) {
-        if (this.selectionEnabled) {
-          if (typeof item === 'number' && item >= 0 && this.items && this.items.length > item) {
-            this._selectItem(this.items[item]);
-          } else {
-            this._selectItem(item);
-          }
-        }
-      },
-
-      _selectItem: function(item) {
-        this._setSelectedItem(item);
-        if (this.multiSelection) {
-          if (this.selectedItems.inverted) {
-            if ((index = this.selectedItems.indexOf(item)) > -1) {
-              this.splice('selectedItems', index, 1);
-            }
-          } else {
-            this.push('selectedItems', item);
-          }
-        } else {
-          this.splice('selectedItems', 0, this.selectedItems.length, item);
-        }
-      },
-
-      /**
-       * Deselects the given item list if it is already selected.
-       *
-       * @method deselect
-       * @param {(Object|number)} item The item object or its index
-       */
-      deselectItem: function(item) {
-        if (typeof item === 'number' && item >= 0 && this.items && this.items.length > item) {
-          this._deselectItem(this.items[item]);
-        } else {
-          this._deselectItem(item);
-        }
-      },
-
-      _deselectItem: function(item) {
-        this._setSelectedItem(null);
-        var index = this.selectedItems.indexOf(item);
-        if (this.selectedItems.inverted) {
-          if (index === -1) {
-            this.push('selectedItems', item);
-          }
-        } else {
-          if (index > -1) {
-            this.splice('selectedItems', index, 1);
-          }
-        }
-      },
-
-      _isSelected: function(item, selectedItems) {
-        var selected = selectedItems.indexOf(item) > -1;
-        return selectedItems.inverted ? !selected : selected;
-      },
-
-      /**
-       * Multi-Selection
-       */
-      _selectedItemsChanged: function(e) {
-        if (e.path === 'selectedItems.splices') {
-          var splices = e.value.indexSplices[0];
-          Array.prototype.forEach.call(splices.object, function(item) {
-            this._templatesForItem(item).forEach(function(t) {
-              t.selected = e.base.inverted ? false : true;
-            });
-          }.bind(this));
-          Array.prototype.forEach.call(splices.removed, function(item) {
-            this._templatesForItem(item).forEach(function(t) {
-              t.selected = e.base.inverted ? true : false;
-            });
-          }.bind(this));
-        }
-      },
-
-      /*
-       * Selects all the items in the list.
-       */
-      selectAll: function() {
-        var selectedItems = [];
-        selectedItems.inverted = true;
-        selectedItems.filters = this.filters || [];
-        this._setSelectedItems(selectedItems);
-      },
-
-      /**
-       * Clears the current selection state.
-       */
-      clearSelection: function() {
-        var selectedItems = [];
-        selectedItems.inverted = false;
-        selectedItems.filters = this.filters || [];
-        this._setSelectedItems(selectedItems);
-      },
-
-      _toggleSelectAll: function() {
-        if (this._isSelectAllChecked(this.selectedItems.length, this.selectedItems.inverted)) {
-          this.clearSelection();
-        } else {
-          this.selectAll();
-        }
-      },
-
-      _isSelectAllChecked: function(selectedItemsLength, inverted) {
-        return selectedItemsLength === (inverted ? 0 : this.size);
-      },
-
-      _isSelectAllIndeterminate: function(selectedItemsLength) {
-        return selectedItemsLength > 0;
       },
 
       _bind: function(item, index) {
