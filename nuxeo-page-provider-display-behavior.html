@@ -19,24 +19,25 @@ Contributors:
 <link rel="import" href="../polymer/polymer.html">
 
 <!--
-`nuxeo-selection-behavior`
+`nuxeo-page-provider-display-behavior`
 @group Nuxeo UI Elements
-@element nuxeo-selection-behavior
+@element nuxeo-page-provider-display-behavior
 -->
 <script>
   var Nuxeo = Nuxeo || {};
   (function () {
 
     /**
-    * @polymerBehavior Nuxeo.SelectionBehavior
+    * @polymerBehavior Nuxeo.PageProviderDisplayBehavior
     */
-    Nuxeo.SelectionBehavior = {
+    Nuxeo.PageProviderDisplayBehavior = {
 
       properties: {
 
         selectedItems: {
-          type: Object,
-          notify: true
+          type: Array,
+          notify: true,
+          value: []
         },
 
         size: {
@@ -54,6 +55,12 @@ Contributors:
         _isSelectAllIndeterminate: {
           type: Boolean,
           value: false,
+          notify: true,
+        },
+
+        _isSelectionEmpty: {
+          type: Boolean,
+          value: true,
           notify: true,
         },
 
@@ -91,7 +98,8 @@ Contributors:
 
       observers: [
         '_updateFlags(size)',
-        '_nxProviderChanged(nxProvider)'
+        '_nxProviderChanged(nxProvider)',
+        '_observeSelectedItems(selectedItems)'
       ],
 
       _nxProviderChanged: function(nxProvider) {
@@ -131,6 +139,7 @@ Contributors:
         }
         if (this.nxProvider.page === 1) {
           this.$.list.items = [];
+          this.selectedItems = [];
         }
         var docs = this.nxProvider.currentPage;
         docs.forEach(function(doc) {
@@ -150,6 +159,7 @@ Contributors:
         this.loading = true;
         this.nxProvider.page = 1;
         this.$.list.items = [];
+        this.selectedItems = [];
         this.size = 0;
         this.nxProvider.isNextPageAvailable = false;
         this.$.list.notifyResize();
@@ -227,7 +237,6 @@ Contributors:
        */
       clearSelection: function() {
         this.selectedItems = [];
-        this._updateFlags();
       },
 
       _toggleSelectAll: function() {
@@ -236,6 +245,10 @@ Contributors:
         } else {
           this.selectAll();
         }
+      },
+
+      _observeSelectedItems: function() {
+        this._updateFlags();
       }
 
     };

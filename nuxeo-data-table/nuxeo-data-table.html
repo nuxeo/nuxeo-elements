@@ -19,7 +19,7 @@
 <link rel="import" href="nuxeo-data-table-settings.html">
 <link rel="import" href="nuxeo-table-styles.html">
 
-<link rel="import" href="../nuxeo-selection-behavior.html">
+<link rel="import" href="../nuxeo-page-provider-display-behavior.html">
 
 <!--
 An element to display a page provider result within a table with infinite scrolling.
@@ -130,7 +130,7 @@ Example:
             checked="[[_isSelectAllChecked]]" indeterminate="[[_isSelectAllIndeterminate]]">
           </nuxeo-data-table-checkbox>
           <template is="dom-repeat" items="[[columns]]" as="column">
-            <nuxeo-data-table-cell header column="[[column]]" bind="[[_bind(column)]]">
+            <nuxeo-data-table-cell header column="[[column]]" bind="[[_bind(column)]]" hidden$="[[]]">
               <nuxeo-data-table-column-sort sort-order="[[sortOrder]]" path="[[column.sortBy]]"
                 on-sort-direction-changed="_sortDirectionChanged"
                 hidden$="[[!column.sortBy]]">
@@ -181,7 +181,7 @@ Example:
 
       behaviors: [
         Polymer.IronResizableBehavior,
-        Nuxeo.SelectionBehavior
+        Nuxeo.PageProviderDisplayBehavior
       ],
 
       listeners: {
