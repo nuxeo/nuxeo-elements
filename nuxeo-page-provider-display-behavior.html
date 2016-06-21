@@ -73,12 +73,6 @@ Contributors:
           type: HTMLElement
         },
 
-        _initParams: {
-          type: Object,
-          value: {},
-          notify: true
-        },
-
         /**
          * `true` if the table is currently loading data from the data source.
          */
@@ -110,10 +104,8 @@ Contributors:
             var parentNode = Polymer.dom(this).parentNode;
             this.nxProvider = parentNode.querySelector('#' + nxProvider);
           }
-          this._initParams = this.nxProvider.params;
           this.listen(this.nxProvider, 'update', '_updateResults');
         } else if (nxProvider) {
-          this._initParams = this.nxProvider.params;
           this.listen(this.nxProvider, 'update', '_updateResults');
         }
       },

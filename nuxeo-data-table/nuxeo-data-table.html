@@ -280,7 +280,7 @@ Example:
       },
 
       observers: [
-        '_resetResults(_ppFilters.*, _ppSort.*)'
+        '_resetResults(_ppSort.*)'
       ],
 
       created: function() {
@@ -392,25 +392,19 @@ Example:
           });
         }
 
-        var tmpFilters = {};
-        if (this.filter && this.filter.length > 0) {
-          this.filter.forEach(function(filterItem) {
-            if (filterItem.filter.length > 0) {
-              if (filterItem.path === 'title' || filterItem.path === 'ecm_fulltext') {
-                tmpFilters[filterItem.path] = filterItem.filter + '*';
-              } else {
-                tmpFilters[filterItem.path] = filterItem.filter;
-              }
+        if (this.nxProvider.params[e.detail.filterBy] && e.detail.value.length === 0) {
+          delete this.nxProvider.params[e.detail.filterBy];
+        } else {
+          if (e.detail.value.length > 0) {
+            if (e.detail.filterBy === 'title' || e.detail.filterBy === 'ecm_fulltext') {
+              this.nxProvider.params[e.detail.filterBy] = e.detail.value + '*';
+            } else {
+              this.nxProvider.params[e.detail.filterBy] = e.detail.value;
             }
-          });
+          }
         }
-        if (JSON.stringify(this._ppFilters) !== JSON.stringify(tmpFilters)) {
-          this._ppFilters = tmpFilters;
-          var result = {};
-          jQuery().extend(result, this._initParams, this._ppFilters);
-          this.nxProvider.params = result;
-        }
-
+        this._resetResults();
+        this.nxProvider.fetch();
       },
 
       _resizeCellContainers: function() {
