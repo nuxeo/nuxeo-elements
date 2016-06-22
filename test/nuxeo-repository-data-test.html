@@ -130,7 +130,7 @@ Contributors:
           var search = fixture('ecm-terms');
           assert.deepEqual(search.query.bool.must, [
             { terms: {"ecm:primaryType": ["Note"]} },
-            { terms: {"ecm:lifecycleState": ["project"]} },
+            { terms: {"ecm:currentLifeCycleState": ["project"]} },
             { terms: {"ecm:mixinType": ["Versionable"]} }
           ]);
         });
@@ -139,7 +139,7 @@ Contributors:
           var search = fixture('ecm-multiple-terms');
           assert.deepEqual(search.query.bool.must, [
             { terms: {"ecm:primaryType": ["File", "Note"] } },
-            { terms: {"ecm:lifecycleState": ["project", "approved"] } },
+            { terms: {"ecm:currentLifeCycleState": ["project", "approved"] } },
             { terms: {"ecm:mixinType": ["Versionable", "Downloadable"] } }
           ]);
         });

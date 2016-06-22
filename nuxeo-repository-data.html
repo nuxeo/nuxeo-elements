@@ -126,7 +126,7 @@ The previous example would produce a query like:
         terms.push({terms: {'ecm:primaryType': this._splitTerms(this.ecmPrimaryType) }});
       }
       if (this.ecmLifecycleState) {
-        terms.push({terms: {'ecm:lifecycleState': this._splitTerms(this.ecmLifecycleState) }});
+        terms.push({terms: {'ecm:currentLifeCycleState': this._splitTerms(this.ecmLifecycleState) }});
       }
       if (this.ecmMixinType) {
         terms.push({terms: {'ecm:mixinType': this._splitTerms(this.ecmMixinType) }});
