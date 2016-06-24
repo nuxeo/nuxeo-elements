@@ -123,6 +123,8 @@ Example:
 
     <div id="container">
 
+      <content select="nuxeo-selection-toolbar"></content>
+
       <div id="header">
         <nuxeo-data-table-row header>
           <nuxeo-data-table-checkbox header hidden$="[[!selectionEnabled]]"
@@ -146,6 +148,7 @@ Example:
         lower-threshold="1000"
         on-lower-threshold="_loadMoreData">
         <iron-list id="list" as="item" items="[[_items]]"
+          selected-items="{{selectedItems}}"
           scroll-target="scrollThreshold">
           <template>
             <div class="item">
@@ -154,8 +157,7 @@ Example:
                               before-bind="[[_beforeRowBind]]"
                               even$="[[!_isEven(index)]]">
                 <nuxeo-data-table-checkbox hidden$="[[!selectionEnabled]]" tabindex="-1"
-                  checked="[[_isSelected(item, selectedItems, selectedItems.*)]]"
-                  on-tap="_onCheckBoxTap">
+                  checked="[[selected]]" on-tap="_onCheckBoxTap">
                 </nuxeo-data-table-checkbox>
                 <template is="dom-repeat" items="[[columns]]" as="column" index-as="colIndex">
                   <nuxeo-data-table-cell column="[[column]]" bind="[[_bind(item, index)]]"
@@ -426,33 +428,10 @@ Example:
         }
       },
 
-      // we need to listen to click instead of tap because on mobile safari, the
-      // document.activeElement has not been updated (focus has not been shifted)
-      // yet at the point when tap event is being executed.
-      _onRowClick: function(e) {
-        // Prevent item selection if row itself is not focused. This means that
-        // an element inside the row has been focused.
-        // Mobile devices don't move focus from body unless it's an input element that is focused, so this element will never get focused.
-        if (document.activeElement !== document.body &&
-            Polymer.dom(e).localTarget.contains(Polymer.dom(document.activeElement).node)) {
-          return;
-        } else {
-          if (this.rowDetail && this.detailsEnabled) {
-            if (this._isExpanded(e.model.item, this._expandedItems)) {
-              this.collapseItem(e.model.item);
-            } else {
-              this.expandItem(e.model.item);
-            }
-          }
-          if (this.selectionEnabled) {
-            this._isSelected(e.model.item, this.selectedItems) ? this.deselectItem(e.model.item) : this.selectItem(e.model.item);
-          }
-        }
-      },
-
       _onCheckBoxTap: function(e) {
         if (this.selectionEnabled) {
-          this._isSelected(e.model.item, this.selectedItems) ? this.deselectItem(e.model.item) : this.selectItem(e.model.item);
+          e.srcElement.fire('selected');
+          this._updateFlags();
         }
       }
 

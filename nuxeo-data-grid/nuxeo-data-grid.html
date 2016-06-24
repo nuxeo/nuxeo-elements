@@ -127,11 +127,14 @@ Contributors:
     </style>
 
     <div id="container">
+
+      <content select="nuxeo-selection-toolbar"></content>
+
       <iron-scroll-threshold id="scrollThreshold"
         lower-threshold="1000"
         on-lower-threshold="_loadMoreData">
         <div class="grid-ctn bubbleBoxes">
-          <iron-list id="list" scroll-target="scrollThreshold" grid>
+          <iron-list id="list" scroll-target="scrollThreshold" grid selected-items="{{selectedItems}}">
           </iron-list>
         </div>
       </iron-scroll-threshold>
@@ -171,24 +174,6 @@ Contributors:
             // iron-list will look for our template and stamp the items
             this.$.list.items = [];
             this._templateStamped = true;
-          }
-          if (this.selectionEnabled) {
-            this.$.list.selectionEnabled = true;
-            this.$.list.unlisten.call(this.$.list, this.$.list, 'tap', '_selectionHandler');
-            this.$.list.listen.call(this.$.list, this.$.list, 'selected', '_selectionHandler');
-            this.$.list.toggleSelectionForItem = function(item) {
-              item = this.$.list._getNormalizedItem(item);
-              var model = this.$.list._getModelFromItem(item);
-              if (model) {
-                if (model[this.$.list.selectedAs]) {
-                  model[this.$.list.selectedAs] = false;
-                  this.deselectItem(item);
-                } else {
-                  model[this.$.list.selectedAs] = true;
-                  this.selectItem(item);
-                }
-              }
-            }.bind(this);
           }
         }
 

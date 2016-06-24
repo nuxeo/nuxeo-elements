@@ -34,12 +34,6 @@ Contributors:
 
       properties: {
 
-        selectedItems: {
-          type: Array,
-          notify: true,
-          value: []
-        },
-
         size: {
           type: Number,
           value: 0,
@@ -87,14 +81,23 @@ Contributors:
           type: Boolean,
           value: false
         },
+        selectedItems: {
+          type: Object,
+          notify: true
+        },
+
       },
 
 
       observers: [
         '_updateFlags(size)',
         '_nxProviderChanged(nxProvider)',
-        '_observeSelectedItems(selectedItems)'
+        '_selectionEnabledChanged(selectionEnabled)'
       ],
+
+      listeners: {
+        'clear-selected-items': 'clearSelection'
+      },
 
       _nxProviderChanged: function(nxProvider) {
         if (typeof nxProvider === 'string') {
@@ -131,7 +134,7 @@ Contributors:
         }
         if (this.nxProvider.page === 1) {
           this.$.list.items = [];
-          this.selectedItems = [];
+          this.clearSelection();
         }
         var docs = this.nxProvider.currentPage;
         docs.forEach(function(doc) {
@@ -151,7 +154,6 @@ Contributors:
         this.loading = true;
         this.nxProvider.page = 1;
         this.$.list.items = [];
-        this.selectedItems = [];
         this.size = 0;
         this.nxProvider.isNextPageAvailable = false;
         this.$.list.notifyResize();
@@ -163,53 +165,30 @@ Contributors:
         return (this.nxProvider && typeof this.nxProvider !== 'string');
       },
 
-      /**
-       * Select the list item at the given index.
-       *
-       * @method selectItem
-       * @param {(Object|number)} item The item object or its index
-       */
       selectItem: function(item) {
         if (this.selectionEnabled) {
-          if (typeof item === 'number' && item >= 0 && this.items && this.items.length > item) {
-            this.push('selectedItems', this.items[item]);
-          } else {
-            this.push('selectedItems', item);
-          }
+          this.$.list.selectItem(item);
           this._updateFlags();
         }
       },
 
       _updateFlags: function() {
-        this._isSelectAllIndeterminate = this.selectedItems && this.selectedItems.length > 0 && this.selectedItems.length < this.size;
-        this._isSelectAllChecked = this.selectedItems && this.selectedItems.length > 0 && this.selectedItems.length === this.size;
+        var selectedItems = this.$.list.selectedItems;
+        this._isSelectAllIndeterminate = selectedItems
+                                          && selectedItems.length > 0
+                                          && selectedItems.length < this.size;
+        this._isSelectAllChecked = selectedItems && selectedItems.length > 0 && selectedItems.length === this.size;
       },
 
-      _deselectItem: function(item) {
-        var index = this.selectedItems.indexOf(item);
-        if (index > -1) {
-          this.splice('selectedItems', index, 1);
+      deselectItem: function(item) {
+        if (this.selectionEnabled) {
+          this.$.list.deselectItem(item);
           this._updateFlags();
         }
       },
 
-      /**
-      * Deselects the given item list if it is already selected.
-      *
-      * @method deselect
-      * @param {(Object|number)} item The item object or its index
-      */
-      deselectItem: function(item) {
-        if (typeof item === 'number' && item >= 0 && this.items && this.items.length > item) {
-          this._deselectItem(this.items[item]);
-        } else {
-          this._deselectItem(item);
-        }
-        this._updateFlags();
-      },
-
       _isSelected: function(item, selectedItems) {
-        var selected = selectedItems.indexOf(item) > -1;
+        var selected = this.$.list.selectedItems.indexOf(item) > -1;
         return selected;
       },
 
@@ -217,10 +196,9 @@ Contributors:
        * Selects all the items in the list.
        */
       selectAll: function() {
-        this.selectedItems = [];
-        this.$.list.items.forEach(function(doc) {
-          this.push('selectedItems', doc);
-        }.bind(this));
+        this.$.list.items.forEach(function(item) {
+          this.selectItem(item);
+        }.bind(this.$.list));
         this._updateFlags();
       },
 
@@ -228,7 +206,8 @@ Contributors:
        * Clears the current selection state.
        */
       clearSelection: function() {
-        this.selectedItems = [];
+        this.$.list.clearSelection();
+        this._updateFlags();
       },
 
       _toggleSelectAll: function() {
@@ -239,8 +218,13 @@ Contributors:
         }
       },
 
-      _observeSelectedItems: function() {
-        this._updateFlags();
+      _selectionEnabledChanged: function() {
+        this.$.list.selectionEnabled = this.selectionEnabled;
+        this.$.list.multiSelection = true;
+        if (this.selectionEnabled) {
+          this.$.list.unlisten.call(this.$.list, this.$.list, 'tap', '_selectionHandler');
+          this.$.list.listen.call(this.$.list, this.$.list, 'selected', '_selectionHandler');
+        }
       }
 
     };
