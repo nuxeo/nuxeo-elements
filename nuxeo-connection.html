@@ -130,6 +130,10 @@ Note: Elements that depend on a connectionId use `nx` as default.
                 return this.client && this.client._activeRequests > 0;
             },
 
+            get user() {
+                return this.client.user;
+            },
+
             handleConnected: function () {
                 if (this.client.connected) {
                     this.fire('connected');
