@@ -139,7 +139,8 @@ Example:
               </nuxeo-data-table-column-sort>
             </nuxeo-data-table-cell>
           </template>
-          <nuxeo-data-table-settings columns="[[columns]]" hidden$="[[!settingsEnabled]]">
+          <nuxeo-data-table-settings columns="{{columns}}" hidden$="[[!settingsEnabled]]"
+            on-settings-changed="_settingsChanged">
           </nuxeo-data-table-settings>
         </nuxeo-data-table-row>
       </div>
@@ -432,6 +433,27 @@ Example:
         if (this.selectionEnabled) {
           e.srcElement.fire('selected');
           this._updateFlags();
+        }
+      },
+
+      get settings() {
+        var tableSettings = {}
+        tableSettings.columns = {};
+        if (this.columns) {
+          this.columns.forEach(function(column) {
+            tableSettings.columns[column.name] = {hidden: column.hidden};
+          });
+        }
+        return tableSettings;
+      },
+
+      set settings(settings) {
+        if (settings) {
+          if (this.columns && settings.columns) {
+            this.columns.forEach(function(column) {
+              column.set('hidden', settings.columns[column.name].hidden);
+            });
+          }
         }
       }
 

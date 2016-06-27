@@ -23,10 +23,10 @@
               <label></label>
             </div>
             <table>
-              <template is="dom-repeat" items="[[columns]]" as="column">
+              <template is="dom-repeat" items="{{columns}}" as="column">
                 <tr>
                   <td>
-                    <paper-checkbox checked="{{!column.hidden}}">
+                    <paper-checkbox checked="{{!column.hidden}}" on-tap="_columnDisplayTap">
                     </paper-checkbox>
                   </td>
                   <td>
@@ -63,6 +63,10 @@
 
       toggleColsSettingsPopup: function() {
         this.$$('#columnsSettingsPopup').toggle();
+      },
+
+      _columnDisplayTap: function() {
+        this.fire('tableSettingsChanged');
       }
 
     });
