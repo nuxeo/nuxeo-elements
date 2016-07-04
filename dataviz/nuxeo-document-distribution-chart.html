@@ -434,7 +434,7 @@ Example:
             alert('Mode must be either size or docCount');
             return;
           }
-          var url = [this.$.nx.client._baseURL, 'site/es', this.index, '_search'].join('/');
+          var url = [this.$.nx.client._baseURL, 'site/es', this.index, 'doc', '_search'].join('/');
           url = url.replace(/(^\/+)|([^:])\/\/+/g, '$2/');
 
           if (this.type) { url += '?search_type=' + this.type; }
