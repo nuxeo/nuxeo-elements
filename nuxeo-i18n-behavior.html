@@ -27,28 +27,13 @@ Contributors:
 <script>
   var Nuxeo = Nuxeo || {};
   (function () {
-    var translate = function() {
-      /**
-       * Translates the given key.
-       * Also accepts a default value and multiple arguments which will be replaced on the value.
-       */
-      return function (key, defaultValue) {
-        var language = window.nuxeo.I18n.language || 'en';
-        var value = (window.nuxeo.I18n[language] && window.nuxeo.I18n[language][key]) || defaultValue || key;
-        var params = Array.prototype.slice.call(arguments, 2);
-        for (var i = 0; i < params.length; i++) {
-          value = value.replace('{' + i + '}', params[i]);
-        } // improve this to use both numbered and named parameters
-        return value;
-      };
-    };
     Nuxeo.I18nBehavior = {
       properties: {
         i18n: {
           type: Function,
           notify: true,
           value: function() {
-            return translate();
+            return window.nuxeo.I18n.translate;
           }
         }
       },
@@ -65,7 +50,7 @@ Contributors:
       },
 
       refresh_18n: function() {
-        this.i18n = translate();
+        this.i18n = window.nuxeo.I18n.translate;
       }
     };
   })();
