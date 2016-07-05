@@ -86,13 +86,17 @@ Contributors:
           notify: true
         },
 
+        items: {
+          type: Array
+        }
       },
 
 
       observers: [
         '_updateFlags(size)',
         '_nxProviderChanged(nxProvider)',
-        '_selectionEnabledChanged(selectionEnabled)'
+        '_selectionEnabledChanged(selectionEnabled)',
+        '_onItemsChanged(items)'
       ],
 
       listeners: {
@@ -225,6 +229,12 @@ Contributors:
           this.$.list.unlisten.call(this.$.list, this.$.list, 'tap', '_selectionHandler');
           this.$.list.listen.call(this.$.list, this.$.list, 'selected', '_selectionHandler');
         }
+      },
+
+      _onItemsChanged: function() {
+        this.size = this.items.length;
+        this.$.list.notifyResize();
+        this.notifyResize();
       }
 
     };

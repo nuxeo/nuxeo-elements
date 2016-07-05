@@ -148,7 +148,7 @@ Example:
       <iron-scroll-threshold id="scrollThreshold"
         lower-threshold="1000"
         on-lower-threshold="_loadMoreData">
-        <iron-list id="list" as="item" items="[[_items]]"
+        <iron-list id="list" as="item" items="[[items]]"
           selected-items="{{selectedItems}}"
           scroll-target="scrollThreshold">
           <template>
@@ -280,6 +280,7 @@ Example:
           type: Boolean,
           value: false
         }
+
       },
 
       observers: [
@@ -332,6 +333,9 @@ Example:
       },
 
       _sortDirectionChanged: function(e) {
+        if (!this._isPPLoaded()) {
+          return;
+        }
         var notFound = true;
         for (var i = 0; i < this.sortOrder.length; i++) {
           if (this.sortOrder[i].path === e.detail.path) {
@@ -379,6 +383,11 @@ Example:
       },
 
       _onColumnFilterChanged: function(e) {
+        if (!this._isPPLoaded()) {
+          this.$.list.notifyResize();
+          this.notifyResize();
+          return;
+        }
         var notFound = true;
         for (var i = 0; i < this.filter.length; i++) {
           if (this.filter[i].path === e.detail.filterBy) {
