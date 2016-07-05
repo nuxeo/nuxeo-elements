@@ -176,6 +176,15 @@ Contributors:
         }
       },
 
+      selectItems: function(items) {
+        if (this.selectionEnabled && items && items.length > 0) {
+          items.forEach(function(item) {
+            this.selectItem(item);
+          }.bind(this.$.list))
+          this._updateFlags();
+        }
+      },
+
       _updateFlags: function() {
         var selectedItems = this.$.list.selectedItems;
         this._isSelectAllIndeterminate = selectedItems
