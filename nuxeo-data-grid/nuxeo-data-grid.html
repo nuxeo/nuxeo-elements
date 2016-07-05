@@ -30,11 +30,6 @@ Contributors:
   <template>
 
     <style is="custom-style">
-      :host {
-        @apply(--layout-horizontal);
-        @apply(--layout-flex);
-      }
-
       .bubbleBoxes.hover {
         border: 2px dashed #aaa;
         @apply(--nuxeo-drop-zone-hover);
@@ -52,18 +47,17 @@ Contributors:
       }
 
       #scrollThreshold {
-        padding: 2.5em 0em .8em;
+        padding: 0 0 .8em;
       }
 
       #list {
-        width: 95%;
-        height: 100vh;
+        min-height: 60vh;
         padding: 2em;
       }
 
       ::content .grid-box {
         width: 20%;
-        min-width: 16em;
+        min-width: 15em;
       }
 
       :host[loading] #list {
