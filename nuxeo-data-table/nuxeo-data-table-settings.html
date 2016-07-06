@@ -30,7 +30,7 @@
               <template is="dom-repeat" items="[[columns]]" as="column">
                 <tr>
                   <td>
-                    <paper-checkbox checked="{{!column.hidden}}" on-tap="_columnDisplayTap">
+                    <paper-checkbox checked="{{!column.hidden}}" on-tap="_columnDisplayChanged">
                     </paper-checkbox>
                   </td>
                   <td>
@@ -43,6 +43,7 @@
         </div>
       </div>
       <div class="buttons sep">
+       <paper-button on-tap="_resetSettings">Reset</paper-button>
        <paper-button dialog-dismiss>Close</paper-button>
       </div>
     </paper-dialog>
@@ -69,8 +70,15 @@
         this.$$('#columnsSettingsPopup').toggle();
       },
 
-      _columnDisplayTap: function() {
+      _columnDisplayChanged: function() {
         this.fire('tableSettingsChanged');
+      },
+
+      _resetSettings: function() {
+        this.columns.forEach(function(column, idx) {
+          this.set('columns.' + idx + '.hidden', column.hiddenBack);
+        }, this);
+        this._columnDisplayChanged();
       }
 
     });
