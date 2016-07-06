@@ -56,7 +56,7 @@ Contributors:
 
       ::content .grid-box {
         width: 20%;
-        min-width: 15em;
+        min-width: 13.5em;
       }
 
       :host[loading] #list {
@@ -94,17 +94,23 @@ Contributors:
       /* small desktop */
       @media all and (min-width: 841px) and (max-width: 1024px) {
         ::content .grid-box {
-          width: 33%;
+          width: 50%;
         }
       }
 
       @media all and (min-width: 1025px) and (max-width: 1280px) {
         ::content .grid-box {
+          width: 33%;
+        }
+      }
+
+      @media all and (min-width: 1281px) and (max-width: 1600px) {
+        ::content .grid-box {
           width: 25%;
         }
       }
 
-      @media all and (min-width: 1281px) and (max-width: 1480px) {
+      @media all and (min-width: 1601px) {
         ::content .grid-box {
           width: 20%;
         }
