@@ -50,10 +50,6 @@ Contributors:
         padding: 0 0 .8em;
       }
 
-      #list {
-        min-height: 60vh;
-      }
-
       ::content .grid-box {
         width: 20%;
         min-width: 13.5em;
@@ -123,6 +119,16 @@ Contributors:
         display: block;
       }
 
+      .emptyResult {
+        color: #c6c6c6;
+        display: block;
+        font-style: italic;
+        font-weight: normal;
+        padding: 1em 0.7em 2em;
+        text-align: center;
+        font-size: 1.5em;
+      }
+
     </style>
 
     <div id="container">
@@ -137,9 +143,9 @@ Contributors:
           </iron-list>
         </div>
       </iron-scroll-threshold>
-      <div hidden$="[[size]]" class="noResult">
-        <span class="empty">No Results</span>
-      </div>
+      <template is="dom-if" if="[[_isEmpty]]">
+        <div class="emptyResult">[[_computedEmptyLabel]]</div>
+      </template>
     </div>
     <paper-spinner-lite active hidden=[[!loading]]></paper-spinner-lite>
 

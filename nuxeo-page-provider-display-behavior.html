@@ -40,6 +40,25 @@ Contributors:
           notify: true
         },
 
+        emptyLabel: {
+          type: String,
+          value : 'No result'
+        },
+
+        emptyLabelWhenFiltered: {
+          type: String,
+          value : 'No result'
+        },
+
+        _computedEmptyLabel: {
+          type: String
+        },
+
+        _isEmpty: {
+          type: Boolean,
+          value: true
+        },
+
         _isSelectAllChecked: {
           type: Boolean,
           value: false,
@@ -65,6 +84,34 @@ Contributors:
          */
         nxProvider: {
           type: HTMLElement
+        },
+
+        /**
+         * An array containing path/filter value pairs that are used to filter the items
+         */
+        filter: {
+          type: Array,
+          notify: true,
+          value: function() {
+            return [];
+          }
+        },
+
+        /**
+         * An array with a path/sortorder ('asc' or 'desc') pairs that are used to sort the items.
+         */
+        sortOrder: {
+          type: Array,
+          notify: true,
+          value: function() {
+            return [];
+          }
+        },
+
+        _ppSort: {
+          type: Object,
+          value: {},
+          notify: true
         },
 
         /**
@@ -191,6 +238,8 @@ Contributors:
                                           && selectedItems.length > 0
                                           && selectedItems.length < this.size;
         this._isSelectAllChecked = selectedItems && selectedItems.length > 0 && selectedItems.length === this.size;
+        this._isEmpty = this.size === 0;
+        this._computedEmptyLabel = (this.filter && this.filter.length > 0) ? this.emptyLabelWhenFiltered : this.emptyLabel;
       },
 
       deselectItem: function(item) {
