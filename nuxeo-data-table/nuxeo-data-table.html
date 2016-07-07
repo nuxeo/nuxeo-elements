@@ -251,10 +251,6 @@ Example:
 
       },
 
-      observers: [
-        '_resetResults(_ppSort.*)'
-      ],
-
       created: function() {
         this._observer = Polymer.dom(this).observeNodes(function(info) {
           var hasColumns = function(node) {
@@ -340,6 +336,10 @@ Example:
         if (JSON.stringify(this._ppSort) !== JSON.stringify(tmpSort)) {
           this._ppSort = tmpSort;
           this.nxProvider.sort = this._ppSort;
+          this._resetResults();
+          if (!this.nxProvider.auto) {
+            this.nxProvider.fetch();
+          }
         }
       },
 
@@ -395,7 +395,9 @@ Example:
           }
         }
         this._resetResults();
-        this.nxProvider.fetch();
+        if (!this.nxProvider.auto) {
+          this.nxProvider.fetch();
+        }
       },
 
       _resizeCellContainers: function() {

@@ -168,8 +168,7 @@ Contributors:
         if (!this._isPPLoaded()) {
           return;
         }
-        if ((e.currentTarget.id === 'scrollThreshold' ? !this.manualLoading : this.manualLoading) &&
-            this.nxProvider &&
+        if (this.nxProvider &&
             this.nxProvider.isNextPageAvailable) {
           this.loading = true;
           this.nxProvider.page = this.nxProvider.page + 1;
