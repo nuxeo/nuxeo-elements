@@ -106,7 +106,7 @@ Example:
         -webkit-transition: opacity 200ms;
       }
 
-      :host[loading] #list {
+      :host[loading] .loadable {
         opacity: 0.25;
       }
 
@@ -153,7 +153,7 @@ Example:
       </div>
 
       <iron-scroll-threshold id="scrollThreshold"
-        lower-threshold="1000"
+        lower-threshold="1000" class="loadable"
         on-lower-threshold="_loadMoreData">
         <iron-list id="list" as="item" items="[[items]]"
           selected-items="{{selectedItems}}"
@@ -337,9 +337,7 @@ Example:
           this._ppSort = tmpSort;
           this.nxProvider.sort = this._ppSort;
           this._resetResults();
-          if (!this.nxProvider.auto) {
-            this.nxProvider.fetch();
-          }
+          this.nxProvider.fetch();
         }
       },
 
@@ -395,9 +393,7 @@ Example:
           }
         }
         this._resetResults();
-        if (!this.nxProvider.auto) {
-          this.nxProvider.fetch();
-        }
+        this.nxProvider.fetch();
       },
 
       _resizeCellContainers: function() {

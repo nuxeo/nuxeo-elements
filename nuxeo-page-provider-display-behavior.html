@@ -140,7 +140,7 @@ Contributors:
 
 
       observers: [
-        '_updateFlags(size)',
+        '_updateFlags(size, loading)',
         '_nxProviderChanged(nxProvider)',
         '_selectionEnabledChanged(selectionEnabled)',
         '_onItemsChanged(items)'
@@ -232,13 +232,15 @@ Contributors:
       },
 
       _updateFlags: function() {
-        var selectedItems = this.$.list.selectedItems;
-        this._isSelectAllIndeterminate = selectedItems
-                                          && selectedItems.length > 0
-                                          && selectedItems.length < this.size;
-        this._isSelectAllChecked = selectedItems && selectedItems.length > 0 && selectedItems.length === this.size;
-        this._isEmpty = this.size === 0;
-        this._computedEmptyLabel = (this.filter && this.filter.length > 0) ? this.emptyLabelWhenFiltered : this.emptyLabel;
+        if (!this.loading) {
+          var selectedItems = this.$.list.selectedItems;
+          this._isSelectAllIndeterminate = selectedItems
+                                            && selectedItems.length > 0
+                                            && selectedItems.length < this.size;
+          this._isSelectAllChecked = selectedItems && selectedItems.length > 0 && selectedItems.length === this.size;
+          this._isEmpty = this.size === 0;
+          this._computedEmptyLabel = (this.filter && this.filter.length > 0) ? this.emptyLabelWhenFiltered : this.emptyLabel;
+        }
       },
 
       deselectItem: function(item) {

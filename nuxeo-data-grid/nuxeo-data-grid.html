@@ -55,7 +55,7 @@ Contributors:
         min-width: 13.5em;
       }
 
-      :host[loading] #list {
+      :host[loading] .loadable {
         opacity: 0.25;
       }
 
@@ -136,7 +136,7 @@ Contributors:
       <content select="nuxeo-selection-toolbar"></content>
 
       <iron-scroll-threshold id="scrollThreshold"
-        lower-threshold="1000"
+        lower-threshold="1000" class="loadable"
         on-lower-threshold="_loadMoreData">
         <div class="grid-ctn bubbleBoxes">
           <iron-list id="list" scroll-target="scrollThreshold" grid selected-items="{{selectedItems}}">
