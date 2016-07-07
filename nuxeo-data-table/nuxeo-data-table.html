@@ -273,7 +273,21 @@ Example:
         });
       },
 
+      _patchIronListCreatePool: function() {
+        var createPool = this.$.list._createPool.bind(this.$.list);
+        var initialCreateCalled = false;
+        this.$.list._createPool = function(size) {
+          var items = createPool(size);
+          if (!initialCreateCalled) {
+            initialCreateCalled = true;
+            Polymer.dom.flush();
+          }
+          return items;
+        };
+      },
+
       ready: function() {
+        this._patchIronListCreatePool();
         this.$.list._selectionHandler = function(e) {
           var first = Polymer.dom(e).event.path.filter(function(p) {
             return this.modelForElement(p);
