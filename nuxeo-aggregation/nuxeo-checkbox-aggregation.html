@@ -35,7 +35,10 @@ Contributors:
 
   <div class="layout vertical">
     <template is="dom-repeat" items="{{buckets}}">
-      <paper-checkbox checked="{{item.checked}}" on-change="_computeValues">[[item.key]] ([[item.docCount]])</paper-checkbox>
+      <paper-checkbox checked="{{item.checked}}"
+                      on-change="_computeValues">
+        [[_computeLabel(item)]] ([[item.docCount]])
+      </paper-checkbox>
     </template>
     <template is="dom-if" if="[[_isEmpty(data)]]">
       <label class="empty">[[i18n('label.aggregate.no_results', 'No available result')]]</label>
@@ -93,6 +96,10 @@ Contributors:
 
        _isEmpty: function(data) {
          return data && data.extendedBuckets.length === 0;
+       },
+
+       _computeLabel: function(item) {
+         return this.i18n('label.ui.aggregate.' + item.key, item.key);
        }
      });
    })();
