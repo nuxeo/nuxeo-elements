@@ -28,11 +28,7 @@ An element for viewing videos.
 
 Example:
 
-    <nuxeo-video-viewer controls preload="auto" width="640" height="264">
-     <source src="video.mp4" type="video/mp4" />
-     <source src="video.webm" type="video/webm" />
-     <source src="video.ogv" type="video/ogg" />
-    </nuxeo-video-viewer>
+    <nuxeo-video-viewer sources="[[sources]]" controls preload="auto" width="640" height="264"></nuxeo-video-viewer>
 
 @group Nuxeo UI Elements
 @element nuxeo-video-viewer
@@ -48,7 +44,9 @@ Example:
       }
     </style>
     <video id="video" class="video-js vjs-default-skin" controls$="[[controls]]" width="[[width]]" height="[[height]]" preload="[[preload]]" poster="[[poster]]">
-      <content></content>
+      <template is="dom-repeat" items="[[sources]]" as="source">
+        <source src="[[source.data]]" type="[[source.type]]" />
+      </template>
     </video>
   </template>
 
@@ -99,7 +97,12 @@ Example:
       /**
        * The `poster` attribute specifies an image shown while downloading.
        */
-      poster: String
+      poster: String,
+
+      /**
+       * The `sources` to be displayed.
+       */
+      sources: Object
 
     },
 
