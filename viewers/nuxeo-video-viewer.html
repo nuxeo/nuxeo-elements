@@ -112,6 +112,11 @@ Example:
       //   Polymer.dom(this.$.video).appendChild(child);
       // }.bind(this));
       // this.updateStyles();
+
+      // Capture tap event to prevent clashing with videojs tap/click events
+      this.addEventListener('tap', function(event) {
+        event.stopPropagation();
+      }, true);
     },
 
     attached: function() {
