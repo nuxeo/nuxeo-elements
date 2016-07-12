@@ -289,14 +289,13 @@ Example:
       ready: function() {
         this._patchIronListCreatePool();
         this.$.list._selectionHandler = function(e) {
-          var first = Polymer.dom(e).event.path.filter(function(p) {
-            return this.modelForElement(p);
-          }.bind(this))[0];
-
-          var model = this.modelForElement(first);
-          if (model) {
-            this.toggleSelectionForItem(model[this.as]);
+          var model = this.modelForElement(e.target);
+          if (!model) {
+            return;
           }
+          var modelTabIndex, activeElTabIndex;
+          var target = Polymer.dom(e).path[0];
+          this.toggleSelectionForItem(model[this.as]);
         };
       },
 
@@ -431,7 +430,8 @@ Example:
 
       _onCheckBoxTap: function(e) {
         if (this.selectionEnabled) {
-          e.srcElement.fire('selected');
+          var target = e.target || e.srcElement;
+          target.fire('selected');
           this._updateFlags();
         }
       },
