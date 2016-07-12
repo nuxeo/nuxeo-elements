@@ -90,14 +90,18 @@ Contributors:
       }.bind(this));
     },
 
-    batchExecute: function(operationId, params) {
+    batchExecute: function(operationId, params, headers) {
       return this.$.nx.operation(operationId).then(function(operation) {
+        var options = {};
+        if (headers) {
+          options['headers'] = headers;
+        }
         if (params.context) {
           operation = operation.context(params.context);
         }
         return operation.input(this.uploader)
           .params(params)
-          .execute()
+          .execute(options)
           .then(function(data) {
             this.fire('response', {response: data});
             this.response = data;
