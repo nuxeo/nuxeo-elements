@@ -197,7 +197,6 @@ Example:
       ],
 
       listeners: {
-        'column-filter-changed': '_onColumnFilterChanged',
         'iron-resize': '_resizeCellContainers',
         'scroll': '_onHorizontalScroll'
       },
@@ -315,44 +314,6 @@ Example:
         return index % 2 === 0;
       },
 
-      _sortDirectionChanged: function(e) {
-        if (!this._isPPLoaded()) {
-          return;
-        }
-        var notFound = true;
-        for (var i = 0; i < this.sortOrder.length; i++) {
-          if (this.sortOrder[i].path === e.detail.path) {
-            if (e.detail.direction) {
-              this.set('sortOrder.' + i + '.direction', e.detail.direction);
-            } else {
-              this.splice('sortOrder', i, 1);
-            }
-            notFound = false;
-            break;
-          }
-        }
-        if (notFound) {
-          this.push('sortOrder', {
-            path: e.detail.path,
-            direction: e.detail.direction
-          });
-        }
-
-        // TODO make it simpler
-        var tmpSort = {};
-        if (this.sortOrder && this.sortOrder.length > 0) {
-          this.sortOrder.forEach(function(sortItem) {
-            tmpSort[sortItem.path] = sortItem.direction;
-          });
-        }
-        if (JSON.stringify(this._ppSort) !== JSON.stringify(tmpSort)) {
-          this._ppSort = tmpSort;
-          this.nxProvider.sort = this._ppSort;
-          this._resetResults();
-          this.nxProvider.fetch();
-        }
-      },
-
       _columnsChanged: function(columns, oldColumns) {
         if (oldColumns) {
           oldColumns.forEach(function(column) {
@@ -365,47 +326,6 @@ Example:
             this.listen(column, 'filter-value-changed', '_onColumnFilterChanged');
           }.bind(this));
         }
-      },
-
-      _onColumnFilterChanged: function(e) {
-        if (!this._isPPLoaded()) {
-          this.$.list.notifyResize();
-          this.notifyResize();
-          return;
-        }
-        var notFound = true;
-        for (var i = 0; i < this.filter.length; i++) {
-          if (this.filter[i].path === e.detail.filterBy) {
-            if (e.detail.value.length === 0) {
-              this.filter.splice(i, 1);
-            } else {
-              this.set('filter.' + i + '.filter', e.detail.value);
-            }
-            notFound = false;
-            break;
-          }
-        }
-
-        if (notFound && e.detail.value.length !== 0) {
-          this.push('filter', {
-            path: e.detail.filterBy,
-            filter: e.detail.value
-          });
-        }
-
-        if (this.nxProvider.params[e.detail.filterBy] && e.detail.value.length === 0) {
-          delete this.nxProvider.params[e.detail.filterBy];
-        } else {
-          if (e.detail.value.length > 0) {
-            if (e.detail.filterBy === 'title' || e.detail.filterBy === 'ecm_fulltext') {
-              this.nxProvider.params[e.detail.filterBy] = e.detail.value + '*';
-            } else {
-              this.nxProvider.params[e.detail.filterBy] = e.detail.value;
-            }
-          }
-        }
-        this._resetResults();
-        this.nxProvider.fetch();
       },
 
       _resizeCellContainers: function() {

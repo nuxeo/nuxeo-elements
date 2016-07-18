@@ -89,12 +89,10 @@ Contributors:
         /**
          * An array containing path/filter value pairs that are used to filter the items
          */
-        filter: {
+        filters: {
           type: Array,
           notify: true,
-          value: function() {
-            return [];
-          }
+          value: []
         },
 
         /**
@@ -136,6 +134,7 @@ Contributors:
         items: {
           type: Array
         }
+
       },
 
 
@@ -143,11 +142,12 @@ Contributors:
         '_updateFlags(size, loading)',
         '_nxProviderChanged(nxProvider)',
         '_selectionEnabledChanged(selectionEnabled)',
-        '_onItemsChanged(items)'
+        '_onItemsChanged(items)',
       ],
 
       listeners: {
-        'clear-selected-items': 'clearSelection'
+        'clear-selected-items': 'clearSelection',
+        'column-filter-changed': '_onColumnFilterChanged'
       },
 
       _nxProviderChanged: function(nxProvider) {
@@ -239,7 +239,7 @@ Contributors:
                                             && selectedItems.length < this.size;
           this._isSelectAllChecked = selectedItems && selectedItems.length > 0 && selectedItems.length === this.size;
           this._isEmpty = this.size === 0;
-          this._computedEmptyLabel = (this.filter && this.filter.length > 0) ? this.emptyLabelWhenFiltered : this.emptyLabel;
+          this._computedEmptyLabel = (this.filters && this.filters.length > 0) ? this.emptyLabelWhenFiltered : this.emptyLabel;
         }
       },
 
@@ -294,6 +294,87 @@ Contributors:
         this.size = this.items.length;
         this.$.list.notifyResize();
         this.notifyResize();
+      },
+
+      _sortDirectionChanged: function(e) {
+        if (!this._isPPLoaded()) {
+          return;
+        }
+        var notFound = true;
+        for (var i = 0; i < this.sortOrder.length; i++) {
+          if (this.sortOrder[i].path === e.detail.path) {
+            if (e.detail.direction) {
+              this.set('sortOrder.' + i + '.direction', e.detail.direction);
+            } else {
+              this.splice('sortOrder', i, 1);
+            }
+            notFound = false;
+            break;
+          }
+        }
+        if (notFound) {
+          this.push('sortOrder', {
+            path: e.detail.path,
+            direction: e.detail.direction
+          });
+        }
+
+        // TODO make it simpler
+        var tmpSort = {};
+        if (this.sortOrder && this.sortOrder.length > 0) {
+          this.sortOrder.forEach(function(sortItem) {
+            tmpSort[sortItem.path] = sortItem.direction;
+          });
+        }
+        if (JSON.stringify(this._ppSort) !== JSON.stringify(tmpSort)) {
+          this._ppSort = tmpSort;
+          this.nxProvider.sort = this._ppSort;
+          this._resetResults();
+          this.nxProvider.fetch();
+        }
+      },
+
+      _onColumnFilterChanged: function(e) {
+        console.log('_onColumnFilterChanged');
+        if (!this._isPPLoaded()) {
+          this.$.list.notifyResize();
+          this.notifyResize();
+          return;
+        }
+        var notFound = true;
+        for (var i = 0; i < this.filters.length; i++) {
+          if (this.filters[i].path === e.detail.filterBy) {
+            if (e.detail.value.length === 0) {
+              this.splice('filters', i, 1);
+            } else {
+              this.set('filters.' + i + '.value', e.detail.value);
+            }
+            notFound = false;
+            break;
+          }
+        }
+
+        if (notFound && e.detail.value.length !== 0) {
+          this.push('filters', {
+            path: e.detail.filterBy,
+            value: e.detail.value,
+            name: e.detail.name
+          });
+        }
+
+        if (this.nxProvider.params[e.detail.filterBy] && e.detail.value.length === 0) {
+          delete this.nxProvider.params[e.detail.filterBy];
+        } else {
+          if (e.detail.value.length > 0) {
+            if (e.detail.filterBy === 'title' || e.detail.filterBy === 'ecm_fulltext') {
+              this.nxProvider.params[e.detail.filterBy] = e.detail.value + '*';
+            } else {
+              this.nxProvider.params[e.detail.filterBy] = e.detail.value;
+            }
+          }
+        }
+        this._resetResults();
+        this.nxProvider.fetch();
       }
 
     };

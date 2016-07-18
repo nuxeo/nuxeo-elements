@@ -159,7 +159,7 @@
       ],
 
       _filterValueChanged: function(filterValue, filterBy) {
-        this.fire('column-filter-changed', {value: filterValue, filterBy: filterBy});
+        this.fire('column-filter-changed', {value: filterValue, filterBy: filterBy, name: this.name});
       },
 
       _forwardParentProp: function(prop, value) {

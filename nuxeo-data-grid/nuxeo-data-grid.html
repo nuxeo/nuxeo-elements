@@ -134,11 +134,39 @@ Contributors:
         font-size: 1.5em;
       }
 
+      .filters {
+        margin: 1em 0 0 2.3em;
+      }
+
+      .filter {
+        display: inline-block;
+        background-color: var(--nuxeo-tag-background);
+        color: var(--nuxeo-tag-text);
+        padding: .2rem .4rem;
+        margin: 0 .3em .1em 0;
+        font-size: .8em;
+        border-radius: 2.5em;
+        line-height: initial;
+      }
+
+      .filter .remove:hover {
+        cursor: pointer;
+      }
+
     </style>
 
     <div id="container">
 
       <content select="nuxeo-selection-toolbar"></content>
+
+      <div id="filters" class="filters">
+        <template is="dom-repeat" items="[[filters]]" as="filter">
+          <span class="tag filter">
+            [[filter.name]]: [[filter.value]]
+            <iron-icon icon="icons:clear" class="remove" on-tap="_removeFilter"></iron-icon>
+          </span>
+        </template>
+      </div>
 
       <iron-scroll-threshold id="scrollThreshold"
         lower-threshold="1000" class="loadable"
@@ -185,6 +213,11 @@ Contributors:
             this.$.list.items = [];
             this._templateStamped = true;
           }
+        },
+
+        _removeFilter: function(e) {
+          console.log('_removeFilter');
+          this.fire('column-filter-changed', {value: '', filterBy: e.model.filter.path});
         }
 
         });
