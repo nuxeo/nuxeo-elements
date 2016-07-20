@@ -24,7 +24,7 @@
     "/test/"
   ],
   "devDependencies": {
-    "iron-component-page": "PolymerElements/iron-component-page#1.0.5",
+    "iron-component-page": "PolymerElements/iron-component-page#1.1.7",
     "test-fixture": "PolymerElements/test-fixture#^1.0.0",
     "web-component-tester": "^4.0.0"
   }
