@@ -16,7 +16,7 @@
     "@polymer/polymer": "^1.2.5-npm-test.2",
     "@polymer/iron-elements": "0.0.3",
     "@polymer/paper-elements": "0.0.3",
-    "nuxeo-elements": "nuxeo/nuxeo-elements#v0.3.0",
+    "nuxeo-elements": "nuxeo/nuxeo-elements",
     "cropperjs": "^0.5.6",
     "d3": "^3.5.16",
     "moment": "^2.10.6",
