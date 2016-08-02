@@ -57,6 +57,14 @@ Contributors:
       uploading: {
         type: Boolean,
         value: false
+      },
+
+      /**
+       * Allow multiple files to be added to the same batch.
+       */
+      batchAppend: {
+        type: Boolean,
+        value: false
       }
     },
 
@@ -71,25 +79,13 @@ Contributors:
       if (!this.connection) {
         throw 'Missing connection';
       }
-      this.files = [];
-      this._newBatch().then(function() {
-        for (var i = 0; i < files.length; i++) {
-          var file = files[i];
-          file.progress = 0;
-          file.error = false;
-          file.complete = false;
-          this.push('files', file);
-          var blob = new Nuxeo.Blob({ content: file });
-          this._uploadStarted(i, file);
-          this.uploader.upload(blob)
-            .then(function(result) {
-              this._uploadFinished(result.blob.fileIdx);
-            }.bind(this));
-        }
-        this.uploader.done().then(function(result) {
-          this._batchFinished(result.batch._batchId);
-        }.bind(this));
-      }.bind(this));
+      if (!this.batchAppend || !this.uploader) {
+        this.files = [];
+        this._newBatch().then(this._uploadeFiles.bind(this, files));
+      } else {
+        this._uploadeFiles(files);
+      }
+
     },
 
     batchExecute: function(operationId, params, headers) {
@@ -114,6 +110,25 @@ Contributors:
             console.log('Batch Execute operation failed: ' + error);
             throw error;
           }.bind(this));
+      }.bind(this));
+    },
+
+    _uploadeFiles: function(files) {
+      for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        file.progress = 0;
+        file.error = false;
+        file.complete = false;
+        this.push('files', file);
+        var blob = new Nuxeo.Blob({ content: file });
+        this._uploadStarted(i, file);
+        this.uploader.upload(blob)
+          .then(function(result) {
+            this._uploadFinished(result.blob.fileIdx);
+          }.bind(this));
+      }
+      this.uploader.done().then(function(result) {
+        this._batchFinished(result.batch._batchId);
       }.bind(this));
     },
 
@@ -150,7 +165,8 @@ Contributors:
     _uploadFinished: function(index) {
       this._updateFile(index, {
         progress: 100,
-        complete: true
+        complete: true,
+        index: index
       });
     },
 
