@@ -113,6 +113,16 @@ Contributors:
       }.bind(this));
     },
 
+    cancelBatch: function() {
+      if (this.uploader) {
+        if (this.uploader._batchId) {
+          this.uploader.cancel();
+        }
+        this.uploader = null;
+        this.batchId = null;
+      }
+    },
+
     _uploadeFiles: function(files) {
       for (var i = 0; i < files.length; i++) {
         var file = files[i];
