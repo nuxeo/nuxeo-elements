@@ -148,15 +148,18 @@ controller = {
         init: function() {
           if (this.data && this.controller) {
             this.template = Polymer.dom(this).querySelector('template');
-            var root = document.createElement('nuxeo-tree-node');
-            root.id = 'root';
-            root.dataHost = this.dataHost;
-            root.controller = this.controller;
-            root.template = this.template;
-            root.nodeKey = this.nodeKey;
-            root.data = this.data;
-            root.dataset[this.nodeKey] = this.data[this.nodeKey];
-            Polymer.dom(this).appendChild(root);
+            if (this._root) {
+              Polymer.dom(this).removeChild(this._root);
+            }
+            this._root = document.createElement('nuxeo-tree-node');
+            this._root.id = 'root';
+            this._root.dataHost = this.dataHost;
+            this._root.controller = this.controller;
+            this._root.template = this.template;
+            this._root.nodeKey = this.nodeKey;
+            this._root.data = this.data;
+            this._root.dataset[this.nodeKey] = this.data[this.nodeKey];
+            Polymer.dom(this).appendChild(this._root);
             Polymer.dom.flush();
           }
         },
