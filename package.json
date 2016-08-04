@@ -14,7 +14,7 @@
   "dependencies": {
     "@polymer/polymer": "^1.2.5-npm-test.2",
     "@polymer/iron-elements": "0.0.3",
-    "nuxeo": "^0.25.0",
+    "nuxeo": "^2.0.2",
     "es6-promise": "^3.1.2",
     "select2": "3.5.2-browserify",
     "jquery": "1.11.0",
