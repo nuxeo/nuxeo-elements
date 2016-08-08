@@ -1,4 +1,4 @@
-<dom-module id="nuxeo-data-table-row">
+<dom-module id="data-table-row">
   <template>
     <style is="custom-style">
       :host {
@@ -7,36 +7,36 @@
         opacity: 1;
         cursor: pointer;
 
-        @apply(--nuxeo-data-table-row);
+        @apply(--iron-data-table-row);
       }
 
       :host([selected]) .cells {
-        @apply(--nuxeo-data-table-row-selected);
-      }
-
-      :host(:not([header]):hover) {
-        @apply(--nuxeo-data-table-row-hover);
+        @apply(--iron-data-table-row-selected);
       }
 
       :host(:not([header])[even]) {
-        @apply(--nuxeo-data-table-row-even);
+        @apply(--iron-data-table-row-even);
       }
 
       :host(:not([header]):not([even])) {
-        @apply(--nuxeo-data-table-row-odd);
+        @apply(--iron-data-table-row-odd);
       }
 
       :host(:focus) {
         outline: none;
-        @apply(--nuxeo-data-table-row-focused);
+        @apply(--iron-data-table-row-focused);
+      }
+
+      :host(:not([header]):hover) {
+        @apply(--iron-data-table-row-hover);
       }
 
       :host(:focus):after {
-        @apply(--nuxeo-data-table-row-focused-after);
+        @apply(--iron-data-table-row-focused-after);
       }
 
       :host:after {
-        @apply(--nuxeo-data-table-row-after);
+        @apply(--iron-data-table-row-after);
       }
 
       .cells {
@@ -46,38 +46,39 @@
       }
     </style>
     <div class="cells">
-      <content select="nuxeo-data-table-checkbox"></content>
-      <content select="nuxeo-data-table-cell"></content>
+      <content select="data-table-checkbox"></content>
+      <content select="data-table-cell"></content>
       <content select="nuxeo-data-table-settings"></content>
+    </div>
+    <div class="details">
+      <content select="data-table-row-detail"></content>
     </div>
   </template>
   <script>
     Polymer({
-      is: 'nuxeo-data-table-row',
-
-      listeners: {
-        'tap': '_onTap'
-      },
+      is: 'data-table-row',
 
       properties: {
         beforeBind: Object,
-        bind: Object,
-        header: Boolean,
         expanded: {
           type: Boolean,
-          notify: false,
-          value: false,
-          reflectToAttribute: true,
-          observer: '_expandedChanged'
+          reflectToAttribute: true
         },
+        index: Number,
+        item: Object,
+        selected: {
+          type: Boolean,
+          reflectToAttribute: true
+        },
+
 
         _static: {
           type: Object,
-          value: {id: 0}
+          value: { id: 0 }
         }
       },
 
-      observers: ['_bindChanged(bind, beforeBind)'],
+      observers: ['_beforeBind(beforeBind, index, item.*, selected, expanded)'],
 
       attached: function() {
         if (this.domHost && this.domHost.tagName === 'NUXEO-DATA-TABLE') {
@@ -92,31 +93,22 @@
             item._rowId = id;
 
             Polymer.dom(this.domHost).appendChild(this);
+            // reset the cached value for shady root owner to make this.domHost
+            // return correct value.
+            this._ownerShadyRoot = undefined;
           }
         }
       },
 
-      _bindChanged: function(data, beforeBind) {
+      _beforeBind: function(beforeBind, index, item, selected, expanded) {
+        var data = {
+          index: index,
+          item: item.base,
+          expanded: expanded,
+          selected: selected
+        };
+
         beforeBind(data, this);
-      },
-
-      _onTap: function(e) {
-        // Prevent item selection if row itself is not focused. This means that
-        // an element inside the row has been focused.
-        // Mobile devices don't move focus from body unless it's an input element
-        // that is focused, so this element will never get focused.
-        if (!this.header && document.activeElement !== document.body &&
-          Polymer.dom(document.activeElement) !== Polymer.dom(this)) {
-          e.stopPropagation();
-        }
-      },
-
-      _expandedChanged: function(expanded) {
-        if (expanded) {
-          this.fire('item-expanded');
-        } else {
-          this.fire('item-collapsed');
-        }
       }
     });
   </script>

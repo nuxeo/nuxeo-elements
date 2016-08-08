@@ -1,3 +1,20 @@
+<!--
+@license
+Copyright 2016 Sauli Tähkäpää
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-list/iron-list.html">
 <link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
@@ -17,7 +34,7 @@
 <link rel="import" href="data-table-row.html">
 <link rel="import" href="data-table-checkbox.html">
 <link rel="import" href="data-table-settings.html">
-<link rel="import" href="data-table-styles.html">
+<link rel="import" href="default-styles.html">
 
 <link rel="import" href="../nuxeo-page-provider-display-behavior.html">
 
@@ -74,10 +91,13 @@ Example:
     <style is="custom-style">
       :host {
         display: block;
+        position: relative;
         overflow-x: auto;
         overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
-        @apply(--nuxeo-data-table);
+        /* Default height just to help users get started in making stuff visible.  */
+        //height: 400px;
+        @apply(--iron-data-table);
       }
 
       #container {
@@ -94,7 +114,7 @@ Example:
         transition: box-shadow 200ms;
         -webkit-transition: box-shadow 200ms;
         z-index: 1;
-        @apply(--nuxeo-data-table-header);
+        @apply(--iron-data-table-header);
       }
 
       #header.scrolled {
@@ -102,6 +122,9 @@ Example:
       }
 
       #list {
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        flex: 1;
         transition: opacity 200ms;
         -webkit-transition: opacity 200ms;
       }
@@ -110,7 +133,11 @@ Example:
         opacity: 0.25;
       }
 
-      :host[loading] paper-spinner-lite {
+      :host(:not([loading])) paper-spinner-lite {
+        display: none;
+      }
+
+      :host([loading]) paper-spinner-lite {
         position: absolute;
         top: 45%;
         left: 50%;
@@ -133,23 +160,26 @@ Example:
       <content select="nuxeo-selection-toolbar"></content>
 
       <div id="header">
-        <nuxeo-data-table-row header>
-          <nuxeo-data-table-checkbox header hidden$="[[!selectionEnabled]]"
-            on-tap="_toggleSelectAll"
-            checked="[[_isSelectAllChecked]]" indeterminate="[[_isSelectAllIndeterminate]]">
-          </nuxeo-data-table-checkbox>
+        <data-table-row header>
+          <data-table-checkbox header hidden$="[[!selectionEnabled]]" on-tap="_toggleSelectAll" checked="[[_isSelectAllChecked]]" indeterminate="[[_isSelectAllIndeterminate]]"></data-table-checkbox>
           <template is="dom-repeat" items="[[columns]]" as="column">
-            <nuxeo-data-table-cell header column="[[column]]" bind="[[_bind(column)]]" hidden$="[[]]">
-              <nuxeo-data-table-column-sort sort-order="[[sortOrder]]" path="[[column.sortBy]]"
-                on-sort-direction-changed="_sortDirectionChanged"
-                hidden$="[[!column.sortBy]]">
-              </nuxeo-data-table-column-sort>
-            </nuxeo-data-table-cell>
+            <data-table-cell header
+                             align-right="[[column.alignRight]]"
+                             before-bind="[[beforeCellBind]]"
+                             column="[[column]]"
+                             flex="[[column.flex]]"
+                             hidden="[[column.hidden]]"
+                             order="[[column.order]]"
+                             table="[[_this]]"
+                             template="[[column.headerTemplate]]"
+                             width="[[column.width]]">
+              <data-table-column-sort sort-order="[[sortOrder]]" path="[[column.sortBy]]" on-sort-direction-changed="_sortDirectionChanged" hidden$="[[!column.sortBy]]"></data-table-column-sort>
+            </data-table-cell>
           </template>
           <nuxeo-data-table-settings columns="{{columns}}" hidden$="[[!settingsEnabled]]"
             on-settings-changed="_settingsChanged">
           </nuxeo-data-table-settings>
-        </nuxeo-data-table-row>
+        </data-table-row>
       </div>
 
       <iron-scroll-threshold id="scrollThreshold"
@@ -160,19 +190,40 @@ Example:
           scroll-target="scrollThreshold">
           <template>
             <div class="item">
-              <nuxeo-data-table-row tabindex$="[[tabIndex]]"
-                              bind="[[_bind(item, index)]]"
-                              before-bind="[[_beforeRowBind]]"
-                              even$="[[!_isEven(index)]]">
-                <nuxeo-data-table-checkbox hidden$="[[!selectionEnabled]]" tabindex="-1"
-                  checked="[[selected]]" on-tap="_onCheckBoxTap">
-                </nuxeo-data-table-checkbox>
+              <data-table-row on-click="_onRowClick"
+                            before-bind="[[beforeRowBind]]"
+                            even$="[[!_isEven(index)]]"
+                            expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                            index="[[index]]"
+                            item="[[item]]"
+                            tabindex="-1"
+                            selected="[[_isSelected(item, selectedItems, selectedItems.*)]]">
+                <data-table-checkbox hidden$="[[!selectionEnabled]]" tabindex="0" checked="[[selected]]" on-tap="_onCheckBoxTap"></data-table-checkbox>
                 <template is="dom-repeat" items="[[columns]]" as="column" index-as="colIndex">
-                  <nuxeo-data-table-cell column="[[column]]" bind="[[_bind(item, index)]]"
-                    before-bind="[[_beforeCellBind]]">
-                  </nuxeo-data-table-cell>
+                  <data-table-cell template="[[column.template]]"
+                                 table="[[_this]]"
+                                 align-right="[[column.alignRight]]"
+                                 column="[[column]]"
+                                 expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                                 flex="[[column.flex]]"
+                                 hidden="[[column.hidden]]"
+                                 index="[[index]]"
+                                 item="[[item]]"
+                                 order="[[column.order]]"
+                                 selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                                 width="[[column.width]]"
+                                 before-bind="[[beforeCellBind]]"></data-table-cell>
                 </template>
-              </nuxeo-data-table-row>
+                <template is="dom-if" if="[[_isExpanded(item, _expandedItems)]]" on-dom-change="_updateSizeForItem">
+                  <data-table-row-detail index="[[index]]"
+                                       item="[[item]]"
+                                       expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                                       selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                                       before-bind="[[beforeDetailsBind]]"
+                                       table="[[_this]]"
+                                       template="[[rowDetail]]"></data-table-row-detail>
+                </template>
+              </data-table-row>
             </div>
           </template>
         </iron-list>
@@ -181,9 +232,9 @@ Example:
         <div class="emptyResult">[[_computedEmptyLabel]]</div>
       </template>
     </div>
-
-    <paper-spinner-lite active hidden=[[!loading]]></paper-spinner-lite>
+    <paper-spinner-lite active></paper-spinner-lite>
     <content select="nuxeo-data-table-column"></content>
+    <content select="template[is=row-detail]"></content>
 
   </template>
 
@@ -198,13 +249,14 @@ Example:
 
       listeners: {
         'iron-resize': '_resizeCellContainers',
+        'item-changed': '_itemChanged',
         'scroll': '_onHorizontalScroll'
       },
 
       properties: {
 
         /**
-         * A function that is called before data is bound to a row cell.
+         * A function that is called before data is bound to a row or header cell.
          * Can be used to customize the cell element depending on the data.
          * #### Example:
          * ```js
@@ -213,13 +265,19 @@ Example:
          * }
          * ```
          */
-        _beforeCellBind: {
-          type: Object,
-          value: function() {
-            return function(/*data, cell*/) {
-            };
-          }
-        },
+        beforeCellBind: Object,
+
+        /**
+         * A function that is called before data is bound to a row details element.
+         * Can be used to customize the element depending on the data.
+         * #### Example:
+         * ```js
+         * function(data, details) {
+         *   details.toggleClass('custom', data.useCustomClass);
+         * }
+         * ```
+         */
+        beforeDetailsBind: Object,
 
         /**
          * A function that is called before data is bound to a row.
@@ -231,7 +289,15 @@ Example:
          * }
          * ```
          */
-        _beforeRowBind: Object,
+        beforeRowBind: Object,
+
+        /**
+         * If `true`, tapping a row will expand the item details, if available.
+         */
+        detailsEnabled: {
+          type: Boolean,
+          value: false
+        },
 
         /**
          * An array of `data-table-column` elements which contain the templates
@@ -240,7 +306,24 @@ Example:
         columns: {
           type: Array,
           notify: true,
+          value: function() {
+            return [];
+          },
           observer: '_columnsChanged'
+        },
+
+        _expandedItems: {
+          type: Array,
+          value: function() {
+            return [];
+          }
+        },
+
+        _this: {
+          type: Object,
+          value: function() {
+            return this;
+          }
         },
 
         settingsEnabled: {
@@ -256,11 +339,26 @@ Example:
             return (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'NUXEO-DATA-TABLE-COLUMN');
           };
 
+          var hasDetails = function(node) {
+            return (node.nodeType === Node.ELEMENT_NODE &&
+              node.tagName === 'TEMPLATE' && node.hasAttribute('is') &&
+              node.getAttribute('is') === 'row-detail');
+          };
+
           if (info.addedNodes.filter(hasColumns).length > 0 ||
             info.removedNodes.filter(hasColumns).length > 0) {
             this.set('columns', this.getContentChildren('[select=nuxeo-data-table-column]'));
             this._backupColumnsState();
             this.notifyResize();
+          }
+
+          if (info.addedNodes.filter(hasDetails).length > 0) {
+            this.set('rowDetail', this.getContentChildren('[select="template[is=row-detail]"]')[0]);
+
+            // assuming parent element is always a Polymer element.
+            // set dataHost to the same context the template was declared in
+            var parent = Polymer.dom(this.rowDetail).parentNode;
+            this.rowDetail._rootDataHost = parent.dataHost ? (parent.dataHost._rootDataHost || parent.dataHost) : parent;
           }
 
         }.bind(this));
@@ -272,21 +370,8 @@ Example:
         });
       },
 
-      _patchIronListCreatePool: function() {
-        var createPool = this.$.list._createPool.bind(this.$.list);
-        var initialCreateCalled = false;
-        this.$.list._createPool = function(size) {
-          var items = createPool(size);
-          if (!initialCreateCalled) {
-            initialCreateCalled = true;
-            Polymer.dom.flush();
-          }
-          return items;
-        };
-      },
 
       ready: function() {
-        this._patchIronListCreatePool();
         this.$.list._selectionHandler = function(e) {
           var model = this.modelForElement(e.target);
           if (!model) {
@@ -323,6 +408,7 @@ Example:
 
         if (columns) {
           columns.forEach(function(column) {
+            column.table = this;
             this.listen(column, 'filter-value-changed', '_onColumnFilterChanged');
           }.bind(this));
         }
@@ -334,6 +420,9 @@ Example:
 
         this.async(function() {
           this.$.container.style.width = Math.min(this.scrollWidth, this.clientWidth + this.scrollLeft) + 'px';
+
+          // add scrollbar width as padding
+          this.$.header.style.paddingRight = this.$.list.offsetWidth - this.$.list.clientWidth + 'px';
         }.bind(this));
       },
 
@@ -347,11 +436,127 @@ Example:
         }
       },
 
-      _onCheckBoxTap: function(e) {
-        if (this.selectionEnabled) {
-          var target = e.target || e.srcElement;
-          target.fire('selected');
-          this._updateFlags();
+      _updateSizeForItem: function(event) {
+        if (event.model.get('item')) {
+          // notifyResize() doesn't do anything on iOS if the viewport size hasn't changed
+          // so calling updateSizeForItem(item) is more reliable.
+
+          // TODO: However, since we're reusing the same items array in most cases,
+          // the _collection item map inside <iron-list> gets out of sync and
+          // that breaks things like selection and updateSizeForItem.
+          // To mitigate the issue, we'll update height of every row element.
+          // Can be optimized later if needed to update only the row that has
+          // expanded or collapsed.
+          var itemSet = [];
+          for(var i = 0; i < this.$.list._physicalItems.length; i++) {
+            itemSet.push(i);
+          }
+
+          // extracted from updateSizeFromItem(item) in <iron-list>
+          this.$.list._updateMetrics(itemSet);
+          this.$.list._positionItems();
+        }
+      },
+
+      /**
+       * Expands the row details for this item, if available.
+       */
+      expandItem: function(item) {
+        if (this.rowDetail && this._expandedItems && !this._isExpanded(item, this._expandedItems)) {
+
+          // replacing the whole array here to simplify the observers.
+          this._expandedItems.push(item);
+          this._expandedItems = this._expandedItems.slice(0);
+        }
+      },
+
+      /**
+       * Collapses the row details for this item, if expanded.
+       */
+      collapseItem: function(item) {
+        if (this.rowDetail && this._expandedItems && this._isExpanded(item, this._expandedItems)) {
+          var index = this._expandedItems.indexOf(item);
+
+          // replacing the whole array here to simplify the obsevers.
+          this._expandedItems.splice(index, 1);
+          this._expandedItems = this._expandedItems.slice(0);
+        }
+      },
+
+      _isExpanded: function(item, items) {
+        return items && items.indexOf(item) > -1;
+      },
+
+      _isFocusable: function(target) {
+        if (Polymer.Settings.useNativeShadow) {
+          // https://nemisj.com/focusable/
+          // tabIndex is not reliable in IE.
+          return target.tabIndex >= 0;
+        } else {
+          // unreliable with Shadow, document.activeElement doesn't go inside
+          // the shadow root.
+          return target.contains(Polymer.dom(document.activeElement).node) || target.tagName === 'A';
+        }
+      },
+
+      /**
+       * Fired when user clicks on a item to select it. Note that this event is
+       * not fired when user clicks on a multi-selection checkbox.
+       *
+       * @event selecting-item
+       * @param {Object} detail
+       * @param {Object} detail.item item to be selected
+       */
+
+      /**
+       * Fired when user clicks on a item to deselect it. Note that this event is
+       * not fired when user clicks on a multi-selection checkbox.
+       *
+       * @event deselecting-item
+       * @param {Object} detail
+       * @param {Object} detail.item item to be deselected
+       */
+
+      /**
+       * Fired when user clicks on a item to expand it.
+       *
+       * @event expanding-item
+       * @param {Object} detail
+       * @param {Object} detail.item item to be expanded
+       */
+
+       /**
+        * Fired when user clicks on a item to collapse it.
+        *
+        * @event collapsing-item
+        * @param {Object} detail
+        * @param {Object} detail.item item to be collapsed
+        */
+
+      // we need to listen to click instead of tap because on mobile safari, the
+      // document.activeElement has not been updated (focus has not been shifted)
+      // yet at the point when tap event is being executed.
+      _onRowClick: function(e) {
+        // Prevent item selection if row itself is not focused. This means that
+        // an element inside the row has been focused.
+        // Mobile devices don't move focus from body unless it's an input element that is focused, so this element will never get focused.
+        if (this._isFocusable(Polymer.dom(e).localTarget)) {
+          return;
+        } else {
+          var fireEvent = function(eventName, item, defaultAction) {
+            var e = this.fire(eventName, {item: item}, {cancelable: true});
+            if (!e.defaultPrevented) {
+              defaultAction.call(this, item);
+            }
+          }.bind(this);
+
+          if (this.rowDetail && this.detailsEnabled) {
+            if (this._isExpanded(e.model.item, this._expandedItems)) {
+              fireEvent('collapsing-item', e.model.item, this.collapseItem);
+            } else {
+              fireEvent('expanding-item', e.model.item, this.expandItem);
+            }
+          }
         }
       },
 
@@ -376,8 +581,15 @@ Example:
             }, this);
           }
         }
-      }
+      },
 
+      _onCheckBoxTap: function(e) {
+        if (this.selectionEnabled) {
+          var target = e.target || e.srcElement;
+          target.fire('selected');
+          this._updateFlags();
+        }
+      },
     });
   </script>
 </dom-module>

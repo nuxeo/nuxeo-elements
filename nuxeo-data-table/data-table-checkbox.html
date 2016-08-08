@@ -1,4 +1,4 @@
-<dom-module id="nuxeo-data-table-checkbox">
+<dom-module id="data-table-checkbox">
   <template>
     <style>
       :host {
@@ -19,6 +19,10 @@
 
       :host([hidden]) {
         display: none;
+      }
+
+      :host(:focus) {
+        outline: none;
       }
 
       #container {
@@ -103,7 +107,7 @@
   </template>
   <script>
     Polymer({
-      is: 'nuxeo-data-table-checkbox',
+      is: 'data-table-checkbox',
 
       properties: {
         checked: {
