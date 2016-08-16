@@ -33,6 +33,7 @@
     "d3": "3.5.17",
     "randomcolor": "0.4.1",
     "paper-typeahead": "nuxeo/paper-typeahead#0.4"
+    "iron-iconset-svg": "^1.0.9"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
