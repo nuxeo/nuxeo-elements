@@ -1,7 +1,7 @@
 <dom-module id="nuxeo-data-table-column">
   <template>
     <template id="header">
-      <data-table-column-filter label="[[column.name]]" value="{{column.filterValue}}" hidden$="[[!column.filterBy]]"></data-table-column-filter>
+      <nuxeo-data-table-column-filter label="[[column.name]]" value="{{column.filterValue}}" hidden$="[[!column.filterBy]]"></nuxeo-data-table-column-filter>
       <div hidden$="[[column.filterBy]]">[[column.name]]</div>
     </template>
   </template>

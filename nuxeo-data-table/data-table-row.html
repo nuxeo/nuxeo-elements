@@ -1,4 +1,4 @@
-<dom-module id="data-table-row">
+<dom-module id="nuxeo-data-table-row">
   <template>
     <style is="custom-style">
       :host {
@@ -46,17 +46,17 @@
       }
     </style>
     <div class="cells">
-      <content select="data-table-checkbox"></content>
-      <content select="data-table-cell"></content>
+      <content select="nuxeo-data-table-checkbox"></content>
+      <content select="nuxeo-data-table-cell"></content>
       <content select="nuxeo-data-table-settings"></content>
     </div>
     <div class="details">
-      <content select="data-table-row-detail"></content>
+      <content select="nuxeo-data-table-row-detail"></content>
     </div>
   </template>
   <script>
     Polymer({
-      is: 'data-table-row',
+      is: 'nuxeo-data-table-row',
 
       properties: {
         beforeBind: Object,
