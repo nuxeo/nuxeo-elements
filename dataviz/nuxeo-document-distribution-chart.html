@@ -302,7 +302,7 @@ Example:
               },
               "subLevel": {
                 "terms": {
-                  "field": "ecm:path.level" + depth,
+                  "field": "ecm:path@level" + depth,
                   "size": 0
                 },
                 "aggs": subPart
@@ -319,7 +319,7 @@ Example:
             "aggs": {
               "subLevel": {
                 "terms": {
-                  "field": "ecm:path.level" + pathDepth,
+                  "field": "ecm:path@level" + pathDepth,
                   "size": 0
                 },
                 "aggs": subPart
@@ -337,7 +337,7 @@ Example:
           var subPart = {
             "subLevel": {
               "terms": {
-                "field": "ecm:path.level" + (pathDepth - 1 + this.maxDepth),
+                "field": "ecm:path@level" + (pathDepth - 1 + this.maxDepth),
                 "size": 0,
                 "order": {
                   "_count": "desc"
@@ -350,7 +350,7 @@ Example:
             subPart = {
               "subLevel": {
                 "terms": {
-                  "field": "ecm:path.level" + depth,
+                  "field": "ecm:path@level" + depth,
                   "size": 0,
                   "order": {
                     "_count": "desc"
@@ -429,7 +429,7 @@ Example:
           if (path && path.length > 0) {
             var split = path.replace(/\/$/, "").split('/');
             for (var i = 1; i < split.length; i++) {
-              var propName = "ecm:path.level" + i;
+              var propName = "ecm:path@level" + i;
               var toPush = {
                 "constant_score": {
                     "filter": {
@@ -438,7 +438,7 @@ Example:
                     }
                 }
               };
-              toPush.constant_score.filter.term["ecm:path.level" + i] = split[i];
+              toPush.constant_score.filter.term["ecm:path@level" + i] = split[i];
               result.push(toPush);
             }
           }

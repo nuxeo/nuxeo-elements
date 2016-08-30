@@ -4,7 +4,7 @@
 
 ## Requirements
 
-This element requires Nuxeo 8.2 platform or greater.
+This element requires Nuxeo 8.4 platform or greater.
 
 This element needs the elasticsearch passthrough enabled. Add the following property in nuxeo.conf:
 
