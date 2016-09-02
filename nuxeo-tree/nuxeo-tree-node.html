@@ -205,7 +205,7 @@ Contributors:
         _setupToggleListener: function() {
           this._flushTemplates();
           var selectElts = Polymer.dom(this).querySelector('#content').querySelectorAll('[select]');
-          for (var i = 0; i < contentElts.length; i++) {
+          for (var i = 0; i < selectElts.length; i++) {
             this.listen(selectElts[i], 'tap', '_selectNode');
           }
           var toggleEls = Polymer.dom(this).querySelector('#content').querySelectorAll('[toggle]');
