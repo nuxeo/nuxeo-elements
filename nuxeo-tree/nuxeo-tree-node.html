@@ -115,6 +115,14 @@ Contributors:
           }
         },
 
+        _selectNode: function(e) {
+          if (!e.detail.item) {
+            this.fire('select', {item: this.data});
+          } else {
+            this.fire('select', {item: e.detail.item});
+          }
+        },
+
         open: function() {
           this.opened = true;
           if (!this._updated) {
@@ -196,6 +204,10 @@ Contributors:
 
         _setupToggleListener: function() {
           this._flushTemplates();
+          var selectElts = Polymer.dom(this).querySelector('#content').querySelectorAll('[select]');
+          for (var i = 0; i < contentElts.length; i++) {
+            this.listen(selectElts[i], 'tap', '_selectNode');
+          }
           var toggleEls = Polymer.dom(this).querySelector('#content').querySelectorAll('[toggle]');
           for (var i = 0; i < toggleEls.length; i++) {
             this.listen(toggleEls[i], 'tap', 'toggle');

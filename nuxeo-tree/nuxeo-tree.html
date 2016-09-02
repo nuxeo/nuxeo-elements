@@ -65,13 +65,16 @@ and `isLeaf` which are added to the binding scope):
     <template is="dom-if" if="[[opened]]">
       <iron-icon icon="hardware:keyboard-arrow-down" toggle></iron-icon>
     </template>
-    <span>My title is: [[item.title]]</span>
+    <span select>My title is: [[item.title]]</span>
     <span>Am I a leaf? [[isLeaf]]</span>
   </template>
 </nuxeo-tree>
 ```
 
 The attribute `[toggle]` can be added to any element in the template to toggle a node between opened and closed.
+
+The attribute `[select]` can be added to any element in the template to select a node when clicking the element.
+It will result in the tree firing a 'select' event having the node data as item of the event's detail.
 
 In addition to the template, you must also provide a `controller`.
 For example, for the previous sample:
