@@ -53,3 +53,25 @@ function waitChanged(el, prop, times) {
         return evt.detail;
       });
 }
+
+function login(server, loginFixture) {
+  server.respondWith(
+      'POST',
+      '/dummy/api/v1/automation/login',
+      [
+        200,
+        {'Content-Type': 'application/json'},
+        '{"entity-type":"login","username":"Administrator"}'
+      ]
+  );
+  server.respondWith(
+      'GET',
+      '/dummy/api/v1/repo/default/user/Administrator?',
+      [
+        200,
+        {'Content-Type': 'application/json'},
+        '{"entity-type":"user","username":"Administrator"}'
+      ]
+  );
+  return loginFixture.connect();
+}

@@ -54,29 +54,8 @@ Contributors:
     setup(function() {
       server = sinon.fakeServer.create();
       server.autoRespond = true;
-
-      server.respondWith(
-        'POST',
-        '/dummy/api/v1/automation/login',
-        [
-          200,
-          {'Content-Type': 'application/json'},
-          '{"entity-type":"login","username":"Administrator"}'
-        ]
-      );
-      server.respondWith(
-        'GET',
-        '/dummy/api/v1/repo/default/user/Administrator?',
-        [
-          200,
-          {'Content-Type': 'application/json'},
-          '{"entity-type":"login","username":"Administrator"}'
-        ]
-      );
-      // login
       var nx = fixture('nx');
-      var promise = nx.connect();
-      return promise;
+      return login(server, nx);
     });
 
     suite('create group', function() {
