@@ -32,6 +32,7 @@ limitations under the License.
 <link rel="import" href="data-table-column-filter.html">
 <link rel="import" href="data-table-cell.html">
 <link rel="import" href="data-table-row.html">
+<link rel="import" href="data-table-row-detail.html">
 <link rel="import" href="data-table-checkbox.html">
 <link rel="import" href="data-table-settings.html">
 <link rel="import" href="default-styles.html">
@@ -182,7 +183,7 @@ Example:
           <nuxeo-data-table-settings columns="{{columns}}" hidden$="[[!settingsEnabled]]"
             on-settings-changed="_settingsChanged">
           </nuxeo-data-table-settings>
-        </data-table-row>
+        </nuxeo-data-table-row>
       </div>
 
       <iron-scroll-threshold id="scrollThreshold"

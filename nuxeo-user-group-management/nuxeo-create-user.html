@@ -148,7 +148,7 @@ Used by `nuxeo-user-group-management`
           <label>[[i18n('username', 'Username')]]</label>
         </div>
         <div class="horizontal layout flex required">
-          <input value="{{user.username::input}}" class="flex" required disabled$="[[!new]]">
+          <input value="{{user.username::input}}" class="flex" required>
         </div>
       </div>
       <nuxeo-edit-user id="propertyEditor" user="{{user}}" new></nuxeo-edit-user>

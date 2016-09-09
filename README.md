@@ -21,25 +21,21 @@ Then, go ahead and download the element's dependencies:
 
 ## Quickstart
 
-We recommend that you use [Polyserve](https://github.com/PolymerLabs/polyserve) which you can install via:
+We recommend that you use [Polymer CLI](https://github.com/Polymer/polymer-cli) which you can install via:
 
-    npm install -g polyserve
+    npm install -g polymer-cli
 
-And you can run it via:
+Then you can run a local web server via:
 
-    polyserve -p 3000
+    polymer serve -p 3000
 
 Once running, you can checkout the docs and demos at `http://localhost:3000/components/nuxeo-ui-elements/`.
 
 ## Tests
 
-Install Web Component Tester via:
+To run tests use:
 
-    npm install -g web-component-tester
-    
-Execute the tests by running:
-
-    wct
+    polymer test
 
 ## Documentation
 
