@@ -71,7 +71,7 @@ Contributors:
       <iron-scroll-threshold id="scrollThreshold"
         lower-threshold="1000" class="loadable"
         on-lower-threshold="_loadMoreData">
-          <iron-list id="list" scroll-target="scrollThreshold" selected-items="{{selectedItems}}">
+          <iron-list id="list" scroll-target="scrollThreshold" selected-item="{{selectedItem}}" as="item">
           </iron-list>
         </div>
       </iron-scroll-threshold>
@@ -94,7 +94,14 @@ Contributors:
         ],
 
         properties: {
-
+          multiSelection: {
+            type: Boolean,
+            value: false,
+          },
+          selectOnTap: {
+            type: Boolean,
+            value: true
+          }
         },
 
         ready: function() {
@@ -111,6 +118,34 @@ Contributors:
             // iron-list will look for our template and stamp the items
             this.$.list.items = [];
             this._templateStamped = true;
+
+            // tmp fix
+            // see https://github.com/PolymerElements/iron-list/issues/236
+            this.$.list._didMoveDown = function() {
+              this._focusPhysicalItem(this._focusedIndex + 1);
+            };
+            // end tmp fix
+
+            this.$.list.selectQueuePrevious = function() {
+              this._didMoveUp();
+              this.toggleSelectionForFocusedItem();
+            };
+            this.$.list.selectQueueNext = function() {
+              this._didMoveDown();
+              this.toggleSelectionForFocusedItem();
+            };
+            this.$.list.toggleSelectionForFocusedItem = function() {
+              this.debounce('toggleSelectionForFocusedItem', function() {
+                var model = this._focusedItem._templateInstance;
+                if (model) {
+                  this.toggleSelectionForItem(model[this.as]);
+                }
+              }.bind(this), 300);
+            };
+            this.$.list.addOwnKeyBinding('up', 'toggleSelectionForFocusedItem');
+            this.$.list.addOwnKeyBinding('k', 'selectQueuePrevious');
+            this.$.list.addOwnKeyBinding('down', 'toggleSelectionForFocusedItem');
+            this.$.list.addOwnKeyBinding('j', 'selectQueueNext');
           }
         },
 

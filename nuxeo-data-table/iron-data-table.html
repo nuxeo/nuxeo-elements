@@ -333,6 +333,11 @@ Example:
         settingsEnabled: {
           type: Boolean,
           value: false
+        },
+
+        multiSelection: {
+          type: Boolean,
+          value: true,
         }
 
       },
@@ -593,7 +598,7 @@ Example:
           target.fire('selected');
           this._updateFlags();
         }
-      },
+      }
     });
   </script>
 </dom-module>
