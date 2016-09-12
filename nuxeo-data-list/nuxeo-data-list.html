@@ -53,6 +53,16 @@ Contributors:
         left: 50%;
         --paper-spinner-color: var(--default-primary-color);
       }
+
+      .emptyResult {
+        color: #c6c6c6;
+        display: block;
+        font-style: italic;
+        font-weight: normal;
+        padding: 1em 0.7em 2em;
+        text-align: center;
+        font-size: 1.5em;
+      }
     </style>
 
     <div id="container">
@@ -71,7 +81,7 @@ Contributors:
       <iron-scroll-threshold id="scrollThreshold"
         lower-threshold="1000" class="loadable"
         on-lower-threshold="_loadMoreData">
-          <iron-list id="list" scroll-target="scrollThreshold" selected-item="{{selectedItem}}" as="item">
+          <iron-list id="list" scroll-target="scrollThreshold" selected-item="{{selectedItem}}" as="[[as]]">
           </iron-list>
         </div>
       </iron-scroll-threshold>
@@ -151,6 +161,14 @@ Contributors:
 
         _removeFilter: function(e) {
           this.fire('column-filter-changed', {value: '', filterBy: e.model.filter.path});
+        },
+
+        selectNext: function() {
+          this.$.list.selectQueueNext();
+        },
+
+        selectPrevious: function() {
+          this.$.list.selectQueuePrevious();
         }
 
         });

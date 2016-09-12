@@ -147,8 +147,12 @@ Contributors:
         selectOnTap: {
           type: Boolean,
           value: false
-        }
+        },
 
+        as: {
+          type: String,
+          value: 'item'
+        }
       },
 
 
@@ -299,7 +303,6 @@ Contributors:
       },
 
       _selectionEnabledChanged: function() {
-        console.log('_selectionEnabledChanged');
         this.$.list.selectionEnabled = this.selectionEnabled;
         this.$.list.multiSelection = this.multiSelection;
         this.$.list.unlisten.call(this.$.list, this.$.list, 'selected', '_selectionHandler');
@@ -393,6 +396,14 @@ Contributors:
         }
         this._resetResults();
         this.nxProvider.fetch();
+      },
+
+      scrollToItem: function(item){
+        this.$.list.scrollToItem(item);
+      },
+
+      scrollToIndex: function(idx) {
+        this.$.list.scrollToIndex(idx);
       }
 
     };
