@@ -81,7 +81,7 @@ Contributors:
       <iron-scroll-threshold id="scrollThreshold"
         lower-threshold="1000" class="loadable"
         on-lower-threshold="_loadMoreData">
-        <iron-list id="list" scroll-target="scrollThreshold" selected-item="{{selectedItem}}" as="[[as]]">
+        <iron-list id="list" items="[[items]]" scroll-target="scrollThreshold" selected-item="{{selectedItem}}" as="[[as]]">
         </iron-list>
       </iron-scroll-threshold>
       <template is="dom-if" if="[[_isEmpty]]">
