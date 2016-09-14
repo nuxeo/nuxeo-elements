@@ -42,7 +42,8 @@ Contributors:
 
         emptyLabel: {
           type: String,
-          value : 'No result'
+          value : 'No result',
+          observer: '_observeEmptyLabel'
         },
 
         emptyLabelWhenFiltered: {
@@ -404,6 +405,10 @@ Contributors:
 
       scrollToIndex: function(idx) {
         this.$.list.scrollToIndex(idx);
+      },
+
+      _observeEmptyLabel: function() {
+        this._computedEmptyLabel = this.emptyLabel;
       }
 
     };
