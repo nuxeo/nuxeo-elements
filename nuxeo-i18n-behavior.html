@@ -38,9 +38,7 @@ Contributors:
       },
 
       attached: function() {
-        this.localeLoadedHandler = function(e) {
-          this.refresh_18n();
-        }.bind(this);
+        this.localeLoadedHandler = this.refresh_18n.bind(this);
         document.addEventListener('i18n-locale-loaded', this.localeLoadedHandler);
       },
 
@@ -49,6 +47,7 @@ Contributors:
       },
 
       refresh_18n: function() {
+        this.i18n = null;
         this.i18n = window.nuxeo.I18n.translate;
       }
     };
