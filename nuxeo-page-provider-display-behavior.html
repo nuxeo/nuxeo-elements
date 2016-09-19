@@ -165,7 +165,6 @@ Contributors:
       ],
 
       listeners: {
-        'clear-selected-items': 'clearSelection',
         'column-filter-changed': '_onColumnFilterChanged'
       },
 
@@ -409,6 +408,16 @@ Contributors:
 
       _observeEmptyLabel: function() {
         this._computedEmptyLabel = this.emptyLabel;
+      },
+
+      get items() {
+        return this.$.list.items;
+      },
+
+      focusOnIndexIfNotVisible: function(idx) {
+        if (!this.$.list._isIndexVisible(idx)) {
+          this.$.list.scrollToIndex(idx);
+        }
       }
 
     };
