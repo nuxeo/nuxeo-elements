@@ -41,50 +41,57 @@ Example:
 <dom-module id="nuxeo-user-group-latest">
 
   <template>
-    <style is="custom-style">
+    <style>
       :host {
         display: block;
         @apply(--nuxeo-user-group-latest-layout);
       }
 
-      .table {
-        border: 1px solid #e7e7e7;
+      .title {
+        margin: 0 0 4px 0;
+        padding: 0;
       }
 
-      .table-title {
-        color: #213f7d;
-        margin: 1em 0;
+      .table {
+        border: 1px solid var(--divider-color);
+      }
+
+      .table-header {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        border-bottom: 1px solid var(--divider-color);
+        background-color: #f8f9fb;
+        font-weight: bold;
+        padding: 0 0 0 12px;
+        margin-bottom: 4px;
+      }
+
+      .table-rows {
+        padding: 4px 0;
       }
 
       .table-row {
         @apply(--layout-horizontal);
-      }
-
-      .table-row > div {
-        padding: 0.6em 1em;
-      }
-
-      .table-headers > div {
-        background-color: #f8f9fb;
-        font-weight: bold;
+        @apply(--layout-center);
+        padding: 0 0 0 12px;
       }
 
       .table-actions {
         width: 3em;
       }
 
-      /* tags */
-      .tag {
-        background: none #f3f6f9;
-        border-radius: 16px;
-        font-size: .8em;
-        margin: 0;
-        padding: 0.1em 0.8em 0.2em;
+      .table {
+        border: 1px solid #e7e7e7;
       }
 
-      .counter {
-        margin-right: 2em;
+      .tag {
+        background: none #f3f6f9;
+        border-radius: 4px;
+        font-size: .8em;
+        margin: 0;
+        padding: 6px;
       }
+
     </style>
 
     <nuxeo-resource id="latestCreatedUsersGroups" auto
@@ -93,39 +100,49 @@ Example:
                     headers='{"properties": "*"}'>
     </nuxeo-resource>
 
-    <h3>[[i18n('label.security.recentUsersAndGroups', 'Recently created users and groups')]]</h3>
+    <h3 class="title">
+      <iron-icon icon="history" prefix></iron-icon>
+      [[i18n('label.security.recentUsersAndGroups', 'Recently created users and groups')]]
+    </h3>
     <div class="table">
-      <div class="table-row table-headers">
+      <div class="table-header">
         <div class="flex">[[i18n('label.name', 'Name')]]</div>
         <div class="flex-2">[[i18n('label.security.identifier', 'Identifier')]]</div>
         <div class="table-actions">
           <paper-icon-button icon="refresh" on-tap="_refreshLatest"></paper-icon-button>
         </div>
       </div>
-      <template is="dom-repeat" items="[[latestCreatedUsersGroups.entries]]" as="item">
-         <div class="table-row">
-          <div class="flex">
-            <span class="tag">
+      <div class="table-rows">
+        <template is="dom-repeat" items="[[latestCreatedUsersGroups.entries]]" as="item">
+          <div class="table-row">
+            <div class="flex">
               <template is="dom-if" if="[[_isUser(item)]]">
-                <iron-icon icon="social:person"></iron-icon>
+                <template is="dom-if" if="[[_userHasName(item)]]">
+                  <span class="tag">
+                    <iron-icon icon="social:person"></iron-icon>
+                    [[_displayLCUserGroup(item)]]
+                  </span>
+                </template>
               </template>
               <template is="dom-if" if="[[_isGroup(item)]]">
-                <iron-icon icon="social:people"></iron-icon>
+                <span class="tag">
+                  <iron-icon icon="social:people"></iron-icon>
+                  [[_displayLCUserGroup(item)]]
+                </span>
               </template>
-              [[_displayLCUserGroup(item)]]
-            </span>
+            </div>
+            <div class="flex-2">[[item.uid]]</div>
+            <div class="table-actions layout horizontal">
+              <paper-icon-button icon="editor:mode-edit" on-tap="_manageUserOrGroup"></paper-icon-button>
+            </div>
           </div>
-          <div class="flex-2">[[item.uid]]</div>
-          <div class="table-actions layout horizontal">
-            <paper-icon-button icon="editor:mode-edit" on-tap="_manageUserOrGroup"></paper-icon-button>
+        </template>
+        <template is="dom-if" if=[[_empty(latestCreatedUsersGroups.entries)]]>
+          <div class="table-row">
+            <div>[[i18n('label.security.emptyRecentUserOrGroup', 'No recent user or group.')]]</div>
           </div>
-        </div>
-      </template>
-      <template is="dom-if" if=[[_empty(latestCreatedUsersGroups.entries)]]>
-        <div class="table-row">
-          <div>[[i18n('label.security.emptyRecentUserOrGroup', 'No recent user or group.')]]</div>
-        </div>
-      </template>
+        </template>
+      </div>
     </div>
  </template>
 </dom-module>
@@ -141,6 +158,10 @@ Example:
 
     _empty: function(entries) {
       return entries && entries.length === 0;
+    },
+
+    _userHasName: function(user) {
+      return user.properties.firstName || user.properties.lastName;
     },
 
     _isUser: function(docModel) {

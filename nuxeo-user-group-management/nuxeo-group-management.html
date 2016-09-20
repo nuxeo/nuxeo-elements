@@ -44,7 +44,6 @@ Used by `nuxeo-user-group-management`
     <style>
       :host {
         display: block;
-        padding: 1em;
       }
 
       paper-button {
@@ -116,39 +115,45 @@ Used by `nuxeo-user-group-management`
         position: absolute;
       }
 
-      .table {
-        border: 1px solid #e7e7e7;
-        margin-top: 0.5em;
+      .title {
+        margin: 0 0 4px 0;
+        padding: 0;
       }
 
-      .table-title {
-        color: #213f7d;
-        margin: 0;
+      .table {
+        border: 1px solid var(--divider-color);
+      }
+
+      .table-header {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        border-bottom: 1px solid var(--divider-color);
+        background-color: #f8f9fb;
+        font-weight: bold;
+        padding: 8px 0 8px 12px;
+        margin-bottom: 4px;
+      }
+
+      .table-rows {
+        padding: 4px 0;
       }
 
       .table-row {
         @apply(--layout-horizontal);
-      }
-
-      .table-row > div {
-        padding: 0.6em 1em;
-      }
-
-      .table-headers > div {
-        background-color: #f8f9fb;
-        font-weight: bold;
+        @apply(--layout-center);
+        padding: 0 0 0 12px;
       }
 
       .table-actions {
-        width: 50px;
+        width: 3em;
       }
 
       .tag {
         background: none #f3f6f9;
-        border-radius: 16px;
+        border-radius: 4px;
         font-size: .8em;
         margin: 0;
-        padding: 0.1em 0.8em 0.2em;
+        padding: 6px;
       }
 
       .filter-wrapper {
@@ -279,8 +284,9 @@ Used by `nuxeo-user-group-management`
       </template>
     </div>
 
+    <!-- users -->
     <div class="table-wrapper">
-      <h3 class="table-title">
+      <h3 class="title">
         <iron-icon icon="social:person"></iron-icon> [[i18n('label.userManager.users', 'Users')]]
       </h3>
       <div class="filter-wrapper">
@@ -290,41 +296,46 @@ Used by `nuxeo-user-group-management`
         </paper-input>
       </div>
       <div class="table">
-        <div class="table-row table-headers">
-          <div class="flex">[[i18n('label.name', 'Name')]]</div>
+        <div class="table-header">
+          <div class="flex-4">[[i18n('label.name', 'Name')]]</div>
           <div class="flex-4">[[i18n('label.security.identifier', 'Identifier')]]</div>
-          <div class="table-actions"></div>
+          <div class="table-actions">&nbsp;</div>
         </div>
-        <template is="dom-if" if=[[!_empty(memberUsers.entries)]]>
-          <template is="dom-repeat" items="[[memberUsers.entries]]">
+        <div class="table-rows">
+          <template is="dom-if" if=[[!_empty(memberUsers.entries)]]>
+            <template is="dom-repeat" items="[[memberUsers.entries]]">
+              <div class="table-row">
+                <div class="flex-4">
+                  <template is="dom-if" if="[[_userHasName(item)]]">
+                    <span class="tag">
+                      <iron-icon icon="social:person"></iron-icon>
+                      [[item.properties.firstName]] [[item.properties.lastName]]
+                    </span>
+                  </template>
+                </div>
+                <div class="flex-4">[[item.id]]</div>
+                <div class="table-actions">
+                  <paper-icon-button icon="icons:clear"
+                                     title="[[i18n('label.userManager.removeFrom', 'Remove from {0}', item.label)]]"
+                                     on-tap="_toggleDeleteDialog">
+                  </paper-icon-button>
+                </div>
+              </div>
+            </template>
+          </template>
+          <template is="dom-if" if=[[_empty(memberUsers.entries)]]>
             <div class="table-row">
-              <div class="flex">
-                <span class="tag">
-                  <iron-icon icon="social:person"></iron-icon>
-                  [[item.properties.firstName]] [[item.properties.lastName]]
-                </span>
-              </div>
-              <div class="flex-4">[[item.id]]</div>
-              <div class="table-actions">
-                <paper-icon-button icon="icons:clear"
-                                   title="[[i18n('label.userManager.removeFrom', 'Remove from {0}', item.label)]]"
-                                   on-tap="_toggleDeleteDialog">
-                </paper-icon-button>
-              </div>
+              <div>[[i18n('label.userManager.noSearchResults', 'No results.')]]</div>
             </div>
           </template>
-        </template>
-        <template is="dom-if" if=[[_empty(memberUsers.entries)]]>
-          <div class="table-row">
-            <div>[[i18n('label.userManager.noSearchResults', 'No results.')]]</div>
-          </div>
-        </template>
+        </div>
       </div>
       <nuxeo-pagination-controls page="{{usersCurrentPage}}" number-of-pages="[[memberUsers.numberOfPages]]"></nuxeo-pagination-controls>
     </div>
 
+    <!-- nested groups -->
     <div class="table-wrapper">
-      <h3 class="table-title">
+      <h3 class="title">
         <iron-icon icon="social:people"></iron-icon> [[i18n('label.groupManager.nesteGroups', 'Nested groups')]]
       </h3>
       <div class="filter-wrapper">
@@ -334,43 +345,47 @@ Used by `nuxeo-user-group-management`
         </paper-input>
       </div>
       <div class="table">
-        <div class="table-row table-headers">
-          <div class="flex">[[i18n('label.name', 'Name')]]</div>
+        <div class="table-header">
+          <div class="flex-4">[[i18n('label.name', 'Name')]]</div>
           <div class="flex-4">[[i18n('label.security.identifier', 'Identifier')]]</div>
-          <div class="table-actions"></div>
+          <div class="table-actions">&nbsp;</div>
         </div>
-        <template is="dom-if" if=[[!_empty(memberGroups.entries)]]>
-          <template is="dom-repeat" items="[[memberGroups.entries]]">
-            <div class="table-row">
-              <div class="flex">
+        <div class="table-rows">
+          <template is="dom-if" if=[[!_empty(memberGroups.entries)]]>
+            <template is="dom-repeat" items="[[memberGroups.entries]]">
+              <div class="table-row">
+                <div class="flex-4">
                 <span class="tag">
                   <iron-icon icon="social:people"></iron-icon>
                   [[item.groupname]]
                 </span>
+                </div>
+                <div class="flex-4">[[item.grouplabel]]</div>
+                <div class="table-actions">
+                  <paper-icon-button icon="icons:clear"
+                                     title="[[i18n('label.userManager.removeFrom', 'Remove from {0}', item.label)]]"
+                                     on-tap="_toggleDeleteDialog">
+                  </paper-icon-button>
+                </div>
               </div>
-              <div class="flex-4">[[item.grouplabel]]</div>
-              <div class="table-actions">
-                <paper-icon-button icon="icons:clear"
-                                   title="[[i18n('label.userManager.removeFrom', 'Remove from {0}', item.label)]]"
-                                   on-tap="_toggleDeleteDialog">
-                </paper-icon-button>
-              </div>
+            </template>
+          </template>
+          <template is="dom-if" if=[[_empty(memberGroups.entries)]]>
+            <div class="table-row">
+              <div>[[i18n('label.userManager.noSearchResults', 'No results.')]]</div>
             </div>
           </template>
-        </template>
-        <template is="dom-if" if=[[_empty(memberGroups.entries)]]>
-          <div class="table-row">
-            <div>[[i18n('label.userManager.noSearchResults', 'No results.')]]</div>
-          </div>
-        </template>
+        </div>
       </div>
       <nuxeo-pagination-controls page="{{groupsCurrentPage}}" number-of-pages="[[memberGroups.numberOfPages]]"></nuxeo-pagination-controls>
     </div>
 
+    <!-- permissions -->
     <div class="table-wrapper">
-      <h1 class="table-title floating-header">[[i18n('label.security.permissions', 'Permissions')]]</h1>
+      <h1 class="title floating-header">[[i18n('label.security.permissions', 'Permissions')]]</h1>
       <nuxeo-user-group-permissions-table entity="[[groupname]]"></nuxeo-user-group-permissions-table>
     </div>
+
   </template>
   <script>
     (function() {
@@ -422,6 +437,11 @@ Used by `nuxeo-user-group-management`
             value: false
           },
 
+          pageSize: {
+            type: Number,
+            value: 100
+          },
+
           usersCurrentPage: Number,
 
           usersFilter: String,
@@ -455,6 +475,10 @@ Used by `nuxeo-user-group-management`
           }.bind(this));
         },
 
+        _userHasName: function(user) {
+          return user.properties.firstName || user.properties.lastName;
+        },
+
         _fetch: function() {
           this.$.request.get().then(function(response) {
             this.activity = [];
@@ -483,7 +507,7 @@ Used by `nuxeo-user-group-management`
             }
             var params = {
               q: this.groupsFilter,
-              pageSize: 5,
+              pageSize: this.pageSize,
               currentPageIndex: this.groupsCurrentPage - 1
             };
             this.$.groups.params = params;
@@ -500,7 +524,7 @@ Used by `nuxeo-user-group-management`
             }
             var params = {
               q: this.usersFilter,
-              pageSize: 5,
+              pageSize: this.pageSize,
               currentPageIndex: this.usersCurrentPage - 1
             };
             this.$.users.params = params;

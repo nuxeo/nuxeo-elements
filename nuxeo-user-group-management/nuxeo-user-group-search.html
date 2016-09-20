@@ -34,9 +34,8 @@ Used by `nuxeo-user-management`
 @element nuxeo-user-group-search
 -->
 <dom-module id="nuxeo-user-group-search">
-
   <template>
-    <style is="custom-style">
+    <style>
       :host {
         display: block;
         @apply(--nuxeo-user-group-search-layout);
@@ -44,46 +43,54 @@ Used by `nuxeo-user-management`
 
       .search {
         width: calc(100% - 200px);
+        margin-bottom: 32px;
+      }
+
+      .title {
+        margin: 0 0 4px 0;
+        padding: 0;
       }
 
       .table {
-        border: 1px solid #e7e7e7;
+        border: 1px solid var(--divider-color);
       }
 
-      .table-title {
-        color: #213f7d;
-        margin: 1em 0;
+      .table-header {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        border-bottom: 1px solid var(--divider-color);
+        background-color: #f8f9fb;
+        font-weight: bold;
+        padding: 8px 0 8px 12px;
+        margin-bottom: 4px;
+      }
+
+      .table-rows {
+        padding: 4px 0;
       }
 
       .table-row {
         @apply(--layout-horizontal);
-      }
-
-      .table-row > div {
-        padding: 0.6em 1em;
-      }
-
-      .table-headers > div {
-        background-color: #f8f9fb;
-        font-weight: bold;
+        @apply(--layout-center);
+        padding: 0 0 0 12px;
       }
 
       .table-actions {
         width: 3em;
       }
 
-      /* tags */
       .tag {
         background: none #f3f6f9;
-        border-radius: 16px;
+        border-radius: 4px;
         font-size: .8em;
         margin: 0;
-        padding: 0.1em 0.8em 0.2em;
+        padding: 6px;
       }
 
       .counter {
         margin-right: 2em;
       }
+
     </style>
 
     <nuxeo-resource id="userSearch" auto path="/user/search" response="{{users}}"></nuxeo-resource>
@@ -101,73 +108,80 @@ Used by `nuxeo-user-management`
     </div>
 
     <template is="dom-if" if="[[!_showResults(searchTerm)]]">
-      <h3 class="table-title">
+      <!-- groups -->
+      <h3 class="title">
         <iron-icon icon="social:people"></iron-icon> [[i18n('label.groupManager.groups', 'Groups')]]
       </h3>
       <div class="table">
-        <div class="table-headers table-row">
-          <div class="flex">[[i18n('label.name', 'Name')]]</div>
+        <div class="table-header">
+          <div class="flex-4">[[i18n('label.name', 'Name')]]</div>
           <div class="flex-2">[[i18n('label.security.identifier', 'Identifier')]]</div>
           <div class="flex-4">[[i18n('label.security.contains', 'Contains')]]</div>
-          <div class="table-actions"></div>
+          <div class="table-actions">&nbsp;</div>
         </div>
-        <template is="dom-repeat" items="[[groups.entries]]" as="item">
-           <div class="table-row">
-            <div class="flex">
-              <span class="tag">
-                <iron-icon icon="social:people"></iron-icon>
-                [[item.grouplabel]]
-              </span>
+        <div class="table-rows">
+          <template is="dom-repeat" items="[[groups.entries]]" as="item">
+            <div class="table-row">
+              <div class="flex-4">
+                <span class="tag">
+                  <iron-icon icon="social:people"></iron-icon>
+                  [[item.grouplabel]]
+                </span>
+              </div>
+              <div class="flex-2">[[item.groupname]]</div>
+              <div class="flex-4">
+                <span class="counter">[[_countUsers(item.memberUsers)]]</span>
+                <span class="counter">[[_countGroups(item.memberGroups)]]</span>
+              </div>
+              <div class="table-actions layout horizontal">
+                <paper-icon-button icon="editor:mode-edit" on-tap="_manageGroup"></paper-icon-button>
+              </div>
             </div>
-            <div class="flex-2">[[item.groupname]]</div>
-            <div class="flex-4">
-              <span class="counter">[[_countUsers(item.memberUsers)]]</span>
-              <span class="counter">[[_countGroups(item.memberGroups)]]</span>
+          </template>
+          <template is="dom-if" if=[[_empty(groups.entries)]]>
+            <div class="table-row">
+              <div>[[i18n('label.security.emptyGroupSearchResults', 'No group matches the entered criteria.')]]</div>
             </div>
-            <div class="table-actions layout horizontal">
-              <paper-icon-button icon="editor:mode-edit" on-tap="_manageGroup"></paper-icon-button>
-            </div>
-          </div>
-        </template>
-        <template is="dom-if" if=[[_empty(groups.entries)]]>
-          <div class="table-row">
-            <div>[[i18n('label.security.emptyGroupSearchResults', 'No group matches the entered criteria.')]]</div>
-          </div>
-        </template>
+          </template>
+        </div>
       </div>
       <nuxeo-pagination-controls page="{{groupsCurrentPage}}" number-of-pages="[[groups.numberOfPages]]"></nuxeo-pagination-controls>
-      <h3 class="table-title">
+
+      <!-- users -->
+      <h3 class="title">
         <iron-icon icon="social:person"></iron-icon> [[i18n('label.userManager.users', 'Users')]]
       </h3>
       <div class="table">
-        <div class="table-row table-headers">
-          <div class="flex">[[i18n('label.name', 'Name')]]</div>
+        <div class="table-header">
+          <div class="flex-4">[[i18n('label.name', 'Name')]]</div>
           <div class="flex-2">[[i18n('label.security.identifier', 'Identifier')]]</div>
           <div class="flex-4">[[i18n('email', 'Email')]]</div>
-          <div class="table-actions"></div>
+          <div class="table-actions">&nbsp;</div>
         </div>
-        <template is="dom-repeat" items="[[users.entries]]" as="item">
-           <div class="table-row">
-            <div class="flex">
-              <template is="dom-if" if="[[_userHasName(item)]]">
-                <span class="tag">
-                  <iron-icon icon="social:person"></iron-icon>
-                  [[item.properties.firstName]] [[item.properties.lastName]]
-                </span>
-              </template>
+        <div class="table-rows">
+          <template is="dom-repeat" items="[[users.entries]]" as="item">
+            <div class="table-row">
+              <div class="flex-4">
+                <template is="dom-if" if="[[_userHasName(item)]]">
+                  <span class="tag">
+                    <iron-icon icon="social:person"></iron-icon>
+                    [[item.properties.firstName]] [[item.properties.lastName]]
+                  </span>
+                </template>
+              </div>
+              <div class="flex-2">[[item.id]]</div>
+              <div class="flex-4">[[item.properties.email]]</div>
+              <div class="table-actions layout horizontal">
+                <paper-icon-button icon="editor:mode-edit" on-tap="_manageUser"></paper-icon-button>
+              </div>
             </div>
-            <div class="flex-2">[[item.id]]</div>
-            <div class="flex-4">[[item.properties.email]]</div>
-            <div class="table-actions layout horizontal">
-              <paper-icon-button icon="editor:mode-edit" on-tap="_manageUser"></paper-icon-button>
+          </template>
+          <template is="dom-if" if=[[_empty(users.entries)]]>
+            <div class="table-row">
+              <div>[[i18n('label.security.emptyUserSearchResults', 'No user matches the entered criteria.')]]</div>
             </div>
-          </div>
-        </template>
-        <template is="dom-if" if=[[_empty(users.entries)]]>
-          <div class="table-row">
-            <div>[[i18n('label.security.emptyUserSearchResults', 'No user matches the entered criteria.')]]</div>
-          </div>
-        </template>
+          </template>
+        </div>
       </div>
       <nuxeo-pagination-controls page="{{usersCurrentPage}}" number-of-pages="[[users.numberOfPages]]"></nuxeo-pagination-controls>
     </template>
@@ -189,6 +203,11 @@ Used by `nuxeo-user-management`
 
       users: Object,
       groups: Object,
+
+      pageSize: {
+        type: Number,
+        value: 5
+      },
 
       groupsCurrentPage: Number,
 
@@ -213,7 +232,7 @@ Used by `nuxeo-user-management`
     _searchGroups: function() {
       var params = {
         q: this.searchTerm,
-        pageSize: 5,
+        pageSize: this.pageSize,
         currentPageIndex: this.groupsCurrentPage - 1
       };
       this.$.groupSearch.params = params;
@@ -222,7 +241,7 @@ Used by `nuxeo-user-management`
     _searchUsers: function() {
       var params = {
         q: this.searchTerm,
-        pageSize: 5,
+        pageSize: this.pageSize,
         currentPageIndex: this.usersCurrentPage - 1
       };
       this.$.userSearch.params = params;
