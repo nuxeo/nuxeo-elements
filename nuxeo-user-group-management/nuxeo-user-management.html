@@ -27,6 +27,7 @@ Contributors:
 <link rel="import" href="../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-toast/paper-toast.html">
+<link rel="import" href="../widgets/nuxeo-tag.html">
 
 <!--
 An element for managing a user.
@@ -126,6 +127,7 @@ Used by `nuxeo-user-group-management`
 
       .table-row {
         @apply(--layout-horizontal);
+        @apply(--layout-center);
       }
 
       .table-row > div {
@@ -143,14 +145,6 @@ Used by `nuxeo-user-group-management`
 
       nuxeo-user-group-permissions-table {
         margin-top: 1em;
-      }
-
-      .tag {
-        background: none #f3f6f9;
-        border-radius: 16px;
-        font-size: .8em;
-        margin: 0;
-        padding: 0.1em 0.8em 0.2em;
       }
 
       paper-dialog[id="editUserDialog"] {
@@ -224,13 +218,10 @@ Used by `nuxeo-user-group-management`
       }
     </style>
 
-    <nuxeo-resource id="request"
-                    path="user/[[username]]"
-                    enrichers="userprofile"
-                    enrichers-entity="user">
+    <nuxeo-resource id="request" path="user/[[username]]" enrichers="userprofile" enrichers-entity="user">
     </nuxeo-resource>
-    <nuxeo-resource id="editRequest"
-                    path="user/[[username]]"></nuxeo-resource>
+
+    <nuxeo-resource id="editRequest" path="user/[[username]]"></nuxeo-resource>
 
     <paper-toast id="toast"></paper-toast>
 
@@ -241,10 +232,15 @@ Used by `nuxeo-user-group-management`
         <h3 class="username">[[user.id]]</h3>
         <h4 class="name">[[user.properties.firstName]] [[user.properties.lastName]]</h4>
       </div>
+
       <div class="horizontal layout flex center end-justified">
-        <paper-button id="changePasswordButton" class="horizontal layout center" on-tap="_toggleChangePassword">
-          <iron-icon icon="icons:lock"></iron-icon> [[i18n('command.change.password', 'Change Password')]]
-        </paper-button>
+
+        <!-- change password -->
+        <template is="dom-if" if=[[!readonly]]>
+          <paper-button id="changePasswordButton" class="horizontal layout center" on-tap="_toggleChangePassword">
+            <iron-icon icon="icons:lock"></iron-icon> [[i18n('command.change.password', 'Change Password')]]
+          </paper-button>
+        </template>
         <paper-dialog id="changePasswordDialog" modal>
           <form is="iron-form" id="changePasswordForm" class="vertical layout">
             <h1>[[i18n('command.change.password', 'Change Password')]]</h1>
@@ -258,9 +254,12 @@ Used by `nuxeo-user-group-management`
           </div>
         </paper-dialog>
 
-        <paper-button id="editUserButton" class="horizontal layout center" on-tap="_toggleEditUser">
-          <iron-icon icon="editor:mode-edit"></iron-icon> [[i18n('label.userManager.editUser', 'Edit')]]
-        </paper-button>
+        <!-- edit -->
+        <template is="dom-if" if=[[!readonly]]>
+          <paper-button id="editUserButton" class="horizontal layout center" on-tap="_toggleEditUser">
+            <iron-icon icon="editor:mode-edit"></iron-icon> [[i18n('label.userManager.editUser', 'Edit')]]
+          </paper-button>
+        </template>
         <paper-dialog id="editUserDialog" modal>
           <form is="iron-form" id="editUserForm" class="vertical layout">
             <h1>[[i18n('label.userManager.editUserTitle', 'Edit User')]]</h1>
@@ -281,9 +280,13 @@ Used by `nuxeo-user-group-management`
             </paper-button>
           </div>
         </paper-dialog>
-        <paper-button id="deleteUserButton" class="horizontal layout center" on-tap="_toggleDeleteUser">
-          <iron-icon icon="icons:delete"></iron-icon> [[i18n('command.delete', 'Delete')]]
-        </paper-button>
+
+        <!-- delete -->
+        <template is="dom-if" if=[[!readonly]]>
+          <paper-button id="deleteUserButton" class="horizontal layout center" on-tap="_toggleDeleteUser">
+            <iron-icon icon="icons:delete"></iron-icon> [[i18n('command.delete', 'Delete')]]
+          </paper-button>
+        </template>
         <paper-dialog id="deleteUserDialog" modal>
           <div class="horizontal layout center">
             [[i18n('label.userManager.deleteConfirm', 'Do you really want to delete this user?')]]
@@ -293,15 +296,21 @@ Used by `nuxeo-user-group-management`
             <paper-button class="primary" on-tap="_deleteUser">[[i18n('label.yes', 'Yes')]]</paper-button>
           </div>
         </paper-dialog>
+
       </div>
     </div>
+
     <nuxeo-view-user id="userViewer" user="[[user]]"></nuxeo-view-user>
+
+    <!-- groups -->
     <div class="table-wrapper">
       <div class="layout horizontal">
         <h1 class="flex">[[i18n('label.groupManager.groups', 'Groups')]]</h1>
-        <paper-button id="addGroup" class="flex-end" on-tap="_toggleEditGroups">
-          <iron-icon icon="add"></iron-icon> [[i18n('label.security.addToGroup', 'Add to Group')]]
-        </paper-button>
+        <template is="dom-if" if=[[!readonly]]>
+          <paper-button id="addGroup" class="flex-end" on-tap="_toggleEditGroups">
+            <iron-icon icon="add"></iron-icon> [[i18n('label.security.addToGroup', 'Add to Group')]]
+          </paper-button>
+        </template>
       </div>
       <div class="card layout vertical" hidden$="[[!showEditGroups]]">
         <nuxeo-user-suggestion id="picker" class="flex"
@@ -314,9 +323,7 @@ Used by `nuxeo-user-group-management`
         <template is="dom-repeat" items="[[activity]]">
           <div class="activity-entry">
             [[i18n('label.userManager.memberOf', '{0} is now member of', user.id)]]
-            <span class="tag">
-              <iron-icon icon="social:people"></iron-icon> [[item.label]]
-            </span>
+            <nuxeo-tag icon="social:people">[[item.label]]</nuxeo-tag>
             <span class="remove" on-tap="_toggleDialog">[[i18n('label.userManager.remove', 'Remove')]]</span>
           </div>
         </template>
@@ -325,23 +332,22 @@ Used by `nuxeo-user-group-management`
         <div class="table-row table-headers">
           <div class="flex">[[i18n('label.name', 'Name')]]</div>
           <div class="flex-4">[[i18n('label.security.identifier', 'Identifier')]]</div>
-          <div class="table-actions"></div>
+          <div class="table-actions">&nbsp;</div>
         </div>
         <template is="dom-if" if=[[!empty]]>
           <template is="dom-repeat" items="[[groups]]">
             <div class="table-row">
               <div class="flex">
-                <span class="tag">
-                  <iron-icon icon="social:people"></iron-icon>
-                  [[item.label]]
-                </span>
+                <nuxeo-tag icon="social:people">[[item.label]]</nuxeo-tag>
               </div>
               <div class="flex-4">[[item.name]]</div>
               <div class="table-actions">
-                <paper-icon-button icon="icons:clear"
-                                   title="[[i18n('label.userManager.removeFrom', 'Remove from {0}', item.label)]]"
-                                   on-tap="_toggleDialog">
-                </paper-icon-button>
+                <template is="dom-if" if=[[!readonly]]>
+                  <paper-icon-button icon="icons:clear"
+                                     title="[[i18n('label.userManager.removeFrom', 'Remove from {0}', item.label)]]"
+                                     on-tap="_toggleDialog">
+                  </paper-icon-button>
+                </template>
               </div>
             </div>
           </template>
@@ -353,17 +359,18 @@ Used by `nuxeo-user-group-management`
         </template>
       </div>
     </div>
+
+    <!-- local permissions -->
     <div class="table-wrapper">
       <h1 class="floating-header">[[i18n('label.permissions.localPermissions', 'Local Permissions')]]</h1>
-      <nuxeo-user-group-permissions-table entity="[[username]]"></nuxeo-user-group-permissions-table>
+      <nuxeo-user-group-permissions-table entity="[[username]]" readonly="[[readonly]]"></nuxeo-user-group-permissions-table>
     </div>
     <template is="dom-repeat" items="[[groups]]">
       <div class="table-wrapper">
         <h1 class="floating-header">[[i18n('label.permissions.entityPermissions', '{0} permissions', item.name)]]</h1>
-        <nuxeo-user-group-permissions-table entity="[[item.name]]"></nuxeo-user-group-permissions-table>
+        <nuxeo-user-group-permissions-table entity="[[item.name]]" readonly="[[readonly]]"></nuxeo-user-group-permissions-table>
       </div>
     </template>
-
     <paper-dialog id="dialog" modal class="vertical layout">
       <div class="horizontal layout">
         [[i18n('label.userManager.removeUserFromGroupConfirm', 'Do you really want to remove {0} from {1}?', user.id, _removedGroup.name)]]
@@ -374,6 +381,7 @@ Used by `nuxeo-user-group-management`
       </div>
     </paper-dialog>
   </template>
+
   <script>
     (function() {
       'use strict';
@@ -427,7 +435,13 @@ Used by `nuxeo-user-group-management`
 
           empty: Boolean,
 
-          _removedGroup: Object
+          _removedGroup: Object,
+
+          readonly: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+          }
         },
 
         observers: [

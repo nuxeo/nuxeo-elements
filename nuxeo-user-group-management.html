@@ -89,35 +89,30 @@ Custom property | Description | Default
         background: #fafafa;
         cursor: pointer;
       }
-
-      #createButton {
-        background: #4285f4;
-        color: #fff;
-        padding: 0.4em 0.7em;
-        @apply(--nuxeo-user-management-create-button-layout);
-      }
     </style>
 
     <paper-toast id="toast"></paper-toast>
     <iron-pages selected="[[page]]" attr-for-selected="name">
       <section name="search">
         <div class="horizontal layout center">
-          <paper-menu-button id="createDropdown" horizontal-align="right">
-            <paper-button class="dropdown-trigger" raised id="createButton">
-              <iron-icon icon="add-circle-outline"></iron-icon>
-              <span>[[i18n('action.new.usergroup', 'NEW')]]</span>
-            </paper-button>
-            <paper-menu id="menu" class="dropdown-content" selectable="item">
-              <paper-icon-item on-tap="_createUser">
-                <iron-icon icon="social:person" item-icon></iron-icon>
-                <span>[[i18n('action.new.user', 'User')]]</span>
-              </paper-icon-item>
-              <paper-icon-item on-tap="_createGroup">
-                <iron-icon icon="social:people" item-icon></iron-icon>
-                <span>[[i18n('action.new.group', 'Group')]]</span>
-              </paper-icon-item>
-            </paper-menu>
-          </paper-menu-button>
+          <template is="dom-if" if=[[!readonly]]>
+            <paper-menu-button id="createDropdown" horizontal-align="right">
+              <paper-button class="dropdown-trigger">
+                <iron-icon icon="add-circle-outline"></iron-icon>
+                <span>[[i18n('action.new.usergroup', 'NEW')]]</span>
+              </paper-button>
+              <paper-menu id="menu" class="dropdown-content" selectable="item">
+                <paper-icon-item on-tap="_createUser">
+                  <iron-icon icon="social:person" item-icon></iron-icon>
+                  <span>[[i18n('action.new.user', 'User')]]</span>
+                </paper-icon-item>
+                <paper-icon-item on-tap="_createGroup">
+                  <iron-icon icon="social:people" item-icon></iron-icon>
+                  <span>[[i18n('action.new.group', 'Group')]]</span>
+                </paper-icon-item>
+              </paper-menu>
+            </paper-menu-button>
+          </template>
         </div>
         <nuxeo-user-group-search></nuxeo-user-group-search>
       </section>
@@ -127,7 +122,7 @@ Custom property | Description | Default
       </section>
 
       <section name="manage-user">
-        <nuxeo-user-management username="[[selectedUser]]"></nuxeo-user-management>
+        <nuxeo-user-management username="[[selectedUser]]" readonly="[[readonly]]"></nuxeo-user-management>
       </section>
 
       <section name="create-group">
@@ -135,7 +130,7 @@ Custom property | Description | Default
       </section>
 
       <section name="manage-group">
-        <nuxeo-group-management groupname="[[selectedGroup]]"></nuxeo-group-management>
+        <nuxeo-group-management groupname="[[selectedGroup]]" readonly="[[readonly]]"></nuxeo-group-management>
       </section>
     </iron-pages>
   </template>
@@ -158,9 +153,15 @@ Custom property | Description | Default
       },
 
       selectedUser: String,
+      selectedGroup: String,
 
-      selectedGroup: String
+      readonly: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true
+      }
     },
+
     listeners: {
       'goHome': '_goSearch',
       'nuxeo-user-created': '_toast',

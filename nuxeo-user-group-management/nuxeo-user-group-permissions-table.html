@@ -21,6 +21,7 @@ Contributors:
 <link rel="import" href="../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
+<link rel="import" href="../widgets/nuxeo-tag.html">
 <script src="../../moment/moment.js"></script>
 
 <!--
@@ -127,18 +128,17 @@ Used by `nuxeo-user-group-management`
                   </div>
                   <div class="flex-2">
                     <template is="dom-if" if=[[ace.creator]]>
-                      <span class="tag flex">
-                        <iron-icon icon="social:people"></iron-icon>
-                        [[ace.creator]]
-                      </span>
+                      <nuxeo-tag icon="social:people">[[ace.creator]]</nuxeo-tag>
                     </template>
                   </div>
                   <div class="table-actions">
-                    <paper-icon-button icon="icons:delete"
-                                     title="[[i18n('label.permissions.delete', 'Delete permission')]]"
-                                     on-tap="_toggleDialog"
-                                     hidden$="[[!_canDelete(ace)]]">
-                    </paper-icon-button>
+                    <template is="dom-if" if=[[!readonly]]>
+                      <paper-icon-button icon="icons:delete"
+                                       title="[[i18n('label.permissions.delete', 'Delete permission')]]"
+                                       on-tap="_toggleDialog"
+                                       hidden$="[[!_canDelete(ace)]]">
+                      </paper-icon-button>
+                    </template>
                   </div>
                 </div>
               </template>
@@ -202,7 +202,13 @@ Used by `nuxeo-user-group-management`
             value: 25
           },
 
-          _numberOfPages: Number
+          _numberOfPages: Number,
+
+          readonly: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+          }
         },
 
         observers: [

@@ -27,6 +27,7 @@ Contributors:
 <link rel="import" href="../../paper-input/paper-input.html">
 <link rel="import" href="../../paper-menu/paper-menu.html">
 <link rel="import" href="../../paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../widgets/nuxeo-tag.html">
 
 <!--
 Used by `nuxeo-user-management`
@@ -42,7 +43,7 @@ Used by `nuxeo-user-management`
       }
 
       .search {
-        width: calc(100% - 200px);
+        width: 50%;
         margin-bottom: 32px;
       }
 
@@ -72,19 +73,12 @@ Used by `nuxeo-user-management`
       .table-row {
         @apply(--layout-horizontal);
         @apply(--layout-center);
-        padding: 0 0 0 12px;
+        padding: 8px 0 8px 12px;
+        cursor: pointer;
       }
 
-      .table-actions {
-        width: 3em;
-      }
-
-      .tag {
-        background: none #f3f6f9;
-        border-radius: 4px;
-        font-size: .8em;
-        margin: 0;
-        padding: 6px;
+      .table-row:hover {
+        background: rgba(0, 0, 0, 0.025);
       }
 
       .counter {
@@ -108,6 +102,7 @@ Used by `nuxeo-user-management`
     </div>
 
     <template is="dom-if" if="[[!_showResults(searchTerm)]]">
+
       <!-- groups -->
       <h3 class="title">
         <iron-icon icon="social:people"></iron-icon> [[i18n('label.groupManager.groups', 'Groups')]]
@@ -117,24 +112,17 @@ Used by `nuxeo-user-management`
           <div class="flex-4">[[i18n('label.name', 'Name')]]</div>
           <div class="flex-2">[[i18n('label.security.identifier', 'Identifier')]]</div>
           <div class="flex-4">[[i18n('label.security.contains', 'Contains')]]</div>
-          <div class="table-actions">&nbsp;</div>
         </div>
         <div class="table-rows">
           <template is="dom-repeat" items="[[groups.entries]]" as="item">
-            <div class="table-row">
+            <div class="table-row" on-tap="_manageGroup">
               <div class="flex-4">
-                <span class="tag">
-                  <iron-icon icon="social:people"></iron-icon>
-                  [[item.grouplabel]]
-                </span>
+                <nuxeo-tag icon="social:people">[[item.grouplabel]]</nuxeo-tag>
               </div>
               <div class="flex-2">[[item.groupname]]</div>
               <div class="flex-4">
                 <span class="counter">[[_countUsers(item.memberUsers)]]</span>
                 <span class="counter">[[_countGroups(item.memberGroups)]]</span>
-              </div>
-              <div class="table-actions layout horizontal">
-                <paper-icon-button icon="editor:mode-edit" on-tap="_manageGroup"></paper-icon-button>
               </div>
             </div>
           </template>
@@ -156,24 +144,17 @@ Used by `nuxeo-user-management`
           <div class="flex-4">[[i18n('label.name', 'Name')]]</div>
           <div class="flex-2">[[i18n('label.security.identifier', 'Identifier')]]</div>
           <div class="flex-4">[[i18n('email', 'Email')]]</div>
-          <div class="table-actions">&nbsp;</div>
         </div>
         <div class="table-rows">
           <template is="dom-repeat" items="[[users.entries]]" as="item">
-            <div class="table-row">
+            <div class="table-row" on-tap="_manageUser">
               <div class="flex-4">
                 <template is="dom-if" if="[[_userHasName(item)]]">
-                  <span class="tag">
-                    <iron-icon icon="social:person"></iron-icon>
-                    [[item.properties.firstName]] [[item.properties.lastName]]
-                  </span>
+                  <nuxeo-tag icon="social:person"> [[item.properties.firstName]] [[item.properties.lastName]]</nuxeo-tag>
                 </template>
               </div>
               <div class="flex-2">[[item.id]]</div>
               <div class="flex-4">[[item.properties.email]]</div>
-              <div class="table-actions layout horizontal">
-                <paper-icon-button icon="editor:mode-edit" on-tap="_manageUser"></paper-icon-button>
-              </div>
             </div>
           </template>
           <template is="dom-if" if=[[_empty(users.entries)]]>
@@ -194,6 +175,7 @@ Used by `nuxeo-user-management`
     behaviors: [Nuxeo.I18nBehavior],
 
     properties: {
+
       searchTerm: {
         type: String,
         value: '',
