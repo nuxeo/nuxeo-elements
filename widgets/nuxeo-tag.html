@@ -36,17 +36,18 @@ Example:
   <template>
     <style>
       :host {
-        display: inline-block;
-        background: rgba(0, 0, 0, 0.05);
-        border-radius: 4px;
-        font-size: 12px;
-        margin: 0;
-        padding: 2px 6px;
+        @apply(--nuxeo-tag);
+      }
+
+      :host[uppercase] {
+        text-transform: uppercase;
       }
 
       iron-icon {
-        width: 20px;
-        height: 20px;
+        width: 14px;
+        height: 14px;
+        margin: 0;
+        padding: 0;
       }
     </style>
 
@@ -64,7 +65,12 @@ Example:
       is: 'nuxeo-tag',
 
       properties: {
-        icon: String
+        icon: String,
+        uppercase: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true
+        }
       }
 
     });
