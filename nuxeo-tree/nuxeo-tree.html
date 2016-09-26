@@ -163,6 +163,7 @@ controller = {
             this._root.data = this.data;
             this._root.dataset[this.nodeKey] = this.data[this.nodeKey];
             Polymer.dom(this).appendChild(this._root);
+            this._root.open();
             Polymer.dom.flush();
           }
         },
