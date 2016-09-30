@@ -50,7 +50,7 @@ function XHRLocaleResolver(msgFolder) {
   return function() {
     return new Promise(function(resolve,reject) {
       var language = window.nuxeo.I18n.language || 'en';
-      var url = msgFolder +  '/messages.' + language + '.json';
+      var url = msgFolder +  '/messages' + (language === 'en' ? '' : '-' + language)  + '.json';
       var xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
       xhr.onreadystatechange = function() {
