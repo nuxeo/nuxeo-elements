@@ -49,21 +49,29 @@ window.nuxeo.I18n.loadLocale = function() {
 function XHRLocaleResolver(msgFolder) {
   return function() {
     return new Promise(function(resolve,reject) {
+      function loadLang(url) {
+        var referenceFile = msgFolder +  '/messages.json';
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+              window.nuxeo.I18n[language] = JSON.parse(this.response); // cache this locale
+              resolve(this.response);
+            } else if (xhr.status === 404 && url !== referenceFile) {
+              console.log('Could not find locale "' + language + '". Defaulting to "en".');
+              loadLang(referenceFile); // default to messages.json
+            }
+          }
+        };
+        xhr.onerror = function() {
+          console.error('Failed to load ' + url);
+        };
+        xhr.send();
+      }
       var language = window.nuxeo.I18n.language || 'en';
       var url = msgFolder +  '/messages' + (language === 'en' ? '' : '-' + language)  + '.json';
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', url, true);
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4 && xhr.status == 200) {
-          window.nuxeo.I18n[language] = JSON.parse(this.response); // cache this locale.
-          resolve(this.response);
-        }
-      };
-      xhr.onerror = function() {
-        console.error("Failed to load " + url);
-        reject(this.statusText);
-      };
-      xhr.send();
+      loadLang(url);
     });
   }
 }
