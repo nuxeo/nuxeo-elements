@@ -55,6 +55,7 @@ Custom property | Description | Default
       }
 
       #canvas {
+        width: 100%;
         height: var(--nuxeo-image-viewer-height, 100%);
         position: relative;
       }
@@ -80,17 +81,21 @@ Custom property | Description | Default
         color: #3f51b5;
       }
 
-      img {
-        max-height: 100%;
+      #image {
+        display: none;
         max-width: 100%;
+        max-height: 100%;
       }
 
-      .image {
-        visibility: hidden;
+      ::content .cropper-container {
+        width: 100% !important;
+        height: 100% !important;
       }
+
     </style>
 
     <div id="canvas">
+      <img id="image" src="[[src]]" on-load="_init">
       <template is="dom-if" if="[[controls]]">
         <div id="toolbar">
           <paper-icon-button on-click="_click" icon="zoom-out" data-action="zoom-out"></paper-icon-button>
@@ -99,10 +104,9 @@ Custom property | Description | Default
           <paper-icon-button on-click="_click" icon="image:rotate-right" data-action="rotate-right"></paper-icon-button>
         </div>
       </template>
-
-      <img id="image" src="[[src]]">
     </div>
   </template>
+
   <script>
     (function() {
       'use strict';
@@ -116,8 +120,7 @@ Custom property | Description | Default
            * The URL of an image.
            */
           src: {
-            type: String,
-            observer: 'init'
+            type: String
           },
 
           /**
@@ -151,7 +154,7 @@ Custom property | Description | Default
           'iron-resize': '_resize'
         },
 
-        init: function() {
+        _init: function() {
           if (this._el) {
             this._el.destroy();
           }
@@ -192,7 +195,7 @@ Custom property | Description | Default
         },
 
         _resize: function() {
-          if (this._el && this.responsive) {
+          if (this._el) {
             this._el.resize();
           }
         }

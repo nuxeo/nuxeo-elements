@@ -43,6 +43,9 @@ Example:
       :host {
         display: block;
       }
+      #video {
+        background: var(--primary-background-color);
+      }
     </style>
     <video id="video" class="video-js vjs-default-skin" controls$="[[controls]]" width="[[width]]" height="[[height]]" preload="[[preload]]" poster="[[poster]]">
       <template is="dom-repeat" items="[[sources]]" as="source">
@@ -66,8 +69,8 @@ Example:
        */
       width: {
         type: Number,
-        value: 550,
-        // observer: '_widthChanged'
+        value: 640,
+        observer: '_widthChanged'
       },
 
       /**
@@ -75,8 +78,8 @@ Example:
        */
       height: {
         type: Number,
-        value: 310,
-        // observer: '_heightChanged'
+        value: 360,
+        observer: '_heightChanged'
       },
 
       /**
@@ -108,11 +111,6 @@ Example:
     },
 
     ready: function() {
-      // Polymer.dom(this).children.forEach(function(child) {
-      //   Polymer.dom(this.$.video).appendChild(child);
-      // }.bind(this));
-      // this.updateStyles();
-
       // Capture tap event to prevent clashing with videojs tap/click events
       this.addEventListener('tap', function(event) {
         event.stopPropagation();
@@ -120,10 +118,8 @@ Example:
     },
 
     attached: function() {
-      // this.scopeSubtree(this.$.video, true);
       this.videojs = videojs(this.$.video);
-      // this.videojs.el().style.width = this.width;
-      // this.videojs.el().style.height = this.height;
+      this.videojs.el().style.width = '100%';
     },
 
     detached: function() {
