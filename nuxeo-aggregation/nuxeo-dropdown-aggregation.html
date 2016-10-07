@@ -18,6 +18,8 @@ Contributors:
 -->
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../widgets/nuxeo-select2.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="nuxeo-aggregation-behavior.html">
 
 <!--
 `nuxeo-dropdown-aggregation`
@@ -49,6 +51,8 @@ Contributors:
 
      Polymer({
        is: 'nuxeo-dropdown-aggregation',
+
+       behaviors: [Nuxeo.I18nBehavior, Nuxeo.AggregationBehavior],
 
        properties: {
 
@@ -83,9 +87,9 @@ Contributors:
            return this.data.extendedBuckets.map(function(item) {
              return {
                id: item.key,
-               text: item.key + ' (' + item.docCount + ')'
+               text: this._computeLabel(item) + ' (' + item.docCount + ')'
              };
-           });
+           }.bind(this));
          }
        }
      });

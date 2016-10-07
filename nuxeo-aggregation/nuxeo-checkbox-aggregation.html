@@ -19,6 +19,7 @@ Contributors:
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="nuxeo-aggregation-behavior.html">
 
 <!--
 `nuxeo-checkbox-aggregation`
@@ -55,54 +56,8 @@ Contributors:
      Polymer({
        is: 'nuxeo-checkbox-aggregation',
 
-       behaviors: [Nuxeo.I18nBehavior],
+       behaviors: [Nuxeo.I18nBehavior, Nuxeo.AggregationBehavior],
 
-       properties: {
-
-         data: {
-           type: Object
-         },
-
-         value: {
-           type: Array,
-           value: [],
-           notify: true
-         },
-
-         buckets: {
-           type: Object,
-           computed: '_computeBuckets(data)'
-         }
-       },
-
-       _computeBuckets: function(data) {
-         if (data) {
-           var buckets = data.extendedBuckets;
-           var selectedBuckets = data.selection;
-           buckets.forEach(function(item) {
-             item.checked = selectedBuckets.indexOf(item.key) >= 0;
-           });
-           return buckets;
-         }
-       },
-
-       _computeValues: function() {
-         var values = [];
-         this.buckets.forEach(function(item) {
-           if (item.checked) {
-             values.push(item.key);
-           }
-         });
-         this.value = values;
-       },
-
-       _isEmpty: function(data) {
-         return data && data.extendedBuckets.length === 0;
-       },
-
-       _computeLabel: function(item) {
-         return this.i18n('label.ui.aggregate.' + item.key, item.key);
-       }
      });
    })();
  </script>
