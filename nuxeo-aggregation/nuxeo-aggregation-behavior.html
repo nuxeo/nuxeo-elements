@@ -103,7 +103,9 @@ Contributors:
      },
 
      labelForUserEntry: function(entry) {
-         if (entry.properties['firstName'] && entry.properties['firstName'].length > 0
+         if (entry.properties === undefined) {
+           return entry.id;
+         } else if (entry.properties['firstName'] && entry.properties['firstName'].length > 0
            && entry.properties['lastName'] && entry.properties['lastName'].length > 0) {
            return entry.properties['firstName'] + " " + entry.properties['lastName'];
          } else {
