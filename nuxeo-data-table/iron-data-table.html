@@ -566,6 +566,8 @@ Example:
             } else {
               fireEvent('expanding-item', e.model.item, this.expandItem);
             }
+          } else {
+            this.fire('row-clicked', {item: e.model.item});
           }
         }
       },
