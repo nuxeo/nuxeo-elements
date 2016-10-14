@@ -31,6 +31,17 @@ Contributors:
 -->
 <dom-module id="nuxeo-directory-suggestion">
 <template>
+
+  <style>
+    :host {
+      display: block;
+    }
+  </style>
+
+  <template is="dom-if" if="[[label]]">
+    <label>[[label]]</label>
+  </template>
+
   <nuxeo-select2 operation="Directory.SuggestEntries"
                  min-chars="[[minChars]]"
                  multiple="[[multiple]]"
@@ -40,8 +51,6 @@ Contributors:
                  value="{{value}}"
                  selected-items="{{selectedItems}}">
   </nuxeo-select2>
-
-  <template is="dom-if" if="[[label]]"><span>[[label]]</span> : </template>
 
 </template>
 <script>
