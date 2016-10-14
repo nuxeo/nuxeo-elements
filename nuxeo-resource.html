@@ -97,6 +97,12 @@ element.
       contentType: {type: String, value: 'application/json'},
 
       /**
+       * List of comma separated values of the document schemas to be returned.
+       * All document schemas are returned by default.
+       */
+      schemas: {type: String, value: ''},
+
+      /**
        * The delay in milliseconds to debounce the auto get call when path, params, etc. changes.
        */
       autoDelay: {
@@ -138,6 +144,10 @@ element.
         options.body = this.data;
       }
 
+      // Look up document schemas to be returned
+      if (this.schemas && this.schemas.length > 1) {
+          options.schemas = this.schemas.trim().split(/[\s,]+/);
+      }
       // Look up headers parameter
       options.headers = this.headers || {};
       // add support for plain text responses by default

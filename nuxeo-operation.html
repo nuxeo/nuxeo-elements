@@ -104,7 +104,13 @@ element.
             enrichers: {type: String, value: ''},
 
             /* The `content enricher` entity-type of the resource. Default value for Nuxeo Document Model*/
-            enrichersEntity: {type: String, value: 'document'}
+            enrichersEntity: {type: String, value: 'document'},
+
+            /**
+             * List of comma separated values of the document schemas to be returned.
+             * All document schemas are returned by default.
+             */
+            schemas: {type: String, value: ''},
           },
           observers: [
             '_autoExecute(op, params, enrichers, enrichersEntity)'
@@ -113,6 +119,10 @@ element.
           execute: function() {
             var params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
             var options = {};
+            // Look up document schemas to be returned
+            if (this.schemas && this.schemas.length > 1) {
+              options.schemas = this.schemas.trim().split(/[\s,]+/);
+            }
             options.headers = this.headers || {};
             // Look up content enrichers parameter
             if (this.enrichers) {

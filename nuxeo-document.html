@@ -48,7 +48,8 @@ element.
     <nuxeo-resource id="nxResource" connection-id="{{connectionId}}" method="{{method}}" auto="{{auto}}"
                     path="{{path}}" data="{{data}}" enrichers="{{enrichers}}"
                     params="{{params}}" headers="{{headers}}"
-                    type="{{type}}" response="{{response}}"></nuxeo-resource>
+                    type="{{type}}" response="{{response}}"
+                    schemas="[[schemas]]"></nuxeo-resource>
   </template>
 </dom-module>
 
@@ -97,7 +98,13 @@ element.
       headers: {type: Object, value: null},
 
       /* The `content enricher` of the resource. */
-      enrichers: {type: String, value: ''}
+      enrichers: {type: String, value: ''},
+
+      /**
+       * List of comma separated values of the document schemas to be returned.
+       * All document schemas are returned by default.
+       */
+      schemas: {type: String, value: ''},
     },
 
     get: function () {

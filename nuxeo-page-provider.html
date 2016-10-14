@@ -57,7 +57,8 @@ element.
     <nuxeo-resource id="nxResource"
                     connection-id="[[connectionId]]"
                     path="{{path}}"
-                    enrichers="{{enrichers}}">
+                    enrichers="{{enrichers}}"
+                    schemas="[[schemas]]">
     </nuxeo-resource>
 
   </template>
@@ -181,6 +182,14 @@ element.
         enrichers: {
           type: String,
           value: ''
+        },
+
+        /**
+         * List of comma separated values of the document schemas to be returned.
+         * All document schemas are returned by default.
+         */
+        schemas: {
+          type: String
         },
 
         /**
