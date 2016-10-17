@@ -58,7 +58,8 @@ element.
                     connection-id="[[connectionId]]"
                     path="{{path}}"
                     enrichers="{{enrichers}}"
-                    schemas="[[schemas]]">
+                    schemas="[[schemas]]"
+                    headers="{{headers}}">
     </nuxeo-resource>
 
   </template>
@@ -192,6 +193,11 @@ element.
           type: String
         },
 
+        /* The headers of the request.
+         * 'Accept': 'text/plain,application/json' is already set by default.
+         */
+        headers: {type: Object, value: null},
+
         /**
          * Fetch the aggregate bucket's key if it matches a user
          * or directory entry and translate directory label.
@@ -284,13 +290,13 @@ element.
       },
 
       _fetchAggregatesChanged: function() {
-        if (this.$.nxResource.headers === null) {
-          this.$.nxResource.headers = {};
+        if (this.headers === null) {
+          this.headers = {};
         }
         if (this.fetchAggregates === true) {
-          this.$.nxResource.headers['X-NXfetch.aggregate'] = 'key';
+          this.headers['X-NXfetch.aggregate'] = 'key';
         } else {
-          delete this.$.nxResource.headers['X-NXfetch.aggregate'];
+          delete this.headers['X-NXfetch.aggregate'];
         }
       }
     });
