@@ -49,7 +49,8 @@ element.
                     path="{{path}}" data="{{data}}" enrichers="{{enrichers}}"
                     params="{{params}}" headers="{{headers}}"
                     type="{{type}}" response="{{response}}"
-                    schemas="[[schemas]]"></nuxeo-resource>
+                    schemas="[[schemas]]"
+                    fetches="[[fetches]]"></nuxeo-resource>
   </template>
 </dom-module>
 
@@ -105,6 +106,11 @@ element.
        * All document schemas are returned by default.
        */
       schemas: {type: String, value: ''},
+
+      /**
+       * The document properties to be fetched.
+       */
+      fetches: {type: Object, value: {}}
     },
 
     get: function () {

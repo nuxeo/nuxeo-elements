@@ -111,6 +111,11 @@ element.
              * All document schemas are returned by default.
              */
             schemas: {type: String, value: ''},
+
+            /**
+             * The document properties to be fetched.
+             */
+            fetches: {type: Object, value: {}}
           },
           observers: [
             '_autoExecute(op, params, enrichers, enrichersEntity)'
@@ -127,6 +132,18 @@ element.
             // Look up content enrichers parameter
             if (this.enrichers) {
               options.headers['X-NXenrichers.' + this.enrichersEntity] = this.enrichers;
+            }
+            // Look up for properties to be fetched
+            if (this.fetches) {
+              for (var fetch in this.fetches) {
+                if (this.fetches.hasOwnProperty(fetch)) {
+                  if (fetch.startsWith('X-NXfetch')) {
+                    options.headers[fetch] = this.fetches[fetch];
+                  } else {
+                    options.headers['X-NXfetch.' + fetch] = this.fetches[fetch];
+                  }
+                }
+              }
             }
             return this.$.nx.operation(this.op).then(function(operation) {
               this._operation = operation;

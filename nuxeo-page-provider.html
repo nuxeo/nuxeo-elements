@@ -58,7 +58,8 @@ element.
                     connection-id="[[connectionId]]"
                     path="{{path}}"
                     enrichers="{{enrichers}}"
-                    schemas="[[schemas]]">
+                    schemas="[[schemas]]"
+                    fetches="[[fetches]]">
     </nuxeo-resource>
 
   </template>
@@ -193,14 +194,10 @@ element.
         },
 
         /**
-         * Fetch the aggregate bucket's key if it matches a user
-         * or directory entry and translate directory label.
+         * The document properties to be fetched.
          */
-        fetchAggregates: {
-          type: Boolean,
-          value: false,
-          observer: '_fetchAggregatesChanged'
-        },
+        fetches: {type: Object, value: {}}
+
       },
 
       observers: [
@@ -281,18 +278,8 @@ element.
           path = '/query/' + provider;
         }
         return path;
-      },
-
-      _fetchAggregatesChanged: function() {
-        if (this.$.nxResource.headers === null) {
-          this.$.nxResource.headers = {};
-        }
-        if (this.fetchAggregates === true) {
-          this.$.nxResource.headers['X-NXfetch.aggregate'] = 'key';
-        } else {
-          delete this.$.nxResource.headers['X-NXfetch.aggregate'];
-        }
       }
+
     });
   </script>
 

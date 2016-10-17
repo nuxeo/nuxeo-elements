@@ -102,6 +102,8 @@ element.
        */
       schemas: {type: String, value: ''},
 
+      fetches: {type: Object, value: {}},
+
       /**
        * The delay in milliseconds to debounce the auto get call when path, params, etc. changes.
        */
@@ -159,6 +161,18 @@ element.
         options.headers['enrichers-' + this.enrichersEntity] = this.enrichers;
         // NXP-18425: send also header with dot separator for compat with < 7.10-HF01
         options.headers['X-NXenrichers.' + this.enrichersEntity] = this.enrichers;
+      }
+      // Look up for properties to be fetched
+      if (this.fetches) {
+        for (var fetch in this.fetches) {
+          if (this.fetches.hasOwnProperty(fetch)) {
+            if (fetch.startsWith('X-NXfetch')) {
+              options.headers[fetch] = this.fetches[fetch];
+            } else {
+              options.headers['X-NXfetch.' + fetch] = this.fetches[fetch];
+            }
+          }
+        }
       }
 
       var params = this.params || {};
