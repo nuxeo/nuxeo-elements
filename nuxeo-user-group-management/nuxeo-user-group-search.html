@@ -186,11 +186,6 @@ Used by `nuxeo-user-management`
       users: Object,
       groups: Object,
 
-      pageSize: {
-        type: Number,
-        value: 5
-      },
-
       groupsCurrentPage: Number,
 
       usersCurrentPage: Number
@@ -214,7 +209,6 @@ Used by `nuxeo-user-management`
     _searchGroups: function() {
       var params = {
         q: this.searchTerm,
-        pageSize: this.pageSize,
         currentPageIndex: this.groupsCurrentPage - 1
       };
       this.$.groupSearch.params = params;
@@ -223,7 +217,6 @@ Used by `nuxeo-user-management`
     _searchUsers: function() {
       var params = {
         q: this.searchTerm,
-        pageSize: this.pageSize,
         currentPageIndex: this.usersCurrentPage - 1
       };
       this.$.userSearch.params = params;

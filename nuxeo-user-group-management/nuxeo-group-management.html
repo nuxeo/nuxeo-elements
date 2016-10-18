@@ -429,11 +429,6 @@ Used by `nuxeo-user-group-management`
             value: false
           },
 
-          pageSize: {
-            type: Number,
-            value: 100
-          },
-
           usersCurrentPage: Number,
 
           usersFilter: String,
@@ -505,7 +500,6 @@ Used by `nuxeo-user-group-management`
             }
             var params = {
               q: this.groupsFilter,
-              pageSize: this.pageSize,
               currentPageIndex: this.groupsCurrentPage - 1
             };
             this.$.groups.params = params;
@@ -522,7 +516,6 @@ Used by `nuxeo-user-group-management`
             }
             var params = {
               q: this.usersFilter,
-              pageSize: this.pageSize,
               currentPageIndex: this.usersCurrentPage - 1
             };
             this.$.users.params = params;
