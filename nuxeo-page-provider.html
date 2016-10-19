@@ -169,6 +169,11 @@ element.
           notify: true
         },
 
+        quickFilters: {
+          type: Array,
+          notify: true
+        },
+
         isNextPageAvailable: {
           type: Boolean,
           value: false,
@@ -241,6 +246,18 @@ element.
             }
           }, this);
         }
+
+        // Append quick filters if any
+        if (this.quickFilters) {
+          var retainedFilters = [];
+          for (var i = 0; i < this.quickFilters.length; i++) {
+            if (this.quickFilters[i].active === true) {
+              retainedFilters.push(this.quickFilters[i].name);
+            }
+          }
+          params['quickFilters'] = retainedFilters.join(',');
+        }
+
         this.$.nxResource.params = params;
         return this.$.nxResource.execute()
           .then(function(response) {
@@ -248,6 +265,7 @@ element.
             this.numberOfPages = response.numberOfPages;
             this.resultsCount = response.resultsCount;
             this.aggregations = response.aggregations;
+            this.quickFilters = response.quickFilters;
             this.isNextPageAvailable = response.isNextPageAvailable;
             this.currentPageSize = response.currentPageSize;
             this.fire('update');
