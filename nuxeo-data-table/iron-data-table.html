@@ -157,11 +157,17 @@ Example:
         text-align: center;
         font-size: 1.5em;
       }
+
     </style>
 
     <div id="container">
 
       <content select="nuxeo-selection-toolbar"></content>
+
+      <template is="dom-if" if="[[displayQuickFilters]]">
+        <nuxeo-quick-filters quick-filters="{{quickFilters}}" on-quick-filter-changed="_quickFilterChanged">
+        </nuxeo-quick-filters>
+      </template>
 
       <div id="header">
         <nuxeo-data-table-row header>
@@ -249,7 +255,8 @@ Example:
 
       behaviors: [
         Polymer.IronResizableBehavior,
-        Nuxeo.PageProviderDisplayBehavior
+        Nuxeo.PageProviderDisplayBehavior,
+        Nuxeo.I18nBehavior
       ],
 
       listeners: {
@@ -602,6 +609,7 @@ Example:
           this._updateFlags();
         }
       }
+
     });
   </script>
 </dom-module>

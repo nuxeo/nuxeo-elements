@@ -159,6 +159,11 @@ Contributors:
 
       <content select="nuxeo-selection-toolbar"></content>
 
+      <template is="dom-if" if="[[displayQuickFilters]]">
+        <nuxeo-quick-filters quick-filters="{{quickFilters}}" on-quick-filter-changed="_quickFilterChanged">
+        </nuxeo-quick-filters>
+      </template>
+
       <div id="filters" class="filters">
         <template is="dom-repeat" items="[[filters]]" as="filter">
           <span class="tag filter">

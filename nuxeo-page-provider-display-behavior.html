@@ -153,6 +153,16 @@ Contributors:
         as: {
           type: String,
           value: 'item'
+        },
+
+        displayQuickFilters: {
+          type: Boolean,
+          value: false
+        },
+
+        quickFilters: {
+          type: Array,
+          notify: true
         }
       },
 
@@ -208,6 +218,7 @@ Contributors:
         docs.forEach(function(doc) {
           this.$.list.push('items', doc);
         }.bind(this));
+        this.quickFilters = this.nxProvider.quickFilters;
         this.size = this.$.list.items.length;
         this.$.list.notifyResize();
         this.notifyResize();
@@ -418,6 +429,11 @@ Contributors:
         if (!this.$.list._isIndexVisible(idx)) {
           this.$.list.scrollToIndex(idx);
         }
+      },
+
+      _quickFilterChanged: function(e) {
+        this._resetResults();
+        this.nxProvider.fetch();
       }
 
     };
