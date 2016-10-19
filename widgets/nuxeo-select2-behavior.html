@@ -142,19 +142,28 @@ Contributors:
 
     _initSelection: function(element, callback) {
       if (!this.multiple) {
-        return callback({
-          id: this.value,
-          displayLabel: this.value
-        });
+        return callback(this._resolveEntry(this.value));
       }
       return callback(
         this.value.map(function(entry) {
-          return {
-            id: entry,
-            displayLabel: entry
-          };
-        })
+          return this._resolveEntry(entry);
+        }.bind(this))
       );
+    },
+
+    _resolveEntry(entry) {
+      if (this.data) {
+        for (var i = 0; i < this.data.length; i++) {
+            if (this.data[i].id === entry) {
+                return this.data[i];
+            }
+        }
+      } else {
+        return {
+          id: entry,
+          displayLabel: entry
+        };
+      }
     },
 
     _initSelect2: function (el) {

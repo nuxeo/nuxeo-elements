@@ -85,9 +85,11 @@ Contributors:
        _computeData: function() {
          if (this.data) {
            return this.data.extendedBuckets.map(function(item) {
+             var label = this._computeLabel(item) + ' (' + item.docCount + ')';
              return {
                id: item.key,
-               text: this._computeLabel(item) + ' (' + item.docCount + ')'
+               text: label,
+               displayLabel: label
              };
            }.bind(this));
          }
