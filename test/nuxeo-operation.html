@@ -47,16 +47,8 @@ Contributors:
       json: {'Content-Type': 'application/json'},
       plain: {'Content-Type': 'text/plain'}
     };
+
     var server;
-
-    function timePasses(ms) {
-      return new Promise(function(resolve) {
-        window.setTimeout(function() {
-          resolve();
-        }, ms);
-      });
-    }
-
     setup(function() {
       server = sinon.fakeServer.create();
       server.autoRespond = true;
