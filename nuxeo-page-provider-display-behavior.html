@@ -142,7 +142,8 @@ Contributors:
         },
 
         items: {
-          type: Array
+          type: Array,
+          notify: true
         },
 
         selectOnTap: {
@@ -192,7 +193,7 @@ Contributors:
         }
       },
 
-      _loadMoreData: function(e) {
+      _loadMoreData: function() {
         if (!this._isPPLoaded()) {
           return;
         }
@@ -282,7 +283,7 @@ Contributors:
         }
       },
 
-      _isSelected: function(item, selectedItems) {
+      _isSelected: function(item) {
         var selected = this.$.list.selectedItems.indexOf(item) > -1;
         return selected;
       },
@@ -431,7 +432,7 @@ Contributors:
         }
       },
 
-      _quickFilterChanged: function(e) {
+      _quickFilterChanged: function() {
         this._resetResults();
         this.nxProvider.fetch();
       }

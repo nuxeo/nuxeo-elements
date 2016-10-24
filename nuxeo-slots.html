@@ -168,7 +168,7 @@ Contributors:
               this._forwardParentProp(prop, change.value[prop]);
             }.bind(this));
           } else {
-            this._forwardParentPath(change.path.slice('model.'.length + 1), value);
+            this._forwardParentPath(change.path.slice('model.'.length + 1), change.value);
           }
         },
 
