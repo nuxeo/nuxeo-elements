@@ -75,7 +75,6 @@ Contributors:
               this.set('quickFilters.' + i + '.active', !this.quickFilters[i].active);
             }
           }
-          this.fire('quick-filter-changed', {filter: this.quickFilters[i]});
         },
 
         _computeFilterLabel: function(filter) {
