@@ -47,6 +47,11 @@ Contributors:
 
     hasVersions: function(doc) {
       return doc && (doc.properties['uid:major_version'] > 0 || doc.properties['uid:minor_version'] > 0);
+    },
+
+    hasCollections: function(doc) {
+      return doc && doc.contextParameters && doc.contextParameters.collections &&
+          doc.contextParameters.collections.length > 0;
     }
 
   };
