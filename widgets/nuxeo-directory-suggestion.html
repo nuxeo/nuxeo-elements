@@ -47,15 +47,18 @@ Contributors:
                  multiple="[[multiple]]"
                  params="[[params]]"
                  placeholder="[[placeholder]]"
-                 read-only="[[readOnly]]"
+                 readonly="[[readonly]]"
                  value="{{value}}"
-                 selected-items="{{selectedItems}}">
+                 selected-items="{{selectedItems}}"
+                 selection-formatter="[[selectionFormatter]]"
+                 init-selection="[[initSelection]]">
   </nuxeo-select2>
 
 </template>
 <script>
 Polymer({
   is: 'nuxeo-directory-suggestion',
+  behaviors: [Nuxeo.I18nBehavior],
   properties: {
 
     /**
@@ -89,7 +92,7 @@ Polymer({
       value: false
     },
 
-    readOnly: {
+    readonly: {
       type: Boolean,
       value: false
     },
@@ -104,6 +107,20 @@ Polymer({
     selectedItems: {
       type: Object,
       notify: true
+    },
+
+    selectionFormatter: {
+      type: Function,
+      value: function() {
+        return this._selectionFormatter.bind(this);
+      }
+    },
+
+    initSelection: {
+      type: Function,
+      value: function () {
+        return this._initSelection.bind(this);
+      }
     }
   },
 
@@ -111,7 +128,44 @@ Polymer({
     return this.params = {
       directoryName: this.directoryName,
       dbl10n: this.dbl10n,
-      localize : true
+      localize : true,
+      lang: (window.nuxeo.I18n.language) ? window.nuxeo.I18n.language.split('-')[0] : 'en'
+    };
+  },
+
+  _selectionFormatter: function(entry) {
+    return entry.displayLabel;
+  },
+
+  _initSelection: function(element, callback) {
+    if (!this.multiple) {
+      return callback(this._resolveEntry(this.value));
+    }
+    return callback(
+      this.value.map(function(entry) {
+        return this._resolveEntry(entry);
+      }.bind(this))
+    );
+  },
+
+  _resolveEntry: function(entry) {
+    if (entry && entry['entity-type'] && entry['entity-type'] === 'directoryEntry') {
+      if (entry.properties && entry.properties.label) {
+        return {
+          id: entry.properties.id,
+          displayLabel: this.i18n(entry.properties.label)
+        };
+      } else {
+        var label = 'label_' + ((window.nuxeo.I18n.language) ? window.nuxeo.I18n.language.split('-')[0] : 'en');
+        return {
+          id: entry.properties.id,
+          displayLabel: entry.properties[label]
+        };
+      }
+    }
+    return {
+      id: entry,
+      displayLabel: entry
     };
   }
 

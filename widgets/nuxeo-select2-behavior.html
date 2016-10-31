@@ -49,7 +49,7 @@ Contributors:
         value: false
       },
 
-      readOnly: {
+      readonly: {
         type: Boolean,
         value: false
       },
@@ -229,7 +229,7 @@ Contributors:
       jQuery(el).on('change', this._updateSelection.bind(this));
 
       // view or edit mode
-      if (this.readOnly) {
+      if (this.readonly) {
         jQuery(el).select2('readonly', true);
       }
 
