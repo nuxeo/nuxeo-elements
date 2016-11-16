@@ -25,7 +25,8 @@ Contributors:
   <link rel="import" href="../../font-roboto/roboto.html">
   <link rel="import" href="../../polymer/polymer.html">
   <link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
-  <link rel="import" href="../../nuxeo-elements/nuxeo-page-provider.html">
+  <link rel="import" href="../../nuxeo-elements/nuxeo-audit-page-provider.html">
+  <link rel="import" href="../../nuxeo-elements/nuxeo-document.html">
 </head>
 <style>
 
@@ -67,30 +68,24 @@ Contributors:
 <body>
 <template is="dom-bind">
   <nuxeo-connection id="nx" url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
-  <nuxeo-page-provider auto page-size="5" current-page="{{docs}}"
-                       query="[[query(docType)]]"></nuxeo-page-provider>
+  <nuxeo-document id="doc" doc-path="/default-domain"></nuxeo-document>
+  <nuxeo-audit-page-provider auto page-size="5" current-page="{{entries}}" doc-uid="87533514-8557-462b-aa08-7c9206d3ef52"></nuxeo-audit-page-provider>
   <div class="container" class="layout vertical center">
 
-    <select flex two value="{{docType::change}}">
-      <option value="Note">Notes</option>
-      <option value="File">Files</option>
-    </select>
-
-    <hr/>
-
-    <template is="dom-repeat" items="{{docs}}">
+    <template is="dom-repeat" items="{{entries}}">
       <div class="card layout horizontal center">
-        <h2>[[item.title]]</h2>
+        <h2>[[item.eventId]]</h2>
+        <h3>[[item.principalName]]</h3>
       </div>
     </template>
   </div>
 </template>
 <script>
-  var app = document.querySelector('template[is="dom-bind"]');
-  app.docType = 'File';
-  app.query = function(docType) {
-    return "select * from " + docType  + " where ecm:currentLifeCycleState != 'deleted'";
-  };
+  var nxDoc = document.querySelector('nuxeo-document');
+  console.log('pouet');
+  nxDoc.get().then(function(resp) {
+    console.log('resp');
+  });
 </script>
 </body>
 </html>
