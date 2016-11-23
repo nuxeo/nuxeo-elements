@@ -1,4 +1,5 @@
 <!--
+@license
 (C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,15 +13,16 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-Contributors:
-  Guillaume Renard <grenard@nuxeo.com>
 -->
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="nuxeo-operation.html">
 
 <!--
+`nuxeo-audit-page-provider` perform a query with DOCUMENT_HISTORY_PROVIDER against Audit logs.
+
+    <nuxeo-audit-page-provider doc-uid="" current-page="{{entries}}"></nuxeo-audit-page-provider>
+
 @group Nuxeo Elements
 @element nuxeo-audit-page-provider
 @homepage http://www.nuxeo.org
@@ -46,7 +48,9 @@ Contributors:
       is: 'nuxeo-audit-page-provider',
       properties: {
 
-        /* The id of a nuxeo-connection to use. */
+        /**
+         * The id of a nuxeo-connection to use.
+         */
         connectionId: {
           type: String,
           value: ''
@@ -69,9 +73,33 @@ Contributors:
         },
 
         /**
+         * The id of a page provider.
+         */
+        provider: {
+          type: String,
+          value: ''
+        },
+
+        /**
+         * The query.
+         */
+        query: {
+          type: String,
+          value: ''
+        },
+
+        /**
          * The query parameters.
          */
         params: {
+          type: Array,
+          value: []
+        },
+
+        /**
+         * The named query parameters.
+         */
+        namedParams: {
           type: Object,
           value: {}
         },
@@ -131,17 +159,16 @@ Contributors:
           notify: true
         },
 
-        /* The headers of the request.
+        /**
+         * The headers of the request.
          * 'Accept': 'text/plain,application/json' is already set by default.
          */
-        headers: {type: Object, value: null},
-
-        docUid: String
+        headers: {type: Object, value: null}
 
       },
 
       observers: [
-        '_autoFetch(params.*, pageSize, page, sort, docUid)'
+        '_autoFetch(params.*, namedParams.*, provider, query, pageSize, page, sort)'
       ],
 
       /**
@@ -150,32 +177,25 @@ Contributors:
        * @method fetch
        */
       fetch: function() {
-        if (typeof this.docUid === "undefined" || this.docUid.length === 0) {
-          return;
-        }
-        var queryParams, namedQueryParams = this.params;
-
-        if (this.docUid && this.docUid.length > 0) {
-          queryParams = this.docUid;
-        }
-
-        if (this.params !== null) {
-          Object.keys(this.params).forEach(function(key) {
-            if (typeof this.params[key] === "string") {
-              namedQueryParams[key] = this.params[key];
-            } else {
-              namedQueryParams[key] = JSON.stringify(this.params[key]);
-            }
-          }, this);
-        }
-
         var params = {
-          providerName: 'DOCUMENT_HISTORY_PROVIDER',
-          queryParams: queryParams,
-          namedQueryParams: namedQueryParams,
+          providerName: this.provider,
           currentPageIndex: this.page - 1,
-          pageSize: this.pageSize
+          pageSize: this.pageSize,
+          queryParams: this.params,
+          namedQueryParams: {}
+        };
+
+        if (this.query) {
+          params.query = this.query;
         }
+
+        Object.keys(this.namedParams).forEach(function(key) {
+          if (typeof this.namedParams[key] === "string") {
+            params.namedQueryParams[key] = this.namedParams[key];
+          } else {
+            params.namedQueryParams[key] = JSON.stringify(this.namedParams[key]);
+          }
+        }, this);
 
         if (this._sortKeys.length > 0) {
           params.sortBy = this._sortKeys.join(",");
@@ -204,10 +224,6 @@ Contributors:
       },
 
       _autoFetch: function () {
-        if (this.docUid && this.docUid.length > 0
-            && (this.docUid !== this.$.auditOp.queryParams)) {
-          this.page = 1;
-        }
         if (this.auto) {
           // debounce in case of multiple param changes
           this.debounce('_autoFetch', function() {
