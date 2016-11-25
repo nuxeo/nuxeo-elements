@@ -11,9 +11,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-Contributors:
-    Nelson Silva <nsilva@nuxeo.com>
 -->
 <html>
 <head>
@@ -202,53 +199,60 @@ Contributors:
 </div>
 
 <script>
-
   suite('<nuxeo-filter>', function() {
 
     function stamped(filter, clazz) {
       return Polymer.dom(filter).querySelectorAll((clazz || '*') + ':not(nuxeo-filter):not(template)');
     }
 
-
+    /* global emptyFilter */
     test('empty filter', function() {
       expect(stamped(emptyFilter)).to.be.empty;
     });
 
+    /* global facetFilter */
     test('facet filter', function() {
       expect(stamped(facetFilter, '.ok').length).to.be.equal(3);
       expect(stamped(facetFilter, 'notok')).to.be.empty;
     });
 
+    /* global typeFilter */
     test('type filter', function() {
       expect(stamped(typeFilter, '.ok').length).to.be.equal(2);
       expect(stamped(typeFilter, 'notok')).to.be.empty;
     });
 
+    /* global permissionFilter */
     test('permission filter', function() {
       expect(stamped(permissionFilter, '.ok').length).to.be.equal(1);
       expect(stamped(permissionFilter, 'notok')).to.be.empty;
     });
 
+    /* global stateFilter */
     test('state filter', function() {
       expect(stamped(stateFilter, '.ok').length).to.be.equal(1);
       expect(stamped(stateFilter, 'notok')).to.be.empty;
     });
 
+    /* global pathFilter */
     test('path filter', function() {
       expect(stamped(pathFilter, '.ok').length).to.be.equal(1);
       expect(stamped(pathFilter, 'notok')).to.be.empty;
     });
 
+    /* global groupFilter */
     test('user group filter', function() {
       expect(stamped(groupFilter, '.ok').length).to.be.equal(2);
       expect(stamped(groupFilter, 'notok')).to.be.empty;
     });
 
+    /* global expressionFilter */
     test('expression filter', function() {
       expect(stamped(expressionFilter, '.ok').length).to.be.equal(3);
       expect(stamped(expressionFilter, 'notok')).to.be.empty;
     });
 
+    /* global multipleFilter */
     test('multiple filters', function() {
       expect(stamped(multipleFilter, '.ok').length).to.be.equal(3);
       expect(stamped(multipleFilter, 'notok')).to.be.empty;
