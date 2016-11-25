@@ -18,7 +18,8 @@ limitations under the License.
 <link rel="import" href="../../paper-dialog-scrollable/paper-dialog-scrollable.html">
 
 <!--
-`nuxeo-popup-confirm`
+Element providing a confirmation popup.
+
 @group Nuxeo UI
 @element nuxeo-popup-confirm
 -->
@@ -51,8 +52,16 @@ limitations under the License.
     is: 'nuxeo-popup-confirm',
 
     properties: {
+      /**
+       * Cancel handler.
+       */
       onCancel: Function,
+
+      /**
+       * Confirm handler.
+       */
       onConfirm: Function,
+
       deleteLabel: {
         type: String,
         value: 'Delete'
@@ -63,6 +72,9 @@ limitations under the License.
       }
     },
 
+    /**
+     * Toggle the popup. Optionally you can specific the comfirm handler as parameter.
+     */
     toggle: function(func) {
       if(typeof func === 'function') {
         this.onConfirm = func;
