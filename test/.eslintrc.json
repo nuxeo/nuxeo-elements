@@ -11,6 +11,7 @@
     "MockInteractions": true,
     "login": true,
     "waitChanged": true,
+    "waitForEvent": true,
     "flush": true
   }
 }
