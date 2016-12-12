@@ -13,6 +13,7 @@
     "Polymer": false,
     "Promise": false,
     "Nuxeo": false,
-    "moment": false
+    "moment": false,
+    "XHRLocaleResolver": false
   }
 }
