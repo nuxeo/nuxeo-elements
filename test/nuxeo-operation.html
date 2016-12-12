@@ -20,6 +20,7 @@ limitations under the License.
   <script src="../../web-component-tester/browser.js"></script>
   <script src="../../es6-promise/promise.min.js"></script>
   <link rel="import" href="../../polymer/polymer.html">
+  <script src="test-helpers.js"></script>
   <script>
     window.fetch = null;
   </script>
@@ -34,6 +35,11 @@ limitations under the License.
 <test-fixture id="nxc-ko">
   <template>
     <nuxeo-operation id="nxc-ko" connection-id="nxc-ko" op="something"></nuxeo-operation>
+  </template>
+</test-fixture>
+<test-fixture id="nxc-loading">
+  <template>
+    <nuxeo-operation id="nxc-loading" connection-id="nxc-loading" op="something"></nuxeo-operation>
   </template>
 </test-fixture>
 <script>
@@ -92,6 +98,24 @@ limitations under the License.
         return operation.execute().catch(function() {
           throw new Error('Expected to a valid response!');
         });
+      });
+
+      test('should tell it is loading', function() {
+        server.respondWith(
+          'POST',
+          '/api/v1/automation/something',
+          [
+            200,
+            responseHeaders.json,
+            '{"success":true,"entity-type":"login"}'
+          ]
+        );
+
+        var operation = fixture('nxc-loading');
+        // wait for loading state to toggle on and off
+        return waitChanged(operation, 'loading', 2).then(operation.execute().catch(function() {
+          throw new Error('Expected to a valid response!');
+        }));
       });
 
       // This test fails on firefox due to the 'error' event fired in component

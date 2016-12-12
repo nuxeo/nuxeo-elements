@@ -19,6 +19,7 @@ limitations under the License.
   <script src="../../webcomponentsjs/webcomponents.min.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
   <link rel="import" href="../../polymer/polymer.html">
+  <script src="test-helpers.js"></script>
   <script>
     window.fetch = null;
   </script>
@@ -43,6 +44,11 @@ limitations under the License.
 <test-fixture id="nxd-path">
   <template>
     <nuxeo-document id="nxd-path" connection-id="nxc-ok" doc-path="something"></nuxeo-document>
+  </template>
+</test-fixture>
+<test-fixture id="nxd-loading">
+  <template>
+    <nuxeo-document id="nxd-loading" connection-id="nxc-ok" doc-id="something"></nuxeo-document>
   </template>
 </test-fixture>
 <script>
@@ -192,6 +198,19 @@ limitations under the License.
       test('should build a path from a path', function() {
         var document = fixture('nxd-path');
         expect(document.path).to.be.eq('/path/something');
+      });
+
+    });
+
+    suite('when requesting a document', function() {
+
+      test('should tell it is loading', function() {
+        var document = fixture('nxd-loading');
+        // wait for loading state to toggle on and off
+        return waitChanged(document, 'loading', 2)
+          .then(document.get().then(function() {
+            expect(document.path).to.be.eq('/id/something');
+        }));
       });
 
     });
