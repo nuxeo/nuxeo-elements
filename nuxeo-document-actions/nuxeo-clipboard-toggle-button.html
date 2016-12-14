@@ -90,8 +90,7 @@ limitations under the License.
         },
 
         _computeTooltip: function(inClipboard) {
-          return inClipboard ? this.i18n('clipboardToggleButton.remove.tooltip')
-                              : this.i18n('clipboardToggleButton.add.tooltip');
+          return this.i18n('clipboardToggleButton.tooltip.' + (inClipboard ? 'remove' : 'add'));
         },
 
         _update: function() {

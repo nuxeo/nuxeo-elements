@@ -38,23 +38,30 @@ limitations under the License.
         display: inline-block;
       }
 
+      paper-dialog {
+        min-width: 480px;
+      }
+
+      paper-dialog .buttons {
+        background-color: var(--nuxeo-dialog-buttons-bar, white);
+        margin-top: 2em;
+      }
+
       .items {
+        @apply(--layout-vertical);
         min-width: 25em;
       }
 
       .items .item {
         @apply(--layout-horizontal);
         @apply(--layout-center);
-        padding: 0.25em 0;
+        padding: 0.4em 0;
       }
 
       .items .item a {
         margin-left: 1em;
       }
 
-      .buttons {
-        @apply(--buttons-bar);
-      }
     </style>
 
     <template is="dom-if" if="[[_isAvailable(document)]]">
@@ -63,22 +70,20 @@ limitations under the License.
     </template>
 
     <paper-dialog id="dialog" with-backdrop>
-      <div class="vertical layout">
-        <h2>[[i18n('exportButton.heading')]]</h2>
-        <div class="items">
-          <template is="dom-repeat" items="[[_filterRenditions(document)]]">
-            <div class="item">
-              <iron-icon src="[[item.icon]]"></iron-icon>
-              <a href="[[item.url]]">[[i18n(item.name)]]</a>
-            </div>
-          </template>
-        </div>
+      <h2>[[i18n('exportButton.dialog.heading')]]</h2>
+
+      <div class="items">
+        <template is="dom-repeat" items="[[_filterRenditions(document)]]">
+          <div class="item">
+            <iron-icon src="[[item.icon]]"></iron-icon><a href="[[item.url]]">[[i18n(item.name)]]</a>
+          </div>
+        </template>
       </div>
-      <div class="buttons horizontal end-justified layout">
-        <div class="flex start-justified">
-          <paper-button dialog-dismiss>[[i18n('exportButton.dialog.cancel')]]</paper-button>
-        </div>
+
+      <div class="buttons">
+        <paper-button dialog-dismiss>[[i18n('exportButton.dialog.cancel')]]</paper-button>
       </div>
+
     </paper-dialog>
 
   </template>

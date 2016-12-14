@@ -32,21 +32,19 @@ limitations under the License.
 -->
 <dom-module id="nuxeo-favorites-toggle-button">
   <template>
-
     <style>
       :host {
         display: inline-block;
       }
 
       :host([favorite]) ::content iron-icon {
-        stroke: var(--icon-toggle-outline-color, --nuxeo-action-color-activated);
-        fill: var(--icon-toggle-pressed-color, --nuxeo-action-color-activated);
+        stroke: var(--nuxeo-action-color-activated, orange);
+        fill: var(--nuxeo-action-color-activated, orange);
       }
     </style>
 
-    <nuxeo-operation id="addToFavOp" op="Document.AddToFavorites" input="[[document.uid]]"></nuxeo-operation>
-
-    <nuxeo-operation id="removeFromFavOp" op="Document.RemoveFromFavorites" input="[[document.uid]]"></nuxeo-operation>
+    <nuxeo-operation id="opAdd" op="Document.AddToFavorites" input="[[document.uid]]"></nuxeo-operation>
+    <nuxeo-operation id="opRemove" op="Document.RemoveFromFavorites" input="[[document.uid]]"></nuxeo-operation>
 
     <template is="dom-if" if="[[_isAvailable(document)]]">
       <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
@@ -65,7 +63,7 @@ limitations under the License.
 
           document: {
             type: Object,
-            observer: '_observeDoc'
+            observer: '_documentChanged'
           },
 
           icon: {
@@ -103,23 +101,23 @@ limitations under the License.
 
         _toggle: function() {
           if (!this.favorite) {
-            this.$.addToFavOp.execute().then(function() {
+            this.$.opAdd.execute().then(function() {
               this.fire('addedToFavorites', {doc: this.document});
               this.favorite = true;
             }.bind(this));
           } else {
-            this.$.removeFromFavOp.execute().then(function() {
+            this.$.opRemove.execute().then(function() {
               this.fire('removedFromFavorites', {doc: this.document});
               this.favorite = false;
             }.bind(this));
           }
         },
 
-        _computeTooltip: function(isFavorite) {
-          return isFavorite ? this.i18n('favoritesToggleButton.remove') : this.i18n('favoritesToggleButton.add');
+        _computeTooltip: function(favorite) {
+          return this.i18n('favoritesToggleButton.tooltip.' + (favorite ? 'remove' : 'add'));
         },
 
-        _observeDoc: function() {
+        _documentChanged: function() {
           this.favorite = this.isFavorite(this.document);
         }
 
