@@ -90,7 +90,7 @@ limitations under the License.
         },
 
         ready: function() {
-          window.addEventListener('unsubscribed', function(e) {
+          window.addEventListener('document-unsubscribed', function(e) {
             if (this.document && e.detail.docUid && e.detail.docUid === this.document.uid) {
               this.subscribed = false;
             }
@@ -104,12 +104,12 @@ limitations under the License.
         _toggle: function() {
           if (!this.subscribed) {
             this.$.opSubscribe.execute().then(function() {
-              this.fire('subscribed', {doc: this.document});
+              this.fire('document-subscribed', {doc: this.document});
               this.subscribed = true;
             }.bind(this));
           } else {
             this.$.opUnsubscribe.execute().then(function() {
-              this.fire('unsubscribed', {doc: this.document});
+              this.fire('document-unsubscribed', {doc: this.document});
               this.subscribed = false;
             }.bind(this));
           }

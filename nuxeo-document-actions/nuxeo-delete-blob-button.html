@@ -22,7 +22,6 @@ limitations under the License.
 <link rel="import" href="../../paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../../paper-button/paper-button.html">
-<link rel="import" href="../../paper-toast/paper-toast.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 
@@ -45,6 +44,7 @@ limitations under the License.
       }
 
       paper-dialog .buttons {
+        @apply(--layout-justified);
         background-color: var(--nuxeo-dialog-buttons-bar, white);
         margin-top: 2em;
       }
@@ -65,8 +65,6 @@ limitations under the License.
         <paper-button dialog-confirm on-tap="_remove">[[i18n('deleteBlobButton.dialog.yes')]]</paper-button>
       </div>
     </paper-dialog>
-
-    <paper-toast id="toast"></paper-toast>
 
   </template>
 
@@ -108,15 +106,10 @@ limitations under the License.
 
         _remove: function() {
           this.$.operation.execute().then(function() {
-            this._toast(this.i18n('deleteBlobButton.deleted'));
-            this.fire('document-updated');
+            this.fire('file-deleted');
           }.bind(this));
-        },
-
-        _toast: function(msg) {
-          this.$.toast.text = msg;
-          this.$.toast.open();
         }
+
       });
     })();
   </script>
