@@ -26,10 +26,15 @@ limitations under the License.
 <link rel="import" href="../nuxeo-filters-behavior.html">
 
 <!--
-`nuxeo-notifications-toggle-button`
+A toggle button element for subscribe/unsubscribe a document.
+
+Example:
+
+    <nuxeo-notifications-toggle-button document="[[document]]"></nuxeo-notifications-toggle-button>
+
 @group Nuxeo UI
 @element nuxeo-notifications-toggle-button
-@demo demo/nuxeo-document-actions/index.html
+@demo demo/actions/index.html
 -->
 <dom-module id="nuxeo-notifications-toggle-button">
   <template>
@@ -63,11 +68,17 @@ limitations under the License.
         behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
         properties: {
 
+          /**
+           * Input document.
+           */
           document: {
             type: Object,
             observer: '_documentChanged'
           },
 
+          /**
+           * Icon to use (iconset_name:icon_name).
+           */
           icon: {
             type: String,
             value: 'social:notifications'

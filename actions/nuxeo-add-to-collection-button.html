@@ -23,17 +23,22 @@ limitations under the License.
 <link rel="import" href="../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../../paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../../paper-button/paper-button.html">
-<link rel="import" href="../../paper-textarea/paper-textarea.html">
+<link rel="import" href="../../paper-input/paper-textarea.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../widgets/nuxeo-select2.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-filters-behavior.html">
 
 <!--
-`nuxeo-add-to-collection-button`
+A button element for adding a document to a collection.
+
+Example:
+
+    <nuxeo-add-to-collection-button document="[[document]]"></nuxeo-add-to-collection-button>
+
 @group Nuxeo UI
 @element nuxeo-add-to-collection-button
-@demo demo/nuxeo-document-actions/index.html
+@demo demo/actions/index.html
 -->
 <dom-module id="nuxeo-add-to-collection-button">
   <template>
@@ -108,8 +113,14 @@ limitations under the License.
       behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
       properties: {
 
+        /**
+         * Input document.
+         */
         document: Object,
 
+        /**
+         * Icon to use (iconset_name:icon_name).
+         */
         icon: {
           type: String,
           value: 'icons:book'

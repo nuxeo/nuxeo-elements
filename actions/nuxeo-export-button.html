@@ -18,22 +18,25 @@ limitations under the License.
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
-<link rel="import" href="../../iron-icons/social-icons.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-tooltip/paper-tooltip.html">
-<link rel="import" href="../../paper-dialog/paper-dialog.html">
-<link rel="import" href="../../paper-input/paper-input.html">
 <link rel="import" href="../../paper-button/paper-button.html">
+<link rel="import" href="../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-filters-behavior.html">
 
 <!--
-`nuxeo-share-button`
+A button element for exporting document's content.
+
+Example:
+
+    <nuxeo-export-button document="[[document]]"></nuxeo-export-button>
+
 @group Nuxeo UI
-@element nuxeo-share-button
-@demo demo/nuxeo-document-actions/index.html
+@element nuxeo-export-button
+@demo demo/actions/index.html
 -->
-<dom-module id="nuxeo-share-button">
+<dom-module id="nuxeo-export-button">
   <template>
     <style>
       :host {
@@ -49,38 +52,65 @@ limitations under the License.
         background-color: var(--nuxeo-dialog-buttons-bar, white);
         margin-top: 2em;
       }
+
+      .items {
+        @apply(--layout-vertical);
+        min-width: 25em;
+      }
+
+      .items .item {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        padding: 0.4em 0;
+      }
+
+      .items .item a {
+        margin-left: 1em;
+      }
+
     </style>
 
     <template is="dom-if" if="[[_isAvailable(document)]]">
       <paper-icon-button icon="[[icon]]" on-tap="_toggleDialog" noink></paper-icon-button>
-      <paper-tooltip>[[i18n('shareButton.tooltip')]]</paper-tooltip>
+      <paper-tooltip>[[i18n('exportButton.tooltip')]]</paper-tooltip>
     </template>
 
     <paper-dialog id="dialog" with-backdrop>
-      <h2>[[i18n('shareButton.dialog.heading')]]</h2>
-      <paper-input id="permalink" label="[[i18n('shareButton.copy.label', document.properties.dc:title)]]"
-                   value="[[_buildPermalink(document)]]"
-                   autofocus
-                   readonly>
-      </paper-input>
-      <div class="buttons">
-        <paper-button dialog-dismiss>[[i18n('shareButton.dialog.close')]]</paper-button>
+      <h2>[[i18n('exportButton.dialog.heading')]]</h2>
+
+      <div class="items">
+        <template is="dom-repeat" items="[[_filterRenditions(document)]]">
+          <div class="item">
+            <iron-icon src="[[item.icon]]"></iron-icon><a href="[[item.url]]">[[i18n(item.name)]]</a>
+          </div>
+        </template>
       </div>
+
+      <div class="buttons">
+        <paper-button dialog-dismiss>[[i18n('exportButton.dialog.cancel')]]</paper-button>
+      </div>
+
     </paper-dialog>
 
   </template>
 
   <script>
     Polymer({
-      is: 'nuxeo-share-button',
+      is: 'nuxeo-export-button',
       behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
       properties: {
 
+        /**
+         * Input document.
+         */
         document: Object,
 
+        /**
+         * Icon to use (iconset_name:icon_name).
+         */
         icon: {
           type: String,
-          value: 'social:share'
+          value: 'icons:archive'
         }
       },
 
@@ -90,11 +120,19 @@ limitations under the License.
 
       _toggleDialog: function() {
         this.$.dialog.toggle();
-        this.$.permalink.inputElement.select();
       },
 
-      _buildPermalink: function(document) {
-        return document ? location.origin + location.pathname + '#!/doc/' + document.uid : '';
+      _filterRenditions: function(document) {
+        if (document && document.contextParameters && document.contextParameters.renditions) {
+          return document.contextParameters.renditions.filter(function(rendition) {
+            return rendition.kind !== 'nuxeo:video:conversion' && rendition.kind !== 'nuxeo:picture:conversion';
+          }).map(function(item) {
+            item.name = 'exportButton.' + item.name;
+            return item;
+          });
+        } else {
+          return [];
+        }
       }
 
     });

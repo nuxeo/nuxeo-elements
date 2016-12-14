@@ -24,10 +24,15 @@ limitations under the License.
 <link rel="import" href="../nuxeo-filters-behavior.html">
 
 <!--
-`nuxeo-download-button`
+A button element for downloading the main file from a document.
+
+Example:
+
+    <nuxeo-download-button document="[[document]]"></nuxeo-download-button>
+
 @group Nuxeo UI
 @element nuxeo-download-button
-@demo demo/nuxeo-document-actions/index.html
+@demo demo/actions/index.html
 -->
 <dom-module id="nuxeo-download-button">
   <template>
@@ -50,8 +55,14 @@ limitations under the License.
       behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
       properties: {
 
+        /**
+         * Input document.
+         */
         document: Object,
 
+        /**
+         * Icon to use (iconset_name:icon_name).
+         */
         icon: {
           type: String,
           value: 'icons:file-download'

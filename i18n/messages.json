@@ -7,8 +7,6 @@
   "addToCollectionButton.dialog.select": "Select a Collection...",
   "addToCollectionButton.tooltip": "Add to collection",
   "checkboxAggregation.noResults": "No available result",
-  "clipboardToggleButton.tooltip.add": "Add to Clipboard",
-  "clipboardToggleButton.tooltip.remove": "Remove from clipboard",
   "command.cancel": "Cancel",
   "command.change.password": "Change Password",
   "command.create": "Create",

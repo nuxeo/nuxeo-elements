@@ -25,10 +25,15 @@ limitations under the License.
 <link rel="import" href="../nuxeo-filters-behavior.html">
 
 <!--
-`nuxeo-favorites-toggle-button`
+A toggle button element for adding/removing a document from the favorites.
+
+Example:
+
+    <nuxeo-favorites-toggle-button document="[[document]]"></nuxeo-favorites-toggle-button>
+
 @group Nuxeo UI
 @element nuxeo-favorites-toggle-button
-@demo demo/nuxeo-document-actions/index.html
+@demo demo/actions/index.html
 -->
 <dom-module id="nuxeo-favorites-toggle-button">
   <template>
@@ -61,11 +66,17 @@ limitations under the License.
         behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
         properties: {
 
+          /**
+           * Input document.
+           */
           document: {
             type: Object,
             observer: '_documentChanged'
           },
 
+          /**
+           * Icon to use (iconset_name:icon_name).
+           */
           icon: {
             type: String,
             value: 'icons:grade'
