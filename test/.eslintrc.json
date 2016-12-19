@@ -6,6 +6,8 @@
     "WCT": false,
     "sinon": true,
     "fixture": true,
-    "expect": true
+    "expect": true,
+    "waitChanged": true,
+    "waitForEvent": true
   }
 }
