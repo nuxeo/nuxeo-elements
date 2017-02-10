@@ -1,0 +1,59 @@
+<!--
+(C) Copyright 2017 Nuxeo SA (http://nuxeo.com/) and others.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+
+<head>
+  <title>nuxeo-layout tests</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../nuxeo-elements/test/test-helpers.js"></script>
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../nuxeo-layout.html">
+</head>
+
+<body>
+  <test-fixture id="notfound">
+    <template>
+      <nuxeo-layout href="notfound.html"></nuxeo-layout>
+    </template>
+  </test-fixture>
+  <test-fixture id="layout">
+    <template>
+      <nuxeo-layout href="../nuxeo-layout.html" model='{"href": "dummy"}'></nuxeo-layout>
+    </template>
+  </test-fixture>
+  <script>
+    suite('<nuxeo-layout>', function() {
+
+      test('layout not found', function() {
+        var layout = fixture('notfound');
+        expect(layout.$$('nuxeo-error').hidden).to.be.false;
+        expect(layout.element).to.be.undefined;
+      });
+
+      test('layout stamped with model', function() {
+        var layout = fixture('layout');
+
+        return waitChanged(layout, 'element', 1).then(function() {
+          expect(layout.$$('nuxeo-error').hidden).to.be.true;
+          expect(layout.element.localName).to.equal('nuxeo-layout');
+          expect(layout.element.href).to.equal("dummy");
+        });
+        
+      });
+    });
+  </script>
