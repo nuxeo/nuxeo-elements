@@ -1,0 +1,31 @@
+<!-- Part of `nuxeo-data-table` -->
+<dom-module id="nuxeo-data-table-form">
+  <template>
+  </template>
+  <script>
+    Polymer({
+      is: 'nuxeo-data-table-form',
+
+      properties: {
+        template: {
+          type: Object,
+          readOnly: true,
+          value: function() {
+            var template = Polymer.dom(this).querySelector('template');
+
+            if (template) {
+              if (this.dataHost) {
+                // set dataHost to the context where template has been defined
+                template._rootDataHost = this.dataHost._rootDataHost || this.dataHost;
+              }
+
+              return template;
+            }
+          }
+        }
+      },
+
+
+    });
+  </script>
+</dom-module>
