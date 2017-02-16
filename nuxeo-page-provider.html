@@ -132,7 +132,8 @@ element.
          */
         page: {
           type: Number,
-          value: 1
+          value: 1,
+          notify: true
         },
 
         /**
@@ -299,6 +300,7 @@ element.
             this.quickFilters = response.quickFilters;
             this.isNextPageAvailable = response.isNextPageAvailable;
             this.currentPageSize = response.currentPageSize;
+            this.page = response.pageIndex + 1;
             this.fire('update');
             return response;
           }.bind(this));
