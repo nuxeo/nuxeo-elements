@@ -168,6 +168,16 @@ Example:
         margin: 1em 0 1em 0;
       }
 
+      paper-dialog .buttons {
+        @apply(--layout-justified);
+        background-color: var(--nuxeo-dialog-buttons-bar, white);
+        margin-top: 2em;
+      }
+
+      paper-dialog {
+        min-width: 480px;
+      }
+
     </style>
 
     <div id="container">
@@ -273,8 +283,15 @@ Example:
     <content select="nuxeo-data-table-column"></content>
     <content select="template[is=row-detail]"></content>
 
-    <paper-dialog id="dialog" with-backdrop on-iron-overlay-opened="_patchOverlay" always-on-top modal>
-      <content id="form" select="nuxeo-data-table-form"></content>
+    <paper-dialog id="dialog">
+        <h1>[[i18n('command.add')]]</h1>
+        <form is="iron-form">
+          <content id="form" select="nuxeo-data-table-form"></content>
+        </form>
+        <div class="buttons">
+            <div></div>
+            <paper-button noink dialog-confirm>[[i18n('command.ok')]]</paper-button>
+        </div>
     </paper-dialog>
 
   </template>
