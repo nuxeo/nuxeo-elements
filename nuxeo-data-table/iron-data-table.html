@@ -271,8 +271,11 @@ Example:
     </div>
     <paper-spinner-lite active></paper-spinner-lite>
     <content select="nuxeo-data-table-column"></content>
-    <content select="nuxeo-data-table-form"></content>
     <content select="template[is=row-detail]"></content>
+
+    <paper-dialog id="dialog" with-backdrop on-iron-overlay-opened="_patchOverlay" always-on-top modal>
+      <content id="form" select="nuxeo-data-table-form"></content>
+    </paper-dialog>
 
   </template>
 
@@ -412,10 +415,6 @@ Example:
               node.getAttribute('is') === 'row-detail');
           };
 
-          var hasEditForm = function(node) {
-            return (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'NUXEO-DATA-TABLE-FORM');
-          };
-
           if (info.addedNodes.filter(hasColumns).length > 0 ||
             info.removedNodes.filter(hasColumns).length > 0) {
             this.set('columns', this.getContentChildren('[select=nuxeo-data-table-column]'));
@@ -431,17 +430,6 @@ Example:
             var parent = Polymer.dom(this.rowDetail).parentNode;
             this.rowDetail._rootDataHost = parent.dataHost ? (parent.dataHost._rootDataHost || parent.dataHost) : parent;
           }
-
-          if (info.addedNodes.filter(hasEditForm).length > 0) {
-            this.set('rowForm', this.getContentChildren('[select=nuxeo-data-table-form]')[0].template);
-
-           // assuming parent element is always a Polymer element.
-           // set dataHost to the same context the template was declared in
-           var parent = Polymer.dom(this.rowForm).parentNode;
-           this.rowForm._rootDataHost = parent.dataHost ? (parent.dataHost._rootDataHost || parent.dataHost) : parent;
-          }
-
-
         }.bind(this));
       },
 
@@ -674,6 +662,13 @@ Example:
         }
       },
 
+      _editEntry: function(e) {
+        var editForm = this.getContentChildren('#form')[0];
+        var items = this.items; // TODO: add support for editing when using a page provider
+        editForm.item = items[e.detail.index];
+        this.$.dialog.toggle();
+      },
+
       _deleteEntry: function(e) {
         this.splice('items', e.detail.index, 1);
         this.notifyResize();
@@ -699,6 +694,12 @@ Example:
           this.splice('items', e.detail.index, 1);
           this.splice('items', e.detail.index + 1, 0, item);
           this.notifyResize();
+        }
+      },
+
+      _patchOverlay: function (e) {
+        if (e.target.withBackdrop) {
+          e.target.parentNode.insertBefore(e.target.backdropElement, e.target);
         }
       }
 

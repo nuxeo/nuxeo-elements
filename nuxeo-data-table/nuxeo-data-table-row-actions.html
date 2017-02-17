@@ -1,44 +1,24 @@
+<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
+
 <!-- Part of `nuxeo-data-table` -->
 <dom-module id="nuxeo-data-table-row-actions">
   <template>
-    <style>
-      :host {
-
-      }
-    </style>
-
-    <paper-dialog id="dialog" with-backdrop on-iron-overlay-opened="patchOverlay" always-on-top modal>
-      <div id="edit-container">
-        <h1>[[i18n('command.add')]]</h1>
-        <div class="paper-content layout horizontal">
-          <form id="form" is="iron-form" action="/">
-            <div id="entry-edit">
-              <content></content>
-            </div>
-            <div class="actions">
-              <paper-button name="close" noink dialog-dismiss>[[i18n('command.close')]]</paper-button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </paper-dialog>
-
-    <div>
-      <template is="dom-if" if="[[isUpVisible(index)]]">
-        <paper-icon-button noink id="upButton" icon="icons:arrow-upward" on-tap="moveUp" ></paper-icon-button>
-        <paper-tooltip for="upButton" position="left">[[i18n('command.moveUpward')]]</paper-tooltip>
-      </template>
-      <template is="dom-if" if="[[isDownVisible(index, size)]]">
-        <paper-icon-button noink id="downButton" icon="icons:arrow-downward" on-tap="moveDown"></paper-icon-button>
-        <paper-tooltip for="downButton" position="left">[[i18n('command.moveDownward')]]</paper-tooltip>
-      </template>
-      <template is="dom-if" if="[[editable]]">
-        <paper-icon-button id="edit-button" icon="editor:mode-edit" on-tap="_editEntry" noink></paper-icon-button>
-        <paper-tooltip for="edit-button" position="left">[[i18n('command.edit')]]</paper-tooltip>
-        <paper-icon-button id="delete-button" name="delete" icon="icons:delete" on-tap="_deleteEntry" noink></paper-icon-button>
-        <paper-tooltip for="delete-button" position="left">[[i18n('command.remove')]]</paper-tooltip>
-      </template>
-    </div>
+    <template is="dom-if" if="[[isUpVisible(index)]]">
+      <paper-icon-button noink id="upButton" icon="icons:arrow-upward" on-tap="moveUp" ></paper-icon-button>
+      <paper-tooltip for="upButton" position="left">[[i18n('command.moveUpward')]]</paper-tooltip>
+    </template>
+    <template is="dom-if" if="[[isDownVisible(index, size)]]">
+      <paper-icon-button noink id="downButton" icon="icons:arrow-downward" on-tap="moveDown"></paper-icon-button>
+      <paper-tooltip for="downButton" position="left">[[i18n('command.moveDownward')]]</paper-tooltip>
+    </template>
+    <template is="dom-if" if="[[editable]]">
+      <paper-icon-button id="edit-button" icon="icons:create" on-tap="_editEntry" noink></paper-icon-button>
+      <paper-tooltip for="edit-button" position="left">[[i18n('command.edit')]]</paper-tooltip>
+      <paper-icon-button id="delete-button" name="delete" icon="icons:delete" on-tap="_deleteEntry" noink></paper-icon-button>
+      <paper-tooltip for="delete-button" position="left">[[i18n('command.remove')]]</paper-tooltip>
+    </template>
   </template>
   <script>
     Polymer({
@@ -79,7 +59,7 @@
       },
 
       _editEntry: function() {
-        this.$.dialog.toggle();
+        this.fire('editEntry', {item: this.item, index: this.index});
       },
 
       _deleteEntry: function() {
@@ -100,12 +80,6 @@
 
       isDownVisible: function(index) {
         return this.orderable && index < this.size - 1;
-      },
-
-      patchOverlay: function (e) {
-        if (e.target.withBackdrop) {
-          e.target.parentNode.insertBefore(e.target.backdropElement, e.target);
-        }
       }
     });
   </script>

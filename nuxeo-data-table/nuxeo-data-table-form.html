@@ -1,31 +1,54 @@
+<link rel="import" href="../../paper-button/paper-button.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
+
 <!-- Part of `nuxeo-data-table` -->
 <dom-module id="nuxeo-data-table-form">
   <template>
+    <div>
+      <h1>[[i18n('command.add')]]</h1>
+      <div class="paper-content layout horizontal">
+        <form is="iron-form">
+          <div id="container"></div>
+          <div class="actions">
+            <paper-button noink dialog-confirm>[[i18n('command.ok')]]</paper-button>
+          </div>
+        </form>
+      </div>
+    </div>
   </template>
   <script>
     Polymer({
       is: 'nuxeo-data-table-form',
 
+      behaviors: [Polymer.Templatizer, Nuxeo.I18nBehavior],
+
       properties: {
-        template: {
+        item: {
           type: Object,
-          readOnly: true,
-          value: function() {
-            var template = Polymer.dom(this).querySelector('template');
-
-            if (template) {
-              if (this.dataHost) {
-                // set dataHost to the context where template has been defined
-                template._rootDataHost = this.dataHost._rootDataHost || this.dataHost;
-              }
-
-              return template;
-            }
-          }
+          notify: true,
+          observer: '_itemChanged'
         }
       },
 
+      ready: function() {
+        var template = this.queryEffectiveChildren('template');
+        this.templatize(template);
+        this.instance = this.stamp({item: this.item});
+        Polymer.dom(this.$.container).appendChild(this.instance.root);
+      },
 
+      _itemChanged: function() {
+        if (this.instance) {
+          this.instance.item = this.item;
+        }
+      },
+
+      _forwardParentProp: function(prop, value) {},
+
+      _forwardInstancePath: function(inst, path, value) {
+        // strip "item."
+        this.fire('item-changed', {item: this.item, path: path.substring(5), value: value});
+      }
     });
   </script>
 </dom-module>
