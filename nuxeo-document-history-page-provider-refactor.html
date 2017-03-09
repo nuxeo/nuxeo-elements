@@ -1,0 +1,231 @@
+<!--
+@license
+(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+​
+    http://www.apache.org/licenses/LICENSE-2.0
+​
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="nuxeo-operation.html">
+
+<!--
+`nuxeo-document-history-page-provider` performs a query with DOCUMENT_HISTORY_PROVIDER against audit logs.
+
+    <nuxeo-document-history-page-provider doc-id="..."
+                                          current-page="{{entries}}">
+    </nuxeo-document-history-page-provider>
+
+@group Nuxeo Elements
+@element nuxeo-audit-page-provider
+@homepage http://www.nuxeo.org
+-->
+<dom-module id="nuxeo-document-history-page-provider-refactor">
+  <template>
+    <style>
+      :host {
+        display: none;
+      }
+    </style>
+
+    <nuxeo-audit-query-page-provider id="auditOp" provider-name="DOCUMENT_HISTORY_PROVIDER"
+                                     auto="[[auto]]"  autoDelay="[[autoDelay]]"
+                                     params="[[params]]" queryParams="[[docId]]"
+                                     page-size="[[pageSize]]" page="[[page]]"
+                                     current-page="{{currentPage}}" isNextPageAvailable="{{isNextPageAvailable}}"
+                                     currentPageSize="{{currentPageSize}}"  enrichers="{{enrichers}}"
+                                     schemas="[[schemas]]" headers="[[headers]]"  loading="{{loading}}">
+    </nuxeo-audit-query-page-provider>
+  </template>
+  <script>
+    Polymer({
+      is: 'nuxeo-document-history-page-provider-refactor',
+      properties: {
+
+        /**
+         * The id of a nuxeo-connection to use.
+         */
+        connectionId: {
+          type: String,
+          value: ''
+        },
+
+        /**
+         * If true, automatically execute the operation when either `provider` or `params` changes.
+         */
+        auto: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * The delay in milliseconds to debounce the auto fetch call when provider, params, etc. changes.
+         */
+        autoDelay: {
+          type: Number,
+          value: 300
+        },
+
+        /**
+         * The query parameters.
+         */
+        params: {
+          type: Object,
+          value: {}
+        },
+
+        /**
+         * The number of results per page.
+         */
+        pageSize: {
+          type: Number,
+          value: -1
+        },
+
+        /**
+         * The current page.
+         */
+        page: {
+          type: Number,
+          value: 1
+        },
+
+        /**
+         * The current page entries.
+         */
+        currentPage: {
+          type: Array,
+          value: [],
+          notify: true
+        },
+
+        /**
+         * Map of properties and direction 'asc' / 'desc'
+         */
+        sort: {
+          type: Object,
+          value: {},
+          notify: true
+        },
+
+        /**
+         * Total number of pages.
+         */
+        numberOfPages: {
+          type: Number,
+          notify: true
+        },
+
+        /**
+         * Total number of results.
+         */
+        resultsCount: {
+          type: Number,
+          notify: true
+        },
+
+        /**
+         * Returns true if a next page is available.
+         */
+        isNextPageAvailable: {
+          type: Boolean,
+          value: false,
+          notify: true
+        },
+
+        /**
+         * Current page's size
+         */
+        currentPageSize: {
+          type: Number,
+          notify: true
+        },
+
+        /**
+         * List of content enrichers to use.
+         */
+        enrichers: {
+          type: String,
+          value: ''
+        },
+
+        /**
+         * List of comma separated values of the document schemas to be returned.
+         * All document schemas are returned by default.
+         */
+        schemas: {
+          type: String
+        },
+
+        /**
+         * The headers of the request.
+         * 'Accept': 'text/plain,application/json' is already set by default.
+         */
+        headers: {type: Object, value: null},
+
+        /**
+         * The document id.
+         */
+        docId: String,
+
+        /**
+         * True while requests are in flight.
+         */
+        loading: {
+          type: Boolean,
+          notify: true,
+          readOnly: true
+        }
+      },
+
+
+
+      /**
+       * Fetch the currentPage.
+       *
+       * @method fetch
+       */
+      fetch: function() {
+
+        if (typeof this.docId === "undefined" || this.docId.length === 0) {
+          return;
+        }
+        this.$.auditOp.queryParams = this.docId;
+        this.$.auditOp.fetch();
+
+      },
+
+      get _sortKeys() {
+        return Object.keys(this.sort);
+      },
+
+      get _sortValues() {
+        return this._sortKeys.map(function(k) { return this.sort[k];}.bind(this));
+      },
+
+      _autoFetch: function () {
+        if (this.docId && this.docId.length > 0
+            && (this.docId !== this.$.auditOp.params.queryParams)) {
+          this.page = 1;
+        }
+        if (this.auto) {
+          // debounce in case of multiple param changes
+          this.debounce('_autoFetch', function() {
+            this.fetch();
+          }.bind(this), this.autoDelay);
+        }
+      }
+
+    });
+  </script>
+
+</dom-module>
