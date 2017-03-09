@@ -1,6 +1,6 @@
 <!--
 @license
-(C) Copyright 2015 Nuxeo SA (http://nuxeo.com/) and contributors.
+(C) Copyright 2017 Nuxeo SA (http://nuxeo.com/) and contributors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,23 +13,26 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+Contributors:
+Pedro Costa <pcosta@nuxeo.com>
 -->
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="nuxeo-operation.html">
 
 <!--
-`nuxeo-document-history-page-provider` performs a query with DOCUMENT_HISTORY_PROVIDER against audit logs.
+`nuxeo-audit-page-provider` performs an audit query with the given page provider name against audit logs.
 
-    <nuxeo-document-history-page-provider doc-id="..."
-                                          current-page="{{entries}}">
-    </nuxeo-document-history-page-provider>
+    <nuxeo-audit-page-provider provider-name="EVENTS_VIEW"
+        current-page="{{entries}}" params"..." page-size="4'">
+    </nuxeo-audit-page-provider>
 
 @group Nuxeo Elements
 @element nuxeo-audit-page-provider
 @homepage http://www.nuxeo.org
 -->
-<dom-module id="nuxeo-audit-query-page-provider">
+<dom-module id="nuxeo-audit-page-provider">
   <template>
     <style>
       :host {
@@ -46,7 +49,7 @@ limitations under the License.
   </template>
   <script>
     Polymer({
-      is: 'nuxeo-audit-query-page-provider',
+      is: 'nuxeo-audit-page-provider',
       properties: {
 
         /**
@@ -278,7 +281,6 @@ limitations under the License.
           this._setLoading(this.$.auditOp.loading);
         }.bind(this));
       }
-
     });
   </script>
 </dom-module>
