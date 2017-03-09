@@ -36,14 +36,15 @@ limitations under the License.
         display: none;
       }
     </style>
-
-    <nuxeo-operation id="auditOp"
-      op="Audit.QueryWithPageProvider"
-      enrichers="{{enrichers}}"
-      schemas="[[schemas]]"
-      headers="{{headers}}">
-    </nuxeo-operation>
-
+    <nuxeo-audit-page-provider id="auditOp" provider-name="DOCUMENT_HISTORY_PROVIDER"
+                               auto="[[auto]]"  auto-delay="[[autoDelay]]"
+                               params="[[params]]" page-size="[[pageSize]]" page="[[page]]"
+                               current-page="{{currentPage}}" sort="{{sort}}"
+                               number-of-pages="{{numberOfPages}}"  results-count="{{resultsCount}}"
+                               is-next-page-available="{{isNextPageAvailable}}"
+                               current-page-size="[[currentPageSize]]"  enrichers="[[enrichers]]"
+                               schemas="[[schemas]]" headers="[[headers]]"  loading="{{loading}}">
+    </nuxeo-audit-page-provider>
   </template>
   <script>
     Polymer({
@@ -186,10 +187,6 @@ limitations under the License.
         }
       },
 
-      observers: [
-        '_autoFetch(params.*, pageSize, page, sort, docId)'
-      ],
-
       /**
        * Fetch the currentPage.
        *
@@ -199,75 +196,9 @@ limitations under the License.
         if (typeof this.docId === "undefined" || this.docId.length === 0) {
           return;
         }
-        var queryParams, namedQueryParams = this.params;
-
-        if (this.docId && this.docId.length > 0) {
-          queryParams = this.docId;
-        }
-
-        if (this.params !== null) {
-          Object.keys(this.params).forEach(function(key) {
-            if (typeof this.params[key] === "string") {
-              namedQueryParams[key] = this.params[key];
-            } else {
-              namedQueryParams[key] = JSON.stringify(this.params[key]);
-            }
-          }, this);
-        }
-
-        var params = {
-          providerName: 'DOCUMENT_HISTORY_PROVIDER',
-          queryParams: queryParams,
-          namedQueryParams: namedQueryParams,
-          currentPageIndex: this.page - 1,
-          pageSize: this.pageSize
-        };
-
-        if (this._sortKeys.length > 0) {
-          params.sortBy = this._sortKeys.join(",");
-          params.sortOrder = this._sortValues.join(",");
-        }
-
-        this.$.auditOp.params = params;
-        return this.$.auditOp.execute()
-          .then(function(response) {
-            this.currentPage = response.entries.slice(0);
-            this.numberOfPages = response.numberOfPages;
-            this.resultsCount = response.resultsCount;
-            this.isNextPageAvailable = response.isNextPageAvailable;
-            this.currentPageSize = response.currentPageSize;
-            this.fire('update');
-            return response;
-          }.bind(this));
-      },
-
-      get _sortKeys() {
-        return Object.keys(this.sort);
-      },
-
-      get _sortValues() {
-        return this._sortKeys.map(function(k) { return this.sort[k];}.bind(this));
-      },
-
-      _autoFetch: function () {
-        if (this.docId && this.docId.length > 0
-            && (this.docId !== this.$.auditOp.params.queryParams)) {
-          this.page = 1;
-        }
-        if (this.auto) {
-          // debounce in case of multiple param changes
-          this.debounce('_autoFetch', function() {
-            this.fetch();
-          }.bind(this), this.autoDelay);
-        }
-      },
-
-      ready: function() {
-        this.$.auditOp.addEventListener('loading-changed', function() {
-          this._setLoading(this.$.auditOp.loading);
-        }.bind(this));
+        this.$.auditOp.queryParams = this.docId;
+        this.$.auditOp.fetch();
       }
-
     });
   </script>
 
