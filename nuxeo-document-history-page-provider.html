@@ -36,9 +36,9 @@ limitations under the License.
         display: none;
       }
     </style>
-    <nuxeo-audit-page-provider id="auditOp" provider-name="DOCUMENT_HISTORY_PROVIDER"
-                               auto="[[auto]]"  auto-delay="[[autoDelay]]"
-                               params="[[params]]" page-size="[[pageSize]]" page="[[page]]"
+    <nuxeo-audit-page-provider id="pageProvider" provider-name="DOCUMENT_HISTORY_PROVIDER"
+                               auto$="[[auto]]"  auto-delay="[[autoDelay]]"
+                               params="[[params]]"  query-params="[[docId]]" page-size="[[pageSize]]" page="[[page]]"
                                current-page="{{currentPage}}" sort="{{sort}}"
                                number-of-pages="{{numberOfPages}}"  results-count="{{resultsCount}}"
                                is-next-page-available="{{isNextPageAvailable}}"
@@ -196,8 +196,7 @@ limitations under the License.
         if (typeof this.docId === "undefined" || this.docId.length === 0) {
           return;
         }
-        this.$.auditOp.queryParams = this.docId;
-        this.$.auditOp.fetch();
+        this.$.pageProvider.fetch();
       }
     });
   </script>
