@@ -48,24 +48,56 @@ Note: Elements that depend on a connectionId use `nx` as default.
     // This map is shared between all instances of nuxeo-connection.
     var nxClients = {};
 
+    var connectionRegistry = {};
+
+    function _registerConnection(id, connection) {
+      connectionRegistry[id] = connectionRegistry[id] || [];
+      connectionRegistry[id].push(connection);
+    }
+
+    function _unregisterConnection(id, connection) {
+      connectionRegistry[id].splice(connection[id].indexOf(connection), 1);
+    }
+
+    function _syncConnections(id, data) {
+      connectionRegistry[id].forEach(function(connection) {
+        Object.keys(data).forEach(function(property) {
+          connection.set(property, data[property]);
+        });
+      });
+    }
+
     Polymer({
       is: 'nuxeo-connection',
       properties: {
         /* A unique identifier for this connection. */
-        connectionId: {type: String, value: 'nx'},
+        connectionId: {
+          type: String,
+          value: 'nx',
+          observer: '_connectionIdChanged'
+        },
 
         /* The base URL of the Nuxeo server. */
         url: {type: String, value: ''},
 
         /* The repository name. */
-        repositoryName: {type: String, value: null},
+        repositoryName: { type: String, value: null },
 
         /* The username. */
         username: {type: String, value: null},
 
         /* The password. */
-        password: {type: String, value: null}
+        password: {type: String, value: null},
+
+        /* Set to true to automatically sync the properties of all nuxeo-connection instances whenever a property of
+           this instance is updated. */
+        autoSync: {
+          type: Boolean,
+          value: false
+        }
       },
+
+      observers: ['_syncState(connectionId, url, repositoryName, username, password)'],
 
       ready: function() {
         this.connect();
@@ -169,6 +201,31 @@ Note: Elements that depend on a connectionId use `nx` as default.
         return this.connect().then(function() {
           return this.client.batchUpload();
         }.bind(this));
+      },
+
+      /* Sync the properties of this with all other instances of nuxeo-connection. */
+      sync: function() {
+        _syncConnections(this.connectionId, {
+          url: this.url,
+          repositoryName: this.repositoryName,
+          username: this.username,
+          password: this.password
+        });
+      },
+
+      _connectionIdChanged: function(newValue, oldValue) {
+        if (typeof oldValue !== 'undefined') {
+          _unregisterConnection(oldValue, this);
+        }
+        if (typeof newValue !== 'undefined') {
+          _registerConnection(newValue, this);
+        }
+      },
+
+      _syncState: function() {
+        if (this.autoSync && typeof this.connectionId !== 'undefined') {
+          this.sync();
+        }
       }
     });
   })();
