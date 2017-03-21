@@ -113,8 +113,8 @@ limitations under the License.
         expect(createButton).to.not.be.null;
         MockInteractions.tap(createButton);
         expect(createGroupEl.$.form.validate()).to.be.false;
-        expect(createGroupEl.groupName).to.be.undefined;
-        expect(createGroupEl.groupLabel).to.be.undefined;
+        expect(createGroupEl.groupName).to.be.empty;
+        expect(createGroupEl.groupLabel).to.be.empty;
         expect(createGroupEl.selectedUsers).to.be.empty;
       });
 
