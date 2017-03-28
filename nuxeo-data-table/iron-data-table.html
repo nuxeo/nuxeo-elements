@@ -417,7 +417,10 @@ Example:
       _itemChanged: function(e) {
         if (this.items) {
           var index = this.items.indexOf(e.detail.item);
-          if (index >= 0) {
+          if (e.detail.index > -1) {
+            this.set('items.' + e.detail.index, e.detail.value);
+            this.notifyResize();
+          } else if(index >= 0) {
             this.set('items.' + index + '.' + e.detail.path, e.detail.value);
           }
         }
@@ -685,6 +688,9 @@ Example:
       _editEntry: function(e) {
         var editForm = this.getContentChildren('#form')[0];
         var items = this.items; // TODO: add support for editing when using a page provider
+        if (typeof editForm.item !== 'object') {
+          editForm.index = e.detail.index;
+        }
         editForm.item = items[e.detail.index];
         this.$.dialog.toggle();
       },
@@ -695,7 +701,12 @@ Example:
       },
 
       _createEntry: function() {
-        this.push('items', {});
+        if ((this.items.length > 1 && 'object' !== typeof this.items[0]) || this.columns.length === 1) {
+          // dirty but will work with primitive such as string, number, etc.
+          this.push('items', ' ');
+        } else {
+          his.push('items', {});
+        }
         this.notifyResize();
       },
 

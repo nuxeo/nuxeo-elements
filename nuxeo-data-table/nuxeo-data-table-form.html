@@ -20,7 +20,8 @@
           type: Object,
           notify: true,
           observer: '_itemChanged'
-        }
+        },
+        index: Number
       },
 
       ready: function() {
@@ -36,7 +37,11 @@
         }
       },
 
-      _forwardParentProp: function(prop, value) {},
+      _forwardParentProp: function(prop, value) {
+        if ("undefined" !== typeof this.index && this.index > -1) {
+          this.fire('item-changed', {item: this.item, index: this.index, value: value});
+        }
+      },
 
       _forwardInstancePath: function(inst, path, value) {
         // strip "item."
