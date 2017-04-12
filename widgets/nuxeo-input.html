@@ -17,7 +17,6 @@ limitations under the License.
 
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../paper-input/paper-input.html">
-<link rel="import" href="../nuxeo-i18n-behavior.html">
 
 <!--
 An element for generic input in forms
@@ -30,8 +29,11 @@ An element for generic input in forms
   <template>
 
     <paper-input label="[[label]]"
+                 type="[[type]]"
                  name="[[name]]"
-                 value="[[value]]"
+                 value="{{value}}"
+                 placeholder$="[[placeholder]]"
+                 autofocus$="[[autofocus]]"
                  readonly$="[[readonly]]"
                  disabled$="[[disabled]]"
                  required$="[[required]]"
@@ -52,6 +54,11 @@ An element for generic input in forms
       label: String,
 
       /**
+       * Type.
+       */
+      type: String,
+
+      /**
        * Name.
        */
       name: String,
@@ -60,6 +67,20 @@ An element for generic input in forms
        * Value.
        */
       value: String,
+
+      /**
+       * Placeholder.
+       */
+      placeholder: String,
+
+      /**
+       * Autofocus.
+       */
+      autofocus:  {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true
+      },
 
       /**
        * Read only.

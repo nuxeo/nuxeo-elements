@@ -16,8 +16,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../../paper-textarea/paper-textarea.html">
-<link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../../paper-input/paper-textarea.html">
 
 <!--
 An element for generic textarea input in forms
@@ -31,7 +30,7 @@ An element for generic textarea input in forms
 
     <paper-textarea label="[[label]]"
                     name="[[name]]"
-                    value="[[value]]"
+                    value="{{value}}"
                     required$="[[required]]"
                     disabled$="[[disabled]]"
                     always-float-label>
@@ -59,6 +58,11 @@ An element for generic textarea input in forms
        * Value.
        */
       value: String,
+
+      /**
+       * Placeholder.
+       */
+      placeholder: String,
 
       /**
        * Read only.
