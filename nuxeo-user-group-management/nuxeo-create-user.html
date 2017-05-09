@@ -101,13 +101,13 @@ Used by `nuxeo-user-group-management`
 
     <form is="iron-form" id="form" class="vertical layout">
       <paper-input label="[[i18n('createUser.username')]]" value="{{user.username}}"
-                   required always-float-label>
+                   name="username" required always-float-label>
       </paper-input>
 
       <nuxeo-edit-user id="propertyEditor" user="{{user}}" new></nuxeo-edit-user>
 
       <label class="label-password">[[i18n('createUser.setPassword')]]</label>
-      <paper-toggle-button checked="{{usePassword}}"></paper-toggle-button>
+      <paper-toggle-button checked="{{usePassword}}" name="password-toggle"></paper-toggle-button>
       <nuxeo-edit-password id="passwordEditor" password="{{user.password}}"
                            required$="[[usePassword]]" hidden$="[[!usePassword]]">
       </nuxeo-edit-password>
