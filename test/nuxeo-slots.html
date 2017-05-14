@@ -71,6 +71,14 @@ limitations under the License.
     </nuxeo-slot-content>
   </template>
 </test-fixture>
+
+<test-fixture id="slot1Content1Override">
+  <template>
+    <nuxeo-slot-content name="content1" slot="SLOT1" order="3">
+      <template><span>Content 1 override</span></template>
+    </nuxeo-slot-content>
+  </template>
+</test-fixture>
 <script>
 
   // return all children excluding <nuxeo-slot>
@@ -78,7 +86,7 @@ limitations under the License.
     return container.querySelectorAll(':not(nuxeo-slot)');
   }
 
-  suite('<nuxeo-slots>', function() {
+  suite('<nuxeo-slot>', function() {
 
     var slot1, slot2;
 
@@ -126,6 +134,22 @@ limitations under the License.
       expect(content[0].textContent).to.be.equal('Content 1');
     });
 
+    test('slot content override', function() {
+
+      fixture('slot1Content1');
+      fixture('slot1Content2');
+
+      var content = _content(slot1);
+      expect(content.length).to.be.equal(2);
+      expect(content[0].textContent).to.be.equal('Content 1');
+
+      fixture('slot1Content1Override');
+
+      content = _content(slot1);
+      expect(content.length).to.be.equal(2);
+      // check content 1 was moved to last
+      expect(content[1].textContent).to.be.equal('Content 1 override');
+    });
   });
 </script>
 </body>

@@ -37,14 +37,15 @@ limitations under the License.
 
       function _registerContent(node, slot) {
         var registry = _getRegistry(slot);
-        var existing = registry.nodes.find(function(n) { return _same(node, n); });
-        if (existing) {
-          existing._merge(node);
+        // if content with same name exists override it
+        var idx = registry.nodes.findIndex(function(n) { return _same(node, n); });
+        if (idx !== -1) {
+          registry.nodes[idx] = node;
         } else {
           registry.nodes.push(node);
         }
         registry.nodes.sort(function(a, b) { return a.order - b.order; });
-        registry.slots.forEach(function(c) { c._updateContent(); });
+        registry.slots.forEach(function(s) { s._updateContent(); });
       }
 
       function _unregisterContent(node, slot) {
@@ -52,7 +53,7 @@ limitations under the License.
         var idx = registry.nodes.findIndex(function(n) { return _same(node, n); });
         if (idx !== -1) {
           registry.nodes.splice(idx, 1);
-          registry.slots.forEach(function(c) { c._updateContent(); });
+          registry.slots.forEach(function(s) { s._updateContent(); });
         }
       }
 
@@ -248,12 +249,6 @@ limitations under the License.
 
         detached: function() {
           this._unregister(this.slot);
-        },
-
-        _merge: function(other) {
-          this.slot = other.slot;
-          this.disabled = other.disabled;
-          this.order = other.order;
         },
 
         _slotChanged: function(_, oldSlot) {
