@@ -37,10 +37,13 @@ limitations under the License.
 
       function _registerContent(node, slot) {
         var registry = _getRegistry(slot);
-        // if content with same name exists override it
+        // if content with same name exists check if we should override it
         var idx = registry.nodes.findIndex(function(n) { return _same(node, n); });
         if (idx !== -1) {
-          registry.nodes[idx] = node;
+          // if new content has same or higher priority then do the override
+          if (node.priority >= registry.nodes[idx].priority) {
+            registry.nodes[idx] = node;
+          }
         } else {
           registry.nodes.push(node);
         }
@@ -240,11 +243,19 @@ limitations under the License.
           order: {
             type: Number,
             value: 0
+          },
+
+          /**
+           * Controls merging of slot content with same name.
+           */
+          priority: {
+            type: Number,
+            value: 0
           }
         },
 
         observers: [
-          '_register(disabled, order)'
+          '_register(disabled, order, priority)'
         ],
 
         detached: function() {

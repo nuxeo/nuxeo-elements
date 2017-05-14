@@ -72,6 +72,13 @@ limitations under the License.
   </template>
 </test-fixture>
 
+<test-fixture id="slot1Content1Disabled">
+  <template>
+    <nuxeo-slot-content name="content1" slot="SLOT1" disabled>
+    </nuxeo-slot-content>
+  </template>
+</test-fixture>
+
 <test-fixture id="slot1Content1Override">
   <template>
     <nuxeo-slot-content name="content1" slot="SLOT1" order="3">
@@ -79,6 +86,18 @@ limitations under the License.
     </nuxeo-slot-content>
   </template>
 </test-fixture>
+
+<test-fixture id="slot1Content1Priority">
+  <template>
+    <nuxeo-slot-content name="content1" slot="SLOT1" priority="10">
+      <template><span>Content 1 override</span></template>
+    </nuxeo-slot-content>
+    <nuxeo-slot-content name="content1" slot="SLOT1">
+      <template><span>No content</span></template>
+    </nuxeo-slot-content>
+  </template>
+</test-fixture>
+
 <script>
 
   // return all children excluding <nuxeo-slot>
@@ -132,6 +151,17 @@ limitations under the License.
       expect(content.length).to.be.equal(2);
       // check content 1 was moved to first
       expect(content[0].textContent).to.be.equal('Content 1');
+
+      document.getElementById('slot1Content2').restore();
+    });
+
+    test('slot content disabled', function() {
+
+      fixture('slot1Content1');
+      expect(_content(slot1).length).to.be.equal(1);
+
+      fixture('slot1Content1Disabled');
+      expect(_content(slot1)).to.be.empty;
     });
 
     test('slot content override', function() {
@@ -150,6 +180,17 @@ limitations under the License.
       // check content 1 was moved to last
       expect(content[1].textContent).to.be.equal('Content 1 override');
     });
+
+    test('slot content priority', function() {
+
+      fixture('slot1Content1');
+      fixture('slot1Content1Priority');
+
+      var content = _content(slot1);
+      expect(content.length).to.be.equal(1);
+      expect(content[0].textContent).to.be.equal('Content 1 override');
+    });
+
   });
 </script>
 </body>
