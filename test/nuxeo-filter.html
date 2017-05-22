@@ -198,6 +198,14 @@ limitations under the License.
   </nuxeo-filter>
 </div>
 
+<div id="removalContainer">
+  <nuxeo-filter>
+    <template>
+      <div class="toRemove"></div>
+    </template>
+  </nuxeo-filter>
+</div>
+
 <script>
   suite('<nuxeo-filter>', function() {
 
@@ -258,6 +266,13 @@ limitations under the License.
       expect(stamped(multipleFilter, 'notok')).to.be.empty;
     });
 
+    /* global removalContainer */
+    test('filter removal', function() {
+      expect(stamped(removalContainer, '.toRemove').length).to.be.equal(1);
+      var filter = Polymer.dom(removalContainer).querySelector('nuxeo-filter');
+      removalContainer.removeChild(filter);
+      expect(stamped(removalContainer, '.toRemove').length).to.be.equal(0);
+    });
   });
 </script>
 </body>
