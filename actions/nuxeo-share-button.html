@@ -53,15 +53,13 @@ Example:
 
     <nuxeo-dialog id="dialog" with-backdrop>
       <h2>[[i18n('shareButton.dialog.heading')]]</h2>
-
       <paper-input id="permalink" label="[[i18n('shareButton.copy.label', document.properties.dc:title)]]"
                    value="[[_buildPermalink(document)]]"
                    autofocus
-                   readonly="readonly">
+                   readonly>
       </paper-input>
       <div class="buttons">
         <paper-button dialog-dismiss>[[i18n('shareButton.dialog.close')]]</paper-button>
-        <paper-button dialog-dismiss>TRY</paper-button>
       </div>
     </nuxeo-dialog>
 
