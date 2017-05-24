@@ -16,6 +16,7 @@ limitations under the License.
 -->
 <link rel="import" href="nuxeo-select2.html">
 <link rel="import" href="../nuxeo-elements/nuxeo-operation.html">
+<link rel="import" href="../nuxeo-routing-behavior.html">
 
 <!--
 An element for selecting one or more documents.
@@ -58,7 +59,7 @@ An element for selecting one or more documents.
 <script>
 Polymer({
   is: 'nuxeo-document-suggestion',
-  behaviors: [Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior],
+  behaviors: [Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior, Nuxeo.RoutingBehavior],
   properties: {
 
     /**
@@ -206,11 +207,11 @@ Polymer({
   },
 
   _selectionFormatter: function(doc) {
-    return doc.title;
+    return '<a href="' + this.urlFor('browse', doc.path) + '">' + doc.title + '</a>';
   },
 
   _resultFormatter: function(doc) {
-    return doc.title;
+    return doc.title + '<br/>' + doc.path;
   },
 
   _initSelection: function(element, callback) {
