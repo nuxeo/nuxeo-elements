@@ -265,13 +265,13 @@ limitations under the License.
 
         function fakeResponse(search, json) {
           server.respondWith(
-              'POST',
-              '/dummy/site/es/audit/_search?search_type=count',
-              [
-                200,
-                {'Content-Type': 'application/json'},
-                JSON.stringify(json)
-              ]
+            'POST',
+            '/dummy/site/es/audit/_search?search_type=count',
+            [
+              200,
+              {'Content-Type': 'application/json'},
+              JSON.stringify(json)
+            ]
           );
 
           var promise = search.fetch();
