@@ -182,7 +182,7 @@ limitations under the License.
         test('includeAllCount', function() {
           var distribution = fixture('includeAllCount');
 
-           return fakeResponse(distribution, includeAllCountResp).then(function() {
+          return fakeResponse(distribution, includeAllCountResp).then(function() {
             // check data transformation
             assert.equal(4, distribution._chartData.children.length);
             assert.equal(71, distribution._chartData.value);
@@ -199,7 +199,7 @@ limitations under the License.
         test('includeAllSize', function() {
           var distribution = fixture('includeAllSize');
 
-           return fakeResponse(distribution, includeAllCountResp).then(function() {
+          return fakeResponse(distribution, includeAllCountResp).then(function() {
             // check data transformation
             assert.equal(4, distribution._chartData.children.length);
             assert.equal(28650901, distribution._chartData.value);
@@ -215,13 +215,13 @@ limitations under the License.
 
         function fakeResponse(distribution, json) {
           server.respondWith(
-              'POST',
-              '/dummy/site/es/nuxeo/doc/_search?',
-              [
-                200,
-                {'Content-Type': 'application/json'},
-                JSON.stringify(json)
-              ]
+            'POST',
+            '/dummy/site/es/nuxeo/doc/_search?',
+            [
+              200,
+              {'Content-Type': 'application/json'},
+              JSON.stringify(json)
+            ]
           );
           return distribution.execute();
         }

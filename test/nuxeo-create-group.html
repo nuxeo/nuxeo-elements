@@ -87,13 +87,13 @@ limitations under the License.
       setup(function() {
         createGroupEl = fixture('createGroup');
         server.respondWith(
-            'POST',
-            '/dummy/api/v1/group?',
-            [
-              200,
-              {'Content-Type': 'application/json'},
-              JSON.stringify(creationResponse)
-            ]
+          'POST',
+          '/dummy/api/v1/group?',
+          [
+            200,
+            {'Content-Type': 'application/json'},
+            JSON.stringify(creationResponse)
+          ]
         );
         Polymer.dom.flush(createGroupEl);
       });
