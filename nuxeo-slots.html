@@ -42,7 +42,12 @@ limitations under the License.
         if (idx !== -1) {
           // if new content has same or higher priority then do the override
           if (node.priority >= registry.nodes[idx].priority) {
-            registry.nodes[idx] = node;
+            // if content has a template replace existing one
+            if (node.template) {
+              registry.nodes[idx] = node;
+            } else { // merge
+              registry.nodes[idx]._merge(node);
+            }
           }
         } else {
           registry.nodes.push(node);
@@ -149,7 +154,7 @@ limitations under the License.
           // keep track of stamped instances
           this._instances = [];
           _getRegistry(this.slot).nodes.forEach(function(node) {
-            var template = Polymer.dom(node).querySelector('template');
+            var template = node.template;
             if (!node.disabled && template) {
               this.templatize(template);
               var el = this.stamp(this.model);
@@ -260,6 +265,17 @@ limitations under the License.
 
         detached: function() {
           this._unregister(this.slot);
+        },
+
+        get template() {
+          return Polymer.dom(this).querySelector('template');
+        },
+
+        _merge: function(other) {
+          this.slot = other.slot;
+          this.disabled = other.disabled;
+          this.order = other.order;
+          this.priority = other.priority;
         },
 
         _slotChanged: function(_, oldSlot) {
