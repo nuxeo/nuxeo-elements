@@ -41,8 +41,10 @@ limitations under the License.
 
       test('layout not found', function() {
         var layout = fixture('notfound');
-        expect(layout.$$('nuxeo-error').hidden).to.be.false;
-        expect(layout.element).to.be.undefined;
+        return waitForEvent(layout, 'iron-resize').then(function() {
+          expect(layout.$$('nuxeo-error').hidden).to.be.false;
+          expect(layout.element).to.be.undefined;
+        });
       });
 
       test('layout stamped with model', function() {
