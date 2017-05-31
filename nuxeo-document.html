@@ -112,31 +112,31 @@ element.
       }
     },
 
-    /* Fetch the document */
+    /* Fetch the document. */
     get: function () {
       this.method = 'get';
       return this.execute();
     },
 
-    /* Create the document */
+    /* Create the document. */
     post: function () {
       this.method = 'post';
       return this.execute();
     },
 
-    /* 'Update the document */
+    /* 'Update the document. */
     put: function () {
       this.method = 'put';
       return this.execute();
     },
 
-    /* Delete the document */
+    /* Delete the document. */
     remove: function () {
       this.method = 'delete';
       return this.execute();
     },
 
-    /* Execute the request */
+    /* Execute the request. */
     execute: function() {
       return this.$.nxResource.execute();
     },

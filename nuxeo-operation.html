@@ -135,7 +135,13 @@ element.
       ],
 
       /**
-       * Call the operation
+       * Fired when the operation returns with no errors.
+       *
+       * @event response
+       */
+
+      /**
+       * Call the operation.
        */
       execute: function() {
         this._setActiveRequests(this.activeRequests + 1);

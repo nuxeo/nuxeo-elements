@@ -70,10 +70,19 @@ Note: Elements that depend on a connectionId use `nx` as default.
         user: {type: Object, readOnly: true, notify: true}
       },
 
+      /**
+       * Fired when the client is connected.
+       *
+       * @event connected
+       */
+
       ready: function() {
         this.connect();
       },
 
+      /**
+       * Connects nuxeo client.
+       */
       connect: function() {
         // Create the client if needed
         // If we already have a client with the same connection info just keep it
@@ -92,8 +101,8 @@ Note: Elements that depend on a connectionId use `nx` as default.
             this.client._username === this.username &&
             this.client._password === this.password &&
             this.client._baseOptions.repositoryName === this.repositoryName) {
-            // return the stored connection request promise and chain handleConnected to update instance properties
-            return this.client._promise.then(this.handleConnected.bind(this));
+            // return the stored connection request promise and chain _handleConnected to update instance properties
+            return this.client._promise.then(this._handleConnected.bind(this));
           } else {
             // otherwise override the client with the new properties
             this.client = null;
@@ -125,7 +134,7 @@ Note: Elements that depend on a connectionId use `nx` as default.
             throw error;
           });
 
-        return this.client._promise.then(this.handleConnected.bind(this))
+        return this.client._promise.then(this._handleConnected.bind(this))
       },
 
       /**
@@ -145,7 +154,7 @@ Note: Elements that depend on a connectionId use `nx` as default.
       },
 
 
-      handleConnected: function(user) {
+      _handleConnected: function(user) {
         if (this.client.connected) {
           this._setUser(user);
           this.fire('connected');
@@ -153,18 +162,28 @@ Note: Elements that depend on a connectionId use `nx` as default.
         return user;
       },
 
+      /**
+       * Returns a request object that allows REST requests to be executed on a Nuxeo Platform instance.
+       */
       request: function() {
         return this.connect().then(function() {
           return this.client.request();
         }.bind(this));
       },
 
+      /**
+       * Returns an operation object that allows operations to be executed on a Nuxeo Platform instance.
+       * @param {string} op The operation to be executed.
+       */
       operation: function(op) {
         return this.connect().then(function() {
           return this.client.operation(op);
         }.bind(this));
       },
 
+      /**
+       * Returns an object that allows blobs to be uploaded to a Nuxeo Platform instance using the Batch Upload API.
+       */
       batchUpload: function() {
         return this.connect().then(function() {
           return this.client.batchUpload();

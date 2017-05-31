@@ -164,7 +164,7 @@ element.
         },
 
         /**
-         * Gets the list of saved searches or the current search search if `search-id` is set-
+         * Gets the list of saved searches or the current search search if `search-id` is set.
          */
         get: function() {
           this.method = 'get';
@@ -202,6 +202,9 @@ element.
           return this.$.resource.execute();
         },
 
+        /**
+         * Executes the saved search.
+         */
         execute: function() {
           if (this.searchId) {
             this.method = 'get';
