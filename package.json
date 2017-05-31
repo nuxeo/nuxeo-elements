@@ -14,7 +14,7 @@
   "private": true,
   "scripts": {
     "eslint": "eslint *.html demo/**/*.html test/**/*.html",
-    "polylint": "polymer lint -r 'polymer-1'",
+    "polylint": "polymer lint",
     "lint": "npm run eslint",
     "test": "polymer test --simpleOutput --expanded -l chrome"
   },

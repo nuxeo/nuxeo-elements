@@ -1,0 +1,6 @@
+{
+  "lint": {
+    "rules": ["polymer-1"],
+    "ignoreWarnings": ["databind-with-unknown-property", "polymer-expression-parse-error", "set-unknown-attribute"]
+  }
+}
