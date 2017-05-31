@@ -53,7 +53,8 @@ An element for selecting one or more documents.
                    result-formatter="[[resultFormatter]]"
                    required="[[required]]"
                    invalid="[[invalid]]"
-                   init-selection="[[initSelection]]">
+                   init-selection="[[initSelection]]"
+                   id-function="[[_idFunction]]">
     </nuxeo-select2>
 
   </template>
@@ -171,8 +172,18 @@ An element for selecting one or more documents.
          * to define the ID of entry.
          **/
         idProperty: {
-          type: String,
-          value: "ecm:uuid"
+         type: String,
+         value: "ecm:uuid"
+        },
+
+        /**
+         * Function used to get the id from the choice document.
+         */
+        _idFunction: {
+          type: Function,
+          value: function() {
+            return this._docIdFunction.bind(this);
+          }
         },
 
         /**
@@ -216,6 +227,7 @@ An element for selecting one or more documents.
         return doc.title + '<br/>' + doc.path;
       },
 
+
       _initSelection: function(element, callback) {
         if (this.value) {
           if (this.multiple) {
@@ -225,12 +237,18 @@ An element for selecting one or more documents.
               } else if (typeof this.value[0] === "string" && this.value[0].length > 0) {
                 return this._resolveDocs(this.value, callback);
               }
+            } else {
+              return callback([]);
             }
           } else {
             if (this.value.title) {
               return callback(this.value);
-            } else if (typeof this.value === "string" && this.value.length > 0) {
-              return this._resolveDocs(this.value, callback);
+            } else if (typeof this.value === "string") {
+              if (this.value.length > 0) {
+                return this._resolveDocs(this.value, callback);
+              } else {
+                return callback('');
+              }
             }
           }
           console.log('Unable to resolve such entry. Write your own resolver');
@@ -244,7 +262,15 @@ An element for selecting one or more documents.
         };
         this.$.op.execute().then(function(res) {
           callback(this.multiple ? res.entries : (res.entries.length > 0 ? res.entries[0] : null));
-        });
+        }.bind(this));
+      },
+
+      _docIdFunction: function(doc) {
+        if (this.idProperty === 'ecm:uuid') {
+          return doc.uid;
+        } else {
+          return doc.properties[this.idProperty];
+        }
       }
 
     });
