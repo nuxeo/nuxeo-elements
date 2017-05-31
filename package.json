@@ -31,8 +31,6 @@
     "select2": "3.5.2-browserify"
   },
   "devDependencies": {
-    "@polymer/iron-component-page": "0.0.3",
-    "@polymer/test-fixture": "0.0.3",
     "eslint": "^3.0.0",
     "eslint-plugin-html": "^2.0.0",
     "polymer-cli": "^1.0.0"
