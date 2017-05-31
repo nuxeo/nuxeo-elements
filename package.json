@@ -13,7 +13,7 @@
   "private": true,
   "scripts": {
     "eslint": "eslint *.html demo/**/*.html test/**/*.html",
-    "polylint": "polymer lint -r 'polymer-1' -i *.html",
+    "polylint": "polymer lint -r 'polymer-1'",
     "lint": "npm run eslint && npm run polylint",
     "test": "polymer test --simpleOutput --expanded -l chrome"
   },
@@ -24,8 +24,6 @@
     "es6-promise": "^3.1.2"
   },
   "devDependencies": {
-    "@polymer/iron-component-page": "0.0.3",
-    "@polymer/test-fixture": "0.0.3",
     "eslint": "^3.0.0",
     "eslint-plugin-html": "^2.0.0",
     "polymer-cli": "^1.0.0"
