@@ -84,6 +84,18 @@ Example:
           '_auto(connectionId, auto, index, query, aggregates)'
         ],
 
+        /**
+         * Fired if an error occurs while performing the query.
+         *
+         * @event error
+         */
+
+        /**
+         * Fired when a query is performed.
+         *
+         * @event results
+         */
+
         _auto: function () {
           if (this.auto && this.query && this.aggregates) {
             this.execute();

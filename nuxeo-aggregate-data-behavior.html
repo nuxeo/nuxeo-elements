@@ -290,6 +290,9 @@ limitations under the License.
       this.aggregates = result.aggs;
     },
 
+    /**
+     * Fetch aggregation.
+     */
     fetch: function() {
       var search = document.createElement('nuxeo-es-search');
       search.connectionId = this.connectionId;
