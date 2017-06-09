@@ -53,6 +53,7 @@ limitations under the License.
                    selected-items="{{selectedItems}}"
                    required="[[required]]"
                    invalid="[[invalid]]"
+                   selection-formatter="[[selectionFormatter]]"
                    result-formatter="[[resultFormatter]]"
                    resolve-entry="[[resolveEntry]]"
                    id-function="[[idFunction]]">
@@ -131,6 +132,16 @@ limitations under the License.
         },
 
         /**
+         * Formatter for a selected entry.
+         */
+        selectionFormatter: {
+          type: Function,
+          value: function() {
+            return this._selectionFormatter.bind(this);
+          }
+        },
+
+        /**
          * Formatter for suggested entries.
          */
         resultFormatter: {
@@ -180,13 +191,31 @@ limitations under the License.
         };
       },
 
+      _selectionFormatter: function(item) {
+        if (item) {
+          switch (item['entity-type']) {
+            case 'user':
+              return item.id;
+            case 'group':
+              return item.grouplabel ? item.grouplabel : item.groupname;
+            default:
+              return item;
+          }
+        }
+      },
+
       _resultFormatter: function(item) {
         return (item.displayLabel || item.title) + ((item.type && item.type === 'USER_TYPE') ? '<br>' + item.email : '');
       },
 
-      _resolveEntry: function(term) {
-        return this.prefixed ? {id: term, displayLabel: term, prefixed_id: term }
-                             : {id: term, displayLabel: term};
+      _resolveEntry: function(item) {
+        if (item && item['entity-type']) {
+          return item;
+        } else {
+          return this.prefixed
+            ? {id: item, displayLabel: item, prefixed_id: item}
+            : {id: item, displayLabel: item};
+        }
       },
 
       _idFunction: function(item) {
