@@ -406,7 +406,11 @@ Example:
         if (this.items) {
           var index = this.items.indexOf(e.detail.item);
           if (index >= 0) {
-            this.set('items.' + index + '.' + e.detail.path, e.detail.value);
+            var path =  'items.' + index;
+            if (e.detail.path) {
+              path += '.' + e.detail.path;
+            }
+             this.set(path, e.detail.value);
           }
         }
       },
