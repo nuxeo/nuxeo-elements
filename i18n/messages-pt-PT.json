@@ -215,7 +215,7 @@
   "viewUser.email":"E-mail",
   "workflowButton.dialog.close":"Close",
   "workflowButton.dialog.start":"Start",
-  "workflowButton.dialog.heading":"Start process",
+  "workflowButton.dialog.heading":"Start Process",
   "workflowButton.dialog.placeholder":"Choose process",
-  "workflowButton.tooltip":"Start process"
+  "workflowButton.tooltip":"Start Process"
 }
