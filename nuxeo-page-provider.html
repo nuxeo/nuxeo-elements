@@ -345,9 +345,9 @@ element.
       _computePath: function(provider, query) {
         var path = '';
         if (query) {
-          path = '/query';
+          path = '/search/lang/NXQL/execute';
         } else if (provider) {
-          path = '/query/' + provider;
+          path = '/search/pp/' + provider + '/execute';
         }
         return path;
       },
