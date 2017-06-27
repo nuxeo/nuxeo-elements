@@ -43,15 +43,51 @@ Example:
       :host {
         display: block;
       }
+
       #video {
         background: var(--primary-background-color);
       }
+
+      #container {
+        text-align: center;
+      }
+
+      #storyboard {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+        background: var(--primary-background-color);
+        margin: 8px 0;
+        padding: 4px;
+      }
+
+      #thumbnails {
+        @apply(--layout-horizontal);
+        overflow-x: auto;
+      }
+
+      .thumbnail {
+        padding: 4px;
+        cursor: pointer;
+      }
     </style>
-    <video id="video" class="video-js vjs-default-skin" controls$="[[controls]]" width="[[width]]" height="[[height]]" preload="[[preload]]" poster="[[poster]]">
-      <template is="dom-repeat" items="[[sources]]" as="source">
-        <source src="[[source.data]]" type="[[source.type]]" />
+    <div id="container">
+      <video id="video" class="video-js vjs-default-skin vjs-big-play-centered" controls$="[[controls]]" width="[[width]]"
+             height="[[height]]" preload="[[preload]]" poster="[[poster]]">
+        <template is="dom-repeat" items="[[sources]]" as="source">
+          <source src="[[source.data]]" type="[[source.type]]" />
+        </template>
+      </video>
+
+      <template is="dom-if" if="[[_showStoryboard(storyboard)]]">
+        <div id="storyboard">
+          <div id="thumbnails">
+            <template is="dom-repeat" items="[[storyboard]]" as="thumbnail">
+              <img class="thumbnail" on-click="_jumpTo" src="[[thumbnail.content.data]]" />
+            </template>
+          </div>
+        </div>
       </template>
-    </video>
+    </div>
   </template>
 
   <script>
@@ -101,7 +137,15 @@ Example:
         /**
          * The `sources` to be displayed.
          */
-        sources: Object
+        sources: Object,
+
+        /**
+         * The storyboard (array of thumbnails) for video navigation. If null or empty, the storyboard is not shown.
+         */
+        storyboard: {
+          type: Array,
+          value: []
+        }
       },
 
       ready: function() {
@@ -130,6 +174,14 @@ Example:
         if (this.videojs) {
           this.videojs.el().style.height = this.height;
         }
+      },
+
+      _showStoryboard: function() {
+        return this.storyboard && this.storyboard.length > 0;
+      },
+
+      _jumpTo: function(e) {
+        this.videojs.currentTime(e.model.thumbnail.timecode);
       }
     });
   </script>

@@ -89,7 +89,7 @@ Example:
     </template>
 
     <template mime-pattern="video.*">
-      <nuxeo-video-viewer controls sources="[[_videoSources]]"></nuxeo-video-viewer>
+      <nuxeo-video-viewer controls sources="[[_videoSources]]" storyboard="[[_storyboard]]"></nuxeo-video-viewer>
     </template>
 
     <template mime-pattern="audio.*">
@@ -144,6 +144,11 @@ Example:
         _videoSources: {
           type: Array,
           computed: '_computeVideoSources(document)'
+        },
+
+        _storyboard: {
+          type: Array,
+          computed: '_computeStoryboard(document)'
         },
 
         _audioSource: {
@@ -236,6 +241,12 @@ Example:
               type: conversion.content['mime-type']
             };
           });
+        }
+      },
+
+      _computeStoryboard: function() {
+        if (this.document && this.document.properties && this.document.properties['vid:storyboard']) {
+          return this.document.properties['vid:storyboard'];
         }
       },
 
