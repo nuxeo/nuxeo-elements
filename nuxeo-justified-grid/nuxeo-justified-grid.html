@@ -1,0 +1,231 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../nuxeo-page-provider-display-behavior.html">
+<link rel="import" href="../nuxeo-routing-behavior.html">
+
+<link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../../iron-list/iron-list.html">
+<link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
+<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../paper-spinner/paper-spinner.html">
+
+<!--
+An element for displaying page provider results in a justified grid with infinite scrolling.
+
+@group Nuxeo UI
+@element nuxeo-justified-grid
+-->
+<dom-module id="nuxeo-justified-grid">
+  <template>
+
+    <style>
+      :host {
+        display: block;
+      }
+
+      #grid {
+        display: flex;
+        flex-wrap: wrap;
+        height: 100%;
+        overflow-y: scroll;
+      }
+
+      #grid::after {
+        content: '';
+        flex-grow: 999999999;
+      }
+
+      #grid .item {
+        flex-grow: 1;
+        position: relative;
+        background: no-repeat 50% 50%;
+        background-size: cover;
+        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.04);
+        border: 2px solid transparent;
+        cursor: pointer;
+        outline: none;
+      }
+
+      #grid .item[selected], #grid .item:hover, #grid .item:focus {
+        border: 2px solid var(--nuxeo-grid-selected);
+        background-color: var(--nuxeo-grid-selected);
+        color: white;
+      }
+
+      #grid .item .image {
+        visibility: hidden;
+        max-width: 100%;
+        min-width: 100%;
+        height: 100%;
+        object-fit: cover;
+        vertical-align: bottom;
+        flex-grow: 1;
+      }
+
+      paper-icon-button {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        background-color: rgba(255, 255, 255, 0.95);
+        border: 2px solid var(--nuxeo-grid-selected);
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        padding: 2px;
+        color: var(--nuxeo-grid-selected);
+        display: none;
+      }
+
+      #grid .item[selected] paper-icon-button {
+        border: 2px solid var(--nuxeo-grid-selected);
+        background-color: var(--nuxeo-grid-selected);
+        color: white;
+        display: block;
+      }
+
+      #grid .item:hover paper-icon-button,
+      #grid .item paper-icon-button[selection-mode] {
+        display: block;
+      }
+
+      #grid .item .overlay {
+        display: none;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 24px 10px 8px;
+        background: rgba(0, 0, 0, 0.4);
+        background: -webkit-linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.4));
+        background: -o-linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.4));
+        background: -moz-linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.4));
+        background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.4));
+        text-shadow: -1px 0 rgba(0, 0, 0, 0.4), 0 1px rgba(0, 0, 0, 0.4), 1px 0 rgba(0, 0, 0, 0.4), 0 -1px rgba(0, 0, 0, 0.4);
+      }
+
+      #grid .item:hover .overlay {
+        display: block;
+      }
+
+      #loading {
+        @apply(--layout-vertical);
+        @apply(--layout-center);
+        width: 100%;
+        display: block;
+        text-align: center;
+        padding: 32px;
+      }
+
+      #loading paper-spinner {
+        --paper-spinner-layer-1-color: var(--nuxeo-grid-selected);
+        --paper-spinner-layer-2-color: var(--nuxeo-grid-selected);
+        --paper-spinner-layer-3-color: var(--nuxeo-grid-selected);
+        --paper-spinner-layer-4-color: var(--nuxeo-grid-selected);
+      }
+
+    </style>
+
+    <div id="grid">
+      <template is="dom-repeat" items="[[items]]" as="item">
+        <div class="item" tabindex="0" on-tap="_tap" selected$="[[_isSelected(item, selectedItems.*)]]"
+             style$="height: [[rowHeight]]px; margin: [[margin]]px; background-image:url([[_url(item)]]);">
+          <img class="image" src="[[_url(item)]]" />
+          <paper-icon-button noink icon="icons:check" selection-mode$="[[selectionMode]]"
+                             on-tap="_check"></paper-icon-button>
+          <div class="overlay">[[item.title]]</div>
+        </div>
+      </template>
+
+      <div id="loading" hidden$="[[!loading]]">
+        <paper-spinner active></paper-spinner>
+      </div>
+    </div>
+
+    <iron-scroll-threshold id="scrollThreshold" scroll-target="grid" on-lower-threshold="_loadMoreData">
+    </iron-scroll-threshold>
+
+    <iron-list id="list" items="[[items]]" as="item" selected-items="{{selectedItems}}" multi-selection>
+      <template>
+        <div hidden></div>
+      </template>
+    </iron-list>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-justified-grid',
+      behaviors: [Polymer.IronResizableBehavior, Nuxeo.PageProviderDisplayBehavior, Nuxeo.RoutingBehavior],
+      properties: {
+
+        margin: {
+          type: Number,
+          value: 4
+        },
+
+        rowHeight: {
+          type: Number,
+          value: 196
+        }
+      },
+
+      observers: [
+        '_selectedItemsChanged(selectedItems.splices)'
+      ],
+
+      ready: function() {
+        this.multiSelection = true;
+        this.selectionEnabled = true;
+      },
+
+      _check: function(e) {
+        this.selectionMode = true;
+        this._tap(e);
+      },
+
+      _tap: function(e) {
+        var item = e.model.item;
+        if (this.selectionMode) {
+          if (this._isSelected(item)) {
+            this.deselectItem(item);
+          } else {
+            this.selectItem(item);
+          }
+        } else {
+          this.navigateTo('browse', item.path);
+        }
+        e.stopPropagation();
+      },
+
+      _selectedItemsChanged: function() {
+        this.selectionMode = this.selectedItems && this.selectedItems.length > 0;
+      },
+
+      _isSelected: function(item) {
+        return this.selectedItems.indexOf(item) > -1;
+      },
+
+      _url: function(doc) {
+        if (doc && doc.contextParameters && doc.contextParameters.thumbnail && doc.contextParameters.thumbnail.url) {
+          return doc.contextParameters.thumbnail.url;
+        }
+      }
+
+    });
+  </script>
+</dom-module>
