@@ -50,7 +50,8 @@ Example:
     </style>
 
     <paper-input id="date" label="[[label]]" name="[[name]]" required$="[[required]]" invalid="[[invalid]]"
-                 type="date" on-change="_onChange" always-float-label disabled$="[[disabled]]">
+                 type="date" on-change="_onChange" always-float-label disabled$="[[disabled]]"
+                 error-message="[[errorMessage]]">
     </paper-input>
 
   </template>
@@ -63,6 +64,8 @@ Example:
         label: String,
 
         invalid: Boolean,
+
+        errorMessage: String,
 
         required: {
           type: Boolean,
@@ -85,7 +88,7 @@ Example:
         if (!this.required) {
           return true;
         }
-        return !!this.value;;
+        return !!this.value;
       },
 
       _valueChanged: function() {

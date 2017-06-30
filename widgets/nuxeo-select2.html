@@ -40,22 +40,39 @@ An element wrapping Select2 and relying on an operation for suggestions
         display: block;
       }
 
-      :host([invalid]) .label {
-        color: red;
+      :host([invalid]) .label, .error {
+        color: var(--paper-input-container-invalid-color, red);
       }
 
-      :host([invalid]) .select2-container {
-        border-bottom: 2px solid red;
+      :host([invalid]) .select2-container ::content .select2-choice,
+      :host([invalid]) .select2-container ::content .select2-search-field {
+        border-bottom: 2px solid var(--paper-input-container-invalid-color, red) !important;
+      }
+
+      .label-container {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+      }
+
+      .label-container .label {
+        @apply(--layout-flex);
+      }
+
+      .label-container .required {
+        color: var(--paper-input-container-invalid-color, red);
+        font-size: 1.2em;
       }
     </style>
 
-    <template is="dom-if" if="[[label]]">
-      <label class="label">[[label]]</label>
-    </template>
-
     <nuxeo-operation id="op" op="[[operation]]"></nuxeo-operation>
 
+    <div class="label-container" hidden$="[[!label]]">
+      <label class="label">[[label]]</label><div class="required" hidden$="[[!required]]">*</div>
+    </div>
+
     <input type="hidden" id="select2">
+
+    <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
 
   </template>
 
@@ -80,7 +97,12 @@ An element wrapping Select2 and relying on an operation for suggestions
         /**
          * Results filtering function (optional).
          */
-        queryResultsFilter: Function
+        queryResultsFilter: Function,
+
+        /**
+         * Error message to show when `invalid` is true.
+         */
+        errorMessage: String
       },
 
       attached: function () {

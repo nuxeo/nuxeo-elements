@@ -28,12 +28,25 @@ An element for generic textarea input in forms
 <dom-module id="nuxeo-textarea">
   <template>
 
+    <style>
+      paper-textarea[required] ::content .label-and-input-container::after {
+        display: block;
+        content: '*';
+        position: absolute;
+        right: 0;
+        top: -1rem;
+        color: var(--paper-input-container-invalid-color, red);
+        font-size: 1.2em;
+      }
+    </style>
+
     <paper-textarea label="[[label]]"
                     name="[[name]]"
                     value="{{value}}"
                     required$="[[required]]"
                     disabled$="[[disabled]]"
                     readonly$="[[readonly]]"
+                    error-message="[[errorMessage]]"
                     always-float-label>
     </paper-textarea>
 
@@ -66,6 +79,11 @@ An element for generic textarea input in forms
          * Placeholder.
          */
         placeholder: String,
+
+        /**
+         * Error message to show when `invalid` is true.
+         */
+        errorMessage: String,
 
         /**
          * Read only.

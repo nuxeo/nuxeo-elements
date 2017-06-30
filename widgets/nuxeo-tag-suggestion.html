@@ -51,6 +51,7 @@ limitations under the License.
                    multiple
                    params="[[params]]"
                    placeholder="[[placeholder]]"
+                   error-message="[[errorMessage]]"
                    readonly="[[readonly]]"
                    value="{{value}}"
                    selected-items="{{selectedItems}}"
@@ -126,6 +127,11 @@ limitations under the License.
          * Placeholder.
          */
         placeholder: String,
+
+        /**
+         * Error message to show when `invalid` is true.
+         */
+        errorMessage: String,
 
         /**
          * Selected items.

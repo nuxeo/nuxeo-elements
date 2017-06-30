@@ -46,6 +46,7 @@ An element for selecting one or more documents.
                    multiple="[[multiple]]"
                    params="[[params]]"
                    placeholder="[[placeholder]]"
+                   error-message="[[errorMessage]]"
                    readonly="[[readonly]]"
                    value="{{value}}"
                    selected-items="{{selectedItems}}"
@@ -138,6 +139,11 @@ An element for selecting one or more documents.
          * Placeholder.
          */
         placeholder: String,
+
+        /**
+         * Error message to show when `invalid` is true.
+         */
+        errorMessage: String,
 
         /**
          * Selected items.

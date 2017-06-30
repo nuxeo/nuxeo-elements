@@ -48,6 +48,7 @@ An element for selecting one or more entries from a given directory.
                    multiple="[[multiple]]"
                    params="[[params]]"
                    placeholder="[[placeholder]]"
+                   error-message="[[errorMessage]]"
                    readonly="[[readonly]]"
                    value="{{value}}"
                    selected-items="{{selectedItems}}"
@@ -127,6 +128,11 @@ An element for selecting one or more entries from a given directory.
          * Placeholder.
          */
         placeholder: String,
+
+        /**
+         * Error message to show when `invalid` is true.
+         */
+        errorMessage: String,
 
         /**
          * Selected items.

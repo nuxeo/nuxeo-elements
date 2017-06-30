@@ -28,12 +28,25 @@ An element for generic input in forms
 <dom-module id="nuxeo-input">
   <template>
 
+    <style>
+      paper-input[required] ::content .label-and-input-container::after {
+        display: block;
+        content: '*';
+        position: absolute;
+        right: 0;
+        top: -1rem;
+        color: var(--paper-input-container-invalid-color, red);
+        font-size: 1.2em;
+      }
+    </style>
+
     <paper-input id="paperInput"
                  label="[[label]]"
                  type="[[type]]"
                  name="[[name]]"
                  value="{{value}}"
                  placeholder$="[[placeholder]]"
+                 error-message="[[errorMessage]]"
                  autofocus$="[[autofocus]]"
                  readonly$="[[readonly]]"
                  disabled$="[[disabled]]"
@@ -80,6 +93,11 @@ An element for generic input in forms
          * Placeholder.
          */
         placeholder: String,
+
+        /**
+         * Error message to show when `invalid` is true.
+         */
+        errorMessage: String,
 
         /**
          * Autofocus.
