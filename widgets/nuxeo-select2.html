@@ -45,6 +45,11 @@ An element wrapping Select2 and relying on an operation for suggestions
         color: var(--paper-input-container-invalid-color, red);
       }
 
+      :host([invalid]) .error {
+        opacity: 1;
+        font-size: .923rem;
+      }
+
       :host([invalid]) .select2-container ::content .select2-choice,
       :host([invalid]) .select2-container ::content .select2-search-field {
         border-bottom: 2px solid var(--paper-input-container-invalid-color, red) !important;
