@@ -38,6 +38,7 @@ An element wrapping Select2 and relying on an operation for suggestions
     <style>
       :host {
         display: block;
+        position: relative;
       }
 
       :host([invalid]) .label, .error {
@@ -49,16 +50,12 @@ An element wrapping Select2 and relying on an operation for suggestions
         border-bottom: 2px solid var(--paper-input-container-invalid-color, red) !important;
       }
 
-      .label-container {
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
-      }
-
-      .label-container .label {
-        @apply(--layout-flex);
-      }
-
-      .label-container .required {
+      .label[required]::after {
+        display: block;
+        content: '*';
+        position: absolute;
+        right: 0;
+        top: 0;
         color: var(--paper-input-container-invalid-color, red);
         font-size: 1.2em;
       }
@@ -66,9 +63,7 @@ An element wrapping Select2 and relying on an operation for suggestions
 
     <nuxeo-operation id="op" op="[[operation]]"></nuxeo-operation>
 
-    <div class="label-container" hidden$="[[!label]]">
-      <label class="label">[[label]]</label><div class="required" hidden$="[[!required]]">*</div>
-    </div>
+    <label class="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
 
     <input type="hidden" id="select2">
 
