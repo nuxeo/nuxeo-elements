@@ -110,9 +110,10 @@ Used by `nuxeo-user-group-management`
 
       <label class="label-password">[[i18n('createUser.setPassword')]]</label>
       <paper-toggle-button checked="{{usePassword}}" name="password-toggle"></paper-toggle-button>
-      <nuxeo-edit-password id="passwordEditor" password="{{user.password}}"
-                           required$="[[usePassword]]" hidden$="[[!usePassword]]">
-      </nuxeo-edit-password>
+
+      <template is="dom-if" if="[[usePassword]]" restamp>
+        <nuxeo-edit-password id="passwordEditor" password="{{user.password}}" required></nuxeo-edit-password>
+      </template>
 
       <paper-checkbox noink id="another">[[i18n('createUser.createAnother.checkbox')]]</paper-checkbox>
 
@@ -216,7 +217,9 @@ Used by `nuxeo-user-group-management`
 
       _resetFields: function() {
         this.user = {};
-        this.$.passwordEditor.resetFields();
+        if (this.$.passwordEditor) {
+          this.$.passwordEditor.resetFields();
+        }
         this.errors = '';
         this.usePassword = false;
       },
