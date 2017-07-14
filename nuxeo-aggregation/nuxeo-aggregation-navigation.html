@@ -1,0 +1,219 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
+
+<!--
+An element for providing aggregation based navigation.
+
+`nuxeo-aggregation-navigation`
+@group Nuxeo UI
+@element nuxeo-aggregation-navigation
+@demo demo/nuxeo-list/index.html
+-->
+<dom-module id="nuxeo-aggregation-navigation">
+  <template>
+
+    <style>
+      :host {
+        display: block;
+        pointer-events: none;
+        background: rgba(255, 255, 255, 0.85);
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+
+      #keys {
+        position: relative;
+        width: 100px;
+        height: calc(100% - 32px);
+        margin-top: 16px;
+        padding-right: 8px;
+        cursor: ns-resize;
+      }
+
+      #keys .key {
+        position: absolute;
+        right: 8px;
+        color: black;
+        margin: 0;
+        padding: 0;
+        font-size: 0.7rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        pointer-events: all;
+        text-align: right;
+      }
+
+      #cursor {
+        display: none;
+        position: absolute;
+        right: 0;
+        width: 48px;
+        height: 2px;
+        background: rgba(0, 0, 0, 0.15);
+        pointer-events: none;
+      }
+
+      #cursor .label {
+        position: absolute;
+        right: 64px;
+        top: -14px;
+        white-space: nowrap;
+        text-align: center;
+        background: black;
+        color: white;
+        padding: 6px 8px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        border-radius: 4px;
+        min-width: 64px;
+      }
+    </style>
+
+    <div id="keys" on-mouseout="_mouseOut" on-tap="_tap">
+      <template is="dom-repeat" items="[[_keys]]" as="key">
+        <div class="key" on-mousemove="_mouseMove"
+             style$="top: [[key.top]]px; height: [[key.height]]px; color: [[_color(key.visible)]];">
+          [[_label(key)]]
+        </div>
+      </template>
+      <div id="cursor">
+        <div class="label">[[_cursorLabel]]</div>
+      </div>
+    </div>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-aggregation-navigation',
+      behaviors: [Nuxeo.I18nBehavior],
+      properties: {
+
+        buckets: {
+          type: Array,
+          value: [],
+          observer: '_bucketsChanged'
+        },
+
+        granularity: {
+          type: Number,
+          value: 30
+        },
+
+        opacity: {
+          type: Number,
+          value: 0.85
+        },
+
+        _keys: {
+          type: Array,
+          value: []
+        },
+
+        _count: {
+          type: Number,
+          value: 0
+        },
+
+        _cursorIndex: {
+          type: Number,
+          value: 0
+        },
+
+        _cursorLabel: {
+          type: String,
+          value: ''
+        },
+
+        _rect: {
+          type: Object,
+          value: {top: 0, right: 0, left: 0, bottom: 0}
+        }
+      },
+
+      _label: function(key) {
+        return this.i18n(key.name);
+      },
+
+      _bucketsChanged: function(buckets) {
+        this._rect = this.$.keys.getBoundingClientRect();
+
+        // count documents in buckets
+        this._count = 0;
+        buckets.forEach(function(bucket) {
+          this._count += bucket.docCount;
+        }.bind(this));
+        this.style.opacity = this._count ? this.opacity : 0;
+
+        // fill keys array based on buckets
+        this.set('_keys', []);
+        var offset = 1;
+        var granularity = this.granularity;
+        buckets.forEach(function(bucket) {
+
+          var visible = false;
+          if (granularity >= this.granularity) {
+            visible = true;
+            granularity = 0;
+          }
+
+          var height = bucket.docCount * this._rect.height / this._count;
+
+          this.push('_keys', {
+            name: bucket.key,
+            offset: offset,
+            size: bucket.docCount,
+            top: offset * this._rect.height / this._count,
+            height: height,
+            visible: visible
+          });
+
+          offset += bucket.docCount;
+          granularity += height;
+
+        }.bind(this));
+      },
+
+      _tap: function() {
+        this.fire('navigate', {index: this._cursorIndex});
+      },
+
+      _mouseMove: function(e) {
+        var y = (e.y - this._rect.top);
+        this.$.cursor.style.display = 'block';
+        this.$.cursor.style.top = y + 'px';
+        this._cursorIndex = Math.round(this._count * y / this._rect.height);
+        this._cursorLabel = this._label(e.model.key);
+      },
+
+      _mouseOut: function() {
+        this.$.cursor.style.display = 'none';
+      },
+
+      _color: function(visible) {
+        return visible ? 'black' : 'transparent';
+      }
+
+    });
+  </script>
+</dom-module>

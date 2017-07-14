@@ -65,16 +65,8 @@ Example:
 <dom-module id="nuxeo-data-list">
   <template>
 
-    <style is="custom-style">
-      #container {
-        @apply(--layout-vertical);
-        @apply(--layout-fit);
-      }
-      #scrollThreshold {
-        @apply(--layout-flex);
-      }
-
-      :host[loading] .loadable {
+    <style>
+      :host[loading] {
         opacity: 0.25;
       }
 
@@ -85,6 +77,11 @@ Example:
         --paper-spinner-color: var(--default-primary-color);
       }
 
+      #container {
+        @apply(--layout-vertical);
+        @apply(--layout-fit);
+      }
+
       .emptyResult {
         opacity: .5;
         display: block;
@@ -92,6 +89,17 @@ Example:
         padding: 1.5em .7em;
         text-align: center;
         font-size: 1.1rem;
+      }
+
+      iron-list {
+        height: calc(100% - 40px);
+      }
+
+      nuxeo-aggregation-navigation {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 20px;
       }
     </style>
 
@@ -116,14 +124,14 @@ Example:
       <template is="dom-if" if="[[_isEmpty]]">
         <div class="emptyResult">[[_computedEmptyLabel]]</div>
       </template>
-      <iron-scroll-threshold id="scrollThreshold"
-        lower-threshold="1000" class="loadable"
-        on-lower-threshold="_loadMoreData">
-        <iron-list id="list" items="[[items]]" scroll-target="scrollThreshold" selected-item="{{selectedItem}}"
-                             selected-items="{{selectedItems}}" selection-enabled  as="[[as]]">
-        </iron-list>
-      </iron-scroll-threshold>
+
+      <iron-list id="list" items="[[items]]" as="[[as]]"
+                 selection-enabled selected-item="{{selectedItem}}" selected-items="{{selectedItems}}"
+                 on-scroll="_scrollChanged">
+      </iron-list>
+
     </div>
+
     <paper-spinner-lite active hidden$=[[!loading]]></paper-spinner-lite>
 
   </template>
@@ -140,8 +148,9 @@ Example:
       properties: {
         multiSelection: {
           type: Boolean,
-          value: false,
+          value: false
         },
+
         selectOnTap: {
           type: Boolean,
           value: false
@@ -150,17 +159,9 @@ Example:
 
       ready: function() {
         if (!this._templateStamped) {
-          // use nuxeo-data-grid parent's datahost in the iron-list
-          // functions used in the template should be declared
-          // in the nuxeo-data-grid parent element and not here
           this.$.list.dataHost = this.dataHost;
-          // get template from nuxeo-data-grid definition
           this._template = Polymer.dom(this).querySelector('template');
-          // append template in the <iron-list>
           Polymer.dom(this.$.list).appendChild(this._template);
-          // set binding to items
-          // iron-list will look for our template and stamp the items
-          this.items = [];
           this._templateStamped = true;
 
           // tmp fix
@@ -193,16 +194,20 @@ Example:
         }
       },
 
-      _removeFilter: function(e) {
-        this.fire('column-filter-changed', {value: '', filterBy: e.model.filter.path});
-      },
-
       selectNext: function() {
         this.$.list.selectQueueNext();
       },
 
       selectPrevious: function() {
         this.$.list.selectQueuePrevious();
+      },
+
+      _removeFilter: function(e) {
+        this.fire('column-filter-changed', {value: '', filterBy: e.model.filter.path});
+      },
+
+      _onNavigate: function (e) {
+        this.scrollToIndex(e.detail.index);
       }
 
     });

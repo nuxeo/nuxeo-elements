@@ -157,7 +157,7 @@ An element for displaying page provider results in a justified grid with infinit
       </div>
     </div>
 
-    <iron-scroll-threshold id="scrollThreshold" scroll-target="grid" on-lower-threshold="_loadMoreData">
+    <iron-scroll-threshold id="scrollThreshold" scroll-target="grid" on-lower-threshold="fetch">
     </iron-scroll-threshold>
 
     <iron-list id="list" items="[[items]]" as="item" selected-items="{{selectedItems}}" multi-selection>
@@ -182,6 +182,16 @@ An element for displaying page provider results in a justified grid with infinit
         rowHeight: {
           type: Number,
           value: 196
+        },
+
+        page: {
+          type: Number,
+          value: 1
+        },
+
+        pageSize: {
+          type: Number,
+          value: 50
         }
       },
 
@@ -192,6 +202,24 @@ An element for displaying page provider results in a justified grid with infinit
       ready: function() {
         this.multiSelection = true;
         this.selectionEnabled = true;
+      },
+
+      reset: function() {
+        this.set('items', []);
+        this.page = 1;
+        this.$.scrollThreshold.clearTriggers();
+      },
+
+      fetch: function() {
+        var result = this._fetchPage(this.page, this.pageSize);
+        if (result) {
+          result.then(function() {
+            this.page += 1;
+            this.$.scrollThreshold.clearTriggers();
+          }.bind(this));
+        } else {
+          this.$.scrollThreshold.clearTriggers();
+        }
       },
 
       _check: function(e) {
@@ -222,9 +250,8 @@ An element for displaying page provider results in a justified grid with infinit
       },
 
       _url: function(doc) {
-        if (doc && doc.contextParameters && doc.contextParameters.thumbnail && doc.contextParameters.thumbnail.url) {
-          return doc.contextParameters.thumbnail.url;
-        }
+        return doc && doc.contextParameters && doc.contextParameters.thumbnail && doc.contextParameters.thumbnail.url
+          ? doc.contextParameters.thumbnail.url : '';
       }
 
     });

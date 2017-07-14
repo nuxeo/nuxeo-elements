@@ -211,64 +211,62 @@ Example:
         </nuxeo-data-table-row>
       </div>
 
-      <iron-scroll-threshold id="scrollThreshold"
-        lower-threshold="1000" class="loadable"
-        on-lower-threshold="_loadMoreData">
-        <iron-list id="list" as="item" items="[[items]]"
-          selected-items="{{selectedItems}}"
-          selected-item="{{selectedItem}}"
-          scroll-target="scrollThreshold">
-          <template>
-            <div class="item">
-              <nuxeo-data-table-row on-click="_onRowClick"
-                            before-bind="[[beforeRowBind]]"
-                            even$="[[!_isEven(index)]]"
-                            expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
-                            index="[[index]]"
-                            item="[[item]]"
-                            tabindex="-1"
-                            selected="[[_isSelected(item, selectedItems, selectedItems.*)]]">
-                <nuxeo-data-table-checkbox hidden$="[[!selectionEnabled]]" tabindex="0" checked="[[selected]]" on-tap="_onCheckBoxTap"></nuxeo-data-table-checkbox>
-                <template is="dom-repeat" items="[[columns]]" as="column" index-as="colIndex">
-                  <nuxeo-data-table-cell template="[[column.template]]"
-                                 table="[[_this]]"
-                                 align-right="[[column.alignRight]]"
-                                 column="[[column]]"
-                                 expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
-                                 flex="[[column.flex]]"
-                                 hidden="[[column.hidden]]"
-                                 index="[[index]]"
-                                 item="[[item]]"
-                                 order="[[column.order]]"
-                                 selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
-                                 width="[[column.width]]"
-                                 before-bind="[[beforeCellBind]]"></nuxeo-data-table-cell>
-                </template>
-                <template is="dom-if" if="[[_isExpanded(item, _expandedItems)]]" on-dom-change="_updateSizeForItem">
-                  <nuxeo-data-table-row-detail index="[[index]]"
-                                       item="[[item]]"
-                                       expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
-                                       selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
-                                       before-bind="[[beforeDetailsBind]]"
-                                       table="[[_this]]"
-                                       template="[[rowDetail]]"></nuxeo-data-table-row-detail>
-                </template>
-                  <nuxeo-data-table-row-actions index="[[index]]"
-                                       editable="[[editable]]"
-                                       orderable="[[orderable]]"
-                                       template="[[rowForm]]"
-                                       item="[[item]]"
-                                       size="[[items.length]]"
-                                       table="[[_this]]">
-                  </nuxeo-data-table-row-actions>
-              </nuxeo-data-table-row>
-            </div>
-          </template>
-        </iron-list>
-      </iron-scroll-threshold>
       <template is="dom-if" if="[[_isEmpty]]">
         <div class="emptyResult">[[_computedEmptyLabel]]</div>
       </template>
+
+      <iron-list id="list"  items="[[items]]" as="item"
+        selected-items="{{selectedItems}}" selected-item="{{selectedItem}}"
+        on-scroll="_scrollChanged">
+
+        <template>
+          <div class="item">
+            <nuxeo-data-table-row on-click="_onRowClick"
+                          before-bind="[[beforeRowBind]]"
+                          even$="[[!_isEven(index)]]"
+                          expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                          index="[[index]]"
+                          item="[[item]]"
+                          tabindex="-1"
+                          selected="[[_isSelected(item, selectedItems, selectedItems.*)]]">
+              <nuxeo-data-table-checkbox hidden$="[[!selectionEnabled]]" tabindex="0" checked="[[selected]]" on-tap="_onCheckBoxTap"></nuxeo-data-table-checkbox>
+              <template is="dom-repeat" items="[[columns]]" as="column" index-as="colIndex">
+                <nuxeo-data-table-cell template="[[column.template]]"
+                               table="[[_this]]"
+                               align-right="[[column.alignRight]]"
+                               column="[[column]]"
+                               expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                               flex="[[column.flex]]"
+                               hidden="[[column.hidden]]"
+                               index="[[index]]"
+                               item="[[item]]"
+                               order="[[column.order]]"
+                               selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                               width="[[column.width]]"
+                               before-bind="[[beforeCellBind]]"></nuxeo-data-table-cell>
+              </template>
+              <template is="dom-if" if="[[_isExpanded(item, _expandedItems)]]" on-dom-change="_updateSizeForItem">
+                <nuxeo-data-table-row-detail index="[[index]]"
+                                     item="[[item]]"
+                                     expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                                     selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                                     before-bind="[[beforeDetailsBind]]"
+                                     table="[[_this]]"
+                                     template="[[rowDetail]]"></nuxeo-data-table-row-detail>
+              </template>
+                <nuxeo-data-table-row-actions index="[[index]]"
+                                     editable="[[editable]]"
+                                     orderable="[[orderable]]"
+                                     template="[[rowForm]]"
+                                     item="[[item]]"
+                                     size="[[items.length]]"
+                                     table="[[_this]]">
+                </nuxeo-data-table-row-actions>
+            </nuxeo-data-table-row>
+          </div>
+        </template>
+      </iron-list>
+
     </div>
     <paper-spinner-lite active></paper-spinner-lite>
     <content select="nuxeo-data-table-column"></content>
@@ -303,7 +301,7 @@ Example:
         'edit-entry': '_editEntry',
         'delete-entry': '_deleteEntry',
         'move-upward': '_moveItemUpward',
-        'move-downward': '_moveItemDownward',
+        'move-downward': '_moveItemDownward'
       },
 
       properties: {
@@ -412,7 +410,7 @@ Example:
             if (e.detail.path) {
               path += '.' + e.detail.path;
             }
-             this.set(path, e.detail.value);
+            this.set(path, e.detail.value);
           }
         }
       },

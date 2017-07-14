@@ -28,6 +28,10 @@ limitations under the License.
 
       properties: {
 
+        nxProvider: {
+          type: HTMLElement
+        },
+
         size: {
           type: Number,
           value: 0,
@@ -57,33 +61,24 @@ limitations under the License.
         _isSelectAllChecked: {
           type: Boolean,
           value: false,
-          notify: true,
+          notify: true
         },
 
         _isSelectAllIndeterminate: {
           type: Boolean,
           value: false,
-          notify: true,
+          notify: true
         },
 
         _isSelectionEmpty: {
           type: Boolean,
           value: true,
-          notify: true,
+          notify: true
         },
 
         multiSelection: {
           type: Boolean,
-          value: false,
-        },
-
-        /**
-         * The id of the page provider or the page provider
-         * element itself which will be used to feed the
-         * table.
-         */
-        nxProvider: {
-          type: HTMLElement
+          value: false
         },
 
         /**
@@ -127,10 +122,12 @@ limitations under the License.
           type: Boolean,
           value: false
         },
+
         selectedItems: {
           type: Object,
           notify: true
         },
+
         selectedItem: {
           type: Object,
           notify: true
@@ -138,6 +135,7 @@ limitations under the License.
 
         items: {
           type: Array,
+          value: [],
           notify: true
         },
 
@@ -159,15 +157,20 @@ limitations under the License.
         quickFilters: {
           type: Array,
           notify: true
-        }
-      },
+        },
 
+        scrollThrottle: {
+          type: Number,
+          value: 60
+        }
+
+      },
 
       observers: [
         '_updateFlags(size, loading)',
         '_nxProviderChanged(nxProvider)',
         '_selectionEnabledChanged(selectionEnabled, selectOnTap)',
-        '_onItemsChanged(items.splices)',
+        '_itemsChanged(items.*)'
       ],
 
       listeners: {
@@ -179,80 +182,31 @@ limitations under the License.
           this.nxProvider = this.domHost ? this.domHost.$[nxProvider] :
             Polymer.dom(this.ownerDocument).querySelector('#' + nxProvider);
           if (this.nxProvider === null) {
-            var parentNode = Polymer.dom(this).parentNode;
-            this.nxProvider = parentNode.querySelector('#' + nxProvider);
+            this.nxProvider = Polymer.dom(this).parentNode.querySelector('#' + nxProvider);
           }
         } else if (nxProvider) {
-          if (this.nxProvider.currentPage && this.nxProvider.currentPage.length > 0) {
-            this.items = [];
-            var docs = this.nxProvider.currentPage;
-            docs.forEach(function(doc) {
-              this.push('items', doc);
-            }.bind(this));
-          }
           this.listen(this.nxProvider, 'update', '_updateResults');
-          this.nxProvider.addEventListener('loading-changed', function() {
-            this._setLoading(this.nxProvider.loading);
-          }.bind(this));
         }
       },
 
-      _loadMoreData: function() {
-        if (!this._isPPLoaded()) {
-          return;
-        }
-        if (this.nxProvider &&
-            this.nxProvider.isNextPageAvailable) {
-          var neededPage = (this.items.length / this.nxProvider.pageSize) + 1;
-          if (this.nxProvider.loading && this.nxProvider.page === neededPage) {
-            return;
-          }
-          this.nxProvider.page = neededPage;
-          if (!this.nxProvider.auto) {
-            this.nxProvider.fetch();
-          }
+      _hasPageProvider: function() {
+        return this.nxProvider && typeof this.nxProvider !== 'string';
+      },
+
+      _resetResults: function() {
+        if (this._hasPageProvider()) {
+          this._reset(0);
         }
       },
 
       _updateResults: function() {
-        if (!this._isPPLoaded()) {
-          return;
+        if (this._hasPageProvider()) {
+          this.size = this.items.length;
         }
-        if (this.nxProvider.page === 1) {
-          this.items = [];
-          this.clearSelection();
-        }
-        var docs = this.nxProvider.currentPage;
-        if (((this.nxProvider.page - 1) * this.nxProvider.pageSize) === this.items.length) {
-          docs.forEach(function(doc) {
-            this.push('items', doc);
-          }.bind(this));
-        }
-        this.quickFilters = this.nxProvider.quickFilters;
-        this.size = this.items.length;
-        this.$.list.notifyResize();
-        this.notifyResize();
-        this.$.scrollThreshold.clearTriggers();
-        // just to notify that the update is finished
-        // you can use a property with notify: true instead
-        this.fire('nuxeo-page-loaded');
       },
 
-      _resetResults: function() {
-        if (!this._isPPLoaded()) {
-          return;
-        }
-        this.nxProvider.page = 1;
-        this.items = [];
-        this.size = 0;
-        this.nxProvider.isNextPageAvailable = false;
-        this.$.list.notifyResize();
-        this.notifyResize();
-        this.$.scrollThreshold.clearTriggers();
-      },
-
-      _isPPLoaded: function() {
-        return (this.nxProvider && typeof this.nxProvider !== 'string');
+      _itemsChanged: function() {
+        this._isEmpty = !(this.items && this.items.length > 0);
       },
 
       selectItem: function(item) {
@@ -266,21 +220,8 @@ limitations under the License.
         if (this.selectionEnabled && items && items.length > 0) {
           items.forEach(function(item) {
             this.selectItem(item);
-          }.bind(this.$.list))
+          }.bind(this.$.list));
           this._updateFlags();
-        }
-      },
-
-      _updateFlags: function() {
-        if (!this.loading) {
-          var selectedItems = this.$.list.selectedItems;
-          this._isSelectAllIndeterminate = selectedItems
-              && selectedItems.length > 0
-              && selectedItems.length < this.size;
-          this._isSelectAllChecked = selectedItems && selectedItems.length > 0 && selectedItems.length === this.size;
-          this._isEmpty = this.size === 0;
-          this._computedEmptyLabel = (this.filters && this.filters.length > 0) ?
-              this.emptyLabelWhenFiltered : this.emptyLabel;
         }
       },
 
@@ -291,14 +232,6 @@ limitations under the License.
         }
       },
 
-      _isSelected: function(item) {
-        var selected = this.$.list.selectedItems.indexOf(item) > -1;
-        return selected;
-      },
-
-      /*
-       * Selects all the items in the list.
-       */
       selectAll: function() {
         this.items.forEach(function(item) {
           this.selectItem(item);
@@ -306,12 +239,13 @@ limitations under the License.
         this._updateFlags();
       },
 
-      /**
-       * Clears the current selection state.
-       */
       clearSelection: function() {
         this.$.list.clearSelection();
         this._updateFlags();
+      },
+
+      _isSelected: function(item) {
+        return this.$.list.selectedItems.indexOf(item) > -1;
       },
 
       _toggleSelectAll: function() {
@@ -332,92 +266,79 @@ limitations under the License.
         }
       },
 
-      _onItemsChanged: function() {
-        this.size = this.items ? this.items.length : 0;
-        this.$.list.notifyResize();
-        this.notifyResize();
-      },
-
       _sortDirectionChanged: function(e) {
-        if (!this._isPPLoaded()) {
-          return;
-        }
-        var notFound = true;
-        for (var i = 0; i < this.sortOrder.length; i++) {
-          if (this.sortOrder[i].path === e.detail.path) {
-            if (e.detail.direction) {
-              this.set('sortOrder.' + i + '.direction', e.detail.direction);
-            } else {
-              this.splice('sortOrder', i, 1);
+        if (this._hasPageProvider()) {
+          var notFound = true;
+          for (var i = 0; i < this.sortOrder.length; i++) {
+            if (this.sortOrder[i].path === e.detail.path) {
+              if (e.detail.direction) {
+                this.set('sortOrder.' + i + '.direction', e.detail.direction);
+              } else {
+                this.splice('sortOrder', i, 1);
+              }
+              notFound = false;
+              break;
             }
-            notFound = false;
-            break;
           }
-        }
-        if (notFound) {
-          this.push('sortOrder', {
-            path: e.detail.path,
-            direction: e.detail.direction
-          });
-        }
+          if (notFound) {
+            this.push('sortOrder', {
+              path: e.detail.path,
+              direction: e.detail.direction
+            });
+          }
 
-        // TODO make it simpler
-        var tmpSort = {};
-        if (this.sortOrder && this.sortOrder.length > 0) {
-          this.sortOrder.forEach(function(sortItem) {
-            tmpSort[sortItem.path] = sortItem.direction;
-          });
-        }
-        if (JSON.stringify(this._ppSort) !== JSON.stringify(tmpSort)) {
-          this._ppSort = tmpSort;
-          this.nxProvider.sort = this._ppSort;
-          this._resetResults();
-          if (!this.nxProvider.auto) {
-            this.nxProvider.fetch();
+          // TODO make it simpler
+          var tmpSort = {};
+          if (this.sortOrder && this.sortOrder.length > 0) {
+            this.sortOrder.forEach(function(sortItem) {
+              tmpSort[sortItem.path] = sortItem.direction;
+            });
+          }
+          if (JSON.stringify(this._ppSort) !== JSON.stringify(tmpSort)) {
+            this._ppSort = tmpSort;
+            this.nxProvider.sort = this._ppSort;
+            if (!this.nxProvider.auto) {
+              this.fetch();
+            }
           }
         }
       },
 
       _onColumnFilterChanged: function(e) {
-        if (!this._isPPLoaded()) {
-          this.$.list.notifyResize();
-          this.notifyResize();
-          return;
-        }
-        var notFound = true;
-        for (var i = 0; i < this.filters.length; i++) {
-          if (this.filters[i].path === e.detail.filterBy) {
-            if (e.detail.value.length === 0) {
-              this.splice('filters', i, 1);
-            } else {
-              this.set('filters.' + i + '.value', e.detail.value);
+        if (this._hasPageProvider()) {
+          var notFound = true;
+          for (var i = 0; i < this.filters.length; i++) {
+            if (this.filters[i].path === e.detail.filterBy) {
+              if (e.detail.value.length === 0) {
+                this.splice('filters', i, 1);
+              } else {
+                this.set('filters.' + i + '.value', e.detail.value);
+              }
+              notFound = false;
+              break;
             }
-            notFound = false;
-            break;
           }
-        }
 
-        if (notFound && e.detail.value.length !== 0) {
-          this.push('filters', {
-            path: e.detail.filterBy,
-            value: e.detail.value,
-            name: e.detail.name
-          });
-        }
+          if (notFound && e.detail.value.length !== 0) {
+            this.push('filters', {
+              path: e.detail.filterBy,
+              value: e.detail.value,
+              name: e.detail.name
+            });
+          }
 
-        if (this.nxProvider.params[e.detail.filterBy] && e.detail.value.length === 0) {
-          delete this.nxProvider.params[e.detail.filterBy];
-          this._resetResults();
-          this.nxProvider.fetch();
-        } else {
-          if (e.detail.value.length > 0) {
-            if (e.detail.filterBy === 'title' || e.detail.filterBy === 'ecm_fulltext') {
-              this.nxProvider.params[e.detail.filterBy] = e.detail.value + '*';
-            } else {
-              this.nxProvider.params[e.detail.filterBy] = e.detail.value;
+          if (this.nxProvider.params[e.detail.filterBy] && e.detail.value.length === 0) {
+            delete this.nxProvider.params[e.detail.filterBy];
+            this.fetch();
+          } else {
+            if (e.detail.value.length > 0) {
+              if (e.detail.filterBy === 'title' || e.detail.filterBy === 'ecm_fulltext') {
+                this.nxProvider.params[e.detail.filterBy] = e.detail.value + '*';
+              } else {
+                this.nxProvider.params[e.detail.filterBy] = e.detail.value;
+              }
+              this.fetch();
             }
-            this._resetResults();
-            this.nxProvider.fetch();
           }
         }
       },
@@ -426,23 +347,177 @@ limitations under the License.
         this.$.list.scrollToItem(item);
       },
 
-      scrollToIndex: function(idx) {
-        this.$.list.scrollToIndex(idx);
+      scrollToIndex: function(index) {
+        this.$.list.scrollToIndex(Math.min(Math.max(index, 0), this.items.length - 1));
+      },
+
+      focusOnIndexIfNotVisible: function(index) {
+        if (!this.$.list._isIndexVisible(index)) {
+          this.$.list.scrollToIndex(index);
+        }
       },
 
       _observeEmptyLabel: function() {
         this._computedEmptyLabel = this.emptyLabel;
       },
 
-      focusOnIndexIfNotVisible: function(idx) {
-        if (!this.$.list._isIndexVisible(idx)) {
-          this.$.list.scrollToIndex(idx);
+      _quickFilterChanged: function() {
+        this.fetch();
+      },
+
+      _updateFlags: function() {
+        if (!this.loading) {
+          this.size = this.items && this.items.length > 0 ? this.items.length : 0;
+          var selectedItems = this.$.list.selectedItems;
+          this._isSelectAllIndeterminate = selectedItems
+            && selectedItems.length > 0
+            && selectedItems.length < this.size;
+          this._isSelectAllChecked = selectedItems && selectedItems.length > 0 && selectedItems.length === this.size;
+          this._isEmpty = this.size === 0;
+          this._computedEmptyLabel = (this.filters && this.filters.length > 0) ?
+            this.emptyLabelWhenFiltered : this.emptyLabel;
         }
       },
 
-      _quickFilterChanged: function() {
-        this._resetResults();
-        this.nxProvider.fetch();
+      /**
+       * This function can be overridden by elements that includes this behavior.
+       * That allows to use different items array initialization.
+       */
+      reset: function(size) {
+        this._reset(size);
+      },
+
+      _reset: function(size) {
+        if (size) {
+          var arr = new Array(size);
+          for (var i = 0; i < arr.length; i++) {
+            arr[i] = {};
+          }
+          this.set('items', arr);
+        } else {
+          this.set('items', []);
+        }
+        Polymer.dom.flush();
+        this.size = this.items.length;
+        this.$.list.notifyResize();
+      },
+
+      /**
+       * This function can be overridden by elements that includes this behavior.
+       * That allows to use either range OR page based fetch APIs.
+       * Default behavior is range base fetching.
+       */
+      fetch: function() {
+        if (this._hasPageProvider()) {
+          return this._fetchRange(0, this.nxProvider.pageSize, true);
+        }
+      },
+
+      /**
+       * Fetch a page and push the results to the items array.
+       *
+       * @param page Page index to fetch
+       * @param pageSize Number of results per page
+       */
+      _fetchPage: function(page, pageSize) {
+        if (this._hasPageProvider()) {
+          if (page) {
+            this.nxProvider.page = page;
+            if (page === 1) {
+              this.reset();
+            }
+          }
+          if (pageSize) {
+            this.nxProvider.pageSize = pageSize;
+          }
+          this.nxProvider.offset = 0;
+          return this.nxProvider.fetch().then(function (response) {
+            for (var i = 0; i < response.entries.length; i++) {
+              this.push('items', response.entries[i]);
+            }
+          }.bind(this));
+        }
+      },
+
+      /**
+       * Fetch a range of items (and fill the items array accordingly)
+       *
+       * @param firstIndex First index to fetch
+       * @param lastIndex Last index to fetch
+       * @param clear Clear items array
+       */
+      _fetchRange: function(firstIndex, lastIndex, clear) {
+        if (this._hasPageProvider()) {
+
+          if (!firstIndex && !lastIndex && !clear) {
+            firstIndex = 0;
+            lastIndex = this.nxProvider.pageSize;
+            clear = true;
+          }
+
+          // update items array based on first and last visible indexes
+          this.nxProvider.offset = firstIndex;
+          this.nxProvider.page = 1;
+          this.nxProvider.pageSize = (lastIndex - firstIndex) + 1;
+          return this.nxProvider.fetch().then(function(response) {
+            if (!response) {
+              return;
+            }
+
+            if (clear || this.items.length !== response.resultsCount) {
+              this.reset(response.resultsCount);
+            }
+            var entryIndex = 0;
+            for (var i = firstIndex; i <= lastIndex; i++) {
+              if (entryIndex < response.entries.length) {
+                this.set('items.' + i, response.entries[entryIndex++]);
+              }
+            }
+
+            // update buckets array based on provider's sort property
+            if (response.aggregations) {
+              var providerSort = this.nxProvider.sort;
+              if (providerSort && Object.keys(providerSort).length === 1) {
+                var providerField = Object.keys(providerSort)[0];
+                var providerOrder = providerSort[providerField];
+                var buckets = [];
+                Object.keys(response.aggregations).map(function(key) {
+                  var aggregation = response.aggregations[key];
+                  if (aggregation.field === providerField && aggregation.buckets.length >= buckets.length &&
+                    aggregation.properties && aggregation.properties.order) {
+                    var order = aggregation.properties.order.split(' ');
+                    if (order.length > 0 && order[0] === 'key') {
+                      buckets = aggregation.buckets;
+                    }
+                    if (order.length > 1 && order[1] !== providerOrder) {
+                      buckets.reverse();
+                    }
+                  }
+                }.bind(this));
+                this.set('buckets', buckets);
+              }
+            }
+
+            // quick filters
+            this.quickFilters = this.nxProvider.quickFilters;
+
+            // XXX force scroll to top or bottom (when scrolling to first or last item)
+            if (this.$.list._scrollTop === 0) {
+              this.scrollToIndex(0);
+            } else if (this.$.list._scrollBottom === this.$.list._scrollHeight) {
+              this.scrollToIndex(this.items.length - 1);
+            }
+
+            this.fire('nuxeo-page-loaded');
+
+          }.bind(this));
+        }
+      },
+
+      _scrollChanged: function() {
+        this.debounce('debounce-scroll-changed', function() {
+          this._fetchRange(this.$.list.firstVisibleIndex, this.$.list.lastVisibleIndex);
+        }.bind(this), this.scrollThrottle > 0 ? this.scrollThrottle : 1);
       }
 
     };

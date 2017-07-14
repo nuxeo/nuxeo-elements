@@ -45,7 +45,7 @@ limitations under the License.
      * Checks if the document can be added to a collection.
      */
     isCollectionMember: function(doc) {
-      return (doc) ? doc.facets.indexOf('NotCollectionMember') === -1 : false;
+      return (doc && doc.facets) ? doc.facets.indexOf('NotCollectionMember') === -1 : false;
     },
 
     /**
@@ -117,7 +117,7 @@ limitations under the License.
      * Checks if the document has a main blob.
      */
     hasContent: function(doc) {
-      return (doc) ? doc.properties['file:content'] : false;
+      return (doc && doc.properties) ? doc.properties['file:content'] : false;
     },
 
     /**
