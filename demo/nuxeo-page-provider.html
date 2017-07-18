@@ -48,7 +48,7 @@ limitations under the License.
     width: 100%;
   }
 
-  .card h2 {
+  .card h3 {
     margin: 0;
     font-weight: 300;
   }
@@ -67,6 +67,8 @@ limitations under the License.
   <nuxeo-connection id="nx" url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
   <nuxeo-page-provider auto page-size="5" current-page="{{docs}}"
                        query="[[query(docType)]]"></nuxeo-page-provider>
+  <nuxeo-page-provider auto page-size="5" offset="2" current-page="{{docsWithOffset}}"
+                       query="[[query(docType)]]"></nuxeo-page-provider>
   <div class="container" class="layout vertical center">
 
     <select flex two value="{{docType::change}}">
@@ -75,10 +77,16 @@ limitations under the License.
     </select>
 
     <hr/>
-
+    <h2>First five results</h2>
     <template is="dom-repeat" items="{{docs}}">
       <div class="card layout horizontal center">
-        <h2>[[item.title]]</h2>
+        <h3>[[item.title]]</h3>
+      </div>
+    </template>
+    <h2>First five results with an offset of 2</h2>
+    <template is="dom-repeat" items="{{docsWithOffset}}">
+      <div class="card layout horizontal center">
+        <h3>[[item.title]]</h3>
       </div>
     </template>
   </div>
