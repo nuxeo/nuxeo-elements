@@ -92,7 +92,7 @@ limitations under the License.
     },
 
     batchExecute: function(operationId, params, headers) {
-      return this.$.nx.operation(operationId).then(function(operation) {
+      return this.connection.operation(operationId).then(function(operation) {
         var options = {};
         if (headers) {
           options['headers'] = headers;
@@ -146,7 +146,7 @@ limitations under the License.
     },
 
     _newBatch: function() {
-      return this.$.nx.batchUpload().then(function(uploader) {
+      return this.connection.batchUpload().then(function(uploader) {
         this.uploader = uploader;
       }.bind(this));
     },
