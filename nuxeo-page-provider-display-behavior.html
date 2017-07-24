@@ -203,7 +203,11 @@ limitations under the License.
         }
         if (this.nxProvider &&
             this.nxProvider.isNextPageAvailable) {
-          this.nxProvider.page = this.nxProvider.page + 1;
+          var neededPage = (this.items.length / this.nxProvider.pageSize) + 1;
+          if (this.nxProvider.loading && this.nxProvider.page === neededPage) {
+            return;
+          }
+          this.nxProvider.page = neededPage;
           if (!this.nxProvider.auto) {
             this.nxProvider.fetch();
           }
@@ -219,9 +223,11 @@ limitations under the License.
           this.clearSelection();
         }
         var docs = this.nxProvider.currentPage;
-        docs.forEach(function(doc) {
-          this.push('items', doc);
-        }.bind(this));
+        if (((this.nxProvider.page - 1) * this.nxProvider.pageSize) === this.items.length) {
+          docs.forEach(function(doc) {
+            this.push('items', doc);
+          }.bind(this));
+        }
         this.quickFilters = this.nxProvider.quickFilters;
         this.size = this.items.length;
         this.$.list.notifyResize();
