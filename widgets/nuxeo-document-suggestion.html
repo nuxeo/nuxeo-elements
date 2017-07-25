@@ -55,7 +55,8 @@ An element for selecting one or more documents.
                    required="[[required]]"
                    invalid="[[invalid]]"
                    init-selection="[[initSelection]]"
-                   id-function="[[_idFunction]]">
+                   id-function="[[_idFunction]]"
+                   stay-open-on-select="[[stayOpenOnSelect]]">
     </nuxeo-select2>
 
   </template>
@@ -115,6 +116,14 @@ An element for selecting one or more documents.
          * Set to `true` to allow multiple selection.
          */
         multiple: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * If true, the dropdown stays open after a selection is made.
+         */
+        stayOpenOnSelect: {
           type: Boolean,
           value: false
         },

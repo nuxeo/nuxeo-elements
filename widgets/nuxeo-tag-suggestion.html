@@ -61,7 +61,8 @@ limitations under the License.
                    result-formatter="[[resultFormatter]]"
                    added-entry-handler="[[addedTagHandler]]"
                    removed-entry-handler="[[removedTagHandler]]"
-                   init-selection="[[initSelection]]">
+                   init-selection="[[initSelection]]"
+                   stay-open-on-select="[[stayOpenOnSelect]]">
     </nuxeo-select2>
 
     <nuxeo-operation id="addTagOp"
@@ -127,6 +128,14 @@ limitations under the License.
          * Placeholder.
          */
         placeholder: String,
+
+        /**
+         * If true, the dropdown stays open after a selection is made.
+         */
+        stayOpenOnSelect: {
+          type: Boolean,
+          value: false
+        },
 
         /**
          * Error message to show when `invalid` is true.

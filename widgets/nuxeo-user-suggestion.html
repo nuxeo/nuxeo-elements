@@ -57,7 +57,8 @@ limitations under the License.
                    selection-formatter="[[selectionFormatter]]"
                    result-formatter="[[resultFormatter]]"
                    resolve-entry="[[resolveEntry]]"
-                   id-function="[[idFunction]]">
+                   id-function="[[idFunction]]"
+                   stay-open-on-select="[[stayOpenOnSelect]]">
     </nuxeo-select2>
 
   </template>
@@ -99,6 +100,14 @@ limitations under the License.
          * Set to `true` to allow multiple selection.
          */
         multiple: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * If true, the dropdown stays open after a selection is made.
+         */
+        stayOpenOnSelect: {
           type: Boolean,
           value: false
         },
