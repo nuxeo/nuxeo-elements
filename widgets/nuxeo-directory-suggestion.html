@@ -56,7 +56,8 @@ An element for selecting one or more entries from a given directory.
                    required="[[required]]"
                    invalid="[[invalid]]"
                    init-selection="[[initSelection]]"
-                   stay-open-on-select="[[stayOpenOnSelect]]">
+                   stay-open-on-select="[[stayOpenOnSelect]]"
+                   id-function="[[idFunction]]">
     </nuxeo-select2>
 
   </template>
@@ -123,6 +124,16 @@ An element for selecting one or more entries from a given directory.
         readonly: {
           type: Boolean,
           value: false
+        },
+
+        /**
+         * Function used to get the id from the choice object.
+         */
+        idFunction: {
+          type: Function,
+          value: function() {
+            return this._idFunction.bind(this);
+          }
         },
 
         /**
@@ -221,11 +232,15 @@ An element for selecting one or more entries from a given directory.
               displayLabel: entry.properties[label] || entry.properties['label_en']
             };
           }
-        }
+        }q
         return {
           id: entry,
           displayLabel: entry
         };
+      },
+
+      _idFunction: function(item) {
+        return item.id || item.computedId || item.uid;
       }
 
     });
