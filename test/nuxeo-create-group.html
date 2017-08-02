@@ -105,7 +105,7 @@ limitations under the License.
         return testCreateGroup(false);
       });
 
-      test('create an group with "Create another" turned on', function() {
+      test('create an group with "Create another" button', function() {
         return testCreateGroup(true);
       });
 
@@ -150,14 +150,13 @@ limitations under the License.
         expect(uname).to.be.equal(expected.username ? expected.username : expected.groupname);
         expect(email).to.be.equal(expected.email ? expected.email : '');
 
-        // tick "create another" (or not)
-        if (createAnother) {
-          createGroupEl.$.another.checked = true;
-        }
-
         // hit the create button
         expect(createGroupEl._computeData()).to.be.deep.equal(creationData);
-        createButton = createGroupEl.$$('#createButton');
+        if (createAnother) {
+          createButton = createGroupEl.$$('#createAnotherButton');
+        } else {
+          createButton = createGroupEl.$$('#createButton');
+        }
         expect(createButton).to.not.be.null;
         MockInteractions.tap(createButton);
         return waitChanged(createGroupEl, 'group-name').then(function() {
