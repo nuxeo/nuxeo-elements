@@ -115,11 +115,12 @@ Used by `nuxeo-user-group-management`
         <nuxeo-edit-password id="passwordEditor" password="{{user.password}}" required></nuxeo-edit-password>
       </template>
 
-      <paper-checkbox noink id="another">[[i18n('createUser.createAnother.checkbox')]]</paper-checkbox>
-
       <div class="form-buttons">
         <paper-button noink id="cancelButton" on-tap="_cancel">[[i18n('command.cancel')]]</paper-button>
         <paper-button noink id="createButton" class="primary" on-tap="_submit">[[i18n('command.create')]]</paper-button>
+        <paper-button noink id="createAnotherButton" class="primary" on-tap="_submitAnother">
+          [[i18n('createUser.createAnother')]]
+        </paper-button>
       </div>
 
       <span id="errors" hidden$="[[!_hasErrors(errors)]]">[[errors]]</span>
@@ -150,6 +151,14 @@ Used by `nuxeo-user-group-management`
         isAdministrator: {
           type: Boolean,
           value: false
+        },
+
+        /**
+         * If true, allows to create a new user immediately after the current one is created
+         */
+        _createAnother: {
+          type: Boolean,
+          value: false
         }
       },
 
@@ -165,9 +174,18 @@ Used by `nuxeo-user-group-management`
       },
 
       /**
+       * Submits the form with `_createAnother` option set to true.
+       */
+      _submitAnother: function() {
+        this._createAnother = true;
+        this.$.form.submit();
+      },
+
+      /**
        * Submits the form.
        */
       _submit: function() {
+        this._createAnother = false;
         this.$.form.submit();
       },
 
@@ -181,7 +199,7 @@ Used by `nuxeo-user-group-management`
         }
         this._doCreate(this.user).then(function(user) {
           this._resetFields();
-          if (!this.$.another.checked) {
+          if (!this._createAnother) {
             this._goHome();
           }
         }.bind(this))
