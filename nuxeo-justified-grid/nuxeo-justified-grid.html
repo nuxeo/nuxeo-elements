@@ -208,7 +208,7 @@ An element for displaying page provider results in a justified grid with infinit
             this.selectItem(item);
           }
         } else {
-          this.navigateTo('browse', item.path);
+          this.fire('navigate', {doc: item});
         }
         e.stopPropagation();
       },
