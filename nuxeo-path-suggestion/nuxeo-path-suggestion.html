@@ -176,6 +176,10 @@ Custom property | Description | Default
             var newParentPath = (idx == 0 ? '/' : this.value.substring(0, idx));
             this._updateParent(newParentPath).then(function() {
               this._queryChildren(this.parent, this.value.substring(idx+1))
+            }.bind(this)).catch(function(err) {
+              if (err.status === 403) {
+                this.children = [];
+              }
             }.bind(this));
           }
         }
