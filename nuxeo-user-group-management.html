@@ -74,52 +74,64 @@ Custom property | Description | Default
         @apply(--layout-flex);
       }
 
-      #createDropdown {
-        position: absolute;
-        right: 0;
-        padding: 0;
-        top: 15px;
+      paper-menu-button {
+        width: 130px;
+        height: 48px;
+        margin-bottom: 16px;
+      }
+
+      paper-button {
+        width: 100%;
+      }
+
+      paper-button iron-icon {
+        padding-right: 8px;
       }
 
       paper-menu {
-        padding: 0;
+        width: 130px;
+        outline: none;
+      }
+
+      paper-menu paper-icon-item iron-icon {
+        width: 1.5rem;
+        height: 1.5rem;
       }
 
       paper-menu paper-icon-item:hover {
         background: var(--nuxeo-container-hover, #fafafa);
         cursor: pointer;
       }
-
-      paper-button iron-icon {
-        margin-right: .5em;
-      }
-
     </style>
 
     <paper-toast id="toast"></paper-toast>
     <iron-pages selected="[[page]]" attr-for-selected="name">
       <section name="search">
         <div class="horizontal layout center">
+          <nuxeo-user-group-search class="flex-11"></nuxeo-user-group-search>
           <template is="dom-if" if=[[!readonly]]>
-            <paper-menu-button noanimations id="createDropdown" horizontal-align="right">
-              <paper-button noink class="dropdown-trigger primary" id="createButton">
-                <iron-icon icon="nuxeo:add"></iron-icon>
-                <span>[[i18n('userGroupManagement.new.usergroup')]]</span>
-              </paper-button>
-              <paper-menu noAnimation id="menu" class="dropdown-content" selectable="item">
-                <paper-icon-item name="user" on-tap="_createUser">
-                  <iron-icon icon="nuxeo:user" item-icon></iron-icon>
-                  <span>[[i18n('userGroupManagement.new.user')]]</span>
-                </paper-icon-item>
-                <paper-icon-item name="group" on-tap="_createGroup">
-                  <iron-icon icon="nuxeo:group" item-icon></iron-icon>
-                  <span>[[i18n('userGroupManagement.new.group')]]</span>
-                </paper-icon-item>
-              </paper-menu>
-            </paper-menu-button>
+            <div class="flex-1">
+              <paper-menu-button no-animations id="createDropdown" no-overlap
+                                 horizontal-align="right" horizontal-offset="8"
+                                 vertical-align="top" vertical-offset="-12">
+                <paper-button noink class="dropdown-trigger primary" id="createButton">
+                  <iron-icon icon="nuxeo:add"></iron-icon>
+                  <div>[[i18n('userGroupManagement.new.usergroup')]]</div>
+                </paper-button>
+                <paper-menu no-animations id="menu" class="dropdown-content" selectable="item">
+                  <paper-icon-item name="user" on-tap="_createUser">
+                    <iron-icon icon="nuxeo:user" item-icon></iron-icon>
+                    <span>[[i18n('userGroupManagement.new.user')]]</span>
+                  </paper-icon-item>
+                  <paper-icon-item name="group" on-tap="_createGroup">
+                    <iron-icon icon="nuxeo:group" item-icon></iron-icon>
+                    <span>[[i18n('userGroupManagement.new.group')]]</span>
+                  </paper-icon-item>
+                </paper-menu>
+              </paper-menu-button>
+            </div>
           </template>
         </div>
-        <nuxeo-user-group-search></nuxeo-user-group-search>
       </section>
 
       <section name="create-user">
