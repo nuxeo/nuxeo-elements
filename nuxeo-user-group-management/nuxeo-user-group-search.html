@@ -27,7 +27,8 @@ limitations under the License.
 <link rel="import" href="../../paper-input/paper-input.html">
 <link rel="import" href="../../paper-menu/paper-menu.html">
 <link rel="import" href="../../paper-menu-button/paper-menu-button.html">
-<link rel="import" href="../widgets/nuxeo-tag.html">
+<link rel="import" href="../widgets/nuxeo-group-tag.html">
+<link rel="import" href="../widgets/nuxeo-user-tag.html">
 
 <!--
 Used by `nuxeo-user-management`
@@ -129,7 +130,7 @@ Used by `nuxeo-user-management`
           <template is="dom-repeat" items="[[groups.entries]]" as="item">
             <div class="table-row" on-tap="_manageGroup">
               <div class="flex-4">
-                <nuxeo-tag icon="nuxeo:group">[[item.grouplabel]]</nuxeo-tag>
+                <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
               </div>
               <div class="flex-2">[[item.groupname]]</div>
               <div class="flex-4">
@@ -164,7 +165,7 @@ Used by `nuxeo-user-management`
             <div class="table-row" on-tap="_manageUser">
               <div class="flex-4">
                 <template is="dom-if" if="[[_userHasName(item)]]">
-                  <nuxeo-tag icon="nuxeo:user"> [[item.properties.firstName]] [[item.properties.lastName]]</nuxeo-tag>
+                  <nuxeo-user-tag user="[[item]]"></nuxeo-user-tag>
                 </template>
               </div>
               <div class="flex-2">[[item.id]]</div>

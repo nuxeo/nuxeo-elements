@@ -77,16 +77,25 @@ Example:
       },
 
       _isEntity: function(group) {
-        return group && group['entity-type'] && group['entity-type'] === 'group';
+        return group && group['entity-type'] && (group['entity-type'] === 'group'
+          || (group['entity-type'] === 'document' && group.type === 'group'));
       },
 
       _name: function(group) {
-        return this._isEntity(group) ? group.groupname : group.replace('group:', '');
+        if (this._isEntity(group)) {
+          return group.groupname || group.properties["group:groupname"];
+        } else if (group.name) {
+          return group.name.replace('group:', '');
+        }else {
+          return group.replace('group:', '');
+        }
       },
 
       _label: function(group) {
         if (this._isEntity(group)) {
-          return group.grouplabel;
+          return group.grouplabel || group.properties["group:grouplabel"];
+        } else if (group.label) {
+          return group.label.replace('group:', '');
         } else {
           return group.replace('group:', '');
         }

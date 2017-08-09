@@ -25,7 +25,7 @@ limitations under the License.
 <link rel="import" href="../../paper-toast/paper-toast.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../widgets/nuxeo-user-suggestion.html">
-<link rel="import" href="../widgets/nuxeo-tag.html">
+<link rel="import" href="../widgets/nuxeo-group-tag.html">
 <link rel="import" href="nuxeo-edit-password.html">
 <link rel="import" href="nuxeo-user-group-permissions-table.html">
 
@@ -283,7 +283,7 @@ Used by `nuxeo-user-group-management`
       <template is="dom-repeat" items="[[activity]]">
         <div class="activity-entry">
           [[i18n('userManagement.memberOf.group', user.id)]]
-          <nuxeo-tag icon="nuxeo:group">[[item.label]]</nuxeo-tag>
+          <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
           <span class="remove" on-tap="_toggleDialog">[[i18n('userManagement.group.remove')]]</span>
         </div>
       </template>
@@ -298,7 +298,7 @@ Used by `nuxeo-user-group-management`
         <template is="dom-repeat" items="[[groups]]">
           <div class="table-row">
             <div class="flex">
-              <nuxeo-tag icon="nuxeo:group">[[item.label]]</nuxeo-tag>
+              <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
             </div>
             <div class="flex-4">[[item.name]]</div>
             <div class="table-actions">
@@ -453,11 +453,13 @@ Used by `nuxeo-user-group-management`
       },
 
       _computeGroups: function() {
-        return this.user.extendedGroups.filter(function(group) {
-          if (this.user.properties.groups.indexOf(group.name) > -1) {
-            return group;
-          }
-        }.bind(this));
+        if (this.user) {
+          return this.user.extendedGroups.filter(function(group) {
+            if (this.user.properties.groups.indexOf(group.name) > -1) {
+              return group;
+            }
+          }.bind(this));
+        }
       },
 
       _groupSelected: function() {
@@ -515,7 +517,7 @@ Used by `nuxeo-user-group-management`
       },
 
       _userRemovedFromGroup: function() {
-        this.empty = this.groups.length === 0;
+        this.empty = this.groups && this.groups.length === 0;
       },
 
       _toggleEditGroups: function() {
@@ -574,8 +576,10 @@ Used by `nuxeo-user-group-management`
 
       _deleteUser: function() {
         this.$.deleteUserDialog.toggle();
-        this.$.editRequest.remove();
-        this._goHome();
+        this.$.editRequest.remove().then(function() {
+          this._goHome();
+          this.user = undefined;
+        }.bind(this));
       },
 
       _goHome: function() {

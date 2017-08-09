@@ -236,11 +236,13 @@ Custom property | Description | Default
       },
 
       _manageUser: function(e) {
+        this.selectedUser = null;
         this.selectedUser = e.detail.user;
         this.page = 'manage-user';
       },
 
       _manageGroup: function(e) {
+        this.selectedGroup = null;
         this.selectedGroup = e.detail.group;
         this.page = 'manage-group';
       },

@@ -27,7 +27,8 @@ limitations under the License.
 <link rel="import" href="../../paper-input/paper-input.html">
 <link rel="import" href="../../paper-menu/paper-menu.html">
 <link rel="import" href="../../paper-menu-button/paper-menu-button.html">
-<link rel="import" href="../widgets/nuxeo-tag.html">
+<link rel="import" href="../widgets/nuxeo-group-tag.html">
+<link rel="import" href="../widgets/nuxeo-user-tag.html">
 
 <!--
 An element for displaying the most recently created users and groups.
@@ -129,11 +130,11 @@ Example:
             <div class="flex">
               <template is="dom-if" if="[[_isUser(item)]]">
                 <template is="dom-if" if="[[_userHasName(item)]]">
-                  <nuxeo-tag icon="nuxeo:user">[[_displayLCUserGroup(item)]]</nuxeo-tag>
+                  <nuxeo-user-tag user="[[item]]"></nuxeo-user-tag>
                 </template>
               </template>
               <template is="dom-if" if="[[_isGroup(item)]]">
-                <nuxeo-tag icon="nuxeo:group">[[_displayLCUserGroup(item)]]</nuxeo-tag>
+                <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
               </template>
             </div>
             <div class="flex-2">[[item.uid]]</div>
@@ -202,6 +203,7 @@ Example:
       },
 
       _refreshLatest: function() {
+        this.latestCreatedUsersGroups = {};
         this.$.latestCreatedUsersGroups.execute();
       },
 

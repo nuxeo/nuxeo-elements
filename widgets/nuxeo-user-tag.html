@@ -77,27 +77,35 @@ Example:
       },
 
       _isEntity: function(user) {
-        return user && user['entity-type'] && user['entity-type'] === 'user' && user.properties;
+        return user && user['entity-type'] && (user['entity-type'] === 'user'
+          || (user['entity-type'] === 'document' && user.type === 'user')) && user.properties;
       },
 
       _id: function(user) {
         if (user) {
-          return user.id ? user.id : user.replace('user:', '');
+          var id = user.id || user.uid;
+          return id ? id : user.replace('user:', '');
         }
       },
 
       _name: function(user) {
         if (this._isEntity(user)) {
-          var firstName = user.properties.firstName;
-          var lastName = user.properties.lastName;
-          return (firstName || lastName) ? firstName + ' ' + lastName : user.properties.email;
+          var firstName = user.properties.firstName || user.properties["user:firstName"];
+          var lastName = user.properties.lastName || user.properties["user:lastName"];
+          var email = user.properties.email || user.properties["user:email"];
+          return (firstName || lastName) ? firstName + ' ' + lastName : email;
         } else {
           return this._id(user);
         }
       },
 
       _email: function(user) {
-        return this._isEntity(user) && user.properties.email !== this._id(user) ? user.properties.email : '';
+        if (this._isEntity(user)) {
+          var email = user.properties.email || user.properties["user:email"];
+          return email !== this._id(user) ? email : '';
+        } else {
+          return '';
+        }
       },
 
       _href: function(user) {
