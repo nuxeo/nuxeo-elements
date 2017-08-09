@@ -224,6 +224,12 @@ Example:
         window.addEventListener('nuxeo-group-created', function() {
           this._refreshLatestWithDelay();
         }.bind(this));
+        window.addEventListener('nuxeo-user-deleted', function() {
+          this._refreshLatest();
+        }.bind(this));
+        window.addEventListener('nuxeo-group-deleted', function() {
+          this._refreshLatest();
+        }.bind(this));
       }
 
     });

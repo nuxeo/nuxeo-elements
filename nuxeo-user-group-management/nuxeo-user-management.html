@@ -420,6 +420,12 @@ Used by `nuxeo-user-group-management`
         '_userRemovedFromGroup(groups.splices)'
       ],
 
+      /**
+       * Fired when a user is deleted.
+       *
+       * @event nuxeo-user-deleted
+       */
+
       ready: function() {
         this.$.picker.$$('nuxeo-select2').queryResultsFilter = this.resultsFilter;
         this.$.editUserForm.addEventListener('iron-form-presubmit', function(event) {
@@ -577,8 +583,8 @@ Used by `nuxeo-user-group-management`
       _deleteUser: function() {
         this.$.deleteUserDialog.toggle();
         this.$.editRequest.remove().then(function() {
+          this.fire('nuxeo-user-deleted', this.user);
           this._goHome();
-          this.user = undefined;
         }.bind(this));
       },
 

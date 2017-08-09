@@ -499,6 +499,12 @@ Used by `nuxeo-user-group-management`
         '_filterGroups(groupsFilter)'
       ],
 
+      /**
+       * Fired when a group is deleted.
+       *
+       * @event nuxeo-group-deleted
+       */
+
       ready: function() {
         this.$.picker.$$('nuxeo-select2').queryResultsFilter = this.resultsFilter;
         this.$.editForm.addEventListener('iron-form-presubmit', function(event) {
@@ -653,8 +659,10 @@ Used by `nuxeo-user-group-management`
       _deleteGroup: function() {
         this.$.deleteGroupDialog.toggle();
         this.$.editRequest.data = this.group;
-        this.$.editRequest.remove();
-        this._goHome();
+        this.$.editRequest.remove().then(function() {
+          this.fire('nuxeo-group-deleted', this.group);
+          this._goHome();
+        }.bind(this));
       },
 
       _toggleEditMembers: function() {
