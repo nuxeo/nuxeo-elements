@@ -74,6 +74,13 @@ Custom property | Description | Default
         @apply(--layout-flex);
       }
 
+      #createDropdown {
+        position: absolute;
+        right: 0;
+        padding: 0;
+        top: 15px;
+      }
+
       paper-menu-button {
         width: 130px;
         height: 48px;
@@ -108,12 +115,10 @@ Custom property | Description | Default
     <iron-pages selected="[[page]]" attr-for-selected="name">
       <section name="search">
         <div class="horizontal layout center">
-          <nuxeo-user-group-search class="flex-11"></nuxeo-user-group-search>
           <template is="dom-if" if=[[!readonly]]>
             <div class="flex-1">
               <paper-menu-button no-animations id="createDropdown" no-overlap
-                                 horizontal-align="right" horizontal-offset="8"
-                                 vertical-align="top" vertical-offset="-12">
+                                 horizontal-align="right" vertical-align="top" vertical-offset="-4">
                 <paper-button noink class="dropdown-trigger primary" id="createButton">
                   <iron-icon icon="nuxeo:add"></iron-icon>
                   <div>[[i18n('userGroupManagement.new.usergroup')]]</div>
@@ -132,6 +137,7 @@ Custom property | Description | Default
             </div>
           </template>
         </div>
+        <nuxeo-user-group-search></nuxeo-user-group-search>
       </section>
 
       <section name="create-user">
