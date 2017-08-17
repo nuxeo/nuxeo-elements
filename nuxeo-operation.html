@@ -19,9 +19,10 @@ limitations under the License.
 `nuxeo-operation` allows calling an operation on a Nuxeo server.
 
     <nuxeo-operation auto
-        op="Document.Query"
-        params="{'query': 'select from Document'}"
-        on-response="handleResponse" enrichers="documentURL, preview"></nuxeo-operation>
+                     op="Document.Query"
+                     params='{"query": "select * from Document"}'
+                     on-response="handleResponse"
+                     enrichers="documentURL, preview"></nuxeo-operation>
 
 With `auto` set to `true`, the operation is executed whenever
 its `url` or `params` properties are changed.
