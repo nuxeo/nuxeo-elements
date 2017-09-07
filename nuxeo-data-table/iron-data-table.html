@@ -692,6 +692,9 @@ Example:
       },
 
       _createEntry: function() {
+        if (!this.items) {
+          this.items = [];
+        }
         if ((this.items.length > 1 && 'object' !== typeof this.items[0]) || this.columns.length === 1) {
           // dirty but will work with primitive such as string, number, etc.
           this.push('items', '');
