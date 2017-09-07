@@ -404,7 +404,10 @@ Example:
 
       _itemChanged: function(e) {
         if (this.items) {
-          var index = this.items.indexOf(e.detail.item);
+          var index = e.target.index;
+          if (index === undefined) {
+            index = this.items.indexOf(e.detail.item)
+          }
           if (index >= 0) {
             var path =  'items.' + index;
             if (e.detail.path) {
