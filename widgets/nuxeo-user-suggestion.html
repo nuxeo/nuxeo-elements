@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="nuxeo-select2.html">
+<link rel="import" href="nuxeo-selectivity.html">
 <link rel="import" href="../../iron-form-element-behavior/iron-form-element-behavior.html">
 <link rel="import" href="../../iron-validatable-behavior/iron-validatable-behavior.html">
 <link rel="import" href="../../paper-card/paper-card.html">
@@ -42,7 +42,7 @@ limitations under the License.
       }
     </style>
 
-    <nuxeo-select2 id="s2" operation="UserGroup.Suggestion"
+    <nuxeo-selectivity id="s2" operation="UserGroup.Suggestion"
                    label="[[label]]"
                    min-chars="[[minChars]]"
                    multiple="[[multiple]]"
@@ -58,8 +58,9 @@ limitations under the License.
                    result-formatter="[[resultFormatter]]"
                    resolve-entry="[[resolveEntry]]"
                    id-function="[[idFunction]]"
+                   query-results-filter="[[queryResultsFilter]]"
                    stay-open-on-select="[[stayOpenOnSelect]]">
-    </nuxeo-select2>
+    </nuxeo-selectivity>
 
   </template>
 
@@ -186,7 +187,12 @@ limitations under the License.
           value: function() {
             return this._idFunction.bind(this);
           }
-        }
+        },
+
+        /**
+         * Results filtering function (optional).
+         */
+        queryResultsFilter: Function,
       },
 
       /* Override method from Polymer.IronValidatableBehavior. */

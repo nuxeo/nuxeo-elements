@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="nuxeo-select2.html">
+<link rel="import" href="nuxeo-selectivity.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../nuxeo-routing-behavior.html">
 
@@ -40,7 +40,7 @@ An element for selecting one or more documents.
 
     <nuxeo-operation id="op" op="Document.FetchByProperty"></nuxeo-operation>
 
-    <nuxeo-select2 id="s2" operation="Repository.PageProvider"
+    <nuxeo-selectivity id="s2" operation="Repository.PageProvider"
                    label="[[label]]"
                    min-chars="[[minChars]]"
                    multiple="[[multiple]]"
@@ -57,7 +57,7 @@ An element for selecting one or more documents.
                    init-selection="[[initSelection]]"
                    id-function="[[_idFunction]]"
                    stay-open-on-select="[[stayOpenOnSelect]]">
-    </nuxeo-select2>
+    </nuxeo-selectivity>
 
   </template>
 

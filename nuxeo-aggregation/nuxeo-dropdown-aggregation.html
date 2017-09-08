@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../widgets/nuxeo-select2.html">
+<link rel="import" href="../widgets/nuxeo-selectivity.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="nuxeo-aggregation-behavior.html">
 
@@ -44,12 +44,12 @@ An element to interact with page provider aggregations as suggestions.
     </style>
 
     <div class="layout vertical">
-      <nuxeo-select2 data="[[_computedData]]"
+      <nuxeo-selectivity data="[[_computedData]]"
                      min-chars="[[minChars]]"
                      multiple="[[multiple]]"
                      placeholder="[[placeholder]]"
                      value="{{value}}">
-      </nuxeo-select2>
+      </nuxeo-selectivity>
     </div>
 
   </template>

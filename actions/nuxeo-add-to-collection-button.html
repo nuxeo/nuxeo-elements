@@ -25,7 +25,7 @@ limitations under the License.
 <link rel="import" href="../../paper-input/paper-textarea.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
-<link rel="import" href="../widgets/nuxeo-select2.html">
+<link rel="import" href="../widgets/nuxeo-selectivity.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-filters-behavior.html">
 
@@ -69,17 +69,17 @@ Example:
       <h2>[[i18n('addToCollectionButton.dialog.heading')]]</h2>
       <paper-dialog-scrollable>
         <label>[[i18n('addToCollectionButton.dialog.collections')]]<span class="required">*</span></label>
-        <nuxeo-select2 id="nxSelect"
+        <nuxeo-selectivity id="nxSelect"
                        operation="Collection.Suggestion"
                        min-chars="0"
                        placeholder="[[i18n('addToCollectionButton.dialog.select')]]"
                        value="{{collection}}"
                        tagging="true"
                        query-results-filter="[[resultsFilter]]"
-                       result-formatter="[[resultAndSelectionFormatter]]"
-                       selection-formatter="[[resultAndSelectionFormatter]]"
+                       result-formatter="[[resultFormatter]]"
+                       selection-formatter="[[selectionFormatter]]"
                        new-entry-formatter="[[newEntryFormatter]]">
-        </nuxeo-select2>
+        </nuxeo-selectivity>
         <paper-textarea label="[[i18n('addToCollectionButton.dialog.description')]]"
                         value="{{description::input}}"
                         hidden$="[[!_isNew(collection)]]"
@@ -127,10 +127,17 @@ Example:
           }
         },
 
-        resultAndSelectionFormatter: {
+        resultFormatter: {
           type: Function,
           value: function() {
-            return this._resultAndSelectionFormatter.bind(this);
+            return this._resultFormatter.bind(this);
+          }
+        },
+
+        selectionFormatter: {
+          type: Function,
+          value: function() {
+            return this._selectionFormatter.bind(this);
           }
         },
 
@@ -153,7 +160,8 @@ Example:
       _add: function() {
         if (this._isNew()) {
           var op = this.$$('#createCollectionOp');
-          var name = this.$.nxSelect.textContent.trim();
+          // XXX
+          var name = this.$.nxSelect.$.input.textContent.trim();
           op.input = undefined;
           op.params = {
             'name': name,
@@ -183,14 +191,22 @@ Example:
         return entry.id.indexOf('-999999') === -1;
       },
 
-      _resultAndSelectionFormatter: function(item) {
+      _resultFormatter: function(item) {
         var label = item.displayLabel || item.title;
+
+        // if we are adding a new entry with the _newEntryFormatter we don't want to escape the HTML
+        return item.id === -1 ? '<iron-icon icon="nuxeo:add" item-icon></iron-icon>' + label : this.$.nxSelect.escapeHTML(label);
+      },
+
+      _selectionFormatter: function(item) {
+        var label = item.displayLabel || item.title;
+
         // if we are adding a new entry with the _newEntryFormatter we don't want to escape the HTML
         return item.id === -1 ? label : this.$.nxSelect.escapeHTML(label);
       },
 
       _newEntryFormatter: function(term) {
-        return {id: -1, displayLabel: '<iron-icon icon="nuxeo:add" item-icon></iron-icon>' + term};
+        return {id: -1, displayLabel: term};
       },
 
       _isValid: function() {
@@ -198,7 +214,7 @@ Example:
       },
 
       _isNew: function() {
-        return this.collection === '-1';
+        return this.collection === -1;
       },
 
       _resetPopup: function() {

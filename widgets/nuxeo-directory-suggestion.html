@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="nuxeo-select2.html">
+<link rel="import" href="nuxeo-selectivity.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../../iron-form-element-behavior/iron-form-element-behavior.html">
 <link rel="import" href="../../iron-validatable-behavior/iron-validatable-behavior.html">
@@ -42,7 +42,7 @@ An element for selecting one or more entries from a given directory.
       }
     </style>
 
-    <nuxeo-select2 id="s2" operation="Directory.SuggestEntries"
+    <nuxeo-selectivity id="s2" operation="Directory.SuggestEntries"
                    label="[[label]]"
                    min-chars="[[minChars]]"
                    multiple="[[multiple]]"
@@ -58,7 +58,7 @@ An element for selecting one or more entries from a given directory.
                    init-selection="[[initSelection]]"
                    stay-open-on-select="[[stayOpenOnSelect]]"
                    id-function="[[idFunction]]">
-    </nuxeo-select2>
+    </nuxeo-selectivity>
 
   </template>
   <script>

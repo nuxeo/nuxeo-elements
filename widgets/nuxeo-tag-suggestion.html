@@ -16,7 +16,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
-<link rel="import" href="nuxeo-select2.html">
+<link rel="import" href="nuxeo-selectivity.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../../paper-toast/paper-toast.html">
 <link rel="import" href="../../iron-form-element-behavior/iron-form-element-behavior.html">
@@ -44,7 +44,7 @@ limitations under the License.
       }
     </style>
 
-    <nuxeo-select2 id="s2" operation="Tag.Suggestion"
+    <nuxeo-selectivity id="s2" operation="Tag.Suggestion"
                    label="[[label]]"
                    min-chars="[[minChars]]"
                    tagging$="[[allowNewTags]]"
@@ -63,7 +63,7 @@ limitations under the License.
                    removed-entry-handler="[[removedTagHandler]]"
                    init-selection="[[initSelection]]"
                    stay-open-on-select="[[stayOpenOnSelect]]">
-    </nuxeo-select2>
+    </nuxeo-selectivity>
 
     <nuxeo-operation id="addTagOp"
                      op="Services.TagDocument"
@@ -213,11 +213,10 @@ limitations under the License.
       },
 
       _resultFormatter: function (tag) {
-        var escapeHTML = window.Select2.util.escapeMarkup;
         if (tag.newTag) {
-            return "<span class='s2newTag'>" + "+ " +escapeHTML(tag.displayLabel) + "</span>"
+            return "<span class='s2newTag'>" + "+ " + this.$.s2.escapeHTML(tag.displayLabel) + "</span>"
         } else {
-            return "<span class='s2existingTag'>" + escapeHTML(tag.displayLabel) + "</span>"
+            return "<span class='s2existingTag'>" + this.$.s2.escapeHTML(tag.displayLabel) + "</span>"
         }
       },
 
