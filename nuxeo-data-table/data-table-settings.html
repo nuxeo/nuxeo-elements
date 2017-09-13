@@ -22,7 +22,6 @@
         position: absolute;
         top: 1.5em;
         right: 8px;
-        z-index: 1000;
         width: 1.5em;
         height: 1.5em;
         padding: 0;
@@ -65,7 +64,8 @@
               <template is="dom-repeat" items="[[columns]]" as="column">
                 <tr>
                   <td>
-                    <paper-checkbox noink checked="{{!column.hidden}}" on-tap="_columnDisplayChanged">
+                    <paper-checkbox noink checked="{{!column.hidden}}" on-tap="_columnDisplayChanged"
+                                    disabled$="_noColumnsSelected">
                     </paper-checkbox>
                   </td>
                   <td>
@@ -93,21 +93,24 @@
   <script>
     Polymer({
       is: 'nuxeo-data-table-settings',
-
       behaviors: [Nuxeo.I18nBehavior],
-
       properties: {
         columns: {
           type: Array,
-          notify: true,
-        },
+          notify: true
+        }
       },
 
       toggleColsSettingsPopup: function() {
         this.$$('#columnsSettingsPopup').toggle();
       },
 
-      _columnDisplayChanged: function() {
+      _columnDisplayChanged: function(e) {
+        if (this.columns.every(function (column) {
+            return column.hidden;
+          })) {
+          e.model.column.hidden = false
+        }
         this.fire('settings-changed');
       },
 
