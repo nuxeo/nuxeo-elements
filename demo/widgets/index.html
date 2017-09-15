@@ -41,6 +41,7 @@ limitations under the License.
   <link rel="import" href="../../widgets/nuxeo-operation-button.html">
   <link rel="import" href="../../widgets/nuxeo-select.html">
   <link rel="import" href="../../widgets/nuxeo-date.html">
+  <link rel="import" href="../../widgets/nuxeo-card.html">
   <link rel="stylesheet" href="../../../select2/select2.css">
   <style>
       body {
@@ -129,6 +130,28 @@ limitations under the License.
           <nuxeo-tag-suggestion value="{{tags}}" document="[[tagDoc]]" allow-new-tags></nuxeo-tags-suggestion>
         </td>
         <td>[[tags]]</td>
+      </tr>
+
+      <tr>
+        <td>nuxeo-card</td>
+        <tr>
+        <td><nuxeo-card label="Collapsible card" collapsible>
+          <div>Content of the nuxeo-card</div>
+        </nuxeo-card>
+        </td>
+      </tr>
+      <tr>
+        <td><nuxeo-card label="Non-Collapsible card">
+        <div>Content of the nuxeo-card</div>
+      </nuxeo-card>
+      </td>
+      </tr>
+      <tr>
+        <td><nuxeo-card>
+          <div>Content of the nuxeo-card without a title</div>
+        </nuxeo-card>
+        </td>
+      </tr>
       </tr>
 
       <tr>
