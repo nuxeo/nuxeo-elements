@@ -182,6 +182,16 @@ Note: Elements that depend on a connectionId use `nx` as default.
       },
 
       /**
+       * Get the http resource.
+       * @param {string} url The url to be loaded.
+       */
+      http: function(url) {
+        return this.connect().then(function() {
+          return this.client._http({"url": url});
+        }.bind(this));
+      },
+
+      /**
        * Returns an object that allows blobs to be uploaded to a Nuxeo Platform instance using the Batch Upload API.
        */
       batchUpload: function() {
