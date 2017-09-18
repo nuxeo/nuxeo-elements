@@ -12,8 +12,7 @@
   "main": "nuxeo-elements.html",
   "license": "Apache-2.0",
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.1.4",
-    "iron-elements": "PolymerElements/iron-elements#^1.0.4",
+    "polymer": "polymer/polymer#^2.0.0",
     "nuxeo": "^3.2.1",
     "es6-promise": "2.2.0"
   },
@@ -21,8 +20,9 @@
     "/.*"
   ],
   "devDependencies": {
-    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
-    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
-    "web-component-tester": "^4.0.0"
+    "iron-component-page": "PolymerElements/iron-component-page#^2.0.0",
+    "test-fixture": "PolymerElements/test-fixture#^3.0.0-rc.1",
+    "web-component-tester": "^6.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0"
   }
 }
