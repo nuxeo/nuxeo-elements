@@ -20,7 +20,6 @@ limitations under the License.
   <meta name="viewport"
         content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="../../font-roboto/roboto.html">
   <link rel="import" href="../../polymer/polymer.html">
   <link rel="import" href="../nuxeo-connection.html">
   <link rel="import" href="../nuxeo-search.html">
@@ -60,7 +59,8 @@ limitations under the License.
 </style>
 </head>
 <body>
-<template is="dom-bind">
+<dom-bind>
+<template>
   <nuxeo-connection id="nx" url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
   <nuxeo-search auto searches={{searches}}></nuxeo-search>
   <div class="container" class="layout vertical center">
@@ -96,5 +96,6 @@ limitations under the License.
     </template>
   </div>
 </template>
+</dom-bind>
 </body>
 </html>

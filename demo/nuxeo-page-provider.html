@@ -20,7 +20,6 @@ limitations under the License.
   <meta name="viewport"
         content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="../../font-roboto/roboto.html">
   <link rel="import" href="../../polymer/polymer.html">
   <link rel="import" href="../nuxeo-connection.html">
   <link rel="import" href="../nuxeo-page-provider.html">
@@ -63,7 +62,8 @@ limitations under the License.
 </style>
 </head>
 <body>
-<template is="dom-bind">
+<dom-bind>
+<template>
   <nuxeo-connection id="nx" url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
   <nuxeo-page-provider auto page-size="5" current-page="{{docs}}"
                        query="[[query(docType)]]"></nuxeo-page-provider>
@@ -91,12 +91,13 @@ limitations under the License.
     </template>
   </div>
 </template>
+</dom-bind>
 <script>
-  var app = document.querySelector('template[is="dom-bind"]');
-  app.docType = 'File';
+  var app = document.querySelector('dom-bind');
   app.query = function(docType) {
     return "select * from " + docType  + " where ecm:currentLifeCycleState != 'deleted'";
   };
+  app.docType = 'File';
 </script>
 </body>
 </html>
