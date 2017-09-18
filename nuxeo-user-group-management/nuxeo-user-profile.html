@@ -17,6 +17,8 @@ limitations under the License.
 
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../../paper-input/paper-input.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-card/paper-card.html">
@@ -40,7 +42,7 @@ Example:
 
 <dom-module id="nuxeo-user-profile">
   <template>
-    <style>
+    <style include="iron-flex">
       :host {
         display: block;
       }
@@ -56,10 +58,10 @@ Example:
       }
 
       .actions {
-        @apply(--layout-horizontal);
-        @apply(--layout-flex);
-        @apply(--layout-center);
-        @apply(--layout-end-justified);
+        @apply --layout-horizontal;
+        @apply --layout-flex;
+        @apply --layout-center;
+        @apply --layout-end-justified;
       }
 
       .actions paper-button {
@@ -77,8 +79,8 @@ Example:
       }
 
       .table .header {
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
+        @apply --layout-horizontal;
+        @apply --layout-center;
         background-color: var(--nuxeo-table-header-background, #e6e9ef);
         padding: 1.3em 1em;
         font-weight: 400;
@@ -87,8 +89,8 @@ Example:
       }
 
       .table .row {
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
+        @apply --layout-horizontal;
+        @apply --layout-center;
         background-color: var(--nuxeo-table-items-background, #e6e9ef);
         border-bottom: 1px solid var(--nuxeo-border, #eee);
         padding: 0 1em;
@@ -105,7 +107,7 @@ Example:
       }
 
       .buttons {
-        @apply(--buttons-bar);
+        @apply --buttons-bar;
         margin-top: 2em;
       }
     </style>
@@ -153,7 +155,7 @@ Example:
             </paper-input>
           </form>
 
-          <div class="buttons horizontal end-justified layout">
+          <div class="buttons">
             <div class="flex start-justified">
               <paper-button noink dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
             </div>
@@ -241,7 +243,7 @@ Example:
       },
 
       _isRegistered: function(tag) {
-        return Polymer.isInstance(document.createElement(tag));
+        return document.createElement(tag) instanceof Polymer.Element;
       },
 
       _fetch: function() {

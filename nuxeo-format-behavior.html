@@ -47,6 +47,7 @@ limitations under the License.
      * Use format "relative" to show date relative to current time
      */
     formatDate: function(date, fmt) {
+      if (!date) return;
       moment.locale(this._languageCode());
       if (fmt && fmt === "relative"){
         return moment().to(date) ;
@@ -58,6 +59,7 @@ limitations under the License.
      * Returns the translated mimetype. Message key is 'mimetype.<value>'.
      */
     formatMimeType: function(value) {
+      if (!value) return;
       return this.i18n('mimetype.' + value);
     },
 

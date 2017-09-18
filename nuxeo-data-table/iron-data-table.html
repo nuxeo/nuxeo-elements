@@ -96,7 +96,7 @@ Example:
 -->
 <dom-module id="nuxeo-data-table">
   <template>
-    <style is="custom-style">
+    <style>
       :host {
         display: block;
         position: relative;
@@ -153,7 +153,7 @@ Example:
         -webkit-transition: opacity 200ms;
       }
 
-      #list ::content #items {
+      #list ::slotted #items {
         background: var(--nuxeo-table-items-background, #ffffff);
       }
 
@@ -182,9 +182,9 @@ Example:
       }
 
       .top.actions {
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
-        @apply(--layout-end-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        @apply --layout-end-justified;
         margin: 1em 0 1em 0;
       }
     </style>
@@ -199,7 +199,7 @@ Example:
         </div>
       </template>
 
-      <content select="nuxeo-selection-toolbar"></content>
+      <slot name="nuxeo-selection-toolbar"></slot>
 
       <template is="dom-if" if="[[displayQuickFilters]]">
         <nuxeo-quick-filters quick-filters="{{quickFilters}}" on-quick-filters-changed="_quickFilterChanged">
@@ -286,13 +286,14 @@ Example:
 
     </div>
     <paper-spinner-lite active></paper-spinner-lite>
-    <content select="nuxeo-data-table-column"></content>
-    <content select="template[is=row-detail]"></content>
+
+    <slot id="columns"></slot>
+    <!-- content select="template[is=row-detail]"></content -->
 
     <nuxeo-dialog id="dialog" modal>
       <h1>[[i18n('command.add')]]</h1>
       <form id="editForm" is="iron-form">
-        <content id="form" select="nuxeo-data-table-form"></content>
+        <slot id="form" name="form"></slot>
       </form>
       <div class="buttons">
         <paper-button noink dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
@@ -447,7 +448,7 @@ Example:
 
           if (info.addedNodes.filter(hasColumns).length > 0 ||
             info.removedNodes.filter(hasColumns).length > 0) {
-            this.set('columns', this.getContentChildren('[select=nuxeo-data-table-column]'));
+            this.set('columns', this.$.columns.assignedNodes().filter(hasColumns));
             this._backupColumnsState();
             this.notifyResize();
           }

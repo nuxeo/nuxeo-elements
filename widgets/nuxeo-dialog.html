@@ -29,18 +29,20 @@ An element for dialogs
 -->
 <dom-module id="nuxeo-dialog">
   <template>
-    <style include="paper-dialog-shared-styles"></style>
+    <style include="paper-dialog-shared-styles">
+      :host {
+        @apply --nuxeo-dialog;
+      }
 
-    <style>
-      :host > ::content .buttons {
-        @apply(--layout-horizontal);
-        @apply(--layout-justified);
+      :host > ::slotted(.buttons) {
+        @apply --layout-horizontal;
+        @apply --layout-justified;
         margin-top: 16px;
         background-color: var(--nuxeo-dialog-buttons-bar, white);
       }
     </style>
 
-    <content></content>
+    <slot></slot>
 
   </template>
 
@@ -73,10 +75,16 @@ An element for dialogs
         'iron-overlay-canceled': '_closed'
       },
 
-      _opened: function() {
-        if (this.reparent && this.parentElement !== document.body) {
-          this._parent = this.parentElement;
-          document.body.appendChild(this);
+      disconnectedCallback: function() {
+        // workaround to prevent IronOverlayBehavior.detached() from being called when unattached
+        if (this._observer) {
+          this.detached();
+        }
+      },
+
+      _opened: function(e) {
+        if (this.reparent && e.target.withBackdrop) {
+          e.target.parentNode.insertBefore(e.target.backdropElement, e.target);
         }
       },
 

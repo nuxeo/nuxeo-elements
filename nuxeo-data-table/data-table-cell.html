@@ -22,7 +22,7 @@
         display: none;
       }
     </style>
-    <content></content>
+    <slot></slot>
   </template>
   <script>
     Polymer({
@@ -48,17 +48,18 @@
       },
 
       observers: [
-                  '_beforeBind(beforeBind, column.*, index, item.*, expanded, selected)',
-                  '_beforeBindHeader(beforeBind, column.*)',
-                  '_alignRightChanged(alignRight)',
-                  '_columnChanged(_instance, column)',
-                  '_columnPathChanged(_instance, column.*)',
-                  '_flexChanged(flex)',
-                  '_hiddenChanged(hidden)',
-                  '_orderChanged(order)',
-                  '_widthChanged(width)'],
+        '_beforeBind(beforeBind, column.*, index, item.*, expanded, selected)',
+        '_beforeBindHeader(beforeBind, column.*)',
+        '_alignRightChanged(alignRight)',
+        '_columnChanged(_instance, column)',
+        '_columnPathChanged(_instance, column.*)',
+        '_flexChanged(flex)',
+        '_hiddenChanged(hidden)',
+        '_orderChanged(order)',
+        '_widthChanged(width)'],
 
       attached: function() {
+        /*
         if (!Polymer.Settings.useNativeShadow) {
           // cell is supposed to be placed outside the local dom of iron-data-table.
           Polymer.StyleTransformer.dom(this, 'iron-data-table', this._scopeCssViaAttr, true);
@@ -66,6 +67,7 @@
             Polymer.StyleTransformer.dom(this, this.domHost.tagName.toLowerCase(), this._scopeCssViaAttr, false);
           }
         }
+        */
       },
 
       _alignRightChanged: function(alignRight) {
@@ -113,10 +115,15 @@
       },
 
       _columnChanged: function(instance, column) {
-        instance.column = column;
+        if (instance) {
+          instance.column = column;
+        }
       },
 
       _columnPathChanged: function(instance, column) {
+        if (!instance) {
+          return;
+        }
         // sometimes instance isn't ready to be notified yet and throws an error.
         this.async(function() {
           // TODO: hack to avoid: https://github.com/Polymer/polymer/issues/3307

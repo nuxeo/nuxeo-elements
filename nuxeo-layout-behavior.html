@@ -25,5 +25,12 @@ limitations under the License.
   /**
    * @polymerBehavior Nuxeo.LayoutBehavior
    */
-  Nuxeo.LayoutBehavior = [Nuxeo.RoutingBehavior, Nuxeo.FiltersBehavior, Nuxeo.FormatBehavior];
+  Nuxeo.LayoutBehavior = [
+    {
+      // stamp templates in light DOM
+      _attachDom: function(dom) {
+        this.appendChild(dom);
+        return this;
+      }
+    }, Nuxeo.RoutingBehavior, Nuxeo.FiltersBehavior, Nuxeo.FormatBehavior];
 </script>

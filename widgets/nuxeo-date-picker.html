@@ -72,12 +72,6 @@ Example:
           value: false
         },
 
-        _pickerValue: {
-          type: String,
-          notify: true,
-          observer: '_pickerValueChanged'
-        },
-
         value: {
           type: String,
           notify: true,
@@ -87,6 +81,12 @@ Example:
         disabled: {
           type: Boolean,
           value: false
+        },
+
+        _pickerValue: {
+          type: String,
+          notify: true,
+          observer: '_pickerValueChanged'
         }
       },
 
@@ -101,17 +101,17 @@ Example:
         if (this.value && moment(this.value).isValid()) {
           this._pickerValue = moment(this.value).format('YYYY-MM-DD');
         }
-        
+
         if (!this.value || this.value.length === 0){
-          this._pickerValue = "";
+          this._pickerValue = '';
         }
       },
 
-      _pickerValueChanged: function() {       
+      _pickerValueChanged: function() {
         if (this._pickerValue && moment(this._pickerValue).isValid()) {
           this.value = moment(this._pickerValue).toJSON();
         } else {
-          this.value = "";
+          this.value = '';
         }
       }
 

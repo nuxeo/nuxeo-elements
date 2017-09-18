@@ -80,7 +80,7 @@ limitations under the License.
        **/
       Polymer({
         is: 'nuxeo-slot',
-        behaviors: [Polymer.Templatizer],
+        //behaviors: [Polymer.Templatizer],
         properties: {
 
           /**
@@ -138,7 +138,7 @@ limitations under the License.
             return;
           }
           this._instances.forEach(function(instance) {
-            var c$ = instance._children;
+            var c$ = instance.children;
             if (c$ && c$.length) {
               // use first child parent, for case when dom-if may have been detached
               var p = Polymer.dom(Polymer.dom(c$[0]).parentNode);
@@ -157,8 +157,15 @@ limitations under the License.
           _getRegistry(this.slot).nodes.forEach(function(node) {
             var template = node.template;
             if (!node.disabled && template) {
-              this.templatize(template);
-              var el = this.stamp(this.model);
+              delete template.__templatizeOwner;
+              var ctor = Polymer.Templatize.templatize(template, this);
+              // setting the model in the constructor seems to require instanceProps to be properly set
+              // so we're doing it ourselves after
+              var el =  new ctor({});
+              for (let prop in this.model) {
+                el._setPendingProperty(prop, this.model[prop]);
+              }
+              el._flushProperties()
               this._instances.push(el);
               parent.insertBefore(el.root, this);
             }
@@ -175,35 +182,23 @@ limitations under the License.
         _updateModel: function(change) {
           if (change.path === 'model') {
             Object.keys(change.value).forEach(function(prop) {
-              this._forwardParentProp(prop, change.value[prop]);
+              this._forwardHostProp(prop, change.value[prop]);
             }.bind(this));
           } else {
-            this._forwardParentPath(change.path.slice('model.'.length + 1), change.value);
+            this._forwardHostProp(change.path.slice('model.'.length + 1), change.value);
           }
         },
 
         // Implements extension point from Templatizer mixin
         // Called as side-effect of a host property change, responsible for
         // notifying parent.<prop> path change on instance
-        _forwardParentProp: function(prop, value) {
+        _forwardHostProp: function(prop, value) {
           if (!this._instances) {
             return;
           }
           this._instances.forEach(function(instance) {
-            instance[prop] = value;
-          });
-        },
-
-        // Implements extension point from Templatizer
-        // Called as side-effect of a host path change, responsible for
-        // notifying parent.<path> path change on each row.
-        _forwardParentPath: function(path, value) {
-          if (!this._instances) {
-            return;
-          }
-          this._instances.forEach(function(instance) {
-            instance.notifyPath(path, value, true);
-          });
+            instance.set(prop, value);
+          }, this);
         }
       });
 

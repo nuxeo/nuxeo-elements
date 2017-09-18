@@ -44,10 +44,10 @@ Example:
         line-height: initial;
         text-decoration: none;
 
-        @apply(--nuxeo-tag);
+        @apply --nuxeo-tag;
       }
 
-      :host[uppercase] {
+      :host([uppercase]) {
         text-transform: uppercase;
       }
 
@@ -62,7 +62,7 @@ Example:
     <template is="dom-if" if=[[icon]]>
       <iron-icon icon="[[icon]]"></iron-icon>
     </template>
-    <content></content>
+    <slot></slot>
 
   </template>
 

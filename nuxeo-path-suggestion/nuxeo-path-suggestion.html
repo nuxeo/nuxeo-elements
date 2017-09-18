@@ -39,28 +39,28 @@ Custom property | Description | Default
 @demo demo/nuxeo-path-suggestion/index.html
 -->
 <dom-module id="nuxeo-path-suggestion">
-  <style>
-    :host {
-      display: block;
-    --paper-typeahead-results: {
-      background-color: white;
-      @apply(--nuxeo-path-suggestion-results);
-     };
-    --paper-typeahead-result: {
-      display: block;
-      overflow: hidden;
-      white-space: nowrap;
-      direction:rtl;
-      text-align: left;
-     @apply(--nuxeo-path-suggestion-result);
-     };
-    }
-    paper-typeahead:focus {
-      outline: none;
-      @apply(--nuxeo-path-suggestion-focus);
-    }
-  </style>
   <template>
+    <style>
+        
+        --paper-typeahead-results {
+          background-color: white;
+          @apply --nuxeo-path-suggestion-results;
+        };
+
+        --paper-typeahead-result {
+          display: block;
+          overflow: hidden;
+          white-space: nowrap;
+          direction:rtl;
+          text-align: left;
+          @apply --nuxeo-path-suggestion-result;
+        };
+        
+        paper-typeahead:focus {
+          outline: none;
+          @apply --nuxeo-path-suggestion-focus;
+        }
+    </style>
     <nuxeo-page-provider id="provider"
                          query="[[query]]"
                          params="[[params]]"

@@ -88,6 +88,12 @@ Example:
         return true;
       },
 
+      // stamp templates in light DOM
+      _attachDom: function(dom) {
+        this.appendChild(dom);
+        return this;
+      },
+
       _stamp: function(href) {
         if (!href) {
           this.hidden = true;

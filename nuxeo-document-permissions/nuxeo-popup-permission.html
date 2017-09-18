@@ -15,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../gold-email-input/gold-email-input.html">
 <link rel="import" href="../../iron-autogrow-textarea/iron-autogrow-textarea.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
@@ -24,7 +23,7 @@ limitations under the License.
 <link rel="import" href="../../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-item/paper-item.html">
-<link rel="import" href="../../paper-menu/paper-menu.html">
+<link rel="import" href="../../paper-listbox/paper-listbox.html">
 <link rel="import" href="../../paper-radio-button/paper-radio-button.html">
 <link rel="import" href="../../paper-radio-group/paper-radio-group.html">
 
@@ -41,7 +40,7 @@ limitations under the License.
   <template>
     <style>
       /* Fix polyfill behavior for inputs disabled at initialization */
-      ::content span.btr-dateinput-value {
+      span.btr-dateinput-value {
          color: #212121 !important;
          line-height: 35px !important;
       }
@@ -79,8 +78,8 @@ limitations under the License.
           </template>
           <template is="dom-if" if="{{shareWithExternal}}">
               <div>
-                <gold-email-input id="email" label="[[i18n('popupPermission.email')]]" placeholder="name@company.com" value="{{params.email}}"
-                  required auto-validate></gold-email-input>
+                <paper-input type="email"t id="email" label="[[i18n('popupPermission.email')]]" placeholder="name@company.com" value="{{params.email}}"
+                  required auto-validate></paper-input type="email">
             </div>
           </template>
         </template>

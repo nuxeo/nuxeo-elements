@@ -70,11 +70,11 @@ An element to display page provider results as a grid with infinite scrolling.
   <template>
 
     <style>
-      :host[loading] {
+      :host([loading]) {
         opacity: 0.25;
       }
 
-      :host[loading] paper-spinner-lite {
+      :host([loading]) paper-spinner-lite {
         position: absolute;
         top: 45%;
         left: 50%;
@@ -97,8 +97,8 @@ An element to display page provider results as a grid with infinite scrolling.
       }
 
       #container {
-        @apply(--layout-vertical);
-        @apply(--layout-fit);
+        @apply --layout-vertical;
+        @apply --layout-fit;
       }
 
       .emptyResult {
@@ -142,7 +142,7 @@ An element to display page provider results as a grid with infinite scrolling.
 
     <div id="container">
 
-      <content select="nuxeo-selection-toolbar"></content>
+      <slot name="nuxeo-selection-toolbar"></slot>
 
       <div class="layout horizontal center">
 
@@ -179,8 +179,7 @@ An element to display page provider results as a grid with infinite scrolling.
       </template>
 
     </div>
-
-    <paper-spinner-lite active hidden$=[[!loading]]></paper-spinner-lite>
+    <paper-spinner-lite active$=[[loading]]></paper-spinner-lite>
 
   </template>
 

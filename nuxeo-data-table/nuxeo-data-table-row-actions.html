@@ -63,6 +63,7 @@
       observers: ['_beforeBind(beforeBind, item.*, index, size)'],
 
       attached: function() {
+        /*
         if (!Polymer.Settings.useNativeShadow) {
           // details is supposed to be placed outside the local dom of iron-data-table.
           Polymer.StyleTransformer.dom(this, 'iron-data-table', this._scopeCssViaAttr, true);
@@ -70,9 +71,15 @@
             Polymer.StyleTransformer.dom(this, this.domHost.tagName.toLowerCase(), this._scopeCssViaAttr, false);
           }
         }
+        */
       },
 
-      _beforeBind: function(beforeBind, item, index, selected, expanded) {
+      _beforeBind: function(beforeBind, item, index, size) {
+
+        if (!beforeBind) {
+          return;
+        }
+        
         var data = {
           index: index,
           item: item.base,

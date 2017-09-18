@@ -23,10 +23,10 @@ limitations under the License.
   <link rel="import" href="../../../polymer/polymer.html">
   <link rel="import" href="../../../nuxeo-elements/nuxeo-page-provider.html">
   <link rel="import" href="../../nuxeo-data-list/nuxeo-data-list.html">
+  <link rel="import" href="../../../iron-flex-layout/iron-flex-layout.html">  
 
+  <custom-style>
   <style>
-      :host {
-      }
 
       .content-view  {
         font-family: 'Open Sans', Arial, sans-serif;
@@ -66,8 +66,13 @@ limitations under the License.
         border-bottom: 1px solid #ccc;
       }
 
-      .list-item-title {
+      .list-item-box {
+        @apply --layout-vertical;
+      }
 
+      .list-item-info {
+        @apply --layout-horizontal;
+        @apply --layout-center;
       }
 
       .list-item-detail {
@@ -88,9 +93,11 @@ limitations under the License.
       }
 
   </style>
+  </custom-style>
 </head>
 <body unresolved>
-  <template is="dom-bind">
+  <dom-bind>
+  <template>
 
     <div class="content-view">
 
@@ -110,33 +117,34 @@ limitations under the License.
       <nuxeo-data-list id="dataList"
         nx-provider="cvProvider"
         selection-enabled select-on-tap>
-          <template>
-              <div tabindex$="[[tabIndex]]" class$="[[_computedClass(selected)]]">
-                <div class="list-item-box vertical layout">
-                  <div class="list-item-info horizontal layout center">
-                    <div class="vertical layout center">
-                      <img class="nxicon" src="[[_thumbnail(item)]]">
-                    </div>
-                    <span class="list-item-title">[[item.title]]</span>
-                  </div>
-                  <div class="list-item-detail">
-                    <div class="layout center">
-                      <span class="list-item-property">
-                        [[item.type]]
-                      </span>
-                    </div>
-                  </div>
+        <template>
+          <div tabindex$="[[tabIndex]]" class$="[[_computedClass(selected)]]">
+            <div class="list-item-box">
+              <div class="list-item-info">
+                <div>
+                  <img class="nxicon" src="[[_thumbnail(item)]]">
+                </div>
+                <span class="list-item-title">[[item.title]]</span>
+              </div>
+              <div class="list-item-detail">
+                <div class="layout center">
+                  <span class="list-item-property">
+                    [[item.type]]
+                  </span>
                 </div>
               </div>
-              <div class="border"></div>
-          </template>
+            </div>
+          </div>
+          <div class="border"></div>
+        </template>
       </nuxeo-data-list>
     </div>
 
   </template>
+  </dom-bind>
 
   <script>
-    var t = document.querySelector('template');
+    var t = document.querySelector('dom-bind');
 
     t._thumbnail = function(doc) {
       if (doc && doc.uid) {
@@ -148,7 +156,6 @@ limitations under the License.
         }
       }
     };
-
 
     t._computedClass = function(isSelected) {
       var classes = 'item';

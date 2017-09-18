@@ -35,8 +35,8 @@ limitations under the License.
 
       .icon {
         display: inline-block;
-        @apply(--layout-vertical);
-        @apply(--layout-center);
+        @apply --layout-vertical;
+        @apply --layout-center;
         text-align: center;
         width: 170px;
         border: 1px solid rgba(0, 0, 0, 0.1);
@@ -58,27 +58,31 @@ limitations under the License.
   <body unresolved>
 
     <h1>ICONS</h1>
-    <template is="dom-bind">
-      <iron-meta type="iconset" list="{{iconsets}}"></iron-meta>
-      <template is="dom-repeat" items="{{iconsets}}">
-        <h2>{{item.name}}</h2>
-        <template is="dom-repeat" items="{{getIconNames(item)}}">
-          <div class="icon">
-            <iron-icon icon="{{item}}"></iron-icon>
-            <label>{{getName(item)}}</label>
-          </div>
+    <dom-bind>
+      <template>
+        <iron-meta type="iconset"></iron-meta>
+        <template is="dom-repeat" items="{{iconsets}}">
+          <h2>{{item.name}}</h2>
+          <template is="dom-repeat" items="{{getIconNames(item)}}">
+            <div class="icon">
+              <iron-icon icon="{{item}}"></iron-icon>
+              <label>{{getName(item)}}</label>
+            </div>
+          </template>
         </template>
       </template>
-    </template>
+    </dom-bind>
 
     <script>
-      var el = document.querySelector('[is=dom-bind]');
+      var el = document.querySelector('dom-bind');
       el.getIconNames = function(iconset) {
         return iconset.getIconNames();
       };
       el.getName = function(name) {
         return name.split(':')[1];
       };
+      var meta = document.querySelector('iron-meta');
+      el.iconsets = meta.list;
     </script>
 
   </body>

@@ -1,17 +1,16 @@
 <!-- Part of `nuxeo-data-table` -->
 <dom-module id="nuxeo-data-table-row">
   <template>
-    <style is="custom-style">
+    <style>
       :host {
         display: flex;
         flex-direction: column;
         opacity: 1;
         cursor: pointer;
         border-bottom: 1px solid var(--nuxeo-border, #e3e3e3);
-        @apply(--iron-data-table-row);
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
-
+        @apply --iron-data-table-row;
+        @apply --layout-horizontal;
+        @apply --layout-center;
         -webkit-touch-callout: none;
         -webkit-user-select: none;
         -moz-user-select: none;
@@ -20,33 +19,33 @@
       }
 
       :host([selected]) .cells {
-        @apply(--iron-data-table-row-selected);
+        @apply --iron-data-table-row-selected;
       }
 
       :host(:not([header])[even]) {
-        @apply(--iron-data-table-row-even);
+        @apply --iron-data-table-row-even;
       }
 
       :host(:not([header]):not([even])) {
-        @apply(--iron-data-table-row-odd);
+        @apply --iron-data-table-row-odd;
       }
 
       :host(:focus) {
         outline: none;
-        @apply(--iron-data-table-row-focused);
+        @apply --iron-data-table-row-focused;
       }
 
       :host(:not([header]):hover) {
-        @apply(--iron-data-table-row-hover);
-        @apply(--nuxeo-block-hover);
+        @apply --iron-data-table-row-hover;
+        @apply --nuxeo-block-hover;
       }
 
       :host(:focus):after {
-        @apply(--iron-data-table-row-focused-after);
+        @apply --iron-data-table-row-focused-after;
       }
 
       :host:after {
-        @apply(--iron-data-table-row-after);
+        @apply --iron-data-table-row-after;
       }
 
       .cells {
@@ -58,15 +57,15 @@
     </style>
 
     <div class="cells">
-      <content select="nuxeo-data-table-checkbox"></content>
-      <content select="nuxeo-data-table-cell"></content>
-      <content select="nuxeo-data-table-settings"></content>
+      <slot name="checkbox"></slot>
+      <slot></slot>
+      <slot name="settings"></slot>
     </div>
     <div class="details">
-      <content select="nuxeo-data-table-row-detail"></content>
+      <slot name="detail"></slot>
     </div>
     <div class="actions">
-      <content select="nuxeo-data-table-row-actions"></content>
+      <slot name="action"></slot>
     </div>
   </template>
   <script>
@@ -99,13 +98,14 @@
 
           var item = this.parentElement;
           if (!item._rowId) {
-            this._contentElement = document.createElement('content');
-            this._contentElement.setAttribute('select', '#item' + id);
+            this._contentElement = document.createElement('slot');
+            this._contentElement.setAttribute('name', 'item' + id);
             Polymer.dom(item).appendChild(this._contentElement);
-            this.id = 'item' + id;
             item._rowId = id;
 
             Polymer.dom(this.domHost).appendChild(this);
+
+            this.slot = 'item' + id;
             // reset the cached value for shady root owner to make this.domHost
             // return correct value.
             this._ownerShadyRoot = undefined;
@@ -114,6 +114,10 @@
       },
 
       _beforeBind: function(beforeBind, index, item, selected, expanded) {
+        if (!beforeBind) {
+          return;
+        }
+
         var data = {
           index: index,
           item: item.base,

@@ -29,17 +29,19 @@ limitations under the License.
   <link rel="import" href="../../../paper-item/paper-item.html">
   <link rel="import" href="../../../paper-listbox/paper-listbox.html">
   <link rel="import" href="../../../paper-styles/paper-styles.html">
-  <style is="custom-style">
+  <link rel="import" href="../../../iron-flex-layout/iron-flex-layout-classes.html">
+  <custom-style>
+    <style is="custom-style" include="iron-flex">
     paper-listbox {
       max-width: 200px;
-      @apply(--shadow-elevation-2dp);
+      @apply --shadow-elevation-2dp;
     }
     paper-button {
       background-color: var(--paper-indigo-500);
       color: white;
     }
     paper-card {
-      @apply(--layout-flex);
+      @apply --layout-flex;
     }
     iron-icon {
       color: green;
@@ -47,10 +49,12 @@ limitations under the License.
     li {
       height: 24px;
     }
-  </style>
+    </style>
+  </custom-style>
 </head>
 <body>
-<template is="dom-bind">
+<dom-bind>
+<template>
 
   <div class="layout horizontal">
   <paper-card heading="Document">
@@ -195,8 +199,9 @@ limitations under the License.
   </ul>
 
 </template>
+</dom-bind>
 <script>
-  var t = document.querySelector('template');
+  var t = document.querySelector('dom-bind');
 
   // default document properties
   t.title = 'Title';

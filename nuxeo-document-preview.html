@@ -210,6 +210,7 @@ Example:
           var regex = new RegExp(previewer.getAttribute('mime-pattern'));
           if (this._blob['mime-type'].match(regex)) {
             // Insert our previewer
+            delete previewer.__templatizeOwner;
             this.templatize(previewer);
             var instance = this.stamp();
             this.$.preview.appendChild(instance.root);

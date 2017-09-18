@@ -16,6 +16,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
@@ -41,31 +42,31 @@ Used by `nuxeo-user-group-management`
 -->
 <dom-module id="nuxeo-user-group-permissions-table">
   <template>
-    <style>
+    <style include="nuxeo-styles iron-flex iron-flex-factors">
       :host {
         display: block;
       }
 
       paper-button:hover {
-        @apply(--nx-button-hover);
+        @apply --nx-button-hover;
       }
 
       paper-button.primary {
-        @apply(--nx-button-primary);
+        @apply --nx-button-primary;
       }
 
       paper-button.primary:hover,
       paper-button.primary:focus {
-        @apply(--nx-button-primary-hover);
+        @apply --nx-button-primary-hover;
       }
 
       h3 {
-        @apply(--layout-flex);
+        @apply --layout-flex;
       }
 
       .table-header {
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
+        @apply --layout-horizontal;
+        @apply --layout-center;
         background-color: var(--nuxeo-table-header-background, #fafafa);
         color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.54));
         font-weight: 400;
@@ -76,8 +77,8 @@ Used by `nuxeo-user-group-management`
       }
 
       .table-row {
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
+        @apply --layout-horizontal;
+        @apply --layout-center;
         padding: 0 1em;
         min-height: 48px;
         border-bottom: 1px solid var(--nuxeo-border, #eee);
@@ -117,7 +118,7 @@ Used by `nuxeo-user-group-management`
         padding: .06em .3em;
         text-transform: uppercase;
         white-space: nowrap;
-        @apply(--nuxeo-tag);
+        @apply --nuxeo-tag;
       }
 
       .ace-permission-path {
@@ -126,7 +127,7 @@ Used by `nuxeo-user-group-management`
       }
 
       .buttons {
-        @apply(--buttons-bar);
+        @apply --buttons-bar;
       }
 
       .confirm {

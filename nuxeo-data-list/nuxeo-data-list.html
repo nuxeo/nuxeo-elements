@@ -68,11 +68,11 @@ Example:
   <template>
 
     <style>
-      :host[loading] {
+      :host([loading]) {
         opacity: 0.25;
       }
 
-      :host[loading] paper-spinner-lite {
+      :host([loading]) paper-spinner-lite {
         position: absolute;
         top: 45%;
         left: 50%;
@@ -95,8 +95,8 @@ Example:
       }
 
       #container {
-        @apply(--layout-vertical);
-        @apply(--layout-fit);
+        @apply --layout-vertical;
+        @apply --layout-fit;
       }
 
       .emptyResult {
@@ -122,7 +122,7 @@ Example:
 
     <div id="container">
 
-      <content select="nuxeo-selection-toolbar"></content>
+      <slot name="nuxeo-selection-toolbar"></slot>
 
       <div class="layout horizontal center">
 
@@ -152,6 +152,7 @@ Example:
       <iron-list id="list" items="[[items]]" as="[[as]]"
                  selection-enabled selected-item="{{selectedItem}}" selected-items="{{selectedItems}}"
                  on-scroll="_scrollChanged">
+        <slot></slot>
       </iron-list>
 
       <template is="dom-if" if="[[displayNavigation]]">
@@ -160,7 +161,7 @@ Example:
 
     </div>
 
-    <paper-spinner-lite active hidden$=[[!loading]]></paper-spinner-lite>
+    <paper-spinner-lite active$=[[loading]]></paper-spinner-lite>
 
   </template>
 
@@ -214,40 +215,33 @@ Example:
       ],
 
       ready: function() {
-        if (!this._templateStamped) {
-          this.$.list.dataHost = this.dataHost;
-          this._template = Polymer.dom(this).querySelector('template');
-          Polymer.dom(this.$.list).appendChild(this._template);
-          this._templateStamped = true;
+        // tmp fix
+        // see https://github.com/PolymerElements/iron-list/issues/236
+        this.$.list._didMoveDown = function() {
+          this._focusPhysicalItem(this._focusedIndex + 1);
+        };
+        // end tmp fix
 
-          // tmp fix
-          // see https://github.com/PolymerElements/iron-list/issues/236
-          this.$.list._didMoveDown = function() {
-            this._focusPhysicalItem(this._focusedIndex + 1);
-          };
-          // end tmp fix
-
-          this.$.list.selectQueuePrevious = function() {
-            this._didMoveUp();
-            this.toggleSelectionForFocusedItem();
-          };
-          this.$.list.selectQueueNext = function() {
-            this._didMoveDown();
-            this.toggleSelectionForFocusedItem();
-          };
-          this.$.list.toggleSelectionForFocusedItem = function() {
-            this.debounce('toggleSelectionForFocusedItem', function() {
-              var model = this._focusedItem._templateInstance;
-              if (model) {
-                this.toggleSelectionForItem(model[this.as]);
-              }
-            }.bind(this), 300);
-          };
-          this.$.list.addOwnKeyBinding('up', 'toggleSelectionForFocusedItem');
-          this.$.list.addOwnKeyBinding('k', 'selectQueuePrevious');
-          this.$.list.addOwnKeyBinding('down', 'toggleSelectionForFocusedItem');
-          this.$.list.addOwnKeyBinding('j', 'selectQueueNext');
-        }
+        this.$.list.selectQueuePrevious = function() {
+          this._didMoveUp();
+          this.toggleSelectionForFocusedItem();
+        };
+        this.$.list.selectQueueNext = function() {
+          this._didMoveDown();
+          this.toggleSelectionForFocusedItem();
+        };
+        this.$.list.toggleSelectionForFocusedItem = function() {
+          this.debounce('toggleSelectionForFocusedItem', function() {
+            var model = this._focusedItem._templateInstance;
+            if (model) {
+              this.toggleSelectionForItem(model[this.as]);
+            }
+          }.bind(this), 300);
+        };
+        //this.$.list.addOwnKeyBinding('up', 'toggleSelectionForFocusedItem');
+        //this.$.list.addOwnKeyBinding('k', 'selectQueuePrevious');
+        //this.$.list.addOwnKeyBinding('down', 'toggleSelectionForFocusedItem');
+        //this.$.list.addOwnKeyBinding('j', 'selectQueueNext');
       },
 
       selectNext: function() {

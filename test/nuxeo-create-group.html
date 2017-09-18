@@ -114,7 +114,7 @@ limitations under the License.
         expect(createGroupEl).to.not.be.null;
         createButton = createGroupEl.$$('#createButton');
         expect(createButton).to.not.be.null;
-        MockInteractions.tap(createButton);
+        //MockInteractions.tap(createButton);
         expect(createGroupEl.$.form.validate()).to.be.false;
         expect(createGroupEl.groupName).to.be.empty;
         expect(createGroupEl.groupLabel).to.be.empty;
@@ -159,7 +159,8 @@ limitations under the License.
         }
         expect(createButton).to.not.be.null;
         MockInteractions.tap(createButton);
-        return waitChanged(createGroupEl, 'group-name').then(function() {
+
+        waitChanged(createGroupEl, 'group-name').then(function() {
           expect(createGroupEl.groupName).to.be.equal('');
           expect(createGroupEl.groupLabel).to.be.equal('');
           expect(createGroupEl.selectedUsers).to.be.empty;

@@ -50,6 +50,13 @@
     },
 
     _templatize: function(template) {
+
+      if(!template) {
+        return;
+      }
+
+      delete template.__templatizeOwner;
+
       this.templatize(template);
 
       // fix _rootDataHost to the context where template has been defined
@@ -77,22 +84,28 @@
       // originated from within the template.
       this._expanded = expanded;
 
-      instance.expanded = expanded;
+      if (instance) {
+        instance.expanded = expanded;
+      }
     },
 
     _indexChanged: function(instance, index) {
-      instance.index = index;
+      if (instance) {
+        instance.index = index;
+      }
     },
 
     _itemChanged: function(instance, item) {
-      instance.item = item;
+      if (instance) {
+        instance.item = item;
+      }
     },
 
     _itemPathChanged: function(instance, item) {
       // TODO: hack to avoid: https://github.com/Polymer/polymer/issues/3307
       this._parentProps = this._parentProps || {};
 
-      instance.notifyPath(item.path, item.value);
+      instance &&  instance.notifyPath(item.path, item.value);       
     },
 
     _selectedChanged: function(instance, selected) {
@@ -100,11 +113,13 @@
       // originated from within the template.
       this._selected = selected;
 
-      instance.selected = selected;
+      if (instance) {
+        instance.selected = selected;
+      }
     },
 
     /** templatizer */
-    _forwardParentProp: function(prop, value) {
+    _forwardHostPropV2: function(prop, value) {
       // store props to initialize new instances.
       this._forwardedParentProps[prop] = value;
 
@@ -116,7 +131,7 @@
       });
     },
 
-    _forwardInstanceProp: function(inst, prop, value) {
+    _notifyInstancePropV2: function(inst, prop, value) {
       if (prop === 'expanded' && inst.item && this._expanded !== value) {
         if (value) {
           this.table.expandItem(inst.item);

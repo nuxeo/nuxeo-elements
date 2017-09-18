@@ -44,9 +44,9 @@ Example:
         display: inline-block;
       }
 
-      :host([subscribed]) ::content iron-icon {
-        stroke: var(--icon-toggle-outline-color, --nuxeo-action-color-activated);
-        fill: var(--icon-toggle-pressed-color, --nuxeo-action-color-activated);
+      :host([subscribed]) {
+        --iron-icon-stroke-color: var(--icon-toggle-outline-color, var(--nuxeo-action-color-activated));
+        --iron-icon-fill-color: var(--icon-toggle-pressed-color, var(--nuxeo-action-color-activated));
       }
     </style>
 

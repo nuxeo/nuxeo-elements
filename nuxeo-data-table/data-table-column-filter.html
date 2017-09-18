@@ -2,18 +2,17 @@
 
 <!-- Part of `nuxeo-data-table` -->
 <dom-module id="nuxeo-data-table-column-filter">
-  <style is="custom-style">
-    :host([hidden]) {
-      display: none;
-    }
-    paper-input {
-      --paper-input-container-label: {
-        font-size: inherit;
+    <template>
+    <style>
+      :host([hidden]) {
+        display: none;
       }
-    }
-  </style>
-
-  <template>
+      paper-input {
+        --paper-input-container-label: {
+          font-size: inherit;
+        }
+      }
+    </style>
     <paper-input no-label-float label="[[label]]" value="[[value]]" on-value-changed="_valueChanged"></paper-input>
   </template>
   <script>

@@ -39,9 +39,30 @@ limitations under the License.
   </template>
 </test-fixture>
 
-<test-fixture id="toggleSubscribe">
-  <template is="dom-template">
-    <nuxeo-notifications-toggle-button document="[[doc]]"></nuxeo-notifications-toggle-button>
+<test-fixture id="subscribed">
+  <template>
+    <nuxeo-notifications-toggle-button document='{
+        "entity-type": "document",
+        "uid": "1",
+        "contextParameters": {
+          "subscribedNotifications": [
+            "Creation",
+            "Modification"
+          ]
+        }
+      }'></nuxeo-notifications-toggle-button>
+  </template>
+</test-fixture>
+
+<test-fixture id="unsubscribed">
+  <template>
+    <nuxeo-notifications-toggle-button document='{
+        "entity-type": "document",
+        "uid": "1",
+        "contextParameters": {
+          "subscribedNotifications": []
+        }
+      }'></nuxeo-notifications-toggle-button>
   </template>
 </test-fixture>
 
@@ -70,7 +91,7 @@ limitations under the License.
     suite('when a document is subscribed', function() {
       var element;
       setup(function() {
-        element = fixture('toggleSubscribe', {doc: doc});
+        element = fixture('subscribed');
         server.respondWith(
           'POST',
           '/dummy/api/v1/automation/Document.Unsubscribe',
@@ -98,9 +119,7 @@ limitations under the License.
     suite('when a document is not subscribed', function() {
       var element;
       setup(function() {
-        // Set mock doc as not subscribed
-        doc.contextParameters.subscribedNotifications = [];
-        element = fixture('toggleSubscribe', {doc: doc});
+        element = fixture('unsubscribed');
         server.respondWith(
           'POST',
           '/dummy/api/v1/automation/Document.Subscribe',

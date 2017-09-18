@@ -42,9 +42,9 @@ Example:
         display: inline-block;
       }
 
-      :host([favorite]) ::content iron-icon {
-        stroke: var(--nuxeo-action-color-activated, orange);
-        fill: var(--nuxeo-action-color-activated, orange);
+      :host([favorite]) {
+        --iron-icon-fill-color: var(--icon-toggle-outline-color, var(--nuxeo-action-color-activated));
+        --iron-icon-stroke-color: var(--icon-toggle-pressed-color, var(--nuxeo-action-color-activated));
       }
     </style>
 

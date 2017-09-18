@@ -17,7 +17,7 @@ limitations under the License.
 <html>
 <head>
   <meta charset="utf-8">
-  <script src="../../webcomponentsjs/webcomponents.min.js"></script>
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
 </head>
 <body>
@@ -33,9 +33,10 @@ limitations under the License.
     'nuxeo-filter.html',
     'nuxeo-layout.html'
   ];
-  WCT.loadSuites(tests.concat(tests.map(function (test) {
-    return test + '?dom=shadow'
-  })));
+  var suites = [];
+  tests.forEach(function (test) { suites.push(test + '?dom=shadow'); });
+  tests.forEach(function (test) { suites.push(test + '?wc-shadydom=true&wc-ce=true'); });
+  WCT.loadSuites(suites);
 </script>
 </body>
 </html>

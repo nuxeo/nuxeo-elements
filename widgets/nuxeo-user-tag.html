@@ -33,17 +33,28 @@ Example:
 @demo demo/widgets/index.html
 -->
 <dom-module id="nuxeo-user-tag">
-  <style>
-    nuxeo-user-avatar {
-      margin: 0 .5rem 0 0;
-    }
-    nuxeo-tag {
-      padding: 0 6px 0 0;
-    }
-  </style>
   <template>
+    <style>
+      nuxeo-user-avatar {
+        margin: 0 .5rem 0 0;
+      }
+      nuxeo-tag {
+        padding: 0 6px 0 0;
+      }
+      .tag {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+      }
+      a {
+        @apply --nuxeo-link;
+      }
+
+      a:hover {
+        @apply --nuxeo-link-hover;
+      }
+    </style>
     <nuxeo-tag>
-      <div class="layout horizontal center">
+      <div class="tag">
         <nuxeo-user-avatar user="[[user]]"
           border-radius="50"
           height="22"

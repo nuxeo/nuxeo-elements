@@ -21,6 +21,7 @@ limitations under the License.
   <title>nuxeo-tree Demo</title>
   <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="../../../polymer/polymer.html">
+  <link rel="import" href="../../../iron-icon/iron-icon.html">
   <link rel="import" href="../../../iron-icons/hardware-icons.html">
   <link rel="import" href="../../nuxeo-tree/nuxeo-tree.html">
   <style>
@@ -30,7 +31,8 @@ limitations under the License.
   </style>
 </head>
 <body unresolved>
-   <template is="dom-bind">
+  <dom-bind>
+   <template>
     <nuxeo-tree data="[[data]]" controller="[[controller]]">
       <template>
         <template is="dom-if" if="[[!opened]]">
@@ -43,9 +45,10 @@ limitations under the License.
       </template>
     </nuxeo-tree>
   </template>
+</dom-bind>
 
   <script>
-    var t = document.querySelector('template');
+    var t = document.querySelector('dom-bind');
     t.data = {
       name: 'root',
       children: [

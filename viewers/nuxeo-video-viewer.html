@@ -29,7 +29,7 @@ An element for viewing videos.
 
 Example:
 
-    <nuxeo-video-viewer sources="[[sources]]" controls preload="auto" width="640" height="264"></nuxeo-video-viewer>
+    <nuxeo-video-viewer sources="[[sources]]" controls preload="auto"></nuxeo-video-viewer>
 
 @group Nuxeo UI Elements
 @element nuxeo-video-viewer
@@ -46,22 +46,26 @@ Example:
 
       #video {
         background: var(--primary-background-color);
+        height: 100%;
+        width: 100%;
       }
 
       #container {
         text-align: center;
+        height: 100%;
+        width: 100%;
       }
 
       #storyboard {
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
         background: var(--primary-background-color);
         margin: 8px 0;
         padding: 4px;
       }
 
       #thumbnails {
-        @apply(--layout-horizontal);
+        @apply --layout-horizontal;
         overflow-x: auto;
       }
 
@@ -94,24 +98,6 @@ Example:
     Polymer({
       is: 'nuxeo-video-viewer',
       properties: {
-
-        /**
-         * The width of this video player, in pixels.
-         */
-        width: {
-          type: Number,
-          value: 640,
-          observer: '_widthChanged'
-        },
-
-        /**
-         * The height of this video player, in pixels.
-         */
-        height: {
-          type: Number,
-          value: 360,
-          observer: '_heightChanged'
-        },
 
         /**
          * The `preload` attribute specifies if/how the video should be loaded.
@@ -164,23 +150,10 @@ Example:
 
       attached: function() {
         this.videojs = videojs(this.$.video);
-        this.videojs.el().style.width = '100%';
       },
 
       detached: function() {
         this.videojs.dispose();
-      },
-
-      _widthChanged: function() {
-        if (this.videojs) {
-          this.videojs.el().style.width = this.width;
-        }
-      },
-
-      _heightChanged: function() {
-        if (this.videojs) {
-          this.videojs.el().style.height = this.height;
-        }
       },
 
       _showStoryboard: function() {

@@ -31,7 +31,6 @@ Example:
   <template>
     <style>
       :host {
-        display: block;
         padding: 24px;
         background: rgba(0, 0, 0, 0.025);
         border-radius: 4px;
@@ -39,7 +38,7 @@ Example:
       }
 
       .code {
-        @apply(--layout-flex);
+        @apply --layout-flex;
         text-transform: uppercase;
         color: var(--nuxeo-text-default, rgba(0,0,0,0.3));
         text-align: center;
@@ -48,7 +47,7 @@ Example:
       }
 
       .description {
-        @apply(--layout-flex);
+        @apply --layout-flex;
         text-transform: uppercase;
         color: var(--nuxeo-text-default, rgba(0,0,0,0.3));
         text-align: center;
@@ -58,7 +57,7 @@ Example:
       }
 
       .url {
-        @apply(--layout-flex);
+        @apply --layout-flex;
         color: var(--nuxeo-text-default, rgba(0,0,0,0.3));
         text-align: center;
         padding: 16px 0;
@@ -66,7 +65,7 @@ Example:
       }
 
       .message {
-        @apply(--layout-flex);
+        @apply --layout-flex;
         color: var(--nuxeo-text-default, rgba(0,0,0,0.3));
         text-align: center;
         padding: 8px 0;

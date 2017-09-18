@@ -32,13 +32,12 @@ Example:
 @demo demo/widgets/index.html
 -->
 <dom-module id="nuxeo-tags">
-  <style>
-    :host {
-      display: inline-block;
-    }
-  </style>
-
   <template>
+    <style>
+        :host {
+          display: inline-block;
+        }
+      </style>
     <template is="dom-repeat" items="[[items]]" as="item">
       <template is="dom-if" if="[[_type('tag')]]">
         <nuxeo-tag>[[item]]</nuxeo-tag>

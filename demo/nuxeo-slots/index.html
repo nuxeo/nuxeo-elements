@@ -19,14 +19,14 @@ limitations under the License.
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <title>nuxeo-slot Demo</title>
-  <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../../webcomponentsjs/webcomponents-loader.js"></script>
+  <link rel="import" href="../../../polymer/polymer.html">
   <link rel="import" href="../../../paper-button/paper-button.html">
-  <link rel="import" href="../../../paper-menu/paper-menu.html">
+  <link rel="import" href="../../../paper-listbox/paper-listbox.html">
   <link rel="import" href="../../../paper-item/paper-item.html">
   <link rel="import" href="../../../paper-card/paper-card.html">
   <link rel="import" href="../../../paper-input/paper-input.html">
   <link rel="import" href="../../../paper-toggle-button/paper-toggle-button.html">
-  <link rel="import" href="../../../polymer/polymer.html">
   <link rel="import" href="../../nuxeo-slots.html">
 </head>
 <body unresolved>
@@ -35,14 +35,17 @@ limitations under the License.
   <dom-module id="nuxeo-alert-button">
     <template>
       <paper-button raised on-tap="_act">
-        <content></content>
+        <slot></slot>
       </paper-button>
     </template>
     <script>
       Polymer({
         is: 'nuxeo-alert-button',
         properties: {
-          message: ''
+          message: {
+            value: '',
+            type: String
+          }
         },
         _act: function() {
           alert(this.message);
@@ -52,7 +55,8 @@ limitations under the License.
   </dom-module>
 
 
-  <template is="dom-bind">
+  <dom-bind>
+  <template>
 
     <!-- SLOTS-->
 
@@ -94,10 +98,10 @@ limitations under the License.
     <!-- Slots can be used as children in elements that rely on child selectors since content is stamped as sibling -->
     <paper-card heading="MENU">
       <div class="card-content">
-        <paper-menu>
+        <paper-listbox>
           <paper-item>First item</paper-item>
           <nuxeo-slot slot="MENU"></nuxeo-slot>
-        </paper-menu>
+        </paper-listboxlistbox>
       </div>
     </paper-card>
 
@@ -114,6 +118,12 @@ limitations under the License.
         <nuxeo-alert-button message="Two">TWO</nuxeo-alert-button>
       </template>
     </nuxeo-slot-content>
+
+    <nuxeo-slot-content name="item" slot="LIST">
+        <template>
+          <span>ITEM</span>
+        </template>
+      </nuxeo-slot-content>
 
     <nuxeo-slot-content name="yours" order="[[order]]" slot="[[category]]" disabled$="[[disabled]]">
       <template>
@@ -140,5 +150,8 @@ limitations under the License.
 
     <paper-toggle-button checked="{{showMiddle}}">Show Middle?</paper-toggle-button>
   </template>
+</dom-bind>
+
+
 </body>
 </html>

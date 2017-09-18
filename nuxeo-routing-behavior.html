@@ -27,45 +27,91 @@ limitations under the License.
      * @polymerBehavior Nuxeo.RoutingBehavior
      */
     Nuxeo.RoutingBehavior = {
+
       properties: {
-        router: Object,
+        router: {
+          type: Object,
+          observer: '_routerChanged'
+        },
         urlFor: {
           type: Function,
-          notify: true,
-          value: function() {
-            return this.generateUrl;
-          }
-        }
+          computed: '_computeUrlFor(router)'
+        },
+        navigateTo: {
+          type: Function,
+          computed: '_computeNavigateTo(router)'
+        },
       },
 
-      ready: function() {
-        this.routerChangedHandler = function() {
-          this.urlFor = null;
-          this.urlFor = this.generateUrl;
-        }.bind(this);
-        document.addEventListener('router-changed', this.routerChangedHandler);
+      attached: function() {
+        // initialize router
+        this._updateRouter();
+
+        this.routerChangedHandler = this._updateRouter.bind(this);
+
+        document.addEventListener('nuxeo-router-changed', this.routerChangedHandler);
       },
 
       detached: function() {
-        document.removeEventListener('router-changed', this.routerChangedHandler);
+        document.removeEventListener('nuxeo-router-changed', this.routerChangedHandler);
       },
 
-      generateUrl: function() {
-        if (this.router) {
-          var route = arguments[0];
-          var baseUrl = Nuxeo.RoutingBehavior.baseUrl || '';
-          if (route.startsWith('/')) {
-            return baseUrl + route;
-          }
-          if (!this.router[route]) {
-            console.error('Could not generate a url for route ' + route);
-            return;
-          }
-          var params = Array.prototype.slice.call(arguments, 1);
-          return baseUrl + (baseUrl.endsWith('/') ? '' : '/') +
-                           (Nuxeo.RoutingBehavior.useHashbang ? '#!' : '') +
-                           this.router[route].apply(this, params);
+      _updateRouter: function() {
+        this.router = this.router || Nuxeo.RoutingBehavior.__router;
+      },
+
+      // Caches the router
+      _routerChanged: function(router) {
+        if (!Nuxeo.RoutingBehavior.__router) {
+          Nuxeo.RoutingBehavior.__router = router;
+          document.dispatchEvent(new Event('nuxeo-router-changed'));
         }
+      },
+
+      /**
+       * Returns a computed `urlFor` method, based on the current `router`.
+       */
+      _computeUrlFor: function() {
+        return function() {
+          if (this.router) {
+            var route = arguments[0];
+            var baseUrl = this.router.baseUrl || '';
+            if (route.startsWith('/')) {
+              return baseUrl + route;
+            }
+            if (!this.router[route]) {
+              console.error('Could not generate a url for route ' + route);
+              return;
+            }
+            var params = Array.prototype.slice.call(arguments, 1);
+            return baseUrl + (baseUrl.endsWith('/') ? '' : '/') +
+                              (this.router.useHashbang ? '#!' : '') +
+                              this.router[route].apply(this, params);
+          }
+        };
+      },
+
+      /**
+       * Returns a computed `navigateTo` method, based on the current `router`.
+       * Invokes `router.navigate` to trigger the actual navigation.
+       */
+      _computeNavigateTo: function() {
+        return function() {
+          if (this.router) {
+            var route = arguments[0];
+            var baseUrl = this.router.baseUrl || '';
+            if (route.startsWith('/')) {
+              this.router.navigate(baseUrl + route);
+            }
+            if (!this.router[route]) {
+              console.error('Could not navigate to a url for route ' + route);
+            }
+            var params = Array.prototype.slice.call(arguments, 1);
+            this.router.navigate(this.router[route].apply(this, params));
+          } else {
+            console.error('No router defined');
+          }
+        };
       }
     };
   })();

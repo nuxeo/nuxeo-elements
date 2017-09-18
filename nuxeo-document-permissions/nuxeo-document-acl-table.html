@@ -16,6 +16,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="nuxeo-popup-confirm.html">
 <link rel="import" href="nuxeo-popup-permission.html">
@@ -32,8 +33,8 @@ Element displaying a table with document ACLs.
   <template>
     <style>
       .acl-table-headers {
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
+        @apply --layout-horizontal;
+        @apply --layout-center;
         background-color: var(--nuxeo-table-header-background, #fafafa);
         color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.54));
         font-weight: 700;
@@ -44,8 +45,8 @@ Element displaying a table with document ACLs.
       }
 
       .acl-table-row {
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
+        @apply --layout-horizontal;
+        @apply --layout-center;
         border-bottom: 1px solid var(--nuxeo-border, #e3e3e3);
         background-color: var(--nuxeo-table-items-background, #fafafa);
         cursor: pointer;
@@ -71,7 +72,7 @@ Element displaying a table with document ACLs.
       }
 
       .buttons {
-        @apply(--buttons-bar);
+        @apply --buttons-bar;
       }
 
       .emptyResult {
@@ -81,10 +82,14 @@ Element displaying a table with document ACLs.
         padding: 1.5em .7em;
         text-align: center;
       }
+
+      .flex-2 {
+        @apply  --layout-flex-2;
+      }
     </style>
 
     <div hidden$="[[!_empty(aces)]]">
-      <content select=".emptyResult"></content>
+      <slot name="emptyResult"></slot>
     </div>
 
     <template is="dom-if" if="[[!_empty(aces)]]">
@@ -185,12 +190,12 @@ Element displaying a table with document ACLs.
       ],
 
       aclFilterChanged: function(fn) {
-        this._aclFilter = fn && function() { return this.dataHost[fn].apply(this.dataHost, arguments); };
+        this._aclFilter = fn && function() { return this.__dataHost[fn].apply(this.__dataHost, arguments); };
         this._updateAces();
       },
 
       aceFilterChanged: function(fn) {
-        this._aceFilter = fn && function() { return this.dataHost[fn].apply(this.dataHost, arguments); };
+        this._aceFilter = fn && function() { return this.__dataHost[fn].apply(this.__dataHost, arguments); };
         this._updateAces();
       },
 

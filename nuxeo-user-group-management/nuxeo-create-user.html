@@ -33,7 +33,7 @@ Used by `nuxeo-user-group-management`
 -->
 <dom-module id="nuxeo-create-user">
   <template>
-    <style>
+    <style include="nuxeo-styles">
       :host {
         display: block;
       }
@@ -43,7 +43,7 @@ Used by `nuxeo-user-group-management`
       }
 
       nuxeo-user-suggestion {
-        @apply(--layout-flex);
+        @apply --layout-flex;
       }
 
       .backButton {

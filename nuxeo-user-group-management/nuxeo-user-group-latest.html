@@ -19,13 +19,14 @@ limitations under the License.
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../nuxeo-pagination-controls.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../../iron-icons/editor-icons.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-card/paper-card.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-item/paper-icon-item.html">
 <link rel="import" href="../../paper-input/paper-input.html">
-<link rel="import" href="../../paper-menu/paper-menu.html">
+<link rel="import" href="../../paper-listbox/paper-listbox.html">
 <link rel="import" href="../../paper-menu-button/paper-menu-button.html">
 <link rel="import" href="../widgets/nuxeo-group-tag.html">
 <link rel="import" href="../widgets/nuxeo-user-tag.html">
@@ -43,10 +44,10 @@ Example:
 <dom-module id="nuxeo-user-group-latest">
 
   <template>
-    <style>
+    <style include="iron-flex-factors">
       :host {
         display: block;
-        @apply(--nuxeo-user-group-latest-layout);
+        @apply --nuxeo-user-group-latest-layout;
       }
 
       .title {

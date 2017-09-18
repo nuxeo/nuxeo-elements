@@ -49,7 +49,8 @@ An element providing document permissions management
 
     <style>
       .bubbleBox {
-        @apply(--paper-card);
+        @apply --nuxeo-document-permissions-box;
+        @apply --paper-card;
         background-color: #fff;
         box-shadow: 0 0 1px rgba(0, 0, 0, 0.2);
         display: block;
@@ -57,20 +58,26 @@ An element providing document permissions management
         margin-bottom: 16px;
       }
       .bubbleHeader {
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
+        @apply --nuxeo-document-permissions-header;
+        @apply --layout-horizontal;
+        @apply --layout-center;
         overflow: hidden;
         white-space: nowrap;
         padding: 16px 0;
       }
       .bubbleHeader h3 {
-        @apply(--layout-flex);
+        @apply --nuxeo-document-permissions-header-title;
+        @apply --layout-flex;
         float: left;
         line-height: normal;
         border: 0;
         display: inline-block;
-        margin: 0;
         padding: 0.3em 0;
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 0 0 1em;
+        text-transform: uppercase;
+        letter-spacing: .04em;
       }
       .bubbleHeader paper-button {
         margin: 0;
@@ -145,7 +152,7 @@ An element providing document permissions management
       <div>
         <nuxeo-document-acl-table doc="[[doc]]" acl-filter="_excludeInheritedAcls" ace-filter="_excludeExternalUserAces"
           show-actions="[[_hasPermission(doc,'Everything')]]">
-          <p class="emptyResult">[[i18n('documentPermissions.noLocalPermissions')]]</p>
+          <p slot="emptyResult" class="emptyResult">[[i18n('documentPermissions.noLocalPermissions')]]</p>
         </nuxeo-document-acl-table>
       </div>
     </div>
@@ -171,7 +178,7 @@ An element providing document permissions management
           [[i18n('documentPermissions.blockDescription')]]
         </div>
         <nuxeo-document-acl-table doc="[[doc]]" aces="{{inheritedAces}}" acl-filter="_onlyInheritedAcls" show-actions="false">
-          <p class="emptyResult">[[i18n('documentPermissions.noInheritedText')]]</p>
+          <p slot="emptyResult" class="emptyResult">[[i18n('documentPermissions.noInheritedText')]]</p>
         </nuxeo-document-acl-table>
       </div>
     </div>
@@ -193,7 +200,7 @@ An element providing document permissions management
         acl-filter="_excludeInheritedAcls"
         show-actions="[[_hasPermission(doc,'Everything')]]"
         share-with-external="true">
-        <p class="emptyResult">[[i18n('documentPermissions.noExternalPermission')]]</p>
+        <p slot="emptyResult" class="emptyResult">[[i18n('documentPermissions.noExternalPermission')]]</p>
       </nuxeo-document-acl-table>
     </div>
 

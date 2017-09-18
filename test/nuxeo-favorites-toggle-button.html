@@ -39,26 +39,40 @@ limitations under the License.
     </template>
   </test-fixture>
 
-  <test-fixture id="toggleFavorite">
-    <template is="dom-template">
-       <nuxeo-favorites-toggle-button document="[[doc]]"></nuxeo-favorites-toggle-button>
+  <test-fixture id="favorite">
+    <template>
+       <nuxeo-favorites-toggle-button document='{
+        "entity-type": "document",
+        "uid": "1",
+        "contextParameters": {
+          "favorites": {
+            "isFavorite": true
+          }
+        },
+        "facets": []
+      }'></nuxeo-favorites-toggle-button>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="notFavorite">
+    <template>
+      <nuxeo-favorites-toggle-button document='{
+        "entity-type": "document",
+        "uid": "1",
+        "contextParameters": {
+          "favorites": {
+            "isFavorite": false
+          }
+        },
+        "facets": []
+      }'></nuxeo-favorites-toggle-button>
     </template>
   </test-fixture>
 
   <script>
     suite('<nuxeo-favorites-toggle-button>', function() {
-      var server, doc;
+      var server;
       setup(function() {
-        doc = {
-          "entity-type": "document",
-          "uid": "1",
-          "contextParameters": {
-            "favorites": {
-              "isFavorite": true
-            }
-          },
-          "facets": []
-        };
         server = sinon.fakeServer.create();
         server.autoRespond = true;
         // login
@@ -69,7 +83,7 @@ limitations under the License.
       suite('when a document is a favorite', function() {
         var element;
         setup(function() {
-          element = fixture('toggleFavorite', {doc: doc});
+          element = fixture('favorite');
           server.respondWith(
             'POST',
             '/dummy/api/v1/automation/Document.RemoveFromFavorites',
@@ -97,9 +111,7 @@ limitations under the License.
       suite('when a document is not in favorites', function() {
         var element;
         setup(function() {
-          // Set mock doc as not favorite
-          doc.contextParameters.favorites.isFavorite = false;
-          element = fixture('toggleFavorite', {doc: doc});
+          element = fixture('notFavorite');
           server.respondWith(
             'POST',
             '/dummy/api/v1/automation/Document.AddToFavorites',

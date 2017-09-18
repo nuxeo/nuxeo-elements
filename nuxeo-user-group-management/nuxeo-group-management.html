@@ -45,7 +45,7 @@ Used by `nuxeo-user-group-management`
 -->
 <dom-module id="nuxeo-group-management">
   <template>
-    <style>
+    <style include="nuxeo-styles">
       :host {
         display: block;
       }
@@ -112,14 +112,14 @@ Used by `nuxeo-user-group-management`
       }
 
       .remove {
-        @apply(--nuxeo-link);
+        @apply --nuxeo-link;
         text-decoration: underline;
         padding-left: .5em;
         font-size: .8rem;
       }
 
       .remove:hover {
-        @apply(--nuxeo-link-hover);
+        @apply --nuxeo-link-hover;
       }
 
       /* Table */
@@ -133,8 +133,8 @@ Used by `nuxeo-user-group-management`
       }
 
       .table-header {
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
+        @apply --layout-horizontal;
+        @apply --layout-center;
         background-color: var(--nuxeo-table-header-background, #fafafa);
         color: var(--nuxeo-table-header-titles, rgba(0, 0, 0, 0.54));
         font-weight: 400;
@@ -145,8 +145,8 @@ Used by `nuxeo-user-group-management`
       }
 
       .table-row {
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
+        @apply --layout-horizontal;
+        @apply --layout-center;
         padding: 12px 0 12px 12px;
         border-bottom: 1px solid var(--nuxeo-border, #eee);
         cursor: pointer;
@@ -203,7 +203,7 @@ Used by `nuxeo-user-group-management`
       }
 
       .buttons {
-        @apply(--buttons-bar);
+        @apply --buttons-bar;
       }
 
       #editForm {
@@ -261,16 +261,18 @@ Used by `nuxeo-user-group-management`
 
     <paper-dialog id="editGroupDialog" modal>
       <h2>[[i18n('groupManagement.editGroup.heading')]]</h2>
-      <form is="iron-form" id="editForm" class="vertical layout">
-        <div class="layout horizontal">
-          <div class="label-container">
-            <label>[[i18n('groupManagement.group.label')]]</label>
+      <iron-form id="editForm">
+        <form class="vertical layout">
+          <div class="layout horizontal">
+            <div class="label-container">
+              <label>[[i18n('groupManagement.group.label')]]</label>
+            </div>
+            <div class="horizontal layout flex">
+              <input value="{{_editableGroup.grouplabel::input}}" class="flex">
+            </div>
           </div>
-          <div class="horizontal layout flex">
-            <input value="{{_editableGroup.grouplabel::input}}" class="flex">
-          </div>
-        </div>
-      </form>
+        </form>
+      </iron-form>
       <div class="buttons horizontal end-justified layout">
         <div class="flex start-justified">
           <paper-button dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
@@ -311,7 +313,8 @@ Used by `nuxeo-user-group-management`
                              placeholder="[[i18n('groupManagement.addEntity')]]"
                              value="[[selectedMember]]"
                              selected-items="{{selectedMember}}"
-                             result-formatter="[[resultFormatter]]">
+                             result-formatter="[[resultFormatter]]"
+                             query-results-filter="[[resultsFilter]]">
       </nuxeo-user-suggestion>
       <template is="dom-repeat" items="[[activity]]">
         <div class="activity-entry">
@@ -506,7 +509,6 @@ Used by `nuxeo-user-group-management`
        */
 
       ready: function() {
-        this.$.picker.$$('nuxeo-select2').queryResultsFilter = this.resultsFilter;
         this.$.editForm.addEventListener('iron-form-presubmit', function(event) {
           event.preventDefault();
           this._saveGroup();

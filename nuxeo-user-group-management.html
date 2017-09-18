@@ -24,7 +24,7 @@ limitations under the License.
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-menu-button/paper-menu-button.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-item/paper-icon-item.html">
 <link rel="import" href="../paper-toast/paper-toast.html">
@@ -67,7 +67,7 @@ Custom property | Description | Default
 -->
 <dom-module id="nuxeo-user-group-management">
   <template>
-    <style>
+    <style include="iron-flex">
       :host {
         display: block;
         position: relative;
@@ -95,44 +95,46 @@ Custom property | Description | Default
         padding-right: 8px;
       }
 
-      paper-menu {
+      paper-listbox {
         width: 130px;
         outline: none;
       }
 
-      paper-menu paper-icon-item iron-icon {
+      paper-listbox paper-icon-item iron-icon {
         width: 1.5rem;
         height: 1.5rem;
       }
 
-      paper-menu paper-icon-item:hover {
+      paper-listbox paper-icon-item:hover {
         background: var(--nuxeo-container-hover, #fafafa);
         cursor: pointer;
       }
+
+
     </style>
 
     <paper-toast id="toast"></paper-toast>
     <iron-pages selected="[[page]]" attr-for-selected="name">
       <section name="search">
         <div class="horizontal layout center">
-          <template is="dom-if" if=[[!readonly]]>
-            <div class="flex-1">
+          <template is="dom-if" if="[[!readonly]]">
+            <div class="flex">
               <paper-menu-button no-animations id="createDropdown" no-overlap
                                  horizontal-align="right" vertical-align="top" vertical-offset="-4">
-                <paper-button noink class="dropdown-trigger primary" id="createButton">
+                <paper-button noink class="primary" id="createButton" slot="dropdown-trigger">
                   <iron-icon icon="nuxeo:add"></iron-icon>
                   <div>[[i18n('userGroupManagement.new.usergroup')]]</div>
                 </paper-button>
-                <paper-menu no-animations id="menu" class="dropdown-content" selectable="item">
+                <paper-listbox no-animations id="menu" selectable="item" slot="dropdown-content">
                   <paper-icon-item name="user" on-tap="_createUser">
-                    <iron-icon icon="nuxeo:user" item-icon></iron-icon>
+                    <iron-icon icon="nuxeo:user" slot="item-icon">></iron-icon>
                     <span>[[i18n('userGroupManagement.new.user')]]</span>
                   </paper-icon-item>
                   <paper-icon-item name="group" on-tap="_createGroup">
-                    <iron-icon icon="nuxeo:group" item-icon></iron-icon>
+                    <iron-icon icon="nuxeo:group" slot="item-icon">></iron-icon>
                     <span>[[i18n('userGroupManagement.new.group')]]</span>
                   </paper-icon-item>
-                </paper-menu>
+                </paper-listbox>
               </paper-menu-button>
             </div>
           </template>
@@ -292,7 +294,7 @@ Custom property | Description | Default
        * Determines whether a custom element is registered
        */
       _isRegistered: function(tag) {
-        return Polymer.isInstance(document.createElement(tag));
+        return document.createElement(tag) instanceof Polymer.Element;
       }
 
     });

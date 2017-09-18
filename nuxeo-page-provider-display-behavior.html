@@ -188,7 +188,7 @@ limitations under the License.
 
       _nxProviderChanged: function(nxProvider) {
         if (typeof nxProvider === 'string') {
-          this.nxProvider = this.domHost ? this.domHost.$[nxProvider] :
+          this.nxProvider = this.__dataHost ? this.__dataHost.$[nxProvider] :
             Polymer.dom(this.ownerDocument).querySelector('#' + nxProvider);
           if (this.nxProvider === null) {
             this.nxProvider = Polymer.dom(this).parentNode.querySelector('#' + nxProvider);

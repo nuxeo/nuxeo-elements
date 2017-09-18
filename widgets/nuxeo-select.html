@@ -16,7 +16,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="../../paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../../paper-menu/paper-menu.html">
+<link rel="import" href="../../paper-listbox/paper-listbox.html">
 <link rel="import" href="../../paper-item/paper-item.html">
 
 <!--
@@ -44,21 +44,21 @@ Example:
         };
       }
 
-      paper-menu {
-        --paper-menu-selected-item: {
+      paper-listbox {
+        --paper-listbox-selected-item: {
           font-weight: normal;
         };
-        --paper-menu-focused-item: {
+        --paper-listbox-focused-item: {
           font-weight: normal;
           color: var(--paper-input-container-input-color);
         };
-        --paper-menu-focused-item-after: {
+        --paper-listbox-focused-item-after: {
           font-weight: normal;
           color: var(--nuxeo-box, white);
         }
       }
 
-      ::content paper-item {
+      ::slotted(paper-item) {
         font-weight: normal !important;
         white-space: nowrap;
         overflow: hidden;
@@ -70,7 +70,7 @@ Example:
         color: var(--paper-input-container-input-color);
       }
 
-      ::content paper-item:hover, ::content paper-item[pressed] {
+      ::slotted(paper-item:hover), ::slotted(paper-item[pressed]) {
         background: var(--paper-input-container-focus-color);
         color: var(--nuxeo-box, white) !important;
       }
@@ -91,15 +91,15 @@ Example:
                          disabled$="[[disabled]]"
                          required$="[[required]]">
 
-      <paper-menu id="paperMenu" class="dropdown-content"
+      <paper-listbox id="paperMenu" slot="dropdown-content"
                   attr-for-selected="[[_computeAttrForSelected(attrForSelected, options)]]" selected="{{selected}}">
         <template is="dom-if" if="[[options]]">
           <template is="dom-repeat" items="[[options]]" as="item">
             <paper-item option="[[_id(item)]]">[[_label(item)]]</paper-item>
           </template>
         </template>
-        <content></content>
-      </paper-menu>
+        <slot></slot>
+      </paper-listbox>
     </paper-dropdown-menu>
 
   </template>
@@ -194,7 +194,7 @@ Example:
       },
 
       _resize: function() {
-        var button = this.$.paperDropdownMenu.$$('paper-menu-button');
+        var button = this.$.paperDropdownMenu.$.menuButton;
         button.noOverlap = true;
         button.verticalOffset = -8;
         var width = this.getBoundingClientRect().width;
