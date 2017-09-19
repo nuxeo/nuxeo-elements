@@ -299,7 +299,6 @@ limitations under the License.
       search.index = this.index;
       search.query = this.query;
       search.aggregates = this.aggregates;
-      search.type = 'count';
       return search.execute().then(this._onResults.bind(this));
     },
 
