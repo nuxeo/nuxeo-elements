@@ -256,7 +256,7 @@ limitations under the License.
         function fakeResponse(search, json) {
           server.respondWith(
             'POST',
-            '/dummy/site/es/nuxeo/_search?search_type=count',
+            '/dummy/site/es/nuxeo/_search?',
             [
               200,
               {'Content-Type': 'application/json'},
