@@ -21,7 +21,7 @@ limitations under the License.
     <nuxeo-operation auto
                      op="Document.Query"
                      params='{"query": "select * from Document"}'
-                     response="{{handleResponse}}"
+                     on-response="handleResponse"
                      enrichers="documentURL, preview"></nuxeo-operation>
 
 With `auto` set to `true`, the operation is executed whenever
