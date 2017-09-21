@@ -222,11 +222,6 @@ Example:
             value: 600
           },
 
-          _queryFiler: {
-            type: Object,
-            computed: '_computeQueryFilter(mode, path, includeHidden, includeVersion, includeDeleted, onlyFolder)'
-          },
-
           /**
            * To take into account hidden Documents (i.e. Documents with HiddenInNavigation facet).
            */
@@ -270,6 +265,14 @@ Example:
             notify: true,
             reflectToAttribute: true,
             value: false
+          },
+
+          /**
+           * Maximum number of documents returned per hierarchy level.
+           */
+          maxDocSize: {
+            type: Number,
+            value: 1000
           }
 
         },
@@ -306,7 +309,7 @@ Example:
               "subLevel": {
                 "terms": {
                   "field": "ecm:path@level" + depth,
-                  "size": 0
+                  "size": this.maxDocSize
                 },
                 "aggs": subPart
               }
@@ -315,7 +318,11 @@ Example:
           query = {
             "query": {
               "bool": {
-                  "must": this._queryFiler
+                "must": {
+                  "match_all":{}
+                },
+                "must_not": this._computeMustNot(),
+                "filter": this._computeFilter()
               }
             },
             "size": 0,
@@ -323,7 +330,7 @@ Example:
               "subLevel": {
                 "terms": {
                   "field": "ecm:path@level" + pathDepth,
-                  "size": 0
+                  "size": this.maxDocSize
                 },
                 "aggs": subPart
               }
@@ -341,7 +348,7 @@ Example:
             "subLevel": {
               "terms": {
                 "field": "ecm:path@level" + (pathDepth - 1 + this.maxDepth),
-                "size": 0,
+                "size": this.maxDocSize,
                 "order": {
                   "_count": "desc"
                 }
@@ -354,7 +361,7 @@ Example:
               "subLevel": {
                 "terms": {
                   "field": "ecm:path@level" + depth,
-                  "size": 0,
+                  "size": this.maxDocSize,
                   "order": {
                     "_count": "desc"
                   }
@@ -366,7 +373,11 @@ Example:
           query = {
             "query": {
               "bool": {
-                  "must": this._queryFiler
+                  "must": {
+                    "match_all":{}
+                  },
+                  "must_not": this._computeMustNot(),
+                  "filter": this._computeFilter()
               }
             },
             "size": 0,
@@ -375,73 +386,50 @@ Example:
           return query;
         },
 
-        _computeQueryFilter: function(mode, path) {
+        _computeMustNot: function() {
           var result = [];
-          if (this.onlyFolder && this.mode !== 'size') {
-            result.push({
-              "constant_score": {
-                  "filter": {
-                    "term": {
-                        "ecm:mixinType": "Folderish"
-                    }
-                  }
-              }
-            });
-          }
           if (!this.includeHidden) {
             result.push({
-              "constant_score": {
-                  "filter": {
-                      "not": {
-                          "filter": {
-                              "term": {
-                                  "ecm:mixinType": "HiddenInNavigation"
-                              }
-                          }
-                      }
-                  }
-              }
-            });
-          }
-          if (!this.includeVersion) {
-            result.push({
-              "constant_score" : {
-                "filter" : {
-                  "term" : {
-                    "ecm:isVersion" : "0"
-                  }
-                }
+              "term": {
+                  "ecm:mixinType": "HiddenInNavigation"
               }
             });
           }
           if (!this.includeDeleted) {
             result.push({
-              "constant_score" : {
-                "filter" : {
-                  "not" : {
-                    "filter" : {
-                      "term" : {
-                        "ecm:currentLifeCycleState" : "deleted"
-                      }
-                    }
-                  }
-                }
+              "term" : {
+                "ecm:currentLifeCycleState" : "deleted"
               }
             });
           }
-          if (path && path.length > 0) {
-            var split = path.replace(/\/$/, "").split('/');
+          return result;
+        },
+
+        _computeFilter: function() {
+          var result = [];
+          if (this.onlyFolder && this.mode !== 'size') {
+            result.push({
+              "term": {
+                  "ecm:mixinType": "Folderish"
+              }
+            });
+          }
+          if (!this.includeVersion) {
+            result.push({
+              "term" : {
+                "ecm:isVersion" : "0"
+              }
+            });
+          }
+          if (this.path && this.path.length > 0) {
+            var split = this.path.replace(/\/$/, "").split('/');
             for (var i = 1; i < split.length; i++) {
               var propName = "ecm:path@level" + i;
               var toPush = {
-                "constant_score": {
-                    "filter": {
-                      "term": {
-                      }
-                    }
+                "term": {
                 }
               };
-              toPush.constant_score.filter.term["ecm:path@level" + i] = split[i];
+              toPush.term["ecm:path@level" + i] = split[i];
               result.push(toPush);
             }
           }
@@ -462,7 +450,6 @@ Example:
           var url = [this.$.nx.client._baseURL, 'site/es', this.index, 'doc', '_search'].join('/');
           url = url.replace(/(^\/+)|([^:])\/\/+/g, '$2/');
 
-          if (this.type) { url += '?search_type=' + this.type; }
           var options = {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -772,7 +759,7 @@ Example:
             } while(Math.abs(value) >= thresh && u < units.length - 1);
             return value.toFixed(1)+' '+units[u];
           } else if (this.mode === 'count') {
-            var result = value + ' ';
+            var result = value + (value == this.maxDocSize ? '+ ' : ' ');
             if (value > 1) {
               result += this.i18n('documentDistributionChart.documents');
             } else {
