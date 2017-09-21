@@ -25,7 +25,7 @@ An element for a generic card
 
 Example:
 
-    <nuxeo-card label="title">content</nuxeo-card>
+    <nuxeo-card heading="title">content</nuxeo-card>
 
 ### Styling
 
@@ -84,7 +84,7 @@ Custom property         | Description | Default
       <template is="dom-if" if="[[collapsible]]">
         <h3 on-tap="_toggle">
           <iron-icon icon="[[_icon(opened)]]" toggle></iron-icon>
-          <span>[[label]]</span>
+          <span>[[heading]]</span>
         </h3>
         <iron-collapse opened="{{opened}}">
           <div>
@@ -94,8 +94,8 @@ Custom property         | Description | Default
       </template>
 
       <template is="dom-if" if="[[!collapsible]]">
-        <template is="dom-if" if="[[label]]">
-          <h3>[[label]]</h3>
+        <template is="dom-if" if="[[heading]]">
+          <h3>[[heading]]</h3>
         </template>
         <div>
           <content></content>
@@ -109,9 +109,9 @@ Custom property         | Description | Default
       properties: {
 
         /**
-         * Title of the card
+         * Heading of the card
          */
-        label: String,
+        heading: String,
 
         /**
          * If the card is collapsible
