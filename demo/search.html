@@ -47,7 +47,8 @@ limitations under the License.
   </style>
 </head>
 <body unresolved>
-<template is="dom-bind">
+<dom-bind>
+<template>
 
   <nuxeo-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
 
@@ -190,8 +191,9 @@ limitations under the License.
   </table>
 
 </template>
+</dom-bind>
 <script>
-  var t = document.querySelector('template');
+  var t = document.querySelector('dom-bind');
   var currentDate = moment();
   t.endDate = currentDate.format("YYYY-MM-DD");
   t.startDate = currentDate.subtract(1, 'week').format("YYYY-MM-DD");

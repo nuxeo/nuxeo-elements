@@ -294,16 +294,23 @@ limitations under the License.
      * Fetch aggregation.
      */
     fetch: function() {
-      var search = document.createElement('nuxeo-es-search');
-      search.connectionId = this.connectionId;
-      search.index = this.index;
-      search.query = this.query;
-      search.aggregates = this.aggregates;
-      return search.execute().then(this._onResults.bind(this));
+      // template is not stamped & data system not initialized until the element has been connected :( 
+      if (!this._search) {
+        this._search = document.createElement('nuxeo-es-search');
+        this._attachDom(this._search);	
+      }
+      this._search.connectionId = this.connectionId;
+      this._search.index = this.index;
+      this._search.query = this.query;
+      this._search.aggregates = this.aggregates;
+      
+      return this._search.execute().then(this._onResults.bind(this));
     },
 
     _doFetch: function() {
-      this.debounce('do-fetch', this.fetch.bind(this));
+      if (this.index && this.query && this.aggregates) {
+        this.debounce('do-fetch', this.fetch.bind(this));
+      }
     },
 
     _onResults: function (result) {

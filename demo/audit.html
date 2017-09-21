@@ -61,7 +61,8 @@ limitations under the License.
 </head>
 
 <body unresolved>
-<template is="dom-bind">
+<dom-bind>
+<template>
 
   <nuxeo-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
 
@@ -100,8 +101,9 @@ limitations under the License.
   </table>
 
 </template>
+</dom-bind>
 <script>
-  var t = document.querySelector('template');
+  var t = document.querySelector('dom-bind');
   var currentDate = moment();
 
   // builds page provider query to get info about downloaded docs
