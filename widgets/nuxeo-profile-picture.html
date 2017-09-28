@@ -1,0 +1,244 @@
+<!--
+@license
+Copyright (C) 2017 Keendoo
+-->
+<!--
+`nuxeo-profile-picture` displays user profile picture.
+
+Inspired from https://www.webcomponents.org/element/k4ng/k-avatar
+
+@group Keendoo Elements
+@element nuxeo-profile-picture
+-->
+<dom-module id="nuxeo-profile-picture">
+    <template>
+
+      <!-- get the user informations from his username -->
+      <nuxeo-resource id="getUserProfile" enrichers="userprofile" enrichers-entity="user" path="user/[[_username(user)]]" method="get"
+        response={{userProfile}}>
+      </nuxeo-resource>
+
+      <style>
+         :host {
+          display: inline-block;
+        }
+
+        #container {
+          position: relative;
+        }
+
+        #character {
+          font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+          margin: 0;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        }
+
+      </style>
+
+      <div id="container">
+        <span id="character">{{ _output }}</span>
+      </div>
+
+    </template>
+
+    <script>
+      Polymer({
+        is: 'nuxeo-profile-picture',
+
+        properties: {
+          /**
+           * User entity or a string
+           */
+          user: {
+            type: Object,
+            observer: '__obsName'
+          },
+
+          // the current user profile : avatar, date de naissance ...
+          userProfile: {
+            type: Object,
+            observer: '__userProfileChanged'
+          },
+
+          avatar: {
+            type: String,
+            observer: '__avatarChanged'
+          },
+
+          dataName: {
+            type: String,
+            value: 'K4ng',
+            //observer: '__obsName'
+          },
+          dataHeight: {
+            type: Number,
+            value: 48,
+            observer: '__obsHeight'
+          },
+          dataWidth: {
+            type: Number,
+            value: 48,
+            observer: '__obsWidth'
+          },
+          dataCharAlias: {
+            type: Number,
+            value: 1,
+            observer: '__obsCharAlias'
+          },
+          dataTextColor: {
+            type: String,
+            value: '#FFFFFF',
+            observer: '__obsTextColor'
+          },
+          dataFontSize: {
+            type: Number,
+            value: 20,
+            observer: '__obsFontSize'
+          },
+          dataFontWeight: {
+            type: Number,
+            value: 400,
+            observer: '__obsFontWeight'
+          },
+          dataBorderRadius: {
+            type: Number,
+            value: 0,
+            observer: '__obsBorderRadius'
+          },
+          dataBoxShadow: {
+            type: String,
+            value: '0px 0px 0px 0px rgba(33,33,33,0.75)',
+            observer: '__obsBoxShadow'
+          },
+          dataTextShadow: {
+            type: String,
+            value: '0px 0px 0px rgba(33,33,33,0.75)',
+            observer: '__obsTextShadow'
+          },
+          _output: {
+            type: String
+          },
+
+        },
+
+        _isEntity: function (user) {
+          return user && user['entity-type'] && user['entity-type'] === 'user' && user.properties;
+        },
+
+        _name: function (user) {
+          if (this._isEntity(user)) {
+            var firstName = user.properties.firstName;
+            var lastName = user.properties.lastName;
+            return (firstName || lastName) ? firstName + ' ' + lastName : user.properties.email;
+          } else {
+            return this._id(user);
+          }
+        },
+
+        _username: function (user) {
+          return this._isEntity(user) ? user.properties.username : '';
+        },
+
+        __userProfileChanged: function () {
+          //debugger;
+          if (this.userProfile != null &&
+            this.userProfile != undefined &&
+            this.userProfile.contextParameters.userprofile['avatar'] != null) {
+            this.avatar = this.userProfile.contextParameters.userprofile['avatar'];
+            //this.$.avatar.setAttribute('src',this.userProfile.contextParameters.userprofile['avatar']);
+          }
+        },
+
+        __obsHeight: function () {
+          this.$.container.style.height = this.dataHeight + 'px';
+        },
+        __obsWidth: function () {
+          this.$.container.style.width = this.dataWidth + 'px';
+        },
+        __obsCharAlias: function () {
+          this._output = this.__makeAvatar(this.dataName);
+        },
+        __obsTextColor: function () {
+          this.$.character.style.color = this.dataTextColor;
+        },
+        __obsFontSize: function () {
+          this.$.character.style.fontSize = this.dataFontSize + 'px';
+        },
+        __obsFontWeight: function () {
+          this.$.character.style.fontWeight = this.dataFontWeight;
+        },
+        __obsBorderRadius: function () {
+          if (this.dataBorderRadius == '' || this.dataBorderRadius == null) {
+            this.dataBorderRadius = 0;
+          }
+          this.$.container.style.borderRadius = this.dataBorderRadius + '%';
+        },
+        __obsBoxShadow: function () {
+          this.$.container.style.webkitBoxShadow = this.dataBoxShadow;
+          this.$.container.style.mozBoxShadow = this.dataBoxShadow;
+          this.$.container.style.boxShadow = this.dataBoxShadow;
+        },
+        __obsTextShadow: function () {
+          this.$.character.style.webkitTextShadow = this.dataTextShadow;
+          this.$.character.style.mozTextShadow = this.dataTextShadow;
+          this.$.character.style.textShadow = this.dataTextShadow;
+        },
+        __obsName: function (user) {
+          this.$.getUserProfile.execute();
+          var name = this.dataName;
+          if (this._isEntity(user)) {
+            name = this._name(user);
+          }
+          this._output = this.__makeAvatar(name);
+        },
+
+        __avatarChanged: function () {
+          this._output = this.__makeAvatar('');
+        },
+
+        __makeAvatar: function (xname) {
+          if (xname) {
+            var colors = ["#1abc9c", "#16a085", "#f1c40f", "#f39c12", "#2196F3", "#3F51B5", "#673AB7", "#E91E63",
+                  "#9C27B0", "#009688", "#4CAF50", "#FF9800", "#795548", "#FF5722", "#2ecc71", "#27ae60", "#e67e22",
+                  "#d35400", "#3498db", "#2980b9", "#e74c3c", "#c0392b", "#9b59b6", "#8e44ad", "#bdc3c7", "#34495e",
+                  "#2c3e50", "#95a5a6", "#7f8c8d", "#ec87bf", "#d870ad", "#f69785", "#9ba37e", "#b49255", "#b49255",
+                  "#a94136"
+                ],
+                alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r",
+                  "s", "t", "u", "v", "w", "x", "y", "z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"
+                ],
+                tempName = '',
+                splitName = xname.split(" "),
+                alphabetPosition = alphabet.indexOf(xname.charAt(0).toLowerCase());
+            this.$.container.style.backgroundColor = colors[alphabetPosition];
+
+            if (splitName.length == 1) {
+              return xname.charAt(0);
+            } else {
+              if (this.dataCharAlias == splitName.length) {
+                var l = +this.dataCharAlias;
+
+                for (var i = 0; i < l; i++) {
+                  tempName += splitName[i].charAt(0);
+                }
+                return tempName;
+              } else {
+                return xname.charAt(0);
+              }
+            }
+          } else {
+            this.$.container.style.background = 'url(' + this.avatar + ')';
+            this.$.container.style.backgroundRepeat = "no-repeat";
+            this.$.container.style.backgroundSize = this.dataHeight + 'px' + ' ' + this.dataHeight + 'px';
+          }
+
+        }
+
+      });
+
+    </script>
+
+  </dom-module>
