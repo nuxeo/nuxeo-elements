@@ -89,11 +89,11 @@ Example:
     </template>
 
     <template mime-pattern="video.*">
-      <nuxeo-video-viewer controls sources="[[_videoSources]]" storyboard="[[_storyboard]]"></nuxeo-video-viewer>
+      <nuxeo-video-viewer id="video" controls sources="[[_videoSources]]" storyboard="[[_storyboard]]"></nuxeo-video-viewer>
     </template>
 
     <template mime-pattern="audio.*">
-      <audio controls><source src="[[_audioSource]]">AUDIO</audio>
+      <audio id="audio" controls><source src="[[_audioSource]]">AUDIO</audio>
     </template>
 
     <template mime-pattern="text/(?:.*-)?markdown">
@@ -165,6 +165,18 @@ Example:
       observers: [
         '_updateBlob(document, xpath)'
       ],
+
+      stop: function() {
+        var video = this.$$('#video');
+        if (video) {
+          video.stop();
+        }
+
+        var audio = this.$$('#audio');
+        if (audio) {
+          audio.pause();
+        }
+      },
 
       _updateBlob: function() {
         if (this.document) {
