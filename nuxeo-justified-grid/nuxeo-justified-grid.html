@@ -23,6 +23,7 @@ limitations under the License.
 <link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-spinner/paper-spinner.html">
+<link rel="import" href="../widgets/nuxeo-sort-select.html">
 
 <!--
 An element for displaying page provider results in a justified grid with infinite scrolling.
@@ -141,6 +142,10 @@ An element for displaying page provider results in a justified grid with infinit
 
     </style>
 
+    <template is="dom-if" if="[[displaySort]]">
+      <nuxeo-sort-select label="[[sortLabel]]" options="[[sortOptions]]" selected="{{sortSelected}}"></nuxeo-sort-select>
+    </template>
+
     <div id="grid">
       <template is="dom-repeat" items="[[items]]" as="item">
         <div class="item" tabindex="0" on-tap="_tap" selected$="[[_isSelected(item, selectedItems.*)]]"
@@ -157,8 +162,7 @@ An element for displaying page provider results in a justified grid with infinit
       </div>
     </div>
 
-    <iron-scroll-threshold id="scrollThreshold" scroll-target="grid" on-lower-threshold="fetch">
-    </iron-scroll-threshold>
+    <iron-scroll-threshold id="scrollThreshold" scroll-target="grid" on-lower-threshold="fetch"></iron-scroll-threshold>
 
     <iron-list id="list" items="[[items]]" as="item" selected-items="{{selectedItems}}" multi-selection>
       <template>
@@ -192,10 +196,30 @@ An element for displaying page provider results in a justified grid with infinit
         pageSize: {
           type: Number,
           value: 50
+        },
+
+        displaySort: {
+          type: Boolean,
+          value: false
+        },
+
+        sortLabel: {
+          type: String,
+          value: ''
+        },
+
+        sortSelected: {
+          type: Object
+        },
+
+        sortOptions: {
+          type: Array,
+          value: []
         }
       },
 
       observers: [
+        '_refresh(nxProvider, sortSelected)',
         '_selectedItemsChanged(selectedItems.splices)'
       ],
 
@@ -219,6 +243,16 @@ An element for displaying page provider results in a justified grid with infinit
           }.bind(this));
         } else {
           this.$.scrollThreshold.clearTriggers();
+        }
+      },
+
+      _refresh: function() {
+        if (this.sortSelected && this._hasPageProvider()) {
+          var sort = {};
+          sort[this.sortSelected.field] = this.sortSelected.order;
+          this.nxProvider.sort = sort;
+          this.reset();
+          this.fetch();
         }
       },
 

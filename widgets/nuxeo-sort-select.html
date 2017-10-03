@@ -1,0 +1,125 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-icons/iron-icons.html">
+<link rel="import" href="../../paper-item/paper-item.html">
+<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../widgets/nuxeo-select.html">
+
+<!--
+An element to select sort field and sort order.
+
+@group Nuxeo UI
+@element nuxeo-sort-select
+@demo demo/widgets/index.html
+-->
+<dom-module id="nuxeo-sort-select">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      #container {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+      }
+
+      nuxeo-select {
+        padding: 0 16px 24px 0;
+        width: 200px;
+      }
+    </style>
+
+    <div id="container">
+
+      <nuxeo-select label="[[label]]" attr-for-selected="option" selected="{{selected}}">
+        <template is="dom-if" if="[[options]]">
+          <template is="dom-repeat" items="[[options]]" as="item">
+            <paper-item option="[[item]]">[[item.label]]</paper-item>
+          </template>
+        </template>
+      </nuxeo-select>
+
+      <paper-icon-button noink on-tap="_toggleSortOrder" icon="[[_sortOrderIcon(_sortOrder)]]"></paper-icon-button>
+    </div>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-sort-select',
+      properties: {
+
+        label: {
+          type: String,
+          value: ''
+        },
+
+        options: {
+          type: Array,
+          value: [],
+          observer: '_optionsChanged'
+        },
+
+        selected: {
+          type: String,
+          observer: '_selectedChanged',
+          notify: true
+        },
+
+        _sortOrder: {
+          type: String,
+          value: 'asc'
+        }
+      },
+
+      _optionsChanged: function() {
+        this.options.forEach(function(option) {
+          if (option.selected) {
+            this.selected = option;
+          }
+        }.bind(this));
+      },
+
+      _selectedChanged: function() {
+        if (this.selected) {
+          this._sortOrder = this.selected.order;
+        }
+      },
+
+      _toggleSortOrder: function() {
+        this._sortOrder = this._sortOrder === 'asc' ? 'desc' : 'asc';
+        if (this.selected) {
+          this.selected.order = this._sortOrder;
+          var sel = this.selected;
+          this.selected = null;
+          this.selected = sel;
+        }
+      },
+
+      _sortOrderIcon: function() {
+        return this._sortOrder === 'asc' ? 'icons:arrow-downward' : 'icons:arrow-upward';
+      }
+
+    });
+  </script>
+
+</dom-module>
+
+

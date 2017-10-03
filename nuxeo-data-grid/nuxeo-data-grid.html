@@ -28,6 +28,7 @@ limitations under the License.
 <link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../../paper-spinner/paper-spinner-lite.html">
 
+<link rel="import" href="../widgets/nuxeo-sort-select.html">
 <link rel="import" href="../nuxeo-page-provider-display-behavior.html">
 <link rel="import" href="../nuxeo-quick-filters/nuxeo-quick-filters.html">
 <link rel="import" href="../nuxeo-aggregation/nuxeo-aggregation-navigation.html">
@@ -129,18 +130,25 @@ An element to display page provider results as a grid with infinite scrolling.
 
       <content select="nuxeo-selection-toolbar"></content>
 
-      <template is="dom-if" if="[[displayQuickFilters]]">
-        <nuxeo-quick-filters quick-filters="{{quickFilters}}" on-quick-filters-changed="_quickFilterChanged">
-        </nuxeo-quick-filters>
-      </template>
+      <div class="layout horizontal center">
 
-      <div id="filters" class="filters">
-        <template is="dom-repeat" items="[[filters]]" as="filter">
+        <template is="dom-if" if="[[displaySort]]">
+          <nuxeo-sort-select label="[[sortLabel]]" options="[[sortOptions]]" selected="{{sortSelected}}"></nuxeo-sort-select>
+        </template>
+
+        <template is="dom-if" if="[[displayQuickFilters]]">
+          <nuxeo-quick-filters quick-filters="{{quickFilters}}" on-quick-filters-changed="_quickFilterChanged">
+          </nuxeo-quick-filters>
+        </template>
+
+        <div id="filters" class="filters">
+          <template is="dom-repeat" items="[[filters]]" as="filter">
           <span class="tag filter">
             [[filter.name]]: [[filter.value]]
             <iron-icon icon="nuxeo:remove" class="remove" on-tap="_removeFilter"></iron-icon>
           </span>
-        </template>
+          </template>
+        </div>
       </div>
 
       <template is="dom-if" if="[[_isEmpty]]">
@@ -152,7 +160,9 @@ An element to display page provider results as a grid with infinite scrolling.
                  on-scroll="_scrollChanged">
       </iron-list>
 
-      <nuxeo-aggregation-navigation buckets="[[buckets]]" on-navigate="_onNavigate"></nuxeo-aggregation-navigation>
+      <template is="dom-if" if="[[displayNavigation]]">
+        <nuxeo-aggregation-navigation buckets="[[buckets]]" on-navigate="_onNavigate"></nuxeo-aggregation-navigation>
+      </template>
 
     </div>
 
@@ -184,8 +194,36 @@ An element to display page provider results as a grid with infinite scrolling.
         quickFilters: {
           type: Array,
           notify: true
+        },
+
+        displayNavigation: {
+          type: Boolean,
+          value: false
+        },
+
+        displaySort: {
+          type: Boolean,
+          value: false
+        },
+
+        sortLabel: {
+          type: String,
+          value: ''
+        },
+
+        sortSelected: {
+          type: Object
+        },
+
+        sortOptions: {
+          type: Array,
+          value: []
         }
       },
+
+      observers: [
+        '_refresh(nxProvider, sortSelected)'
+      ],
 
       ready: function() {
         if (!this._templateStamped) {
@@ -202,6 +240,15 @@ An element to display page provider results as a grid with infinite scrolling.
 
       _onNavigate: function(e) {
         this.scrollToIndex(e.detail.index)
+      },
+
+      _refresh: function() {
+        if (this.sortSelected && this._hasPageProvider()) {
+          var sort = {};
+          sort[this.sortSelected.field] = this.sortSelected.order;
+          this.nxProvider.sort = sort;
+          this.fetch();
+        }
       }
 
     });
