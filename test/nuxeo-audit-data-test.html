@@ -96,6 +96,12 @@ limitations under the License.
         setup(function() {
           server = sinon.fakeServer.create();
           server.autoRespond = true;
+          server.respondWith('GET',
+             '/dummy/json/cmis', [
+              200,
+              {'Content-Type': 'application/json'},
+              '{}'
+          ]);
           server.respondWith(
             'POST',
             '/dummy/api/v1/automation/login',
@@ -107,7 +113,7 @@ limitations under the License.
           );
           server.respondWith(
             'GET',
-            '/dummy/api/v1/repo/default/user/Administrator?',
+            '/dummy/api/v1/repo/default/user/Administrator',
             [
               200,
               {'Content-Type': 'application/json'},
@@ -266,7 +272,7 @@ limitations under the License.
         function fakeResponse(search, json) {
           server.respondWith(
             'POST',
-            '/dummy/site/es/audit/_search?',
+            '/dummy/site/es/audit/_search',
             [
               200,
               {'Content-Type': 'application/json'},
