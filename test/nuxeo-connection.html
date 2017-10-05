@@ -107,8 +107,7 @@ limitations under the License.
 
           // Return current connection
           return connection.connect();
-        }).catch(function(e) {
-          debugger;
+        }).catch(function() {
           // We shouldn't be there
           throw new Error('Expected to run something after a succeeded connection!');
         });
