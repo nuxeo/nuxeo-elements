@@ -73,6 +73,11 @@ limitations under the License.
     suite('when login request succeed', function() {
 
       setup(function() {
+        server.respondWith('GET', '/json/cmis', [
+          200,
+          responseHeaders.json,
+          '{}'
+        ]);
         server.respondWith(
           'POST',
           '/api/v1/automation/login',
@@ -84,7 +89,7 @@ limitations under the License.
         );
         server.respondWith(
           'GET',
-          '/api/v1/repo/default/user/Administrator?',
+          '/api/v1/repo/default/user/Administrator',
           [
             200,
             responseHeaders.json,
@@ -94,9 +99,14 @@ limitations under the License.
       });
 
       test('should retrieve something valid', function() {
+        server.respondWith('GET', '/json/cmis', [
+          200,
+          responseHeaders.json,
+          '{}'
+        ]);
         server.respondWith(
           'GET',
-          '/api/v1/path/something?',
+          '/api/v1/path/something',
           [
             200,
             responseHeaders.json,
@@ -115,7 +125,7 @@ limitations under the License.
       test('shouldn\'t retrieve something invalid', function() {
         server.respondWith(
           'GET',
-          '/api/v1/path/something?',
+          '/api/v1/path/something',
           [
             500,
             responseHeaders.json,
@@ -136,6 +146,11 @@ limitations under the License.
     suite('when login request fail', function() {
 
       setup(function() {
+        server.respondWith('GET', '/json/cmis', [
+          200,
+          responseHeaders.json,
+          '{}'
+        ]);
         server.respondWith(
           'POST',
           '/api/v1/automation/login',

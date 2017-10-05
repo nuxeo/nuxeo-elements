@@ -66,7 +66,13 @@ limitations under the License.
       200,
       responseHeaders.json,
       '{"entity-type":"user","username":"Administrator"}'
-    ]
+    ];
+
+    var cmisResponse = [
+      200,
+      responseHeaders.json,
+      '{}'
+    ];
 
     function timePasses(ms) {
       return new Promise(function(resolve) {
@@ -88,8 +94,9 @@ limitations under the License.
     suite('when login request succeed', function() {
 
       setup(function() {
+        server.respondWith('GET', '/json/cmis', cmisResponse);
         server.respondWith('POST','/api/v1/automation/login', loginResponse);
-        server.respondWith('GET', '/api/v1/repo/default/user/Administrator?', userResponse);
+        server.respondWith('GET', '/api/v1/repo/default/user/Administrator', userResponse);
       });
 
       test('should run the next', function() {
@@ -100,7 +107,8 @@ limitations under the License.
 
           // Return current connection
           return connection.connect();
-        }).catch(function() {
+        }).catch(function(e) {
+          debugger;
           // We shouldn't be there
           throw new Error('Expected to run something after a succeeded connection!');
         });
@@ -111,6 +119,11 @@ limitations under the License.
     suite('when login request fail', function() {
 
       setup(function() {
+        server.respondWith('GET', '/json/cmis', [
+          401,
+          responseHeaders.json,
+          '{"error":true,"message":"An error occurred"}'
+        ]);
         server.respondWith(
           'POST',
           '/api/v1/automation/login',
@@ -144,15 +157,16 @@ limitations under the License.
     suite('when using multiple connections', function() {
 
       setup(function() {
+        server.respondWith('GET', '/json/cmis', cmisResponse);
         server.respondWith('POST','/api/v1/automation/login', loginResponse);
-        server.respondWith('GET', '/api/v1/repo/default/user/Administrator?', userResponse);
+        server.respondWith('GET', '/api/v1/repo/default/user/Administrator', userResponse);
       });
 
       test('first connection should succeed', function() {
         var connection = fixture('nxc');
         return timePasses(100).then(function() {
           // Ensure two requests are done so far
-          expect(server.requests.length).to.be.equal(2);
+          expect(server.requests.length).to.be.equal(3);
           // Test if component succeeded to log in
           expect(connection.connected).to.be.equal(true);
           // Return current connection
