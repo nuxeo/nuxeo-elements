@@ -44,7 +44,13 @@ Example:
   <template>
     <nuxeo-tag>
       <div class="layout horizontal center">
-        <nuxeo-user-avatar user="[[user]]" data-border-radius="50" data-height="22" data-width="22" data-font-size="10" data-font-weight="500">
+        <nuxeo-user-avatar user="[[user]]"
+          data-border-radius="50"
+          data-height="22"
+          data-width="22"
+          data-font-size="10"
+          data-font-weight="500"
+          fetch-avatar$="[[fetchAvatar]]">
         </nuxeo-user-avatar>
         <template is="dom-if" if="[[_hasLink(user)]]">
           <a href$="[[_href(user)]]">[[_name(user)]]</a>
@@ -76,6 +82,14 @@ Example:
          * Disable link
          */
         disabled: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * Fetch avatar from profile if not already loaded.
+         */
+        fetchAvatar: {
           type: Boolean,
           value: false
         }
