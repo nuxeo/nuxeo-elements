@@ -19,7 +19,7 @@ limitations under the License.
 <link rel="import" href="../../paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../nuxeo-routing-behavior.html">
 <link rel="import" href="nuxeo-tag.html">
-<link rel="import" href="nuxeo-profile-picture.html">
+<link rel="import" href="nuxeo-user-avatar.html">
 
 <!--
 An element for showing a user entity with a tooltip.
@@ -33,10 +33,18 @@ Example:
 @demo demo/widgets/index.html
 -->
 <dom-module id="nuxeo-user-tag">
+  <style>
+    nuxeo-user-avatar {
+      margin: 0 .5rem 0 0;
+    }
+    nuxeo-tag {
+      padding: 0 6px 0 0;
+    }
+  </style>
   <template>
-    <nuxeo-profile-picture user="[[user]]" data-border-radius="50" data-height="22" data-width="22" data-font-size="10" data-font-weight="500">
-    </nuxeo-profile-picture>
-    <nuxeo-tag>
+    <nuxeo-tag class="layout horizontal center">
+      <nuxeo-user-avatar user="[[user]]" data-border-radius="50" data-height="22" data-width="22" data-font-size="10" data-font-weight="500">
+      </nuxeo-user-avatar>
       <template is="dom-if" if="[[_hasLink(user)]]">
         <a href$="[[_href(user)]]">[[_name(user)]]</a>
       </template>

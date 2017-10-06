@@ -1,0 +1,218 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<!--
+An element for showing a user's avatar if available, its initials with background otherwise.
+
+Example:
+
+    <nuxeo-user-avatar user="[[user]]"></nuxeo-user-avatar>
+
+@group Nuxeo UI
+@element nuxeo-user-avatar
+-->
+<dom-module id="nuxeo-user-avatar">
+  <template>
+
+    <style>
+       :host {
+        display: inline-block;
+      }
+
+      #container {
+        position: relative;
+      }
+
+      #character {
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        margin: 0;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-transform: uppercase;
+      }
+
+    </style>
+
+    <div id="container">
+      <span id="character">{{_output}}</span>
+    </div>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-user-avatar',
+
+      properties: {
+        /**
+         * User entity or a string
+         */
+        user: {
+          type: Object
+        },
+
+        dataHeight: {
+          type: Number,
+          value: 48,
+          observer: '__obsHeight'
+        },
+        dataWidth: {
+          type: Number,
+          value: 48,
+          observer: '__obsWidth'
+        },
+        dataTextColor: {
+          type: String,
+          value: '#FFFFFF',
+          observer: '__obsTextColor'
+        },
+        dataFontSize: {
+          type: Number,
+          value: 20,
+          observer: '__obsFontSize'
+        },
+        dataFontWeight: {
+          type: Number,
+          value: 400,
+          observer: '__obsFontWeight'
+        },
+        dataBorderRadius: {
+          type: Number,
+          value: 0,
+          observer: '__obsBorderRadius'
+        },
+        dataBoxShadow: {
+          type: String,
+          value: '0px 0px 0px 0px rgba(33,33,33,0.75)',
+          observer: '__obsBoxShadow'
+        },
+        dataTextShadow: {
+          type: String,
+          value: '0px 0px 0px rgba(33,33,33,0.75)',
+          observer: '__obsTextShadow'
+        },
+        _output: {
+          type: String
+        }
+
+      },
+
+      observers: [
+        '__makeAvatar(user)'
+      ],
+
+      _isEntity: function(user) {
+        return user && user['entity-type'] && (user['entity-type'] === 'user'
+          || (user['entity-type'] === 'document' && user.type === 'user')) && user.properties;
+      },
+
+      _id: function(user) {
+        if (user) {
+          var id = user.id || user.uid;
+          return id ? id : user.replace('user:', '');
+        }
+      },
+
+      _name: function(user) {
+        if (this._isEntity(user)) {
+          var firstName = user.properties.firstName || user.properties["user:firstName"];
+          var lastName = user.properties.lastName || user.properties["user:lastName"];
+          return (firstName || lastName) ? firstName + ' ' + lastName : this._id(user);
+        } else {
+          return this._id(user);
+        }
+      },
+
+      _email: function(user) {
+        if (this._isEntity(user)) {
+          var email = user.properties.email || user.properties["user:email"];
+          return email !== this._id(user) ? email : '';
+        } else {
+          return '';
+        }
+      },
+
+      __obsHeight: function () {
+        this.$.container.style.height = this.dataHeight + 'px';
+      },
+      __obsWidth: function () {
+        this.$.container.style.width = this.dataWidth + 'px';
+      },
+      __obsTextColor: function () {
+        this.$.character.style.color = this.dataTextColor;
+      },
+      __obsFontSize: function () {
+        this.$.character.style.fontSize = this.dataFontSize + 'px';
+      },
+      __obsFontWeight: function () {
+        this.$.character.style.fontWeight = this.dataFontWeight;
+      },
+      __obsBorderRadius: function () {
+        if (this.dataBorderRadius == '' || this.dataBorderRadius == null) {
+          this.dataBorderRadius = 0;
+        }
+        this.$.container.style.borderRadius = this.dataBorderRadius + '%';
+      },
+      __obsBoxShadow: function () {
+        this.$.container.style.webkitBoxShadow = this.dataBoxShadow;
+        this.$.container.style.mozBoxShadow = this.dataBoxShadow;
+        this.$.container.style.boxShadow = this.dataBoxShadow;
+      },
+      __obsTextShadow: function () {
+        this.$.character.style.webkitTextShadow = this.dataTextShadow;
+        this.$.character.style.mozTextShadow = this.dataTextShadow;
+        this.$.character.style.textShadow = this.dataTextShadow;
+      },
+
+      __makeAvatar: function () {
+        if (this.user) {
+          if (this.user.contextParameters
+            && this.user.contextParameters.userprofile
+            && this.user.contextParameters.userprofile.avatar) {
+              this.$.container.style.background = 'url(' + this.avatar + ')';
+              this.$.container.style.backgroundRepeat = "no-repeat";
+              this.$.container.style.backgroundSize = this.dataHeight + 'px' + ' ' + this.dataHeight + 'px';
+          } else {
+            var name = this._name(this.user);
+            var colors = ["#1abc9c", "#16a085", "#f1c40f", "#f39c12", "#2196F3", "#3F51B5", "#673AB7", "#E91E63",
+                  "#9C27B0", "#009688", "#4CAF50", "#FF9800", "#795548", "#FF5722", "#2ecc71", "#27ae60", "#e67e22",
+                  "#d35400", "#3498db", "#2980b9", "#e74c3c", "#c0392b", "#9b59b6", "#8e44ad", "#bdc3c7", "#34495e",
+                  "#2c3e50", "#95a5a6", "#7f8c8d", "#ec87bf", "#d870ad", "#f69785", "#9ba37e", "#b49255", "#b49255",
+                  "#a94136"
+                ],
+                alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r",
+                  "s", "t", "u", "v", "w", "x", "y", "z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"
+                ],
+                tempName = '',
+                splitName = name.split(" "),
+                alphabetPosition = alphabet.indexOf(name.charAt(0).toLowerCase());
+            this.$.container.style.backgroundColor = colors[alphabetPosition];
+            for (var i = 0; i < splitName.length; i++) {
+              tempName += splitName[i].charAt(0);
+            }
+            this._output = tempName;
+          }
+        }
+      }
+
+    });
+
+  </script>
+
+</dom-module>
