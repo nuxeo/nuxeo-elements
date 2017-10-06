@@ -42,22 +42,23 @@ Example:
     }
   </style>
   <template>
-    <nuxeo-tag class="layout horizontal center">
-      <nuxeo-user-avatar user="[[user]]" data-border-radius="50" data-height="22" data-width="22" data-font-size="10" data-font-weight="500">
-      </nuxeo-user-avatar>
-      <template is="dom-if" if="[[_hasLink(user)]]">
-        <a href$="[[_href(user)]]">[[_name(user)]]</a>
-      </template>
-      <template is="dom-if" if="[[!_hasLink(user)]]">
-        [[_name(user)]]
-      </template>
-      <template is="dom-if" if="[[_isEntity(user)]]">
-        <paper-tooltip id="tooltip" position="top" offset="0" animation-delay="0">
-          [[_id(user)]]<br>[[_email(user)]]
-        </paper-tooltip>
-      </template>
+    <nuxeo-tag>
+      <div class="layout horizontal center">
+        <nuxeo-user-avatar user="[[user]]" data-border-radius="50" data-height="22" data-width="22" data-font-size="10" data-font-weight="500">
+        </nuxeo-user-avatar>
+        <template is="dom-if" if="[[_hasLink(user)]]">
+          <a href$="[[_href(user)]]">[[_name(user)]]</a>
+        </template>
+        <template is="dom-if" if="[[!_hasLink(user)]]">
+          [[_name(user)]]
+        </template>
+        <template is="dom-if" if="[[_isEntity(user)]]">
+          <paper-tooltip id="tooltip" position="top" offset="0" animation-delay="0">
+            [[_id(user)]]<br>[[_email(user)]]
+          </paper-tooltip>
+        </template>
+      </div>
     </nuxeo-tag>
-
   </template>
 
   <script>
