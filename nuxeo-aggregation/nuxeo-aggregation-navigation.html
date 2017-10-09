@@ -32,7 +32,6 @@ An element for providing aggregation based navigation.
     <style>
       :host {
         display: block;
-        pointer-events: none;
         background: rgba(255, 255, 255, 0.85);
         -webkit-touch-callout: none;
         -webkit-user-select: none;
@@ -43,19 +42,17 @@ An element for providing aggregation based navigation.
 
       #keys {
         position: relative;
-        width: 100px;
+        width: 80px;
         height: calc(100% - 32px);
-        margin-top: 16px;
-        padding-right: 8px;
         cursor: ns-resize;
       }
 
       #keys .key {
         position: absolute;
-        right: 8px;
+        right: 0;
         color: black;
         margin: 0;
-        padding: 0;
+        padding: 0 8px 0 0;
         font-size: 0.7rem;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -67,7 +64,7 @@ An element for providing aggregation based navigation.
         display: none;
         position: absolute;
         right: 0;
-        width: 48px;
+        width: 64px;
         height: 2px;
         background: rgba(0, 0, 0, 0.15);
         pointer-events: none;
@@ -75,7 +72,7 @@ An element for providing aggregation based navigation.
 
       #cursor .label {
         position: absolute;
-        right: 64px;
+        right: 56px;
         top: -14px;
         white-space: nowrap;
         text-align: center;
@@ -195,7 +192,7 @@ An element for providing aggregation based navigation.
       },
 
       _tap: function() {
-        this.fire('navigate', {index: this._cursorIndex});
+        this.fire('scroll-to', {index: this._cursorIndex});
       },
 
       _mouseMove: function(e) {

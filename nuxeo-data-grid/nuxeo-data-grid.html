@@ -129,15 +129,14 @@ An element to display page provider results as a grid with infinite scrolling.
       }
 
       iron-list {
-        width: calc(100% - 20px);
         height: calc(100% - 40px);
       }
 
       nuxeo-aggregation-navigation {
         position: absolute;
-        top: 0;
+        top: 82px;
         bottom: 0;
-        right: 20px;
+        right: 12px;
       }
     </style>
 
@@ -176,7 +175,7 @@ An element to display page provider results as a grid with infinite scrolling.
       </iron-list>
 
       <template is="dom-if" if="[[displayNavigation]]">
-        <nuxeo-aggregation-navigation buckets="[[buckets]]" on-navigate="_onNavigate"></nuxeo-aggregation-navigation>
+        <nuxeo-aggregation-navigation buckets="[[buckets]]" on-scroll-to="_onScrollTo"></nuxeo-aggregation-navigation>
       </template>
 
     </div>
@@ -253,7 +252,7 @@ An element to display page provider results as a grid with infinite scrolling.
         this.fire('column-filter-changed', {value: '', filterBy: e.model.filter.path});
       },
 
-      _onNavigate: function(e) {
+      _onScrollTo: function(e) {
         this.scrollToIndex(e.detail.index)
       },
 
