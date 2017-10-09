@@ -106,6 +106,21 @@ Example:
         @apply(--iron-data-table);
       }
 
+      /* scrollbars */
+      :host ::-webkit-scrollbar-track {
+        width: 12px !important;
+        height: 3px;
+      }
+      :host ::-webkit-scrollbar {
+        background-color: rgba(0, 0, 0, 0.03);
+        width: 12px !important;
+        height: 3px;
+      }
+      :host ::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.15);
+        border-radius: 1px !important;
+      }
+
       #container {
         position: absolute;
         left: 0;

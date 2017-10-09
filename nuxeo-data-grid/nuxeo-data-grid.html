@@ -81,6 +81,21 @@ An element to display page provider results as a grid with infinite scrolling.
         --paper-spinner-color: var(--default-primary-color);
       }
 
+      /* scrollbars */
+      :host ::-webkit-scrollbar-track {
+        width: 12px !important;
+        height: 3px;
+      }
+      :host ::-webkit-scrollbar {
+        background-color: rgba(0, 0, 0, 0.03);
+        width: 12px !important;
+        height: 3px;
+      }
+      :host ::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.15);
+        border-radius: 1px !important;
+      }
+
       #container {
         @apply(--layout-vertical);
         @apply(--layout-fit);
