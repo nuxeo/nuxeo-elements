@@ -139,6 +139,13 @@ limitations under the License.
           notify: true
         },
 
+        /**
+         * Use this property to limit the maximum number of items.
+         */
+        maxItems: {
+          type: Number
+        },
+
         selectOnTap: {
           type: Boolean,
           value: false
@@ -388,6 +395,9 @@ limitations under the License.
       },
 
       _reset: function(size) {
+        if (this.maxItems && size && size > this.maxItems) {
+          size = this.maxItems;
+        }
         if (size) {
           var arr = new Array(size);
           for (var i = 0; i < arr.length; i++) {
@@ -455,6 +465,11 @@ limitations under the License.
             clear = true;
           }
 
+          if (this.maxItems && lastIndex > this.maxItems) {
+            lastIndex = this.maxItems;
+            clear = true;
+          }
+
           // update items array based on first and last visible indexes
           this.nxProvider.offset = firstIndex;
           this.nxProvider.page = 1;
@@ -464,8 +479,13 @@ limitations under the License.
               return;
             }
 
-            if (clear || this.items.length !== response.resultsCount) {
-              this.reset(response.resultsCount);
+            if (response.maxResults && !this.maxItems) {
+              this.maxItems = response.maxResults - 1;
+            }
+
+            var count = this.maxItems && response.resultsCount > this.maxItems ? this.maxItems : response.resultsCount;
+            if (clear || this.items.length !== count) {
+              this.reset(count);
             }
             var entryIndex = 0;
             for (var i = firstIndex; i <= lastIndex; i++) {
@@ -474,13 +494,21 @@ limitations under the License.
               }
             }
 
+            // quick filters
+            this.quickFilters = this.nxProvider.quickFilters;
+
+            // check if there is any active quick filter
+            var hasActiveQuickFilters = this.quickFilters ? Object.keys(this.quickFilters).some(function(k) {
+              return this.quickFilters[k].active;
+            }.bind(this)) : false;
+
             // update buckets array based on provider's sort property
-            if (response.aggregations) {
+            var buckets = [];
+            if (response.aggregations && !hasActiveQuickFilters) {
               var providerSort = this.nxProvider.sort;
               if (providerSort && Object.keys(providerSort).length === 1) {
                 var providerField = Object.keys(providerSort)[0];
                 var providerOrder = providerSort[providerField];
-                var buckets = [];
                 Object.keys(response.aggregations).map(function(key) {
                   var aggregation = response.aggregations[key];
                   if (aggregation.field === providerField && aggregation.buckets.length >= buckets.length &&
@@ -494,12 +522,9 @@ limitations under the License.
                     }
                   }
                 }.bind(this));
-                this.set('buckets', buckets);
               }
             }
-
-            // quick filters
-            this.quickFilters = this.nxProvider.quickFilters;
+            this.set('buckets', buckets);
 
             // XXX force scroll to top or bottom (when scrolling to first or last item)
             if (this.$.list._scrollTop === 0) {
