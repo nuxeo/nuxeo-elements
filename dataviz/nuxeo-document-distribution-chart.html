@@ -22,7 +22,6 @@ limitations under the License.
 <script src="../../d3/d3.min.js"></script>
 <script src="../../randomcolor/randomColor.js"></script>
 <link rel="import" href="../nuxeo-i18n-behavior.html">
-<link rel="import" href="../jquery-import.html">
 
 <!--
 A sunburst chart presenting Nuxeo Document Distribution.
@@ -133,7 +132,7 @@ Example:
         <p/>
       </div>
 
-      <paper-spinner-lite active hidden$=[[!loading]]></paper-spinner-lite>
+      <paper-spinner-lite active$=[[loading]]></paper-spinner-lite>
 
     </div>
 
@@ -522,7 +521,11 @@ Example:
 
           // Total size of all segments; we set this later, after loading the data.
           var totalSize = 0;
-          $(this.$.chart).find('svg').remove();
+
+          var svg = this.$.chart.querySelector("svg");
+          if (svg) {
+            svg.parentNode.removeChild(svg);
+          }
 
           vis = d3.select(this.$.chart).append("svg:svg")
               .attr("width", this.width)
@@ -712,7 +715,10 @@ Example:
         },
 
         _initializeBreadcrumbTrail: function() {
-          $(this.$.sequence).empty()
+          while (this.$.sequence.firstChild) {
+            this.$.sequence.removeChild(this.$.sequence.firstChild);
+          }
+
           // Add the svg area.
           var trail = d3.select(this.$.sequence).append("svg:svg")
               .attr("width", '100%')
