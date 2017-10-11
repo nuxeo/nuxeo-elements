@@ -32,24 +32,24 @@ An element for providing aggregation based navigation.
     <style>
       :host {
         display: block;
-        background: rgba(255, 255, 255, 0.85);
         -webkit-touch-callout: none;
         -webkit-user-select: none;
         -moz-user-select: none;
         -ms-user-select: none;
         user-select: none;
+        width: 80px;
       }
 
       #keys {
+        visibility: hidden;
         position: relative;
-        width: 80px;
         height: calc(100% - 32px);
-        cursor: ns-resize;
       }
 
-      #keys .key {
+      .key {
         position: absolute;
         right: 0;
+        width: 64px;
         color: black;
         margin: 0;
         padding: 0 8px 0 0;
@@ -58,13 +58,14 @@ An element for providing aggregation based navigation.
         white-space: nowrap;
         pointer-events: all;
         text-align: right;
+        cursor: ns-resize;
       }
 
       #cursor {
         display: none;
         position: absolute;
         right: 0;
-        width: 64px;
+        width: 56px;
         height: 2px;
         background: rgba(0, 0, 0, 0.15);
         pointer-events: none;
@@ -146,6 +147,21 @@ An element for providing aggregation based navigation.
           type: Object,
           value: {top: 0, right: 0, left: 0, bottom: 0}
         }
+      },
+
+      attached: function() {
+        this.addEventListener('mouseover', function() {
+          this._visibility(true);
+        }.bind(this));
+
+        this.addEventListener('mouseout', function() {
+          this._visibility(false);
+        }.bind(this));
+      },
+
+      _visibility: function(visible) {
+        this.$.keys.style.visibility = visible ? 'visible' : 'hidden';
+        this.style.background = visible ? 'rgba(255, 255, 255, 0.85)' : 'transparent';
       },
 
       _label: function(key) {
