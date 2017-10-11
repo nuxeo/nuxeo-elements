@@ -78,42 +78,42 @@ Example:
           value: false
         },
 
-        dataHeight: {
+        height: {
           type: Number,
           value: 48,
           observer: '__obsHeight'
         },
-        dataWidth: {
+        width: {
           type: Number,
           value: 48,
           observer: '__obsWidth'
         },
-        dataTextColor: {
+        textColor: {
           type: String,
           value: '#FFFFFF',
           observer: '__obsTextColor'
         },
-        dataFontSize: {
+        fontSize: {
           type: Number,
           value: 20,
           observer: '__obsFontSize'
         },
-        dataFontWeight: {
+        fontWeight: {
           type: Number,
           value: 400,
           observer: '__obsFontWeight'
         },
-        dataBorderRadius: {
+        borderRadius: {
           type: Number,
           value: 0,
           observer: '__obsBorderRadius'
         },
-        dataBoxShadow: {
+        boxShadow: {
           type: String,
           value: '0px 0px 0px 0px rgba(33,33,33,0.75)',
           observer: '__obsBoxShadow'
         },
-        dataTextShadow: {
+        textShadow: {
           type: String,
           value: '0px 0px 0px rgba(33,33,33,0.75)',
           observer: '__obsTextShadow'
@@ -164,35 +164,35 @@ Example:
       },
 
       __obsHeight: function () {
-        this.$.container.style.height = this.dataHeight + 'px';
+        this.$.container.style.height = this.height + 'px';
       },
       __obsWidth: function () {
-        this.$.container.style.width = this.dataWidth + 'px';
+        this.$.container.style.width = this.width + 'px';
       },
       __obsTextColor: function () {
-        this.$.character.style.color = this.dataTextColor;
+        this.$.character.style.color = this.textColor;
       },
       __obsFontSize: function () {
-        this.$.character.style.fontSize = this.dataFontSize + 'px';
+        this.$.character.style.fontSize = this.fontSize + 'px';
       },
       __obsFontWeight: function () {
-        this.$.character.style.fontWeight = this.dataFontWeight;
+        this.$.character.style.fontWeight = this.fontWeight;
       },
       __obsBorderRadius: function () {
-        if (this.dataBorderRadius == '' || this.dataBorderRadius == null) {
-          this.dataBorderRadius = 0;
+        if (this.borderRadius == '' || this.borderRadius == null) {
+          this.borderRadius = 0;
         }
-        this.$.container.style.borderRadius = this.dataBorderRadius + '%';
+        this.$.container.style.borderRadius = this.borderRadius + '%';
       },
       __obsBoxShadow: function () {
-        this.$.container.style.webkitBoxShadow = this.dataBoxShadow;
-        this.$.container.style.mozBoxShadow = this.dataBoxShadow;
-        this.$.container.style.boxShadow = this.dataBoxShadow;
+        this.$.container.style.webkitBoxShadow = this.boxShadow;
+        this.$.container.style.mozBoxShadow = this.boxShadow;
+        this.$.container.style.boxShadow = this.boxShadow;
       },
       __obsTextShadow: function () {
-        this.$.character.style.webkitTextShadow = this.dataTextShadow;
-        this.$.character.style.mozTextShadow = this.dataTextShadow;
-        this.$.character.style.textShadow = this.dataTextShadow;
+        this.$.character.style.webkitTextShadow = this.textShadow;
+        this.$.character.style.mozTextShadow = this.textShadow;
+        this.$.character.style.textShadow = this.textShadow;
       },
 
       __makeAvatar: function () {
@@ -203,7 +203,7 @@ Example:
               this._output = '';
               this.$.container.style.background = 'url(' + this.user.contextParameters.userprofile.avatar + ')';
               this.$.container.style.backgroundRepeat = "no-repeat";
-              this.$.container.style.backgroundSize = this.dataHeight + 'px' + ' ' + this.dataHeight + 'px';
+              this.$.container.style.backgroundSize = this.height + 'px' + ' ' + this.height + 'px';
           } else {
             var name = this._name(this.user);
             var colors = ["#1abc9c", "#16a085", "#f1c40f", "#f39c12", "#2196F3", "#3F51B5", "#673AB7", "#E91E63",
