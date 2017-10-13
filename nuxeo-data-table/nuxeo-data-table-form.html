@@ -42,14 +42,9 @@
 
       _forwardParentProp: function(prop, value) {},
 
-      _forwardInstancePath: function(inst, path, value) {
-        // strip "item."
-        this.fire('item-changed', {item: this.item, path: path.substring(5), value: value});
-      },
+      _forwardInstancePath: function(inst, path, value) {},
 
-      _forwardInstanceProp: function(inst, prop, value) {
-        this.fire('item-changed', {item: this.item, value: value});
-      }
+      _forwardInstanceProp: function(inst, prop, value) {}
     });
   </script>
 </dom-module>

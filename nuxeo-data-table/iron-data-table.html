@@ -16,9 +16,11 @@ limitations under the License.
 -->
 
 <link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-form/iron-form.html">
 <link rel="import" href="../../iron-list/iron-list.html">
 <link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
 <link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
@@ -287,13 +289,14 @@ Example:
     <content select="nuxeo-data-table-column"></content>
     <content select="template[is=row-detail]"></content>
 
-    <nuxeo-dialog id="dialog">
+    <nuxeo-dialog id="dialog" modal>
       <h1>[[i18n('command.add')]]</h1>
-      <form is="iron-form">
+      <form id="editForm" is="iron-form">
         <content id="form" select="nuxeo-data-table-form"></content>
       </form>
       <div class="buttons">
-        <paper-button noink dialog-confirm>[[i18n('command.ok')]]</paper-button>
+        <paper-button noink dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
+        <paper-button noink on-tap="_validateEntry" class="primary">[[i18n('command.ok')]]</paper-button>
       </div>
     </nuxeo-dialog>
 
@@ -690,10 +693,45 @@ Example:
 
       _editEntry: function(e) {
         e.stopPropagation();
+        this._toggleEditDialog(e.detail.index);
+      },
+
+      _validateEntry: function() {
+        var editForm = this.$.editForm;
+        editForm._doFakeSubmitForValidation();
+        if (editForm.validate() && editForm.checkValidity()) {
+          var dtform = this.getContentChildren('#form')[0];
+          if (dtform.index > -1) {
+            this.items[dtform.index] = JSON.parse(JSON.stringify(dtform.item));
+          } else {
+            this.push('items', dtform.item);
+          }
+          this.notifyResize();
+          var dtForm = this.getContentChildren('#form')[0];
+          dtForm.item = null;
+          dtForm.index = null;
+          this.$.dialog.close();
+          this.async(function() {
+            document.body.appendChild(this.$.dialog);
+          }.bind(this), 100);
+        }
+      },
+
+      _toggleEditDialog: function(itemIndex) {
         var editForm = this.getContentChildren('#form')[0];
-        var items = this.items; // TODO: add support for editing when using a page provider
-        editForm.index = e.detail.index;
-        editForm.item = items[e.detail.index];
+        if (typeof itemIndex !== "undefined") {
+          editForm.index = itemIndex;
+          editForm.item = JSON.parse(JSON.stringify(this.items[itemIndex]));
+        } else {
+          editForm.index = -1;
+          var newItem;
+          if ((this.items.length > 1 && 'object' !== typeof this.items[0]) || this.columns.length === 1) {
+            // dirty but will work with primitive such as string, number, etc.
+            editForm.item = '';
+          } else {
+            editForm.item = {};
+          }
+        }
         this.$.dialog.toggle();
       },
 
@@ -707,13 +745,8 @@ Example:
         if (!this.items) {
           this.items = [];
         }
-        if ((this.items.length > 1 && 'object' !== typeof this.items[0]) || this.columns.length === 1) {
-          // dirty but will work with primitive such as string, number, etc.
-          this.push('items', '');
-        } else {
-          this.push('items', {});
-        }
         this.notifyResize();
+        this._toggleEditDialog();
       },
 
       _moveItemUpward: function(e) {
