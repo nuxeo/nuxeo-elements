@@ -423,7 +423,7 @@ limitations under the License.
 
             server.respondWith(
               'GET',
-              '/dummy/api/v1/search/pp/default_search/execute?currentPageIndex=0&pageSize=40&sortBy=&sortOrder=&ecm_path=%5B%22%2Fdefault-domain%2Fworkspaces%22%5D',
+              '/dummy/api/v1/search/pp/default_search/execute?currentPageIndex=0&offset=0&pageSize=41&sortBy=&sortOrder=&ecm_path=%5B%22%2Fdefault-domain%2Fworkspaces%22%5D',
               [
                 200,
                 {'Content-Type': 'application/json'},
@@ -434,12 +434,11 @@ limitations under the License.
 
           test('simpleTable', function() {
             var table = fixture('simpleTable')[1];
-            // wait for loading state to toggle on and off
+            table.fetch();
             return waitForEvent(table, 'nuxeo-page-loaded', 1)
               .then(flush)
               .then(function() {
                 assert.equal(4, table.$.list.items.length);
-                // assert.equal(5, Polymer.dom(table).querySelectorAll('nuxeo-data-table-row').length);
               });
           });
         });

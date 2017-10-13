@@ -88,90 +88,99 @@ limitations under the License.
   </style>
 </head>
 <body unresolved>
-  <template is="dom-bind">
 
-    <div class="content-view">
+  <dom-module id="nuxeo-data-table-demo">
+    <template>
+      <div class="content-view">
 
-      <nuxeo-connection url="http://webui.demo.nuxeo.com/nuxeo"
-        username="demo"
-        password="demo">
-      </nuxeo-connection>
+        <nuxeo-connection url="http://webui.demo.nuxeo.com/nuxeo" username="demo" password="demo">
+        </nuxeo-connection>
 
-      <nuxeo-page-provider id="cvProvider" auto
-        provider="default_search"
-        page-size="40"
-        aggregations="{{aggregations}}"
-        enrichers="thumbnail"
-        params='{"ecm_path": ["/default-domain/workspaces"]}'>
-      </nuxeo-page-provider>
+        <nuxeo-page-provider id="cvProvider"
+                             provider="default_search"
+                             page-size="40"
+                             aggregations="{{aggregations}}"
+                             enrichers="thumbnail"
+                             params='{"ecm_path": ["/default-domain/workspaces"]}'>
+        </nuxeo-page-provider>
 
-      <nuxeo-data-table id="datatable"
-        nx-provider="cvProvider"
-        selection-enabled multi-selection>
-        <nuxeo-data-table-column name="Full text search" flex="100" filter-by="ecm_fulltext" sort-by="dc:title">
-          <template>
-            <img class="thumbnail" src="[[_thumbnail(item)]]">
-            <a class="title ellipsis">[[item.title]]</a>
-          </template>
-        </nuxeo-data-table-column>
-        <nuxeo-data-table-column filter-by="dc_modified_agg" flex="50" sort-by="dc:modified">
-          <template is="header">
+        <nuxeo-data-table id="datatable"
+                          nx-provider="cvProvider"
+                          selection-enabled multi-selection>
+          <nuxeo-data-table-column name="Full text search" flex="100" filter-by="ecm_fulltext" sort-by="dc:title">
+            <template>
+              <img class="thumbnail" src="[[_thumbnail(item)]]">
+              <a class="title ellipsis">[[item.title]]</a>
+            </template>
+          </nuxeo-data-table-column>
+          <nuxeo-data-table-column filter-by="dc_modified_agg" flex="50" sort-by="dc:modified">
+            <template is="header">
               <nuxeo-dropdown-aggregation
                   placeholder="Modified"
                   data="[[aggregations.dc_modified_agg]]"
                   value="{{column.filterValue}}" multiple>
               </nuxeo-dropdown-aggregation>
-          </template>
-          <template>
-            [[_formatDate(item.properties.dc:modified)]]
-          </template>
-        </nuxeo-data-table-column>
-        <nuxeo-data-table-column filter-by="dc_creator_agg" flex="50">
-                <template is="header">
-                  <nuxeo-dropdown-aggregation
-                      placeholder="Author"
-                      data="[[aggregations.dc_creator_agg]]"
-                      value="{{column.filterValue}}" multiple>
-                  </nuxeo-dropdown-aggregation>
-              </template>
-          <template>
-            <span class="tag user">[[item.properties.dc:creator]]</span>
-          </template>
-        </nuxeo-data-table-column>
-        <nuxeo-data-table-column name="Version">
-          <template>[[_displayVersion(item)]]</template>
-        </nuxeo-data-table-column>
-        <nuxeo-data-table-column name="State">
-          <template>[[item.state]]</template>
-        </nuxeo-data-table-column>
-      </nuxeo-data-table>
-    </div>
+            </template>
+            <template>
+              [[_formatDate(item.properties.dc:modified)]]
+            </template>
+          </nuxeo-data-table-column>
+          <nuxeo-data-table-column filter-by="dc_creator_agg" flex="50">
+            <template is="header">
+              <nuxeo-dropdown-aggregation
+                  placeholder="Author"
+                  data="[[aggregations.dc_creator_agg]]"
+                  value="{{column.filterValue}}" multiple>
+              </nuxeo-dropdown-aggregation>
+            </template>
+            <template>
+              <span class="tag user">[[item.properties.dc:creator]]</span>
+            </template>
+          </nuxeo-data-table-column>
+          <nuxeo-data-table-column name="Version">
+            <template>[[_displayVersion(item)]]</template>
+          </nuxeo-data-table-column>
+          <nuxeo-data-table-column name="State">
+            <template>[[item.state]]</template>
+          </nuxeo-data-table-column>
+        </nuxeo-data-table>
+      </div>
+    </template>
 
-  </template>
+    <script>
+      Polymer({
+        is: 'nuxeo-data-table-demo',
 
-  <script>
-    var t = document.querySelector('template');
-    t._formatDate = function(date) {
-      return date;
-    };
+        ready: function() {
+          this.$.datatable.fetch();
+        },
 
-    t._thumbnail = function(doc) {
-      if (doc && doc.uid) {
-        if (doc.contextParameters && doc.contextParameters.thumbnail.url) {
-          return doc.contextParameters.thumbnail.url;
-        } else {
-          var baseUrl = document.querySelector('nuxeo-connection').url;
-          return baseUrl + '/nxthumb/default/' + doc.uid + '/blobholder:0/';
+        _formatDate: function(date) {
+          return date;
+        },
+
+        _thumbnail: function(doc) {
+          if (doc && doc.uid) {
+            if (doc.contextParameters && doc.contextParameters.thumbnail.url) {
+              return doc.contextParameters.thumbnail.url;
+            } else {
+              var baseUrl = document.querySelector('nuxeo-connection').url;
+              return baseUrl + '/nxthumb/default/' + doc.uid + '/blobholder:0/';
+            }
+          }
+        },
+
+        _displayVersion: function(doc) {
+          if (doc.properties && doc.properties['uid:major_version'] !== undefined) {
+            return doc.properties['uid:major_version'] + '.' + doc.properties['uid:minor_version'];
+          }
         }
-      }
-    };
 
-    t._displayVersion = function(doc) {
-      if (doc.properties && doc.properties['uid:major_version'] !== undefined) {
-        return doc.properties['uid:major_version'] + '.' + doc.properties['uid:minor_version'];
-      }
-    };
+      });
+    </script>
+  </dom-module>
 
-  </script>
+  <nuxeo-data-table-demo></nuxeo-data-table-demo>
+
 </body>
 </html>
