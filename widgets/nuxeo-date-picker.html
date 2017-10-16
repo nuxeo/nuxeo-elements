@@ -50,7 +50,7 @@ Example:
     </style>
 
     <paper-input id="date" label="[[label]]" name="[[name]]" required$="[[required]]" invalid="[[invalid]]"
-                 type="date" on-change="_onChange" always-float-label disabled$="[[disabled]]"
+                 type="date" value="{{_pickerValue::change}}" always-float-label disabled$="[[disabled]]"
                  error-message="[[errorMessage]]">
     </paper-input>
 
@@ -70,6 +70,12 @@ Example:
         required: {
           type: Boolean,
           value: false
+        },
+
+        _pickerValue: {
+          type: String,
+          notify: true,
+          observer: '_pickerValueChanged'
         },
 
         value: {
@@ -92,18 +98,18 @@ Example:
       },
 
       _valueChanged: function() {
-
-        if (this.$.date.value.length === 0 && this.value && moment(this.value).isValid()) {
-          this.$.date.value = moment(this.value).format('YYYY-MM-DD');
+        if (this.value && moment(this.value).isValid()) {
+          this._pickerValue = moment(this.value).format('YYYY-MM-DD');
         }
+        
         if (!this.value || this.value.length === 0){
-          this.$.date.value = "";
+          this._pickerValue = "";
         }
       },
 
-      _onChange: function() {
-        if (this.$.date.value && this.$.date.value.length > 0) {
-          this.value = moment(this.$.date.value).toJSON();
+      _pickerValueChanged: function() {       
+        if (this._pickerValue && moment(this._pickerValue).isValid()) {
+          this.value = moment(this._pickerValue).toJSON();
         } else {
           this.value = "";
         }
