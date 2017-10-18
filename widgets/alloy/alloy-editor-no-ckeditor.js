@@ -17864,7 +17864,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
                   * @return {DOMEventTarget} Target node.
                   */
                  function getEventTarget(nativeEvent) {
-                     var target = nativeEvent.target || nativeEvent.srcElement || window;
+                     var target = (nativeEvent.composedPath && nativeEvent.composedPath()[0]) ||  nativeEvent.target || nativeEvent.srcElement || window;
                      // Safari may fire events on text nodes (Node.TEXT_NODE is 3).
                      // @see http://www.quirksmode.org/js/events_properties.html
                      return target.nodeType === 3 ? target.parentNode : target;
@@ -35201,7 +35201,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
             //
             // It should be safe to assume that if you have been able to render the toolbar
             // and request the exclusive mode, then rendering might be kept until the exclusive mode is left.
-            if (!this.state.itemExclusive && this.props.editorEvent && this.props.editorEvent.data.nativeEvent.target && !this.props.editorEvent.data.nativeEvent.target.isContentEditable) {
+            if (!this.state.itemExclusive && this.props.editorEvent && this.props.editorEvent.data.nativeEvent.path[0] && !this.props.editorEvent.data.nativeEvent.path[0].isContentEditable) {
                 return null;
             }
 
@@ -35694,7 +35694,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
             // debounce it, when the handler is being invoked, the target might be no more part
             // of the editor's UI - onActionPerformed causes re-render.
             this._mousedownListener = function (event) {
-                this._setUIHidden(event.target);
+                this._setUIHidden((event.composedPath && event.composedPath()[0]) || event.target);
             }.bind(this);
 
             this._keyDownListener = CKEDITOR.tools.debounce(function (event) {

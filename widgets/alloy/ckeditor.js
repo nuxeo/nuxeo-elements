@@ -53,7 +53,7 @@ if ( !window.CKEDITOR ) {
 			 *
 			 *		alert( CKEDITOR.version ); // e.g. 'CKEditor 3.4.1'
 			 */
-			version: '4.6.0 DEV',
+			version: '4.6.2-NX',
 
 			/**
 			 * Contains the CKEditor revision number.
@@ -62,7 +62,7 @@ if ( !window.CKEDITOR ) {
 			 *
 			 *		alert( CKEDITOR.revision ); // e.g. '3975'
 			 */
-			revision: '20af9170a',
+			revision: '239cb80ab',
 
 			/**
 			 * A 3-digit random integer, valid for the entire life of the CKEDITOR object.
@@ -5216,7 +5216,7 @@ CKEDITOR.tools.extend( CKEDITOR.dom.document.prototype, {
 	getActive: function() {
 		var $active;
 		try {
-			$active = this.$.activeElement;
+			$active = (this.$.root.getRootNode && this.$.root.getRootNode().activeElement) || this.$.activeElement;
 		} catch ( e ) {
 			return null;
 		}
@@ -22908,7 +22908,7 @@ CKEDITOR.config.startupMode = 'wysiwyg';
 				// apply focus on the main editable will compromise it's text selection.
 				if ( CKEDITOR.env.webkit && !this.hasFocus ) {
 					// Restore focus on element which we cached (on selectionCheck) as previously active.
-					active = this.editor._.previousActive || this.getDocument().getActive();
+					active = this.editor._.previousActive || (this.$.getRootNode && new CKEDITOR.dom.element( this.$.getRootNode().activeElement) ) || this.getDocument().getActive();
 					if ( this.contains( active ) ) {
 						active.focus();
 						return;
@@ -27294,7 +27294,14 @@ CKEDITOR.config.startupMode = 'wysiwyg';
 			if ( this._.cache.nativeSel !== undefined )
 				return this._.cache.nativeSel;
 
-			return ( this._.cache.nativeSel = isMSSelection ? this.document.$.selection : this.document.getWindow().$.getSelection() );
+			if (isMSSelection) {
+				this._.cache.nativeSel = this.document.$.selection
+			} else {
+				var root = (typeof this.root.$.getRootNode().getSelection === 'function') ? this.root.$.getRootNode(): this.document.getWindow().$;
+				this._.cache.nativeSel = root.getSelection();
+			}
+
+			return this._.cache.nativeSel;
 		},
 
 		/**
