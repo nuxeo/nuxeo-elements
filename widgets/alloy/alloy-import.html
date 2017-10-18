@@ -1,0 +1,12 @@
+<script src="ckeditor.js"></script>
+<script src="alloy-editor-no-ckeditor.js"></script>
+<script type="text/javascript">
+  CKEDITOR.config.customConfig = ''; // skip loading config.js
+  CKEDITOR.config.language = 'en'; // force en locale since it is the only one being vulcanized
+  AlloyEditor._langResourceRequested = true; // skip loading of language file
+</script>
+
+<script src="config.js" type="text/javascript" ></script>
+<script src="lang/en.js" type="text/javascript" ></script>
+<script src="lang/alloy-editor/en.js" type="text/javascript" ></script>
+<script src="styles.js" type="text/javascript" ></script>

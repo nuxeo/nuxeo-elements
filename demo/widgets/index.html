@@ -18,7 +18,7 @@ limitations under the License.
 <head>
   <title>Nuxeo Widgets</title>
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../../webcomponentsjs/webcomponents-loader.js"></script>
   <link rel="import" href="../../../polymer/polymer.html">
   <link rel="import" href="../../../font-roboto/roboto.html">
   <link rel="import" href="../../../iron-icons/iron-icons.html">
@@ -42,6 +42,7 @@ limitations under the License.
   <link rel="import" href="../../widgets/nuxeo-select.html">
   <link rel="import" href="../../widgets/nuxeo-date.html">
   <link rel="import" href="../../widgets/nuxeo-card.html">
+  <link rel="import" href="../../widgets/nuxeo-html-editor.html">
   <link rel="stylesheet" href="../../../select2/select2.css">
   <style>
       body {
@@ -218,6 +219,11 @@ limitations under the License.
         <td>nuxeo-operation-button</td>
         <td><nuxeo-operation-button icon="icons:account-box" label="Get user" operation="User.Get" response="{{operationResponse}}"></nuxeo-operation-button></td>
         <td>[[operationResponse.uid]]</td>
+      </tr>
+      <tr>
+        <td>nuxeo-html-editor</td>
+        <td><nuxeo-html-editor value="{{html}}"></nuxeo-html-editor></td>
+        <td>[[html]]</td>
       </tr>
 
     </tbody>
