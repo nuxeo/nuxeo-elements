@@ -548,7 +548,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
               return (
                   '<div class="selectivity-result-item' +
                   (options.disabled ? ' disabled' : '') +
-                  '" data-item-id="' + escape(options.id) + '">' +
+                  '" data-item-id="' + this.escapeHTML(options.id) + '">' +
                   this.resultFormatter(options.item)
                   + '</div>');
             }.bind(this),
@@ -556,7 +556,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
             singleSelectedItem: function(options) {
               return (
                   '<span class="selectivity-single-selected-item" ' +
-                  'data-item-id="' + escape(options.id) + '">' +
+                  'data-item-id="' + this.escapeHTML(options.id) + '">' +
                   (options.removable
                       ? '<a class="selectivity-single-selected-item-remove">' +
                         '<i class="selectivity-remove"></i>' +
@@ -572,7 +572,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
               return (
                   '<span class="selectivity-multiple-selected-item' +
                   extraClass +
-                  '" data-item-id="' + escape(options.id) + '">' +
+                  '" data-item-id="' + this.escapeHTML(options.id) + '">' +
                   (options.removable
                       ? '<a class="selectivity-multiple-selected-item-remove">' +
                         '<i class="selectivity-remove"></i>' +
