@@ -25154,7 +25154,7 @@ CKEDITOR.config.startupMode = 'wysiwyg';
 			var i = cells.count(),
 				cell;
 
-			for ( i; i-- > 0; ) {
+			for ( i; i > 0; i-- ) {
 				cell = cells.getItem( i );
 
 				if ( !CKEDITOR.tools.trim( cell.getHtml() ) ) {
