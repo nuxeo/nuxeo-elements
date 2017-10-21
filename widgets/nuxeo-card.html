@@ -58,7 +58,7 @@ Custom property         | Description | Default
 
       :host[collapsible] h3:hover {
         cursor: pointer;
-        @apply(--nuxeo-link-hover);
+        @apply --nuxeo-link-hover;
       }
 
       #card {
@@ -66,12 +66,12 @@ Custom property         | Description | Default
         background-color: white;
         padding: 16px;
         box-shadow: 0 3px 5px rgba(0, 0, 0, 0.04);
-        @apply(--nuxeo-card);
+        @apply --nuxeo-card;
       }
 
       h3 {
-        @apply(--layout-center);
-        @apply(--layout-horizontal);
+        @apply --layout-center;
+        @apply --layout-horizontal;
         margin: 0 0 1em;
         font-size: 1rem;
         font-weight: 700;
@@ -88,7 +88,7 @@ Custom property         | Description | Default
         </h3>
         <iron-collapse opened="{{opened}}">
           <div>
-            <content></content>
+            <slot></slot>
           </div>
         </iron-collapse>
       </template>
@@ -98,7 +98,7 @@ Custom property         | Description | Default
           <h3>[[heading]]</h3>
         </template>
         <div>
-          <content></content>
+          <slot></slot>
         </div>
       </template>
     </div>
