@@ -20,7 +20,7 @@
     "/test/"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.1.0",
+    "polymer": "Polymer/polymer#1.10.1",
     "video.js": "5.20.1",
     "cropperjs": "0.5.6",
     "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#~1.0.2",
