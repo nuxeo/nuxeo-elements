@@ -270,7 +270,7 @@ An element for displaying page provider results in a justified grid with infinit
             this.selectItem(item);
           }
         } else {
-          this.fire('navigate', {doc: item});
+          this.fire('navigate', {doc: item, index: e.model.index});
         }
         e.stopPropagation();
       },
