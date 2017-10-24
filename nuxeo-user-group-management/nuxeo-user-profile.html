@@ -19,6 +19,7 @@ limitations under the License.
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../iron-form/iron-form.html">
 <link rel="import" href="../../paper-input/paper-input.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-card/paper-card.html">
@@ -139,21 +140,23 @@ Example:
         <paper-dialog id="changePasswordDialog" with-backdrop>
           <h3>[[i18n('userProfile.password.change')]]</h3>
 
-          <form is="iron-form" id="changePasswordForm" class="vertical layout">
-            <paper-input id="passwordOld" type="password" label="[[i18n('userProfile.password.old')]]"
-                         required always-float-label>
-            </paper-input>
+          <iron-form id="changePasswordForm">
+            <form class="vertical layout">
+              <paper-input id="passwordOld" type="password" label="[[i18n('userProfile.password.old')]]"
+                           required always-float-label>
+              </paper-input>
 
-            <paper-input id="passwordNew" type="password" label="[[i18n('userProfile.password.new')]]"
-                         required always-float-label
-                         value="{{passwordNew}}">
-            </paper-input>
+              <paper-input id="passwordNew" type="password" label="[[i18n('userProfile.password.new')]]"
+                           required always-float-label
+                           value="{{passwordNew}}">
+              </paper-input>
 
-            <paper-input id="passwordConfirm" type="password" label="[[i18n('userProfile.password.confirm')]]"
-                         required always-float-label
-                         pattern="[[passwordNew]]">
-            </paper-input>
-          </form>
+              <paper-input id="passwordConfirm" type="password" label="[[i18n('userProfile.password.confirm')]]"
+                           required always-float-label
+                           pattern="[[passwordNew]]">
+              </paper-input>
+            </form>
+          </iron-form>
 
           <div class="buttons">
             <div class="flex start-justified">
