@@ -208,7 +208,7 @@ Example:
 
       <div id="header">
         <nuxeo-data-table-row header>
-          <nuxeo-data-table-checkbox header hidden$="[[!selectionEnabled]]" on-tap="_toggleSelectAll" checked="[[_isSelectAllChecked]]" indeterminate="[[_isSelectAllIndeterminate]]"></nuxeo-data-table-checkbox>
+          <nuxeo-data-table-checkbox header class="invisible" hidden$="[[!selectionEnabled]]"></nuxeo-data-table-checkbox>
           <template is="dom-repeat" items="[[columns]]" as="column">
             <nuxeo-data-table-cell header
                              align-right="[[column.alignRight]]"
