@@ -687,6 +687,7 @@ Example:
       },
 
       _onCheckBoxTap: function(e) {
+        e.stopPropagation();
         if (this.selectionEnabled) {
           var target = e.target || e.srcElement;
           target.fire('selected', {index: e.model.index, shiftKey: e.detail.sourceEvent.shiftKey});
