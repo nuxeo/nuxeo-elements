@@ -219,16 +219,31 @@ limitations under the License.
       },
 
       _selected: function(e) {
-        if (typeof e.detail.index === 'number') {
+        var index = e.detail.index;
+        if (typeof index === 'number') {
           if (e.detail.shiftKey && typeof this._lastSelectedIndex === 'number') {
-            var index = e.detail.index;
+
+            // prevent from an item not loaded yet
+            if (!this.items[index] || !this.items[index].uid) {
+              this.deselectItem(index);
+            }
+
             var last = this._lastSelectedIndex;
             var start = index > last ? last : index;
             var end = index > last ? index : last;
-            for (var i = start; i < end; i++) {
-              var item = this.items[i];
-              if (item && item.uid) {
-                this.selectItem(item);
+
+            // check if all items in the range are loaded
+            var valid = this.items.slice(start, end).every(function(item) {
+              return item && item.uid;
+            }.bind(this));
+
+            // select items in range
+            if (valid) {
+              for (var i = start; i < end; i++) {
+                var item = this.items[i];
+                if (item && item.uid) {
+                  this.selectItem(item);
+                }
               }
             }
           }

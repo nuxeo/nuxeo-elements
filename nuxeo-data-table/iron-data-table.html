@@ -686,7 +686,7 @@ Example:
       _onCheckBoxTap: function(e) {
         if (this.selectionEnabled) {
           var target = e.target || e.srcElement;
-          target.fire('selected');
+          target.fire('selected', {index: e.model.index, shiftKey: e.detail.sourceEvent.shiftKey});
           this._updateFlags();
         }
       },
