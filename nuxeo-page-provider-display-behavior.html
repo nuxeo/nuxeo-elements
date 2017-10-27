@@ -169,8 +169,9 @@ limitations under the License.
         scrollThrottle: {
           type: Number,
           value: 60
-        }
+        },
 
+        _lastSelectedIndex: Number
       },
 
       observers: [
@@ -181,7 +182,8 @@ limitations under the License.
       ],
 
       listeners: {
-        'column-filter-changed': '_onColumnFilterChanged'
+        'column-filter-changed': '_onColumnFilterChanged',
+        'selected': '_selected'
       },
 
       _nxProviderChanged: function(nxProvider) {
@@ -214,6 +216,24 @@ limitations under the License.
 
       _itemsChanged: function() {
         this._isEmpty = !(this.items && this.items.length > 0);
+      },
+
+      _selected: function(e) {
+        if (typeof e.detail.index === 'number') {
+          if (e.detail.shiftKey && typeof this._lastSelectedIndex === 'number') {
+            var index = e.detail.index;
+            var last = this._lastSelectedIndex;
+            var start = index > last ? last : index;
+            var end = index > last ? index : last;
+            for (var i = start; i < end; i++) {
+              var item = this.items[i];
+              if (item && item.uid) {
+                this.selectItem(item);
+              }
+            }
+          }
+          this._lastSelectedIndex = e.detail.index;
+        }
       },
 
       selectItem: function(item) {
