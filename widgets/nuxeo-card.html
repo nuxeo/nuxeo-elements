@@ -48,15 +48,15 @@ Custom property         | Description | Default
         box-sizing: border-box;         /* Opera/IE 8+ */
       }
 
-      :host[collapsible] #card {
+      :host([collapsible]) #card {
         padding-bottom: 1px;
       }
 
-      :host[opened] #card {
+      :host([opened]) #card {
         padding-bottom: 16px;
       }
 
-      :host[collapsible] h3:hover {
+      :host([collapsible]) h3:hover {
         cursor: pointer;
         @apply --nuxeo-link-hover;
       }
