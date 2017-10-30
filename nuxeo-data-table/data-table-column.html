@@ -125,9 +125,14 @@
         '_widthChanged(table, width)'
       ],
 
-      created: function() {
+      ready: function() {
         this._setTemplate(Polymer.dom(this).querySelector('template:not([is=header])'));
-        this._setHeaderTemplate(Polymer.dom(this).querySelector('template[is=header]'));
+        var customHeader = Polymer.dom(this).querySelector('template[is=header]');
+        if (customHeader) {
+            this._setHeaderTemplate(customHeader);
+        } else {
+          this._setHeaderTemplate(Polymer.dom(this.root).querySelector('#header'));
+        }
       },
 
       _notifyTable: function(table, path, value) {
@@ -178,7 +183,7 @@
       },
 
       _filterValueChanged: function(table, filterValue, filterBy) {
-        if (table && filterValue && filterBy) {
+        if (table && (typeof filterValue === 'string') && filterBy) {
           this._notifyTable(table, 'filterValue', filterValue);
           this.fire('column-filter-changed', {value: filterValue, filterBy: filterBy});
         }
