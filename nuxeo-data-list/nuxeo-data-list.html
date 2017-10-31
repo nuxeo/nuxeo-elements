@@ -215,41 +215,46 @@ Example:
       ],
 
       ready: function() {
-        // tmp fix
-        // see https://github.com/PolymerElements/iron-list/issues/236
-        this.$.list._didMoveDown = function() {
-          this._focusPhysicalItem(this._focusedIndex + 1);
-        };
-        // end tmp fix
+        // keyBindings don't allow registering 'down' key
+        // https://github.com/PolymerElements/iron-list/issues/236
+        this.listen(this.$.list, 'keydown', '_keydown');
+      },
 
-        this.$.list.selectQueuePrevious = function() {
-          this._didMoveUp();
-          this.toggleSelectionForFocusedItem();
-        };
-        this.$.list.selectQueueNext = function() {
-          this._didMoveDown();
-          this.toggleSelectionForFocusedItem();
-        };
-        this.$.list.toggleSelectionForFocusedItem = function() {
-          this.debounce('toggleSelectionForFocusedItem', function() {
-            var model = this._focusedItem._templateInstance;
-            if (model) {
-              this.toggleSelectionForItem(model[this.as]);
-            }
-          }.bind(this), 300);
-        };
-        //this.$.list.addOwnKeyBinding('up', 'toggleSelectionForFocusedItem');
-        //this.$.list.addOwnKeyBinding('k', 'selectQueuePrevious');
-        //this.$.list.addOwnKeyBinding('down', 'toggleSelectionForFocusedItem');
-        //this.$.list.addOwnKeyBinding('j', 'selectQueueNext');
+      _keydown: function(e) {
+        switch (e.key) {
+          case 'ArrowUp':
+            this._select(-1, 1);
+            break;
+          case 'k':
+            this._select(-1, 0);
+            break;
+          case 'ArrowDown':
+            this._select(1, -1);
+            break;
+          case 'j':
+            this._select(1, 0);
+            break;
+        }
+      },
+
+      _select: function(indexOffset, focusOffset) {
+        var index = this._selectedItemIndex() + indexOffset;
+        if (index >= 0 && index < this.$.list.items.length) {
+          this.$.list.selectIndex(index);
+          this.$.list.focusItem(index + focusOffset);
+        }
       },
 
       selectNext: function() {
-        this.$.list.selectQueueNext();
+        this._select(1, 0);
       },
 
       selectPrevious: function() {
-        this.$.list.selectQueuePrevious();
+        this._select(-1, 0);
+      },
+
+      _selectedItemIndex: function() {
+        return this.selectedItem ? this.$.list.items.indexOf(this.selectedItem) : 0;
       },
 
       _removeFilter: function(e) {
