@@ -223,9 +223,9 @@ limitations under the License.
         if (typeof index === 'number') {
           if (e.detail.shiftKey && typeof this._lastSelectedIndex === 'number') {
 
-            // prevent from an item not loaded yet
+            // prevent selecting an item not loaded yet
             if (!this.items[index] || !this.items[index].uid) {
-              this.deselectItem(index);
+              this.deselectIndex(index);
             }
 
             var last = this._lastSelectedIndex;
@@ -258,6 +258,13 @@ limitations under the License.
         }
       },
 
+      selectIndex: function(index) {
+        if (this.selectionEnabled) {
+          this.$.list.selectIndex(index);
+          this._updateFlags();
+        }
+      },
+
       selectItems: function(items) {
         if (this.selectionEnabled && items && items.length > 0) {
           items.forEach(function(item) {
@@ -270,6 +277,13 @@ limitations under the License.
       deselectItem: function(item) {
         if (this.selectionEnabled) {
           this.$.list.deselectItem(item);
+          this._updateFlags();
+        }
+      },
+
+      deselectIndex: function(index) {
+        if (this.selectionEnabled) {
+          this.$.list.deselectIndex(index);
           this._updateFlags();
         }
       },
@@ -385,7 +399,7 @@ limitations under the License.
         }
       },
 
-      scrollToItem: function(item){
+      scrollToItem: function(item) {
         this.$.list.scrollToItem(item);
       },
 
@@ -569,17 +583,7 @@ limitations under the License.
 
       _scrollChanged: function() {
         this.debounce('debounce-scroll-changed', function() {
-          var request = this._fetchRange(this.$.list.firstVisibleIndex, this.$.list.lastVisibleIndex);
-          if (request) {
-            request.then(function() {
-              // XXX force scroll to top or bottom (when scrolling to first or last item)
-              if (this.$.list._scrollTop === 0) {
-                this.scrollToIndex(0);
-              } else if (this.$.list._scrollBottom === this.$.list._scrollHeight) {
-                this.scrollToIndex(this.items.length - 1);
-              }
-            }.bind(this));
-          }
+          this._fetchRange(this.$.list.firstVisibleIndex, this.$.list.lastVisibleIndex);
         }.bind(this), this.scrollThrottle > 0 ? this.scrollThrottle : 1);
       }
 
