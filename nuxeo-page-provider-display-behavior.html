@@ -447,7 +447,8 @@ limitations under the License.
         if (this.maxItems && size && size > this.maxItems) {
           size = this.maxItems;
         }
-        if (size) {
+
+        if (typeof size === 'number' && size > 0) {
           var arr = new Array(size);
           for (var i = 0; i < arr.length; i++) {
             arr[i] = {};
@@ -528,14 +529,21 @@ limitations under the License.
               return;
             }
 
-            if (response.maxResults && !this.maxItems) {
-              this.maxItems = response.maxResults - 1;
+            // get results count, and reset the array if it differs from current array length
+            var count = 0;
+            if (!this.maxItems) {
+              this.maxItems = response.resultsCountLimit ? response.resultsCountLimit : 0;
             }
-
-            var count = this.maxItems && response.resultsCount > this.maxItems ? this.maxItems : response.resultsCount;
+            if (response.resultsCount < 0) {
+              count = response.resultsCountLimit ? response.resultsCountLimit : 0;
+            } else {
+              count = response.resultsCount > this.maxItems ? this.maxItems : response.resultsCount;
+            }
             if (clear || this.items.length !== count) {
               this.reset(count);
             }
+
+            // fill items range based on response
             var entryIndex = 0;
             for (var i = firstIndex; i <= lastIndex; i++) {
               if (entryIndex < response.entries.length) {
