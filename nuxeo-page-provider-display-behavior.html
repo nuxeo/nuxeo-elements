@@ -530,12 +530,12 @@ limitations under the License.
             }
 
             // get results count, and reset the array if it differs from current array length
-            if (response.maxResults && !this.maxItems) {
-              this.maxItems = response.maxResults - 1;
-            }
-            var count = this.maxItems && response.resultsCount > this.maxItems ? this.maxItems : response.resultsCount;
+            var count = response.resultsCount;
             if (count < 0) {
               count = response.resultsCountLimit;
+            }
+            if (this.maxItems && count > this.maxItems) {
+              count = this.maxItems;
             }
             if (clear || this.items.length !== count) {
               this.reset(count);
