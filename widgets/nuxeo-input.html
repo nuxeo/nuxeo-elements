@@ -17,6 +17,8 @@ limitations under the License.
 
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../paper-input/paper-input.html">
+<link rel="import" href="../../iron-form-element-behavior/iron-form-element-behavior.html">
+<link rel="import" href="../../iron-validatable-behavior/iron-validatable-behavior.html">
 
 <!--
 An element for generic input in forms
@@ -64,7 +66,7 @@ An element for generic input in forms
   <script>
     Polymer({
       is: 'nuxeo-input',
-
+      behaviors: [Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior],
       properties: {
         /**
          * Label.
@@ -159,6 +161,17 @@ An element for generic input in forms
          * A pattern to validate.
          */
         pattern: String
+      },
+
+      /* Override method from Polymer.IronValidatableBehavior. */
+      _getValidity: function() {
+        return this.$.paperInput._getValidity();
+      },
+
+      /* Override method from Polymer.IronValidatableBehavior. */
+      validate: function(value) {
+        this.invalid = !this.$.paperInput.validate();
+        return !this.invalid;
       },
 
       focus: function() {
