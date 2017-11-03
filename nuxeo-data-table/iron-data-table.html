@@ -246,7 +246,7 @@ Example:
                           item="[[item]]"
                           tabindex="-1"
                           selected="[[_isSelected(item, selectedItems, selectedItems.*)]]">
-              <nuxeo-data-table-checkbox hidden$="[[!selectionEnabled]]" tabindex="0" checked="[[selected]]" on-tap="_onCheckBoxTap"></nuxeo-data-table-checkbox>
+              <nuxeo-data-table-checkbox hidden$="[[!selectionEnabled]]" tabindex="0" checked$="[[selected]]" on-tap="_onCheckBoxTap"></nuxeo-data-table-checkbox>
               <template is="dom-repeat" items="[[columns]]" as="column" index-as="colIndex">
                 <nuxeo-data-table-cell template="[[column.template]]"
                                table="[[_this]]"
@@ -597,7 +597,8 @@ Example:
         } else {
           // unreliable with Shadow, document.activeElement doesn't go inside
           // the shadow root.
-          return target.contains(Polymer.dom(document.activeElement).node) || target.tagName === 'A';
+          return  target.contains(Polymer.dom(document.activeElement).node) || 
+                  target.tagName === 'NUXEO-DATA-TABLE-CHECKBOX' || target.tagName === 'A' ;
         }
       },
 
@@ -687,8 +688,8 @@ Example:
       },
 
       _onCheckBoxTap: function(e) {
-        e.stopPropagation();
         if (this.selectionEnabled) {
+          this.$.list.toggleSelectionForIndex(e.model.index);
           var target = e.target || e.srcElement;
           target.fire('selected', {index: e.model.index, shiftKey: e.detail.sourceEvent.shiftKey});
           this._updateFlags();
