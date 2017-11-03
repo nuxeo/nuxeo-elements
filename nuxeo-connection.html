@@ -55,7 +55,7 @@ Note: Elements that depend on a connectionId use `nx` as default.
         connectionId: {type: String, value: 'nx'},
 
         /* The base URL of the Nuxeo server. */
-        url: {type: String, value: ''},
+        url: {type: String, value: '', notify: true},
 
         /* The repository name. */
         repositoryName: {type: String, value: null},
@@ -91,7 +91,7 @@ Note: Elements that depend on a connectionId use `nx` as default.
         if (this.client) {
           // if this instance does not have any properties set properties from the client
           if (!this.url && !this.username && !this.password && !this.repositoryName) {
-            this.url = this.client._baseURL;
+            this.set('url', this.client._baseURL);
             this.username = this.client._username;
             this.password = this.client._password;
             this.repositoryName = this.client._baseOptions.repositoryName;
