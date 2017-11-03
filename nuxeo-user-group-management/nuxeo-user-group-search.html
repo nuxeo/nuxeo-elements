@@ -117,70 +117,70 @@ Used by `nuxeo-user-management`
     <template is="dom-if" if="[[!_showResults(searchTerm)]]">
 
       <!-- groups -->
-      <paper-card>
-      <h3 class="title">
-        <iron-icon icon="nuxeo:group"></iron-icon> [[i18n('userGroupSearch.groups')]]
-      </h3>
-      <div class="table">
-        <div class="table-header">
-          <div class="flex-4">[[i18n('userGroupSearch.name')]]</div>
-          <div class="flex-2">[[i18n('userGroupSearch.identifier')]]</div>
-          <div class="flex-4">[[i18n('userGroupSearch.contains')]]</div>
-        </div>
-        <div class="table-rows">
-          <template is="dom-repeat" items="[[groups.entries]]" as="item">
-            <div class="table-row" on-tap="_manageGroup">
-              <div class="flex-4">
-                <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
+      <paper-card name="groups">
+        <h3 class="title">
+          <iron-icon icon="nuxeo:group"></iron-icon> [[i18n('userGroupSearch.groups')]]
+        </h3>
+        <div class="table">
+          <div class="table-header">
+            <div class="flex-4">[[i18n('userGroupSearch.name')]]</div>
+            <div class="flex-2">[[i18n('userGroupSearch.identifier')]]</div>
+            <div class="flex-4">[[i18n('userGroupSearch.contains')]]</div>
+          </div>
+          <div class="table-rows">
+            <template is="dom-repeat" items="[[groups.entries]]" as="item">
+              <div class="table-row" on-tap="_manageGroup">
+                <div class="flex-4">
+                  <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
+                </div>
+                <div name="id" class="flex-2">[[item.groupname]]</div>
+                <div class="flex-4">
+                  <span class="counter">[[_countUsers(item.memberUsers)]]</span>
+                  <span class="counter">[[_countGroups(item.memberGroups)]]</span>
+                </div>
               </div>
-              <div class="flex-2">[[item.groupname]]</div>
-              <div class="flex-4">
-                <span class="counter">[[_countUsers(item.memberUsers)]]</span>
-                <span class="counter">[[_countGroups(item.memberGroups)]]</span>
+            </template>
+            <template is="dom-if" if=[[_empty(groups.entries)]]>
+              <div class="table-row">
+                <div class="emptyResult">[[i18n('userGroupSearch.empty.groups')]]</div>
               </div>
-            </div>
-          </template>
-          <template is="dom-if" if=[[_empty(groups.entries)]]>
-            <div class="table-row">
-              <div class="emptyResult">[[i18n('userGroupSearch.empty.groups')]]</div>
-            </div>
-          </template>
+            </template>
+          </div>
         </div>
-      </div>
-      <nuxeo-pagination-controls page="{{groupsCurrentPage}}" number-of-pages="[[groups.numberOfPages]]"></nuxeo-pagination-controls>
+        <nuxeo-pagination-controls page="{{groupsCurrentPage}}" number-of-pages="[[groups.numberOfPages]]"></nuxeo-pagination-controls>
       </paper-card>
 
       <!-- users -->
-      <paper-card>
-      <h3 class="title">
-        <iron-icon icon="nuxeo:user"></iron-icon> [[i18n('userGroupSearch.users.heading')]]
-      </h3>
-      <div class="table">
-        <div class="table-header">
-          <div class="flex-4">[[i18n('userGroupSearch.name')]]</div>
-          <div class="flex-2">[[i18n('userGroupSearch.identifier')]]</div>
-          <div class="flex-4">[[i18n('userGroupSearch.email')]]</div>
-        </div>
-        <div class="table-rows">
-          <template is="dom-repeat" items="[[users.entries]]" as="item">
-            <div class="table-row" on-tap="_manageUser">
-              <div class="flex-4">
-                <template is="dom-if" if="[[_userHasName(item)]]">
-                  <nuxeo-user-tag user="[[item]]"></nuxeo-user-tag>
-                </template>
+      <paper-card name="users">
+        <h3 class="title">
+          <iron-icon icon="nuxeo:user"></iron-icon> [[i18n('userGroupSearch.users.heading')]]
+        </h3>
+        <div class="table">
+          <div class="table-header">
+            <div class="flex-4">[[i18n('userGroupSearch.name')]]</div>
+            <div class="flex-2">[[i18n('userGroupSearch.identifier')]]</div>
+            <div class="flex-4">[[i18n('userGroupSearch.email')]]</div>
+          </div>
+          <div class="table-rows">
+            <template is="dom-repeat" items="[[users.entries]]" as="item">
+              <div class="table-row" on-tap="_manageUser">
+                <div class="flex-4">
+                  <template is="dom-if" if="[[_userHasName(item)]]">
+                    <nuxeo-user-tag user="[[item]]"></nuxeo-user-tag>
+                  </template>
+                </div>
+                <div name="id" class="flex-2">[[item.id]]</div>
+                <div class="flex-4">[[item.properties.email]]</div>
               </div>
-              <div class="flex-2">[[item.id]]</div>
-              <div class="flex-4">[[item.properties.email]]</div>
-            </div>
-          </template>
-          <template is="dom-if" if=[[_empty(users.entries)]]>
-            <div class="table-row">
-              <div class="emptyResult">[[i18n('userGroupSearch.empty.users')]]</div>
-            </div>
-          </template>
+            </template>
+            <template is="dom-if" if=[[_empty(users.entries)]]>
+              <div class="table-row">
+                <div class="emptyResult">[[i18n('userGroupSearch.empty.users')]]</div>
+              </div>
+            </template>
+          </div>
         </div>
-      </div>
-      <nuxeo-pagination-controls page="{{usersCurrentPage}}" number-of-pages="[[users.numberOfPages]]"></nuxeo-pagination-controls>
+        <nuxeo-pagination-controls page="{{usersCurrentPage}}" number-of-pages="[[users.numberOfPages]]"></nuxeo-pagination-controls>
       </paper-card>
     </template>
   </template>
