@@ -200,7 +200,7 @@ Used by `nuxeo-user-group-management`
           this.errors = this.i18n('createUser.errorAdministratorsGroup');
           return;
         }
-        this._doCreate(this.user).then(function(user) {
+        this._doCreate(this.user).then(function() {
           this._resetFields();
           if (!this._createAnother) {
             this._goHome();
@@ -237,7 +237,7 @@ Used by `nuxeo-user-group-management`
       },
 
       _resetFields: function() {
-        this.user = {};
+        this.user = {groups: []};
         if (this.$.passwordEditor) {
           this.$.passwordEditor.resetFields();
         }
