@@ -172,6 +172,7 @@ An element to display page provider results as a grid with infinite scrolling.
       <iron-list id="list" items="[[items]]" as="[[as]]" grid
                  selection-enabled selected-item="{{selectedItem}}" selected-items="{{selectedItems}}"
                  on-scroll="_scrollChanged">
+        <slot></slot>
       </iron-list>
 
       <template is="dom-if" if="[[displayNavigation]]">
@@ -237,15 +238,6 @@ An element to display page provider results as a grid with infinite scrolling.
       observers: [
         '_refresh(nxProvider, sortSelected)'
       ],
-
-      ready: function() {
-        if (!this._templateStamped) {
-          this.$.list.dataHost = this.dataHost;
-          this._template = Polymer.dom(this).querySelector('template');
-          Polymer.dom(this.$.list).appendChild(this._template);
-          this._templateStamped = true;
-        }
-      },
 
       _removeFilter: function(e) {
         this.fire('column-filter-changed', {value: '', filterBy: e.model.filter.path});
