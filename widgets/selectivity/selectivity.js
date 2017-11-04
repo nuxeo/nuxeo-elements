@@ -5619,7 +5619,7 @@ assign(Selectivity.prototype, {
 
         this._value = newValue;
 
-        if (this.options.initSelection) {
+        if (this._value && this.options.initSelection) {
             this.options.initSelection(
                 newValue,
                 function(data) {
@@ -5673,7 +5673,7 @@ assign(Selectivity.prototype, {
      * @param Optional additional options added to the event object.
      */
     triggerChange: function(options) {
-        var data = assign({ value: this._value }, options);
+        var data = assign({ value: this._value, items: this._data}, options);
         this.triggerEvent('change', data);
         this.triggerEvent('selectivity-change', data);
     },

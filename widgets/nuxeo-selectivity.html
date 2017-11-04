@@ -317,7 +317,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
       .selectivity-caret:before {
         content: "\25bc";
       }
-      
+
     </style>
 
     <nuxeo-operation id="op" op="[[operation]]"></nuxeo-operation>
@@ -438,7 +438,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
             return this._newEntryFormatter.bind(this);
           }
         },
-    
+
 
         /**
          * Function that transforms the entries added using the value property into object
@@ -488,6 +488,14 @@ An element wrapping selectivity.js and relying on an operation for suggestions
          * Selected items.
          */
         selectedItems: {
+          type: Array,
+          notify: true
+        },
+
+        /**
+         * Selected item.
+         */
+        selectedItem: {
           type: Object,
           notify: true
         },
@@ -653,6 +661,11 @@ An element wrapping selectivity.js and relying on an operation for suggestions
       _updateSelection: function(e) {
         this._inUpdateSelection = true;
         this.value = this.multiple ? e.value.slice(0) : e.value;
+        if (this.multiple) {
+          this.selectedItems = e.items.slice(0);
+        } else {
+          this.selectedItem = e.items;
+        }
         if (e.added) {
           if (this.addedEntryHandler) {
             this.addedEntryHandler(e.added);
