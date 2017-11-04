@@ -161,7 +161,7 @@ Example:
         if (this._isNew()) {
           var op = this.$$('#createCollectionOp');
           // XXX
-          var name = this.$.nxSelect.$.input.textContent.trim();
+          var name = this.$.nxSelect.selectedItem.item.displayLabel;
           op.input = undefined;
           op.params = {
             'name': name,
@@ -218,7 +218,7 @@ Example:
       },
 
       _resetPopup: function() {
-        this.collection = '';
+        this.set('collection', null);
         this.description = '';
       }
 
