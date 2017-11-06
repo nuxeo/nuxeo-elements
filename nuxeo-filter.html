@@ -211,6 +211,10 @@ limitations under the License.
           delete template.__templatizeOwner;
           this.templatize(template);
           this._instance = this.stamp();
+          for (var prop in this.properties) {
+            this._instance._setPendingProperty(prop, this[prop]);
+          }
+          this._instance._flushProperties()
           var root = this._instance.root;
           parent.insertBefore(root, this);
         }
