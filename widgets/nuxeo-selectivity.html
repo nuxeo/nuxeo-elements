@@ -51,8 +51,8 @@ An element wrapping selectivity.js and relying on an operation for suggestions
         font-size: .923rem;
       }
 
-       :host([invalid]) .select2-container ::content .select2-choice,
-       :host([invalid]) .select2-container ::content .select2-search-field {
+       :host([invalid]) .select2-container ::slotted .select2-choice,
+       :host([invalid]) .select2-container ::slotted .select2-search-field {
         border-bottom: 2px solid var(--paper-input-container-invalid-color, red) !important;
       }
 
