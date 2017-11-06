@@ -201,7 +201,7 @@ Example:
             && this.user.contextParameters.userprofile
             && this.user.contextParameters.userprofile.avatar) {
               this._output = '';
-              this.$.container.style.background = 'url(' + this.user.contextParameters.userprofile.avatar + ')';
+              this.$.container.style.background = 'url(' + this.user.contextParameters.userprofile.avatar.data + ')';
               this.$.container.style.backgroundRepeat = "no-repeat";
               this.$.container.style.backgroundSize = this.height + 'px' + ' ' + this.height + 'px';
           } else {
