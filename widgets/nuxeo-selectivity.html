@@ -682,7 +682,8 @@ An element wrapping selectivity.js and relying on an operation for suggestions
           var fn = function(item) {
             return (item && item['entity-type']) ? this.idFunction(item) : item;
           }.bind(this);
-          this._selectivity.setValue(Array.isArray(newValue) ? newValue.map(fn) : fn(newValue));
+          this._selectivity.setValue(Array.isArray(newValue) ? newValue.map(fn) : fn(newValue), { triggerChange: false });
+          this._selectivity.rerenderSelection();
         }
         this._inUpdateSelection = false;
       },
