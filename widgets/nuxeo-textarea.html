@@ -29,14 +29,17 @@ An element for generic textarea input in forms
   <template>
 
     <style>
-      paper-textarea[required] ::content .label-and-input-container::after {
+      :host {
+        position: relative;
+      }
+
+      :host([required]) paper-textarea::after {
         display: block;
         content: '*';
         position: absolute;
         right: 0;
-        top: -1rem;
+        top: 1rem;
         color: var(--paper-input-container-invalid-color, red);
-        font-size: 1.2em;
       }
     </style>
 
@@ -48,6 +51,7 @@ An element for generic textarea input in forms
                     readonly$="[[readonly]]"
                     error-message="[[errorMessage]]"
                     always-float-label>
+      <div class="required" slot="suffix">*</div>
     </paper-textarea>
 
   </template>

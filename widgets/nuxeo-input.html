@@ -31,14 +31,17 @@ An element for generic input in forms
   <template>
 
     <style>
-      paper-input[required] ::slotted(.label-and-input-container::after) {
+      :host {
+        position: relative;
+      }
+
+      :host([required]) paper-input::after {
         display: block;
         content: '*';
         position: absolute;
         right: 0;
-        top: -1rem;
+        top: 1rem;
         color: var(--paper-input-container-invalid-color, red);
-        font-size: 1.2em;
       }
     </style>
 

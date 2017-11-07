@@ -35,14 +35,23 @@ Example:
 <dom-module id="nuxeo-date-picker">
   <template>
     <style>
-      paper-input {
+      :host {
         position: relative;
-        z-index: 2 !important;
+      }
 
+      :host([required]) paper-input::after {
+        display: block;
+        content: '*';
+        position: absolute;
+        right: 0;
+        top: 1rem;
+        color: var(--paper-input-container-invalid-color, red);
+      }
+
+      paper-input {
         --paper-input-container-input-webkit-spinner: {
           -webkit-appearance: none;
         };
-
         --paper-input-container-input-webkit-clear: {
           -webkit-appearance: none;
         };
