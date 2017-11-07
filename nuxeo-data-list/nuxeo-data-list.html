@@ -99,6 +99,11 @@ Example:
         @apply --layout-fit;
       }
 
+      .header {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+      }
+
       .emptyResult {
         opacity: .5;
         display: block;
@@ -124,7 +129,7 @@ Example:
 
       <slot name="nuxeo-selection-toolbar"></slot>
 
-      <div class="layout horizontal center">
+      <div class="header">
 
         <template is="dom-if" if="[[displaySort]]">
           <nuxeo-sort-select label="[[sortLabel]]" options="[[sortOptions]]" selected="{{sortSelected}}"></nuxeo-sort-select>

@@ -101,6 +101,11 @@ An element to display page provider results as a grid with infinite scrolling.
         @apply --layout-fit;
       }
 
+      .header {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+      }
+
       .emptyResult {
         opacity: .5;
         display: block;
@@ -144,7 +149,7 @@ An element to display page provider results as a grid with infinite scrolling.
 
       <slot name="nuxeo-selection-toolbar"></slot>
 
-      <div class="layout horizontal center">
+      <div class="header">
 
         <template is="dom-if" if="[[displaySort]]">
           <nuxeo-sort-select label="[[sortLabel]]" options="[[sortOptions]]" selected="{{sortSelected}}"></nuxeo-sort-select>
