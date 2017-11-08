@@ -134,7 +134,7 @@ limitations under the License.
       slot2 = fixture('slot2');
     });
 
-   test('empty slots and content', function() {
+    test('empty slots and content', function() {
       expect(_content(slot1)).to.be.empty;
 
       fixture('emptySlotContent');
@@ -148,7 +148,7 @@ limitations under the License.
       expect(_content(slot1).length).to.be.equal(1);
       expect(_content(slot2)).to.be.empty;
 
-      
+
       document.getElementById('slot1Content2').create();
       expect(_content(slot1).length).to.be.equal(2);
       expect(_content(slot2)).to.be.empty;
@@ -201,7 +201,7 @@ limitations under the License.
       expect(content.length).to.be.equal(1);
       expect(content[0].textContent).to.be.equal('Disabled content');
     });
- 
+
     test('slot content override', function() {
 
       fixture('slot1Content1');

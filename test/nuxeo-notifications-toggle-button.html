@@ -68,19 +68,8 @@ limitations under the License.
 
 <script>
   suite('<nuxeo-notifications-toggle-button>', function() {
-    var server, doc;
+    var server;
     setup(function() {
-      doc = {
-        "entity-type": "document",
-        "uid": "1",
-        "contextParameters": {
-          "subscribedNotifications": [
-            "Creation",
-            "Modification"
-          ]
-        },
-        "facets": []
-      };
       server = sinon.fakeServer.create();
       server.autoRespond = true;
       // login
