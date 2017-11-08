@@ -52,8 +52,8 @@
     "paper-dialog": "PolymerElements/paper-dialog#^2.0.0",
     "paper-toggle-button": "PolymerElements/paper-toggle-button#^2.0.0",
     "iron-collapse": "PolymerElements/iron-collapse#^2.0.0",
-    "nuxeo-elements": "nuxeo/nuxeo-elements#polymer-2",
-    "paper-typeahead": "nuxeo/paper-typeahead#polymer-2"
+    "nuxeo-elements": "nuxeo/nuxeo-elements#master",
+    "paper-typeahead": "nuxeo/paper-typeahead#0.6"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^2.0.0",
