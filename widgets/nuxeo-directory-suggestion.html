@@ -62,7 +62,8 @@ An element for selecting one or more entries from a given directory.
                    invalid="[[invalid]]"
                    init-selection="[[initSelection]]"
                    stay-open-on-select="[[stayOpenOnSelect]]"
-                   id-function="[[idFunction]]">
+                   id-function="[[idFunction]]"
+                   query-results-filter="[[queryResultsFilter]]">
     </nuxeo-selectivity>
 
   </template>
@@ -193,7 +194,12 @@ An element for selecting one or more entries from a given directory.
           value: function () {
             return this._initSelection.bind(this);
           }
-        }
+        },
+
+        /**
+         * Results filtering function (optional).
+         */
+         queryResultsFilter: Function
       },
 
       /* Override method from Polymer.IronValidatableBehavior. */
