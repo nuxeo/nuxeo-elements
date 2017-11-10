@@ -241,8 +241,17 @@ An element to display page provider results as a grid with infinite scrolling.
       },
 
       observers: [
-        '_refresh(nxProvider, sortSelected)'
+        'fetch(sortSelected)'
       ],
+
+      fetch: function() {
+        if (this._hasPageProvider() && this.sortSelected && this.sortSelected.field && this.sortSelected.order) {
+          var sort = {};
+          sort[this.sortSelected.field] = this.sortSelected.order;
+          this.nxProvider.sort = sort;
+          return this._fetchRange(0, this.nxProvider.pageSize, true);
+        }
+      },
 
       _removeFilter: function(e) {
         this.fire('column-filter-changed', {value: '', filterBy: e.model.filter.path});
@@ -250,15 +259,6 @@ An element to display page provider results as a grid with infinite scrolling.
 
       _onScrollTo: function(e) {
         this.scrollToIndex(e.detail.index)
-      },
-
-      _refresh: function() {
-        if (this.sortSelected && this._hasPageProvider()) {
-          var sort = {};
-          sort[this.sortSelected.field] = this.sortSelected.order;
-          this.nxProvider.sort = sort;
-          this.fetch();
-        }
       }
 
     });
