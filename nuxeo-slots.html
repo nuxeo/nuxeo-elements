@@ -66,6 +66,19 @@ limitations under the License.
         }
       }
 
+      // shared model
+      var sharedModel = {};
+      window.nuxeo = window.nuxeo || {};
+      window.nuxeo.slots = window.nuxeo.slots || {};
+      window.nuxeo.slots.setSharedModel = function(model) {
+        sharedModel = model;
+        Object.keys(REGISTRY).forEach(function(k) {
+          return REGISTRY[k] && REGISTRY[k].slots && REGISTRY[k].slots.forEach(function(slot) {
+            slot._updateSharedModel();
+          });
+        });
+      };
+
       /**
        * Custom element to help build pluggable applications.
        * Slots allow dynamic registration of content which will be stamped in the slot's parent.
@@ -115,6 +128,7 @@ limitations under the License.
 
         attached: function() {
           this._updateContent();
+          this._updateSharedModel();
         },
 
         detached: function() {
@@ -187,6 +201,12 @@ limitations under the License.
           } else {
             this._forwardHostProp(change.path.slice('model.'.length + 1), change.value);
           }
+        },
+
+        _updateSharedModel: function() {
+          Object.keys(sharedModel).forEach(function(prop) {
+            this._forwardHostProp(prop, sharedModel[prop]);
+          }.bind(this));
         },
 
         // Implements extension point from Templatizer mixin
