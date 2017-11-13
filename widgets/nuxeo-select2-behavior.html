@@ -304,6 +304,7 @@ limitations under the License.
 
       jQuery(el).on('change', this._updateSelection.bind(this));
       jQuery(el).on('select2-open', this._handleClick.bind(this));
+      jQuery(el).on('select2-selecting', this._handleSelection.bind(this));
 
       // view or edit mode
       if (this.readonly) {
@@ -314,6 +315,17 @@ limitations under the License.
 
     _handleClick: function() {
       jQuery(this).closest('nuxeo-select2').click();
+    },
+
+    // XXX: workaround for: https://github.com/select2/select2/issues/2264
+    _handleSelection: function(e) {
+      if (this.multiple && this.stayOpenOnSelect && this.minChars > 0){
+        e.preventDefault();
+        var target =  jQuery(this._el);
+        var data = target.select2('data');
+        data.push(e.object);
+        target.select2('data', data);
+      }
     },
 
     _updateSelection: function(e) {
