@@ -40,10 +40,6 @@ An element for dialogs
         margin-top: 16px;
         background-color: var(--nuxeo-dialog-buttons-bar, white);
       }
-
-      :host > ::slotted(h2) {
-        margin: 0;
-      }
     </style>
 
     <slot></slot>
@@ -76,8 +72,7 @@ An element for dialogs
       listeners: {
         'iron-overlay-opened': '_opened',
         'iron-overlay-closed': '_closed',
-        'iron-overlay-canceled': '_closed',
-        'keydown': '_keyDown'
+        'iron-overlay-canceled': '_closed'
       },
 
       disconnectedCallback: function() {
@@ -85,10 +80,6 @@ An element for dialogs
         if (this._observer) {
           this.detached();
         }
-      },
-
-      _keyDown: function(e) {
-        e.preventDefault();
       },
 
       _opened: function(e) {
