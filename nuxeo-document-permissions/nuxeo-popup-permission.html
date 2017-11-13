@@ -18,7 +18,6 @@ limitations under the License.
 <link rel="import" href="../../iron-autogrow-textarea/iron-autogrow-textarea.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
-<link rel="import" href="../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../../paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
@@ -32,6 +31,7 @@ limitations under the License.
 <link rel="import" href="../widgets/nuxeo-date-picker.html">
 <link rel="import" href="../widgets/nuxeo-textarea.html">
 <link rel="import" href="../widgets/nuxeo-select.html">
+<link rel="import" href="../widgets/nuxeo-dialog.html">
 
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 
@@ -65,29 +65,28 @@ limitations under the License.
       <paper-icon-button on-tap="togglePopup" icon="nuxeo:edit"></paper-icon-button>
     </template>
 
-    <paper-dialog id="popupRight" modal no-auto-focus>
+    <nuxeo-dialog id="popupRight" with-backdrop>
       <h2>[[_computedTitle]]</h2>
 
-      <!-- Give acces to row -->
+      <!-- Give access to row -->
       <paper-dialog-scrollable>
         <template is="dom-if" if="{{!updatingACE}}">
           <template is="dom-if" if="{{!shareWithExternal}}">
             <div>
-                <nuxeo-user-suggestion label="[[i18n('popupPermission.userGroup')]]" value="{{params.username}}" name="userGroup"></nuxeo-user-suggestion>
+              <nuxeo-user-suggestion label="[[i18n('popupPermission.userGroup')]]" value="{{params.username}}" name="userGroup"></nuxeo-user-suggestion>
             </div>
           </template>
           <template is="dom-if" if="{{shareWithExternal}}">
-              <div>
-                <paper-input type="email"t id="email" label="[[i18n('popupPermission.email')]]" placeholder="name@company.com" value="{{params.email}}"
-                  required auto-validate></paper-input type="email">
+            <div>
+              <paper-input type="email" id="email" label="[[i18n('popupPermission.email')]]" placeholder="name@company.com" value="{{params.email}}"
+                required auto-validate></paper-input>
             </div>
           </template>
         </template>
         <!-- Right row -->
-        <div layout horizontal>
+        <div>
           <nuxeo-select label="[[i18n('popupPermission.right')]]" name="right"
                         selected="{{params.permission}}" options="[[userVisiblePermissions]]">
-
           </nuxeo-select>
         </div>
         <div>
@@ -108,24 +107,23 @@ limitations under the License.
           <div>
             <nuxeo-date-picker id="end" label="[[i18n('popupPermission.to')]]" value="{{params.end::change}}"
                                disabled="[[permissionIsPermanent]]" required="[[shareWithExternal]]"></nuxeo-date-picker>
-
           </div>
         </div>
         <div id="notification">
           <template is="dom-if" if="{{!shareWithExternal}}">
-            <div layout horizontal>
+            <div>
               <paper-checkbox noink checked="{{params.notify}}" name="notify">
                 [[i18n('popupPermission.notify')]]
               </paper-checkbox>
             </div>
           </template>
-          <div layout horizontal>
+          <div>
             <nuxeo-textarea
                     label="[[i18n('popupPermission.notifyLabel')]]"
                     placeholder="[[i18n('popupPermission.notifyPlaceholder')]]"
                     disabled="[[!params.notify]]"
                     name="notifyEmail"
-                    id="commentText"  value="{{params.comment}}" max-rows="4"></nuxeo-textarea>
+                    id="commentText" value="{{params.comment}}" max-rows="4"></nuxeo-textarea>
           </div>
         </div>
       </paper-dialog-scrollable>
@@ -141,7 +139,7 @@ limitations under the License.
           <paper-button noink class="primary" on-tap="doUpdate">[[i18n('popupPermission.update')]]</paper-button>
         </template>
       </div>
-    </paper-dialog>
+    </nuxeo-dialog>
   </template>
 
   <script>

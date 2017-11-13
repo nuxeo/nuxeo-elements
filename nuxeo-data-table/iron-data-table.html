@@ -290,8 +290,8 @@ Example:
     <slot id="columns"></slot>
     <!-- content select="template[is=row-detail]"></content -->
 
-    <nuxeo-dialog id="dialog" modal>
-      <h1>[[i18n('command.add')]]</h1>
+    <nuxeo-dialog id="dialog" with-backdrop>
+      <h2>[[i18n('command.add')]]</h2>
       <iron-form>
         <form id="editForm">
           <slot id="form" name="form"></slot>

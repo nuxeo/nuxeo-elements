@@ -20,12 +20,12 @@ limitations under the License.
 <link rel="import" href="../../paper-input/paper-input.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-card/paper-card.html">
-<link rel="import" href="../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-toast/paper-toast.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../widgets/nuxeo-user-suggestion.html">
 <link rel="import" href="../widgets/nuxeo-group-tag.html">
+<link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="nuxeo-edit-password.html">
 <link rel="import" href="nuxeo-user-group-permissions-table.html">
 
@@ -152,7 +152,7 @@ Used by `nuxeo-user-group-management`
         margin-top: 1.5em;
       }
 
-      paper-dialog {
+      nuxeo-dialog {
         min-width: 400px;
         padding-top: 24px;
       }
@@ -197,17 +197,15 @@ Used by `nuxeo-user-group-management`
             <iron-icon noink icon="nuxeo:delete"></iron-icon> [[i18n('command.delete')]]
           </paper-button>
         </template>
-        <paper-dialog id="deleteUserDialog" modal>
-          <div class="horizontal layout center confirm">
-            [[i18n('userManagement.delete.user.confirm')]]
-          </div>
+        <nuxeo-dialog id="deleteUserDialog" with-backdrop>
+          <h2>[[i18n('userManagement.delete.user.confirm')]]</h2>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
               <paper-button noink dialog-dismiss>[[i18n('label.no')]]</paper-button>
             </div>
             <paper-button noink class="primary" on-tap="_deleteUser">[[i18n('label.yes')]]</paper-button>
           </div>
-        </paper-dialog>
+        </nuxeo-dialog>
 
         <!-- change password -->
         <template is="dom-if" if=[[!readonly]]>
@@ -215,8 +213,8 @@ Used by `nuxeo-user-group-management`
             <iron-icon icon="nuxeo:lock"></iron-icon> [[i18n('command.change.password')]]
           </paper-button>
         </template>
-        <paper-dialog id="changePasswordDialog" modal>
-          <h3>[[i18n('command.change.password')]]</h3>
+        <nuxeo-dialog id="changePasswordDialog" with-backdrop>
+          <h2>[[i18n('command.change.password')]]</h2>
           <iron-form id="changePasswordForm">
             <form class="vertical layout">
               <nuxeo-edit-password required id="passwordEditor"></nuxeo-edit-password>
@@ -230,7 +228,7 @@ Used by `nuxeo-user-group-management`
               [[i18n('command.save.changes')]]
             </paper-button>
           </div>
-        </paper-dialog>
+        </nuxeo-dialog>
 
         <!-- edit -->
         <template is="dom-if" if=[[!readonly]]>
@@ -238,8 +236,8 @@ Used by `nuxeo-user-group-management`
             <iron-icon icon="nuxeo:edit"></iron-icon> [[i18n('userManagement.editUser.button')]]
           </paper-button>
         </template>
-        <paper-dialog id="editUserDialog" modal>
-          <h3>[[i18n('userManagement.editUser.heading')]]</h3>
+        <nuxeo-dialog id="editUserDialog" with-backdrop>
+          <h2>[[i18n('userManagement.editUser.heading')]]</h2>
           <iron-form  id="editUserForm">
             <form class="vertical layout">
               <paper-input label="[[i18n('userManagement.username')]]" value="[[user.properties.username]]"
@@ -255,7 +253,7 @@ Used by `nuxeo-user-group-management`
               [[i18n('command.save.changes')]]
             </paper-button>
           </div>
-        </paper-dialog>
+        </nuxeo-dialog>
 
       </div>
     </div>
@@ -341,17 +339,15 @@ Used by `nuxeo-user-group-management`
       </paper-card>
     </template>
 
-    <paper-dialog id="dialog" modal class="vertical layout">
-      <div class="horizontal layout confirm">
-        [[i18n('userManagement.removeUserFromGroup.confirm', user.id, _removedGroup.name)]]
-      </div>
+    <nuxeo-dialog id="dialog" with-backdrop>
+      <h2>[[i18n('userManagement.removeUserFromGroup.confirm', user.id, _removedGroup.name)]]</h2>
       <div class="buttons horizontal end-justified layout">
         <div class="flex start-justified">
           <paper-button noink dialog-dismiss>[[i18n('label.no')]]</paper-button>
         </div>
         <paper-button noink dialog-confirm on-tap="_remove" class="primary">[[i18n('label.yes')]]</paper-button>
       </div>
-    </paper-dialog>
+    </nuxeo-dialog>
   </template>
 
   <script>

@@ -18,6 +18,7 @@ limitations under the License.
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../../paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../widgets/nuxeo-dialog.html">
 
 <!--
 Element providing a confirmation popup.
@@ -27,24 +28,15 @@ Element providing a confirmation popup.
 -->
 <dom-module id="nuxeo-popup-confirm">
   <template>
-
-    <style>
-      input {
-        width: 100%;
-        line-height: 1.4em;
-        padding: 0.5em;
-      }
-    </style>
-
-    <paper-dialog id="dialog">
+    <nuxeo-dialog id="dialog" with-backdrop>
       <paper-dialog-scrollable>
-        <content></content>
+        <slot></slot>
       </paper-dialog-scrollable>
       <div class="buttons">
         <paper-button dialog-dismissive on-tap="_onCancel">{{cancelLabel}}</paper-button>
         <paper-button dialog-affirmative class="colorful" on-tap="_onConfirm">{{deleteLabel}}</paper-button>
       </div>
-    </paper-dialog>
+    </nuxeo-dialog>
   </template>
 
   <script>

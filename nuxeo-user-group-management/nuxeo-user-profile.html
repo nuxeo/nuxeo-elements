@@ -23,11 +23,11 @@ limitations under the License.
 <link rel="import" href="../../paper-input/paper-input.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-card/paper-card.html">
-<link rel="import" href="../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-toast/paper-toast.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../widgets/nuxeo-group-tag.html">
+<link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="nuxeo-user-group-permissions-table.html">
 
 <!--
@@ -102,7 +102,7 @@ Example:
         margin: 2em;
       }
 
-      paper-dialog {
+      nuxeo-dialog {
         min-width: 400px;
         padding-top: 24px;
       }
@@ -137,7 +137,7 @@ Example:
             <iron-icon icon="nuxeo:lock"></iron-icon> [[i18n('userProfile.password.change')]]
           </paper-button>
         </template>
-        <paper-dialog id="changePasswordDialog" with-backdrop>
+        <nuxeo-dialog id="changePasswordDialog" with-backdrop>
           <h3>[[i18n('userProfile.password.change')]]</h3>
 
           <iron-form id="changePasswordForm">
@@ -166,7 +166,7 @@ Example:
               [[i18n('command.save.changes')]]
             </paper-button>
           </div>
-        </paper-dialog>
+        </nuxeo-dialog>
       </div>
     </div>
 

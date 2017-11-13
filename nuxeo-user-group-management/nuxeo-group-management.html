@@ -24,13 +24,13 @@ limitations under the License.
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-card/paper-card.html">
-<link rel="import" href="../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-input/paper-input.html">
 <link rel="import" href="../../paper-toast/paper-toast.html">
 <link rel="import" href="../widgets/nuxeo-group-tag.html">
 <link rel="import" href="../widgets/nuxeo-tag.html">
 <link rel="import" href="../widgets/nuxeo-user-tag.html">
+<link rel="import" href="../widgets/nuxeo-dialog.html">
 
 <!--
 An element for managing a group.
@@ -182,24 +182,8 @@ Used by `nuxeo-user-group-management`
         width: 150px;
       }
 
-      paper-dialog[id="editGroupDialog"] {
+      nuxeo-dialog[id="editGroupDialog"] {
         width: 40%;
-      }
-
-      paper-dialog paper-button {
-        padding: .7em .57em;
-      }
-
-      paper-dialog paper-button.primary {
-        background-color: var(--nuxeo-button-primary, #00adff);
-        color: #fff;
-      }
-
-      paper-dialog paper-button.primary:hover,
-      paper-dialog paper-button.primary:focus {
-        background-color: var(--nuxeo-button-primary-focus, #0079b3);
-        font-weight: inherit;
-        color: #fff !important;
       }
 
       .buttons {
@@ -235,31 +219,27 @@ Used by `nuxeo-user-group-management`
 
     <paper-toast id="toast"></paper-toast>
 
-    <paper-dialog id="deleteGroupDialog" modal>
-      <div class="horizontal layout confirm">
-        [[i18n('groupManagement.delete.confirm')]]
-      </div>
+    <nuxeo-dialog id="deleteGroupDialog" with-backdrop>
+      <h2>[[i18n('groupManagement.delete.confirm')]]</h2>
       <div class="buttons horizontal end-justified layout">
         <div class="flex start-justified">
           <paper-button noink dialog-dismiss>[[i18n('label.no')]]</paper-button>
         </div>
         <paper-button noink class="primary" on-tap="_deleteGroup">[[i18n('label.yes')]]</paper-button>
       </div>
-    </paper-dialog>
+    </nuxeo-dialog>
 
-    <paper-dialog id="rmFromGroupDialog" modal class="vertical layout">
-      <div class="horizontal layout confirm">
-        [[i18n('groupManagement.removeUserFromGroup.confirm', _removedMember.id)]]
-      </div>
+    <nuxeo-dialog id="rmFromGroupDialog" with-backdrop class="vertical layout">
+      <h2>[[i18n('groupManagement.removeUserFromGroup.confirm', _removedMember.id)]]</h2>
       <div class="buttons horizontal end-justified layout">
         <div class="flex start-justified">
           <paper-button noink dialog-dismiss>[[i18n('label.no')]]</paper-button>
         </div>
         <paper-button noink class="primary" dialog-confirm on-tap="_removeMember">[[i18n('label.yes')]]</paper-button>
       </div>
-    </paper-dialog>
+    </nuxeo-dialog>
 
-    <paper-dialog id="editGroupDialog" modal>
+    <nuxeo-dialog id="editGroupDialog" with-backdrop>
       <h2>[[i18n('groupManagement.editGroup.heading')]]</h2>
       <iron-form id="editForm">
         <form class="vertical layout">
@@ -279,32 +259,32 @@ Used by `nuxeo-user-group-management`
         </div>
         <paper-button noink class="primary" on-tap="_submitEditForm">[[i18n('command.save.changes')]]</paper-button>
       </div>
-    </paper-dialog>
+    </nuxeo-dialog>
 
     <paper-card>
-    <div class="header horizontal layout">
-      <paper-icon-button noink class="backButton" icon="icons:arrow-back" on-tap="_goHome"></paper-icon-button>
-      <iron-icon icon="nuxeo:user" class="avatar"></iron-icon>
-      <div class="layout vertical flex">
-        <h3 class="groupname">[[group.groupname]]</h3>
-        <h4 class="grouplabel">[[group.grouplabel]]</h4>
-        <h5 class="counter">[[_countUsers(group.memberUsers)]] + [[_countGroups(group.memberGroups)]]</h5>
-      </div>
-
-      <template is="dom-if" if=[[!readonly]]>
-        <div class="layout horizontal header-actions">
-          <paper-button id="deleteGroupButton" noink class="flex-end" on-tap="_toggleDeleteGroup">
-            <iron-icon icon="nuxeo:delete"></iron-icon> [[i18n('command.delete')]]
-          </paper-button>
-          <paper-button id="addMembersButton" noink class="flex-end primary" on-tap="_toggleEditMembers">
-            <iron-icon icon="nuxeo:add"></iron-icon> [[i18n('groupManagement.addMembers')]]
-          </paper-button>
-          <paper-button id="editGroupButton" noink on-tap="_toggleEditGroup" class="primary">
-            <iron-icon icon="nuxeo:edit"></iron-icon> [[i18n('groupManagement.editGroup')]]
-          </paper-button>
+      <div class="header horizontal layout">
+        <paper-icon-button noink class="backButton" icon="icons:arrow-back" on-tap="_goHome"></paper-icon-button>
+        <iron-icon icon="nuxeo:user" class="avatar"></iron-icon>
+        <div class="layout vertical flex">
+          <h3 class="groupname">[[group.groupname]]</h3>
+          <h4 class="grouplabel">[[group.grouplabel]]</h4>
+          <h5 class="counter">[[_countUsers(group.memberUsers)]] + [[_countGroups(group.memberGroups)]]</h5>
         </div>
-      </template>
-    </div>
+
+        <template is="dom-if" if=[[!readonly]]>
+          <div class="layout horizontal header-actions">
+            <paper-button id="deleteGroupButton" noink class="flex-end" on-tap="_toggleDeleteGroup">
+              <iron-icon icon="nuxeo:delete"></iron-icon> [[i18n('command.delete')]]
+            </paper-button>
+            <paper-button id="addMembersButton" noink class="flex-end primary" on-tap="_toggleEditMembers">
+              <iron-icon icon="nuxeo:add"></iron-icon> [[i18n('groupManagement.addMembers')]]
+            </paper-button>
+            <paper-button id="editGroupButton" noink on-tap="_toggleEditGroup" class="primary">
+              <iron-icon icon="nuxeo:edit"></iron-icon> [[i18n('groupManagement.editGroup')]]
+            </paper-button>
+          </div>
+        </template>
+      </div>
     </paper-card>
 
     <div class="card layout vertical" hidden$="[[!showEditMembers]]">
