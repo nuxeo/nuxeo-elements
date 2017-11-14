@@ -1,10 +1,20 @@
+<link rel="import" href="../../iron-form/iron-form.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 
 <!-- Part of `nuxeo-data-table` -->
 <dom-module id="nuxeo-data-table-form">
   <template>
-    <div id="container"></div>
+    <style>
+      #container {
+        margin: 24px;
+      }
+    </style>
+    <iron-form id="editForm">
+      <form>
+        <div id="container"></div>
+      </form>
+    </iron-form>
   </template>
   <script>
     Polymer({
@@ -18,6 +28,12 @@
           notify: true,
           observer: '_itemChanged'
         },
+        slot: {
+          value: 'form',
+          type: String,
+          reflectToAttribute: true,
+          readonly: true
+        },
         index: Number
       },
 
@@ -27,7 +43,12 @@
         this._instanceProps = {item: true};
         this.templatize(template);
         this.instance = this.stamp({item: this.item});
+        this.instance.dispatchEvent = function() {};
         Polymer.dom(this.$.container).appendChild(this.instance.root);
+      },
+
+      validateItem: function() {
+        return this.$.editForm.validate();
       },
 
       _itemChanged: function() {
