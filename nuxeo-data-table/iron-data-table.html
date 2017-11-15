@@ -219,7 +219,7 @@ Example:
                              table="[[_this]]"
                              template="[[column.headerTemplate]]"
                              width="[[column.width]]">
-              <nuxeo-data-table-column-sort sort-order="[[sortOrder]]" path="[[column.sortBy]]" on-sort-direction-changed="_sortDirectionChanged" hidden$="[[!column.sortBy]]"></nuxeo-data-table-column-sort>
+              <nuxeo-data-table-column-sort sort-order="[[sortOrder]]" path="[[column.sortBy]]" on-sort-direction-changed="_sort" hidden$="[[!column.sortBy]]"></nuxeo-data-table-column-sort>
             </nuxeo-data-table-cell>
           </template>
           <nuxeo-data-table-cell flex="0" hidden$="[[!editable]]"></nuxeo-data-table-cell>
@@ -231,9 +231,9 @@ Example:
         <div class="emptyResult">[[_computedEmptyLabel]]</div>
       </template>
 
-      <iron-list id="list"  items="[[items]]" as="item"
+      <iron-list id="list" items="[[items]]" as="item"
         selected-items="{{selectedItems}}" selected-item="{{selectedItem}}"
-        on-scroll="_scrollChanged">
+        on-scroll="_scroll">
 
         <template>
           <div class="item">
@@ -282,6 +282,8 @@ Example:
           </div>
         </template>
       </iron-list>
+
+      <iron-scroll-threshold id="scrollThreshold" scroll-target="list" on-lower-threshold="_threshold"></iron-scroll-threshold>
 
     </div>
     <paper-spinner-lite active></paper-spinner-lite>
@@ -400,7 +402,7 @@ Example:
 
         multiSelection: {
           type: Boolean,
-          value: true,
+          value: true
         },
 
         editable: {
@@ -411,8 +413,12 @@ Example:
         orderable: {
           type: Boolean,
           value: false
-        }
+        },
 
+        paginable: {
+          type: Boolean,
+          value: false
+        }
       },
 
       _itemChanged: function(e) {
@@ -466,7 +472,6 @@ Example:
           col.hiddenBack = col.hidden;
         });
       },
-
 
       ready: function() {
         this.$.list._selectionHandler = function(e) {
@@ -766,6 +771,49 @@ Example:
         if (e.target.withBackdrop) {
           e.target.parentNode.insertBefore(e.target.backdropElement, e.target);
         }
+      },
+
+      fetch: function() {
+        if (this._hasPageProvider()) {
+          if (this.paginable) {
+            if (this.nxProvider.page === 1) {
+              this._reset(0);
+              this.$.scrollThreshold.clearTriggers();
+            }
+            var result = this._fetchPage(this.nxProvider.page, this.nxProvider.pageSize);
+            if (result) {
+              result.then(function() {
+                this.nxProvider.page += 1;
+                this.$.scrollThreshold.clearTriggers();
+                this.$.list.notifyResize();
+              }.bind(this));
+            } else {
+              this.$.scrollThreshold.clearTriggers();
+              this.$.list.notifyResize();
+            }
+          } else {
+            return this._fetchRange(0, this.nxProvider.pageSize, true);
+          }
+        }
+      },
+
+      _threshold: function() {
+        if (this.paginable) {
+          this.fetch();
+        }
+      },
+
+      _scroll: function() {
+        if (!this.paginable) {
+          this._scrollChanged();
+        }
+      },
+
+      _sort: function(e) {
+        if (this.paginable) {
+          this.nxProvider.page = 1;
+        }
+        this._sortDirectionChanged(e);
       }
 
     });
