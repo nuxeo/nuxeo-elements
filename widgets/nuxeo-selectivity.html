@@ -486,7 +486,8 @@ An element wrapping selectivity.js and relying on an operation for suggestions
          */
         selectedItems: {
           type: Array,
-          notify: true
+          notify: true,
+          observer: '_selectedItemChanged'
         },
 
         /**
@@ -494,7 +495,8 @@ An element wrapping selectivity.js and relying on an operation for suggestions
          */
         selectedItem: {
           type: Object,
-          notify: true
+          notify: true,
+          observer: '_selectedItemChanged'
         },
 
         /**
@@ -684,6 +686,14 @@ An element wrapping selectivity.js and relying on an operation for suggestions
             this.removedEntryHandler(e.removed);
           }
         }
+      },
+
+      _selectedItemChanged: function() {
+        if (!this._inUpdateSelection && !this.selectedItems && !this.selectedItem) {
+          // allow reset widget
+          this._selectivity.setValue(null);
+        }
+        this._inUpdateSelection = false;
       },
 
       _valueChanged: function(newValue) {
