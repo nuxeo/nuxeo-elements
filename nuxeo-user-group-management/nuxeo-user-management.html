@@ -43,7 +43,7 @@ Used by `nuxeo-user-group-management`
 
 <dom-module id="nuxeo-user-management">
   <template>
-    <style include="nuxeo-styles">
+    <style include="iron-flex iron-flex-alignment iron-flex-factors nuxeo-styles">
       :host {
         display: block;
       }
@@ -51,6 +51,10 @@ Used by `nuxeo-user-group-management`
       label {
         font-weight: bold;
         margin-bottom: 5px;
+      }
+
+      .header {
+        @apply --layout-start;
       }
 
       .backButton {
@@ -100,6 +104,10 @@ Used by `nuxeo-user-group-management`
         font-size: .8rem;
         margin-left: 10px;
         text-decoration: underline;
+      }
+
+      .table {
+        margin-top: 12px;
       }
 
       .table-headers {
@@ -277,8 +285,7 @@ Used by `nuxeo-user-group-management`
       <nuxeo-user-suggestion id="picker" class="flex"
                              search-type="GROUP_TYPE"
                              placeholder="[[i18n('userManagement.search.groups')]]"
-                             value="{{selectedGroup}}"
-                             selected-items="{{selectedGroup}}"
+                             selected-item="{{selectedGroup}}"
                              result-formatter="[[resultFormatter]]"
                              query-results-filter="[[resultsFilter]]">
       </nuxeo-user-suggestion>

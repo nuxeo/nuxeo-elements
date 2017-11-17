@@ -45,7 +45,7 @@ Used by `nuxeo-user-group-management`
 -->
 <dom-module id="nuxeo-group-management">
   <template>
-    <style include="nuxeo-styles">
+    <style include="iron-flex iron-flex-alignment iron-flex-factors nuxeo-styles">
       :host {
         display: block;
       }
@@ -80,6 +80,7 @@ Used by `nuxeo-user-group-management`
 
       .header {
         margin-bottom: 2rem;
+        @apply --layout-start;
       }
 
       h3 iron-icon {
@@ -291,8 +292,7 @@ Used by `nuxeo-user-group-management`
       <nuxeo-user-suggestion id="picker"
                              search-type="USER_GROUP_TYPE"
                              placeholder="[[i18n('groupManagement.addEntity')]]"
-                             value="[[selectedMember]]"
-                             selected-items="{{selectedMember}}"
+                             selected-item="{{selectedMember}}"
                              result-formatter="[[resultFormatter]]"
                              query-results-filter="[[resultsFilter]]">
       </nuxeo-user-suggestion>
