@@ -173,9 +173,12 @@ An element wrapping selectivity.js and relying on an operation for suggestions
       * Multi-selection input
       */
 
-      .selectivity-multiple-input-container {
+      #input:not([readonly]) .selectivity-multiple-input-container {
         border-bottom: 1px solid #3a3a54;
         border-radius: 2px;
+      }
+
+      .selectivity-multiple-input-container {
         cursor: text;
         max-height: 10em;
         min-height: calc(2em + 4px);
@@ -233,8 +236,8 @@ An element wrapping selectivity.js and relying on an operation for suggestions
         background-color: #ccc;
       }
 
-      .selectivity-multiple-selected-item-remove {
-        color: #fff;
+      .selectivity-multiple-selected-item-remove, .selectivity-single-selected-item-remove {
+        color: #000;
         cursor: pointer;
         margin-left: -5px;
         padding: 5px;
@@ -272,12 +275,6 @@ An element wrapping selectivity.js and relying on an operation for suggestions
       .selectivity-single-selected-item {
         color: #000;
         @apply --nuxeo-tag;
-      }
-
-      .selectivity-single-selected-item-remove {
-        color: #000;
-        float: right;
-        padding: 0 5px;
       }
 
       .selectivity-caret {
@@ -324,7 +321,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
 
     <label class="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
 
-    <div id="input"></div>
+    <div id="input" readonly$="[[readonly]]"></div>
 
     <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
 
@@ -628,6 +625,10 @@ An element wrapping selectivity.js and relying on an operation for suggestions
 
         this._selectivity = new InputType(options);
 
+        if (this.value) {
+          this._valueChanged(this.value);
+        }
+
         // scope styles
         this.scopeSubtree(this.$.input, true);
       },
@@ -661,10 +662,18 @@ An element wrapping selectivity.js and relying on an operation for suggestions
       _updateSelection: function(e) {
         this._inUpdateSelection = true;
         this.value = this.multiple ? e.value.slice(0) : e.value;
+        this._inUpdateSelection = true;
         if (this.multiple) {
-          this.selectedItems = e.items.slice(0);
+          var items = [];
+          var valS = e.items.slice(0);
+          if (valS) {
+            valS.forEach(function(el) {
+              items.push(el.item ? el.item : el);
+            });
+          }
+          this.selectedItems = items;
         } else {
-          this.selectedItem = e.items;
+          this.set('selectedItem', e.items ? e.items.item : null);
         }
         if (e.added) {
           if (this.addedEntryHandler) {
@@ -680,7 +689,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
       _valueChanged: function(newValue) {
         if (this._selectivity && !this._inUpdateSelection) {
           var fn = function(item) {
-            return (item && item['entity-type']) ? this.idFunction(item) : item;
+            return (item && typeof item !== 'string') ? this.idFunction(item) : item;
           }.bind(this);
           this._selectivity.setValue(Array.isArray(newValue) ? newValue.map(fn) : fn(newValue), { triggerChange: false });
           this._selectivity.rerenderSelection();

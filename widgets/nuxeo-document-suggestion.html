@@ -50,6 +50,7 @@ An element for selecting one or more documents.
                    readonly="[[readonly]]"
                    value="{{value}}"
                    selected-items="{{selectedItems}}"
+                   selected-item="{{selectedItem}}"
                    selection-formatter="[[selectionFormatter]]"
                    result-formatter="[[resultFormatter]]"
                    required="[[required]]"
@@ -158,6 +159,14 @@ An element for selecting one or more documents.
          * Selected items.
          */
         selectedItems: {
+          type: Array,
+          notify: true
+        },
+
+        /**
+         * Selected item.
+         */
+        selectedItem: {
           type: Object,
           notify: true
         },

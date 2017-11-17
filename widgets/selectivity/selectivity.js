@@ -3366,13 +3366,11 @@ var callSuper = Selectivity.inherits(MultipleInput, Selectivity, {
      * @private
      */
     _updateInputWidth: function() {
-        if (this.enabled) {
-            var inputContent =
-                this.input.value || (!this._data.length && this.options.placeholder) || '';
-            this.input.setAttribute('size', inputContent.length + 2);
+        var inputContent =
+            this.input.value || (!this._data.length && this.options.placeholder) || '';
+        this.input.setAttribute('size', inputContent.length + 2);
 
-            this.positionDropdown();
-        }
+        this.positionDropdown();
     },
 
     /**

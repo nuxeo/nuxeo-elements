@@ -35,7 +35,15 @@ Example:
 -->
 <dom-module id="nuxeo-group-tag">
   <template>
+  <style>
+    a {
+      @apply --nuxeo-link;
+    }
 
+    a:hover {
+      @apply --nuxeo-link-hover;
+    }
+  </style>
     <nuxeo-tag icon="nuxeo:group">
       <template is="dom-if" if="[[!disabled]]">
         <a href$="[[_href(group)]]">[[_label(group)]]</a>

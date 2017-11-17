@@ -52,6 +52,7 @@ limitations under the License.
                    readonly="[[readonly]]"
                    value="{{value}}"
                    selected-items="{{selectedItems}}"
+                   selected-item="{{selectedItem}}"
                    required="[[required]]"
                    invalid="[[invalid]]"
                    selection-formatter="[[selectionFormatter]]"
@@ -143,6 +144,14 @@ limitations under the License.
          * Selected items.
          */
         selectedItems: {
+          type: Array,
+          notify: true
+        },
+
+        /**
+         * Selected item.
+         */
+        selectedItem: {
           type: Object,
           notify: true
         },

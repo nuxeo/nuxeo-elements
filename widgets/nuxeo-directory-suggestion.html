@@ -52,6 +52,7 @@ An element for selecting one or more entries from a given directory.
                    readonly="[[readonly]]"
                    value="{{value}}"
                    selected-items="{{selectedItems}}"
+                   selected-item="{{selectedItem}}"
                    selection-formatter="[[selectionFormatter]]"
                    required="[[required]]"
                    invalid="[[invalid]]"
@@ -158,6 +159,14 @@ An element for selecting one or more entries from a given directory.
          * Selected items.
          */
         selectedItems: {
+          type: Array,
+          notify: true
+        },
+
+        /**
+         * Selected item.
+         */
+        selectedItem: {
           type: Object,
           notify: true
         },
