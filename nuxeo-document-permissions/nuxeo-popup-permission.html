@@ -38,7 +38,7 @@ limitations under the License.
 <!-- Part of `nuxeo-document-permissions`-->
 <dom-module id="nuxeo-popup-permission">
   <template>
-    <style>
+    <style include="nuxeo-styles">
       /* Fix polyfill behavior for inputs disabled at initialization */
       span.btr-dateinput-value {
          color: #212121 !important;
@@ -221,7 +221,7 @@ limitations under the License.
         }
 
         // not a valid email
-        if (this.params.email && !document.querySelector("#email").validate()) {
+        if (this.params.email && !this.shadowRoot.querySelector('#email').validate()) {
           return;
         }
 
