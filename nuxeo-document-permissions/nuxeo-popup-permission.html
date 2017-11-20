@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../../iron-autogrow-textarea/iron-autogrow-textarea.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
@@ -38,7 +39,7 @@ limitations under the License.
 <!-- Part of `nuxeo-document-permissions`-->
 <dom-module id="nuxeo-popup-permission">
   <template>
-    <style include="nuxeo-styles">
+    <style include="iron-positioning">
       /* Fix polyfill behavior for inputs disabled at initialization */
       span.btr-dateinput-value {
          color: #212121 !important;
@@ -47,8 +48,7 @@ limitations under the License.
 
       .buttons {
         background-color: var(--nuxeo-dialog-buttons-bar, white);
-        @apply(--buttons-bar);
-        @apply(--layout-justified);
+        @apply --buttons-bar;
         margin-top: 2em;
       }
 
@@ -70,19 +70,18 @@ limitations under the License.
 
       <!-- Give access to row -->
       <paper-dialog-scrollable>
-        <template is="dom-if" if="{{!updatingACE}}">
-          <template is="dom-if" if="{{!shareWithExternal}}">
-            <div>
-              <nuxeo-user-suggestion label="[[i18n('popupPermission.userGroup')]]" value="{{params.username}}" name="userGroup"></nuxeo-user-suggestion>
-            </div>
-          </template>
-          <template is="dom-if" if="{{shareWithExternal}}">
-            <div>
-              <paper-input type="email" id="email" label="[[i18n('popupPermission.email')]]" placeholder="name@company.com" value="{{params.email}}"
-                required auto-validate></paper-input>
-            </div>
-          </template>
-        </template>
+        <div hidden$="{{updatingACE}}">
+          <div hidden$="{{shareWithExternal}}">
+            <nuxeo-user-suggestion name="userGroup" label="[[i18n('popupPermission.userGroup')]]"
+                                   value="{{params.username}}"
+                                   placeholder="[[i18n('popupPermission.userGroup.placeholder')]]">
+            </nuxeo-user-suggestion>
+          </div>
+          <div hidden$="{{!shareWithExternal}}">
+            <paper-input type="email" id="email" label="[[i18n('popupPermission.email')]]" placeholder="name@company.com" value="{{params.email}}"
+              required auto-validate></paper-input>
+          </div>
+        </div>
         <!-- Right row -->
         <div>
           <nuxeo-select label="[[i18n('popupPermission.right')]]" name="right"
