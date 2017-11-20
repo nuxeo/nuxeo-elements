@@ -161,8 +161,7 @@ Example:
         if (this._isNew()) {
           var op = this.$$('#createCollectionOp');
           // XXX
-          var name = this.$.nxSelect.selectedItem.item.displayLabel;
-          op.input = undefined;
+          var name = this.$.nxSelect.selectedItem.displayLabel;
           op.params = {
             'name': name,
             'description': this.description
