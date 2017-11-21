@@ -83,7 +83,8 @@ An element for dialogs
       },
 
       _opened: function(e) {
-        if (this.reparent && e.target.withBackdrop) {
+        var isIOS = /iPhone|iPad|iPod/.test(window.navigator.userAgent);
+        if (this.reparent && e.target.withBackdrop || isIOS) {
           e.target.parentNode.insertBefore(e.target.backdropElement, e.target);
         }
       },
