@@ -67,7 +67,10 @@ Note: Elements that depend on a connectionId use `nx` as default.
         password: {type: String, value: null},
 
         /* The current user entity */
-        user: {type: Object, readOnly: true, notify: true}
+        user: {type: Object, readOnly: true, notify: true},
+
+        /* The platform version */
+        platformVersion: {type: String, readOnly: true, notify: true}
       },
 
       /**
@@ -157,6 +160,7 @@ Note: Elements that depend on a connectionId use `nx` as default.
       _handleConnected: function(nuxeo) {
         if (this.client.connected) {
           this._setUser(nuxeo.user);
+          this._setPlatformVersion(nuxeo.nuxeoVersion);
           this.fire('connected');
         }
         return nuxeo.user;
