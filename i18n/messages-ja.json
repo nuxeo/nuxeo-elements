@@ -154,6 +154,7 @@
   "popupPermission.update": "更新",
   "popupPermission.updatePermission": "アクセス許可を更新",
   "popupPermission.userGroup": "ユーザ/グループ",
+  "popupPermission.userGroup.placeholder": "Search for users and groups",
   "previewButton.tooltip": "プレビュー",
   "shareButton.copy.label": "リンクをコピーして、文書を共有する{0}",
   "shareButton.dialog.close": "閉じる",

@@ -154,6 +154,7 @@
   "popupPermission.update": "Uppdatera",
   "popupPermission.updatePermission": "Uppdatera behörighet",
   "popupPermission.userGroup": "Användare / grupp",
+  "popupPermission.userGroup.placeholder": "Search for users and groups",
   "previewButton.tooltip": "Förhandsgranska",
   "shareButton.copy.label": "Kopiera länken och dela dokumentet {0}",
   "shareButton.dialog.close": "Stäng",

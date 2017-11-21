@@ -154,6 +154,7 @@
   "popupPermission.update": "Eguneratu",
   "popupPermission.updatePermission": "Eguneratu baimena",
   "popupPermission.userGroup": "Erabiltzailea / Taldea",
+  "popupPermission.userGroup.placeholder": "Search for users and groups",
   "previewButton.tooltip": "Preview",
   "shareButton.copy.label": "Copy the link and share the document {0}.",
   "shareButton.dialog.close": "Itxi",

@@ -154,6 +154,7 @@
   "popupPermission.update": "Aktualisieren",
   "popupPermission.updatePermission": "Berechtigung aktualisieren",
   "popupPermission.userGroup": "Benutzer/Gruppe",
+  "popupPermission.userGroup.placeholder": "Search for users and groups",
   "previewButton.tooltip": "Vorschau",
   "shareButton.copy.label": "Kopieren Sie den Link und teilen Sie Dokument {0}",
   "shareButton.dialog.close": "Schließen",
