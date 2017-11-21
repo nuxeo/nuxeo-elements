@@ -132,7 +132,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
 
       .selectivity-load-more.highlight,
       .selectivity-result-item.highlight {
-        background: #e4e4e4;
+        background: var(--nuxeo-primary-color);
         color: #fff;
       }
 
@@ -605,7 +605,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
           options.data = this.data;
         } else {
           options.query = function(query) {
-            if (!this.tagging && (query.term.length < this.minChars)) {
+            if (query.term.length < this.minChars) {
               query.error("Please enter " + this.minChars + " or more character");
               return;
             }
@@ -758,8 +758,13 @@ An element wrapping selectivity.js and relying on an operation for suggestions
           if (this.queryResultsFilter) {
             results = results.filter(this.queryResultsFilter);
           }
-          if (this.tagging && !this.multiple && !results.length) {
-            results.push(this.newEntryFormatter(query.term));
+          if (this.tagging && query.term) {
+            var exists = results.some(function(item) {
+              return item.id === query.term;
+            })
+            if (!exists) {
+              results.push(this.newEntryFormatter(query.term));
+            }
           }
 
           query.callback({
