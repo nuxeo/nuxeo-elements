@@ -111,6 +111,10 @@ Example:
         @apply --buttons-bar;
         margin-top: 2em;
       }
+
+      paper-card {
+        @apply --nuxeo-card;
+      }
     </style>
 
     <nuxeo-connection id="nxcon"></nuxeo-connection>
@@ -121,91 +125,91 @@ Example:
 
     <paper-card>
 
-    <div class="horizontal layout center">
+      <div class="horizontal layout center">
 
-      <iron-icon class="user-icon" icon="nuxeo:user"></iron-icon>
-      <div class="layout vertical">
-        <div class="user">[[user.id]]</div>
-        <div>[[user.properties.firstName]] [[user.properties.lastName]]</div>
-      </div>
+        <iron-icon class="user-icon" icon="nuxeo:user"></iron-icon>
+        <div class="layout vertical">
+          <div class="user">[[user.id]]</div>
+          <div>[[user.properties.firstName]] [[user.properties.lastName]]</div>
+        </div>
 
-      <div class="actions">
+        <div class="actions">
 
-        <!-- change password -->
-        <template is="dom-if" if=[[!readonly]]>
-          <paper-button noink id="changePasswordButton" class="horizontal layout center primary" on-tap="_openChangePasswordDialog">
-            <iron-icon icon="nuxeo:lock"></iron-icon> [[i18n('userProfile.password.change')]]
-          </paper-button>
-        </template>
-        <nuxeo-dialog id="changePasswordDialog" with-backdrop>
-          <h3>[[i18n('userProfile.password.change')]]</h3>
-
-          <iron-form id="changePasswordForm">
-            <form class="vertical layout">
-              <paper-input id="passwordOld" type="password" label="[[i18n('userProfile.password.old')]]"
-                           required always-float-label>
-              </paper-input>
-
-              <paper-input id="passwordNew" type="password" label="[[i18n('userProfile.password.new')]]"
-                           required always-float-label
-                           value="{{passwordNew}}">
-              </paper-input>
-
-              <paper-input id="passwordConfirm" type="password" label="[[i18n('userProfile.password.confirm')]]"
-                           required always-float-label
-                           pattern="[[passwordNew]]">
-              </paper-input>
-            </form>
-          </iron-form>
-
-          <div class="buttons">
-            <div class="flex start-justified">
-              <paper-button noink dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
-            </div>
-            <paper-button noink class="primary" on-tap="_submitChangePassword">
-              [[i18n('command.save.changes')]]
+          <!-- change password -->
+          <template is="dom-if" if=[[!readonly]]>
+            <paper-button noink id="changePasswordButton" class="horizontal layout center primary" on-tap="_openChangePasswordDialog">
+              <iron-icon icon="nuxeo:lock"></iron-icon> [[i18n('userProfile.password.change')]]
             </paper-button>
-          </div>
-        </nuxeo-dialog>
-      </div>
-    </div>
+          </template>
+          <nuxeo-dialog id="changePasswordDialog" with-backdrop>
+            <h3>[[i18n('userProfile.password.change')]]</h3>
 
-    <!-- user -->
-    <nuxeo-view-user id="userViewer" user="[[user]]"></nuxeo-view-user>
+            <iron-form id="changePasswordForm">
+              <form class="vertical layout">
+                <paper-input id="passwordOld" type="password" label="[[i18n('userProfile.password.old')]]"
+                             required always-float-label>
+                </paper-input>
+
+                <paper-input id="passwordNew" type="password" label="[[i18n('userProfile.password.new')]]"
+                             required always-float-label
+                             value="{{passwordNew}}">
+                </paper-input>
+
+                <paper-input id="passwordConfirm" type="password" label="[[i18n('userProfile.password.confirm')]]"
+                             required always-float-label
+                             pattern="[[passwordNew]]">
+                </paper-input>
+              </form>
+            </iron-form>
+
+            <div class="buttons">
+              <div class="flex start-justified">
+                <paper-button noink dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
+              </div>
+              <paper-button noink class="primary" on-tap="_submitChangePassword">
+                [[i18n('command.save.changes')]]
+              </paper-button>
+            </div>
+          </nuxeo-dialog>
+        </div>
+      </div>
+
+      <!-- user -->
+      <nuxeo-view-user id="userViewer" user="[[user]]"></nuxeo-view-user>
 
     </paper-card>
 
     <!-- groups -->
     <paper-card>
-    <h3 class="flex">[[i18n('userManagement.groups')]]</h3>
-    <div class="table">
-      <div class="header">
-        <div class="flex">[[i18n('userManagement.name')]]</div>
-        <div class="flex-4">[[i18n('userManagement.identifier')]]</div>
-      </div>
-      <template is="dom-repeat" items="[[groups]]">
-        <div class="row">
-          <div class="flex"><nuxeo-group-tag group="[[item]]"></nuxeo-group-tag></div>
-          <div class="flex-4">[[item.name]]</div>
+      <h3 class="flex">[[i18n('userManagement.groups')]]</h3>
+      <div class="table">
+        <div class="header">
+          <div class="flex">[[i18n('userManagement.name')]]</div>
+          <div class="flex-4">[[i18n('userManagement.identifier')]]</div>
         </div>
-      </template>
-    </div>
+        <template is="dom-repeat" items="[[groups]]">
+          <div class="row">
+            <div class="flex"><nuxeo-group-tag group="[[item]]"></nuxeo-group-tag></div>
+            <div class="flex-4">[[item.name]]</div>
+          </div>
+        </template>
+      </div>
     </paper-card>
 
     <!-- local permissions -->
     <paper-card>
-    <nuxeo-user-group-permissions-table label="[[i18n('userManagement.localPermissions.heading')]]"
-                                        entity="[[username]]" readonly>
-    </nuxeo-user-group-permissions-table>
+      <nuxeo-user-group-permissions-table label="[[i18n('userManagement.localPermissions.heading')]]"
+                                          entity="[[username]]" readonly>
+      </nuxeo-user-group-permissions-table>
     </paper-card>
 
     <!-- group permissions -->
     <paper-card>
-    <template is="dom-repeat" items="[[groups]]">
-      <nuxeo-user-group-permissions-table label="[[i18n('userManagement.entityPermissions', item.name)]]"
-                                          entity="[[item.name]]" readonly>
-      </nuxeo-user-group-permissions-table>
-    </template>
+      <template is="dom-repeat" items="[[groups]]">
+        <nuxeo-user-group-permissions-table label="[[i18n('userManagement.entityPermissions', item.name)]]"
+                                            entity="[[item.name]]" readonly>
+        </nuxeo-user-group-permissions-table>
+      </template>
     </paper-card>
 
   </template>
