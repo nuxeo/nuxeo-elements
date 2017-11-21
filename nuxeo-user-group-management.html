@@ -110,7 +110,10 @@ Custom property | Description | Default
         cursor: pointer;
       }
 
-
+      paper-card {
+        @apply --nuxeo-card;
+        padding-bottom: 0;
+      }
     </style>
 
     <paper-toast id="toast"></paper-toast>
@@ -143,7 +146,9 @@ Custom property | Description | Default
       </section>
 
       <section name="create-user">
-        <paper-card><nuxeo-create-user is-administrator="[[isAdministrator]]"></nuxeo-create-user></paper-card>
+        <paper-card>
+          <nuxeo-create-user is-administrator="[[isAdministrator]]"></nuxeo-create-user>
+        </paper-card>
       </section>
 
       <section name="manage-user">
@@ -151,7 +156,9 @@ Custom property | Description | Default
       </section>
 
       <section name="create-group">
-        <paper-card><nuxeo-create-group></nuxeo-create-group></paper-card>
+        <paper-card>
+          <nuxeo-create-group></nuxeo-create-group>
+        </paper-card>
       </section>
 
       <section name="manage-group">

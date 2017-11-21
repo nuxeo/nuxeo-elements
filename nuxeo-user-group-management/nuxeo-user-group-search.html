@@ -98,6 +98,9 @@ Used by `nuxeo-user-management`
         text-align: center;
       }
 
+      paper-card {
+        @apply --nuxeo-card;
+      }
     </style>
 
     <nuxeo-resource id="userSearch" auto path="/user/search" response="{{users}}"></nuxeo-resource>

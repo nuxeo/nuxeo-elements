@@ -104,6 +104,9 @@ Example:
         text-align: center;
       }
 
+      paper-card {
+        @apply --nuxeo-card;
+      }
     </style>
 
     <nuxeo-resource id="latestCreatedUsersGroups" auto
@@ -113,42 +116,42 @@ Example:
     </nuxeo-resource>
 
     <paper-card>
-    <h3 class="title">
-      <iron-icon icon="nuxeo:recent" prefix></iron-icon>
-      [[i18n('userGroupLatest.recentlyCreated')]]
-    </h3>
-    <div class="table">
-      <div class="table-header">
-        <div class="flex">[[i18n('userGroupLatest.name')]]</div>
-        <div class="flex-2">[[i18n('userGroupLatest.identifier')]]</div>
-        <div class="table-actions">
-          <paper-icon-button noink icon="nuxeo:refresh" on-tap="_refreshLatest"></paper-icon-button>
+      <h3 class="title">
+        <iron-icon icon="nuxeo:recent" prefix></iron-icon>
+        [[i18n('userGroupLatest.recentlyCreated')]]
+      </h3>
+      <div class="table">
+        <div class="table-header">
+          <div class="flex">[[i18n('userGroupLatest.name')]]</div>
+          <div class="flex-2">[[i18n('userGroupLatest.identifier')]]</div>
+          <div class="table-actions">
+            <paper-icon-button noink icon="nuxeo:refresh" on-tap="_refreshLatest"></paper-icon-button>
+          </div>
+        </div>
+        <div class="table-rows">
+          <template is="dom-repeat" items="[[latestCreatedUsersGroups.entries]]" as="item">
+            <div class="table-row" on-tap="_manageUserOrGroup">
+              <div class="flex">
+                <template is="dom-if" if="[[_isUser(item)]]">
+                  <template is="dom-if" if="[[_userHasName(item)]]">
+                    <nuxeo-user-tag user="[[item]]"></nuxeo-user-tag>
+                  </template>
+                </template>
+                <template is="dom-if" if="[[_isGroup(item)]]">
+                  <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
+                </template>
+              </div>
+              <div class="flex-2">[[item.uid]]</div>
+              <div class="table-actions"></div>
+            </div>
+          </template>
+          <template is="dom-if" if=[[_empty(latestCreatedUsersGroups.entries)]]>
+            <div class="table-row">
+              <div class="emptyResult">[[i18n('userGroupLatest.emptyRecentUserOrGroup')]]</div>
+            </div>
+          </template>
         </div>
       </div>
-      <div class="table-rows">
-        <template is="dom-repeat" items="[[latestCreatedUsersGroups.entries]]" as="item">
-          <div class="table-row" on-tap="_manageUserOrGroup">
-            <div class="flex">
-              <template is="dom-if" if="[[_isUser(item)]]">
-                <template is="dom-if" if="[[_userHasName(item)]]">
-                  <nuxeo-user-tag user="[[item]]"></nuxeo-user-tag>
-                </template>
-              </template>
-              <template is="dom-if" if="[[_isGroup(item)]]">
-                <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
-              </template>
-            </div>
-            <div class="flex-2">[[item.uid]]</div>
-            <div class="table-actions"></div>
-          </div>
-        </template>
-        <template is="dom-if" if=[[_empty(latestCreatedUsersGroups.entries)]]>
-          <div class="table-row">
-            <div class="emptyResult">[[i18n('userGroupLatest.emptyRecentUserOrGroup')]]</div>
-          </div>
-        </template>
-      </div>
-    </div>
     </paper-card>
  </template>
 
