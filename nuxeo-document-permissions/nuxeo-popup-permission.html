@@ -101,10 +101,10 @@ limitations under the License.
             </paper-radio-group>
           </template>
           <div>
-            <nuxeo-date-picker id="begin" label="[[i18n('popupPermission.from')]]" value="{{params.begin::change}}" disabled="[[permissionIsPermanent]]"></nuxeo-date-picker>
+            <nuxeo-date-picker id="begin" label="[[i18n('popupPermission.from')]]" value="{{params.begin}}" disabled="[[permissionIsPermanent]]"></nuxeo-date-picker>
           </div>
           <div>
-            <nuxeo-date-picker id="end" label="[[i18n('popupPermission.to')]]" value="{{params.end::change}}"
+            <nuxeo-date-picker id="end" label="[[i18n('popupPermission.to')]]" value="{{params.end}}"
                                disabled="[[permissionIsPermanent]]" required="[[shareWithExternal]]"></nuxeo-date-picker>
           </div>
         </div>

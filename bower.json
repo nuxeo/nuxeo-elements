@@ -40,7 +40,6 @@
     "paper-radio-button": "PolymerElements/paper-radio-button#^2.0.0",
     "paper-radio-group": "PolymerElements/paper-radio-group#^2.0.0",
     "paper-tooltip": "PolymerElements/paper-tooltip#^2.0.0",
-    "better-dateinput-polyfill": "2.0.2",
     "moment": "2.10.6",
     "d3": "3.5.17",
     "randomcolor": "0.4.1",
@@ -53,7 +52,8 @@
     "paper-toggle-button": "PolymerElements/paper-toggle-button#^2.0.0",
     "iron-collapse": "PolymerElements/iron-collapse#^2.0.0",
     "nuxeo-elements": "nuxeo/nuxeo-elements#master",
-    "paper-typeahead": "nuxeo/paper-typeahead#0.6"
+    "paper-typeahead": "nuxeo/paper-typeahead#0.6",
+    "datetime-picker": "fooloomanzoo/datetime-picker#^2.5.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^2.0.0",
