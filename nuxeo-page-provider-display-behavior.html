@@ -194,6 +194,7 @@ limitations under the License.
             this.nxProvider = Polymer.dom(this).parentNode.querySelector('#' + nxProvider);
           }
         } else if (nxProvider) {
+          this._pageSize = this.nxProvider.pageSize;
           this.listen(this.nxProvider, 'update', '_updateResults');
         }
       },
@@ -469,7 +470,7 @@ limitations under the License.
        */
       fetch: function() {
         if (this._hasPageProvider()) {
-          return this._fetchRange(0, this.nxProvider.pageSize, true);
+          return this._fetchRange(0, this._pageSize, true);
         }
       },
 
@@ -511,7 +512,7 @@ limitations under the License.
 
           if (!firstIndex && !lastIndex && !clear) {
             firstIndex = 0;
-            lastIndex = this.nxProvider.pageSize;
+            lastIndex = this._pageSize;
             clear = true;
           }
 
@@ -530,12 +531,20 @@ limitations under the License.
             }
 
             // get results count, and reset the array if it differs from current array length
-            var count = response.resultsCount;
-            if (count < 0) {
+            var count = response.currentPageSize;
+            if (response.resultsCountLimit === 0) {
+              if (response.resultsCount > 0) {
+                count = response.resultsCount;
+              }
+            } else if (response.resultsCountLimit < response.resultsCount) {
               count = response.resultsCountLimit;
+            } else {
+              count = response.resultsCount;
             }
-            if (this.maxItems && count > this.maxItems) {
-              count = this.maxItems;
+            if (this.maxItems) {
+              if (count > this.maxItems) {
+                count = this.maxItems;
+              }
             }
             if (clear || this.items.length !== count) {
               this.reset(count);
