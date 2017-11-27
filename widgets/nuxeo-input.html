@@ -61,6 +61,7 @@ An element for generic input in forms
                  min$="[[min]]"
                  max$="[[max]]"
                  pattern$="[[pattern]]"
+                 validator$="[[validator]]"
                  always-float-label>
     </paper-input>
 
@@ -163,7 +164,12 @@ An element for generic input in forms
         /**
          * A pattern to validate.
          */
-        pattern: String
+        pattern: String,
+
+        /**
+         * The name of the custom validator
+         */
+        validator: String
       },
 
       /* Override method from Polymer.IronValidatableBehavior. */
