@@ -158,7 +158,7 @@ Example:
 
       _inputValueChanged: function() {
         if (this._inputValue && moment(this._inputValue).isValid()) {
-          this.set('value', moment(this._pickerValue).toJSON());
+          this.set('value', moment(this._inputValue).toJSON());
         } else {
           this.value = '';
         }
