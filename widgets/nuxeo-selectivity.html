@@ -246,9 +246,16 @@ An element wrapping selectivity.js and relying on an operation for suggestions
       * Single-selection input
       */
 
-      .selectivity-single-select {
+      #input:not([readonly]) .selectivity-single-select {
         border-bottom: 1px solid #3a3a54;
         border-radius: 2px;
+      }
+
+      #input[readonly] .selectivity-caret {
+        display: none;
+      }
+
+      .selectivity-single-select {
         cursor: pointer;
         min-height: 2em;
         padding: 5px;
