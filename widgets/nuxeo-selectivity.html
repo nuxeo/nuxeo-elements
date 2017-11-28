@@ -635,7 +635,9 @@ An element wrapping selectivity.js and relying on an operation for suggestions
         this._selectivity = new InputType(options);
 
         if (this.value) {
-          this._valueChanged(this.value);
+          this.async(function() {
+            this._valueChanged(this.value);
+          }.bind(this), 100);
         }
 
         // scope styles
