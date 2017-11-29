@@ -201,12 +201,6 @@ An element for selecting one or more entries from a given directory.
         return this.$.s2._getValidity();
       },
 
-      /* Override method from Polymer.IronValidatableBehavior. */
-      validate: function(value) {
-        this.invalid = !this.$.s2.validate();
-        return !this.invalid;
-      },
-
       _computeParams: function() {
         return this.params = {
           directoryName: this.directoryName,

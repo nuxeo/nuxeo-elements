@@ -18,6 +18,7 @@ limitations under the License.
 <link rel="import" href="../../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../../paper-listbox/paper-listbox.html">
 <link rel="import" href="../../paper-item/paper-item.html">
+<link rel="import" href="../../iron-validatable-behavior/iron-validatable-behavior.html">
 
 <!--
 An element for selecting options.
@@ -111,7 +112,9 @@ Example:
                          on-paper-dropdown-open="_resize"
                          readonly$="[[readonly]]"
                          disabled$="[[disabled]]"
-                         required$="[[required]]">
+                         required$="[[required]]"
+                         validator$="[[validator]]"
+                         invalid$="[[invalid]]">
 
       <paper-listbox id="paperMenu" slot="dropdown-content"
                   attr-for-selected="[[_computeAttrForSelected(attrForSelected, options)]]" selected="{{selected}}">
@@ -129,7 +132,7 @@ Example:
   <script>
     Polymer({
       is: 'nuxeo-select',
-      behaviors: [Polymer.IronResizableBehavior],
+      behaviors: [Polymer.IronResizableBehavior, Polymer.IronValidatableBehavior],
       properties: {
 
         /**
@@ -238,6 +241,11 @@ Example:
 
       _computeAttrForSelected: function(attrForSelected, options) {
         return options ? 'option' : attrForSelected;
+      },
+
+      /* Override method from Polymer.IronValidatableBehavior. */
+      _getValidity: function() {
+        return this.$.paperDropdownMenu._getValidity();
       }
 
     });

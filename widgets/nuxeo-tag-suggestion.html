@@ -210,12 +210,6 @@ limitations under the License.
         return this.$.s2._getValidity();
       },
 
-      /* Override method from Polymer.IronValidatableBehavior. */
-      validate: function(value) {
-        this.invalid = !this.$.s2.validate();
-        return !this.invalid;
-      },
-
       _resultFormatter: function (tag) {
         if (tag.newTag) {
             return "<span class='s2newTag'>" + "+ " + this.$.s2.escapeHTML(tag.displayLabel) + "</span>"

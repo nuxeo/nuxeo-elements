@@ -17,6 +17,7 @@ limitations under the License.
 
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../paper-input/paper-textarea.html">
+<link rel="import" href="../../iron-validatable-behavior/iron-validatable-behavior.html">
 
 <!--
 An element for generic textarea input in forms
@@ -61,12 +62,15 @@ An element for generic textarea input in forms
 
     <label>[[label]]</label>
 
-    <paper-textarea name="[[name]]"
+    <paper-textarea id="textarea"
+                    name="[[name]]"
                     value="{{value}}"
                     required$="[[required]]"
                     disabled$="[[disabled]]"
                     readonly$="[[readonly]]"
                     error-message="[[errorMessage]]"
+                    validator$="[[validator]]"
+                    invalid$="[[invalid]]"
                     no-label-float>
     </paper-textarea>
 
@@ -131,6 +135,11 @@ An element for generic textarea input in forms
           value: false,
           reflectToAttribute: true
         }
+      },
+
+      /* Override method from Polymer.IronValidatableBehavior. */
+      _getValidity: function() {
+        return this.$.textarea.validate();
       }
 
     });

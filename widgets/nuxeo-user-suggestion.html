@@ -213,12 +213,6 @@ limitations under the License.
         return this.$.s2._getValidity();
       },
 
-      /* Override method from Polymer.IronValidatableBehavior. */
-      validate: function(value) {
-        this.invalid = !this.$.s2.validate();
-        return !this.invalid;
-      },
-
       _computeParams: function() {
         return this.params = {
           searchType: this.searchType

@@ -189,19 +189,13 @@ An element for generic input in forms
         validator: String
       },
 
-      /* Override method from Polymer.IronValidatableBehavior. */
-      _getValidity: function() {
-        return this.$.paperInput._getValidity();
-      },
-
-      /* Override method from Polymer.IronValidatableBehavior. */
-      validate: function(value) {
-        this.invalid = !this.$.paperInput.validate();
-        return !this.invalid;
-      },
-
       focus: function() {
         this.$.paperInput.focus();
+      },
+
+      /* Override method from Polymer.IronValidatableBehavior. */
+      _getValidity: function() {
+        return this.$.paperInput.validate();
       }
 
     });
