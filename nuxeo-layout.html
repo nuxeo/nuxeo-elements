@@ -84,8 +84,34 @@ Example:
       validate: function() {
         if (this.element && ('function' === typeof this.element.validate)) {
           return this.element.validate();
+        } else {
+          // workaroud for https://github.com/PolymerElements/iron-form/issues/218, adapted from iron-form.html
+          var valid = true;
+          if (this.element) {
+            var elements = this._getValidatableElements(this.element.root);
+            for (var el, i = 0; el = elements[i], i < elements.length; i++) {
+              valid = !!el.validate() && valid;
+            }
+          }
+          return valid;
         }
-        return true;
+      },
+
+      _getValidatableElements: function(parent) {
+        var nodes = Polymer.dom(parent).querySelectorAll('*');
+        var submittable = [];
+        for (var i = 0; i < nodes.length; i++) {
+          var node = nodes[i];
+          if (!node.disabled) {
+            if (node.validate) {
+              submittable.push(node);
+            }
+            else if (node.root) {
+              Array.prototype.push.apply(submittable, this._getValidatableElements(node.root));
+            }
+          }
+        }
+        return submittable;
       },
 
       _stamp: function(href) {
