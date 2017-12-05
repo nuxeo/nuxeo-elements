@@ -30,28 +30,44 @@ An element for generic textarea input in forms
 
     <style>
       :host {
+        display: block;
         position: relative;
+        padding-bottom: 8px;
       }
 
-      :host([required]) paper-textarea::after {
+      :host([hidden]) {
+        display: none;
+      }
+
+      :host([required]) label::after {
         display: block;
         content: '*';
         position: absolute;
         right: 0;
-        top: 1rem;
+        top: 0;
         color: var(--paper-input-container-invalid-color, red);
+      }
+
+      paper-textarea {
+        --paper-input-container: {
+          padding: 0;
+        }
+      }
+
+      label {
+        @apply --nuxeo-label;
       }
     </style>
 
-    <paper-textarea label="[[label]]"
-                    name="[[name]]"
+    <label>[[label]]</label>
+
+    <paper-textarea name="[[name]]"
                     value="{{value}}"
                     required$="[[required]]"
                     disabled$="[[disabled]]"
                     readonly$="[[readonly]]"
                     error-message="[[errorMessage]]"
-                    always-float-label>
-      <div class="required" slot="suffix">*</div>
+                    no-label-float>
     </paper-textarea>
 
   </template>

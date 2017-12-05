@@ -42,6 +42,10 @@ limitations under the License.
       :host {
         display: block;
       }
+
+      :host([hidden]) {
+        display: none;
+      }
     </style>
 
     <nuxeo-selectivity id="s2" operation="Tag.Suggestion"

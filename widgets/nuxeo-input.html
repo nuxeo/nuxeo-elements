@@ -32,21 +32,38 @@ An element for generic input in forms
 
     <style>
       :host {
+        display: block;
         position: relative;
+        padding-bottom: 8px;
       }
 
-      :host([required]) paper-input::after {
+      :host([hidden]) {
+        display: none;
+      }
+
+      :host([required]) label::after {
         display: block;
         content: '*';
         position: absolute;
         right: 0;
-        top: 1rem;
+        top: 0;
         color: var(--paper-input-container-invalid-color, red);
+      }
+
+      paper-input {
+        --paper-input-container: {
+          padding: 0;
+        }
+      }
+
+      label {
+        @apply --nuxeo-label;
       }
     </style>
 
+    <label>[[label]]</label>
+
     <paper-input id="paperInput"
-                 label="[[label]]"
                  type="[[type]]"
                  name="[[name]]"
                  value="{{value}}"
@@ -62,7 +79,7 @@ An element for generic input in forms
                  max$="[[max]]"
                  pattern$="[[pattern]]"
                  validator$="[[validator]]"
-                 always-float-label>
+                 no-label-float>
     </paper-input>
 
   </template>

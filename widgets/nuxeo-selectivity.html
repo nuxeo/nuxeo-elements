@@ -36,29 +36,34 @@ An element wrapping selectivity.js and relying on an operation for suggestions
 <dom-module id="nuxeo-selectivity">
   <template>
     <style is="custom-style">
-       :host {
+      :host {
         display: block;
         position: relative;
+        padding-bottom: 8px;
       }
 
-       :host([invalid]) .label,
+      :host([hidden]) {
+        display: none;
+      }
+
+      :host([invalid]) .label,
       .error {
         color: var(--paper-input-container-invalid-color, red);
       }
 
-       :host([invalid]) .error {
+      :host([invalid]) .error {
         opacity: 1;
         font-size: .923rem;
       }
 
-       :host([invalid]) .select2-container ::slotted(.select2-choice),
-       :host([invalid]) .select2-container ::slotted(.select2-search-field) {
+      :host([invalid]) .select2-container ::slotted(.select2-choice),
+      :host([invalid]) .select2-container ::slotted(.select2-search-field) {
         border-bottom: 2px solid var(--paper-input-container-invalid-color, red) !important;
       }
 
-       .label {
-          @apply --nuxeo-selectivity-label;
-       }
+      .label {
+         @apply --nuxeo-label;
+      }
 
       .label[required]::after {
         display: block;

@@ -37,25 +37,38 @@ Example:
   <template>
     <style>
       :host {
+        display: block;
         position: relative;
+        padding-bottom: 8px;
       }
 
-      :host([required]) paper-input::after {
+      :host([hidden]) {
+        display: none;
+      }
+
+      :host([required]) label::after {
         display: block;
         content: '*';
         position: absolute;
         right: 0;
-        top: 1rem;
+        top: 0;
         color: var(--paper-input-container-invalid-color, red);
       }
 
       paper-input {
+        --paper-input-container: {
+          padding: 0;
+        };
         --paper-input-container-input-webkit-spinner: {
           -webkit-appearance: none;
         };
         --paper-input-container-input-webkit-clear: {
           -webkit-appearance: none;
         };
+      }
+
+      label {
+        @apply --nuxeo-label;
       }
       
       overlay-date-picker {
@@ -67,8 +80,10 @@ Example:
       }
     </style>
 
-    <paper-input id="date" label="[[label]]" name="[[name]]" required$="[[required]]" invalid="[[invalid]]"
-                 type="date" value="{{_inputValue}}" always-float-label disabled$="[[disabled]]"
+    <label>[[label]]</label>
+
+    <paper-input id="date" name="[[name]]" required$="[[required]]" invalid="[[invalid]]"
+                 type="date" value="{{_inputValue}}" no-label-float disabled$="[[disabled]]"
                  error-message="[[errorMessage]]" on-tap="_togglePicker">
     </paper-input>
 

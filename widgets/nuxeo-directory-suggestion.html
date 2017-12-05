@@ -40,6 +40,10 @@ An element for selecting one or more entries from a given directory.
       :host {
         display: block;
       }
+
+      :host([hidden]) {
+        display: none;
+      }
     </style>
 
     <nuxeo-selectivity id="s2" operation="Directory.SuggestEntries"

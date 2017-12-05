@@ -36,6 +36,10 @@ An element for selecting one or more documents.
       :host {
         display: block;
       }
+
+      :host([hidden]) {
+        display: none;
+      }
     </style>
 
     <nuxeo-operation id="op" op="Document.FetchByProperty"></nuxeo-operation>
