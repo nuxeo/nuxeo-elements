@@ -58,11 +58,9 @@
         }
       },
 
-      _forwardParentProp: function(prop, value) {},
-
-      _forwardInstancePath: function(inst, path, value) {},
-
-      _forwardInstanceProp: function(inst, prop, value) {}
+      _notifyInstancePropV2: function(inst, prop, value) {
+        this.notifyPath(prop, value);
+      }
     });
   </script>
 </dom-module>
