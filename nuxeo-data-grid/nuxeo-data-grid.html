@@ -245,10 +245,12 @@ An element to display page provider results as a grid with infinite scrolling.
       ],
 
       fetch: function() {
-        if (this._hasPageProvider() && this.sortSelected && this.sortSelected.field && this.sortSelected.order) {
-          var sort = {};
-          sort[this.sortSelected.field] = this.sortSelected.order;
-          this.nxProvider.sort = sort;
+        if (this._hasPageProvider()) {
+          if (this.sortSelected && this.sortSelected.field && this.sortSelected.order) {
+            var sort = {};
+            sort[this.sortSelected.field] = this.sortSelected.order;
+            this.nxProvider.sort = sort;
+          }
           return this._fetchRange(0, this.nxProvider.pageSize, true);
         }
       },
