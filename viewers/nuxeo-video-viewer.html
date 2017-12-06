@@ -51,17 +51,21 @@ Example:
       }
 
       #container {
+        position: relative;
         text-align: center;
         height: 100%;
         width: 100%;
       }
 
       #storyboard {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 8px;
+        background: var(--primary-background-color);
         @apply --layout-horizontal;
         @apply --layout-center-justified;
-        background: var(--primary-background-color);
-        margin: 8px 0;
-        padding: 4px;
       }
 
       #thumbnails {
