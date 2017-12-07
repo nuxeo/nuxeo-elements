@@ -503,6 +503,9 @@ Used by `nuxeo-user-group-management`
       },
 
       _fetch: function() {
+        if (!this.groupname) {
+          return;
+        }
         this.$.request.get().then(function(response) {
           this.activity = [];
           this.showEditMembers = false;

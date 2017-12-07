@@ -192,8 +192,7 @@ Custom property | Description | Default
          * Selected group id.
          */
         selectedGroup: {
-          type: String,
-          observer: '_selectedGroupChanged'
+          type: String
         },
 
         /**
@@ -202,7 +201,8 @@ Custom property | Description | Default
         readonly: {
           type: Boolean,
           value: false,
-          reflectToAttribute: true
+          reflectToAttribute: true,
+          computed: '_isReadonly(isAdministrator, selectedGroup)'
         },
 
         /**
@@ -225,6 +225,8 @@ Custom property | Description | Default
        * Go to the 'search' page.
        */
       _goSearch: function() {
+        this.selectedGroup = null;
+        this.selectedUser = null;
         this.page = 'search';
         this.$$('nuxeo-user-group-search')._searchTermChanged();
       },
@@ -255,8 +257,8 @@ Custom property | Description | Default
         this.page = 'manage-group';
       },
 
-      _selectedGroupChanged: function() {
-        this.readonly = !!(this.selectedGroup === 'administrators' && !this.isAdministrator);
+      _isReadonly: function() {
+        return !this.isAdministrator || this.selectedGroup === 'administrators';
       },
 
       /**
