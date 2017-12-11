@@ -22,8 +22,9 @@ limitations under the License.
 <link rel="import" href="../../paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../../paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../../paper-button/paper-button.html">
-<link rel="import" href="../../paper-input/paper-textarea.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
+<link rel="import" href="../widgets/nuxeo-selectivity.html">
+<link rel="import" href="../widgets/nuxeo-textarea.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../widgets/nuxeo-selectivity.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
@@ -44,16 +45,7 @@ Example:
   <template>
     <style>
       :host {
-        display: inline-block;
-      }
-
-      nuxeo-select2, textarea {
-        width: 100%;
-      }
-
-      .required {
-        color: red;
-        padding: 4px;
+        display: block;
       }
     </style>
 
@@ -68,23 +60,23 @@ Example:
     <nuxeo-dialog id="add-to-collection-dialog" with-backdrop on-iron-overlay-closed="_resetPopup" no-auto-focus>
       <h2>[[i18n('addToCollectionButton.dialog.heading')]]</h2>
       <paper-dialog-scrollable>
-        <label>[[i18n('addToCollectionButton.dialog.collections')]]<span class="required">*</span></label>
         <nuxeo-selectivity id="nxSelect"
-                       operation="Collection.Suggestion"
-                       min-chars="0"
-                       placeholder="[[i18n('addToCollectionButton.dialog.select')]]"
-                       value="{{collection}}"
-                       tagging="true"
-                       query-results-filter="[[resultsFilter]]"
-                       result-formatter="[[resultFormatter]]"
-                       selection-formatter="[[selectionFormatter]]"
-                       new-entry-formatter="[[newEntryFormatter]]">
+                           label="[[i18n('addToCollectionButton.dialog.collections')]]"
+                           required
+                           operation="Collection.Suggestion"
+                           min-chars="0"
+                           placeholder="[[i18n('addToCollectionButton.dialog.select')]]"
+                           value="{{collection}}"
+                           tagging="true"
+                           query-results-filter="[[resultsFilter]]"
+                           result-formatter="[[resultFormatter]]"
+                           selection-formatter="[[selectionFormatter]]"
+                           new-entry-formatter="[[newEntryFormatter]]">
         </nuxeo-selectivity>
-        <paper-textarea label="[[i18n('addToCollectionButton.dialog.description')]]"
+        <nuxeo-textarea label="[[i18n('addToCollectionButton.dialog.description')]]"
                         value="{{description::input}}"
-                        hidden$="[[!_isNew(collection)]]"
-                        always-float-label>
-        </paper-textarea>
+                        hidden$="[[!_isNew(collection)]]">
+        </nuxeo-textarea>
       </paper-dialog-scrollable>
       <div class="buttons">
         <paper-button dialog-dismiss>[[i18n('addToCollectionButton.dialog.cancel')]]</paper-button>
