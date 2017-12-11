@@ -62,7 +62,7 @@ An element for generic textarea input in forms
 
     <label>[[label]]</label>
 
-    <paper-textarea id="textarea"
+    <paper-textarea id="paperTextarea"
                     name="[[name]]"
                     value="{{value}}"
                     required$="[[required]]"
@@ -139,7 +139,7 @@ An element for generic textarea input in forms
 
       /* Override method from Polymer.IronValidatableBehavior. */
       _getValidity: function() {
-        return this.$.textarea.validate();
+        return this.$.paperTextarea.validate();
       }
 
     });
