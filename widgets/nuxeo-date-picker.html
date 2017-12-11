@@ -65,6 +65,10 @@ Example:
         --paper-input-container-input-webkit-clear: {
           -webkit-appearance: none;
         };
+        /* XXX: fix for safari mobile: https://github.com/PolymerElements/paper-input/issues/352 */
+        --paper-input-container-input: {
+          min-height: 1px;
+        };
       }
 
       label {
