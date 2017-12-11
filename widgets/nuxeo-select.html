@@ -36,15 +36,27 @@ Example:
     <style>
       :host {
         display: block;
+        position: relative;
         --paper-input-container-underline: {
           border-bottom: 1px solid var(--paper-input-container-input-color) !important;
         };
-        --paper-input-container-label: {
-          opacity: 1 !important;
-        };
+      }
+
+      :host([hidden]) {
+        display: none;
+      }
+
+      :host([required]) label::after {
+        display: block;
+        content: '*';
+        position: absolute;
+        right: 0;
+        top: 0;
+        color: var(--paper-input-container-invalid-color, red);
       }
 
       paper-listbox {
+        padding: 0;
         --paper-listbox-selected-item: {
           font-weight: normal;
         };
@@ -56,6 +68,16 @@ Example:
           font-weight: normal;
           color: var(--nuxeo-box, white);
         }
+      }
+
+      paper-dropdown-menu {
+        --paper-input-container: {
+          padding-top: 0;
+        }
+      }
+
+      label {
+        @apply --nuxeo-label;
       }
 
       ::slotted(paper-item) {
@@ -76,12 +98,12 @@ Example:
       }
     </style>
 
+    <label>[[label]]</label>
+
     <paper-dropdown-menu id="paperDropdownMenu"
-                         label="[[label]]"
                          placeholder="[[placeholder]]"
                          error-message="[[errorMessage]]"
-                         no-label-float$="[[!label]]"
-                         always-float-label$="[[!label]]"
+                         no-label-float
                          noink
                          no-animations
                          restore-focus-on-close="false"
