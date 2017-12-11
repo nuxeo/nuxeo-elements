@@ -90,7 +90,7 @@ Example:
           if (this.element) {
             var elements = this._getValidatableElements(this.element.root);
             for (var el, i = 0; el = elements[i], i < elements.length; i++) {
-              valid = !!el.validate() && valid;
+              valid = (el.validate ? el.validate() : el.checkValidity()) && valid;
             }
           }
           return valid;
@@ -103,7 +103,7 @@ Example:
         for (var i = 0; i < nodes.length; i++) {
           var node = nodes[i];
           if (!node.disabled) {
-            if (node.validate) {
+            if (node.validate || node.checkValidity) {
               submittable.push(node);
             }
             else if (node.root) {
