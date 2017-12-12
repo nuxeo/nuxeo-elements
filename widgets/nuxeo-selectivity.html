@@ -656,11 +656,11 @@ An element wrapping selectivity.js and relying on an operation for suggestions
         return this.multiple ? !!this.value && this.value.length > 0 : !!this.value;
       },
 
-      _initSelection: function(element, callback) {
+      _initSelection: function(value, callback) {
         if (!this.multiple) {
-          return callback(this.resolveEntry(this.value));
+          return callback(this.resolveEntry(value));
         }
-        return callback(this.value.map(this.resolveEntry.bind(this)));
+        return callback(value.map(this.resolveEntry.bind(this)));
       },
 
       _resolveEntry: function(entry) {
