@@ -19,10 +19,10 @@ limitations under the License.
 <link rel="import" href="../nuxeo-routing-behavior.html">
 
 <link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../../iron-image/iron-image.html">
 <link rel="import" href="../../iron-list/iron-list.html">
 <link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../paper-spinner/paper-spinner.html">
 <link rel="import" href="../widgets/nuxeo-sort-select.html">
 
 <!--
@@ -33,53 +33,54 @@ An element for displaying page provider results in a justified grid with infinit
 -->
 <dom-module id="nuxeo-justified-grid">
   <template>
-
     <style>
       :host {
         display: block;
-        height: 100px;
       }
 
-      #grid {
-        display: flex;
-        flex-wrap: wrap;
-        max-height: 100%;
-        overflow-y: scroll;
+      #container {
+        position: relative;
+        height: 100%;
+        width: 100%;
       }
 
-      #grid::after {
+      #list {
+        @apply --layout-fit;
+      }
+
+      #list::after {
         content: '';
         flex-grow: 999999999;
       }
 
-      #grid .item {
-        flex-grow: 1;
+      #list .row {
+        display: flex;
+        flex-direction: row;
+      }
+
+      #list .item {
         position: relative;
-        background: no-repeat 50% 50%;
-        background-size: cover;
         box-shadow: 0 3px 5px rgba(0, 0, 0, 0.04);
         border: 2px solid transparent;
         cursor: pointer;
         outline: none;
       }
 
-      #grid .item[selected], #grid .item:hover, #grid .item:focus {
+      #list .item[selected], #list .item:hover, #list .item:focus {
         border: 2px solid var(--nuxeo-grid-selected);
         background-color: var(--nuxeo-grid-selected);
         color: white;
       }
 
-      #grid .item .image {
-        visibility: hidden;
-        max-width: 100%;
-        min-width: 100%;
+      #list .item iron-image {
         height: 100%;
-        object-fit: cover;
-        vertical-align: bottom;
-        flex-grow: 1;
+        width: 100%;
+        --iron-image-placeholder: {
+          background: #fafafa;
+        };
       }
 
-      paper-icon-button {
+      #list .item paper-icon-button {
         position: absolute;
         left: 10px;
         top: 10px;
@@ -93,19 +94,20 @@ An element for displaying page provider results in a justified grid with infinit
         display: none;
       }
 
-      #grid .item[selected] paper-icon-button {
+      #list .item[selected] paper-icon-button {
         border: 2px solid var(--nuxeo-grid-selected);
         background-color: var(--nuxeo-grid-selected);
         color: white;
         display: block;
       }
 
-      #grid .item:hover paper-icon-button,
-      #grid .item paper-icon-button[selection-mode] {
+      #list .item:hover paper-icon-button,
+      #list .item paper-icon-button[selection-mode],
+      #list .item:hover .overlay {
         display: block;
       }
 
-      #grid .item .overlay {
+      #list .item .overlay {
         display: none;
         position: absolute;
         bottom: 0;
@@ -120,68 +122,42 @@ An element for displaying page provider results in a justified grid with infinit
         text-shadow: -1px 0 rgba(0, 0, 0, 0.4), 0 1px rgba(0, 0, 0, 0.4), 1px 0 rgba(0, 0, 0, 0.4), 0 -1px rgba(0, 0, 0, 0.4);
       }
 
-      #grid .item:hover .overlay {
-        display: block;
+      [hidden] {
+        display: none;
       }
-
-      #loading {
-        @apply --layout-vertical;
-        @apply --layout-center;
-        width: 100%;
-        display: block;
-        text-align: center;
-        padding: 32px;
-      }
-
-      #loading paper-spinner {
-        --paper-spinner-layer-1-color: var(--nuxeo-grid-selected);
-        --paper-spinner-layer-2-color: var(--nuxeo-grid-selected);
-        --paper-spinner-layer-3-color: var(--nuxeo-grid-selected);
-        --paper-spinner-layer-4-color: var(--nuxeo-grid-selected);
-      }
-
     </style>
 
     <template is="dom-if" if="[[displaySort]]">
       <nuxeo-sort-select label="[[sortLabel]]" options="[[sortOptions]]" selected="{{sortSelected}}"></nuxeo-sort-select>
     </template>
 
-    <div id="grid">
-      <template is="dom-repeat" items="[[items]]" as="item">
-        <div class="item" tabindex="0" on-tap="_tap" selected$="[[_isSelected(item, selectedItems.*)]]"
-             style$="height: [[rowHeight]]px; margin: [[margin]]px; background-image:url([[_url(item)]]);">
-          <img class="image" src="[[_url(item)]]" />
-          <paper-icon-button noink icon="icons:check" selection-mode$="[[selectionMode]]"
-                             on-tap="_check"></paper-icon-button>
-          <div class="overlay">[[item.title]]</div>
-        </div>
-      </template>
+    <div id="container">
+      <iron-list id="list" items="[[rows]]" as="row" on-iron-resize="_resize">
+        <template>
+          <div class="row">
+            <dom-repeat items="[[row]]">
+              <template>
+                <div class="item" tabindex="0" on-tap="_tap" selected$="[[_isSelected(item, selectedItems.*)]]"
+                     style$="height: [[item._view.height]]px; width: [[item._view.width]]px;">
+                  <iron-image src="[[_url(item)]]" sizing="cover" preload fade></iron-image>
+                  <paper-icon-button noink icon="icons:check" selection-mode$="[[selectionMode]]" on-tap="_check"></paper-icon-button>
+                  <div class="overlay">[[item.title]]</div>
+                </div>
+              </template>
+            </dom-repeat>
+          </div>
+        </template>
+      </iron-list>
 
-      <div id="loading">
-        <paper-spinner active$="[[loading]]"></paper-spinner>
-      </div>
+      <iron-scroll-threshold id="scrollThreshold" scroll-target="list" on-lower-threshold="fetch"></iron-scroll-threshold>
+      <array-selector id="selector" items="{{items}}" selected="{{selectedItems}}" multi></array-selector>
     </div>
-
-    <iron-scroll-threshold id="scrollThreshold" scroll-target="grid" on-lower-threshold="fetch"></iron-scroll-threshold>
-
-    <iron-list id="list" items="[[items]]" as="item" selected-items="{{selectedItems}}" multi-selection>
-      <template>
-        <div hidden></div>
-      </template>
-    </iron-list>
-
   </template>
-
   <script>
     Polymer({
       is: 'nuxeo-justified-grid',
       behaviors: [Polymer.IronResizableBehavior, Nuxeo.PageProviderDisplayBehavior, Nuxeo.RoutingBehavior],
       properties: {
-
-        margin: {
-          type: Number,
-          value: 4
-        },
 
         rowHeight: {
           type: Number,
@@ -217,6 +193,11 @@ An element for displaying page provider results in a justified grid with infinit
           value: []
         },
 
+        rows: {
+          type: Array,
+          value: []
+        },
+
         _isFetching: {
           type: Boolean,
           value: false
@@ -233,12 +214,15 @@ An element for displaying page provider results in a justified grid with infinit
         this.selectionEnabled = true;
       },
 
+      // overridden from Nuxeo.PageProviderDisplayBehavior
       reset: function() {
         this.set('items', []);
+        this.set('rows', []);
         this.page = 1;
         this.$.scrollThreshold.clearTriggers();
       },
 
+      // overridden from Nuxeo.PageProviderDisplayBehavior
       fetch: function() {
         if (this._isFetching || !this._hasPageProvider()) {
           this.$.scrollThreshold.clearTriggers();
@@ -246,11 +230,73 @@ An element for displaying page provider results in a justified grid with infinit
           return Promise.resolve();
         }
         this._isFetching = true;
-        return this._fetchPage(this.page, this.pageSize).then(function() {
+        return this._fetchPage(this.page, this.pageSize).then(function(response) {
+          this._addItems(response.entries);
           this.page += 1;
           this.$.scrollThreshold.clearTriggers();
           this._isFetching = false;
         }.bind(this));
+      },
+
+      // overridden from Nuxeo.PageProviderDisplayBehavior
+      getSelectedItems: function() {
+        return this.$.selector.selected;
+      },
+
+      // overridden from Nuxeo.PageProviderDisplayBehavior
+      selectItem: function(item) {
+        if (this.selectionEnabled) {
+          this.$.selector.select(item);
+          this._updateFlags();
+        }
+      },
+
+      // overridden from Nuxeo.PageProviderDisplayBehavior
+      selectIndex: function(index) {
+        if (this.selectionEnabled) {
+          this.$.selector.selectIndex(index);
+          this._updateFlags();
+        }
+      },
+
+      // overridden from Nuxeo.PageProviderDisplayBehavior
+      selectItems: function(items) {
+        if (this.selectionEnabled && items && items.length > 0) {
+          items.forEach(function(item) {
+            this.$.selector.select(item);
+          }.bind(this));
+          this._updateFlags();
+        }
+      },
+
+      // overridden from Nuxeo.PageProviderDisplayBehavior
+      deselectItem: function(item) {
+        if (this.selectionEnabled) {
+          this.$.selector.deselect(item);
+          this._updateFlags();
+        }
+      },
+
+      // overridden from Nuxeo.PageProviderDisplayBehavior
+      deselectIndex: function(index) {
+        if (this.selectionEnabled) {
+          this.$.selector.deselectIndex(index);
+          this._updateFlags();
+        }
+      },
+
+      // overridden from Nuxeo.PageProviderDisplayBehavior
+      selectAll: function() {
+        this.items.forEach(function(item) {
+          this.$.selector.select(item);
+        }.bind(this));
+        this._updateFlags();
+      },
+
+      // overridden from Nuxeo.PageProviderDisplayBehavior
+      clearSelection: function() {
+        this.$.selector.clearSelection();
+        this._updateFlags();
       },
 
       _refresh: function() {
@@ -269,15 +315,18 @@ An element for displaying page provider results in a justified grid with infinit
       },
 
       _tap: function(e) {
-        var item = e.model.item;
+        var index = e.model.item._view.index;
         if (this.selectionMode) {
-          if (this._isSelected(item)) {
-            this.deselectItem(item);
+          // since we are using Object.assign() when creating items for the grid, we cannot really use
+          // selector.selectItem()/deselectItem() because it relies on indexOf and since the e.model.item is not a
+          // reference of the original item, it doesn't work.
+          if (this._isIndexSelected(index)) {
+            this.deselectIndex(index);
           } else {
-            this.selectItem(item);
+            this.selectIndex(index);
           }
         } else {
-          this.fire('navigate', {doc: item, index: e.model.index});
+          this.fire('navigate', {doc: this.items[index], index: index});
         }
         e.stopPropagation();
       },
@@ -287,14 +336,110 @@ An element for displaying page provider results in a justified grid with infinit
       },
 
       _isSelected: function(item) {
-        return this.selectedItems.indexOf(item) > -1;
+        return this._isIndexSelected(item._view.index);
+      },
+
+      _isIndexSelected: function(index) {
+        return this.selectedItems.indexOf(this.items[index]) > -1;
+      },
+
+      /**
+       * Adds a list of items to the grid. The `items` are computed and transformed into rows.
+       * This is the ideal way to add new items to the grid (e.g. when loading more items with infinite scroll behavior).
+       */
+      _addItems: function (newItems) {
+        // recompute last row before adding new items
+        if (this.rows.length > 0) {
+          // get last row items
+          var lastRowItems = this.rows[this.rows.length - 1].map(function(item) {
+            return this.items[item._view.index];
+          }.bind(this));
+          // append last row items to `newItems` param
+          newItems = lastRowItems.concat(newItems);
+          // drop last row
+          this.pop('rows');
+        }
+        this._computeRows(newItems).forEach(function (row) {
+          this.push('rows', row);
+        }.bind(this));
+        this.$.scrollThreshold.clearTriggers();
+      },
+
+      /**
+       * Given a set of items, computes a list of rows. The goal is to compute each row by trying to add items until
+       * they fit. When a row doesn't have space to fit another item, we increase the height of the current row to take
+       * advantage of the remaining width space to avoid cropping images.
+       * Currently relies on `picture:info` to get the dimensions of a video/image. Fallbacks to square dimensions if the
+       * document doesn't have the `picture` schema.
+       */
+      _computeRows: function(items) {
+        var gridWidth = this.$.list.offsetWidth;
+        var rows = [];
+        var currentRowWidth = 0;
+        var currentRow = [];
+        items.forEach(function(item, idx) {
+          var clone = Object.assign({}, item);
+          // fallback to square dimensions if item doesn't have a size object in it's model
+          clone.size = clone.properties['picture:info'] || {width: 1, height: 1};
+          clone.size.width = clone.size.width || 1;
+          clone.size.height = clone.size.height || 1;
+          clone._view = {};
+          clone._view.index = this.items.indexOf(item);
+
+          // compute item width to fit a row with `rowHeight`
+          // new width = original width * rowHeight / original height
+          clone._view.width = clone.size.width * this.rowHeight / clone.size.height;
+          clone._view.height = this.rowHeight;
+
+          // if item fits, add it to current row
+          if (currentRowWidth + clone._view.width <= gridWidth) {
+            currentRow.push(clone);
+            currentRowWidth += clone._view.width;
+          } else {
+            // current item doesn't fit in current row
+            // fit items do width and push current row to rows
+            rows.push(this._fitItemsToWidth(currentRow, currentRowWidth, gridWidth));
+            // append current item (that didn't fit in current row) to a new row
+            currentRow = [clone];
+            currentRowWidth = clone._view.width;
+          }
+
+          if (idx === (items.length - 1)) {
+            // fit items do width and push current row to rows
+            rows.push(this._fitItemsToWidth(currentRow, currentRowWidth, gridWidth));
+          }
+        }.bind(this));
+        return rows;
+      },
+
+      /**
+       * Computes the ideal height of current row in order to increase the width of items and take advantage of the
+       * remaining width space.
+       */
+      _fitItemsToWidth: function(currentRow, currentRowWidth, gridWidth) {
+        var computedHeight = gridWidth * this.rowHeight / currentRowWidth;
+        currentRow.forEach(function(item) {
+          item._view.height = computedHeight;
+          item._view.width = item._view.width / currentRowWidth * gridWidth;
+        });
+        return currentRow;
+      },
+
+      /**
+       * Recomputes rows when the browser window is resized.
+       */
+      _resize: function() {
+        if (this.$.list.offsetWidth || this.$.list.offsetHeight) {
+          this.debounce('resize-grid', function() {
+            this.rows = this._computeRows(this.items);
+          }.bind(this), 150);
+        }
       },
 
       _url: function(doc) {
         return doc && doc.contextParameters && doc.contextParameters.thumbnail && doc.contextParameters.thumbnail.url
           ? doc.contextParameters.thumbnail.url : '';
       }
-
     });
   </script>
 </dom-module>

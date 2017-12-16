@@ -303,7 +303,7 @@ limitations under the License.
       },
 
       _isSelected: function(item) {
-        return this.$.list.selectedItems.indexOf(item) > -1;
+        return this.selectedItems.indexOf(item) > -1;
       },
 
       _toggleSelectAll: function() {
@@ -426,11 +426,12 @@ limitations under the License.
       _updateFlags: function() {
         if (!this.loading) {
           this.size = this.items && this.items.length > 0 ? this.items.length : 0;
-          var selectedItems = this.$.list.selectedItems;
-          this._isSelectAllIndeterminate = selectedItems
-            && selectedItems.length > 0
-            && selectedItems.length < this.size;
-          this._isSelectAllChecked = selectedItems && selectedItems.length > 0 && selectedItems.length === this.size;
+          this._isSelectAllIndeterminate = this.selectedItems
+            && this.selectedItems.length > 0
+            && this.selectedItems.length < this.size;
+          this._isSelectAllChecked = this.selectedItems
+            && this.selectedItems.length > 0
+            && this.selectedItems.length === this.size;
           this._isEmpty = this.size === 0;
           this._computedEmptyLabel = (this.filters && this.filters.length > 0) ?
             this.emptyLabelWhenFiltered : this.emptyLabel;
@@ -497,6 +498,7 @@ limitations under the License.
             for (var i = 0; i < response.entries.length; i++) {
               this.push('items', response.entries[i]);
             }
+            return response;
           }.bind(this));
         }
       },
