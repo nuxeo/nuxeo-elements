@@ -35,8 +35,10 @@ limitations under the License.
 <link rel="import" href="../iron-icons/social-icons.html">
 
 <link rel="import" href="../nuxeo-elements/nuxeo-resource.html">
+<link rel="import" href="../nuxeo-elements/nuxeo-connection.html">
 <link rel="import" href="widgets/nuxeo-user-suggestion.html">
 
+<link rel="import" href="nuxeo-filters-behavior.html">
 <link rel="import" href="nuxeo-i18n-behavior.html">
 <link rel="import" href="nuxeo-user-group-management/nuxeo-user-group-search.html">
 <link rel="import" href="nuxeo-user-group-management/nuxeo-create-user.html">
@@ -115,11 +117,13 @@ Custom property | Description | Default
       }
     </style>
 
+    <nuxeo-connection user="{{_currentUser}}"></nuxeo-connection>
+
     <paper-toast id="toast"></paper-toast>
     <iron-pages selected="[[page]]" attr-for-selected="name">
       <section name="search">
         <div class="horizontal layout center">
-          <template is="dom-if" if="[[!readonly]]">
+          <template is="dom-if" if="[[_canCreateUserGroup(readonly, _currentUser)]]">
             <div class="flex">
               <paper-menu-button no-animations id="createDropdown" no-overlap
                                  horizontal-align="right" vertical-align="top" vertical-offset="-4">
@@ -146,12 +150,12 @@ Custom property | Description | Default
 
       <section name="create-user">
         <paper-card>
-          <nuxeo-create-user is-administrator="[[isAdministrator]]"></nuxeo-create-user>
+          <nuxeo-create-user readonly$="[[readonly]]"></nuxeo-create-user>
         </paper-card>
       </section>
 
       <section name="manage-user">
-        <nuxeo-user-management username="[[selectedUser]]" readonly$="[[readonly]]" is-administrator="[[isAdministrator]]"></nuxeo-user-management>
+        <nuxeo-user-management username="[[selectedUser]]" readonly$="[[readonly]]"></nuxeo-user-management>
       </section>
 
       <section name="create-group">
@@ -170,7 +174,7 @@ Custom property | Description | Default
     Polymer({
       is: 'nuxeo-user-group-management',
 
-      behaviors: [Nuxeo.I18nBehavior],
+      behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
 
       properties: {
         /**
@@ -201,16 +205,11 @@ Custom property | Description | Default
         readonly: {
           type: Boolean,
           value: false,
-          reflectToAttribute: true,
-          computed: '_isReadonly(isAdministrator, selectedGroup)'
+          reflectToAttribute: true
         },
 
-        /**
-         * Set to true for administrators to remove restrictions.
-         */
-        isAdministrator: {
-          type: Boolean,
-          value: false
+        _currentUser: {
+          type: Object
         }
       },
 
@@ -257,8 +256,12 @@ Custom property | Description | Default
         this.page = 'manage-group';
       },
 
-      _isReadonly: function() {
-        return !this.isAdministrator || this.selectedGroup === 'administrators';
+      _hasAdministrationPermissions: function(user) {
+        return user && (user.isAdministrator || this.isMember(user, 'powerusers'));
+      },
+
+      _canCreateUserGroup: function(readonly, currentUser) {
+        return !readonly && this._hasAdministrationPermissions(currentUser);
       },
 
       /**

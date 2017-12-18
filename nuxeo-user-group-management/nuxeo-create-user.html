@@ -22,6 +22,7 @@ limitations under the License.
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../widgets/nuxeo-user-suggestion.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
@@ -92,6 +93,8 @@ Used by `nuxeo-user-group-management`
       }
     </style>
 
+    <nuxeo-connection user="{{_currentUser}}"></nuxeo-connection>
+
     <nuxeo-resource id="request" path="/user" headers='{"Content-Type":"application/json"}'></nuxeo-resource>
 
     <nuxeo-operation id="invite" op="User.Invite"></nuxeo-operation>
@@ -150,17 +153,16 @@ Used by `nuxeo-user-group-management`
           value: ''
         },
 
-        isAdministrator: {
-          type: Boolean,
-          value: false
-        },
-
         /**
          * If true, allows to create a new user immediately after the current one is created
          */
         _createAnother: {
           type: Boolean,
           value: false
+        },
+
+        _currentUser: {
+          type: Object
         }
       },
 
@@ -195,7 +197,8 @@ Used by `nuxeo-user-group-management`
        * Creates a new user if the form was successfully submitted.
        */
       _create: function() {
-        if (!this.isAdministrator && this.user.groups && this.user.groups.indexOf('administrators') !== -1) {
+        if (!this._isAdministrator(this._currentUser) &&
+          this.user.groups && this.user.groups.indexOf('administrators') !== -1) {
           this.errors = this.i18n('createUser.errorAdministratorsGroup');
           return;
         }
@@ -246,6 +249,10 @@ Used by `nuxeo-user-group-management`
 
       _hasErrors: function() {
         return this.errors !== '';
+      },
+
+      _isAdministrator: function(user) {
+        return user && user.isAdministrator;
       }
     });
   </script>

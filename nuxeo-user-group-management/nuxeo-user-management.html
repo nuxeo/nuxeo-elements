@@ -22,10 +22,14 @@ limitations under the License.
 <link rel="import" href="../../paper-card/paper-card.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-toast/paper-toast.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../widgets/nuxeo-user-suggestion.html">
 <link rel="import" href="../widgets/nuxeo-group-tag.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../nuxeo-filters-behavior.html">
+
 <link rel="import" href="nuxeo-edit-password.html">
 <link rel="import" href="nuxeo-user-group-permissions-table.html">
 
@@ -185,6 +189,8 @@ Used by `nuxeo-user-group-management`
       }
     </style>
 
+    <nuxeo-connection user="{{_currentUser}}"></nuxeo-connection>
+
     <nuxeo-resource id="request" path="user/[[username]]" enrichers="userprofile" enrichers-entity="user">
     </nuxeo-resource>
 
@@ -204,7 +210,7 @@ Used by `nuxeo-user-group-management`
         <div class="actions">
 
           <!-- delete -->
-          <template is="dom-if" if=[[!readonly]]>
+          <template is="dom-if" if="[[_canEdit(readonly, _currentUser, user)]]">
             <paper-button noink id="deleteUserButton" class="horizontal layout center" on-tap="_toggleDeleteUser">
               <iron-icon noink icon="nuxeo:delete"></iron-icon> [[i18n('command.delete')]]
             </paper-button>
@@ -220,7 +226,7 @@ Used by `nuxeo-user-group-management`
           </nuxeo-dialog>
 
           <!-- change password -->
-          <template is="dom-if" if=[[!readonly]]>
+          <template is="dom-if" if="[[_canEdit(readonly, _currentUser, user)]]">
             <paper-button noink id="changePasswordButton" class="primary horizontal layout center" on-tap="_toggleChangePassword">
               <iron-icon icon="nuxeo:lock"></iron-icon> [[i18n('command.change.password')]]
             </paper-button>
@@ -243,7 +249,7 @@ Used by `nuxeo-user-group-management`
           </nuxeo-dialog>
 
           <!-- edit -->
-          <template is="dom-if" if=[[!readonly]]>
+          <template is="dom-if" if="[[_canEdit(readonly, _currentUser, user)]]">
             <paper-button noink id="editUserButton" class="primary horizontal layout center" on-tap="_toggleEditUser">
               <iron-icon icon="nuxeo:edit"></iron-icon> [[i18n('userManagement.editUser.button')]]
             </paper-button>
@@ -279,7 +285,7 @@ Used by `nuxeo-user-group-management`
     <paper-card>
       <div class="layout horizontal center">
         <h3 class="flex">[[i18n('userManagement.groups')]]</h3>
-        <template is="dom-if" if=[[!readonly]]>
+        <template is="dom-if" if="[[_canEdit(readonly, _currentUser, user)]]">
           <paper-button noink id="addGroup" class="flex-end" on-tap="_toggleEditGroups">
             <iron-icon icon="nuxeo:add"></iron-icon> [[i18n('userManagement.addToGroup.button')]]
           </paper-button>
@@ -316,7 +322,7 @@ Used by `nuxeo-user-group-management`
               </div>
               <div class="flex-4">[[item.name]]</div>
               <div class="table-actions">
-                <template is="dom-if" if="[[_canRemoveAdministratorsGroup(item)]]">
+                <template is="dom-if" if="[[_canEdit(readonly, _currentUser, user)]]">
                   <paper-icon-button icon="nuxeo:remove"
                                      title="[[i18n('userManagement.removeFrom.group', item.label)]]"
                                      on-tap="_toggleDialog">
@@ -364,7 +370,7 @@ Used by `nuxeo-user-group-management`
   <script>
     Polymer({
       is: 'nuxeo-user-management',
-      behaviors: [Nuxeo.I18nBehavior],
+      behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
       properties: {
         username: {
           type: String,
@@ -422,9 +428,8 @@ Used by `nuxeo-user-group-management`
           reflectToAttribute: true
         },
 
-        isAdministrator: {
-          type: Boolean,
-          value: false
+        _currentUser: {
+          type: Object
         }
       },
 
@@ -461,12 +466,22 @@ Used by `nuxeo-user-group-management`
         }
       },
 
-      _canRemoveAdministratorsGroup: function(group) {
-        if (group.name === 'administrators') {
-          return !this.readonly && this.isAdministrator;
-        } else {
-          return !this.readonly;
-        }
+      _isAdministrator: function(user) {
+        return user && user.isAdministrator;
+      },
+
+      _hasAdministrationPermissions: function(currentUser) {
+        return currentUser && (currentUser.isAdministrator ||
+          (this.isMember(currentUser, 'powerusers') && !this.user.isAdministrator));
+      },
+
+      _canEdit: function(readonly, currentUser, user) {
+        return !readonly && this.user && currentUser && (this._hasAdministrationPermissions(currentUser) ||
+          this._isSameUsername(currentUser.properties.username, user.properties.username));
+      },
+
+      _isSameUsername: function(username1, username2) {
+        return username1 && username2 && username1 === username2;
       },
 
       _computeGroups: function() {
@@ -481,7 +496,7 @@ Used by `nuxeo-user-group-management`
 
       _groupSelected: function() {
         if (this.selectedGroup) {
-          if (!this.isAdministrator && this.selectedGroup.groupname === 'administrators') {
+          if (!this._isAdministrator(this._currentUser) && this.selectedGroup.groupname === 'administrators') {
             this.errors = this.i18n('userManagement.errorAdministratorsGroup');
             this.selectedGroup = null;
             return;

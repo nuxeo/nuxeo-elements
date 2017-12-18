@@ -18,8 +18,10 @@ limitations under the License.
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="nuxeo-user-group-permissions-table.html">
 <link rel="import" href="../nuxeo-pagination-controls.html">
+<link rel="import" href="../nuxeo-filters-behavior.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../widgets/nuxeo-user-suggestion.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../paper-button/paper-button.html">
@@ -212,6 +214,8 @@ Used by `nuxeo-user-group-management`
       }
     </style>
 
+    <nuxeo-connection user="{{_currentUser}}"></nuxeo-connection>
+
     <nuxeo-resource id="request"
                     path="group/[[groupname]]" response="{{group}}"
                     headers='{"fetch.group": "memberUsers,memberGroups"}'>
@@ -275,7 +279,7 @@ Used by `nuxeo-user-group-management`
           <h5 class="counter">[[_countUsers(group.memberUsers)]] + [[_countGroups(group.memberGroups)]]</h5>
         </div>
 
-        <template is="dom-if" if=[[!readonly]]>
+        <template is="dom-if" if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
           <div class="layout horizontal header-actions">
             <paper-button id="deleteGroupButton" noink class="flex-end" on-tap="_toggleDeleteGroup">
               <iron-icon icon="nuxeo:delete"></iron-icon> [[i18n('command.delete')]]
@@ -336,7 +340,7 @@ Used by `nuxeo-user-group-management`
                 </div>
                 <div class="flex-4">[[item.id]]</div>
                 <div class="table-actions">
-                  <template is="dom-if" if=[[!readonly]]>
+                  <template is="dom-if" if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
                     <paper-icon-button icon="nuxeo:clear" noink
                                        title="[[i18n('groupManagement.removeFrom', item.label)]]"
                                        on-tap="_toggleDeleteDialog">
@@ -382,7 +386,7 @@ Used by `nuxeo-user-group-management`
                 </div>
                 <div class="flex-4">[[item.grouplabel]]</div>
                 <div class="table-actions">
-                  <template is="dom-if" if=[[!readonly]]>
+                  <template is="dom-if" if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
                     <paper-icon-button icon="nuxeo:clear" noink
                                        title="[[i18n('groupManagement.removeFrom', item.label)]]"
                                        on-tap="_toggleDeleteDialog">
@@ -412,7 +416,7 @@ Used by `nuxeo-user-group-management`
   <script>
     Polymer({
       is: 'nuxeo-group-management',
-      behaviors: [Nuxeo.I18nBehavior],
+      behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
       properties: {
         groupname: {
           type: String,
@@ -475,6 +479,10 @@ Used by `nuxeo-user-group-management`
           type: Boolean,
           value: false,
           reflectToAttribute: true
+        },
+
+        _currentUser: {
+          type: Object
         }
       },
 
@@ -498,21 +506,29 @@ Used by `nuxeo-user-group-management`
         }.bind(this));
       },
 
+      _hasAdministrationPermissions: function(user) {
+        return user && (user.isAdministrator || (this.isMember(user, 'powerusers')
+          && this.groupname !== 'administrators'));
+      },
+
+      _canEditGroup: function(readonly, currentUser, groupname) {
+        return !readonly && this._hasAdministrationPermissions(currentUser, groupname);
+      },
+
       _userHasName: function(user) {
         return user.properties.firstName || user.properties.lastName;
       },
 
       _fetch: function() {
-        if (!this.groupname) {
-          return;
+        if (this.groupname) {
+          this.$.request.get().then(function() {
+            this.activity = [];
+            this.showEditMembers = false;
+            this.selectedMember = null;
+            this._fetchGroups();
+            this._fetchUsers();
+          }.bind(this));
         }
-        this.$.request.get().then(function(response) {
-          this.activity = [];
-          this.showEditMembers = false;
-          this.selectedMember = null;
-          this._fetchGroups();
-          this._fetchUsers();
-        }.bind(this));
       },
 
       _saveGroup: function() {
