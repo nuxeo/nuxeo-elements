@@ -129,7 +129,7 @@ Example:
           var firstName = user.properties.firstName || user.properties["user:firstName"];
           var lastName = user.properties.lastName || user.properties["user:lastName"];
           var email = user.properties.email || user.properties["user:email"];
-          return (firstName || lastName) ? firstName + ' ' + lastName : email;
+          return (firstName || lastName) ? firstName + ' ' + lastName : email || this._id(user);
         } else {
           return this._id(user);
         }
