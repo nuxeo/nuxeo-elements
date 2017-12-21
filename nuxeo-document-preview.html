@@ -255,6 +255,16 @@ Example:
             };
           });
         }
+        // fallback to blob data if there are no transcoded videos (e.g. video documents managed by liveconnect)
+        if (this.xpath) {
+          this._updateBlob();
+          if (this._blob && this._blob['mime-type'].match('video.*')) {
+            return [{
+              data: this._blob.data,
+              type: this._blob['mime-type']
+            }];
+          }
+        }
       },
 
       _computeStoryboard: function() {
