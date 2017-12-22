@@ -43,14 +43,17 @@ An element to interact with page provider aggregations as suggestions.
       }
     </style>
 
-    <div class="layout vertical">
+    <template is="dom-if" if="[[!_isEmpty]]">
       <nuxeo-selectivity data="[[_computedData]]"
                      min-chars="[[minChars]]"
                      multiple="[[multiple]]"
                      placeholder="[[placeholder]]"
                      value="{{value}}">
       </nuxeo-selectivity>
-    </div>
+    </template>
+    <template is="dom-if" if="[[_isEmpty]]">
+      <label>[[i18n('dropdownAggregation.noResults')]]</label>
+    </template>
 
   </template>
   <script>
