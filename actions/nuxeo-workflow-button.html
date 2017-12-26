@@ -71,7 +71,7 @@ Example:
 
       <div class="buttons">
         <paper-button dialog-dismiss>[[i18n('workflowButton.dialog.close')]]</paper-button>
-        <paper-button class="primary" disabled="[[!selectedProcess]]" on-tap="_startWorkflow">[[i18n('workflowButton.dialog.start')]]</paper-button>
+        <paper-button id="startButton" class="primary" disabled="[[!selectedProcess]]" on-tap="_startWorkflow">[[i18n('workflowButton.dialog.start')]]</paper-button>
       </div>
     </nuxeo-dialog>
 
@@ -125,10 +125,13 @@ Example:
       },
 
       _toggleDialog: function() {
+        this.$.startButton.removeAttribute('disabled');
         this.$.dialog.toggle();
       },
 
       _startWorkflow : function() {
+        // disable start button to prevent starting multiple workflows
+        this.$.startButton.setAttribute('disabled', true);
         this.workflows = this.$.workflows;
         this.$.workflows.data = {
           'entity-type': 'workflow',
