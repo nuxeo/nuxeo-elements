@@ -70,6 +70,7 @@
   "documentPermissions.permissionUpdated": "Baimena eguneratuta",
   "documentPermissions.unblock": "Desblokeatu",
   "downloadButton.tooltip": "Deskargatu",
+  "dropdownAggregation.noResults": "No available results",
   "editPassword.password": "Pasahitza",
   "editPassword.verify": "Pasahitza (berretsi)",
   "editPassword.noMatch": "Pasahitza ez dator bat.",

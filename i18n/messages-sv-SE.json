@@ -70,6 +70,7 @@
   "documentPermissions.permissionUpdated": "Behörighet uppdaterad",
   "documentPermissions.unblock": "Häv blockering",
   "downloadButton.tooltip": "Ladda ned",
+  "dropdownAggregation.noResults": "No available results",
   "editPassword.password": "Lösenord",
   "editPassword.verify": "Lösenord (bekräfta)",
   "editPassword.noMatch": "Lösenordet matchar inte.",

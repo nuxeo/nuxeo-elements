@@ -70,6 +70,7 @@
   "documentPermissions.permissionUpdated": "Permission mise à jour",
   "documentPermissions.unblock": "Débloquer",
   "downloadButton.tooltip": "Télécharger",
+  "dropdownAggregation.noResults": "No available results",
   "editPassword.password": "Mot de passe",
   "editPassword.verify": "Mot de passe (Vérification)",
   "editPassword.noMatch": "Les mots de passe ne correspondent pas.",
