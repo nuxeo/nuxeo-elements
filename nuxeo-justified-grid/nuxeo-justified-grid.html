@@ -215,6 +215,11 @@ An element for displaying page provider results in a justified grid with infinit
         sortOptions: {
           type: Array,
           value: []
+        },
+
+        _isFetching: {
+          type: Boolean,
+          value: false
         }
       },
 
@@ -235,15 +240,17 @@ An element for displaying page provider results in a justified grid with infinit
       },
 
       fetch: function() {
-        var result = this._fetchPage(this.page, this.pageSize);
-        if (result) {
-          result.then(function() {
-            this.page += 1;
-            this.$.scrollThreshold.clearTriggers();
-          }.bind(this));
-        } else {
+        if (this._isFetching || !this._hasPageProvider()) {
           this.$.scrollThreshold.clearTriggers();
+          this._isFetching = false;
+          return Promise.resolve();
         }
+        this._isFetching = true;
+        return this._fetchPage(this.page, this.pageSize).then(function() {
+          this.page += 1;
+          this.$.scrollThreshold.clearTriggers();
+          this._isFetching = false;
+        }.bind(this));
       },
 
       _refresh: function() {
