@@ -70,7 +70,7 @@
   "documentPermissions.permissionUpdated": "アクセス許可が更新されました",
   "documentPermissions.unblock": "ブロック解除",
   "downloadButton.tooltip": "ダウンロード",
-  "dropdownAggregation.noResults": "No available results",
+  "dropdownAggregation.noResults": "ご利用可能な結果がありません。",
   "editPassword.password": "パスワード",
   "editPassword.verify": "パスワード（確認）",
   "editPassword.noMatch": "パスワードが一致していません",
