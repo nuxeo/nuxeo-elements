@@ -23,7 +23,7 @@ limitations under the License.
       // force use of polyfill: see ELEMENTS-56
       window.fetch = null;
     </script>
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
     <script src="../../test-fixture/test-fixture-mocha.js"></script>
     <script src="../../nuxeo-elements/test/test-helpers.js"></script>
@@ -90,157 +90,157 @@ limitations under the License.
     </test-fixture>
     <script>
 
-      suite('<nuxeo-audit-data>', function() {
+      suite('<nuxeo-audit-data>', () => {
 
-        var server;
+        let server;
 
-        setup(function() {
+        setup(() => {
           server = sinon.fakeServer.create();
           server.autoRespond = true;
           // login
-          var nx = fixture('nx');
+          const nx = fixture('nx');
           return login(server, nx);
         });
 
-        test('date-terms', function() {
-          var search = fixture('date-terms');
+        test('date-terms', () => {
+          const search = fixture('date-terms');
           assert.deepEqual(search.query.bool.must, [
-            { term: { "eventId": "eventName"}},
-            { range: { eventDate: {gte: "1980-01-01", lte: "1980-12-31"}}}
+            {term: {eventId: 'eventName'}},
+            {range: {eventDate: {gte: '1980-01-01', lte: '1980-12-31'}}},
           ]);
         });
 
-        test('grouped-by', function() {
-          var search = fixture('grouped-by');
-          assert.equal(search.aggregates.by.terms.field, "variable");
+        test('grouped-by', () => {
+          const search = fixture('grouped-by');
+          assert.equal(search.aggregates.by.terms.field, 'variable');
 
           return fakeResponse(search, {
-            "aggregations": {
-              "by": {
-                "buckets": [{
-                  "key": "bucket1",
-                  "doc_count":  1
+            aggregations: {
+              by: {
+                buckets: [{
+                  key: 'bucket1',
+                  doc_count: 1,
                 }, {
-                  "key": "bucket2",
-                  "doc_count":  2
-                }]
-              }
-            }
-          }).then(function() {
+                  key: 'bucket2',
+                  doc_count: 2,
+                }],
+              },
+            },
+          }).then(() => {
             assert.isArray(search.data);
             assert.equal(search.data.length, 2);
-            assert.deepEqual(search.data[0], {key: "bucket1", value: 1});
-            assert.deepEqual(search.data[1], {key: "bucket2", value: 2});
+            assert.deepEqual(search.data[0], {key: 'bucket1', value: 1});
+            assert.deepEqual(search.data[1], {key: 'bucket2', value: 2});
           });
         });
 
-        test('multiple-groups', function() {
-          var search = fixture('multiple-groups');
-          var agg1 = search.aggregates.by,
-              agg2 = agg1.aggs.by;
-          assert.equal(agg1.terms.field, "variable1");
+        test('multiple-groups', () => {
+          const search = fixture('multiple-groups');
+          const agg1 = search.aggregates.by;
+          const agg2 = agg1.aggs.by;
+          assert.equal(agg1.terms.field, 'variable1');
           assert.equal(agg1.terms.size, 5);
-          assert.equal(agg2.terms.field, "extended.variable2");
+          assert.equal(agg2.terms.field, 'extended.variable2');
           assert.isUndefined(agg2.terms.size);
         });
 
-        test('metrics', function() {
-          var search = fixture('metrics');
-          assert.equal(search.aggregates.metrics.avg.field, "variable");
+        test('metrics', () => {
+          const search = fixture('metrics');
+          assert.equal(search.aggregates.metrics.avg.field, 'variable');
 
           return fakeResponse(search, {
-            "aggregations": {
-              "metrics": {
-                "value": 1
-              }
-            }
-          }).then(function() {
+            aggregations: {
+              metrics: {
+                value: 1,
+              },
+            },
+          }).then(() => {
             assert.equal(search.data, 1);
           });
         });
 
-        test('metrics', function() {
-          var search = fixture('metrics');
-          assert.equal(search.aggregates.metrics.avg.field, "variable");
+        test('metrics', () => {
+          const search = fixture('metrics');
+          assert.equal(search.aggregates.metrics.avg.field, 'variable');
 
           return fakeResponse(search, {
-            "aggregations": {
-              "metrics": {
-                "value": 1
-              }
-            }
-          }).then(function() {
+            aggregations: {
+              metrics: {
+                value: 1,
+              },
+            },
+          }).then(() => {
             assert.equal(search.data, 1);
           });
         });
 
-        test('ranges', function() {
-          var search = fixture('ranges');
-          assert.equal(search.aggregates.by.range.field, "variable");
+        test('ranges', () => {
+          const search = fixture('ranges');
+          assert.equal(search.aggregates.by.range.field, 'variable');
           assert.deepEqual(search.aggregates.by.range.ranges, [
-            {"key": "low", "to": 1500 },
-            {"key": "high", "from": 1500}
+            {key: 'low', to: 1500},
+            {key: 'high', from: 1500},
           ]);
 
           return fakeResponse(search, {
-            "aggregations": {
-              "by": {
-                "buckets": [{
-                  "key": "low",
-                  "doc_count":  1
+            aggregations: {
+              by: {
+                buckets: [{
+                  key: 'low',
+                  doc_count: 1,
                 }, {
-                  "key": "high",
-                  "doc_count":  2
-                }]
-              }
-            }
-          }).then(function() {
+                  key: 'high',
+                  doc_count: 2,
+                }],
+              },
+            },
+          }).then(() => {
             assert.isArray(search.data);
             assert.equal(search.data.length, 2);
-            assert.deepEqual(search.data[0], {key: "low", value: 1});
-            assert.deepEqual(search.data[1], {key: "high", value: 2});
+            assert.deepEqual(search.data[0], {key: 'low', value: 1});
+            assert.deepEqual(search.data[1], {key: 'high', value: 2});
           });
         });
 
-        test('date-intervals', function() {
-          var search = fixture('date-intervals');
+        test('date-intervals', () => {
+          const search = fixture('date-intervals');
           assert.deepEqual(search.aggregates.by.date_histogram, {
-            field: "field",
-            format: "yyyy-MM-dd",
-            interval: "day",
+            field: 'field',
+            format: 'yyyy-MM-dd',
+            interval: 'day',
             min_doc_count: 0,
             extended_bounds: {
-              min: "1980-01-01",
-              max: "1980-01-03"
-            }
+              min: '1980-01-01',
+              max: '1980-01-03',
+            },
           });
 
           return fakeResponse(search, {
-            "aggregations": {
-              "by": {
-                "buckets": [
-                  {"key_as_string": "1980-01-01", "doc_count":  1},
-                  {"key_as_string": "1980-01-02", "doc_count":  2},
-                  {"key_as_string": "1980-01-03", "doc_count":  3}
-                ]
-              }
-            }
-          }).then(function() {
+            aggregations: {
+              by: {
+                buckets: [
+                  {key_as_string: '1980-01-01', doc_count: 1},
+                  {key_as_string: '1980-01-02', doc_count: 2},
+                  {key_as_string: '1980-01-03', doc_count: 3},
+                ],
+              },
+            },
+          }).then(() => {
             assert.isArray(search.data);
             assert.equal(search.data.length, 3);
             assert.deepEqual(search.data, [
-              {key: "1980-01-01", value: 1},
-              {key: "1980-01-02", value: 2},
-              {key: "1980-01-03", value: 3}]);
+              {key: '1980-01-01', value: 1},
+              {key: '1980-01-02', value: 2},
+              {key: '1980-01-03', value: 3}]);
           });
         });
 
-        test('where-terms', function() {
-          var search = fixture('where-terms');
+        test('where-terms', () => {
+          const search = fixture('where-terms');
           assert.deepEqual(search.query.bool.must, [
-            { term: { "eventId": "eventName"}},
-            { term: { "key": "value"}},
-            { term: { "anotherKey": "anotherValue"}},
+            {term: {eventId: 'eventName'}},
+            {term: {key: 'value'}},
+            {term: {anotherKey: 'anotherValue'}},
           ]);
         });
 
@@ -251,13 +251,13 @@ limitations under the License.
             [
               200,
               {'Content-Type': 'application/json'},
-              JSON.stringify(json)
-            ]
+              JSON.stringify(json),
+            ],
           );
 
-          var promise = search.fetch();
+          const promise = search.fetch();
 
-          Polymer.Base.async(function() {
+          Polymer.Base.async(() => {
             server.respond();
           });
 

@@ -15,8 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="nuxeo-aggregate-data-behavior.html">
+<link rel="import" href="nuxeo-aggregate-data-element.html">
+
 <!--
 An element providing data from the audit index.
 
@@ -76,57 +76,63 @@ If all the aggregation levels are configured it will produce a query like:
 @demo demo/audit.html
 -->
 <script>
-  Polymer({
+  {
+    class AuditData extends Nuxeo.AggregateDataElement {
 
-    is: 'nuxeo-audit-data',
-
-    behaviors: [Nuxeo.AggregateDataBehavior],
-
-    properties: {
-
-      /**
-       * the name of the index
-       */
-      index: {
-        type: String,
-        value: 'audit'
-      },
-
-      /**
-       * the name of the event to filter by
-       */
-      eventId: {
-        type: String,
-        value: ''
-      },
-
-      /**
-       * Date field to use
-       **/
-      // @override
-      dateField: {
-        type: String,
-        value: 'eventDate'
+      static get is() {
+        return 'nuxeo-audit-data';
       }
 
-    },
+      static get properties() {
+        return {
+          /**
+           * the name of the index
+           */
+          index: {
+            type: String,
+            value: 'audit',
+          },
 
-    observers: [
-      '_query(eventId, where, startDate, endDate)',
-      '_aggregates(groupedBy, withRanges, withDateIntervals, metrics, metricsOperator, startDate, endDate)'
-    ],
+          /**
+           * the name of the event to filter by
+           */
+          eventId: {
+            type: String,
+            value: '',
+          },
 
-    _query: function () {
-      var terms = [
-        {term: {"eventId": this.eventId}}
-      ];
-
-      if (this._dateRange) {
-        terms.push(this._dateRange);
+          /**
+           * Date field to use
+           */
+          // @override
+          dateField: {
+            type: String,
+            value: 'eventDate',
+          },
+        };
       }
 
-      this.query = this._buildTerms(terms);
+      static get observers() {
+        return [
+          '_query(eventId, where, startDate, endDate)',
+          '_aggregates(groupedBy, withRanges, withDateIntervals, metrics, metricsOperator, startDate, endDate)',
+        ];
+      }
+
+      _query() {
+        const terms = [
+          {term: {eventId: this.eventId}},
+        ];
+
+        if (this._dateRange) {
+          terms.push(this._dateRange);
+        }
+
+        this.query = this._buildTerms(terms);
+      }
     }
 
-  });
+    customElements.define(AuditData.is, AuditData);
+    Nuxeo.AuditData = AuditData;
+  }
 </script>

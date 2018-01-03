@@ -20,7 +20,7 @@ limitations under the License.
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <title>Nuxeo Workflow Data Elements Demo</title>
-  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
   <script src="../../moment/min/moment-with-locales.js"></script>
   <link rel="import" href="../nuxeo-dataviz-elements.html">
   <style>
@@ -252,34 +252,34 @@ limitations under the License.
 </template>
 </dom-bind>
 <script>
-  var t = document.querySelector('dom-bind');
-  var currentDate = moment();
-  t.endDate = currentDate.format("YYYY-MM-DD");
-  t.startDate = currentDate.subtract(7, 'days').format("YYYY-MM-DD");
+  const t = document.querySelector('dom-bind');
+  const currentDate = moment();
+  t.endDate = currentDate.format('YYYY-MM-DD');
+  t.startDate = currentDate.subtract(7, 'days').format('YYYY-MM-DD');
 
-  t.formatDuration = function (duration) {
-    var seconds = Math.floor(duration/1000),
-        minutes = Math.floor(seconds/60),
-        hours = Math.floor(minutes/60),
-        days = Math.floor(hours/24),
-        result = ";";
-    hours = hours-(days*24);
-    minutes = minutes-(days*24*60)-(hours*60);
-    seconds = seconds-(days*24*60*60)-(hours*60*60)-(minutes*60);
+  t.formatDuration = (duration) => {
+    let seconds = Math.floor(duration / 1000);
+    let minutes = Math.floor(seconds / 60);
+    let hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    let result = ';';
+    hours -= (days * 24);
+    minutes = minutes - (days * 24 * 60) - (hours * 60);
+    seconds = seconds - (days * 24 * 60 * 60) - (hours * 60 * 60) - (minutes * 60);
     if (days > 0) {
-      result += days + " Days ";
+      result += `${days} Days `;
     }
     if (hours > 0) {
-      result += hours + " h ";
+      result += `${hours} h `;
     }
     if (minutes > 0) {
-      result += minutes + " m ";
+      result += `${minutes} m `;
     }
     if (seconds > 0) {
-      result += seconds + " s ";
+      result += `${seconds}  s `;
     }
     return result;
-  }
+  };
 </script>
 </body>
 </html>

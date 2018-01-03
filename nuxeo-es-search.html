@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../nuxeo-elements/nuxeo-connection.html">
 
 <!--
@@ -30,59 +31,69 @@ Example:
 <dom-module id="nuxeo-es-search">
   <template>
     <style>
-        :host {
-          display: none;
-        }
-      </style>
+      :host {
+        display: none;
+      }
+    </style>
     <nuxeo-connection id="nx" connection-id="[[connectionId]]"></nuxeo-connection>
   </template>
 
   <script>
-    (function() {
-      Polymer({
-        is: 'nuxeo-es-search',
+    {
+      class ESSearch extends Nuxeo.Element {
 
-        properties: {
-          /**
-           * The id of a nuxeo-connection to use.
-           */
-          connectionId: {
+        static get is() {
+          return 'nuxeo-es-search';
+        }
+
+        static get properties() {
+          return {
+            /**
+             * The id of a nuxeo-connection to use.
+             */
+            connectionId: {
+              type: String,
+              value: 'nx',
+            },
+
+            /**
+             * If true, automatically execute the operation when either `path` or `params` changes.
+             */
+            auto: {
+              type: Boolean,
+              value: false,
+            },
+
+            index: {
+              type: String,
+              value: 'nuxeo',
+            },
+
+            query: Object,
+
+            aggregates: Object,
+
             type: String,
-            value: 'nx'
-          },
 
-          /**
-           *  If true, automatically execute the operation when either `path` or `params` changes.
-           */
-          auto: {type: Boolean, value: false},
+            aggregations: {
+              type: Object,
+              notify: true,
+              readOnly: true,
+            },
 
-          index: {
-            type: String,
-            value: 'nuxeo'
-          },
+            hits: {
+              type: Object,
+              notify: true,
+              readOnly: true,
+            },
+          };
+        }
 
-          query:  Object,
-
-          aggregates: Object,
-
-          type: String,
-
-          aggregations: {
-            type: Object,
-            notify: true,
-            readOnly: true
-          },
-
-          hits: {
-            type: Object,
-            notify: true,
-            readOnly: true
-          }
-        },
-
-        observers: [
-          '_auto(connectionId, auto, index, query, aggregates)'
-        ],
+        static get observers() {
+          return [
+            '_auto(connectionId, auto, index, query, aggregates)',
+          ];
+        }
 
         /**
          * Fired if an error occurs while performing the query.
@@ -96,54 +107,65 @@ Example:
          * @event results
          */
 
-        _auto: function () {
+        _auto() {
           if (this.auto && this.query && this.aggregates) {
             this.execute();
           }
-        },
+        }
 
-        execute: function () {
-          return this.$.nx.connect()
-              .then(this._send.bind(this));
-        },
+        execute() {
+          return this.$.nx.connect().then(this._send.bind(this));
+        }
 
-        _send: function() {
-          var url = [this.$.nx.client._baseURL, 'site/es', this.index, '_search'].join('/');
+        _send() {
+          let url = [this.$.nx.client._baseURL, 'site/es', this.index, '_search'].join('/');
           url = url.replace(/(^\/+)|([^:])\/\/+/g, '$2/');
 
-          if (this.type) { url += '?search_type=' + this.type; }
-          var options = {
+          if (this.type) {
+            url += `?search_type=${this.type}`;
+          }
+          const options = {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: {
-              query: this.query, aggs: this.aggregates
+              query: this.query,
+              aggs: this.aggregates,
             },
-            url: url
+            url,
           };
-          return this.$.nx.request().then(function(request) {
-            return request
-              .execute(options)
-              .then(this._handleResponse.bind(this))
-              .catch(this._handleError.bind(this))
-          }.bind(this));
-        },
+          return this.$.nx.request().then((request) => request.execute(options)
+            .then(this._handleResponse.bind(this))
+            .catch(this._handleError.bind(this)));
+        }
 
-        _handleError: function(request, error) {
+        _handleError(request, error) {
           console.error(error);
-          this.fire('error', {
-            request: request,
-            error: error
-          });
-        },
+          this.dispatchEvent(new CustomEvent('error', {
+            bubbles: true,
+            composed: true,
+            detail: {
+              request,
+              error,
+            },
+          }));
+        }
 
-        _handleResponse: function(response) {
+        _handleResponse(response) {
           this._setHits(response.hits);
           this._setAggregations(response.aggregations);
-          this.fire('results', response);
+          this.dispatchEvent(new CustomEvent('results', {
+            bubbles: true,
+            composed: true,
+            detail: {
+              response,
+            },
+          }));
           return response;
         }
-      });
-    })();
-  </script>
+      }
 
+      customElements.define(ESSearch.is, ESSearch);
+      Nuxeo.ESSearch = ESSearch;
+    }
+  </script>
 </dom-module>

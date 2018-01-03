@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="nuxeo-aggregate-data-behavior.html">
+<link rel="import" href="nuxeo-aggregate-data-element.html">
 <!--
 An element providing metrics data on workflows.
 
@@ -75,80 +74,85 @@ If all the aggregation levels are configured it will produce a query like:
 @demo demo/workflow.html
 -->
 <script>
+  {
+    class WorkflowData extends Nuxeo.AggregateDataElement {
 
-  Polymer({
-
-    is: 'nuxeo-workflow-data',
-
-    behaviors: [Nuxeo.AggregateDataBehavior],
-
-    properties: {
-
-      index: {
-        type: String,
-        value: 'audit_wf'
-      },
-
-      /**
-       * the name of the event to filter by
-       */
-      event: {
-        type: String,
-        value: ''
-      },
-
-      /**
-       * the workflow model name
-       */
-      workflow: String,
-
-      /**
-       * the name of the task to filter by
-       */
-      task: {
-        type: String,
-        value: ''
-      },
-
-      /**
-       * Date field to use
-       **/
-      dateField: {
-        type: String,
-        value: 'eventDate'
+      static get is() {
+        return 'nuxeo-workflow-data';
       }
 
-    },
+      static get properties() {
+        return {
+          index: {
+            type: String,
+            value: 'audit_wf',
+          },
 
-    observers: [
-      '_query(workflow, startDate, endDate)',
-      '_aggregates(groupedBy, withRanges, withDateIntervals, metrics, metricsOperator, startDate, endDate)'
-    ],
+          /**
+           * the name of the event to filter by
+           */
+          event: {
+            type: String,
+            value: '',
+          },
 
-    _query: function() {
-      var event = this.event || (this.task ? 'afterWorkflowTaskEnded' : 'afterWorkflowFinish');
+          /**
+           * the workflow model name
+           */
+          workflow: String,
 
-      var terms = [
-        {term: {"eventId": event}},
-        {term: {"extended.modelName": this.workflow}}
-      ];
+          /**
+           * the name of the task to filter by
+           */
+          task: {
+            type: String,
+            value: '',
+          },
 
-      if (this.task) {
-        terms.push({term: { 'extended.taskName': this.task}});
+          /**
+           * Date field to use
+           */
+          dateField: {
+            type: String,
+            value: 'eventDate',
+          },
+        };
       }
-      if (this._dateRange) {
-        terms.push(this._dateRange);
+
+      static get observers() {
+        return [
+          '_query(workflow, startDate, endDate)',
+          '_aggregates(groupedBy, withRanges, withDateIntervals, metrics, metricsOperator, startDate, endDate)',
+        ];
       }
 
-      this.query = this._buildTerms(terms);
-    },
+      _query() {
+        const event = this.event || (this.task ? 'afterWorkflowTaskEnded' : 'afterWorkflowFinish');
 
-    // @override
-    _fieldFor: function(column) {
-      // TODO: limit 'exposed' fields to system field (ex: 'user', 'taskName', 'action', etc) and 'workflowVariables.*'
-      return 'extended.' + column;
+        const terms = [
+          {term: {eventId: event}},
+          {term: {'extended.modelName': this.workflow}},
+        ];
+
+        if (this.task) {
+          terms.push({term: {'extended.taskName': this.task}});
+        }
+        if (this._dateRange) {
+          terms.push(this._dateRange);
+        }
+
+        this.query = this._buildTerms(terms);
+      }
+
+      // @override
+      _fieldFor(column) {
+        // TODO: limit 'exposed' fields to system field (ex: 'user', 'taskName', 'action', etc) and 'workflowVariables.*'
+        return `extended.${column}`;
+      }
+
     }
 
-  });
-
+    customElements.define(WorkflowData.is, WorkflowData);
+    Nuxeo.WorkflowData = WorkflowData;
+  }
 </script>

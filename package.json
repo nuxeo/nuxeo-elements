@@ -13,13 +13,19 @@
   "private": true,
   "scripts": {
     "eslint": "eslint *.html demo/**/*.html test/**/*.html",
-    "polylint": "polymer lint -r 'polymer-1'",
+    "polylint": "polymer lint",
     "lint": "npm run eslint && npm run polylint",
-    "test": "polymer test --simpleOutput --expanded -l chrome"
+    "test": "polymer test --simpleOutput --expanded -l chrome",
+    "docs": "polymer analyze > analysis.json && polymer serve"
   },
   "devDependencies": {
-    "eslint": "^3.0.0",
-    "eslint-plugin-html": "^2.0.0",
-    "polymer-cli": "1.6.0"
+    "eslint": "^4.14.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-config-google": "^0.9.1",
+    "eslint-plugin-html": "^4.0.1",
+    "eslint-plugin-import": "^2.8.0",
+    "moment": "^2.10.6",
+    "polymer-cli": "1.6.0",
+    "web-component-tester": "*"
   }
 }

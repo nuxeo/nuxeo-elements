@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="nuxeo-aggregate-data-behavior.html">
+<link rel="import" href="nuxeo-aggregate-data-element.html">
 <!--
 An element providing metrics data on searches.
 
@@ -74,60 +73,65 @@ If all the aggregation levels are configured it will produce a query like:
 @demo demo/search.html
 -->
 <script>
+  {
+    class SearchData extends Nuxeo.AggregateDataElement {
 
-  Polymer({
-
-    is: 'nuxeo-search-data',
-
-    behaviors: [Nuxeo.AggregateDataBehavior],
-
-    properties: {
-
-      index: {
-        type: String,
-        value: 'audit'
-      },
-
-      /**
-       * the page provider name
-       */
-      pageProvider: String,
-
-      /**
-       * Date field to use
-       **/
-      dateField: {
-        type: String,
-        value: 'eventDate'
+      static get is() {
+        return 'nuxeo-search-data';
       }
 
-    },
+      static get properties() {
+        return {
+          index: {
+            type: String,
+            value: 'audit',
+          },
 
-    observers: [
-      '_query(startDate, endDate)'
-    ],
+          /**
+           * the page provider name
+           */
+          pageProvider: String,
 
-    _query: function() {
-      var terms = [
-        {term: {"eventId": "search"}}
-      ];
-
-      if (this.pageProvider) {
-        terms.push({term: {'extended.pageProviderName': this.pageProvider}});
+          /**
+           * Date field to use
+           */
+          dateField: {
+            type: String,
+            value: 'eventDate',
+          },
+        };
       }
 
-      if (this._dateRange) {
-        terms.push(this._dateRange);
+      static get observers() {
+        return [
+          '_query(startDate, endDate)',
+        ];
       }
 
-      this.query = this._buildTerms(terms);
-    },
+      _query() {
+        const terms = [
+          {term: {eventId: 'search'}},
+        ];
 
-    // @override
-    _fieldFor: function(column) {
-      return 'extended.' + column;
+        if (this.pageProvider) {
+          terms.push({term: {'extended.pageProviderName': this.pageProvider}});
+        }
+
+        if (this._dateRange) {
+          terms.push(this._dateRange);
+        }
+
+        this.query = this._buildTerms(terms);
+      }
+
+      // @override
+      _fieldFor(column) {
+        return `extended.${column}`;
+      }
+
     }
 
-  });
-
+    customElements.define(SearchData.is, SearchData);
+    Nuxeo.SearchData = SearchData;
+  }
 </script>
