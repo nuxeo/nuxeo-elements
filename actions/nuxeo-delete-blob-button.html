@@ -24,6 +24,7 @@ limitations under the License.
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../nuxeo-filters-behavior.html">
 
 <!--
 A button element for deleting a file blob from a document.
@@ -66,7 +67,7 @@ Example:
   <script>
     Polymer({
       is: 'nuxeo-delete-blob-button',
-      behaviors: [Nuxeo.I18nBehavior],
+      behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
       properties: {
 
         /**
@@ -93,7 +94,8 @@ Example:
       },
 
       _isAvailable: function(doc) {
-        return doc;
+        return doc && this.hasPermission(doc, 'Write') && !this.isImmutable(doc) &&
+          doc.type !== 'Root' && doc.state !== 'deleted';
       },
 
       _toggleDialog: function() {
