@@ -95,7 +95,7 @@ Example:
     </paper-input>
 
     <overlay-date-picker id="picker" confirmed-date="{{_pickerValue}}" vertical-align="bottom" 
-                         native auto-confirm></overlay-date-picker>
+                         on-opened-changed="_pickerOpenedChanged" native auto-confirm></overlay-date-picker>
 
   </template>
 
@@ -144,8 +144,13 @@ Example:
         if (!this._wasOpened && !this.value) {
           this.$.picker.now();
         }
-        this._wasOpened = true;
         this.$.picker.toggle();
+      },
+
+      _pickerOpenedChanged: function(e) {
+        if (e.detail.value) {
+          this._wasOpened = true;
+        }
       },
 
       _getValidity: function() {
@@ -156,31 +161,44 @@ Example:
       },
 
       _valueChanged: function() {
-        if (this.value && moment(this.value).isValid()) {
-          this._pickerValue = moment(this.value).format('YYYY-MM-DD');
-          this._inputValue = moment(this._pickerValue).format('YYYY-MM-DD');
+        if (this.value === undefined) {
+          return;
         }
-
-        if (!this.value || this.value.length === 0) {
+        var date = moment(this.value);
+        if (this.value && date.isValid()) {
+          this._inputValue = date.format('YYYY-MM-DD');
+          // XXX This if prevents value from being stuck on current date if set using the keyboard.
+          // Typing years using the keyboard causes this value to assume a one-, two- and three-digit number, which
+          // breaks overlay-date-picker. This if can be removed as soon as these PRs are merged:
+          // - https://github.com/fooloomanzoo/property-mixins/pull/1
+          // - https://github.com/fooloomanzoo/datetime-picker/pull/28
+          if (date.year() > 999) {
+            this._pickerValue = date.format('YYYY-MM-DD');
+          }
+        } else {
+          this._inputValue = '';
           this._pickerValue = '';
         }
       },
 
       _pickerValueChanged: function() {
+        if (this._pickerValue === undefined) {
+          return;
+        }
         if (this._wasOpened && this._pickerValue && moment(this._pickerValue).isValid()) {
           this.set('value', moment(this._pickerValue).toJSON());
-          this._inputValue = moment(this._pickerValue).format('YYYY-MM-DD');
-        } else {
-          this.value = '';
-          this._inputValue = '';
+          this._wasOpened = false;
         }
       },
 
       _inputValueChanged: function() {
+        if (this._inputValue === undefined) {
+          return;
+        }
         if (this._inputValue && moment(this._inputValue).isValid()) {
           this.set('value', moment(this._inputValue).toJSON());
         } else {
-          this.value = '';
+          this.set('value', '');
         }
       }
     });
