@@ -20,4 +20,4 @@ before_script:
   - npm run lint
 
 script:
-  - xvfb-run npm run test
+  - xvfb-run polymer test --plugin sauce

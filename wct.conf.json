@@ -1,7 +1,38 @@
 {
   "plugins": {
     "local": {
-      "browsers": ["chrome"]
+      "browsers": ["chrome", "firefox"]
+    },
+    "sauce": {
+      "disabled": true,
+      "browsers": [
+        {
+          "browserName": "microsoftedge",
+          "platform": "Windows 10",
+          "version": "15"
+        },
+        {
+          "browserName": "internet explorer",
+          "platform": "Windows 8.1",
+          "version": "11"
+        },
+        {
+          "browserName": "safari",
+          "platform": "macOS 10.13",
+          "version": "11"
+        },
+        {
+          "browserName": "ipad",
+          "platform": "macOS 10.12",
+          "version": "10.3"
+        },
+        {
+          "browserName": "android",
+          "platform": "linux",
+          "version": "6.0",
+          "deviceType": "tablet"
+        }
+      ]
     }
   }
 }

@@ -15,7 +15,7 @@
     "eslint": "eslint *.html demo/**/*.html test/**/*.html",
     "polylint": "polymer lint -r 'polymer-1'",
     "lint": "npm run eslint && npm run polylint",
-    "test": "polymer test --simpleOutput --expanded -l chrome"
+    "test": "polymer test"
   },
   "dependencies": {
     "@polymer/polymer": "^1.2.5-npm-test.2",
