@@ -34,8 +34,10 @@ element.
 @element nuxeo-resource
 @homepage http://www.nuxeo.org
 -->
-<link rel="import" href="../polymer/polymer.html">
+
+<link rel="import" href="nuxeo-element.html">
 <link rel="import" href="nuxeo-connection.html">
+
 <dom-module id="nuxeo-resource">
   <template>
     <style>
@@ -45,228 +47,286 @@ element.
     </style>
     <nuxeo-connection id="nx" connection-id="{{connectionId}}"></nuxeo-connection>
   </template>
-</dom-module>
-<script>
-  Polymer({
-    is: 'nuxeo-resource',
-    properties: {
-      /* The id of a nuxeo-connection to use. */
-      connectionId: {type: String, value: ''},
 
-      /* The success response status */
-      success: {type: Boolean, notify: true},
+  <script>
+    {
+      class Resource extends Nuxeo.Element {
 
-      /* The error response */
-      error: {type: Object, notify: true},
+        static get is() {
+          return 'nuxeo-resource';
+        }
 
-      /* If true, automatically execute the operation when either `path` or `params` changes. */
-      auto: {type: Boolean, value: false},
+        static get properties() {
+          return {
 
-      /* The HTTP method to use ('GET', 'POST', 'PUT', or 'DELETE'). Default is 'GET' */
-      method: { type: String, value: 'get'},
+            /** The id of a nuxeo-connection to use. */
+            connectionId: {
+              type: String,
+              value: '',
+            },
 
-      /* The path of the resource. */
-      path: {type: String},
+            /** The success response status */
+            success: {
+              type: Boolean,
+              notify: true,
+            },
 
-      /* The parameters to send. */
-      params: {type: Object, value: null},
+            /** The error response */
+            error: {
+              type: Object,
+              notify: true,
+            },
 
-      /* The data to pass to the server. */
-      data: {type: Object, value: null},
+            /** If true, automatically execute the operation when either `path` or `params` changes. */
+            auto: {
+              type: Boolean,
+              value: false,
+            },
 
-      /* The response from the server. */
-      response: {type: Object, value: null, notify: true},
+            /** The HTTP method to use ('GET', 'POST', 'PUT', or 'DELETE'). Default is 'GET' */
+            method: {
+              type: String,
+              value: 'get',
+            },
 
-      /* The `entity-type` of the resource. */
-      type: {type: String, value: ''},
+            /** The path of the resource. */
+            path: {
+              type: String,
+            },
 
-      /* The headers of the request.
-       * 'Accept': 'text/plain,application/json' is already set by default.
-       */
-      headers: {type: Object, value: null},
+            /** The parameters to send. */
+            params: {
+              type: Object,
+              value: null,
+            },
 
-      /* The `content enricher` of the resource. */
-      enrichers: {type: String, value: ''},
+            /** The data to pass to the server. */
+            data: {
+              type: Object,
+              value: null,
+            },
 
-      /* The `content enricher` entity-type of the resource. Default value for Nuxeo Document Model*/
-      enrichersEntity: {type: String, value: 'document'},
+            /** The response from the server. */
+            response: {
+              type: Object,
+              value: null,
+              notify: true,
+            },
 
-      /* The `content type` of the request */
-      contentType: {type: String, value: 'application/json'},
+            /** The `entity-type` of the resource. */
+            type: {
+              type: String,
+              value: '',
+            },
 
-      /**
-       * List of comma separated values of the document schemas to be returned.
-       * All document schemas are returned by default.
-       */
-      schemas: {type: String, value: ''},
+            /** The headers of the request.
+             * 'Accept': 'text/plain,application/json' is already set by default.
+             */
+            headers: {
+              type: Object,
+              value: null,
+            },
 
-      /**
-       * The delay in milliseconds to debounce the auto get call when path, params, etc. changes.
-       */
-      autoDelay: {
-        type: Number,
-        value: 300
-      },
+            /** The `content enricher` of the resource. */
+            enrichers: {
+              type: String,
+              value: '',
+            },
 
-      /**
-       * Active request count.
-       */
-      activeRequests: {
-        type: Number,
-        value: 0,
-        notify: true,
-        readOnly: true
-      },
+            /** The `content enricher` entity-type of the resource. Default value for Nuxeo Document Model */
+            enrichersEntity: {
+              type: String,
+              value: 'document',
+            },
 
-      /**
-       * If true, documents changed by the call will be reindexed synchronously server side.
-       */
-      syncIndexing: Boolean,
+            /** The `content type` of the request */
+            contentType: {
+              type: String,
+              value: 'application/json',
+            },
 
-      /**
-       * True while requests are in flight.
-       */
-      loading: {
-        type: Boolean,
-        notify: true,
-        readOnly: true
-      }
-    },
+            /**
+             * List of comma separated values of the document schemas to be returned.
+             * All document schemas are returned by default.
+             */
+            schemas: {
+              type: String,
+              value: '',
+            },
 
-    observers: [
-      '_autoGet(connectionId, auto, path, params, type, enrichers, enrichersEntity)',
-      '_isLoading(activeRequests)'
-    ],
+            /**
+             * The delay in milliseconds to debounce the auto get call when path, params, etc. changes.
+             */
+            autoDelay: {
+              type: Number,
+              value: 300,
+            },
 
-    /**
-     * Fired when the resource request returns with no errors.
-     *
-     * @event response
-     */
+            /**
+             * Active request count.
+             */
+            activeRequests: {
+              type: Number,
+              value: 0,
+              notify: true,
+              readOnly: true,
+            },
 
-    /* Execute a 'GET' request */
-    get: function () {
-      this.method = 'get';
-      return this.execute();
-    },
+            /**
+             * If true, documents changed by the call will be reindexed synchronously server side.
+             */
+            syncIndexing: Boolean,
 
-    /* Execute a 'POST' request */
-    post: function () {
-      this.method = 'post';
-      return this.execute();
-    },
+            /**
+             * True while requests are in flight.
+             */
+            loading: {
+              type: Boolean,
+              notify: true,
+              readOnly: true,
+            },
+          };
+        }
 
-    /* Execute a 'PUT' request */
-    put: function () {
-      this.method = 'put';
-      return this.execute();
-    },
+        static get observers() {
+          return [
+            '_autoGet(connectionId, auto, path, params, type, enrichers, enrichersEntity)',
+            '_isLoading(activeRequests)',
+          ];
+        }
 
-    /* Execute a 'DELETE' request */
-    remove: function () {
-      this.method = 'delete';
-      return this.execute();
-    },
+        /** Execute a 'GET' request */
+        get() {
+          this.method = 'get';
+          return this.execute();
+        }
 
-    /* Execute the request */
-    execute: function () {
-      this._setActiveRequests(this.activeRequests + 1);
-      var options = {
-        method: this.method || 'get'
-      };
+        /** Execute a 'POST' request */
+        post() {
+          this.method = 'post';
+          return this.execute();
+        }
 
-      if (this.data && this.method != 'get') {
-        options.body = this.data;
-      }
+        /** Execute a 'PUT' request */
+        put() {
+          this.method = 'put';
+          return this.execute();
+        }
 
-      // Look up document schemas to be returned
-      if (this.schemas && this.schemas.length > 1) {
-        options.schemas = this.schemas.trim().split(/[\s,]+/);
-      }
-      // Look up headers parameter
-      options.headers = this.headers || {};
-      // Force sync indexing
-      if (this.syncIndexing) {
-        options.headers['nx_es_sync'] = true;
-      }
-      // add support for plain text responses by default
-      options.headers.accept = 'text/plain,application/json';
-      // set default content-type
-      options.headers['Content-Type'] = this.contentType;
-      // Look up content enrichers parameter
-      if (this.enrichers) {
-        options.headers['enrichers-' + this.enrichersEntity] = this.enrichers;
-        // NXP-18425: send also header with dot separator for compat with < 7.10-HF01
-        options.headers['X-NXenrichers.' + this.enrichersEntity] = this.enrichers;
-      }
+        /** Execute a 'DELETE' request */
+        remove() {
+          this.method = 'delete';
+          return this.execute();
+        }
 
-      // resolve with full response to skip default unmarshallers
-      options.resolveWithFullResponse = true;
+        /** Execute the request */
+        execute() {
+          this._setActiveRequests(this.activeRequests + 1);
+          const options = {method: this.method || 'get'};
 
-      var params = this.params || {};
-      return this.$.nx.request().then(function(request) {
-        this._request = request;
-        return this._doExecute(params, options);
-      }.bind(this));
-    },
-
-    _autoGet: function () {
-      if (this.auto && this.path) {
-        this.debounce('_autoGet', function() {
-          this.get();
-        }.bind(this), this.autoDelay);
-      }
-    },
-
-    _doExecute: function(params, options) {
-      return this._request
-        .path(this.path)
-        .queryParams(params)
-        .repositoryName(this._request._baseOptions.repositoryName === 'default' ?
-          undefined : this._request._baseOptions.repositoryName)
-        .execute(options)
-        .then(function(response) {
-          return response.text().then(function(text) {
-            try {
-              return text ? JSON.parse(text) : {};
-            } catch (e) {
-              return { error: 'Invalid json' };
-            }
-          });
-        }).then(function(data) {
-          this.fire('response', {response: data});
-          this.response = data;
-          this.success = true;
-          this._setActiveRequests(this.activeRequests - 1);
-          return this.response;
-        }.bind(this))
-        .catch(function(error) {
-          this.success = false;
-          this._setActiveRequests(this.activeRequests - 1);
-          if (error.response) {
-            return error.response.text().then(function (text) {
-              if (text) {
-                try {
-                  this.error = JSON.parse(text);
-                  this.error.status = error.response.status;
-                  console.log("Resource request failed: " + this.error.message);
-                } catch (e) {
-                  this.error = { message: 'Invalid json', status: error.response.status };
-                }
-              } else {
-                this.error = { message: 'No message', status: error.response.status };
-              }
-              throw this.error;
-            }.bind(this));
-          } else {
-            throw error;
+          if (this.data && this.method !== 'get') {
+            options.body = this.data;
           }
-        }.bind(this));
-    },
 
-    _isLoading: function() {
-      this._setLoading(this.activeRequests > 0 ? true : false);
+          // Look up document schemas to be returned
+          if (this.schemas && this.schemas.length > 1) {
+            options.schemas = this.schemas.trim().split(/[\s,]+/);
+          }
+          // Look up headers parameter
+          options.headers = this.headers || {};
+          // Force sync indexing
+          if (this.syncIndexing) {
+            options.headers.nx_es_sync = true;
+          }
+          // add support for plain text responses by default
+          options.headers.accept = 'text/plain,application/json';
+          // set default content-type
+          options.headers['Content-Type'] = this.contentType;
+          // Look up content enrichers parameter
+          if (this.enrichers) {
+            options.headers[`enrichers-${this.enrichersEntity}`] = this.enrichers;
+            // NXP-18425: send also header with dot separator for compat with < 7.10-HF01
+            options.headers[`X-NXenrichers.${this.enrichersEntity}`] = this.enrichers;
+          }
+
+          // resolve with full response to skip default unmarshallers
+          options.resolveWithFullResponse = true;
+
+          const params = this.params || {};
+          return this.$.nx.request().then((request) => {
+            this._request = request;
+            return this._doExecute(params, options);
+          });
+        }
+
+        _autoGet() {
+          if (this.auto && this.path) {
+            this._debouncer = Polymer.Debouncer.debounce(
+              this._debouncer,
+              Polymer.Async.timeOut.after(this.autoDelay), () => this.get(),
+            );
+          }
+        }
+
+        _doExecute(params, options) {
+          return this._request
+            .path(this.path)
+            .queryParams(params)
+            .repositoryName(this._request._baseOptions.repositoryName === 'default' ?
+              undefined : this._request._baseOptions.repositoryName)
+            .execute(options)
+            .then((response) => response.text().then((text) => {
+              try {
+                return text ? JSON.parse(text) : {};
+              } catch (e) {
+                return {error: 'Invalid json'};
+              }
+            }))
+            .then((data) => {
+              this.dispatchEvent(new CustomEvent('response', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                  response: data,
+                },
+              }));
+              this.response = data;
+              this.success = true;
+              this._setActiveRequests(this.activeRequests - 1);
+              return this.response;
+            })
+            .catch((error) => {
+              this.success = false;
+              this._setActiveRequests(this.activeRequests - 1);
+              if (error.response) {
+                return error.response.text().then((text) => {
+                  if (text) {
+                    try {
+                      this.error = JSON.parse(text);
+                      this.error.status = error.response.status;
+                      console.log(`Resource request failed: ${this.error.message}`);
+                    } catch (e) {
+                      this.error = {message: 'Invalid json', status: error.response.status};
+                    }
+                  } else {
+                    this.error = {message: 'No message', status: error.response.status};
+                  }
+                  throw this.error;
+                });
+              } else {
+                throw error;
+              }
+            });
+        }
+
+        _isLoading() {
+          this._setLoading(this.activeRequests > 0);
+        }
+      }
+
+      customElements.define(Resource.is, Resource);
+      Nuxeo.Resource = Resource;
     }
+  </script>
 
-  });
-</script>
+</dom-module>

@@ -15,9 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="nuxeo-resource.html">
-
 <!--
 `nuxeo-document` allows managing Documents on a Nuxeo server.
 
@@ -33,6 +30,10 @@ element.
 @element nuxeo-document
 @homepage http://www.nuxeo.org
 -->
+
+<link rel="import" href="nuxeo-element.html">
+<link rel="import" href="nuxeo-resource.html">
+
 <dom-module id="nuxeo-document">
   <template>
     <style>
@@ -40,126 +41,185 @@ element.
         display: none;
       }
     </style>
-    <nuxeo-resource id="nxResource" connection-id="{{connectionId}}" method="{{method}}" auto="{{auto}}"
-                    path="{{path}}" data="{{data}}" enrichers="{{enrichers}}"
-                    params="{{params}}" headers="{{headers}}"
-                    type="{{type}}" response="{{response}}"
-                    schemas="[[schemas]]" sync-indexing$="[[syncIndexing]]"></nuxeo-resource>
+    <nuxeo-resource
+      id="nxResource"
+      connection-id="{{connectionId}}"
+      method="{{method}}"
+      auto="{{auto}}"
+      path="{{path}}"
+      data="{{data}}"
+      enrichers="{{enrichers}}"
+      params="{{params}}"
+      headers="{{headers}}"
+      type="{{type}}"
+      response="{{response}}"
+      schemas="[[schemas]]"
+      sync-indexing$="[[syncIndexing]]">
+    </nuxeo-resource>
   </template>
-</dom-module>
 
-<script>
-  Polymer({
-    is: 'nuxeo-document',
-    properties: {
+  <script>
+    {
+      class Document extends Nuxeo.Element {
 
-      /**Inherited properties of nuxeo-resource: TODO -> USE EXTENDS WHEN AVAILABLE**/
+        static get is() {
+          return 'nuxeo-document';
+        }
 
-      /* The id of a nuxeo-connection to use. */
-      connectionId: {type: String, value: ''},
+        static get properties() {
+          return {
+            /** Inherited properties of nuxeo-resource: TODO -> USE EXTENDS WHEN AVAILABLE */
 
-      /* If true, automatically execute the operation when either `path` or `params` changes. */
-      auto: {type: Boolean, value: false},
+            /** The id of a nuxeo-connection to use. */
+            connectionId: {
+              type: String,
+              value: '',
+            },
 
-      /* The HTTP method to use ('GET', 'POST', 'PUT', or 'DELETE'). Default is 'GET' */
-      method: { type: String, value: 'get'},
+            /** If true, automatically execute the operation when either `path` or `params` changes. */
+            auto: {
+              type: Boolean,
+              value: false,
+            },
 
-      /* The document id. Either 'docId' or 'docPath' must be defined. */
-      docId: { type: String, value: ''},
+            /** The HTTP method to use ('GET', 'POST', 'PUT', or 'DELETE'). Default is 'GET' */
+            method: {
+              type: String,
+              value: 'get',
+            },
 
-      /* The document path. Either 'docId' or 'docPath' must be defined. */
-      docPath: { type: String, value: ''},
+            /** The document id. Either 'docId' or 'docPath' must be defined. */
+            docId: {
+              type: String,
+              value: '',
+            },
 
-      /* The path of the resource. */
-      path: {
-        type: String,
-        computed: '_computePath(docId, docPath)'
-      },
+            /** The document path. Either 'docId' or 'docPath' must be defined. */
+            docPath: {
+              type: String,
+              value: '',
+            },
 
-      /* The parameters to send. */
-      params: {type: Object, value: null},
+            /** The path of the resource. */
+            path: {
+              type: String,
+              computed: '_computePath(docId, docPath)',
+            },
 
-      /* The data to pass to the server. */
-      data: {type: Object, value: null},
+            /** The parameters to send. */
+            params: {
+              type: Object,
+              value: null,
+            },
 
-      /* The response from the server. */
-      response: {type: Object, value: null, notify: true},
+            /** The data to pass to the server. */
+            data: {
+              type: Object,
+              value: null,
+            },
 
-      /* The `entity-type` of the resource. */
-      type: {type: String, value: ''},
+            /** The response from the server. */
+            response: {
+              type: Object,
+              value: null,
+              notify: true,
+            },
 
-      /* The headers of the request.
-       * 'Accept': 'text/plain,application/json' is already set by default.
-       */
-      headers: {type: Object, value: null},
+            /** The `entity-type` of the resource. */
+            type: {
+              type: String,
+              value: '',
+            },
 
-      /* The `content enricher` of the resource. */
-      enrichers: {type: String, value: ''},
+            /** The headers of the request.
+             * 'Accept': 'text/plain,application/json' is already set by default.
+             */
+            headers: {
+              type: Object,
+              value: null,
+            },
 
-      /**
-       * List of comma separated values of the document schemas to be returned.
-       * All document schemas are returned by default.
-       */
-      schemas: {type: String, value: ''},
+            /** The `content enricher` of the resource. */
+            enrichers: {
+              type: String,
+              value: '',
+            },
 
-      /**
-       * If true, documents changed by the call will be reindexed synchronously server side.
-       */
-      syncIndexing: Boolean,
+            /**
+             * List of comma separated values of the document schemas to be returned.
+             * All document schemas are returned by default.
+             */
+            schemas: {
+              type: String,
+              value: '',
+            },
 
-      /**
-       * True while requests are in flight.
-       */
-      loading: {
-        type: Boolean,
-        notify: true,
-        readOnly: true
+            /**
+             * If true, documents changed by the call will be reindexed synchronously server side.
+             */
+            syncIndexing: Boolean,
+
+            /**
+             * True while requests are in flight.
+             */
+            loading: {
+              type: Boolean,
+              notify: true,
+              readOnly: true,
+            },
+          };
+        }
+
+        ready() {
+          super.ready();
+          this.$.nxResource.addEventListener('loading-changed', () => {
+            this._setLoading(this.$.nxResource.loading);
+          });
+        }
+
+        /* Fetch the document. */
+        get() {
+          this.method = 'get';
+          return this.execute();
+        }
+
+        /* Create the document. */
+        post() {
+          this.method = 'post';
+          return this.execute();
+        }
+
+        /* 'Update the document. */
+        put() {
+          this.method = 'put';
+          return this.execute();
+        }
+
+        /* Delete the document. */
+        remove() {
+          this.method = 'delete';
+          return this.execute();
+        }
+
+        /* Execute the request. */
+        execute() {
+          return this.$.nxResource.execute();
+        }
+
+        _computePath(docId, docPath) {
+          let path = '';
+          if (docId) {
+            path = `/id/${docId}`;
+          } else if (docPath) {
+            path = `/path/${docPath}`;
+          }
+          return path;
+        }
       }
-    },
 
-    /* Fetch the document. */
-    get: function () {
-      this.method = 'get';
-      return this.execute();
-    },
-
-    /* Create the document. */
-    post: function () {
-      this.method = 'post';
-      return this.execute();
-    },
-
-    /* 'Update the document. */
-    put: function () {
-      this.method = 'put';
-      return this.execute();
-    },
-
-    /* Delete the document. */
-    remove: function () {
-      this.method = 'delete';
-      return this.execute();
-    },
-
-    /* Execute the request. */
-    execute: function() {
-      return this.$.nxResource.execute();
-    },
-
-    _computePath: function(docId, docPath) {
-      var path = '';
-      if (docId) {
-        path = '/id/' + docId;
-      } else if (docPath) {
-        path = '/path/' + docPath;
-      }
-      return path;
-    },
-
-    ready: function() {
-      this.$.nxResource.addEventListener('loading-changed', function() {
-        this._setLoading(this.$.nxResource.loading);
-      }.bind(this));
+      customElements.define(Document.is, Document);
+      Nuxeo.Document = Document;
     }
-  });
-</script>
+  </script>
+
+</dom-module>

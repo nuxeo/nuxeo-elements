@@ -15,9 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="nuxeo-resource.html">
-
 <!--
 `nuxeo-page-provider` performs queries on the repository and provides paginated results.
 
@@ -50,6 +47,10 @@ element.
 @demo demo/nuxeo-page-provider.html
 @homepage http://www.nuxeo.org
 -->
+
+<link rel="import" href="nuxeo-element.html">
+<link rel="import" href="nuxeo-resource.html">
+
 <dom-module id="nuxeo-page-provider">
   <template>
     <style>
@@ -58,334 +59,361 @@ element.
       }
     </style>
 
-    <nuxeo-resource id="nxResource"
-                    connection-id="[[connectionId]]"
-                    path="{{path}}"
-                    enrichers="{{enrichers}}"
-                    schemas="[[schemas]]"
-                    headers="{{headers}}">
+    <nuxeo-resource
+      id="nxResource"
+      connection-id="[[connectionId]]"
+      path="{{path}}"
+      enrichers="{{enrichers}}"
+      schemas="[[schemas]]"
+      headers="{{headers}}">
     </nuxeo-resource>
-
   </template>
+
   <script>
-    Polymer({
-      is: 'nuxeo-page-provider',
-      properties: {
+    {
+      class PageProvider extends Nuxeo.Element {
 
-        /* The id of a nuxeo-connection to use. */
-        connectionId: {
-          type: String,
-          value: ''
-        },
-
-        /**
-         * If true, automatically execute the operation when either `provider` or `params` changes.
-         */
-        auto: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * The delay in milliseconds to debounce the auto fetch call when provider, params, etc. changes.
-         */
-        autoDelay: {
-          type: Number,
-          value: 300
-        },
-
-        /**
-         * The id of a page provider.
-         */
-        provider: {
-          type: String,
-          value: ''
-        },
-
-        /**
-         * The query.
-         */
-        query: {
-          type: String,
-          value: ''
-        },
-
-        /**
-         * Computed path of the query endpoint to use.
-         */
-        path: {
-          type: String,
-          computed: '_computePath(provider, query)'
-        },
-
-        /**
-         * The query parameters.
-         */
-        params: {
-          type: Object,
-          value: {}
-        },
-
-        /**
-         * The number of results per page.
-         */
-        pageSize: {
-          type: Number,
-          value: -1
-        },
-
-        /**
-         * The current page. Ignored when current page offset is set.
-         */
-        page: {
-          type: Number,
-          value: 1
-        },
-
-        /**
-         * The current page offset.
-         */
-        offset: {
-          type: Number,
-          notify: true
-        },
-
-        /**
-         * The current page entries.
-         */
-        currentPage: {
-          type: Array,
-          value: [],
-          notify: true
-        },
-
-        /**
-         * Map of properties and direction 'asc' / 'desc'
-         */
-        sort: {
-          type: Object,
-          value: {},
-          notify: true
-        },
-
-        /**
-         * Total number of pages.
-         */
-        numberOfPages: {
-          type: Number,
-          notify: true
-        },
-
-        /**
-         * Total number of results.
-         */
-        resultsCount: {
-          type: Number,
-          notify: true
-        },
-
-        /**
-         * Aggregations returned.
-         */
-        aggregations: {
-          type: Object,
-          value: {},
-          notify: true
-        },
-
-        /**
-         * Quick filters state.
-         */
-        quickFilters: {
-          type: Array,
-          notify: true
-        },
-
-        /**
-         * Returns true if a next page is available.
-         */
-        isNextPageAvailable: {
-          type: Boolean,
-          value: false,
-          notify: true
-        },
-
-        /**
-         * Current page's size
-         */
-        currentPageSize: {
-          type: Number,
-          notify: true
-        },
-
-        /**
-         * List of content enrichers to use.
-         */
-        enrichers: {
-          type: String,
-          value: ''
-        },
-
-        /**
-         * List of comma separated values of the document schemas to be returned.
-         * All document schemas are returned by default.
-         */
-        schemas: {
-          type: String
-        },
-
-        /**
-         * The headers of the request.
-         * 'Accept': 'text/plain,application/json' is already set by default.
-         */
-        headers: {type: Object, value: null},
-
-        /**
-         * Fetch the aggregate bucket's key if it matches a user
-         * or directory entry and translate directory label.
-         */
-        fetchAggregates: {
-          type: Boolean,
-          value: false,
-          observer: '_fetchAggregatesChanged'
-        },
-
-        /**
-         * True while requests are in flight.
-         */
-        loading: {
-          type: Boolean,
-          notify: true,
-          readOnly: true
-        }
-      },
-
-      observers: [
-        '_autoFetch(auto, provider, query, params.*, pageSize, page, sort)'
-      ],
-
-      /**
-       * Fired when the current page is fetched.
-       *
-       * @event update
-       */
-
-      /**
-       * Fired if an error occurs when fetching the current page.
-       *
-       * @event error
-       */
-
-      /**
-       * Fetch the currentPage.
-       *
-       * @method fetch
-       */
-      fetch: function() {
-        var params = {
-          currentPageIndex: this.page - 1,
-          offset: this.offset,
-          pageSize: this.pageSize,
-          sortBy: this._sortKeys.join(","),
-          sortOrder: this._sortValues.join(",")
-        };
-
-        if (this.query) {
-          params.query = this.query;
+        static get is() {
+          return 'nuxeo-page-provider';
         }
 
-        if (Array.isArray(this.params)) {
-          params.queryParams = this.params;
-        } else {
-          Object.keys(this.params).forEach(function(key) {
-            if (typeof this.params[key] === "string") {
-              params[key] = this.params[key];
-            } else {
-              params[key] = JSON.stringify(this.params[key]);
-            }
-          }, this);
+        static get properties() {
+          return {
+            /** The id of a nuxeo-connection to use. */
+            connectionId: {
+              type: String,
+              value: '',
+            },
+
+            /**
+             * If true, automatically execute the operation when either `provider` or `params` changes.
+             */
+            auto: {
+              type: Boolean,
+              value: false,
+            },
+
+            /**
+             * The delay in milliseconds to debounce the auto fetch call when provider, params, etc. changes.
+             */
+            autoDelay: {
+              type: Number,
+              value: 300,
+            },
+
+            /**
+             * The id of a page provider.
+             */
+            provider: {
+              type: String,
+              value: '',
+            },
+
+            /**
+             * The query.
+             */
+            query: {
+              type: String,
+              value: '',
+            },
+
+            /**
+             * Computed path of the query endpoint to use.
+             */
+            path: {
+              type: String,
+              computed: '_computePath(provider, query)',
+            },
+
+            /**
+             * The query parameters.
+             */
+            params: {
+              type: Object,
+              value: {},
+            },
+
+            /**
+             * The number of results per page.
+             */
+            pageSize: {
+              type: Number,
+              value: -1,
+            },
+
+            /**
+             * The current page. Ignored when current page offset is set.
+             */
+            page: {
+              type: Number,
+              value: 1,
+            },
+
+            /**
+             * The current page offset.
+             */
+            offset: {
+              type: Number,
+              notify: true,
+            },
+
+            /**
+             * The current page entries.
+             */
+            currentPage: {
+              type: Array,
+              value: [],
+              notify: true,
+            },
+
+            /**
+             * Map of properties and direction 'asc' / 'desc'
+             */
+            sort: {
+              type: Object,
+              value: {},
+              notify: true,
+            },
+
+            /**
+             * Total number of pages.
+             */
+            numberOfPages: {
+              type: Number,
+              notify: true,
+            },
+
+            /**
+             * Total number of results.
+             */
+            resultsCount: {
+              type: Number,
+              notify: true,
+            },
+
+            /**
+             * Aggregations returned.
+             */
+            aggregations: {
+              type: Object,
+              value: {},
+              notify: true,
+            },
+
+            /**
+             * Quick filters state.
+             */
+            quickFilters: {
+              type: Array,
+              notify: true,
+            },
+
+            /**
+             * Returns true if a next page is available.
+             */
+            isNextPageAvailable: {
+              type: Boolean,
+              value: false,
+              notify: true,
+            },
+
+            /**
+             * Current page's size
+             */
+            currentPageSize: {
+              type: Number,
+              notify: true,
+            },
+
+            /**
+             * List of content enrichers to use.
+             */
+            enrichers: {
+              type: String,
+              value: '',
+            },
+
+            /**
+             * List of comma separated values of the document schemas to be returned.
+             * All document schemas are returned by default.
+             */
+            schemas: {
+              type: String,
+            },
+
+            /**
+             * The headers of the request.
+             * 'Accept': 'text/plain,application/json' is already set by default.
+             */
+            headers: {
+              type: Object,
+              value: null,
+            },
+
+            /**
+             * Fetch the aggregate bucket's key if it matches a user
+             * or directory entry and translate directory label.
+             */
+            fetchAggregates: {
+              type: Boolean,
+              value: false,
+              observer: '_fetchAggregatesChanged',
+            },
+
+            /**
+             * True while requests are in flight.
+             */
+            loading: {
+              type: Boolean,
+              notify: true,
+              readOnly: true,
+            },
+          };
         }
 
-        // Append quick filters if any
-        if (this.quickFilters) {
-          var retainedFilters = [];
-          for (var i = 0; i < this.quickFilters.length; i++) {
-            if (this.quickFilters[i].active === true) {
-              retainedFilters.push(this.quickFilters[i].name);
-            }
+        static get observers() {
+          return [
+            '_autoFetch(auto, provider, query, params.*, pageSize, page, sort)',
+          ];
+        }
+
+        /**
+         * Fired when the current page is fetched.
+         *
+         * @event update
+         */
+
+        /**
+         * Fired if an error occurs when fetching the current page.
+         *
+         * @event error
+         */
+
+        ready() {
+          super.ready();
+          this.$.nxResource.addEventListener('loading-changed', () => {
+            this._setLoading(this.$.nxResource.loading);
+          });
+        }
+
+        /**
+         * Fetch the currentPage.
+         *
+         * @method fetch
+         */
+        fetch() {
+          const params = {
+            currentPageIndex: this.page - 1,
+            offset: this.offset,
+            pageSize: this.pageSize,
+            sortBy: this._sortKeys.join(','),
+            sortOrder: this._sortValues.join(','),
+          };
+
+          if (this.query) {
+            params.query = this.query;
           }
-          params['quickFilters'] = retainedFilters.join(',');
+
+          if (Array.isArray(this.params)) {
+            params.queryParams = this.params;
+          } else {
+            Object.keys(this.params).forEach((key) => {
+              if (typeof this.params[key] === 'string') {
+                params[key] = this.params[key];
+              } else {
+                params[key] = JSON.stringify(this.params[key]);
+              }
+            }, this);
+          }
+
+          // Append quick filters if any
+          if (this.quickFilters) {
+            const retainedFilters = [];
+            for (let i = 0; i < this.quickFilters.length; i++) {
+              if (this.quickFilters[i].active === true) {
+                retainedFilters.push(this.quickFilters[i].name);
+              }
+            }
+            params.quickFilters = retainedFilters.join(',');
+          }
+
+          this.$.nxResource.params = params;
+          return this.$.nxResource.execute()
+            .then((response) => {
+              this.currentPage = response.entries.slice(0);
+              this.numberOfPages = response.numberOfPages;
+              this.resultsCount = response.resultsCount;
+              this.aggregations = response.aggregations;
+              this.quickFilters = response.quickFilters;
+              this.isNextPageAvailable = response.isNextPageAvailable;
+              this.currentPageSize = response.currentPageSize;
+              this.dispatchEvent(new CustomEvent('update', {
+                bubbles: true,
+                composed: true,
+              }));
+              return response;
+            })
+            .catch((err) => {
+              this.dispatchEvent(new CustomEvent('response', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                  error: err,
+                },
+              }));
+            });
         }
 
-        this.$.nxResource.params = params;
-        return this.$.nxResource.execute()
-          .then(function(response) {
-            this.currentPage = response.entries.slice(0);
-            this.numberOfPages = response.numberOfPages;
-            this.resultsCount = response.resultsCount;
-            this.aggregations = response.aggregations;
-            this.quickFilters = response.quickFilters;
-            this.isNextPageAvailable = response.isNextPageAvailable;
-            this.currentPageSize = response.currentPageSize;
-            this.fire('update');
-            return response;
-          }.bind(this)).catch(function(err) {
-            this.fire('error', { error : err });
-          }.bind(this));
-      },
-
-      get _sortKeys() {
-        return Object.keys(this.sort);
-      },
-
-      get _sortValues() {
-        return this._sortKeys.map(function(k) { return this.sort[k];}.bind(this));
-      },
-
-      _autoFetch: function () {
-        // Reset the page if the query changes
-        if (this.$.nxResource.params
-            && this.query
-            && this.query.length === 0
-            && (this.query !== this.$.nxResource.params.query)) {
-          this.page = 1;
+        get _sortKeys() {
+          return Object.keys(this.sort);
         }
-        if (this.auto && (this.query || this.provider)) {
-          // debounce in case of multiple param changes
-          this.debounce('_autoFetch', function() {
-            this.fetch();
-          }.bind(this), this.autoDelay);
-        }
-      },
 
-      _computePath: function(provider, query) {
-        var path = '';
-        if (query) {
-          path = '/search/lang/NXQL/execute';
-        } else if (provider) {
-          path = '/search/pp/' + provider + '/execute';
+        get _sortValues() {
+          return this._sortKeys.map((k) => this.sort[k]);
         }
-        return path;
-      },
 
-      _fetchAggregatesChanged: function() {
-        if (this.headers === null) {
-          this.headers = {};
-        }
-        if (this.fetchAggregates === true) {
-          this.headers['X-NXfetch.aggregate'] = 'key';
-        } else {
-          delete this.headers['X-NXfetch.aggregate'];
-        }
-      },
+        _autoFetch() {
+          // Reset the page if the query changes
+          if (this.$.nxResource.params
+            && this.query && this.query.length === 0 && this.query !== this.$.nxResource.params.query) {
+            this.page = 1;
+          }
+          if (this.auto && (this.query || this.provider)) {
+            // debounce in case of multiple param changes
 
-      ready: function() {
-        this.$.nxResource.addEventListener('loading-changed', function() {
-          this._setLoading(this.$.nxResource.loading);
-        }.bind(this));
+            this._debouncer = Polymer.Debouncer.debounce(
+              this._debouncer,
+              Polymer.Async.timeOut.after(this.autoDelay), () => this.fetch(),
+            );
+          }
+        }
+
+        _computePath(provider, query) {
+          let path = '';
+          if (query) {
+            path = '/search/lang/NXQL/execute';
+          } else if (provider) {
+            path = `/search/pp/${provider}/execute`;
+          }
+          return path;
+        }
+
+        _fetchAggregatesChanged() {
+          if (this.headers === null) {
+            this.headers = {};
+          }
+          if (this.fetchAggregates === true) {
+            this.headers['X-NXfetch.aggregate'] = 'key';
+          } else {
+            delete this.headers['X-NXfetch.aggregate'];
+          }
+        }
+
       }
 
-    });
-  </script>
+      customElements.define(PageProvider.is, PageProvider);
+      Nuxeo.PageProvider = PageProvider;
+    }
 
+  </script>
 </dom-module>

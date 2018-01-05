@@ -15,87 +15,86 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <html>
-<head>
-  <title>nuxeo-search Demo</title>
-  <meta name="viewport"
-        content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="../../polymer/polymer.html">
-  <link rel="import" href="../nuxeo-connection.html">
-  <link rel="import" href="../nuxeo-search.html">
-</head>
-<style>
-  html, body {
-    height: 100%;
-    margin: 0;
-    background-color: #E5E5E5;
-    font-family: 'RobotoDraft', sans-serif;
-  }
+  <head>
+    <title>nuxeo-search demo</title>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
+    <link rel="import" href="../../polymer/polymer.html">
+    <link rel="import" href="../nuxeo-connection.html">
+    <link rel="import" href="../nuxeo-search.html">
+  </head>
 
-  .container {
-    width: 80%;
-    margin: 50px auto;
-  }
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background-color: #E5E5E5;
+      font-family: 'RobotoDraft', sans-serif;
+    }
 
-  .card {
-    display: block;
-    position: relative;
-    background-color: white;
-    padding: 10px;
-    margin-bottom: 20px;
-    width: 100%;
-  }
+    .container {
+      width: 80%;
+      margin: 50px auto;
+    }
 
-  .propName {
-    display: inline-block;
-    font-weight: bold;
-    width: 125px;
-    margin-right: 0;
-  }
+    .card {
+      display: block;
+      position: relative;
+      background-color: white;
+      padding: 10px;
+      margin-bottom: 20px;
+      width: 100%;
+    }
 
-  .prop:not(:first-child) {
-    margin-top: 12px;
-  }
-</style>
-</head>
-<body>
-<dom-bind>
-<template>
-  <nuxeo-connection id="nx" url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
-  <nuxeo-search auto searches={{searches}}></nuxeo-search>
-  <div class="container" class="layout vertical center">
-    <template is="dom-repeat" items={{searches}}>
-      <div class="card">
-        <div class="prop">
-          <label class="propName">id:</label>
-          <label class="propValue">[[item.id]]</label>
+    .propName {
+      display: inline-block;
+      font-weight: bold;
+      width: 125px;
+      margin-right: 0;
+    }
+
+    .prop:not(:first-child) {
+      margin-top: 12px;
+    }
+  </style>
+  <body>
+    <dom-bind>
+      <template>
+        <nuxeo-connection id="nx" url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
+        <nuxeo-search auto searches={{searches}}></nuxeo-search>
+        <div class="container" class="layout vertical center">
+          <template is="dom-repeat" items={{searches}}>
+            <div class="card">
+              <div class="prop">
+                <label class="propName">id:</label>
+                <label class="propValue">[[item.id]]</label>
+              </div>
+              <div class="prop">
+                <label class="propName">title:</label>
+                <label class="propValue">[[item.title]]</label>
+              </div>
+              <template is="dom-if" if="[[item.pageProviderName]]">
+                <div class="prop">
+                  <label class="propName">page provider:</label>
+                  <label class="propValue">[[item.pageProviderName]]</label>
+                </div>
+              </template>
+              <template is="dom-if" if="[[item.query]]">
+                <div class="prop">
+                  <label class="propName">query:</label>
+                  <label class="propValue">[[item.query]]</label>
+                </div>
+              </template>
+              <template is="dom-if" if="[[item.queryParams]]">
+                <div class="prop">
+                  <label class="propName">params:</label>
+                  <label class="propValue">[[item.queryParams]]</label>
+                </div>
+              </template>
+            </div>
+          </template>
         </div>
-        <div class="prop">
-          <label class="propName">title:</label>
-          <label class="propValue">[[item.title]]</label>
-        </div>
-        <template is="dom-if" if="[[item.pageProviderName]]">
-          <div class="prop">
-            <label class="propName">page provider:</label>
-            <label class="propValue">[[item.pageProviderName]]</label>
-          </div>
-        </template>
-        <template is="dom-if" if="[[item.query]]">
-          <div class="prop">
-            <label class="propName">query:</label>
-            <label class="propValue">[[item.query]]</label>
-          </div>
-        </template>
-        <template is="dom-if" if="[[item.queryParams]]">
-          <div class="prop">
-            <label class="propName">params:</label>
-            <label class="propValue">[[item.queryParams]]</label>
-          </div>
-        </template>
-      </div>
-    </template>
-  </div>
-</template>
-</dom-bind>
-</body>
+      </template>
+    </dom-bind>
+  </body>
 </html>

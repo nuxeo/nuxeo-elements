@@ -15,9 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="nuxeo-resource.html">
-
 <!--
 `nuxeo-search` allows managing saved searches on a Nuxeo server.
 
@@ -44,6 +41,9 @@ element.
 @homepage http://www.nuxeo.org
 -->
 
+<link rel="import" href="nuxeo-element.html">
+<link rel="import" href="nuxeo-resource.html">
+
 <dom-module id="nuxeo-search">
   <template>
     <style>
@@ -52,194 +52,214 @@ element.
       }
     </style>
 
-    <nuxeo-resource id="resource" connection-id="[[connectionId]]" method="[[method]]"
-                    path="[[path]]" data="[[data]]" headers="[[headers]]" params="[[params]]">
+    <nuxeo-resource
+      id="resource"
+      connection-id="[[connectionId]]"
+      method="[[method]]"
+      path="[[path]]"
+      data="[[data]]"
+      headers="[[headers]]"
+      params="[[params]]">
     </nuxeo-resource>
-
   </template>
+
   <script>
-    (function() {
-      'use strict';
+    {
+      class Search extends Nuxeo.Element {
 
-      Polymer({
-        is: 'nuxeo-search',
+        static get is() {
+          return 'nuxeo-search';
+        }
 
-        properties: {
+        static get properties() {
+          return {
+            /**
+             * Id of a saved search to be used on requests.
+             */
+            searchId: {
+              type: String,
+              value: '',
+            },
 
-          /**
-          * Id of a saved search to be used on requests.
-          */
-          searchId: {
-            type: String,
-            value: ''
-          },
+            /**
+             * Body to be used on POST/PUT requests.
+             */
+            data: {
+              type: Object,
+            },
 
-          /**
-          * Body to be used on POST/PUT requests.
-          */
-          data: Object,
+            /**
+             * A single saved search as a result of a GET request with a given id.
+             */
+            search: {
+              type: Object,
+              notify: true,
+            },
 
-          /**
-          * A single saved search as a result of a GET request with a given id.
-          */
-          search: {
-            type: Object,
-            notify: true
-          },
+            /**
+             * Saved searches accessible by the current user.
+             * Result of a GET request when an id is not specified.
+             */
+            searches: {
+              type: Array,
+              notify: true,
+            },
 
-          /**
-          * Saved searches accessible by the current user.
-          * Result of a GET request when an id is not specified.
-          */
-          searches: {
-            type: Array,
-            notify: true
-          },
+            /**
+             * Results when executing a given saved search.
+             */
+            results: {
+              type: Array,
+              notify: true,
+            },
 
-          /**
-          * Results when executing a given saved search.
-          */
-          results: {
-            type: Array,
-            notify: true
-          },
+            /**
+             * Computed path of the search endpoint to use.
+             */
+            path: {
+              type: String,
+              computed: '_computePath(auto, searchId)',
+            },
 
-          /**
-           * Computed path of the search endpoint to use.
-           */
-          path: {
-            type: String,
-            computed: '_computePath(auto, searchId)'
-          },
+            /**
+             * Search parameters.
+             */
+            params: {
+              type: Object,
+            },
 
-          /**
-           * Search parameters.
-           */
-          params: {
-            type: Object
-          },
+            /**
+             * The id of a nuxeo-connection to use.
+             */
+            connectionId: {
+              type: String,
+            },
 
-          /**
-           * The id of a nuxeo-connection to use.
-           */
-          connectionId: String,
+            /**
+             * If true, automatically execute the search request.
+             */
+            auto: {
+              type: Boolean,
+              value: false,
+              observer: '_autoChanged',
+            },
 
-          /**
-           * If true, automatically execute the search request.
-           */
-          auto: {
-            type: Boolean,
-            value: false,
-            observer: '_autoChanged'
-          },
+            /**
+             * The HTTP method to use ('GET', 'POST', 'PUT', or 'DELETE'). Default is 'GET'
+             */
+            method: {
+              type: String,
+              value: 'get',
+            },
 
-          /**
-           * The HTTP method to use ('GET', 'POST', 'PUT', or 'DELETE'). Default is 'GET'
-           */
-          method: {
-            type: String,
-            value: 'get'
-          },
+            /**
+             * The headers of the request.
+             */
+            headers: {
+              type: Object,
+            },
 
-          /**
-           * The headers of the request.
-           */
-          headers: Object,
+            /**
+             * The delay in milliseconds to debounce the auto fetch call.
+             */
+            autoDelay: {
+              type: Number,
+              value: 300,
+            },
 
-          /**
-           * The delay in milliseconds to debounce the auto fetch call.
-           */
-          autoDelay: {
-            type: Number,
-            value: 300
-          },
+            /**
+             * True while requests are in flight.
+             */
+            loading: {
+              type: Boolean,
+              notify: true,
+              readOnly: true,
+            },
+          };
 
-          /**
-           * True while requests are in flight.
-           */
-          loading: {
-            type: Boolean,
-            notify: true,
-            readOnly: true
-          }
-        },
+        }
+
+        ready() {
+          super.ready();
+          this.$.resource.addEventListener('loading-changed', () => {
+            this._setLoading(this.$.resource.loading);
+          });
+        }
 
         /**
          * Gets the list of saved searches or the current search search if `search-id` is set.
          */
-        get: function() {
+        get() {
           this.method = 'get';
-          return this.$.resource.execute().then(function(response) {
+          return this.$.resource.execute().then((response) => {
             if (this.searchId) {
               this.search = response;
             } else {
               this.searches = response.entries;
             }
             return response;
-          }.bind(this));
-        },
+          });
+        }
 
         /**
          * Saves the search.
          */
-        post: function() {
+        post() {
           this.method = 'post';
           return this.$.resource.execute();
-        },
+        }
 
         /**
          * Updates the saved search.
          */
-        put: function() {
+        put() {
           this.method = 'put';
           return this.$.resource.execute();
-        },
+        }
 
         /**
          * Deletes the saved search.
          */
-        remove: function() {
+        remove() {
           this.method = 'delete';
           return this.$.resource.execute();
-        },
+        }
 
         /**
          * Executes the saved search.
          */
-        execute: function() {
+        execute() {
           if (this.searchId) {
             this.method = 'get';
             this.$.resource.path += '/execute';
-            this.$.resource.execute().then(function(response) {
+            this.$.resource.execute().then((response) => {
               this.results = response.entries;
-            }.bind(this));
+            });
           }
-        },
+        }
 
-        _computePath: function() {
-          var path = '/search/saved';
+        _computePath() {
+          let path = '/search/saved';
           if (this.searchId) {
-            path += '/' + this.searchId;
+            path += `/${this.searchId}`;
           }
           return path;
-        },
-
-        _autoChanged: function() {
-          if (this.auto && this.path) {
-            this.debounce('_auto', function() {
-              this.get().then(function() {
-                this.execute();
-              }.bind(this));
-            }.bind(this), this.autoDelay);
-          }
-        },
-
-        ready: function() {
-          this.$.resource.addEventListener('loading-changed', function() {
-            this._setLoading(this.$.resource.loading);
-          }.bind(this));
         }
-      });
-    })();
+
+        _autoChanged() {
+          if (this.auto && this.path) {
+            this._debouncer = Polymer.Debouncer.debounce(
+              this._debouncer,
+              Polymer.Async.timeOut.after(this.autoDelay), () => this.get().then(() => this.execute()),
+            );
+          }
+        }
+
+      }
+
+      customElements.define(Search.is, Search);
+      Nuxeo.Search = Search;
+    }
+
   </script>
 </dom-module>

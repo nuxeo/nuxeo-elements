@@ -15,89 +15,87 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <html>
-<head>
-  <title>Nuxeo elements samples</title>
-  <meta name="viewport"
-        content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="../../polymer/polymer.html">
-  <link rel="import" href="../nuxeo-connection.html">
-  <link rel="import" href="../nuxeo-page-provider.html">
-</head>
-<style>
+  <head>
+    <title>nuxeo-page-provider demo</title>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
+    <link rel="import" href="../../polymer/polymer.html">
+    <link rel="import" href="../nuxeo-connection.html">
+    <link rel="import" href="../nuxeo-page-provider.html">
+  </head>
 
-  html, body {
-    height: 100%;
-    margin: 0;
-    background-color: #E5E5E5;
-    font-family: 'RobotoDraft', sans-serif;
-  }
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background-color: #E5E5E5;
+      font-family: 'RobotoDraft', sans-serif;
+    }
 
-  .container {
-    width: 80%;
-    margin: 50px auto;
-  }
+    .container {
+      width: 80%;
+      margin: 50px auto;
+    }
 
-  .card {
-    display: block;
-    position: relative;
-    background-color: white;
-    padding: 10px;
-    margin-bottom: 20px;
-    width: 100%;
-  }
+    .card {
+      display: block;
+      position: relative;
+      background-color: white;
+      padding: 10px;
+      margin-bottom: 20px;
+      width: 100%;
+    }
 
-  .card h3 {
-    margin: 0;
-    font-weight: 300;
-  }
+    .card h3 {
+      margin: 0;
+      font-weight: 300;
+    }
 
-  .card img {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    margin: 10px;
-  }
+    .card img {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      margin: 10px;
+    }
+  </style>
 
-</style>
-</head>
-<body>
-<dom-bind>
-<template>
-  <nuxeo-connection id="nx" url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
-  <nuxeo-page-provider auto page-size="5" current-page="{{docs}}"
-                       query="[[query(docType)]]"></nuxeo-page-provider>
-  <nuxeo-page-provider auto page-size="5" offset="2" current-page="{{docsWithOffset}}"
-                       query="[[query(docType)]]"></nuxeo-page-provider>
-  <div class="container" class="layout vertical center">
+  <body>
+    <dom-bind>
+      <template>
+        <nuxeo-connection id="nx" url="http://localhost:8080/nuxeo" username="Administrator"
+                          password="Administrator"></nuxeo-connection>
+        <nuxeo-page-provider auto page-size="5" current-page="{{docs}}"
+                             query="[[query(docType)]]"></nuxeo-page-provider>
+        <nuxeo-page-provider auto page-size="5" offset="2" current-page="{{docsWithOffset}}"
+                             query="[[query(docType)]]"></nuxeo-page-provider>
+        <div class="container" class="layout vertical center">
 
-    <select flex two value="{{docType::change}}">
-      <option value="Note">Notes</option>
-      <option value="File">Files</option>
-    </select>
+          <select flex two value="{{docType::change}}">
+            <option value="Note">Notes</option>
+            <option value="File">Files</option>
+          </select>
 
-    <hr/>
-    <h2>First five results</h2>
-    <template is="dom-repeat" items="{{docs}}">
-      <div class="card layout horizontal center">
-        <h3>[[item.title]]</h3>
-      </div>
-    </template>
-    <h2>First five results with an offset of 2</h2>
-    <template is="dom-repeat" items="{{docsWithOffset}}">
-      <div class="card layout horizontal center">
-        <h3>[[item.title]]</h3>
-      </div>
-    </template>
-  </div>
-</template>
-</dom-bind>
-<script>
-  var app = document.querySelector('dom-bind');
-  app.query = function(docType) {
-    return "select * from " + docType  + " where ecm:currentLifeCycleState != 'deleted'";
-  };
-  app.docType = 'File';
-</script>
-</body>
+          <hr/>
+          <h2>First five results</h2>
+          <template is="dom-repeat" items="{{docs}}">
+            <div class="card layout horizontal center">
+              <h3>[[item.title]]</h3>
+            </div>
+          </template>
+          <h2>First five results with an offset of 2</h2>
+          <template is="dom-repeat" items="{{docsWithOffset}}">
+            <div class="card layout horizontal center">
+              <h3>[[item.title]]</h3>
+            </div>
+          </template>
+        </div>
+      </template>
+    </dom-bind>
+
+    <script>
+      const app = document.querySelector('dom-bind');
+      app.query = (docType) => `select * from ${docType} where ecm:currentLifeCycleState != 'deleted'`;
+      app.docType = 'File';
+    </script>
+  </body>
 </html>

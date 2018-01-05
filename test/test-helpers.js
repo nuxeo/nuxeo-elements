@@ -15,30 +15,31 @@
  * limitations under the License.
  */
 
+/* eslint-disable no-unused-vars,no-param-reassign */
+
 function timePasses(ms) {
-  return new Promise(function(resolve) {
-    window.setTimeout(function() {
+  return new Promise((resolve) => {
+    window.setTimeout(() => {
       resolve();
     }, ms || 1);
   });
 }
 
-var flushCb = window.flush;
-window.flush = function() {
-  return new Promise(function(resolve) {
-    flushCb(function() {
-      resolve();
-    });
+const flushCb = window.flush;
+window.flush = () => new Promise((resolve) => {
+  flushCb(() => {
+    resolve();
   });
-}
+});
+
 
 function waitForEvent(el, event, times) {
   times = times || 1;
-  return new Promise(function(resolve) {
-    var listener = function(event) {
+  return new Promise((resolve) => {
+    const listener = (e) => {
       if (--times === 0) {
-        el.removeEventListener(event, listener);
-        resolve(event);
+        el.removeEventListener(e, listener);
+        resolve(e);
       }
     };
     el.addEventListener(event, listener);
@@ -46,36 +47,39 @@ function waitForEvent(el, event, times) {
 }
 
 function waitChanged(el, prop, times) {
-  return waitForEvent(el, prop + '-changed', times)
-      .then(function(evt) {
-        return evt.detail;
-      });
+  return waitForEvent(el, `${prop}-changed`, times).then((e) => e.detail);
 }
 
 function login(server, loginFixture) {
-  server.respondWith('GET',
-     '/dummy/json/cmis', [
+
+  server.respondWith(
+    'GET',
+    '/dummy/json/cmis', [
       200,
       {'Content-Type': 'application/json'},
-      '{}'
-  ]);
-  server.respondWith(
-      'POST',
-      '/dummy/api/v1/automation/login',
-      [
-        200,
-        {'Content-Type': 'application/json'},
-        '{"entity-type":"login","username":"Administrator"}'
-      ]
+      '{}',
+    ],
   );
+
   server.respondWith(
-      'GET',
-      '/dummy/api/v1/user/Administrator',
-      [
-        200,
-        {'Content-Type': 'application/json'},
-        '{"entity-type":"user","username":"Administrator", "isAdministrator": true}'
-      ]
+    'POST',
+    '/dummy/api/v1/automation/login',
+    [
+      200,
+      {'Content-Type': 'application/json'},
+      '{"entity-type":"login","username":"Administrator"}',
+    ],
   );
+
+  server.respondWith(
+    'GET',
+    '/dummy/api/v1/user/Administrator',
+    [
+      200,
+      {'Content-Type': 'application/json'},
+      '{"entity-type":"user","username":"Administrator", "isAdministrator": true}',
+    ],
+  );
+
   return loginFixture.connect();
 }

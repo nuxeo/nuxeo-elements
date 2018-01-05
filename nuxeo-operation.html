@@ -36,8 +36,10 @@ element.
 @element nuxeo-operation
 @homepage http://www.nuxeo.org
 -->
-<link rel="import" href="../polymer/polymer.html">
+
+<link rel="import" href="nuxeo-element.html">
 <link rel="import" href="nuxeo-connection.html">
+
 <dom-module id="nuxeo-operation">
   <template>
     <style>
@@ -47,163 +49,198 @@ element.
     </style>
     <nuxeo-connection id="nx" connection-id="{{connectionId}}"></nuxeo-connection>
   </template>
+
   <script>
-    Polymer({
-      is: 'nuxeo-operation',
-      properties: {
-        /* The id of a nuxeo-connection to use. */
-        connectionId: {
-          type: String,
-          value: ''
-        },
+    {
+      class Operation extends Nuxeo.Element {
 
-        /* The success response status */
-        success: {type: Boolean, notify: true},
+        static get is() {
+          return 'nuxeo-operation';
+        }
 
-        /* The error response status */
-        error: {type: String, notify: true},
+        static get properties() {
+          return {
+            /** The id of a nuxeo-connection to use. */
+            connectionId: {
+              type: String,
+              value: '',
+            },
 
-        /* The id the operation to call. */
-        op: {
-          type: String,
-          value: ''
-        },
+            /** The success response status */
+            success: {
+              type: Boolean,
+              notify: true,
+            },
 
-        /* The parameters to send. */
-        params: {
-          type: Object,
-          value: function() {
-            return {};
+            /** The error response status */
+            error: {
+              type: String,
+              notify: true,
+            },
+
+            /** The id the operation to call. */
+            op: {
+              type: String,
+              value: '',
+            },
+
+            /** The parameters to send. */
+            params: {
+              type: Object,
+              value: {},
+            },
+
+            /** The operation input. */
+            input: {
+              type: String,
+            },
+
+            /** If true, automatically execute the operation when either `op` or `params` changes. */
+            auto: {
+              type: Boolean,
+              value: false,
+            },
+
+            /** The response from the server. */
+            response: {
+              type: Object,
+              value: null,
+              notify: true,
+            },
+
+            /** The headers of the request. */
+            headers: {
+              type: Object,
+              value: null,
+            },
+
+            /** The `content enricher` of the resource. */
+            enrichers: {
+              type: String,
+              value: '',
+            },
+
+            /** The `content enricher` entity-type of the resource. Default value for Nuxeo Document Model */
+            enrichersEntity: {
+              type: String,
+              value: 'document',
+            },
+
+            /**
+             * List of comma separated values of the document schemas to be returned.
+             * All document schemas are returned by default.
+             */
+            schemas: {
+              type: String,
+              value: '',
+            },
+
+            /**
+             * Active request count.
+             */
+            activeRequests: {
+              type: Number,
+              value: 0,
+              notify: true,
+              readOnly: true,
+            },
+
+            /**
+             * If true, documents changed by the call will be reindexed synchronously server side.
+             */
+            syncIndexing: Boolean,
+
+            /**
+             * True while requests are in flight.
+             */
+            loading: {
+              type: Boolean,
+              notify: true,
+              readOnly: true,
+            },
+          };
+        }
+
+        static get observers() {
+          return [
+            '_autoExecute(op, params, enrichers, enrichersEntity)',
+            '_isLoading(activeRequests)',
+          ];
+        }
+
+        /**
+         * Fired when the operation returns with no errors.
+         *
+         * @event response
+         */
+
+        execute() {
+          this._setActiveRequests(this.activeRequests + 1);
+          const params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
+          const options = {};
+          // Look up document schemas to be returned
+          if (this.schemas && this.schemas.length > 1) {
+            options.schemas = this.schemas.trim().split(/[\s,]+/);
           }
-        },
-
-        /* The operation input. */
-        input: {
-          type: String
-        },
-
-        /* If true, automatically execute the operation when either `op` or `params` changes. */
-        auto: {
-          type: Boolean,
-          value: false
-        },
-
-        /* The response from the server. */
-        response: {
-          type: Object,
-          value: null,
-          notify: true
-        },
-
-        /* The headers of the request. */
-        headers: {type: Object, value: null},
-
-        /* The `content enricher` of the resource. */
-        enrichers: {type: String, value: ''},
-
-        /* The `content enricher` entity-type of the resource. Default value for Nuxeo Document Model*/
-        enrichersEntity: {type: String, value: 'document'},
-
-        /**
-         * List of comma separated values of the document schemas to be returned.
-         * All document schemas are returned by default.
-         */
-        schemas: {type: String, value: ''},
-
-        /**
-         * Active request count.
-         */
-        activeRequests: {
-          type: Number,
-          value: 0,
-          notify: true,
-          readOnly: true
-        },
-
-        /**
-         * If true, documents changed by the call will be reindexed synchronously server side.
-         */
-        syncIndexing: Boolean,
-
-        /**
-         * True while requests are in flight.
-         */
-        loading: {
-          type: Boolean,
-          notify: true,
-          readOnly: true
+          options.headers = this.headers || {};
+          // Force sync indexing
+          if (this.syncIndexing) {
+            options.headers.nx_es_sync = true;
+          }
+          // Look up content enrichers parameter
+          if (this.enrichers) {
+            options.headers[`X-NXenrichers.${this.enrichersEntity}`] = this.enrichers;
+          }
+          return this.$.nx.operation(this.op).then((operation) => {
+            this._operation = operation;
+            return this._doExecute(params, options);
+          });
         }
-      },
-      observers: [
-        '_autoExecute(op, params, enrichers, enrichersEntity)',
-        '_isLoading(activeRequests)'
-      ],
 
-      /**
-       * Fired when the operation returns with no errors.
-       *
-       * @event response
-       */
+        _autoExecute() {
+          if (this.auto) {
+            this.execute();
+          }
+        }
 
-      /**
-       * Call the operation.
-       */
-      execute: function() {
-        this._setActiveRequests(this.activeRequests + 1);
-        var params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
-        var options = {};
-        // Look up document schemas to be returned
-        if (this.schemas && this.schemas.length > 1) {
-          options.schemas = this.schemas.trim().split(/[\s,]+/);
+        _doExecute(params, options) {
+          if (params.context) {
+            this._operation = this._operation.context(params.context);
+          }
+          return this._operation
+            .params(params)
+            .input(this.input)
+            .execute(options)
+            .then((data) => {
+              this.dispatchEvent(new CustomEvent('response', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                  response: data,
+                },
+              }));
+              this.response = data;
+              this.success = true;
+              this._setActiveRequests(this.activeRequests - 1);
+              return this.response;
+            })
+            .catch((error) => {
+              this.success = false;
+              this.error = error;
+              console.log(`Operation request failed: ${error}`);
+              this._setActiveRequests(this.activeRequests - 1);
+              throw error;
+            });
         }
-        options.headers = this.headers || {};
-        // Force sync indexing
-        if (this.syncIndexing) {
-          options.headers['nx_es_sync'] = true;
-        }
-        // Look up content enrichers parameter
-        if (this.enrichers) {
-          options.headers['X-NXenrichers.' + this.enrichersEntity] = this.enrichers;
-        }
-        return this.$.nx.operation(this.op).then(function(operation) {
-          this._operation = operation;
-          return this._doExecute(params, options);
-        }.bind(this));
-      },
 
-      _autoExecute: function() {
-        if (this.auto) {
-          this.execute();
+        _isLoading() {
+          this._setLoading(this.activeRequests > 0);
         }
-      },
 
-      _doExecute: function(params, options) {
-        if (params.context) {
-          this._operation = this._operation.context(params.context);
-        }
-        return this._operation
-          .params(params)
-          .input(this.input)
-          .execute(options)
-          .then(function(data) {
-            this.fire('response', {response: data});
-            this.response = data;
-            this.success = true;
-            this._setActiveRequests(this.activeRequests - 1);
-            return this.response;
-          }.bind(this))
-          .catch(function(error) {
-            this.success = false;
-            this.error = error;
-            console.log("Operation request failed: " + error);
-            this._setActiveRequests(this.activeRequests - 1);
-            throw error;
-          }.bind(this));
-      },
-
-      _isLoading: function() {
-        this._setLoading(this.activeRequests > 0 ? true : false);
       }
-    });
+
+      customElements.define(Operation.is, Operation);
+      Nuxeo.Operation = Operation;
+    }
   </script>
 </dom-module>
