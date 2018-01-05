@@ -1,0 +1,23 @@
+language: node_js
+sudo: false
+dist: trusty
+node_js: stable
+
+addons:
+  firefox: latest
+  google-chrome: latest
+
+cache:
+  directories:
+    - node_modules
+
+install:
+  - npm install
+  - npm install -g bower
+  - bower install
+
+before_script:
+  - npm run lint
+
+script:
+  - xvfb-run npm run test
