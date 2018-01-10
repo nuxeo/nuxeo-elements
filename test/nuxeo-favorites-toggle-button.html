@@ -39,7 +39,7 @@ limitations under the License.
     </template>
   </test-fixture>
 
-  <test-fixture id="favorite">
+  <test-fixture id="isFavorite">
     <template>
        <nuxeo-favorites-toggle-button document='{
         "entity-type": "document",
@@ -83,7 +83,7 @@ limitations under the License.
       suite('when a document is a favorite', function() {
         var element;
         setup(function() {
-          element = fixture('favorite');
+          element = fixture('isFavorite');
           server.respondWith(
             'POST',
             '/dummy/api/v1/automation/Document.RemoveFromFavorites',
