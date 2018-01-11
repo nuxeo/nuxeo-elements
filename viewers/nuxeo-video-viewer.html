@@ -145,11 +145,27 @@ Example:
         }, true);
       },
 
+      play: function() {
+        if (this.videojs) {
+          this.videojs.play();
+        }
+      },
+
       stop: function() {
-        if (this.$.video) {
-          this.$.video.pause();
+        if (this.videojs) {
+          this.pause();
           this.videojs.currentTime(0);
         }
+      },
+
+      pause: function() {
+        if (this.videojs) {
+          this.videojs.pause();
+        }
+      },
+
+      isPaused: function() {
+        return this.videojs && this.videojs.paused();
       },
 
       attached: function() {

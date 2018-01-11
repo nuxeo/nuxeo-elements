@@ -16,6 +16,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../marked-element/marked-element.html">
 <link rel="import" href="viewers/nuxeo-image-viewer.html">
 <link rel="import" href="viewers/nuxeo-video-viewer.html">
@@ -117,7 +118,7 @@ Example:
   <script>
     Polymer({
       is: 'nuxeo-document-preview',
-      behaviors: [Polymer.Templatizer],
+      behaviors: [Polymer.Templatizer, Polymer.IronResizableBehavior],
       properties: {
 
         /**
@@ -166,6 +167,10 @@ Example:
         '_updateBlob(document, xpath)'
       ],
 
+      listeners: {
+        'iron-resize': '_onResize'
+      },
+
       stop: function() {
         var video = this.$$('#video');
         if (video) {
@@ -175,6 +180,7 @@ Example:
         var audio = this.$$('#audio');
         if (audio) {
           audio.pause();
+          audio.currentTime = 0;
         }
       },
 
@@ -289,6 +295,27 @@ Example:
         } else if (this._blob) {
           return this._blob.data;
         }
+      },
+
+      /**
+       * Automatically pauses the audio/video if the document preview is not visible anymore.
+       */
+      _onResize: function() {
+        if (!this._isVisible) {
+          var audio = this.$$('#audio');
+          if (audio && !audio.paused) {
+            audio.pause();
+            return;
+          }
+          var video = this.$$('#video');
+          if (video && !video.isPaused()) {
+            video.pause();
+          }
+        }
+      },
+
+      get _isVisible() {
+        return Boolean(this.offsetWidth || this.offsetHeight);
       }
 
     });
