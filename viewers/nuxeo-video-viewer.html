@@ -138,10 +138,10 @@ Example:
       },
 
       ready: function() {
-        // Capture tap event to prevent clashing with videojs tap/click events
-        this.addEventListener('tap', function(event) {
+        // Capture click event to prevent clashing with videojs tap/click events
+        this.addEventListener('click', function(event) {
           event.stopPropagation();
-        }, true);
+        });
       },
 
       play: function() {
