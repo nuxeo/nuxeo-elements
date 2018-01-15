@@ -79,6 +79,7 @@ An element for generic input in forms
                  max$="[[max]]"
                  step$="[[step]]"
                  pattern$="[[pattern]]"
+                 auto-validate$="[[autoValidate]]"
                  validator$="[[validator]]"
                  invalid$="[[invalid]]"
                  no-label-float>
@@ -193,7 +194,15 @@ An element for generic input in forms
         /**
          * The name of the custom validator
          */
-        validator: String
+        validator: String,
+
+        /**
+         * Set to true to auto-validate the input value when it changes.
+         */
+        autoValidate: {
+          type: Boolean,
+          value: false
+        }
       },
 
       focus: function() {
