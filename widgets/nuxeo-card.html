@@ -44,16 +44,21 @@ Custom property         | Description | Default
   <template>
     <style>
       :host {
+        display: block;
         -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
         -moz-box-sizing: border-box;    /* Firefox, other Gecko */
         box-sizing: border-box;         /* Opera/IE 8+ */
+        background-color: white;
+        padding: 16px;
+        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.04);
+        @apply --nuxeo-card;
       }
 
-      :host([collapsible]) #card {
+      :host([collapsible]) {
         padding-bottom: 1px;
       }
 
-      :host([opened]) #card {
+      :host([opened]) {
         padding-bottom: 16px;
       }
 
@@ -66,49 +71,45 @@ Custom property         | Description | Default
         display: none !important;
       }
 
-      #card {
-        display: block;
-        background-color: white;
-        padding: 16px;
-        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.04);
-        @apply --nuxeo-card;
-      }
-
-      #card .header {
+      .header {
         @apply --layout-horizontal;
         @apply --layout-center;
         margin: 0 0 1em;
+      }
+
+      .header .icon {
+        display: inline-block;
+        margin-right: 8px;
+        --iron-icon-width: 16px;
+        --iron-icon-height: 16px;
+      }
+
+      .header .heading {
+        @apply --layout-flex;
         font-size: 1rem;
         font-weight: 700;
         letter-spacing: .04em;
         text-transform: uppercase;
       }
-
-      #card .header .icon {
-        display: inline-block;
-        margin-right: 8px;
-      }
-
-      #card .header .heading {
-        @apply --layout-flex;
-      }
     </style>
 
-    <div id="card">
+    <template is="dom-if" if="[[_hasHeading(icon, heading, collapsible)]]">
       <h3 class="header" on-tap="_toggle">
         <iron-icon class="icon" icon="[[icon]]" hidden$="[[!icon]]"></iron-icon>
         <span class="heading">[[heading]]</span>
         <iron-icon icon="[[_toggleIcon(opened)]]" toggle hidden$="[[!collapsible]]"></iron-icon>
       </h3>
-      <template is="dom-if" if="[[collapsible]]">
-        <iron-collapse opened="[[_opened(opened, collapsible)]]">
-          <slot></slot>
-        </iron-collapse>
-      </template>
-      <template is="dom-if" if="[[!collapsible]]">
+    </template>
+
+    <template is="dom-if" if="[[collapsible]]">
+      <iron-collapse opened="[[_opened(opened, collapsible)]]">
         <slot></slot>
-      </template>
-    </div>
+      </iron-collapse>
+    </template>
+
+    <template is="dom-if" if="[[!collapsible]]">
+      <slot></slot>
+    </template>
 
   </template>
 
@@ -150,6 +151,10 @@ Custom property         | Description | Default
           value: false,
           reflectToAttribute: true
         }
+      },
+
+      _hasHeading: function(icon, heading, collapsible) {
+        return icon || heading || collapsible;
       },
 
       _opened: function(opened, collapsible) {
