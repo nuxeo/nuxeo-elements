@@ -20,14 +20,14 @@ limitations under the License.
 <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../../iron-form/iron-form.html">
-<link rel="import" href="../../paper-input/paper-input.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-card/paper-card.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-toast/paper-toast.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
-<link rel="import" href="../widgets/nuxeo-group-tag.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
+<link rel="import" href="../widgets/nuxeo-group-tag.html">
+<link rel="import" href="../widgets/nuxeo-input.html">
 <link rel="import" href="nuxeo-user-group-permissions-table.html">
 
 <!--
@@ -146,19 +146,17 @@ Example:
 
             <iron-form id="changePasswordForm">
               <form class="vertical layout">
-                <paper-input id="passwordOld" type="password" label="[[i18n('userProfile.password.old')]]"
-                             required always-float-label>
-                </paper-input>
+                <nuxeo-input id="passwordOld" type="password" label="[[i18n('userProfile.password.old')]]"
+                             required>
+                </nuxeo-input>
 
-                <paper-input id="passwordNew" type="password" label="[[i18n('userProfile.password.new')]]"
-                             required always-float-label
-                             value="{{passwordNew}}">
-                </paper-input>
+                <nuxeo-input id="passwordNew" type="password" label="[[i18n('userProfile.password.new')]]"
+                             required value="{{passwordNew}}">
+                </nuxeo-input>
 
-                <paper-input id="passwordConfirm" type="password" label="[[i18n('userProfile.password.confirm')]]"
-                             required always-float-label
-                             pattern="[[passwordNew]]">
-                </paper-input>
+                <nuxeo-input id="passwordConfirm" type="password" label="[[i18n('userProfile.password.confirm')]]"
+                             required pattern="[[passwordNew]]">
+                </nuxeo-input>
               </form>
             </iron-form>
 

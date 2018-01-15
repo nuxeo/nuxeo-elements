@@ -37,10 +37,10 @@ Used by `nuxeo-user-management` and `nuxeo-create-user`
     </style>
 
     <div class="layout vertical">
-      <paper-input label="[[i18n('editUser.firstName')]]" value="{{user.firstName}}" name="firstname" always-float-label></paper-input>
-      <paper-input label="[[i18n('editUser.lastName')]]" value="{{user.lastName}}" name="lastname" always-float-label></paper-input>
-      <paper-input label="[[i18n('editUser.company')]]" value="{{user.company}}" name="company" always-float-label></paper-input>
-      <paper-input label="[[i18n('editUser.email')]]" value="{{user.email}}" name="email" always-float-label type="email" required></paper-input>
+      <nuxeo-input label="[[i18n('editUser.firstName')]]" value="{{user.firstName}}" name="firstname"></nuxeo-input>
+      <nuxeo-input label="[[i18n('editUser.lastName')]]" value="{{user.lastName}}" name="lastname"></nuxeo-input>
+      <nuxeo-input label="[[i18n('editUser.company')]]" value="{{user.company}}" name="company"></nuxeo-input>
+      <nuxeo-input label="[[i18n('editUser.email')]]" value="{{user.email}}" name="email" type="email" required></nuxeo-input>
     </div>
 
     <template is="dom-if" if="[[new]]">

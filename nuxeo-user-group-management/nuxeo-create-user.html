@@ -17,13 +17,13 @@ limitations under the License.
 
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-form/iron-form.html">
-<link rel="import" href="../../paper-input/paper-input.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
+<link rel="import" href="../widgets/nuxeo-input.html">
 <link rel="import" href="../widgets/nuxeo-user-suggestion.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="nuxeo-edit-password.html">
@@ -106,9 +106,9 @@ Used by `nuxeo-user-group-management`
 
     <iron-form id="form">
       <form class="vertical layout">
-        <paper-input label="[[i18n('createUser.username')]]" value="{{user.username}}"
-                     name="username" required always-float-label>
-        </paper-input>
+        <nuxeo-input label="[[i18n('createUser.username')]]" value="{{user.username}}"
+                     name="username" required>
+        </nuxeo-input>
 
         <nuxeo-edit-user id="propertyEditor" user="{{user}}" new></nuxeo-edit-user>
 

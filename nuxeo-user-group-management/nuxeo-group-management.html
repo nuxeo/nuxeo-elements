@@ -23,16 +23,17 @@ limitations under the License.
 <link rel="import" href="../widgets/nuxeo-user-suggestion.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
+<link rel="import" href="../../iron-form/iron-form.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-card/paper-card.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../paper-input/paper-input.html">
 <link rel="import" href="../../paper-toast/paper-toast.html">
+<link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../widgets/nuxeo-group-tag.html">
+<link rel="import" href="../widgets/nuxeo-input.html">
 <link rel="import" href="../widgets/nuxeo-tag.html">
 <link rel="import" href="../widgets/nuxeo-user-tag.html">
-<link rel="import" href="../widgets/nuxeo-dialog.html">
 
 <!--
 An element for managing a group.
@@ -318,10 +319,10 @@ Used by `nuxeo-user-group-management`
         <iron-icon icon="nuxeo:user"></iron-icon> [[i18n('groupManagement.users.heading')]]
       </h3>
       <div class="filter-wrapper">
-        <paper-input autofocus="true" value="{{usersFilter}}" type="search"
-                     placeholder="[[i18n('groupManagement.filterUsers.placeholder')]]" no-label-float>
+        <nuxeo-input autofocus value="{{usersFilter}}" type="search"
+                     placeholder="[[i18n('groupManagement.filterUsers.placeholder')]]">
           <iron-icon icon="nuxeo:search" prefix></iron-icon>
-        </paper-input>
+        </nuxeo-input>
       </div>
       <div class="table">
         <div class="table-header">
@@ -366,10 +367,10 @@ Used by `nuxeo-user-group-management`
         <iron-icon icon="nuxeo:group"></iron-icon> [[i18n('groupManagement.nestedGroups.heading')]]
       </h3>
       <div class="filter-wrapper">
-        <paper-input autofocus="true" value="{{groupsFilter}}" type="search"
-                     placeholder="[[i18n('groupManagement.filterGroups.placeholder')]]" no-label-float>
+        <nuxeo-input autofocus value="{{groupsFilter}}" type="search"
+                     placeholder="[[i18n('groupManagement.filterGroups.placeholder')]]">
           <iron-icon icon="nuxeo:search" prefix></iron-icon>
-        </paper-input>
+        </nuxeo-input>
       </div>
       <div class="table">
         <div class="table-header">

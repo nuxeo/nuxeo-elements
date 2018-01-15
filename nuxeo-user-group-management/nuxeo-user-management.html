@@ -16,17 +16,18 @@ limitations under the License.
 -->
 
 <link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-form/iron-form.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
-<link rel="import" href="../../paper-input/paper-input.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-card/paper-card.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-toast/paper-toast.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
-<link rel="import" href="../widgets/nuxeo-user-suggestion.html">
-<link rel="import" href="../widgets/nuxeo-group-tag.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
+<link rel="import" href="../widgets/nuxeo-input.html">
+<link rel="import" href="../widgets/nuxeo-group-tag.html">
+<link rel="import" href="../widgets/nuxeo-user-suggestion.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-filters-behavior.html">
 
@@ -354,8 +355,8 @@ Used by `nuxeo-user-group-management`
       <h2>[[i18n('userManagement.editUser.heading')]]</h2>
       <iron-form  id="editUserForm">
         <form class="vertical layout">
-          <paper-input label="[[i18n('userManagement.username')]]" value="[[user.properties.username]]"
-                       always-float-label readonly required></paper-input>
+          <nuxeo-input label="[[i18n('userManagement.username')]]" value="[[user.properties.username]]"
+                       readonly required></nuxeo-input>
           <nuxeo-edit-user id="userEditor"></nuxeo-edit-user>
         </form>
       </iron-form>
