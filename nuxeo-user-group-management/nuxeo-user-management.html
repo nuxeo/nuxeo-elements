@@ -30,6 +30,7 @@ limitations under the License.
 <link rel="import" href="../widgets/nuxeo-user-suggestion.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-filters-behavior.html">
+<link rel="import" href="../nuxeo-layout.html">
 
 <link rel="import" href="nuxeo-edit-password.html">
 <link rel="import" href="nuxeo-user-group-permissions-table.html">
@@ -357,7 +358,7 @@ Used by `nuxeo-user-group-management`
         <form class="vertical layout">
           <nuxeo-input label="[[i18n('userManagement.username')]]" value="[[user.properties.username]]"
                        readonly required></nuxeo-input>
-          <nuxeo-edit-user id="userEditor"></nuxeo-edit-user>
+          <nuxeo-layout id="layout" href="[[_layoutHref('nuxeo-edit-user.html')]]"></nuxeo-layout>
         </form>
       </iron-form>
       <div class="buttons horizontal end-justified layout">
@@ -587,7 +588,7 @@ Used by `nuxeo-user-group-management`
       },
 
       _toggleEditUser: function() {
-        this.$.userEditor.user = JSON.parse(JSON.stringify(this.user.properties));
+        this.$.layout.model = { user: JSON.parse(JSON.stringify(this.user.properties)) };
         this.$.editUserDialog.toggle();
       },
 
@@ -598,7 +599,7 @@ Used by `nuxeo-user-group-management`
       _saveUser: function() {
         this.$.editUserDialog.toggle();
         var editedUser = JSON.parse(JSON.stringify(this.user));
-        editedUser.properties = this.$.userEditor.user;
+        editedUser.properties = this.$.layout.model.user;
         this.$.editRequest.data = editedUser;
         this.$.editRequest.put().then(function(response) {
           this.user = response;
@@ -638,6 +639,10 @@ Used by `nuxeo-user-group-management`
       _toast: function(msg) {
         this.$.toast.text = msg;
         this.$.toast.open();
+      },
+
+      _layoutHref: function(layout) {
+        return this.resolveUrl(layout);
       }
     });
   </script>

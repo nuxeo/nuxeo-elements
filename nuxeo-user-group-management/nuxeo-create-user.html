@@ -26,6 +26,7 @@ limitations under the License.
 <link rel="import" href="../widgets/nuxeo-input.html">
 <link rel="import" href="../widgets/nuxeo-user-suggestion.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../nuxeo-layout.html">
 <link rel="import" href="nuxeo-edit-password.html">
 
 <!--
@@ -110,7 +111,9 @@ Used by `nuxeo-user-group-management`
                      name="username" required>
         </nuxeo-input>
 
-        <nuxeo-edit-user id="propertyEditor" user="{{user}}" new></nuxeo-edit-user>
+        <nuxeo-layout id="layout" href="[[_layoutHref('nuxeo-edit-user.html')]]"
+                      model="[[_layoutModel(user, new)]]"
+                      on-element-changed="_layoutElementChanged"></nuxeo-layout>
 
         <label class="label-password">[[i18n('createUser.setPassword')]]</label>
         <paper-toggle-button checked="{{usePassword}}" name="password-toggle"></paper-toggle-button>
@@ -253,6 +256,23 @@ Used by `nuxeo-user-group-management`
 
       _isAdministrator: function(user) {
         return user && user.isAdministrator;
+      },
+
+      _layoutHref: function(layout) {
+        return this.resolveUrl(layout);
+      },
+
+      _layoutModel: function() {
+        return {
+          user: this.user,
+          "new": this.new
+        };
+      },
+
+      _layoutElementChanged: function() {
+        this.$.layout.element.addEventListener('user-changed', function(e) {
+          this.set(e.detail.path, e.detail.value);
+        }.bind(this));
       }
     });
   </script>
