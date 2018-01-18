@@ -1,4 +1,7 @@
+[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/nuxeo/nuxeo-elements)
 [![Build Status](https://qa.nuxeo.org/jenkins/buildStatus/icon?job=master/nuxeo-elements-master)](https://qa.nuxeo.org/jenkins/job/master/job/nuxeo-elements-master/)
+
+[![Browser Status](https://badges.herokuapp.com/sauce/nuxeo-elements?name=nuxeo-elements-master)](https://saucelabs.com/u/nuxeo-elements)
 
 # About nuxeo-elements
 
