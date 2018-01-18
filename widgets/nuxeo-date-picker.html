@@ -167,14 +167,7 @@ Example:
         var date = moment(this.value);
         if (this.value && date.isValid()) {
           this._inputValue = date.format('YYYY-MM-DD');
-          // XXX This if prevents value from being stuck on current date if set using the keyboard.
-          // Typing years using the keyboard causes this value to assume a one-, two- and three-digit number, which
-          // breaks overlay-date-picker. This if can be removed as soon as these PRs are merged:
-          // - https://github.com/fooloomanzoo/property-mixins/pull/1
-          // - https://github.com/fooloomanzoo/datetime-picker/pull/28
-          if (date.year() > 999) {
-            this._pickerValue = date.format('YYYY-MM-DD');
-          }
+          this._pickerValue = date.format('YYYY-MM-DD');
         } else {
           this._inputValue = '';
           this._pickerValue = '';
