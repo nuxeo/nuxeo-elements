@@ -21,10 +21,10 @@ limitations under the License.
 <link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../../iron-form/iron-form.html">
 <link rel="import" href="../../paper-button/paper-button.html">
-<link rel="import" href="../../paper-card/paper-card.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-toast/paper-toast.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
+<link rel="import" href="../widgets/nuxeo-card.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../widgets/nuxeo-group-tag.html">
 <link rel="import" href="../widgets/nuxeo-input.html">
@@ -111,10 +111,6 @@ Example:
         @apply --buttons-bar;
         margin-top: 2em;
       }
-
-      paper-card {
-        @apply --nuxeo-card;
-      }
     </style>
 
     <nuxeo-connection id="nxcon"></nuxeo-connection>
@@ -123,7 +119,7 @@ Example:
 
     <paper-toast id="toast"></paper-toast>
 
-    <paper-card>
+    <nuxeo-card>
 
       <div class="horizontal layout center">
 
@@ -175,11 +171,10 @@ Example:
       <!-- user -->
       <nuxeo-view-user user="[[user]]"></nuxeo-view-user>
 
-    </paper-card>
+    </nuxeo-card>
 
     <!-- groups -->
-    <paper-card>
-      <h3 class="flex">[[i18n('userManagement.groups')]]</h3>
+    <nuxeo-card heading="[[i18n('userManagement.groups')]]">
       <div class="table">
         <div class="header">
           <div class="flex">[[i18n('userManagement.name')]]</div>
@@ -192,23 +187,23 @@ Example:
           </div>
         </template>
       </div>
-    </paper-card>
+    </nuxeo-card>
 
     <!-- local permissions -->
-    <paper-card>
+    <nuxeo-card>
       <nuxeo-user-group-permissions-table label="[[i18n('userManagement.localPermissions.heading')]]"
                                           entity="[[username]]" readonly>
       </nuxeo-user-group-permissions-table>
-    </paper-card>
+    </nuxeo-card>
 
     <!-- group permissions -->
-    <paper-card>
+    <nuxeo-card>
       <template is="dom-repeat" items="[[groups]]">
         <nuxeo-user-group-permissions-table label="[[i18n('userManagement.entityPermissions', item.name)]]"
                                             entity="[[item.name]]" readonly>
         </nuxeo-user-group-permissions-table>
       </template>
-    </paper-card>
+    </nuxeo-card>
 
   </template>
 

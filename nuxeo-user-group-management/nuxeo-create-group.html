@@ -16,7 +16,6 @@ limitations under the License.
 -->
 
 <link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
@@ -33,23 +32,61 @@ Used by `nuxeo-user-group-management`
 -->
 <dom-module id="nuxeo-create-group">
   <template>
-    <style include="nuxeo-styles iron-flex-alignment">
+    <style include="iron-flex">
       :host {
         display: block;
       }
 
-      .backButton {
-        var(--nuxeo-button-primary, #00adff);
+      .header {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        margin-bottom: 16px;
       }
 
       .header > iron-icon {
         padding: 8px;
       }
 
-      form {
-        margin: 24px 0 0;
+      .backButton {
+        color: var(--nuxeo-button-primary, #00adff);
       }
 
+      .row {
+        font-size: 0.8rem;
+        border: 1px solid var(--nuxeo-border, #aaa);
+        @apply --layout-horizontal;
+        @apply --layout-center;
+      }
+
+      .row .label {
+        font-weight: 400;
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        @apply --layout-flex;
+      }
+
+      .row .label iron-icon {
+        margin: 0 8px;
+      }
+
+      .row .name {
+        @apply --layout-flex;
+      }
+
+      .row .email {
+        @apply --layout-flex;
+      }
+
+      .form-buttons {
+        margin-top: 16px;
+      }
+
+      #errors {
+        color: red;
+        margin: 1em 0;
+      }
+
+      /* buttons */
       paper-button.primary {
         background-color: var(--nuxeo-button-primary, #00adff);
         color: #fff;
@@ -61,79 +98,18 @@ Used by `nuxeo-user-group-management`
         font-weight: inherit;
         color: #fff !important;
       }
-
-      .search-entry {
-        border: 1px solid #aaa;
-        padding: 4px;
-        font-size: .8rem;
-        @apply --layout-horizontal;
-        @apply --layout-center;
-      }
-
-      .search-entry + .search-entry {
-        margin-top: 8px;
-      }
-
-      .search-entry .user-info {
-        padding: 0.2em 0.6em;
-        text-align: center;
-        width: 30%;
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        @apply --layout-center-justified;
-      }
-
-      .search-entry .user-info .label {
-        text-align: center;
-        font-weight: bold;
-        @apply --layout-horizontal;
-        @apply --layout-center;
-      }
-
-      .search-entry iron-icon {
-        --iron-icon-height: 14px;
-        --iron-icon-width: 14px;
-        margin-right: 4px;
-      }
-
-      .search-entry paper-icon-button {
-        width: 32px;
-        height: 32px;
-      }
-
-      #another {
-        margin: 2em 0;
-      }
-
-      #errors {
-        color: red;
-        margin: 1em 0;
-      }
-
-      .header h3 {
-        margin-bottom: 0;
-      }
-
-      h3 iron-icon {
-        width: 1.3em;
-        margin-right: .2rem;
-      }
-
-      .form-buttons {
-        padding: 1em;
-        margin: 16px -1.2rem 0;
-      }
     </style>
 
     <nuxeo-resource id="request" path="/group"></nuxeo-resource>
 
-    <div class="header horizontal layout center">
+    <div class="header">
       <paper-icon-button class="backButton" icon="icons:arrow-back" on-tap="_goHome"></paper-icon-button>
-      <h3><iron-icon icon="nuxeo:group"></iron-icon>[[i18n('createGroup.heading')]]</h3>
+      <iron-icon icon="nuxeo:group"></iron-icon>
+      <h3>[[i18n('createGroup.heading')]]</h3>
     </div>
 
     <iron-form id="form">
-      <form class="vertical layout">
+      <form>
 
         <nuxeo-input id="groupName" label="[[i18n('createGroup.group.name')]]" value="{{groupName}}" required></nuxeo-input>
         <nuxeo-input id="groupLabel" label="[[i18n('createGroup.group.label')]]" value="{{groupLabel}}"></nuxeo-input>
@@ -148,34 +124,28 @@ Used by `nuxeo-user-group-management`
         </nuxeo-user-suggestion>
 
         <!-- selected members -->
-        <div class="vertical layout flex">
-          <template is="dom-repeat" items="[[selectedUsers]]">
-            <div class="search-entry">
-              <div class="user-info">
-                <div class="label">
-                  <iron-icon icon="nuxeo:user" hidden="[[item.groupname]]"></iron-icon>
-                  <iron-icon icon="nuxeo:group" hidden="[[item.username]]"></iron-icon>
-                  <span>[[item.displayLabel]]</span>
-                </div>
-              </div>
-              <div class="user-info">
-                <span class="username" hidden="[[item.groupname]]">[[item.username]]</span>
-                <span class="username" hidden="[[item.username]]">[[item.groupname]]</span>
-              </div>
-              <div class="user-info">
-                <span class="email">[[item.email]]</span>
-              </div>
-              <paper-icon-button icon="nuxeo:remove" title="remove" on-tap="_remove"></paper-icon-button>
+        <template is="dom-repeat" items="[[selectedUsers]]">
+          <div class="row">
+            <div class="label">
+              <iron-icon icon="nuxeo:user" hidden="[[item.groupname]]"></iron-icon>
+              <iron-icon icon="nuxeo:group" hidden="[[item.username]]"></iron-icon>
+              <span>[[item.displayLabel]]</span>
             </div>
-          </template>
-        </div>
+            <div class="name">
+              <span hidden="[[item.groupname]]">[[item.username]]</span>
+              <span hidden="[[item.username]]">[[item.groupname]]</span>
+            </div>
+            <div class="email">
+              <span>[[item.email]]</span>
+            </div>
+            <paper-icon-button icon="nuxeo:remove" title="remove" on-tap="_remove"></paper-icon-button>
+          </div>
+        </template>
 
         <div class="form-buttons">
           <paper-button noink id="cancelButton" on-tap="_cancel">[[i18n('command.cancel')]]</paper-button>
           <paper-button noink id="createButton" class="primary" on-tap="_submit">[[i18n('command.create')]]</paper-button>
-          <paper-button noink id="createAnotherButton" class="primary" on-tap="_submitAnother">
-            [[i18n('createGroup.createAnother')]]
-          </paper-button>
+          <paper-button noink id="createAnotherButton" class="primary" on-tap="_submitAnother">[[i18n('createGroup.createAnother')]]</paper-button>
         </div>
 
         <span id="errors" hidden$="[[!_hasErrors(errors)]]">[[errors]]</span>

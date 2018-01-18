@@ -32,16 +32,13 @@ Used by `nuxeo-user-management` and `nuxeo-create-user`
     <style>
       :host {
         display: block;
-        width: 100%;
       }
     </style>
 
-    <div class="layout vertical">
-      <nuxeo-input label="[[i18n('editUser.firstName')]]" value="{{user.firstName}}" name="firstname"></nuxeo-input>
-      <nuxeo-input label="[[i18n('editUser.lastName')]]" value="{{user.lastName}}" name="lastname"></nuxeo-input>
-      <nuxeo-input label="[[i18n('editUser.company')]]" value="{{user.company}}" name="company"></nuxeo-input>
-      <nuxeo-input label="[[i18n('editUser.email')]]" value="{{user.email}}" name="email" type="email" required></nuxeo-input>
-    </div>
+    <nuxeo-input label="[[i18n('editUser.firstName')]]" value="{{user.firstName}}" name="firstname"></nuxeo-input>
+    <nuxeo-input label="[[i18n('editUser.lastName')]]" value="{{user.lastName}}" name="lastname"></nuxeo-input>
+    <nuxeo-input label="[[i18n('editUser.company')]]" value="{{user.company}}" name="company"></nuxeo-input>
+    <nuxeo-input label="[[i18n('editUser.email')]]" value="{{user.email}}" name="email" type="email" required></nuxeo-input>
 
     <template is="dom-if" if="[[new]]">
       <nuxeo-user-suggestion id="picker"

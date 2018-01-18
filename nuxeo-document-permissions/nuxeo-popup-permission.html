@@ -30,6 +30,7 @@ limitations under the License.
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../widgets/nuxeo-user-suggestion.html">
 <link rel="import" href="../widgets/nuxeo-date-picker.html">
+<link rel="import" href="../widgets/nuxeo-input.html">
 <link rel="import" href="../widgets/nuxeo-textarea.html">
 <link rel="import" href="../widgets/nuxeo-select.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
@@ -78,8 +79,8 @@ limitations under the License.
             </nuxeo-user-suggestion>
           </div>
           <div hidden$="{{!shareWithExternal}}">
-            <paper-input type="email" id="email" label="[[i18n('popupPermission.email')]]" placeholder="name@company.com" value="{{params.email}}"
-              required auto-validate></paper-input>
+            <nuxeo-input type="email" id="email" label="[[i18n('popupPermission.email')]]" placeholder="name@company.com" value="{{params.email}}"
+              required auto-validate></nuxeo-input>
           </div>
         </div>
         <!-- Right row -->

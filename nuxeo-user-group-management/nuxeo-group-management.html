@@ -26,9 +26,9 @@ limitations under the License.
 <link rel="import" href="../../iron-form/iron-form.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../paper-button/paper-button.html">
-<link rel="import" href="../../paper-card/paper-card.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-toast/paper-toast.html">
+<link rel="import" href="../widgets/nuxeo-card.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../widgets/nuxeo-group-tag.html">
 <link rel="import" href="../widgets/nuxeo-input.html">
@@ -48,9 +48,13 @@ Used by `nuxeo-user-group-management`
 -->
 <dom-module id="nuxeo-group-management">
   <template>
-    <style include="iron-flex iron-flex-alignment iron-flex-factors nuxeo-styles">
+    <style include="iron-flex iron-flex-alignment iron-flex-factors">
       :host {
         display: block;
+      }
+
+      [hidden] {
+        display: none !important;
       }
 
       h2 {
@@ -172,20 +176,6 @@ Used by `nuxeo-user-group-management`
         margin-top: 1em;
       }
 
-      input {
-        border: 1px solid #c6c6c6;
-        border-radius: 3px;
-        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.07) inset;
-        font-size: 1em;
-        margin-bottom: 0.5em;
-        padding: 0.5em;
-      }
-
-      .label-container {
-        font-weight: bold;
-        width: 150px;
-      }
-
       nuxeo-dialog[id="editGroupDialog"] {
         width: 40%;
       }
@@ -198,10 +188,6 @@ Used by `nuxeo-user-group-management`
         padding: 1em 2em 2em;
       }
 
-      .confirm {
-        padding: 2em;
-      }
-
       .emptyResult {
         opacity: .5;
         display: block;
@@ -210,8 +196,17 @@ Used by `nuxeo-user-group-management`
         text-align: center;
       }
 
-      paper-card {
-        @apply --nuxeo-card;
+      /* buttons */
+      paper-button.primary {
+        background-color: var(--nuxeo-button-primary, #00adff);
+        color: #fff;
+      }
+
+      paper-button.primary:hover,
+      paper-button.primary:focus {
+        background-color: var(--nuxeo-button-primary-focus, #0079b3);
+        font-weight: inherit;
+        color: #fff !important;
       }
     </style>
 
@@ -251,15 +246,8 @@ Used by `nuxeo-user-group-management`
     <nuxeo-dialog id="editGroupDialog" with-backdrop>
       <h2>[[i18n('groupManagement.editGroup.heading')]]</h2>
       <iron-form id="editForm">
-        <form class="vertical layout">
-          <div class="layout horizontal">
-            <div class="label-container">
-              <label>[[i18n('groupManagement.group.label')]]</label>
-            </div>
-            <div class="horizontal layout flex">
-              <input value="{{_editableGroup.grouplabel::input}}" class="flex">
-            </div>
-          </div>
+        <form>
+          <nuxeo-input label="[[i18n('groupManagement.group.label')]]" value="{{_editableGroup.grouplabel}}" ></nuxeo-input>
         </form>
       </iron-form>
       <div class="buttons horizontal end-justified layout">
@@ -270,7 +258,7 @@ Used by `nuxeo-user-group-management`
       </div>
     </nuxeo-dialog>
 
-    <paper-card>
+    <nuxeo-card>
       <div class="header horizontal layout">
         <paper-icon-button noink class="backButton" icon="icons:arrow-back" on-tap="_goHome"></paper-icon-button>
         <iron-icon icon="nuxeo:user" class="avatar"></iron-icon>
@@ -294,7 +282,7 @@ Used by `nuxeo-user-group-management`
           </div>
         </template>
       </div>
-    </paper-card>
+    </nuxeo-card>
 
     <div class="card layout vertical" hidden$="[[!showEditMembers]]">
       <nuxeo-user-suggestion id="picker"
@@ -314,10 +302,7 @@ Used by `nuxeo-user-group-management`
     </div>
 
     <!-- users table -->
-    <paper-card>
-      <h3 class="title">
-        <iron-icon icon="nuxeo:user"></iron-icon> [[i18n('groupManagement.users.heading')]]
-      </h3>
+    <nuxeo-card icon="nuxeo:user" heading="[[i18n('groupManagement.users.heading')]]">
       <div class="filter-wrapper">
         <nuxeo-input autofocus value="{{usersFilter}}" type="search"
                      placeholder="[[i18n('groupManagement.filterUsers.placeholder')]]">
@@ -359,13 +344,10 @@ Used by `nuxeo-user-group-management`
         </div>
       </div>
       <nuxeo-pagination-controls page="{{usersCurrentPage}}" number-of-pages="[[memberUsers.numberOfPages]]"></nuxeo-pagination-controls>
-    </paper-card>
+    </nuxeo-card>
 
     <!-- nested groups -->
-    <paper-card>
-      <h3 class="title">
-        <iron-icon icon="nuxeo:group"></iron-icon> [[i18n('groupManagement.nestedGroups.heading')]]
-      </h3>
+    <nuxeo-card icon="nuxeo:group" heading="[[i18n('groupManagement.nestedGroups.heading')]]">
       <div class="filter-wrapper">
         <nuxeo-input autofocus value="{{groupsFilter}}" type="search"
                      placeholder="[[i18n('groupManagement.filterGroups.placeholder')]]">
@@ -405,13 +387,12 @@ Used by `nuxeo-user-group-management`
         </div>
       </div>
       <nuxeo-pagination-controls page="{{groupsCurrentPage}}" number-of-pages="[[memberGroups.numberOfPages]]"></nuxeo-pagination-controls>
-    </paper-card>
+    </nuxeo-card>
 
     <!-- permissions -->
-    <paper-card>
-      <h3 class="title floating-header">[[i18n('groupManagement.permissions.heading')]]</h3>
+    <nuxeo-card heading="[[i18n('groupManagement.permissions.heading')]]">
       <nuxeo-user-group-permissions-table entity="[[groupname]]"></nuxeo-user-group-permissions-table>
-    </paper-card>
+    </nuxeo-card>
 
   </template>
   <script>

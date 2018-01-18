@@ -21,12 +21,12 @@ limitations under the License.
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../iron-icons/editor-icons.html">
-<link rel="import" href="../../paper-card/paper-card.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-item/paper-icon-item.html">
 <link rel="import" href="../../paper-listbox/paper-listbox.html">
 <link rel="import" href="../../paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../widgets/nuxeo-card.html">
 <link rel="import" href="../widgets/nuxeo-group-tag.html">
 <link rel="import" href="../widgets/nuxeo-input.html">
 <link rel="import" href="../widgets/nuxeo-user-tag.html">
@@ -38,7 +38,7 @@ Used by `nuxeo-user-management`
 -->
 <dom-module id="nuxeo-user-group-search">
   <template>
-    <style include="iron-flex iron-flex-alignment iron-flex-factors nuxeo-styles">
+    <style include="iron-flex iron-flex-alignment iron-flex-factors">
       :host {
         display: block;
         @apply --nuxeo-user-group-search-layout;
@@ -97,10 +97,6 @@ Used by `nuxeo-user-management`
         padding: 1.5em .7em;
         text-align: center;
       }
-
-      paper-card {
-        @apply --nuxeo-card;
-      }
     </style>
 
     <nuxeo-resource id="userSearch" auto path="/user/search" response="{{users}}"></nuxeo-resource>
@@ -110,20 +106,17 @@ Used by `nuxeo-user-management`
                     headers='{"fetch.group": "memberUsers,memberGroups"}'>
     </nuxeo-resource>
 
-    <paper-card class="search">
+    <nuxeo-card class="search">
       <nuxeo-input autofocus value="{{searchTerm}}" type="search"
                    placeholder="[[i18n('userGroupSearch.search.placeholder')]]">
         <iron-icon icon="nuxeo:search" prefix></iron-icon>
       </nuxeo-input>
-    </paper-card>
+    </nuxeo-card>
 
     <template is="dom-if" if="[[!_showResults(searchTerm)]]">
 
       <!-- groups -->
-      <paper-card name="groups">
-        <h3 class="title">
-          <iron-icon icon="nuxeo:group"></iron-icon> [[i18n('userGroupSearch.groups')]]
-        </h3>
+      <nuxeo-card name="groups" icon="nuxeo:group" heading="[[i18n('userGroupSearch.groups')]]">
         <div class="table">
           <div class="table-header">
             <div class="flex-4">[[i18n('userGroupSearch.name')]]</div>
@@ -151,13 +144,10 @@ Used by `nuxeo-user-management`
           </div>
         </div>
         <nuxeo-pagination-controls page="{{groupsCurrentPage}}" number-of-pages="[[groups.numberOfPages]]"></nuxeo-pagination-controls>
-      </paper-card>
+      </nuxeo-card>
 
       <!-- users -->
-      <paper-card name="users">
-        <h3 class="title">
-          <iron-icon icon="nuxeo:user"></iron-icon> [[i18n('userGroupSearch.users.heading')]]
-        </h3>
+      <nuxeo-card name="users" icon="nuxeo:user" heading="[[i18n('userGroupSearch.users.heading')]]">
         <div class="table">
           <div class="table-header">
             <div class="flex-4">[[i18n('userGroupSearch.name')]]</div>
@@ -184,7 +174,7 @@ Used by `nuxeo-user-management`
           </div>
         </div>
         <nuxeo-pagination-controls page="{{usersCurrentPage}}" number-of-pages="[[users.numberOfPages]]"></nuxeo-pagination-controls>
-      </paper-card>
+      </nuxeo-card>
     </template>
   </template>
 

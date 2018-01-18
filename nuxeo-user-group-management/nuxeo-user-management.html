@@ -19,11 +19,11 @@ limitations under the License.
 <link rel="import" href="../../iron-form/iron-form.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../paper-button/paper-button.html">
-<link rel="import" href="../../paper-card/paper-card.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-toast/paper-toast.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
+<link rel="import" href="../widgets/nuxeo-card.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../widgets/nuxeo-input.html">
 <link rel="import" href="../widgets/nuxeo-group-tag.html">
@@ -49,9 +49,13 @@ Used by `nuxeo-user-group-management`
 
 <dom-module id="nuxeo-user-management">
   <template>
-    <style include="iron-flex iron-flex-alignment iron-flex-factors nuxeo-styles">
+    <style include="iron-flex iron-flex-alignment iron-flex-factors">
       :host {
         display: block;
+      }
+
+      [hidden] {
+        display: none !important;
       }
 
       label {
@@ -181,13 +185,17 @@ Used by `nuxeo-user-group-management`
         margin-top: 2em;
       }
 
-      .confirm {
-        padding: 2em;
-        font-size: 1.1rem;
+      /* buttons */
+      paper-button.primary {
+        background-color: var(--nuxeo-button-primary, #00adff);
+        color: #fff;
       }
 
-      paper-card {
-        @apply --nuxeo-card;
+      paper-button.primary:hover,
+      paper-button.primary:focus {
+        background-color: var(--nuxeo-button-primary-focus, #0079b3);
+        font-weight: inherit;
+        color: #fff !important;
       }
     </style>
 
@@ -200,7 +208,7 @@ Used by `nuxeo-user-group-management`
 
     <paper-toast id="toast"></paper-toast>
 
-    <paper-card>
+    <nuxeo-card>
       <div class="header horizontal layout">
         <paper-icon-button class="backButton" icon="icons:arrow-back" on-tap="_goHome"></paper-icon-button>
         <iron-icon icon="nuxeo:user" class="avatar"></iron-icon>
@@ -238,10 +246,10 @@ Used by `nuxeo-user-group-management`
       <!-- user -->
       <nuxeo-view-user user="[[user]]"></nuxeo-view-user>
 
-    </paper-card>
+    </nuxeo-card>
 
     <!-- groups -->
-    <paper-card>
+    <nuxeo-card>
       <div class="layout horizontal center">
         <h3 class="flex">[[i18n('userManagement.groups')]]</h3>
         <template is="dom-if" if="[[_canEdit(readonly, _currentUser, user)]]">
@@ -297,22 +305,22 @@ Used by `nuxeo-user-group-management`
           </div>
         </template>
       </div>
-    </paper-card>
+    </nuxeo-card>
 
     <!-- local permissions -->
-    <paper-card>
+    <nuxeo-card>
       <nuxeo-user-group-permissions-table label="[[i18n('userManagement.localPermissions.heading')]]"
                                           entity="[[username]]" readonly="[[readonly]]">
       </nuxeo-user-group-permissions-table>
-    </paper-card>
+    </nuxeo-card>
 
     <!-- group permissions -->
     <template is="dom-repeat" items="[[groups]]">
-      <paper-card>
+      <nuxeo-card>
         <nuxeo-user-group-permissions-table label="[[i18n('userManagement.entityPermissions', item.name)]]"
                                             entity="[[item.name]]" readonly="[[readonly]]">
         </nuxeo-user-group-permissions-table>
-      </paper-card>
+      </nuxeo-card>
     </template>
 
     <nuxeo-dialog id="dialog" with-backdrop>
