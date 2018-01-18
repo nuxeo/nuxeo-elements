@@ -140,12 +140,12 @@ limitations under the License.
         createGroupEl.selectedUsers = suggestResponses;
         Polymer.dom.flush(createGroupEl);
 
-        var searchEntries = Polymer.dom(createGroupEl.root).querySelectorAll('.search-entry');
+        var searchEntries = Polymer.dom(createGroupEl.root).querySelectorAll('.row');
         expect(searchEntries.length).to.be.equal(1);
         Polymer.dom.flush(searchEntries[0]);
-        var label = searchEntries[0].querySelector('.label > span').textContent;
-        var uname = searchEntries[0].querySelector('.username:not([hidden])').textContent;
-        var email = searchEntries[0].querySelector('.email').textContent;
+        var label = searchEntries[0].querySelector('.label > span').textContent.trim();
+        var uname = searchEntries[0].querySelector('.name:not([hidden])').textContent.trim();
+        var email = searchEntries[0].querySelector('.email').textContent.trim();
         var expected = suggestResponses[0];
         expect(label).to.be.equal(expected.displayLabel);
         expect(uname).to.be.equal(expected.username ? expected.username : expected.groupname);
