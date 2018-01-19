@@ -27,10 +27,6 @@
           "browserName": "safari",
           "platform": "macOS 10.13",
           "version": "11"
-        },
-        {
-          "browserName": "ipad",
-          "platform": "iOS 11.1"
         }
       ]
     }
