@@ -82,13 +82,12 @@ Example:
     <template is="dom-if" if="[[_isAvailable(document)]]">
       <paper-icon-button icon="[[icon]]" on-tap="_toggleDialog" noink></paper-icon-button>
       <paper-tooltip>[[i18n('previewButton.tooltip')]]</paper-tooltip>
+
+      <nuxeo-dialog on-iron-overlay-closed="_previewClosed" id="dialog" with-backdrop>
+        <nuxeo-document-preview id="preview" document="[[document]]" xpath="[[xpath]]"></nuxeo-document-preview>
+        <paper-icon-button id="close-icon" icon="nuxeo:clear" on-tap="_toggleDialog" noink></paper-icon-button>
+      </nuxeo-dialog>
     </template>
-
-    <nuxeo-dialog on-iron-overlay-closed="_previewClosed" id="dialog" with-backdrop>
-      <nuxeo-document-preview id="preview" document="[[document]]" xpath="[[xpath]]"></nuxeo-document-preview>
-      <paper-icon-button id="close-icon" icon="nuxeo:clear" on-tap="_toggleDialog" noink></paper-icon-button>
-    </nuxeo-dialog>
-
   </template>
 
   <script>
@@ -121,7 +120,7 @@ Example:
       },
 
       _previewClosed: function() {
-        this.$.preview.stop();
+        this.$$('#preview').stop();
       },
 
       _isAvailable: function(document) {
@@ -129,7 +128,7 @@ Example:
       },
 
       _toggleDialog: function() {
-        this.$.dialog.toggle();
+        this.$$('#dialog').toggle();
       }
 
     });
