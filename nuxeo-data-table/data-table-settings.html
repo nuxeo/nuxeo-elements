@@ -52,7 +52,7 @@
 
     <nuxeo-connection id="nxcon"></nuxeo-connection>
 
-    <nuxeo-dialog id="columnsSettingsPopup" with-backdrop>
+    <nuxeo-dialog id="columnsSettingsPopup" with-backdrop on-iron-overlay-closed="_onSettingsClosed">
       <h2>[[i18n('tableSettings.columnSettings')]]</h2>
       <div class="paper-content layout horizontal">
         <div class="layout vertical">
@@ -64,9 +64,7 @@
               <template is="dom-repeat" items="[[columns]]" as="column">
                 <tr>
                   <td>
-                    <paper-checkbox noink checked="{{!column.hidden}}" on-tap="_columnDisplayChanged"
-                                    disabled$="_noColumnsSelected">
-                    </paper-checkbox>
+                    <paper-checkbox noink checked="{{!column.hidden}}"></paper-checkbox>
                   </td>
                   <td>
                     [[column.name]]
@@ -101,26 +99,31 @@
         }
       },
 
+      observers: ['_columnDisplayChanged(columns.*)'],
+
       toggleColsSettingsPopup: function() {
         this.$$('#columnsSettingsPopup').toggle();
       },
 
-      _columnDisplayChanged: function(e) {
-        if (this.columns.every(function (column) {
-            return column.hidden;
-          })) {
-          e.model.column.hidden = false
+      _columnDisplayChanged: function(change) {
+        if (change.path.endsWith('hidden')) {
+          this.fire('settings-changed');
         }
-        this.fire('settings-changed');
       },
 
       _resetSettings: function() {
         this.columns.forEach(function(column, idx) {
           this.set('columns.' + idx + '.hidden', column.hiddenBack);
         }, this);
-        this._columnDisplayChanged();
-      }
+      },
 
+      _onSettingsClosed: function() {
+        if (this.columns.every(function(column) {
+              return column.hidden;
+            })) {
+          this._resetSettings();
+        }
+      }
     });
   </script>
 </dom-module>
