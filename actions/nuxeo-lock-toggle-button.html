@@ -101,10 +101,8 @@ Example:
       },
 
       _isAvailable: function(doc) {
-        return doc && !doc.isVersion
-          && this.document.facets.indexOf('Folderish') === -1
-          && this.document.facets.indexOf('Immutable') === -1
-          && this.document.type !== 'Root';
+        return doc && !doc.isVersion && this.hasPermission(doc, 'Write') && !this.isImmutable(doc)
+          && !this.hasFacet(doc, 'Folderish') && doc.type !== 'Root';
       },
 
       _toggle: function() {
