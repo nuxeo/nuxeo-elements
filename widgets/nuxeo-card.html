@@ -91,13 +91,18 @@ Custom property         | Description | Default
         letter-spacing: .04em;
         text-transform: uppercase;
       }
+
+      .header .toggle {
+        --iron-icon-width: 20px;
+        --iron-icon-height: 20px;
+      }
     </style>
 
     <template is="dom-if" if="[[_hasHeading(icon, heading, collapsible)]]">
       <h3 class="header" on-tap="_toggle">
         <iron-icon class="icon" icon="[[icon]]" hidden$="[[!icon]]"></iron-icon>
         <span class="heading">[[heading]]</span>
-        <iron-icon icon="[[_toggleIcon(opened)]]" toggle hidden$="[[!collapsible]]"></iron-icon>
+        <iron-icon class="toggle" icon="[[_toggleIcon(opened)]]" toggle hidden$="[[!collapsible]]"></iron-icon>
       </h3>
     </template>
 
