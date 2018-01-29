@@ -711,12 +711,17 @@ An element wrapping selectivity.js and relying on an operation for suggestions
       },
 
       _valueChanged: function(newValue) {
-        if (newValue && this._selectivity && !this._inUpdateSelection) {
-          var fn = function(item) {
-            return (item && typeof item !== 'string') ? this.idFunction(item) : item;
-          }.bind(this);
-          this._selectivity.setValue(Array.isArray(newValue) ? newValue.map(fn) : fn(newValue), { triggerChange: false });
-          this._selectivity.rerenderSelection();
+        if (this._selectivity && !this._inUpdateSelection) {
+          if (newValue) {
+            var fn = function(item) {
+              return (item && typeof item !== 'string') ? this.idFunction(item) : item;
+            }.bind(this);
+            this._selectivity.setValue(Array.isArray(newValue) ? newValue.map(fn) : fn(newValue), { triggerChange: false });
+            this._selectivity.rerenderSelection();
+          } else {
+            // in cases where newValue is either undefined or null, set a null value
+            this._selectivity.setValue(null);
+          }
         }
         this._inUpdateSelection = false;
       },
