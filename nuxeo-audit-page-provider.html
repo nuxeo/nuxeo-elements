@@ -17,6 +17,7 @@ limitations under the License.
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="nuxeo-operation.html">
+<link rel="import" href="nuxeo-resource.html">
 
 <!--
 `nuxeo-audit-page-provider` performs an audit query with the given parameters against audit logs.
@@ -43,10 +44,19 @@ If the property docId is not set, the EVENTS_VIEW provider is used instead.
       }
     </style>
 
+    <nuxeo-resource id="res"
+                     path="/id/[[docId]]/@audit"
+                     enrichers="{{enrichers}}"
+                     schemas="[[schemas]]"
+                     loading="{{loading}}"
+                     headers="{{headers}}">
+    </nuxeo-resource>
+
     <nuxeo-operation id="auditOp"
                      op="Audit.QueryWithPageProvider"
                      enrichers="{{enrichers}}"
                      schemas="[[schemas]]"
+                     loading="{{loading}}"
                      headers="{{headers}}">
     </nuxeo-operation>
   </template>
@@ -92,8 +102,7 @@ If the property docId is not set, the EVENTS_VIEW provider is used instead.
          * When set, the provider DOCUMENT_HISTORY_PROVIDER is used.
          */
         docId: {
-          type: String,
-          value: ''
+          type: String
         },
 
         /**
@@ -196,7 +205,8 @@ If the property docId is not set, the EVENTS_VIEW provider is used instead.
       },
 
       observers: [
-        '_autoFetch(params.*, docId,  pageSize, page, sort)'
+        '_resetAndAutoFetch(params.*, docId, pageSize, sort)',
+        '_autoFetch(page)'
       ],
 
       /**
@@ -227,26 +237,39 @@ If the property docId is not set, the EVENTS_VIEW provider is used instead.
        * @method fetch
        */
       fetch: function() {
+        return this._isForDoc ? this._fetchRes() : this._fetchOp();
+      },
 
-        var namedQueryParams = this._stringifyJSONObject(this.params);
-        var queryParams = this.docId && this.docId.length > 0 ? this.docId : '';
-        var providerName = this.docId && this.docId.length > 0 ? "DOCUMENT_HISTORY_PROVIDER" : "EVENTS_VIEW";
-
+      _fetchOp: function() {
         var params = {
-          providerName: providerName,
-          queryParams: queryParams,
-          namedQueryParams: namedQueryParams,
+          providerName: 'EVENTS_VIEW',
+          namedQueryParams: this._stringifyJSONObject(this.params),
           currentPageIndex: this.page - 1,
           pageSize: this.pageSize
         };
+        return this._fetch(this.$.auditOp, params);
+      },
 
-        if (this._sortKeys.length > 0) {
-          params.sortBy = this._sortKeys.join(",");
-          params.sortOrder = this._sortValues.join(",");
+      _fetchRes: function() {
+        var params = {};
+        if (this.params.startDate) {
+          params.startEventDate = this.params.startDate;
         }
+        if (this.params.endDate) {
+          params.endEventDate = this.params.endDate;
+        }
+        params.currentPageIndex = this.page - 1;
+        params.pageSize = this.pageSize;
+        return this._fetch(this.$.res, params);
+      },
 
-        this.$.auditOp.params = params;
-        return this.$.auditOp.execute()
+      _fetch: function(exec, params) {
+        if (this._sortKeys.length > 0) {
+          params.sortBy = this._sortKeys.join(',');
+          params.sortOrder = this._sortValues.join(',');
+        }
+        exec.params = params;
+        return exec.execute()
           .then(function(response) {
             this.currentPage = response.entries.slice(0);
             this.numberOfPages = response.numberOfPages;
@@ -268,24 +291,22 @@ If the property docId is not set, the EVENTS_VIEW provider is used instead.
         }.bind(this));
       },
 
+      get _isForDoc() {
+        return this.docId && this.docId.length > 0;
+      },
+
+      _resetAndAutoFetch: function() {
+        this.page = 1;
+        this._autoFetch();
+      },
+
       _autoFetch: function () {
-        // if parameters changed, go back to page 1
-        if ((this.params && this._stringifyJSONObject(this.params) !== this.$.auditOp.params.namedQueryParams)
-          || (this.docId && this.docId !== this.$.auditOp.params.queryParams)) {
-          this.page = 1;
-        }
         if (this.auto) {
           // debounce in case of multiple param changes
           this.debounce('_autoFetch', function() {
             this.fetch();
           }.bind(this), this.autoDelay);
         }
-      },
-
-      ready: function() {
-        this.$.auditOp.addEventListener('loading-changed', function() {
-          this._setLoading(this.$.auditOp.loading);
-        }.bind(this));
       }
     });
   </script>
