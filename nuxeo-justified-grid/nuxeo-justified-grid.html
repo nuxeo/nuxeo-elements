@@ -123,7 +123,7 @@ An element for displaying page provider results in a justified grid with infinit
       }
 
       [hidden] {
-        display: none;
+        display: none !important;
       }
     </style>
 
@@ -140,7 +140,8 @@ An element for displaying page provider results in a justified grid with infinit
                 <div class="item" tabindex="0" on-tap="_tap" selected$="[[_isSelected(item, selectedItems.*)]]"
                      style$="height: [[item._view.height]]px; width: [[item._view.width]]px;">
                   <iron-image src="[[_url(item)]]" sizing="cover" preload fade></iron-image>
-                  <paper-icon-button noink icon="icons:check" selection-mode$="[[selectionMode]]" on-tap="_check"></paper-icon-button>
+                  <paper-icon-button noink icon="icons:check" selection-mode$="[[selectionMode]]"
+                                     hidden$="[[!selectionEnabled]]" on-tap="_check"></paper-icon-button>
                   <div class="overlay">[[item.title]]</div>
                 </div>
               </template>
@@ -208,11 +209,6 @@ An element for displaying page provider results in a justified grid with infinit
         '_refresh(nxProvider, sortSelected)',
         '_selectedItemsChanged(selectedItems.splices)'
       ],
-
-      ready: function() {
-        this.multiSelection = true;
-        this.selectionEnabled = true;
-      },
 
       // overridden from Nuxeo.PageProviderDisplayBehavior
       reset: function() {
@@ -310,13 +306,15 @@ An element for displaying page provider results in a justified grid with infinit
       },
 
       _check: function(e) {
-        this.selectionMode = true;
-        this._tap(e);
+        if (this.selectionEnabled) {
+          this.selectionMode = true;
+          this._tap(e);
+        }
       },
 
       _tap: function(e) {
         var index = e.model.item._view.index;
-        if (this.selectionMode) {
+        if (this.selectionEnabled && this.selectionMode) {
           // since we are using Object.assign() when creating items for the grid, we cannot really use
           // selector.selectItem()/deselectItem() because it relies on indexOf and since the e.model.item is not a
           // reference of the original item, it doesn't work.
