@@ -137,6 +137,16 @@ Example:
         _wasOpened: {
           type: Boolean,
           value: false
+        },
+
+        _preventInputUpdate: {
+          type: Boolean,
+          value: false
+        },
+
+        _preventPickerUpdate: {
+          type: Boolean,
+          value: false
         }
       },
 
@@ -166,7 +176,9 @@ Example:
         }
         var date = moment(this.value);
         if (this.value && date.isValid()) {
+          this._preventInputUpdate = true;
           this._inputValue = date.format('YYYY-MM-DD');
+          this._preventPickerUpdate = true;
           this._pickerValue = date.format('YYYY-MM-DD');
         } else {
           this._inputValue = '';
@@ -175,24 +187,26 @@ Example:
       },
 
       _pickerValueChanged: function() {
-        if (this._pickerValue === undefined) {
-          return;
+        if (this._pickerValue && !this._preventPickerUpdate) {
+          var date = moment(this._pickerValue);
+          if (this._wasOpened && date.isValid()) {
+            this.set('value', date.toJSON());
+            this._wasOpened = false;
+          }
         }
-        if (this._wasOpened && this._pickerValue && moment(this._pickerValue).isValid()) {
-          this.set('value', moment(this._pickerValue).toJSON());
-          this._wasOpened = false;
-        }
+        this._preventPickerUpdate = false;
       },
 
       _inputValueChanged: function() {
-        if (this._inputValue === undefined) {
-          return;
+        if (this._inputValue && !this._preventInputUpdate) {
+          var date = moment(this._inputValue);
+          if (date.isValid()) {
+            this.set('value', date.toJSON());
+          } else {
+            this.set('value', '');
+          }
         }
-        if (this._inputValue && moment(this._inputValue).isValid()) {
-          this.set('value', moment(this._inputValue).toJSON());
-        } else {
-          this.set('value', '');
-        }
+        this._preventInputUpdate = false;
       }
     });
   </script>
