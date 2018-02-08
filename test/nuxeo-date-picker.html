@@ -35,6 +35,24 @@ limitations under the License.
 </test-fixture>
 
 <script>
+  // XXX: prevents "Error stamping [object HTMLUnknownElement] SyntaxError" when stamping overlay-date-picker on
+  // IE11 and old versions of Edge
+  // by default, runs func only if not running on IE11 or Edge < 16
+  function suiteMSsafe(name, func, skipIE11, minEdgeVersion) {
+    skipIE11 = (typeof skipIE11 !== 'undefined') ?  skipIE11 : true;
+    minEdgeVersion = (typeof minEdgeVersion !== 'undefined') ?  minEdgeVersion : 16;
+    var ua = window.navigator.userAgent;
+    var edge = ua.indexOf('Edge/');
+    var edgeVersion;
+    if (edge > 0) {
+      edgeVersion = parseInt(ua.substring(edge + 5, ua.indexOf('.', edge)), 10);
+    }
+    var isIE11 = !(window.ActiveXObject) && "ActiveXObject" in window;
+    if (!(skipIE11 && isIE11) && !(!!minEdgeVersion && edgeVersion < minEdgeVersion)) {
+      suite(name, func);
+    }
+  }
+
   function getInput(element) {
     return element.root.querySelector('#date');
   }
@@ -56,7 +74,7 @@ limitations under the License.
     expect(element._pickerValue).to.be.equal(input);
   }
 
-  suite('<nuxeo-date-picker>', function() {
+  suiteMSsafe('<nuxeo-date-picker>', function() {
     var element;
     setup(function() {
       element = fixture('picker');
