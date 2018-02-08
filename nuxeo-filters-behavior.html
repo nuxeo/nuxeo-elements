@@ -49,6 +49,13 @@ limitations under the License.
     },
 
     /**
+     * Checks if the document is trashed.
+     */
+    isTrashed: function(doc) {
+      return doc && (this.hasState(doc, 'deleted') || doc.isTrashed);
+    },
+
+    /**
      * Checks if the document is a version.
      */
     isVersion: function(doc) {
