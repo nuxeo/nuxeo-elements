@@ -119,6 +119,11 @@ element.
       },
 
       /**
+       * If true, documents changed by the call will be reindexed synchronously server side.
+       */
+      syncIndexing: Boolean,
+
+      /**
        * True while requests are in flight.
        */
       loading: {
@@ -180,6 +185,10 @@ element.
       }
       // Look up headers parameter
       options.headers = this.headers || {};
+      // Force sync indexing
+      if (this.syncIndexing) {
+        options.headers['nx_es_sync'] = true;
+      }
       // add support for plain text responses by default
       options.headers.accept = 'text/plain,application/json';
       // set default content-type
