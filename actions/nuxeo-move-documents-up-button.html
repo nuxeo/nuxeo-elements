@@ -45,7 +45,7 @@ A button element for moving documents up within an OrderedFolder.
     <nuxeo-operation id="moveUpOp"
       op="Document.Order"
       params='{"before": "[[_beforeUid]]"}'
-      headers='{"nx_es_sync": "true"}'
+      sync-indexing
       input="[[_sortedDocuments]]">
     </nuxeo-operation>
 
@@ -117,7 +117,7 @@ A button element for moving documents up within an OrderedFolder.
               var idxa = this.documents.indexOf(a);
               var idxb = this.documents.indexOf(b);
               if (idxa < 0 || idxb < 0) {
-                throw new Error("Document is not in the list.");
+                throw new Error('Document is not in the list.');
               }
               return idxa - idxb;
             }.bind(this));
