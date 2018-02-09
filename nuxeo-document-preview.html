@@ -215,6 +215,10 @@ Example:
             delete previewer.__templatizeOwner;
             this.templatize(previewer);
             var instance = this.stamp();
+            for (var prop in this.properties) {
+              instance._setPendingProperty(prop, this[prop]);
+            }
+            instance._flushProperties();
             this.$.preview.appendChild(instance.root);
             break;
           }
