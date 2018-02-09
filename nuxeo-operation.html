@@ -121,6 +121,11 @@ element.
         },
 
         /**
+         * If true, documents changed by the call will be reindexed synchronously server side.
+         */
+        syncIndexing: Boolean,
+
+        /**
          * True while requests are in flight.
          */
         loading: {
@@ -152,6 +157,10 @@ element.
           options.schemas = this.schemas.trim().split(/[\s,]+/);
         }
         options.headers = this.headers || {};
+        // Force sync indexing
+        if (this.syncIndexing) {
+          options.headers['nx_es_sync'] = true;
+        }
         // Look up content enrichers parameter
         if (this.enrichers) {
           options.headers['X-NXenrichers.' + this.enrichersEntity] = this.enrichers;
