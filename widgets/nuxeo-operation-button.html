@@ -40,7 +40,8 @@ Example:
 <dom-module id="nuxeo-operation-button">
   <template>
 
-    <nuxeo-operation id="op" op="[[operation]]" input="[[input]]" params="[[params]]"></nuxeo-operation>
+    <nuxeo-operation id="op" op="[[operation]]" input="[[input]]" params="[[params]]" sync-indexing$="[[syncIndexing]]">
+    </nuxeo-operation>
 
     <paper-icon-button id="bt" icon="[[icon]]" on-tap="_execute"></paper-icon-button>
     <paper-tooltip for="bt">[[label]]</paper-tooltip>
@@ -68,6 +69,11 @@ Example:
 
         /* The operation input. */
         input: String,
+
+        /**
+         * If true, documents changed by the operation call will be reindexed synchronously server side.
+         */
+        syncIndexing: Boolean,
 
         /* The parameters to send. */
         params: {
