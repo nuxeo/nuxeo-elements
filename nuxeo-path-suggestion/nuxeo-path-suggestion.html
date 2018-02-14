@@ -41,25 +41,40 @@ Custom property | Description | Default
 <dom-module id="nuxeo-path-suggestion">
   <template>
     <style>
-        
-        --paper-typeahead-results {
+      :host {
+        display: block;
+        padding-bottom: 8px;
+      }
+
+      paper-typeahead {
+        --paper-typeahead-results: {
           background-color: white;
+          z-index: 100;
           @apply --nuxeo-path-suggestion-results;
         };
 
-        --paper-typeahead-result {
+        --paper-typeahead-result: {
           display: block;
           overflow: hidden;
           white-space: nowrap;
-          direction:rtl;
+          direction: rtl;
           text-align: left;
           @apply --nuxeo-path-suggestion-result;
         };
-        
-        paper-typeahead:focus {
-          outline: none;
-          @apply --nuxeo-path-suggestion-focus;
-        }
+
+        --paper-input-container-underline: {
+          z-index: 0;
+        };
+      }
+
+      paper-typeahead:focus {
+        outline: none;
+        @apply --nuxeo-path-suggestion-focus;
+      }
+
+      label {
+        @apply --nuxeo-label;
+      }
     </style>
     <nuxeo-page-provider id="provider"
                          query="[[query]]"
@@ -67,16 +82,19 @@ Custom property | Description | Default
                          page-size="20"
                          current-page="{{children}}"></nuxeo-page-provider>
     <nuxeo-document id="parent" enrichers="[[enrichers]]"></nuxeo-document>
+
+    <template is="dom-if" if="[[label]]">
+      <label>[[label]]</label>
+    </template>
+
     <paper-typeahead id="typeahead"
-                     label="[[label]]"
                      value="{{value}}"
                      data="[[data]]"
-                     no-label-float="[[noLabelFloat]]"
                      allowed-pattern="[[allowedPattern]]"
                      auto-validate="[[autoValidate]]"
                      on-focus="_onFocus"
                      disabled$="[[disabled]]"
-                     always-float-label="[[alwaysFloatLabel]]"></paper-typeahead>
+                     no-label-float></paper-typeahead>
   </template>
   <script>
     Polymer({
@@ -115,16 +133,6 @@ Custom property | Description | Default
         },
 
         label: String,
-
-        noLabelFloat: {
-          type: Boolean,
-          value: false
-        },
-
-        alwaysFloatLabel: {
-          type: Boolean,
-          value: false
-        },
 
         autoValidate: {
           type: Boolean,
