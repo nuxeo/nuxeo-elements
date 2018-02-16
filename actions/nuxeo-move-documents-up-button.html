@@ -104,7 +104,7 @@ A button element for moving documents up within an OrderedFolder.
           this.fire('refresh-display', {'focusIndex': this._focusIndex});
         }.bind(this)).catch(function() {
           this.fire('notify', {'message': this.i18n('moveDocumentButton.error')});
-        });
+        }.bind(this));
       },
 
       _isAvailable: function() {
@@ -137,10 +137,10 @@ A button element for moving documents up within an OrderedFolder.
             }
             return true;
           }.bind(this));
-          if (this._sortedDocuments[0].uid === this.documents[0].uid && isSequence) {
-            return;
-          }
-          if (!isSequence) {
+          if (this._sortedDocuments[0].uid === this.documents[0].uid) {
+            if (isSequence) {
+              return;
+            }
             this._focusIndex = this.documents.indexOf(this._sortedDocuments[0]) + 1;
             this._sortedDocuments.splice(0, sequenceBreakIdx);
           } else {

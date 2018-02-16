@@ -44,7 +44,7 @@ A button element for moving documents down within an OrderedFolder.
 
     <nuxeo-operation id="moveDownOp"
       op="Document.Order"
-      params='{"before": "[[_beforeUid]]"}'
+      params="[[_computeParams(_beforeUid)]]"
       sync-indexing
       input="[[_sortedDocuments]]">
     </nuxeo-operation>
@@ -104,7 +104,7 @@ A button element for moving documents down within an OrderedFolder.
           this.fire('refresh-display', {'focusIndex': this._focusIndex + 1});
         }.bind(this)).catch(function() {
           this.fire('notify', {'message': this.i18n('moveDocumentButton.error')});
-        });
+        }.bind(this));
       },
 
       _isAvailable: function() {
@@ -137,25 +137,32 @@ A button element for moving documents down within an OrderedFolder.
             }
             return true;
           }.bind(this));
-          if (this._sortedDocuments[0].uid === this.documents[this.documents.length - 1].uid && isSequence) {
-            return;
-          }
-          if (!isSequence) {
+          if (this._sortedDocuments[0].uid === this.documents[this.documents.length - 1].uid) {
+            if (isSequence) {
+              return;
+            }
             this._focusIndex = this.documents.indexOf(this._sortedDocuments[0]) - sequenceBreakIdx;
             this._sortedDocuments.splice(0, sequenceBreakIdx);
             this._beforeUid = this.documents[this._focusIndex + 1].uid;
           } else {
             var tmpIdx = this.documents.indexOf(this._sortedDocuments[0]);
-            this._beforeUid = this._sortedDocuments[this._sortedDocuments.length - 1].uid;
-            this._focusIndex = this.documents.indexOf(this._sortedDocuments[this._sortedDocuments.length - 1]);
-            this._sortedDocuments = [];
-            this._sortedDocuments.push(this.documents[tmpIdx + 1]);
+            if (tmpIdx < this.documents.length - 2) {
+              this._beforeUid = this.documents[tmpIdx + 2].uid;
+              this._focusIndex = tmpIdx + 1;
+            } else {
+              this._beforeUid = null;
+              this._focusIndex = this.documents.length - 1;
+            }
           }
           this._sortedDocuments.sort(function(a, b) {
             return this.documents.indexOf(a) - this.documents.indexOf(b);
           }.bind(this));
           this._available = true;
         }
+      },
+
+      _computeParams: function() {
+        return this._beforeUid ? {'before': this._beforeUid} : {};
       }
 
     });
