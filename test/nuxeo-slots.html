@@ -139,84 +139,109 @@ limitations under the License.
 
       fixture('emptySlotContent');
 
-      expect(_content(slot1)).to.be.empty;
+      return flush().then(function() {
+        expect(_content(slot1)).to.be.empty;
+      });
     });
 
     test('slot content', function() {
       document.getElementById('slot1Content1').create();
 
-      expect(_content(slot1).length).to.be.equal(1);
-      expect(_content(slot2)).to.be.empty;
+      return flush().then(function() {
+        expect(_content(slot1).length).to.be.equal(1);
+        expect(_content(slot2)).to.be.empty;
 
+        document.getElementById('slot1Content2').create();
+        return flush();
+      }).then(function() {
+        expect(_content(slot1).length).to.be.equal(2);
+        expect(_content(slot2)).to.be.empty;
 
-      document.getElementById('slot1Content2').create();
-      expect(_content(slot1).length).to.be.equal(2);
-      expect(_content(slot2)).to.be.empty;
+        document.getElementById('slot2Content').create();
+        return flush();
+      }).then(function() {
+        expect(_content(slot1).length).to.be.equal(2);
+        expect(_content(slot2).length).to.be.equal(1);
 
-      document.getElementById('slot2Content').create();
-      expect(_content(slot1).length).to.be.equal(2);
-      expect(_content(slot2).length).to.be.equal(1);
+        var content1 = _content(slot1);
+        var content2 = _content(slot2);
+        expect(content1[0].textContent).to.be.equal('Content 1');
+        expect(content1[1].textContent).to.be.equal('Content 2');
+        expect(content2[0].textContent).to.be.equal('Content 3');
 
-      var content1 = _content(slot1);
-      var content2 = _content(slot2);
-      expect(content1[0].textContent).to.be.equal('Content 1');
-      expect(content1[1].textContent).to.be.equal('Content 2');
-      expect(content2[0].textContent).to.be.equal('Content 3');
-
-      document.getElementById('slot1Content1').restore();
-      document.getElementById('slot1Content2').restore();
-      document.getElementById('slot2Content').restore();
+        document.getElementById('slot1Content1').restore();
+        document.getElementById('slot1Content2').restore();
+        document.getElementById('slot2Content').restore();
+      });
     });
 
     test('slot content order', function() {
 
       document.getElementById('slot1Content2').create();
-      expect(_content(slot1).length).to.be.equal(1);
 
-      fixture('slot1Content1');
-      var content = _content(slot1);
-      expect(content.length).to.be.equal(2);
-      // check content 1 was moved to first
-      expect(content[0].textContent).to.be.equal('Content 1');
+      return flush().then(function() {
+        expect(_content(slot1).length).to.be.equal(1);
 
-      document.getElementById('slot1Content2').restore();
+        fixture('slot1Content1');
+
+        return flush();
+      }).then(function() {
+        var content = _content(slot1);
+        expect(content.length).to.be.equal(2);
+        // check content 1 was moved to first
+        expect(content[0].textContent).to.be.equal('Content 1');
+
+        document.getElementById('slot1Content2').restore();
+      });
     });
 
     test('slot content disabled', function() {
 
       fixture('slot1Content1');
-      expect(_content(slot1).length).to.be.equal(1);
+      return flush().then(function() {
+        expect(_content(slot1).length).to.be.equal(1);
 
-      fixture('slot1Content1Disabled');
-      expect(_content(slot1)).to.be.empty;
+        fixture('slot1Content1Disabled');
+        return flush();
+      }).then(function() {
+        expect(_content(slot1)).to.be.empty;
+      });
     });
 
     test('slot content re-enabled', function() {
 
       fixture('disabledSlotContent');
-      expect(_content(slot1)).to.be.empty;
+      return flush().then(function() {
+        expect(_content(slot1)).to.be.empty;
 
-      fixture('reenabledSlotContent');
-      var content = _content(slot1);
-      expect(content.length).to.be.equal(1);
-      expect(content[0].textContent).to.be.equal('Disabled content');
+        fixture('reenabledSlotContent');
+        return flush();
+      }).then(function() {
+        var content = _content(slot1);
+        expect(content.length).to.be.equal(1);
+        expect(content[0].textContent).to.be.equal('Disabled content');
+      });
     });
 
     test('slot content override', function() {
 
       fixture('slot1Content1');
       fixture('slot1Content2');
+      var content;
 
-      var content = _content(slot1);
-      expect(content.length).to.be.equal(2);
-      expect(content[0].textContent).to.be.equal('Content 1');
+      return flush().then(function() {
+        content = _content(slot1);
+        expect(content.length).to.be.equal(2);
+        expect(content[0].textContent).to.be.equal('Content 1');
 
-      fixture('slot1Content1Override');
-
-      content = _content(slot1);
-      expect(content.length).to.be.equal(2);
-      // check content 1 was moved to last
-      expect(content[1].textContent).to.be.equal('Content 1 override');
+        fixture('slot1Content1Override');
+        return flush();
+      }).then(function() {
+        content = _content(slot1);
+        expect(content.length).to.be.equal(2);
+        // check content 1 was moved to last
+        expect(content[1].textContent).to.be.equal('Content 1 override');
+      });
     });
 
     test('slot content priority', function() {
@@ -224,9 +249,11 @@ limitations under the License.
       fixture('slot1Content1');
       fixture('slot1Content1Priority');
 
-      var content = _content(slot1);
-      expect(content.length).to.be.equal(1);
-      expect(content[0].textContent).to.be.equal('Content 1 override');
+      return flush().then(function() {
+        var content = _content(slot1);
+        expect(content.length).to.be.equal(1);
+        expect(content[0].textContent).to.be.equal('Content 1 override');
+      });
     });
 
   });
