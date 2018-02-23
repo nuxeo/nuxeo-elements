@@ -194,9 +194,12 @@ limitations under the License.
     },
 
     _update: function() {
-      this.async(function() {
-        this.check() ? this._render() : this._clear();
-      });
+      this.__renderDebouncer = Polymer.Debouncer.debounce(this.__renderDebouncer, Polymer.Async.microTask,
+        function() {
+          this.check() ? this._render() : this._clear();
+        }.bind(this));
+      // enqueuing is needed for testing, as it allows content to be stamped on flush
+      Polymer.enqueueDebouncer(this.__renderDebouncer);
     },
 
     _render: function() {
