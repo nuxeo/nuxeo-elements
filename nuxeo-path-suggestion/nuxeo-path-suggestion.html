@@ -214,7 +214,7 @@ Custom property | Description | Default
       _queryChildren: function(parent, term) {
         this.query = 'SELECT * FROM Document WHERE ecm:parentId = \'' + parent.uid + '\' AND ecm:name LIKE ? ' +
                      'AND ecm:mixinType = \'Folderish\' AND ecm:mixinType != \'HiddenInNavigation\' ' +
-                     'AND ecm:isCheckedInVersion = 0 AND ecm:currentLifeCycleState != \'deleted\'';
+                     'AND ecm:isVersion = 0 AND ecm:currentLifeCycleState != \'deleted\'';
         this.params = [term+'%'];
         return this.$.provider.fetch();
       },
