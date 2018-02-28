@@ -33,6 +33,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
 
 @group Nuxeo Widgets
 @element nuxeo-selectivity
+@demo demo/nuxeo-selectivity/index.html
 -->
 
 <dom-module id="nuxeo-selectivity">
@@ -236,7 +237,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
         },
 
         data: {
-          type: Object,
+          type: Array,
           observer: '_dataChanged'
         },
 
@@ -361,7 +362,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
         }
 
         if (this.data) {
-          options.data = this.data;
+          options.items = this._wrap(this.data);
         } else {
           options.query = function(query) {
             if (query.term.length < this.minChars) {
@@ -482,7 +483,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
       },
 
       _idFunction: function(item) {
-        return item.computedId || item.uid || item.id;
+        return item.computedId || item.uid || item.id || item;
       },
 
       _newEntryFormatter: function(term) {
@@ -490,11 +491,11 @@ An element wrapping selectivity.js and relying on an operation for suggestions
       },
 
       _selectionFormatter: function(item) {
-        return this.escapeHTML(item.displayLabel || item.title);
+        return this.escapeHTML(item.displayLabel || item.title || item.text || item);
       },
 
       _resultFormatter: function(item) {
-        return this.escapeHTML(item.displayLabel || item.title);
+        return this.escapeHTML(item.displayLabel || item.title || item.text || item);
       },
 
       _wrap: function(value) {
