@@ -98,6 +98,15 @@ limitations under the License.
       testInput(element, '2003-02-20');
       testInput(element, '2004-06-12');
     });
+
+    test('the value can be cleared', function() {
+      expect(element.value).to.be.undefined;
+      testInput(element, '2003-02-20');
+      // now clear the value
+      element.value = null;
+      expect(element.value).to.be.equal(null);
+      expect(getInput(element).value).to.be.equal(null);
+    });
     
   });
 </script>

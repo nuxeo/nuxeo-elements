@@ -171,7 +171,8 @@ Example:
       },
 
       _valueChanged: function() {
-        if (this.value === undefined) {
+        if (!this.value) {
+          this._inputValue = null;
           return;
         }
         var date = moment(this.value);
