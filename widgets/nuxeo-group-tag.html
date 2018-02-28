@@ -91,17 +91,17 @@ Example:
 
       _name: function(group) {
         if (this._isEntity(group)) {
-          return group.groupname || group.properties["group:groupname"];
+          return group.groupname || group.properties['group:groupname'];
         } else if (group.name) {
           return group.name.replace('group:', '');
-        }else {
+        } else {
           return group.replace('group:', '');
         }
       },
 
       _label: function(group) {
         if (this._isEntity(group)) {
-          return group.grouplabel || group.properties["group:grouplabel"];
+          return group.grouplabel || group.properties['group:grouplabel'] || this._name(group);
         } else if (group.label) {
           return group.label.replace('group:', '');
         } else {
