@@ -93,7 +93,7 @@ Example:
       },
 
       _isAvailable: function(doc) {
-        return doc && this.hasPermission(doc, 'Write') && (!this.isTrashed(doc) || this.hard);
+        return doc && !this.isVersion(doc) && this.hasPermission(doc, 'Write') && (!this.isTrashed(doc) || this.hard);
       },
 
       _computeIcon: function(hard) {
