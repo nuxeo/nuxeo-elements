@@ -122,6 +122,19 @@ Example:
         border-radius: 1px !important;
       }
 
+      :host([required]) label::after {
+        display: block;
+        content: '*';
+        position: absolute;
+        right: 0;
+        top: 0;
+        color: var(--paper-input-container-invalid-color, red);
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
       #container {
         position: absolute;
         left: 0;
@@ -180,25 +193,40 @@ Example:
         font-size: 1.1em;
       }
 
-      .top.actions {
+      .top-actions {
         @apply --layout-horizontal;
         @apply --layout-center;
-        @apply --layout-end-justified;
-        margin: 1em 0 1em 0;
+        @apply --layout-justified;
+        margin-right: 8px;
+      }
+
+      .top-actions paper-button {
+        padding: 0;
+        margin-right: 6px;
+      }
+
+      .error {
+        color: var(--paper-input-container-invalid-color, red);
+      }
+
+      label {
+        display: block;
+        @apply --nuxeo-label;
       }
     </style>
 
     <div id="container">
 
-      <template is="dom-if" if="[[editable]]">
-        <div class="top actions">
-          <paper-button id="addEntry" class="primary" on-tap="_createEntry">
-            <span>+ [[i18n('command.add')]]</span>
-          </paper-button>
-        </div>
-      </template>
-
       <slot name="nuxeo-selection-toolbar"></slot>
+
+      <div class="top-actions">
+        <label>[[label]]</label>
+        <template is="dom-if" if="[[editable]]">
+          <paper-button id="addEntry" noink class="primary" on-tap="_createEntry">+ [[i18n('command.add')]]</paper-button>
+        </template>
+      </div>
+
+      <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
 
       <template is="dom-if" if="[[displayQuickFilters]]">
         <nuxeo-quick-filters quick-filters="{{quickFilters}}" on-quick-filters-changed="_quickFilterChanged">
@@ -307,9 +335,8 @@ Example:
       is: 'nuxeo-data-table',
 
       behaviors: [
-        Polymer.IronResizableBehavior,
-        Nuxeo.PageProviderDisplayBehavior,
-        Nuxeo.I18nBehavior
+        Polymer.IronResizableBehavior, Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior,
+        Nuxeo.PageProviderDisplayBehavior, Nuxeo.I18nBehavior
       ],
 
       listeners: {
@@ -393,6 +420,19 @@ Example:
           value: function() {
             return this;
           }
+        },
+
+        label: {
+          type: String
+        },
+
+        required:  {
+          type: Boolean,
+          value: false
+        },
+
+        errorMessage: {
+          type: String
         },
 
         settingsEnabled: {
@@ -814,6 +854,11 @@ Example:
           this.nxProvider.page = 1;
         }
         this._sortDirectionChanged(e);
+      },
+
+      /* Override method from Polymer.IronValidatableBehavior. */
+      _getValidity: function() {
+        return this.required ? this.items && this.items.length > 0 : true;
       }
 
     });
