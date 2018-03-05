@@ -185,6 +185,9 @@ limitations under the License.
           value: false
         },
 
+        /**
+         * Current upload provider being used. If `undefined`, the `defaultProvider` will be used.
+         */
         provider: {
           type: String,
           notify: true,
@@ -200,7 +203,7 @@ limitations under the License.
         }
       },
 
-      observers: [ '_initProvider(_provider, connection, accept, batchAppend)'],
+      observers: ['_initProvider(_provider, connection, accept, batchAppend)'],
 
       _initProvider: function() {
         if (this._provider) {
@@ -209,7 +212,7 @@ limitations under the License.
       },
 
       _reloadProvider: function() {
-        if (this.provider && this.provider != this._provider) {
+        if (this.provider && this.provider !== this._provider) {
           this.set('_provider', this.provider);
         } else if (!this.provider) {
           this.set('_provider', _defaultProvider);
@@ -221,18 +224,33 @@ limitations under the License.
         document.addEventListener('defaultUploadProviderChanged', this.defaultProviderChangedHandler);
       },
 
+      /**
+       * Registers a new upload provider.
+       */
       registerProvider: function(name, provider) {
         _registry[name] = provider;
       },
       
+      /**
+       * Returns all registered upload providers.
+       */
       getProviders: function() {
         return _registry;
       },
 
+      /**
+       * Gets the default upload provider.
+       */
       get defaultProvider() {
         return _defaultProvider;
       },
 
+      /**
+       * Sets the default upload provider.
+       * 
+       * Every element extending this behavior will use this provider from now on except if a `provider` was
+       * explicitly set.
+       */
       set defaultProvider(provider) {
         _defaultProvider = provider;
         document.dispatchEvent(new Event('defaultUploadProviderChanged'));
@@ -261,7 +279,7 @@ limitations under the License.
         this._instance.upload(files, function(event) {
           switch(event.type) {
             case 'uploadStarted':
-              this._uploadStarted(event.file)
+              this._uploadStarted(event.file);
               break;
             case 'uploadProgress':
               this._uploadProgressUpdated(event.fileIdx, event.progress);
@@ -282,8 +300,7 @@ limitations under the License.
             this.fire('response', { response: data });
             this.response = data;
             return this.response;
-          }.bind(this))
-          .catch(function(error) {
+          }.bind(this)).catch(function(error) {
             this.fire('error', error);
             console.log('Batch Execute operation failed: ' + error);
             throw error;
