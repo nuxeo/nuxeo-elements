@@ -173,7 +173,7 @@ limitations under the License.
             return this[arg];
           }.bind(this));
           // if filter supports multiple values apply the function to each one
-          var values = filter.multiple ? v.split(',') : [v];
+          var values = filter.multiple ? v.trim().split(/\s*,\s*/) : [v];
           var fn = this[filter.fn];
 
           // pass if any check returns true, basically Array.some()
