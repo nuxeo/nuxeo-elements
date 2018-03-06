@@ -125,8 +125,7 @@ Example:
         },
 
         _pickerValue: {
-          type: String,
-          observer: '_pickerValueChanged'
+          type: String
         },
 
         _inputValue: {
@@ -142,11 +141,6 @@ Example:
         _preventInputUpdate: {
           type: Boolean,
           value: false
-        },
-
-        _preventPickerUpdate: {
-          type: Boolean,
-          value: false
         }
       },
 
@@ -160,6 +154,11 @@ Example:
       _pickerOpenedChanged: function(e) {
         if (e.detail.value) {
           this._wasOpened = true;
+        } else if (this._pickerValue) {
+          var date = moment(this._pickerValue);
+          if (date.isValid()) {
+            this.set('value', date.toJSON());
+          }
         }
       },
 
@@ -179,23 +178,11 @@ Example:
         if (this.value && date.isValid()) {
           this._preventInputUpdate = true;
           this._inputValue = date.format('YYYY-MM-DD');
-          this._preventPickerUpdate = true;
           this._pickerValue = date.format('YYYY-MM-DD');
         } else {
           this._inputValue = '';
           this._pickerValue = '';
         }
-      },
-
-      _pickerValueChanged: function() {
-        if (this._pickerValue && !this._preventPickerUpdate) {
-          var date = moment(this._pickerValue);
-          if (this._wasOpened && date.isValid()) {
-            this.set('value', date.toJSON());
-            this._wasOpened = false;
-          }
-        }
-        this._preventPickerUpdate = false;
       },
 
       _inputValueChanged: function() {
