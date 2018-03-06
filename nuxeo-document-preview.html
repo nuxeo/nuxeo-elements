@@ -76,6 +76,11 @@ Example:
         margin: 0;
       }
 
+      #xml {
+        font-family: monospace;
+        white-space: pre;
+      }
+
       #preview {
         border: none;
         width: 100%;
@@ -99,6 +104,10 @@ Example:
 
     <template mime-pattern="text/(?:.*-)?(markdown|html)">
       <marked-element markdown="[[_blob.data]]"></marked-element>
+    </template>
+
+    <template mime-pattern="text/xml">
+      <div id="xml">[[_blob.data]]</div>
     </template>
 
     <template mime-pattern="application/pdf">
