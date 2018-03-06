@@ -145,10 +145,12 @@ Example:
       },
 
       _togglePicker: function() {
-        if (!this._wasOpened && !this.value) {
-          this.$.picker.now();
+        if (!this.$.picker._hasNative) {
+          if (!this._wasOpened && !this.value) {
+            this.$.picker.now();
+          }
+          this.$.picker.toggle();
         }
-        this.$.picker.toggle();
       },
 
       _pickerOpenedChanged: function(e) {
