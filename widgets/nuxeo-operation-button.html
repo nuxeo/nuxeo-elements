@@ -18,7 +18,6 @@ limitations under the License.
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../paper-toast/paper-toast.html">
 <link rel="import" href="../../paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
@@ -45,9 +44,6 @@ Example:
 
     <paper-icon-button id="bt" icon="[[icon]]" on-tap="_execute"></paper-icon-button>
     <paper-tooltip for="bt">[[label]]</paper-tooltip>
-
-    <paper-toast id="toast" text="[[i18n(notification)]]"></paper-toast>
-    <paper-toast id="error"></paper-toast>
   </template>
 
   <script>
@@ -116,7 +112,7 @@ Example:
       _execute: function() {
         this.$.op.execute().then(function(response) {
           if (this.notification) {
-            this.$.toast.open();
+            this.fire('notify', {'message': this.i18n(this.notification)});
           }
           var detail = {response: response};
           if (this.detail) {
@@ -130,8 +126,7 @@ Example:
           }
         }.bind(this))
         .catch(function(error) {
-          this.$.error.text = error;
-          this.$.error.open();
+          this.fire('notify', {'message': error});
         }.bind(this));
       },
 
