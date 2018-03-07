@@ -123,7 +123,8 @@ An element wrapping selectivity.js and relying on an operation for suggestions
          */
         readonly: {
           type: Boolean,
-          value: false
+          value: false,
+          observer: '_readonlyChanged'
         },
 
         /**
@@ -480,6 +481,10 @@ An element wrapping selectivity.js and relying on an operation for suggestions
 
       _placeholderChanged: function() {
         this.$.input.setAttribute('placeholder', this.placeholder);
+      },
+
+      _readonlyChanged: function() {
+        this._selectivity && this._selectivity.setOptions({readOnly: this.readonly});
       },
 
       _idFunction: function(item) {
