@@ -220,10 +220,15 @@ limitations under the License.
             var selected = Polymer.dom(radioGroup.root).querySelectorAll('paper-radio-button[checked]');
             expect(selected.length).to.be.equal(1);
             expect(selected[0].name).to.be.equal('en');
-            MockInteractions.tap(choices[3]);
-            selected = Polymer.dom(radioGroup.root).querySelectorAll('paper-radio-button[checked]');
-            expect(selected.length).to.be.equal(1);
-            expect(selected[0].name).to.be.equal('fr');
+            MockInteractions.focus(radioGroup);
+            Polymer.Base.async(function() {
+              MockInteractions.tap(choices[3]);
+              return waitChanged(radioGroup, 'value').then(function() {
+                selected = Polymer.dom(radioGroup.root).querySelectorAll('paper-radio-button[checked]');
+                expect(selected.length).to.be.equal(1);
+                expect(selected[0].name).to.be.equal('fr');
+              });
+            });
           });
         });
       });
