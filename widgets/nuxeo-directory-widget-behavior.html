@@ -1,0 +1,147 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../../iron-form-element-behavior/iron-form-element-behavior.html">
+<link rel="import" href="../../iron-validatable-behavior/iron-validatable-behavior.html">
+
+<script>
+  var Nuxeo = Nuxeo || {};
+  (function () {
+
+    /**
+     * `Nuxeo.DirectoryWidgetBehavior` provides helpers to build a widget to select Nuxeo vocabulary entrie(s).
+     *
+     * @polymerBehavior Nuxeo.DirectoryWidgetBehavior
+     */
+    Nuxeo.DirectoryWidgetBehavior = [Nuxeo.I18nBehavior, Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior, {
+      properties: {
+        /**
+         * Name of the directory.
+         */
+        directoryName: {
+          type: String
+        },
+
+        /**
+         * Checking this option means that the labels are localized with translations provided
+         * in the directory itself (i.e. in fields). Otherwise labels are translated as usual
+         * picking values in messages*.properties files.
+         */
+        dbl10n: {type: Boolean, value: false},
+
+        /**
+         * Label.
+         */
+        label: String,
+
+        /**
+         * In case of hierarchical vocabulary, if true, parent item can be selected.
+         */
+        canSelectParent: Boolean,
+
+        /**
+         * Set to `true` for read only mode.
+         */
+        readonly: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * Function used to get the id from the choice object.
+         */
+        idFunction: {
+          type: Function,
+          value: function() {
+            return this._idFunction.bind(this);
+          }
+        },
+
+        /**
+         * Error message to show when `invalid` is true.
+         */
+        errorMessage: String,
+
+        /**
+         * Formatter for the entries.
+         */
+        format: {
+          type: Function,
+          value: function() {
+            return this._formatter.bind(this);
+          }
+        },
+
+        /**
+         * Fired when the directory entries are loaded.
+         *
+         * @event directory-entries-loaded
+         */
+
+        _entries: Array
+      },
+
+      observers: [
+        '_fetchEntries(directoryName)'
+      ],
+
+      _fetchEntries: function() {
+        if (this.directoryName) {
+          this.value = [];
+          this.async(function() {
+            this.$.op.params = {
+              'directoryName': this.directoryName,
+              'dbl10n': this.dbl10n,
+              'canSelectParent': this.canSelectParent,
+              'localize' : true,
+              'lang': (window.nuxeo.I18n.language) ? window.nuxeo.I18n.language.split('-')[0] : 'en'
+             };
+            this.$.op.execute().then(function(resp) {
+              this._entries = [];
+              resp.forEach(function(entry) {
+                this._populate(entry);
+              }.bind(this));
+              this.fire('directory-entries-loaded');
+            }.bind(this));
+          }.bind(this));
+        }
+      },
+
+      _formatter: function(entry) {
+        return entry.absoluteLabel || entry.displayLabel;
+      },
+
+      _idFunction: function(item) {
+        return item.id || item.computedId || item.uid;
+      },
+
+      _populate: function(entry) {
+        if (this.canSelectParent || !entry.children) {
+          entry.checked = this._isChecked(entry);
+          this._entries.push(entry);
+        }
+        if (entry.children) {
+          entry.children.forEach(function(child) {
+            this._populate(child);
+          }.bind(this));
+        }
+      }
+    }];
+  })();
+</script>

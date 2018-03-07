@@ -1,0 +1,136 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
+<link rel="import" href="../../paper-radio-button/paper-radio-button.html">
+<link rel="import" href="../../paper-radio-group/paper-radio-group.html">
+<link rel="import" href="nuxeo-directory-widget-behavior.html">
+
+<!--
+An element for selecting one directory entry with a radio group widget.
+
+    <nuxeo-directory-radio-group directory-name="country" value="{{value}}"></nuxeo-directory-radio-group>
+
+@group Nuxeo Widgets
+@element nuxeo-directory-radio-group
+@demo demo/widgets/index.html
+@homepage http://www.nuxeo.org
+-->
+<dom-module id="nuxeo-directory-radio-group">
+  <template>
+    <style>
+      :host {
+        display: block;
+        position: relative;
+        padding-bottom: 8px;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      :host([invalid]) .label,
+      .error {
+        color: var(--paper-input-container-invalid-color, red);
+      }
+
+      :host([invalid]) .error {
+        opacity: 1;
+        font-size: .923rem;
+      }
+
+      .label {
+         @apply --nuxeo-label;
+      }
+
+      .label[required]::after {
+        display: block;
+        content: '*';
+        position: absolute;
+        right: 0;
+        top: 0;
+        color: var(--paper-input-container-invalid-color, red);
+        font-size: 1.2em;
+      }
+
+      paper-checkbox {
+        margin-top: 10px
+      }
+
+    </style>
+
+    <nuxeo-operation id="op" op="Directory.SuggestEntries">
+    </nuxeo-operation>
+
+    <label class="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
+
+    <paper-radio-group on-selected-item-changed="_updateItem" selected="{{_selected}}">
+      <template is="dom-repeat" items="[[_entries]]">
+        <paper-radio-button name="[[idFunction(item)]]" data-index="[[index]]" checked="[[item.checked]]" disabled="[[readonly]]">
+          [[format(item)]]
+        </paper-radio-button>
+      </template>
+    </paper-radio-group>
+
+    <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-directory-radio-group',
+      behaviors: [Nuxeo.DirectoryWidgetBehavior],
+      properties: {
+
+        /**
+         * Selected entry.
+         */
+        value: {
+          type: String,
+          notify: true
+        },
+
+        _selected: String
+
+      },
+
+      _updateItem: function(e) {
+        if (e.detail && e.detail.value) {
+          this.set('value', this._entries[e.detail.value.dataIndex]);
+        }
+      },
+
+      /* Override method from Polymer.IronValidatableBehavior. */
+      _getValidity: function() {
+        if (this.required) {
+          return !!this.value;
+        }
+        return true;
+      },
+
+      _isChecked: function(entry) {
+        if (this.value && this.idFunction(this.value) === this.idFunction(entry)) {
+          this._selected = this.idFunction(entry);
+          return true;
+        }
+        return false;
+      }
+
+    });
+  </script>
+</dom-module>
