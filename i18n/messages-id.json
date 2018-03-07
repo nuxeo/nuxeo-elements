@@ -1,6 +1,6 @@
 {
   "addToCollectionButton.dialog.add": "Menambahkan",
-  "addToCollectionButton.dialog.cancel": "Batalkan",
+  "addToCollectionButton.dialog.cancel": "Cancel",
   "addToCollectionButton.dialog.collections": "Koleksi",
   "addToCollectionButton.dialog.description": "Deskripsi",
   "addToCollectionButton.dialog.heading": "Tambahkan ke dalam koleksi",
@@ -55,7 +55,7 @@
   "documentDistributionChart.foldersOnly": "Hanya folder",
   "documentDistributionChart.includeDeleted": "Sertakan dokumen yang dihapus",
   "documentDistributionChart.includeHidden": "Sertakan dokumen yang tersembunyi",
-  "documentDistributionChart.includeVersions": "Sertakan versi",
+  "documentDistributionChart.includeVersions": "Include versions",
   "documentDistributionChart.size": "Ukuran",
   "documentPermissions.block": "Blokir",
   "documentPermissions.blockDescription": "Jika anda ingin secara eksplisit mengontrol akses ke dokumen ini, anda dapat memblokir hak akses perizinan. Setiap perubahan yang dilakukan pada dokumen induk tidak akan mempengaruhi kondisi akses ke dokumen ini. Anda dan pengelola akan ditambahkan ke izin lokal.",
