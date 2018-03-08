@@ -31,7 +31,10 @@ limitations under the License.
       properties: {
         router: {
           type: Object,
-          observer: '_routerChanged'
+          observer: '_routerChanged',
+          value: function() {
+            return Nuxeo.RoutingBehavior.__router;
+          }
         },
         urlFor: {
           type: Function,
@@ -62,7 +65,7 @@ limitations under the License.
 
       // Caches the router
       _routerChanged: function(router) {
-        if (!Nuxeo.RoutingBehavior.__router) {
+        if (router && !Nuxeo.RoutingBehavior.__router) {
           Nuxeo.RoutingBehavior.__router = router;
           document.dispatchEvent(new Event('nuxeo-router-changed'));
         }
