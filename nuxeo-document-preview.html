@@ -245,7 +245,8 @@ Example:
       },
 
       _computeImageSource: function() {
-        if (this.document && this.document.properties && this.document.properties['picture:views']) {
+        if (this.document && this.document.properties && this.document.properties['picture:views']
+            && this.xpath === 'file:content') {
           var filteredViews = this.document.properties['picture:views'].filter(function(view) {
             return view.title === 'FullHD';
           });
@@ -262,7 +263,8 @@ Example:
       },
 
       _computeVideoSources: function() {
-        if (this.document && this.document.properties && this.document.properties['vid:transcodedVideos']) {
+        if (this.document && this.document.properties && this.document.properties['vid:transcodedVideos']
+            && this.xpath === 'file:content') {
           var conversions = [];
           this.document.properties['vid:transcodedVideos'].forEach(function(conversion) {
             if (conversion && conversion.content && conversion.content.data && conversion.content['mime-type']) {
@@ -287,7 +289,8 @@ Example:
       },
 
       _computeStoryboard: function() {
-        if (this.document && this.document.properties && this.document.properties['vid:storyboard']) {
+        if (this.document && this.document.properties && this.document.properties['vid:storyboard']
+            && this.xpath === 'file:content') {
           return this.document.properties['vid:storyboard'];
         }
       },
