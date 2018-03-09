@@ -77,7 +77,7 @@ Custom property | Description | Default
       }
     </style>
     <nuxeo-page-provider id="provider"
-                         query="[[query]]"
+                         provider="nxql_search"
                          params="[[params]]"
                          page-size="20"
                          current-page="{{children}}"></nuxeo-page-provider>
@@ -212,10 +212,12 @@ Custom property | Description | Default
       },
 
       _queryChildren: function(parent, term) {
-        this.query = 'SELECT * FROM Document WHERE ecm:parentId = \'' + parent.uid + '\' AND ecm:name LIKE ? ' +
-                     'AND ecm:mixinType = \'Folderish\' AND ecm:mixinType != \'HiddenInNavigation\' ' +
-                     'AND ecm:isVersion = 0 AND ecm:currentLifeCycleState != \'deleted\'';
-        this.params = [term+'%'];
+        this.params = {
+          queryParams: 'SELECT * FROM Document WHERE ecm:parentId = \'' + parent.uid + '\' ' +
+                       'AND ecm:name LIKE \'' + term + '%\' AND ecm:mixinType = \'Folderish\' ' +
+                       'AND ecm:mixinType != \'HiddenInNavigation\' AND ecm:isVersion = 0 ' + 
+                       'AND ecm:currentLifeCycleState != \'deleted\''
+        };
         return this.$.provider.fetch();
       },
 
