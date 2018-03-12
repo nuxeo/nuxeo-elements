@@ -122,6 +122,56 @@ limitations under the License.
 
       });
 
+      suite('When I select items 1, 2, 4', function() {
+        var selectedItems = [
+          items[0],
+          items[1],
+          items[3]
+        ];
+        setup(function() {
+          upButton = fixture('up');
+          upButton.documents = items.slice(0);
+          upButton.selectedDocuments = selectedItems.slice(0);
+        });
+
+        test('Then clicking "Up" should order items to 1, 2, 3', function() {
+          MockInteractions.tap(upButton);
+          return waitForEvent(upButton, 'refresh-display').then(function() {
+            assert.equal(1, upButton.documents[0].uid);
+            assert.equal(2, upButton.documents[1].uid);
+            assert.equal(4, upButton.documents[2].uid);
+            assert.equal(3, upButton.documents[3].uid);
+            assert.equal(5, upButton.documents[4].uid);
+          });
+        });
+
+      });
+
+      suite('When I select items 2, 4, 5', function() {
+        var selectedItems = [
+          items[1],
+          items[3],
+          items[4]
+        ];
+        setup(function() {
+          downButton = fixture('down');
+          downButton.documents = items.slice(0);
+          downButton.selectedDocuments = selectedItems.slice(0);
+        });
+
+        test('Then clicking "Down" should order items to 3, 4, 5', function() {
+          MockInteractions.tap(downButton);
+          return waitForEvent(downButton, 'refresh-display').then(function() {
+            assert.equal(1, downButton.documents[0].uid);
+            assert.equal(3, downButton.documents[1].uid);
+            assert.equal(2, downButton.documents[2].uid);
+            assert.equal(4, downButton.documents[3].uid);
+            assert.equal(5, downButton.documents[4].uid);
+          });
+        });
+
+      });
+
       suite('When I select items 2, 4', function() {
         var selectedItems = [
           items[1],
