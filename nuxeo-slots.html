@@ -128,7 +128,6 @@ limitations under the License.
 
         attached: function() {
           this._updateContent();
-          this._updateSharedModel();
         },
 
         detached: function() {
@@ -176,6 +175,9 @@ limitations under the License.
               // setting the model in the constructor seems to require instanceProps to be properly set
               // so we're doing it ourselves after
               var el =  new ctor({});
+              for (var shared in sharedModel) {
+                el._setPendingProperty(shared, sharedModel[shared]);
+              }
               for (var prop in this.model) {
                 el._setPendingProperty(prop, this.model[prop]);
               }
