@@ -16,46 +16,38 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <title>Nuxeo Document Distribution Chart Demo</title>
-  <link rel="import" href="../../dataviz/nuxeo-document-distribution-chart.html">
-  <style>
-    table {
-      width: 100%;
-      background-color: transparent;
-      border-collapse: collapse;
-      border-spacing: 0;
-    }
-    th {
-      vertical-align: bottom;
-      border-bottom: 2px solid #ddd;
-      text-align: left;
-    }
-    td {
-      padding: 8px;
-      line-height: 1.5em;
-      vertical-align: top;
-      border-top: 1px solid #ddd;
-    }
-    tr:nth-child(odd)>td {
-      background-color: #f9f9f9;
-    }
-  </style>
-</head>
-<body unresolved>
+  <head>
+    <title>nuxeo-document-distribution-chart</title>
 
-  <nuxeo-connection url="http://webui.demo.nuxeo.com/nuxeo" username="demo" password="demo"></nuxeo-connection>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="../../../webcomponentsjs/webcomponents-loader.js"></script>
 
-  <h2>Nuxeo Document Distribution Chart</h2>
+    <!-- polymer elements -->
+    <link rel="import" href="../../../polymer/polymer.html">
 
-  <nuxeo-document-distribution-chart index="nuxeo"
-    path="/default-domain" mode="count" max-depth="10"
-    chart-hue="blue" chart-lumonisity="light"
-    include-version include-hidden
-    include-deleted>
-  </nuxeo-document-distribution-chart>
+    <!-- nuxeo elements -->
+    <link rel="import" href="../nuxeo-demo.html">
+    <link rel="import" href="../../../nuxeo-elements/nuxeo-connection.html">
+    <link rel="import" href="../../dataviz/nuxeo-document-distribution-chart.html">
+  </head>
 
-</body>
+  <body unresolved>
+    <nuxeo-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
+
+    <nuxeo-demo-section heading="Nuxeo Document Distribution Chart" size="large">
+      <nuxeo-document-distribution-chart
+        index="nuxeo"
+        path="/default-domain"
+        mode="count"
+        max-depth="10"
+        chart-hue="blue"
+        chart-lumonisity="light"
+        include-version include-hidden
+        include-deleted>
+      </nuxeo-document-distribution-chart>
+    </nuxeo-demo-section>
+
+  </body>
+
 </html>

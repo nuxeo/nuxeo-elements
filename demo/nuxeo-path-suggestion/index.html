@@ -15,26 +15,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <title>nuxeo-user-group-management Demo</title>
-  <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="../../../polymer/polymer.html">
-  <link rel="import" href="../../../paper-card/paper-card.html">
-  <link rel="import" href="../../nuxeo-path-suggestion/nuxeo-path-suggestion.html">
-  <style>
-    paper-card {
-      width: 100%;
-    }
-  </style>
-</head>
-<body unresolved>
-<nuxeo-connection id="nx" url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
-<paper-card>
-  <div class="card-content">
-    <nuxeo-path-suggestion value="/" label="path"></nuxeo-path-suggestion>
-  </div>
-</paper-card>
-</body>
+  <head>
+    <title>nuxeo-path-suggestion</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="../../../webcomponentsjs/webcomponents-loader.js"></script>
+
+    <!-- polymer elements -->
+    <link rel="import" href="../../../polymer/polymer.html">
+
+    <!-- nuxeo elements -->
+    <link rel="import" href="../nuxeo-demo.html">
+    <link rel="import" href="../../../nuxeo-elements/nuxeo-connection.html">
+    <link rel="import" href="../../nuxeo-path-suggestion/nuxeo-path-suggestion.html">
+  </head>
+
+  <body unresolved>
+    <nuxeo-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
+    <nuxeo-demo-section heading="Select a path">
+      <nuxeo-path-suggestion value="/" label="Path"></nuxeo-path-suggestion>
+    </nuxeo-demo-section>
+  </body>
 </html>

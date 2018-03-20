@@ -17,10 +17,17 @@ limitations under the License.
 <html>
 <head>
   <title>nuxeo-document-preview</title>
+
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../../webcomponentsjs/webcomponents-loader.js"></script>
+
+  <!-- polymer elements -->
   <link rel="import" href="../../../polymer/polymer.html">
+
+  <!-- nuxeo elements -->
+  <link rel="import" href="../nuxeo-demo.html">
+  <link rel="import" href="../../../nuxeo-elements/nuxeo-connection.html">
   <link rel="import" href="../../../nuxeo-elements/nuxeo-page-provider.html">
   <link rel="import" href="../../nuxeo-document-preview.html">
 </head>
@@ -30,7 +37,7 @@ limitations under the License.
   <dom-module id="nuxeo-document-preview-demo">
     <template>
 
-      <nuxeo-connection url="http://webui.demo.nuxeo.com/nuxeo" username="demo" password="demo"></nuxeo-connection>
+      <nuxeo-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
 
       <nuxeo-page-provider auto
                            provider="default_search"
@@ -40,32 +47,29 @@ limitations under the License.
       </nuxeo-page-provider>
 
       <h4>[[document.title]]</h4>
+
       <nuxeo-document-preview document="[[document]]"></nuxeo-document-preview>
 
     </template>
 
     <script>
-      (function() {
-        'use strict';
-
-        Polymer({
-          is: 'nuxeo-document-preview-demo',
-          properties: {
-            document: Object,
-            results: {
-              type: Array,
-              observer: '_resultsChanged'
-            }
-          },
-
-          _resultsChanged: function() {
-            if (this.results && this.results.length > 0) {
-              this.document = this.results[0];
-            }
+      Polymer({
+        is: 'nuxeo-document-preview-demo',
+        properties: {
+          document: Object,
+          results: {
+            type: Array,
+            observer: '_resultsChanged'
           }
+        },
 
-        });
-      })();
+        _resultsChanged: function() {
+          if (this.results && this.results.length > 0) {
+            this.document = this.results[0];
+          }
+        }
+
+      });
     </script>
   </dom-module>
 

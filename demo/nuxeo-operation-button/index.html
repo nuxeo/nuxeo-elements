@@ -16,48 +16,76 @@ limitations under the License.
 -->
 <html>
   <head>
+    <title>nuxeo-operation-button</title>
+
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-    <title>nuxeo-operation-button Demo</title>
     <script src="../../../webcomponentsjs/webcomponents-loader.js"></script>
+
+    <!-- polymer elements -->
     <link rel="import" href="../../../polymer/polymer.html">
-    <link rel="import" href="../../../paper-card/paper-card.html">
+
+    <!-- nuxeo elements -->
+    <link rel="import" href="../nuxeo-demo.html">
+    <link rel="import" href="../../../nuxeo-elements/nuxeo-connection.html">
+    <link rel="import" href="../../../nuxeo-elements/nuxeo-document.html">
     <link rel="import" href="../../nuxeo-icons.html">
     <link rel="import" href="../../nuxeo-path-suggestion/nuxeo-path-suggestion.html">
     <link rel="import" href="../../widgets/nuxeo-operation-button.html">
-    <style>
-      paper-card {
-        width: 100%;
-      }
-    </style>
   </head>
+
   <body>
     <dom-bind>
       <template>
-        <nuxeo-connection url="/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
+
+        <nuxeo-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
         <nuxeo-document auto id="doc" headers='{"fetch.document": "lock,properties"}' doc-path="[[docpath]]" response="{{document}}"></nuxeo-document>
-        <paper-card>
-          <div class="card-content">
-              <nuxeo-path-suggestion label="path" value="{{docpath}}"></nuxeo-path-suggestion>
-          </div>
-          <div class="card-actions">
-            <template is="dom-if" if="[[!document.lockCreated]]"> 
-              <nuxeo-operation-button icon="nuxeo:lock" label="Lock" operation="Document.Lock" input="[[docpath]]"
-                notification="Document locked" event="document-updated"></nuxeo-operation-button>
-            </template>
-            <template is="dom-if" if="[[document.lockCreated]]"> 
-              <nuxeo-operation-button icon="nuxeo:unlock" label="Unlock" operation="Document.Unlock" input="[[docpath]]"
-              notification="Document unlocked" event="document-updated"></nuxeo-operation-button>
-            </template>
-              
-            <template is="dom-if" if="[[document.properties.file:content]]">
-              <nuxeo-operation-button icon="nuxeo:download" label="Get Blob" operation="Document.GetBlob" input="[[docpath]]" params='{"xpath": "file:content"}' download
-              event="document-downloaded" detail='{"filename": "[[document.properties.file:content.name]]"}'></nuxeo-operation-button>
-            </template>
-          </div>            
-        </paper-card>
+
+        <nuxeo-demo-section heading="Custom operation button" size="small">
+          <nuxeo-path-suggestion label="Path of the document" value="{{docpath}}"></nuxeo-path-suggestion>
+
+          <template is="dom-if" if="[[!document.lockCreated]]">
+            <nuxeo-operation-button
+              icon="nuxeo:lock"
+              label="Lock"
+              operation="Document.Lock"
+              input="[[docpath]]"
+              notification="Document locked"
+              event="document-updated">
+            </nuxeo-operation-button>
+          </template>
+
+          <template is="dom-if" if="[[document.lockCreated]]">
+            <nuxeo-operation-button
+              icon="nuxeo:unlock"
+              label="Unlock"
+              operation="Document.Unlock"
+              input="[[docpath]]"
+              notification="Document unlocked"
+              event="document-updated">
+            </nuxeo-operation-button>
+          </template>
+
+          <template is="dom-if" if="[[document.properties.file:content]]">
+            <nuxeo-operation-button
+              icon="nuxeo:download"
+              label="Get Blob"
+              operation="Document.GetBlob"
+              input="[[docpath]]"
+              params='{"xpath": "file:content"}'
+              download
+              event="document-downloaded"
+              detail='{"filename": "[[document.properties.file:content.name]]"}'>
+            </nuxeo-operation-button>
+          </template>
+
+          <label>Click button to lock/unlock the selected document</label>
+
+        </nuxeo-demo-section>
+
       </template>
     </dom-bind>
+
     <script>
       var t = document.querySelector('dom-bind');
       t.docpath = '/default-domain/workspaces/';
@@ -65,8 +93,9 @@ limitations under the License.
       window.addEventListener('document-updated', function() { this.doc.get(); });
 
       window.addEventListener('document-downloaded', function(e) {
-        console.log('Received "document-dowloaded" event with detail ', e.detail);
+        console.log('Received "document-downloaded" event with detail ', e.detail);
       });
     </script>
+
   </body>
 </html>

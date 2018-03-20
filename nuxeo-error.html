@@ -26,11 +26,13 @@ Example:
 
 @group Nuxeo UI
 @element nuxeo-error
+@demo demo/nuxeo-error/index.html
 -->
 <dom-module id="nuxeo-error">
   <template>
     <style>
       :host {
+        display: block;
         padding: 24px;
         background: rgba(0, 0, 0, 0.025);
         border-radius: 4px;
@@ -73,11 +75,14 @@ Example:
         font-weight: 500;
       }
     </style>
+
     <div class="code" hidden$="[[!code]]">[[code]]</div>
     <div class="description" hidden$="[[!code]]">[[_label(code)]]</div>
     <div class="url" hidden$="[[!url]]">[[url]]</div>
     <div class="message" hidden$="[[!message]]">[[message]]</div>
+
   </template>
+
   <script>
     Polymer({
       is: 'nuxeo-error',

@@ -15,79 +15,91 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <title>nuxeo-tree Demo</title>
-  <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="../../../polymer/polymer.html">
-  <link rel="import" href="../../../iron-icon/iron-icon.html">
-  <link rel="import" href="../../../iron-icons/hardware-icons.html">
-  <link rel="import" href="../../nuxeo-tree/nuxeo-tree.html">
-  <style>
-    [toggle] {
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body unresolved>
-  <dom-bind>
-   <template>
-    <nuxeo-tree data="[[data]]" controller="[[controller]]">
-      <template>
-        <template is="dom-if" if="[[!opened]]">
-          <iron-icon icon="hardware:keyboard-arrow-right" toggle></iron-icon>
-        </template>
-        <template is="dom-if" if="[[opened]]">
-          <iron-icon icon="hardware:keyboard-arrow-down" toggle></iron-icon>
-        </template>
-        <b>[[item.name]]</b> <i>Am I a Leaf?</i> [[isLeaf]]
-      </template>
-    </nuxeo-tree>
-  </template>
-</dom-bind>
+  <head>
+    <title>nuxeo-tree</title>
 
-  <script>
-    var t = document.querySelector('dom-bind');
-    t.data = {
-      name: 'root',
-      children: [
-        {
-          name: 'a',
-          children: [
-            {
-              name: 'c',
-              children: [
-                {name: 'd'},
-                {name: 'e'}
-              ]
-            }
-          ]
-        },
-        {
-          name: 'b',
-          children: [
-            {name: 'x'}
-          ]
-        }
-      ]
-    };
-    t.controller = {
-      getChildren: function(node) {
-        return Promise.resolve(node.children);
-      },
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="../../../webcomponentsjs/webcomponents-loader.js"></script>
 
-      shouldExpand: function() {
-        return false;
-      },
+    <!-- polymer elements -->
+    <link rel="import" href="../../../polymer/polymer.html">
+    <link rel="import" href="../../../iron-icon/iron-icon.html">
+    <link rel="import" href="../../../iron-icons/hardware-icons.html">
 
-      isLeaf: function(node) {
-        if (node.children) {
-          return node.children.length === 0;
-        }
-        return true;
+    <!-- nuxeo elements -->
+    <link rel="import" href="../nuxeo-demo.html">
+    <link rel="import" href="../../nuxeo-tree/nuxeo-tree.html">
+
+    <style>
+      [toggle] {
+        cursor: pointer;
       }
-    };
-  </script>
-</body>
+    </style>
+  </head>
+
+  <body unresolved>
+    <dom-bind>
+      <template>
+
+        <nuxeo-demo-section heading="Tree" size="small">
+          <nuxeo-tree data="[[data]]" controller="[[controller]]">
+            <template>
+              <template is="dom-if" if="[[!opened]]">
+                <iron-icon icon="hardware:keyboard-arrow-right" toggle></iron-icon>
+              </template>
+              <template is="dom-if" if="[[opened]]">
+                <iron-icon icon="hardware:keyboard-arrow-down" toggle></iron-icon>
+              </template>
+              <b>[[item.name]]</b> Am I a Leaf? ([[isLeaf]])
+            </template>
+          </nuxeo-tree>
+        </nuxeo-demo-section>
+
+      </template>
+    </dom-bind>
+
+    <script>
+      var t = document.querySelector('dom-bind');
+      t.data = {
+        name: 'root',
+        children: [
+          {
+            name: 'a',
+            children: [
+              {
+                name: 'c',
+                children: [
+                  {name: 'd'},
+                  {name: 'e'}
+                ]
+              }
+            ]
+          },
+          {
+            name: 'b',
+            children: [
+              {name: 'x'}
+            ]
+          }
+        ]
+      };
+      t.controller = {
+        getChildren: function(node) {
+          return Promise.resolve(node.children);
+        },
+
+        shouldExpand: function() {
+          return false;
+        },
+
+        isLeaf: function(node) {
+          if (node.children) {
+            return node.children.length === 0;
+          }
+          return true;
+        }
+      };
+    </script>
+  </body>
 </html>

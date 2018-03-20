@@ -16,11 +16,18 @@ limitations under the License.
 -->
 <html>
 <head>
+  <title>nuxeo-data-list-demo</title>
+
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <title>nuxeo-data-list-demo</title>
-  <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../../webcomponentsjs/webcomponents-loader.js"></script>
+
+  <!-- polymer elements -->
   <link rel="import" href="../../../polymer/polymer.html">
+
+  <!-- nuxeo elements -->
+  <link rel="import" href="../nuxeo-demo.html">
+  <link rel="import" href="../../../nuxeo-elements/nuxeo-connection.html">
   <link rel="import" href="../../../nuxeo-elements/nuxeo-page-provider.html">
   <link rel="import" href="../../nuxeo-data-list/nuxeo-data-list.html">
 </head>
@@ -31,11 +38,6 @@ limitations under the License.
     <template>
 
       <style>
-
-        .content-view  {
-          font-family: 'Open Sans', Arial, sans-serif;
-        }
-
         .item {
           cursor: pointer;
           padding: 16px 22px;
@@ -95,12 +97,11 @@ limitations under the License.
           box-sizing: border-box;
           margin-right: 8px;
         }
-
       </style>
 
       <div class="content-view">
 
-        <nuxeo-connection url="http://webui.demo.nuxeo.com/nuxeo" username="demo" password="demo"></nuxeo-connection>
+        <nuxeo-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
 
         <nuxeo-page-provider id="cvProvider"
                              provider="default_search"
@@ -110,30 +111,31 @@ limitations under the License.
                              params='{"ecm_path": ["/default-domain/workspaces"]}'>
         </nuxeo-page-provider>
 
-        <nuxeo-data-list id="dataList"
-                         nx-provider="cvProvider"
-                         selection-enabled select-on-tap>
-          <template>
-            <div tabindex$="[[tabIndex]]" class$="[[_computedClass(selected)]]">
-              <div class="list-item-box">
-                <div class="list-item-info">
-                  <div>
-                    <img class="nxicon" src="[[_thumbnail(item)]]">
+        <nuxeo-demo-section heading="Data list">
+          <nuxeo-data-list id="dataList" nx-provider="cvProvider" selection-enabled select-on-tap>
+            <template>
+              <div tabindex$="[[tabIndex]]" class$="[[_computedClass(selected)]]">
+                <div class="list-item-box">
+                  <div class="list-item-info">
+                    <div>
+                      <img class="nxicon" src="[[_thumbnail(item)]]">
+                    </div>
+                    <span class="list-item-title">[[item.title]]</span>
                   </div>
-                  <span class="list-item-title">[[item.title]]</span>
-                </div>
-                <div class="list-item-detail">
-                  <div class="layout center">
+                  <div class="list-item-detail">
+                    <div class="layout center">
                     <span class="list-item-property">
                       [[item.type]]
                     </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="border"></div>
-          </template>
-        </nuxeo-data-list>
+              <div class="border"></div>
+            </template>
+          </nuxeo-data-list>
+        </nuxeo-demo-section>
+
       </div>
 
     </template>
