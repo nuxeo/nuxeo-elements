@@ -415,7 +415,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
       _resolveEntry: function(entry) {
         if (this.data) {
           for (var i = 0; i < this.data.length; i++) {
-            if (this.data[i].id === entry) {
+            if (this.idFunction(this.data[i]) === entry) {
               return this.data[i];
             }
           }
