@@ -44,11 +44,11 @@ An element for selecting one or more documents.
 
     <nuxeo-operation id="op" op="Document.FetchByProperty"></nuxeo-operation>
 
-    <nuxeo-selectivity id="s2" operation="Repository.PageProvider"
+    <nuxeo-selectivity id="s2" operation="[[operation]]"
                    label="[[label]]"
                    min-chars="[[minChars]]"
                    multiple="[[multiple]]"
-                   params="[[params]]"
+                   params="[[_computeParams(params.*, pageProvider, schemas, repository)]]"
                    placeholder="[[placeholder]]"
                    error-message="[[errorMessage]]"
                    readonly="[[readonly]]"
@@ -102,12 +102,17 @@ An element for selecting one or more documents.
         label: String,
 
         /**
-         * Computed parameters for the `Repository.PageProvider` operation.
+         * Operation to call for suggestions.
          */
-        params: {
-          type: Object,
-          computed: '_computeParams(pageProvider, schemas, repository)'
+        operation: {
+          type: String,
+          value: 'Repository.PageProvider'
         },
+
+        /**
+         * Parameters for the operation.
+         */
+        params: Object,
 
         /**
          * Selected value(s).
@@ -231,14 +236,14 @@ An element for selecting one or more documents.
       },
 
       _computeParams: function() {
-        return this.params = {
+        return Object.assign({}, {
           documentSchemas: this.schemas,
           repository: this.repository,
           providerName: this.pageProvider,
           pageProviderName: this.pageProvider,
           page: 0,
           pageSize: 20
-        };
+        }, this.params);
       },
 
       _selectionFormatter: function(doc) {

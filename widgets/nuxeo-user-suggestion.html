@@ -45,11 +45,11 @@ limitations under the License.
       }
     </style>
 
-    <nuxeo-selectivity id="s2" operation="UserGroup.Suggestion"
+    <nuxeo-selectivity id="s2" operation="[[operation]]"
                    label="[[label]]"
                    min-chars="[[minChars]]"
                    multiple="[[multiple]]"
-                   params="[[params]]"
+                   params="[[_computeParams(params.*, searchType)]]"
                    placeholder="[[placeholder]]"
                    error-message="[[errorMessage]]"
                    readonly="[[readonly]]"
@@ -86,12 +86,17 @@ limitations under the License.
         label: String,
 
         /**
-         * Computed parameters for the `UserGroup.Suggestion` operation.
+         * Operation to call for suggestions.
          */
-        params: {
-          type: Object,
-          computed: '_computeParams(searchType)'
+        operation: {
+          type: String,
+          value: 'UserGroup.Suggestion'
         },
+
+        /**
+         * Parameters for the operation.
+         */
+        params: Object,
 
         /**
          * Selected value(s).
@@ -213,9 +218,9 @@ limitations under the License.
       },
 
       _computeParams: function() {
-        return this.params = {
+        return Object.assign({}, {
           searchType: this.searchType
-        };
+        }, this.params);
       },
 
       _selectionFormatter: function(item) {

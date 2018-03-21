@@ -47,7 +47,7 @@ limitations under the License.
       }
     </style>
 
-    <nuxeo-selectivity id="s2" operation="Tag.Suggestion"
+    <nuxeo-selectivity id="s2" operation="[[operation]]"
                    label="[[label]]"
                    min-chars="[[minChars]]"
                    tagging$="[[allowNewTags]]"
@@ -93,6 +93,22 @@ limitations under the License.
          */
         label: String,
 
+        /**
+         * Operation to call for suggestions.
+         */
+        operation: {
+          type: String,
+          value: 'Tag.Suggestion'
+        },
+
+        /**
+         * Parameters for the operation.
+         */
+        params: Object,
+
+        /**
+         * The document to add / remove tags from.
+         */
         document: {
           type: Object,
           observer: '_observeDocument'
@@ -211,9 +227,9 @@ limitations under the License.
 
       _resultFormatter: function (tag) {
         if (tag.newTag) {
-            return "<span class='s2newTag'>" + "+ " + this.$.s2.escapeHTML(tag.displayLabel) + "</span>"
+          return "<span class='s2newTag'>" + "+ " + this.$.s2.escapeHTML(tag.displayLabel) + "</span>"
         } else {
-            return "<span class='s2existingTag'>" + this.$.s2.escapeHTML(tag.displayLabel) + "</span>"
+          return "<span class='s2existingTag'>" + this.$.s2.escapeHTML(tag.displayLabel) + "</span>"
         }
       },
 

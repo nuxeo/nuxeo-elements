@@ -45,11 +45,11 @@ An element for selecting one or more entries from a given directory.
       }
     </style>
 
-    <nuxeo-selectivity id="s2" operation="Directory.SuggestEntries"
+    <nuxeo-selectivity id="s2" operation="[[operation]]"
                    label="[[label]]"
                    min-chars="[[minChars]]"
                    multiple="[[multiple]]"
-                   params="[[params]]"
+                   params="[[_computeParams(params.*, directoryName, dbl10n)]]"
                    placeholder="[[placeholder]]"
                    error-message="[[errorMessage]]"
                    readonly="[[readonly]]"
@@ -92,12 +92,17 @@ An element for selecting one or more entries from a given directory.
         label: String,
 
         /**
-         * Computed parameters for the `Directory.SuggestEntries` operation.
+         * Operation to call for suggestions.
          */
-        params: {
-          type: Object,
-          computed: '_computeParams(directoryName, dbl10n)'
+        operation: {
+          type: String,
+          value: 'Directory.SuggestEntries'
         },
+
+        /**
+         * Parameters for the operation.
+         */
+        params: Object,
 
         /**
          * Selected value(s).
@@ -198,7 +203,7 @@ An element for selecting one or more entries from a given directory.
         /**
          * Results filtering function (optional).
          */
-         queryResultsFilter: Function
+        queryResultsFilter: Function
       },
 
       /* Override method from Polymer.IronValidatableBehavior. */
@@ -207,12 +212,12 @@ An element for selecting one or more entries from a given directory.
       },
 
       _computeParams: function() {
-        return this.params = {
+        return Object.assign({}, {
           directoryName: this.directoryName,
           dbl10n: this.dbl10n,
           localize : true,
           lang: (window.nuxeo.I18n.language) ? window.nuxeo.I18n.language.split('-')[0] : 'en'
-        };
+        }, this.params);
       },
 
       _selectionFormatter: function(entry) {
