@@ -95,7 +95,7 @@ An element to interact with page provider aggregations as suggestions.
       _computeData: function () {
         if (this.data) {
           this._computedData = this.data.extendedBuckets.map(function (item) {
-            var label = this._computeLabel(item) + ' (' + item.docCount + ')';
+            var label = this.labelFormatter(item) + ' (' + item.docCount + ')';
             return {
               id: item.key,
               text: label,

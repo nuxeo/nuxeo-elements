@@ -1,0 +1,95 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+<head>
+  <title>nuxeo-aggregation-widgets</title>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script>
+    // force use of polyfill: see ELEMENTS-56
+    window.fetch = null;
+  </script>
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../nuxeo-elements/test/test-helpers.js"></script>
+
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../iron-test-helpers/mock-interactions.html">
+  <link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
+  <link rel="import" href="../nuxeo-aggregation/nuxeo-checkbox-aggregation.html">
+</head>
+<body>
+
+  <test-fixture id="nx">
+    <template>
+      <nuxeo-connection url="/dummy"></nuxeo-connection>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="documentAggs">
+    <template>
+        <nuxeo-checkbox-aggregation>
+        </nuxeo-checkbox-aggregation>
+    </template>
+  </test-fixture>
+
+  <script>
+    suite('Given a nuxeo-checkbox-aggregation widget on document aggregations', function() {
+      var documentAggs;
+      var server;
+
+      setup(function() {
+        server = sinon.fakeServer.create();
+        server.autoRespond = true;
+        var nx = fixture('nx');
+        documentAggs = fixture('documentAggs');
+        documentAggs.data = {
+          'entity-type': 'aggregate',
+          'extendedBuckets': [
+            {
+              'docCount': 1,
+              'fetchedKey': {
+                'entity-type': 'document',
+                'properties': {
+                  'dc:title': 'Tolkien',
+                },
+                'uid': '59cf794f-6875-45ca-a837-053c196b2292'
+              },
+              'key': '59cf794f-6875-45ca-a837-053c196b2292'
+            }
+          ],
+          'field': 'book:author',
+          'id': 'book_author_agg',
+          'properties': {
+            'order': 'count desc',
+            'size': '20'
+          },
+          'ranges': [],
+          'selection': [],
+          'type': 'terms'
+        };
+        return login(server, nx);
+      });
+
+      test('It displays the title of the document', function() {
+        var choices = Polymer.dom(documentAggs.root).querySelectorAll('paper-checkbox');
+        expect(choices.length).to.be.equal(1);
+        expect(choices[0].textContent.trim()).to.be.equal('Tolkien (1)');
+      });
+
+    });
+  </script>
+</body>
