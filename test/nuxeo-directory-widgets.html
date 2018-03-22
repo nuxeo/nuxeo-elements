@@ -172,20 +172,22 @@ limitations under the License.
 
         test('Then I can deselect English and select French and Arabic instead', function() {
           return waitForEvent(checkboxes, 'directory-entries-loaded').then(function() {
-            var choices = Polymer.dom(checkboxes.root).querySelectorAll('paper-checkbox');
-            expect(choices.length).to.be.equal(4);
-            var selected = Polymer.dom(checkboxes.root).querySelectorAll('paper-checkbox[checked]');
-            expect(selected.length).to.be.equal(1);
-            expect(selected[0].name).to.be.equal('en');
-            MockInteractions.tap(selected[0]);
-            selected = Polymer.dom(checkboxes.root).querySelectorAll('paper-checkbox[checked]');
-            expect(selected.length).to.be.equal(0);
-            MockInteractions.tap(choices[3]);
-            MockInteractions.tap(choices[0]);
-            selected = Polymer.dom(checkboxes.root).querySelectorAll('paper-checkbox[checked]');
-            expect(selected.length).to.be.equal(2);
-            expect(selected[1].name).to.be.equal('fr');
-            expect(selected[0].name).to.be.equal('ar');
+            return flush().then(function() {
+              var choices = Polymer.dom(checkboxes.root).querySelectorAll('paper-checkbox');
+              expect(choices.length).to.be.equal(4);
+              var selected = Polymer.dom(checkboxes.root).querySelectorAll('paper-checkbox[checked]');
+              expect(selected.length).to.be.equal(1);
+              expect(selected[0].name).to.be.equal('en');
+              MockInteractions.tap(selected[0]);
+              selected = Polymer.dom(checkboxes.root).querySelectorAll('paper-checkbox[checked]');
+              expect(selected.length).to.be.equal(0);
+              MockInteractions.tap(choices[3]);
+              MockInteractions.tap(choices[0]);
+              selected = Polymer.dom(checkboxes.root).querySelectorAll('paper-checkbox[checked]');
+              expect(selected.length).to.be.equal(2);
+              expect(selected[1].name).to.be.equal('fr');
+              expect(selected[0].name).to.be.equal('ar');
+            });
           });
         });
       });
@@ -215,18 +217,20 @@ limitations under the License.
 
         test('Then I can select French and it deselects English', function() {
           return waitForEvent(radioGroup, 'directory-entries-loaded').then(function() {
-            var choices = Polymer.dom(radioGroup.root).querySelectorAll('paper-radio-button');
-            expect(choices.length).to.be.equal(4);
-            var selected = Polymer.dom(radioGroup.root).querySelectorAll('paper-radio-button[checked]');
-            expect(selected.length).to.be.equal(1);
-            expect(selected[0].name).to.be.equal('en');
-            MockInteractions.focus(radioGroup);
-            Polymer.Base.async(function() {
-              MockInteractions.tap(choices[3]);
-              return waitChanged(radioGroup, 'value').then(function() {
-                selected = Polymer.dom(radioGroup.root).querySelectorAll('paper-radio-button[checked]');
-                expect(selected.length).to.be.equal(1);
-                expect(selected[0].name).to.be.equal('fr');
+            return flush().then(function() {
+              var choices = Polymer.dom(radioGroup.root).querySelectorAll('paper-radio-button');
+              expect(choices.length).to.be.equal(4);
+              var selected = Polymer.dom(radioGroup.root).querySelectorAll('paper-radio-button[checked]');
+              expect(selected.length).to.be.equal(1);
+              expect(selected[0].name).to.be.equal('en');
+              MockInteractions.focus(radioGroup);
+              Polymer.Base.async(function() {
+                MockInteractions.tap(choices[3]);
+                return waitChanged(radioGroup, 'value').then(function() {
+                  selected = Polymer.dom(radioGroup.root).querySelectorAll('paper-radio-button[checked]');
+                  expect(selected.length).to.be.equal(1);
+                  expect(selected[0].name).to.be.equal('fr');
+                });
               });
             });
           });
