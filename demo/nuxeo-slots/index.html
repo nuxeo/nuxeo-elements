@@ -26,11 +26,11 @@ limitations under the License.
     <link rel="import" href="../../../polymer/polymer.html">
     <link rel="import" href="../../../paper-listbox/paper-listbox.html">
     <link rel="import" href="../../../paper-item/paper-item.html">
-    <link rel="import" href="../../../paper-card/paper-card.html">
     <link rel="import" href="../../../paper-toggle-button/paper-toggle-button.html">
 
     <!-- nuxeo elements -->
     <link rel="import" href="../nuxeo-demo.html">
+    <link rel="import" href="../../widgets/nuxeo-card.html">
     <link rel="import" href="../../widgets/nuxeo-input.html">
     <link rel="import" href="../../nuxeo-slots.html">
     <link rel="import" href="nuxeo-alert-button.html">
@@ -41,56 +41,42 @@ limitations under the License.
     <dom-bind>
       <template>
 
-        <!-- SLOTS-->
-        <nuxeo-demo-section heading="Slots" center>
+        <nuxeo-demo-section heading="Slots">
 
-          <paper-card heading="LEFT">
-            <div class="card-content">
-              <nuxeo-slot slot="LEFT"></nuxeo-slot>
-            </div>
-          </paper-card>
+          <!-- SLOTS-->
+
+          <nuxeo-card heading="LEFT">
+            <nuxeo-slot slot="LEFT"></nuxeo-slot>
+          </nuxeo-card>
 
           <!-- MIDDLE slot can be attached after content contributions -->
           <template is="dom-if" if="[[showMiddle]]">
-            <paper-card heading="MIDDLE">
-              <div class="card-content">
-                <nuxeo-slot slot="MIDDLE"></nuxeo-slot>
-              </div>
-            </paper-card>
+            <nuxeo-card heading="MIDDLE">
+              <nuxeo-slot slot="MIDDLE"></nuxeo-slot>
+            </nuxeo-card>
           </template>
 
-          <paper-card heading="RIGHT">
-            <div class="card-content">
-              <nuxeo-slot slot="RIGHT"></nuxeo-slot>
-            </div>
-          </paper-card>
+          <nuxeo-card heading="RIGHT">
+            <nuxeo-slot slot="RIGHT"></nuxeo-slot>
+          </nuxeo-card>
 
           <!-- Multiple LIST slots can be used. All will have the same slot content -->
-          <paper-card heading="LIST">
-            <div class="card-content">
-              <ul>
-                <li>
-                  <nuxeo-slot slot="LIST"></nuxeo-slot>
-                </li>
-                <li>
-                  <nuxeo-slot slot="LIST"></nuxeo-slot>
-                </li>
-              </ul>
-            </div>
-          </paper-card>
+          <nuxeo-card heading="LIST">
+            <ul>
+              <li><nuxeo-slot slot="LIST"></nuxeo-slot></li>
+              <li><nuxeo-slot slot="LIST"></nuxeo-slot></li>
+            </ul>
+          </nuxeo-card>
 
           <!-- Slots can be used as children in elements that rely on child selectors since content is stamped as sibling -->
-          <paper-card heading="MENU">
-            <div class="card-content">
-              <paper-listbox>
-                <paper-item>First item</paper-item>
-                <nuxeo-slot slot="MENU"></nuxeo-slot>
-              </paper-listbox>
-            </div>
-          </paper-card>
+          <nuxeo-card heading="MENU">
+            <paper-listbox>
+              <paper-item>First item</paper-item>
+              <nuxeo-slot slot="MENU"></nuxeo-slot>
+            </paper-listbox>
+          </nuxeo-card>
 
           <!-- SLOT CONTENT -->
-
           <nuxeo-slot-content name="one" slot="LEFT">
             <template>
               <nuxeo-alert-button message="One">ONE</nuxeo-alert-button>
@@ -104,10 +90,10 @@ limitations under the License.
           </nuxeo-slot-content>
 
           <nuxeo-slot-content name="item" slot="LIST">
-              <template>
-                <span>ITEM</span>
-              </template>
-            </nuxeo-slot-content>
+            <template>
+              <span>ITEM</span>
+            </template>
+          </nuxeo-slot-content>
 
           <nuxeo-slot-content name="yours" order="[[order]]" slot="[[category]]" disabled$="[[disabled]]">
             <template>
@@ -115,6 +101,7 @@ limitations under the License.
             </template>
           </nuxeo-slot-content>
 
+          <!-- ACTIONS -->
           <table>
             <tr>
               <td>
@@ -130,10 +117,10 @@ limitations under the License.
           </table>
 
           <paper-toggle-button checked="{{disabled}}">Disabled</paper-toggle-button>
-          <br>
           <paper-toggle-button checked="{{showMiddle}}">Show Middle?</paper-toggle-button>
 
         </nuxeo-demo-section>
+
       </template>
     </dom-bind>
 

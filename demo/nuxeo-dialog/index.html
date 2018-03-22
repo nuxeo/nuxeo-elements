@@ -36,7 +36,7 @@ limitations under the License.
       <template>
 
         <nuxeo-demo-section heading="Simple dialog" size="small">
-          <paper-button toggles active="{{opened}}" noink raised>OPEN DIALOG</paper-button>
+          <paper-button primary toggles active="{{opened}}" noink>OPEN DIALOG</paper-button>
           <nuxeo-dialog opened="{{opened}}" with-backdrop>
             <h2>TITLE</h2>
             <div>
@@ -47,8 +47,8 @@ limitations under the License.
               reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
             </div>
             <div class="buttons">
-              <paper-button dialog-dismiss noink raised>DISMISS</paper-button>
-              <paper-button dialog-confirm noink raised>CONFIRM</paper-button>
+              <paper-button dialog-dismiss noink>DISMISS</paper-button>
+              <paper-button dialog-confirm noink primary>CONFIRM</paper-button>
             </div>
           </nuxeo-dialog>
         </nuxeo-demo-section>
