@@ -24,7 +24,6 @@ limitations under the License.
 
     <!-- polymer elements -->
     <link rel="import" href="../../../polymer/polymer.html">
-    <link rel="import" href="../../../paper-button/paper-button.html">
     <link rel="import" href="../../../paper-listbox/paper-listbox.html">
     <link rel="import" href="../../../paper-item/paper-item.html">
     <link rel="import" href="../../../paper-card/paper-card.html">
@@ -34,32 +33,10 @@ limitations under the License.
     <link rel="import" href="../nuxeo-demo.html">
     <link rel="import" href="../../widgets/nuxeo-input.html">
     <link rel="import" href="../../nuxeo-slots.html">
+    <link rel="import" href="nuxeo-alert-button.html">
   </head>
 
   <body unresolved>
-
-    <!-- ACTION TEMPLATE -->
-    <dom-module id="nuxeo-alert-button">
-      <template>
-        <paper-button raised on-tap="_act">
-          <slot></slot>
-        </paper-button>
-      </template>
-      <script>
-        Polymer({
-          is: 'nuxeo-alert-button',
-          properties: {
-            message: {
-              value: '',
-              type: String
-            }
-          },
-          _act: function() {
-            alert(this.message);
-          }
-        });
-      </script>
-    </dom-module>
 
     <dom-bind>
       <template>

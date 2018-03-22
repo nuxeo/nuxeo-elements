@@ -16,7 +16,7 @@ limitations under the License.
 -->
 <html>
   <head>
-    <title>nuxeo-video-viewer</title>
+    <title>nuxeo-dialog</title>
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
@@ -24,36 +24,36 @@ limitations under the License.
 
     <!-- polymer elements -->
     <link rel="import" href="../../../polymer/polymer.html">
+    <link rel="import" href="../../../paper-button/paper-button.html">
 
     <!-- nuxeo elements -->
     <link rel="import" href="../nuxeo-demo.html">
-    <link rel="import" href="../../viewers/nuxeo-video-viewer.html">
+    <link rel="import" href="../../widgets/nuxeo-dialog.html">
   </head>
 
   <body unresolved>
     <dom-bind>
       <template>
 
-        <style>
-          nuxeo-video-viewer {
-            height: 380px;
-          }
-        </style>
-
-        <nuxeo-demo-section heading="Video viewer">
-          <nuxeo-video-viewer controls poster="poster.jpg" sources="[[sources]]"></nuxeo-video-viewer>
-          <pre>(c) copyright 2008, Blender Foundation / <a href="http://www.bigbuckbunny.org/" target="_blank">www.bigbuckbunny.org</a>.</pre>
+        <nuxeo-demo-section heading="Simple dialog" size="small">
+          <paper-button toggles active="{{opened}}" noink raised>OPEN DIALOG</paper-button>
+          <nuxeo-dialog opened="{{opened}}" with-backdrop>
+            <h2>TITLE</h2>
+            <div>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+              sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+            </div>
+            <div class="buttons">
+              <paper-button dialog-dismiss noink raised>DISMISS</paper-button>
+              <paper-button dialog-confirm noink raised>CONFIRM</paper-button>
+            </div>
+          </nuxeo-dialog>
         </nuxeo-demo-section>
 
       </template>
     </dom-bind>
-
-    <script>
-      document.querySelector('dom-bind').sources = [
-        {"data": "sample.mp4", "type": "video/mp4"},
-        {"data": "sample.webm", "type": "video/webm"},
-        {"data": "sample.ogg", "type": "video/ogg"}
-      ];
-    </script>
   </body>
 </html>

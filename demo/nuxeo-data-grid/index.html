@@ -27,61 +27,13 @@ limitations under the License.
 
     <!-- nuxeo elements -->
     <link rel="import" href="../nuxeo-demo.html">
-    <link rel="import" href="../../../nuxeo-elements/nuxeo-connection.html">
-    <link rel="import" href="../../../nuxeo-elements/nuxeo-page-provider.html">
-    <link rel="import" href="../../nuxeo-data-grid/nuxeo-data-grid.html">
+    <link rel="import" href="nuxeo-data-grid-demo.html">
+
   </head>
 
-  <body>
-    <dom-module id="nuxeo-data-grid-demo">
-      <template>
-
-        <style>
-          nuxeo-data-grid {
-            height: 800px;
-          }
-          img {
-            width: 250px;
-            height: 200px;
-            border: 4px solid white;
-          }
-        </style>
-
-        <nuxeo-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
-
-        <nuxeo-page-provider id="provider"
-                             provider="default_search"
-                             page-size="40"
-                             enrichers="thumbnail"
-                             params='{"ecm_path": ["/default-domain/workspaces/demo"]}'>
-        </nuxeo-page-provider>
-
-        <nuxeo-demo-section heading="Data grid" size="large">
-          <nuxeo-data-grid id="grid" nx-provider="provider">
-            <template>
-              <img src="[[_url(item)]]">
-            </template>
-          </nuxeo-data-grid>
-        </nuxeo-demo-section>
-      </template>
-
-      <script>
-        Polymer({
-          is: 'nuxeo-data-grid-demo',
-
-          ready: function() {
-            this.$.grid.fetch();
-          },
-
-          _url: function(doc) {
-            return doc && doc.contextParameters && doc.contextParameters.thumbnail && doc.contextParameters.thumbnail.url
-              ? doc.contextParameters.thumbnail.url : '';
-          }
-        });
-      </script>
-    </dom-module>
-
-    <nuxeo-data-grid-demo></nuxeo-data-grid-demo>
-
+  <body unresolved>
+    <nuxeo-demo-section heading="Data grid" size="large">
+      <nuxeo-data-grid-demo></nuxeo-data-grid-demo>
+    </nuxeo-demo-section>
   </body>
 </html>

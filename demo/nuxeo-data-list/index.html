@@ -15,163 +15,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <html>
-<head>
-  <title>nuxeo-data-list-demo</title>
+  <head>
+    <title>nuxeo-data-list-demo</title>
 
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <script src="../../../webcomponentsjs/webcomponents-loader.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="../../../webcomponentsjs/webcomponents-loader.js"></script>
 
-  <!-- polymer elements -->
-  <link rel="import" href="../../../polymer/polymer.html">
+    <!-- polymer elements -->
+    <link rel="import" href="../../../polymer/polymer.html">
 
-  <!-- nuxeo elements -->
-  <link rel="import" href="../nuxeo-demo.html">
-  <link rel="import" href="../../../nuxeo-elements/nuxeo-connection.html">
-  <link rel="import" href="../../../nuxeo-elements/nuxeo-page-provider.html">
-  <link rel="import" href="../../nuxeo-data-list/nuxeo-data-list.html">
-</head>
+    <!-- nuxeo elements -->
+    <link rel="import" href="../nuxeo-demo.html">
+    <link rel="import" href="nuxeo-data-list-demo.html">
+  </head>
 
-<body unresolved>
+  <body unresolved>
+    <nuxeo-demo-section heading="Data list">
+      <nuxeo-data-list-demo></nuxeo-data-list-demo>
+    </nuxeo-demo-section>
+  </body>
 
-  <dom-module id="nuxeo-data-list-demo">
-    <template>
-
-      <style>
-        .item {
-          cursor: pointer;
-          padding: 16px 22px;
-          border-bottom: 1px solid #DDD;
-        }
-        .item:focus,
-        .item.selected:focus {
-          outline: 0;
-          background-color: #ddd;
-        }
-        .item.selected {
-          color: var(--paper-blue-600);
-        }
-        .item.selected {
-          background-color: var(--google-grey-300);
-          border-bottom: 1px solid #ccc;
-        }
-
-        .list-item {
-          cursor: pointer;
-          padding: 1em;
-          border-bottom: 1px solid #DDD;
-        }
-        .list-item:focus,
-        .list-item.selected:focus {
-          outline: 0;
-          background-color: #ddd;
-        }
-        .list-item.selected {
-          color: var(--paper-blue-600);
-          background-color: var(--google-grey-300);
-          border-bottom: 1px solid #ccc;
-        }
-
-        .list-item-box {
-          @apply --layout-vertical;
-        }
-
-        .list-item-info {
-          @apply --layout-horizontal;
-          @apply --layout-center;
-        }
-
-        .list-item-detail {
-          margin-left: 40px;
-        }
-
-        .list-item-property {
-          color: gray;
-          margin-right: .2em;
-        }
-
-        .nxicon {
-          height: 32px;
-          width: 32px;
-          border-radius: 20px;
-          box-sizing: border-box;
-          margin-right: 8px;
-        }
-      </style>
-
-      <div class="content-view">
-
-        <nuxeo-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
-
-        <nuxeo-page-provider id="cvProvider"
-                             provider="default_search"
-                             page-size="40"
-                             aggregations="{{aggregations}}"
-                             enrichers="thumbnail"
-                             params='{"ecm_path": ["/default-domain/workspaces"]}'>
-        </nuxeo-page-provider>
-
-        <nuxeo-demo-section heading="Data list">
-          <nuxeo-data-list id="dataList" nx-provider="cvProvider" selection-enabled select-on-tap>
-            <template>
-              <div tabindex$="[[tabIndex]]" class$="[[_computedClass(selected)]]">
-                <div class="list-item-box">
-                  <div class="list-item-info">
-                    <div>
-                      <img class="nxicon" src="[[_thumbnail(item)]]">
-                    </div>
-                    <span class="list-item-title">[[item.title]]</span>
-                  </div>
-                  <div class="list-item-detail">
-                    <div class="layout center">
-                    <span class="list-item-property">
-                      [[item.type]]
-                    </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="border"></div>
-            </template>
-          </nuxeo-data-list>
-        </nuxeo-demo-section>
-
-      </div>
-
-    </template>
-
-    <script>
-      Polymer({
-        is: 'nuxeo-data-list-demo',
-
-        ready: function() {
-          this.$.dataList.fetch();
-        },
-
-        _computedClass: function (isSelected) {
-          var classes = 'item';
-          if (isSelected) {
-            classes += ' selected';
-          }
-          return classes;
-        },
-
-        _thumbnail: function(doc) {
-          if (doc && doc.uid) {
-            if (doc.contextParameters && doc.contextParameters.thumbnail.url) {
-              return doc.contextParameters.thumbnail.url;
-            } else {
-              var baseUrl = document.querySelector('nuxeo-connection').url;
-              return baseUrl + '/nxthumb/default/' + doc.uid + '/blobholder:0/';
-            }
-          }
-        }
-
-      });
-    </script>
-
-  </dom-module>
-
-  <nuxeo-data-list-demo></nuxeo-data-list-demo>
-</body>
 </html>

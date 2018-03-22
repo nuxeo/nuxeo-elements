@@ -36,9 +36,9 @@ limitations under the License.
     <dom-bind>
       <template>
 
-        <nuxeo-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
+        <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
 
-        <nuxeo-document auto doc-path="/default-domain/workspaces/demo/document" response="{{document}}" enrichers="runnableWorkflows"></nuxeo-document>
+        <nuxeo-document auto doc-path="/default-domain/workspaces/demo/file" response="{{document}}" enrichers="runnableWorkflows"></nuxeo-document>
 
         <nuxeo-demo-section heading="Start a workflow on a document" size="small">
           <nuxeo-workflow-button document="[[document]]"></nuxeo-workflow-button>

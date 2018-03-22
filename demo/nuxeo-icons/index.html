@@ -30,59 +30,66 @@ limitations under the License.
     <link rel="import" href="../nuxeo-demo.html">
     <link rel="import" href="../../nuxeo-icons.html">
 
-    <style>
-      .icon {
-        display: inline-block;
-        @apply --layout-vertical;
-        @apply --layout-center;
-        text-align: center;
-        width: 170px;
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        border-radius: 4px;
-        margin: 8px;
-        padding: 4px;
-        background-color: white;
-      }
-      iron-icon {
-        padding: 8px;
-        color: black;
-      }
-      label {
-        display: block;
-        margin: 0 0 8px;
-      }
-    </style>
+
   </head>
 
   <body unresolved>
+    <dom-bind id="scope">
+      <template is="dom-bind">
 
-    <dom-bind>
-      <template>
+        <style>
+          .icon {
+            display: inline-block;
+            @apply --layout-vertical;
+            @apply --layout-center;
+            text-align: center;
+            width: 170px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            margin: 8px;
+            padding: 4px;
+            background-color: white;
+          }
+          iron-icon {
+            padding: 8px;
+            color: black;
+          }
+          label {
+            display: block;
+            margin: 0 0 8px;
+          }
+        </style>
+
         <nuxeo-demo-section heading="ICONSET" size="large" center>
-          <iron-meta type="iconset"></iron-meta>
-          <template is="dom-repeat" items="{{iconsets}}">
+          <template is="dom-repeat" id="iconsets">
             <h2>{{item.name}}</h2>
-            <template is="dom-repeat" items="{{getIconNames(item)}}">
-              <div class="icon">
-                <iron-icon icon="{{item}}"></iron-icon>
-                <label>{{getName(item)}}</label>
-              </div>
-            </template>
+            <div class="set">
+              <template is="dom-repeat" items="{{getIconNames(item)}}">
+                <div class="icon">
+                  <iron-icon icon="{{item}}"></iron-icon>
+                  <label>{{getIconName(item)}}</label>
+                </div>
+              </template>
+            </div>
           </template>
         </nuxeo-demo-section>
+
       </template>
     </dom-bind>
 
     <script>
-      var el = document.querySelector('dom-bind');
-      el.getIconNames = function(iconset) {
-        return iconset.getIconNames();
-      };
-      el.getName = function(name) {
-        return name.split(':')[1];
-      };
-      var meta = document.querySelector('iron-meta');
-      el.iconsets = meta.list;
+      window.addEventListener('WebComponentsReady', function() {
+        var scope = document.querySelector('#scope');
+        scope.getIconNames = function(iconset) {
+          return iconset.getIconNames();
+        };
+        scope.getIconName = function(name) {
+          return name.split(':')[1];
+        };
+        scope.parentNode.getIconNames = scope.getIconNames;
+        var iconsets = document.querySelector('#iconsets');
+        iconsets.items = new Polymer.IronMeta({type: 'iconset'}).list;
+      });
     </script>
 
   </body>

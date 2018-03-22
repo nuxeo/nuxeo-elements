@@ -15,65 +15,43 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <html>
-<head>
-  <title>nuxeo-document-preview</title>
+  <head>
+    <title>nuxeo-document-preview</title>
 
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <script src="../../../webcomponentsjs/webcomponents-loader.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="../../../webcomponentsjs/webcomponents-loader.js"></script>
 
-  <!-- polymer elements -->
-  <link rel="import" href="../../../polymer/polymer.html">
+    <!-- polymer elements -->
+    <link rel="import" href="../../../polymer/polymer.html">
 
-  <!-- nuxeo elements -->
-  <link rel="import" href="../nuxeo-demo.html">
-  <link rel="import" href="../../../nuxeo-elements/nuxeo-connection.html">
-  <link rel="import" href="../../../nuxeo-elements/nuxeo-page-provider.html">
-  <link rel="import" href="../../nuxeo-document-preview.html">
-</head>
+    <!-- nuxeo elements -->
+    <link rel="import" href="../nuxeo-demo.html">
+    <link rel="import" href="../../../nuxeo-elements/nuxeo-connection.html">
+    <link rel="import" href="../../../nuxeo-elements/nuxeo-document.html">
+    <link rel="import" href="../../nuxeo-document-preview.html">
+  </head>
 
-<body unresolved>
+  <body unresolved>
 
-  <dom-module id="nuxeo-document-preview-demo">
-    <template>
+    <dom-bind>
+      <template>
 
-      <nuxeo-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
-
-      <nuxeo-page-provider auto
-                           provider="default_search"
-                           params='{"ecm_fulltext": "Picture*"}'
-                           page-size="1"
-                           current-page="{{results}}">
-      </nuxeo-page-provider>
-
-      <h4>[[document.title]]</h4>
-
-      <nuxeo-document-preview document="[[document]]"></nuxeo-document-preview>
-
-    </template>
-
-    <script>
-      Polymer({
-        is: 'nuxeo-document-preview-demo',
-        properties: {
-          document: Object,
-          results: {
-            type: Array,
-            observer: '_resultsChanged'
+        <style>
+          nuxeo-document-preview {
+            height: 800px;
           }
-        },
+        </style>
 
-        _resultsChanged: function() {
-          if (this.results && this.results.length > 0) {
-            this.document = this.results[0];
-          }
-        }
+        <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
+        <nuxeo-document auto doc-path="/default-domain/workspaces/demo/file" response="{{document}}"></nuxeo-document>
 
-      });
-    </script>
-  </dom-module>
+        <nuxeo-demo-section heading="Document preview">
+          <nuxeo-document-preview document="[[document]]"></nuxeo-document-preview>
+        </nuxeo-demo-section>
 
-  <nuxeo-document-preview-demo></nuxeo-document-preview-demo>
+      </template>
+    </dom-bind>
 
-</body>
+  </body>
 </html>

@@ -33,7 +33,7 @@ limitations under the License.
   </head>
 
   <body>
-    <dom-module id="nuxeo-justified-grid-demo">
+    <dom-bind>
       <template>
 
         <style>
@@ -42,7 +42,7 @@ limitations under the License.
           }
         </style>
 
-        <nuxeo-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
+        <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
 
         <nuxeo-page-provider id="provider"
                              provider="default_search"
@@ -54,20 +54,8 @@ limitations under the License.
         <nuxeo-demo-section heading="Justified grid" size="large">
           <nuxeo-justified-grid id="grid" nx-provider="provider" selection-enabled></nuxeo-justified-grid>
         </nuxeo-demo-section>
+
       </template>
-
-      <script>
-        Polymer({
-          is: 'nuxeo-justified-grid-demo',
-
-          ready: function() {
-            this.$.grid.fetch();
-          }
-        });
-      </script>
-    </dom-module>
-
-    <nuxeo-justified-grid-demo></nuxeo-justified-grid-demo>
-
+    </dom-bind>
   </body>
 </html>

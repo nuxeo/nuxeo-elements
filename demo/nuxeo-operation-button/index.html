@@ -38,7 +38,8 @@ limitations under the License.
     <dom-bind>
       <template>
 
-        <nuxeo-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
+        <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
+
         <nuxeo-document auto id="doc" headers='{"fetch.document": "lock,properties"}' doc-path="[[docpath]]" response="{{document}}"></nuxeo-document>
 
         <nuxeo-demo-section heading="Custom operation button" size="small">

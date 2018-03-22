@@ -39,6 +39,10 @@ Example:
         border: 1px dashed rgba(0, 0, 0, 0.1);
       }
 
+      :host([hidden]) {
+        display: none !important;
+      }
+
       .code {
         @apply --layout-flex;
         text-transform: uppercase;
