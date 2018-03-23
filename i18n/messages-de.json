@@ -6,6 +6,7 @@
   "addToCollectionButton.dialog.heading": "Der Sammlung hinzufügen",
   "addToCollectionButton.dialog.select": "Sammlung auswählen ...",
   "addToCollectionButton.tooltip": "Der Sammlung hinzufügen",
+  "aggregation.format.document.field.unknown": "No {0} field in document. Define your own label formatter.",
   "checkboxAggregation.noResults": "Kein Ergebnis verfügbar",
   "command.add": "Hinzufügen",
   "command.moveUpward": "Nach oben",

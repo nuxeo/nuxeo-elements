@@ -6,6 +6,7 @@
   "addToCollectionButton.dialog.heading": "Gehitu bildumara",
   "addToCollectionButton.dialog.select": "Hautatu bilduma...",
   "addToCollectionButton.tooltip": "Gehitu bildumara",
+  "aggregation.format.document.field.unknown": "No {0} field in document. Define your own label formatter.",
   "checkboxAggregation.noResults": "Ez dago emaitza erabilgarririk",
   "command.add": "Gehitu",
   "command.moveUpward": "Mugitu gora",

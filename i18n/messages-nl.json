@@ -6,6 +6,7 @@
   "addToCollectionButton.dialog.heading": "Toevoegen aan Collectie",
   "addToCollectionButton.dialog.select": "Een collectie selecteren ...",
   "addToCollectionButton.tooltip": "Toevoegen aan Collectie",
+  "aggregation.format.document.field.unknown": "No {0} field in document. Define your own label formatter.",
   "checkboxAggregation.noResults": "Geen resultaten beschikbaar",
   "command.add": "Toevoegen",
   "command.moveUpward": "Omhoog verplaatsen",

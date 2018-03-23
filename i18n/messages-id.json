@@ -6,6 +6,7 @@
   "addToCollectionButton.dialog.heading": "Tambahkan ke dalam koleksi",
   "addToCollectionButton.dialog.select": "Pilih Koleksi...",
   "addToCollectionButton.tooltip": "Masukkan ke dalam koleksi",
+  "aggregation.format.document.field.unknown": "No {0} field in document. Define your own label formatter.",
   "checkboxAggregation.noResults": "Tidak ada hasil yang tersedia",
   "command.add": "Tambah",
   "command.moveUpward": "Pindah ke atas",
