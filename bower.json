@@ -21,7 +21,6 @@
   ],
   "dependencies": {
     "polymer": "polymer/polymer#^2.0.0",
-    "video.js": "^5.20.4",
     "cropperjs": "0.5.6",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^2.0.0",
     "iron-form": "PolymerElements/iron-form#^2.0.0",

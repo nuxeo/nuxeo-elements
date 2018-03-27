@@ -17,13 +17,6 @@ limitations under the License.
 
 <link rel="import" href="../../polymer/polymer.html">
 
-<script>
-  // XXX: disable shadow root support for now
-  // var VIDEOJS_NO_DYNAMIC_STYLE = true;
-</script>
-<link rel="stylesheet" href="../../video.js/dist/video-js.css">
-<script src="../../video.js/dist/video.js"></script>
-
 <!--
 An element for viewing videos.
 
@@ -36,8 +29,6 @@ Example:
 @demo demo/nuxeo-video-viewer/index.html
 -->
 <dom-module id="nuxeo-video-viewer">
-
-  <link rel="import" type="css" href="../../video.js/dist/video-js.css">
   <template>
     <style>
       :host {
@@ -78,8 +69,8 @@ Example:
     </style>
 
     <div id="container">
-      <video id="video" class="video-js vjs-default-skin vjs-big-play-centered" controls$="[[controls]]" width="[[width]]"
-             height="[[height]]" preload="[[preload]]" poster="[[poster]]">
+      <video id="video" controls$="[[controls]]" width="[[width]]" height="[[height]]" preload="[[preload]]"
+             poster="[[poster]]">
         <template is="dom-repeat" items="[[sources]]" as="source">
           <source src="[[source.data]]" type="[[source.type]]" />
         </template>
@@ -137,38 +128,21 @@ Example:
         }
       },
 
-      ready: function() {
-        // Capture click event to prevent clashing with videojs tap/click events
-        this.addEventListener('click', function(event) {
-          event.stopPropagation();
-        });
-      },
-
       play: function() {
-        if (this.videojs) {
-          this.videojs.play();
-        }
+        this.$.video.play();
       },
 
       stop: function() {
-        if (this.videojs) {
-          this.pause();
-          this.videojs.currentTime(0);
-        }
+        this.$.video.pause();
+        this.$.video.currentTime = 0;
       },
 
       pause: function() {
-        if (this.videojs) {
-          this.videojs.pause();
-        }
+        this.$.video.pause();
       },
 
       isPaused: function() {
-        return this.videojs && this.videojs.paused();
-      },
-
-      attached: function() {
-        this.videojs = videojs(this.$.video);
+        return this.$.video.paused;
       },
 
       _showStoryboard: function() {
@@ -176,7 +150,7 @@ Example:
       },
 
       _jumpTo: function(e) {
-        this.videojs.currentTime(e.model.thumbnail.timecode);
+        this.$.video.currentTime = e.model.thumbnail.timecode;
       }
     });
   </script>
