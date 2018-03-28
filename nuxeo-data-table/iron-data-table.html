@@ -744,22 +744,40 @@ Example:
       _validateEntry: function() {
         var dtform = this.getContentChildren('#form')[0];
         if (dtform.validateItem()) {
+          var item = this._deepCopy(dtform.item);
           if (dtform.index > -1) {
-            this.set('items.' + dtform.index, dtform.item);
-            //this.items[dtform.index] = JSON.parse(JSON.stringify(dtform.item));
+            this.set('items.' + dtform.index, item);
           } else {
-            this.push('items', dtform.item);
+            this.push('items', item);
           }
           this.notifyResize();
           this.$.dialog.close();
         }
       },
 
+      _deepCopy: function(obj) {
+        var cache = [];
+        var result = JSON.parse(JSON.stringify(obj, function(key, value) {
+          if (typeof value === 'object' && value !== null) {
+            if (cache.indexOf(value) !== -1) {
+              // Circular reference found, discard key
+              return;
+            }
+            // Store value in our collection
+            cache.push(value);
+          }
+          return value;
+        }));
+        // Allow GC
+        cache = null;
+        return result;
+      },
+
       _toggleEditDialog: function(itemIndex) {
         var dtform = this.getContentChildren('#form')[0];
         if (typeof itemIndex !== "undefined") {
           dtform.index = itemIndex;
-          dtform.item = JSON.parse(JSON.stringify(this.items[itemIndex]));
+          dtform.item = this._deepCopy(this.items[itemIndex]);
         } else {
           dtform.index = -1;
           var newItem;

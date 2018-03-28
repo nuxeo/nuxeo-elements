@@ -5612,26 +5612,34 @@ assign(Selectivity.prototype, {
      */
     setValue: function(newValue, options) {
         options = options || {};
+        var fn = function(item) {
+          if (item && typeof item !== 'string') {
+            if (!this.options.idFunction) {
+              throw new Error("missing id function");
+            }
+           return this.options.idFunction(item);
+         } else {
+           return item;
+         }
+        }.bind(this);
+        var ids = Array.isArray(newValue) ? newValue.map(fn) : fn(newValue);
+        ids = this.validateValue(ids);
 
-        newValue = this.validateValue(newValue);
-
-        this._value = newValue;
+        this._value = ids;
 
         if (this._value && this.options.initSelection) {
             this.options.initSelection(
                 newValue,
                 function(data) {
-                    if (this._value === newValue) {
-                        this._data = this.validateData(data);
+                  this._data = this.validateData(data);
 
-                        if (options.triggerChange !== false) {
-                            this.triggerChange();
-                        }
-                    }
+                  if (options.triggerChange !== false) {
+                      this.triggerChange();
+                  }
                 }.bind(this)
             );
         } else {
-            this._data = this.getDataForValue(newValue);
+            this._data = this.getDataForValue(ids);
 
             if (options.triggerChange !== false) {
                 this.triggerChange();

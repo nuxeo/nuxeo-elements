@@ -248,7 +248,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
         selectedItems: {
           type: Array,
           notify: true,
-          observer: '_selectedItemChanged'
+          observer: '_valueChanged'
         },
 
         /**
@@ -257,7 +257,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
         selectedItem: {
           type: Object,
           notify: true,
-          observer: '_selectedItemChanged'
+          observer: '_valueChanged'
         },
 
         /**
@@ -308,6 +308,10 @@ An element wrapping selectivity.js and relying on an operation for suggestions
             this.initSelection(value, function(selection) {
               callback(this.multiple ? selection.map(prep) : prep(selection));
             }.bind(this));
+          }.bind(this),
+
+          idFunction: function(value) {
+            return this.idFunction(value);
           }.bind(this),
 
           // override templates since formatter should already escape text
@@ -388,9 +392,9 @@ An element wrapping selectivity.js and relying on an operation for suggestions
 
         this._selectivity = new InputType(options);
 
-        if (this.value) {
+        if (this.value || this.selectedItem || this.selectedItems) {
           this.async(function() {
-            this._valueChanged(this.value);
+            this._valueChanged(this.value || this.selectedItem || this.selectedItems);
           }.bind(this), 100);
         }
 
@@ -451,24 +455,14 @@ An element wrapping selectivity.js and relying on an operation for suggestions
         }
       },
 
-      _selectedItemChanged: function() {
-        if (!this._inUpdateSelection && !this.selectedItems && !this.selectedItem) {
-          // allow reset widget
-          this._selectivity.setValue(null);
-        }
-        this._inUpdateSelection = false;
-      },
-
       _valueChanged: function(newValue) {
         if (this._selectivity && !this._inUpdateSelection) {
           if (newValue) {
-            var fn = function(item) {
-              return (item && typeof item !== 'string') ? this.idFunction(item) : item;
-            }.bind(this);
-            this._selectivity.setValue(Array.isArray(newValue) ? newValue.map(fn) : fn(newValue), { triggerChange: false });
+            this._selectivity.setValue(newValue, { triggerChange: false });
             this._selectivity.rerenderSelection();
           } else {
             // in cases where newValue is either undefined or null, clear the value
+            this._selectivity.setValue(null);
             this._selectivity.clear();
           }
         }
