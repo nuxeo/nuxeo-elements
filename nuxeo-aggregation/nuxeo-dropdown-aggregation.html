@@ -48,7 +48,7 @@ An element to interact with page provider aggregations as suggestions.
       }
     </style>
 
-    <nuxeo-selectivity data="[[_computedData]]"
+    <nuxeo-selectivity data="[[_computeData(buckets)]]"
                    min-chars="[[minChars]]"
                    multiple="[[multiple]]"
                    placeholder="[[placeholder]]"
@@ -80,22 +80,13 @@ An element to interact with page provider aggregations as suggestions.
           value: 0
         },
 
-        placeholder: String,
-
-        _computedData: {
-          type: Object,
-          value: []
-        }
+        placeholder: String
       },
 
-      observers: [
-        '_computeData(data)'
-      ],
-
-      _computeData: function () {
-        if (this.data) {
-          this._computedData = this.data.extendedBuckets.map(function (item) {
-            var label = this.labelFormatter(item) + ' (' + item.docCount + ')';
+      _computeData: function (buckets) {
+        if (buckets) {
+          return buckets.map(function (item) {
+            var label = item.label + ' (' + item.docCount + ')';
             return {
               id: item.key,
               text: label,
@@ -103,7 +94,7 @@ An element to interact with page provider aggregations as suggestions.
             };
           }.bind(this));
         } else {
-          this._computedData = [];
+          return [];
         }
       }
     });

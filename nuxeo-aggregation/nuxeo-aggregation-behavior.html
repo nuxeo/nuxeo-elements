@@ -45,6 +45,11 @@ limitations under the License.
         },
 
         /**
+         * Sort buckets by label instead of doc count.
+         */
+        sortByLabel: Boolean,
+
+        /**
          * Function used to format the label of the aggregate entry.
          */
         labelFormatter: {
@@ -74,7 +79,13 @@ limitations under the License.
           var selectedBuckets = data.selection;
           buckets.forEach(function(item) {
             item.checked = selectedBuckets.indexOf(item.key) >= 0;
-          });
+            item.label = this.labelFormatter(item);
+          }.bind(this));
+          if (this.sortByLabel) {
+            buckets.sort(function(a, b) {
+              return a.label < b.label ? -1 : (a.label > b.label ? 1 : 0);
+            });
+          }
           return buckets;
         }
       },
