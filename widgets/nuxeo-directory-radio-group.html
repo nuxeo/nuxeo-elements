@@ -95,9 +95,16 @@ An element for selecting one directory entry with a radio group widget.
       is: 'nuxeo-directory-radio-group',
       behaviors: [Nuxeo.DirectoryWidgetBehavior],
       properties: {
-
         /**
          * Selected entry.
+         */
+        selectedItem: {
+          type: Object,
+          notify: true
+        },
+
+        /**
+         * Selected id.
          */
         value: {
           type: String,
@@ -110,7 +117,8 @@ An element for selecting one directory entry with a radio group widget.
 
       _updateItem: function(e) {
         if (e.detail && e.detail.value) {
-          this.set('value', this._entries[e.detail.value.dataIndex]);
+          this.set('selectedItem', this._entries[e.detail.value.dataIndex]);
+          this.set('value', this.idFunction(this.selectedItem));
         }
       },
 
@@ -123,7 +131,8 @@ An element for selecting one directory entry with a radio group widget.
       },
 
       _isChecked: function(entry) {
-        if (this.value && this.idFunction(this.value) === this.idFunction(entry)) {
+        var value = this.value || this.selectedItem;
+        if (value && this.idFunction(value) === this.idFunction(entry)) {
           this._selected = this.idFunction(entry);
           return true;
         }

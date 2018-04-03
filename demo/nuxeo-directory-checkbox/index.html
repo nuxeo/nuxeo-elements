@@ -40,11 +40,19 @@ limitations under the License.
         <nuxeo-demo-section heading="Simple directory selector with checkboxes" size="small">
           <nuxeo-directory-checkbox directory-name="continent"
                                     label="Select continents"
-                                    value="{{directoryCheckboxIds}}">
+                                    value="{{selectedIds}}"
+                                    selected-items="{{selectedItems}}">
           </nuxeo-directory-checkbox>
 
-          <template is="dom-repeat" items="[[directoryCheckboxIds]]">
+          <h3>Item Labels</h3>
+          <template is="dom-repeat" items="[[selectedItems]]">
             [[item.absoluteLabel]]
+            <br/>
+          </template>
+          <br/>
+          <h3>Ids</h3>
+          <template is="dom-repeat" items="[[selectedIds]]">
+            [[item]]
             <br/>
           </template>
         </nuxeo-demo-section>

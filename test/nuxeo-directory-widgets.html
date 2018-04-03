@@ -181,12 +181,20 @@ limitations under the License.
               MockInteractions.tap(selected[0]);
               selected = Polymer.dom(checkboxes.root).querySelectorAll('paper-checkbox[checked]');
               expect(selected.length).to.be.equal(0);
-              MockInteractions.tap(choices[3]);
-              MockInteractions.tap(choices[0]);
-              selected = Polymer.dom(checkboxes.root).querySelectorAll('paper-checkbox[checked]');
-              expect(selected.length).to.be.equal(2);
-              expect(selected[1].name).to.be.equal('fr');
-              expect(selected[0].name).to.be.equal('ar');
+              Polymer.Base.async(function() {
+                MockInteractions.tap(choices[3]);
+                MockInteractions.tap(choices[0]);
+                selected = Polymer.dom(checkboxes.root).querySelectorAll('paper-checkbox[checked]');
+                expect(selected.length).to.be.equal(2);
+                expect(selected[1].name).to.be.equal('fr');
+                expect(selected[0].name).to.be.equal('ar');
+                expect(checkboxes.value.length).to.be.equal(2);
+                expect(checkboxes.value[0]).to.be.equal('fr');
+                expect(checkboxes.value[1]).to.be.equal('ar');
+                expect(checkboxes.selectedItems.length).to.be.equal(2);
+                expect(checkboxes.selectedItems[0].id).to.be.equal('fr');
+                expect(checkboxes.selectedItems[1].id).to.be.equal('ar');
+              });
             });
           });
         });
@@ -226,11 +234,11 @@ limitations under the License.
               MockInteractions.focus(radioGroup);
               Polymer.Base.async(function() {
                 MockInteractions.tap(choices[3]);
-                return waitChanged(radioGroup, 'value').then(function() {
-                  selected = Polymer.dom(radioGroup.root).querySelectorAll('paper-radio-button[checked]');
-                  expect(selected.length).to.be.equal(1);
-                  expect(selected[0].name).to.be.equal('fr');
-                });
+                selected = Polymer.dom(radioGroup.root).querySelectorAll('paper-radio-button[checked]');
+                expect(selected.length).to.be.equal(1);
+                expect(selected[0].name).to.be.equal('fr');
+                expect(radioGroup.value).to.be.equal('fr');
+                expect(radioGroup.selectedItem.id).to.be.equal('fr');
               });
             });
           });

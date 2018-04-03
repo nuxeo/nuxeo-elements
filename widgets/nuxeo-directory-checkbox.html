@@ -102,6 +102,14 @@ An element for selecting one or more directory entries with checkboxes.
         /**
          * Selected entries.
          */
+        selectedItems: {
+          type: Array,
+          notify: true
+        },
+
+        /**
+        * Selected ids.
+        */
         value: {
           type: Array,
           notify: true
@@ -115,12 +123,16 @@ An element for selecting one or more directory entries with checkboxes.
 
       _updateItems: function(e) {
         var tmp = [];
+        var tmpIds = [];
         if (e.detail.value) {
           for (var i = 0; i < e.detail.value.length; i++) {
-            tmp.push(this._entries[e.detail.value[i].dataIndex]);
+            var item = this._entries[e.detail.value[i].dataIndex];
+            tmp.push(item);
+            tmpIds.push(this.idFunction(item));
           }
         }
-        this.value = tmp;
+        this.selectedItems = tmp;
+        this.value = tmpIds;
       },
 
       /* Override method from Polymer.IronValidatableBehavior. */
@@ -132,7 +144,8 @@ An element for selecting one or more directory entries with checkboxes.
       },
 
       _isChecked: function(entry) {
-        return this.value && this.value.some(function(el) {
+        var value = this.value || this.selectedItems;
+        return value && value.some(function(el) {
           if (this.idFunction(el) === this.idFunction(entry)) {
             this._selected.push(this.idFunction(entry));
             return true;

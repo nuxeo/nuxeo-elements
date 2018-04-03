@@ -40,10 +40,12 @@ limitations under the License.
     <nuxeo-demo-section heading="Simple directory selector with a radio group" size="small">
       <nuxeo-directory-radio-group directory-name="language"
                                    label="Select language"
-                                   value="{{directoryRadioId}}">
+                                   value="{{id}}"
+                                   selected-item="{{item}}">
       </nuxeo-directory-radio-group>
 
-      <div>Selected directory: [[directoryRadioId.absoluteLabel]]</div>
+      <div>Selected directory id: [[id]]</div>
+      <div>Selected directory label: [[item.absoluteLabel]]</div>
     </nuxeo-demo-section>
 
   </template>
