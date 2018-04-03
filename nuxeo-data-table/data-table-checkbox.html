@@ -1,3 +1,6 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../widgets/nuxeo-checkmark.html">
+
 <!-- Part of `nuxeo-data-table` -->
 <dom-module id="nuxeo-data-table-checkbox">
   <template>
@@ -21,118 +24,22 @@
         outline: none;
       }
 
-      :host(:focus) #container {
-        border: 2px solid var(--paper-checkbox-checked-color);
-      }
-
-      #container {
-        position: relative;
-        box-sizing: border-box;
-        height: 18px;
-        width: 18px;
-        border: 1px solid var(--paper-checkbox-unchecked-color);
-        border-radius: 2px;
-        pointer-events: none;
-        -webkit-transition: background-color 140ms, border-color 140ms;
-        transition: background-color 140ms, border-color 140ms;
-      }
-
-      :host([checked]) #container {
-        border-color: var(--paper-checkbox-checked-color);
-        background-color: var(--paper-checkbox-checked-color);
-      }
-
-      :host([checked]) .checkmark {
-        border-bottom: 2px solid white;
-        border-right: 2px solid white;
-        width: 36%;
-        height: 70%;
-        -webkit-transform-origin: 97% 86%;
-        transform-origin: 97% 86%;
-        -webkit-animation: checkmark-expand 140ms ease-out forwards;
-        animation: checkmark-expand 140ms ease-out forwards;
-      }
-
-      @-webkit-keyframes checkmark-expand {
-        0% {
-          -webkit-transform: scale(0, 0) rotate(45deg);
-        }
-        100% {
-          -webkit-transform: scale(1, 1) rotate(45deg);
-        }
-      }
-
-      @keyframes checkmark-expand {
-        0% {
-          transform: scale(0, 0) rotate(45deg);
-        }
-        100% {
-          transform: scale(1, 1) rotate(45deg);
-        }
-      }
-
-      :host([indeterminate]) .checkmark {
-        border-bottom: 2px solid var(--primary-text-color);
-        width: 60%;
-        height: 45%;
-        margin-left: 3px;
-        -webkit-animation: indeterminate-expand 140ms ease-out forwards;
-        animation: indeterminate-expand 140ms ease-out forwards;
-      }
-
-      @-webkit-keyframes indeterminate-expand {
-        0% {
-          -webkit-transform: scale(0, 0);
-        }
-        100% {
-          -webkit-transform: scale(1, 1);
-        }
-      }
-
-      @keyframes indeterminate-expand {
-        0% {
-          transform: scale(0, 1);
-        }
-        100% {
-          transform: scale(1, 1);
-        }
+      :host([header]) {
+        visibility: hidden !important;
       }
     </style>
 
-    <div id="container">
-      <div class="checkmark"></div>
-    </div>
+    <nuxeo-checkmark checked="{{checked}}"></nuxeo-checkmark>
 
   </template>
   <script>
     Polymer({
       is: 'nuxeo-data-table-checkbox',
-
       properties: {
         checked: {
           type: Boolean,
-          observer: '_checkedChanged',
           reflectToAttribute: true,
           value: false
-        },
-
-        indeterminate: {
-          type: Boolean,
-          reflectToAttribute: true,
-          observer: '_indeterminateChanged',
-          value: false
-        }
-      },
-
-      _checkedChanged: function(checked) {
-        if (checked) {
-          this.indeterminate = false;
-        }
-      },
-
-      _indeterminateChanged: function(indeterminate) {
-        if (indeterminate) {
-          this.checked = false;
         }
       }
     });

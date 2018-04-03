@@ -7,7 +7,9 @@
         flex-direction: column;
         opacity: 1;
         cursor: pointer;
+        border: 2px solid transparent;
         border-bottom: 1px solid var(--nuxeo-border, #e3e3e3);
+        padding-bottom: 1px;
         @apply --iron-data-table-row;
         @apply --layout-horizontal;
         @apply --layout-center;
@@ -16,6 +18,12 @@
         -moz-user-select: none;
         -ms-user-select: none;
         user-select: none;
+      }
+
+      :host([selected]) {
+        border: 2px solid var(--nuxeo-primary-color, blue);
+        padding-bottom: 0;
+        background-color: var(--nuxeo-page-background, red);
       }
 
       :host([selected]) .cells {
@@ -82,7 +90,8 @@
         item: Object,
         selected: {
           type: Boolean,
-          reflectToAttribute: true
+          reflectToAttribute: true,
+          value: false
         },
         _static: {
           type: Object,
