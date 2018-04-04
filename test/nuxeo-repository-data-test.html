@@ -101,11 +101,11 @@ limitations under the License.
           server = sinon.fakeServer.create();
           server.autoRespond = true;
           server.respondWith('GET',
-             '/dummy/json/cmis', [
+            '/dummy/json/cmis', [
               200,
               {'Content-Type': 'application/json'},
               '{}'
-          ]);
+            ]);
           server.respondWith(
             'POST',
             '/dummy/api/v1/automation/login',

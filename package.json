@@ -17,13 +17,7 @@
     "lint": "npm run eslint && npm run polylint",
     "test": "polymer test --simpleOutput --expanded -l chrome"
   },
-  "dependencies": {
-    "@polymer/polymer": "^1.2.5-npm-test.2",
-    "nuxeo-elements": "nuxeo/nuxeo-elements"
-  },
   "devDependencies": {
-    "web-component-tester": "*",
-    "moment": "^2.10.6",
     "eslint": "^3.0.0",
     "eslint-plugin-html": "^2.0.0",
     "polymer-cli": "^1.0.0"
