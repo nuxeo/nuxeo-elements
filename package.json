@@ -17,12 +17,6 @@
     "lint": "npm run eslint && npm run polylint",
     "test": "polymer test --simpleOutput --expanded -l chrome"
   },
-  "dependencies": {
-    "@polymer/polymer": "^1.2.5-npm-test.2",
-    "@polymer/iron-elements": "0.0.3",
-    "nuxeo": "^2.0.2",
-    "es6-promise": "^3.1.2"
-  },
   "devDependencies": {
     "eslint": "^3.0.0",
     "eslint-plugin-html": "^2.0.0",
