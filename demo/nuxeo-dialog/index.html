@@ -36,9 +36,9 @@ limitations under the License.
       <template>
 
         <nuxeo-demo-section heading="Simple dialog" size="small">
-          <paper-button primary toggles active="{{opened}}" noink>OPEN DIALOG</paper-button>
-          <nuxeo-dialog opened="{{opened}}" with-backdrop>
-            <h2>TITLE</h2>
+          <paper-button primary toggles active="{{dialogOpened1}}" noink>OPEN DIALOG</paper-button>
+          <nuxeo-dialog opened="{{dialogOpened1}}" with-backdrop>
+            <h2>Simple dialog</h2>
             <div>
               Lorem ipsum dolor sit amet, consectetur adipiscing elit,
               sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -50,6 +50,26 @@ limitations under the License.
               <paper-button dialog-dismiss noink>DISMISS</paper-button>
               <paper-button dialog-confirm noink primary>CONFIRM</paper-button>
             </div>
+          </nuxeo-dialog>
+        </nuxeo-demo-section>
+
+        <nuxeo-demo-section heading="Simple dialog (with lazy loaded template)" size="small">
+          <paper-button primary toggles active="{{dialogOpened2}}" noink>OPEN DIALOG</paper-button>
+          <nuxeo-dialog opened="{{dialogOpened2}}" with-backdrop>
+            <template>
+              <h2>Simple dialog (with lazy loaded template)</h2>
+              <div>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+                sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+                reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+              </div>
+              <div class="buttons">
+                <paper-button dialog-dismiss noink>DISMISS</paper-button>
+                <paper-button dialog-confirm noink primary>CONFIRM</paper-button>
+              </div>
+            </template>
           </nuxeo-dialog>
         </nuxeo-demo-section>
 
