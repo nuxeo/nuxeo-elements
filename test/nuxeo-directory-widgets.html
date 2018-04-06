@@ -32,6 +32,7 @@ limitations under the License.
   <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
   <link rel="import" href="../widgets/nuxeo-directory-checkbox.html">
   <link rel="import" href="../widgets/nuxeo-directory-radio-group.html">
+  <link rel="import" href="../widgets/nuxeo-directory-suggestion.html">
 </head>
 <body>
   <test-fixture id="nx">
@@ -54,7 +55,117 @@ limitations under the License.
     </template>
   </test-fixture>
 
+  <test-fixture id="suggestion">
+    <template>
+        <nuxeo-directory-suggestion>
+        </nuxeo-directory-suggestion>
+    </template>
+  </test-fixture>
+
   <script>
+    suite('Given I have a non-balanced hierarchical vocabulary', function() {
+      var server;
+      var suggestionWidget;
+      setup(function() {
+        server = sinon.fakeServer.create();
+        server.autoRespond = true;
+        var response = [
+          {
+            "absoluteLabel": "Brittany",
+            "computedId": "breizh",
+            "directoryName": "l10ncoverage",
+            "displayLabel": "Brittany",
+            "entity-type": "directoryEntry",
+            "id": "breizh",
+            "label_en": "Brittany",
+            "label_fr": "Bretagne",
+            "obsolete": 0,
+            "ordering": 10000000,
+            "parent": "",
+            "properties": {
+              "id": "breizh",
+              "label_en": "Brittany",
+              "label_fr": "Bretagne",
+              "obsolete": 0,
+              "ordering": 10000000,
+              "parent": ""
+            }
+          },
+          {
+            "children": [
+              {
+                "absoluteLabel": "South-america/Brazil",
+                "computedId": "south-america/Brazil",
+                "directoryName": "l10ncoverage",
+                "displayLabel": "Brazil",
+                "entity-type": "directoryEntry",
+                "id": "Brazil",
+                "label_en": "Brazil",
+                "label_fr": "Br\u00e9sil",
+                "obsolete": 0,
+                "ordering": 10000000,
+                "parent": "south-america",
+                "properties": {
+                  "id": "Brazil",
+                  "label_en": "Brazil",
+                  "label_fr": "Br\u00e9sil",
+                  "obsolete": 0,
+                  "ordering": 10000000,
+                  "parent": "south-america"
+                }
+              }
+            ],
+            "displayLabel": "South-america"
+          }
+        ];
+        server.respondWith(
+          'POST',
+          '/dummy/api/v1/automation/Directory.SuggestEntries',
+          [
+            200,
+            {'Content-Type': 'application/json'},
+            JSON.stringify(response)
+          ]
+        );
+        // login
+        var nx = fixture('nx');
+        return login(server, nx);
+      });
+
+      suite('When I have a suggestion widget', function() {
+        setup(function() {
+          suggestionWidget = fixture('suggestion');
+          suggestionWidget.directoryName = 'l10coverage';
+          suggestionWidget.minChars = 0;
+        });
+
+        test('Then it works', function() {
+          var s2 = Polymer.dom(suggestionWidget.root).querySelector('#s2');
+          var input = Polymer.dom(s2.root).querySelector('#input');
+          MockInteractions.tap(input);
+          Polymer.dom(s2.root).querySelector('.selectivity-search-input').value = 'Brittany';
+          var getSuggestedValue = function(timeout) {
+            timeout = timeout || 2000;
+            var start = Date.now();
+            var waitForSuggestion = function(resolve, reject) {
+              var result = Polymer.dom(s2.root).querySelector('.selectivity-result-item.highlight');
+              if (result) {
+                resolve(result.textContent);
+              } else if (timeout && (Date.now() - start) >= timeout) {
+                reject(new Error("timeout"));
+              } else {
+                setTimeout(waitForSuggestion.bind(this, resolve, reject), 30);
+              }
+            };
+            return new Promise(waitForSuggestion);
+          }
+          return flush().then(getSuggestedValue).then(function(val) {
+            expect(val).to.be.equal('Brittany');
+          });
+        });
+      });
+    });
+
     suite('Given I have a language vocabulary', function() {
       var server;
       var checkboxes, radioGroup;
