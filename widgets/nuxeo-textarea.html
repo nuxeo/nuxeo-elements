@@ -65,6 +65,7 @@ An element for generic textarea input in forms
     <paper-textarea id="paperTextarea"
                     name="[[name]]"
                     value="{{value}}"
+                    rows$="[[rows]]"
                     required$="[[required]]"
                     disabled$="[[disabled]]"
                     readonly$="[[readonly]]"
@@ -98,6 +99,11 @@ An element for generic textarea input in forms
           type: String,
           notify: true
         },
+
+        /**
+         * Initial number of rows.
+         */
+        rows: Number,
 
         /**
          * Placeholder.
