@@ -17,6 +17,7 @@ limitations under the License.
 
 <link rel="import" href="nuxeo-selectivity.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../nuxeo-format-behavior.html">
 <link rel="import" href="../../iron-form-element-behavior/iron-form-element-behavior.html">
 <link rel="import" href="../../iron-validatable-behavior/iron-validatable-behavior.html">
 
@@ -70,7 +71,7 @@ An element for selecting one or more entries from a given directory.
   <script>
     Polymer({
       is: 'nuxeo-directory-suggestion',
-      behaviors: [Nuxeo.I18nBehavior, Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior],
+      behaviors: [Nuxeo.I18nBehavior, Nuxeo.FormatBehavior, Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior],
       properties: {
 
         /**
@@ -202,6 +203,14 @@ An element for selecting one or more entries from a given directory.
         },
 
         /**
+         * Separator used for hierachical vocabulary entry's label.
+         */
+        separator: {
+          type: String,
+          value: '/'
+        },
+
+        /**
          * Function that transforms the entries added using the value property into object
          */
         resolveEntry: {
@@ -233,21 +242,15 @@ An element for selecting one or more entries from a given directory.
       },
 
       _selectionFormatter: function(entry) {
-        return entry.displayLabel;
+        return entry.absoluteLabel || entry.displayLabel;
       },
 
       _resolveEntry: function(entry) {
         if (entry && entry['entity-type'] && entry['entity-type'] === 'directoryEntry') {
-          if (entry.properties && entry.properties.label) {
+          if (entry.properties) {
             return {
               id: entry.properties.id,
-              displayLabel: this.i18n(entry.properties.label)
-            };
-          } else {
-            var label = 'label_' + ((window.nuxeo.I18n.language) ? window.nuxeo.I18n.language.split('-')[0] : 'en');
-            return {
-              id: entry.properties.id,
-              displayLabel: entry.properties[label] || entry.properties['label_en']
+              displayLabel: this.formatDirectory(entry, this.separator)
             };
           }
         }
@@ -258,7 +261,7 @@ An element for selecting one or more entries from a given directory.
       },
 
       _idFunction: function(item) {
-        return item.id || item.computedId || item.uid;
+        return item.computedId || item.id || item.uid;
       }
 
     });

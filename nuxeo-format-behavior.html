@@ -78,16 +78,29 @@ limitations under the License.
     /**
      * Returns the label for the given directory entry.
      */
-    formatDirectory: function(value) {
+    formatDirectory: function(value, separator) {
       if (value && value['entity-type'] && value['entity-type'] === 'directoryEntry') {
         if (value.properties && value.properties.label) {
-          return value.properties.label;
+          return this._absoluteDirectoryPath(value, 'label', separator || '/');
         } else {
           var label = 'label_' + this._languageCode();
-          return value.properties[label] || value.properties['label_en']
+          return this._absoluteDirectoryPath(value, label || 'label_en', separator || '/');
         }
       } else {
         return value;
+      }
+    },
+
+    _absoluteDirectoryPath: function(entry, labelField, separator, subPath) {
+      var parent = entry.properties.parent;
+      var tmp = entry.properties[labelField];
+      if (subPath) {
+        tmp += separator + subPath;
+      }
+      if (parent && parent['entity-type'] && parent['entity-type'] === 'directoryEntry') {
+        return this._absoluteDirectoryPath(parent, labelField, separator, tmp);
+      } else {
+        return tmp;
       }
     },
 
