@@ -92,6 +92,11 @@ An element for selecting one or more entries from a given directory.
         label: String,
 
         /**
+         * In case of hierarchical vocabulary, if true, parent item can be selected.
+         */
+        canSelectParent: Boolean,
+
+        /**
          * Operation to call for suggestions.
          */
         operation: {
@@ -215,6 +220,7 @@ An element for selecting one or more entries from a given directory.
         return Object.assign({}, {
           directoryName: this.directoryName,
           dbl10n: this.dbl10n,
+          canSelectParent: this.canSelectParent,
           localize : true,
           lang: (window.nuxeo.I18n.language) ? window.nuxeo.I18n.language.split('-')[0] : 'en'
         }, this.params);
