@@ -141,6 +141,14 @@ An element wrapping selectivity.js and relying on an operation for suggestions
         },
 
         /**
+         * Time in ms used to debounce requests.
+         */
+        frequency: {
+          type: Number,
+          value: 300
+        },
+
+        /**
          * Placeholder.
          */
         placeholder: {
@@ -382,7 +390,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
             // debounce requests
             this.debounce('_selectivityQuery', function() {
               this._query(query);
-            }.bind(this), 300);
+            }.bind(this), this.frequency);
           }.bind(this);
         }
 

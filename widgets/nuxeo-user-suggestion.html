@@ -48,6 +48,7 @@ limitations under the License.
     <nuxeo-selectivity id="s2" operation="[[operation]]"
                    label="[[label]]"
                    min-chars="[[minChars]]"
+                   frequency="[[frequency]]"
                    multiple="[[multiple]]"
                    params="[[_computeParams(params.*, searchType)]]"
                    placeholder="[[placeholder]]"
@@ -137,6 +138,11 @@ limitations under the License.
           type: Number,
           value: 3
         },
+
+        /**
+         * Time in ms used to debounce requests.
+         */
+        frequency: Number,
 
         /**
          * Placeholder.
