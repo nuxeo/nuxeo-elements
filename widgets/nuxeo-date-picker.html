@@ -74,7 +74,7 @@ Example:
       label {
         @apply --nuxeo-label;
       }
-      
+
       overlay-date-picker {
         width: 0;
         height: 1px;
@@ -91,10 +91,11 @@ Example:
 
     <paper-input id="date" name="[[name]]" required$="[[required]]" invalid="[[invalid]]"
                  type="date" value="{{_inputValue}}" no-label-float disabled$="[[disabled]]"
+                 min="[[min]]" max="[[max]]"
                  error-message="[[errorMessage]]" on-tap="_togglePicker">
     </paper-input>
 
-    <overlay-date-picker id="picker" confirmed-date="{{_pickerValue}}" vertical-align="bottom" 
+    <overlay-date-picker id="picker" confirmed-date="{{_pickerValue}}" vertical-align="bottom"
                          on-opened-changed="_pickerOpenedChanged" native auto-confirm></overlay-date-picker>
 
   </template>
@@ -107,6 +108,16 @@ Example:
         label: String,
 
         errorMessage: String,
+
+        /*
+         * The maximum date-time input value (e.g. `"2000-01-01"`).
+         */
+        max: String,
+
+        /*
+         * The minimum date-time input value (e.g. `"2000-01-01"`).
+         */
+        min: String,
 
         required: {
           type: Boolean,
