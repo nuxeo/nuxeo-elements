@@ -58,23 +58,22 @@ Example:
     <template is="dom-if" if="[[_isAvailable(document)]]">
       <paper-icon-button icon="[[icon]]" on-tap="_toggleDialog" noink></paper-icon-button>
       <paper-tooltip>[[i18n('workflowButton.tooltip')]]</paper-tooltip>
+
+      <nuxeo-dialog id="dialog" with-backdrop>
+        <h2>[[i18n('workflowButton.dialog.heading')]]</h2>
+
+        <nuxeo-select label="[[i18n('workflowButton.dialog.placeholder')]]" selected="{{selectedProcess}}" attr-for-selected="key">
+          <template is="dom-repeat" items="[[processes]]" as="process">
+            <paper-item key="[[process.workflowModelName]]">[[i18n(process.title)]]</paper-item>
+          </template>
+        </nuxeo-select>
+
+        <div class="buttons">
+          <paper-button dialog-dismiss>[[i18n('workflowButton.dialog.close')]]</paper-button>
+          <paper-button id="startButton" class="primary" disabled="[[!selectedProcess]]" on-tap="_startWorkflow">[[i18n('workflowButton.dialog.start')]]</paper-button>
+        </div>
+      </nuxeo-dialog>
     </template>
-
-    <nuxeo-dialog id="dialog" with-backdrop>
-      <h2>[[i18n('workflowButton.dialog.heading')]]</h2>
-
-      <nuxeo-select label="[[i18n('workflowButton.dialog.placeholder')]]" selected="{{selectedProcess}}" attr-for-selected="key">
-        <template is="dom-repeat" items="[[processes]]" as="process">
-          <paper-item key="[[process.workflowModelName]]">[[i18n(process.title)]]</paper-item>
-        </template>
-      </nuxeo-select>
-
-      <div class="buttons">
-        <paper-button dialog-dismiss>[[i18n('workflowButton.dialog.close')]]</paper-button>
-        <paper-button id="startButton" class="primary" disabled="[[!selectedProcess]]" on-tap="_startWorkflow">[[i18n('workflowButton.dialog.start')]]</paper-button>
-      </div>
-    </nuxeo-dialog>
-
   </template>
 
   <script>
@@ -125,13 +124,13 @@ Example:
       },
 
       _toggleDialog: function() {
-        this.$.startButton.removeAttribute('disabled');
-        this.$.dialog.toggle();
+        this.$$('#startButton').removeAttribute('disabled');
+        this.$$('#dialog').toggle();
       },
 
       _startWorkflow : function() {
         // disable start button to prevent starting multiple workflows
-        this.$.startButton.setAttribute('disabled', true);
+        this.$$('#startButton').setAttribute('disabled', true);
         this.workflows = this.$.workflows;
         this.$.workflows.data = {
           'entity-type': 'workflow',
@@ -141,7 +140,7 @@ Example:
 
         this.workflows.post().then(function() {
           this.fire('workflowStarted');
-          this.$.dialog.toggle();
+          this.$$('#dialog').toggle();
         }.bind(this));
       },
 
