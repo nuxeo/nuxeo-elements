@@ -44,6 +44,7 @@ limitations under the License.
 <link rel="import" href="nuxeo-data-table-form.html">
 
 <link rel="import" href="../nuxeo-page-provider-display-behavior.html">
+<link rel="import" href="../nuxeo-draggable-list-behavior.html">
 
 <!--
 An element to display a page provider result within a table with infinite scrolling.
@@ -105,6 +106,15 @@ Example:
         width: 100%;
         min-height: 300px;
         @apply --iron-data-table;
+      }
+
+      :host([draggable]) ::slotted(nuxeo-data-table-row[selected]) {
+        cursor: -webkit-grab;
+        cursor: grab;
+      }
+
+      :host .droptarget-hover ::slotted(nuxeo-data-table-row) {
+        border: 2px dashed var(--nuxeo-primary-color, blue);
       }
 
       /* scrollbars */
@@ -336,7 +346,7 @@ Example:
 
       behaviors: [
         Polymer.IronResizableBehavior, Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior,
-        Nuxeo.PageProviderDisplayBehavior, Nuxeo.I18nBehavior
+        Nuxeo.PageProviderDisplayBehavior, Nuxeo.I18nBehavior, Nuxeo.DraggableListBehavior
       ],
 
       listeners: {
@@ -877,6 +887,11 @@ Example:
       /* Override method from Polymer.IronValidatableBehavior. */
       _getValidity: function() {
         return this.required ? this.items && this.items.length > 0 : true;
+      },
+
+      draggableFilter: function(el) {
+        var row = el.closest('nuxeo-data-table-row');
+        return row && row.selected;
       }
 
     });

@@ -25,6 +25,7 @@ limitations under the License.
 
 <link rel="import" href="../widgets/nuxeo-sort-select.html">
 <link rel="import" href="../nuxeo-page-provider-display-behavior.html">
+<link rel="import" href="../nuxeo-draggable-list-behavior.html">
 <link rel="import" href="../nuxeo-quick-filters/nuxeo-quick-filters.html">
 <link rel="import" href="../nuxeo-aggregation/nuxeo-aggregation-navigation.html">
 
@@ -129,6 +130,11 @@ Example:
         bottom: 0;
         right: 12px;
       }
+
+      :host([draggable]) ::slotted([selected]) {
+        cursor: -webkit-grab;
+        cursor: grab;
+      }
     </style>
 
     <div id="container">
@@ -182,7 +188,8 @@ Example:
 
       behaviors: [
         Polymer.IronResizableBehavior,
-        Nuxeo.PageProviderDisplayBehavior
+        Nuxeo.PageProviderDisplayBehavior,
+        Nuxeo.DraggableListBehavior
       ],
 
       properties: {
@@ -283,6 +290,10 @@ Example:
           this.nxProvider.sort = sort;
           this.fetch();
         }
+      },
+
+      draggableFilter: function(el) {
+        return el.selected;
       }
 
     });
