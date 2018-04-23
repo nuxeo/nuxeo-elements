@@ -15,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../iron-image/iron-image.html">
 <link rel="import" href="../../iron-list/iron-list.html">
 <link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
@@ -25,10 +24,10 @@ limitations under the License.
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../../polymer/lib/utils/debounce.html">
+<link rel="import" href="../../polymer/lib/utils/render-status.html">
 <link rel="import" href="../nuxeo-page-provider-display-behavior.html">
 <link rel="import" href="../nuxeo-routing-behavior.html">
 <link rel="import" href="../widgets/nuxeo-sort-select.html">
-<link rel="import" href="nuxeo-justified-grid-item.html">
 
 <!--
 An element for displaying page provider results in a justified grid with infinite scrolling.
@@ -78,14 +77,6 @@ An element for displaying page provider results in a justified grid with infinit
         color: white;
       }
 
-      #list .item iron-image {
-        height: 100%;
-        width: 100%;
-        --iron-image-placeholder: {
-          background: #fafafa;
-        };
-      }
-
       #list .item paper-icon-button {
         position: absolute;
         left: 10px;
@@ -129,10 +120,10 @@ An element for displaying page provider results in a justified grid with infinit
           <div class="row">
             <dom-repeat items="[[row]]">
               <template>
-                <div class="item" tabindex="0" on-click="_tap" selected$="[[_isSelected(item, selectedItems.*)]]"
+                <div class="item" tabindex="0" on-click="_click" selected$="[[_isSelected(item, selectedItems.*)]]"
                      style$="height: [[item._view.height]]px; width: [[item._view.width]]px;">
-                  <nuxeo-justified-grid-item document="[[item]]"></nuxeo-justified-grid-item>
-                  <paper-icon-button noink icon="icons:check" selection-mode$="[[selectionMode]]" hidden$="[[!selectionEnabled]]" on-tap="_check"></paper-icon-button>
+                  <div id="item-[[item._view.index]]"></div>[[_itemChanged(item, item._view.width, item._view.height)]]
+                  <paper-icon-button noink icon="icons:check" selection-mode$="[[selectionMode]]" hidden$="[[!selectionEnabled]]" on-click="_check"></paper-icon-button>
                 </div>
               </template>
             </dom-repeat>
@@ -147,8 +138,8 @@ An element for displaying page provider results in a justified grid with infinit
   <script>
     {
       class JustifiedGrid
-        extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior, Nuxeo.PageProviderDisplayBehavior,
-          Nuxeo.RoutingBehavior], Nuxeo.Element) {
+        extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior, Polymer.Templatizer,
+          Nuxeo.PageProviderDisplayBehavior, Nuxeo.RoutingBehavior], Nuxeo.Element) {
 
         static get is() {
           return 'nuxeo-justified-grid';
@@ -199,6 +190,10 @@ An element for displaying page provider results in a justified grid with infinit
               type: Boolean,
               value: false,
             },
+
+            _templateElement: {
+              type: Object,
+            },
           };
         }
 
@@ -207,6 +202,32 @@ An element for displaying page provider results in a justified grid with infinit
             '_refresh(nxProvider, sortSelected)',
             '_selectedItemsChanged(selectedItems.splices)',
           ];
+        }
+
+        ready() {
+          super.ready();
+          const template = Polymer.dom(this).querySelector('template');
+          if (template) {
+            this.templatize(template);
+            this._templateElement = this.stamp().root.firstElementChild;
+          }
+        }
+
+        _itemChanged(item) {
+          if (this._templateElement && item && item._view) {
+            Polymer.RenderStatus.afterNextRender(this, () => {
+              const el = this.$$(`#item-${item._view.index}`);
+              if (el) {
+                if (el.childNodes.length > 0) {
+                  el.childNodes[0].set('document', item);
+                } else {
+                  const clone = this._templateElement.cloneNode(true);
+                  clone.set('document', item);
+                  el.appendChild(clone);
+                }
+              }
+            });
+          }
         }
 
         // overridden from Nuxeo.PageProviderDisplayBehavior
@@ -303,11 +324,11 @@ An element for displaying page provider results in a justified grid with infinit
         _check(e) {
           if (this.selectionEnabled) {
             this.selectionMode = true;
-            this._tap(e);
+            this._click(e);
           }
         }
 
-        _tap(e) {
+        _click(e) {
           const index = e.model.item._view.index;
           if (this.selectionEnabled && this.selectionMode) {
             // since we are using Object.assign() when creating items for the grid, we cannot really use

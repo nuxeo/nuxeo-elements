@@ -16,8 +16,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="../../iron-image/iron-image.html">
-<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="nuxeo-justified-grid-item.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 
 <!--
 An element for displaying an item in nuxeo-justified-grid.
@@ -38,7 +37,11 @@ An element for displaying an item in nuxeo-justified-grid.
       }
 
       .item {
-        position: relative;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
       }
 
       .item iron-image {
@@ -78,18 +81,28 @@ An element for displaying an item in nuxeo-justified-grid.
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-justified-grid-item',
+    {
+      class JustifiedGridItem extends Nuxeo.Element {
 
-      properties: {
-        document: Object
-      },
+        static get is() {
+          return 'nuxeo-justified-grid-item';
+        }
 
-      _url: function(doc) {
-        return doc && doc.contextParameters && doc.contextParameters.thumbnail && doc.contextParameters.thumbnail.url
-          ? doc.contextParameters.thumbnail.url : '';
+        static get properties() {
+          return {
+            document: Object,
+          };
+        }
+
+        _url(doc) {
+          return doc && doc.contextParameters && doc.contextParameters.thumbnail && doc.contextParameters.thumbnail.url
+            ? doc.contextParameters.thumbnail.url : '';
+        }
+
       }
 
-    });
+      customElements.define(JustifiedGridItem.is, JustifiedGridItem);
+      Nuxeo.JustifiedGridItem = JustifiedGridItem;
+    }
   </script>
 </dom-module>
