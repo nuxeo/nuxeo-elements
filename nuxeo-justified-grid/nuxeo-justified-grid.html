@@ -28,6 +28,7 @@ limitations under the License.
 <link rel="import" href="../nuxeo-page-provider-display-behavior.html">
 <link rel="import" href="../nuxeo-routing-behavior.html">
 <link rel="import" href="../widgets/nuxeo-sort-select.html">
+<link rel="import" href="nuxeo-justified-grid-item.html">
 
 <!--
 An element for displaying page provider results in a justified grid with infinite scrolling.
@@ -107,24 +108,8 @@ An element for displaying page provider results in a justified grid with infinit
       }
 
       #list .item:hover paper-icon-button,
-      #list .item paper-icon-button[selection-mode],
-      #list .item:hover .overlay {
+      #list .item paper-icon-button[selection-mode] {
         display: block;
-      }
-
-      #list .item .overlay {
-        display: none;
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        padding: 24px 10px 8px;
-        background: rgba(0, 0, 0, 0.4);
-        background: -webkit-linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.4));
-        background: -o-linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.4));
-        background: -moz-linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.4));
-        background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.4));
-        text-shadow: -1px 0 rgba(0, 0, 0, 0.4), 0 1px rgba(0, 0, 0, 0.4), 1px 0 rgba(0, 0, 0, 0.4), 0 -1px rgba(0, 0, 0, 0.4);
       }
 
       [hidden] {
@@ -146,10 +131,8 @@ An element for displaying page provider results in a justified grid with infinit
               <template>
                 <div class="item" tabindex="0" on-click="_tap" selected$="[[_isSelected(item, selectedItems.*)]]"
                      style$="height: [[item._view.height]]px; width: [[item._view.width]]px;">
-                  <iron-image src="[[_url(item)]]" sizing="cover" preload fade></iron-image>
-                  <paper-icon-button noink icon="icons:check" selection-mode$="[[selectionMode]]"
-                                     hidden$="[[!selectionEnabled]]" on-click="_check"></paper-icon-button>
-                  <div class="overlay">[[item.title]]</div>
+                  <nuxeo-justified-grid-item document="[[item]]"></nuxeo-justified-grid-item>
+                  <paper-icon-button noink icon="icons:check" selection-mode$="[[selectionMode]]" hidden$="[[!selectionEnabled]]" on-tap="_check"></paper-icon-button>
                 </div>
               </template>
             </dom-repeat>
@@ -448,11 +431,6 @@ An element for displaying page provider results in a justified grid with infinit
               },
             );
           }
-        }
-
-        _url(doc) {
-          return doc && doc.contextParameters && doc.contextParameters.thumbnail && doc.contextParameters.thumbnail.url
-            ? doc.contextParameters.thumbnail.url : '';
         }
 
       }
