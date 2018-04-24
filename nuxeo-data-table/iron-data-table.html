@@ -25,6 +25,7 @@ limitations under the License.
 <link rel="import" href="../../iron-icons/iron-icons.html">
 <link rel="import" href="../../paper-input/paper-input.html">
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../../paper-styles/paper-styles-classes.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../nuxeo-quick-filters/nuxeo-quick-filters.html">
@@ -331,7 +332,9 @@ Example:
 
     <nuxeo-dialog id="dialog" with-backdrop>
       <h2>[[i18n('command.add')]]</h2>
+      <paper-dialog-scrollable>
         <slot id="form" name="form"></slot>
+      </paper-dialog-scrollable>
       <div class="buttons">
         <paper-button noink dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
         <paper-button id="save" noink on-tap="_validateEntry" class="primary">[[i18n('command.ok')]]</paper-button>
