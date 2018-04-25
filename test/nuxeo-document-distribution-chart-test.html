@@ -26,6 +26,7 @@ limitations under the License.
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
     <script src="../../test-fixture/test-fixture-mocha.js"></script>
+    <script src="../../nuxeo-elements/test/test-helpers.js"></script>
 
     <link rel="import" href="../../polymer/polymer.html">
     <link rel="import" href="../../test-fixture/test-fixture.html">
@@ -172,20 +173,11 @@ limitations under the License.
               '{"entity-type":"login","username":"Administrator"}'
             ]
           );
-          server.respondWith(
-            'GET',
-            '/dummy/api/v1/repo/default/user/Administrator',
-            [
-              200,
-              {'Content-Type': 'application/json'},
-              '{"entity-type":"user","username":"Administrator"}'
-            ]
-          );
 
           // login
           var nx = fixture('nx');
           var promise = nx.connect();
-          return promise;
+          return login(server, nx);
         });
 
         test('includeAllCount', function() {
