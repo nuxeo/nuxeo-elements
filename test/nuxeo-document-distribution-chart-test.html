@@ -156,24 +156,6 @@ limitations under the License.
         setup(function() {
           server = sinon.fakeServer.create();
           server.autoRespond = true;
-          server.respondWith('GET',
-            '/dummy/json/cmis',
-            [
-              200,
-              {'Content-Type': 'application/json'},
-              '{}'
-            ]
-          );
-          server.respondWith(
-            'POST',
-            '/dummy/api/v1/automation/login',
-            [
-              200,
-              {'Content-Type': 'application/json'},
-              '{"entity-type":"login","username":"Administrator"}'
-            ]
-          );
-
           // login
           var nx = fixture('nx');
           return login(server, nx);
