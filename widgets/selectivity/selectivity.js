@@ -5635,6 +5635,7 @@ assign(Selectivity.prototype, {
                   if (options.triggerChange !== false) {
                       this.triggerChange();
                   }
+                  this.rerenderSelection();
                 }.bind(this)
             );
         } else {
