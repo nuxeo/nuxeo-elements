@@ -96,7 +96,7 @@ limitations under the License.
       setup(function() {
         server.respondWith('GET', '/json/cmis', cmisResponse);
         server.respondWith('POST','/api/v1/automation/login', loginResponse);
-        server.respondWith('GET', '/api/v1/repo/default/user/Administrator', userResponse);
+        server.respondWith('GET', '/api/v1/user/Administrator', userResponse);
       });
 
       test('should run the next', function() {
@@ -158,7 +158,7 @@ limitations under the License.
       setup(function() {
         server.respondWith('GET', '/json/cmis', cmisResponse);
         server.respondWith('POST','/api/v1/automation/login', loginResponse);
-        server.respondWith('GET', '/api/v1/repo/default/user/Administrator', userResponse);
+        server.respondWith('GET', '/api/v1/user/Administrator', userResponse);
       });
 
       test('first connection should succeed', function() {
