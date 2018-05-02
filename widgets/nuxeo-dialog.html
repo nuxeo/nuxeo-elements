@@ -86,7 +86,7 @@ If a `<template>` is passed as the dialog's content, that `<template>` will be s
         }
 
         if (!this._instance) {
-          var template = Polymer.dom(this).querySelector('template');
+          var template = Polymer.dom(this).querySelector('nuxeo-dialog > template');
           if (template) {
             this.templatize(template);
             this._instance = this.stamp();
