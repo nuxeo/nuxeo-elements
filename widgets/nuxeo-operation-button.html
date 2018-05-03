@@ -54,16 +54,20 @@ Example:
 
       properties: {
 
-        /* Icon */
+        /* Icon name, can be anything taken from the [material icons](https://material.io/icons/), e.g. "chat", "description". */
         icon: String,
 
         /* Label (shown as tooltip) */
         label: String,
 
-        /* The id of the operation to call. */
+        /* The id of the operation, automation chain or script to call. */
         operation: String,
 
-        /* The operation input. */
+         /* Pass contextual information that will be forwarded to the operation,
+          * automation chain or script triggered as the input for the first
+          * operation. Possible options depend on the slot chosen.
+          * [Documentation](https://doc.nuxeo.com/nxdoc/web-ui-slots)
+          */
         input: String,
 
         /**
