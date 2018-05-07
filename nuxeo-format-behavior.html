@@ -31,7 +31,7 @@ limitations under the License.
      * Formats a size given in bytes in MB, KB, or bytes.
      */
     formatSize: function(size) {
-      if (!size) {
+      if (!size || size < 0) {
         return '';
       } else if (size > 1048576) {
         return parseFloat(size / 1048576).toFixed(2) + ' MB';
