@@ -122,19 +122,19 @@ limitations under the License.
 </div>
 
 <div id="groupFilter">
-  <nuxeo-filter user='{"properties":{"groups": ["Administrators"]}}' group="Administrators">
+  <nuxeo-filter user='{"extendedGroups":[{"name":"Administrators"}]}' group="Administrators">
     <template>
       <div class="ok"></div>
     </template>
   </nuxeo-filter>
 
-  <nuxeo-filter user='{"properties":{"groups": ["Members"]}}' group="Administrators">
+  <nuxeo-filter user='{"extendedGroups":[{"name":"Members"}]}' group="Administrators">
     <template>
       <div class="notok"></div>
     </template>
   </nuxeo-filter>
 
-  <nuxeo-filter user='{"properties":{"groups": ["Members"]}}' group="Administrators,Members">
+  <nuxeo-filter user='{"extendedGroups":[{"name":"Members"}]}' group="Administrators,Members">
     <template>
       <div class="ok"></div>
     </template>
@@ -181,13 +181,13 @@ limitations under the License.
     </template>
   </nuxeo-filter>
 
-  <nuxeo-filter document='{"type":"File"}' type="File" user='{"properties":{"groups": ["Administrators"]}}' group="Administrators">
+  <nuxeo-filter document='{"type":"File"}' type="File" user='{"extendedGroups":[{"name":"Administrators"}]}' group="Administrators">
     <template>
       <div class="ok"></div>
     </template>
   </nuxeo-filter>
 
-  <nuxeo-filter document='{"type":"File"}' type="File" user='{"properties":{"groups": []}}' group="Administrators">
+  <nuxeo-filter document='{"type":"File"}' type="File" user='{"extendedGroups":[]}' group="Administrators">
     <template>
       <div class="notok"></div>
     </template>
