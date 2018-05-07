@@ -183,7 +183,7 @@
       },
 
       _filterValueChanged: function(table, filterValue, filterBy) {
-        if (table && filterBy && filterValue) {
+        if (table && filterBy && filterValue !== undefined) {
           this._notifyTable(table, 'filterValue', filterValue);
           this.fire('column-filter-changed', {value: filterValue, filterBy: filterBy});
         }

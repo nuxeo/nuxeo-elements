@@ -385,6 +385,10 @@ limitations under the License.
             });
           }
 
+          if (this.paginable) {
+            this.nxProvider.page = 1;
+          }
+
           if (this.nxProvider.params[e.detail.filterBy] && e.detail.value.length === 0) {
             delete this.nxProvider.params[e.detail.filterBy];
             this.fetch();
