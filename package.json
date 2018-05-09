@@ -20,6 +20,6 @@
   "devDependencies": {
     "eslint": "^3.0.0",
     "eslint-plugin-html": "^2.0.0",
-    "polymer-cli": "^1.0.0"
+    "polymer-cli": "1.6.0"
   }
 }
