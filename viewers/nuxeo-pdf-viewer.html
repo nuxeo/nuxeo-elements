@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 
 <!--
 An element for viewing PDF files.
@@ -59,23 +59,35 @@ Custom property | Description | Default
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-pdf-viewer',
-      properties: {
+    {
+      class PDFViewer extends Nuxeo.Element {
 
-        /**
-         * The path to the pdf file to display.
-         */
-        src: {
-          type: String
+        static get is() {
+          return 'nuxeo-pdf-viewer';
         }
-      },
 
-      _path: function(file) {
-        // get an absolute href
-        file = this.create("a", {href: file}).href;
-        return this.resolveUrl('pdfjs/web/viewer.html?file=' + file);
+        static get properties() {
+          return {
+            /**
+             * The path to the pdf file to display.
+             */
+            src: {
+              type: String,
+            },
+          };
+        }
+
+        _path(file) {
+          // get an absolute href
+          const el = document.createElement('a');
+          el.href = file;
+          return this.resolveUrl(`pdfjs/web/viewer.html?file=${el.href}`);
+        }
+
       }
-    });
+
+      customElements.define(PDFViewer.is, PDFViewer);
+      Nuxeo.PDFViewer = PDFViewer;
+    }
   </script>
 </dom-module>

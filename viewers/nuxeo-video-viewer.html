@@ -15,7 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 
 <!--
 An element for viewing videos.
@@ -71,87 +73,104 @@ Example:
     <div id="container">
       <video id="video" controls$="[[controls]]" width="[[width]]" height="[[height]]" preload="[[preload]]"
              poster="[[poster]]">
-        <template is="dom-repeat" items="[[sources]]" as="source">
-          <source src="[[source.data]]" type="[[source.type]]" />
-        </template>
+        <dom-repeat items="[[sources]]" as="source">
+          <template>
+            <source src="[[source.data]]" type="[[source.type]]" />
+          </template>
+        </dom-repeat>
       </video>
 
-      <template is="dom-if" if="[[_showStoryboard(storyboard)]]">
-        <div id="storyboard">
-          <div id="thumbnails">
-            <template is="dom-repeat" items="[[storyboard]]" as="thumbnail">
-              <img class="thumbnail" on-click="_jumpTo" src="[[thumbnail.content.data]]" />
-            </template>
+      <dom-if if="[[_showStoryboard(storyboard)]]">
+        <template>
+          <div id="storyboard">
+            <div id="thumbnails">
+              <dom-repeat items="[[storyboard]]" as="thumbnail">
+                <template>
+                  <img class="thumbnail" on-click="_jumpTo" src="[[thumbnail.content.data]]" />
+                </template>
+              </dom-repeat>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
+      </dom-if>
     </div>
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-video-viewer',
-      properties: {
+    {
+      class VideoViewer extends Nuxeo.Element {
 
-        /**
-         * The `preload` attribute specifies if/how the video should be loaded.
-         */
-        preload: {
-          type: String,
-          value: 'auto'
-        },
-
-        /**
-         * If true, controls for the user to interact with are displayed.
-         */
-        controls: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * The `poster` attribute specifies an image shown while downloading.
-         */
-        poster: String,
-
-        /**
-         * The `sources` to be displayed.
-         */
-        sources: Object,
-
-        /**
-         * The storyboard (array of thumbnails) for video navigation. If null or empty, the storyboard is not shown.
-         */
-        storyboard: {
-          type: Array,
-          value: []
+        static get is() {
+          return 'nuxeo-video-viewer';
         }
-      },
 
-      play: function() {
-        this.$.video.play();
-      },
+        static get properties() {
+          return {
+            /**
+             * The `preload` attribute specifies if/how the video should be loaded.
+             */
+            preload: {
+              type: String,
+              value: 'auto',
+            },
 
-      stop: function() {
-        this.$.video.pause();
-        this.$.video.currentTime = 0;
-      },
+            /**
+             * If true, controls for the user to interact with are displayed.
+             */
+            controls: {
+              type: Boolean,
+              value: false,
+            },
 
-      pause: function() {
-        this.$.video.pause();
-      },
+            /**
+             * The `poster` attribute specifies an image shown while downloading.
+             */
+            poster: String,
 
-      isPaused: function() {
-        return this.$.video.paused;
-      },
+            /**
+             * The `sources` to be displayed.
+             */
+            sources: Object,
 
-      _showStoryboard: function() {
-        return this.storyboard && this.storyboard.length > 0;
-      },
+            /**
+             * The storyboard (array of thumbnails) for video navigation. If null or empty, the storyboard is not shown.
+             */
+            storyboard: {
+              type: Array,
+              value: [],
+            },
+          };
+        }
 
-      _jumpTo: function(e) {
-        this.$.video.currentTime = e.model.thumbnail.timecode;
+        play() {
+          this.$.video.play();
+        }
+
+        stop() {
+          this.$.video.pause();
+          this.$.video.currentTime = 0;
+        }
+
+        pause() {
+          this.$.video.pause();
+        }
+
+        isPaused() {
+          return this.$.video.paused;
+        }
+
+        _showStoryboard() {
+          return this.storyboard && this.storyboard.length > 0;
+        }
+
+        _jumpTo(e) {
+          this.$.video.currentTime = e.model.thumbnail.timecode;
+        }
+
       }
-    });
+
+      customElements.define(VideoViewer.is, VideoViewer);
+      Nuxeo.VideoViewer = VideoViewer;
+    }
   </script>
 </dom-module>
