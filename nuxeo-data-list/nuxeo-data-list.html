@@ -144,7 +144,8 @@ Example:
       <div class="header">
 
         <template is="dom-if" if="[[displaySort]]">
-          <nuxeo-sort-select label="[[sortLabel]]" options="[[sortOptions]]" selected="{{sortSelected}}"></nuxeo-sort-select>
+          <nuxeo-sort-select label="[[sortLabel]]" options="[[sortOptions]]" selected="{{sortSelected}}"
+                             on-sort-order-changed="_refresh"></nuxeo-sort-select>
         </template>
 
         <template is="dom-if" if="[[displayQuickFilters]]">
@@ -219,7 +220,8 @@ Example:
         },
 
         sortSelected: {
-          type: Object
+          type: Object,
+          observer: '_sortSelectedChanged'
         },
 
         sortOptions: {
@@ -227,10 +229,6 @@ Example:
           value: []
         }
       },
-
-      observers: [
-        '_refresh(nxProvider, sortSelected)'
-      ],
 
       ready: function() {
         // keyBindings don't allow registering 'down' key
@@ -290,12 +288,25 @@ Example:
           var sort = {};
           sort[this.sortSelected.field] = this.sortSelected.order;
           this.nxProvider.sort = sort;
-          this.fetch();
+          if (this.visible) {
+            this.fetch();
+          }
+        }
+      },
+
+      _sortSelectedChanged: function(newSort, oldSort) {
+        // do not trigger fetch results when sort options are being initialized
+        if (newSort && oldSort) {
+          this._refresh();
         }
       },
 
       draggableFilter: function(el) {
         return el.selected;
+      },
+
+      get visible() {
+        return Boolean(this.offsetWidth || this.offsetHeight);
       }
 
     });

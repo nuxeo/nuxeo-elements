@@ -106,10 +106,8 @@ An element to select sort field and sort order.
       _toggleSortOrder: function() {
         this._sortOrder = this._sortOrder === 'asc' ? 'desc' : 'asc';
         if (this.selected) {
-          this.selected.order = this._sortOrder;
-          var sel = this.selected;
-          this.selected = null;
-          this.selected = sel;
+          this.set('selected.order', this._sortOrder);
+          this.fire('sort-order-changed', { sort: this.selected });
         }
       },
 
