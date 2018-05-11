@@ -15,17 +15,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
+<link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-tooltip/paper-tooltip.html">
-<link rel="import" href="../../paper-button/paper-button.html">
-<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
-<link rel="import" href="../widgets/nuxeo-dialog.html">
-<link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../nuxeo-filters-behavior.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-icons.html">
+<link rel="import" href="../widgets/nuxeo-dialog.html">
 
 <!--
 A button element for moving document to trash (if available server side) or permanently delete if hard set to true.
@@ -53,72 +54,92 @@ Example:
 
     <nuxeo-operation id="trashOp" op="Document.Trash" input="[[document.uid]]" sync-indexing></nuxeo-operation>
 
-    <template is="dom-if" if="[[_isAvailable(document)]]">
-      <paper-icon-button icon="[[icon]]" on-tap="_delete" noink id="deleteButton"></paper-icon-button>
-      <paper-tooltip fit-to-visible-bounds>[[_tooltip]]</paper-tooltip>
-    </template>
+    <dom-if if="[[_isAvailable(document)]]">
+      <template>
+        <paper-icon-button icon="[[icon]]" on-click="_delete" noink id="deleteButton"></paper-icon-button>
+        <paper-tooltip fit-to-visible-bounds>[[_tooltip]]</paper-tooltip>
+      </template>
+    </dom-if>
 
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-delete-document-button',
-      behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
-      properties: {
+    {
+      class DeleteDocumentButton
+        extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 
-        /**
-         * Input document.
-         */
-        document: Object,
-
-        /**
-         * Icon to use (iconset_name:icon_name).
-         */
-        icon: {
-          type: String,
-          value: 'nuxeo:delete',
-          computed: '_computeIcon(hard)'
-        },
-
-        /**
-         * Permanently delete the document.
-         */
-        hard: {
-          type: Boolean,
-          value: false
-        },
-
-        _tooltip: {
-          type: String,
-          computed: '_computeTooltip(hard)'
+        static get is() {
+          return 'nuxeo-delete-document-button';
         }
-      },
 
-      _isAvailable: function(doc) {
-        return doc && !this.isVersion(doc) && this.hasPermission(doc, 'Write') && (!this.isTrashed(doc) || this.hard);
-      },
+        static get properties() {
+          return {
+            /**
+             * Input document.
+             */
+            document: Object,
 
-      _computeIcon: function(hard) {
-        return hard ? 'nuxeo:delete-permanently' : 'nuxeo:delete';
-      },
+            /**
+             * Icon to use (iconset_name:icon_name).
+             */
+            icon: {
+              type: String,
+              value: 'nuxeo:delete',
+              computed: '_computeIcon(hard)',
+            },
 
-      _computeTooltip: function(hard) {
-        return this.i18n(hard ? 'deleteButton.tooltip.permanently' : 'deleteButton.tooltip');
-      },
+            /**
+             * Permanently delete the document.
+             */
+            hard: {
+              type: Boolean,
+              value: false,
+            },
 
-      _delete: function() {
-        if (!confirm(this.i18n('deleteButton.confirm'))) {
-          return;
+            _tooltip: {
+              type: String,
+              computed: '_computeTooltip(hard)',
+            },
+          };
         }
-        var op = this.hard ? this.$.deleteOp : this.$.trashOp;
-        op.execute().then(function() {
-          this.fire('document-deleted', {doc: this.document});
-        }.bind(this)).catch(function(error) {
-          this.fire('document-deleted', {doc: this.document, error: error});
-        }.bind(this));
+
+        _isAvailable(doc) {
+          return doc && !this.isVersion(doc) && this.hasPermission(doc, 'Write') && (!this.isTrashed(doc) || this.hard);
+        }
+
+        _computeIcon(hard) {
+          return hard ? 'nuxeo:delete-permanently' : 'nuxeo:delete';
+        }
+
+        _computeTooltip(hard) {
+          return this.i18n(hard ? 'deleteButton.tooltip.permanently' : 'deleteButton.tooltip');
+        }
+
+        _delete() {
+          if (!confirm(this.i18n('deleteButton.confirm'))) {
+            return;
+          }
+          const op = this.hard ? this.$.deleteOp : this.$.trashOp;
+          op.execute().then(() => {
+            this.dispatchEvent(new CustomEvent('document-deleted', {
+              composed: true,
+              bubbles: true,
+              detail: { doc: this.document },
+            }));
+          }).catch((error) => {
+            this.dispatchEvent(new CustomEvent('document-deleted', {
+              composed: true,
+              bubbles: true,
+              detail: { doc: this.document, error },
+            }));
+          });
+        }
+
       }
 
-    });
+      customElements.define(DeleteDocumentButton.is, DeleteDocumentButton);
+      Nuxeo.DeleteDocumentButton = DeleteDocumentButton;
+    }
   </script>
 
 </dom-module>

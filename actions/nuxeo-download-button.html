@@ -15,13 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-tooltip/paper-tooltip.html">
-<link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../nuxeo-filters-behavior.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-icons.html">
 
 <!--
@@ -43,64 +44,76 @@ Example:
       }
     </style>
 
-    <template is="dom-if" if="[[_isAvailable(document)]]">
-      <paper-icon-button icon="[[icon]]" on-tap="_download" noink></paper-icon-button>
-      <paper-tooltip>[[i18n('downloadButton.tooltip')]]</paper-tooltip>
-    </template>
+    <dom-if if="[[_isAvailable(document)]]">
+      <template>
+        <paper-icon-button icon="[[icon]]" on-click="_download" noink></paper-icon-button>
+        <paper-tooltip>[[i18n('downloadButton.tooltip')]]</paper-tooltip>
+      </template>
+    </dom-if>
 
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-download-button',
-      behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
-      properties: {
+    {
+      class DownloadButton extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 
-        /**
-         * Input document.
-         */
-        document: Object,
-
-        /**
-         * Icon to use (iconset_name:icon_name).
-         */
-        icon: {
-          type: String,
-          value: 'nuxeo:download'
-        },
-
-        /**
-         *
-         * Path of the file object to download.
-         * For example `xpath="files:files/0/file"`.
-         */
-        xpath: {
-          type: String,
-          value: 'file:content'
+        static get is() {
+          return 'nuxeo-download-button';
         }
-      },
 
-      _isAvailable: function(doc) {
-        return this.hasContent(doc);
-      },
+        static get properties() {
+          return {
+            /**
+             * Input document.
+             */
+            document: Object,
 
-      _download: function() {
-        var blob = this.document && this._deepFind(this.document.properties, this.xpath);
-        if (blob){
-          location.href = blob.data;
+            /**
+             * Icon to use (iconset_name:icon_name).
+             */
+            icon: {
+              type: String,
+              value: 'nuxeo:download',
+            },
+
+            /**
+             *
+             * Path of the file object to download.
+             * For example `xpath="files:files/0/file"`.
+             */
+            xpath: {
+              type: String,
+              value: 'file:content',
+            },
+          };
         }
-      },
 
-      _deepFind: function(obj, props) {
-        for (var i = 0, path = props.split('/'), len = path.length; i < len; i++) {
-          if(!obj || obj === []) {
-            break;
+        _isAvailable(doc) {
+          return this.hasContent(doc);
+        }
+
+        _download() {
+          const blob = this.document && this._deepFind(this.document.properties, this.xpath);
+          if (blob) {
+            location.href = blob.data;
           }
-          obj = obj[path[i]];
         }
-        return obj;
+
+        _deepFind(obj, props) {
+          for (let i = 0, path = props.split('/'), len = path.length; i < len; i++) {
+            if (!obj || obj === []) {
+              break;
+            }
+            obj = obj[path[i]];
+          }
+          return obj;
+        }
+
       }
-    });
+
+      customElements.define(DownloadButton.is, DownloadButton);
+      Nuxeo.DownloadButton = DownloadButton;
+    }
   </script>
 
 </dom-module>

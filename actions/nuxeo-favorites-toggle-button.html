@@ -15,14 +15,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-tooltip/paper-tooltip.html">
-<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
-<link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../nuxeo-filters-behavior.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-icons.html">
 
 <!--
@@ -51,86 +52,104 @@ Example:
     <nuxeo-operation id="opAdd" op="Document.AddToFavorites" input="[[document.uid]]"></nuxeo-operation>
     <nuxeo-operation id="opRemove" op="Document.RemoveFromFavorites" input="[[document.uid]]"></nuxeo-operation>
 
-    <template is="dom-if" if="[[_isAvailable(document)]]">
-      <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
-      <paper-tooltip>[[_tooltip]]</paper-tooltip>
-    </template>
+    <dom-if if="[[_isAvailable(document)]]">
+      <template>
+        <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
+        <paper-tooltip>[[_tooltip]]</paper-tooltip>
+      </template>
+    </dom-if>
 
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-favorites-toggle-button',
-      behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
-      properties: {
+    {
+      class FavoritesToggleButton
+        extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 
-        /**
-         * Input document.
-         */
-        document: {
-          type: Object,
-          observer: '_documentChanged'
-        },
-
-        /**
-         * Icon to use (iconset_name:icon_name).
-         */
-        icon: {
-          type: String,
-          value: 'nuxeo:favorites'
-        },
-
-        favorite: {
-          type: Boolean,
-          notify: true,
-          reflectToAttribute: true
-        },
-
-        _tooltip: {
-          type: String,
-          computed: '_computeTooltip(favorite)'
+        static get is() {
+          return 'nuxeo-favorites-toggle-button';
         }
-      },
 
-      listeners: {
-        'tap': '_toggle'
-      },
+        static get properties() {
+          return {
+            /**
+             * Input document.
+             */
+            document: {
+              type: Object,
+              observer: '_documentChanged',
+            },
 
-      ready: function() {
-        window.addEventListener('removed-from-favorites', function(e) {
-          if (this.document && e.detail.docUid && e.detail.docUid === this.document.uid) {
-            this.favorite = false;
+            /**
+             * Icon to use (iconset_name:icon_name).
+             */
+            icon: {
+              type: String,
+              value: 'nuxeo:favorites',
+            },
+
+            favorite: {
+              type: Boolean,
+              notify: true,
+              reflectToAttribute: true,
+            },
+
+            _tooltip: {
+              type: String,
+              computed: '_computeTooltip(favorite)',
+            },
+          };
+        }
+
+        ready() {
+          super.ready();
+          window.addEventListener('removed-from-favorites', (e) => {
+            if (this.document && e.detail.docUid && e.detail.docUid === this.document.uid) {
+              this.favorite = false;
+            }
+          });
+          this.addEventListener('click', this._toggle);
+        }
+
+        _isAvailable(doc) {
+          return this.isCollectionMember(doc);
+        }
+
+        _toggle() {
+          if (!this.favorite) {
+            this.$.opAdd.execute().then(() => {
+              this.dispatchEvent(new CustomEvent('added-to-favorites', {
+                composed: true,
+                bubbles: true,
+                detail: { doc: this.document },
+              }));
+              this.favorite = true;
+            });
+          } else {
+            this.$.opRemove.execute().then(() => {
+              this.dispatchEvent(new CustomEvent('removed-from-favorites', {
+                composed: true,
+                bubbles: true,
+                detail: { doc: this.document },
+              }));
+              this.favorite = false;
+            });
           }
-        }.bind(this));
-      },
-
-      _isAvailable: function(doc) {
-        return this.isCollectionMember(doc);
-      },
-
-      _toggle: function() {
-        if (!this.favorite) {
-          this.$.opAdd.execute().then(function() {
-            this.fire('added-to-favorites', {doc: this.document});
-            this.favorite = true;
-          }.bind(this));
-        } else {
-          this.$.opRemove.execute().then(function() {
-            this.fire('removed-from-favorites', {doc: this.document});
-            this.favorite = false;
-          }.bind(this));
         }
-      },
 
-      _computeTooltip: function(favorite) {
-        return this.i18n('favoritesToggleButton.tooltip.' + (favorite ? 'remove' : 'add'));
-      },
+        _computeTooltip(favorite) {
+          return this.i18n(`favoritesToggleButton.tooltip.${favorite ? 'remove' : 'add'}`);
+        }
 
-      _documentChanged: function() {
-        this.favorite = this.isFavorite(this.document);
+        _documentChanged() {
+          this.favorite = this.isFavorite(this.document);
+        }
+
       }
 
-    });
+      customElements.define(FavoritesToggleButton.is, FavoritesToggleButton);
+      Nuxeo.FavoritesToggleButton = FavoritesToggleButton;
+    }
   </script>
 
 </dom-module>

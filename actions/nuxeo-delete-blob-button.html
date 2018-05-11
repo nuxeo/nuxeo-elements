@@ -15,17 +15,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
+<link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-tooltip/paper-tooltip.html">
-<link rel="import" href="../../paper-button/paper-button.html">
-<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
-<link rel="import" href="../widgets/nuxeo-dialog.html">
-<link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../nuxeo-filters-behavior.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-icons.html">
+<link rel="import" href="../widgets/nuxeo-dialog.html">
 
 <!--
 A button element for deleting a file blob from a document.
@@ -49,73 +50,87 @@ Example:
 
     <nuxeo-operation id="operation" op="Blob.RemoveFromDocument" input="[[document.uid]]" params="[[_params(xpath)]]"></nuxeo-operation>
 
-    <template is="dom-if" if="[[_isAvailable(document)]]">
-      <paper-icon-button icon="[[icon]]" on-tap="_toggleDialog" noink></paper-icon-button>
-      <paper-tooltip>[[i18n('deleteBlobButton.tooltip')]]</paper-tooltip>
-    </template>
+    <dom-if if="[[_isAvailable(document)]]">
+      <template>
+        <paper-icon-button icon="[[icon]]" on-click="_toggleDialog" noink></paper-icon-button>
+        <paper-tooltip>[[i18n('deleteBlobButton.tooltip')]]</paper-tooltip>
+      </template>
+    </dom-if>
 
     <nuxeo-dialog id="dialog" with-backdrop>
       <h2>[[i18n('deleteBlobButton.dialog.heading')]]</h2>
       <div>[[i18n('deleteBlobButton.dialog.message')]]</div>
       <div class="buttons">
         <paper-button dialog-dismiss>[[i18n('deleteBlobButton.dialog.no')]]</paper-button>
-        <paper-button dialog-confirm on-tap="_remove">[[i18n('deleteBlobButton.dialog.yes')]]</paper-button>
+        <paper-button dialog-confirm on-click="_remove">[[i18n('deleteBlobButton.dialog.yes')]]</paper-button>
       </div>
     </nuxeo-dialog>
 
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-delete-blob-button',
-      behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
-      properties: {
+    {
+      class DeleteBlobButton extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 
-        /**
-         * Input document.
-         */
-        document: Object,
-
-        /**
-         * Path of the file object to delete.
-         * For example `xpath="files:files/0/file"`.
-         */
-        xpath: {
-          type: String,
-          value: 'file:content'
-        },
-
-        /**
-         * Icon to use (iconset_name:icon_name).
-         */
-        icon: {
-          type: String,
-          value: 'nuxeo:delete'
+        static get is() {
+          return 'nuxeo-delete-blob-button';
         }
-      },
 
-      _isAvailable: function(doc) {
-        return doc && this.hasPermission(doc, 'Write') && !this.isImmutable(doc) &&
-          doc.type !== 'Root' && doc.state !== 'deleted';
-      },
+        static get properties() {
+          return {
+            /**
+             * Input document.
+             */
+            document: Object,
 
-      _toggleDialog: function() {
-        this.$.dialog.toggle();
-      },
+            /**
+             * Path of the file object to delete.
+             * For example `xpath="files:files/0/file"`.
+             */
+            xpath: {
+              type: String,
+              value: 'file:content',
+            },
 
-      _params: function(xpath) {
-        return {
-          xpath: xpath.startsWith('files:') ? xpath.split('/file')[0] : xpath
-        };
-      },
+            /**
+             * Icon to use (iconset_name:icon_name).
+             */
+            icon: {
+              type: String,
+              value: 'nuxeo:delete',
+            },
+          };
+        }
 
-      _remove: function() {
-        this.$.operation.execute().then(function() {
-          this.fire('file-deleted');
-        }.bind(this));
+        _isAvailable(doc) {
+          return doc && this.hasPermission(doc, 'Write') && !this.isImmutable(doc) &&
+              doc.type !== 'Root' && doc.state !== 'deleted';
+        }
+
+        _toggleDialog() {
+          this.$.dialog.toggle();
+        }
+
+        _params(xpath) {
+          return {
+            xpath: xpath.startsWith('files:') ? xpath.split('/file')[0] : xpath,
+          };
+        }
+
+        _remove() {
+          this.$.operation.execute().then(() => {
+            this.dispatchEvent(new CustomEvent('file-deleted', {
+              composed: true,
+              bubbles: true,
+            }));
+          });
+        }
+
       }
 
-    });
+      customElements.define(DeleteBlobButton.is, DeleteBlobButton);
+      Nuxeo.DeleteBlobButton = DeleteBlobButton;
+    }
   </script>
 
 </dom-module>

@@ -15,18 +15,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
 <link rel="import" href="../../iron-icons/social-icons.html">
-<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../paper-tooltip/paper-tooltip.html">
-<link rel="import" href="../../paper-input/paper-input.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-button/paper-button.html">
-<link rel="import" href="../widgets/nuxeo-dialog.html">
-<link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../paper-input/paper-input.html">
+<link rel="import" href="../../paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../nuxeo-filters-behavior.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-icons.html">
+<link rel="import" href="../widgets/nuxeo-dialog.html">
 
 <!--
 A button element for sharing a document.
@@ -47,10 +48,12 @@ Example:
       }
     </style>
 
-    <template is="dom-if" if="[[_isAvailable(document)]]">
-      <paper-icon-button icon="[[icon]]" on-tap="_toggleDialog" noink></paper-icon-button>
-      <paper-tooltip>[[i18n('shareButton.tooltip')]]</paper-tooltip>
-    </template>
+    <dom-if if="[[_isAvailable(document)]]">
+      <template>
+        <paper-icon-button icon="[[icon]]" on-click="_toggleDialog" noink></paper-icon-button>
+        <paper-tooltip>[[i18n('shareButton.tooltip')]]</paper-tooltip>
+      </template>
+    </dom-if>
 
     <nuxeo-dialog id="dialog" with-backdrop>
       <h2>[[i18n('shareButton.dialog.heading')]]</h2>
@@ -67,39 +70,48 @@ Example:
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-share-button',
-      behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
-      properties: {
+    {
+      class ShareButton extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 
-        /**
-         * Input document.
-         */
-        document: Object,
-
-        /**
-         * Icon to use (iconset_name:icon_name).
-         */
-        icon: {
-          type: String,
-          value: 'nuxeo:share'
+        static get is() {
+          return 'nuxeo-share-button';
         }
-      },
 
-      _isAvailable: function(document) {
-        return document;
-      },
+        static get properties() {
+          return {
+            /**
+             * Input document.
+             */
+            document: Object,
 
-      _toggleDialog: function() {
-        this.$.dialog.toggle();
-        this.$.permalink.inputElement.inputElement.select();
-      },
+            /**
+             * Icon to use (iconset_name:icon_name).
+             */
+            icon: {
+              type: String,
+              value: 'nuxeo:share',
+            },
+          };
+        }
 
-      _buildPermalink: function(document) {
-        return document ? location.origin + location.pathname + '#!/doc/' + document.uid : '';
+        _isAvailable(document) {
+          return document;
+        }
+
+        _toggleDialog() {
+          this.$.dialog.toggle();
+          this.$.permalink.inputElement.inputElement.select();
+        }
+
+        _buildPermalink(document) {
+          return document ? `${location.origin + location.pathname}#!/doc/${document.uid}` : '';
+        }
+
       }
 
-    });
+      customElements.define(ShareButton.is, ShareButton);
+      Nuxeo.ShareButton = ShareButton;
+    }
   </script>
 
 </dom-module>

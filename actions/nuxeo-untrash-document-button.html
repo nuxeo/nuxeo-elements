@@ -15,17 +15,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
+<link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-tooltip/paper-tooltip.html">
-<link rel="import" href="../../paper-button/paper-button.html">
-<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
-<link rel="import" href="../widgets/nuxeo-dialog.html">
-<link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../nuxeo-filters-behavior.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-icons.html">
+<link rel="import" href="../widgets/nuxeo-dialog.html">
 
 <!--
 A button element to untrash a trashed document.
@@ -50,46 +51,66 @@ Example:
     <nuxeo-operation id="operation" op="Document.Untrash" input="[[document.uid]]" sync-indexing>
     </nuxeo-operation>
 
-    <template is="dom-if" if="[[_isAvailable(document)]]">
-      <paper-icon-button icon="[[icon]]" on-tap="_untrash" noink id="untrashButton"></paper-icon-button>
-      <paper-tooltip>[[i18n('untrashButton.tooltip')]]</paper-tooltip>
-    </template>
+    <dom-if if="[[_isAvailable(document)]]">
+      <template>
+        <paper-icon-button icon="[[icon]]" on-click="_untrash" noink id="untrashButton"></paper-icon-button>
+        <paper-tooltip>[[i18n('untrashButton.tooltip')]]</paper-tooltip>
+      </template>
+    </dom-if>
 
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-untrash-document-button',
-      behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
-      properties: {
+    {
+      class UntrashDocumentButton
+        extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 
-        /**
-         * Input document.
-         */
-        document: Object,
-
-        /**
-         * Icon to use (iconset_name:icon_name).
-         */
-        icon: {
-          type: String,
-          value: 'nuxeo:restore-deleted'
+        static get is() {
+          return 'nuxeo-untrash-document-button';
         }
-      },
 
-      _isAvailable: function(doc) {
-        return doc && this.isTrashed(doc) && this.hasPermission(doc, 'Write');
-      },
+        static get properties() {
+          return {
+            /**
+             * Input document.
+             */
+            document: Object,
 
-      _untrash: function() {
-        this.$.operation.execute().then(function(res) {
-          this.fire('document-untrashed', {doc: res});
-        }.bind(this)).catch(function(error) {
-          this.fire('document-untrashed', {error: error});
-        }.bind(this));
+            /**
+             * Icon to use (iconset_name:icon_name).
+             */
+            icon: {
+              type: String,
+              value: 'nuxeo:restore-deleted',
+            },
+          };
+        }
+
+        _isAvailable(doc) {
+          return doc && this.isTrashed(doc) && this.hasPermission(doc, 'Write');
+        }
+
+        _untrash() {
+          this.$.operation.execute().then((res) => {
+            this.dispatchEvent(new CustomEvent('document-untrashed', {
+              composed: true,
+              bubbles: true,
+              detail: { doc: res },
+            }));
+          }).catch((error) => {
+            this.dispatchEvent(new CustomEvent('document-untrashed', {
+              composed: true,
+              bubbles: true,
+              detail: { error },
+            }));
+          });
+        }
+
       }
 
-    });
+      customElements.define(UntrashDocumentButton.is, UntrashDocumentButton);
+      Nuxeo.UntrashDocumentButton = UntrashDocumentButton;
+    }
   </script>
 
 </dom-module>

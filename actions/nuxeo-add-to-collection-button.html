@@ -15,21 +15,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
+<link rel="import" href="../../paper-button/paper-button.html">
+<link rel="import" href="../../paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-tooltip/paper-tooltip.html">
-<link rel="import" href="../../paper-dialog-scrollable/paper-dialog-scrollable.html">
-<link rel="import" href="../../paper-button/paper-button.html">
-<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
-<link rel="import" href="../widgets/nuxeo-selectivity.html">
-<link rel="import" href="../widgets/nuxeo-textarea.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../nuxeo-filters-behavior.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../widgets/nuxeo-selectivity.html">
-<link rel="import" href="../nuxeo-i18n-behavior.html">
-<link rel="import" href="../nuxeo-filters-behavior.html">
-<link rel="import" href="../nuxeo-icons.html">
+<link rel="import" href="../widgets/nuxeo-selectivity.html">
+<link rel="import" href="../widgets/nuxeo-textarea.html">
 
 <!--
 A button element for adding a document to a collection.
@@ -61,10 +62,12 @@ Example:
     <nuxeo-operation id="addToCollectionOp" op="Document.AddToCollection" input="[[document.uid]]"></nuxeo-operation>
     <nuxeo-operation id="createCollectionOp" op="Collection.Create"></nuxeo-operation>
 
-    <template is="dom-if" if="[[_isAvailable(document)]]">
-      <paper-icon-button icon="[[icon]]" on-tap="_toggleDialog" noink></paper-icon-button>
-      <paper-tooltip>[[i18n('addToCollectionButton.tooltip')]]</paper-tooltip>
-    </template>
+    <dom-if if="[[_isAvailable(document)]]">
+      <template>
+        <paper-icon-button icon="[[icon]]" on-click="_toggleDialog" noink></paper-icon-button>
+        <paper-tooltip>[[i18n('addToCollectionButton.tooltip')]]</paper-tooltip>
+      </template>
+    </dom-if>
 
     <nuxeo-dialog id="add-to-collection-dialog" with-backdrop on-iron-overlay-closed="_resetPopup" no-auto-focus>
       <h2>[[i18n('addToCollectionButton.dialog.heading')]]</h2>
@@ -89,7 +92,7 @@ Example:
       </paper-dialog-scrollable>
       <div class="buttons">
         <paper-button dialog-dismiss>[[i18n('addToCollectionButton.dialog.cancel')]]</paper-button>
-        <paper-button dialog-confirm class="primary" name="add" on-tap="_add" disabled$="[[!_isValid(collection)]]">
+        <paper-button dialog-confirm class="primary" name="add" on-click="_add" disabled$="[[!_isValid(collection)]]">
           [[i18n('addToCollectionButton.dialog.add')]]
         </paper-button>
       </div>
@@ -98,131 +101,146 @@ Example:
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-add-to-collection-button',
-      behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
-      properties: {
+    {
+      class AddToCollectionButton
+        extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 
-        /**
-         * Input document.
-         */
-        document: Object,
-
-        /**
-         * Icon to use (iconset_name:icon_name).
-         */
-        icon: {
-          type: String,
-          value: 'nuxeo:collections'
-        },
-
-        collection: {
-          type: String,
-          value: ''
-        },
-
-        resultsFilter: {
-          type: Function,
-          value: function() {
-            return this._resultsFilter.bind(this);
-          }
-        },
-
-        resultFormatter: {
-          type: Function,
-          value: function() {
-            return this._resultFormatter.bind(this);
-          }
-        },
-
-        selectionFormatter: {
-          type: Function,
-          value: function() {
-            return this._selectionFormatter.bind(this);
-          }
-        },
-
-        newEntryFormatter: {
-          type: Function,
-          value: function() {
-            return this._newEntryFormatter.bind(this);
-          }
+        static get is() {
+          return 'nuxeo-add-to-collection-button';
         }
-      },
 
-      _isAvailable: function(doc) {
-        return this.isCollectionMember(doc);
-      },
+        static get properties() {
+          return {
+            /**
+             * Input document.
+             */
+            document: Object,
 
-      _toggleDialog: function() {
-        this.$['add-to-collection-dialog'].toggle();
-      },
+            /**
+             * Icon to use (iconset_name:icon_name).
+             */
+            icon: {
+              type: String,
+              value: 'nuxeo:collections',
+            },
 
-      _add: function() {
-        if (this._isNew()) {
-          var op = this.$$('#createCollectionOp');
-          // XXX
-          var name = this.$.nxSelect.selectedItem.displayLabel;
-          op.params = {
-            'name': name,
-            'description': this.description
+            collection: {
+              type: String,
+              value: '',
+            },
+
+            resultsFilter: {
+              type: Function,
+              value() {
+                return this._resultsFilter.bind(this);
+              },
+            },
+
+            resultFormatter: {
+              type: Function,
+              value() {
+                return this._resultFormatter.bind(this);
+              },
+            },
+
+            selectionFormatter: {
+              type: Function,
+              value() {
+                return this._selectionFormatter.bind(this);
+              },
+            },
+
+            newEntryFormatter: {
+              type: Function,
+              value() {
+                return this._newEntryFormatter.bind(this);
+              },
+            },
           };
-          return op.execute().then(function(response) {
-            this.collection = response.uid;
-            this._addToCollection();
-          }.bind(this));
-        } else {
-          this._addToCollection();
         }
-      },
 
-      _addToCollection: function() {
-        var op = this.$$('#addToCollectionOp');
-        op.params = {
-          'collection': this.collection
-        };
-        return op.execute().then(function() {
-          this.fire('added-to-collection', {docId: this.document.uid, collectionId: this.collection});
-          this._resetPopup();
-        }.bind(this));
-      },
+        _isAvailable(doc) {
+          return this.isCollectionMember(doc);
+        }
 
-      _resultsFilter: function(entry) {
-        return entry.id.indexOf('-999999') === -1;
-      },
+        _toggleDialog() {
+          this.$['add-to-collection-dialog'].toggle();
+        }
 
-      _resultFormatter: function(item) {
-        var label = item.displayLabel || item.title;
+        _add() {
+          if (this._isNew()) {
+            const op = this.$$('#createCollectionOp');
+            // XXX
+            const name = this.$.nxSelect.selectedItem.displayLabel;
+            op.params = {
+              name,
+              description: this.description,
+            };
+            return op.execute().then((response) => {
+              this.collection = response.uid;
+              this._addToCollection();
+            });
+          } else {
+            this._addToCollection();
+          }
+        }
 
-        // if we are adding a new entry with the _newEntryFormatter we don't want to escape the HTML
-        return item.id === -1 ? '<iron-icon icon="nuxeo:add" item-icon></iron-icon>' + label : this.$.nxSelect.escapeHTML(label);
-      },
+        _addToCollection() {
+          const op = this.$$('#addToCollectionOp');
+          op.params = {
+            collection: this.collection,
+          };
+          return op.execute().then(() => {
+            this.dispatchEvent(new CustomEvent('added-to-collection', {
+              composed: true,
+              bubbles: true,
+              detail: { docId: this.document.uid, collectionId: this.collection },
+            }));
+            this._resetPopup();
+          });
+        }
 
-      _selectionFormatter: function(item) {
-        var label = item.displayLabel || item.title;
+        _resultsFilter(entry) {
+          return entry.id.indexOf('-999999') === -1;
+        }
 
-        // if we are adding a new entry with the _newEntryFormatter we don't want to escape the HTML
-        return item.id === -1 ? label : this.$.nxSelect.escapeHTML(label);
-      },
+        _resultFormatter(item) {
+          const label = item.displayLabel || item.title;
 
-      _newEntryFormatter: function(term) {
-        return {id: -1, displayLabel: term};
-      },
+          // if we are adding a new entry with the _newEntryFormatter we don't want to escape the HTML
+          return item.id === -1 ? `<iron-icon icon="nuxeo:add" item-icon></iron-icon>${label}`
+            : this.$.nxSelect.escapeHTML(label);
+        }
 
-      _isValid: function() {
-        return this.collection !== '';
-      },
+        _selectionFormatter(item) {
+          const label = item.displayLabel || item.title;
 
-      _isNew: function() {
-        return this.collection === -1;
-      },
+          // if we are adding a new entry with the _newEntryFormatter we don't want to escape the HTML
+          return item.id === -1 ? label : this.$.nxSelect.escapeHTML(label);
+        }
 
-      _resetPopup: function() {
-        this.set('collection', null);
-        this.description = '';
+        _newEntryFormatter(term) {
+          return { id: -1, displayLabel: term };
+        }
+
+        _isValid() {
+          return this.collection !== '';
+        }
+
+        _isNew() {
+          return this.collection === -1;
+        }
+
+        _resetPopup() {
+          this.set('collection', null);
+          this.description = '';
+        }
+
       }
 
-    });
+      customElements.define(AddToCollectionButton.is, AddToCollectionButton);
+      Nuxeo.AddToCollectionButton = AddToCollectionButton;
+    }
   </script>
 
 </dom-module>
