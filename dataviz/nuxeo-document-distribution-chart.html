@@ -14,14 +14,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
 <link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
-<link rel="import" href="../../paper-radio-group/paper-radio-group.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../paper-radio-group/paper-radio-group.html">
 <link rel="import" href="../../paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
 <script src="../../d3/d3.min.js"></script>
 <script src="../../randomcolor/randomColor.js"></script>
-<link rel="import" href="../nuxeo-i18n-behavior.html">
 
 <!--
 A sunburst chart presenting Nuxeo Document Distribution.
@@ -42,7 +42,7 @@ Example:
 <dom-module id="nuxeo-document-distribution-chart">
   <template>
 
-    <style is="custom-style">
+    <style>
       :host {
         color: var(--nuxeo-text-default, #000);
       }
@@ -139,305 +139,317 @@ Example:
   </template>
 
   <script>
-    (function() {
+    {
+      let vis;
+      let radius;
+      let partition;
+      let arc;
 
-      Polymer({
-        is: 'nuxeo-document-distribution-chart',
+      // Breadcrumb dimensions: width, height, spacing, width of tip/tail.
+      const b = {
+        w: 100, h: 30, s: 3, t: 10,
+      };
 
-        behaviors: [Nuxeo.I18nBehavior],
+      const colors = {};
 
-        properties: {
-          /**
-           * The id of a nuxeo-connection to use.
-           */
-          connectionId: {
-            type: String,
-            value: 'nx'
-          },
+      class DocumentDistributionChart extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
-          /**
-           * The name of the index.
-           */
-          index: {
-            type: String,
-            value: 'nuxeo'
-          },
+        static get is() {
+          return 'nuxeo-document-distribution-chart';
+        }
 
-          /**
-           * Path of the document to scan. For instance '/default-domain/workspaces'.
-           * Leave blank to scan the full repository.
-           */
-          path: {
-            type: String,
-            value: ''
-          },
+        static get properties() {
+          return {
+            /**
+             * The id of a nuxeo-connection to use.
+             */
+            connectionId: {
+              type: String,
+              value: 'nx',
+            },
 
-          /**
-           * Possible values are 'size' for Document size or 'count' for Document count.
-           */
-          mode: {
-            type: String,
-            value: 'size',
-            observer: '_observeMode'
-          },
+            /**
+             * The name of the index.
+             */
+            index: {
+              type: String,
+              value: 'nuxeo',
+            },
 
-          /**
-           * Maximum depth to scan in the hierarchy.
-           */
-          maxDepth: {
-            type: Number,
-            value: 10
-          },
+            /**
+             * Path of the document to scan. For instance '/default-domain/workspaces'.
+             * Leave blank to scan the full repository.
+             */
+            path: {
+              type: String,
+              value: '',
+            },
 
-          /**
-           * Possible values are 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink' and 'monochrome'.
-           */
-          chartLuminosity: {
-            type: String,
-            value: 'light'
-          },
+            /**
+             * Possible values are 'size' for Document size or 'count' for Document count.
+             */
+            mode: {
+              type: String,
+              value: 'size',
+              observer: '_observeMode',
+            },
 
-          /**
-           * Possible values are 'bright', 'light' or 'dark'.
-           */
-          chartHue: {
-            type: String,
-            value: 'blue'
-          },
+            /**
+             * Maximum depth to scan in the hierarchy.
+             */
+            maxDepth: {
+              type: Number,
+              value: 10,
+            },
 
-          /**
-           * Chart width.
-           */
-          width: {
-            type: Number,
-            value: 750
-          },
+            /**
+             * Possible values are 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink' and 'monochrome'.
+             */
+            chartLuminosity: {
+              type: String,
+              value: 'light',
+            },
 
-          /**
-           * Chart height.
-           */
-          height: {
-            type: Number,
-            value: 600
-          },
+            /**
+             * Possible values are 'bright', 'light' or 'dark'.
+             */
+            chartHue: {
+              type: String,
+              value: 'blue',
+            },
 
-          /**
-           * To take into account hidden Documents (i.e. Documents with HiddenInNavigation facet).
-           */
-          includeHidden: {
-            type: Boolean,
-            value: false
-          },
+            /**
+             * Chart width.
+             */
+            width: {
+              type: Number,
+              value: 750,
+            },
 
-          /**
-           * To take into account Versions in the size/count computation.
-           *
-           * LIMITATION: the size of Versions are not properly taken into account in the final result.
-           */
-          includeVersion: {
-            type: Boolean,
-            value: false
-          },
+            /**
+             * Chart height.
+             */
+            height: {
+              type: Number,
+              value: 600,
+            },
 
-          /**
-           * To take into account deleted Documents (i.e. Documents with lifecycle deleted).
-           */
-          includeDeleted: {
-            type: Boolean,
-            value: true
-          },
+            /**
+             * To take into account hidden Documents (i.e. Documents with HiddenInNavigation facet).
+             */
+            includeHidden: {
+              type: Boolean,
+              value: false,
+            },
 
-          /**
-           * To take into account folder Documents (i.e. Documents with Folderish facet).
-           */
-          onlyFolder: {
-            type: Boolean,
-            value: false
-          },
+            /**
+             * To take into account Versions in the size/count computation.
+             *
+             * LIMITATION: the size of Versions are not properly taken into account in the final result.
+             */
+            includeVersion: {
+              type: Boolean,
+              value: false,
+            },
 
-          _chartData: {
-            type: Object
-          },
+            /**
+             * To take into account deleted Documents (i.e. Documents with lifecycle deleted).
+             */
+            includeDeleted: {
+              type: Boolean,
+              value: true,
+            },
 
-          loading: {
-            type: Boolean,
-            notify: true,
-            reflectToAttribute: true,
-            value: false
-          },
+            /**
+             * To take into account folder Documents (i.e. Documents with Folderish facet).
+             */
+            onlyFolder: {
+              type: Boolean,
+              value: false,
+            },
 
-          /**
-           * Maximum number of documents returned per hierarchy level.
-           */
-          maxDocSize: {
-            type: Number,
-            value: 1000
-          }
+            _chartData: {
+              type: Object,
+            },
 
-        },
+            loading: {
+              type: Boolean,
+              notify: true,
+              reflectToAttribute: true,
+              value: false,
+            },
 
-        _chechFolderDisabled: function(mode) {
+            /**
+             * Maximum number of documents returned per hierarchy level.
+             */
+            maxDocSize: {
+              type: Number,
+              value: 1000,
+            },
+          };
+        }
+
+        ready() {
+          super.ready();
+          this.execute();
+        }
+
+        _chechFolderDisabled(mode) {
           return mode === 'size';
-        },
+        }
 
-        _observeMode: function() {
+        _observeMode() {
           if (this.mode === 'size') {
             this.onlyFolder = false;
           }
-        },
+        }
 
-        _computeSizeQuery: function () {
-          var query;
+        _computeSizeQuery() {
+          const pathDepth = this.path.replace(/\/$/, '').split('/').length;
 
-          var pathDepth = this.path.replace(/\/$/, "").split('/').length;
-
-          var subPart = {
-            "size": {
-              "sum": {
-                "field": "file:content.length"
-              }
-            }
-          };
-          for (var depth = pathDepth - 1 + this.maxDepth; depth > pathDepth; depth--) {
-            subPart = {
-              "size": {
-                "sum": {
-                  "field": "file:content.length"
-                }
+          let subPart = {
+            size: {
+              sum: {
+                field: 'file:content.length',
               },
-              "subLevel": {
-                "terms": {
-                  "field": "ecm:path@level" + depth,
-                  "size": this.maxDocSize
+            },
+          };
+          for (let depth = (pathDepth - 1) + this.maxDepth; depth > pathDepth; depth--) {
+            subPart = {
+              size: {
+                sum: {
+                  field: 'file:content.length',
                 },
-                "aggs": subPart
-              }
+              },
+              subLevel: {
+                terms: {
+                  field: `ecm:path@level${depth}`,
+                  size: this.maxDocSize,
+                },
+                aggs: subPart,
+              },
             };
           }
-          query = {
-            "query": {
-              "bool": {
-                "must": {
-                  "match_all":{}
+          const query = {
+            query: {
+              bool: {
+                must: {
+                  match_all: {},
                 },
-                "must_not": this._computeMustNot(),
-                "filter": this._computeFilter()
-              }
+                must_not: this._computeMustNot(),
+                filter: this._computeFilter(),
+              },
             },
-            "size": 0,
-            "aggs": {
-              "subLevel": {
-                "terms": {
-                  "field": "ecm:path@level" + pathDepth,
-                  "size": this.maxDocSize
+            size: 0,
+            aggs: {
+              subLevel: {
+                terms: {
+                  field: `ecm:path@level${pathDepth}`,
+                  size: this.maxDocSize,
                 },
-                "aggs": subPart
-              }
-            }
-          }
+                aggs: subPart,
+              },
+            },
+          };
           return query;
-        },
+        }
 
-        _computeDocCountQuery: function () {
-          var query;
+        _computeDocCountQuery() {
+          const pathDepth = this.path.replace(/\/$/, '').split('/').length;
 
-          var pathDepth = this.path.replace(/\/$/, "").split('/').length;
-
-          var subPart = {
-            "subLevel": {
-              "terms": {
-                "field": "ecm:path@level" + (pathDepth - 1 + this.maxDepth),
-                "size": this.maxDocSize,
-                "order": {
-                  "_count": "desc"
-                }
-              }
-            }
+          let subPart = {
+            subLevel: {
+              terms: {
+                field: `ecm:path@level${(pathDepth - 1) + this.maxDepth}`,
+                size: this.maxDocSize,
+                order: {
+                  _count: 'desc',
+                },
+              },
+            },
           };
 
-          for (var depth = pathDepth - 2 + this.maxDepth; depth >= pathDepth; depth--) {
+          for (let depth = (pathDepth - 2) + this.maxDepth; depth >= pathDepth; depth--) {
             subPart = {
-              "subLevel": {
-                "terms": {
-                  "field": "ecm:path@level" + depth,
-                  "size": this.maxDocSize,
-                  "order": {
-                    "_count": "desc"
-                  }
+              subLevel: {
+                terms: {
+                  field: `ecm:path@level${depth}`,
+                  size: this.maxDocSize,
+                  order: {
+                    _count: 'desc',
+                  },
                 },
-                "aggs": subPart
-              }
+                aggs: subPart,
+              },
             };
           }
-          query = {
-            "query": {
-              "bool": {
-                  "must": {
-                    "match_all":{}
-                  },
-                  "must_not": this._computeMustNot(),
-                  "filter": this._computeFilter()
-              }
+          const query = {
+            query: {
+              bool: {
+                must: {
+                  match_all: {},
+                },
+                must_not: this._computeMustNot(),
+                filter: this._computeFilter(),
+              },
             },
-            "size": 0,
-            "aggs": subPart
-          }
+            size: 0,
+            aggs: subPart,
+          };
           return query;
-        },
+        }
 
-        _computeMustNot: function() {
-          var result = [];
+        _computeMustNot() {
+          const result = [];
           if (!this.includeHidden) {
             result.push({
-              "term": {
-                  "ecm:mixinType": "HiddenInNavigation"
-              }
+              term: {
+                'ecm:mixinType': 'HiddenInNavigation',
+              },
             });
           }
           if (!this.includeDeleted) {
             result.push({
-              "term" : {
-                "ecm:currentLifeCycleState" : "deleted"
-              }
+              term: {
+                'ecm:currentLifeCycleState': 'deleted',
+              },
             });
           }
           return result;
-        },
+        }
 
-        _computeFilter: function() {
-          var result = [];
+        _computeFilter() {
+          const result = [];
           if (this.onlyFolder && this.mode !== 'size') {
             result.push({
-              "term": {
-                  "ecm:mixinType": "Folderish"
-              }
+              term: {
+                'ecm:mixinType': 'Folderish',
+              },
             });
           }
           if (!this.includeVersion) {
             result.push({
-              "term" : {
-                "ecm:isVersion" : "0"
-              }
+              term: {
+                'ecm:isVersion': '0',
+              },
             });
           }
           if (this.path && this.path.length > 0) {
-            var split = this.path.replace(/\/$/, "").split('/');
-            for (var i = 1; i < split.length; i++) {
-              var propName = "ecm:path@level" + i;
-              var toPush = {
-                "term": {
-                }
+            const split = this.path.replace(/\/$/, '').split('/');
+            for (let i = 1; i < split.length; i++) {
+              const toPush = {
+                term: {},
               };
-              toPush.term["ecm:path@level" + i] = split[i];
+              toPush.term[`ecm:path@level${i}`] = split[i];
               result.push(toPush);
             }
           }
           return result;
-        },
+        }
 
-        execute: function() {
+        execute() {
           this.loading = true;
-          var query;
+          let query;
           if (this.mode === 'size') {
             query = this._computeSizeQuery();
           } else if (this.mode === 'count') {
@@ -446,41 +458,40 @@ Example:
             alert('Mode must be either size or docCount');
             return;
           }
-          var url = [this.$.nx.client._baseURL, 'site/es', this.index, 'doc', '_search'].join('/');
+          let url = [this.$.nx.client._baseURL, 'site/es', this.index, 'doc', '_search'].join('/');
           url = url.replace(/(^\/+)|([^:])\/\/+/g, '$2/');
 
-          var options = {
+          const options = {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: query,
-            url: url
+            url,
           };
-          return this.$.nx.request().then(function(request) {
-            return request
-              .execute(options)
-              .then(this._handleResponse.bind(this))
-              .catch(this._handleError.bind(this))
-          }.bind(this));
-        },
+          return this.$.nx.request().then((request) => request
+            .execute(options)
+            .then(this._handleResponse.bind(this))
+            .catch(this._handleError.bind(this)));
+        }
 
-        _handleError: function(reason) {
+        _handleError(reason) {
           console.error(reason);
-          this.fire('error', {
-            reason: reason,
-            error: reason
-          });
+          this.dispatchEvent(new CustomEvent('error', {
+            composed: true,
+            bubbles: true,
+            detail: { reason, error: reason },
+          }));
           this.loading = false;
-        },
+        }
 
-        _handleResponse: function(response) {
+        _handleResponse(response) {
           this._buildSunBurst(response.aggregations);
           this.loading = false;
-        },
+        }
 
-        _transformSubBuckets: function(bucket) {
+        _transformSubBuckets(bucket) {
           bucket.name = bucket.key;
           bucket.color = this._getColor(bucket.name, this.chartHue, this.chartLuminosity);
-          var size;
+          let size;
           if (this.mode === 'size') {
             size = bucket.size.value;
             delete bucket.size;
@@ -493,24 +504,24 @@ Example:
           if (bucket.subLevel) {
             bucket.children = bucket.subLevel.buckets;
             delete bucket.subLevel;
-            if (bucket.children.length == 0) {
+            if (bucket.children.length === 0) {
               return;
             }
-            for (var j = 0; j < bucket.children.length; j++) {
+            for (let j = 0; j < bucket.children.length; j++) {
               this._transformSubBuckets(bucket.children[j]);
             }
           }
-        },
+        }
 
-        _buildSunBurst: function(aggregations) {
-          var aggregations = aggregations.subLevel;
-          aggregations.name = "root";
+        _buildSunBurst(aggs) {
+          const aggregations = aggs.subLevel;
+          aggregations.name = 'root';
           aggregations.color = this._getColor(aggregations.name, this.chartHue, this.chartLuminosity);
           aggregations.children = aggregations.buckets;
           delete aggregations.buckets;
           delete aggregations.doc_count_error_upper_bound;
           delete aggregations.sum_other_doc_count;
-          for (var i = 0; i < aggregations.children.length; i++) {
+          for (let i = 0; i < aggregations.children.length; i++) {
             this._transformSubBuckets(aggregations.children[i]);
           }
 
@@ -520,252 +531,243 @@ Example:
           radius = Math.min(this.width, this.height) / 2;
 
           // Total size of all segments; we set this later, after loading the data.
-          var totalSize = 0;
+          this.totalSize = 0;
 
-          var svg = this.$.chart.querySelector("svg");
+          const svg = this.$.chart.querySelector('svg');
           if (svg) {
             svg.parentNode.removeChild(svg);
           }
 
-          vis = d3.select(this.$.chart).append("svg:svg")
-              .attr("width", this.width)
-              .attr("height", this.height)
-              .append("svg:g")
-              .attr("id", "container")
-              .attr("transform", "translate(" + this.width / 2 + "," + this.height / 2 + ")");
+          vis = d3.select(this.$.chart).append('svg:svg')
+            .attr('width', this.width)
+            .attr('height', this.height)
+            .append('svg:g')
+            .attr('id', 'container')
+            .attr('transform', `translate(${this.width / 2},${this.height / 2})`);
 
           partition = d3.layout.partition()
-              .size([2 * Math.PI, radius * radius])
-              .value(function(d) { return d.size; });
+            .size([2 * Math.PI, radius * radius])
+            .value((d) => d.size);
 
           arc = d3.svg.arc()
-              .startAngle(function(d) { return d.x; })
-              .endAngle(function(d) { return d.x + d.dx; })
-              .innerRadius(function(d) { return Math.sqrt(d.y); })
-              .outerRadius(function(d) { return Math.sqrt(d.y + d.dy); });
+            .startAngle((d) => d.x)
+            .endAngle((d) => d.x + d.dx)
+            .innerRadius((d) => Math.sqrt(d.y))
+            .outerRadius((d) => Math.sqrt(d.y + d.dy));
 
           this._createVisualization();
+        }
 
-        },
-
-        _getColor: function(pathPart, hue, luminosity) {
-          var result = colors[pathPart];
+        _getColor(pathPart, hue, luminosity) {
+          let result = colors[pathPart];
           if (result === undefined) {
             result = randomColor({
-              hue: hue,
-              luminosity: luminosity
+              hue,
+              luminosity,
             });
             colors[pathPart] = result;
           }
           return result;
-        },
+        }
 
         // Given a node in a partition layout, return an array of all of its ancestor
         // nodes, highest first, but excluding the root.
-        _getAncestors: function(node) {
-          var path = [];
-          var current = node;
+        _getAncestors(node) {
+          const path = [];
+          let current = node;
           while (current.parent) {
             path.unshift(current);
             current = current.parent;
           }
           return path;
-        },
+        }
 
         // Update the breadcrumb trail to show the current sequence and percentage.
-        _updateBreadcrumbs: function(nodeArray, percentageString) {
+        _updateBreadcrumbs(nodeArray, percentageString) {
 
           // Data join; key function combines name and depth (= position in sequence).
-          var g = d3.select(Polymer.dom(this.root).querySelector('#trail'))
-              .selectAll("g")
-              .data(nodeArray, function(d) { return d.name + d.depth; });
+          const g = d3.select(Polymer.dom(this.root).querySelector('#trail'))
+            .selectAll('g')
+            .data(nodeArray, (d) => d.name + d.depth);
 
           // Add breadcrumb and label for entering nodes.
-          var entering = g.enter().append("svg:g");
+          const entering = g.enter().append('svg:g');
 
-          entering.append("svg:polygon")
-              .attr("points", this._breadcrumbPoints)
-              .style("fill", function(d) { return d.color; });
+          entering.append('svg:polygon')
+            .attr('points', this._breadcrumbPoints)
+            .style('fill', (d) => d.color);
 
-          entering.append("svg:text")
-              .attr("x", (b.w + b.t) / 2)
-              .attr("y", b.h / 2)
-              .attr("dy", "0.35em")
-              .attr("text-anchor", "middle")
-              .text(function(d) {
-                if(d.name.length > 10) {
-                  return d.name.substring(0, 9) + "...";
-                } else {
-                  return d.name;
-                }
-              });
+          entering.append('svg:text')
+            .attr('x', (b.w + b.t) / 2)
+            .attr('y', b.h / 2)
+            .attr('dy', '0.35em')
+            .attr('text-anchor', 'middle')
+            .text((d) => {
+              if (d.name.length > 10) {
+                return `${d.name.substring(0, 9)}...`;
+              } else {
+                return d.name;
+              }
+            });
 
           // Set position for entering and updating nodes.
-          g.attr("transform", function(d, i) {
-            return "translate(" + i * (b.w + b.s) + ", 0)";
-          });
+          g.attr('transform', (d, i) => `translate(${i * (b.w + b.s)}, 0)`);
 
           // Remove exiting nodes.
           g.exit().remove();
 
           // Now move and update the percentage at the end.
           d3.select(Polymer.dom(this.root).querySelector('#trail').querySelector('#endlabel'))
-              .attr("x", (nodeArray.length + 0.5) * (b.w + b.s))
-              .attr("y", b.h / 2)
-              .attr("dy", "0.35em")
-              .attr("text-anchor", "middle")
-              .text(percentageString);
+            .attr('x', (nodeArray.length + 0.5) * (b.w + b.s))
+            .attr('y', b.h / 2)
+            .attr('dy', '0.35em')
+            .attr('text-anchor', 'middle')
+            .text(percentageString);
 
           // Make the breadcrumb trail visible, if it's hidden.
           d3.select(Polymer.dom(this.root).querySelector('#trail'))
-              .style("visibility", "");
+            .style('visibility', '');
 
-        },
+        }
 
         // Main function to draw and set up the visualization, once we have the data.
-        _createVisualization: function() {
+        _createVisualization() {
 
           this._initializeBreadcrumbTrail();
 
           // Bounding circle underneath the sunburst, to make it easier to detect
           // when the mouse leaves the parent g.
-          vis.append("svg:circle")
-              .attr("r", radius)
-              .style("opacity", 0);
+          vis.append('svg:circle')
+            .attr('r', radius)
+            .style('opacity', 0);
 
           // For efficiency, filter nodes to keep only those large enough to see.
-          var nodes = partition.nodes(this._chartData)
-              .filter(function(d) {
-              return (d.dx > 0.005); // 0.005 radians = 0.29 degrees
-              });
+          const nodes = partition.nodes(this._chartData).filter((d) => (d.dx > 0.005)); // 0.005 radians = 0.29 degrees
 
-          var path = vis.data([this._chartData]).selectAll("path")
-              .data(nodes)
-              .enter().append("svg:path")
-              .attr("display", function(d) { return d.depth ? null : "none"; })
-              .attr("d", arc)
-              .attr("fill-rule", "evenodd")
-              .style("fill", function(d) {
-                return d.color;
-              })
-              .style("opacity", 1)
-              .on("mouseover", this._mouseover.bind(this));
+          const path = vis.data([this._chartData]).selectAll('path')
+            .data(nodes)
+            .enter()
+            .append('svg:path')
+            .attr('display', (d) => (d.depth ? null : 'none'))
+            .attr('d', arc)
+            .attr('fill-rule', 'evenodd')
+            .style('fill', (d) => d.color)
+            .style('opacity', 1)
+            .on('mouseover', this._mouseover.bind(this));
 
           // Add the mouseleave handler to the bounding circle.
-          d3.select(Polymer.dom(this.root).querySelector('#container')).on("mouseleave", this._mouseleave);
+          d3.select(Polymer.dom(this.root).querySelector('#container')).on('mouseleave', this._mouseleave);
 
           // Get total size of the tree = value of root node from partition.
-          totalSize = path.node().__data__.value;
-        },
+          this.totalSize = path.node().__data__.value;
+        }
 
         // Fade all but the current sequence, and show it in the breadcrumb trail.
-        _mouseover: function(d) {
+        _mouseover(d) {
 
-          var percentage = (100 * d.value / totalSize).toPrecision(3);
-          var percentageString = percentage + "%";
+          const percentage = ((100 * d.value) / this.totalSize).toPrecision(3);
+          let percentageString = `${percentage}%`;
           if (percentage < 0.1) {
-            percentageString = "< 0.1%";
+            percentageString = '< 0.1%';
           }
 
           d3.select(this.$.cl)
-              .text(this._formatValue(d.value, true));
+            .text(this._formatValue(d.value, true));
           d3.select(this.$.clb)
-              .text('(' + percentageString + ')');
+            .text(`(${percentageString})`);
 
           d3.select(this.$.ex)
-              .style("visibility", "");
+            .style('visibility', '');
 
-          var sequenceArray = this._getAncestors(d);
+          const sequenceArray = this._getAncestors(d);
           this._updateBreadcrumbs(sequenceArray, percentageString);
 
           // Fade all the segments.
           d3.selectAll(Polymer.dom(this.root).querySelectorAll('#chart path'))
-              .style("opacity", 0.3);
+            .style('opacity', 0.3);
 
           // Then highlight only those that are an ancestor of the current segment.
-          vis.selectAll("#chart path")
-              .filter(function(node) {
-                        return (sequenceArray.indexOf(node) >= 0);
-                      })
-              .style("opacity", 1);
-        },
+          vis.selectAll('#chart path')
+            .filter((node) => (sequenceArray.indexOf(node) >= 0))
+            .style('opacity', 1);
+        }
 
         // Restore everything to full opacity when moving off the visualization.
-        _mouseleave: function(d) {
-          return;
+        _mouseleave() {
+          // return;
           // Hide the breadcrumb trail
-          d3.select(Polymer.dom(this.root).querySelector('#trail'))
-              .style("visibility", "hidden");
+          // d3.select(Polymer.dom(this.root).querySelector('#trail'))
+          //   .style('visibility', 'hidden');
+          //
+          // // Deactivate all segments during transition.
+          // d3.selectAll(Polymer.dom(this.root).querySelectorAll('#chart path'))
+          //   .on('mouseover', null);
+          //
+          // // Transition each segment to full opacity and then reactivate it.
+          // d3.selectAll(Polymer.dom(this.root).querySelectorAll('#chart path'))
+          //   .transition()
+          //   .duration(1000)
+          //   .style('opacity', 1)
+          //   .each('end', function () {
+          //     d3.select(this).on('mouseover', this._mouseover.bind(this));
+          //   });
+          //
+          // d3.select(this.$.ex)
+          //   .style('visibility', 'hidden');
+        }
 
-          // Deactivate all segments during transition.
-          d3.selectAll(Polymer.dom(this.root).querySelectorAll('#chart path'))
-          .on("mouseover", null);
-
-          // Transition each segment to full opacity and then reactivate it.
-          d3.selectAll(Polymer.dom(this.root).querySelectorAll('#chart path'))
-              .transition()
-              .duration(1000)
-              .style("opacity", 1)
-              .each("end", function() {
-                      d3.select(this).on("mouseover", this._mouseover.bind(this));
-                    });
-
-          d3.select(this.$.ex)
-              .style("visibility", "hidden");
-        },
-
-        _initializeBreadcrumbTrail: function() {
+        _initializeBreadcrumbTrail() {
           while (this.$.sequence.firstChild) {
             this.$.sequence.removeChild(this.$.sequence.firstChild);
           }
 
           // Add the svg area.
-          var trail = d3.select(this.$.sequence).append("svg:svg")
-              .attr("width", '100%')
-              .attr("height", 50)
-              .attr("id", "trail");
+          const trail = d3.select(this.$.sequence).append('svg:svg')
+            .attr('width', '100%')
+            .attr('height', 50)
+            .attr('id', 'trail');
           // Add the label at the end, for the percentage.
-          trail.append("svg:text")
-            .attr("id", "endlabel")
-            .style("fill", "#000");
+          trail.append('svg:text')
+            .attr('id', 'endlabel')
+            .style('fill', '#000');
 
           d3.select(this.$.cl)
-              .text('');
+            .text('');
           d3.select(this.$.clb)
-              .text('');
-        },
+            .text('');
+        }
 
         // Generate a string that describes the points of a breadcrumb polygon.
-        _breadcrumbPoints: function(d, i) {
-          var points = [];
-          points.push("0,0");
-          points.push(b.w + ",0");
-          points.push(b.w + b.t + "," + (b.h / 2));
-          points.push(b.w + "," + b.h);
-          points.push("0," + b.h);
+        _breadcrumbPoints(d, i) {
+          const points = [];
+          points.push('0,0');
+          points.push(`${b.w},0`);
+          points.push(`${b.w + b.t},${b.h / 2}`);
+          points.push(`${b.w},${b.h}`);
+          points.push(`0,${b.h}`);
           if (i > 0) { // Leftmost breadcrumb; don't include 6th vertex.
-            points.push(b.t + "," + (b.h / 2));
+            points.push(`${b.t},${b.h / 2}`);
           }
-          return points.join(" ");
-        },
+          return points.join(' ');
+        }
 
-        _formatValue: function(value, si) {
+        _formatValue(value, si) {
           if (this.mode === 'size') {
-            var thresh = si ? 1000 : 1024;
-            if(Math.abs(value) < thresh) {
-                return value + ' B';
+            const thresh = si ? 1000 : 1024;
+            if (Math.abs(value) < thresh) {
+              return `${value} B`;
             }
-            var units = si
-                ? ['kB','MB','GB','TB','PB','EB','ZB','YB']
-                : ['KiB','MiB','GiB','TiB','PiB','EiB','ZiB','YiB'];
-            var u = -1;
+            const units = si
+              ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+              : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+            let u = -1;
             do {
-                value /= thresh;
-                ++u;
-            } while(Math.abs(value) >= thresh && u < units.length - 1);
-            return value.toFixed(1)+' '+units[u];
+              value /= thresh;
+              ++u;
+            } while (Math.abs(value) >= thresh && u < units.length - 1);
+            return `${value.toFixed(1)} ${units[u]}`;
           } else if (this.mode === 'count') {
-            var result = value + (value == this.maxDocSize ? '+ ' : ' ');
+            let result = value + (value === this.maxDocSize ? '+ ' : ' ');
             if (value > 1) {
               result += this.i18n('documentDistributionChart.documents');
             } else {
@@ -775,24 +777,13 @@ Example:
           } else {
             return value;
           }
-        },
-
-        ready: function() {
-          this.execute();
         }
 
-      });
+      }
 
-      var vis, radius, partition, arc;
-
-      // Breadcrumb dimensions: width, height, spacing, width of tip/tail.
-      var b = {
-        w: 100, h: 30, s: 3, t: 10
-      };
-
-      var colors = {};
-
-    })();
+      customElements.define(DocumentDistributionChart.is, DocumentDistributionChart);
+      Nuxeo.DocumentDistributionChart = DocumentDistributionChart;
+    }
   </script>
 
 </dom-module>
