@@ -15,12 +15,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../../iron-selector/iron-selector.html">
 <link rel="import" href="../../iron-validatable-behavior/iron-validatable-behavior.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="nuxeo-directory-widget-behavior.html">
 
 <!--
@@ -83,11 +84,13 @@ An element for selecting one or more directory entries with checkboxes.
     <iron-selector attr-for-selected="name" multi selected-attribute="checked"
       class="layout vertical flex" selected-values="{{_selected}}"
       on-selected-items-changed="_updateItems">
-      <template is="dom-repeat" items="[[_entries]]">
-        <paper-checkbox name="[[idFunction(item)]]" data-index="[[index]]" checked="[[item.checked]]" disabled="[[readonly]]">
-          [[format(item)]]
-        </paper-checkbox>
-      </template>
+      <dom-repeat items="[[_entries]]">
+        <template>
+          <paper-checkbox name="[[idFunction(item)]]" data-index="[[index]]" checked="[[item.checked]]" disabled="[[readonly]]">
+            [[format(item)]]
+          </paper-checkbox>
+        </template>
+      </dom-repeat>
     </iron-selector>
 
     <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
@@ -95,65 +98,75 @@ An element for selecting one or more directory entries with checkboxes.
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-directory-checkbox',
-      behaviors: [Nuxeo.DirectoryWidgetBehavior],
-      properties: {
-        /**
-         * Selected entries.
-         */
-        selectedItems: {
-          type: Array,
-          notify: true
-        },
+    {
+      class DirectoryCheckbox extends Polymer.mixinBehaviors([Nuxeo.DirectoryWidgetBehavior], Nuxeo.Element) {
 
-        /**
-        * Selected ids.
-        */
-        value: {
-          type: Array,
-          notify: true
-        },
-
-        _selected: {
-          type: Array,
-          value: []
+        static get is() {
+          return 'nuxeo-directory-checkbox';
         }
-      },
 
-      _updateItems: function(e) {
-        var tmp = [];
-        var tmpIds = [];
-        if (e.detail.value) {
-          for (var i = 0; i < e.detail.value.length; i++) {
-            var item = this._entries[e.detail.value[i].dataIndex];
-            tmp.push(item);
-            tmpIds.push(this.idFunction(item));
+        static get properties() {
+          return {
+            /**
+             * Selected entries.
+             */
+            selectedItems: {
+              type: Array,
+              notify: true,
+            },
+
+            /**
+             * Selected ids.
+             */
+            value: {
+              type: Array,
+              notify: true,
+            },
+
+            _selected: {
+              type: Array,
+              value: [],
+            },
+          };
+        }
+
+        _updateItems(e) {
+          const tmp = [];
+          const tmpIds = [];
+          if (e.detail.value) {
+            for (let i = 0; i < e.detail.value.length; i++) {
+              const item = this._entries[e.detail.value[i].dataIndex];
+              tmp.push(item);
+              tmpIds.push(this.idFunction(item));
+            }
           }
+          this.selectedItems = tmp;
+          this.value = tmpIds;
         }
-        this.selectedItems = tmp;
-        this.value = tmpIds;
-      },
 
-      /* Override method from Polymer.IronValidatableBehavior. */
-      _getValidity: function() {
-        if (this.required) {
-          return this.value && this.value.length > 0;
-        }
-        return true;
-      },
-
-      _isChecked: function(entry) {
-        var value = this.value || this.selectedItems;
-        return value && value.some(function(el) {
-          if (this.idFunction(el) === this.idFunction(entry)) {
-            this._selected.push(this.idFunction(entry));
-            return true;
+        /* Override method from Polymer.IronValidatableBehavior. */
+        _getValidity() {
+          if (this.required) {
+            return this.value && this.value.length > 0;
           }
-          return false;
-        }.bind(this));
+          return true;
+        }
+
+        _isChecked(entry) {
+          const value = this.value || this.selectedItems;
+          return value && value.some((el) => {
+            if (this.idFunction(el) === this.idFunction(entry)) {
+              this._selected.push(this.idFunction(entry));
+              return true;
+            }
+            return false;
+          });
+        }
+
       }
 
-    });
+      customElements.define(DirectoryCheckbox.is, DirectoryCheckbox);
+      Nuxeo.DirectoryCheckbox = DirectoryCheckbox;
+    }
   </script>
 </dom-module>

@@ -15,8 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../neon-animation/neon-animation-runner-behavior.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-dialog-behavior/paper-dialog-behavior.html">
 <link rel="import" href="../../paper-dialog-behavior/paper-dialog-shared-styles.html">
 
@@ -53,54 +53,66 @@ If a `<template>` is passed as the dialog's content, that `<template>` will be s
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-dialog',
-      behaviors: [Polymer.PaperDialogBehavior, Polymer.NeonAnimationRunnerBehavior, Polymer.Templatizer],
-      properties: {
+    {
+      class Dialog
+        extends Polymer.mixinBehaviors([
+          Polymer.PaperDialogBehavior, Polymer.NeonAnimationRunnerBehavior, Polymer.Templatizer], Nuxeo.Element) {
 
-        /**
-         * Make sure dialog is positioned after the backdrop element.
-         * Should only be used when the dialog appears behind the backdrop because of stacking context issues.
-         */
-        reparent: {
-          type: Boolean,
-          value: false
-        }
-      },
-
-      listeners: {
-        'iron-overlay-opened': '_opened'
-      },
-
-      disconnectedCallback: function() {
-        // workaround to prevent IronOverlayBehavior.detached() from being called when unattached
-        if (this._observer) {
-          this.detached();
-        }
-      },
-
-      _opened: function(e) {
-        var isIOS = /iPhone|iPad|iPod/.test(window.navigator.userAgent);
-        if (this.reparent && e.target.withBackdrop || isIOS) {
-          e.target.parentNode.insertBefore(e.target.backdropElement, e.target);
+        static get is() {
+          return 'nuxeo-dialog';
         }
 
-        if (!this._instance) {
-          var template = Polymer.dom(this).querySelector('nuxeo-dialog > template');
-          if (template) {
-            this.templatize(template);
-            this._instance = this.stamp();
-            this.appendChild(this._instance.root);
+        static get properties() {
+          return {
+            /**
+             * Make sure dialog is positioned after the backdrop element.
+             * Should only be used when the dialog appears behind the backdrop because of stacking context issues.
+             */
+            reparent: {
+              type: Boolean,
+              value: false,
+            },
+          };
+        }
+
+        ready() {
+          super.ready();
+          this.addEventListener('iron-overlay-opened', this._opened);
+        }
+
+        disconnectedCallback() {
+          // workaround to prevent IronOverlayBehavior.detached() from being called when unattached
+          if (this._observer) {
+            this.detached();
           }
         }
-      },
 
-      _forwardHostPropV2: function(prop, value) {
-        if (this._instance) {
-          this._instance.forwardHostProp(prop, value);
+        _opened(e) {
+          const isIOS = /iPhone|iPad|iPod/.test(window.navigator.userAgent);
+          if ((this.reparent && e.target.withBackdrop) || isIOS) {
+            e.target.parentNode.insertBefore(e.target.backdropElement, e.target);
+          }
+
+          if (!this._instance) {
+            const template = Polymer.dom(this).querySelector('nuxeo-dialog > template');
+            if (template) {
+              this.templatize(template);
+              this._instance = this.stamp();
+              this.appendChild(this._instance.root);
+            }
+          }
         }
+
+        _forwardHostPropV2(prop, value) {
+          if (this._instance) {
+            this._instance.forwardHostProp(prop, value);
+          }
+        }
+
       }
 
-    });
+      customElements.define(Dialog.is, Dialog);
+      Nuxeo.Dialog = Dialog;
+    }
   </script>
 </dom-module>

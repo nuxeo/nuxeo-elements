@@ -14,10 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
-<link rel="import" href="../../paper-typeahead/paper-typeahead.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-document.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-page-provider.html">
+<link rel="import" href="../../paper-typeahead/paper-typeahead.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../es6-polyfills.html">
 
 <!--
@@ -83,9 +84,11 @@ Custom property | Description | Default
                          current-page="{{children}}"></nuxeo-page-provider>
     <nuxeo-document id="parent" enrichers="[[enrichers]]"></nuxeo-document>
 
-    <template is="dom-if" if="[[label]]">
-      <label>[[label]]</label>
-    </template>
+    <dom-if if="[[label]]">
+      <template>
+        <label>[[label]]</label>
+      </template>
+    </dom-if>
 
     <paper-typeahead id="typeahead"
                      value="{{value}}"
@@ -97,136 +100,144 @@ Custom property | Description | Default
                      no-label-float></paper-typeahead>
   </template>
   <script>
-    Polymer({
-      is: 'nuxeo-path-suggestion',
-      properties: {
+    {
+      class PathSuggestion extends Nuxeo.Element {
 
-        parent: {
-          type: Object,
-          notify: true
-        },
-
-        query: String,
-
-        params: Object,
-
-        /**
-         * List of content enrichers to use.
-         */
-        enrichers: {
-          type: String,
-          value: ''
-        },
-
-        value: {
-          type: String,
-          observer: '_valueChanged',
-          notify: true
-        },
-
-        data: Object,
-
-        children: {
-          type: Array,
-          observer: '_childrenChanged',
-          notify: true
-        },
-
-        label: String,
-
-        autoValidate: {
-          type: Boolean,
-          value: true
-        },
-
-        allowedPattern: {
-          type: String,
-          value: '[^\(\)\\\+\*\%]'
-        },
-
-        disabled: {
-          type: Boolean,
-          observer: '_disabledChanged',
-          reflectToAttribute: true
+        static get is() {
+          return 'nuxeo-path-suggestion';
         }
-      },
 
-      displayResults: function() {
-        this.$.typeahead.tryDisplayResults();
-      },
+        static get properties() {
+          return {
+            parent: {
+              type: Object,
+              notify: true,
+            },
 
-      hideResults: function() {
-        this.$.typeahead.closeResults();
-      },
+            query: String,
 
-      _onFocus: function() {
-        this.$.typeahead.typedValue = this.value;
-        this.displayResults();
-      },
+            params: Object,
 
-      _childrenChanged: function() {
-        if (this.children) {
-          if (this.children.length == 1 && this.children[0].path === this.$.typeahead.typedValue) {
-            this.hideResults();
-          } else {
-            this.data = this.children.map(function(child) {
-              return child.path + '/'
-            });
-            this.displayResults();
-          }
+            /**
+             * List of content enrichers to use.
+             */
+            enrichers: {
+              type: String,
+              value: '',
+            },
+
+            value: {
+              type: String,
+              observer: '_valueChanged',
+              notify: true,
+            },
+
+            data: Object,
+
+            children: {
+              type: Array,
+              observer: '_childrenChanged',
+              notify: true,
+            },
+
+            label: String,
+
+            autoValidate: {
+              type: Boolean,
+              value: true,
+            },
+
+            allowedPattern: {
+              type: String,
+              value: '[^()\\+*%]',
+            },
+
+            disabled: {
+              type: Boolean,
+              observer: '_disabledChanged',
+              reflectToAttribute: true,
+            },
+          };
         }
-      },
 
-      _valueChanged: function() {
-        if(this.value && !this.disabled) {
-          var idx = this.value.lastIndexOf('/');
-          if (idx > -1) {
-            var newParentPath = (idx == 0 ? '/' : this.value.substring(0, idx));
-            this._updateParent(newParentPath).then(function() {
-              this._queryChildren(this.parent, this.value.substring(idx+1))
-            }.bind(this)).catch(function(err) {
-              if (err.status === 403) {
-                this.children = [];
-              }
-            }.bind(this));
-          }
+        displayResults() {
+          this.$.typeahead.tryDisplayResults();
         }
-      },
 
-      _updateParent: function(newParentPath) {
-        if (!this.parent || newParentPath !== this.$.parent.docPath) {
-          this.$.parent.docPath = newParentPath;
-          return this.$.parent.get().then(function(response) {
-            this.parent = response;
-          }.bind(this)).catch(function(error) {
-            if (!(error.code === 'org.nuxeo.ecm.core.api.DocumentNotFoundException' &&
-                  error.message === newParentPath)) {
-              throw error;
+        hideResults() {
+          this.$.typeahead.closeResults();
+        }
+
+        _onFocus() {
+          this.$.typeahead.typedValue = this.value;
+          this.displayResults();
+        }
+
+        _childrenChanged() {
+          if (this.children) {
+            if (this.children.length === 1 && this.children[0].path === this.$.typeahead.typedValue) {
+              this.hideResults();
+            } else {
+              this.data = this.children.map((child) => `${child.path}/`);
+              this.displayResults();
             }
-          }.bind(this));
-        } else {
-          return new Promise(function(resolve) {
-            resolve();
-          });
+          }
         }
-      },
 
-      _queryChildren: function(parent, term) {
-        this.params = {
-          queryParams: 'SELECT * FROM Document WHERE ecm:parentId = \'' + parent.uid + '\' ' +
-                       'AND ecm:name LIKE \'' + term + '%\' AND ecm:mixinType = \'Folderish\' ' +
-                       'AND ecm:mixinType != \'HiddenInNavigation\' AND ecm:isVersion = 0 ' + 
-                       'AND ecm:currentLifeCycleState != \'deleted\''
-        };
-        return this.$.provider.fetch();
-      },
-
-      _disabledChanged: function() {
-        if (!this.disabled) {
-          this._valueChanged();
+        _valueChanged() {
+          if (this.value && !this.disabled) {
+            const idx = this.value.lastIndexOf('/');
+            if (idx > -1) {
+              const newParentPath = (idx === 0 ? '/' : this.value.substring(0, idx));
+              this._updateParent(newParentPath).then(() => {
+                this._queryChildren(this.parent, this.value.substring(idx + 1));
+              }).catch((err) => {
+                if (err.status === 403) {
+                  this.children = [];
+                }
+              });
+            }
+          }
         }
+
+        _updateParent(newParentPath) {
+          if (!this.parent || newParentPath !== this.$.parent.docPath) {
+            this.$.parent.docPath = newParentPath;
+            return this.$.parent.get().then((response) => {
+              this.parent = response;
+            }).catch((error) => {
+              if (!(error.code === 'org.nuxeo.ecm.core.api.DocumentNotFoundException' &&
+                  error.message === newParentPath)) {
+                throw error;
+              }
+            });
+          } else {
+            return new Promise(((resolve) => {
+              resolve();
+            }));
+          }
+        }
+
+        _queryChildren(parent, term) {
+          this.params = {
+            queryParams: `SELECT * FROM Document WHERE ecm:parentId = '${parent.uid}' ` +
+            `AND ecm:name LIKE '${term}%' AND ecm:mixinType = 'Folderish' ` +
+            'AND ecm:mixinType != \'HiddenInNavigation\' AND ecm:isVersion = 0 ' +
+            'AND ecm:currentLifeCycleState != \'deleted\'',
+          };
+          return this.$.provider.fetch();
+        }
+
+        _disabledChanged() {
+          if (!this.disabled) {
+            this._valueChanged();
+          }
+        }
+
       }
 
-    });
+      customElements.define(PathSuggestion.is, PathSuggestion);
+      Nuxeo.PathSuggestion = PathSuggestion;
+    }
   </script>
 </dom-module>

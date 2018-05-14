@@ -15,11 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-tooltip/paper-tooltip.html">
-<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 
 <!--
@@ -42,125 +42,144 @@ Example:
     <nuxeo-operation id="op" op="[[operation]]" input="[[input]]" params="[[params]]" sync-indexing$="[[syncIndexing]]">
     </nuxeo-operation>
 
-    <paper-icon-button id="bt" icon="[[icon]]" on-tap="_execute"></paper-icon-button>
+    <paper-icon-button id="bt" icon="[[icon]]" on-click="_execute"></paper-icon-button>
     <paper-tooltip for="bt">[[label]]</paper-tooltip>
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-operation-button',
+    {
+      class OperationButton extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
-      behaviors: [Nuxeo.I18nBehavior],
+        static get is() {
+          return 'nuxeo-operation-button';
+        }
 
-      properties: {
+        static get properties() {
+          return {
+            /* Icon name, can be anything taken from the [material icons](https://material.io/icons/), e.g. "chat", "description". */
+            icon: String,
 
-        /* Icon name, can be anything taken from the [material icons](https://material.io/icons/), e.g. "chat", "description". */
-        icon: String,
+            /* Label (shown as tooltip) */
+            label: String,
 
-        /* Label (shown as tooltip) */
-        label: String,
+            /* The id of the operation, automation chain or script to call. */
+            operation: String,
 
-        /* The id of the operation, automation chain or script to call. */
-        operation: String,
-
-         /* Pass contextual information that will be forwarded to the operation,
+            /* Pass contextual information that will be forwarded to the operation,
           * automation chain or script triggered as the input for the first
           * operation. Possible options depend on the slot chosen.
           * [Documentation](https://doc.nuxeo.com/nxdoc/web-ui-slots)
           */
-        input: String,
+            input: String,
 
-        /**
-         * If true, documents changed by the operation call will be reindexed synchronously server side.
-         */
-        syncIndexing: Boolean,
+            /**
+             * If true, documents changed by the operation call will be reindexed synchronously server side.
+             */
+            syncIndexing: Boolean,
 
-        /* The parameters to send. */
-        params: {
-          type: Object,
-          value: function() {
-            return {};
-          }
-        },
+            /* The parameters to send. */
+            params: {
+              type: Object,
+              value() {
+                return {};
+              },
+            },
 
-        /* The response from the server. */
-        response: {
-          type: Object,
-          value: null,
-          notify: true
-        },
+            /* The response from the server. */
+            response: {
+              type: Object,
+              value: null,
+              notify: true,
+            },
 
-        /* The text or i18n key to display in the notification. */
-        notification: {
-          type: String
-        },
+            /* The text or i18n key to display in the notification. */
+            notification: {
+              type: String,
+            },
 
-        /* Trigger download of Blob response. */
-        download: {
-          type: Boolean,
-          value: false
-        },
+            /* Trigger download of Blob response. */
+            download: {
+              type: Boolean,
+              value: false,
+            },
 
-        /* The event type to fire on completion. */
-        event: {
-          type: String,
-          value: 'operation-executed'
-        },
+            /* The event type to fire on completion. */
+            event: {
+              type: String,
+              value: 'operation-executed',
+            },
 
-        /* The detail of the event fired on completion.  */
-        detail: {
-          type: String
+            /* The detail of the event fired on completion.  */
+            detail: {
+              type: String,
+            },
+          };
         }
-      },
 
-      _execute: function() {
-        this.$.op.execute().then(function(response) {
-          if (this.notification) {
-            this.fire('notify', {'message': this.i18n(this.notification)});
-          }
-          var detail = {response: response};
-          if (this.detail) {
-            // if the supplied params are a string, parse them as JSON
-            detail = typeof this.detail === 'string' ? JSON.parse(this.detail) : this.detail;
-          }
-          this.fire(this.event, detail);
-
-          if (this.download) {
-            return this._download(response);
-          }
-        }.bind(this))
-        .catch(function(error) {
-          this.fire('notify', {'message': error});
-        }.bind(this));
-      },
-
-      // https://jira.nuxeo.com/browse/ELEMENTS-370
-      _download: function(response) {
-        var contentDisposition = response.headers.get('Content-Disposition');
-        if (contentDisposition) {
-          var filenameMatches = contentDisposition
-              .match(/filename[^;=\n]*=([^;\n]*''([^;\n]*)|[^;\n]*)/).filter(function(match) { return !!match; });
-          var filename = decodeURI(filenameMatches[filenameMatches.length - 1]);
-          return response.blob().then(function(blob) {
-            if (navigator.msSaveBlob) {
-              // handle IE11 and Edge
-              navigator.msSaveBlob(blob, filename);
-            } else {
-              var a = document.createElement('a');
-              a.style = 'display: none';
-              a.download = filename;
-              a.href = URL.createObjectURL(blob);
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              URL.revokeObjectURL(a.href);
+        _execute() {
+          this.$.op.execute().then((response) => {
+            if (this.notification) {
+              this.dispatchEvent(new CustomEvent('notify', {
+                composed: true,
+                bubbles: true,
+                detail: { message: this.i18n(this.notification) },
+              }));
             }
-          }.bind(this));
-        } else {
-          return Promise.reject(new Error('missing Content-Disposition header'));
+            let detail = { response };
+            if (this.detail) {
+              // if the supplied params are a string, parse them as JSON
+              detail = typeof this.detail === 'string' ? JSON.parse(this.detail) : this.detail;
+            }
+            this.dispatchEvent(new CustomEvent(this.event, {
+              composed: true,
+              bubbles: true,
+              detail,
+            }));
+
+            if (this.download) {
+              return this._download(response);
+            }
+          })
+            .catch((error) => {
+              this.dispatchEvent(new CustomEvent('notify', {
+                composed: true,
+                bubbles: true,
+                detail: { message: error },
+              }));
+            });
         }
+
+        // https://jira.nuxeo.com/browse/ELEMENTS-370
+        _download(response) {
+          const contentDisposition = response.headers.get('Content-Disposition');
+          if (contentDisposition) {
+            const filenameMatches = contentDisposition
+              .match(/filename[^;=\n]*=([^;\n]*''([^;\n]*)|[^;\n]*)/).filter((match) => !!match);
+            const filename = decodeURI(filenameMatches[filenameMatches.length - 1]);
+            return response.blob().then((blob) => {
+              if (navigator.msSaveBlob) {
+                // handle IE11 and Edge
+                navigator.msSaveBlob(blob, filename);
+              } else {
+                const a = document.createElement('a');
+                a.style = 'display: none';
+                a.download = filename;
+                a.href = URL.createObjectURL(blob);
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(a.href);
+              }
+            });
+          } else {
+            return Promise.reject(new Error('missing Content-Disposition header'));
+          }
+        }
+
       }
 
-    });
+      customElements.define(OperationButton.is, OperationButton);
+      Nuxeo.OperationButton = OperationButton;
+    }
   </script>
 </dom-module>

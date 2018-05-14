@@ -15,7 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 
 <!--
@@ -87,13 +88,15 @@ An element for providing aggregation based navigation.
       }
     </style>
 
-    <div id="keys" on-mouseout="_mouseOut" on-tap="_tap">
-      <template is="dom-repeat" items="[[_keys]]" as="key">
-        <div class="key" on-mousemove="_mouseMove"
-             style$="top: [[key.top]]px; height: [[key.height]]px; color: [[_color(key.visible)]];">
-          [[_label(key)]]
-        </div>
-      </template>
+    <div id="keys" on-mouseout="_mouseOut" on-click="_tap">
+      <dom-repeat items="[[_keys]]" as="key">
+        <template>
+          <div class="key" on-mousemove="_mouseMove"
+               style$="top: [[key.top]]px; height: [[key.height]]px; color: [[_color(key.visible)]];">
+            [[_label(key)]]
+          </div>
+        </template>
+      </dom-repeat>
       <div id="cursor">
         <div class="label">[[_cursorLabel]]</div>
       </div>
@@ -102,131 +105,147 @@ An element for providing aggregation based navigation.
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-aggregation-navigation',
-      behaviors: [Nuxeo.I18nBehavior],
-      properties: {
+    {
+      class AggregationNavigation extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
-        buckets: {
-          type: Array,
-          value: [],
-          observer: '_bucketsChanged'
-        },
-
-        granularity: {
-          type: Number,
-          value: 30
-        },
-
-        opacity: {
-          type: Number,
-          value: 0.85
-        },
-
-        _keys: {
-          type: Array,
-          value: []
-        },
-
-        _count: {
-          type: Number,
-          value: 0
-        },
-
-        _cursorIndex: {
-          type: Number,
-          value: 0
-        },
-
-        _cursorLabel: {
-          type: String,
-          value: ''
-        },
-
-        _rect: {
-          type: Object,
-          value: {top: 0, right: 0, left: 0, bottom: 0}
+        static get is() {
+          return 'nuxeo-aggregation-navigation';
         }
-      },
 
-      attached: function() {
-        this.addEventListener('mouseover', function() {
-          this._visibility(true);
-        }.bind(this));
+        static get properties() {
+          return {
+            buckets: {
+              type: Array,
+              value: [],
+              observer: '_bucketsChanged',
+            },
 
-        this.addEventListener('mouseout', function() {
-          this._visibility(false);
-        }.bind(this));
-      },
+            granularity: {
+              type: Number,
+              value: 30,
+            },
 
-      _visibility: function(visible) {
-        this.$.keys.style.visibility = visible ? 'visible' : 'hidden';
-        this.style.background = visible ? 'rgba(255, 255, 255, 0.85)' : 'transparent';
-      },
+            opacity: {
+              type: Number,
+              value: 0.85,
+            },
 
-      _label: function(key) {
-        return this.i18n(key.name);
-      },
+            _keys: {
+              type: Array,
+              value: [],
+            },
 
-      _bucketsChanged: function(buckets) {
-        this._rect = this.$.keys.getBoundingClientRect();
+            _count: {
+              type: Number,
+              value: 0,
+            },
 
-        // count documents in buckets
-        this._count = 0;
-        buckets.forEach(function(bucket) {
-          this._count += bucket.docCount;
-        }.bind(this));
-        this.style.opacity = this._count ? this.opacity : 0;
+            _cursorIndex: {
+              type: Number,
+              value: 0,
+            },
 
-        // fill keys array based on buckets
-        this.set('_keys', []);
-        var offset = 1;
-        var granularity = this.granularity;
-        buckets.forEach(function(bucket) {
+            _cursorLabel: {
+              type: String,
+              value: '',
+            },
 
-          var visible = false;
-          if (granularity >= this.granularity) {
-            visible = true;
-            granularity = 0;
-          }
+            _rect: {
+              type: Object,
+              value: {
+                top: 0, right: 0, left: 0, bottom: 0,
+              },
+            },
+          };
+        }
 
-          var height = bucket.docCount * this._rect.height / this._count;
-
-          this.push('_keys', {
-            name: bucket.key,
-            offset: offset,
-            size: bucket.docCount,
-            top: offset * this._rect.height / this._count,
-            height: height,
-            visible: visible
+        connectedCallback() {
+          super.connectedCallback();
+          this.addEventListener('mouseover', () => {
+            this._visibility(true);
           });
 
-          offset += bucket.docCount;
-          granularity += height;
+          this.addEventListener('mouseout', () => {
+            this._visibility(false);
+          });
+        }
 
-        }.bind(this));
-      },
+        _visibility(visible) {
+          this.$.keys.style.visibility = visible ? 'visible' : 'hidden';
+          this.style.background = visible ? 'rgba(255, 255, 255, 0.85)' : 'transparent';
+        }
 
-      _tap: function() {
-        this.fire('scroll-to', {index: this._cursorIndex});
-      },
+        _label(key) {
+          return this.i18n(key.name);
+        }
 
-      _mouseMove: function(e) {
-        var y = (e.y - this._rect.top);
-        this.$.cursor.style.display = 'block';
-        this.$.cursor.style.top = y + 'px';
-        this._cursorIndex = Math.round(this._count * y / this._rect.height);
-        this._cursorLabel = this._label(e.model.key);
-      },
+        _bucketsChanged(buckets) {
+          this._rect = this.$.keys.getBoundingClientRect();
 
-      _mouseOut: function() {
-        this.$.cursor.style.display = 'none';
-      },
+          // count documents in buckets
+          this._count = 0;
+          buckets.forEach((bucket) => {
+            this._count += bucket.docCount;
+          });
+          this.style.opacity = this._count ? this.opacity : 0;
 
-      _color: function(visible) {
-        return visible ? 'black' : 'transparent';
+          // fill keys array based on buckets
+          this.set('_keys', []);
+          let offset = 1;
+          let granularity = this.granularity;
+          buckets.forEach((bucket) => {
+
+            let visible = false;
+            if (granularity >= this.granularity) {
+              visible = true;
+              granularity = 0;
+            }
+
+            const height = bucket.docCount * (this._rect.height / this._count);
+
+            this.push('_keys', {
+              name: bucket.key,
+              offset,
+              size: bucket.docCount,
+              top: (offset * this._rect.height) / this._count,
+              height,
+              visible,
+            });
+
+            offset += bucket.docCount;
+            granularity += height;
+
+          });
+        }
+
+        _tap() {
+          this.dispatchEvent(new CustomEvent('scroll-to', {
+            composed: true,
+            bubbles: true,
+            detail: { index: this._cursorIndex },
+          }));
+        }
+
+        _mouseMove(e) {
+          const y = (e.y - this._rect.top);
+          this.$.cursor.style.display = 'block';
+          this.$.cursor.style.top = `${y}px`;
+          this._cursorIndex = Math.round(this._count * y / this._rect.height);
+          this._cursorLabel = this._label(e.model.key);
+        }
+
+        _mouseOut() {
+          this.$.cursor.style.display = 'none';
+        }
+
+        _color(visible) {
+          return visible ? 'black' : 'transparent';
+        }
+
       }
 
-    });
+      customElements.define(AggregationNavigation.is, AggregationNavigation);
+      Nuxeo.AggregationNavigation = AggregationNavigation;
+    }
   </script>
 </dom-module>

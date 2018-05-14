@@ -15,10 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-tooltip/paper-tooltip.html">
-<link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-format-behavior.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
 
 <!--
 An element to show a datetime formatted with a tooltip. Format maybe relative to now
@@ -40,42 +40,53 @@ Example:
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-date',
-      behaviors: [Nuxeo.I18nBehavior, Nuxeo.FormatBehavior],
-      properties: {
+    {
+      class Date extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FormatBehavior], Nuxeo.Element) {
 
-        /*
-         * A string with the date and time to be shown
-         */
-        datetime: {
-          type: String
-        },
-
-        /*
-         * The format of datetime output text representation. Options are "relative" or the
-         * [moment Format](http://momentjs.com/docs/#/displaying/format/).
-         */
-        format: {
-          type: String,
-          value: "MMMM D, YYYY"
-        },
-
-        /*
-         * The format of datetime output text tooltip. Options are "relative" or the
-         * [moment Format](http://momentjs.com/docs/#/displaying/format/).
-         */
-        tooltipFormat: {
-          type: String,
-          value: "MMMM D, YYYY HH:mm"
+        static get is() {
+          return 'nuxeo-date';
         }
-      },
 
-      ready: function () {
-        document.body.appendChild(this.$.tooltip);
-        this.$.tooltip._target = this.$.datetime;
-        this.$.tooltip._addListeners();
+        static get properties() {
+          return {
+            /*
+             * A string with the date and time to be shown
+             */
+            datetime: {
+              type: String,
+            },
+
+            /*
+             * The format of datetime output text representation. Options are "relative" or the
+             * [moment Format](http://momentjs.com/docs/#/displaying/format/).
+             */
+            format: {
+              type: String,
+              value: 'MMMM D, YYYY',
+            },
+
+            /*
+             * The format of datetime output text tooltip. Options are "relative" or the
+             * [moment Format](http://momentjs.com/docs/#/displaying/format/).
+             */
+            tooltipFormat: {
+              type: String,
+              value: 'MMMM D, YYYY HH:mm',
+            },
+          };
+        }
+
+        ready() {
+          super.ready();
+          document.body.appendChild(this.$.tooltip);
+          this.$.tooltip._target = this.$.datetime;
+          this.$.tooltip._addListeners();
+        }
+
       }
-    });
+
+      customElements.define(Date.is, Date);
+      Nuxeo.Date = Date;
+    }
   </script>
 </dom-module>

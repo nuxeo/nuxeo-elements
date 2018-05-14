@@ -15,10 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
-<link rel="import" href="../../paper-item/paper-item.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../paper-item/paper-item.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../widgets/nuxeo-select.html">
 
 <!--
@@ -49,73 +51,91 @@ An element to select sort field and sort order.
     <div id="container">
 
       <nuxeo-select label="[[label]]" attr-for-selected="option" selected="{{selected}}">
-        <template is="dom-if" if="[[options]]">
-          <template is="dom-repeat" items="[[options]]" as="item">
-            <paper-item option="[[item]]">[[item.label]]</paper-item>
+        <dom-if if="[[options]]">
+          <template>
+            <dom-repeat items="[[options]]" as="item">
+              <template>
+                <paper-item option="[[item]]">[[item.label]]</paper-item>
+              </template>
+            </dom-repeat>
           </template>
-        </template>
+        </dom-if>
       </nuxeo-select>
 
-      <paper-icon-button noink on-tap="_toggleSortOrder" icon="[[_sortOrderIcon(_sortOrder)]]"></paper-icon-button>
+      <paper-icon-button noink on-click="_toggleSortOrder" icon="[[_sortOrderIcon(_sortOrder)]]"></paper-icon-button>
     </div>
 
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-sort-select',
-      properties: {
+    {
+      class SortSelect extends Nuxeo.Element {
 
-        label: {
-          type: String,
-          value: ''
-        },
-
-        options: {
-          type: Array,
-          value: [],
-          observer: '_optionsChanged'
-        },
-
-        selected: {
-          type: String,
-          observer: '_selectedChanged',
-          notify: true
-        },
-
-        _sortOrder: {
-          type: String,
-          value: 'asc'
+        static get is() {
+          return 'nuxeo-sort-select';
         }
-      },
 
-      _optionsChanged: function() {
-        this.options.forEach(function(option) {
-          if (option.selected) {
-            this.selected = option;
+        static get properties() {
+          return {
+            label: {
+              type: String,
+              value: '',
+            },
+
+            options: {
+              type: Array,
+              value: [],
+              observer: '_optionsChanged',
+            },
+
+            selected: {
+              type: String,
+              observer: '_selectedChanged',
+              notify: true,
+            },
+
+            _sortOrder: {
+              type: String,
+              value: 'asc',
+            },
+          };
+        }
+
+        _optionsChanged() {
+          this.options.forEach((option) => {
+            if (option.selected) {
+              this.selected = option;
+            }
+          });
+        }
+
+        _selectedChanged() {
+          if (this.selected) {
+            this._sortOrder = this.selected.order;
           }
-        }.bind(this));
-      },
-
-      _selectedChanged: function() {
-        if (this.selected) {
-          this._sortOrder = this.selected.order;
         }
-      },
 
-      _toggleSortOrder: function() {
-        this._sortOrder = this._sortOrder === 'asc' ? 'desc' : 'asc';
-        if (this.selected) {
-          this.set('selected.order', this._sortOrder);
-          this.fire('sort-order-changed', { sort: this.selected });
+        _toggleSortOrder() {
+          this._sortOrder = this._sortOrder === 'asc' ? 'desc' : 'asc';
+          if (this.selected) {
+            this.set('selected.order', this._sortOrder);
+            this.dispatchEvent(new CustomEvent('sort-order-changed', {
+              composed: true,
+              bubbles: true,
+              detail: { sort: this.selected },
+            }));
+          }
         }
-      },
 
-      _sortOrderIcon: function() {
-        return this._sortOrder === 'asc' ? 'icons:arrow-downward' : 'icons:arrow-upward';
+        _sortOrderIcon() {
+          return this._sortOrder === 'asc' ? 'icons:arrow-downward' : 'icons:arrow-upward';
+        }
+
       }
 
-    });
+      customElements.define(SortSelect.is, SortSelect);
+      Nuxeo.SortSelect = SortSelect;
+    }
   </script>
 
 </dom-module>

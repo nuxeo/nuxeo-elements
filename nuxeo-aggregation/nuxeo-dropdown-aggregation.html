@@ -14,9 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../widgets/nuxeo-selectivity.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../widgets/nuxeo-selectivity.html">
 <link rel="import" href="nuxeo-aggregation-behavior.html">
 
 <!--
@@ -57,44 +57,55 @@ An element to interact with page provider aggregations as suggestions.
 
   </template>
   <script>
-    Polymer({
-      is: 'nuxeo-dropdown-aggregation',
-      behaviors: [Nuxeo.I18nBehavior, Nuxeo.AggregationBehavior],
-      properties: {
+    {
+      class DropdownAggregation
+        extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.AggregationBehavior], Nuxeo.Element) {
 
-        value: {
-          type: Array,
-          value: [],
-          notify: true
-        },
-
-        multiple: {
-          type: Boolean,
-          value: false
-        },
-
-        minChars: {
-          type: Number,
-          value: 0
-        },
-
-        placeholder: String
-      },
-
-      _computeData: function (buckets) {
-        if (buckets) {
-          return buckets.map(function (item) {
-            var label = item.label + ' (' + item.docCount + ')';
-            return {
-              id: item.key,
-              text: label,
-              displayLabel: label
-            };
-          }.bind(this));
-        } else {
-          return [];
+        static get is() {
+          return 'nuxeo-dropdown-aggregation';
         }
+
+        static get properties() {
+          return {
+            value: {
+              type: Array,
+              value: [],
+              notify: true,
+            },
+
+            multiple: {
+              type: Boolean,
+              value: false,
+            },
+
+            minChars: {
+              type: Number,
+              value: 0,
+            },
+
+            placeholder: String,
+          };
+        }
+
+        _computeData(buckets) {
+          if (buckets) {
+            return buckets.map((item) => {
+              const label = `${item.label} (${item.docCount})`;
+              return {
+                id: item.key,
+                text: label,
+                displayLabel: label,
+              };
+            });
+          } else {
+            return [];
+          }
+        }
+
       }
-    });
+
+      customElements.define(DropdownAggregation.is, DropdownAggregation);
+      Nuxeo.DropdownAggregation = DropdownAggregation;
+    }
   </script>
 </dom-module>

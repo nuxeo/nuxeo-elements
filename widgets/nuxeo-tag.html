@@ -15,8 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 
 <!--
@@ -59,33 +60,46 @@ Example:
       }
     </style>
 
-    <template is="dom-if" if=[[icon]]>
-      <iron-icon icon="[[icon]]"></iron-icon>
-    </template>
+    <dom-if if=[[icon]]>
+      <template>
+        <iron-icon icon="[[icon]]"></iron-icon>
+      </template>
+    </dom-if>
     <slot></slot>
 
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-tag',
-      properties: {
+    {
+      class Tag extends Nuxeo.Element {
 
-        /**
-         * Icon to use (iconset_name:icon_name).
-         */
-        icon: String,
-
-        /**
-         * Attribute to uppercase tag content.
-         */
-        uppercase: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true
+        static get is() {
+          return 'nuxeo-tag';
         }
+
+        static get properties() {
+          return {
+            /**
+             * Icon to use (iconset_name:icon_name).
+             */
+            icon: String,
+
+            /**
+             * Attribute to uppercase tag content.
+             */
+            uppercase: {
+              type: Boolean,
+              value: false,
+              reflectToAttribute: true,
+            },
+          };
+        }
+
       }
-    });
+
+      customElements.define(Tag.is, Tag);
+      Nuxeo.Tag = Tag;
+    }
   </script>
 
 </dom-module>

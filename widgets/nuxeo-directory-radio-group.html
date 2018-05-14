@@ -15,10 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../../paper-radio-button/paper-radio-button.html">
 <link rel="import" href="../../paper-radio-group/paper-radio-group.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="nuxeo-directory-widget-behavior.html">
 
 <!--
@@ -79,11 +80,13 @@ An element for selecting one directory entry with a radio group widget.
     <label class="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
 
     <paper-radio-group on-selected-item-changed="_updateItem" selected="{{_selected}}">
-      <template is="dom-repeat" items="[[_entries]]">
-        <paper-radio-button name="[[idFunction(item)]]" data-index="[[index]]" checked="[[item.checked]]" disabled="[[readonly]]">
-          [[format(item)]]
-        </paper-radio-button>
-      </template>
+      <dom-repeat items="[[_entries]]">
+        <template>
+          <paper-radio-button name="[[idFunction(item)]]" data-index="[[index]]" checked="[[item.checked]]" disabled="[[readonly]]">
+            [[format(item)]]
+          </paper-radio-button>
+        </template>
+      </dom-repeat>
     </paper-radio-group>
 
     <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
@@ -91,54 +94,63 @@ An element for selecting one directory entry with a radio group widget.
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-directory-radio-group',
-      behaviors: [Nuxeo.DirectoryWidgetBehavior],
-      properties: {
-        /**
-         * Selected entry.
-         */
-        selectedItem: {
-          type: Object,
-          notify: true
-        },
+    {
+      class DirectoryRadioGroup extends Polymer.mixinBehaviors([Nuxeo.DirectoryWidgetBehavior], Nuxeo.Element) {
 
-        /**
-         * Selected id.
-         */
-        value: {
-          type: String,
-          notify: true
-        },
-
-        _selected: String
-
-      },
-
-      _updateItem: function(e) {
-        if (e.detail && e.detail.value) {
-          this.set('selectedItem', this._entries[e.detail.value.dataIndex]);
-          this.set('value', this.idFunction(this.selectedItem));
+        static get is() {
+          return 'nuxeo-directory-radio-group';
         }
-      },
 
-      /* Override method from Polymer.IronValidatableBehavior. */
-      _getValidity: function() {
-        if (this.required) {
-          return !!this.value;
+        static get properties() {
+          return {
+            /**
+             * Selected entry.
+             */
+            selectedItem: {
+              type: Object,
+              notify: true,
+            },
+
+            /**
+             * Selected id.
+             */
+            value: {
+              type: String,
+              notify: true,
+            },
+
+            _selected: String,
+          };
         }
-        return true;
-      },
 
-      _isChecked: function(entry) {
-        var value = this.value || this.selectedItem;
-        if (value && this.idFunction(value) === this.idFunction(entry)) {
-          this._selected = this.idFunction(entry);
+        _updateItem(e) {
+          if (e.detail && e.detail.value) {
+            this.set('selectedItem', this._entries[e.detail.value.dataIndex]);
+            this.set('value', this.idFunction(this.selectedItem));
+          }
+        }
+
+        /* Override method from Polymer.IronValidatableBehavior. */
+        _getValidity() {
+          if (this.required) {
+            return !!this.value;
+          }
           return true;
         }
-        return false;
+
+        _isChecked(entry) {
+          const value = this.value || this.selectedItem;
+          if (value && this.idFunction(value) === this.idFunction(entry)) {
+            this._selected = this.idFunction(entry);
+            return true;
+          }
+          return false;
+        }
+
       }
 
-    });
+      customElements.define(DirectoryRadioGroup.is, DirectoryRadioGroup);
+      Nuxeo.DirectoryRadioGroup = DirectoryRadioGroup;
+    }
   </script>
 </dom-module>

@@ -15,11 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../../iron-icon/iron-icon.html">
-<link rel="import" href="../../iron-icons/hardware-icons.html">
 <link rel="import" href="../../iron-collapse/iron-collapse.html">
 <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../iron-icon/iron-icon.html">
+<link rel="import" href="../../iron-icons/hardware-icons.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
 
 <!--
 An element for a generic card
@@ -98,83 +99,100 @@ Custom property         | Description | Default
       }
     </style>
 
-    <template is="dom-if" if="[[_hasHeading(icon, heading, collapsible)]]">
-      <h3 class="header" on-tap="_toggle">
-        <iron-icon class="icon" icon="[[icon]]" hidden$="[[!icon]]"></iron-icon>
-        <span class="heading">[[heading]]</span>
-        <iron-icon class="toggle" icon="[[_toggleIcon(opened)]]" toggle hidden$="[[!collapsible]]"></iron-icon>
-      </h3>
-    </template>
+    <dom-if if="[[_hasHeading(icon, heading, collapsible)]]">
+      <template>
+        <h3 class="header" on-click="_toggle">
+          <iron-icon class="icon" icon="[[icon]]" hidden$="[[!icon]]"></iron-icon>
+          <span class="heading">[[heading]]</span>
+          <iron-icon class="toggle" icon="[[_toggleIcon(opened)]]" toggle hidden$="[[!collapsible]]"></iron-icon>
+        </h3>
+      </template>
+    </dom-if>
 
-    <template is="dom-if" if="[[collapsible]]">
-      <iron-collapse opened="[[_opened(opened, collapsible)]]">
+    <dom-if if="[[collapsible]]">
+      <template>
+        <iron-collapse opened="[[_opened(opened, collapsible)]]">
+          <slot></slot>
+        </iron-collapse>
+      </template>
+    </dom-if>
+
+    <dom-if if="[[!collapsible]]">
+      <template>
         <slot></slot>
-      </iron-collapse>
-    </template>
-
-    <template is="dom-if" if="[[!collapsible]]">
-      <slot></slot>
-    </template>
+      </template>
+    </dom-if>
 
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-card',
-      properties: {
+    {
+      class Card extends Nuxeo.Element {
 
-        /**
-         * Heading icon
-         */
-        icon: {
-          type: String,
-          value: null
-        },
-
-        /**
-         * Heading of the card
-         */
-        heading: {
-          type: String,
-          value: null
-        },
-
-        /**
-         * If the card is collapsible
-         */
-        collapsible: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true
-        },
-
-        /**
-         * If is a collapsible card, if it is opened or not
-         */
-        opened: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true
+        static get is() {
+          return 'nuxeo-card';
         }
-      },
 
-      _hasHeading: function(icon, heading, collapsible) {
-        return icon || heading || collapsible;
-      },
+        static get properties() {
+          return {
+            /**
+             * Heading icon
+             */
+            icon: {
+              type: String,
+              value: null,
+            },
 
-      _opened: function(opened, collapsible) {
-        return !collapsible || opened;
-      },
+            /**
+             * Heading of the card
+             */
+            heading: {
+              type: String,
+              value: null,
+            },
 
-      _toggle: function() {
-        if (this.collapsible) {
-          this.opened = !this.opened;
+            /**
+             * If the card is collapsible
+             */
+            collapsible: {
+              type: Boolean,
+              value: false,
+              reflectToAttribute: true,
+            },
+
+            /**
+             * If is a collapsible card, if it is opened or not
+             */
+            opened: {
+              type: Boolean,
+              value: false,
+              reflectToAttribute: true,
+            },
+          };
         }
-      },
 
-      _toggleIcon: function(opened) {
-        return 'hardware:keyboard-arrow-' + (opened ? 'up' : 'down');
+        _hasHeading(icon, heading, collapsible) {
+          return icon || heading || collapsible;
+        }
+
+        _opened(opened, collapsible) {
+          return !collapsible || opened;
+        }
+
+        _toggle() {
+          if (this.collapsible) {
+            this.opened = !this.opened;
+          }
+        }
+
+        _toggleIcon(opened) {
+          return `hardware:keyboard-arrow-${opened ? 'up' : 'down'}`;
+        }
+
       }
-    });
+
+      customElements.define(Card.is, Card);
+      Nuxeo.Card = Card;
+    }
   </script>
 </dom-module>

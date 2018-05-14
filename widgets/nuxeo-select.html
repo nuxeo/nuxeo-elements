@@ -15,10 +15,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../../paper-listbox/paper-listbox.html">
-<link rel="import" href="../../paper-item/paper-item.html">
 <link rel="import" href="../../iron-validatable-behavior/iron-validatable-behavior.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../paper-item/paper-item.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../../paper-listbox/paper-listbox.html">
 
 <!--
 An element for selecting options.
@@ -118,11 +121,15 @@ Example:
 
       <paper-listbox id="paperMenu" slot="dropdown-content"
                   attr-for-selected="[[_computeAttrForSelected(attrForSelected, options)]]" selected="{{selected}}">
-        <template is="dom-if" if="[[options]]">
-          <template is="dom-repeat" items="[[options]]" as="item">
-            <paper-item option="[[_id(item)]]">[[_label(item)]]</paper-item>
+        <dom-if if="[[options]]">
+          <template>
+            <dom-repeat items="[[options]]" as="item">
+              <template>
+                <paper-item option="[[_id(item)]]">[[_label(item)]]</paper-item>
+              </template>
+            </dom-repeat>
           </template>
-        </template>
+        </dom-if>
         <slot></slot>
       </paper-listbox>
     </paper-dropdown-menu>
@@ -130,124 +137,135 @@ Example:
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-select',
-      behaviors: [Polymer.IronResizableBehavior, Polymer.IronValidatableBehavior],
-      properties: {
+    {
+      class Select extends
+        Polymer.mixinBehaviors([Polymer.IronResizableBehavior, Polymer.IronValidatableBehavior], Nuxeo.Element) {
 
-        /**
-         * Label.
-         */
-        label: {
-          type: String,
-          value: null
-        },
-
-        /**
-         * Placeholder.
-         */
-        placeholder: {
-          type: String,
-          value: ' '
-        },
-
-        /**
-         * Error message.
-         */
-        errorMessage: {
-          type: String
-        },
-
-        /**
-         * Options array to show.
-         */
-        options: {
-          type: Array,
-          value: null
-        },
-
-        /**
-         * Gets or sets the selected option.
-         */
-        selected: {
-          type: String,
-          notify: true
-        },
-
-        /**
-         * Attribute value or property of an element for `selected` instead of the default `option` value.
-         */
-        attrForSelected: {
-          type: String,
-          value: null
-        },
-
-        /**
-         * Read only.
-         */
-        readonly:  {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Disabled.
-         */
-        disabled:  {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true
-        },
-
-        /**
-         * Required.
-         */
-        required:  {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true
+        static get is() {
+          return 'nuxeo-select';
         }
-      },
 
-      listeners: {
-        'iron-resize': '_resize'
-      },
+        static get properties() {
+          return {
+            /**
+             * Label.
+             */
+            label: {
+              type: String,
+              value: null,
+            },
 
-      close: function() {
-        this.$.paperDropdownMenu.close();
-      },
+            /**
+             * Placeholder.
+             */
+            placeholder: {
+              type: String,
+              value: ' ',
+            },
 
-      _resize: function() {
-        var button = this.$.paperDropdownMenu.$.menuButton;
-        button.noOverlap = true;
-        button.verticalOffset = -8;
-        var width = this.getBoundingClientRect().width;
-        if (width > 0) {
-          this.$.paperDropdownMenu.style.width = this.$.paperMenu.style.width = width + 'px';
+            /**
+             * Error message.
+             */
+            errorMessage: {
+              type: String,
+            },
+
+            /**
+             * Options array to show.
+             */
+            options: {
+              type: Array,
+              value: null,
+            },
+
+            /**
+             * Gets or sets the selected option.
+             */
+            selected: {
+              type: String,
+              notify: true,
+            },
+
+            /**
+             * Attribute value or property of an element for `selected` instead of the default `option` value.
+             */
+            attrForSelected: {
+              type: String,
+              value: null,
+            },
+
+            /**
+             * Read only.
+             */
+            readonly: {
+              type: Boolean,
+              value: false,
+              reflectToAttribute: true,
+            },
+
+            /**
+             * Disabled.
+             */
+            disabled: {
+              type: Boolean,
+              value: false,
+              reflectToAttribute: true,
+            },
+
+            /**
+             * Required.
+             */
+            required: {
+              type: Boolean,
+              value: false,
+              reflectToAttribute: true,
+            },
+          };
         }
-      },
 
-      _id: function(item) {
-        if (!this.selected) { // select first item as default selection
-          this.selected = (item && item.id) ? item.id : item;
+        ready() {
+          super.ready();
+          this.addEventListener('iron-resize', this._resize);
         }
-        return (item && item.id) ? item.id : item;
-      },
 
-      _label: function(item) {
-        return (item && item.label) ? item.label : item;
-      },
+        close() {
+          this.$.paperDropdownMenu.close();
+        }
 
-      _computeAttrForSelected: function(attrForSelected, options) {
-        return options ? 'option' : attrForSelected;
-      },
+        _resize() {
+          const button = this.$.paperDropdownMenu.$.menuButton;
+          button.noOverlap = true;
+          button.verticalOffset = -8;
+          const width = this.getBoundingClientRect().width;
+          if (width > 0) {
+            this.$.paperDropdownMenu.style.width = this.$.paperMenu.style.width = `${width}px`;
+          }
+        }
 
-      /* Override method from Polymer.IronValidatableBehavior. */
-      _getValidity: function() {
-        return this.$.paperDropdownMenu._getValidity();
+        _id(item) {
+          if (!this.selected) { // select first item as default selection
+            this.selected = (item && item.id) ? item.id : item;
+          }
+          return (item && item.id) ? item.id : item;
+        }
+
+        _label(item) {
+          return (item && item.label) ? item.label : item;
+        }
+
+        _computeAttrForSelected(attrForSelected, options) {
+          return options ? 'option' : attrForSelected;
+        }
+
+        /* Override method from Polymer.IronValidatableBehavior. */
+        _getValidity() {
+          return this.$.paperDropdownMenu._getValidity();
+        }
+
       }
 
-    });
+      customElements.define(Select.is, Select);
+      Nuxeo.Select = Select;
+    }
   </script>
 </dom-module>

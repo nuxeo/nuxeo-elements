@@ -14,9 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="nuxeo-aggregation-behavior.html">
 
@@ -48,21 +50,33 @@ An element to interact with page provider aggregations as checkboxes.
      }
    </style>
 
-    <template is="dom-repeat" items="{{buckets}}">
-      <paper-checkbox noink checked="{{item.checked}}"
-                      on-change="_computeValues">
-        [[item.label]] ([[item.docCount]])
-      </paper-checkbox>
-    </template>
-    <template is="dom-if" if="[[_isEmpty]]">
-      <label>[[i18n('checkboxAggregation.noResults')]]</label>
-    </template>
+    <dom-repeat items="{{buckets}}">
+      <template>
+        <paper-checkbox noink checked="{{item.checked}}"
+                        on-change="_computeValues">
+          [[item.label]] ([[item.docCount]])
+        </paper-checkbox>
+      </template>
+    </dom-repeat>
+    <dom-if if="[[_isEmpty]]">
+      <template>
+        <label>[[i18n('checkboxAggregation.noResults')]]</label>
+      </template>
+    </dom-if>
 
  </template>
  <script>
-   Polymer({
-     is: 'nuxeo-checkbox-aggregation',
-     behaviors: [Nuxeo.I18nBehavior, Nuxeo.AggregationBehavior]
-   });
+   {
+     class CheckboxAggregation
+       extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.AggregationBehavior], Nuxeo.Element) {
+
+       static get is() {
+         return 'nuxeo-checkbox-aggregation';
+       }
+     }
+
+     customElements.define(CheckboxAggregation.is, CheckboxAggregation);
+     Nuxeo.CheckboxAggregation = CheckboxAggregation;
+   }
  </script>
 </dom-module>

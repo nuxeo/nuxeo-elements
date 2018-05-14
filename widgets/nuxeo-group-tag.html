@@ -15,10 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-icons/social-icons.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../nuxeo-routing-behavior.html">
 <link rel="import" href="nuxeo-tag.html">
 
@@ -35,84 +36,100 @@ Example:
 -->
 <dom-module id="nuxeo-group-tag">
   <template>
-  <style>
-    a {
-      @apply --nuxeo-link;
-    }
+    <style>
+      a {
+        @apply --nuxeo-link;
+      }
 
-    a:hover {
-      @apply --nuxeo-link-hover;
-    }
-  </style>
+      a:hover {
+        @apply --nuxeo-link-hover;
+      }
+    </style>
     <nuxeo-tag icon="nuxeo:group">
-      <template is="dom-if" if="[[!disabled]]">
-        <a href$="[[_href(group)]]">[[_label(group)]]</a>
-      </template>
-      <template is="dom-if" if="[[disabled]]">
-        [[_label(group)]]
-      </template>
-      <template is="dom-if" if="[[_isEntity(group)]]">
-        <paper-tooltip id="tooltip" position="top" offset="0" animation-delay="0">[[_name(group)]]</paper-tooltip>
-      </template>
+      <dom-if if="[[!disabled]]">
+        <template>
+          <a href$="[[_href(group)]]">[[_label(group)]]</a>
+        </template>
+      </dom-if>
+      <dom-if if="[[disabled]]">
+        <template>
+          [[_label(group)]]
+        </template>
+      </dom-if>
+      <dom-if if="[[_isEntity(group)]]">
+        <template>
+          <paper-tooltip id="tooltip" position="top" offset="0" animation-delay="0">[[_name(group)]]</paper-tooltip>
+        </template>
+      </dom-if>
     </nuxeo-tag>
 
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-group-tag',
-      behaviors: [Nuxeo.RoutingBehavior],
-      properties: {
+    {
+      class GroupTag extends Polymer.mixinBehaviors([Nuxeo.RoutingBehavior], Nuxeo.Element) {
 
-        /**
-         * Group entity or a string
-         */
-        group: Object,
-
-        /**
-         * Disable link
-         */
-        disabled: {
-          type: Boolean,
-          value: false
+        static get is() {
+          return 'nuxeo-group-tag';
         }
-      },
 
-      ready: function() {
-        if (this.$.tooltip) {
-          document.body.appendChild(this.$.tooltip);
+        static get properties() {
+          return {
+            /**
+             * Group entity or a string
+             */
+            group: Object,
+
+            /**
+             * Disable link
+             */
+            disabled: {
+              type: Boolean,
+              value: false,
+            },
+          };
         }
-      },
 
-      _isEntity: function(group) {
-        return group && group['entity-type'] && (group['entity-type'] === 'group'
-          || (group['entity-type'] === 'document' && group.type === 'group'));
-      },
-
-      _name: function(group) {
-        if (this._isEntity(group)) {
-          return group.groupname || group.properties['group:groupname'];
-        } else if (group.name) {
-          return group.name.replace('group:', '');
-        } else {
-          return group.replace('group:', '');
+        ready() {
+          super.ready();
+          if (this.$.tooltip) {
+            document.body.appendChild(this.$.tooltip);
+          }
         }
-      },
 
-      _label: function(group) {
-        if (this._isEntity(group)) {
-          return group.grouplabel || group.properties['group:grouplabel'] || this._name(group);
-        } else if (group.label) {
-          return group.label.replace('group:', '');
-        } else {
-          return group.replace('group:', '');
+        _isEntity(group) {
+          return group && group['entity-type'] && (group['entity-type'] === 'group'
+              || (group['entity-type'] === 'document' && group.type === 'group'));
         }
-      },
 
-      _href: function(group) {
-        return this.urlFor('group', this._name(group));
+        _name(group) {
+          if (this._isEntity(group)) {
+            return group.groupname || group.properties['group:groupname'];
+          } else if (group.name) {
+            return group.name.replace('group:', '');
+          } else {
+            return group.replace('group:', '');
+          }
+        }
+
+        _label(group) {
+          if (this._isEntity(group)) {
+            return group.grouplabel || group.properties['group:grouplabel'] || this._name(group);
+          } else if (group.label) {
+            return group.label.replace('group:', '');
+          } else {
+            return group.replace('group:', '');
+          }
+        }
+
+        _href(group) {
+          return this.urlFor('group', this._name(group));
+        }
+
       }
 
-    });
+      customElements.define(GroupTag.is, GroupTag);
+      Nuxeo.GroupTag = GroupTag;
+    }
   </script>
 </dom-module>

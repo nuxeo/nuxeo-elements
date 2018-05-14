@@ -15,7 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="nuxeo-tag.html">
 <link rel="import" href="nuxeo-user-tag.html">
 <link rel="import" href="nuxeo-group-tag.html">
@@ -38,45 +40,63 @@ Example:
           display: inline-block;
         }
       </style>
-    <template is="dom-repeat" items="[[items]]" as="item">
-      <template is="dom-if" if="[[_type('tag')]]">
-        <nuxeo-tag>[[item]]</nuxeo-tag>
+    <dom-repeat items="[[items]]" as="item">
+      <template>
+        <dom-if if="[[_type('tag')]]">
+          <template>
+            <nuxeo-tag>[[item]]</nuxeo-tag>
+          </template>
+        </dom-if>
+        <dom-if if="[[_type('user')]]">
+          <template>
+            <nuxeo-user-tag user="[[item]]"></nuxeo-user-tag>
+          </template>
+        </dom-if>
+        <dom-if if="[[_type('group')]]">
+          <template>
+            <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
+          </template>
+        </dom-if>
       </template>
-      <template is="dom-if" if="[[_type('user')]]">
-        <nuxeo-user-tag user="[[item]]"></nuxeo-user-tag>
-      </template>
-      <template is="dom-if" if="[[_type('group')]]">
-        <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
-      </template>
-    </template>
+    </dom-repeat>
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-tags',
-      properties: {
+    {
+      class Tags extends Nuxeo.Element {
 
-        /**
-         * Type ("tag", "user", "group").
-         */
-        type: {
-          type: String,
-          value: 'tag'
-        },
-
-        /**
-         * Array of user/group entities or strings.
-         */
-        items: {
-          type: Array
+        static get is() {
+          return 'nuxeo-tags';
         }
-      },
 
-      _type: function(value) {
-        return this.type === value;
+        static get properties() {
+          return {
+            /**
+             * Type ("tag", "user", "group").
+             */
+            type: {
+              type: String,
+              value: 'tag',
+            },
+
+            /**
+             * Array of user/group entities or strings.
+             */
+            items: {
+              type: Array,
+            },
+          };
+        }
+
+        _type(value) {
+          return this.type === value;
+        }
+
       }
 
-    });
+      customElements.define(Tags.is, Tags);
+      Nuxeo.Tags = Tags;
+    }
   </script>
 
 </dom-module>

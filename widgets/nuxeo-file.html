@@ -16,11 +16,14 @@ limitations under the License.
 -->
 
 <link rel="import" href="../../iron-icon/iron-icon.html">
-<link rel="import" href="../../iron-icons/iron-icons.html">
 <link rel="import" href="../../iron-icons/av-icons.html">
+<link rel="import" href="../../iron-icons/iron-icons.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-progress/paper-progress.html">
-<link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="nuxeo-uploader-behavior.html">
 
@@ -55,93 +58,108 @@ An element for uploading blobs using the batch upload API.
     <input hidden id="input" type="file" multiple$="[[multiple]]" accept$="[[accept]]" on-change="_filesChanged">
 
     <div id="dropZone">
-      <template is="dom-if" if="[[!uploading]]">
-        <paper-button id="button" raised on-tap="_pick">
-          <iron-icon icon="nuxeo:upload"></iron-icon>
-          <span>Upload</span>
-        </paper-button>
-      </template>
+      <dom-if if="[[!uploading]]">
+        <template>
+          <paper-button id="button" raised on-click="_pick">
+            <iron-icon icon="nuxeo:upload"></iron-icon>
+            <span>Upload</span>
+          </paper-button>
+        </template>
+      </dom-if>
 
-      <template is="dom-if" if="[[uploading]]">
-        <paper-button id="button" raised on-tap="pause">
-          <iron-icon icon="av:pause"></iron-icon>
-          <span>Pause</span>
-        </paper-button>
-      </template>
+      <dom-if if="[[uploading]]">
+        <template>
+          <paper-button id="button" raised on-click="pause">
+            <iron-icon icon="av:pause"></iron-icon>
+            <span>Pause</span>
+          </paper-button>
+        </template>
+      </dom-if>
     </div>
 
-    <template is="dom-repeat" items="[[files]]" as="file">
-      <div class="file">
-        <div class="layout horizontal">
-          <span>[[file.name]]</span>
-          <iron-icon icon="autorenew" title="Retry" on-tap="retry" hidden$="[[!file.error]]"></iron-icon>
-          <iron-icon icon="nuxeo:remove" title="Remove" on-tap="cancel" hidden$="[[file.complete]]"></iron-icon>
-          <iron-icon icon="check-circle" title="Done" hidden$="[[!file.complete]]"></iron-icon>
+    <dom-repeat items="[[files]]" as="file">
+      <template>
+        <div class="file">
+          <div class="layout horizontal">
+            <span>[[file.name]]</span>
+            <iron-icon icon="autorenew" title="Retry" on-click="retry" hidden$="[[!file.error]]"></iron-icon>
+            <iron-icon icon="nuxeo:remove" title="Remove" on-click="cancel" hidden$="[[file.complete]]"></iron-icon>
+            <iron-icon icon="check-circle" title="Done" hidden$="[[!file.complete]]"></iron-icon>
+          </div>
+          <paper-progress value="[[file.progress]]" error="[[file.error]]" hidden="[[file.complete]]"></paper-progress>
         </div>
-        <paper-progress value="[[file.progress]]" error="[[file.error]]" hidden="[[file.complete]]"></paper-progress>
-      </div>
-    </template>
+      </template>
+    </dom-repeat>
 
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-file',
-      behaviors: [Nuxeo.UploaderBehavior],
-      properties: {
-        /**
-         * Blob reference (`upload-batch` and `upload-fileId).
-         */
-        value: {
-          type: Object,
-          notify: true
-        },
+    {
+      class File extends Polymer.mixinBehaviors([Nuxeo.UploaderBehavior], Nuxeo.Element) {
 
-        /**
-         * Set to `true` to allow uploading multiple files.
-         */
-        multiple: {
-          type: Boolean,
-          value: false
+        static get is() {
+          return 'nuxeo-file';
         }
-      },
 
-      listeners: {
-          'batchFinished': '_updateValue'
-      },
+        static get properties() {
+          return {
+            /**
+             * Blob reference (`upload-batch` and `upload-fileId).
+             */
+            value: {
+              type: Object,
+              notify: true,
+            },
 
-      ready: function() {
-        this.connection = this.$.nx;
-        this.setupDropZone(this.$.dropZone);
-      },
-
-      _filesChanged: function(e) {
-        this.uploadFiles(e.target.files);
-      },
-
-      _pick: function() {
-        this.$.input.click();
-      },
-
-      _updateValue: function() {
-        this.value = {
-          "upload-batch": this.batchId,
-          "upload-fileId": (this.files.length - 1).toString()
+            /**
+             * Set to `true` to allow uploading multiple files.
+             */
+            multiple: {
+              type: Boolean,
+              value: false,
+            },
+          };
         }
-      },
 
-      pause: function() {
-        //XXX add support for pause / resume (NXJS-33)
-        alert("Upload paused");
-      },
+        ready() {
+          super.ready();
+          this.connection = this.$.nx;
+          this.setupDropZone(this.$.dropZone);
+          this.addEventListener('batchFinished', this._updateValue);
+        }
 
-      retry: function() {
-        alert("Upload paused");
-      },
+        _filesChanged(e) {
+          this.uploadFiles(e.target.files);
+        }
 
-      cancel: function() {
-        alert("Upload paused");
+        _pick() {
+          this.$.input.click();
+        }
+
+        _updateValue() {
+          this.value = {
+            'upload-batch': this.batchId,
+            'upload-fileId': (this.files.length - 1).toString(),
+          };
+        }
+
+        pause() {
+          // XXX add support for pause / resume (NXJS-33)
+          alert('Upload paused');
+        }
+
+        retry() {
+          alert('Upload paused');
+        }
+
+        cancel() {
+          alert('Upload paused');
+        }
+
       }
-    });
+
+      customElements.define(File.is, File);
+      Nuxeo.File = File;
+    }
   </script>
 </dom-module>

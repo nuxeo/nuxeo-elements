@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="alloy/alloy-import.html">
 <link rel="import" href="alloy/alloy-ocean.html">
 
@@ -47,95 +48,105 @@ limitations under the License.
     <div id="editor" data-placeholder$="[[placeholder]]"></div>
   </template>
   <script>
-    Polymer({
-      is: 'nuxeo-html-editor',
+    {
+      class HTMLEditor extends Nuxeo.Element {
 
-      properties: {
-
-        element: Object,
-
-        value: {
-          type: String,
-          notify: true,
-          observer: '_valueChanged'
-        },
-
-        placeholder: {
-          type: String,
-          value: 'Type here...'
-        },
-
-        readOnly: Boolean,
-
-        hideToolbars: Boolean
-      },
-
-      attached: function() {
-        this.async(this._init.bind(this), 100);
-      },
-
-      _init: function() {
-        // init editor
-        var toolbars = this.hideToolbars ? {} : {
-          add: {
-            buttons: ['image', 'camera', 'hline', 'table'],
-            tabIndex: 2
-          },
-          styles: {
-            selections: [
-              {
-                name: 'link',
-                buttons: ['linkEdit'],
-                test: AlloyEditor.SelectionTest.link
-              },
-              {
-                name: 'image',
-                buttons: ['imageLeft', 'imageCenter', 'imageRight'],
-                test: AlloyEditor.SelectionTest.image
-              },
-              {
-                name: 'text',
-                buttons: ['styles', 'bold', 'italic', 'underline', 'strike', 'paragraphLeft', 'paragraphCenter',
-                  'paragraphJustify', 'ul', 'ol', 'quote', 'link', 'removeFormat'],
-                test: AlloyEditor.SelectionTest.text
-              },
-              {
-                name: 'table',
-                buttons: ['tableRow', 'tableColumn', 'tableCell', 'tableRemove'],
-                getArrowBoxClasses: AlloyEditor.SelectionGetArrowBoxClasses.table,
-                setPosition: AlloyEditor.SelectionSetPosition.table,
-                test: AlloyEditor.SelectionTest.table
-              }
-            ],
-            tabIndex: 1
-          }
-        };
-        var editor = AlloyEditor.editable(this.$.editor, {
-          readOnly: this.readOnly,
-          uiNode: this.root,
-          toolbars: toolbars
-        });
-        this.element = editor.get('nativeEditor');
-        // set initial value
-        this.element.setData(this.value);
-
-        this.element.on('change', this._updateValue.bind(this));
-
-        this.element.on('actionPerformed', this._updateValue.bind(this));
-      },
-
-      _updateValue: function() {
-        this._internalChange = true;
-        this.value = this.element.getData();
-        this._internalChange = false;
-      },
-
-      _valueChanged: function() {
-        if (this.element && !this._internalChange) {
-          this.element.setData(this.value);
+        static get is() {
+          return 'nuxeo-html-editor';
         }
+
+        static get properties() {
+          return {
+            element: Object,
+
+            value: {
+              type: String,
+              notify: true,
+              observer: '_valueChanged',
+            },
+
+            placeholder: {
+              type: String,
+              value: 'Type here...',
+            },
+
+            readOnly: Boolean,
+
+            hideToolbars: Boolean,
+          };
+        }
+
+        connectedCallback() {
+          super.connectedCallback();
+          this.async(this._init.bind(this), 100);
+        }
+
+        _init() {
+          // init editor
+          const toolbars = this.hideToolbars ? {} : {
+            add: {
+              buttons: ['image', 'camera', 'hline', 'table'],
+              tabIndex: 2,
+            },
+            styles: {
+              selections: [
+                {
+                  name: 'link',
+                  buttons: ['linkEdit'],
+                  test: AlloyEditor.SelectionTest.link,
+                },
+                {
+                  name: 'image',
+                  buttons: ['imageLeft', 'imageCenter', 'imageRight'],
+                  test: AlloyEditor.SelectionTest.image,
+                },
+                {
+                  name: 'text',
+                  buttons: ['styles', 'bold', 'italic', 'underline', 'strike', 'paragraphLeft', 'paragraphCenter',
+                    'paragraphJustify', 'ul', 'ol', 'quote', 'link', 'removeFormat'],
+                  test: AlloyEditor.SelectionTest.text,
+                },
+                {
+                  name: 'table',
+                  buttons: ['tableRow', 'tableColumn', 'tableCell', 'tableRemove'],
+                  getArrowBoxClasses: AlloyEditor.SelectionGetArrowBoxClasses.table,
+                  setPosition: AlloyEditor.SelectionSetPosition.table,
+                  test: AlloyEditor.SelectionTest.table,
+                },
+              ],
+              tabIndex: 1,
+            },
+          };
+          const editor = AlloyEditor.editable(this.$.editor, {
+            readOnly: this.readOnly,
+            uiNode: this.root,
+            toolbars,
+          });
+          this.element = editor.get('nativeEditor');
+          // set initial value
+          this.element.setData(this.value);
+
+          this.element.on('change', this._updateValue.bind(this));
+
+          this.element.on('actionPerformed', this._updateValue.bind(this));
+        }
+
+        _updateValue() {
+          this._internalChange = true;
+          this.value = this.element.getData();
+          this._internalChange = false;
+        }
+
+        _valueChanged() {
+          if (this.element && !this._internalChange) {
+            this.element.setData(this.value);
+          }
+        }
+
       }
 
-    });
+      customElements.define(HTMLEditor.is, HTMLEditor);
+      Nuxeo.HTMLEditor = HTMLEditor;
+    }
   </script>
 </dom-module>

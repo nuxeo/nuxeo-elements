@@ -19,9 +19,10 @@ limitations under the License.
 <!-- browsers without native shadow dom -->
 <link rel="stylesheet" href="selectivity/selectivity.css">
 
-<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../../iron-form-element-behavior/iron-form-element-behavior.html">
 <link rel="import" href="../../iron-validatable-behavior/iron-validatable-behavior.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 
 <!--
 An element wrapping selectivity.js and relying on an operation for suggestions
@@ -40,7 +41,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
   <link rel="import" type="css" href="selectivity/selectivity.css">
 
   <template>
-    <style is="custom-style">
+    <style>
       :host {
         display: block;
         position: relative;
@@ -88,489 +89,484 @@ An element wrapping selectivity.js and relying on an operation for suggestions
   </template>
 
   <script>
+    {
+      class SelectivityElement
+        extends Polymer.mixinBehaviors([Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior], Nuxeo.Element) {
 
-    Polymer({
-      is: 'nuxeo-selectivity',
-      behaviors: [Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior],
-      properties: {
-
-        /**
-         * Label.
-         */
-        label: String,
-
-        /**
-         * Selected value(s).
-         */
-        value: {
-          notify: true,
-          observer: '_valueChanged'
-        },
-
-        /**
-         * Set to `true` to allow multiple selection.
-         */
-        multiple: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * If true, the dropdown stays open after a selection is made.
-         */
-        stayOpenOnSelect: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * Set to `true` for read only mode.
-         */
-        readonly: {
-          type: Boolean,
-          value: false,
-          observer: '_readonlyChanged'
-        },
-
-        /**
-         * Minimum number of chars to trigger the suggestions.
-         */
-        minChars: {
-          type: Number,
-          value: 3
-        },
-
-        /**
-         * Time in ms used to debounce requests.
-         */
-        frequency: {
-          type: Number,
-          value: 300
-        },
-
-        /**
-         * Placeholder.
-         */
-        placeholder: {
-          type: String,
-          value: ' ',
-          observer: '_placeholderChanged'
-        },
-
-        /**
-         * Separator to use with multiple selection.
-         */
-        separator: {
-          type: String,
-          value: ','
-        },
-
-        tagging: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * Function used to get the id from the choice object.
-         */
-        idFunction: {
-          type: Function,
-          value: function() {
-            return this._idFunction.bind(this);
-          }
-        },
-
-        /**
-         * Formatter for selected entries.
-         */
-        selectionFormatter: {
-          type: Function,
-          value: function() {
-            return this._selectionFormatter.bind(this);
-          }
-        },
-
-        /**
-         * Formatter for suggested entries.
-         */
-        resultFormatter: {
-          type: Function,
-          value: function() {
-            return this._resultFormatter.bind(this);
-          }
-        },
-
-        /**
-         * Formatter for new entries.
-         */
-        newEntryFormatter: {
-          type: Function,
-          value: function() {
-            return this._newEntryFormatter.bind(this);
-          }
-        },
-
-
-        /**
-         * Function that transforms the entries added using the value property into object
-         */
-        resolveEntry: {
-          type: Function,
-          value: function() {
-            return this._resolveEntry.bind(this);
-          }
-        },
-
-        /**
-         * Function called when an entry is selected.
-         */
-        addedEntryHandler: {
-          type: Function
-        },
-
-        /**
-         * Function called when an entry is unselected.
-         */
-        removedEntryHandler: {
-          type: Function
-        },
-
-        /**
-         * Formatter for initial selection.
-         */
-        initSelection: {
-          type: Function,
-          value: function() {
-            return this._initSelection.bind(this);
-          }
-        },
-
-        maximumSelectionSize: {
-          type: Number,
-          value: -1
-        },
-
-        data: {
-          type: Array,
-          observer: '_dataChanged'
-        },
-
-        /**
-         * Selected items.
-         */
-        selectedItems: {
-          type: Array,
-          notify: true,
-          observer: '_valueChanged'
-        },
-
-        /**
-         * Selected item.
-         */
-        selectedItem: {
-          type: Object,
-          notify: true,
-          observer: '_valueChanged'
-        },
-
-        /**
-         * Operation to call for suggestions.
-         */
-        operation: String,
-
-        /**
-         * Parameters to use in the operation call (will include `searchTerm`).
-         */
-        params: {
-          type: Object
-        },
-
-        /**
-         * Results filtering function (optional).
-         */
-        queryResultsFilter: Function,
-
-        /**
-         * Error message to show when `invalid` is true.
-         */
-        errorMessage: String
-      },
-
-      attached: function() {
-
-        var options = {
-          searchFloor: this.minChars, // minimum length a search value should be before choices are searched
-          tokenSeparators: [this.separator],
-          width: "100%",
-          readOnly: this.readonly,
-          backspaceHighlightsBeforeDelete: true,
-
-          // initialize selection and create entries
-          initSelection: function(value, callback) {
-            if (!value) return;
-
-            var prep = function(item) {
-              var id = this.idFunction(item);
-              return {
-                id: id,
-                text: id,
-                item: item
-              };
-            }.bind(this);
-
-            this.initSelection(value, function(selection) {
-              callback(this.multiple ? selection.map(prep) : prep(selection));
-            }.bind(this));
-          }.bind(this),
-
-          idFunction: function(value) {
-            return this.idFunction(value);
-          }.bind(this),
-
-          // override templates since formatter should already escape text
-          templates: {
-            resultItem: function(options) {
-              return (
-                  '<div class="selectivity-result-item' +
-                  (options.disabled ? ' disabled' : '') +
-                  '" data-item-id="' + this.escapeHTML(options.id) + '">' +
-                  this.resultFormatter(options.item)
-                  + '</div>');
-            }.bind(this),
-
-            singleSelectedItem: function(options) {
-              return (
-                  '<span class="selectivity-single-selected-item" ' +
-                  'data-item-id="' + this.escapeHTML(options.id) + '">' +
-                  (options.removable
-                      ? '<a class="selectivity-single-selected-item-remove">' +
-                        '<i class="selectivity-remove"></i>' +
-                        '</a>'
-                      : '') +
-                  this.selectionFormatter(options.item || options) +
-                  '</span>'
-              );
-            }.bind(this),
-
-            multipleSelectedItem: function(options) {
-              var extraClass = options.highlighted ? ' highlighted' : '';
-              return (
-                  '<span class="selectivity-multiple-selected-item' +
-                  extraClass +
-                  '" data-item-id="' + this.escapeHTML(options.id) + '">' +
-                  (options.removable
-                      ? '<a class="selectivity-multiple-selected-item-remove">' +
-                        '<i class="selectivity-remove"></i>' +
-                        '</a>'
-                      : '') +
-                  this.selectionFormatter(options.item || options) +
-                  '</span>');
-            }.bind(this),
-          }
-        };
-
-        var InputType = Selectivity.Inputs[this.multiple ? 'Multiple' : 'Single'];
-        options.element = this.$.input;
-
-        options.closeOnSelect = !this.stayOpenOnSelect;
-
-        if (!this.readonly) {
-          options.placeholder = this.placeholder;
-          options.allowClear = !this.required;
+        static get is() {
+          return 'nuxeo-selectivity';
         }
 
-        if (this.data) {
-          options.items = this._wrap(this.data);
-        } else {
-          options.query = function(query) {
-            if (query.term.length < this.minChars) {
-              query.error("Please enter " + this.minChars + " or more character");
-              return;
-            }
-            // debounce requests
-            this.debounce('_selectivityQuery', function() {
-              this._query(query);
-            }.bind(this), this.frequency);
-          }.bind(this);
-        }
+        static get properties() {
+          return {
+            /**
+             * Label.
+             */
+            label: String,
 
-        // createTokenItem is not supported in single inputs in selectivity
-        if (this.multiple && this.tagging) {
-          options.createTokenItem = function(term) {
-            return this._wrap(this.newEntryFormatter(term));
-          }.bind(this);
-        }
+            /**
+             * Selected value(s).
+             */
+            value: {
+              notify: true,
+              observer: '_valueChanged',
+            },
 
-        this.$.input.addEventListener('selectivity-change', this._updateSelection.bind(this));
+            /**
+             * Set to `true` to allow multiple selection.
+             */
+            multiple: {
+              type: Boolean,
+              value: false,
+            },
 
-        this._selectivity = new InputType(options);
+            /**
+             * If true, the dropdown stays open after a selection is made.
+             */
+            stayOpenOnSelect: {
+              type: Boolean,
+              value: false,
+            },
 
-        if (this.value || this.selectedItem || this.selectedItems) {
-          this.async(function() {
-            this._valueChanged(this.value || this.selectedItem || this.selectedItems);
-          }.bind(this), 100);
-        }
+            /**
+             * Set to `true` for read only mode.
+             */
+            readonly: {
+              type: Boolean,
+              value: false,
+              observer: '_readonlyChanged',
+            },
 
-        // scope styles
-        this.scopeSubtree(this.$.input, true);
-      },
+            /**
+             * Minimum number of chars to trigger the suggestions.
+             */
+            minChars: {
+              type: Number,
+              value: 3,
+            },
 
-      _getValidity: function() {
-        if (!this.required) {
-          return true;
-        }
-        return this.multiple ? !!this.value && this.value.length > 0 : !!this.value;
-      },
+            /**
+             * Time in ms used to debounce requests.
+             */
+            frequency: {
+              type: Number,
+              value: 300,
+            },
 
-      _initSelection: function(value, callback) {
-        if (!this.multiple) {
-          return callback(this.resolveEntry(value));
-        }
-        return callback(value.map(this.resolveEntry.bind(this)));
-      },
+            /**
+             * Placeholder.
+             */
+            placeholder: {
+              type: String,
+              value: ' ',
+              observer: '_placeholderChanged',
+            },
 
-      _resolveEntry: function(entry) {
-        if (this.data) {
-          for (var i = 0; i < this.data.length; i++) {
-            if (this.idFunction(this.data[i]) === entry) {
-              return this.data[i];
-            }
-          }
-        } else {
-          return { id: entry, displayLabel: entry };
-        }
-      },
+            /**
+             * Separator to use with multiple selection.
+             */
+            separator: {
+              type: String,
+              value: ',',
+            },
 
-      _updateSelection: function(e) {
-        this._inUpdateSelection = true;
-        this.value = this.multiple ? e.value.slice(0) : e.value;
-        this._inUpdateSelection = true;
-        if (this.multiple) {
-          var items = [];
-          var valS = e.items.slice(0);
-          if (valS) {
-            valS.forEach(function(el) {
-              items.push(el.item ? el.item : el);
-            });
-          }
-          this.selectedItems = items;
-        } else {
-          this.set('selectedItem', e.items ? e.items.item : null);
-        }
-        if (e.added) {
-          if (this.addedEntryHandler) {
-            this.addedEntryHandler(e.added);
-          }
-        } else if (e.removed) {
-          if (this.removedEntryHandler) {
-            this.removedEntryHandler(e.removed);
-          }
-        }
-      },
+            tagging: {
+              type: Boolean,
+              value: false,
+            },
 
-      _valueChanged: function(newValue) {
-        if (this._selectivity && !this._inUpdateSelection) {
-          if (newValue) {
-            this._selectivity.setValue(newValue, { triggerChange: false });
-          } else {
-            // in cases where newValue is either undefined or null, clear the value
-            this._selectivity.setValue(null);
-            this._selectivity.clear();
-          }
-        }
-        this._inUpdateSelection = false;
-      },
+            /**
+             * Function used to get the id from the choice object.
+             */
+            idFunction: {
+              type: Function,
+              value() {
+                return this._idFunction.bind(this);
+              },
+            },
 
-      _dataChanged: function() {
-        this._selectivity && this._selectivity.setOptions({items: this._wrap(this.data)});
-      },
+            /**
+             * Formatter for selected entries.
+             */
+            selectionFormatter: {
+              type: Function,
+              value() {
+                return this._selectionFormatter.bind(this);
+              },
+            },
 
-      _placeholderChanged: function() {
-        this.$.input.setAttribute('placeholder', this.placeholder);
-      },
+            /**
+             * Formatter for suggested entries.
+             */
+            resultFormatter: {
+              type: Function,
+              value() {
+                return this._resultFormatter.bind(this);
+              },
+            },
 
-      _readonlyChanged: function() {
-        this._selectivity && this._selectivity.setOptions({readOnly: this.readonly});
-      },
+            /**
+             * Formatter for new entries.
+             */
+            newEntryFormatter: {
+              type: Function,
+              value() {
+                return this._newEntryFormatter.bind(this);
+              },
+            },
 
-      _idFunction: function(item) {
-        return item.computedId || item.uid || item.id || item;
-      },
 
-      _newEntryFormatter: function(term) {
-        return { id: term, displayLabel: term };
-      },
+            /**
+             * Function that transforms the entries added using the value property into object
+             */
+            resolveEntry: {
+              type: Function,
+              value() {
+                return this._resolveEntry.bind(this);
+              },
+            },
 
-      _selectionFormatter: function(item) {
-        return this.escapeHTML(item.displayLabel || item.title || item.text || item);
-      },
+            /**
+             * Function called when an entry is selected.
+             */
+            addedEntryHandler: {
+              type: Function,
+            },
 
-      _resultFormatter: function(item) {
-        return this.escapeHTML(item.displayLabel || item.title || item.text || item);
-      },
+            /**
+             * Function called when an entry is unselected.
+             */
+            removedEntryHandler: {
+              type: Function,
+            },
 
-      _wrap: function(value) {
-        var fn = function(item) {
-          var id = this.idFunction(item);
-          var entry = {
-            id: id,
-            text: item.displayLabel || item.text || id || '',
-            item: item
+            /**
+             * Formatter for initial selection.
+             */
+            initSelection: {
+              type: Function,
+              value() {
+                return this._initSelection.bind(this);
+              },
+            },
+
+            maximumSelectionSize: {
+              type: Number,
+              value: -1,
+            },
+
+            data: {
+              type: Array,
+              observer: '_dataChanged',
+            },
+
+            /**
+             * Selected items.
+             */
+            selectedItems: {
+              type: Array,
+              notify: true,
+              observer: '_valueChanged',
+            },
+
+            /**
+             * Selected item.
+             */
+            selectedItem: {
+              type: Object,
+              notify: true,
+              observer: '_valueChanged',
+            },
+
+            /**
+             * Operation to call for suggestions.
+             */
+            operation: String,
+
+            /**
+             * Parameters to use in the operation call (will include `searchTerm`).
+             */
+            params: {
+              type: Object,
+            },
+
+            /**
+             * Results filtering function (optional).
+             */
+            queryResultsFilter: Function,
+
+            /**
+             * Error message to show when `invalid` is true.
+             */
+            errorMessage: String,
           };
-          if (item.children) {
-            entry.children = item.children.map(fn.bind(this));
-          }
-          return entry;
-        };
-        return Array.isArray(value) ? value.map(fn.bind(this)) : fn.call(this, value);
-      },
-
-      // Implements abstract Nuxeo.Select2 methods
-      _query: function(query) {
-        var params = this.params || {};
-        params.searchTerm = query.term;
-        this.$.op.params = params;
-
-        this.$.op.execute().then(function(response) {
-          var results = Array.isArray(response.entries) ? response.entries : response;
-          if (this.queryResultsFilter) {
-            results = results.filter(this.queryResultsFilter);
-          }
-          if (this.tagging && query.term) {
-            var exists = results.some(function(item) {
-              return item.id === query.term;
-            })
-            if (!exists) {
-              results.push(this.newEntryFormatter(query.term));
-            }
-          }
-
-          query.callback({
-            results: this._wrap(results)
-          });
-        }.bind(this));
-      },
-
-      escapeHTML: function(markup) {
-        var replaceMap = {
-          '\\': '&#92;',
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          '\'': '&#39;',
-          '/': '&#47;'
-        };
-
-        // Do not try to escape the markup if it's not a string
-        if (typeof markup !== 'string') {
-          return markup;
         }
 
-        return String(markup).replace(/[&<>"'\/\\]/g, function (match) {
-          return replaceMap[match];
-        });
+        connectedCallback() {
+          super.connectedCallback();
+          const options = {
+            searchFloor: this.minChars, // minimum length a search value should be before choices are searched
+            tokenSeparators: [this.separator],
+            width: '100%',
+            readOnly: this.readonly,
+            backspaceHighlightsBeforeDelete: true,
+
+            // initialize selection and create entries
+            initSelection: (value, callback) => {
+              if (!value) return;
+
+              const prep = (item) => {
+                const id = this.idFunction(item);
+                return {
+                  id,
+                  text: id,
+                  item,
+                };
+              };
+
+              this.initSelection(value, (selection) => {
+                callback(this.multiple ? selection.map(prep) : prep(selection));
+              });
+            },
+
+            idFunction: (value) => this.idFunction(value),
+
+            // override templates since formatter should already escape text
+            templates: {
+              resultItem: (opts) => (
+                `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
+                      data-item-id="${this.escapeHTML(opts.id)}">${this.resultFormatter(opts.item)}</div>`
+              ),
+
+              singleSelectedItem: (opts) => (
+                `${'<span class="selectivity-single-selected-item" ' +
+                'data-item-id="'}${this.escapeHTML(opts.id)}">${
+                  opts.removable ? '<a class="selectivity-single-selected-item-remove">' +
+                      '<i class="selectivity-remove"></i>' +
+                      '</a>'
+                    : ''
+                }${this.selectionFormatter(opts.item || opts)}</span>`
+              ),
+
+              multipleSelectedItem: (opts) => {
+                const extraClass = opts.highlighted ? ' highlighted' : '';
+                return (
+                  `<span class="selectivity-multiple-selected-item${extraClass}"
+                         data-item-id="${this.escapeHTML(opts.id)}">${
+                    opts.removable ? '<a class="selectivity-multiple-selected-item-remove">' +
+                        '<i class="selectivity-remove"></i>' +
+                        '</a>'
+                      : ''
+                  }${this.selectionFormatter(opts.item || opts)}</span>`);
+              },
+            },
+          };
+
+          const InputType = Selectivity.Inputs[this.multiple ? 'Multiple' : 'Single'];
+          options.element = this.$.input;
+
+          options.closeOnSelect = !this.stayOpenOnSelect;
+
+          if (!this.readonly) {
+            options.placeholder = this.placeholder;
+            options.allowClear = !this.required;
+          }
+
+          if (this.data) {
+            options.items = this._wrap(this.data);
+          } else {
+            options.query = (query) => {
+              if (query.term.length < this.minChars) {
+                query.error(`Please enter ${this.minChars} or more character`);
+                return;
+              }
+              // debounce requests
+              this.debounce('_selectivityQuery', () => {
+                this._query(query);
+              }, this.frequency);
+            };
+          }
+
+          // createTokenItem is not supported in single inputs in selectivity
+          if (this.multiple && this.tagging) {
+            options.createTokenItem = (term) => this._wrap(this.newEntryFormatter(term));
+          }
+
+          this.$.input.addEventListener('selectivity-change', this._updateSelection.bind(this));
+
+          this._selectivity = new InputType(options);
+
+          if (this.value || this.selectedItem || this.selectedItems) {
+            this.async(() => {
+              this._valueChanged(this.value || this.selectedItem || this.selectedItems);
+            }, 100);
+          }
+
+          // scope styles
+          this.scopeSubtree(this.$.input, true);
+        }
+
+        _getValidity() {
+          if (!this.required) {
+            return true;
+          }
+          return this.multiple ? !!this.value && this.value.length > 0 : !!this.value;
+        }
+
+        _initSelection(value, callback) {
+          if (!this.multiple) {
+            return callback(this.resolveEntry(value));
+          }
+          return callback(value.map(this.resolveEntry.bind(this)));
+        }
+
+        _resolveEntry(entry) {
+          if (this.data) {
+            for (let i = 0; i < this.data.length; i++) {
+              if (this.idFunction(this.data[i]) === entry) {
+                return this.data[i];
+              }
+            }
+          } else {
+            return { id: entry, displayLabel: entry };
+          }
+        }
+
+        _updateSelection(e) {
+          this._inUpdateSelection = true;
+          this.value = this.multiple ? e.value.slice(0) : e.value;
+          this._inUpdateSelection = true;
+          if (this.multiple) {
+            const items = [];
+            const valS = e.items.slice(0);
+            if (valS) {
+              valS.forEach((el) => {
+                items.push(el.item ? el.item : el);
+              });
+            }
+            this.selectedItems = items;
+          } else {
+            this.set('selectedItem', e.items ? e.items.item : null);
+          }
+          if (e.added) {
+            if (this.addedEntryHandler) {
+              this.addedEntryHandler(e.added);
+            }
+          } else if (e.removed) {
+            if (this.removedEntryHandler) {
+              this.removedEntryHandler(e.removed);
+            }
+          }
+        }
+
+        _valueChanged(newValue) {
+          if (this._selectivity && !this._inUpdateSelection) {
+            if (newValue) {
+              this._selectivity.setValue(newValue, { triggerChange: false });
+            } else {
+              // in cases where newValue is either undefined or null, clear the value
+              this._selectivity.setValue(null);
+              this._selectivity.clear();
+            }
+          }
+          this._inUpdateSelection = false;
+        }
+
+        _dataChanged() {
+          if (this._selectivity) {
+            this._selectivity.setOptions({ items: this._wrap(this.data) });
+          }
+        }
+
+        _placeholderChanged() {
+          this.$.input.setAttribute('placeholder', this.placeholder);
+        }
+
+        _readonlyChanged() {
+          if (this._selectivity) {
+            this._selectivity.setOptions({ readOnly: this.readonly });
+          }
+        }
+
+        _idFunction(item) {
+          return item.computedId || item.uid || item.id || item;
+        }
+
+        _newEntryFormatter(term) {
+          return { id: term, displayLabel: term };
+        }
+
+        _selectionFormatter(item) {
+          return this.escapeHTML(item.displayLabel || item.title || item.text || item);
+        }
+
+        _resultFormatter(item) {
+          return this.escapeHTML(item.displayLabel || item.title || item.text || item);
+        }
+
+        _wrap(value) {
+          const fn = (item) => {
+            const id = this.idFunction(item);
+            const entry = {
+              id,
+              text: item.displayLabel || item.text || id || '',
+              item,
+            };
+            if (item.children) {
+              entry.children = item.children.map(fn.bind(this));
+            }
+            return entry;
+          };
+          return Array.isArray(value) ? value.map(fn.bind(this)) : fn.call(this, value);
+        }
+
+        // Implements abstract Nuxeo.Select2 methods
+        _query(query) {
+          const params = this.params || {};
+          params.searchTerm = query.term;
+          this.$.op.params = params;
+
+          this.$.op.execute().then((response) => {
+            let results = Array.isArray(response.entries) ? response.entries : response;
+            if (this.queryResultsFilter) {
+              results = results.filter(this.queryResultsFilter);
+            }
+            if (this.tagging && query.term) {
+              const exists = results.some((item) => item.id === query.term);
+              if (!exists) {
+                results.push(this.newEntryFormatter(query.term));
+              }
+            }
+
+            query.callback({
+              results: this._wrap(results),
+            });
+          });
+        }
+
+        escapeHTML(markup) {
+          const replaceMap = {
+            '\\': '&#92;',
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            '\'': '&#39;',
+            '/': '&#47;',
+          };
+
+          // Do not try to escape the markup if it's not a string
+          if (typeof markup !== 'string') {
+            return markup;
+          }
+
+          return String(markup).replace(/[&<>"'/\\]/g, (match) => replaceMap[match]);
+        }
+
       }
-    });
+
+      customElements.define(SelectivityElement.is, SelectivityElement);
+      Nuxeo.Selectivity = SelectivityElement;
+    }
   </script>
 </dom-module>

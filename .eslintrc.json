@@ -9,8 +9,10 @@
       "ignoreUrls": true,
       "ignoreComments": false
     }],
+    "no-alert" : "off",
     "no-console": 0,
     "no-else-return": "off",
+    "no-mixed-operators": "off",
     "no-multi-assign": "off",
     "no-param-reassign": ["error", { "props": false }],
     "no-plusplus": "off",
@@ -19,6 +21,7 @@
     "no-use-before-define": ["error", { "functions": false }],
     "object-curly-spacing": "off",
     "padded-blocks": "off",
+    "prefer-destructuring" : "off",
     "require-jsdoc": "off",
     "valid-jsdoc": "off"
   },
@@ -40,6 +43,9 @@
     "XHRLocaleResolver": false,
     "Cropper": false,
     "randomColor": false,
-    "d3": false
+    "d3": false,
+    "AlloyEditor": false,
+    "CKEDITOR": false,
+    "Selectivity": false
   }
 }

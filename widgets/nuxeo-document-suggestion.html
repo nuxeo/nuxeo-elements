@@ -15,10 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="nuxeo-selectivity.html">
+<link rel="import" href="../../iron-validatable-behavior/iron-validatable-behavior.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../nuxeo-routing-behavior.html">
-<link rel="import" href="../../iron-validatable-behavior/iron-validatable-behavior.html">
+<link rel="import" href="nuxeo-selectivity.html">
 
 <!--
 An element for selecting one or more documents.
@@ -68,244 +69,257 @@ An element for selecting one or more documents.
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-document-suggestion',
-      behaviors: [Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior, Nuxeo.RoutingBehavior],
-      properties: {
+    {
+      class DocumentSuggestion extends
+        Polymer.mixinBehaviors([Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior,
+          Nuxeo.RoutingBehavior], Nuxeo.Element) {
 
-        /**
-         * Page provider to use for looking up suggestions.
-         */
-        pageProvider: {
-          type: String,
-          value: 'default_document_suggestion'
-        },
-
-        /**
-         * Document schemas.
-         */
-        schemas: {
-          type: Array,
-          value: ['*']
-        },
-
-        /**
-         * Repository.
-         */
-        repository: {
-          type: String,
-          value: 'default'
-        },
-
-        /**
-         * Label.
-         */
-        label: String,
-
-        /**
-         * Operation to call for suggestions.
-         */
-        operation: {
-          type: String,
-          value: 'Repository.PageProvider'
-        },
-
-        /**
-         * Parameters for the operation.
-         */
-        params: Object,
-
-        /**
-         * Selected value(s).
-         */
-        value: {
-          type: String,
-          notify: true
-        },
-
-        /**
-         * Set to `true` to allow multiple selection.
-         */
-        multiple: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * If true, the dropdown stays open after a selection is made.
-         */
-        stayOpenOnSelect: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * Set to `true` for read only mode.
-         */
-        readonly: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * Minimum number of chars to trigger the suggestions.
-         */
-        minChars: {
-          type: Number,
-          value: 3
-        },
-
-        /**
-         * Time in ms used to debounce requests.
-         */
-        frequency: Number,
-
-        /**
-         * Placeholder.
-         */
-        placeholder: String,
-
-        /**
-         * Error message to show when `invalid` is true.
-         */
-        errorMessage: String,
-
-        /**
-         * Selected items.
-         */
-        selectedItems: {
-          type: Array,
-          notify: true
-        },
-
-        /**
-         * Selected item.
-         */
-        selectedItem: {
-          type: Object,
-          notify: true
-        },
-
-        /**
-         * Formatter for a selected entry.
-         */
-        selectionFormatter: {
-          type: Function,
-          value: function() {
-            return this._selectionFormatter.bind(this);
-          }
-        },
-
-        /**
-         * Formatter for suggested entries.
-         */
-        resultFormatter: {
-          type: Function,
-          value: function() {
-            return this._resultFormatter.bind(this);
-          }
-        },
-
-        /**
-         * Name of the Document property that should be used
-         * to define the ID of entry.
-         **/
-        idProperty: {
-          type: String,
-          value: "ecm:uuid"
-        },
-
-        /**
-         * Function used to get the id from the choice document.
-         */
-        _idFunction: {
-          type: Function,
-          value: function() {
-            return this._docIdFunction.bind(this);
-          }
-        },
-
-        /**
-         * Formatter for initial selection.
-         */
-        initSelection: {
-          type: Function,
-          value: function () {
-            return this._initSelection.bind(this);
-          }
+        static get is() {
+          return 'nuxeo-document-suggestion';
         }
-      },
 
-      /* Override method from Polymer.IronValidatableBehavior. */
-      _getValidity: function() {
-        return this.$.s2._getValidity();
-      },
+        static get properties() {
+          return {
+            /**
+             * Page provider to use for looking up suggestions.
+             */
+            pageProvider: {
+              type: String,
+              value: 'default_document_suggestion',
+            },
 
-      _computeParams: function() {
-        return Object.assign({}, {
-          documentSchemas: this.schemas,
-          repository: this.repository,
-          providerName: this.pageProvider,
-          pageProviderName: this.pageProvider,
-          page: 0,
-          pageSize: 20
-        }, this.params);
-      },
+            /**
+             * Document schemas.
+             */
+            schemas: {
+              type: Array,
+              value: ['*'],
+            },
 
-      _selectionFormatter: function(doc) {
-        return '<a href="' + this.urlFor('browse', doc.path) + '">' + doc.title + '</a>';
-      },
+            /**
+             * Repository.
+             */
+            repository: {
+              type: String,
+              value: 'default',
+            },
 
-      _resultFormatter: function(doc) {
-        return doc.title + '<br/>' + doc.path;
-      },
+            /**
+             * Label.
+             */
+            label: String,
+
+            /**
+             * Operation to call for suggestions.
+             */
+            operation: {
+              type: String,
+              value: 'Repository.PageProvider',
+            },
+
+            /**
+             * Parameters for the operation.
+             */
+            params: Object,
+
+            /**
+             * Selected value(s).
+             */
+            value: {
+              type: String,
+              notify: true,
+            },
+
+            /**
+             * Set to `true` to allow multiple selection.
+             */
+            multiple: {
+              type: Boolean,
+              value: false,
+            },
+
+            /**
+             * If true, the dropdown stays open after a selection is made.
+             */
+            stayOpenOnSelect: {
+              type: Boolean,
+              value: false,
+            },
+
+            /**
+             * Set to `true` for read only mode.
+             */
+            readonly: {
+              type: Boolean,
+              value: false,
+            },
+
+            /**
+             * Minimum number of chars to trigger the suggestions.
+             */
+            minChars: {
+              type: Number,
+              value: 3,
+            },
+
+            /**
+             * Time in ms used to debounce requests.
+             */
+            frequency: Number,
+
+            /**
+             * Placeholder.
+             */
+            placeholder: String,
+
+            /**
+             * Error message to show when `invalid` is true.
+             */
+            errorMessage: String,
+
+            /**
+             * Selected items.
+             */
+            selectedItems: {
+              type: Array,
+              notify: true,
+            },
+
+            /**
+             * Selected item.
+             */
+            selectedItem: {
+              type: Object,
+              notify: true,
+            },
+
+            /**
+             * Formatter for a selected entry.
+             */
+            selectionFormatter: {
+              type: Function,
+              value() {
+                return this._selectionFormatter.bind(this);
+              },
+            },
+
+            /**
+             * Formatter for suggested entries.
+             */
+            resultFormatter: {
+              type: Function,
+              value() {
+                return this._resultFormatter.bind(this);
+              },
+            },
+
+            /**
+             * Name of the Document property that should be used
+             * to define the ID of entry.
+             * */
+            idProperty: {
+              type: String,
+              value: 'ecm:uuid',
+            },
+
+            /**
+             * Function used to get the id from the choice document.
+             */
+            _idFunction: {
+              type: Function,
+              value() {
+                return this._docIdFunction.bind(this);
+              },
+            },
+
+            /**
+             * Formatter for initial selection.
+             */
+            initSelection: {
+              type: Function,
+              value() {
+                return this._initSelection.bind(this);
+              },
+            },
+          };
+        }
+
+        /* Override method from Polymer.IronValidatableBehavior. */
+        _getValidity() {
+          return this.$.s2._getValidity();
+        }
+
+        _computeParams() {
+          return Object.assign({}, {
+            documentSchemas: this.schemas,
+            repository: this.repository,
+            providerName: this.pageProvider,
+            pageProviderName: this.pageProvider,
+            page: 0,
+            pageSize: 20,
+          }, this.params);
+        }
+
+        _selectionFormatter(doc) {
+          return `<a href="${this.urlFor('browse', doc.path)}">${doc.title}</a>`;
+        }
+
+        _resultFormatter(doc) {
+          return `${doc.title}<br/>${doc.path}`;
+        }
 
 
-      _initSelection: function(element, callback) {
-        if (element) {
-          if (this.multiple) {
-            if (element.length > 0) {
-              if (element[0].title) {
-                return callback(element);
-              } else if (typeof element[0] === "string" && element[0].length > 0) {
-                return this._resolveDocs(element, callback);
+        _initSelection(element, callback) {
+          if (element) {
+            if (this.multiple) {
+              if (element.length > 0) {
+                if (element[0].title) {
+                  return callback(element);
+                } else if (typeof element[0] === 'string' && element[0].length > 0) {
+                  return this._resolveDocs(element, callback);
+                }
+              } else {
+                return callback([]);
               }
-            } else {
-              return callback([]);
-            }
-          } else {
-            if (element.title) {
+            } else if (element.title) {
               return callback(element);
-            } else if (typeof element === "string") {
+            } else if (typeof element === 'string') {
               if (element.length > 0) {
                 return this._resolveDocs(element, callback);
               } else {
                 return callback('');
               }
             }
+            console.log('Unable to resolve such entry. Write your own resolver');
           }
-          console.log('Unable to resolve such entry. Write your own resolver');
         }
-      },
 
-      _resolveDocs: function(docs, callback) {
-        this.$.op.params = {
-          values: this.value,
-          property: this.idProperty
-        };
-        this.$.op.execute().then(function(res) {
-          callback(this.multiple ? res.entries : (res.entries.length > 0 ? res.entries[0] : null));
-        }.bind(this));
-      },
-
-      _docIdFunction: function(doc) {
-        if (this.idProperty === 'ecm:uuid') {
-          return doc.uid;
-        } else {
-          return doc.properties[this.idProperty];
+        _resolveDocs(docs, callback) {
+          this.$.op.params = {
+            values: this.value,
+            property: this.idProperty,
+          };
+          this.$.op.execute().then((res) => {
+            if (this.multiple) {
+              callback(res.entries);
+            } else {
+              callback(res.entries.length > 0 ? res.entries[0] : null);
+            }
+          });
         }
+
+        _docIdFunction(doc) {
+          if (this.idProperty === 'ecm:uuid') {
+            return doc.uid;
+          } else {
+            return doc.properties[this.idProperty];
+          }
+        }
+
       }
 
-    });
+      customElements.define(DocumentSuggestion.is, DocumentSuggestion);
+      Nuxeo.DocumentSuggestion = DocumentSuggestion;
+    }
   </script>
 </dom-module>
