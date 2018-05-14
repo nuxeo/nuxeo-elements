@@ -52,10 +52,7 @@
     "iron-collapse": "PolymerElements/iron-collapse#^2.0.0",
     "nuxeo-elements": "nuxeo/nuxeo-elements#master",
     "paper-typeahead": "nuxeo/paper-typeahead#0.6",
-    "datetime-picker": "fooloomanzoo/datetime-picker#2.5.8",
-    "input-picker-pattern": "fooloomanzoo/input-picker-pattern#1.0.13",
-    "number-input": "fooloomanzoo/number-input#1.3.2",
-    "property-mixins": "fooloomanzoo/property-mixins#1.0.10"
+    "vaadin-date-picker": "^3.0.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^2.0.0",

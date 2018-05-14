@@ -83,7 +83,7 @@ limitations under the License.
     });
 
     test('the value can be changed', function() {
-      expect(element.value).to.be.undefined;
+      expect(element.value).to.be.null;
       testValue(element, '2022-03-12T00:00:00.000Z');
       testValue(element, '1800-12-28T00:00:00.000Z');
       testValue(element, '0021-11-07T00:00:00.000Z');
@@ -102,12 +102,12 @@ limitations under the License.
     });
 
     test('the value can be cleared', function() {
-      expect(element.value).to.be.undefined;
+      expect(element.value).to.be.null;
       testInput(element, '2003-02-20');
       // now clear the value
       element.value = null;
       expect(element.value).to.be.equal(null);
-      expect(getInput(element).value).to.be.equal(null);
+      expect(getInput(element).value).to.be.equal('');
     });
     
   });
