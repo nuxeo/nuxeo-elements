@@ -14,25 +14,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
-<!--
-<link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../bower_components/iron-list/iron-list.html">
-<link rel="import" href="../../bower_components/iron-scroll-threshold/iron-scroll-threshold.html">
-<link rel="import" href="../../bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
-<link rel="import" href="../../bower_components/paper-spinner/paper-spinner-lite.html">
--->
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-list/iron-list.html">
-<link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
 <link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-spinner/paper-spinner-lite.html">
-
-<link rel="import" href="../widgets/nuxeo-sort-select.html">
-<link rel="import" href="../nuxeo-page-provider-display-behavior.html">
-<link rel="import" href="../nuxeo-draggable-list-behavior.html">
-<link rel="import" href="../nuxeo-quick-filters/nuxeo-quick-filters.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../nuxeo-aggregation/nuxeo-aggregation-navigation.html">
+<link rel="import" href="../nuxeo-draggable-list-behavior.html">
+<link rel="import" href="../nuxeo-page-provider-display-behavior.html">
+<link rel="import" href="../nuxeo-quick-filters/nuxeo-quick-filters.html">
+<link rel="import" href="../widgets/nuxeo-sort-select.html">
 
 <!--
 An element to display page provider results as a grid with infinite scrolling.
@@ -164,29 +158,37 @@ An element to display page provider results as a grid with infinite scrolling.
 
       <div class="header">
 
-        <template is="dom-if" if="[[displaySort]]">
-          <nuxeo-sort-select label="[[sortLabel]]" options="[[sortOptions]]" selected="{{sortSelected}}"
-                             on-sort-order-changed="fetch"></nuxeo-sort-select>
-        </template>
+        <dom-if if="[[displaySort]]">
+          <template>
+            <nuxeo-sort-select label="[[sortLabel]]" options="[[sortOptions]]" selected="{{sortSelected}}"
+                               on-sort-order-changed="fetch"></nuxeo-sort-select>
+          </template>
+        </dom-if>
 
-        <template is="dom-if" if="[[displayQuickFilters]]">
-          <nuxeo-quick-filters quick-filters="{{quickFilters}}" on-quick-filters-changed="_quickFilterChanged">
-          </nuxeo-quick-filters>
-        </template>
+        <dom-if if="[[displayQuickFilters]]">
+          <template>
+            <nuxeo-quick-filters quick-filters="{{quickFilters}}" on-quick-filters-changed="_quickFilterChanged">
+            </nuxeo-quick-filters>
+          </template>
+        </dom-if>
 
         <div id="filters" class="filters">
-          <template is="dom-repeat" items="[[filters]]" as="filter">
-          <span class="tag filter">
-            [[filter.name]]: [[filter.value]]
-            <iron-icon icon="nuxeo:remove" class="remove" on-tap="_removeFilter"></iron-icon>
-          </span>
-          </template>
+          <dom-repeat items="[[filters]]" as="filter">
+            <template>
+              <span class="tag filter">
+                [[filter.name]]: [[filter.value]]
+                <iron-icon icon="nuxeo:remove" class="remove" on-click="_removeFilter"></iron-icon>
+              </span>
+            </template>
+          </dom-repeat>
         </div>
       </div>
 
-      <template is="dom-if" if="[[_isEmpty]]">
-        <div class="emptyResult">[[_computedEmptyLabel]]</div>
-      </template>
+      <dom-if if="[[_isEmpty]]">
+        <template>
+          <div class="emptyResult">[[_computedEmptyLabel]]</div>
+        </template>
+      </dom-if>
 
       <iron-list id="list" items="[[items]]" as="[[as]]" grid
                  selection-enabled selected-item="{{selectedItem}}" selected-items="{{selectedItems}}"
@@ -194,9 +196,11 @@ An element to display page provider results as a grid with infinite scrolling.
         <slot></slot>
       </iron-list>
 
-      <template is="dom-if" if="[[displayNavigation]]">
-        <nuxeo-aggregation-navigation buckets="[[buckets]]" on-scroll-to="_onScrollTo"></nuxeo-aggregation-navigation>
-      </template>
+      <dom-if if="[[displayNavigation]]">
+        <template>
+          <nuxeo-aggregation-navigation buckets="[[buckets]]" on-scroll-to="_onScrollTo"></nuxeo-aggregation-navigation>
+        </template>
+      </dom-if>
 
     </div>
     <paper-spinner-lite active$=[[loading]]></paper-spinner-lite>
@@ -204,95 +208,104 @@ An element to display page provider results as a grid with infinite scrolling.
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-data-grid',
+    {
+      class DataGrid
+        extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior, Nuxeo.PageProviderDisplayBehavior,
+          Nuxeo.DraggableListBehavior], Nuxeo.Element) {
 
-      behaviors: [
-        Polymer.IronResizableBehavior,
-        Nuxeo.PageProviderDisplayBehavior,
-        Nuxeo.DraggableListBehavior
-      ],
-
-      properties: {
-
-        multiSelection: {
-          type: Boolean,
-          value: true
-        },
-
-        displayQuickFilters: {
-          type: Boolean,
-          value: false
-        },
-
-        quickFilters: {
-          type: Array,
-          notify: true
-        },
-
-        displayNavigation: {
-          type: Boolean,
-          value: false
-        },
-
-        displaySort: {
-          type: Boolean,
-          value: false
-        },
-
-        sortLabel: {
-          type: String,
-          value: ''
-        },
-
-        sortSelected: {
-          type: Object,
-          observer: '_sortSelectedChanged'
-        },
-
-        sortOptions: {
-          type: Array,
-          value: []
+        static get is() {
+          return 'nuxeo-data-grid';
         }
-      },
 
-      fetch: function() {
-        if (this._hasPageProvider()) {
-          if (this.sortSelected && this.sortSelected.field && this.sortSelected.order) {
-            var sort = {};
-            sort[this.sortSelected.field] = this.sortSelected.order;
-            this.nxProvider.sort = sort;
+        static get properties() {
+          return {
+            multiSelection: {
+              type: Boolean,
+              value: true,
+            },
+
+            displayQuickFilters: {
+              type: Boolean,
+              value: false,
+            },
+
+            quickFilters: {
+              type: Array,
+              notify: true,
+            },
+
+            displayNavigation: {
+              type: Boolean,
+              value: false,
+            },
+
+            displaySort: {
+              type: Boolean,
+              value: false,
+            },
+
+            sortLabel: {
+              type: String,
+              value: '',
+            },
+
+            sortSelected: {
+              type: Object,
+              observer: '_sortSelectedChanged',
+            },
+
+            sortOptions: {
+              type: Array,
+              value: [],
+            },
+          };
+        }
+
+        fetch() {
+          if (this._hasPageProvider()) {
+            if (this.sortSelected && this.sortSelected.field && this.sortSelected.order) {
+              const sort = {};
+              sort[this.sortSelected.field] = this.sortSelected.order;
+              this.nxProvider.sort = sort;
+            }
+            if (this.visible) {
+              return this._fetchRange(0, this.nxProvider.pageSize, true);
+            }
           }
-          if (this.visible) {
-            return this._fetchRange(0, this.nxProvider.pageSize, true);
+        }
+
+        _sortSelectedChanged(newSort, oldSort) {
+          // do not trigger fetch results when sort options are being initialized
+          if (newSort && oldSort) {
+            this.fetch();
           }
         }
-      },
 
-      _sortSelectedChanged: function(newSort, oldSort) {
-        // do not trigger fetch results when sort options are being initialized
-        if (newSort && oldSort) {
-          this.fetch();
+        _removeFilter(e) {
+          this.dispatchEvent(new CustomEvent('column-filter-changed', {
+            composed: true,
+            bubbles: true,
+            detail: { value: '', filterBy: e.model.filter.path },
+          }));
         }
-      },
 
-      _removeFilter: function(e) {
-        this.fire('column-filter-changed', {value: '', filterBy: e.model.filter.path});
-      },
+        _onScrollTo(e) {
+          this.scrollToIndex(e.detail.index);
+        }
 
-      _onScrollTo: function(e) {
-        this.scrollToIndex(e.detail.index)
-      },
+        draggableFilter(el) {
+          return el.selected;
+        }
 
-      draggableFilter: function(el) {
-        return el.selected;
-      },
+        get visible() {
+          return Boolean(this.offsetWidth || this.offsetHeight);
+        }
 
-      get visible() {
-        return Boolean(this.offsetWidth || this.offsetHeight);
       }
 
-    });
+      customElements.define(DataGrid.is, DataGrid);
+      Nuxeo.DataGrid = DataGrid;
+    }
   </script>
 
 </dom-module>

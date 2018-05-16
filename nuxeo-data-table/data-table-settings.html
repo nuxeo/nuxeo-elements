@@ -1,14 +1,16 @@
+<link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 
 <!-- Part of `nuxeo-data-table` -->
 <dom-module id="nuxeo-data-table-settings">
   <template>
-    <style is="custom-style">
+    <style>
       :host {
         position: relative;
       }
@@ -61,69 +63,87 @@
               <label></label>
             </div>
             <table>
-              <template is="dom-repeat" items="[[columns]]" as="column">
-                <tr>
-                  <td>
-                    <paper-checkbox noink checked="{{!column.hidden}}"></paper-checkbox>
-                  </td>
-                  <td>
-                    [[column.name]]
-                  </td>
-                </tr>
-              </template>
+              <dom-repeat items="[[columns]]" as="column">
+                <template>
+                  <tr>
+                    <td>
+                      <paper-checkbox noink checked="{{!column.hidden}}"></paper-checkbox>
+                    </td>
+                    <td>
+                      [[column.name]]
+                    </td>
+                  </tr>
+                </template>
+              </dom-repeat>
             </table>
           </div>
         </div>
       </div>
       <div class="buttons horizontal end-justified layout">
         <div class="flex start-justified">
-          <paper-button noink on-tap="_resetSettings">[[i18n('tableSettings.columnSettings.reset')]]</paper-button>
+          <paper-button noink on-click="_resetSettings">[[i18n('tableSettings.columnSettings.reset')]]</paper-button>
         </div>
         <paper-button noink class="primary" dialog-dismiss>[[i18n('tableSettings.columnSettings.close')]]</paper-button>
       </div>
     </nuxeo-dialog>
 
     <paper-icon-button noink icon="nuxeo:settings" id="toggleColSettings"
-      on-tap="toggleColsSettingsPopup">
+      on-click="toggleColsSettingsPopup">
     </paper-icon-button>
 
   </template>
   <script>
-    Polymer({
-      is: 'nuxeo-data-table-settings',
-      behaviors: [Nuxeo.I18nBehavior],
-      properties: {
-        columns: {
-          type: Array,
-          notify: true
+    {
+      class DataTableSettings extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
+
+        static get is() {
+          return 'nuxeo-data-table-settings';
         }
-      },
 
-      observers: ['_columnDisplayChanged(columns.*)'],
-
-      toggleColsSettingsPopup: function() {
-        this.$$('#columnsSettingsPopup').toggle();
-      },
-
-      _columnDisplayChanged: function(change) {
-        if (change.path.endsWith('hidden')) {
-          this.fire('settings-changed');
+        static get properties() {
+          return {
+            columns: {
+              type: Array,
+              notify: true,
+            },
+          };
         }
-      },
 
-      _resetSettings: function() {
-        this.columns.forEach(function(column, idx) {
-          this.set('columns.' + idx + '.hidden', column.hiddenBack);
-        }, this);
-      },
-
-      _onSettingsClosed: function() {
-        if (this.columns.every(function(column) {
-              return column.hidden;
-            })) {
-          this._resetSettings();
+        static get observers() {
+          return [
+            '_columnDisplayChanged(columns.*)',
+          ];
         }
+
+        toggleColsSettingsPopup() {
+          this.$$('#columnsSettingsPopup').toggle();
+        }
+
+        _columnDisplayChanged(change) {
+          if (change.path.endsWith('hidden')) {
+            this.dispatchEvent(new CustomEvent('settings-changed', {
+              composed: true,
+              bubbles: true,
+            }));
+          }
+        }
+
+        _resetSettings() {
+          this.columns.forEach((column, idx) => {
+            this.set(`columns.${idx}.hidden`, column.hiddenBack);
+          });
+        }
+
+        _onSettingsClosed() {
+          if (this.columns.every((column) => column.hidden)) {
+            this._resetSettings();
+          }
+        }
+
       }
-    });
+
+      customElements.define(DataTableSettings.is, DataTableSettings);
+      Nuxeo.DataTableSettings = DataTableSettings;
+    }
   </script>
 </dom-module>

@@ -1,3 +1,5 @@
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+
 <!-- Part of `nuxeo-data-table` -->
 <dom-module id="nuxeo-data-table-row">
   <template>
@@ -77,65 +79,81 @@
     </div>
   </template>
   <script>
-    Polymer({
-      is: 'nuxeo-data-table-row',
+    {
+      class DataTableRow extends Nuxeo.Element {
 
-      properties: {
-        beforeBind: Object,
-        expanded: {
-          type: Boolean,
-          reflectToAttribute: true
-        },
-        index: Number,
-        item: Object,
-        selected: {
-          type: Boolean,
-          reflectToAttribute: true,
-          value: false
-        },
-        _static: {
-          type: Object,
-          value: { id: 0 }
+        static get is() {
+          return 'nuxeo-data-table-row';
         }
-      },
 
-      observers: ['_beforeBind(beforeBind, index, item.*, selected, expanded)'],
+        static get properties() {
+          return {
+            beforeBind: Object,
+            expanded: {
+              type: Boolean,
+              reflectToAttribute: true,
+            },
+            index: Number,
+            item: Object,
+            selected: {
+              type: Boolean,
+              reflectToAttribute: true,
+              value: false,
+            },
+            _static: {
+              type: Object,
+              value: { id: 0 },
+            },
+          };
+        }
 
-      attached: function() {
-        if (this.domHost && this.domHost.tagName === 'NUXEO-DATA-TABLE') {
-          var id = this._static.id++;
+        static get observers() {
+          return [
+            '_beforeBind(beforeBind, index, item.*, selected, expanded)',
+          ];
+        }
 
-          var item = this.parentElement;
-          if (!item._rowId) {
-            this._contentElement = document.createElement('slot');
-            this._contentElement.setAttribute('name', 'item' + id);
-            Polymer.dom(item).appendChild(this._contentElement);
-            item._rowId = id;
+        connectedCallback() {
+          super.connectedCallback();
+          const host = Polymer.dom(this).getOwnerRoot().host;
+          if (host && host.tagName === 'NUXEO-DATA-TABLE') {
+            const id = this._static.id++;
+            const item = this.parentElement;
+            if (!item._rowId) {
+              this._contentElement = document.createElement('slot');
+              this._contentElement.setAttribute('name', `item${id}`);
+              Polymer.dom(item).appendChild(this._contentElement);
+              item._rowId = id;
 
-            Polymer.dom(this.domHost).appendChild(this);
+              Polymer.dom(host).appendChild(this);
 
-            this.slot = 'item' + id;
-            // reset the cached value for shady root owner to make this.domHost
-            // return correct value.
-            this._ownerShadyRoot = undefined;
+              this.slot = `item${id}`;
+              // reset the cached value for shady root owner to make this.domHost
+              // return correct value.
+              this._ownerShadyRoot = undefined;
+            }
           }
         }
-      },
 
-      _beforeBind: function(beforeBind, index, item, selected, expanded) {
-        if (!beforeBind) {
-          return;
+        _beforeBind(beforeBind, index, item, selected, expanded) {
+          if (!beforeBind) {
+            return;
+          }
+
+          const data = {
+            index,
+            item: item.base,
+            expanded,
+            selected,
+          };
+
+          beforeBind(data, this);
         }
 
-        var data = {
-          index: index,
-          item: item.base,
-          expanded: expanded,
-          selected: selected
-        };
-
-        beforeBind(data, this);
       }
-    });
+
+      customElements.define(DataTableRow.is, DataTableRow);
+      Nuxeo.DataTableRow = DataTableRow;
+    }
   </script>
 </dom-module>

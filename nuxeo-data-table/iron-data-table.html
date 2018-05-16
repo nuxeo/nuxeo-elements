@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../iron-list/iron-list.html">
 <link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
 <link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
@@ -27,6 +27,8 @@ limitations under the License.
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../../paper-styles/paper-styles-classes.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../nuxeo-quick-filters/nuxeo-quick-filters.html">
 
@@ -232,43 +234,51 @@ Example:
 
       <div class="top-actions">
         <label>[[label]]</label>
-        <template is="dom-if" if="[[editable]]">
-          <paper-button id="addEntry" noink class="primary" on-tap="_createEntry">+ [[i18n('command.add')]]</paper-button>
-        </template>
+        <dom-if if="[[editable]]">
+          <template>
+            <paper-button id="addEntry" noink class="primary" on-click="_createEntry">+ [[i18n('command.add')]]</paper-button>
+          </template>
+        </dom-if>
       </div>
 
       <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
 
-      <template is="dom-if" if="[[displayQuickFilters]]">
-        <nuxeo-quick-filters quick-filters="{{quickFilters}}" on-quick-filters-changed="_quickFilterChanged">
-        </nuxeo-quick-filters>
-      </template>
+      <dom-if if="[[displayQuickFilters]]">
+        <template>
+          <nuxeo-quick-filters quick-filters="{{quickFilters}}" on-quick-filters-changed="_quickFilterChanged">
+          </nuxeo-quick-filters>
+        </template>
+      </dom-if>
 
       <div id="header">
         <nuxeo-data-table-row header>
           <nuxeo-data-table-checkbox header hidden$="[[!selectionEnabled]]"></nuxeo-data-table-checkbox>
-          <template is="dom-repeat" items="[[columns]]" as="column">
-            <nuxeo-data-table-cell header
-                             align-right="[[column.alignRight]]"
-                             before-bind="[[beforeCellBind]]"
-                             column="[[column]]"
-                             flex="[[column.flex]]"
-                             hidden="[[column.hidden]]"
-                             order="[[column.order]]"
-                             table="[[_this]]"
-                             template="[[column.headerTemplate]]"
-                             width="[[column.width]]">
-              <nuxeo-data-table-column-sort sort-order="[[sortOrder]]" path="[[column.sortBy]]" on-sort-direction-changed="_sort" hidden$="[[!column.sortBy]]"></nuxeo-data-table-column-sort>
-            </nuxeo-data-table-cell>
-          </template>
+          <dom-repeat items="[[columns]]" as="column">
+            <template>
+              <nuxeo-data-table-cell header
+                               align-right="[[column.alignRight]]"
+                               before-bind="[[beforeCellBind]]"
+                               column="[[column]]"
+                               flex="[[column.flex]]"
+                               hidden="[[column.hidden]]"
+                               order="[[column.order]]"
+                               table="[[_this]]"
+                               template="[[column.headerTemplate]]"
+                               width="[[column.width]]">
+                <nuxeo-data-table-column-sort sort-order="[[sortOrder]]" path="[[column.sortBy]]" on-sort-direction-changed="_sort" hidden$="[[!column.sortBy]]"></nuxeo-data-table-column-sort>
+              </nuxeo-data-table-cell>
+            </template>
+          </dom-repeat>
           <nuxeo-data-table-cell flex="0" hidden$="[[!editable]]"></nuxeo-data-table-cell>
           <nuxeo-data-table-settings columns="{{columns}}" hidden$="[[!settingsEnabled]]"></nuxeo-data-table-settings>
         </nuxeo-data-table-row>
       </div>
 
-      <template is="dom-if" if="[[_isEmpty]]">
-        <div class="emptyResult">[[_computedEmptyLabel]]</div>
-      </template>
+      <dom-if if="[[_isEmpty]]">
+        <template>
+          <div class="emptyResult">[[_computedEmptyLabel]]</div>
+        </template>
+      </dom-if>
 
       <iron-list id="list" items="[[items]]" as="item"
         selected-items="{{selectedItems}}" selected-item="{{selectedItem}}"
@@ -284,31 +294,35 @@ Example:
                           item="[[item]]"
                           tabindex="-1"
                           selected="[[_isSelected(item, selectedItems, selectedItems.*)]]">
-              <nuxeo-data-table-checkbox hidden$="[[!selectionEnabled]]" tabindex="0" checked$="[[selected]]" on-tap="_onCheckBoxTap"></nuxeo-data-table-checkbox>
-              <template is="dom-repeat" items="[[columns]]" as="column" index-as="colIndex">
-                <nuxeo-data-table-cell template="[[column.template]]"
-                               table="[[_this]]"
-                               align-right="[[column.alignRight]]"
-                               column="[[column]]"
-                               expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
-                               flex="[[column.flex]]"
-                               hidden="[[column.hidden]]"
-                               index="[[index]]"
-                               item="[[item]]"
-                               order="[[column.order]]"
-                               selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
-                               width="[[column.width]]"
-                               before-bind="[[beforeCellBind]]"></nuxeo-data-table-cell>
-              </template>
-              <template is="dom-if" if="[[_isExpanded(item, _expandedItems)]]" on-dom-change="_updateSizeForItem">
-                <nuxeo-data-table-row-detail index="[[index]]"
-                                     item="[[item]]"
-                                     expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
-                                     selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
-                                     before-bind="[[beforeDetailsBind]]"
-                                     table="[[_this]]"
-                                     template="[[rowDetail]]"></nuxeo-data-table-row-detail>
-              </template>
+              <nuxeo-data-table-checkbox hidden$="[[!selectionEnabled]]" tabindex="0" checked$="[[selected]]" on-click="_onCheckBoxTap"></nuxeo-data-table-checkbox>
+              <dom-repeat items="[[columns]]" as="column" index-as="colIndex">
+                <template>
+                  <nuxeo-data-table-cell template="[[column.template]]"
+                                 table="[[_this]]"
+                                 align-right="[[column.alignRight]]"
+                                 column="[[column]]"
+                                 expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                                 flex="[[column.flex]]"
+                                 hidden="[[column.hidden]]"
+                                 index="[[index]]"
+                                 item="[[item]]"
+                                 order="[[column.order]]"
+                                 selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                                 width="[[column.width]]"
+                                 before-bind="[[beforeCellBind]]"></nuxeo-data-table-cell>
+                </template>
+              </dom-repeat>
+              <dom-if if="[[_isExpanded(item, _expandedItems)]]" on-dom-change="_updateSizeForItem">
+                <template>
+                  <nuxeo-data-table-row-detail index="[[index]]"
+                                       item="[[item]]"
+                                       expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                                       selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                                       before-bind="[[beforeDetailsBind]]"
+                                       table="[[_this]]"
+                                       template="[[rowDetail]]"></nuxeo-data-table-row-detail>
+                </template>
+              </dom-if>
                 <nuxeo-data-table-row-actions index="[[index]]"
                                      editable="[[editable]]"
                                      orderable="[[orderable]]"
@@ -336,580 +350,604 @@ Example:
       </paper-dialog-scrollable>
       <div class="buttons">
         <paper-button noink dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
-        <paper-button id="save" noink on-tap="_validateEntry" class="primary">[[i18n('command.ok')]]</paper-button>
+        <paper-button id="save" noink on-click="_validateEntry" class="primary">[[i18n('command.ok')]]</paper-button>
       </div>
     </nuxeo-dialog>
 
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-data-table',
+    {
+      class DataTable
+        extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior, Polymer.IronFormElementBehavior,
+          Polymer.IronValidatableBehavior, Nuxeo.PageProviderDisplayBehavior, Nuxeo.I18nBehavior,
+          Nuxeo.DraggableListBehavior], Nuxeo.Element) {
 
-      behaviors: [
-        Polymer.IronResizableBehavior, Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior,
-        Nuxeo.PageProviderDisplayBehavior, Nuxeo.I18nBehavior, Nuxeo.DraggableListBehavior
-      ],
-
-      listeners: {
-        'iron-resize': '_resizeCellContainers',
-        'item-changed': '_itemChanged',
-        'scroll': '_onHorizontalScroll',
-        'edit-entry': '_editEntry',
-        'delete-entry': '_deleteEntry',
-        'move-upward': '_moveItemUpward',
-        'move-downward': '_moveItemDownward'
-      },
-
-      properties: {
-
-        /**
-         * A function that is called before data is bound to a row or header cell.
-         * Can be used to customize the cell element depending on the data.
-         * #### Example:
-         * ```js
-         * function(data, cell) {
-         *   cell.toggleClass('custom', data.useCustomClass);
-         * }
-         * ```
-         */
-        beforeCellBind: Object,
-
-        /**
-         * A function that is called before data is bound to a row details element.
-         * Can be used to customize the element depending on the data.
-         * #### Example:
-         * ```js
-         * function(data, details) {
-         *   details.toggleClass('custom', data.useCustomClass);
-         * }
-         * ```
-         */
-        beforeDetailsBind: Object,
-
-        /**
-         * A function that is called before data is bound to a row.
-         * Can be used to customize the row element depending on the data.
-         * #### Example:
-         * ```js
-         * function(data, row) {
-         *   row.toggleClass('custom', data.useCustomClass);
-         * }
-         * ```
-         */
-        beforeRowBind: Object,
-
-        /**
-         * If `true`, tapping a row will expand the item details, if available.
-         */
-        detailsEnabled: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * An array of `data-table-column` elements which contain the templates
-         * to be stamped with items.
-         */
-        columns: {
-          type: Array,
-          notify: true,
-          value: function() {
-            return [];
-          },
-          observer: '_columnsChanged'
-        },
-
-        _expandedItems: {
-          type: Array,
-          value: function() {
-            return [];
-          }
-        },
-
-        _this: {
-          type: Object,
-          value: function() {
-            return this;
-          }
-        },
-
-        label: {
-          type: String
-        },
-
-        required:  {
-          type: Boolean,
-          value: false
-        },
-
-        errorMessage: {
-          type: String
-        },
-
-        settingsEnabled: {
-          type: Boolean,
-          value: false
-        },
-
-        multiSelection: {
-          type: Boolean,
-          value: true
-        },
-
-        editable: {
-          type: Boolean,
-          value: false
-        },
-
-        orderable: {
-          type: Boolean,
-          value: false
-        },
-
-        paginable: {
-          type: Boolean,
-          value: false
+        static get is() {
+          return 'nuxeo-data-table';
         }
-      },
 
-      _itemChanged: function(e) {
-        if (this.items) {
-          var index = e.target.index;
-          if (index === undefined) {
-            index = this.items.indexOf(e.detail.item)
-          }
-          if (index >= 0) {
-            var path =  'items.' + index;
-            if (e.detail.path) {
-              path += '.' + e.detail.path;
-            }
-            this.set(path, e.detail.value);
-          }
-        }
-      },
-
-      created: function() {
-        this._observer = Polymer.dom(this).observeNodes(function(info) {
-          var hasColumns = function(node) {
-            return (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'NUXEO-DATA-TABLE-COLUMN');
-          };
-
-          var hasDetails = function(node) {
-            return (node.nodeType === Node.ELEMENT_NODE &&
-              node.tagName === 'TEMPLATE' && node.hasAttribute('is') &&
-              node.getAttribute('is') === 'row-detail');
-          };
-
-          if (info.addedNodes.filter(hasColumns).length > 0 ||
-            info.removedNodes.filter(hasColumns).length > 0) {
-            this.set('columns', this.$.columns.assignedNodes().filter(hasColumns));
-            this._backupColumnsState();
-            this.notifyResize();
-          }
-
-          if (info.addedNodes.filter(hasDetails).length > 0) {
-            this.set('rowDetail', this.getContentChildren('[select="template[is=row-detail]"]')[0]);
-
-            // assuming parent element is always a Polymer element.
-            // set dataHost to the same context the template was declared in
-            var parent = Polymer.dom(this.rowDetail).parentNode;
-            this.rowDetail._rootDataHost = parent.dataHost ? (parent.dataHost._rootDataHost || parent.dataHost) : parent;
-          }
-        }.bind(this));
-      },
-
-      _backupColumnsState: function() {
-        this.columns.forEach(function(col) {
-          col.hiddenBack = col.hidden;
-        });
-      },
-
-      ready: function() {
-        this.$.list._selectionHandler = function(e) {
-          var model = this.modelForElement(e.target);
-          if (!model) {
-            return;
-          }
-          this.toggleSelectionForItem(model[this.as]);
-        };
-        // listen for changes in form slot contents to make sure we disable the form when it is stamped.
-        // the form will be enabled/disabled when the dialog is opened/closed.
-        // this allow us to bypass the form validation when it's not visible.
-        var slot = this.shadowRoot.querySelector('#form');
-        slot.addEventListener('slotchange', function() {
-          var form = this.getContentChildren('#form')[0];
-          form.disabled = true;
-        }.bind(this));
-      },
-
-      _bind: function(item, index) {
-        if (index !== undefined) {
+        static get properties() {
           return {
-            item: item,
-            index: index
+            /**
+             * A function that is called before data is bound to a row or header cell.
+             * Can be used to customize the cell element depending on the data.
+             * #### Example:
+             * ```js
+             * function(data, cell) {
+             *   cell.toggleClass('custom', data.useCustomClass);
+             * }
+             * ```
+             */
+            beforeCellBind: Object,
+
+            /**
+             * A function that is called before data is bound to a row details element.
+             * Can be used to customize the element depending on the data.
+             * #### Example:
+             * ```js
+             * function(data, details) {
+             *   details.toggleClass('custom', data.useCustomClass);
+             * }
+             * ```
+             */
+            beforeDetailsBind: Object,
+
+            /**
+             * A function that is called before data is bound to a row.
+             * Can be used to customize the row element depending on the data.
+             * #### Example:
+             * ```js
+             * function(data, row) {
+             *   row.toggleClass('custom', data.useCustomClass);
+             * }
+             * ```
+             */
+            beforeRowBind: Object,
+
+            /**
+             * If `true`, tapping a row will expand the item details, if available.
+             */
+            detailsEnabled: {
+              type: Boolean,
+              value: false,
+            },
+
+            /**
+             * An array of `data-table-column` elements which contain the templates
+             * to be stamped with items.
+             */
+            columns: {
+              type: Array,
+              notify: true,
+              value() {
+                return [];
+              },
+              observer: '_columnsChanged',
+            },
+
+            _expandedItems: {
+              type: Array,
+              value() {
+                return [];
+              },
+            },
+
+            _this: {
+              type: Object,
+              value() {
+                return this;
+              },
+            },
+
+            label: {
+              type: String,
+            },
+
+            required: {
+              type: Boolean,
+              value: false,
+            },
+
+            errorMessage: {
+              type: String,
+            },
+
+            settingsEnabled: {
+              type: Boolean,
+              value: false,
+            },
+
+            multiSelection: {
+              type: Boolean,
+              value: true,
+            },
+
+            editable: {
+              type: Boolean,
+              value: false,
+            },
+
+            orderable: {
+              type: Boolean,
+              value: false,
+            },
+
+            paginable: {
+              type: Boolean,
+              value: false,
+            },
           };
-        } else {
-          return {
-            column: item
-          };
-        }
-      },
-
-      _isEven: function(index) {
-        return index % 2 === 0;
-      },
-
-      _columnsChanged: function(columns, oldColumns) {
-        if (oldColumns) {
-          oldColumns.forEach(function(column) {
-            this.unlisten(column, 'filter-value-changed');
-          }.bind(this));
         }
 
-        if (columns) {
-          columns.forEach(function(column) {
-            column.table = this;
-            this.listen(column, 'filter-value-changed', '_onColumnFilterChanged');
-          }.bind(this));
-        }
-      },
+        constructor() {
+          super();
+          this._observer = Polymer.dom(this).observeNodes((info) => {
+            const hasColumns = function (node) {
+              return (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'NUXEO-DATA-TABLE-COLUMN');
+            };
 
-      _resizeCellContainers: function() {
-        // reset header width first to make the cells and scroll width to reset their widths.
-        this.$.container.style.width = '';
+            const hasDetails = function (node) {
+              return (node.nodeType === Node.ELEMENT_NODE &&
+                  node.tagName === 'TEMPLATE' && node.hasAttribute('is') &&
+                  node.getAttribute('is') === 'row-detail');
+            };
 
-        this.async(function() {
-          this.$.container.style.width = Math.min(this.scrollWidth, this.clientWidth + this.scrollLeft) + 'px';
-
-          // add scrollbar width as padding
-          this.$.header.style.paddingRight = this.$.list.offsetWidth - this.$.list.clientWidth + 'px';
-        }.bind(this));
-      },
-
-      _onHorizontalScroll: function() {
-        if (!this.isDebouncerActive('scrolling')) {
-          this.$.container.style.width = this.scrollWidth + 'px';
-          this.debounce('scrolling', function() {
-            this.$.container.style.width = Math.min(this.scrollWidth, this.clientWidth + this.scrollLeft) + 'px';
-            // long timeout here to prevent jerkiness with the rubberband effect on iOS especially.
-          }, 1000);
-        }
-      },
-
-      _updateSizeForItem: function(event) {
-        if (event.model.get('item')) {
-          // notifyResize() doesn't do anything on iOS if the viewport size hasn't changed
-          // so calling updateSizeForItem(item) is more reliable.
-
-          // TODO: However, since we're reusing the same items array in most cases,
-          // the _collection item map inside <iron-list> gets out of sync and
-          // that breaks things like selection and updateSizeForItem.
-          // To mitigate the issue, we'll update height of every row element.
-          // Can be optimized later if needed to update only the row that has
-          // expanded or collapsed.
-          var itemSet = [];
-          for(var i = 0; i < this.$.list._physicalItems.length; i++) {
-            itemSet.push(i);
-          }
-
-          // extracted from updateSizeFromItem(item) in <iron-list>
-          this.$.list._updateMetrics(itemSet);
-          this.$.list._positionItems();
-        }
-      },
-
-      /**
-       * Expands the row details for this item, if available.
-       */
-      expandItem: function(item) {
-        if (this.rowDetail && this._expandedItems && !this._isExpanded(item, this._expandedItems)) {
-
-          // replacing the whole array here to simplify the observers.
-          this._expandedItems.push(item);
-          this._expandedItems = this._expandedItems.slice(0);
-        }
-      },
-
-      /**
-       * Collapses the row details for this item, if expanded.
-       */
-      collapseItem: function(item) {
-        if (this.rowDetail && this._expandedItems && this._isExpanded(item, this._expandedItems)) {
-          var index = this._expandedItems.indexOf(item);
-
-          // replacing the whole array here to simplify the obsevers.
-          this._expandedItems.splice(index, 1);
-          this._expandedItems = this._expandedItems.slice(0);
-        }
-      },
-
-      _isExpanded: function(item, items) {
-        return items && items.indexOf(item) > -1;
-      },
-
-      _isFocusable: function(target) {
-        if (Polymer.Settings.useNativeShadow) {
-          // https://nemisj.com/focusable/
-          // tabIndex is not reliable in IE.
-          return target.tabIndex >= 0;
-        } else {
-          // unreliable with Shadow, document.activeElement doesn't go inside
-          // the shadow root.
-          return  target.contains(Polymer.dom(document.activeElement).node) ||
-                  target.tagName === 'NUXEO-DATA-TABLE-CHECKBOX' || target.tagName === 'A' ;
-        }
-      },
-
-      /**
-       * Fired when user clicks on a item to select it. Note that this event is
-       * not fired when user clicks on a multi-selection checkbox.
-       *
-       * @event selecting-item
-       * @param {Object} detail
-       * @param {Object} detail.item item to be selected
-       */
-
-      /**
-       * Fired when user clicks on a item to deselect it. Note that this event is
-       * not fired when user clicks on a multi-selection checkbox.
-       *
-       * @event deselecting-item
-       * @param {Object} detail
-       * @param {Object} detail.item item to be deselected
-       */
-
-      /**
-       * Fired when user clicks on a item to expand it.
-       *
-       * @event expanding-item
-       * @param {Object} detail
-       * @param {Object} detail.item item to be expanded
-       */
-
-       /**
-        * Fired when user clicks on a item to collapse it.
-        *
-        * @event collapsing-item
-        * @param {Object} detail
-        * @param {Object} detail.item item to be collapsed
-        */
-
-      // we need to listen to click instead of tap because on mobile safari, the
-      // document.activeElement has not been updated (focus has not been shifted)
-      // yet at the point when tap event is being executed.
-      _onRowClick: function(e) {
-        // Prevent item selection if row itself is not focused. This means that
-        // an element inside the row has been focused.
-        // Mobile devices don't move focus from body unless it's an input element that is focused, so this element will never get focused.
-        if (this._isFocusable(Polymer.dom(e).localTarget)) {
-          return;
-        } else {
-          var fireEvent = function(eventName, item, defaultAction) {
-            var e = this.fire(eventName, {item: item}, {cancelable: true});
-            if (!e.defaultPrevented) {
-              defaultAction.call(this, item);
+            if (info.addedNodes.filter(hasColumns).length > 0 ||
+                info.removedNodes.filter(hasColumns).length > 0) {
+              this.set('columns', this.$.columns.assignedNodes().filter(hasColumns));
+              this._backupColumnsState();
+              this.notifyResize();
             }
-          }.bind(this);
 
-          if (this.rowDetail && this.detailsEnabled) {
-            if (this._isExpanded(e.model.item, this._expandedItems)) {
-              fireEvent('collapsing-item', e.model.item, this.collapseItem);
-            } else {
-              fireEvent('expanding-item', e.model.item, this.expandItem);
+            if (info.addedNodes.filter(hasDetails).length > 0) {
+              this.set('rowDetail', this.getContentChildren('[select="template[is=row-detail]"]')[0]);
+
+              // assuming parent element is always a Polymer element.
+              // set dataHost to the same context the template was declared in
+              const parent = Polymer.dom(this.rowDetail).parentNode;
+              this.rowDetail._rootDataHost = parent.dataHost ? (parent.dataHost._rootDataHost || parent.dataHost) : parent;
             }
-          } else {
-            this.fire('row-clicked', {item: e.model.item, index: e.model.index});
-          }
-        }
-      },
-
-      get settings() {
-        var tableSettings = {}
-        tableSettings.columns = {};
-        if (this.columns) {
-          this.columns.forEach(function(column, idx) {
-            tableSettings.columns[column.field ? column.field : "col-" + idx] = {hidden: column.hidden};
           });
         }
-        return tableSettings;
-      },
 
-      set settings(settings) {
-        if (settings) {
-          if (this.columns && settings.columns) {
-            this.columns.forEach(function(column, idx) {
-                this.set('columns.' + idx + '.hidden',
-                    settings.columns[column.field ? column.field : "col-" + idx].hidden);
-            }, this);
-          }
-        }
-      },
-
-      _onCheckBoxTap: function(e) {
-        if (this.selectionEnabled) {
-          this.$.list.toggleSelectionForIndex(e.model.index);
-          var target = e.target || e.srcElement;
-          target.fire('selected', {index: e.model.index, shiftKey: e.detail.sourceEvent.shiftKey});
-          this._updateFlags();
-        }
-      },
-
-      _editEntry: function(e) {
-        e.stopPropagation();
-        this._toggleEditDialog(e.detail.index);
-      },
-
-      _validateEntry: function() {
-        var dtform = this.getContentChildren('#form')[0];
-        if (dtform.validateItem()) {
-          var item = this._deepCopy(dtform.item);
-          if (dtform.index > -1) {
-            this.set('items.' + dtform.index, item);
-          } else {
-            this.push('items', item);
-          }
-          this.notifyResize();
-          this.$.dialog.close();
-        }
-      },
-
-      _deepCopy: function(obj) {
-        var cache = [];
-        var result = JSON.parse(JSON.stringify(obj, function(key, value) {
-          if (typeof value === 'object' && value !== null) {
-            if (cache.indexOf(value) !== -1) {
-              // Circular reference found, discard key
+        ready() {
+          super.ready();
+          this.addEventListener('iron-resize', this._resizeCellContainers);
+          this.addEventListener('item-changed', this._itemChanged);
+          this.addEventListener('scroll', this._onHorizontalScroll);
+          this.addEventListener('edit-entry', this._editEntry);
+          this.addEventListener('delete-entry', this._deleteEntry);
+          this.addEventListener('move-upward', this._moveItemUpward);
+          this.addEventListener('move-downward', this._moveItemDownward);
+          this.$.list._selectionHandler = function (e) {
+            const model = this.modelForElement(e.target);
+            if (!model) {
               return;
             }
-            // Store value in our collection
-            cache.push(value);
-          }
-          return value;
-        }));
-        // Allow GC
-        cache = null;
-        return result;
-      },
-
-      _toggleEditDialog: function(itemIndex) {
-        var dtform = this.getContentChildren('#form')[0];
-        if (typeof itemIndex !== "undefined") {
-          dtform.index = itemIndex;
-          dtform.item = this._deepCopy(this.items[itemIndex]);
-        } else {
-          dtform.index = -1;
-          var newItem;
-          if ((this.items.length > 1 && 'object' !== typeof this.items[0]) || this.columns.length === 1) {
-            // dirty but will work with primitive such as string, number, etc.
-            dtform.item = '';
-          } else {
-            dtform.item = {};
-          }
+            this.toggleSelectionForItem(model[this.as]);
+          };
+          // listen for changes in form slot contents to make sure we disable the form when it is stamped.
+          // the form will be enabled/disabled when the dialog is opened/closed.
+          // this allow us to bypass the form validation when it's not visible.
+          const slot = this.shadowRoot.querySelector('#form');
+          slot.addEventListener('slotchange', () => {
+            const form = this.getContentChildren('#form')[0];
+            form.disabled = true;
+          });
         }
-        this.$.dialog.toggle();
-      },
 
-      _deleteEntry: function(e) {
-        e.stopPropagation();
-        this.splice('items', e.detail.index, 1);
-        this.notifyResize();
-      },
-
-      _createEntry: function() {
-        if (!this.items) {
-          this.items = [];
-        }
-        this.notifyResize();
-        this._toggleEditDialog();
-      },
-
-      _moveItemUpward: function(e) {
-        e.stopPropagation();
-        if (e.detail.index > 0) {
-          var item = this.items[e.detail.index];
-          this.splice('items', e.detail.index, 1);
-          this.splice('items', e.detail.index - 1, 0, item);
-          this.notifyResize();
-        }
-      },
-
-      _moveItemDownward: function(e) {
-        e.stopPropagation();
-        if ((this.items.length - 1) > e.detail.index) {
-          var item = this.items[e.detail.index];
-          this.splice('items', e.detail.index, 1);
-          this.splice('items', e.detail.index + 1, 0, item);
-          this.notifyResize();
-        }
-      },
-
-      _patchOverlay: function (e) {
-        if (e.target.withBackdrop) {
-          e.target.parentNode.insertBefore(e.target.backdropElement, e.target);
-        }
-      },
-
-      fetch: function() {
-        if (this._hasPageProvider()) {
-          if (this.paginable) {
-            if (this.nxProvider.page === 1) {
-              this._reset(0);
-              this.$.scrollThreshold.clearTriggers();
+        _itemChanged(e) {
+          if (this.items) {
+            let index = e.target.index;
+            if (index === undefined) {
+              index = this.items.indexOf(e.detail.item);
             }
-            var result = this._fetchPage(this.nxProvider.page, this.nxProvider.pageSize);
-            if (result) {
-              result.then(function() {
-                this.nxProvider.page += 1;
+            if (index >= 0) {
+              let path = `items.${index}`;
+              if (e.detail.path) {
+                path += `.${e.detail.path}`;
+              }
+              this.set(path, e.detail.value);
+            }
+          }
+        }
+
+        _backupColumnsState() {
+          this.columns.forEach((col) => {
+            col.hiddenBack = col.hidden;
+          });
+        }
+
+        _bind(item, index) {
+          if (index !== undefined) {
+            return {
+              item,
+              index,
+            };
+          } else {
+            return {
+              column: item,
+            };
+          }
+        }
+
+        _isEven(index) {
+          return index % 2 === 0;
+        }
+
+        _columnsChanged(columns, oldColumns) {
+          if (oldColumns) {
+            oldColumns.forEach((column) => {
+              this.unlisten(column, 'filter-value-changed');
+            });
+          }
+
+          if (columns) {
+            columns.forEach((column) => {
+              column.table = this;
+              this.listen(column, 'filter-value-changed', '_onColumnFilterChanged');
+            });
+          }
+        }
+
+        _resizeCellContainers() {
+          // reset header width first to make the cells and scroll width to reset their widths.
+          this.$.container.style.width = '';
+
+          this.async(() => {
+            this.$.container.style.width = `${Math.min(this.scrollWidth, this.clientWidth + this.scrollLeft)}px`;
+
+            // add scrollbar width as padding
+            this.$.header.style.paddingRight = `${this.$.list.offsetWidth - this.$.list.clientWidth}px`;
+          });
+        }
+
+        _onHorizontalScroll() {
+          if (!this.isDebouncerActive('scrolling')) {
+            this.$.container.style.width = `${this.scrollWidth}px`;
+            this._debouncer = Polymer.Debouncer.debounce(
+              this._debouncer,
+              Polymer.Async.timeOut.after(1000), () => {
+                // long timeout here to prevent jerkiness with the rubberband effect on iOS especially.
+                this.$.container.style.width = `${Math.min(this.scrollWidth, this.clientWidth + this.scrollLeft)}px`;
+              },
+            );
+          }
+        }
+
+        _updateSizeForItem(event) {
+          if (event.model.get('item')) {
+            // notifyResize() doesn't do anything on iOS if the viewport size hasn't changed
+            // so calling updateSizeForItem(item) is more reliable.
+
+            // TODO: However, since we're reusing the same items array in most cases,
+            // the _collection item map inside <iron-list> gets out of sync and
+            // that breaks things like selection and updateSizeForItem.
+            // To mitigate the issue, we'll update height of every row element.
+            // Can be optimized later if needed to update only the row that has
+            // expanded or collapsed.
+            const itemSet = [];
+            for (let i = 0; i < this.$.list._physicalItems.length; i++) {
+              itemSet.push(i);
+            }
+
+            // extracted from updateSizeFromItem(item) in <iron-list>
+            this.$.list._updateMetrics(itemSet);
+            this.$.list._positionItems();
+          }
+        }
+
+        /**
+         * Expands the row details for this item, if available.
+         */
+        expandItem(item) {
+          if (this.rowDetail && this._expandedItems && !this._isExpanded(item, this._expandedItems)) {
+
+            // replacing the whole array here to simplify the observers.
+            this._expandedItems.push(item);
+            this._expandedItems = this._expandedItems.slice(0);
+          }
+        }
+
+        /**
+         * Collapses the row details for this item, if expanded.
+         */
+        collapseItem(item) {
+          if (this.rowDetail && this._expandedItems && this._isExpanded(item, this._expandedItems)) {
+            const index = this._expandedItems.indexOf(item);
+
+            // replacing the whole array here to simplify the obsevers.
+            this._expandedItems.splice(index, 1);
+            this._expandedItems = this._expandedItems.slice(0);
+          }
+        }
+
+        _isExpanded(item, items) {
+          return items && items.indexOf(item) > -1;
+        }
+
+        _isFocusable(target) {
+          if (Polymer.Settings.useNativeShadow) {
+            // https://nemisj.com/focusable/
+            // tabIndex is not reliable in IE.
+            return target.tabIndex >= 0;
+          } else {
+            // unreliable with Shadow, document.activeElement doesn't go inside
+            // the shadow root.
+            return target.contains(Polymer.dom(document.activeElement).node) ||
+                target.tagName === 'NUXEO-DATA-TABLE-CHECKBOX' || target.tagName === 'A';
+          }
+        }
+
+        /**
+         * Fired when user clicks on a item to select it. Note that this event is
+         * not fired when user clicks on a multi-selection checkbox.
+         *
+         * @event selecting-item
+         * @param {Object} detail
+         * @param {Object} detail.item item to be selected
+         */
+
+        /**
+         * Fired when user clicks on a item to deselect it. Note that this event is
+         * not fired when user clicks on a multi-selection checkbox.
+         *
+         * @event deselecting-item
+         * @param {Object} detail
+         * @param {Object} detail.item item to be deselected
+         */
+
+        /**
+         * Fired when user clicks on a item to expand it.
+         *
+         * @event expanding-item
+         * @param {Object} detail
+         * @param {Object} detail.item item to be expanded
+         */
+
+        /**
+         * Fired when user clicks on a item to collapse it.
+         *
+         * @event collapsing-item
+         * @param {Object} detail
+         * @param {Object} detail.item item to be collapsed
+         */
+
+        // we need to listen to click instead of tap because on mobile safari, the
+        // document.activeElement has not been updated (focus has not been shifted)
+        // yet at the point when tap event is being executed.
+        _onRowClick(ev) {
+          // Prevent item selection if row itself is not focused. This means that
+          // an element inside the row has been focused.
+          // Mobile devices don't move focus from body unless it's an input element that is focused, so this element
+          // will never get focused.
+          if (!this._isFocusable(Polymer.dom(ev).localTarget)) {
+            const fireEvent = function (eventName, item, defaultAction) {
+              const e = new CustomEvent(eventName, {
+                cancelable: true,
+                composed: true,
+                bubbles: true,
+                detail: { item },
+              });
+              this.dispatchEvent(e);
+              if (!e.defaultPrevented) {
+                defaultAction.call(this, item);
+              }
+            }.bind(this);
+
+            if (this.rowDetail && this.detailsEnabled) {
+              if (this._isExpanded(ev.model.item, this._expandedItems)) {
+                fireEvent('collapsing-item', ev.model.item, this.collapseItem);
+              } else {
+                fireEvent('expanding-item', ev.model.item, this.expandItem);
+              }
+            } else {
+              this.dispatchEvent(new CustomEvent('row-clicked', {
+                composed: true,
+                bubbles: true,
+                detail: { item: ev.model.item, index: ev.model.index },
+              }));
+            }
+          }
+        }
+
+        get settings() {
+          const tableSettings = {};
+          tableSettings.columns = {};
+          if (this.columns) {
+            this.columns.forEach((column, idx) => {
+              tableSettings.columns[column.field ? column.field : `col-${idx}`] = { hidden: column.hidden };
+            });
+          }
+          return tableSettings;
+        }
+
+        set settings(settings) {
+          if (settings) {
+            if (this.columns && settings.columns) {
+              this.columns.forEach(function (column, idx) {
+                this.set(
+                  `columns.${idx}.hidden`,
+                  settings.columns[column.field ? column.field : `col-${idx}`].hidden,
+                );
+              }, this);
+            }
+          }
+        }
+
+        _onCheckBoxTap(e) {
+          if (this.selectionEnabled) {
+            this.$.list.toggleSelectionForIndex(e.model.index);
+            const target = e.target || e.srcElement;
+            target.dispatchEvent(new CustomEvent('selected', {
+              composed: true,
+              bubbles: true,
+              detail: { index: e.model.index, shiftKey: e.shiftKey },
+            }));
+            this._updateFlags();
+          }
+        }
+
+        _editEntry(e) {
+          e.stopPropagation();
+          this._toggleEditDialog(e.detail.index);
+        }
+
+        _validateEntry() {
+          const dtform = this.getContentChildren('#form')[0];
+          if (dtform.validateItem()) {
+            const item = this._deepCopy(dtform.item);
+            if (dtform.index > -1) {
+              this.set(`items.${dtform.index}`, item);
+            } else {
+              this.push('items', item);
+            }
+            this.notifyResize();
+            this.$.dialog.close();
+          }
+        }
+
+        _deepCopy(obj) {
+          let cache = [];
+          const result = JSON.parse(JSON.stringify(obj, (key, value) => {
+            if (typeof value === 'object' && value !== null) {
+              if (cache.indexOf(value) !== -1) {
+                // Circular reference found, discard key
+                return;
+              }
+              // Store value in our collection
+              cache.push(value);
+            }
+            return value;
+          }));
+          // Allow GC
+          cache = null;
+          return result;
+        }
+
+        _toggleEditDialog(itemIndex) {
+          const dtform = this.getContentChildren('#form')[0];
+          if (typeof itemIndex !== 'undefined') {
+            dtform.index = itemIndex;
+            dtform.item = this._deepCopy(this.items[itemIndex]);
+          } else {
+            dtform.index = -1;
+            if ((this.items.length > 1 && typeof this.items[0] !== 'object') || this.columns.length === 1) {
+              // dirty but will work with primitive such as string, number, etc.
+              dtform.item = '';
+            } else {
+              dtform.item = {};
+            }
+          }
+          this.$.dialog.toggle();
+        }
+
+        _deleteEntry(e) {
+          e.stopPropagation();
+          this.splice('items', e.detail.index, 1);
+          this.notifyResize();
+        }
+
+        _createEntry() {
+          if (!this.items) {
+            this.items = [];
+          }
+          this.notifyResize();
+          this._toggleEditDialog();
+        }
+
+        _moveItemUpward(e) {
+          e.stopPropagation();
+          if (e.detail.index > 0) {
+            const item = this.items[e.detail.index];
+            this.splice('items', e.detail.index, 1);
+            this.splice('items', e.detail.index - 1, 0, item);
+            this.notifyResize();
+          }
+        }
+
+        _moveItemDownward(e) {
+          e.stopPropagation();
+          if ((this.items.length - 1) > e.detail.index) {
+            const item = this.items[e.detail.index];
+            this.splice('items', e.detail.index, 1);
+            this.splice('items', e.detail.index + 1, 0, item);
+            this.notifyResize();
+          }
+        }
+
+        _patchOverlay(e) {
+          if (e.target.withBackdrop) {
+            e.target.parentNode.insertBefore(e.target.backdropElement, e.target);
+          }
+        }
+
+        fetch() {
+          if (this._hasPageProvider()) {
+            if (this.paginable) {
+              if (this.nxProvider.page === 1) {
+                this._reset(0);
+                this.$.scrollThreshold.clearTriggers();
+              }
+              const result = this._fetchPage(this.nxProvider.page, this.nxProvider.pageSize);
+              if (result) {
+                result.then(() => {
+                  this.nxProvider.page += 1;
+                  this.$.scrollThreshold.clearTriggers();
+                  this.$.list.notifyResize();
+                });
+              } else {
                 this.$.scrollThreshold.clearTriggers();
                 this.$.list.notifyResize();
-              }.bind(this));
+              }
             } else {
-              this.$.scrollThreshold.clearTriggers();
-              this.$.list.notifyResize();
+              return this._fetchRange(0, this.nxProvider.pageSize, true);
             }
-          } else {
-            return this._fetchRange(0, this.nxProvider.pageSize, true);
           }
         }
-      },
 
-      _threshold: function() {
-        if (this.paginable) {
-          this.fetch();
+        _threshold() {
+          if (this.paginable) {
+            this.fetch();
+          }
         }
-      },
 
-      _scroll: function() {
-        if (!this.paginable) {
-          this._scrollChanged();
+        _scroll() {
+          if (!this.paginable) {
+            this._scrollChanged();
+          }
         }
-      },
 
-      _sort: function(e) {
-        if (this.paginable) {
-          this.nxProvider.page = 1;
+        _sort(e) {
+          if (this.paginable) {
+            this.nxProvider.page = 1;
+          }
+          this._sortDirectionChanged(e);
         }
-        this._sortDirectionChanged(e);
-      },
 
-      /* Override method from Polymer.IronValidatableBehavior. */
-      _getValidity: function() {
-        return this.required ? this.items && this.items.length > 0 : true;
-      },
-
-      draggableFilter: function(el) {
-        var row = el.closest('nuxeo-data-table-row');
-        return row && row.selected;
-      },
-
-      _formDialogOpenedChanged: function(e) {
-        var form = this.getContentChildren('#form')[0];
-        if (form) {
-          // disable form when the dialog is closed, to make sure we bypass validation when the form is not visible
-          form.disabled = !e.detail.value;
+        /* Override method from Polymer.IronValidatableBehavior. */
+        _getValidity() {
+          return this.required ? this.items && this.items.length > 0 : true;
         }
+
+        draggableFilter(el) {
+          const row = el.closest('nuxeo-data-table-row');
+          return row && row.selected;
+        }
+
+        _formDialogOpenedChanged(e) {
+          const form = this.getContentChildren('#form')[0];
+          if (form) {
+            // disable form when the dialog is closed, to make sure we bypass validation when the form is not visible
+            form.disabled = !e.detail.value;
+          }
+        }
+
       }
-    });
+
+      customElements.define(DataTable.is, DataTable);
+      Nuxeo.DataTable = DataTable;
+    }
   </script>
 </dom-module>

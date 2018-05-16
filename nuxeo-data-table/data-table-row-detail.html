@@ -1,3 +1,4 @@
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="data-table-templatizer-behavior.html">
 
 <!-- Part of `nuxeo-data-table` -->
@@ -13,39 +14,38 @@
     <slot></slot>
   </template>
   <script>
-    Polymer({
-      is: 'nuxeo-data-table-row-detail',
+    {
+      class DataTableRowDetail extends Polymer.mixinBehaviors([saulis.DataTableTemplatizerBehavior], Nuxeo.Element) {
 
-      behaviors: [
-        saulis.DataTableTemplatizerBehavior
-      ],
-
-      properties: {
-        beforeBind: Object
-      },
-
-      observers: ['_beforeBind(beforeBind, item.*, index, selected, expanded)'],
-
-      attached: function() {
-        if (!Polymer.Settings.useNativeShadow) {
-          // details is supposed to be placed outside the local dom of iron-data-table.
-          Polymer.StyleTransformer.dom(this, 'iron-data-table', this._scopeCssViaAttr, true);
-          if (this.domHost) {
-            Polymer.StyleTransformer.dom(this, this.domHost.tagName.toLowerCase(), this._scopeCssViaAttr, false);
-          }
+        static get is() {
+          return 'nuxeo-data-table-row-detail';
         }
-      },
 
-      _beforeBind: function(beforeBind, item, index, selected, expanded) {
-        var data = {
-          index: index,
-          item: item.base,
-          expanded: expanded,
-          selected: selected
-        };
+        static get properties() {
+          return {
+            beforeBind: Object,
+          };
+        }
 
-        beforeBind(data, this);
+        static get observers() {
+          return [
+            '_beforeBind(beforeBind, item.*, index, selected, expanded)',
+          ];
+        }
+
+        _beforeBind(beforeBind, item, index, selected, expanded) {
+          beforeBind({
+            index,
+            item: item.base,
+            expanded,
+            selected,
+          }, this);
+        }
+
       }
-    });
+
+      customElements.define(DataTableRowDetail.is, DataTableRowDetail);
+      Nuxeo.DataTableRowDetail = DataTableRowDetail;
+    }
   </script>
 </dom-module>

@@ -1,7 +1,7 @@
 <link rel="import" href="../../polymer/polymer.html">
 
 <script>
-  var saulis = window.saulis || {};
+  const saulis = window.saulis || {};
 
   /** @polymerBehavior */
   saulis.DataTableTemplatizerBehaviorImpl = {
@@ -13,22 +13,22 @@
       table: Object,
       template: Object,
 
-      //singleton
+      // singleton
       _instances: {
         type: Array,
-        value: []
+        value: [],
       },
 
-      //singleton
+      // singleton
       _forwardedParentProps: {
         type: Object,
-        value: {}
+        value: {},
       },
 
       _instance: {
         type: Object,
-        computed: '_templatize(template)'
-      }
+        computed: '_templatize(template)',
+      },
     },
 
     observers: [
@@ -36,22 +36,22 @@
       '_indexChanged(_instance, index)',
       '_itemChanged(_instance, item)',
       '_itemPathChanged(_instance, item.*)',
-      '_selectedChanged(_instance, selected)'
+      '_selectedChanged(_instance, selected)',
     ],
 
-    created: function() {
+    created() {
       this._instanceProps = {
         column: true,
         expanded: true,
         index: true,
         item: true,
-        selected: true
+        selected: true,
       };
     },
 
-    _templatize: function(template) {
+    _templatize(template) {
 
-      if(!template) {
+      if (!template) {
         return;
       }
 
@@ -61,17 +61,19 @@
 
       // fix _rootDataHost to the context where template has been defined
       if (template._rootDataHost) {
-        this._getRootDataHost = function() { return template._rootDataHost; };
+        this._getRootDataHost = function () {
+          return template._rootDataHost;
+        };
       }
 
-      var instance = this.stamp({});
+      const instance = this.stamp({});
 
 
       // initializing new template instance with previously forwarded parent props.
       // could be done with observers, but this is simpler.
-      for (var key in this._forwardedParentProps) {
+      Object.keys(this._forwardedParentProps).forEach((key) => {
         instance[key] = this._forwardedParentProps[key];
-      }
+      });
       this._instances.push(instance);
 
       Polymer.dom(this).insertBefore(instance.root, Polymer.dom(this).firstElementChild);
@@ -79,7 +81,7 @@
       return instance;
     },
 
-    _expandedChanged: function(instance, expanded) {
+    _expandedChanged(instance, expanded) {
       // store original expanded value to detect when value change has
       // originated from within the template.
       this._expanded = expanded;
@@ -89,26 +91,28 @@
       }
     },
 
-    _indexChanged: function(instance, index) {
+    _indexChanged(instance, index) {
       if (instance) {
         instance.index = index;
       }
     },
 
-    _itemChanged: function(instance, item) {
+    _itemChanged(instance, item) {
       if (instance) {
         instance.item = item;
       }
     },
 
-    _itemPathChanged: function(instance, item) {
+    _itemPathChanged(instance, item) {
       // TODO: hack to avoid: https://github.com/Polymer/polymer/issues/3307
       this._parentProps = this._parentProps || {};
 
-      instance &&  instance.notifyPath(item.path, item.value);       
+      if (instance) {
+        instance.notifyPath(item.path, item.value);
+      }
     },
 
-    _selectedChanged: function(instance, selected) {
+    _selectedChanged(instance, selected) {
       // store original selected value to detect when value change has
       // originated from within the template.
       this._selected = selected;
@@ -119,19 +123,19 @@
     },
 
     /** templatizer */
-    _forwardHostPropV2: function(prop, value) {
+    _forwardHostPropV2(prop, value) {
       // store props to initialize new instances.
       this._forwardedParentProps[prop] = value;
 
-      //TODO: Bug in Polymer, seems to two-way bind any parent property only
-      //to the last template instance created. We need to push the property
-      //to all instances manually.
-      this._instances.forEach(function(inst) {
+      // TODO: Bug in Polymer, seems to two-way bind any parent property only
+      // to the last template instance created. We need to push the property
+      // to all instances manually.
+      this._instances.forEach((inst) => {
         inst[prop] = value;
       });
     },
 
-    _notifyInstancePropV2: function(inst, prop, value) {
+    _notifyInstancePropV2(inst, prop, value) {
       if (prop === 'expanded' && inst.item && this._expanded !== value) {
         if (value) {
           this.table.expandItem(inst.item);
@@ -149,19 +153,18 @@
       }
     },
 
-    _forwardInstancePath: function(inst, path, value) {
+    _forwardInstancePath(inst, path, value) {
       if (path.indexOf('item') === 0) {
         // instance.notifyPath above will call _forwardInstancePath recursively,
         // so need to debounce to avoid firing the same event multiple times.
-        this.table.debounce('item-changed', function() {
+        this.table.debounce('item-changed', () => {
           // stripping 'item.' from path.
-          this.table.fire('item-changed', {item: inst.item, path: path.substring(5), value: value});
-        }.bind(this));
+          this.table.fire('item-changed', { item: inst.item, path: path.substring(5), value });
+        });
       }
-    }
+    },
   };
 
   /** @polymerBehavior */
-  saulis.DataTableTemplatizerBehavior =
-    [Polymer.Templatizer, saulis.DataTableTemplatizerBehaviorImpl];
+  saulis.DataTableTemplatizerBehavior = [Polymer.Templatizer, saulis.DataTableTemplatizerBehaviorImpl];
 </script>

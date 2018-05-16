@@ -1,3 +1,4 @@
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-input/paper-input.html">
 
 <!-- Part of `nuxeo-data-table` -->
@@ -16,26 +17,37 @@
     <paper-input no-label-float label="[[label]]" value="[[value]]" on-value-changed="_valueChanged"></paper-input>
   </template>
   <script>
-    Polymer({
-      is: 'nuxeo-data-table-column-filter',
+    {
+      class DataTableColumnFilter extends Nuxeo.Element {
 
-      properties: {
-        label: String,
-        value: {
-          type: String,
-          notify: true
-        },
-        hidden: Boolean
-      },
+        static get is() {
+          return 'nuxeo-data-table-column-filter';
+        }
 
-      _valueChanged: function(e) {
-        // store value in a variable, referring to e.detail.value inside the debounce
-        // function results in weird outcomes. event object might be reused by Polymer?
-        var value = e.detail.value;
-        this.debounce('value', function() {
-          this.value = value;
-        }.bind(this), 250);
+        static get properties() {
+          return {
+            label: String,
+            value: {
+              type: String,
+              notify: true,
+            },
+            hidden: Boolean,
+          };
+        }
+
+        _valueChanged(e) {
+          // store value in a variable, referring to e.detail.value inside the debounce
+          // function results in weird outcomes. event object might be reused by Polymer?
+          const value = e.detail.value;
+          this._debouncer = Polymer.Debouncer.debounce(this._debouncer, Polymer.Async.timeOut.after(250), () => {
+            this.value = value;
+          });
+        }
+
       }
-    });
+
+      customElements.define(DataTableColumnFilter.is, DataTableColumnFilter);
+      Nuxeo.DataTableColumnFilter = DataTableColumnFilter;
+    }
   </script>
 </dom-module>

@@ -18,8 +18,9 @@ limitations under the License.
 <link rel="import" href="../polymer/polymer.html">
 
 <script>
+  /* eslint-disable no-var, no-use-before-define */
   var Nuxeo = Nuxeo || {};
-  (function () {
+  (() => {
 
     /**
     * @polymerBehavior Nuxeo.PageProviderDisplayBehavior
@@ -29,56 +30,56 @@ limitations under the License.
       properties: {
 
         nxProvider: {
-          type: HTMLElement
+          type: HTMLElement,
         },
 
         size: {
           type: Number,
           value: 0,
-          notify: true
+          notify: true,
         },
 
         emptyLabel: {
           type: String,
-          value : 'No result',
-          observer: '_observeEmptyLabel'
+          value: 'No result',
+          observer: '_observeEmptyLabel',
         },
 
         emptyLabelWhenFiltered: {
           type: String,
-          value : 'No result'
+          value: 'No result',
         },
 
         _computedEmptyLabel: {
-          type: String
+          type: String,
         },
 
         _isEmpty: {
           type: Boolean,
-          value: true
+          value: true,
         },
 
         _isSelectAllChecked: {
           type: Boolean,
           value: false,
-          notify: true
+          notify: true,
         },
 
         _isSelectAllIndeterminate: {
           type: Boolean,
           value: false,
-          notify: true
+          notify: true,
         },
 
         _isSelectionEmpty: {
           type: Boolean,
           value: true,
-          notify: true
+          notify: true,
         },
 
         multiSelection: {
           type: Boolean,
-          value: false
+          value: false,
         },
 
         /**
@@ -87,7 +88,7 @@ limitations under the License.
         filters: {
           type: Array,
           notify: true,
-          value: []
+          value: [],
         },
 
         /**
@@ -96,15 +97,15 @@ limitations under the License.
         sortOrder: {
           type: Array,
           notify: true,
-          value: function() {
+          value() {
             return [];
-          }
+          },
         },
 
         _ppSort: {
           type: Object,
           value: {},
-          notify: true
+          notify: true,
         },
 
         /**
@@ -115,28 +116,28 @@ limitations under the License.
           reflectToAttribute: true,
           notify: true,
           readOnly: true,
-          value: false
+          value: false,
         },
 
         selectionEnabled: {
           type: Boolean,
-          value: false
+          value: false,
         },
 
         selectedItems: {
           type: Object,
-          notify: true
+          notify: true,
         },
 
         selectedItem: {
           type: Object,
-          notify: true
+          notify: true,
         },
 
         items: {
           type: Array,
           value: [],
-          notify: true
+          notify: true,
         },
 
         /**
@@ -144,55 +145,55 @@ limitations under the License.
          */
         maxItems: {
           type: Number,
-          value: 10000
+          value: 10000,
         },
 
         selectOnTap: {
           type: Boolean,
-          value: false
+          value: false,
         },
 
         as: {
           type: String,
-          value: 'item'
+          value: 'item',
         },
 
         displayQuickFilters: {
           type: Boolean,
-          value: false
+          value: false,
         },
 
         quickFilters: {
           type: Array,
-          notify: true
+          notify: true,
         },
 
         scrollThrottle: {
           type: Number,
-          value: 60
+          value: 60,
         },
 
-        _lastSelectedIndex: Number
+        _lastSelectedIndex: Number,
       },
 
       observers: [
         '_updateFlags(size, loading)',
         '_nxProviderChanged(nxProvider)',
         '_selectionEnabledChanged(selectionEnabled, selectOnTap)',
-        '_itemsChanged(items.*)'
+        '_itemsChanged(items.*)',
       ],
 
       listeners: {
         'column-filter-changed': '_onColumnFilterChanged',
-        'selected': '_selected'
+        selected: '_selected',
       },
 
-      _nxProviderChanged: function(nxProvider) {
+      _nxProviderChanged(nxProvider) {
         if (typeof nxProvider === 'string') {
           this.nxProvider = this.__dataHost ? this.__dataHost.$[nxProvider] :
-            Polymer.dom(this.ownerDocument).querySelector('#' + nxProvider);
+            Polymer.dom(this.ownerDocument).querySelector(`#${nxProvider}`);
           if (this.nxProvider === null) {
-            this.nxProvider = Polymer.dom(this).parentNode.querySelector('#' + nxProvider);
+            this.nxProvider = Polymer.dom(this).parentNode.querySelector(`#${nxProvider}`);
           }
         } else if (nxProvider) {
           this._pageSize = this.nxProvider.pageSize;
@@ -200,49 +201,47 @@ limitations under the License.
         }
       },
 
-      _hasPageProvider: function() {
+      _hasPageProvider() {
         return this.nxProvider && typeof this.nxProvider !== 'string';
       },
 
-      _resetResults: function() {
+      _resetResults() {
         if (this._hasPageProvider()) {
           this._reset(0);
         }
       },
 
-      _updateResults: function() {
+      _updateResults() {
         if (this._hasPageProvider()) {
           this.size = this.items.length;
         }
       },
 
-      _itemsChanged: function() {
+      _itemsChanged() {
         this._isEmpty = !(this.items && this.items.length > 0);
       },
 
-      _selected: function(e) {
-        var index = e.detail.index;
+      _selected(e) {
+        const index = e.detail.index;
         if (typeof index === 'number') {
           if (e.detail.shiftKey && typeof this._lastSelectedIndex === 'number') {
 
-            // prevent selecting an item not loaded yet
+          // prevent selecting an item not loaded yet
             if (!this.items[index] || !this.items[index].uid) {
               this.deselectIndex(index);
             }
 
-            var last = this._lastSelectedIndex;
-            var start = index > last ? last : index;
-            var end = index > last ? index : last;
+            const last = this._lastSelectedIndex;
+            const start = index > last ? last : index;
+            const end = index > last ? index : last;
 
             // check if all items in the range are loaded
-            var valid = this.items.slice(start, end).every(function(item) {
-              return item && item.uid;
-            }.bind(this));
+            const valid = this.items.slice(start, end).every((item) => item && item.uid);
 
             // select items in range
             if (valid) {
-              for (var i = start; i < end; i++) {
-                var item = this.items[i];
+              for (let i = start; i < end; i++) {
+                const item = this.items[i];
                 if (item && item.uid) {
                   this.selectItem(item);
                 }
@@ -253,60 +252,60 @@ limitations under the License.
         }
       },
 
-      selectItem: function(item) {
+      selectItem(item) {
         if (this.selectionEnabled) {
           this.$.list.selectItem(item);
           this._updateFlags();
         }
       },
 
-      selectIndex: function(index) {
+      selectIndex(index) {
         if (this.selectionEnabled) {
           this.$.list.selectIndex(index);
           this._updateFlags();
         }
       },
 
-      selectItems: function(items) {
+      selectItems(items) {
         if (this.selectionEnabled && items && items.length > 0) {
-          items.forEach(function(item) {
+          items.forEach(function (item) {
             this.selectItem(item);
           }.bind(this.$.list));
           this._updateFlags();
         }
       },
 
-      deselectItem: function(item) {
+      deselectItem(item) {
         if (this.selectionEnabled) {
           this.$.list.deselectItem(item);
           this._updateFlags();
         }
       },
 
-      deselectIndex: function(index) {
+      deselectIndex(index) {
         if (this.selectionEnabled) {
           this.$.list.deselectIndex(index);
           this._updateFlags();
         }
       },
 
-      selectAll: function() {
-        this.items.forEach(function(item) {
+      selectAll() {
+        this.items.forEach(function (item) {
           this.selectItem(item);
         }.bind(this.$.list));
         this._updateFlags();
       },
 
-      clearSelection: function() {
+      clearSelection() {
         this.$.list.clearSelection();
         this._updateFlags();
       },
 
-      _isSelected: function(item) {
+      _isSelected(item) {
         return !!(this.selectedItems && this.selectedItems.length && this.selectedItems.indexOf(item) > -1);
       },
 
-      _toggleSelectAll: function() {
+      _toggleSelectAll() {
         if (this._isSelectAllChecked) {
           this.clearSelection();
         } else {
@@ -314,7 +313,7 @@ limitations under the License.
         }
       },
 
-      _selectionEnabledChanged: function() {
+      _selectionEnabledChanged() {
         this.$.list.selectionEnabled = this.selectionEnabled;
         this.$.list.multiSelection = this.multiSelection;
         this.$.list.unlisten.call(this.$.list, this.$.list, 'selected', '_selectionHandler');
@@ -324,13 +323,13 @@ limitations under the License.
         }
       },
 
-      _sortDirectionChanged: function(e) {
+      _sortDirectionChanged(e) {
         if (this._hasPageProvider()) {
-          var notFound = true;
-          for (var i = 0; i < this.sortOrder.length; i++) {
+          let notFound = true;
+          for (let i = 0; i < this.sortOrder.length; i++) {
             if (this.sortOrder[i].path === e.detail.path) {
               if (e.detail.direction) {
-                this.set('sortOrder.' + i + '.direction', e.detail.direction);
+                this.set(`sortOrder.${i}.direction`, e.detail.direction);
               } else {
                 this.splice('sortOrder', i, 1);
               }
@@ -341,14 +340,14 @@ limitations under the License.
           if (notFound) {
             this.push('sortOrder', {
               path: e.detail.path,
-              direction: e.detail.direction
+              direction: e.detail.direction,
             });
           }
 
           // TODO make it simpler
-          var tmpSort = {};
+          const tmpSort = {};
           if (this.sortOrder && this.sortOrder.length > 0) {
-            this.sortOrder.forEach(function(sortItem) {
+            this.sortOrder.forEach((sortItem) => {
               tmpSort[sortItem.path] = sortItem.direction;
             });
           }
@@ -362,15 +361,15 @@ limitations under the License.
         }
       },
 
-      _onColumnFilterChanged: function(e) {
+      _onColumnFilterChanged(e) {
         if (this._hasPageProvider()) {
-          var notFound = true;
-          for (var i = 0; i < this.filters.length; i++) {
+          let notFound = true;
+          for (let i = 0; i < this.filters.length; i++) {
             if (this.filters[i].path === e.detail.filterBy) {
               if (e.detail.value.length === 0) {
                 this.splice('filters', i, 1);
               } else {
-                this.set('filters.' + i + '.value', e.detail.value);
+                this.set(`filters.${i}.value`, e.detail.value);
               }
               notFound = false;
               break;
@@ -381,7 +380,7 @@ limitations under the License.
             this.push('filters', {
               path: e.detail.filterBy,
               value: e.detail.value,
-              name: e.detail.name
+              name: e.detail.name,
             });
           }
 
@@ -392,50 +391,48 @@ limitations under the License.
           if (this.nxProvider.params[e.detail.filterBy] && e.detail.value.length === 0) {
             delete this.nxProvider.params[e.detail.filterBy];
             this.fetch();
-          } else {
-            if (e.detail.value.length > 0) {
-              if (e.detail.filterBy === 'title' || e.detail.filterBy === 'ecm_fulltext') {
-                this.nxProvider.params[e.detail.filterBy] = e.detail.value + '*';
-              } else {
-                this.nxProvider.params[e.detail.filterBy] = e.detail.value;
-              }
-              this.fetch();
+          } else if (e.detail.value.length > 0) {
+            if (e.detail.filterBy === 'title' || e.detail.filterBy === 'ecm_fulltext') {
+              this.nxProvider.params[e.detail.filterBy] = `${e.detail.value}*`;
+            } else {
+              this.nxProvider.params[e.detail.filterBy] = e.detail.value;
             }
+            this.fetch();
           }
         }
       },
 
-      scrollToItem: function(item) {
+      scrollToItem(item) {
         this.$.list.scrollToItem(item);
       },
 
-      scrollToIndex: function(index) {
+      scrollToIndex(index) {
         this.$.list.scrollToIndex(Math.min(Math.max(index, 0), this.items.length - 1));
       },
 
-      focusOnIndexIfNotVisible: function(index) {
+      focusOnIndexIfNotVisible(index) {
         if (!this.$.list._isIndexVisible(index)) {
           this.$.list.scrollToIndex(index);
         }
       },
 
-      _observeEmptyLabel: function() {
+      _observeEmptyLabel() {
         this._computedEmptyLabel = this.emptyLabel;
       },
 
-      _quickFilterChanged: function() {
+      _quickFilterChanged() {
         this.fetch();
       },
 
-      _updateFlags: function() {
+      _updateFlags() {
         if (!this.loading) {
           this.size = this.items && this.items.length > 0 ? this.items.length : 0;
           this._isSelectAllIndeterminate = this.selectedItems
-            && this.selectedItems.length > 0
-            && this.selectedItems.length < this.size;
+          && this.selectedItems.length > 0
+          && this.selectedItems.length < this.size;
           this._isSelectAllChecked = this.selectedItems
-            && this.selectedItems.length > 0
-            && this.selectedItems.length === this.size;
+          && this.selectedItems.length > 0
+          && this.selectedItems.length === this.size;
           this._isEmpty = this.size === 0;
           this._computedEmptyLabel = (this.filters && this.filters.length > 0) ?
             this.emptyLabelWhenFiltered : this.emptyLabel;
@@ -446,18 +443,18 @@ limitations under the License.
        * This function can be overridden by elements that includes this behavior.
        * That allows to use different items array initialization.
        */
-      reset: function(size) {
+      reset(size) {
         this._reset(size);
       },
 
-      _reset: function(size) {
+      _reset(size) {
         if (this.maxItems && size && size > this.maxItems) {
           size = this.maxItems;
         }
 
         if (typeof size === 'number' && size > 0) {
-          var arr = new Array(size);
-          for (var i = 0; i < arr.length; i++) {
+          const arr = new Array(size);
+          for (let i = 0; i < arr.length; i++) {
             arr[i] = {};
           }
           this.set('items', arr);
@@ -474,7 +471,7 @@ limitations under the License.
        * That allows to use either range OR page based fetch APIs.
        * Default behavior is range base fetching.
        */
-      fetch: function() {
+      fetch() {
         if (this._hasPageProvider()) {
           return this._fetchRange(0, this._pageSize, true);
         }
@@ -486,7 +483,7 @@ limitations under the License.
        * @param page Page index to fetch
        * @param pageSize Number of results per page
        */
-      _fetchPage: function(page, pageSize) {
+      _fetchPage(page, pageSize) {
         if (this._hasPageProvider()) {
           if (page) {
             this.nxProvider.page = page;
@@ -498,12 +495,12 @@ limitations under the License.
             this.nxProvider.pageSize = pageSize;
           }
           this.nxProvider.offset = 0;
-          return this.nxProvider.fetch().then(function (response) {
-            for (var i = 0; i < response.entries.length; i++) {
+          return this.nxProvider.fetch().then((response) => {
+            for (let i = 0; i < response.entries.length; i++) {
               this.push('items', response.entries[i]);
             }
             return response;
-          }.bind(this));
+          });
         }
       },
 
@@ -514,7 +511,7 @@ limitations under the License.
        * @param lastIndex Last index to fetch
        * @param clear Clear items array
        */
-      _fetchRange: function(firstIndex, lastIndex, clear) {
+      _fetchRange(firstIndex, lastIndex, clear) {
         if (this._hasPageProvider()) {
 
           if (!firstIndex && !lastIndex && !clear) {
@@ -532,13 +529,13 @@ limitations under the License.
           this.nxProvider.offset = firstIndex;
           this.nxProvider.page = 1;
           this.nxProvider.pageSize = (lastIndex - firstIndex) + 1;
-          return this.nxProvider.fetch().then(function(response) {
+          return this.nxProvider.fetch().then((response) => {
             if (!response) {
               return;
             }
 
             // get results count, and reset the array if it differs from current array length
-            var count = response.currentPageSize;
+            let count = response.currentPageSize;
             if (response.resultsCountLimit === 0) {
               if (response.resultsCount > 0) {
                 count = response.resultsCount;
@@ -558,12 +555,12 @@ limitations under the License.
             }
 
             // fill items range based on response
-            var entryIndex = 0;
-            for (var i = firstIndex; i <= lastIndex; i++) {
+            let entryIndex = 0;
+            for (let i = firstIndex; i <= lastIndex; i++) {
               if (entryIndex < response.entries.length) {
-                var isSelected = this._isSelected(this.items[i]);
+                const isSelected = this._isSelected(this.items[i]);
 
-                this.set('items.' + i, response.entries[entryIndex++]);
+                this.set(`items.${i}`, response.entries[entryIndex++]);
 
                 if (isSelected) {
                   this.selectIndex(i);
@@ -575,22 +572,21 @@ limitations under the License.
             this.quickFilters = this.nxProvider.quickFilters;
 
             // check if there is any active quick filter
-            var hasActiveQuickFilters = this.quickFilters ? Object.keys(this.quickFilters).some(function(k) {
-              return this.quickFilters[k].active;
-            }.bind(this)) : false;
+            const hasActiveQuickFilters = this.quickFilters ?
+              Object.keys(this.quickFilters).some((k) => this.quickFilters[k].active) : false;
 
             // update buckets array based on provider's sort property
-            var buckets = [];
+            let buckets = [];
             if (response.aggregations && !hasActiveQuickFilters) {
-              var providerSort = this.nxProvider.sort;
+              const providerSort = this.nxProvider.sort;
               if (providerSort && Object.keys(providerSort).length === 1) {
-                var providerField = Object.keys(providerSort)[0];
-                var providerOrder = providerSort[providerField];
-                Object.keys(response.aggregations).map(function(key) {
-                  var aggregation = response.aggregations[key];
+                const providerField = Object.keys(providerSort)[0];
+                const providerOrder = providerSort[providerField];
+                Object.keys(response.aggregations).forEach((key) => {
+                  const aggregation = response.aggregations[key];
                   if (aggregation.field === providerField && aggregation.buckets.length >= buckets.length &&
-                    aggregation.properties && aggregation.properties.order) {
-                    var order = aggregation.properties.order.split(' ');
+                      aggregation.properties && aggregation.properties.order) {
+                    const order = aggregation.properties.order.split(' ');
                     if (order.length > 0 && order[0] === 'key') {
                       buckets = aggregation.buckets;
                     }
@@ -598,26 +594,27 @@ limitations under the License.
                       buckets.reverse();
                     }
                   }
-                }.bind(this));
+                });
               }
             }
             this.set('buckets', buckets);
 
             this.fire('nuxeo-page-loaded');
 
-          }.bind(this));
+          });
         }
       },
 
-      _scrollChanged: function() {
-        this.debounce('debounce-scroll-changed', function() {
-          this._fetchRange(this.$.list.firstVisibleIndex, this.$.list.lastVisibleIndex);
-        }.bind(this), this.scrollThrottle > 0 ? this.scrollThrottle : 1);
+      _scrollChanged() {
+        this._debouncer = Polymer.Debouncer.debounce(
+          this._debouncer, Polymer.Async.timeOut.after(this.scrollThrottle > 0 ? this.scrollThrottle : 1),
+          () => this._fetchRange(this.$.list.firstVisibleIndex, this.$.list.lastVisibleIndex),
+        );
       },
 
-      modelForElement: function(el) {
+      modelForElement(el) {
         return this.$.list.modelForElement(el);
-      }
+      },
 
     };
   })();

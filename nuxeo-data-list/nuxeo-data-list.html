@@ -15,19 +15,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-list/iron-list.html">
-<link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
 <link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../../paper-styles/paper-styles-classes.html">
-
-<link rel="import" href="../widgets/nuxeo-sort-select.html">
-<link rel="import" href="../nuxeo-page-provider-display-behavior.html">
-<link rel="import" href="../nuxeo-draggable-list-behavior.html">
-<link rel="import" href="../nuxeo-quick-filters/nuxeo-quick-filters.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../nuxeo-aggregation/nuxeo-aggregation-navigation.html">
+<link rel="import" href="../nuxeo-draggable-list-behavior.html">
+<link rel="import" href="../nuxeo-page-provider-display-behavior.html">
+<link rel="import" href="../nuxeo-quick-filters/nuxeo-quick-filters.html">
+<link rel="import" href="../widgets/nuxeo-sort-select.html">
 
 <!--
 An element to display page provider results as a list with infinite scrolling.
@@ -143,29 +144,37 @@ Example:
 
       <div class="header">
 
-        <template is="dom-if" if="[[displaySort]]">
-          <nuxeo-sort-select label="[[sortLabel]]" options="[[sortOptions]]" selected="{{sortSelected}}"
-                             on-sort-order-changed="_refresh"></nuxeo-sort-select>
-        </template>
+        <dom-if if="[[displaySort]]">
+          <template>
+            <nuxeo-sort-select label="[[sortLabel]]" options="[[sortOptions]]" selected="{{sortSelected}}"
+                               on-sort-order-changed="_refresh"></nuxeo-sort-select>
+          </template>
+        </dom-if>
 
-        <template is="dom-if" if="[[displayQuickFilters]]">
-          <nuxeo-quick-filters quick-filters="{{quickFilters}}" on-quick-filters-changed="_quickFilterChanged">
-          </nuxeo-quick-filters>
-        </template>
+        <dom-if if="[[displayQuickFilters]]">
+          <template>
+            <nuxeo-quick-filters quick-filters="{{quickFilters}}" on-quick-filters-changed="_quickFilterChanged">
+            </nuxeo-quick-filters>
+          </template>
+        </dom-if>
 
         <div id="filters" class="filters">
-          <template is="dom-repeat" items="[[filters]]" as="filter">
-            <span class="tag filter">
-              [[filter.name]]: [[filter.value]]
-              <iron-icon icon="nuxeo:remove" class="remove" on-tap="_removeFilter"></iron-icon>
-            </span>
-          </template>
+          <dom-repeat items="[[filters]]" as="filter">
+            <template>
+              <span class="tag filter">
+                [[filter.name]]: [[filter.value]]
+                <iron-icon icon="nuxeo:remove" class="remove" on-click="_removeFilter"></iron-icon>
+              </span>
+            </template>
+          </dom-repeat>
         </div>
       </div>
 
-      <template is="dom-if" if="[[_isEmpty]]">
-        <div class="emptyResult">[[_computedEmptyLabel]]</div>
-      </template>
+      <dom-if if="[[_isEmpty]]">
+        <template>
+          <div class="emptyResult">[[_computedEmptyLabel]]</div>
+        </template>
+      </dom-if>
 
       <iron-list id="list" items="[[items]]" as="[[as]]"
                  selection-enabled selected-item="{{selectedItem}}" selected-items="{{selectedItems}}"
@@ -173,9 +182,11 @@ Example:
         <slot></slot>
       </iron-list>
 
-      <template is="dom-if" if="[[displayNavigation]]">
-        <nuxeo-aggregation-navigation buckets="[[buckets]]" on-scroll-to="_onScrollTo"></nuxeo-aggregation-navigation>
-      </template>
+      <dom-if if="[[displayNavigation]]">
+        <template>
+          <nuxeo-aggregation-navigation buckets="[[buckets]]" on-scroll-to="_onScrollTo"></nuxeo-aggregation-navigation>
+        </template>
+      </dom-if>
 
     </div>
 
@@ -184,132 +195,145 @@ Example:
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-data-list',
+    {
+      class DataList
+        extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior, Nuxeo.PageProviderDisplayBehavior,
+          Nuxeo.DraggableListBehavior], Nuxeo.Element) {
 
-      behaviors: [
-        Polymer.IronResizableBehavior,
-        Nuxeo.PageProviderDisplayBehavior,
-        Nuxeo.DraggableListBehavior
-      ],
-
-      properties: {
-        multiSelection: {
-          type: Boolean,
-          value: false
-        },
-
-        selectOnTap: {
-          type: Boolean,
-          value: false
-        },
-
-        displayNavigation: {
-          type: Boolean,
-          value: false
-        },
-
-        displaySort: {
-          type: Boolean,
-          value: false
-        },
-
-        sortLabel: {
-          type: String,
-          value: ''
-        },
-
-        sortSelected: {
-          type: Object,
-          observer: '_sortSelectedChanged'
-        },
-
-        sortOptions: {
-          type: Array,
-          value: []
+        static get is() {
+          return 'nuxeo-data-list';
         }
-      },
 
-      ready: function() {
-        // keyBindings don't allow registering 'down' key
-        // https://github.com/PolymerElements/iron-list/issues/236
-        this.listen(this.$.list, 'keydown', '_keydown');
-      },
+        static get properties() {
+          return {
+            multiSelection: {
+              type: Boolean,
+              value: false,
+            },
 
-      _keydown: function(e) {
-        switch (e.key) {
-          case 'ArrowUp':
-          case 'Up':
-            this._select(-1, 1);
-            break;
-          case 'k':
-            this._select(-1, 0);
-            break;
-          case 'ArrowDown':
-          case 'Down':
-            this._select(1, -1);
-            break;
-          case 'j':
-            this._select(1, 0);
-            break;
+            selectOnTap: {
+              type: Boolean,
+              value: false,
+            },
+
+            displayNavigation: {
+              type: Boolean,
+              value: false,
+            },
+
+            displaySort: {
+              type: Boolean,
+              value: false,
+            },
+
+            sortLabel: {
+              type: String,
+              value: '',
+            },
+
+            sortSelected: {
+              type: Object,
+              observer: '_sortSelectedChanged',
+            },
+
+            sortOptions: {
+              type: Array,
+              value: [],
+            },
+          };
         }
-      },
 
-      _select: function(indexOffset, focusOffset) {
-        var index = this._selectedItemIndex() + indexOffset;
-        if (index >= 0 && index < this.$.list.items.length) {
-          this.$.list.selectIndex(index);
-          this.$.list.focusItem(index + focusOffset);
+        ready() {
+          super.ready();
+          // keyBindings don't allow registering 'down' key
+          // https://github.com/PolymerElements/iron-list/issues/236
+          this.listen(this.$.list, 'keydown', '_keydown');
         }
-      },
 
-      selectNext: function() {
-        this._select(1, 0);
-      },
-
-      selectPrevious: function() {
-        this._select(-1, 0);
-      },
-
-      _selectedItemIndex: function() {
-        return this.selectedItem ? this.$.list.items.indexOf(this.selectedItem) : 0;
-      },
-
-      _removeFilter: function(e) {
-        this.fire('column-filter-changed', {value: '', filterBy: e.model.filter.path});
-      },
-
-      _onScrollTo: function(e) {
-        this.scrollToIndex(e.detail.index);
-      },
-
-      _refresh: function() {
-        if (this.sortSelected && this._hasPageProvider()) {
-          var sort = {};
-          sort[this.sortSelected.field] = this.sortSelected.order;
-          this.nxProvider.sort = sort;
-          if (this.visible) {
-            this.fetch();
+        _keydown(e) {
+          switch (e.key) {
+            case 'ArrowUp':
+            case 'Up':
+              this._select(-1, 1);
+              break;
+            case 'k':
+              this._select(-1, 0);
+              break;
+            case 'ArrowDown':
+            case 'Down':
+              this._select(1, -1);
+              break;
+            case 'j':
+              this._select(1, 0);
+              break;
+            default:
+              // do nothing
           }
         }
-      },
 
-      _sortSelectedChanged: function(newSort, oldSort) {
-        // do not trigger fetch results when sort options are being initialized
-        if (newSort && oldSort) {
-          this._refresh();
+        _select(indexOffset, focusOffset) {
+          const index = this._selectedItemIndex() + indexOffset;
+          if (index >= 0 && index < this.$.list.items.length) {
+            this.$.list.selectIndex(index);
+            this.$.list.focusItem(index + focusOffset);
+          }
         }
-      },
 
-      draggableFilter: function(el) {
-        return el.selected;
-      },
+        selectNext() {
+          this._select(1, 0);
+        }
 
-      get visible() {
-        return Boolean(this.offsetWidth || this.offsetHeight);
+        selectPrevious() {
+          this._select(-1, 0);
+        }
+
+        _selectedItemIndex() {
+          return this.selectedItem ? this.$.list.items.indexOf(this.selectedItem) : 0;
+        }
+
+        _removeFilter(e) {
+          this.dispatchEvent(new CustomEvent('column-filter-changed', {
+            composed: true,
+            bubbles: true,
+            detail: { value: '', filterBy: e.model.filter.path },
+          }));
+        }
+
+        _onScrollTo(e) {
+          this.scrollToIndex(e.detail.index);
+        }
+
+        _refresh() {
+          if (this.sortSelected && this._hasPageProvider()) {
+            const sort = {};
+            sort[this.sortSelected.field] = this.sortSelected.order;
+            this.nxProvider.sort = sort;
+            if (this.visible) {
+              this.fetch();
+            }
+          }
+        }
+
+        _sortSelectedChanged(newSort, oldSort) {
+          // do not trigger fetch results when sort options are being initialized
+          if (newSort && oldSort) {
+            this._refresh();
+          }
+        }
+
+        draggableFilter(el) {
+          return el.selected;
+        }
+
+        get visible() {
+          return Boolean(this.offsetWidth || this.offsetHeight);
+        }
+
       }
 
-    });
+      customElements.define(DataList.is, DataList);
+      Nuxeo.DataList = DataList;
+    }
   </script>
 
 </dom-module>

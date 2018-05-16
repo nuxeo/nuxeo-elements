@@ -14,8 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+<link rel="import" href="../polymer/polymer.html">
 
 <script>
+  /* eslint-disable no-var, no-use-before-define */
   var Nuxeo = Nuxeo || {};
 
   /**
@@ -27,7 +29,7 @@ limitations under the License.
       draggable: {
         type: Boolean,
         value: false,
-        reflectToAttribute: true
+        reflectToAttribute: true,
       },
 
       /**
@@ -35,9 +37,9 @@ limitations under the License.
        */
       dropTargetFilter: {
         type: Function,
-        value: function() {
+        value() {
           return this.dropTargetFilter.bind(this);
-        }
+        },
       },
 
       /**
@@ -45,18 +47,18 @@ limitations under the License.
        */
       draggableFilter: {
         type: Function,
-        value: function() {
+        value() {
           return this.draggableFilter.bind(this);
-        }
-      }
+        },
+      },
     },
 
-    attached: function() {
-      var proxy;
-      var bodyEl = document.querySelector('body');
+    attached() {
+      let proxy;
+      const bodyEl = document.querySelector('body');
       // mouse move handler
-      var moveFn = function(e) {
-        // block list pointer events while dragging and apply grabbing cursor
+      const moveFn = (e) => {
+      // block list pointer events while dragging and apply grabbing cursor
         this.style.pointerEvents = 'none';
         bodyEl.setAttribute('style', 'cursor: grabbing; cursor: -webkit-grabbing;');
         // create proxy with number of items that are being dragged
@@ -71,16 +73,16 @@ limitations under the License.
         this._scrollList(e);
         // iterate drop targets and check if mouse is hovering any target
         this.target = null;
-        this.droptargets.forEach(function(target) {
+        this.droptargets.forEach((target) => {
           target.classList.remove('droptarget-hover');
-          var boundingClientRect = target.getBoundingClientRect();
+          const boundingClientRect = target.getBoundingClientRect();
           if (e.clientX > boundingClientRect.left && e.clientX < boundingClientRect.right &&
-              e.clientY > boundingClientRect.top && e.clientY < boundingClientRect.bottom) {
+          e.clientY > boundingClientRect.top && e.clientY < boundingClientRect.bottom) {
             this.target = target;
           }
-        }.bind(this));
+        });
         if (this.target) {
-          // block DnD if mouse target belongs to the selected items
+        // block DnD if mouse target belongs to the selected items
           if (this.selectedItems.indexOf(this.modelForElement(this.target).item) > -1) {
             this.target = null;
             proxy.hidden = true;
@@ -89,11 +91,11 @@ limitations under the License.
             this.target.classList.add('droptarget-hover');
           }
         }
-      }.bind(this);
+      };
 
       // mouse up handler
-      var upFn = function() {
-        // restore list pointer events, restore cursor and remove proxy
+      const upFn = () => {
+      // restore list pointer events, restore cursor and remove proxy
         this.style.pointerEvents = '';
         bodyEl.style.cursor = '';
         if (proxy) {
@@ -107,13 +109,13 @@ limitations under the License.
           this.target.classList.remove('droptarget-hover');
           this.fire('nuxeo-documents-dropped', {
             targetDocument: this.modelForElement(this.target).item,
-            documents: this.selectedItems
+            documents: this.selectedItems,
           });
           this.target = null;
         }
-      }.bind(this);
+      };
 
-      this.addEventListener('mousedown', function(e) {
+      this.addEventListener('mousedown', (e) => {
         if (this.draggable) {
           // prevent default behavior to make sure cursors are applied across all browsers
           e.preventDefault();
@@ -123,36 +125,37 @@ limitations under the License.
             document.addEventListener('mouseup', upFn);
           }
         }
-      }.bind(this));
+      });
     },
 
     get droptargets() {
-      return Array.from(this.$.list.queryAllEffectiveChildren('*')).filter(function(el) {
-        return this.dropTargetFilter(el, this.modelForElement(el));
-      }.bind(this));
+      return Array.from(this.$.list.queryAllEffectiveChildren('*')).filter((el) => this.dropTargetFilter(
+        el,
+        this.modelForElement(el),
+      ));
     },
 
     // override with custom logic
-    dropTargetFilter: function(el, model) { // eslint-disable-line no-unused-vars
+    dropTargetFilter(el, model) { // eslint-disable-line no-unused-vars
       return true;
     },
 
     // override with custom logic
-    draggableFilter: function(el) { // eslint-disable-line no-unused-vars
+    draggableFilter(el) { // eslint-disable-line no-unused-vars
       return true;
     },
 
-    _scrollList: function(e) {
-      var container = this.$.list;
-      var threshold = 100;
-      var boundingClientRect = container.getBoundingClientRect();
-      var scrollRate = 30; // increase or decrease this to speed up or slow down scrolling
+    _scrollList(e) {
+      const container = this.$.list;
+      const threshold = 100;
+      const boundingClientRect = container.getBoundingClientRect();
+      const scrollRate = 30; // increase or decrease this to speed up or slow down scrolling
       if (boundingClientRect.bottom - e.pageY <= threshold) { // scroll down
         container.scrollTop += scrollRate;
       } else if (e.pageY >= boundingClientRect.top && e.pageY <= (boundingClientRect.top + threshold)) { // scroll up
         container.scrollTop -= scrollRate;
       }
-    }
+    },
   };
 </script>
 
@@ -185,18 +188,30 @@ limitations under the License.
     <span>[[counter]]</span>
   </template>
 
+  <link rel="import" href="../nuxeo-elements/nuxeo-element.html">
   <script>
-    Polymer({
-      is: 'nuxeo-drag-proxy',
+    {
+      class DragProxy extends Nuxeo.Element {
 
-      properties: {
-        counter: Number
-      },
+        static get is() {
+          return 'nuxeo-drag-proxy';
+        }
 
-      setPosition: function(x, y) {
-        this.style.left = x + 'px';
-        this.style.top = y + 'px';
+        static get properties() {
+          return {
+            counter: Number,
+          };
+        }
+
+        setPosition(x, y) {
+          this.style.left = `${x}px`;
+          this.style.top = `${y}px`;
+        }
+
       }
-    });
+
+      customElements.define(DragProxy.is, DragProxy);
+      Nuxeo.DragProxy = DragProxy;
+    }
   </script>
 </dom-module>

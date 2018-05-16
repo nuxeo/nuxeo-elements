@@ -14,7 +14,7 @@
     "no-else-return": "off",
     "no-mixed-operators": "off",
     "no-multi-assign": "off",
-    "no-param-reassign": ["error", { "props": false }],
+    "no-param-reassign": "off",
     "no-plusplus": "off",
     "no-restricted-globals": ["off", "confirm"],
     "no-underscore-dangle": "off",
@@ -46,6 +46,7 @@
     "d3": false,
     "AlloyEditor": false,
     "CKEDITOR": false,
-    "Selectivity": false
+    "Selectivity": false,
+    "saulis": false
   }
 }

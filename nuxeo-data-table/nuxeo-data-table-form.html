@@ -1,4 +1,5 @@
 <link rel="import" href="../../iron-form/iron-form.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 
@@ -17,50 +18,61 @@
     </iron-form>
   </template>
   <script>
-    Polymer({
-      is: 'nuxeo-data-table-form',
+    {
+      class DataTableForm extends Polymer.mixinBehaviors([Polymer.Templatizer, Nuxeo.I18nBehavior], Nuxeo.Element) {
 
-      behaviors: [Polymer.Templatizer, Nuxeo.I18nBehavior],
-
-      properties: {
-        item: {
-          type: Object,
-          notify: true,
-          observer: '_itemChanged'
-        },
-        slot: {
-          value: 'form',
-          type: String,
-          reflectToAttribute: true,
-          readonly: true
-        },
-        index: Number
-      },
-
-      ready: function() {
-        var template = this.queryEffectiveChildren('template');
-        // custom notification for the `item` property
-        this._instanceProps = {item: true};
-        this.templatize(template);
-        this.instance = this.stamp({item: this.item});
-        this.instance.dispatchEvent = function() {};
-        Polymer.dom(this.$.container).appendChild(this.instance.root);
-      },
-
-      validateItem: function() {
-        return this.$.editForm.validate();
-      },
-
-      _itemChanged: function() {
-        if (this.instance) {
-          this.instance.item = this.item;
-          this.instance.i18n = this.i18n;
+        static get is() {
+          return 'nuxeo-data-table-form';
         }
-      },
 
-      _notifyInstancePropV2: function(inst, prop, value) {
-        this.notifyPath(prop, value);
+        static get properties() {
+          return {
+            item: {
+              type: Object,
+              notify: true,
+              observer: '_itemChanged',
+            },
+            slot: {
+              value: 'form',
+              type: String,
+              reflectToAttribute: true,
+              readonly: true,
+            },
+            index: Number,
+          };
+        }
+
+        ready() {
+          super.ready();
+          const template = this.queryEffectiveChildren('template');
+          // custom notification for the `item` property
+          this._instanceProps = { item: true };
+          this.templatize(template);
+          this.instance = this.stamp({ item: this.item });
+          this.instance.dispatchEvent = function () {
+          };
+          Polymer.dom(this.$.container).appendChild(this.instance.root);
+        }
+
+        validateItem() {
+          return this.$.editForm.validate();
+        }
+
+        _itemChanged() {
+          if (this.instance) {
+            this.instance.item = this.item;
+            this.instance.i18n = this.i18n;
+          }
+        }
+
+        _notifyInstancePropV2(inst, prop, value) {
+          this.notifyPath(prop, value);
+        }
+
       }
-    });
+
+      customElements.define(DataTableForm.is, DataTableForm);
+      Nuxeo.DataTableForm = DataTableForm;
+    }
   </script>
 </dom-module>

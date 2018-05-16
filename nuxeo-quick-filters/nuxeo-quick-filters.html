@@ -15,8 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-button/paper-button.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 
 <!--
@@ -28,7 +29,7 @@ An element for toggling quickfilters.
 -->
 <dom-module id="nuxeo-quick-filters">
   <template>
-    <style is="custom-style">
+    <style>
       :host {
         display: block;
       }
@@ -52,40 +53,52 @@ An element for toggling quickfilters.
     </style>
 
     <div id="filters">
-      <template is="dom-repeat" items="[[quickFilters]]" as="filter" id="filterList">
-        <paper-button toggles noink class="quick-filters" active$="[[filter.active]]" on-tap="_selectFilter">
-            [[_computeFilterLabel(filter)]]
-        </paper-button>
-      </template>
+      <dom-repeat items="[[quickFilters]]" as="filter" id="filterList">
+        <template>
+          <paper-button toggles noink class="quick-filters" active$="[[filter.active]]" on-click="_selectFilter">
+              [[_computeFilterLabel(filter)]]
+          </paper-button>
+        </template>
+      </dom-repeat>
     </div>
 
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-quick-filters',
-      behaviors: [Nuxeo.I18nBehavior],
-      properties: {
-        /**
-         * Quick filters state.
-         */
-        quickFilters: {
-          type: Array
-        }
-      },
+    {
+      class QuickFilters extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
-      _selectFilter: function(e) {
-        for (var i = 0; i < this.quickFilters.length; i++) {
-          if (this.quickFilters[i].name === e.model.filter.name) {
-            this.set('quickFilters.' + i + '.active', !this.quickFilters[i].active);
+        static get is() {
+          return 'nuxeo-quick-filters';
+        }
+
+        static get properties() {
+          return {
+            /**
+             * Quick filters state.
+             */
+            quickFilters: {
+              type: Array,
+            },
+          };
+        }
+
+        _selectFilter(e) {
+          for (let i = 0; i < this.quickFilters.length; i++) {
+            if (this.quickFilters[i].name === e.model.filter.name) {
+              this.set(`quickFilters.${i}.active`, !this.quickFilters[i].active);
+            }
           }
         }
-      },
 
-      _computeFilterLabel: function(filter) {
-        return this.i18n('ui.label.quickFilters.' + filter.name);
+        _computeFilterLabel(filter) {
+          return this.i18n(`ui.label.quickFilters.${filter.name}`);
+        }
+
       }
 
-    });
+      customElements.define(QuickFilters.is, QuickFilters);
+      Nuxeo.QuickFilters = QuickFilters;
+    }
   </script>
 </dom-module>

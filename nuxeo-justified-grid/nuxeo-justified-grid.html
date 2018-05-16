@@ -15,14 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../nuxeo-page-provider-display-behavior.html">
-<link rel="import" href="../nuxeo-routing-behavior.html">
-
-<link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../../iron-image/iron-image.html">
 <link rel="import" href="../../iron-list/iron-list.html">
+<link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../nuxeo-page-provider-display-behavior.html">
+<link rel="import" href="../nuxeo-routing-behavior.html">
 <link rel="import" href="../widgets/nuxeo-sort-select.html">
 
 <!--
@@ -128,9 +130,11 @@ An element for displaying page provider results in a justified grid with infinit
       }
     </style>
 
-    <template is="dom-if" if="[[displaySort]]">
-      <nuxeo-sort-select label="[[sortLabel]]" options="[[sortOptions]]" selected="{{sortSelected}}"></nuxeo-sort-select>
-    </template>
+    <dom-if if="[[displaySort]]">
+      <template>
+        <nuxeo-sort-select label="[[sortLabel]]" options="[[sortOptions]]" selected="{{sortSelected}}"></nuxeo-sort-select>
+      </template>
+    </dom-if>
 
     <div id="container">
       <iron-list id="list" items="[[rows]]" as="row" on-iron-resize="_resize">
@@ -138,11 +142,11 @@ An element for displaying page provider results in a justified grid with infinit
           <div class="row">
             <dom-repeat items="[[row]]">
               <template>
-                <div class="item" tabindex="0" on-tap="_tap" selected$="[[_isSelected(item, selectedItems.*)]]"
+                <div class="item" tabindex="0" on-click="_tap" selected$="[[_isSelected(item, selectedItems.*)]]"
                      style$="height: [[item._view.height]]px; width: [[item._view.width]]px;">
                   <iron-image src="[[_url(item)]]" sizing="cover" preload fade></iron-image>
                   <paper-icon-button noink icon="icons:check" selection-mode$="[[selectionMode]]"
-                                     hidden$="[[!selectionEnabled]]" on-tap="_check"></paper-icon-button>
+                                     hidden$="[[!selectionEnabled]]" on-click="_check"></paper-icon-button>
                   <div class="overlay">[[item.title]]</div>
                 </div>
               </template>
@@ -156,289 +160,303 @@ An element for displaying page provider results in a justified grid with infinit
     </div>
   </template>
   <script>
-    Polymer({
-      is: 'nuxeo-justified-grid',
-      behaviors: [Polymer.IronResizableBehavior, Nuxeo.PageProviderDisplayBehavior, Nuxeo.RoutingBehavior],
-      properties: {
+    {
+      class JustifiedGrid
+        extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior, Nuxeo.PageProviderDisplayBehavior,
+          Nuxeo.RoutingBehavior], Nuxeo.Element) {
 
-        rowHeight: {
-          type: Number,
-          value: 196
-        },
-
-        page: {
-          type: Number,
-          value: 1
-        },
-
-        pageSize: {
-          type: Number,
-          value: 50
-        },
-
-        displaySort: {
-          type: Boolean,
-          value: false
-        },
-
-        sortLabel: {
-          type: String,
-          value: ''
-        },
-
-        sortSelected: {
-          type: Object
-        },
-
-        sortOptions: {
-          type: Array,
-          value: []
-        },
-
-        rows: {
-          type: Array,
-          value: []
-        },
-
-        _isFetching: {
-          type: Boolean,
-          value: false
+        static get is() {
+          return 'nuxeo-justified-grid';
         }
-      },
 
-      observers: [
-        '_refresh(nxProvider, sortSelected)',
-        '_selectedItemsChanged(selectedItems.splices)'
-      ],
+        static get properties() {
+          return {
+            rowHeight: {
+              type: Number,
+              value: 196,
+            },
 
-      // overridden from Nuxeo.PageProviderDisplayBehavior
-      reset: function() {
-        this.set('items', []);
-        this.set('rows', []);
-        this.page = 1;
-        this.$.scrollThreshold.clearTriggers();
-      },
+            page: {
+              type: Number,
+              value: 1,
+            },
 
-      // overridden from Nuxeo.PageProviderDisplayBehavior
-      fetch: function() {
-        if (this._isFetching || !this._hasPageProvider()) {
+            pageSize: {
+              type: Number,
+              value: 50,
+            },
+
+            displaySort: {
+              type: Boolean,
+              value: false,
+            },
+
+            sortLabel: {
+              type: String,
+              value: '',
+            },
+
+            sortSelected: {
+              type: Object,
+            },
+
+            sortOptions: {
+              type: Array,
+              value: [],
+            },
+
+            rows: {
+              type: Array,
+              value: [],
+            },
+
+            _isFetching: {
+              type: Boolean,
+              value: false,
+            },
+          };
+        }
+
+        static get observers() {
+          return [
+            '_refresh(nxProvider, sortSelected)',
+            '_selectedItemsChanged(selectedItems.splices)',
+          ];
+        }
+
+        // overridden from Nuxeo.PageProviderDisplayBehavior
+        reset() {
+          this.set('items', []);
+          this.set('rows', []);
+          this.page = 1;
           this.$.scrollThreshold.clearTriggers();
-          this._isFetching = false;
-          return Promise.resolve();
         }
-        this._isFetching = true;
-        return this._fetchPage(this.page, this.pageSize).then(function(response) {
-          this._addItems(response.entries);
-          this.page += 1;
-          this.$.scrollThreshold.clearTriggers();
-          this._isFetching = false;
-        }.bind(this));
-      },
 
-      // overridden from Nuxeo.PageProviderDisplayBehavior
-      getSelectedItems: function() {
-        return this.$.selector.selected;
-      },
-
-      // overridden from Nuxeo.PageProviderDisplayBehavior
-      selectItem: function(item) {
-        if (this.selectionEnabled) {
-          this.$.selector.select(item);
-          this._updateFlags();
+        // overridden from Nuxeo.PageProviderDisplayBehavior
+        fetch() {
+          if (this._isFetching || !this._hasPageProvider()) {
+            this.$.scrollThreshold.clearTriggers();
+            this._isFetching = false;
+            return Promise.resolve();
+          }
+          this._isFetching = true;
+          return this._fetchPage(this.page, this.pageSize).then((response) => {
+            this._addItems(response.entries);
+            this.page += 1;
+            this.$.scrollThreshold.clearTriggers();
+            this._isFetching = false;
+          });
         }
-      },
 
-      // overridden from Nuxeo.PageProviderDisplayBehavior
-      selectIndex: function(index) {
-        if (this.selectionEnabled) {
-          this.$.selector.selectIndex(index);
-          this._updateFlags();
+        // overridden from Nuxeo.PageProviderDisplayBehavior
+        getSelectedItems() {
+          return this.$.selector.selected;
         }
-      },
 
-      // overridden from Nuxeo.PageProviderDisplayBehavior
-      selectItems: function(items) {
-        if (this.selectionEnabled && items && items.length > 0) {
-          items.forEach(function(item) {
+        // overridden from Nuxeo.PageProviderDisplayBehavior
+        selectItem(item) {
+          if (this.selectionEnabled) {
             this.$.selector.select(item);
-          }.bind(this));
+            this._updateFlags();
+          }
+        }
+
+        // overridden from Nuxeo.PageProviderDisplayBehavior
+        selectIndex(index) {
+          if (this.selectionEnabled) {
+            this.$.selector.selectIndex(index);
+            this._updateFlags();
+          }
+        }
+
+        // overridden from Nuxeo.PageProviderDisplayBehavior
+        selectItems(items) {
+          if (this.selectionEnabled && items && items.length > 0) {
+            items.forEach((item) => this.$.selector.select(item));
+            this._updateFlags();
+          }
+        }
+
+        // overridden from Nuxeo.PageProviderDisplayBehavior
+        deselectItem(item) {
+          if (this.selectionEnabled) {
+            this.$.selector.deselect(item);
+            this._updateFlags();
+          }
+        }
+
+        // overridden from Nuxeo.PageProviderDisplayBehavior
+        deselectIndex(index) {
+          if (this.selectionEnabled) {
+            this.$.selector.deselectIndex(index);
+            this._updateFlags();
+          }
+        }
+
+        // overridden from Nuxeo.PageProviderDisplayBehavior
+        selectAll() {
+          this.items.forEach((item) => this.$.selector.select(item));
           this._updateFlags();
         }
-      },
 
-      // overridden from Nuxeo.PageProviderDisplayBehavior
-      deselectItem: function(item) {
-        if (this.selectionEnabled) {
-          this.$.selector.deselect(item);
+        // overridden from Nuxeo.PageProviderDisplayBehavior
+        clearSelection() {
+          this.$.selector.clearSelection();
           this._updateFlags();
         }
-      },
 
-      // overridden from Nuxeo.PageProviderDisplayBehavior
-      deselectIndex: function(index) {
-        if (this.selectionEnabled) {
-          this.$.selector.deselectIndex(index);
-          this._updateFlags();
+        _refresh() {
+          if (this.sortSelected && this._hasPageProvider()) {
+            const sort = {};
+            sort[this.sortSelected.field] = this.sortSelected.order;
+            this.nxProvider.sort = sort;
+            this.reset();
+            this.fetch();
+          }
         }
-      },
 
-      // overridden from Nuxeo.PageProviderDisplayBehavior
-      selectAll: function() {
-        this.items.forEach(function(item) {
-          this.$.selector.select(item);
-        }.bind(this));
-        this._updateFlags();
-      },
-
-      // overridden from Nuxeo.PageProviderDisplayBehavior
-      clearSelection: function() {
-        this.$.selector.clearSelection();
-        this._updateFlags();
-      },
-
-      _refresh: function() {
-        if (this.sortSelected && this._hasPageProvider()) {
-          var sort = {};
-          sort[this.sortSelected.field] = this.sortSelected.order;
-          this.nxProvider.sort = sort;
-          this.reset();
-          this.fetch();
+        _check(e) {
+          if (this.selectionEnabled) {
+            this.selectionMode = true;
+            this._tap(e);
+          }
         }
-      },
 
-      _check: function(e) {
-        if (this.selectionEnabled) {
-          this.selectionMode = true;
-          this._tap(e);
-        }
-      },
-
-      _tap: function(e) {
-        var index = e.model.item._view.index;
-        if (this.selectionEnabled && this.selectionMode) {
-          // since we are using Object.assign() when creating items for the grid, we cannot really use
-          // selector.selectItem()/deselectItem() because it relies on indexOf and since the e.model.item is not a
-          // reference of the original item, it doesn't work.
-          if (this._isIndexSelected(index)) {
-            this.deselectIndex(index);
+        _tap(e) {
+          const index = e.model.item._view.index;
+          if (this.selectionEnabled && this.selectionMode) {
+            // since we are using Object.assign() when creating items for the grid, we cannot really use
+            // selector.selectItem()/deselectItem() because it relies on indexOf and since the e.model.item is not a
+            // reference of the original item, it doesn't work.
+            if (this._isIndexSelected(index)) {
+              this.deselectIndex(index);
+            } else {
+              this.selectIndex(index);
+            }
           } else {
-            this.selectIndex(index);
+            this.dispatchEvent(new CustomEvent('navigate', {
+              composed: true,
+              bubbles: true,
+              detail: { doc: this.items[index], index },
+            }));
           }
-        } else {
-          this.fire('navigate', {doc: this.items[index], index: index});
+          e.stopPropagation();
         }
-        e.stopPropagation();
-      },
 
-      _selectedItemsChanged: function() {
-        this.selectionMode = this.selectedItems && this.selectedItems.length > 0;
-      },
-
-      _isSelected: function(item) {
-        return this._isIndexSelected(item._view.index);
-      },
-
-      _isIndexSelected: function(index) {
-        return this.selectedItems.indexOf(this.items[index]) > -1;
-      },
-
-      /**
-       * Adds a list of items to the grid. The `items` are computed and transformed into rows.
-       * This is the ideal way to add new items to the grid (e.g. when loading more items with infinite scroll behavior).
-       */
-      _addItems: function (newItems) {
-        // recompute last row before adding new items
-        if (this.rows.length > 0) {
-          // get last row items
-          var lastRowItems = this.rows[this.rows.length - 1].map(function(item) {
-            return this.items[item._view.index];
-          }.bind(this));
-          // append last row items to `newItems` param
-          newItems = lastRowItems.concat(newItems);
-          // drop last row
-          this.pop('rows');
+        _selectedItemsChanged() {
+          this.selectionMode = this.selectedItems && this.selectedItems.length > 0;
         }
-        this._computeRows(newItems).forEach(function (row) {
-          this.push('rows', row);
-        }.bind(this));
-        this.$.scrollThreshold.clearTriggers();
-      },
 
-      /**
-       * Given a set of items, computes a list of rows. The goal is to compute each row by trying to add items until
-       * they fit. When a row doesn't have space to fit another item, we increase the height of the current row to take
-       * advantage of the remaining width space to avoid cropping images.
-       * Currently relies on `picture:info` to get the dimensions of a video/image. Fallbacks to square dimensions if the
-       * document doesn't have the `picture` schema.
-       */
-      _computeRows: function(items) {
-        var gridWidth = this.$.list.offsetWidth;
-        var rows = [];
-        var currentRowWidth = 0;
-        var currentRow = [];
-        items.forEach(function(item, idx) {
-          var clone = Object.assign({}, item);
-          // fallback to square dimensions if item doesn't have a size object in it's model
-          clone.size = clone.properties['picture:info'] || {width: 1, height: 1};
-          clone.size.width = clone.size.width || 1;
-          clone.size.height = clone.size.height || 1;
-          clone._view = {};
-          clone._view.index = this.items.indexOf(item);
+        _isSelected(item) {
+          return this._isIndexSelected(item._view.index);
+        }
 
-          // compute item width to fit a row with `rowHeight`
-          // new width = original width * rowHeight / original height
-          clone._view.width = clone.size.width * this.rowHeight / clone.size.height;
-          clone._view.height = this.rowHeight;
+        _isIndexSelected(index) {
+          return this.selectedItems.indexOf(this.items[index]) > -1;
+        }
 
-          // if item fits, add it to current row
-          if (currentRowWidth + clone._view.width <= gridWidth) {
-            currentRow.push(clone);
-            currentRowWidth += clone._view.width;
-          } else {
-            // current item doesn't fit in current row
-            // fit items do width and push current row to rows
-            rows.push(this._fitItemsToWidth(currentRow, currentRowWidth, gridWidth));
-            // append current item (that didn't fit in current row) to a new row
-            currentRow = [clone];
-            currentRowWidth = clone._view.width;
+        /**
+         * Adds a list of items to the grid. The `items` are computed and transformed into rows.
+         * This is the ideal way to add new items to the grid (e.g. when loading more items with infinite scroll behavior).
+         */
+        _addItems(newItems) {
+          let items = newItems;
+          // recompute last row before adding new items
+          if (this.rows.length > 0) {
+            // get last row items
+            const lastRowItems = this.rows[this.rows.length - 1].map((item) => this.items[item._view.index]);
+            // append last row items to `newItems` param
+            items = lastRowItems.concat(items);
+            // drop last row
+            this.pop('rows');
           }
-
-          if (idx === (items.length - 1)) {
-            // fit items do width and push current row to rows
-            rows.push(this._fitItemsToWidth(currentRow, currentRowWidth, gridWidth));
-          }
-        }.bind(this));
-        return rows;
-      },
-
-      /**
-       * Computes the ideal height of current row in order to increase the width of items and take advantage of the
-       * remaining width space.
-       */
-      _fitItemsToWidth: function(currentRow, currentRowWidth, gridWidth) {
-        var computedHeight = gridWidth * this.rowHeight / currentRowWidth;
-        currentRow.forEach(function(item) {
-          item._view.height = computedHeight;
-          item._view.width = item._view.width / currentRowWidth * gridWidth;
-        });
-        return currentRow;
-      },
-
-      /**
-       * Recomputes rows when the browser window is resized.
-       */
-      _resize: function() {
-        if (this.$.list.offsetWidth || this.$.list.offsetHeight) {
-          this.debounce('resize-grid', function() {
-            this.rows = this._computeRows(this.items);
-          }.bind(this), 150);
+          this._computeRows(items).forEach((row) => this.push('rows', row));
+          this.$.scrollThreshold.clearTriggers();
         }
-      },
 
-      _url: function(doc) {
-        return doc && doc.contextParameters && doc.contextParameters.thumbnail && doc.contextParameters.thumbnail.url
-          ? doc.contextParameters.thumbnail.url : '';
+        /**
+         * Given a set of items, computes a list of rows. The goal is to compute each row by trying to add items until
+         * they fit. When a row doesn't have space to fit another item, we increase the height of the current row to take
+         * advantage of the remaining width space to avoid cropping images.
+         * Currently relies on `picture:info` to get the dimensions of a video/image. Fallbacks to square dimensions if the
+         * document doesn't have the `picture` schema.
+         */
+        _computeRows(items) {
+          const gridWidth = this.$.list.offsetWidth;
+          const rows = [];
+          let currentRowWidth = 0;
+          let currentRow = [];
+          items.forEach((item, idx) => {
+            const clone = Object.assign({}, item);
+            // fallback to square dimensions if item doesn't have a size object in it's model
+            clone.size = clone.properties['picture:info'] || { width: 1, height: 1 };
+            clone.size.width = clone.size.width || 1;
+            clone.size.height = clone.size.height || 1;
+            clone._view = {};
+            clone._view.index = this.items.indexOf(item);
+
+            // compute item width to fit a row with `rowHeight`
+            // new width = original width * rowHeight / original height
+            clone._view.width = clone.size.width * this.rowHeight / clone.size.height;
+            clone._view.height = this.rowHeight;
+
+            // if item fits, add it to current row
+            if (currentRowWidth + clone._view.width <= gridWidth) {
+              currentRow.push(clone);
+              currentRowWidth += clone._view.width;
+            } else {
+              // current item doesn't fit in current row
+              // fit items do width and push current row to rows
+              rows.push(this._fitItemsToWidth(currentRow, currentRowWidth, gridWidth));
+              // append current item (that didn't fit in current row) to a new row
+              currentRow = [clone];
+              currentRowWidth = clone._view.width;
+            }
+
+            if (idx === (items.length - 1)) {
+              // fit items do width and push current row to rows
+              rows.push(this._fitItemsToWidth(currentRow, currentRowWidth, gridWidth));
+            }
+          });
+          return rows;
+        }
+
+        /**
+         * Computes the ideal height of current row in order to increase the width of items and take advantage of the
+         * remaining width space.
+         */
+        _fitItemsToWidth(currentRow, currentRowWidth, gridWidth) {
+          const computedHeight = gridWidth * this.rowHeight / currentRowWidth;
+          currentRow.forEach((item) => {
+            item._view.height = computedHeight;
+            item._view.width = item._view.width / currentRowWidth * gridWidth;
+          });
+          return currentRow;
+        }
+
+        /**
+         * Recomputes rows when the browser window is resized.
+         */
+        _resize() {
+          if (this.$.list.offsetWidth || this.$.list.offsetHeight) {
+            this._debouncer = Polymer.Debouncer.debounce(
+              this._debouncer,
+              Polymer.Async.timeOut.after(150), () => {
+                this.rows = this._computeRows(this.items);
+              },
+            );
+          }
+        }
+
+        _url(doc) {
+          return doc && doc.contextParameters && doc.contextParameters.thumbnail && doc.contextParameters.thumbnail.url
+            ? doc.contextParameters.thumbnail.url : '';
+        }
+
       }
-    });
+
+      customElements.define(JustifiedGrid.is, JustifiedGrid);
+      Nuxeo.JustifiedGrid = JustifiedGrid;
+    }
   </script>
 </dom-module>

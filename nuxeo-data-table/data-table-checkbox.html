@@ -1,4 +1,4 @@
-<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../widgets/nuxeo-checkmark.html">
 
 <!-- Part of `nuxeo-data-table` -->
@@ -33,15 +33,27 @@
 
   </template>
   <script>
-    Polymer({
-      is: 'nuxeo-data-table-checkbox',
-      properties: {
-        checked: {
-          type: Boolean,
-          reflectToAttribute: true,
-          value: false
+    {
+      class DataTableCheckbox extends Nuxeo.Element {
+
+        static get is() {
+          return 'nuxeo-data-table-checkbox';
         }
+
+        static get properties() {
+          return {
+            checked: {
+              type: Boolean,
+              reflectToAttribute: true,
+              value: false,
+            },
+          };
+        }
+
       }
-    });
+
+      customElements.define(DataTableCheckbox.is, DataTableCheckbox);
+      Nuxeo.DataTableChecbox = DataTableCheckbox;
+    }
   </script>
 </dom-module>

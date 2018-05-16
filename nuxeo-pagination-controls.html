@@ -15,9 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../iron-icons/av-icons.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
 
 <!--
 An element to handle pagination.
@@ -52,65 +53,76 @@ Example:
 
     <div class="horizontal layout end-justified center">
       <paper-icon-button icon="av:skip-previous" title="First Page"
-                         on-tap="_first" disabled$="[[_isFirst(page)]]">
+                         on-click="_first" disabled$="[[_isFirst(page)]]">
       </paper-icon-button>
       <paper-icon-button icon="icons:chevron-left" title="Previous Page"
-                         on-tap="_previous" disabled$="[[_isFirst(page)]]">
+                         on-click="_previous" disabled$="[[_isFirst(page)]]">
       </paper-icon-button>
       <span class="controls">[[page]]/[[numberOfPages]]</span>
       <paper-icon-button icon="icons:chevron-right" title="Next Page"
-                         on-tap="_next" disabled$="[[_isLast(page, numberOfPages)]]">
+                         on-click="_next" disabled$="[[_isLast(page, numberOfPages)]]">
       </paper-icon-button>
       <paper-icon-button icon="av:skip-next" title="Last Page"
-                         on-tap="_last" disabled$="[[_isLast(page, numberOfPages)]]">
+                         on-click="_last" disabled$="[[_isLast(page, numberOfPages)]]">
       </paper-icon-button>
     </div>
 
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-pagination-controls',
+    {
+      class PaginationControls extends Nuxeo.Element {
 
-      properties: {
-        /**
-         * The current page.
-         */
-        page: {
-          type: Number,
-          value: 1,
-          notify: true
-        },
+        static get is() {
+          return 'nuxeo-pagination-controls';
+        }
 
-        /**
-         * The current number of pages.
-         */
-        numberOfPages: Number
-      },
+        static get properties() {
+          return {
+            /**
+             * The current page.
+             */
+            page: {
+              type: Number,
+              value: 1,
+              notify: true,
+            },
 
-      _previous: function() {
-        this.page--;
-      },
+            /**
+             * The current number of pages.
+             */
+            numberOfPages: Number,
+          };
+        }
 
-      _next: function() {
-        this.page++;
-      },
+        _previous() {
+          this.page--;
+        }
 
-      _first: function() {
-        this.page = 1;
-      },
+        _next() {
+          this.page++;
+        }
 
-      _last: function() {
-        this.page = this.numberOfPages;
-      },
+        _first() {
+          this.page = 1;
+        }
 
-      _isFirst: function(page) {
-        return page == 1;
-      },
+        _last() {
+          this.page = this.numberOfPages;
+        }
 
-      _isLast: function(page) {
-        return page == this.numberOfPages;
+        _isFirst(page) {
+          return page === 1;
+        }
+
+        _isLast(page) {
+          return page === this.numberOfPages;
+        }
+
       }
-    });
+
+      customElements.define(PaginationControls.is, PaginationControls);
+      Nuxeo.PaginationControls = PaginationControls;
+    }
   </script>
 </dom-module>
