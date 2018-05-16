@@ -24,7 +24,7 @@ limitations under the License.
      *
      * @param {Object} connection an instance of nuxeo-connection to be used
      * @param {String} accept a string holding a comma separated list of accepted file types or mime types
-     * @param {Boolean} batchAppend a boolean whether files should be appended to the current batch or not 
+     * @param {Boolean} batchAppend a boolean whether files should be appended to the current batch or not
      **/
     function DefaultUploadProvider(connection, accept, batchAppend) {
       this.connection = connection;
@@ -68,11 +68,15 @@ limitations under the License.
             }
             this.uploader.upload(blob).then(function(result) {
               callback({ type: 'uploadCompleted', fileIdx: result.blob.fileIdx });
+            }.bind(this)).catch(function(error) {
+              callback({type: 'uploadInterrupted', file: file, error: error});
             }.bind(this));
           }
           this.uploader.done().then(function(result) {
             callback({ type: 'batchFinished', batchId: result.batch._batchId });
-          }.bind(this));
+          }.bind(this)).catch(function(error) {
+            callback({type: 'batchFailed', error: error});
+          }.bind(this));;
         }.bind(this));
       }
     };
@@ -230,7 +234,7 @@ limitations under the License.
       registerProvider: function(name, provider) {
         _registry[name] = provider;
       },
-      
+
       /**
        * Returns all registered upload providers.
        */
@@ -247,7 +251,7 @@ limitations under the License.
 
       /**
        * Sets the default upload provider.
-       * 
+       *
        * Every element extending this behavior will use this provider from now on except if a `provider` was
        * explicitly set.
        */
@@ -290,7 +294,13 @@ limitations under the License.
             case 'batchFinished':
               this._batchFinished(event.batchId);
               break;
-          } 
+            case 'uploadInterrupted':
+              this._uploadInterrupted(event.file, event.error);
+              break;
+            case 'batchFailed':
+              this._batchFailed(event.error);
+              break;
+          }
         }.bind(this));
       },
 
@@ -347,6 +357,11 @@ limitations under the License.
         this.fire('batchFinished', {batchId: batchId});
       },
 
+      _batchFailed: function(error) {
+        this.uploading = false;
+        this.fire('batchFailed', {error: error});
+      },
+
       _uploadStarted: function(file) {
         file.progress = 0;
         file.error = false;
@@ -361,6 +376,10 @@ limitations under the License.
           complete: true,
           index: index
         });
+      },
+
+      _uploadInterrupted: function(file, error) {
+        this.fire('uploadInterrupted', {file: file, error: error || 'Upload Interrupted!'});
       },
 
       _uploadProgressUpdated: function(index, progress) {
