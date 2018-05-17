@@ -15,23 +15,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../iron-form/iron-form.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-toast/paper-toast.html">
-<link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
-<link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../nuxeo-filters-behavior.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../nuxeo-layout.html">
 <link rel="import" href="../widgets/nuxeo-card.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
-<link rel="import" href="../widgets/nuxeo-input.html">
 <link rel="import" href="../widgets/nuxeo-group-tag.html">
+<link rel="import" href="../widgets/nuxeo-input.html">
 <link rel="import" href="../widgets/nuxeo-user-suggestion.html">
-<link rel="import" href="../nuxeo-i18n-behavior.html">
-<link rel="import" href="../nuxeo-filters-behavior.html">
-<link rel="import" href="../nuxeo-layout.html">
-
 <link rel="import" href="nuxeo-edit-password.html">
 <link rel="import" href="nuxeo-user-group-permissions-table.html">
 
@@ -210,7 +211,7 @@ Used by `nuxeo-user-group-management`
 
     <nuxeo-card>
       <div class="header horizontal layout">
-        <paper-icon-button class="backButton" icon="icons:arrow-back" on-tap="_goHome"></paper-icon-button>
+        <paper-icon-button class="backButton" icon="icons:arrow-back" on-click="_goHome"></paper-icon-button>
         <iron-icon icon="nuxeo:user" class="avatar"></iron-icon>
         <div class="layout vertical">
           <h3 class="username">[[user.id]]</h3>
@@ -220,25 +221,31 @@ Used by `nuxeo-user-group-management`
         <div class="actions">
 
           <!-- delete -->
-          <template is="dom-if" if="[[_canEdit(readonly, _currentUser, user)]]">
-            <paper-button noink id="deleteUserButton" class="horizontal layout center" on-tap="_toggleDeleteUser">
-              <iron-icon noink icon="nuxeo:delete"></iron-icon> [[i18n('command.delete')]]
-            </paper-button>
-          </template>
+          <dom-if if="[[_canEdit(readonly, _currentUser, user)]]">
+            <template>
+              <paper-button noink id="deleteUserButton" class="horizontal layout center" on-click="_toggleDeleteUser">
+                <iron-icon noink icon="nuxeo:delete"></iron-icon> [[i18n('command.delete')]]
+              </paper-button>
+            </template>
+          </dom-if>
 
           <!-- change password -->
-          <template is="dom-if" if="[[_canEdit(readonly, _currentUser, user)]]">
-            <paper-button noink id="changePasswordButton" class="primary horizontal layout center" on-tap="_toggleChangePassword">
-              <iron-icon icon="nuxeo:lock"></iron-icon> [[i18n('command.change.password')]]
-            </paper-button>
-          </template>
+          <dom-if if="[[_canEdit(readonly, _currentUser, user)]]">
+            <template>
+              <paper-button noink id="changePasswordButton" class="primary horizontal layout center" on-click="_toggleChangePassword">
+                <iron-icon icon="nuxeo:lock"></iron-icon> [[i18n('command.change.password')]]
+              </paper-button>
+            </template>
+          </dom-if>
 
           <!-- edit -->
-          <template is="dom-if" if="[[_canEdit(readonly, _currentUser, user)]]">
-            <paper-button noink id="editUserButton" class="primary horizontal layout center" on-tap="_toggleEditUser">
-              <iron-icon icon="nuxeo:edit"></iron-icon> [[i18n('userManagement.editUser.button')]]
-            </paper-button>
-          </template>
+          <dom-if if="[[_canEdit(readonly, _currentUser, user)]]">
+            <template>
+              <paper-button noink id="editUserButton" class="primary horizontal layout center" on-click="_toggleEditUser">
+                <iron-icon icon="nuxeo:edit"></iron-icon> [[i18n('userManagement.editUser.button')]]
+              </paper-button>
+            </template>
+          </dom-if>
 
         </div>
       </div>
@@ -252,11 +259,13 @@ Used by `nuxeo-user-group-management`
     <nuxeo-card>
       <div class="layout horizontal center">
         <h3 class="flex">[[i18n('userManagement.groups')]]</h3>
-        <template is="dom-if" if="[[_canEdit(readonly, _currentUser, user)]]">
-          <paper-button noink id="addGroup" class="flex-end" on-tap="_toggleEditGroups">
-            <iron-icon icon="nuxeo:add"></iron-icon> [[i18n('userManagement.addToGroup.button')]]
-          </paper-button>
-        </template>
+        <dom-if if="[[_canEdit(readonly, _currentUser, user)]]">
+          <template>
+            <paper-button noink id="addGroup" class="flex-end" on-click="_toggleEditGroups">
+              <iron-icon icon="nuxeo:add"></iron-icon> [[i18n('userManagement.addToGroup.button')]]
+            </paper-button>
+          </template>
+        </dom-if>
       </div>
       <div class="layout vertical" hidden$="[[!showEditGroups]]">
         <nuxeo-user-suggestion id="picker" class="flex"
@@ -267,13 +276,15 @@ Used by `nuxeo-user-group-management`
                                query-results-filter="[[resultsFilter]]">
         </nuxeo-user-suggestion>
         <div id="errors" hidden$="[[!errors]]">[[errors]]</div>
-        <template is="dom-repeat" items="[[activity]]">
-          <div class="activity-entry">
-            [[i18n('userManagement.memberOf.group', user.id)]]
-            <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
-            <span class="remove" on-tap="_toggleDialog">[[i18n('userManagement.group.remove')]]</span>
-          </div>
-        </template>
+        <dom-repeat items="[[activity]]">
+          <template>
+            <div class="activity-entry">
+              [[i18n('userManagement.memberOf.group', user.id)]]
+              <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
+              <span class="remove" on-click="_toggleDialog">[[i18n('userManagement.group.remove')]]</span>
+            </div>
+          </template>
+        </dom-repeat>
       </div>
       <div class="table">
         <div class="table-headers">
@@ -281,29 +292,37 @@ Used by `nuxeo-user-group-management`
           <div class="flex-4">[[i18n('userManagement.identifier')]]</div>
           <div class="table-actions">&nbsp;</div>
         </div>
-        <template is="dom-if" if=[[!empty]]>
-          <template is="dom-repeat" items="[[groups]]">
+        <dom-if if=[[!empty]]>
+          <template>
+            <dom-repeat items="[[groups]]">
+              <template>
+                <div class="table-row">
+                  <div class="flex">
+                    <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
+                  </div>
+                  <div class="flex-4">[[item.name]]</div>
+                  <div class="table-actions">
+                    <dom-if if="[[_canEdit(readonly, _currentUser, user)]]">
+                      <template>
+                        <paper-icon-button icon="nuxeo:remove"
+                                           title="[[i18n('userManagement.removeFrom.group', item.label)]]"
+                                           on-click="_toggleDialog">
+                        </paper-icon-button>
+                      </template>
+                    </dom-if>
+                  </div>
+                </div>
+              </template>
+            </dom-repeat>
+          </template>
+        </dom-if>
+        <dom-if if=[[empty]]>
+          <template>
             <div class="table-row">
-              <div class="flex">
-                <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
-              </div>
-              <div class="flex-4">[[item.name]]</div>
-              <div class="table-actions">
-                <template is="dom-if" if="[[_canEdit(readonly, _currentUser, user)]]">
-                  <paper-icon-button icon="nuxeo:remove"
-                                     title="[[i18n('userManagement.removeFrom.group', item.label)]]"
-                                     on-tap="_toggleDialog">
-                  </paper-icon-button>
-                </template>
-              </div>
+              <div>[[i18n('userManagement.noSearchResults')]]</div>
             </div>
           </template>
-        </template>
-        <template is="dom-if" if=[[empty]]>
-          <div class="table-row">
-            <div>[[i18n('userManagement.noSearchResults')]]</div>
-          </div>
-        </template>
+        </dom-if>
       </div>
     </nuxeo-card>
 
@@ -315,13 +334,15 @@ Used by `nuxeo-user-group-management`
     </nuxeo-card>
 
     <!-- group permissions -->
-    <template is="dom-repeat" items="[[groups]]">
-      <nuxeo-card>
-        <nuxeo-user-group-permissions-table label="[[i18n('userManagement.entityPermissions', item.name)]]"
-                                            entity="[[item.name]]" readonly="[[readonly]]">
-        </nuxeo-user-group-permissions-table>
-      </nuxeo-card>
-    </template>
+    <dom-repeat items="[[groups]]">
+      <template>
+        <nuxeo-card>
+          <nuxeo-user-group-permissions-table label="[[i18n('userManagement.entityPermissions', item.name)]]"
+                                              entity="[[item.name]]" readonly="[[readonly]]">
+          </nuxeo-user-group-permissions-table>
+        </nuxeo-card>
+      </template>
+    </dom-repeat>
 
     <nuxeo-dialog id="dialog" with-backdrop>
       <h2>[[i18n('userManagement.removeUserFromGroup.confirm', user.id, _removedGroup.name)]]</h2>
@@ -329,7 +350,7 @@ Used by `nuxeo-user-group-management`
         <div class="flex start-justified">
           <paper-button noink dialog-dismiss>[[i18n('label.no')]]</paper-button>
         </div>
-        <paper-button noink dialog-confirm on-tap="_remove" class="primary">[[i18n('label.yes')]]</paper-button>
+        <paper-button noink dialog-confirm on-click="_remove" class="primary">[[i18n('label.yes')]]</paper-button>
       </div>
     </nuxeo-dialog>
 
@@ -339,7 +360,7 @@ Used by `nuxeo-user-group-management`
         <div class="flex start-justified">
           <paper-button noink dialog-dismiss>[[i18n('label.no')]]</paper-button>
         </div>
-        <paper-button noink class="primary" on-tap="_deleteUser">[[i18n('label.yes')]]</paper-button>
+        <paper-button noink class="primary" on-click="_deleteUser">[[i18n('label.yes')]]</paper-button>
       </div>
     </nuxeo-dialog>
 
@@ -354,7 +375,7 @@ Used by `nuxeo-user-group-management`
         <div class="flex start-justified">
           <paper-button noink dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
         </div>
-        <paper-button noink class="primary" on-tap="_submitChangePassword">
+        <paper-button noink class="primary" on-click="_submitChangePassword">
           [[i18n('command.save.changes')]]
         </paper-button>
       </div>
@@ -373,7 +394,7 @@ Used by `nuxeo-user-group-management`
         <div class="flex start-justified">
           <paper-button noink dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
         </div>
-        <paper-button noink class="primary" on-tap="_submitEditUser">
+        <paper-button noink class="primary" on-click="_submitEditUser">
           [[i18n('command.save.changes')]]
         </paper-button>
       </div>
@@ -381,277 +402,294 @@ Used by `nuxeo-user-group-management`
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-user-management',
-      behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
-      properties: {
-        username: {
-          type: String,
-          observer: '_fetch'
-        },
+    {
+      class UserManagement extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 
-        user: Object,
-
-        groups: {
-          type: Object,
-          computed: '_computeGroups(user)'
-        },
-
-        selectedGroup: {
-          type: Object,
-          observer: '_groupSelected'
-        },
-
-        activity: {
-          type: Array,
-          value: []
-        },
-
-        resultsFilter: {
-          type: Function,
-          value: function() {
-            return this._resultsFilter.bind(this);
-          }
-        },
-
-        resultFormatter: {
-          type: Function,
-          value: function() {
-            return this._resultFormatter.bind(this);
-          }
-        },
-
-        showEditGroups: {
-          type: Boolean,
-          value: false
-        },
-
-        empty: Boolean,
-
-        _removedGroup: Object,
-
-        readonly: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true
-        },
-
-        errors: {
-          type: String,
-          reflectToAttribute: true
-        },
-
-        _currentUser: {
-          type: Object
+        static get is() {
+          return 'nuxeo-user-management';
         }
-      },
 
-      observers: [
-        '_userRemovedFromGroup(groups.splices)'
-      ],
+        static get properties() {
+          return {
+            username: {
+              type: String,
+              observer: '_fetch',
+            },
 
-      /**
-       * Fired when a user is deleted.
-       *
-       * @event nuxeo-user-deleted
-       */
+            user: Object,
 
-      ready: function() {
-        this.$.editUserForm.addEventListener('iron-form-presubmit', function(event) {
-          event.preventDefault();
-          this._saveUser();
-        }.bind(this));
-        this.$.changePasswordForm.addEventListener('iron-form-presubmit', function(event) {
-          event.preventDefault();
-          this._savePassword();
-        }.bind(this));
-      },
+            groups: {
+              type: Object,
+              computed: '_computeGroups(user)',
+            },
 
-      _fetch: function() {
-        if (this.username) {
-          this.$.request.get().then(function(response) {
-            delete response.properties.password;
-            this.user = response;
-            this.activity = [];
-            this.showEditGroups = false;
-            this.selectedGroup = null;
-          }.bind(this));
-        }
-      },
+            selectedGroup: {
+              type: Object,
+              observer: '_groupSelected',
+            },
 
-      _isAdministrator: function(user) {
-        return user && user.isAdministrator;
-      },
+            activity: {
+              type: Array,
+              value: [],
+            },
 
-      _hasAdministrationPermissions: function(currentUser) {
-        return currentUser && (currentUser.isAdministrator ||
-          (this.isMember(currentUser, 'powerusers') && !this.user.isAdministrator));
-      },
+            resultsFilter: {
+              type: Function,
+              value() {
+                return this._resultsFilter.bind(this);
+              },
+            },
 
-      _canEdit: function(readonly, currentUser, user) {
-        return !readonly && this.user && currentUser && (this._hasAdministrationPermissions(currentUser) ||
-          this._isSameUsername(currentUser.properties.username, user.properties.username));
-      },
+            resultFormatter: {
+              type: Function,
+              value() {
+                return this._resultFormatter.bind(this);
+              },
+            },
 
-      _isSameUsername: function(username1, username2) {
-        return username1 && username2 && username1 === username2;
-      },
+            showEditGroups: {
+              type: Boolean,
+              value: false,
+            },
 
-      _computeGroups: function() {
-        if (this.user) {
-          return this.user.extendedGroups.filter(function(group) {
-            if (this.user.properties.groups.indexOf(group.name) > -1) {
-              return group;
-            }
-          }.bind(this));
-        }
-      },
+            empty: Boolean,
 
-      _groupSelected: function() {
-        if (this.selectedGroup) {
-          if (!this._isAdministrator(this._currentUser) && this.selectedGroup.groupname === 'administrators') {
-            this.errors = this.i18n('userManagement.errorAdministratorsGroup');
-            this.selectedGroup = null;
-            return;
-          }
-          var group = {
-            'name': this.selectedGroup.groupname,
-            'label': this.selectedGroup.grouplabel
+            _removedGroup: Object,
+
+            readonly: {
+              type: Boolean,
+              value: false,
+              reflectToAttribute: true,
+            },
+
+            errors: {
+              type: String,
+              reflectToAttribute: true,
+            },
+
+            _currentUser: {
+              type: Object,
+            },
           };
-          this.push('activity', group);
-          this.$.request.path = 'user/' + this.user.id + '/group/' + group.name;
-          this.$.request.post().then(function(response) {
+        }
+
+        static get observers() {
+          return [
+            '_userRemovedFromGroup(groups.splices)',
+          ];
+        }
+
+        /**
+         * Fired when a user is deleted.
+         *
+         * @event nuxeo-user-deleted
+         */
+
+        ready() {
+          super.ready();
+          this.$.editUserForm.addEventListener('iron-form-presubmit', (event) => {
+            event.preventDefault();
+            this._saveUser();
+          });
+          this.$.changePasswordForm.addEventListener('iron-form-presubmit', (event) => {
+            event.preventDefault();
+            this._savePassword();
+          });
+        }
+
+        _fetch() {
+          if (this.username) {
+            this.$.request.get().then((response) => {
+              delete response.properties.password;
+              this.user = response;
+              this.activity = [];
+              this.showEditGroups = false;
+              this.selectedGroup = null;
+            });
+          }
+        }
+
+        _isAdministrator(user) {
+          return user && user.isAdministrator;
+        }
+
+        _hasAdministrationPermissions(currentUser) {
+          return currentUser && (currentUser.isAdministrator ||
+              (this.isMember(currentUser, 'powerusers') && !this.user.isAdministrator));
+        }
+
+        _canEdit(readonly, currentUser, user) {
+          return !readonly && this.user && currentUser && (this._hasAdministrationPermissions(currentUser) ||
+              this._isSameUsername(currentUser.properties.username, user.properties.username));
+        }
+
+        _isSameUsername(username1, username2) {
+          return username1 && username2 && username1 === username2;
+        }
+
+        _computeGroups() {
+          if (this.user) {
+            return this.user.extendedGroups.filter((group) => this.user.properties.groups.indexOf(group.name) > -1);
+          }
+        }
+
+        _groupSelected() {
+          if (this.selectedGroup) {
+            if (!this._isAdministrator(this._currentUser) && this.selectedGroup.groupname === 'administrators') {
+              this.errors = this.i18n('userManagement.errorAdministratorsGroup');
+              this.selectedGroup = null;
+              return;
+            }
+            const group = {
+              name: this.selectedGroup.groupname,
+              label: this.selectedGroup.grouplabel,
+            };
+            this.push('activity', group);
+            this.$.request.path = `user/${this.user.id}/group/${group.name}`;
+            this.$.request.post().then((response) => {
+              this.user = response;
+              this._toast(this.i18n('userManagement.addedUserToGroup', this.user.id, group.name));
+            });
+          }
+          this.selectedGroup = null;
+        }
+
+        _remove() {
+          const group = this._removedGroup;
+          this.$.request.path = `user/${this.user.id}/group/${group.name}`;
+          return this.$.request.remove().then(() => {
+            this._removeRecent(group.name);
+            this._removeFromGroup(group.name);
+            this._toast(this.i18n('userManagement.removedUserFromGroup', this.user.id, group.name));
+          });
+        }
+
+        _removeRecent(group) {
+          // remove from 'recent', if it exists
+          for (let i = 0; i < this.activity.length; i++) {
+            if (this.activity[i].name === group) {
+              this.splice('activity', i, 1);
+              return;
+            }
+          }
+        }
+
+        _removeFromGroup(group) {
+          // DELETE request does not return the user object, so when we remove
+          // we need to manually update the user model and the list of groups
+          const idx = this.user.properties.groups.indexOf(group);
+          this.user.properties.groups.splice(idx, 1);
+          for (let i = 0; i < this.groups.length; i++) {
+            if (this.groups[i].name === group) {
+              this.splice('groups', i, 1);
+              return;
+            }
+          }
+        }
+
+        _userRemovedFromGroup() {
+          this.empty = this.groups && this.groups.length === 0;
+        }
+
+        _toggleEditGroups() {
+          this.showEditGroups = !this.showEditGroups;
+        }
+
+        _toggleDialog(e) {
+          this._removedGroup = e.model.item;
+          this.$.dialog.toggle();
+        }
+
+        _toggleChangePassword() {
+          this.$.changePasswordDialog.toggle();
+        }
+
+        _submitChangePassword() {
+          this.$.changePasswordForm.submit();
+        }
+
+        _savePassword() {
+          this.$.changePasswordDialog.toggle();
+          this.$.editRequest.data = JSON.parse(JSON.stringify(this.user));
+          this.$.editRequest.data.properties.password = this.$.passwordEditor.password;
+          this.$.editRequest.put().then((response) => {
             this.user = response;
-            this._toast(this.i18n('userManagement.addedUserToGroup', this.user.id, group.name));
-          }.bind(this));
+            this._toast(this.i18n('userManagement.password.changed'));
+            if (this.$.passwordEditor.resetFields) {
+              this.$.passwordEditor.resetFields();
+            }
+          });
         }
-        this.selectedGroup = null;
-      },
 
-      _remove: function() {
-        var group = this._removedGroup;
-        this.$.request.path = 'user/' + this.user.id + '/group/' + group.name;
-        return this.$.request.remove().then(function() {
-          this._removeRecent(group.name);
-          this._removeFromGroup(group.name);
-          this._toast(this.i18n('userManagement.removedUserFromGroup', this.user.id, group.name));
-        }.bind(this))
-      },
-
-      _removeRecent: function(group) {
-        // remove from 'recent', if it exists
-        for (var i = 0; i < this.activity.length; i++) {
-          if (this.activity[i].name === group) {
-            this.splice('activity', i, 1);
-            return;
-          }
+        _toggleEditUser() {
+          this.$.layout.model = { user: JSON.parse(JSON.stringify(this.user.properties)) };
+          this.$.editUserDialog.toggle();
         }
-      },
 
-      _removeFromGroup: function(group) {
-        // DELETE request does not return the user object, so when we remove
-        // we need to manually update the user model and the list of groups
-        var idx = this.user.properties.groups.indexOf(group);
-        this.user.properties.groups.splice(idx, 1);
-        for (var i = 0; i < this.groups.length; i++) {
-          if (this.groups[i].name === group) {
-            this.splice('groups', i, 1);
-            return;
-          }
+        _submitEditUser() {
+          this.$.editUserForm.submit();
         }
-      },
 
-      _userRemovedFromGroup: function() {
-        this.empty = this.groups && this.groups.length === 0;
-      },
-
-      _toggleEditGroups: function() {
-        this.showEditGroups = !this.showEditGroups;
-      },
-
-      _toggleDialog: function(e) {
-        this._removedGroup = e.model.item;
-        this.$.dialog.toggle();
-      },
-
-      _toggleChangePassword: function() {
-        this.$.changePasswordDialog.toggle();
-      },
-
-      _submitChangePassword: function() {
-        this.$.changePasswordForm.submit();
-      },
-
-      _savePassword: function() {
-        this.$.changePasswordDialog.toggle();
-        this.$.editRequest.data = JSON.parse(JSON.stringify(this.user));
-        this.$.editRequest.data.properties.password = this.$.passwordEditor.password;
-        this.$.editRequest.put().then(function(response) {
-          this.user = response;
-          this._toast(this.i18n('userManagement.password.changed'));
-          if (!!this.$.passwordEditor.resetFields) {
-            this.$.passwordEditor.resetFields();
-          }
-        }.bind(this));
-      },
-
-      _toggleEditUser: function() {
-        this.$.layout.model = { user: JSON.parse(JSON.stringify(this.user.properties)) };
-        this.$.editUserDialog.toggle();
-      },
-
-      _submitEditUser: function() {
-        this.$.editUserForm.submit();
-      },
-
-      _saveUser: function() {
-        this.$.editUserDialog.toggle();
-        var editedUser = JSON.parse(JSON.stringify(this.user));
-        editedUser.properties = this.$.layout.model.user;
-        this.$.editRequest.data = editedUser;
-        this.$.editRequest.put().then(function(response) {
-          this.user = response;
-          this._toast(this.i18n('userManagement.user.updated'));
-        }.bind(this));
-      },
-
-      _toggleDeleteUser: function() {
-        this.$.deleteUserDialog.toggle();
-      },
-
-      _deleteUser: function() {
-        this.$.deleteUserDialog.toggle();
-        this.$.editRequest.remove().then(function() {
-          this.fire('nuxeo-user-deleted', this.user);
-          this._goHome();
-        }.bind(this));
-      },
-
-      _goHome: function() {
-        this.fire('goHome');
-      },
-
-      _resultsFilter: function(entry) {
-        for (var i = 0; i < this.groups.length; i++) {
-          if (entry.id === this.groups[i].name) {
-            return false;
-          }
+        _saveUser() {
+          this.$.editUserDialog.toggle();
+          const editedUser = JSON.parse(JSON.stringify(this.user));
+          editedUser.properties = this.$.layout.model.user;
+          this.$.editRequest.data = editedUser;
+          this.$.editRequest.put().then((response) => {
+            this.user = response;
+            this._toast(this.i18n('userManagement.user.updated'));
+          });
         }
-        return true;
-      },
 
-      _resultFormatter: function(item) {
-        return item.displayLabel + ' (' + (item.groupname || item.username) + ')';
-      },
+        _toggleDeleteUser() {
+          this.$.deleteUserDialog.toggle();
+        }
 
-      _toast: function(msg) {
-        this.$.toast.text = msg;
-        this.$.toast.open();
-      },
+        _deleteUser() {
+          this.$.deleteUserDialog.toggle();
+          this.$.editRequest.remove().then(() => {
+            this.dispatchEvent(new CustomEvent('nuxeo-user-deleted', {
+              composed: true,
+              bubbles: true,
+              detail: this.user,
+            }));
+            this._goHome();
+          });
+        }
 
-      _layoutHref: function(layout) {
-        return this.resolveUrl(layout);
+        _goHome() {
+          this.dispatchEvent(new CustomEvent('goHome', {
+            composed: true,
+            bubbles: true,
+          }));
+        }
+
+        _resultsFilter(entry) {
+          for (let i = 0; i < this.groups.length; i++) {
+            if (entry.id === this.groups[i].name) {
+              return false;
+            }
+          }
+          return true;
+        }
+
+        _resultFormatter(item) {
+          return `${item.displayLabel} (${item.groupname || item.username})`;
+        }
+
+        _toast(msg) {
+          this.$.toast.text = msg;
+          this.$.toast.open();
+        }
+
+        _layoutHref(layout) {
+          return this.resolveUrl(layout);
+        }
+
       }
-    });
+
+      customElements.define(UserManagement.is, UserManagement);
+      Nuxeo.UserManagement = UserManagement;
+    }
   </script>
 </dom-module>

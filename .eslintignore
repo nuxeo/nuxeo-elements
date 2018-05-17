@@ -5,6 +5,6 @@ test/
 es6-polyfills.html
 jquery-import.html
 moment-import.html
-nuxeo-user-group-management/nuxeo-view-user.html
 nuxeo-user-group-management/nuxeo-edit-user.html
+nuxeo-user-group-management/nuxeo-view-user.html
 widgets/nuxeo-select2*

@@ -15,17 +15,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
-<link rel="import" href="../nuxeo-pagination-controls.html">
-<link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-icons/editor-icons.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-item/paper-icon-item.html">
 <link rel="import" href="../../paper-listbox/paper-listbox.html">
 <link rel="import" href="../../paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../nuxeo-pagination-controls.html">
 <link rel="import" href="../widgets/nuxeo-card.html">
 <link rel="import" href="../widgets/nuxeo-group-tag.html">
 <link rel="import" href="../widgets/nuxeo-input.html">
@@ -118,117 +120,145 @@ Example:
           <div class="flex">[[i18n('userGroupLatest.name')]]</div>
           <div class="flex-2">[[i18n('userGroupLatest.identifier')]]</div>
           <div class="table-actions">
-            <paper-icon-button noink icon="nuxeo:refresh" on-tap="_refreshLatest"></paper-icon-button>
+            <paper-icon-button noink icon="nuxeo:refresh" on-click="_refreshLatest"></paper-icon-button>
           </div>
         </div>
         <div class="table-rows">
-          <template is="dom-repeat" items="[[latestCreatedUsersGroups.entries]]" as="item">
-            <div class="table-row" on-tap="_manageUserOrGroup">
-              <div class="flex">
-                <template is="dom-if" if="[[_isUser(item)]]">
-                  <template is="dom-if" if="[[_userHasName(item)]]">
-                    <nuxeo-user-tag user="[[item]]"></nuxeo-user-tag>
-                  </template>
-                </template>
-                <template is="dom-if" if="[[_isGroup(item)]]">
-                  <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
-                </template>
+          <dom-repeat items="[[latestCreatedUsersGroups.entries]]" as="item">
+            <template>
+              <div class="table-row" on-click="_manageUserOrGroup">
+                <div class="flex">
+                  <dom-if if="[[_isUser(item)]]">
+                    <template>
+                      <dom-if if="[[_userHasName(item)]]">
+                        <template>
+                          <nuxeo-user-tag user="[[item]]"></nuxeo-user-tag>
+                        </template>
+                      </dom-if>
+                    </template>
+                  </dom-if>
+                  <dom-if if="[[_isGroup(item)]]">
+                    <template>
+                      <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
+                    </template>
+                  </dom-if>
+                </div>
+                <div class="flex-2">[[item.uid]]</div>
+                <div class="table-actions"></div>
               </div>
-              <div class="flex-2">[[item.uid]]</div>
-              <div class="table-actions"></div>
-            </div>
-          </template>
-          <template is="dom-if" if=[[_empty(latestCreatedUsersGroups.entries)]]>
-            <div class="table-row">
-              <div class="emptyResult">[[i18n('userGroupLatest.emptyRecentUserOrGroup')]]</div>
-            </div>
-          </template>
+            </template>
+          </dom-repeat>
+          <dom-if if=[[_empty(latestCreatedUsersGroups.entries)]]>
+            <template>
+              <div class="table-row">
+                <div class="emptyResult">[[i18n('userGroupLatest.emptyRecentUserOrGroup')]]</div>
+              </div>
+            </template>
+          </dom-if>
         </div>
       </div>
     </nuxeo-card>
  </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-user-group-latest',
-      behaviors: [Nuxeo.I18nBehavior],
-      properties: {
-        // Holds the list of last created users or groups
-        latestCreatedUsersGroups: Object
-      },
+    {
+      class UserGroupLatest extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
-      _empty: function(entries) {
-        return entries && entries.length === 0;
-      },
+        static get is() {
+          return 'nuxeo-user-group-latest';
+        }
 
-      _userHasName: function(user) {
-        return user.properties['user:firstName'] || user.properties['user:lastName'] ;
-      },
+        static get properties() {
+          return {
+            // Holds the list of last created users or groups
+            latestCreatedUsersGroups: Object,
+          };
+        }
 
-      _isUser: function(docModel) {
-        return docModel.type === 'user';
-      },
+        ready() {
+          super.ready();
+          window.addEventListener('nuxeo-user-created', () => {
+            this._refreshLatestWithDelay();
+          });
+          window.addEventListener('nuxeo-group-created', () => {
+            this._refreshLatestWithDelay();
+          });
+          window.addEventListener('nuxeo-user-deleted', () => {
+            this._refreshLatest();
+          });
+          window.addEventListener('nuxeo-group-deleted', () => {
+            this._refreshLatest();
+          });
+        }
 
-      _isGroup: function(docModel) {
-        return docModel.type === 'group';
-      },
+        _empty(entries) {
+          return entries && entries.length === 0;
+        }
 
-      _displayLCUserGroup: function(docModel) {
-        if (this._isUser(docModel)) {
-          var result = '';
-          if (docModel.properties['user:firstName']) {
-            result += docModel.properties['user:firstName'];
-          }
-          if (docModel.properties['user:lastName']) {
-            if (result.length > 0) {
-              result += ' ';
+        _userHasName(user) {
+          return user.properties['user:firstName'] || user.properties['user:lastName'];
+        }
+
+        _isUser(docModel) {
+          return docModel.type === 'user';
+        }
+
+        _isGroup(docModel) {
+          return docModel.type === 'group';
+        }
+
+        _displayLCUserGroup(docModel) {
+          if (this._isUser(docModel)) {
+            let result = '';
+            if (docModel.properties['user:firstName']) {
+              result += docModel.properties['user:firstName'];
             }
-            result += docModel.properties['user:lastName'];
+            if (docModel.properties['user:lastName']) {
+              if (result.length > 0) {
+                result += ' ';
+              }
+              result += docModel.properties['user:lastName'];
+            }
+            return result;
+          } else if (this._isGroup(docModel)) {
+            return docModel.properties['group:grouplabel'];
           }
-          return result;
-        } else if (this._isGroup(docModel)) {
-          return docModel.properties['group:grouplabel'];
         }
-      },
 
-      _manageUserOrGroup: function(e) {
-        if (this._isUser(e.model.item)) {
-          this.fire('manageUser', {user: e.model.item.uid});
-        } else if (this._isGroup(e.model.item)) {
-          this.fire('manageGroup', {group: e.model.item.uid});
+        _manageUserOrGroup(e) {
+          if (this._isUser(e.model.item)) {
+            this.dispatchEvent(new CustomEvent('manageUser', {
+              composed: true,
+              bubbles: true,
+              detail: { user: e.model.item.uid },
+            }));
+          } else if (this._isGroup(e.model.item)) {
+            this.dispatchEvent(new CustomEvent('manageGroup', {
+              composed: true,
+              bubbles: true,
+              detail: { group: e.model.item.uid },
+            }));
+          }
         }
-      },
 
-      _refreshLatest: function() {
-        this.latestCreatedUsersGroups = {};
-        this.$.latestCreatedUsersGroups.execute();
-      },
+        _refreshLatest() {
+          this.latestCreatedUsersGroups = {};
+          this.$.latestCreatedUsersGroups.execute();
+        }
 
-      _refreshLatestWithDelay: function() {
-        setTimeout(function() {
-          // audit is on es backend -> async
-          // Let's give it 1 sec to index
-          // (dirty, I know ..)
-          this._refreshLatest();
+        _refreshLatestWithDelay() {
+          setTimeout(() => {
+            // audit is on es backend -> async
+            // Let's give it 1 sec to index
+            // (dirty, I know ..)
+            this._refreshLatest();
+          }, 1000);
+        }
 
-        }.bind(this), 1000);
-      },
-
-      ready: function() {
-        window.addEventListener('nuxeo-user-created', function() {
-          this._refreshLatestWithDelay();
-        }.bind(this));
-        window.addEventListener('nuxeo-group-created', function() {
-          this._refreshLatestWithDelay();
-        }.bind(this));
-        window.addEventListener('nuxeo-user-deleted', function() {
-          this._refreshLatest();
-        }.bind(this));
-        window.addEventListener('nuxeo-group-deleted', function() {
-          this._refreshLatest();
-        }.bind(this));
       }
 
-    });
+      customElements.define(UserGroupLatest.is, UserGroupLatest);
+      Nuxeo.UserGroupLatest = UserGroupLatest;
+    }
   </script>
 </dom-module>

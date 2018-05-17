@@ -15,8 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-button/paper-button.html">
-<link rel="import" href="../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../../paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 
@@ -33,63 +33,71 @@ Element providing a confirmation popup.
         <slot></slot>
       </paper-dialog-scrollable>
       <div class="buttons">
-        <paper-button dialog-dismissive on-tap="_onCancel">{{cancelLabel}}</paper-button>
-        <paper-button dialog-affirmative class="colorful" on-tap="_onConfirm">{{deleteLabel}}</paper-button>
+        <paper-button dialog-dismissive on-click="_onCancel">{{cancelLabel}}</paper-button>
+        <paper-button dialog-affirmative class="colorful" on-click="_onConfirm">{{deleteLabel}}</paper-button>
       </div>
     </nuxeo-dialog>
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-popup-confirm',
+    {
+      class PopupConfirm extends Nuxeo.Element {
 
-      properties: {
+        static get is() {
+          return 'nuxeo-popup-confirm';
+        }
+
+        static get properties() {
+          return {
+            /**
+             * Cancel handler.
+             */
+            onCancel: Function,
+
+            /**
+             * Confirm handler.
+             */
+            onConfirm: Function,
+
+            deleteLabel: {
+              type: String,
+              value: 'Delete',
+            },
+            cancelLabel: {
+              type: String,
+              value: 'Cancel',
+            },
+          };
+        }
+
         /**
-         * Cancel handler.
+         * Toggle the popup. Optionally you can specific the comfirm handler as parameter.
          */
-        onCancel: Function,
-
-        /**
-         * Confirm handler.
-         */
-        onConfirm: Function,
-
-        deleteLabel: {
-          type: String,
-          value: 'Delete'
-        },
-        cancelLabel: {
-          type: String,
-          value: 'Cancel'
-        }
-      },
-
-      /**
-       * Toggle the popup. Optionally you can specific the comfirm handler as parameter.
-       */
-      toggle: function(func) {
-        if(typeof func === 'function') {
-          this.onConfirm = func;
+        toggle(func) {
+          if (typeof func === 'function') {
+            this.onConfirm = func;
+          }
+          this.$.dialog.toggle();
         }
 
-        this.$.dialog.toggle();
-      },
-
-      _onCancel: function() {
-        if(this.onCancel) {
-          this.onCancel();
+        _onCancel() {
+          if (this.onCancel) {
+            this.onCancel();
+          }
+          this.toggle();
         }
 
-        this.toggle();
-      },
-
-      _onConfirm: function() {
-        if(this.onConfirm) {
-          this.onConfirm();
+        _onConfirm() {
+          if (this.onConfirm) {
+            this.onConfirm();
+          }
+          this.toggle();
         }
 
-        this.toggle();
       }
-    });
+
+      customElements.define(PopupConfirm.is, PopupConfirm);
+      Nuxeo.PopupConfirm = PopupConfirm;
+    }
   </script>
 </dom-module>

@@ -15,23 +15,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../../paper-styles/paper-styles.html">
-<link rel="import" href="../../paper-button/paper-button.html">
-<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../paper-toast/paper-toast.html">
 <link rel="import" href="../../iron-icons/editor-icons.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
-
 <link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-document.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
-<link rel="import" href="../widgets/nuxeo-card.html">
+<link rel="import" href="../../paper-button/paper-button.html">
+<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../paper-styles/paper-styles.html">
+<link rel="import" href="../../paper-toast/paper-toast.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
-
+<link rel="import" href="../widgets/nuxeo-card.html">
 <link rel="import" href="nuxeo-document-acl-table.html">
-<link rel="import" href="nuxeo-popup-permission.html">
 <link rel="import" href="nuxeo-popup-confirm.html">
+<link rel="import" href="nuxeo-popup-permission.html">
 
 <!--
 An element providing document permissions management
@@ -83,13 +82,15 @@ An element providing document permissions management
 
     <!-- Local permissions -->
     <nuxeo-card heading="[[i18n('documentPermissions.locallyDefined')]]">
-      <template is="dom-if" if="[[_hasPermission(doc,'Everything')]]">
-        <div class="actions">
-          <nuxeo-popup-permission id="localPermissions" doc-id="{{doc.uid}}"
-                                  user-visible-permissions="{{doc.contextParameters.userVisiblePermissions}}">
-          </nuxeo-popup-permission>
-        </div>
-      </template>
+      <dom-if if="[[_hasPermission(doc,'Everything')]]">
+        <template>
+          <div class="actions">
+            <nuxeo-popup-permission id="localPermissions" doc-id="{{doc.uid}}"
+                                    user-visible-permissions="{{doc.contextParameters.userVisiblePermissions}}">
+            </nuxeo-popup-permission>
+          </div>
+        </template>
+      </dom-if>
       <div class="content">
         <nuxeo-document-acl-table doc="[[doc]]" acl-filter="_excludeInheritedAcls" ace-filter="_excludeExternalUserAces"
           show-actions="[[_hasPermission(doc,'Everything')]]">
@@ -100,16 +101,22 @@ An element providing document permissions management
 
     <!-- Inherited permissions -->
     <nuxeo-card heading="[[i18n('documentPermissions.inherited')]]">
-      <template is="dom-if" if="[[_hasPermission(doc,'Everything')]]">
-        <div class="actions">
-          <template is="dom-if" if="[[!_empty(inheritedAces)]]">
-            <paper-button id="block" on-tap="blockInheritance">[[i18n('documentPermissions.block')]]</paper-button>
-          </template>
-          <template is="dom-if" if="[[_empty(inheritedAces)]]">
-            <paper-button id="unblock" on-tap="unblockInheritance">[[i18n('documentPermissions.unblock')]]</paper-button>
-          </template>
-        </div>
-      </template>
+      <dom-if if="[[_hasPermission(doc,'Everything')]]">
+        <template>
+          <div class="actions">
+            <dom-if if="[[!_empty(inheritedAces)]]">
+              <template>
+                <paper-button id="block" on-click="blockInheritance">[[i18n('documentPermissions.block')]]</paper-button>
+              </template>
+            </dom-if>
+            <dom-if if="[[_empty(inheritedAces)]]">
+              <template>
+                <paper-button id="unblock" on-click="unblockInheritance">[[i18n('documentPermissions.unblock')]]</paper-button>
+              </template>
+            </dom-if>
+          </div>
+        </template>
+      </dom-if>
       <div class="content">
         <div class="tip" hidden$="[[_empty(inheritedAces)]]">[[i18n('documentPermissions.blockDescription')]]</div>
         <nuxeo-document-acl-table doc="[[doc]]" aces="{{inheritedAces}}" acl-filter="_onlyInheritedAcls" show-actions="false">
@@ -120,13 +127,15 @@ An element providing document permissions management
 
     <!-- External users permissions -->
     <nuxeo-card heading="[[i18n('documentPermissions.external')]]">
-      <template is="dom-if" if="[[_hasPermission(doc, 'Everything')]]">
-        <div class="actions">
-          <nuxeo-popup-permission id="externalPermissions" doc-id="{{doc.uid}}"
-            user-visible-permissions="{{doc.contextParameters.userVisiblePermissions}}"
-            share-with-external="true"></nuxeo-popup-permission>
-        </div>
-      </template>
+      <dom-if if="[[_hasPermission(doc, 'Everything')]]">
+        <template>
+          <div class="actions">
+            <nuxeo-popup-permission id="externalPermissions" doc-id="{{doc.uid}}"
+              user-visible-permissions="{{doc.contextParameters.userVisiblePermissions}}"
+              share-with-external="true"></nuxeo-popup-permission>
+          </div>
+        </template>
+      </dom-if>
 
       <div class="content">
         <div class="tip">[[i18n('documentPermissions.externalDescription')]]</div>
@@ -147,107 +156,123 @@ An element providing document permissions management
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-document-permissions',
-      behaviors: [Nuxeo.I18nBehavior],
-      properties: {
-        doc: {
-          type: Object,
-          value: null
-        },
-        docId: {
-          type: String,
-          value: ''
-        },
-        docPath: {
-          type: String,
-          value: ''
-        },
-        params: {
-          type: Object,
-          value: {
-            "fetch.acls": "username,creator,extended",
-            "depth": "children",
-            "time": new Date().getTime()
+    {
+      class DocumentPermissions extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
+
+        static get is() {
+          return 'nuxeo-document-permissions';
+        }
+
+        static get properties() {
+          return {
+            doc: {
+              type: Object,
+              value: null,
+            },
+            docId: {
+              type: String,
+              value: '',
+            },
+            docPath: {
+              type: String,
+              value: '',
+            },
+            params: {
+              type: Object,
+              value: {
+                'fetch.acls': 'username,creator,extended',
+                depth: 'children',
+                time: new Date().getTime(),
+              },
+            },
+            visible: {
+              type: Boolean,
+              value: false,
+              observer: 'refresh',
+            },
+          };
+        }
+
+        ready() {
+          super.ready();
+          this.addEventListener('acecreated', this.onACECreated);
+          this.addEventListener('aceupdated', this.onACEUpdated);
+          this.addEventListener('acedeleted', this.onACEDeleted);
+          this.addEventListener('notification', this.onNotification);
+        }
+
+        refresh() {
+          if (this.visible) {
+            this.params.time = new Date().getTime();
+            this.$.doc.get().then(() => {
+              this.dispatchEvent(new CustomEvent('iron-resize', {
+                composed: true,
+                bubbles: true,
+              }));
+            });
           }
-        },
-        visible: {
-          type: Boolean,
-          value: false,
-          observer: 'refresh'
         }
-      },
 
-      listeners: {
-        'acecreated': 'onACECreated',
-        'aceupdated': 'onACEUpdated',
-        'acedeleted': 'onACEDeleted',
-        'notification': 'onNotification'
-      },
-
-      refresh: function () {
-        if (this.visible) {
-          this.params.time = new Date().getTime();
-          this.$.doc.get();
+        onACECreated() {
+          this.$.toast.text = this.i18n('documentPermissions.permissionCreated');
+          this.$.toast.show();
+          this.refresh();
         }
-      },
 
-      onACECreated: function() {
-        this.$.toast.text = this.i18n('documentPermissions.permissionCreated');
-        this.$.toast.show();
-        this.refresh();
-      },
+        onACEUpdated() {
+          this.$.toast.text = this.i18n('documentPermissions.permissionUpdated');
+          this.$.toast.show();
+          this.refresh();
+        }
 
-      onACEUpdated: function() {
-        this.$.toast.text = this.i18n('documentPermissions.permissionUpdated');
-        this.$.toast.show();
-        this.refresh();
-      },
+        onACEDeleted() {
+          this.$.toast.text = this.i18n('documentPermissions.permissionDeleted');
+          this.$.toast.show();
+          this.refresh();
+        }
 
-      onACEDeleted: function() {
-        this.$.toast.text = this.i18n('documentPermissions.permissionDeleted');
-        this.$.toast.show();
-        this.refresh();
-      },
+        onNotification() {
+          this.$.toast.text = this.i18n('documentPermissions.permissionNotificationSent');
+          this.$.toast.show();
+        }
 
-      onNotification: function() {
-        this.$.toast.text = this.i18n('documentPermissions.permissionNotificationSent');
-        this.$.toast.show();
-      },
+        _hasPermission() {
+          const permissions = this.doc && this.doc.contextParameters && this.doc.contextParameters.permissions;
+          return permissions && permissions.indexOf('Everything') !== -1;
+        }
 
-      _hasPermission: function (doc, name) {
-        var permissions = this.doc && this.doc.contextParameters && this.doc.contextParameters.permissions;
-        return permissions && permissions.indexOf('Everything') !== -1;
-      },
+        _empty(arr) {
+          return arr.length === 0;
+        }
 
-      _empty: function(arr) {
-        return arr.length === 0;
-      },
+        _excludeInheritedAcls(acl) {
+          return acl.name !== 'inherited';
+        }
 
-      _excludeInheritedAcls: function (acl) {
-        return acl.name !== 'inherited';
-      },
+        _onlyInheritedAcls(acl) {
+          return acl.name === 'inherited';
+        }
 
-      _onlyInheritedAcls: function (acl) {
-        return acl.name === 'inherited';
-      },
+        _excludeExternalUserAces(ace) {
+          return ace.granted && (ace.status === 'pending' || ace.status === 'effective') && ace.externalUser === false;
+        }
 
-      _excludeExternalUserAces: function (ace) {
-        return ace.granted && (ace.status === 'pending' || ace.status === 'effective') && ace.externalUser === false;
-      },
+        _onlyExternalUserAces(ace) {
+          return ace.granted && (ace.status === 'pending' || ace.status === 'effective') && ace.externalUser === true;
+        }
 
-      _onlyExternalUserAces: function (ace) {
-        return ace.granted && (ace.status === 'pending' || ace.status === 'effective') && ace.externalUser === true;
-      },
+        blockInheritance() {
+          this.$.blockOp.execute().then(this.refresh.bind(this));
+        }
 
-      blockInheritance: function () {
-        this.$.blockOp.execute().then(this.refresh.bind(this));
-      },
+        unblockInheritance() {
+          this.$.unblockOp.execute().then(this.refresh.bind(this));
+        }
 
-      unblockInheritance: function () {
-        this.$.unblockOp.execute().then(this.refresh.bind(this));
       }
 
-    });
+      customElements.define(DocumentPermissions.is, DocumentPermissions);
+      Nuxeo.DocumentPermissions = DocumentPermissions;
+    }
   </script>
 </dom-module>

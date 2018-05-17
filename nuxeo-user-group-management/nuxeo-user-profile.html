@@ -15,15 +15,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../../iron-icon/iron-icon.html">
-<link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../iron-form/iron-form.html">
+<link rel="import" href="../../iron-icon/iron-icon.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-toast/paper-toast.html">
-<link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../../polymer/lib/utils/import-href.html">
 <link rel="import" href="../widgets/nuxeo-card.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../widgets/nuxeo-group-tag.html">
@@ -132,11 +135,13 @@ Example:
         <div class="actions">
 
           <!-- change password -->
-          <template is="dom-if" if=[[!readonly]]>
-            <paper-button noink id="changePasswordButton" class="horizontal layout center primary" on-tap="_openChangePasswordDialog">
-              <iron-icon icon="nuxeo:lock"></iron-icon> [[i18n('userProfile.password.change')]]
-            </paper-button>
-          </template>
+          <dom-if if=[[!readonly]]>
+            <template>
+              <paper-button noink id="changePasswordButton" class="horizontal layout center primary" on-click="_openChangePasswordDialog">
+                <iron-icon icon="nuxeo:lock"></iron-icon> [[i18n('userProfile.password.change')]]
+              </paper-button>
+            </template>
+          </dom-if>
           <nuxeo-dialog id="changePasswordDialog" with-backdrop>
             <h3>[[i18n('userProfile.password.change')]]</h3>
 
@@ -180,12 +185,14 @@ Example:
           <div class="flex">[[i18n('userManagement.name')]]</div>
           <div class="flex-4">[[i18n('userManagement.identifier')]]</div>
         </div>
-        <template is="dom-repeat" items="[[groups]]">
-          <div class="row">
-            <div class="flex"><nuxeo-group-tag group="[[item]]"></nuxeo-group-tag></div>
-            <div class="flex-4">[[item.name]]</div>
-          </div>
-        </template>
+        <dom-repeat items="[[groups]]">
+          <template>
+            <div class="row">
+              <div class="flex"><nuxeo-group-tag group="[[item]]"></nuxeo-group-tag></div>
+              <div class="flex-4">[[item.name]]</div>
+            </div>
+          </template>
+        </dom-repeat>
       </div>
     </nuxeo-card>
 
@@ -198,109 +205,118 @@ Example:
 
     <!-- group permissions -->
     <nuxeo-card>
-      <template is="dom-repeat" items="[[groups]]">
-        <nuxeo-user-group-permissions-table label="[[i18n('userManagement.entityPermissions', item.name)]]"
-                                            entity="[[item.name]]" readonly>
-        </nuxeo-user-group-permissions-table>
-      </template>
+      <dom-repeat items="[[groups]]">
+        <template>
+          <nuxeo-user-group-permissions-table label="[[i18n('userManagement.entityPermissions', item.name)]]"
+                                              entity="[[item.name]]" readonly>
+          </nuxeo-user-group-permissions-table>
+        </template>
+      </dom-repeat>
     </nuxeo-card>
 
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-user-profile',
-      behaviors: [Nuxeo.I18nBehavior],
-      properties: {
-        username: {
-          type: String,
-          observer: '_fetch'
-        },
+    {
+      class UserProfile extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
-        user: Object,
-
-        groups: {
-          type: Object,
-          computed: '_computeGroups(user)'
-        },
-
-        readonly: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true
-        }
-      },
-
-      ready: function() {
-        if (!this._isRegistered('nuxeo-view-user')) {
-          Polymer.Base.importHref(this.resolveUrl('nuxeo-view-user.html'));
+        static get is() {
+          return 'nuxeo-user-profile';
         }
 
-        this.$.changePasswordForm.addEventListener('iron-form-presubmit', function(event) {
-          event.preventDefault();
-          this._savePassword();
-        }.bind(this));
-      },
+        static get properties() {
+          return {
+            username: {
+              type: String,
+              observer: '_fetch',
+            },
 
-      _isRegistered: function(tag) {
-        return document.createElement(tag) instanceof Polymer.Element;
-      },
+            user: Object,
 
-      _fetch: function() {
-        if (this.username) {
-          this.$.request.get().then(function(response) {
-            delete response.properties.password;
+            groups: {
+              type: Object,
+              computed: '_computeGroups(user)',
+            },
+
+            readonly: {
+              type: Boolean,
+              value: false,
+              reflectToAttribute: true,
+            },
+          };
+        }
+
+        ready() {
+          super.ready();
+          if (!this._isRegistered('nuxeo-view-user')) {
+            Polymer.importHref(this.resolveUrl('nuxeo-view-user.html'));
+          }
+
+          this.$.changePasswordForm.addEventListener('iron-form-presubmit', (event) => {
+            event.preventDefault();
+            this._savePassword();
+          });
+        }
+
+        _isRegistered(tag) {
+          return document.createElement(tag) instanceof Polymer.Element;
+        }
+
+        _fetch() {
+          if (this.username) {
+            this.$.request.get().then((response) => {
+              delete response.properties.password;
+              this.user = response;
+            });
+          }
+        }
+
+        _computeGroups() {
+          return this.user.extendedGroups.filter((group) => this.user.properties.groups.indexOf(group.name) > -1);
+        }
+
+        _openChangePasswordDialog() {
+          this.$.passwordOld.value = this.$.passwordNew.value = this.$.passwordConfirm.value = '';
+          this.$.changePasswordDialog.open();
+        }
+
+        _submitChangePassword() {
+          this.$.changePasswordForm.submit();
+        }
+
+        _savePassword() {
+          this.$.changePasswordDialog.close();
+          this.$.changePassword.data = {
+            oldPassword: this.$.passwordOld.value,
+            newPassword: this.$.passwordNew.value,
+          };
+          this.$.changePassword.put().then((response) => {
             this.user = response;
-          }.bind(this));
+            this._toast(this.i18n('userProfile.password.changed'));
+
+            // update connection
+            this.$.nxcon.username = this.user.id;
+            this.$.nxcon.password = this.$.passwordNew.value;
+            this.$.nxcon.connect();
+
+          }).catch((error) => {
+            if (error.status === 401) {
+              this._toast(this.i18n('userProfile.password.wrong'), true);
+            } else {
+              this._toast(this.i18n('userProfile.password.error'), true);
+            }
+          });
         }
-      },
 
-      _computeGroups: function() {
-        return this.user.extendedGroups.filter(function(group) {
-          if (this.user.properties.groups.indexOf(group.name) > -1) {
-            return group;
-          }
-        }.bind(this));
-      },
+        _toast(msg) {
+          this.$.toast.text = msg;
+          this.$.toast.open();
+        }
 
-      _openChangePasswordDialog: function() {
-        this.$.passwordOld.value = this.$.passwordNew.value = this.$.passwordConfirm.value = '';
-        this.$.changePasswordDialog.open();
-      },
-
-      _submitChangePassword: function() {
-        this.$.changePasswordForm.submit();
-      },
-
-      _savePassword: function() {
-        this.$.changePasswordDialog.close();
-        this.$.changePassword.data = {
-          "oldPassword" : this.$.passwordOld.value,
-          "newPassword" : this.$.passwordNew.value
-        };
-        this.$.changePassword.put().then(function(response) {
-          this.user = response;
-          this._toast(this.i18n('userProfile.password.changed'));
-
-          // update connection
-          this.$.nxcon.username = this.user.id;
-          this.$.nxcon.password = this.$.passwordNew.value;
-          this.$.nxcon.connect();
-
-        }.bind(this)).catch(function(error) {
-          if (error.status === 401) {
-            this._toast(this.i18n('userProfile.password.wrong'), true);
-          } else {
-            this._toast(this.i18n('userProfile.password.error'), true);
-          }
-        }.bind(this));
-      },
-
-      _toast: function(msg) {
-        this.$.toast.text = msg;
-        this.$.toast.open();
       }
 
-    });
+      customElements.define(UserProfile.is, UserProfile);
+      Nuxeo.UserProfile = UserProfile;
+    }
   </script>
 </dom-module>

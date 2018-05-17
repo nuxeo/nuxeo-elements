@@ -15,25 +15,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="nuxeo-user-group-permissions-table.html">
-<link rel="import" href="../nuxeo-pagination-controls.html">
-<link rel="import" href="../nuxeo-filters-behavior.html">
-<link rel="import" href="../nuxeo-i18n-behavior.html">
-<link rel="import" href="../widgets/nuxeo-user-suggestion.html">
-<link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
-<link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../../iron-form/iron-form.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-toast/paper-toast.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../nuxeo-filters-behavior.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../nuxeo-pagination-controls.html">
 <link rel="import" href="../widgets/nuxeo-card.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../widgets/nuxeo-group-tag.html">
 <link rel="import" href="../widgets/nuxeo-input.html">
 <link rel="import" href="../widgets/nuxeo-tag.html">
+<link rel="import" href="../widgets/nuxeo-user-suggestion.html">
 <link rel="import" href="../widgets/nuxeo-user-tag.html">
+<link rel="import" href="nuxeo-user-group-permissions-table.html">
 
 <!--
 An element for managing a group.
@@ -229,7 +231,7 @@ Used by `nuxeo-user-group-management`
         <div class="flex start-justified">
           <paper-button noink dialog-dismiss>[[i18n('label.no')]]</paper-button>
         </div>
-        <paper-button noink class="primary" on-tap="_deleteGroup">[[i18n('label.yes')]]</paper-button>
+        <paper-button noink class="primary" on-click="_deleteGroup">[[i18n('label.yes')]]</paper-button>
       </div>
     </nuxeo-dialog>
 
@@ -239,7 +241,7 @@ Used by `nuxeo-user-group-management`
         <div class="flex start-justified">
           <paper-button noink dialog-dismiss>[[i18n('label.no')]]</paper-button>
         </div>
-        <paper-button noink class="primary" dialog-confirm on-tap="_removeMember">[[i18n('label.yes')]]</paper-button>
+        <paper-button noink class="primary" dialog-confirm on-click="_removeMember">[[i18n('label.yes')]]</paper-button>
       </div>
     </nuxeo-dialog>
 
@@ -254,13 +256,13 @@ Used by `nuxeo-user-group-management`
         <div class="flex start-justified">
           <paper-button dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
         </div>
-        <paper-button noink class="primary" on-tap="_submitEditForm">[[i18n('command.save.changes')]]</paper-button>
+        <paper-button noink class="primary" on-click="_submitEditForm">[[i18n('command.save.changes')]]</paper-button>
       </div>
     </nuxeo-dialog>
 
     <nuxeo-card>
       <div class="header horizontal layout">
-        <paper-icon-button noink class="backButton" icon="icons:arrow-back" on-tap="_goHome"></paper-icon-button>
+        <paper-icon-button noink class="backButton" icon="icons:arrow-back" on-click="_goHome"></paper-icon-button>
         <iron-icon icon="nuxeo:user" class="avatar"></iron-icon>
         <div class="layout vertical flex">
           <h3 class="groupname">[[group.groupname]]</h3>
@@ -268,19 +270,21 @@ Used by `nuxeo-user-group-management`
           <h5 class="counter">[[_countUsers(group.memberUsers)]] + [[_countGroups(group.memberGroups)]]</h5>
         </div>
 
-        <template is="dom-if" if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
-          <div class="layout horizontal header-actions">
-            <paper-button id="deleteGroupButton" noink class="flex-end" on-tap="_toggleDeleteGroup">
-              <iron-icon icon="nuxeo:delete"></iron-icon> [[i18n('command.delete')]]
-            </paper-button>
-            <paper-button id="addMembersButton" noink class="flex-end primary" on-tap="_toggleEditMembers">
-              <iron-icon icon="nuxeo:add"></iron-icon> [[i18n('groupManagement.addMembers')]]
-            </paper-button>
-            <paper-button id="editGroupButton" noink on-tap="_toggleEditGroup" class="primary">
-              <iron-icon icon="nuxeo:edit"></iron-icon> [[i18n('groupManagement.editGroup')]]
-            </paper-button>
-          </div>
-        </template>
+        <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
+          <template>
+            <div class="layout horizontal header-actions">
+              <paper-button id="deleteGroupButton" noink class="flex-end" on-click="_toggleDeleteGroup">
+                <iron-icon icon="nuxeo:delete"></iron-icon> [[i18n('command.delete')]]
+              </paper-button>
+              <paper-button id="addMembersButton" noink class="flex-end primary" on-click="_toggleEditMembers">
+                <iron-icon icon="nuxeo:add"></iron-icon> [[i18n('groupManagement.addMembers')]]
+              </paper-button>
+              <paper-button id="editGroupButton" noink on-click="_toggleEditGroup" class="primary">
+                <iron-icon icon="nuxeo:edit"></iron-icon> [[i18n('groupManagement.editGroup')]]
+              </paper-button>
+            </div>
+          </template>
+        </dom-if>
       </div>
     </nuxeo-card>
 
@@ -292,13 +296,15 @@ Used by `nuxeo-user-group-management`
                              result-formatter="[[resultFormatter]]"
                              query-results-filter="[[resultsFilter]]">
       </nuxeo-user-suggestion>
-      <template is="dom-repeat" items="[[activity]]">
-        <div class="activity-entry">
-          <nuxeo-tag icon="[[_icon(item)]]">[[item.displayLabel]]</nuxeo-tag>
-          <span>[[i18n('groupManagement.addedToGroup')]]</span>
-          <span class="remove" on-tap="_toggleDeleteDialog">[[i18n('groupManagement.remove')]]</span>
-        </div>
-      </template>
+      <dom-repeat items="[[activity]]">
+        <template>
+          <div class="activity-entry">
+            <nuxeo-tag icon="[[_icon(item)]]">[[item.displayLabel]]</nuxeo-tag>
+            <span>[[i18n('groupManagement.addedToGroup')]]</span>
+            <span class="remove" on-click="_toggleDeleteDialog">[[i18n('groupManagement.remove')]]</span>
+          </div>
+        </template>
+      </dom-repeat>
     </div>
 
     <!-- users table -->
@@ -316,31 +322,41 @@ Used by `nuxeo-user-group-management`
           <div class="table-actions"></div>
         </div>
         <div class="table-rows">
-          <template is="dom-if" if=[[!_empty(memberUsers.entries)]]>
-            <template is="dom-repeat" items="[[memberUsers.entries]]">
+          <dom-if if=[[!_empty(memberUsers.entries)]]>
+            <template>
+              <dom-repeat items="[[memberUsers.entries]]">
+                <template>
+                  <div class="table-row">
+                    <div class="flex-4">
+                      <dom-if if="[[_userHasName(item)]]">
+                        <template>
+                          <nuxeo-user-tag user="[[item]]"></nuxeo-user-tag>
+                        </template>
+                      </dom-if>
+                    </div>
+                    <div class="flex-4">[[item.id]]</div>
+                    <div class="table-actions">
+                      <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
+                        <template>
+                          <paper-icon-button icon="nuxeo:clear" noink
+                                             title="[[i18n('groupManagement.removeFrom', groupname)]]"
+                                             on-click="_toggleDeleteDialog">
+                          </paper-icon-button>
+                        </template>
+                      </dom-if>
+                    </div>
+                  </div>
+                </template>
+              </dom-repeat>
+            </template>
+          </dom-if>
+          <dom-if if=[[_empty(memberUsers.entries)]]>
+            <template>
               <div class="table-row">
-                <div class="flex-4">
-                  <template is="dom-if" if="[[_userHasName(item)]]">
-                    <nuxeo-user-tag user="[[item]]"></nuxeo-user-tag>
-                  </template>
-                </div>
-                <div class="flex-4">[[item.id]]</div>
-                <div class="table-actions">
-                  <template is="dom-if" if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
-                    <paper-icon-button icon="nuxeo:clear" noink
-                                       title="[[i18n('groupManagement.removeFrom', groupname)]]"
-                                       on-tap="_toggleDeleteDialog">
-                    </paper-icon-button>
-                  </template>
-                </div>
+                <div class="emptyResult">[[i18n('groupManagement.noSearchResults')]]</div>
               </div>
             </template>
-          </template>
-          <template is="dom-if" if=[[_empty(memberUsers.entries)]]>
-            <div class="table-row">
-              <div class="emptyResult">[[i18n('groupManagement.noSearchResults')]]</div>
-            </div>
-          </template>
+          </dom-if>
         </div>
       </div>
       <nuxeo-pagination-controls page="{{usersCurrentPage}}" number-of-pages="[[memberUsers.numberOfPages]]"></nuxeo-pagination-controls>
@@ -361,29 +377,37 @@ Used by `nuxeo-user-group-management`
           <div class="table-actions"></div>
         </div>
         <div class="table-rows">
-          <template is="dom-if" if=[[!_empty(memberGroups.entries)]]>
-            <template is="dom-repeat" items="[[memberGroups.entries]]">
+          <dom-if if=[[!_empty(memberGroups.entries)]]>
+            <template>
+              <dom-repeat items="[[memberGroups.entries]]">
+                <template>
+                  <div class="table-row">
+                    <div class="flex-4">
+                      <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
+                    </div>
+                    <div class="flex-4">[[item.grouplabel]]</div>
+                    <div class="table-actions">
+                      <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
+                        <template>
+                          <paper-icon-button icon="nuxeo:clear" noink
+                                             title="[[i18n('groupManagement.removeFrom', groupname)]]"
+                                             on-click="_toggleDeleteDialog">
+                          </paper-icon-button>
+                        </template>
+                      </dom-if>
+                    </div>
+                  </div>
+                </template>
+              </dom-repeat>
+            </template>
+          </dom-if>
+          <dom-if if=[[_empty(memberGroups.entries)]]>
+            <template>
               <div class="table-row">
-                <div class="flex-4">
-                  <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
-                </div>
-                <div class="flex-4">[[item.grouplabel]]</div>
-                <div class="table-actions">
-                  <template is="dom-if" if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
-                    <paper-icon-button icon="nuxeo:clear" noink
-                                       title="[[i18n('groupManagement.removeFrom', groupname)]]"
-                                       on-tap="_toggleDeleteDialog">
-                    </paper-icon-button>
-                  </template>
-                </div>
+                <div>[[i18n('groupManagement.noSearchResults')]]</div>
               </div>
             </template>
-          </template>
-          <template is="dom-if" if=[[_empty(memberGroups.entries)]]>
-            <div class="table-row">
-              <div>[[i18n('groupManagement.noSearchResults')]]</div>
-            </div>
-          </template>
+          </dom-if>
         </div>
       </div>
       <nuxeo-pagination-controls page="{{groupsCurrentPage}}" number-of-pages="[[memberGroups.numberOfPages]]"></nuxeo-pagination-controls>
@@ -396,343 +420,366 @@ Used by `nuxeo-user-group-management`
 
   </template>
   <script>
-    Polymer({
-      is: 'nuxeo-group-management',
-      behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
-      properties: {
-        groupname: {
-          type: String,
-          observer: '_fetch'
-        },
+    {
+      class GroupManagement extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 
-        group: Object,
-
-        selectedMember: {
-          type: Object,
-          observer: '_memberSelected'
-        },
-
-        memberUsers: Object,
-
-        memberGroups: Object,
-
-        activity: {
-          type: Array,
-          value: []
-        },
-
-        resultsFilter: {
-          type: Function,
-          value: function() {
-            return this._resultsFilter.bind(this);
-          }
-        },
-
-        resultFormatter: {
-          type: Function,
-          value: function() {
-            return this._resultFormatter.bind(this);
-          }
-        },
-
-        showEditMembers: {
-          type: Boolean,
-          value: false
-        },
-
-        usersCurrentPage: Number,
-
-        usersFilter: String,
-
-        groupsCurrentPage: Number,
-
-        groupsFilter: String,
-
-        _editableGroup: Object,
-
-        _removedMember: Object,
-
-        _fromDelete: {
-          type: Boolean,
-          value: false
-        },
-
-        readonly: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true
-        },
-
-        _currentUser: {
-          type: Object
+        static get is() {
+          return 'nuxeo-group-management';
         }
-      },
 
-      observers: [
-        '_fetchUsers(usersCurrentPage)',
-        '_filterUsers(usersFilter)',
-        '_fetchGroups(groupsCurrentPage)',
-        '_filterGroups(groupsFilter)'
-      ],
+        static get properties() {
+          return {
+            groupname: {
+              type: String,
+              observer: '_fetch',
+            },
 
-      /**
-       * Fired when a group is deleted.
-       *
-       * @event nuxeo-group-deleted
-       */
+            group: Object,
 
-      ready: function() {
-        this.$.editForm.addEventListener('iron-form-presubmit', function(event) {
-          event.preventDefault();
-          this._saveGroup();
-        }.bind(this));
-      },
+            selectedMember: {
+              type: Object,
+              observer: '_memberSelected',
+            },
 
-      _hasAdministrationPermissions: function(user) {
-        return user && (user.isAdministrator || (this.isMember(user, 'powerusers')
-          && this.groupname !== 'administrators'));
-      },
+            memberUsers: Object,
 
-      _canEditGroup: function(readonly, currentUser, groupname) {
-        return !readonly && this._hasAdministrationPermissions(currentUser, groupname);
-      },
+            memberGroups: Object,
 
-      _userHasName: function(user) {
-        return user.properties.firstName || user.properties.lastName;
-      },
+            activity: {
+              type: Array,
+              value: [],
+            },
 
-      _fetch: function() {
-        if (this.groupname) {
-          this.$.request.get().then(function() {
-            this.activity = [];
-            this.showEditMembers = false;
-            this.selectedMember = null;
-            this._fetchGroups();
-            this._fetchUsers();
-          }.bind(this));
-        }
-      },
+            resultsFilter: {
+              type: Function,
+              value() {
+                return this._resultsFilter.bind(this);
+              },
+            },
 
-      _saveGroup: function() {
-        this.$.editRequest.data = this._editableGroup;
-        this.$.editRequest.put().then(function(response) {
-          this._toast(this.i18n('groupManagement.group.updated'));
-          this.$.editGroupDialog.toggle();
-        }.bind(this));
-      },
+            resultFormatter: {
+              type: Function,
+              value() {
+                return this._resultFormatter.bind(this);
+              },
+            },
 
-      _fetchGroups: function() {
-        if (this.group) {
-          // if there's only one entry left in the current page and we delete it, we should go to prev page
-          if (this._fromDelete && this.memberGroups.currentPageSize === 1) {
-            this._fromDelete = false;
-            this.groupsCurrentPage--;
-            return;
-          }
-          var params = {
-            q: this.groupsFilter,
-            currentPageIndex: this.groupsCurrentPage - 1
+            showEditMembers: {
+              type: Boolean,
+              value: false,
+            },
+
+            usersCurrentPage: Number,
+
+            usersFilter: String,
+
+            groupsCurrentPage: Number,
+
+            groupsFilter: String,
+
+            _editableGroup: Object,
+
+            _removedMember: Object,
+
+            _fromDelete: {
+              type: Boolean,
+              value: false,
+            },
+
+            readonly: {
+              type: Boolean,
+              value: false,
+              reflectToAttribute: true,
+            },
+
+            _currentUser: {
+              type: Object,
+            },
           };
-          this.$.groups.params = params;
         }
-      },
 
-      _fetchUsers: function() {
-        if (this.group) {
-          // if there's only one entry left in the current page and we delete it, we should go to prev page
-          if (this._fromDelete && this.memberUsers.currentPageSize === 1) {
-            this._fromDelete = false;
-            this.usersCurrentPage--;
-            return;
-          }
-          var params = {
-            q: this.usersFilter,
-            currentPageIndex: this.usersCurrentPage - 1
-          };
-          this.$.users.params = params;
+        static get observers() {
+          return [
+            '_fetchUsers(usersCurrentPage)',
+            '_filterUsers(usersFilter)',
+            '_fetchGroups(groupsCurrentPage)',
+            '_filterGroups(groupsFilter)',
+          ];
         }
-      },
 
-      _memberSelected: function() {
-        if (this.selectedMember) {
-          var member = this.selectedMember;
-          switch (member.type) {
-            case 'USER_TYPE':
-              var users = this.group.memberUsers || [];
-              users.push(member.id);
-              member['entity-type'] = 'user';
-              this.group.memberUsers = users;
-              break;
-            case 'GROUP_TYPE':
-              var groups = this.group.memberGroups || [];
-              groups.push(member.id);
-              member['entity-type'] = 'group';
-              this.group.memberGroups = groups;
-              break;
+        /**
+         * Fired when a group is deleted.
+         *
+         * @event nuxeo-group-deleted
+         */
+
+        ready() {
+          super.ready();
+          this.$.editForm.addEventListener('iron-form-presubmit', (event) => {
+            event.preventDefault();
+            this._saveGroup();
+          });
+        }
+
+        _hasAdministrationPermissions(user) {
+          return user && (user.isAdministrator || (this.isMember(user, 'powerusers')
+              && this.groupname !== 'administrators'));
+        }
+
+        _canEditGroup(readonly, currentUser, groupname) {
+          return !readonly && this._hasAdministrationPermissions(currentUser, groupname);
+        }
+
+        _userHasName(user) {
+          return user.properties.firstName || user.properties.lastName;
+        }
+
+        _fetch() {
+          if (this.groupname) {
+            this.$.request.get().then(() => {
+              this.activity = [];
+              this.showEditMembers = false;
+              this.selectedMember = null;
+              this._fetchGroups();
+              this._fetchUsers();
+            });
           }
-          this.push('activity', member);
+        }
+
+        _saveGroup() {
+          this.$.editRequest.data = this._editableGroup;
+          this.$.editRequest.put().then(() => {
+            this._toast(this.i18n('groupManagement.group.updated'));
+            this.$.editGroupDialog.toggle();
+          });
+        }
+
+        _fetchGroups() {
+          if (this.group) {
+            // if there's only one entry left in the current page and we delete it, we should go to prev page
+            if (this._fromDelete && this.memberGroups.currentPageSize === 1) {
+              this._fromDelete = false;
+              this.groupsCurrentPage--;
+              return;
+            }
+            const params = {
+              q: this.groupsFilter,
+              currentPageIndex: this.groupsCurrentPage - 1,
+            };
+            this.$.groups.params = params;
+          }
+        }
+
+        _fetchUsers() {
+          if (this.group) {
+            // if there's only one entry left in the current page and we delete it, we should go to prev page
+            if (this._fromDelete && this.memberUsers.currentPageSize === 1) {
+              this._fromDelete = false;
+              this.usersCurrentPage--;
+              return;
+            }
+            const params = {
+              q: this.usersFilter,
+              currentPageIndex: this.usersCurrentPage - 1,
+            };
+            this.$.users.params = params;
+          }
+        }
+
+        _memberSelected() {
+          if (this.selectedMember) {
+            const member = this.selectedMember;
+            switch (member.type) {
+              case 'USER_TYPE': {
+                const users = this.group.memberUsers || [];
+                users.push(member.id);
+                member['entity-type'] = 'user';
+                this.group.memberUsers = users;
+                break;
+              }
+              case 'GROUP_TYPE': {
+                const groups = this.group.memberGroups || [];
+                groups.push(member.id);
+                member['entity-type'] = 'group';
+                this.group.memberGroups = groups;
+                break;
+              }
+              default:
+                // do nothing
+            }
+            this.push('activity', member);
+            this.$.editRequest.data = this.group;
+            this.$.editRequest.put().then(() => {
+              if (member['entity-type'] === 'user') {
+                this._fetchUsers();
+              } else {
+                this._fetchGroups();
+              }
+              this._toast(this.i18n('groupManagement.addedUserToGroup', member.displayLabel, this.group.groupname));
+            });
+          }
+          this.selectedMember = null;
+        }
+
+        _removeMember() {
+          const member = this._removedMember;
+          let idx;
+          switch (member['entity-type']) {
+            case 'user':
+              if (this.group.memberUsers) {
+                idx = this.group.memberUsers.indexOf(this._removedMember.id);
+                this.group.memberUsers.splice(idx, 1);
+              }
+              break;
+            case 'group':
+              if (this.group.memberGroups) {
+                idx = this.group.memberGroups.indexOf(this._removedMember.id);
+                this.group.memberGroups.splice(idx, 1);
+              }
+              break;
+            default:
+              // do nothing
+          }
           this.$.editRequest.data = this.group;
-          this.$.editRequest.put().then(function(response) {
+          this.$.editRequest.put().then(() => {
+            this._fromDelete = true;
             if (member['entity-type'] === 'user') {
               this._fetchUsers();
             } else {
               this._fetchGroups();
             }
-            this._toast(this.i18n('groupManagement.addedUserToGroup', member.displayLabel, this.group.groupname));
-          }.bind(this));
+            this._removeRecent(this._removedMember.id);
+            this._toast(this.i18n('groupManagement.removedUserFromGroup', this._removedMember.id));
+          });
         }
-        this.selectedMember = null;
-      },
 
-      _removeMember: function() {
-        var member = this._removedMember;
-        var idx;
-        switch (member['entity-type']) {
-          case 'user':
-            if (this.group.memberUsers) {
-              idx = this.group.memberUsers.indexOf(this._removedMember.id);
-              this.group.memberUsers.splice(idx, 1);
+        _removeRecent(group) {
+          // remove from 'recent', if it exists
+          for (let i = 0; i < this.activity.length; i++) {
+            if (this.activity[i].id === group) {
+              this.splice('activity', i, 1);
+              return;
             }
-            break;
-          case 'group':
-            if (this.group.memberGroups) {
-              idx = this.group.memberGroups.indexOf(this._removedMember.id);
-              this.group.memberGroups.splice(idx, 1);
-              break;
-            }
+          }
         }
-        this.$.editRequest.data = this.group;
-        this.$.editRequest.put().then(function(response) {
-          this._fromDelete = true;
-          if (member['entity-type'] === 'user') {
+
+        _submitEditForm() {
+          this.$.editForm.submit();
+        }
+
+        _filterUsers() {
+          if (this.group) {
+            this.usersCurrentPage = 1;
             this._fetchUsers();
-          } else {
+          }
+        }
+
+        _filterGroups() {
+          if (this.group) {
+            this.groupsCurrentPage = 1;
             this._fetchGroups();
           }
-          this._removeRecent(this._removedMember.id);
-          this._toast(this.i18n('groupManagement.removedUserFromGroup', this._removedMember.id));
-        }.bind(this));
-      },
+        }
 
-      _removeRecent: function(group) {
-        // remove from 'recent', if it exists
-        for (var i = 0; i < this.activity.length; i++) {
-          if (this.activity[i].id === group) {
-            this.splice('activity', i, 1);
-            return;
+        _deleteGroup() {
+          this.$.deleteGroupDialog.toggle();
+          this.$.editRequest.data = this.group;
+          this.$.editRequest.remove().then(() => {
+            this.dispatchEvent(new CustomEvent('nuxeo-group-deleted', {
+              composed: true,
+              bubbles: true,
+              detail: this.group,
+            }));
+            this._goHome();
+          });
+        }
+
+        _toggleEditMembers() {
+          this.showEditMembers = !this.showEditMembers;
+        }
+
+        _toggleDeleteDialog(e) {
+          const type = e.model.item['entity-type'];
+          this._removedMember = e.model.item;
+          this._removedMember.id = type === 'user' ? e.model.item.id : e.model.item.groupname;
+          this.$.rmFromGroupDialog.toggle();
+        }
+
+        _toggleEditGroup() {
+          this._clone();
+          this.$.editGroupDialog.toggle();
+        }
+
+        _toggleDeleteGroup() {
+          this.$.deleteGroupDialog.toggle();
+        }
+
+        _empty(entries) {
+          return entries && entries.length === 0;
+        }
+
+        _goHome() {
+          this.dispatchEvent(new CustomEvent('goHome', {
+            composed: true,
+            bubbles: true,
+          }));
+        }
+
+        _resultsFilter(entry) {
+          const userInGroup = this.group.memberUsers && this.group.memberUsers.indexOf(entry.id) >= 0;
+          const groupInGroup = this.group.memberGroups && this.group.memberGroups.indexOf(entry.id) >= 0;
+          return !userInGroup && !groupInGroup && entry.id !== this.group.groupname;
+        }
+
+        _resultFormatter(item) {
+          return `${item.displayLabel} (${item.groupname || item.username})`;
+        }
+
+        _icon(entry) {
+          return entry.type === 'GROUP_TYPE' ? 'nuxeo:group' : 'nuxeo:user';
+        }
+
+        _countUsers(users) {
+          if (users) {
+            const label = ` ${users.length === 1 ? this.i18n('groupManagement.member') :
+              this.i18n('groupManagement.members')}`;
+            return users.length + label;
           }
         }
-      },
 
-      _submitEditForm: function() {
-        this.$.editForm.submit();
-      },
-
-      _filterUsers: function() {
-        if (this.group) {
-          this.usersCurrentPage = 1;
-          this._fetchUsers();
+        _countGroups(groups) {
+          if (groups) {
+            const label = ` ${groups.length === 1 ? this.i18n('groupManagement.nestedGroup') :
+              this.i18n('groupManagement.nestedGroups')}`;
+            return groups.length + label;
+          }
         }
-      },
 
-      _filterGroups: function() {
-        if (this.group) {
-          this.groupsCurrentPage = 1;
-          this._fetchGroups();
+        _toast(msg) {
+          this.$.toast.text = msg;
+          this.$.toast.open();
         }
-      },
 
-      _deleteGroup: function() {
-        this.$.deleteGroupDialog.toggle();
-        this.$.editRequest.data = this.group;
-        this.$.editRequest.remove().then(function() {
-          this.fire('nuxeo-group-deleted', this.group);
-          this._goHome();
-        }.bind(this));
-      },
-
-      _toggleEditMembers: function() {
-        this.showEditMembers = !this.showEditMembers;
-      },
-
-      _toggleDeleteDialog: function(e) {
-        var type = e.model.item['entity-type'];
-        this._removedMember = e.model.item;
-        this._removedMember.id = type === 'user' ? e.model.item.id : e.model.item.groupname;
-        this.$.rmFromGroupDialog.toggle();
-      },
-
-      _toggleEditGroup: function() {
-        this._clone();
-        this.$.editGroupDialog.toggle();
-      },
-
-      _toggleDeleteGroup: function() {
-        this.$.deleteGroupDialog.toggle();
-      },
-
-      _empty: function(entries) {
-        return entries && entries.length === 0;
-      },
-
-      _goHome: function() {
-        this.fire('goHome');
-      },
-
-      _resultsFilter: function(entry) {
-        if (this.group.memberUsers) {
-          var userInGroup = this.group.memberUsers.indexOf(entry.id) >= 0;
+        _clone() {
+          this._editableGroup = JSON.parse(JSON.stringify(this.group));
         }
-        if (this.group.memberGroups) {
-          var groupInGroup = this.group.memberGroups.indexOf(entry.id) >= 0;
+
+        _usersPath() {
+          if (this.groupname) {
+            return `group/${this.groupname}/@users`;
+          }
         }
-        return !userInGroup && !groupInGroup && entry.id !== this.group.groupname;
-      },
 
-      _resultFormatter: function(item) {
-        return item.displayLabel + ' (' + (item.groupname || item.username) + ')';
-      },
-
-      _icon: function(entry) {
-        return entry.type === 'GROUP_TYPE' ? 'nuxeo:group' : 'nuxeo:user';
-      },
-
-      _countUsers: function(users) {
-        if (users) {
-          var label = ' ' + (users.length === 1 ? this.i18n('groupManagement.member') :
-                                                  this.i18n('groupManagement.members'));
-          return users.length + label;
+        _groupsPath() {
+          if (this.groupname) {
+            return `group/${this.groupname}/@groups`;
+          }
         }
-      },
 
-      _countGroups: function(groups) {
-        if (groups) {
-          var label = ' ' + (groups.length === 1 ? this.i18n('groupManagement.nestedGroup') :
-                                                   this.i18n('groupManagement.nestedGroups'));
-          return groups.length + label;
-        }
-      },
-
-      _toast: function(msg) {
-        this.$.toast.text = msg;
-        this.$.toast.open();
-      },
-
-      _clone: function() {
-        this._editableGroup = JSON.parse(JSON.stringify(this.group));
-      },
-
-      _usersPath: function() {
-        if (this.groupname) {
-          return 'group/' + this.groupname + '/@users';
-        }
-      },
-
-      _groupsPath: function() {
-        if (this.groupname) {
-          return 'group/' + this.groupname + '/@groups';
-        }
       }
-    });
+
+      customElements.define(GroupManagement.is, GroupManagement);
+      Nuxeo.GroupManagement = GroupManagement;
+    }
   </script>
 </dom-module>

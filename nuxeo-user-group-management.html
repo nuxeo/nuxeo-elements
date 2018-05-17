@@ -15,38 +15,35 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../iron-form/iron-form.html">
-
-<link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../paper-menu-button/paper-menu-button.html">
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../paper-listbox/paper-listbox.html">
-<link rel="import" href="../paper-checkbox/paper-checkbox.html">
-<link rel="import" href="../paper-item/paper-icon-item.html">
-<link rel="import" href="../paper-toast/paper-toast.html">
-
-<link rel="import" href="../iron-input/iron-input.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icons/social-icons.html">
-
-<link rel="import" href="../nuxeo-elements/nuxeo-resource.html">
+<link rel="import" href="../iron-input/iron-input.html">
+<link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../nuxeo-elements/nuxeo-connection.html">
-<link rel="import" href="widgets/nuxeo-card.html">
-<link rel="import" href="widgets/nuxeo-user-suggestion.html">
-
-<link rel="import" href="nuxeo-icons.html">
+<link rel="import" href="../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../nuxeo-elements/nuxeo-resource.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-item/paper-icon-item.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../paper-toast/paper-toast.html">
+<link rel="import" href="../polymer/lib/elements/dom-if.html">
 <link rel="import" href="nuxeo-filters-behavior.html">
 <link rel="import" href="nuxeo-i18n-behavior.html">
-<link rel="import" href="nuxeo-user-group-management/nuxeo-user-group-search.html">
-<link rel="import" href="nuxeo-user-group-management/nuxeo-create-user.html">
+<link rel="import" href="nuxeo-icons.html">
 <link rel="import" href="nuxeo-user-group-management/nuxeo-create-group.html">
-<link rel="import" href="nuxeo-user-group-management/nuxeo-user-management.html">
+<link rel="import" href="nuxeo-user-group-management/nuxeo-create-user.html">
 <link rel="import" href="nuxeo-user-group-management/nuxeo-group-management.html">
+<link rel="import" href="nuxeo-user-group-management/nuxeo-user-group-search.html">
+<link rel="import" href="nuxeo-user-group-management/nuxeo-user-management.html">
 <link rel="import" href="nuxeo-user-group-management/nuxeo-user-profile.html">
+<link rel="import" href="widgets/nuxeo-card.html">
+<link rel="import" href="widgets/nuxeo-user-suggestion.html">
 
 <!--
 An element for managing users and groups in Nuxeo.
@@ -133,27 +130,29 @@ Custom property | Description | Default
     <iron-pages selected="[[page]]" attr-for-selected="name">
       <section name="search">
         <div class="horizontal layout center">
-          <template is="dom-if" if="[[_canCreateUserGroup(readonly, _currentUser)]]">
-            <div class="flex">
-              <paper-menu-button no-animations id="createDropdown" no-overlap
-                                 horizontal-align="right" vertical-align="top" vertical-offset="-4">
-                <paper-button noink class="primary" id="createButton" slot="dropdown-trigger">
-                  <iron-icon icon="nuxeo:add"></iron-icon>
-                  <div>[[i18n('userGroupManagement.new.usergroup')]]</div>
-                </paper-button>
-                <paper-listbox no-animations id="menu" selectable="item" slot="dropdown-content">
-                  <paper-icon-item name="user" on-tap="_createUser">
-                    <iron-icon icon="nuxeo:user" slot="item-icon">></iron-icon>
-                    <span>[[i18n('userGroupManagement.new.user')]]</span>
-                  </paper-icon-item>
-                  <paper-icon-item name="group" on-tap="_createGroup">
-                    <iron-icon icon="nuxeo:group" slot="item-icon">></iron-icon>
-                    <span>[[i18n('userGroupManagement.new.group')]]</span>
-                  </paper-icon-item>
-                </paper-listbox>
-              </paper-menu-button>
-            </div>
-          </template>
+          <dom-if if="[[_canCreateUserGroup(readonly, _currentUser)]]">
+            <template>
+              <div class="flex">
+                <paper-menu-button no-animations id="createDropdown" no-overlap
+                                   horizontal-align="right" vertical-align="top" vertical-offset="-4">
+                  <paper-button noink class="primary" id="createButton" slot="dropdown-trigger">
+                    <iron-icon icon="nuxeo:add"></iron-icon>
+                    <div>[[i18n('userGroupManagement.new.usergroup')]]</div>
+                  </paper-button>
+                  <paper-listbox no-animations id="menu" selectable="item" slot="dropdown-content">
+                    <paper-icon-item name="user" on-click="_createUser">
+                      <iron-icon icon="nuxeo:user" slot="item-icon">></iron-icon>
+                      <span>[[i18n('userGroupManagement.new.user')]]</span>
+                    </paper-icon-item>
+                    <paper-icon-item name="group" on-click="_createGroup">
+                      <iron-icon icon="nuxeo:group" slot="item-icon">></iron-icon>
+                      <span>[[i18n('userGroupManagement.new.group')]]</span>
+                    </paper-icon-item>
+                  </paper-listbox>
+                </paper-menu-button>
+              </div>
+            </template>
+          </dom-if>
         </div>
         <nuxeo-user-group-search></nuxeo-user-group-search>
       </section>
@@ -181,143 +180,153 @@ Custom property | Description | Default
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-user-group-management',
+    {
+      class UserGroupManagement
+        extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 
-      behaviors: [Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior],
+        static get is() {
+          return 'nuxeo-user-group-management';
+        }
 
-      properties: {
+        static get properties() {
+          return {
+            /**
+             * The user-group-management page to be displayed. Possible values are:
+             * `search`, `create-user`, `manage-user`, `create-group` and `manage-group`.
+             */
+            page: {
+              type: String,
+              value: 'search',
+              notify: true,
+            },
+
+            /**
+             * Selected user id.
+             */
+            selectedUser: String,
+
+            /**
+             * Selected group id.
+             */
+            selectedGroup: {
+              type: String,
+            },
+
+            /**
+             * True if currently in read only mode.
+             */
+            readonly: {
+              type: Boolean,
+              value: false,
+              reflectToAttribute: true,
+            },
+
+            _currentUser: {
+              type: Object,
+            },
+          };
+        }
+
+        ready() {
+          super.ready();
+          // dynamic loading of user layouts
+          if (!this._isRegistered('nuxeo-view-user')) {
+            Polymer.Base.importHref(this.resolveUrl('nuxeo-user-group-management/nuxeo-view-user.html'));
+          }
+          if (!this._isRegistered('nuxeo-edit-user')) {
+            Polymer.Base.importHref(this.resolveUrl('nuxeo-user-group-management/nuxeo-edit-user.html'));
+          }
+
+          window.addEventListener('manageUser', (e) => {
+            this._manageUser(e);
+          });
+          window.addEventListener('manageGroup', (e) => {
+            this._manageGroup(e);
+          });
+
+          this.addEventListener('goHome', this._goSearch);
+          this.addEventListener('nuxeo-user-created', this._toast);
+          this.addEventListener('nuxeo-user-invited', this._toast);
+          this.addEventListener('nuxeo-group-created', this._toast);
+        }
+
         /**
-         * The user-group-management page to be displayed. Possible values are:
-         * `search`, `create-user`, `manage-user`, `create-group` and `manage-group`.
+         * Go to the 'search' page.
          */
-        page: {
-          type: String,
-          value: 'search',
-          notify: true
-        },
+        _goSearch() {
+          this.selectedGroup = null;
+          this.selectedUser = null;
+          this.page = 'search';
+          this.$$('nuxeo-user-group-search')._searchTermChanged();
+        }
 
         /**
-         * Selected user id.
+         * Got to the 'create-user' page.
          */
-        selectedUser: String,
+        _createUser() {
+          this.page = 'create-user';
+        }
 
         /**
-         * Selected group id.
+         * Go to the 'create-group' page.
          */
-        selectedGroup: {
-          type: String
-        },
+        _createGroup() {
+          this.page = 'create-group';
+        }
+
+        _manageUser(e) {
+          this.selectedUser = null;
+          this.selectedUser = e.detail.user;
+          this.page = 'manage-user';
+        }
+
+        _manageGroup(e) {
+          this.selectedGroup = null;
+          this.selectedGroup = e.detail.group;
+          this.page = 'manage-group';
+        }
+
+        _hasAdministrationPermissions(user) {
+          return user && (user.isAdministrator || this.isMember(user, 'powerusers'));
+        }
+
+        _canCreateUserGroup(readonly, currentUser) {
+          return !readonly && this._hasAdministrationPermissions(currentUser);
+        }
 
         /**
-         * True if currently in read only mode.
+         * Displays a message.
          */
-        readonly: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true
-        },
-
-        _currentUser: {
-          type: Object
-        }
-      },
-
-      listeners: {
-        'goHome': '_goSearch',
-        'nuxeo-user-created': '_toast',
-        'nuxeo-user-invited': '_toast',
-        'nuxeo-group-created': '_toast'
-      },
-
-      /**
-       * Go to the 'search' page.
-       */
-      _goSearch: function() {
-        this.selectedGroup = null;
-        this.selectedUser = null;
-        this.page = 'search';
-        this.$$('nuxeo-user-group-search')._searchTermChanged();
-      },
-
-      /**
-       * Got to the 'create-user' page.
-       */
-      _createUser: function() {
-        this.page = 'create-user';
-      },
-
-      /**
-       * Go to the 'create-group' page.
-       */
-      _createGroup: function() {
-        this.page = 'create-group';
-      },
-
-      _manageUser: function(e) {
-        this.selectedUser = null;
-        this.selectedUser = e.detail.user;
-        this.page = 'manage-user';
-      },
-
-      _manageGroup: function(e) {
-        this.selectedGroup = null;
-        this.selectedGroup = e.detail.group;
-        this.page = 'manage-group';
-      },
-
-      _hasAdministrationPermissions: function(user) {
-        return user && (user.isAdministrator || this.isMember(user, 'powerusers'));
-      },
-
-      _canCreateUserGroup: function(readonly, currentUser) {
-        return !readonly && this._hasAdministrationPermissions(currentUser);
-      },
-
-      /**
-       * Displays a message.
-       */
-      _toast: function(event) {
-        var msg;
-        switch (event.type) {
-          case 'nuxeo-user-created':
-          case 'nuxeo-user-invited':
-            msg = 'User ' + event.detail.id + ' created';
-            break;
-          case 'nuxeo-group-created':
-            msg = 'Group ' + event.detail.groupname + ' created';
-            break;
-        }
-        if (msg) {
-          this.$.toast.text = msg;
-          this.$.toast.open();
-        }
-      },
-
-      ready: function() {
-        // dynamic loading of user layouts
-        if (!this._isRegistered('nuxeo-view-user')) {
-          Polymer.Base.importHref(this.resolveUrl('nuxeo-user-group-management/nuxeo-view-user.html'));
-        }
-        if (!this._isRegistered('nuxeo-edit-user')) {
-          Polymer.Base.importHref(this.resolveUrl('nuxeo-user-group-management/nuxeo-edit-user.html'));
+        _toast(event) {
+          let msg;
+          switch (event.type) {
+            case 'nuxeo-user-created':
+            case 'nuxeo-user-invited':
+              msg = `User ${event.detail.id} created`;
+              break;
+            case 'nuxeo-group-created':
+              msg = `Group ${event.detail.groupname} created`;
+              break;
+            default:
+              // do nothing
+          }
+          if (msg) {
+            this.$.toast.text = msg;
+            this.$.toast.open();
+          }
         }
 
-        window.addEventListener('manageUser', function(e) {
-          this._manageUser(e);
-        }.bind(this));
-        window.addEventListener('manageGroup', function(e) {
-          this._manageGroup(e);
-        }.bind(this));
-      },
+        /**
+         * Determines whether a custom element is registered
+         */
+        _isRegistered(tag) {
+          return document.createElement(tag) instanceof Polymer.Element;
+        }
 
-      /**
-       * Determines whether a custom element is registered
-       */
-      _isRegistered: function(tag) {
-        return document.createElement(tag) instanceof Polymer.Element;
       }
 
-    });
+      customElements.define(UserGroupManagement.is, UserGroupManagement);
+      Nuxeo.UserGroupManagement = UserGroupManagement;
+    }
   </script>
 </dom-module>

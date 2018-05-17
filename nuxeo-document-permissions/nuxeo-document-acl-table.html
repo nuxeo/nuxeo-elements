@@ -15,8 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="nuxeo-popup-confirm.html">
 <link rel="import" href="nuxeo-popup-permission.html">
@@ -41,7 +44,7 @@ Element displaying a table with document ACLs.
         min-height: 48px;
         padding: 0 0 0 12px;
         border-bottom: 2px solid var(--nuxeo-border, #eee);
-        box-shadow: 0 -1px 0 rgba(0,0,0,0.2) inset;
+        box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2) inset;
       }
 
       .acl-table-row {
@@ -67,7 +70,7 @@ Element displaying a table with document ACLs.
       }
 
       .table-headers > div {
-        background-color: var(--nuxeo-table-header-background,#f8f9fb);
+        background-color: var(--nuxeo-table-header-background, #f8f9fb);
         font-weight: bold;
       }
 
@@ -84,7 +87,7 @@ Element displaying a table with document ACLs.
       }
 
       .flex-2 {
-        @apply  --layout-flex-2;
+        @apply --layout-flex-2;
       }
     </style>
 
@@ -92,262 +95,295 @@ Element displaying a table with document ACLs.
       <slot name="emptyResult"></slot>
     </div>
 
-    <template is="dom-if" if="[[!_empty(aces)]]">
-    <div class="acl-table">
-      <div class="acl-table-headers">
-        <div class="flex-2 tmp-tab">[[i18n('documentAclTable.userGroup')]]</div>
-        <div class="flex-2 tmp-tab">[[i18n('documentAclTable.right')]]</div>
-        <div class="flex-2 tmp-tab">[[i18n('documentAclTable.timeFrame')]]</div>
-        <div class="flex-2 tmp-tab">[[i18n('documentAclTable.grantedBy')]]</div>
-        <template is="dom-if" if="[[showActions]]">
-          <div class="flex-2 tmp-tab">[[i18n('documentAclTable.actions')]]</div>
-        </template>
-      </div>
-      <template is="dom-repeat" items="[[aces]]" as="ace" sort="_sortAces" strip-whitespace>
-        <div class$="acl-table-row [[ace.status]]">
-          <div class="flex-2"><span class$="[[entityClass(ace.username)]]" title="[[entityTooltip(ace.username)]]">[[entityDisplay(ace.username)]]</span>
-          </div>
-          <div class="flex-2"><span class="label">[[i18n(ace.permission)]]</span></div>
-          <div class="flex-2"><span>{{formatTimeFrame(ace)}}</span></div>
-          <div class="flex-2"><span class$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">[[entityDisplay(ace.creator)]]</span>
-          </div>
-          <template is="dom-if" if="[[showActions]]">
-            <div class="flex-2">
-              <nuxeo-popup-permission doc-id="{{doc.uid}}" ace="{{ace}}"
-                user-visible-permissions="{{doc.contextParameters.userVisiblePermissions}}"
-                share-with-external="[[shareWithExternal]]"></nuxeo-popup-permission>
-              <template is="dom-if" if="[[shareWithExternal]]">
-                <paper-icon-button icon="nuxeo:send" on-tap="sendEmailExternalSharing"></paper-icon-button>
+    <dom-if if="[[!_empty(aces)]]">
+      <template>
+        <div class="acl-table">
+          <div class="acl-table-headers">
+            <div class="flex-2 tmp-tab">[[i18n('documentAclTable.userGroup')]]</div>
+            <div class="flex-2 tmp-tab">[[i18n('documentAclTable.right')]]</div>
+            <div class="flex-2 tmp-tab">[[i18n('documentAclTable.timeFrame')]]</div>
+            <div class="flex-2 tmp-tab">[[i18n('documentAclTable.grantedBy')]]</div>
+            <dom-if if="[[showActions]]">
+              <template>
+                <div class="flex-2 tmp-tab">[[i18n('documentAclTable.actions')]]</div>
               </template>
-              <paper-icon-button icon="nuxeo:delete" on-tap="_deleteAce"></paper-icon-button>
-              <nuxeo-popup-confirm id="confirmation" delete-label="[[i18n('command.delete')]]"
-                cancel-label="[[i18n('documentAclTable.cancel')]]">
-                <div>
-                  <h2>[[i18n('documentAclTable.deleteConfirmation')]]</h2>
-                  <div class="acl-table">
-                    <div class="acl-table-headers">
-                      <div class="flex-2 tmp-tab">[[i18n('documentAclTable.userGroup')]]</div>
-                      <div class="flex-2 tmp-tab">[[i18n('documentAclTable.right')]]</div>
-                      <div class="flex-2 tmp-tab">[[i18n('documentAclTable.timeFrame')]]</div>
-                      <div class="flex-2 tmp-tab">[[i18n('documentAclTable.grantedBy')]]</div>
-                    </div>
-                    <div class$="acl-table-row [[ace.status]]">
-                      <div class="flex-2"><span class$="[[entityClass(ace.username)]]" title="[[entityTooltip(ace.username)]]">[[entityDisplay(ace.username)]]</span>
-                      </div>
-                      <div class="flex-2"><span class="label">[[i18n(ace.permission)]]</span></div>
-                      <div class="flex-2"><span>{{formatTimeFrame(ace)}}</span></div>
-                      <div class="flex-2"><span class$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">[[entityDisplay(ace.creator)]]</span>
-                      </div>
-                    </div>
-                  </div>
+            </dom-if>
+          </div>
+          <dom-repeat items="[[aces]]" as="ace" sort="_sortAces" strip-whitespace>
+            <template>
+              <div class$="acl-table-row [[ace.status]]">
+                <div class="flex-2"><span class$="[[entityClass(ace.username)]]" title="[[entityTooltip(ace.username)]]">[[entityDisplay(ace.username)]]</span>
                 </div>
-              </nuxeo-popup-confirm>
-            </div>
-          </template>
+                <div class="flex-2"><span class="label">[[i18n(ace.permission)]]</span></div>
+                <div class="flex-2"><span>{{formatTimeFrame(ace)}}</span></div>
+                <div class="flex-2"><span class$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">[[entityDisplay(ace.creator)]]</span>
+                </div>
+                <dom-if if="[[showActions]]">
+                  <template>
+                    <div class="flex-2">
+                      <nuxeo-popup-permission doc-id="{{doc.uid}}" ace="{{ace}}"
+                                              user-visible-permissions="{{doc.contextParameters.userVisiblePermissions}}"
+                                              share-with-external="[[shareWithExternal]]"></nuxeo-popup-permission>
+                      <dom-if if="[[shareWithExternal]]">
+                        <template>
+                          <paper-icon-button icon="nuxeo:send" on-click="sendEmailExternalSharing"></paper-icon-button>
+                        </template>
+                      </dom-if>
+                      <paper-icon-button icon="nuxeo:delete" on-click="_deleteAce"></paper-icon-button>
+                      <nuxeo-popup-confirm id="confirmation" delete-label="[[i18n('command.delete')]]"
+                                           cancel-label="[[i18n('documentAclTable.cancel')]]">
+                        <div>
+                          <h2>[[i18n('documentAclTable.deleteConfirmation')]]</h2>
+                          <div class="acl-table">
+                            <div class="acl-table-headers">
+                              <div class="flex-2 tmp-tab">[[i18n('documentAclTable.userGroup')]]</div>
+                              <div class="flex-2 tmp-tab">[[i18n('documentAclTable.right')]]</div>
+                              <div class="flex-2 tmp-tab">[[i18n('documentAclTable.timeFrame')]]</div>
+                              <div class="flex-2 tmp-tab">[[i18n('documentAclTable.grantedBy')]]</div>
+                            </div>
+                            <div class$="acl-table-row [[ace.status]]">
+                              <div class="flex-2"><span class$="[[entityClass(ace.username)]]"
+                                                        title="[[entityTooltip(ace.username)]]">[[entityDisplay(ace.username)]]</span>
+                              </div>
+                              <div class="flex-2"><span class="label">[[i18n(ace.permission)]]</span></div>
+                              <div class="flex-2"><span>{{formatTimeFrame(ace)}}</span></div>
+                              <div class="flex-2"><span class$="[[entityClass(ace.creator)]]"
+                                                        title="[[entityTooltip(ace.creator)]]">[[entityDisplay(ace.creator)]]</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </nuxeo-popup-confirm>
+                    </div>
+                  </template>
+                </dom-if>
+              </div>
+            </template>
+          </dom-repeat>
         </div>
       </template>
-    </div>
-  </template>
+    </dom-if>
 
-  <nuxeo-operation id="rmPermission" op="Document.RemovePermission" input="{{doc.uid}}"></nuxeo-operation>
-  <nuxeo-operation id="sendNotificationEmailPermissionOp" op="Document.SendNotificationEmailForPermission" input="{{doc.uid}}"></nuxeo-operation>
+    <nuxeo-operation id="rmPermission" op="Document.RemovePermission" input="{{doc.uid}}"></nuxeo-operation>
+    <nuxeo-operation id="sendNotificationEmailPermissionOp" op="Document.SendNotificationEmailForPermission"
+                     input="{{doc.uid}}"></nuxeo-operation>
 
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-document-acl-table',
-      behaviors: [Nuxeo.I18nBehavior],
-      properties: {
-        doc: {
-          type: Object
-        },
-        aclFilter: {
-          type: Function,
-          observer: 'aclFilterChanged'
-        },
-        aceFilter: {
-          type: Function,
-          observer: 'aceFilterChanged'
-        },
-        shareWithExternal: {
-          type: Object, // Boolean
-          value: false
-        },
-        aces: {
-          type: Array,
-          value: function() { return []; },
-          notify: true
-        },
-        showActions: {
-          type: Object, // Boolean
-          value: false
+    /* eslint-disable prefer-spread, prefer-rest-params */
+    {
+      class DocumentACLTable extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
+
+        static get is() {
+          return 'nuxeo-document-acl-table';
         }
-      },
 
-      observers: [
-        '_updateAces(doc)'
-      ],
-
-      aclFilterChanged: function(fn) {
-        this._aclFilter = fn && function() { return this.__dataHost[fn].apply(this.__dataHost, arguments); };
-        this._updateAces();
-      },
-
-      aceFilterChanged: function(fn) {
-        this._aceFilter = fn && function() { return this.__dataHost[fn].apply(this.__dataHost, arguments); };
-        this._updateAces();
-      },
-
-      _updateAces: function() {
-        var acls = this.doc && this.doc.contextParameters && this.doc.contextParameters.acls;
-        if (!acls) return;
-        if (this._aclFilter) {
-          acls = acls.filter(this._aclFilter.bind(this));
-        }
-        var aces = [];
-        acls.forEach(function(acl) {
-          acl.aces.forEach(function(ace) {
-            if (this._aceFilter(ace)) {
-              ace.aclName = acl.name;
-              aces.push(ace);
-            }
-          }.bind(this));
-        }.bind(this));
-
-        this.aces = aces.sort(this._sortAces);
-      },
-
-      _aclFilter: function(acl) {
-        return acl.name !== 'inherited';
-      },
-
-      _aceFilter: function(ace) {
-        return ace.granted && (ace.status === 'pending' || ace.status === 'effective');
-      },
-
-      _sortAces: function (a, b) {
-        if (a.begin === null) {
-          return -1;
-        } else if (b.begin === null) {
-          return 1;
-        } else {
-          var aBegin = moment(a.begin);
-          var bBegin = moment(b.begin);
-          return aBegin.isBefore(bBegin) ? -1 : 1;
-        }
-      },
-
-      _deleteAce: function (e, i) {
-        var popup = e.currentTarget.parentElement.querySelector("nuxeo-popup-confirm");
-        popup.toggle(function () {
-          this.$.rmPermission.params = {
-            id: e.model.ace.id
+        static get properties() {
+          return {
+            doc: {
+              type: Object,
+            },
+            aclFilter: {
+              type: Function,
+              observer: 'aclFilterChanged',
+            },
+            aceFilter: {
+              type: Function,
+              observer: 'aceFilterChanged',
+            },
+            shareWithExternal: {
+              type: Object, // Boolean
+              value: false,
+            },
+            aces: {
+              type: Array,
+              value() {
+                return [];
+              },
+              notify: true,
+            },
+            showActions: {
+              type: Object, // Boolean
+              value: false,
+            },
           };
-          this.$.rmPermission.execute().then(function() {
-            this.fire('acedeleted');
-          }.bind(this));
-        }.bind(this));
-      },
-
-      formatTimeFrame: function (ace) {
-        var now = moment();
-        var begin = ace.begin;
-        var end = ace.end;
-        var format = 'D MMM YYYY';
-
-        var sinceStr = this.i18n('documentAclTable.since') + ' ';
-        var fromStr = this.i18n('documentAclTable.from') + ' ';
-        var untilStr = this.i18n('documentAclTable.until') + ' ';
-        var untilMiddleStr = ' ' + this.i18n('documentAclTable.untilMiddle') + ' ';
-
-        if (begin !== null && end === null) {
-          return (now.isAfter(begin) ? sinceStr : fromStr) + moment(begin).format(format);
-        } else if (begin === null && end !== null) {
-          return untilStr + moment(end).format(format);
-        } else if (begin !== null && end !== null) {
-          return (now.isAfter(begin) ? sinceStr : fromStr) + moment(begin).format(format) + untilMiddleStr + moment(end).format(format);
-        } else {
-          return this.i18n('documentAclTable.permanent');
-        }
-      },
-
-      entityDisplay: function (entity) {
-        if (!entity) {
-          return '';
         }
 
-        if (typeof entity === 'object') {
-          if (entity['entity-type'] === 'user') {
-            var id = entity.id;
-            var first = entity.properties.firstName;
-            var last = entity.properties.lastName;
-            if (first === null || first.length === 0) {
-              if (last === null || last.length === 0) {
-                return id;
-              } else {
-                return last;
+        static get observers() {
+          return [
+            '_updateAces(doc)',
+          ];
+        }
+
+        aclFilterChanged(fn) {
+          this._aclFilter = fn && (() => this.__dataHost[fn].apply(this.__dataHost, arguments));
+          this._updateAces();
+        }
+
+        aceFilterChanged(fn) {
+          this._aceFilter = fn && (() => this.__dataHost[fn].apply(this.__dataHost, arguments));
+          this._updateAces();
+        }
+
+        _updateAces() {
+          let acls = this.doc && this.doc.contextParameters && this.doc.contextParameters.acls;
+          if (!acls) return;
+          if (this._aclFilter) {
+            acls = acls.filter(this._aclFilter.bind(this));
+          }
+          const aces = [];
+          acls.forEach((acl) => {
+            acl.aces.forEach((ace) => {
+              if (this._aceFilter(ace)) {
+                ace.aclName = acl.name;
+                aces.push(ace);
               }
-            } else {
-              if (last === null || last.length === 0) {
+            });
+          });
+
+          this.aces = aces.sort(this._sortAces);
+        }
+
+        _aclFilter(acl) {
+          return acl.name !== 'inherited';
+        }
+
+        _aceFilter(ace) {
+          return ace.granted && (ace.status === 'pending' || ace.status === 'effective');
+        }
+
+        _sortAces(a, b) {
+          if (a.begin === null) {
+            return -1;
+          } else if (b.begin === null) {
+            return 1;
+          } else {
+            const aBegin = moment(a.begin);
+            const bBegin = moment(b.begin);
+            return aBegin.isBefore(bBegin) ? -1 : 1;
+          }
+        }
+
+        _deleteAce(e) {
+          const popup = e.currentTarget.parentElement.querySelector('nuxeo-popup-confirm');
+          popup.toggle(() => {
+            this.$.rmPermission.params = {
+              id: e.model.ace.id,
+            };
+            this.$.rmPermission.execute().then(() => {
+              this.dispatchEvent(new CustomEvent('acedeleted', {
+                composed: true,
+                bubbles: true,
+              }));
+            });
+          });
+        }
+
+        formatTimeFrame(ace) {
+          const now = moment();
+          const begin = ace.begin;
+          const end = ace.end;
+          const format = 'D MMM YYYY';
+
+          const sinceStr = `${this.i18n('documentAclTable.since')} `;
+          const fromStr = `${this.i18n('documentAclTable.from')} `;
+          const untilStr = `${this.i18n('documentAclTable.until')} `;
+          const untilMiddleStr = ` ${this.i18n('documentAclTable.untilMiddle')} `;
+
+          if (begin !== null && end === null) {
+            return (now.isAfter(begin) ? sinceStr : fromStr) + moment(begin).format(format);
+          } else if (begin === null && end !== null) {
+            return untilStr + moment(end).format(format);
+          } else if (begin !== null && end !== null) {
+            return (now.isAfter(begin) ? sinceStr : fromStr) + moment(begin).format(format) + untilMiddleStr
+                + moment(end).format(format);
+          } else {
+            return this.i18n('documentAclTable.permanent');
+          }
+        }
+
+        entityDisplay(entity) {
+          if (!entity) {
+            return '';
+          }
+
+          if (typeof entity === 'object') {
+            if (entity['entity-type'] === 'user') {
+              const id = entity.id;
+              const first = entity.properties.firstName;
+              const last = entity.properties.lastName;
+              if (first === null || first.length === 0) {
+                if (last === null || last.length === 0) {
+                  return id;
+                } else {
+                  return last;
+                }
+              } else if (last === null || last.length === 0) {
                 return first;
               } else {
-                return first + ' ' + last;
+                return `${first} ${last}`;
               }
+            } else if (entity['entity-type'] === 'group') {
+              const groupLabel = entity.grouplabel;
+              return groupLabel !== null && groupLabel.length > 0 ? groupLabel : entity.groupname;
             }
-          } else if (entity['entity-type'] === 'group') {
-            var groupLabel = entity.grouplabel;
-            return groupLabel !== null && groupLabel.length > 0 ? groupLabel : entity.groupname;
           }
+          return entity;
         }
-        return entity;
-      },
 
-      entityClass: function (entity) {
-        if (!entity) {
+        entityClass(entity) {
+          if (!entity) {
+            return '';
+          }
+
+          if (typeof entity === 'object') {
+            if (entity['entity-type'] === 'user') {
+              return 'tag user';
+            } else if (entity['entity-type'] === 'group') {
+              return 'tag group';
+            }
+          }
           return '';
         }
 
-        if (typeof entity === 'object') {
-          if (entity['entity-type'] === 'user') {
-            return 'tag user';
-          } else if (entity['entity-type'] === 'group') {
-            return 'tag group';
+        entityTooltip(entity) {
+          if (!entity) {
+            return '';
           }
-        }
-        return '';
-      },
 
-      entityTooltip: function (entity) {
-        if (!entity) {
-          return '';
-        }
-
-        if (typeof entity === 'object') {
-          if (entity['entity-type'] === 'user') {
-            var email = entity.properties.email;
-            return entity.id + (email !== null && email.length > 0 ? ' - ' + email : '');
-          } else if (entity['entity-type'] === 'group') {
-            return entity.groupname;
+          if (typeof entity === 'object') {
+            if (entity['entity-type'] === 'user') {
+              const email = entity.properties.email;
+              return entity.id + (email !== null && email.length > 0 ? ` - ${email}` : '');
+            } else if (entity['entity-type'] === 'group') {
+              return entity.groupname;
+            }
           }
+          return entity;
         }
-        return entity;
-      },
 
-      sendEmailExternalSharing: function(e, i) {
-        var item = e.model.dataHost.dataHost.ace;
-        this.$.sendNotificationEmailPermissionOp.params = {
-          id: item.id
-        };
-        var self = this;
-        this.$.sendNotificationEmailPermissionOp.execute().then(function() {
-          self.fire('notification');
-        });
-      },
+        sendEmailExternalSharing(e) {
+          const item = e.model.dataHost.dataHost.ace;
+          this.$.sendNotificationEmailPermissionOp.params = {
+            id: item.id,
+          };
+          this.$.sendNotificationEmailPermissionOp.execute().then(() => {
+            this.dispatchEvent(new CustomEvent('notification', {
+              composed: true,
+              bubbles: true,
+            }));
+          });
+        }
 
-      _empty: function(arr) {
-        return arr.length == 0;
+        _empty(arr) {
+          return arr.length === 0;
+        }
+
       }
-    });
+
+      customElements.define(DocumentACLTable.is, DocumentACLTable);
+      Nuxeo.DocumentACLTable = DocumentACLTable;
+    }
   </script>
 </dom-module>

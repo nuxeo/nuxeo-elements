@@ -15,15 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-form/iron-form.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../iron-form/iron-form.html">
-<link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../widgets/nuxeo-input.html">
 <link rel="import" href="../widgets/nuxeo-user-suggestion.html">
-<link rel="import" href="../nuxeo-i18n-behavior.html">
 
 <!--
 Used by `nuxeo-user-group-management`
@@ -103,7 +104,7 @@ Used by `nuxeo-user-group-management`
     <nuxeo-resource id="request" path="/group"></nuxeo-resource>
 
     <div class="header">
-      <paper-icon-button class="backButton" icon="icons:arrow-back" on-tap="_goHome"></paper-icon-button>
+      <paper-icon-button class="backButton" icon="icons:arrow-back" on-click="_goHome"></paper-icon-button>
       <iron-icon icon="nuxeo:group"></iron-icon>
       <h3>[[i18n('createGroup.heading')]]</h3>
     </div>
@@ -124,28 +125,30 @@ Used by `nuxeo-user-group-management`
         </nuxeo-user-suggestion>
 
         <!-- selected members -->
-        <template is="dom-repeat" items="[[selectedUsers]]">
-          <div class="row">
-            <div class="label">
-              <iron-icon icon="nuxeo:user" hidden="[[item.groupname]]"></iron-icon>
-              <iron-icon icon="nuxeo:group" hidden="[[item.username]]"></iron-icon>
-              <span>[[item.displayLabel]]</span>
+        <dom-repeat items="[[selectedUsers]]">
+          <template>
+            <div class="row">
+              <div class="label">
+                <iron-icon icon="nuxeo:user" hidden="[[item.groupname]]"></iron-icon>
+                <iron-icon icon="nuxeo:group" hidden="[[item.username]]"></iron-icon>
+                <span>[[item.displayLabel]]</span>
+              </div>
+              <div class="name">
+                <span hidden="[[item.groupname]]">[[item.username]]</span>
+                <span hidden="[[item.username]]">[[item.groupname]]</span>
+              </div>
+              <div class="email">
+                <span>[[item.email]]</span>
+              </div>
+              <paper-icon-button icon="nuxeo:remove" title="remove" on-click="_remove"></paper-icon-button>
             </div>
-            <div class="name">
-              <span hidden="[[item.groupname]]">[[item.username]]</span>
-              <span hidden="[[item.username]]">[[item.groupname]]</span>
-            </div>
-            <div class="email">
-              <span>[[item.email]]</span>
-            </div>
-            <paper-icon-button icon="nuxeo:remove" title="remove" on-tap="_remove"></paper-icon-button>
-          </div>
-        </template>
+          </template>
+        </dom-repeat>
 
         <div class="form-buttons">
-          <paper-button noink id="cancelButton" on-tap="_cancel">[[i18n('command.cancel')]]</paper-button>
-          <paper-button noink id="createButton" class="primary" on-tap="_submit">[[i18n('command.create')]]</paper-button>
-          <paper-button noink id="createAnotherButton" class="primary" on-tap="_submitAnother">[[i18n('createGroup.createAnother')]]</paper-button>
+          <paper-button noink id="cancelButton" on-click="_cancel">[[i18n('command.cancel')]]</paper-button>
+          <paper-button noink id="createButton" class="primary" on-click="_submit">[[i18n('command.create')]]</paper-button>
+          <paper-button noink id="createAnotherButton" class="primary" on-click="_submitAnother">[[i18n('createGroup.createAnother')]]</paper-button>
         </div>
 
         <span id="errors" hidden$="[[!_hasErrors(errors)]]">[[errors]]</span>
@@ -155,168 +158,180 @@ Used by `nuxeo-user-group-management`
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-create-group',
-      behaviors: [Nuxeo.I18nBehavior],
-      properties: {
-        groupName: {
-          type: String,
-          notify: true
-        },
+    {
+      class CreateGroup extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
-        groupLabel: {
-          type: String,
-          notify: true
-        },
+        static get is() {
+          return 'nuxeo-create-group';
+        }
 
-        selectedUser: {
-          type: Object,
-          notify: true
-        },
+        static get properties() {
+          return {
+            groupName: {
+              type: String,
+              notify: true,
+            },
 
-        selectedUsers: {
-          type: Array,
-          value: [],
-          notify: true
-        },
+            groupLabel: {
+              type: String,
+              notify: true,
+            },
 
-        resultsFilter: {
-          type: Function,
-          value: function() {
-            return this._resultsFilter.bind(this);
+            selectedUser: {
+              type: Object,
+              notify: true,
+            },
+
+            selectedUsers: {
+              type: Array,
+              value: [],
+              notify: true,
+            },
+
+            resultsFilter: {
+              type: Function,
+              value() {
+                return this._resultsFilter.bind(this);
+              },
+            },
+
+            resultFormatter: {
+              type: Function,
+              value() {
+                return this._resultFormatter.bind(this);
+              },
+            },
+
+            errors: {
+              type: String,
+              value: '',
+            },
+
+            /**
+             * If true, allows to create a new group immediately after the current one is created
+             */
+            _createAnother: {
+              type: Boolean,
+              value: false,
+            },
+          };
+        }
+
+        static get observers() {
+          return [
+            '_observeSelectedUser(selectedUser)',
+          ];
+        }
+
+        ready() {
+          super.ready();
+          this.$.form.addEventListener('iron-form-presubmit', (event) => {
+            event.preventDefault();
+            this._create();
+          });
+        }
+
+        _goHome() {
+          this.dispatchEvent(new CustomEvent('goHome', {
+            composed: true,
+            bubbles: true,
+          }));
+        }
+
+        _observeSelectedUser() {
+          if (this.selectedUser && this.selectedUsers.indexOf(this.selectedUser) === -1) {
+            this.push('selectedUsers', this.selectedUser);
           }
-        },
+          this.selectedUser = null;
+        }
 
-        resultFormatter: {
-          type: Function,
-          value: function() {
-            return this._resultFormatter.bind(this);
+        _remove(e) {
+          if (e.model.item) {
+            this.splice('selectedUsers', this.selectedUsers.indexOf(e.model.item), 1);
           }
-        },
-
-        errors: {
-          type: String,
-          value: ''
-        },
+        }
 
         /**
-         * If true, allows to create a new group immediately after the current one is created
+         * Submits the form with `_createAnother` option set to true.
          */
-        _createAnother: {
-          type: Boolean,
-          value: false
+        _submitAnother() {
+          this._createAnother = true;
+          this.$.form.submit();
         }
-      },
 
-      observers: [
-        '_observeSelectedUser(selectedUser)'
-      ],
-
-      ready: function() {
-        this.$.form.addEventListener('iron-form-presubmit', function(event) {
-          event.preventDefault();
-          this._create();
-        }.bind(this));
-      },
-
-      _goHome: function() {
-        this.fire('goHome');
-      },
-
-      _observeSelectedUser: function() {
-        if (this.selectedUser && this.selectedUsers.indexOf(this.selectedUser) === -1) {
-          this.push('selectedUsers', this.selectedUser);
+        /**
+         * Submits the form.
+         */
+        _submit() {
+          this._createAnother = false;
+          this.$.form.submit();
         }
-        this.selectedUser = null;
-      },
 
-      _remove: function(e) {
-        if (e.model.item) {
-          this.splice('selectedUsers', this.selectedUsers.indexOf(e.model.item), 1);
-        }
-      },
-
-      /**
-       * Submits the form with `_createAnother` option set to true.
-       */
-      _submitAnother: function() {
-        this._createAnother = true;
-        this.$.form.submit();
-      },
-
-      /**
-       * Submits the form.
-       */
-      _submit: function() {
-        this._createAnother = false;
-        this.$.form.submit();
-      },
-
-      /**
-       * Creates a new group if the form was successfully submitted.
-       */
-      _create: function() {
-        this.$.request.data = this._computeData();
-        this.$.request.post().then(function(response) {
-          this.fire('nuxeo-group-created', response);
-          this._resetFields();
-          if (!this._createAnother) {
-            this._goHome();
-          }
-        }.bind(this))
-          .catch(function(error) {
+        /**
+         * Creates a new group if the form was successfully submitted.
+         */
+        _create() {
+          this.$.request.data = this._computeData();
+          this.$.request.post().then((response) => {
+            this.dispatchEvent(new CustomEvent('nuxeo-group-created', {
+              composed: true,
+              bubbles: true,
+              detail: response,
+            }));
+            this._resetFields();
+            if (!this._createAnother) {
+              this._goHome();
+            }
+          }).catch((error) => {
             this.errors = error.message;
-          }.bind(this));
-      },
-
-      _cancel: function() {
-        this._resetFields();
-        this._goHome();
-      },
-
-      _resetFields: function() {
-        this.groupName = '';
-        this.groupLabel = '';
-        this.errors = '';
-        this.selectedUsers = [];
-      },
-
-      _computeData: function() {
-        return {
-          "entity-type": "group",
-          "groupname": this.groupName,
-          "grouplabel": this.groupLabel,
-          "memberUsers": this.selectedUsers.filter(function(record) {
-            return record.type === 'USER_TYPE';
-          })
-            .map(function(record) {
-              return record.username;
-            }),
-          "memberGroups": this.selectedUsers.filter(function(record) {
-            return record.type === 'GROUP_TYPE';
-          })
-            .map(function(record) {
-              return record.groupname;
-            })
-        };
-      },
-
-      _resultsFilter: function(entry) {
-        for (var i = 0; i < this.selectedUsers.length; i++) {
-          if (entry.id === this.selectedUsers[i].id) {
-            return false;
-          }
+          });
         }
-        return true;
-      },
 
-      _resultFormatter: function(item) {
-        return item.displayLabel + ' (' + (item.groupname || item.username) + ')';
-      },
+        _cancel() {
+          this._resetFields();
+          this._goHome();
+        }
 
-      _hasErrors: function() {
-        return this.errors !== '';
+        _resetFields() {
+          this.groupName = '';
+          this.groupLabel = '';
+          this.errors = '';
+          this.selectedUsers = [];
+        }
+
+        _computeData() {
+          return {
+            'entity-type': 'group',
+            groupname: this.groupName,
+            grouplabel: this.groupLabel,
+            memberUsers: this.selectedUsers.filter((record) => record.type === 'USER_TYPE')
+              .map((record) => record.username),
+            memberGroups: this.selectedUsers.filter((record) => record.type === 'GROUP_TYPE')
+              .map((record) => record.groupname),
+          };
+        }
+
+        _resultsFilter(entry) {
+          for (let i = 0; i < this.selectedUsers.length; i++) {
+            if (entry.id === this.selectedUsers[i].id) {
+              return false;
+            }
+          }
+          return true;
+        }
+
+        _resultFormatter(item) {
+          return `${item.displayLabel} (${item.groupname || item.username})`;
+        }
+
+        _hasErrors() {
+          return this.errors !== '';
+        }
+
       }
-    });
+
+      customElements.define(CreateGroup.is, CreateGroup);
+      Nuxeo.CreateGroup = CreateGroup;
+    }
   </script>
 </dom-module>

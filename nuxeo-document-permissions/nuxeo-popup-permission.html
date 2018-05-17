@@ -15,8 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../../iron-autogrow-textarea/iron-autogrow-textarea.html">
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../../paper-button/paper-button.html">
 <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../paper-dialog-scrollable/paper-dialog-scrollable.html">
@@ -26,16 +28,14 @@ limitations under the License.
 <link rel="import" href="../../paper-listbox/paper-listbox.html">
 <link rel="import" href="../../paper-radio-button/paper-radio-button.html">
 <link rel="import" href="../../paper-radio-group/paper-radio-group.html">
-
-<link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
-<link rel="import" href="../widgets/nuxeo-user-suggestion.html">
-<link rel="import" href="../widgets/nuxeo-date-picker.html">
-<link rel="import" href="../widgets/nuxeo-input.html">
-<link rel="import" href="../widgets/nuxeo-textarea.html">
-<link rel="import" href="../widgets/nuxeo-select.html">
-<link rel="import" href="../widgets/nuxeo-dialog.html">
-
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../widgets/nuxeo-date-picker.html">
+<link rel="import" href="../widgets/nuxeo-dialog.html">
+<link rel="import" href="../widgets/nuxeo-input.html">
+<link rel="import" href="../widgets/nuxeo-select.html">
+<link rel="import" href="../widgets/nuxeo-textarea.html">
+<link rel="import" href="../widgets/nuxeo-user-suggestion.html">
 
 <!-- Part of `nuxeo-document-permissions`-->
 <dom-module id="nuxeo-popup-permission">
@@ -59,12 +59,16 @@ limitations under the License.
     <nuxeo-operation id="replaceOp" op="Document.ReplacePermission" input={{docId}} params={{params}}
       on-response="handleResponse"></nuxeo-operation>
 
-    <template is="dom-if" if="{{!updatingACE}}">
-      <paper-button on-tap="togglePopup" id="newPermissionButton">[[i18n('popupPermission.newPermission')]]</paper-button>
-    </template>
-    <template is="dom-if" if="{{updatingACE}}">
-      <paper-icon-button on-tap="togglePopup" icon="nuxeo:edit"></paper-icon-button>
-    </template>
+    <dom-if if="{{!updatingACE}}">
+      <template>
+        <paper-button on-click="togglePopup" id="newPermissionButton">[[i18n('popupPermission.newPermission')]]</paper-button>
+      </template>
+    </dom-if>
+    <dom-if if="{{updatingACE}}">
+      <template>
+        <paper-icon-button on-click="togglePopup" icon="nuxeo:edit"></paper-icon-button>
+      </template>
+    </dom-if>
 
     <nuxeo-dialog id="popupRight" with-backdrop no-auto-focus>
       <h2>[[_computedTitle]]</h2>
@@ -90,17 +94,19 @@ limitations under the License.
           </nuxeo-select>
         </div>
         <div>
-          <template is="dom-if" if="{{!shareWithExternal}}">
-            <label>[[i18n('popupPermission.timeFrame')]]</label>
-            <paper-radio-group selected="{{selectedTimeFrame}}">
-              <paper-radio-button noink name="permanent">
-                [[i18n('popupPermission.permanent')]]
-              </paper-radio-button>
-              <paper-radio-button noink name="datebased">
-                [[i18n('popupPermission.dateBased')]]
-              </paper-radio-button>
-            </paper-radio-group>
-          </template>
+          <dom-if if="{{!shareWithExternal}}">
+            <template>
+              <label>[[i18n('popupPermission.timeFrame')]]</label>
+              <paper-radio-group selected="{{selectedTimeFrame}}">
+                <paper-radio-button noink name="permanent">
+                  [[i18n('popupPermission.permanent')]]
+                </paper-radio-button>
+                <paper-radio-button noink name="datebased">
+                  [[i18n('popupPermission.dateBased')]]
+                </paper-radio-button>
+              </paper-radio-group>
+            </template>
+          </dom-if>
           <div>
             <nuxeo-date-picker id="begin" label="[[i18n('popupPermission.from')]]" value="{{params.begin}}" disabled="[[permissionIsPermanent]]"></nuxeo-date-picker>
           </div>
@@ -110,13 +116,15 @@ limitations under the License.
           </div>
         </div>
         <div id="notification">
-          <template is="dom-if" if="{{!shareWithExternal}}">
-            <div>
-              <paper-checkbox noink checked="{{params.notify}}" name="notify">
-                [[i18n('popupPermission.notify')]]
-              </paper-checkbox>
-            </div>
-          </template>
+          <dom-if if="{{!shareWithExternal}}">
+            <template>
+              <div>
+                <paper-checkbox noink checked="{{params.notify}}" name="notify">
+                  [[i18n('popupPermission.notify')]]
+                </paper-checkbox>
+              </div>
+            </template>
+          </dom-if>
           <div>
             <nuxeo-textarea
                     label="[[i18n('popupPermission.notifyLabel')]]"
@@ -130,196 +138,219 @@ limitations under the License.
 
       <div class="buttons">
         <paper-button dialog-dismiss>[[i18n('popupPermission.cancel')]]</paper-button>
-        <template is="dom-if" if="{{!updatingACE}}">
-          <paper-button noink class="primary" on-tap="doCreateAndAdd" id="createAndAddPermissionButton">[[i18n('popupPermission.createAndAdd')]]
-          </paper-button>
-          <paper-button noink class="primary" on-tap="doCreate" id="createPermissionButton">[[i18n('popupPermission.create')]]</paper-button>
-        </template>
-        <template is="dom-if" if="{{updatingACE}}">
-          <paper-button noink class="primary" on-tap="doUpdate">[[i18n('popupPermission.update')]]</paper-button>
-        </template>
+        <dom-if if="{{!updatingACE}}">
+          <template>
+            <paper-button noink class="primary" on-click="doCreateAndAdd" id="createAndAddPermissionButton">[[i18n('popupPermission.createAndAdd')]]
+            </paper-button>
+            <paper-button noink class="primary" on-click="doCreate" id="createPermissionButton">[[i18n('popupPermission.create')]]</paper-button>
+          </template>
+        </dom-if>
+        <dom-if if="{{updatingACE}}">
+          <template>
+            <paper-button noink class="primary" on-click="doUpdate">[[i18n('popupPermission.update')]]</paper-button>
+          </template>
+        </dom-if>
       </div>
     </nuxeo-dialog>
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-popup-permission',
-      behaviors: [Nuxeo.I18nBehavior],
-      properties: {
-        docId: {
-          type: String,
-          value: ''
-        },
-        ace: {
-          type: Object,
-          value: null
-        },
-        userVisiblePermissions: {
-          type: Array,
-          value: []
-        },
-        params: {
-          type: Object,
-          computed: 'computeParams(ace, shareWithExternal)'
-        },
-        updatingACE: {
-          type: Boolean,
-          computed: 'isUpdatingACE(ace)'
-        },
-        shareWithExternal: {
-          type: Boolean,
-          value: false
-        },
-        selectedTimeFrame: {
-          type: String,
-          value: 'permanent',
-          observer: '_selectedTimeFrameChanged'
-        },
+    {
+      class PopupPermission extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
-        /*
+        static get is() {
+          return 'nuxeo-popup-permission';
+        }
+
+        static get properties() {
+          return {
+            docId: {
+              type: String,
+              value: '',
+            },
+            ace: {
+              type: Object,
+              value: null,
+            },
+            userVisiblePermissions: {
+              type: Array,
+              value: [],
+            },
+            params: {
+              type: Object,
+              computed: 'computeParams(ace, shareWithExternal)',
+            },
+            updatingACE: {
+              type: Boolean,
+              computed: 'isUpdatingACE(ace)',
+            },
+            shareWithExternal: {
+              type: Boolean,
+              value: false,
+            },
+            selectedTimeFrame: {
+              type: String,
+              value: 'permanent',
+              observer: '_selectedTimeFrameChanged',
+            },
+
+            /*
          * The title of the dialog
          */
-        _computedTitle: {
-          type: String,
-          computed: '_computeTitle(shareWithExternal, updatingACE)'
-        }
-      },
-
-      togglePopup: function () {
-        this.$.popupRight.toggle();
-      },
-
-      doCreate: function () {
-        this._doSend(true);
-      },
-
-      doCreateAndAdd: function () {
-        this._doSend(false);
-      },
-
-      doUpdate: function () {
-        this._doSend(true);
-      },
-
-      _computeTitle: function() {
-        if (this.updatingACE) {
-          return this.i18n('popupPermission.updatePermission');
-        }
-        if (this.shareWithExternal) {
-          return this.i18n('popupPermission.shareWithExternalUser');
-        }
-        return this.i18n('popupPermission.addPermission');
-      },
-
-      _doSend: function (togglePopup) {
-        if (this.shareWithExternal && ((!this.updatingACE && !this.params.email) || (this.updatingACE && !this.params.username))) {
-          return;
-        }
-        if (!this.shareWithExternal && !this.params.username) {
-          return;
+            _computedTitle: {
+              type: String,
+              computed: '_computeTitle(shareWithExternal, updatingACE)',
+            },
+          };
         }
 
-        // not a valid email
-        if (this.params.email && !this.shadowRoot.querySelector('#email').validate()) {
-          return;
+        togglePopup() {
+          this.$.popupRight.toggle();
         }
 
-        var dateBased = this.selectedTimeFrame === 'datebased';
-
-        if (this.params.begin && dateBased) {
-          this.params.begin = this.params.begin.length > 0 ? moment(new Date(this.params.begin)).format() : null;
-        } else {
-          this.params.begin = null;
+        doCreate() {
+          this._doSend(true);
         }
 
-        if (this.params.end && dateBased) {
-          this.params.end = this.params.end.length > 0 ? moment(new Date(this.params.end)).format() : null;
-        } else {
-          this.params.end = null;
-        }
-        if (this.params.end === null && this.shareWithExternal) {
-          //do nothing, we need an end date
-          return;
+        doCreateAndAdd() {
+          this._doSend(false);
         }
 
-        if (this.updatingACE) {
-          this.$.replaceOp.execute();
-        } else {
-          this.$.createOp.execute();
+        doUpdate() {
+          this._doSend(true);
         }
 
-        if (togglePopup) {
-          this.togglePopup();
-        }
-      },
-
-      handleResponse: function () {
-        if (this.updatingACE) {
-          this.fire('aceupdated');
-        } else {
-          this.fire('acecreated');
-
-          this.set('params.username', null);
-          this.set('params.email', null);
-          this.set('params.permission', 'Read');
-          this.set('params.begin', null);
-          this.set('params.end', null);
-          this.set('params.notify', true);
-          this.set('params.comment', '');
-          this.set('selectedTimeFrame', this.shareWithExternal ? 'datebased' : 'permanent');
-
-        }
-      },
-
-      computeParams: function (ace, shareWithExternal) {
-        var params = {
-          username: null,
-          email: null,
-          permission: 'Read',
-          begin: '',
-          end: '',
-          notify: true,
-          comment: ''
-        };
-
-        // force datebased and notification for external share
-        if (shareWithExternal) {
-          this.set('selectedTimeFrame', 'datebased');
-        }
-
-        if (ace !== null) {
-          params.id = ace.id;
-          var username = typeof ace.username === 'object' ? (ace.username['entity-type'] === 'user' ? ace.username.id : ace.username.groupname) : ace.username;
-          params.username = username;
-
-          params.permission = ace.permission;
-          params.notify = ace.notify;
-          params.comment = ace.comment;
-          var dateBased = false;
-          if (ace.begin !== null) {
-            params.begin = moment(new Date(ace.begin)).format('YYYY-MM-DD');
-            dateBased = true;
+        _computeTitle() {
+          if (this.updatingACE) {
+            return this.i18n('popupPermission.updatePermission');
           }
-          if (ace.end !== null) {
-            params.end = moment(new Date(ace.end)).format('YYYY-MM-DD');
-            dateBased = true;
+          if (this.shareWithExternal) {
+            return this.i18n('popupPermission.shareWithExternalUser');
+          }
+          return this.i18n('popupPermission.addPermission');
+        }
+
+        _doSend(togglePopup) {
+          if (this.shareWithExternal &&
+            ((!this.updatingACE && !this.params.email) || (this.updatingACE && !this.params.username))) {
+            return;
+          }
+          if (!this.shareWithExternal && !this.params.username) {
+            return;
           }
 
-          if (dateBased) {
+          // not a valid email
+          if (this.params.email && !this.shadowRoot.querySelector('#email').validate()) {
+            return;
+          }
+
+          const dateBased = this.selectedTimeFrame === 'datebased';
+
+          if (this.params.begin && dateBased) {
+            this.params.begin = this.params.begin.length > 0 ? moment(new Date(this.params.begin)).format() : null;
+          } else {
+            this.params.begin = null;
+          }
+
+          if (this.params.end && dateBased) {
+            this.params.end = this.params.end.length > 0 ? moment(new Date(this.params.end)).format() : null;
+          } else {
+            this.params.end = null;
+          }
+          if (this.params.end === null && this.shareWithExternal) {
+            // do nothing, we need an end date
+            return;
+          }
+
+          if (this.updatingACE) {
+            this.$.replaceOp.execute();
+          } else {
+            this.$.createOp.execute();
+          }
+
+          if (togglePopup) {
+            this.togglePopup();
+          }
+        }
+
+        handleResponse() {
+          if (this.updatingACE) {
+            this.dispatchEvent(new CustomEvent('aceupdated', {
+              composed: true,
+              bubbles: true,
+            }));
+          } else {
+            this.dispatchEvent(new CustomEvent('acecreated', {
+              composed: true,
+              bubbles: true,
+            }));
+            this.set('params.username', null);
+            this.set('params.email', null);
+            this.set('params.permission', 'Read');
+            this.set('params.begin', null);
+            this.set('params.end', null);
+            this.set('params.notify', true);
+            this.set('params.comment', '');
+            this.set('selectedTimeFrame', this.shareWithExternal ? 'datebased' : 'permanent');
+
+          }
+        }
+
+        computeParams(ace, shareWithExternal) {
+          const params = {
+            username: null,
+            email: null,
+            permission: 'Read',
+            begin: '',
+            end: '',
+            notify: true,
+            comment: '',
+          };
+
+          // force datebased and notification for external share
+          if (shareWithExternal) {
             this.set('selectedTimeFrame', 'datebased');
           }
+
+          if (ace !== null) {
+            params.id = ace.id;
+            if (typeof ace.username === 'object') {
+              params.username = ace.username['entity-type'] === 'user' ? ace.username.id : ace.username.groupname;
+            } else {
+              params.username = ace.username;
+            }
+            params.permission = ace.permission;
+            params.notify = ace.notify;
+            params.comment = ace.comment;
+            let dateBased = false;
+            if (ace.begin !== null) {
+              params.begin = moment(new Date(ace.begin)).format('YYYY-MM-DD');
+              dateBased = true;
+            }
+            if (ace.end !== null) {
+              params.end = moment(new Date(ace.end)).format('YYYY-MM-DD');
+              dateBased = true;
+            }
+
+            if (dateBased) {
+              this.set('selectedTimeFrame', 'datebased');
+            }
+          }
+          return params;
         }
-        return params;
-      },
 
-      isUpdatingACE: function (ace) {
-        return ace !== null;
-      },
+        isUpdatingACE(ace) {
+          return ace !== null;
+        }
 
-      _selectedTimeFrameChanged: function() {
-        this.permissionIsPermanent = this.selectedTimeFrame === 'permanent';
+        _selectedTimeFrameChanged() {
+          this.permissionIsPermanent = this.selectedTimeFrame === 'permanent';
+        }
+
       }
-    });
+
+      customElements.define(PopupPermission.is, PopupPermission);
+      Nuxeo.PopupPermission = PopupPermission;
+    }
   </script>
 </dom-module>
