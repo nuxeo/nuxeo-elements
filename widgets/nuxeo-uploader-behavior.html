@@ -16,8 +16,9 @@ limitations under the License.
 -->
 
 <script>
+  /* eslint-disable no-var, no-use-before-define */
   var Nuxeo = Nuxeo || {};
-  (function () {
+  (() => {
 
     /**
      * Initializes a new default upload provider.
@@ -25,7 +26,7 @@ limitations under the License.
      * @param {Object} connection an instance of nuxeo-connection to be used
      * @param {String} accept a string holding a comma separated list of accepted file types or mime types
      * @param {Boolean} batchAppend a boolean whether files should be appended to the current batch or not
-     **/
+     * */
     function DefaultUploadProvider(connection, accept, batchAppend) {
       this.connection = connection;
       this.accept = accept;
@@ -34,20 +35,20 @@ limitations under the License.
       this.batchId = null;
     }
 
-    DefaultUploadProvider.prototype._ensureBatch = function() {
+    DefaultUploadProvider.prototype._ensureBatch = function () {
       if (!this.batchAppend || !this.uploader) {
-        return this.connection.batchUpload().then(function(uploader) {
+        return this.connection.batchUpload().then((uploader) => {
           this.uploader = uploader;
-        }.bind(this));
+        });
       } else {
         return Promise.resolve();
       }
     };
 
-    DefaultUploadProvider.prototype._newBatch = function() {
-      return this.connection.batchUpload().then(function(uploader) {
+    DefaultUploadProvider.prototype._newBatch = function () {
+      return this.connection.batchUpload().then((uploader) => {
         this.uploader = uploader;
-      }.bind(this));
+      });
     };
 
     /**
@@ -56,35 +57,35 @@ limitations under the License.
      * @param {Object[]} files the list of files to upload
      * @param {Function} callback a callback function that should be called when a file upload starts,
      * when progress is updated, when a file upload ends, and when an upload batch is complete
-     **/
-    DefaultUploadProvider.prototype.upload = function(files, callback) {
+     * */
+    DefaultUploadProvider.prototype.upload = function (files, callback) {
       if (files) {
-        this._ensureBatch().then(function() {
-          for (var i = 0; i < files.length; i++) {
-            var file = files[i];
-            var blob = new Nuxeo.Blob({ content: file });
+        this._ensureBatch().then(() => {
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const blob = new Nuxeo.Blob({ content: file });
             if (typeof callback === 'function') {
-              callback({ type: 'uploadStarted', file: file });
+              callback({ type: 'uploadStarted', file });
             }
-            this.uploader.upload(blob).then(function(result) {
+            this.uploader.upload(blob).then((result) => {
               callback({ type: 'uploadCompleted', fileIdx: result.blob.fileIdx });
-            }.bind(this)).catch(function(error) {
-              callback({type: 'uploadInterrupted', file: file, error: error});
-            }.bind(this));
+            }).catch((error) => {
+              callback({ type: 'uploadInterrupted', file, error });
+            });
           }
-          this.uploader.done().then(function(result) {
+          this.uploader.done().then((result) => {
             callback({ type: 'batchFinished', batchId: result.batch._batchId });
-          }.bind(this)).catch(function(error) {
-            callback({type: 'batchFailed', error: error});
-          }.bind(this));;
-        }.bind(this));
+          }).catch((error) => {
+            callback({ type: 'batchFailed', error });
+          });
+        });
       }
     };
 
     /**
      * Cancels the current batch.
-     **/
-    DefaultUploadProvider.prototype.cancelBatch = function() {
+     * */
+    DefaultUploadProvider.prototype.cancelBatch = function () {
       if (this.uploader) {
         if (this.uploader._batchId) {
           this.uploader.cancel();
@@ -100,12 +101,12 @@ limitations under the License.
      * @param {String} operationId the operation to execute
      * @param {Object} params the operation params
      * @param {Object} headers the request headers
-     **/
-    DefaultUploadProvider.prototype.batchExecute = function(operationId, params, headers) {
-      return this.connection.operation(operationId).then(function(operation) {
-        var options = {};
+     * */
+    DefaultUploadProvider.prototype.batchExecute = function (operationId, params, headers) {
+      return this.connection.operation(operationId).then((operation) => {
+        const options = {};
         if (headers) {
-          options['headers'] = headers;
+          options.headers = headers;
         }
         if (params.context) {
           operation = operation.context(params.context);
@@ -113,7 +114,7 @@ limitations under the License.
         return operation.input(this.uploader)
           .params(params)
           .execute(options);
-      }.bind(this));
+      });
     };
 
     /**
@@ -121,10 +122,10 @@ limitations under the License.
      *
      * @param {Object} file the file to be checked
      * @return {Boolean} true if the current file is accepted by the current provider, false otherwise
-     **/
-    DefaultUploadProvider.prototype.accepts = function(file) {
-      var mimeType = ((file.type !== '') ? file.type.match(/^[^\/]*\//)[0] : null);
-      var fileType = file.name.match(/\.[^\.]*$/)[0];
+     * */
+    DefaultUploadProvider.prototype.accepts = function (file) {
+      const mimeType = ((file.type !== '') ? file.type.match(/^[^/]*\//)[0] : null);
+      const fileType = file.name.match(/\.[^.]*$/)[0];
 
       return !(this.accept && !(this.accept.indexOf(mimeType) > -1 || this.accept.indexOf(fileType) > -1));
     };
@@ -133,13 +134,13 @@ limitations under the License.
      * Returns whether or not the provider reports file upload progress.
      *
      * @return {Boolean} true if the provider reports progress, false otherwise
-     **/
-    DefaultUploadProvider.prototype.hasProgress = function() {
+     * */
+    DefaultUploadProvider.prototype.hasProgress = function () {
       return false;
     };
 
-    var _registry = { 'default': DefaultUploadProvider };
-    var _defaultProvider = 'default';
+    const _registry = { default: DefaultUploadProvider };
+    let _defaultProvider = 'default';
 
     /**
      * @polymerBehavior Nuxeo.UploaderBehavior
@@ -157,7 +158,7 @@ limitations under the License.
          */
         immediate: {
           type: Boolean,
-          value: true
+          value: true,
         },
 
         /**
@@ -170,7 +171,7 @@ limitations under the License.
          */
         files: {
           type: Array,
-          value: []
+          value: [],
         },
 
         /**
@@ -178,7 +179,7 @@ limitations under the License.
          */
         uploading: {
           type: Boolean,
-          value: false
+          value: false,
         },
 
         /**
@@ -186,7 +187,7 @@ limitations under the License.
          */
         batchAppend: {
           type: Boolean,
-          value: false
+          value: false,
         },
 
         /**
@@ -196,26 +197,26 @@ limitations under the License.
           type: String,
           notify: true,
           reflectToAttribute: true,
-          observer: '_reloadProvider'
+          observer: '_reloadProvider',
         },
 
         _provider: {
           type: String,
-          value: function() {
+          value() {
             return _defaultProvider;
-          }
-        }
+          },
+        },
       },
 
       observers: ['_initProvider(_provider, connection, accept, batchAppend)'],
 
-      _initProvider: function() {
+      _initProvider() {
         if (this._provider) {
           this._instance = new _registry[this._provider](this.connection, this.accept, this.batchAppend);
         }
       },
 
-      _reloadProvider: function() {
+      _reloadProvider() {
         if (this.provider && this.provider !== this._provider) {
           this.set('_provider', this.provider);
         } else if (!this.provider) {
@@ -223,7 +224,7 @@ limitations under the License.
         }
       },
 
-      created: function() {
+      created() {
         this.defaultProviderChangedHandler = this._reloadProvider.bind(this);
         document.addEventListener('defaultUploadProviderChanged', this.defaultProviderChangedHandler);
       },
@@ -231,14 +232,14 @@ limitations under the License.
       /**
        * Registers a new upload provider.
        */
-      registerProvider: function(name, provider) {
+      registerProvider(name, provider) {
         _registry[name] = provider;
       },
 
       /**
        * Returns all registered upload providers.
        */
-      getProviders: function() {
+      getProviders() {
         return _registry;
       },
 
@@ -260,28 +261,28 @@ limitations under the License.
         document.dispatchEvent(new Event('defaultUploadProviderChanged'));
       },
 
-      setupDropZone: function(el) {
+      setupDropZone(el) {
         this._dropZone = el;
         this._dropZone.addEventListener('dragover', this._dragover.bind(this));
         this._dropZone.addEventListener('dragleave', this._dragleave.bind(this));
         this._dropZone.addEventListener('drop', this._drop.bind(this));
       },
 
-      uploadFiles: function(files) {
+      uploadFiles(files) {
         if (!this.accepts(files)) {
-          console.warn('Can only upload ' + this.accept + ' files.');
+          console.warn(`Can only upload ${this.accept} files.`);
           return;
         }
         if (!this.connection) {
-          throw 'Missing connection';
+          throw 'Missing connection'; // eslint-disable-line no-throw-literal
         }
 
         if (!this.batchAppend) {
           this.files = [];
         }
 
-        this._instance.upload(files, function(event) {
-          switch(event.type) {
+        this._instance.upload(files, (event) => {
+          switch (event.type) {
             case 'uploadStarted':
               this._uploadStarted(event.file);
               break;
@@ -300,37 +301,39 @@ limitations under the License.
             case 'batchFailed':
               this._batchFailed(event.error);
               break;
+            default:
+              // do nothing
           }
-        }.bind(this));
+        });
       },
 
-      batchExecute: function(operationId, params, headers) {
+      batchExecute(operationId, params, headers) {
         return this._instance.batchExecute(operationId, params, headers)
-          .then(function(data) {
+          .then((data) => {
             this.fire('response', { response: data });
             this.response = data;
             return this.response;
-          }.bind(this)).catch(function(error) {
+          }).catch((error) => {
             this.fire('error', error);
-            console.log('Batch Execute operation failed: ' + error);
+            console.log(`Batch Execute operation failed: ${error}`);
             throw error;
-          }.bind(this));
+          });
       },
 
-      cancelBatch: function() {
+      cancelBatch() {
         return this._instance.cancelBatch();
       },
 
-      hasProgress: function() {
+      hasProgress() {
         return this._instance.hasProgress();
       },
 
-      accepts: function(files) {
+      accepts(files) {
         if (!this._instance) {
           return false;
         }
         if (files.length) {
-          for (var i = 0; i < files.length; i++) {
+          for (let i = 0; i < files.length; i++) {
             if (!this._accepts(files[i])) {
               return false;
             }
@@ -341,28 +344,28 @@ limitations under the License.
         }
       },
 
-      _accepts: function(file) {
+      _accepts(file) {
         return this._instance ? this._instance.accepts(file) : false;
       },
 
-      _updateFile: function(index, values) {
-        Object.keys(values).forEach(function (k) {
+      _updateFile(index, values) {
+        Object.keys(values).forEach((k) => {
           this.set(['files', index, k].join('.'), values[k]);
-        }.bind(this));
+        });
       },
 
-      _batchFinished: function(batchId) {
+      _batchFinished(batchId) {
         this.uploading = false;
         this.batchId = batchId;
-        this.fire('batchFinished', {batchId: batchId});
+        this.fire('batchFinished', { batchId });
       },
 
-      _batchFailed: function(error) {
+      _batchFailed(error) {
         this.uploading = false;
-        this.fire('batchFailed', {error: error});
+        this.fire('batchFailed', { error });
       },
 
-      _uploadStarted: function(file) {
+      _uploadStarted(file) {
         file.progress = 0;
         file.error = false;
         file.complete = false;
@@ -370,41 +373,41 @@ limitations under the License.
         this.uploading = true;
       },
 
-      _uploadFinished: function(index) {
+      _uploadFinished(index) {
         this._updateFile(index, {
           progress: 100,
           complete: true,
-          index: index
+          index,
         });
       },
 
-      _uploadInterrupted: function(file, error) {
-        this.fire('uploadInterrupted', {file: file, error: error || 'Upload Interrupted!'});
+      _uploadInterrupted(file, error) {
+        this.fire('uploadInterrupted', { file, error: error || 'Upload Interrupted!' });
       },
 
-      _uploadProgressUpdated: function(index, progress) {
-        this._updateFile(index, {progress: progress}); // in percentage
+      _uploadProgressUpdated(index, progress) {
+        this._updateFile(index, { progress }); // in percentage
       },
 
-      _uploadSpeedUpdated: function(index, file, speed) {
-        this._updateFile(index, {speed: speed}); // in KB/sec
+      _uploadSpeedUpdated(index, file, speed) {
+        this._updateFile(index, { speed }); // in KB/sec
       },
 
       // DnD
-      _dragover: function(e) {
+      _dragover(e) {
         e.preventDefault();
         this.toggleClass('hover', true, this._dropZone);
       },
 
-      _dragleave: function() {
+      _dragleave() {
         this.toggleClass('hover', false, this._dropZone);
       },
 
-      _drop: function(e) {
+      _drop(e) {
         this.toggleClass('hover', false, this._dropZone);
         e.preventDefault();
         this.uploadFiles(e.dataTransfer.files);
-      }
+      },
     };
   })();
 </script>

@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="nuxeo-i18n-behavior.html">
 <!--
 An element to display errors.
@@ -88,45 +88,56 @@ Example:
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-error',
-      behaviors: [Nuxeo.I18nBehavior],
-      properties: {
-        /**
-         * The error code. Description will rely on a label with key 'error.<code>'.
-         **/
-        code: String,
+    {
+      class Error extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
-        /**
-         * Error message to display.
-         **/
-        message: String,
-
-        url: String,
-
-        hidden: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true
+        static get is() {
+          return 'nuxeo-error';
         }
-      },
 
-      show: function(code, url, message) {
-        if (arguments.length) {
-          this.code = code;
-          this.url = url;
-          this.message = message;
+        static get properties() {
+          return {
+            /**
+             * The error code. Description will rely on a label with key 'error.<code>'.
+             * */
+            code: String,
+
+            /**
+             * Error message to display.
+             * */
+            message: String,
+
+            url: String,
+
+            hidden: {
+              type: Boolean,
+              value: false,
+              reflectToAttribute: true,
+            },
+          };
         }
-        this.hidden = false;
-      },
 
-      hide: function() {
-        this.hidden = true;
-      },
+        show(code, url, message) {
+          if (arguments.length) {
+            this.code = code;
+            this.url = url;
+            this.message = message;
+          }
+          this.hidden = false;
+        }
 
-      _label: function() {
-        return this.i18n('error.' + this.code);
+        hide() {
+          this.hidden = true;
+        }
+
+        _label() {
+          return this.i18n(`error.${this.code}`);
+        }
+
       }
-    });
+
+      customElements.define(Error.is, Error);
+      Nuxeo.Error = Error;
+    }
   </script>
 </dom-module>

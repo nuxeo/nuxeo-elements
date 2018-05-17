@@ -18,6 +18,7 @@ limitations under the License.
 <link rel="import" href="nuxeo-i18n-behavior.html">
 
 <script>
+  /* eslint-disable no-var, no-use-before-define */
   var Nuxeo = Nuxeo || {};
 
   /**
@@ -30,15 +31,15 @@ limitations under the License.
     /**
      * Formats a size given in bytes in MB, KB, or bytes.
      */
-    formatSize: function(size) {
+    formatSize(size) {
       if (!size || size < 0) {
         return '';
       } else if (size > 1048576) {
-        return parseFloat(size / 1048576).toFixed(2) + ' MB';
+        return `${parseFloat(size / 1048576).toFixed(2)} MB`;
       } else if (size > 1024) {
-        return parseFloat(size / 1024).toFixed(2) + ' KB';
+        return `${parseFloat(size / 1024).toFixed(2)} KB`;
       } else {
-        return size.toString() + ' Bytes';
+        return `${size.toString()} Bytes`;
       }
     },
 
@@ -46,11 +47,11 @@ limitations under the License.
      * Formats a date as a string. Default format is 'MMM D, YYYY'.
      * Use format "relative" to show date relative to current time
      */
-    formatDate: function(date, fmt) {
+    formatDate(date, fmt) {
       if (!date) return;
       moment.locale(this._languageCode());
-      if (fmt && fmt === "relative"){
-        return moment().to(date) ;
+      if (fmt && fmt === 'relative') {
+        return moment().to(date);
       }
       return moment(date).format(fmt || 'MMMM D, YYYY');
     },
@@ -58,18 +59,18 @@ limitations under the License.
     /**
      * Returns the translated mimetype. Message key is 'mimetype.<value>'.
      */
-    formatMimeType: function(value) {
+    formatMimeType(value) {
       if (!value) return;
-      return this.i18n('mimetype.' + value);
+      return this.i18n(`mimetype.${value}`);
     },
 
     /**
      * Returns the version of a document as <major>.<minor>.
      */
-    formatVersion: function(doc) {
+    formatVersion(doc) {
       if (doc && doc.properties
           && doc.properties['uid:major_version'] !== undefined && doc.properties['uid:minor_version'] !== undefined) {
-        return doc.properties['uid:major_version'] + '.' + doc.properties['uid:minor_version'];
+        return `${doc.properties['uid:major_version']}.${doc.properties['uid:minor_version']}`;
       } else {
         return '';
       }
@@ -78,12 +79,12 @@ limitations under the License.
     /**
      * Returns the label for the given directory entry.
      */
-    formatDirectory: function(value, separator) {
+    formatDirectory(value, separator) {
       if (value && value['entity-type'] && value['entity-type'] === 'directoryEntry') {
         if (value.properties && value.properties.label) {
           return this._absoluteDirectoryPath(value, 'label', separator || '/');
         } else {
-          var label = 'label_' + this._languageCode();
+          const label = `label_${this._languageCode()}`;
           return this._absoluteDirectoryPath(value, label || 'label_en', separator || '/');
         }
       } else {
@@ -91,7 +92,7 @@ limitations under the License.
       }
     },
 
-    _absoluteDirectoryPath: function(entry, labelField, separator, subPath) {
+    _absoluteDirectoryPath(entry, labelField, separator, subPath) {
       var parent = entry.properties.parent;
       var tmp = entry.properties[labelField];
       if (subPath) {
@@ -107,21 +108,21 @@ limitations under the License.
     /**
      * Returns the label for the given lifecycle state.
      */
-    formatLifecycleState: function(state) {
-      var t = this.i18n('label.ui.state.' + state);
-      return t === 'label.ui.state.' + state ? state : t;
+    formatLifecycleState(state) {
+      var t = this.i18n(`label.ui.state.${state}`);
+      return t === `label.ui.state.${state}` ? state : t;
     },
 
     /**
      * Returns sanitized fulltext
      */
-    formatFulltext: function(text) {
+    formatFulltext(text) {
       return text.replace(/-/g, ' ');
     },
 
-    _languageCode: function (){
+    _languageCode() {
       return ((window.nuxeo.I18n.language) ? window.nuxeo.I18n.language.split('-')[0] : 'en');
-    }
+    },
 
   }];
 </script>

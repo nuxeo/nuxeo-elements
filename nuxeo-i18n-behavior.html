@@ -20,8 +20,9 @@ limitations under the License.
 <script src="nuxeo-i18n.js"></script>
 
 <script>
+  /* eslint-disable no-var, no-use-before-define */
   var Nuxeo = Nuxeo || {};
-  (function () {
+  (() => {
 
     /**
      * `Nuxeo.I18nBehavior` provides a `i18n` helper function for translations.
@@ -36,21 +37,21 @@ limitations under the License.
         i18n: {
           type: Function,
           notify: true,
-          value: function() {
+          value() {
             return window.nuxeo.I18n.translate;
-          }
-        }
+          },
+        },
       },
 
-      created: function() {
+      created() {
         this.localeLoadedHandler = this.refreshI18n.bind(this);
         document.addEventListener('i18n-locale-loaded', this.localeLoadedHandler);
       },
 
-      refreshI18n: function() {
+      refreshI18n() {
         this.i18n = null;
         this.set('i18n', window.nuxeo.I18n.translate);
-      }
+      },
     };
   })();
 </script>

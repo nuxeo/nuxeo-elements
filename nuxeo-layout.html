@@ -15,8 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="nuxeo-error.html">
 <!--
 An element to import and stamp layout elements.
@@ -34,130 +34,140 @@ Example:
     <div id="container"></div>
   </template>
   <script>
-    Polymer({
-      is: 'nuxeo-layout',
+    {
+      class Layout extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Nuxeo.Element) {
 
-      behaviors: [Polymer.IronResizableBehavior],
-
-      properties: {
-
-        /**
-         * The href of the element to import.
-         * The name of the element is inferred from the filename.
-         **/
-        href: {
-          type: String,
-          observer: '_stamp'
-        },
-
-        /**
-         * Model object with properties to set on the instantiated element.
-         **/
-        model: {
-          type: Object,
-          value: {}
-        },
-
-        /**
-         * Error message to display if layout is not found.
-         **/
-        error: {
-          type: String,
-          value: 'Failed to find layout'
-        },
-
-        /**
-         * The stamped element.
-         **/
-        element: {
-          type: Object,
-          readOnly: true,
-          notify: true
+        static get is() {
+          return 'nuxeo-layout';
         }
-      },
 
-      observers: [
-        '_update(model.*)'
-      ],
+        static get properties() {
+          return {
+            /**
+             * The href of the element to import.
+             * The name of the element is inferred from the filename.
+             * */
+            href: {
+              type: String,
+              observer: '_stamp',
+            },
 
-      // Trigger the layout validation if it exists.
-      validate: function() {
-        if (this.element && ('function' === typeof this.element.validate)) {
-          return this.element.validate();
-        } else {
-          // workaroud for https://github.com/PolymerElements/iron-form/issues/218, adapted from iron-form.html
-          var valid = true;
-          if (this.element) {
-            var elements = this._getValidatableElements(this.element.root);
-            for (var el, i = 0; el = elements[i], i < elements.length; i++) {
-              valid = (el.validate ? el.validate() : el.checkValidity()) && valid;
-            }
-          }
-          return valid;
+            /**
+             * Model object with properties to set on the instantiated element.
+             * */
+            model: {
+              type: Object,
+              value: {},
+            },
+
+            /**
+             * Error message to display if layout is not found.
+             * */
+            error: {
+              type: String,
+              value: 'Failed to find layout',
+            },
+
+            /**
+             * The stamped element.
+             * */
+            element: {
+              type: Object,
+              readOnly: true,
+              notify: true,
+            },
+          };
         }
-      },
 
-      _getValidatableElements: function(parent) {
-        var nodes = Polymer.dom(parent).querySelectorAll('*');
-        var submittable = [];
-        for (var i = 0; i < nodes.length; i++) {
-          var node = nodes[i];
-          if (!node.disabled) {
-            if (node.validate || node.checkValidity) {
-              submittable.push(node);
+        static get observers() {
+          return [
+            '_update(model.*)',
+          ];
+        }
+
+        // Trigger the layout validation if it exists.
+        validate() {
+          if (this.element && (typeof this.element.validate === 'function')) {
+            return this.element.validate();
+          } else {
+            // workaroud for https://github.com/PolymerElements/iron-form/issues/218, adapted from iron-form.html
+            let valid = true;
+            if (this.element) {
+              const elements = this._getValidatableElements(this.element.root);
+              for (let el, i = 0; el = elements[i], i < elements.length; i++) {
+                valid = (el.validate ? el.validate() : el.checkValidity()) && valid;
+              }
             }
-            else if (node.root) {
-              Array.prototype.push.apply(submittable, this._getValidatableElements(node.root));
-            }
+            return valid;
           }
         }
-        return submittable;
-      },
 
-      _stamp: function(href) {
-        if (!href) {
-          this.hidden = true;
-          return;
+        _getValidatableElements(parent) {
+          const nodes = Polymer.dom(parent).querySelectorAll('*');
+          const submittable = [];
+          for (let i = 0; i < nodes.length; i++) {
+            const node = nodes[i];
+            if (!node.disabled) {
+              if (node.validate || node.checkValidity) {
+                submittable.push(node);
+              } else if (node.root) {
+                Array.prototype.push.apply(submittable, this._getValidatableElements(node.root));
+              }
+            }
+          }
+          return submittable;
         }
 
-        this.$.error.hidden = true;
-        this.hidden = this.$.container.hidden = false;
+        _stamp(href) {
+          if (!href) {
+            this.hidden = true;
+            return;
+          }
 
-        var file = href.split('/').pop(),
-            name = file.split('.')[0];
+          this.$.error.hidden = true;
+          this.hidden = this.$.container.hidden = false;
 
-        this.importHref(href,
-          function() {
-            var element = document.createElement(name);
+          const file = href.split('/').pop();
+          const name = file.split('.')[0];
+          this.importHref(
+            href,
+            () => {
+              const element = document.createElement(name);
 
-            if (this.$.container.hasChildNodes()) {
-              this.$.container.replaceChild(element, this.$.container.firstChild);
-            } else {
-              this.$.container.appendChild(element);
-            }
+              if (this.$.container.hasChildNodes()) {
+                this.$.container.replaceChild(element, this.$.container.firstChild);
+              } else {
+                this.$.container.appendChild(element);
+              }
 
-            this._setElement(element);
-            this._update();
-            this.notifyResize();
-          },
-          // error handling
-          function() {
-            this._setElement(undefined);
-            this.$.error.hidden = false;
-            this.$.container.hidden = true;
-            this.notifyResize()
-          });
-      },
+              this._setElement(element);
+              this._update();
+              this.notifyResize();
+            },
+            // error handling
+            () => {
+              this._setElement(undefined);
+              this.$.error.hidden = false;
+              this.$.container.hidden = true;
+              this.notifyResize();
+            },
+          );
+        }
 
-      // setup data binding
-      _update: function() {
-        // Object.assign(element, model);
-        if (this.element && this.model) {
-          for (var prop in this.model) {
-            this.element[prop] = this.model[prop];
+        // setup data binding
+        _update() {
+          // Object.assign(element, model);
+          if (this.element && this.model) {
+            Object.keys(this.model).forEach((prop) => {
+              this.element[prop] = this.model[prop];
+            });
           }
         }
+
       }
-    });
+
+      customElements.define(Layout.is, Layout);
+      Nuxeo.Layout = Layout;
+    }
   </script>
 </dom-module>
