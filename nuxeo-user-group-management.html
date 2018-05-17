@@ -33,6 +33,7 @@ limitations under the License.
 <link rel="import" href="../paper-menu-button/paper-menu-button.html">
 <link rel="import" href="../paper-toast/paper-toast.html">
 <link rel="import" href="../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../polymer/lib/utils/import-href.html">
 <link rel="import" href="nuxeo-filters-behavior.html">
 <link rel="import" href="nuxeo-i18n-behavior.html">
 <link rel="import" href="nuxeo-icons.html">
@@ -231,10 +232,10 @@ Custom property | Description | Default
           super.ready();
           // dynamic loading of user layouts
           if (!this._isRegistered('nuxeo-view-user')) {
-            Polymer.Base.importHref(this.resolveUrl('nuxeo-user-group-management/nuxeo-view-user.html'));
+            Polymer.importHref(this.resolveUrl('nuxeo-user-group-management/nuxeo-view-user.html'));
           }
           if (!this._isRegistered('nuxeo-edit-user')) {
-            Polymer.Base.importHref(this.resolveUrl('nuxeo-user-group-management/nuxeo-edit-user.html'));
+            Polymer.importHref(this.resolveUrl('nuxeo-user-group-management/nuxeo-edit-user.html'));
           }
 
           window.addEventListener('manageUser', (e) => {

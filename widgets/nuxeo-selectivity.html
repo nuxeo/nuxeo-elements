@@ -23,6 +23,7 @@ limitations under the License.
 <link rel="import" href="../../iron-validatable-behavior/iron-validatable-behavior.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
+<link rel="import" href="../../polymer/lib/utils/debounce.html">
 
 <!--
 An element wrapping selectivity.js and relying on an operation for suggestions
@@ -381,9 +382,12 @@ An element wrapping selectivity.js and relying on an operation for suggestions
                 return;
               }
               // debounce requests
-              this.debounce('_selectivityQuery', () => {
-                this._query(query);
-              }, this.frequency);
+              this._debouncer = Polymer.Debouncer.debounce(
+                this._debouncer,
+                Polymer.Async.timeOut.after(this.frequency), () => {
+                  this._query(query);
+                },
+              );
             };
           }
 
@@ -397,7 +401,7 @@ An element wrapping selectivity.js and relying on an operation for suggestions
           this._selectivity = new InputType(options);
 
           if (this.value || this.selectedItem || this.selectedItems) {
-            this.async(() => {
+            setTimeout(() => {
               this._valueChanged(this.value || this.selectedItem || this.selectedItems);
             }, 100);
           }

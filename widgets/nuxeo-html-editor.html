@@ -78,7 +78,9 @@ limitations under the License.
 
         connectedCallback() {
           super.connectedCallback();
-          this.async(this._init.bind(this), 100);
+          setTimeout(() => {
+            this._init();
+          }, 100);
         }
 
         _init() {

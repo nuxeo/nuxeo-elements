@@ -217,12 +217,12 @@ Element displaying a table with document ACLs.
         }
 
         aclFilterChanged(fn) {
-          this._aclFilter = fn && (() => this.__dataHost[fn].apply(this.__dataHost, arguments));
+          this._aclFilter = fn && function () { return this.__dataHost[fn].apply(this.__dataHost, arguments); };
           this._updateAces();
         }
 
         aceFilterChanged(fn) {
-          this._aceFilter = fn && (() => this.__dataHost[fn].apply(this.__dataHost, arguments));
+          this._aceFilter = fn && function () { return this.__dataHost[fn].apply(this.__dataHost, arguments); };
           this._updateAces();
         }
 

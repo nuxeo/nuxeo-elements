@@ -1,4 +1,5 @@
 <link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../polymer/lib/utils/debounce.html">
 
 <script>
   const saulis = window.saulis || {};
@@ -157,10 +158,17 @@
       if (path.indexOf('item') === 0) {
         // instance.notifyPath above will call _forwardInstancePath recursively,
         // so need to debounce to avoid firing the same event multiple times.
-        this.table.debounce('item-changed', () => {
-          // stripping 'item.' from path.
-          this.table.fire('item-changed', { item: inst.item, path: path.substring(5), value });
-        });
+        this.table._debouncer = Polymer.Debouncer.debounce(
+          this.table._debouncer,
+          Polymer.Async.microTask, () => {
+            this.table.dispatchEvent(new CustomEvent('item-changed', {
+              composed: true,
+              bubbles: true,
+              // stripping 'item.' from path.
+              detail: { item: inst.item, path: path.substring(5), value },
+            }));
+          },
+        );
       }
     },
   };

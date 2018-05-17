@@ -17,6 +17,7 @@ limitations under the License.
 
 <link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../polymer/lib/utils/import-href.html">
 <link rel="import" href="nuxeo-error.html">
 <!--
 An element to import and stamp layout elements.
@@ -129,7 +130,7 @@ Example:
 
           const file = href.split('/').pop();
           const name = file.split('.')[0];
-          this.importHref(
+          Polymer.importHref(
             href,
             () => {
               const element = document.createElement(name);

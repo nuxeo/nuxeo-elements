@@ -1,4 +1,5 @@
 <link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../polymer/lib/utils/async.html">
 <link rel="import" href="data-table-templatizer-behavior.html">
 
 <!-- Part of `nuxeo-data-table` -->
@@ -122,7 +123,7 @@
             return;
           }
           // sometimes instance isn't ready to be notified yet and throws an error.
-          this.async(function () {
+          Polymer.Async.microTask.run(() => {
             // TODO: hack to avoid: https://github.com/Polymer/polymer/issues/3307
             this._parentProps = this._parentProps || {};
             instance.notifyPath(column.path, column.value);
