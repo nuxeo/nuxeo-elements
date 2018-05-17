@@ -119,7 +119,7 @@
   "groupManagement.permissions.heading": "Permissions",
   "groupManagement.remove": "Remove",
   "groupManagement.removedUserFromGroup": "{0} was removed from the group.",
-  "groupManagement.removeFrom": "Remove from {0}",
+  "groupManagement.removeFrom": "Remove from '{0}' group",
   "groupManagement.removeUserFromGroup.confirm": "Do you really want to remove {0} from this group?",
   "groupManagement.users.heading": "Users",
   "label.no": "No",

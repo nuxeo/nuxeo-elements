@@ -328,7 +328,7 @@ Used by `nuxeo-user-group-management`
                 <div class="table-actions">
                   <template is="dom-if" if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
                     <paper-icon-button icon="nuxeo:clear" noink
-                                       title="[[i18n('groupManagement.removeFrom', item.label)]]"
+                                       title="[[i18n('groupManagement.removeFrom', groupname)]]"
                                        on-tap="_toggleDeleteDialog">
                     </paper-icon-button>
                   </template>
@@ -371,7 +371,7 @@ Used by `nuxeo-user-group-management`
                 <div class="table-actions">
                   <template is="dom-if" if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
                     <paper-icon-button icon="nuxeo:clear" noink
-                                       title="[[i18n('groupManagement.removeFrom', item.label)]]"
+                                       title="[[i18n('groupManagement.removeFrom', groupname)]]"
                                        on-tap="_toggleDeleteDialog">
                     </paper-icon-button>
                   </template>
