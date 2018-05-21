@@ -78,7 +78,7 @@ An element providing document permissions management
       }
     </style>
 
-    <nuxeo-document id="doc" auto doc-id="{{docId}}" doc-path="{{docPath}}" response="{{doc}}"
+    <nuxeo-document id="doc" doc-id="{{docId}}" doc-path="{{docPath}}" response="{{doc}}"
       enrichers="acls, permissions, userVisiblePermissions" params="{{params}}"></nuxeo-document>
 
     <!-- Local permissions -->
@@ -170,6 +170,11 @@ An element providing document permissions management
             "depth": "children",
             "time": new Date().getTime()
           }
+        },
+        visible: {
+          type: Boolean,
+          value: false,
+          observer: 'refresh'
         }
       },
 
@@ -181,8 +186,10 @@ An element providing document permissions management
       },
 
       refresh: function () {
-        this.params.time = new Date().getTime();
-        this.$.doc.get();
+        if (this.visible) {
+          this.params.time = new Date().getTime();
+          this.$.doc.get();
+        }
       },
 
       onACECreated: function() {
