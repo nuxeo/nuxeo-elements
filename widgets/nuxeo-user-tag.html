@@ -16,11 +16,11 @@ limitations under the License.
 -->
 
 <link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
-<link rel="import" href="../../paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../nuxeo-routing-behavior.html">
 <link rel="import" href="nuxeo-tag.html">
 <link rel="import" href="nuxeo-user-avatar.html">
+<link rel="import" href="nuxeo-tooltip.html">
 
 <!--
 An element for showing a user entity with a tooltip.
@@ -76,9 +76,9 @@ Example:
         </dom-if>
         <dom-if if="[[_isEntity(user)]]">
           <template>
-            <paper-tooltip id="tooltip" position="top" offset="0" animation-delay="0">
+            <nuxeo-tooltip position="top" offset="0" animation-delay="0">
               [[_id(user)]]<br>[[_email(user)]]
-            </paper-tooltip>
+            </nuxeo-tooltip>
           </template>
         </dom-if>
       </div>
@@ -116,13 +116,6 @@ Example:
               value: false,
             },
           };
-        }
-
-        ready() {
-          super.ready();
-          if (this.$.tooltip) {
-            document.body.appendChild(this.$.tooltip);
-          }
         }
 
         _isEntity(user) {

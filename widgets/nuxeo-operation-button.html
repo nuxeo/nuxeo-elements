@@ -19,8 +19,8 @@ limitations under the License.
 <link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../widgets/nuxeo-tooltip.html">
 
 <!--
 An element for running an operation.
@@ -43,7 +43,7 @@ Example:
     </nuxeo-operation>
 
     <paper-icon-button id="bt" icon="[[icon]]" on-click="_execute"></paper-icon-button>
-    <paper-tooltip for="bt">[[label]]</paper-tooltip>
+    <nuxeo-tooltip for="bt">[[label]]</nuxeo-tooltip>
   </template>
 
   <script>

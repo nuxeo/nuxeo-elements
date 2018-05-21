@@ -16,9 +16,9 @@ limitations under the License.
 -->
 
 <link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
-<link rel="import" href="../../paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../nuxeo-format-behavior.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../widgets/nuxeo-tooltip.html">
 
 <!--
 An element to show a datetime formatted with a tooltip. Format maybe relative to now
@@ -36,7 +36,7 @@ Example:
 <dom-module id="nuxeo-date">
   <template>
     <span id="datetime" hidden$="[[!datetime]]">[[formatDate(datetime, format)]]</span>
-    <paper-tooltip id="tooltip" for="datetime">[[formatDate(datetime, tooltipFormat)]]</paper-tooltip>
+    <nuxeo-tooltip for="datetime">[[formatDate(datetime, tooltipFormat)]]</nuxeo-tooltip>
   </template>
 
   <script>
@@ -74,13 +74,6 @@ Example:
               value: 'MMMM D, YYYY HH:mm',
             },
           };
-        }
-
-        ready() {
-          super.ready();
-          document.body.appendChild(this.$.tooltip);
-          this.$.tooltip._target = this.$.datetime;
-          this.$.tooltip._addListeners();
         }
 
       }

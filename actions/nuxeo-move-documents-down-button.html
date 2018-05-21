@@ -18,11 +18,11 @@ limitations under the License.
 <link rel="import" href="../../nuxeo-elements/nuxeo-element.html">>
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../nuxeo-filters-behavior.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-icons.html">
+<link rel="import" href="../widgets/nuxeo-tooltip.html">
 
 <!--
 A button element for moving documents down within an OrderedFolder.
@@ -58,9 +58,9 @@ A button element for moving documents down within an OrderedFolder.
           id="downButton"
           icon="icons:arrow-downward">
         </paper-icon-button>
-        <paper-tooltip for="downButton" position="[[tooltipPosition]]">
+        <nuxeo-tooltip for="downButton" position="[[tooltipPosition]]">
           [[i18n('moveDocumentButton.down.tooltip')]]
-        </paper-tooltip>
+        </nuxeo-tooltip>
       </template>
     </dom-if>
 

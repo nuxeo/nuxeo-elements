@@ -19,11 +19,11 @@ limitations under the License.
 <link rel="import" href="../../iron-icons/iron-icons.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../nuxeo-filters-behavior.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-icons.html">
+<link rel="import" href="../widgets/nuxeo-tooltip.html">
 
 <!--
 A button element for downloading the main file from a document.
@@ -47,7 +47,7 @@ Example:
     <dom-if if="[[_isAvailable(document)]]">
       <template>
         <paper-icon-button icon="[[icon]]" on-click="_download" noink></paper-icon-button>
-        <paper-tooltip>[[i18n('downloadButton.tooltip')]]</paper-tooltip>
+        <nuxeo-tooltip>[[i18n('downloadButton.tooltip')]]</nuxeo-tooltip>
       </template>
     </dom-if>
 
