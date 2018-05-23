@@ -22,7 +22,6 @@ limitations under the License.
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
-  <script src="../../jquery/dist/jquery.min.js"></script>
   <script>
     window.fetch = null;
   </script>
@@ -47,69 +46,68 @@ limitations under the License.
 </test-fixture>
 
 <script>
-  suite('<nuxeo-create-group>', function() {
-    var server;
+  /* eslint-disable no-unused-expressions */
 
-    setup(function() {
+  suite('<nuxeo-create-group>', () => {
+    let server;
+
+    setup(() => {
       server = sinon.fakeServer.create();
       server.autoRespond = true;
-      var nx = fixture('nx');
+      const nx = fixture('nx');
       return login(server, nx);
     });
 
-    suite('create group', function() {
-      var createGroupEl, createButton;
-      var suggestResponses = [{
-        'firstName': '',
-        'lastName': '',
-        'groups': [],
-        'company': '',
-        'email': 'devnull@nuxeo.com',
-        'username': 'Administrator',
-        'id': 'Administrator',
-        'type': 'USER_TYPE',
-        'prefixed_id': 'user:Administrator',
-        'displayLabel': 'Administrator',
-        'displayIcon': true
+    suite('create group', () => {
+      let createGroupEl;
+      let createButton;
+      const suggestResponses = [{
+        firstName: '',
+        lastName: '',
+        groups: [],
+        company: '',
+        email: 'devnull@nuxeo.com',
+        username: 'Administrator',
+        id: 'Administrator',
+        type: 'USER_TYPE',
+        prefixed_id: 'user:Administrator',
+        displayLabel: 'Administrator',
+        displayIcon: true,
       }];
-      var creationResponse = {
-        "entity-type": "group",
-        "groupname": "test",
-        "grouplabel": "Test",
-        "memberUsers": [],
-        "memberGroups": []
+      const creationResponse = {
+        'entity-type': 'group',
+        groupname: 'test',
+        grouplabel: 'Test',
+        memberUsers: [],
+        memberGroups: [],
       };
-      var creationData = {
-        "entity-type": "group",
-        "groupname": "test",
-        "grouplabel": "Test",
-        "memberUsers": ["Administrator"],
-        "memberGroups": []
+      const creationData = {
+        'entity-type': 'group',
+        groupname: 'test',
+        grouplabel: 'Test',
+        memberUsers: ['Administrator'],
+        memberGroups: [],
       };
 
-      setup(function() {
+      setup(() => {
         createGroupEl = fixture('createGroup');
         server.respondWith(
           'POST',
           '/dummy/api/v1/group',
           [
             200,
-            {'Content-Type': 'application/json'},
-            JSON.stringify(creationResponse)
-          ]
+            { 'Content-Type': 'application/json' },
+            JSON.stringify(creationResponse),
+          ],
         );
         Polymer.dom.flush(createGroupEl);
       });
 
-      test('create a group with one user', function() {
-        return testCreateGroup(false);
-      });
+      test('create a group with one user', () => testCreateGroup(false));
 
-      test('create an group with "Create another" button', function() {
-        return testCreateGroup(true);
-      });
+      test('create an group with "Create another" button', () => testCreateGroup(true));
 
-      test('try to create a group with no name', function() {
+      test('try to create a group with no name', () => {
         // try to create right away
         expect(createGroupEl).to.not.be.null;
         createButton = createGroupEl.$$('#createButton');
@@ -125,9 +123,9 @@ limitations under the License.
       function testCreateGroup(createAnother) {
         // type in group name and label
         expect(createGroupEl).to.not.be.null;
-        var groupName = createGroupEl.$$('#groupName');
+        const groupName = createGroupEl.$$('#groupName');
         expect(groupName.value).to.not.be.null;
-        var groupLabel = createGroupEl.$$('#groupLabel');
+        const groupLabel = createGroupEl.$$('#groupLabel');
         expect(groupLabel.value).to.be.not.be.null;
         groupName.value = createGroupEl.groupName = 'test';
         Polymer.dom.flush(groupName);
@@ -140,13 +138,13 @@ limitations under the License.
         createGroupEl.selectedUsers = suggestResponses;
         Polymer.dom.flush(createGroupEl);
 
-        var searchEntries = Polymer.dom(createGroupEl.root).querySelectorAll('.row');
+        const searchEntries = Polymer.dom(createGroupEl.root).querySelectorAll('.row');
         expect(searchEntries.length).to.be.equal(1);
         Polymer.dom.flush(searchEntries[0]);
-        var label = searchEntries[0].querySelector('.label > span').textContent.trim();
-        var uname = searchEntries[0].querySelector('.name:not([hidden])').textContent.trim();
-        var email = searchEntries[0].querySelector('.email').textContent.trim();
-        var expected = suggestResponses[0];
+        const label = searchEntries[0].querySelector('.label > span').textContent.trim();
+        const uname = searchEntries[0].querySelector('.name:not([hidden])').textContent.trim();
+        const email = searchEntries[0].querySelector('.email').textContent.trim();
+        const expected = suggestResponses[0];
         expect(label).to.be.equal(expected.displayLabel);
         expect(uname).to.be.equal(expected.username ? expected.username : expected.groupname);
         expect(email).to.be.equal(expected.email ? expected.email : '');
@@ -161,7 +159,7 @@ limitations under the License.
         expect(createButton).to.not.be.null;
         MockInteractions.tap(createButton);
 
-        waitChanged(createGroupEl, 'group-name').then(function() {
+        waitChanged(createGroupEl, 'group-name').then(() => {
           expect(createGroupEl.groupName).to.be.equal('');
           expect(createGroupEl.groupLabel).to.be.equal('');
           expect(createGroupEl.selectedUsers).to.be.empty;

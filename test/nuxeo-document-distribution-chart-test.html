@@ -63,108 +63,108 @@ limitations under the License.
 
     <script>
 
-      suite('<nuxeo-document-distribution-chart>', function() {
+      suite('<nuxeo-document-distribution-chart>', () => {
 
-        var server;
+        let server;
 
-        var includeAllCountResp = {
-          "aggregations": {
-            "subLevel": {
-              "buckets": [
+        const includeAllCountResp = {
+          aggregations: {
+            subLevel: {
+              buckets: [
                 {
-                  "doc_count": 62,
-                  "key": "workspaces",
-                  "size": {
-                    "value": 28650901.0
+                  doc_count: 62,
+                  key: 'workspaces',
+                  size: {
+                    value: 28650901.0,
                   },
-                  "subLevel": {
-                    "buckets": [
+                  subLevel: {
+                    buckets: [
                       {
-                        "doc_count": 35,
-                        "key": "Media",
-                        "size": {
-                          "value": 19544488.0
-                        }
+                        doc_count: 35,
+                        key: 'Media',
+                        size: {
+                          value: 19544488.0,
+                        },
                       },
                       {
-                        "doc_count": 19,
-                        "key": "Deep",
-                        "size": {
-                          "value": 6625895.0
-                        }
+                        doc_count: 19,
+                        key: 'Deep',
+                        size: {
+                          value: 6625895.0,
+                        },
                       },
                       {
-                        "doc_count": 7,
-                        "key": "Small",
-                        "size": {
-                          "value": 2480518.0
-                        }
-                      }
-                    ]
-                  }
+                        doc_count: 7,
+                        key: 'Small',
+                        size: {
+                          value: 2480518.0,
+                        },
+                      },
+                    ],
+                  },
                 },
                 {
-                  "doc_count": 9,
-                  "key": "UserWorkspaces",
-                  "size": {
-                    "value": 0.0
+                  doc_count: 9,
+                  key: 'UserWorkspaces',
+                  size: {
+                    value: 0.0,
                   },
-                  "subLevel": {
-                    "buckets": [
+                  subLevel: {
+                    buckets: [
                       {
-                        "doc_count": 5,
-                        "key": "Administrator",
-                        "size": {
-                          "value": 0.0
-                        }
+                        doc_count: 5,
+                        key: 'Administrator',
+                        size: {
+                          value: 0.0,
+                        },
                       },
                       {
-                        "doc_count": 3,
-                        "key": "jdoe",
-                        "size": {
-                          "value": 0.0
-                        }
-                      }
-                    ]
-                  }
+                        doc_count: 3,
+                        key: 'jdoe',
+                        size: {
+                          value: 0.0,
+                        },
+                      },
+                    ],
+                  },
                 },
                 {
-                  "doc_count": 1,
-                  "key": "sections",
-                  "size": {
-                    "value": 0.0
+                  doc_count: 1,
+                  key: 'sections',
+                  size: {
+                    value: 0.0,
                   },
-                  "subLevel": {
-                    "buckets": []
-                  }
+                  subLevel: {
+                    buckets: [],
+                  },
                 },
                 {
-                  "doc_count": 1,
-                  "key": "templates",
-                  "size": {
-                    "value": 0.0
+                  doc_count: 1,
+                  key: 'templates',
+                  size: {
+                    value: 0.0,
                   },
-                  "subLevel": {
-                    "buckets": []
-                  }
-                }
-              ]
-            }
-          }
+                  subLevel: {
+                    buckets: [],
+                  },
+                },
+              ],
+            },
+          },
         };
 
-        setup(function() {
+        setup(() => {
           server = sinon.fakeServer.create();
           server.autoRespond = true;
           // login
-          var nx = fixture('nx');
+          const nx = fixture('nx');
           return login(server, nx);
         });
 
-        test('includeAllCount', function() {
-          var distribution = fixture('includeAllCount');
+        test('includeAllCount', () => {
+          const distribution = fixture('includeAllCount');
 
-          return fakeResponse(distribution, includeAllCountResp).then(function() {
+          return fakeResponse(distribution, includeAllCountResp).then(() => {
             // check data transformation
             assert.equal(4, distribution._chartData.children.length);
             assert.equal(71, distribution._chartData.value);
@@ -178,10 +178,10 @@ limitations under the License.
           });
         });
 
-        test('includeAllSize', function() {
-          var distribution = fixture('includeAllSize');
+        test('includeAllSize', () => {
+          const distribution = fixture('includeAllSize');
 
-          return fakeResponse(distribution, includeAllCountResp).then(function() {
+          return fakeResponse(distribution, includeAllCountResp).then(() => {
             // check data transformation
             assert.equal(4, distribution._chartData.children.length);
             assert.equal(28650901, distribution._chartData.value);
@@ -201,9 +201,9 @@ limitations under the License.
             '/dummy/site/es/nuxeo/doc/_search',
             [
               200,
-              {'Content-Type': 'application/json'},
-              JSON.stringify(json)
-            ]
+              { 'Content-Type': 'application/json' },
+              JSON.stringify(json),
+            ],
           );
           return distribution.execute();
         }

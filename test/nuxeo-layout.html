@@ -39,25 +39,27 @@ limitations under the License.
     </template>
   </test-fixture>
   <script>
-    suite('<nuxeo-layout>', function() {
+    /* eslint-disable no-unused-expressions */
 
-      test('layout not found', function() {
-        var layout = fixture('notfound');
-        return waitForEvent(layout, 'iron-resize').then(function() {
+    suite('<nuxeo-layout>', () => {
+
+      test('layout not found', () => {
+        const layout = fixture('notfound');
+        return waitForEvent(layout, 'iron-resize').then(() => {
           expect(layout.$$('nuxeo-error').hidden).to.be.false;
           expect(layout.element).to.be.undefined;
         });
       });
 
-      test('layout stamped with model', function() {
-        var layout = fixture('layout');
+      test('layout stamped with model', () => {
+        const layout = fixture('layout');
 
-        return waitChanged(layout, 'element', 1).then(function() {
+        return waitChanged(layout, 'element', 1).then(() => {
           expect(layout.$$('nuxeo-error').hidden).to.be.true;
           expect(layout.element.localName).to.equal('nuxeo-layout');
-          expect(layout.element.href).to.equal("dummy");
+          expect(layout.element.href).to.equal('dummy');
         });
-        
+
       });
     });
   </script>

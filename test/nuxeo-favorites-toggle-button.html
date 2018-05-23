@@ -70,67 +70,69 @@ limitations under the License.
   </test-fixture>
 
   <script>
-    suite('<nuxeo-favorites-toggle-button>', function() {
-      var server;
-      setup(function() {
+    /* eslint-disable no-unused-expressions */
+
+    suite('<nuxeo-favorites-toggle-button>', () => {
+      let server;
+      setup(() => {
         server = sinon.fakeServer.create();
         server.autoRespond = true;
         // login
-        var nx = fixture('nx');
+        const nx = fixture('nx');
         return login(server, nx);
       });
 
-      suite('when a document is a favorite', function() {
-        var element;
-        setup(function() {
+      suite('when a document is a favorite', () => {
+        let element;
+        setup(() => {
           element = fixture('isFavorite');
           server.respondWith(
             'POST',
             '/dummy/api/v1/automation/Document.RemoveFromFavorites',
             [
               200,
-              {'Content-Type': 'application/json'},
-              '{"entity-type": "document","uid": "1"}'
-            ]
+              { 'Content-Type': 'application/json' },
+              '{"entity-type": "document","uid": "1"}',
+            ],
           );
         });
 
-        test('it should display the document as favorite', function() {
+        test('it should display the document as favorite', () => {
           expect(element.favorite).to.be.true;
         });
 
-        test('toggle should remove document from favorites', function() {
+        test('toggle should remove document from favorites', () => {
           // Remove document from favorites by toggling
           MockInteractions.tap(element);
-          return waitChanged(element, 'favorite').then(function() {
+          return waitChanged(element, 'favorite').then(() => {
             expect(element.favorite).to.be.false;
           });
         });
       });
 
-      suite('when a document is not in favorites', function() {
-        var element;
-        setup(function() {
+      suite('when a document is not in favorites', () => {
+        let element;
+        setup(() => {
           element = fixture('notFavorite');
           server.respondWith(
             'POST',
             '/dummy/api/v1/automation/Document.AddToFavorites',
             [
               200,
-              {'Content-Type': 'application/json'},
-              '{"entity-type": "document","uid": "1"}'
-            ]
+              { 'Content-Type': 'application/json' },
+              '{"entity-type": "document","uid": "1"}',
+            ],
           );
         });
 
-        test('it should display the document as not favorite', function() {
+        test('it should display the document as not favorite', () => {
           expect(element.favorite).to.be.false;
         });
 
-        test('toggle should add the document to favorites', function() {
+        test('toggle should add the document to favorites', () => {
           // Add the documents to favorites by toggling
           MockInteractions.tap(element);
-          return waitChanged(element, 'favorite').then(function() {
+          return waitChanged(element, 'favorite').then(() => {
             expect(element.favorite).to.be.true;
           });
         });

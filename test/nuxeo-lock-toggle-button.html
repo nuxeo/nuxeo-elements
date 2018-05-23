@@ -64,67 +64,69 @@ limitations under the License.
   </test-fixture>
 
   <script>
-    suite('<nuxeo-lock-toggle-button>', function() {
-      var server;
-      setup(function() {
+    /* eslint-disable no-unused-expressions */
+
+    suite('<nuxeo-lock-toggle-button>', () => {
+      let server;
+      setup(() => {
         server = sinon.fakeServer.create();
         server.autoRespond = true;
         // login
-        var nx = fixture('nx');
+        const nx = fixture('nx');
         return login(server, nx);
       });
 
-      suite('when a document is locked', function() {
-        var element;
-        setup(function() {
+      suite('when a document is locked', () => {
+        let element;
+        setup(() => {
           element = fixture('locked');
           server.respondWith(
             'POST',
             '/dummy/api/v1/automation/Document.Unlock',
             [
               200,
-              {'Content-Type': 'application/json'},
-              '{"entity-type": "document","uid": "1"}'
-            ]
+              { 'Content-Type': 'application/json' },
+              '{"entity-type": "document","uid": "1"}',
+            ],
           );
         });
 
-        test('it should display the document as locked', function() {
+        test('it should display the document as locked', () => {
           expect(element.locked).to.be.true;
         });
 
-        test('toggle should unlock the document', function() {
+        test('toggle should unlock the document', () => {
           // Unlock the document by toggling
           MockInteractions.tap(element);
-          return waitChanged(element, 'locked').then(function() {
+          return waitChanged(element, 'locked').then(() => {
             expect(element.locked).to.be.false;
           });
         });
       });
 
-      suite('when a document is unlocked', function() {
-        var element;
-        setup(function() {
+      suite('when a document is unlocked', () => {
+        let element;
+        setup(() => {
           element = fixture('unlocked');
           server.respondWith(
             'POST',
             '/dummy/api/v1/automation/Document.Lock',
             [
               200,
-              {'Content-Type': 'application/json'},
-              '{"entity-type": "document","uid": "1"}'
-            ]
+              { 'Content-Type': 'application/json' },
+              '{"entity-type": "document","uid": "1"}',
+            ],
           );
         });
 
-        test('it should display the document as unlocked', function() {
+        test('it should display the document as unlocked', () => {
           expect(element.locked).to.be.false;
         });
 
-        test('toggle should lock the document', function() {
+        test('toggle should lock the document', () => {
           // Lock the document by toggling
           MockInteractions.tap(element);
-          return waitChanged(element, 'locked').then(function() {
+          return waitChanged(element, 'locked').then(() => {
             expect(element.locked).to.be.true;
           });
         });

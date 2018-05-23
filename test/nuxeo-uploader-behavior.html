@@ -52,12 +52,15 @@ limitations under the License.
   </test-fixture>
 
   <script>
-    suite('Nuxeo.UploaderBehavior', function() {
+    /* eslint-disable no-unused-expressions */
 
-      var server, DefaultUploadProvider;
-      setup(function() {
-        DefaultUploadProvider = Nuxeo.UploaderBehavior.getProviders()['default'];
-        var MyProvider = function() {};
+    suite('Nuxeo.UploaderBehavior', () => {
+
+      let server;
+      let DefaultUploadProvider;
+      setup(() => {
+        DefaultUploadProvider = Nuxeo.UploaderBehavior.getProviders().default;
+        const MyProvider = function () { };
         MyProvider.prototype.accepts = DefaultUploadProvider.prototype.accepts;
         MyProvider.prototype.upload = DefaultUploadProvider.prototype.upload;
         MyProvider.prototype.hasProgress = DefaultUploadProvider.prototype.hasProgress;
@@ -68,21 +71,22 @@ limitations under the License.
         server = sinon.fakeServer.create();
         server.autoRespond = true;
         // login
-        var nx = fixture('nx');
+        const nx = fixture('nx');
         return login(server, nx);
       });
 
-      suite('upload providers', function() {
-        
-        var noProvider, withProvider;
+      suite('upload providers', () => {
 
-        setup(function() {
+        let noProvider;
+        let withProvider;
+
+        setup(() => {
           noProvider = fixture('noProvider');
           withProvider = fixture('withProvider');
         });
 
-        test('can contribute a new upload provider', function() {
-          var MyProvider2 = function() {};
+        test('can contribute a new upload provider', () => {
+          const MyProvider2 = function () { };
           MyProvider2.prototype.accepts = DefaultUploadProvider.prototype.accepts;
           MyProvider2.prototype.upload = DefaultUploadProvider.prototype.upload;
           MyProvider2.prototype.hasProgress = DefaultUploadProvider.prototype.hasProgress;
@@ -94,20 +98,20 @@ limitations under the License.
             .to.have.all.members(['default', 'myProvider', 'myProvider2']);
         });
 
-        test('can have elements with both default and explicit providers', function() {
+        test('can have elements with both default and explicit providers', () => {
           expect(noProvider._provider).to.be.equal('default');
           expect(noProvider.provider).to.be.empty;
           expect(withProvider._provider).to.be.equal('myProvider');
           expect(withProvider.provider).to.be.equal(withProvider._provider);
         });
 
-        test('can switch default provider', function() {
+        test('can switch default provider', () => {
           Nuxeo.UploaderBehavior.defaultProvider = 'myProvider';
           expect(noProvider._provider).to.be.equal('myProvider');
           expect(noProvider.provider).to.be.empty;
           expect(withProvider._provider).to.be.equal('myProvider');
           expect(withProvider.provider).to.be.equal(withProvider._provider);
-          
+
           Nuxeo.UploaderBehavior.defaultProvider = 'default';
           expect(noProvider._provider).to.be.equal('default');
           expect(noProvider.provider).to.be.empty;
@@ -115,13 +119,13 @@ limitations under the License.
           expect(withProvider.provider).to.be.equal(withProvider._provider);
         });
 
-        test('can switch provider for a single element', function() {
+        test('can switch provider for a single element', () => {
           noProvider.provider = 'default';
           expect(noProvider._provider).to.be.equal('default');
           expect(noProvider.provider).to.be.equal(noProvider._provider);
           expect(withProvider._provider).to.be.equal('myProvider');
           expect(withProvider.provider).to.be.equal(withProvider._provider);
-          
+
           Nuxeo.UploaderBehavior.defaultProvider = 'myProvider';
           expect(noProvider._provider).to.be.equal('default');
           expect(noProvider.provider).to.be.equal(noProvider._provider);
@@ -130,7 +134,7 @@ limitations under the License.
         });
 
       });
-      
+
     });
   </script>
 </body>

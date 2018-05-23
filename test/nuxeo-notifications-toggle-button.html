@@ -67,67 +67,69 @@ limitations under the License.
 </test-fixture>
 
 <script>
-  suite('<nuxeo-notifications-toggle-button>', function() {
-    var server;
-    setup(function() {
+  /* eslint-disable no-unused-expressions */
+
+  suite('<nuxeo-notifications-toggle-button>', () => {
+    let server;
+    setup(() => {
       server = sinon.fakeServer.create();
       server.autoRespond = true;
       // login
-      var nx = fixture('nx');
+      const nx = fixture('nx');
       return login(server, nx);
     });
 
-    suite('when a document is subscribed', function() {
-      var element;
-      setup(function() {
+    suite('when a document is subscribed', () => {
+      let element;
+      setup(() => {
         element = fixture('subscribed');
         server.respondWith(
           'POST',
           '/dummy/api/v1/automation/Document.Unsubscribe',
           [
             200,
-            {'Content-Type': 'application/json'},
-            '{"entity-type": "document","uid": "1"}'
-          ]
+            { 'Content-Type': 'application/json' },
+            '{"entity-type": "document","uid": "1"}',
+          ],
         );
       });
 
-      test('it should display the document as subscribed', function() {
+      test('it should display the document as subscribed', () => {
         expect(element.subscribed).to.be.true;
       });
 
-      test('toggle should unsubscribe the document', function() {
+      test('toggle should unsubscribe the document', () => {
         // Unsubscribe document by toggling
         MockInteractions.tap(element);
-        return waitChanged(element, 'subscribed').then(function() {
+        return waitChanged(element, 'subscribed').then(() => {
           expect(element.subscribed).to.be.false;
         });
       });
     });
 
-    suite('when a document is not subscribed', function() {
-      var element;
-      setup(function() {
+    suite('when a document is not subscribed', () => {
+      let element;
+      setup(() => {
         element = fixture('unsubscribed');
         server.respondWith(
           'POST',
           '/dummy/api/v1/automation/Document.Subscribe',
           [
             200,
-            {'Content-Type': 'application/json'},
-            '{"entity-type": "document","uid": "1"}'
-          ]
+            { 'Content-Type': 'application/json' },
+            '{"entity-type": "document","uid": "1"}',
+          ],
         );
       });
 
-      test('it should display the document as not subscribed', function() {
+      test('it should display the document as not subscribed', () => {
         expect(element.subscribed).to.be.false;
       });
 
-      test('toggle should subscribe the document', function() {
+      test('toggle should subscribe the document', () => {
         // Subscribe all documents by toggling
         MockInteractions.tap(element);
-        return waitChanged(element, 'subscribed').then(function() {
+        return waitChanged(element, 'subscribed').then(() => {
           expect(element.subscribed).to.be.true;
         });
       });

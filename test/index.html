@@ -22,7 +22,7 @@ limitations under the License.
 </head>
 <body>
 <script>
-  var tests = [
+  const tests = [
     'nuxeo-favorites-toggle-button.html',
     'nuxeo-lock-toggle-button.html',
     'nuxeo-notifications-toggle-button.html',
@@ -37,11 +37,11 @@ limitations under the License.
     'nuxeo-uploader-behavior.html',
     'nuxeo-aggregation-widget.html',
     'nuxeo-directory-widgets.html',
-    'nuxeo-document-suggestion.html'
+    'nuxeo-document-suggestion.html',
   ];
-  var suites = [];
-  tests.forEach(function (test) { suites.push(test + '?dom=shadow'); });
-  tests.forEach(function (test) { suites.push(test + '?wc-shadydom=true&wc-ce=true'); });
+  const suites = [];
+  tests.forEach((test) => { suites.push(`${test}?dom=shadow`); });
+  tests.forEach((test) => { suites.push(`${test}?wc-shadydom=true&wc-ce=true`); });
   WCT.loadSuites(suites);
 </script>
 </body>

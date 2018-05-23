@@ -54,58 +54,58 @@ limitations under the License.
   </test-fixture>
 
   <script>
-    var data = {
+    const data = {
       'entity-type': 'aggregate',
-      'extendedBuckets': [
+      extendedBuckets: [
         {
-          'docCount': 2,
-          'fetchedKey': {
+          docCount: 2,
+          fetchedKey: {
             'entity-type': 'document',
-            'properties': {
+            properties: {
               'dc:title': 'Tolkien',
             },
-            'uid': '59cf794f-6875-45ca-a837-053c196b2292'
+            uid: '59cf794f-6875-45ca-a837-053c196b2292',
           },
-          'key': '59cf794f-6875-45ca-a837-053c196b2292'
+          key: '59cf794f-6875-45ca-a837-053c196b2292',
         },
         {
-          'docCount': 1,
-          'fetchedKey': {
+          docCount: 1,
+          fetchedKey: {
             'entity-type': 'document',
-            'properties': {
+            properties: {
               'dc:title': 'Asimov',
             },
-            'uid': '59cf794f-6875-45ca-a837-053c196b2291'
+            uid: '59cf794f-6875-45ca-a837-053c196b2291',
           },
-          'key': '59cf794f-6875-45ca-a837-053c196b2291'
-        }
+          key: '59cf794f-6875-45ca-a837-053c196b2291',
+        },
       ],
-      'field': 'book:author',
-      'id': 'book_author_agg',
-      'properties': {
-        'order': 'count desc',
-        'size': '20'
+      field: 'book:author',
+      id: 'book_author_agg',
+      properties: {
+        order: 'count desc',
+        size: '20',
       },
-      'ranges': [],
-      'selection': [],
-      'type': 'terms'
+      ranges: [],
+      selection: [],
+      type: 'terms',
     };
 
-    suite('Given a nuxeo-checkbox-aggregation widget on document aggregations', function() {
-      var documentAggs;
-      var server;
+    suite('Given a nuxeo-checkbox-aggregation widget on document aggregations', () => {
+      let documentAggs;
+      let server;
 
-      setup(function() {
+      setup(() => {
         server = sinon.fakeServer.create();
         server.autoRespond = true;
         documentAggs = fixture('documentAggs');
         documentAggs.data = data;
-        var nx = fixture('nx');
+        const nx = fixture('nx');
         return login(server, nx);
       });
 
-      test('It displays the title of the document', function() {
-        var choices = Polymer.dom(documentAggs.root).querySelectorAll('paper-checkbox');
+      test('It displays the title of the document', () => {
+        const choices = Polymer.dom(documentAggs.root).querySelectorAll('paper-checkbox');
         expect(choices.length).to.be.equal(2);
         expect(choices[0].textContent.trim()).to.be.equal('Tolkien (2)');
         expect(choices[1].textContent.trim()).to.be.equal('Asimov (1)');
@@ -113,21 +113,21 @@ limitations under the License.
 
     });
 
-    suite('Given a nuxeo-checkbox-aggregation widget on document aggregations sorted by label', function() {
-      var documentAggsSorted;
-      var server;
+    suite('Given a nuxeo-checkbox-aggregation widget on document aggregations sorted by label', () => {
+      let documentAggsSorted;
+      let server;
 
-      setup(function() {
+      setup(() => {
         server = sinon.fakeServer.create();
         server.autoRespond = true;
         documentAggsSorted = fixture('documentAggsSorted');
         documentAggsSorted.data = data;
-        var nx = fixture('nx');
+        const nx = fixture('nx');
         return login(server, nx);
       });
 
-      test('It displays the aggregations sorted by document title', function() {
-        var choices = Polymer.dom(documentAggsSorted.root).querySelectorAll('paper-checkbox');
+      test('It displays the aggregations sorted by document title', () => {
+        const choices = Polymer.dom(documentAggsSorted.root).querySelectorAll('paper-checkbox');
         expect(choices.length).to.be.equal(2);
         expect(choices[0].textContent.trim()).to.be.equal('Asimov (1)');
         expect(choices[1].textContent.trim()).to.be.equal('Tolkien (2)');

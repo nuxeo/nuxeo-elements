@@ -47,74 +47,74 @@ limitations under the License.
   </test-fixture>
 
   <script>
-    suite('Given I have a field without a doc resolver', function() {
-      var server;
-      var suggestionWidget;
-      setup(function() {
+    suite('Given I have a field without a doc resolver', () => {
+      let server;
+      let suggestionWidget;
+      setup(() => {
         server = sinon.fakeServer.create();
         server.autoRespond = true;
-        var response = {
-          "entity-type": "documents",
-          "entries": [
+        const response = {
+          'entity-type': 'documents',
+          entries: [
             {
-              "entity-type": "document",
-              "facets": [
-                "Folderish",
-                "NXTag",
-                "SuperSpace"
+              'entity-type': 'document',
+              facets: [
+                'Folderish',
+                'NXTag',
+                'SuperSpace',
               ],
-              "path": "/default-domain/workspaces/toto",
-              "properties": {
-                "dc:title": "bar",
+              path: '/default-domain/workspaces/toto',
+              properties: {
+                'dc:title': 'bar',
               },
-              "repository": "default",
-              "state": "project",
-              "title": "bar",
-              "type": "Workspace",
-              "uid": "e7c1fa21-2713-419f-b17e-ee9d772729dd"
-            }
-          ]
+              repository: 'default',
+              state: 'project',
+              title: 'bar',
+              type: 'Workspace',
+              uid: 'e7c1fa21-2713-419f-b17e-ee9d772729dd',
+            },
+          ],
         };
         server.respondWith(
           'POST',
           '/dummy/api/v1/automation/Document.FetchByProperty',
           [
             200,
-            {'Content-Type': 'application/json'},
-            JSON.stringify(response)
-          ]
+            { 'Content-Type': 'application/json' },
+            JSON.stringify(response),
+          ],
         );
         // login
-        var nx = fixture('nx');
+        const nx = fixture('nx');
         return login(server, nx);
       });
 
-      suite('When I bind a document suggestion widget', function() {
-        setup(function() {
+      suite('When I bind a document suggestion widget', () => {
+        setup(() => {
           suggestionWidget = fixture('suggestion');
-          suggestionWidget.selectionFormatter = function(entry) {
-            return '<span class="selectorToBeFound">' + entry.title + '</span>'
-          }
+          suggestionWidget.selectionFormatter = function (entry) {
+            return `<span class="selectorToBeFound">${entry.title}</span>`;
+          };
         });
 
-        test('Then it manages to resolve the doc and initialize properly', function() {
-          var s2 = Polymer.dom(suggestionWidget.root).querySelector('#s2');
-          var getSelectedValue = function(timeout) {
+        test('Then it manages to resolve the doc and initialize properly', () => {
+          const s2 = Polymer.dom(suggestionWidget.root).querySelector('#s2');
+          const getSelectedValue = function (timeout) {
             timeout = timeout || 20000;
-            var start = Date.now();
-            var waitForLoaded = function(resolve, reject) {
-              var result = Polymer.dom(s2.root).querySelector('.selectivity-single-selected-item .selectorToBeFound');
+            const start = Date.now();
+            const waitForLoaded = function (resolve, reject) {
+              const result = Polymer.dom(s2.root).querySelector('.selectivity-single-selected-item .selectorToBeFound');
               if (result) {
                 resolve(result.textContent);
               } else if (timeout && (Date.now() - start) >= timeout) {
-                reject(new Error("timeout"));
+                reject(new Error('timeout'));
               } else {
                 setTimeout(waitForLoaded.bind(this, resolve, reject), 30);
               }
             };
             return new Promise(waitForLoaded);
-          }
-          return flush().then(getSelectedValue).then(function(val) {
+          };
+          return flush().then(getSelectedValue).then((val) => {
             expect(val).to.be.equal('bar');
           });
         });

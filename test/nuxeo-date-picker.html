@@ -35,19 +35,21 @@ limitations under the License.
 </test-fixture>
 
 <script>
+  /* eslint-disable no-unused-expressions */
+
   // XXX: prevents "Error stamping [object HTMLUnknownElement] SyntaxError" when stamping overlay-date-picker on
   // IE11 and old versions of Edge
   // by default, runs func only if not running on IE11 or Edge < 16
   function suiteMSsafe(name, func, skipIE11, minEdgeVersion) {
-    skipIE11 = (typeof skipIE11 !== 'undefined') ?  skipIE11 : true;
-    minEdgeVersion = (typeof minEdgeVersion !== 'undefined') ?  minEdgeVersion : 16;
-    var ua = window.navigator.userAgent;
-    var edge = ua.indexOf('Edge/');
-    var edgeVersion;
+    skipIE11 = (typeof skipIE11 !== 'undefined') ? skipIE11 : true;
+    minEdgeVersion = (typeof minEdgeVersion !== 'undefined') ? minEdgeVersion : 16;
+    const ua = window.navigator.userAgent;
+    const edge = ua.indexOf('Edge/');
+    let edgeVersion;
     if (edge > 0) {
       edgeVersion = parseInt(ua.substring(edge + 5, ua.indexOf('.', edge)), 10);
     }
-    var isIE11 = !(window.ActiveXObject) && "ActiveXObject" in window;
+    const isIE11 = !(window.ActiveXObject) && 'ActiveXObject' in window;
     if (!(skipIE11 && isIE11) && !(!!minEdgeVersion && edgeVersion < minEdgeVersion)) {
       suite(name, func);
     }
@@ -60,15 +62,15 @@ limitations under the License.
   function testValue(element, value) {
     element.value = value;
     expect(element.value).to.be.equal(value);
-    var inputValue = getInput(element).value;
-    var local = moment(value).local().format('YYYY-MM-DD');
+    const inputValue = getInput(element).value;
+    const local = moment(value).local().format('YYYY-MM-DD');
     expect(inputValue).to.be.equal(local);
     // ELEMENTS-599: assertion temporarily disabled owing to third party picker issues
     // expect(element._pickerValue).to.be.equal(local);
   }
 
   function testInput(element, input) {
-    var i = getInput(element);
+    const i = getInput(element);
     i.value = input;
     expect(i.value).to.be.equal(input);
     expect(element.value).to.be.equal(moment(input).toJSON());
@@ -76,13 +78,13 @@ limitations under the License.
     // expect(element._pickerValue).to.be.equal(input);
   }
 
-  suiteMSsafe('<nuxeo-date-picker>', function() {
-    var element;
-    setup(function() {
+  suiteMSsafe('<nuxeo-date-picker>', () => {
+    let element;
+    setup(() => {
       element = fixture('picker');
     });
 
-    test('the value can be changed', function() {
+    test('the value can be changed', () => {
       expect(element.value).to.be.null;
       testValue(element, '2022-03-12T00:00:00.000Z');
       testValue(element, '1800-12-28T00:00:00.000Z');
@@ -90,18 +92,18 @@ limitations under the License.
       testValue(element, '0002-01-01T00:00:00.000Z');
     });
 
-    test('the value set in UCT is correctly converted to local time', function() {
+    test('the value set in UCT is correctly converted to local time', () => {
       testValue(element, '2003-06-12T22:00:00.000Z');
       testValue(element, '2003-06-12T23:00:00.000Z');
       testValue(element, '2003-06-13T00:00:00.000Z');
     });
 
-    test('the input changes reflect on the value', function() {
+    test('the input changes reflect on the value', () => {
       testInput(element, '2003-02-20');
       testInput(element, '2004-06-12');
     });
 
-    test('the value can be cleared', function() {
+    test('the value can be cleared', () => {
       expect(element.value).to.be.null;
       testInput(element, '2003-02-20');
       // now clear the value
@@ -109,7 +111,7 @@ limitations under the License.
       expect(element.value).to.be.equal(null);
       expect(getInput(element).value).to.be.equal('');
     });
-    
+
   });
 </script>
 </body>
