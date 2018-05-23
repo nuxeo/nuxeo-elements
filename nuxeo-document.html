@@ -60,7 +60,7 @@ element.
 
   <script>
     {
-      class Document extends Nuxeo.Element {
+      class DocumentElement extends Nuxeo.Element {
 
         static get is() {
           return 'nuxeo-document';
@@ -217,8 +217,8 @@ element.
         }
       }
 
-      customElements.define(Document.is, Document);
-      Nuxeo.Document = Document;
+      customElements.define(DocumentElement.is, DocumentElement);
+      Nuxeo.Document = DocumentElement;
     }
   </script>
 
