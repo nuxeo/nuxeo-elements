@@ -221,7 +221,7 @@ limitations under the License.
     </dom-bind>
 
     <script>
-      var t = document.querySelector('dom-bind');
+      const t = document.querySelector('dom-bind');
 
       // default document properties
       t.title = 'Title';
@@ -233,21 +233,21 @@ limitations under the License.
       t.username = 'Administrator';
       t.groups = ['Administrators', 'Members'];
 
-      t.save = function() {
+      t.save = () => {
         t.document = {
           title: t.title,
           type: t.type,
           facets: t.facets,
           contextParameters: {
-            permissions: t.permissions
-          }
+            permissions: t.permissions,
+          },
         };
 
         t.user = {
           id: t.username,
           properties: {
-            groups: t.groups
-          }
+            groups: t.groups,
+          },
         };
       };
 

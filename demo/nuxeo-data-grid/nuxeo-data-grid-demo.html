@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../../polymer/polymer.html">
+<link rel="import" href="../../../polymer/polymer-element.html">
 <link rel="import" href="../../../nuxeo-elements/nuxeo-connection.html">
 <link rel="import" href="../../../nuxeo-elements/nuxeo-page-provider.html">
 <link rel="import" href="../../nuxeo-data-grid/nuxeo-data-grid.html">
@@ -51,17 +51,23 @@ limitations under the License.
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-data-grid-demo',
+    {
+      class DataGridDemo extends Polymer.Element {
+        static get is() {
+          return 'nuxeo-data-grid-demo';
+        }
 
-      ready: function() {
-        this.$.grid.fetch();
-      },
+        ready() {
+          super.ready();
+          this.$.grid.fetch();
+        }
 
-      _url: function(doc) {
-        return doc && doc.contextParameters && doc.contextParameters.thumbnail && doc.contextParameters.thumbnail.url
-          ? doc.contextParameters.thumbnail.url : '';
+        _url(doc) {
+          return doc && doc.contextParameters && doc.contextParameters.thumbnail && doc.contextParameters.thumbnail.url
+            ? doc.contextParameters.thumbnail.url : '';
+        }
       }
-    });
+      customElements.define(DataGridDemo.is, DataGridDemo);
+    }
   </script>
 </dom-module>

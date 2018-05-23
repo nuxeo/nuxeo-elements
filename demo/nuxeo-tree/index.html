@@ -60,7 +60,7 @@ limitations under the License.
     </dom-bind>
 
     <script>
-      var t = document.querySelector('dom-bind');
+      const t = document.querySelector('dom-bind');
       t.data = {
         name: 'root',
         children: [
@@ -71,34 +71,34 @@ limitations under the License.
                 name: 'c',
                 children: [
                   {name: 'd'},
-                  {name: 'e'}
-                ]
-              }
-            ]
+                  {name: 'e'},
+                ],
+              },
+            ],
           },
           {
             name: 'b',
             children: [
-              {name: 'x'}
-            ]
-          }
-        ]
+              {name: 'x'},
+            ],
+          },
+        ],
       };
       t.controller = {
-        getChildren: function(node) {
+        getChildren(node) {
           return Promise.resolve(node.children);
         },
 
-        shouldExpand: function() {
+        shouldExpand() {
           return false;
         },
 
-        isLeaf: function(node) {
+        isLeaf(node) {
           if (node.children) {
             return node.children.length === 0;
           }
           return true;
-        }
+        },
       };
     </script>
   </body>

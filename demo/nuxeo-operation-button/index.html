@@ -88,12 +88,14 @@ limitations under the License.
     </dom-bind>
 
     <script>
-      var t = document.querySelector('dom-bind');
+      const t = document.querySelector('dom-bind');
       t.docpath = '/default-domain/workspaces/';
 
-      window.addEventListener('document-updated', function() { this.doc.get(); });
+      window.addEventListener('document-updated', () => {
+        this.doc.get();
+      });
 
-      window.addEventListener('document-downloaded', function(e) {
+      window.addEventListener('document-downloaded', (e) => {
         console.log('Received "document-downloaded" event with detail ', e.detail);
       });
     </script>

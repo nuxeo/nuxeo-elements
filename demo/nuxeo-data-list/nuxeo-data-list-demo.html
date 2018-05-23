@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../../polymer/polymer.html">
+<link rel="import" href="../../../polymer/polymer-element.html">
 <link rel="import" href="../../../nuxeo-elements/nuxeo-connection.html">
 <link rel="import" href="../../../nuxeo-elements/nuxeo-page-provider.html">
 <link rel="import" href="../../nuxeo-data-list/nuxeo-data-list.html">
@@ -125,33 +125,41 @@ limitations under the License.
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-data-list-demo',
+    {
+      class DataListDemo extends Polymer.Element {
 
-      ready: function() {
-        this.$.dataList.fetch();
-      },
-
-      _computedClass: function (isSelected) {
-        var classes = 'item';
-        if (isSelected) {
-          classes += ' selected';
+        static get is() {
+          return 'nuxeo-data-list-demo';
         }
-        return classes;
-      },
 
-      _thumbnail: function(doc) {
-        if (doc && doc.uid) {
-          if (doc.contextParameters && doc.contextParameters.thumbnail.url) {
-            return doc.contextParameters.thumbnail.url;
-          } else {
-            var baseUrl = document.querySelector('nuxeo-connection').url;
-            return baseUrl + '/nxthumb/default/' + doc.uid + '/blobholder:0/';
+        ready() {
+          super.ready();
+          this.$.dataList.fetch();
+        }
+
+        _computedClass(isSelected) {
+          let classes = 'item';
+          if (isSelected) {
+            classes += ' selected';
+          }
+          return classes;
+        }
+
+        _thumbnail(doc) {
+          if (doc && doc.uid) {
+            if (doc.contextParameters && doc.contextParameters.thumbnail.url) {
+              return doc.contextParameters.thumbnail.url;
+            } else {
+              const baseUrl = document.querySelector('nuxeo-connection').url;
+              return `${baseUrl}/nxthumb/default/${doc.uid}/blobholder:0/`;
+            }
           }
         }
+
       }
 
-    });
+      customElements.define(DataListDemo.is, DataListDemo);
+    }
   </script>
 
 </dom-module>

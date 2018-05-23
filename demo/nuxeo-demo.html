@@ -17,7 +17,7 @@ limitations under the License.
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans">
 
-<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../polymer/polymer-element.html">
 <link rel="import" href="../nuxeo-routing-behavior.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="nuxeo-demo-theme.html">
@@ -27,15 +27,15 @@ limitations under the License.
   Nuxeo.RoutingBehavior.router = {
     baseUrl: '',
     useHashbang: true,
-    browse: function() {
+    browse() {
       return '#';
     },
-    user: function() {
+    user() {
       return '#';
     },
-    group: function() {
+    group() {
       return '#';
-    }
+    },
   };
 </script>
 
@@ -88,36 +88,45 @@ limitations under the License.
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-demo-section',
-      properties: {
-        heading: {
-          type: String
-        },
-        center: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * Size of the section ('small', 'medium', 'large', 'full').
-         */
-        size: {
-          type: String,
-          value: 'medium',
-          observer: '_sizeChanged'
-        },
-
-        _sizes: {
-          type: Object,
-          value: {small: '480px', medium: '768px', large: '960px', full: '100vw'}
+    {
+      class DemoSection extends Polymer.Element {
+        static get is() {
+          return 'nuxeo-demo-section';
         }
-      },
+        static get properties() {
+          return {
+            heading: {
+              type: String,
+            },
+            center: {
+              type: Boolean,
+              value: false,
+            },
 
-      _sizeChanged: function(size) {
-        this.$.container.style.maxWidth = this._sizes[size];
+            /**
+             * Size of the section ('small', 'medium', 'large', 'full').
+             */
+            size: {
+              type: String,
+              value: 'medium',
+              observer: '_sizeChanged',
+            },
+
+            _sizes: {
+              type: Object,
+              value: {
+                small: '480px', medium: '768px', large: '960px', full: '100vw',
+              },
+            },
+          };
+        }
+
+        _sizeChanged(size) {
+          this.$.container.style.maxWidth = this._sizes[size];
+        }
       }
-    });
+      customElements.define(DemoSection.is, DemoSection);
+    }
   </script>
 </dom-module>
 

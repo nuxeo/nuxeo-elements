@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../../../polymer/polymer.html">
+<link rel="import" href="../../../polymer/polymer-element.html">
 <link rel="import" href="../../../paper-button/paper-button.html">
 
 <dom-module id="nuxeo-alert-button">
@@ -27,17 +27,26 @@ limitations under the License.
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-alert-button',
-      properties: {
-        message: {
-          value: '',
-          type: String
+    {
+      class AlertButtonDemo extends Polymer.Element {
+        static get is() {
+          return 'nuxeo-alert-button';
         }
-      },
-      _act: function() {
-        alert(this.message);
+
+        static get properties() {
+          return {
+            message: {
+              value: '',
+              type: String,
+            },
+          };
+        }
+
+        _act() {
+          alert(this.message);
+        }
       }
-    });
+      customElements.define(AlertButtonDemo.is, AlertButtonDemo);
+    }
   </script>
 </dom-module>

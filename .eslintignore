@@ -1,6 +1,5 @@
 bower_components/
 node_modules/
-demo/
 es6-polyfills.html
 jquery-import.html
 moment-import.html

@@ -78,17 +78,13 @@ limitations under the License.
     </dom-bind>
 
     <script>
-      window.addEventListener('WebComponentsReady', function() {
-        var scope = document.querySelector('#scope');
-        scope.getIconNames = function(iconset) {
-          return iconset.getIconNames();
-        };
-        scope.getIconName = function(name) {
-          return name.split(':')[1];
-        };
+      window.addEventListener('WebComponentsReady', () => {
+        const scope = document.querySelector('#scope');
+        scope.getIconNames = (iconset) => iconset.getIconNames();
+        scope.getIconName = (name) => name.split(':')[1];
         scope.parentNode.getIconNames = scope.getIconNames;
-        var iconsets = document.querySelector('#iconsets');
-        iconsets.items = new Polymer.IronMeta({type: 'iconset'}).list;
+        const iconsets = document.querySelector('#iconsets');
+        iconsets.items = new Polymer.IronMeta({ type: 'iconset' }).list;
       });
     </script>
 

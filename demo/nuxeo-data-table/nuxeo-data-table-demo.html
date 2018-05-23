@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../../../polymer/polymer.html">
+<link rel="import" href="../../../polymer/polymer-element.html">
 <link rel="import" href="../../../nuxeo-elements/nuxeo-connection.html">
 <link rel="import" href="../../../nuxeo-elements/nuxeo-page-provider.html">
 <link rel="import" href="../../nuxeo-aggregation/nuxeo-dropdown-aggregation.html">
@@ -131,33 +131,39 @@ limitations under the License.
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-data-table-demo',
+    {
+      class DataTableDemo extends Polymer.Element {
+        static get is() {
+          return 'nuxeo-data-table-demo';
+        }
 
-      ready: function () {
-        this.$.datatable.fetch();
-      },
+        ready() {
+          super.ready();
+          this.$.datatable.fetch();
+        }
 
-      _formatDate: function (date) {
-        return date;
-      },
+        _formatDate(date) {
+          return date;
+        }
 
-      _thumbnail: function (doc) {
-        if (doc && doc.uid) {
-          if (doc.contextParameters && doc.contextParameters.thumbnail.url) {
-            return doc.contextParameters.thumbnail.url;
-          } else {
-            var baseUrl = document.querySelector('nuxeo-connection').url;
-            return baseUrl + '/nxthumb/default/' + doc.uid + '/blobholder:0/';
+        _thumbnail(doc) {
+          if (doc && doc.uid) {
+            if (doc.contextParameters && doc.contextParameters.thumbnail.url) {
+              return doc.contextParameters.thumbnail.url;
+            } else {
+              const baseUrl = document.querySelector('nuxeo-connection').url;
+              return `${baseUrl}/nxthumb/default/${doc.uid}/blobholder:0/`;
+            }
           }
         }
-      },
 
-      _displayVersion: function (doc) {
-        if (doc.properties && doc.properties['uid:major_version'] !== undefined) {
-          return doc.properties['uid:major_version'] + '.' + doc.properties['uid:minor_version'];
+        _displayVersion(doc) {
+          if (doc.properties && doc.properties['uid:major_version'] !== undefined) {
+            return `${doc.properties['uid:major_version']}.${doc.properties['uid:minor_version']}`;
+          }
         }
       }
-    });
+      customElements.define(DataTableDemo.is, DataTableDemo);
+    }
   </script>
 </dom-module>
