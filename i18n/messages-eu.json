@@ -119,7 +119,7 @@
   "groupManagement.permissions.heading": "Baimenak",
   "groupManagement.remove": "Kendu",
   "groupManagement.removedUserFromGroup": "{0} taldetik kendu da",
-  "groupManagement.removeFrom": "Kendu {0} taldetik",
+  "groupManagement.removeFrom": "Kendu '{0}' taldetik",
   "groupManagement.removeUserFromGroup.confirm": "Ziur {0} talde honetatik kendu nahi duzula?",
   "groupManagement.users.heading": "Erabiltzaileak",
   "label.no": "Ez",
