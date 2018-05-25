@@ -285,7 +285,6 @@ Example:
         }
 
         _savePassword() {
-          this.$.changePasswordDialog.close();
           this.$.changePassword.data = {
             oldPassword: this.$.passwordOld.value,
             newPassword: this.$.passwordNew.value,
@@ -293,6 +292,7 @@ Example:
           this.$.changePassword.put().then((response) => {
             this.user = response;
             this._toast(this.i18n('userProfile.password.changed'));
+            this.$.changePasswordDialog.close();
 
             // update connection
             this.$.nxcon.username = this.user.id;
