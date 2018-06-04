@@ -240,7 +240,7 @@ An element for displaying page provider results in a justified grid with infinit
 
         // overridden from Nuxeo.PageProviderDisplayBehavior
         fetch() {
-          if (this._isFetching || !this._hasPageProvider()) {
+          if (this._isFetching || !this._hasPageProvider() || this.page > this.nxProvider.numberOfPages) {
             this.$.scrollThreshold.clearTriggers();
             this._isFetching = false;
             return Promise.resolve();
