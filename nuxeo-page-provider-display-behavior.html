@@ -148,6 +148,14 @@ limitations under the License.
           value: 10000,
         },
 
+        /**
+         * Number of items to fetch ahead of current range limit.
+         */
+        _fetchAheadLimit: {
+          type: Number,
+          value: 10,
+        },
+
         selectOnTap: {
           type: Boolean,
           value: false,
@@ -528,7 +536,7 @@ limitations under the License.
             lastIndex = this.maxItems;
             clear = true;
           } else if (firstIndex > 0) {
-            lastIndex += 10;
+            lastIndex += this._fetchAheadLimit;
             if (this.maxItems) {
               lastIndex = Math.min(lastIndex, this.size);
             }

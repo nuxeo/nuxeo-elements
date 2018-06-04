@@ -476,9 +476,11 @@ An element wrapping selectivity.js and relying on an operation for suggestions
             if (newValue) {
               this._selectivity.setValue(newValue, { triggerChange: false });
             } else {
-              // in cases where newValue is either undefined or null, clear the value
-              this._selectivity.setValue(null);
-              this._selectivity.clear();
+              const cv = this._selectivity.getValue();
+              if ((this.multiple && cv.length > 0) || (!this.multiple && cv)) {
+                // in cases where newValue is either undefined or null, clear the value
+                this._selectivity.clear();
+              }
             }
           }
           this._inUpdateSelection = false;
