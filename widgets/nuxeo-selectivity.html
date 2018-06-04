@@ -396,7 +396,8 @@ An element wrapping selectivity.js and relying on an operation for suggestions
             options.createTokenItem = (term) => this._wrap(this.newEntryFormatter(term));
           }
 
-          this.$.input.addEventListener('selectivity-change', this._updateSelection.bind(this));
+          this._updateSelectionHandler = this._updateSelection.bind(this);
+          this.$.input.addEventListener('selectivity-change', this._updateSelectionHandler);
 
           this._selectivity = new InputType(options);
 
@@ -408,6 +409,13 @@ An element wrapping selectivity.js and relying on an operation for suggestions
 
           // scope styles
           this.scopeSubtree(this.$.input, true);
+        }
+
+        disconnectedCallback() {
+          super.disconnectedCallback();
+          this.$.input.removeEventListener('selectivity-change', this._updateSelectionHandler);
+          this._updateSelectionHandler = null;
+          this._selectivity = null;
         }
 
         _getValidity() {

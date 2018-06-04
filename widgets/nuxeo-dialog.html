@@ -85,6 +85,7 @@ If a `<template>` is passed as the dialog's content, that `<template>` will be s
           if (this._observer) {
             this.detached();
           }
+          this._instance = null;
         }
 
         _opened(e) {

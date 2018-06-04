@@ -229,6 +229,11 @@ limitations under the License.
         document.addEventListener('defaultUploadProviderChanged', this.defaultProviderChangedHandler);
       },
 
+      detached() {
+        document.removeEventListener('defaultUploadProviderChanged', this.defaultProviderChangedHandler);
+        this.defaultProviderChangedHandler = null;
+      },
+
       /**
        * Registers a new upload provider.
        */
@@ -263,9 +268,22 @@ limitations under the License.
 
       setupDropZone(el) {
         this._dropZone = el;
-        this._dropZone.addEventListener('dragover', this._dragover.bind(this));
-        this._dropZone.addEventListener('dragleave', this._dragleave.bind(this));
-        this._dropZone.addEventListener('drop', this._drop.bind(this));
+        this._dragoverHandler = this._dragover.bind(this);
+        this._dragleaveHandler = this._dragleave.bind(this);
+        this._dropHandler = this._drop.bind(this);
+        this._dropZone.addEventListener('dragover', this._dragoverHandler);
+        this._dropZone.addEventListener('dragleave', this._dragleaveHandler);
+        this._dropZone.addEventListener('drop', this._dropHandler);
+      },
+
+      teardownDropZone() {
+        this._dropZone.removeEventListener('dragover', this._dragoverHandler);
+        this._dropZone.removeEventListener('dragleave', this._dragleaveHandler);
+        this._dropZone.removeEventListener('drop', this._dropHandler);
+        this._dropZone = null;
+        this._dragoverHandler = null;
+        this._dragleaveHandler = null;
+        this._dropHandler = null;
       },
 
       uploadFiles(files) {

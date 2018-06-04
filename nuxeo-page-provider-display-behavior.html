@@ -188,6 +188,12 @@ limitations under the License.
         selected: '_selected',
       },
 
+      detached() {
+        this.unlisten(this.nxProvider, 'update', '_updateResults');
+        this.$.list.unlisten.call(this.$.list, this.$.list, 'selected', '_selectionHandler');
+        this.$.list.unlisten.call(this.$.list, this.$.list, 'tap', '_selectionHandler');
+      },
+
       _nxProviderChanged(nxProvider) {
         if (typeof nxProvider === 'string') {
           this.nxProvider = this.__dataHost ? this.__dataHost.$[nxProvider] :

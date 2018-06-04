@@ -103,12 +103,19 @@ Example:
 
         ready() {
           super.ready();
-          window.addEventListener('removed-from-favorites', (e) => {
+          this.removeFromFavoritesHandler = (e) => {
             if (this.document && e.detail.docUid && e.detail.docUid === this.document.uid) {
               this.favorite = false;
             }
-          });
+          };
+          window.addEventListener('removed-from-favorites', this.removeFromFavoritesHandler);
           this.addEventListener('click', this._toggle);
+        }
+
+        disconnectedCallback() {
+          super.disconnectedCallback();
+          window.removeEventListener('removed-from-favorites', this.removeFromFavoritesHandler);
+          this.removeFromFavoritesHandler = null;
         }
 
         _isAvailable(doc) {

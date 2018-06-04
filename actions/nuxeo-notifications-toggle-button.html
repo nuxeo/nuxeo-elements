@@ -105,12 +105,19 @@ Example:
 
         ready() {
           super.ready();
-          window.addEventListener('document-unsubscribed', (e) => {
+          this.documentUnsubscribedHandler = (e) => {
             if (this.document && e.detail.docUid && e.detail.docUid === this.document.uid) {
               this.subscribed = false;
             }
-          });
+          };
+          window.addEventListener('document-unsubscribed', this.documentUnsubscribedHandler);
           this.addEventListener('click', this._toggle);
+        }
+
+        disconnectedCallback() {
+          super.disconnectedCallback();
+          window.removeEventListener('document-unsubscribed', this.documentUnsubscribedHandler);
+          this.documentUnsubscribedHandler = null;
         }
 
         _isAvailable(doc) {

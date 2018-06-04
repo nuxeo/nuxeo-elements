@@ -213,6 +213,11 @@ An element for displaying page provider results in a justified grid with infinit
           }
         }
 
+        disconnectedCallback() {
+          super.disconnectedCallback();
+          this._templateElement = null;
+        }
+
         _itemChanged(item) {
           if (this._templateElement && item && item._view) {
             Polymer.RenderStatus.afterNextRender(this, () => {

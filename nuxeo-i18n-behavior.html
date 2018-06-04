@@ -48,6 +48,11 @@ limitations under the License.
         document.addEventListener('i18n-locale-loaded', this.localeLoadedHandler);
       },
 
+      detached() {
+        document.removeEventListener('i18n-locale-loaded', this.localeLoadedHandler);
+        this.localeLoadedHandler = null;
+      },
+
       refreshI18n() {
         this.i18n = null;
         this.set('i18n', window.nuxeo.I18n.translate);
