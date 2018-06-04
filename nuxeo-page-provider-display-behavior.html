@@ -479,7 +479,7 @@ limitations under the License.
        */
       fetch() {
         if (this._hasPageProvider()) {
-          return this._fetchRange(0, this._pageSize, true);
+          return this._fetchRange(0, this._pageSize - 1, true);
         }
       },
 
@@ -520,15 +520,31 @@ limitations under the License.
       _fetchRange(firstIndex, lastIndex, clear) {
         if (this._hasPageProvider()) {
 
-          if (!firstIndex && !lastIndex && !clear) {
-            firstIndex = 0;
-            lastIndex = this._pageSize;
-            clear = true;
+          if (firstIndex === 0) {
+            lastIndex = this._pageSize - 1;
           }
 
           if (this.maxItems && lastIndex > this.maxItems) {
             lastIndex = this.maxItems;
             clear = true;
+          } else if (firstIndex > 0) {
+            lastIndex += 10;
+            if (this.maxItems) {
+              lastIndex = Math.min(lastIndex, this.size);
+            }
+          }
+
+          if (!clear && this.items && this.items.length) {
+            const shouldLoad = this.items.slice(firstIndex, lastIndex).some((el, idx) => {
+              if (!el || (Object.keys(el).length === 0 && el.constructor === Object)) {
+                firstIndex += idx;
+                return true;
+              }
+              return false;
+            });
+            if (!shouldLoad) {
+              return;
+            }
           }
 
           // update items array based on first and last visible indexes
