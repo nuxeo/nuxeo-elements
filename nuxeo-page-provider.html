@@ -306,9 +306,14 @@ element.
             currentPageIndex: this.page - 1,
             offset: this.offset,
             pageSize: this.pageSize,
-            sortBy: this._sortKeys.join(','),
-            sortOrder: this._sortValues.join(','),
           };
+
+          // do not add empty sort info, to be able to fallback to default sort defined in page providers
+          const sortKeys = this._sortKeys;
+          if (sortKeys.length > 0) {
+            params.sortBy = this._sortKeys.join(',');
+            params.sortOrder = this._sortValues.join(',');
+          }
 
           if (this.query) {
             params.query = this.query;
