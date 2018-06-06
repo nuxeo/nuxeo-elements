@@ -221,7 +221,7 @@ Used by `nuxeo-user-group-management`
         <div class="actions">
 
           <!-- delete -->
-          <dom-if if="[[_canEdit(readonly, _currentUser, user)]]">
+          <dom-if if="[[_canDelete(readonly, _currentUser, user)]]">
             <template>
               <paper-button noink id="deleteUserButton" class="horizontal layout center" on-click="_toggleDeleteUser">
                 <iron-icon noink icon="nuxeo:delete"></iron-icon> [[i18n('command.delete')]]
@@ -521,6 +521,11 @@ Used by `nuxeo-user-group-management`
         _canEdit(readonly, currentUser, user) {
           return !readonly && this.user && currentUser && (this._hasAdministrationPermissions(currentUser) ||
               this._isSameUsername(currentUser.properties.username, user.properties.username));
+        }
+
+        _canDelete(readonly, currentUser, user) {
+          return !readonly && this.user && currentUser && this._hasAdministrationPermissions(currentUser) &&
+              !this._isSameUsername(currentUser.properties.username, user.properties.username);
         }
 
         _isSameUsername(username1, username2) {
