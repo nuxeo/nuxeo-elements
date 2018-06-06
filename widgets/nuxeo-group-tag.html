@@ -48,7 +48,7 @@ Example:
     <nuxeo-tag icon="nuxeo:group">
       <dom-if if="[[!disabled]]">
         <template>
-          <a href$="[[_href(group)]]">[[_label(group)]]</a>
+          <a href$="[[_href(group)]]" on-click="_preventPropagation">[[_label(group)]]</a>
         </template>
       </dom-if>
       <dom-if if="[[disabled]]">
@@ -117,6 +117,14 @@ Example:
 
         _href(group) {
           return this.urlFor('group', this._name(group));
+        }
+
+        /**
+         * Prevents further propagation of the current event (for instance to avoid issues when the element is used
+         * inside tables that add click events to the whole row).
+         */
+        _preventPropagation(e) {
+          e.stopPropagation();
         }
 
       }
