@@ -68,10 +68,6 @@ Used by `nuxeo-user-group-management`
         @apply --layout-start;
       }
 
-      .backButton {
-        color: var(--nuxeo-button-primary, #00adff);
-      }
-
       .username {
         margin: 10px 0 5px 5px;
       }
@@ -211,7 +207,6 @@ Used by `nuxeo-user-group-management`
 
     <nuxeo-card>
       <div class="header horizontal layout">
-        <paper-icon-button class="backButton" icon="icons:arrow-back" on-click="_goHome"></paper-icon-button>
         <iron-icon icon="nuxeo:user" class="avatar"></iron-icon>
         <div class="layout vertical">
           <h3 class="username">[[user.id]]</h3>
