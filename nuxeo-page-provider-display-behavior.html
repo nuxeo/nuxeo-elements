@@ -559,7 +559,10 @@ limitations under the License.
           this.nxProvider.offset = firstIndex;
           this.nxProvider.page = 1;
           this.nxProvider.pageSize = (lastIndex - firstIndex) + 1;
-          return this.nxProvider.fetch().then((response) => {
+          const options = {
+            skipAggregates: firstIndex !== 0,
+          };
+          return this.nxProvider.fetch(options).then((response) => {
             if (!response) {
               return;
             }
@@ -626,8 +629,8 @@ limitations under the License.
                   }
                 });
               }
+              this.set('buckets', buckets);
             }
-            this.set('buckets', buckets);
 
             this.fire('nuxeo-page-loaded');
 
