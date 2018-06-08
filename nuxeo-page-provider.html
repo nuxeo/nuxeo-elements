@@ -300,8 +300,11 @@ element.
          * Fetch the currentPage.
          *
          * @method fetch
+         * @param {Object} options
+         *   The options of the fetch:
+         *   - "skipAggregates" to do not compute aggregations (boolean)
          */
-        fetch() {
+        fetch(options) {
           const params = {
             currentPageIndex: this.page - 1,
             offset: this.offset,
@@ -341,6 +344,14 @@ element.
             }
             params.quickFilters = retainedFilters.join(',');
           }
+          if (!this.headers) {
+            this.headers = {};
+          }
+          if (options && options.skipAggregates) {
+            this.headers.skipAggregates = 'true';
+          } else {
+            delete this.headers.skipAggregates;
+          }
 
           this.$.nxResource.params = params;
           return this.$.nxResource.execute()
@@ -348,7 +359,9 @@ element.
               this.currentPage = response.entries.slice(0);
               this.numberOfPages = response.numberOfPages;
               this.resultsCount = response.resultsCount;
-              this.aggregations = response.aggregations;
+              if (!options || !options.skipAggregates) {
+                this.aggregations = response.aggregations;
+              }
               this.quickFilters = response.quickFilters;
               this.isNextPageAvailable = response.isNextPageAvailable;
               this.currentPageSize = response.currentPageSize;
