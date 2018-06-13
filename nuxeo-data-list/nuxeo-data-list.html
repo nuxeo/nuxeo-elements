@@ -208,36 +208,62 @@ limitations under the License.
 
         static get properties() {
           return {
+            /**
+             * If enabled, it allows to select multiple documents and apply an action on them,
+             * like moving them to trash, to favorites or to a collection.
+             */
             multiSelection: {
               type: Boolean,
               value: false,
             },
-
+            /**
+             * @ignore
+             */
             selectOnTap: {
               type: Boolean,
               value: false,
             },
-
+            /**
+             * If enabled, it allows the aggregation navigation on the right side of the search results view.
+             * For instance, if you use grid view you can filter using a timeline.
+             * This parameter only works when list sorted by histogram aggregations.
+             */
             displayNavigation: {
               type: Boolean,
               value: false,
             },
-
+            /**
+             * If enabled, it allows to sort the results of the search results.
+             */
             displaySort: {
               type: Boolean,
               value: false,
             },
-
+            /**
+             * Name of the sort label displayed on Grid view mode "Sort by" at the top of the search results.
+             * If the field is empty, the label will be hidden.
+             */
             sortLabel: {
               type: String,
               value: '',
             },
-
+            /**
+             * Sort option selected by default (can retrieve the one configured in sort-options).
+             */
             sortSelected: {
               type: Object,
               observer: '_sortSelectedChanged',
             },
-
+            /**
+             * List of properties available to sort the result list.
+             * It should be formatted as a JSON array of objects like:
+             * ```
+             * [
+             *   {field: 'dc:title', label: this.i18n('searchResults.sort.field.title'), order: 'asc'},
+             *   {field: 'dc:created', label: this.i18n('searchResults.sort.field.created'), order: 'asc', selected: true}
+             * ]
+             * ```
+             */
             sortOptions: {
               type: Array,
               value: [],
