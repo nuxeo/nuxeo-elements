@@ -6,7 +6,7 @@
   "addToCollectionButton.dialog.heading": "Lägg till i samlingen",
   "addToCollectionButton.dialog.select": "Välj en samling...",
   "addToCollectionButton.tooltip": "Lägg till i samlingen",
-  "aggregation.format.document.field.unknown": "No {0} field in document. Define your own label formatter.",
+  "aggregation.format.document.field.unknown": "Inget fält i dokumentet. Definiera din egna märkning.",
   "checkboxAggregation.noResults": "Inget tillgängligt resultat",
   "command.add": "Lägg till",
   "command.moveUpward": "Flytta uppåt",
