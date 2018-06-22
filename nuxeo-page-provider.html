@@ -268,6 +268,16 @@ element.
               notify: true,
               readOnly: true,
             },
+
+            /**
+             * If true, obsolete requests will be ignored.
+             */
+            sequential: Boolean,
+
+            _counter: {
+              type: Number,
+              value: 0
+            }
           };
         }
 
@@ -343,8 +353,12 @@ element.
           }
 
           this.$.nxResource.params = params;
+          var rqnb = ++this._counter;
           return this.$.nxResource.execute()
             .then((response) => {
+              if (this.sequential && rqnb !== this._counter) {
+                return;
+              }
               this.currentPage = response.entries.slice(0);
               this.numberOfPages = response.numberOfPages;
               this.resultsCount = response.resultsCount;
