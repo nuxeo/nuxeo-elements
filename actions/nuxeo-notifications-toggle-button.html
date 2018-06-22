@@ -27,17 +27,6 @@ limitations under the License.
 <link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
 
-<!--
-A toggle button element for subscribe/unsubscribe a document.
-
-Example:
-
-    <nuxeo-notifications-toggle-button document="[[document]]"></nuxeo-notifications-toggle-button>
-
-@group Nuxeo UI
-@element nuxeo-notifications-toggle-button
-@demo demo/nuxeo-notifications-toggle-button/index.html
--->
 <dom-module id="nuxeo-notifications-toggle-button">
   <template>
 
@@ -65,6 +54,18 @@ Example:
 
   <script>
     {
+      /**
+       * A toggle button element for subscribe/unsubscribe a document.
+       *
+       * Example:
+       *
+       *     <nuxeo-notifications-toggle-button document="[[document]]"></nuxeo-notifications-toggle-button>
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @appliesMixin Nuxeo.FiltersBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-notifications-toggle-button/index.html
+       */
       class NotificationsToggleButton
         extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 

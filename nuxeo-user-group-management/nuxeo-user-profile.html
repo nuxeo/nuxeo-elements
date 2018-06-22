@@ -33,17 +33,6 @@ limitations under the License.
 <link rel="import" href="../widgets/nuxeo-input.html">
 <link rel="import" href="nuxeo-user-group-permissions-table.html">
 
-<!--
-An element for viewing and editing a user.
-
-Example:
-
-    <nuxeo-user-profile username="Administrator"></nuxeo-user-profile>
-
-@group Nuxeo UI
-@element nuxeo-user-profile
--->
-
 <dom-module id="nuxeo-user-profile">
   <template>
     <style include="iron-flex iron-flex-alignment iron-flex-factors">
@@ -218,6 +207,16 @@ Example:
 
   <script>
     {
+      /**
+       * An element for viewing and editing a user.
+       *
+       * Example:
+       *
+       *     <nuxeo-user-profile username="Administrator"></nuxeo-user-profile>
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @memberof Nuxeo
+       */
       class UserProfile extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
         static get is() {

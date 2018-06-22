@@ -28,19 +28,6 @@ limitations under the License.
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
 
-<!--
-A button element for moving document to trash (if available server side) or permanently delete if hard set to true.
-
-Example:
-
-    <nuxeo-delete-document-button document="[[document]]"></nuxeo-delete-document-button>
-
-    <nuxeo-delete-document-button document="[[document]]" hard></nuxeo-delete-document-button>
-
-@group Nuxeo UI
-@element nuxeo-delete-document-button
-@demo demo/nuxeo-delete-document-button/index.html
--->
 <dom-module id="nuxeo-delete-document-button">
 
   <template>
@@ -65,6 +52,20 @@ Example:
 
   <script>
     {
+      /**
+       * A button element for moving document to trash (if available server side) or permanently delete if hard set to true.
+       *
+       * Example:
+       *
+       *     <nuxeo-delete-document-button document="[[document]]"></nuxeo-delete-document-button>
+       *
+       *     <nuxeo-delete-document-button document="[[document]]" hard></nuxeo-delete-document-button>
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @appliesMixin Nuxeo.FiltersBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-delete-document-button/index.html
+       */
       class DeleteDocumentButton
         extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 

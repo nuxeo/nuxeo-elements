@@ -20,19 +20,6 @@ limitations under the License.
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
 
-<!--
-An element to show a datetime formatted with a tooltip. Format maybe relative to now
-or [moment Format](http://momentjs.com/docs/#/displaying/format/).
-
-Example:
-
-    <nuxeo-date datetime="2016-01-06T00:00:00.000Z"></nuxeo-date>
-    <nuxeo-date datetime="2016-01-06T00:00:00.000Z" format="relative"></nuxeo-date>
-
-@group Nuxeo UI
-@element nuxeo-date
-@demo demo/nuxeo-date/index.html
--->
 <dom-module id="nuxeo-date">
   <template>
     <span id="datetime" hidden$="[[!datetime]]">[[formatDate(datetime, format)]]</span>
@@ -41,6 +28,20 @@ Example:
 
   <script>
     {
+      /**
+       * An element to show a datetime formatted with a tooltip. Format maybe relative to now
+       * or [moment Format](http://momentjs.com/docs/#/displaying/format/).
+       *
+       * Example:
+       *
+       *     <nuxeo-date datetime="2016-01-06T00:00:00.000Z"></nuxeo-date>
+       *     <nuxeo-date datetime="2016-01-06T00:00:00.000Z" format="relative"></nuxeo-date>
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @appliesMixin Nuxeo.FormatBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-date/index.html
+       */
       class Date extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FormatBehavior], Nuxeo.Element) {
 
         static get is() {

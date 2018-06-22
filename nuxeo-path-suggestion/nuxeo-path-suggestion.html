@@ -21,24 +21,6 @@ limitations under the License.
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../es6-polyfills.html">
 
-<!--
-An element that provides path auto completion to nuxeo folderish documents.
-
-    <nuxeo-path-suggestion value="/"></nuxeo-path-suggestion>
-
-### Styling
-
-The following custom properties and mixins are available for styling:
-
-Custom property | Description | Default
-----------------|-------------|----------
-`--nuxeo-path-suggestion-results` | Mixin applied to the results pane | `{}`
-`--nuxeo-path-suggestion-result` | Mixin applied to the result items | `{}`
-
-@group Nuxeo UI Elements
-@element nuxeo-path-suggestion
-@demo demo/nuxeo-path-suggestion/index.html
--->
 <dom-module id="nuxeo-path-suggestion">
   <template>
     <style>
@@ -101,6 +83,23 @@ Custom property | Description | Default
   </template>
   <script>
     {
+      /**
+       * An element that provides path auto completion to nuxeo folderish documents.
+       *
+       *     <nuxeo-path-suggestion value="/"></nuxeo-path-suggestion>
+       *
+       * ### Styling
+       *
+       * The following custom properties and mixins are available for styling:
+       *
+       * Custom property | Description | Default
+       * ----------------|-------------|----------
+       * `--nuxeo-path-suggestion-results` | Mixin applied to the results pane | `{}`
+       * `--nuxeo-path-suggestion-result` | Mixin applied to the result items | `{}`
+       *
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-path-suggestion/index.html
+       */
       class PathSuggestion extends Nuxeo.Element {
 
         static get is() {

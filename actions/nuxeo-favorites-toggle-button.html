@@ -26,17 +26,6 @@ limitations under the License.
 <link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
 
-<!--
-A toggle button element for adding/removing a document from the favorites.
-
-Example:
-
-    <nuxeo-favorites-toggle-button document="[[document]]"></nuxeo-favorites-toggle-button>
-
-@group Nuxeo UI
-@element nuxeo-favorites-toggle-button
-@demo demo/nuxeo-favorites-toggle-button/index.html
--->
 <dom-module id="nuxeo-favorites-toggle-button">
   <template>
     <style>
@@ -63,6 +52,18 @@ Example:
 
   <script>
     {
+      /**
+       * A toggle button element for adding/removing a document from the favorites.
+       *
+       * Example:
+       *
+       *     <nuxeo-favorites-toggle-button document="[[document]]"></nuxeo-favorites-toggle-button>
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @appliesMixin Nuxeo.FiltersBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-favorites-toggle-button/index.html
+       */
       class FavoritesToggleButton
         extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 

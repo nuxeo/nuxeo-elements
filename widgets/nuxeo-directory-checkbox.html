@@ -24,15 +24,6 @@ limitations under the License.
 <link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="nuxeo-directory-widget-behavior.html">
 
-<!--
-An element for selecting one or more directory entries with checkboxes.
-
-    <nuxeo-directory-checkbox directory-name="country" value="{{value}}"></nuxeo-directory-checkbox>
-
-@group Nuxeo Widgets
-@element nuxeo-directory-checkbox
-@demo demo/nuxeo-directory-checkbox/index.html
--->
 <dom-module id="nuxeo-directory-checkbox">
   <template>
     <style include="iron-flex iron-flex-alignment">
@@ -97,6 +88,15 @@ An element for selecting one or more directory entries with checkboxes.
 
   <script>
     {
+      /**
+       * An element for selecting one or more directory entries with checkboxes.
+       *
+       *     <nuxeo-directory-checkbox directory-name="country" value="{{value}}"></nuxeo-directory-checkbox>
+       *
+       * @appliesMixin Nuxeo.DirectoryWidgetBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-directory-checkbox/index.html
+       */
       class DirectoryCheckbox extends Polymer.mixinBehaviors([Nuxeo.DirectoryWidgetBehavior], Nuxeo.Element) {
 
         static get is() {

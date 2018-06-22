@@ -20,15 +20,6 @@ limitations under the License.
 <link rel="import" href="../../paper-dialog-behavior/paper-dialog-behavior.html">
 <link rel="import" href="../../paper-dialog-behavior/paper-dialog-shared-styles.html">
 
-<!--
-A dialog element.
-
-If a `<template>` is passed as the dialog's content, that `<template>` will be stamped when dialog is opened.
-
-@group Nuxeo UI
-@element nuxeo-dialog
-@demo demo/nuxeo-dialog/index.html
--->
 <dom-module id="nuxeo-dialog">
   <template>
     <style include="paper-dialog-shared-styles">
@@ -54,6 +45,16 @@ If a `<template>` is passed as the dialog's content, that `<template>` will be s
 
   <script>
     {
+      /**
+       * A dialog element.
+       *
+       * If a `<template>` is passed as the dialog's content, that `<template>` will be stamped when dialog is opened.
+       *
+       * @appliesMixin Polymer.NeonAnimationRunnerBehavior
+       * @appliesMixin Polymer.Templatizer
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-dialog/index.html
+       */
       class Dialog
         extends Polymer.mixinBehaviors([
           Polymer.PaperDialogBehavior, Polymer.NeonAnimationRunnerBehavior, Polymer.Templatizer], Nuxeo.Element) {

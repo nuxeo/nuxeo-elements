@@ -21,15 +21,6 @@ limitations under the License.
 <link rel="import" href="../nuxeo-routing-behavior.html">
 <link rel="import" href="nuxeo-selectivity.html">
 
-<!--
-An element for selecting one or more documents.
-
-    <nuxeo-document-suggestion></nuxeo-document-suggestion>
-
-@group Nuxeo Widgets
-@element nuxeo-document-suggestion
-@demo demo/nuxeo-document-suggestion/index.html
--->
 <dom-module id="nuxeo-document-suggestion">
   <template>
 
@@ -70,6 +61,17 @@ An element for selecting one or more documents.
 
   <script>
     {
+      /**
+       * An element for selecting one or more documents.
+       *
+       *     <nuxeo-document-suggestion></nuxeo-document-suggestion>
+       *
+       * @appliesMixin Polymer.IronFormElementBehavior
+       * @appliesMixin Polymer.IronValidatableBehavior
+       * @appliesMixin Nuxeo.RoutingBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-document-suggestion/index.html
+       */
       class DocumentSuggestion extends
         Polymer.mixinBehaviors([Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior,
           Nuxeo.RoutingBehavior], Nuxeo.Element) {

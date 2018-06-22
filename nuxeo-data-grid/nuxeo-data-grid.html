@@ -28,40 +28,6 @@ limitations under the License.
 <link rel="import" href="../nuxeo-quick-filters/nuxeo-quick-filters.html">
 <link rel="import" href="../widgets/nuxeo-sort-select.html">
 
-<!--
-An element to display page provider results as a grid with infinite scrolling.
-
-    <nuxeo-page-provider id="cvProvider" auto
-                         provider="default_search"
-                         page-size="40"
-                         enrichers="thumbnail"
-                         params='{"ecm_path": ["/default-domain/workspaces"]}'>
-    </nuxeo-page-provider>
-
-    <nuxeo-data-grid nx-provider="nxProvider" selection-enabled>
-      <template>
-        <div class="list-item-box vertical layout">
-          <div class="list-item-info horizontal layout center">
-            <div class="vertical layout center">
-              <img class="nxicon" src="[[_thumbnail(item)]]">
-            </div>
-            <span class="list-item-title">[[item.title]]</span>
-          </div>
-          <div class="list-item-detail">
-            <div class="layout center">
-              <span class="list-item-property">
-                [[item.type]]
-              </span>
-            </div>
-          </div>
-        </div>
-      </template>
-    </nuxeo-data-grid>
-
-@group Nuxeo UI
-@element nuxeo-data-grid
-@demo demo/nuxeo-data-grid/index.html
--->
 <dom-module id="nuxeo-data-grid">
   <template>
 
@@ -209,6 +175,42 @@ An element to display page provider results as a grid with infinite scrolling.
 
   <script>
     {
+      /**
+       * An element to display page provider results as a grid with infinite scrolling.
+       *
+       *     <nuxeo-page-provider id="cvProvider" auto
+       *                          provider="default_search"
+       *                          page-size="40"
+       *                          enrichers="thumbnail"
+       *                          params='{"ecm_path": ["/default-domain/workspaces"]}'>
+       *     </nuxeo-page-provider>
+       *
+       *     <nuxeo-data-grid nx-provider="nxProvider" selection-enabled>
+       *       <template>
+       *         <div class="list-item-box vertical layout">
+       *           <div class="list-item-info horizontal layout center">
+       *             <div class="vertical layout center">
+       *               <img class="nxicon" src="[[_thumbnail(item)]]">
+       *             </div>
+       *             <span class="list-item-title">[[item.title]]</span>
+       *           </div>
+       *           <div class="list-item-detail">
+       *             <div class="layout center">
+       *               <span class="list-item-property">
+       *                 [[item.type]]
+       *               </span>
+       *             </div>
+       *           </div>
+       *         </div>
+       *       </template>
+       *     </nuxeo-data-grid>
+       *
+       * @appliesMixin Polymer.IronResizableBehavior
+       * @appliesMixin Nuxeo.PageProviderDisplayBehavior
+       * @appliesMixin Nuxeo.DraggableListBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-data-grid/index.html
+       */
       class DataGrid
         extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior, Nuxeo.PageProviderDisplayBehavior,
           Nuxeo.DraggableListBehavior], Nuxeo.Element) {

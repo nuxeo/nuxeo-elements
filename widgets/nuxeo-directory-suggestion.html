@@ -22,18 +22,6 @@ limitations under the License.
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="nuxeo-selectivity.html">
 
-<!--
-An element for selecting one or more entries from a given directory.
-
-    <nuxeo-directory-suggestion directory-name="l10nsubjects"
-                                multiple="true"
-                                dbl10n="true"
-                                value="{{suggestions}}"></nuxeo-directory-suggestion>
-
-@group Nuxeo Widgets
-@element nuxeo-directory-suggestion
-@demo demo/nuxeo-directory-suggestion/index.html
--->
 <dom-module id="nuxeo-directory-suggestion">
   <template>
 
@@ -71,6 +59,21 @@ An element for selecting one or more entries from a given directory.
   </template>
   <script>
     {
+      /**
+       * An element for selecting one or more entries from a given directory.
+       *
+       *     <nuxeo-directory-suggestion directory-name="l10nsubjects"
+       *                                 multiple="true"
+       *                                 dbl10n="true"
+       *                                 value="{{suggestions}}"></nuxeo-directory-suggestion>
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @appliesMixin Nuxeo.FormatBehavior
+       * @appliesMixin Polymer.IronFormElementBehavior
+       * @appliesMixin Polymer.IronValidatableBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-directory-suggestion/index.html
+       */
       class DirectorySuggestion
         extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FormatBehavior, Polymer.IronFormElementBehavior,
           Polymer.IronValidatableBehavior], Nuxeo.Element) {

@@ -24,14 +24,6 @@ limitations under the License.
 <link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
 
-<!--
-A button element for moving documents down within an OrderedFolder.
-
-`nuxeo-move-documents-down-button`
-@group Nuxeo UI
-@element nuxeo-move-documents-down-button
-@demo demo/nuxeo-move-documents-down-button/index.html
--->
 <dom-module id="nuxeo-move-documents-down-button">
   <template>
 
@@ -68,6 +60,14 @@ A button element for moving documents down within an OrderedFolder.
 
   <script>
     {
+      /**
+       * A button element for moving documents down within an OrderedFolder.
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @appliesMixin Nuxeo.FiltersBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-move-documents-down-button/index.html
+       */
       class MoveDocumentsDown extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 
         static get is() {

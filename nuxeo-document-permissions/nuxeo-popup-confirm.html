@@ -20,12 +20,6 @@ limitations under the License.
 <link rel="import" href="../../paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 
-<!--
-Element providing a confirmation popup.
-
-@group Nuxeo UI
-@element nuxeo-popup-confirm
--->
 <dom-module id="nuxeo-popup-confirm">
   <template>
     <nuxeo-dialog id="dialog" with-backdrop>
@@ -41,6 +35,11 @@ Element providing a confirmation popup.
 
   <script>
     {
+      /**
+       * Element providing a confirmation popup.
+       *
+       * @memberof Nuxeo
+       */
       class PopupConfirm extends Nuxeo.Element {
 
         static get is() {

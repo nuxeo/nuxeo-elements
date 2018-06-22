@@ -29,13 +29,6 @@ limitations under the License.
 <link rel="import" href="../nuxeo-routing-behavior.html">
 <link rel="import" href="../widgets/nuxeo-sort-select.html">
 
-<!--
-An element for displaying page provider results in a justified grid with infinite scrolling.
-
-@group Nuxeo UI
-@element nuxeo-justified-grid
-@demo demo/nuxeo-justified-grid/index.html
--->
 <dom-module id="nuxeo-justified-grid">
   <template>
     <style>
@@ -137,6 +130,16 @@ An element for displaying page provider results in a justified grid with infinit
   </template>
   <script>
     {
+      /**
+       * An element for displaying page provider results in a justified grid with infinite scrolling.
+       *
+       * @memberof Nuxeo
+       * @appliesMixin Polymer.IronResizableBehavior
+       * @appliesMixin Polymer.Templatizer
+       * @appliesMixin Nuxeo.PageProviderDisplayBehavior
+       * @appliesMixin Nuxeo.RoutingBehavior
+       * @demo demo/nuxeo-justified-grid/index.html
+       */
       class JustifiedGrid
         extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior, Polymer.Templatizer,
           Nuxeo.PageProviderDisplayBehavior, Nuxeo.RoutingBehavior], Nuxeo.Element) {

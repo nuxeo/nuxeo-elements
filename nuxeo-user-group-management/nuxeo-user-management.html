@@ -36,18 +36,6 @@ limitations under the License.
 <link rel="import" href="nuxeo-edit-password.html">
 <link rel="import" href="nuxeo-user-group-permissions-table.html">
 
-<!--
-An element for managing a user.
-
-Example:
-
-    <nuxeo-user-management user="Administrator"></nuxeo-user-management>
-
-Used by `nuxeo-user-group-management`
-@group Nuxeo Elements
-@element nuxeo-user-management
--->
-
 <dom-module id="nuxeo-user-management">
   <template>
     <style include="iron-flex iron-flex-alignment iron-flex-factors">
@@ -398,6 +386,18 @@ Used by `nuxeo-user-group-management`
 
   <script>
     {
+      /**
+       * An element for managing a user.
+       *
+       * Example:
+       *
+       *     <nuxeo-user-management user="Administrator"></nuxeo-user-management>
+       *
+       * Used by `nuxeo-user-group-management`
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @appliesMixin Nuxeo.FiltersBehavior
+       * @memberof Nuxeo
+       */
       class UserManagement extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 
         static get is() {

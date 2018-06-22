@@ -22,22 +22,6 @@ limitations under the License.
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="nuxeo-aggregation-behavior.html">
 
-<!--
-An element to interact with page provider aggregations as checkboxes.
-
-    <nuxeo-page-provider provider="default_search" auto
-                         aggregations="{{aggregations}}"
-                         params="[[params]]">
-    </nuxeo-page-provider>
-
-    <nuxeo-checkbox-aggregation data="[[aggregations.dc_created_agg]]"
-                                value="{{params.dc_created_agg}}">
-    </nuxeo-checkbox-aggregation>
-
-@group Nuxeo UI
-@element nuxeo-checkbox-aggregation
-@demo demo/nuxeo-checkbox-aggregation/index.html
--->
 <dom-module id="nuxeo-checkbox-aggregation">
  <template>
    <style>
@@ -67,6 +51,23 @@ An element to interact with page provider aggregations as checkboxes.
  </template>
  <script>
    {
+     /**
+      * An element to interact with page provider aggregations as checkboxes.
+      *
+      *     <nuxeo-page-provider provider="default_search" auto
+      *                          aggregations="{{aggregations}}"
+      *                          params="[[params]]">
+      *     </nuxeo-page-provider>
+      *
+      *     <nuxeo-checkbox-aggregation data="[[aggregations.dc_created_agg]]"
+      *                                 value="{{params.dc_created_agg}}">
+      *     </nuxeo-checkbox-aggregation>
+      *
+      * @appliesMixin Nuxeo.I18nBehavior
+      * @appliesMixin Nuxeo.AggregationBehavior
+      * @memberof Nuxeo
+      * @demo demo/nuxeo-checkbox-aggregation/index.html
+      */
      class CheckboxAggregation
        extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.AggregationBehavior], Nuxeo.Element) {
 

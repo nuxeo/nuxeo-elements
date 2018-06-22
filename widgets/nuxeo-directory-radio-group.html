@@ -22,15 +22,6 @@ limitations under the License.
 <link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="nuxeo-directory-widget-behavior.html">
 
-<!--
-An element for selecting one directory entry with a radio group widget.
-
-    <nuxeo-directory-radio-group directory-name="country" value="{{value}}"></nuxeo-directory-radio-group>
-
-@group Nuxeo Widgets
-@element nuxeo-directory-radio-group
-@demo demo/nuxeo-directory-radio-group/index.html
--->
 <dom-module id="nuxeo-directory-radio-group">
   <template>
     <style>
@@ -93,6 +84,15 @@ An element for selecting one directory entry with a radio group widget.
 
   <script>
     {
+      /**
+       * An element for selecting one directory entry with a radio group widget.
+       *
+       *     <nuxeo-directory-radio-group directory-name="country" value="{{value}}"></nuxeo-directory-radio-group>
+       *
+       * @appliesMixin Nuxeo.DirectoryWidgetBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-directory-radio-group/index.html
+       */
       class DirectoryRadioGroup extends Polymer.mixinBehaviors([Nuxeo.DirectoryWidgetBehavior], Nuxeo.Element) {
 
         static get is() {

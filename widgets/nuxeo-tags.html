@@ -22,17 +22,6 @@ limitations under the License.
 <link rel="import" href="nuxeo-user-tag.html">
 <link rel="import" href="nuxeo-group-tag.html">
 
-<!--
-An element to display a list of tags.
-
-Example:
-
-    <nuxeo-tags type="user" tags='["User 1", "User 2", "User 3"]'></nuxeo-tags>
-
-@group Nuxeo UI
-@element nuxeo-tags
-@demo demo/nuxeo-tags/index.html
--->
 <dom-module id="nuxeo-tags">
   <template>
     <style>
@@ -63,6 +52,16 @@ Example:
 
   <script>
     {
+      /**
+       * An element to display a list of tags.
+       *
+       * Example:
+       *
+       *     <nuxeo-tags type="user" tags='["User 1", "User 2", "User 3"]'></nuxeo-tags>
+       *
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-tags/index.html
+       */
       class Tags extends Nuxeo.Element {
 
         static get is() {

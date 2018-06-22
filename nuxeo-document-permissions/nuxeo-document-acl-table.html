@@ -24,14 +24,6 @@ limitations under the License.
 <link rel="import" href="nuxeo-popup-confirm.html">
 <link rel="import" href="nuxeo-popup-permission.html">
 
-<!--
-Element displaying a table with document ACLs.
-
-    <nuxeo-document-acl-table doc="[[doc]]"></nuxeo-document-acl>
-
-@group Nuxeo UI
-@element nuxeo-popup-confirm
--->
 <dom-module id="nuxeo-document-acl-table">
   <template>
     <style>
@@ -173,6 +165,14 @@ Element displaying a table with document ACLs.
   <script>
     /* eslint-disable prefer-spread, prefer-rest-params */
     {
+      /**
+       * Element displaying a table with document ACLs.
+       *
+       *     <nuxeo-document-acl-table doc="[[doc]]"></nuxeo-document-acl>
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @memberof Nuxeo
+       */
       class DocumentACLTable extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
         static get is() {

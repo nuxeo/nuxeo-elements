@@ -27,16 +27,6 @@ limitations under the License.
 <link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="nuxeo-uploader-behavior.html">
 
-<!--
-An element for uploading blobs using the batch upload API.
-
-    <nuxeo-file value="{{document.properties.file:content}}"></nuxeo-file>
-
-@group Nuxeo Widgets
-@element nuxeo-file
-@demo demo/nuxeo-file/index.html
--->
-
 <dom-module id="nuxeo-file">
   <template>
     <style>
@@ -95,6 +85,15 @@ An element for uploading blobs using the batch upload API.
 
   <script>
     {
+      /**
+       * An element for uploading blobs using the batch upload API.
+       *
+       *     <nuxeo-file value="{{document.properties.file:content}}"></nuxeo-file>
+       *
+       * @appliesMixin Nuxeo.UploaderBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-file/index.html
+       */
       class File extends Polymer.mixinBehaviors([Nuxeo.UploaderBehavior], Nuxeo.Element) {
 
         static get is() {

@@ -79,19 +79,20 @@ limitations under the License.
         }));
       });
 
-      /**
-       * Custom element to help build pluggable applications.
-       * Slots allow dynamic registration of content which will be stamped in the slot's parent.
-       *
-       * Example:
-       *
-       *     <nuxeo-slot name="MY_SLOT">
-       *       <!-- <nuxeo-slot-content slot="MY_SLOT"> will appear here -->
-       *     </nuxeo-slot>
-       *
-       * @demo demo/nuxeo-slots/index.html
-       * */
       {
+        /**
+         * Custom element to help build pluggable applications.
+         * Slots allow dynamic registration of content which will be stamped in the slot's parent.
+         *
+         * Example:
+         *
+         *     <nuxeo-slot name="MY_SLOT">
+         *       <!-- <nuxeo-slot-content slot="MY_SLOT"> will appear here -->
+         *     </nuxeo-slot>
+         *
+         * @memberof Nuxeo
+         * @demo demo/nuxeo-slots/index.html
+         */
         class Slot extends Nuxeo.Element {
 
           static get is() {
@@ -242,21 +243,22 @@ limitations under the License.
         Nuxeo.Slot = Slot;
       }
 
-      /**
-       * Registers the given template as content in a `nuxeo-slot`.
-       * Each content should have a unique `name` that can later be used to override properties
-       * (ex: disabling previously contributed content)
-       *
-       * Example:
-       *     <nuxeo-slot-content slot="MY_SLOT">
-       *       <template>
-       *         This content will go into MY_SLOT
-       *       </template>
-       *     </nuxeo-slot-content>
-       *
-       * @demo demo/nuxeo-slots/index.html
-       * */
       {
+        /**
+         * Registers the given template as content in a `nuxeo-slot`.
+         * Each content should have a unique `name` that can later be used to override properties
+         * (ex: disabling previously contributed content)
+         *
+         * Example:
+         *     <nuxeo-slot-content slot="MY_SLOT">
+         *       <template>
+         *         This content will go into MY_SLOT
+         *       </template>
+         *     </nuxeo-slot-content>
+         *
+         * @memberof Nuxeo
+         * @demo demo/nuxeo-slots/index.html
+         */
         class SlotContent extends Nuxeo.Element {
 
           static get is() {

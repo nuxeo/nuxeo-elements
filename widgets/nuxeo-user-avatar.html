@@ -17,17 +17,6 @@ limitations under the License.
 <link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-resource.html">
 
-<!--
-An element for showing a user's avatar if available, its initials with background otherwise.
-
-Example:
-
-    <nuxeo-user-avatar user="[[user]]"></nuxeo-user-avatar>
-
-@group Nuxeo UI
-@element nuxeo-user-avatar
-@demo demo/nuxeo-user-avatar/index.html
--->
 <dom-module id="nuxeo-user-avatar">
   <template>
 
@@ -63,6 +52,16 @@ Example:
 
   <script>
     {
+      /**
+       * An element for showing a user's avatar if available, its initials with background otherwise.
+       *
+       * Example:
+       *
+       *     <nuxeo-user-avatar user="[[user]]"></nuxeo-user-avatar>
+       *
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-user-avatar/index.html
+       */
       class UserAvatar extends Nuxeo.Element {
 
         static get is() {

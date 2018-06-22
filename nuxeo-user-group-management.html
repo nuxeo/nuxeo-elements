@@ -46,26 +46,6 @@ limitations under the License.
 <link rel="import" href="widgets/nuxeo-card.html">
 <link rel="import" href="widgets/nuxeo-user-suggestion.html">
 
-<!--
-An element for managing users and groups in Nuxeo.
-
-Example:
-
-    <nuxeo-user-group-management></nuxeo-user-group-management>
-
-### Styling
-
-The following custom properties and mixins are available for styling:
-
-Custom property | Description | Default
-----------------|-------------|----------
-`--nuxeo-user-management-layout` | Mixin applied to the host element | `{}`
-`--nuxeo-user-management-create-button-layout` | Mixin applied to the create button | `{}`
-
-@group Nuxeo UI Elements
-@element nuxeo-user-group-management
-@demo demo/nuxeo-user-group-management/index.html
--->
 <dom-module id="nuxeo-user-group-management">
   <template>
     <style include="iron-flex iron-flex-alignment">
@@ -182,6 +162,28 @@ Custom property | Description | Default
 
   <script>
     {
+      /**
+       * An element for managing users and groups in Nuxeo.
+       *
+       * Example:
+       *
+       *     <nuxeo-user-group-management></nuxeo-user-group-management>
+       *
+       * ### Styling
+       *
+       * The following custom properties and mixins are available for styling:
+       *
+       * Custom property | Description | Default
+       * ----------------|-------------|----------
+       * `--nuxeo-user-management-layout` | Mixin applied to the host element | `{}`
+       * `--nuxeo-user-management-create-button-layout` | Mixin applied to the create button | `{}`
+       *
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @appliesMixin Nuxeo.FiltersBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-user-group-management/index.html
+       */
       class UserGroupManagement
         extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 

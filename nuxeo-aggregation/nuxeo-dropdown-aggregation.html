@@ -19,22 +19,6 @@ limitations under the License.
 <link rel="import" href="../widgets/nuxeo-selectivity.html">
 <link rel="import" href="nuxeo-aggregation-behavior.html">
 
-<!--
-An element to interact with page provider aggregations as suggestions.
-
-    <nuxeo-page-provider provider="default_search" auto
-                         aggregations="{{aggregations}}"
-                         params="[[params]]">
-    </nuxeo-page-provider>
-
-    <nuxeo-dropdown-aggregation data="[[aggregations.dc_creator_agg]]" multiple
-                                value="{{params.dc_creator_agg}}">
-    </nuxeo-dropdown-aggregation>
-
-@group Nuxeo UI
-@element nuxeo-dropdown-aggregation
-@demo demo/nuxeo-dropdown-aggregation/index.html
--->
 <dom-module id="nuxeo-dropdown-aggregation">
   <template>
     <style>
@@ -58,6 +42,23 @@ An element to interact with page provider aggregations as suggestions.
   </template>
   <script>
     {
+      /**
+       * An element to interact with page provider aggregations as suggestions.
+       *
+       *     <nuxeo-page-provider provider="default_search" auto
+       *                          aggregations="{{aggregations}}"
+       *                          params="[[params]]">
+       *     </nuxeo-page-provider>
+       *
+       *     <nuxeo-dropdown-aggregation data="[[aggregations.dc_creator_agg]]" multiple
+       *                                 value="{{params.dc_creator_agg}}">
+       *     </nuxeo-dropdown-aggregation>
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @appliesMixin Nuxeo.AggregationBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-dropdown-aggregation/index.html
+       */
       class DropdownAggregation
         extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.AggregationBehavior], Nuxeo.Element) {
 

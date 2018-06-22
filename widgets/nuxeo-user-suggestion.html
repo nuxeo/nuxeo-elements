@@ -23,16 +23,7 @@ limitations under the License.
 <link rel="import" href="nuxeo-user-group-formatter.html">
 
 <!--
-`nuxeo-user-suggestion` allows selecting one or more users.
 
-    <nuxeo-user-suggestion search-type="GROUP_TYPE"
-                           placeholder="Search for Groups"
-                           value="{{groups}}"
-                           multiple></nuxeo-user-suggestion>
-
-@group Nuxeo Widgets
-@element nuxeo-user-suggestion
-@demo demo/nuxeo-user-suggestion/index.html
 -->
 <dom-module id="nuxeo-user-suggestion">
   <template>
@@ -73,6 +64,19 @@ limitations under the License.
 
   <script>
     {
+      /**
+       * `nuxeo-user-suggestion` allows selecting one or more users.
+       *
+       *     <nuxeo-user-suggestion search-type="GROUP_TYPE"
+       *                            placeholder="Search for Groups"
+       *                            value="{{groups}}"
+       *                            multiple></nuxeo-user-suggestion>
+       *
+       * @appliesMixin Polymer.IronFormElementBehavior
+       * @appliesMixin Polymer.IronValidatableBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-user-suggestion/index.html
+       */
       class UserSuggestion
         extends Polymer.mixinBehaviors([Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior], Nuxeo.Element) {
 

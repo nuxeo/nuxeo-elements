@@ -17,26 +17,6 @@ limitations under the License.
 
 <link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 
-<!--
-An element for viewing PDF files.
-
-Example:
-
-    <nuxeo-pdf-viewer src="sample.pdf"></nuxeo-pdf-viewer>
-
-### Styling
-
-The following custom properties and mixins are available for styling:
-
-Custom property | Description | Default
-----------------|-------------|----------
-`--nuxeo-pdf-viewer-layout` | Mixin applied to the viewer | `{}`
-`--nuxeo-pdf-viewer-iframe` | Mixin applied to the iframe enclosing pdfjs | `{}`
-
-@group Nuxeo UI Elements
-@element nuxeo-pdf-viewer
-@demo demo/nuxeo-pdf-viewer/index.html
--->
 <dom-module id="nuxeo-pdf-viewer">
 
   <template>
@@ -60,6 +40,26 @@ Custom property | Description | Default
 
   <script>
     {
+      /**
+       * An element for viewing PDF files.
+       *
+       * Example:
+       *
+       *     <nuxeo-pdf-viewer src="sample.pdf"></nuxeo-pdf-viewer>
+       *
+       * ### Styling
+       *
+       * The following custom properties and mixins are available for styling:
+       *
+       * Custom property | Description | Default
+       * ----------------|-------------|----------
+       * `--nuxeo-pdf-viewer-layout` | Mixin applied to the viewer | `{}`
+       * `--nuxeo-pdf-viewer-iframe` | Mixin applied to the iframe enclosing pdfjs | `{}`
+       *
+       *
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-pdf-viewer/index.html
+       */
       class PDFViewer extends Nuxeo.Element {
 
         static get is() {

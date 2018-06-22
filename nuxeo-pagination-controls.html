@@ -20,19 +20,6 @@ limitations under the License.
 <link rel="import" href="../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 
-<!--
-An element to handle pagination.
-
-Example:
-
-    <nuxeo-pagination-controls page="{{currentePage}}"
-                               number-of-pages="[[numberOfPages]]">
-    </nuxeo-pagination-controls>
-
-@group Nuxeo Elements
-@element nuxeo-pagination-controls
-@demo demo/nuxeo-pagination-controls/index.html
--->
 <dom-module id="nuxeo-pagination-controls">
   <template>
     <style>
@@ -71,6 +58,18 @@ Example:
 
   <script>
     {
+      /**
+       * An element to handle pagination.
+       *
+       * Example:
+       *
+       *     <nuxeo-pagination-controls page="{{currentePage}}"
+       *                                number-of-pages="[[numberOfPages]]">
+       *     </nuxeo-pagination-controls>
+       *
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-pagination-controls/index.html
+       */
       class PaginationControls extends Nuxeo.Element {
 
         static get is() {

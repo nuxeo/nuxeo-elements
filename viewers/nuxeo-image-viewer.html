@@ -24,20 +24,6 @@ limitations under the License.
 <link rel="stylesheet" href="../../cropperjs/dist/cropper.css" >
 <script src="../../cropperjs/dist/cropper.js"></script>
 
-<!--
-An element for viewing images.
-
-Example:
-
-    <nuxeo-image-viewer src="[[document.properties.file:content.data]]"
-                        controls
-                        responsive>
-    </nuxeo-image-viewer>
-
-@group Nuxeo UI Elements
-@element nuxeo-image-viewer
-@demo demo/nuxeo-image-viewer/index.html
--->
 <dom-module id="nuxeo-image-viewer">
   <link rel="import" type="css" href="../../cropperjs/dist/cropper.css">
   <template>
@@ -101,6 +87,20 @@ Example:
 
   <script>
     {
+      /**
+       * An element for viewing images.
+       *
+       * Example:
+       *
+       *     <nuxeo-image-viewer src="[[document.properties.file:content.data]]"
+       *                         controls
+       *                         responsive>
+       *     </nuxeo-image-viewer>
+       *
+       * @appliesMixin Polymer.IronResizableBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-image-viewer/index.html
+       */
       class ImageViewer extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Nuxeo.Element) {
 
         static get is() {

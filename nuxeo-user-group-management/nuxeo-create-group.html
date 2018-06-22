@@ -26,11 +26,6 @@ limitations under the License.
 <link rel="import" href="../widgets/nuxeo-input.html">
 <link rel="import" href="../widgets/nuxeo-user-suggestion.html">
 
-<!--
-Used by `nuxeo-user-group-management`
-@group Nuxeo Elements
-@element nuxeo-create-group
--->
 <dom-module id="nuxeo-create-group">
   <template>
     <style include="iron-flex">
@@ -154,6 +149,11 @@ Used by `nuxeo-user-group-management`
 
   <script>
     {
+      /**
+       * Used by `nuxeo-user-group-management`
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @memberof Nuxeo
+       */
       class CreateGroup extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
         static get is() {

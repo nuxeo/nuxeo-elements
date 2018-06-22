@@ -19,16 +19,7 @@ limitations under the License.
 <link rel="import" href="../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../polymer/lib/utils/import-href.html">
 <link rel="import" href="nuxeo-error.html">
-<!--
-An element to import and stamp layout elements.
 
-Example:
-
-    <nuxeo-layout href="nuxeo-note-view-layout.html" model='{"document": {...}}'></nuxeo-layout>
-
-@group Nuxeo UI
-@element nuxeo-layout
--->
 <dom-module id="nuxeo-layout">
   <template>
     <nuxeo-error id="error" code="404" url="[[href]]" message="[[error]]" hidden></nuxeo-error>
@@ -36,6 +27,16 @@ Example:
   </template>
   <script>
     {
+      /**
+       * An element to import and stamp layout elements.
+       *
+       * Example:
+       *
+       *     <nuxeo-layout href="nuxeo-note-view-layout.html" model='{"document": {...}}'></nuxeo-layout>
+       *
+       * @appliesMixin Polymer.IronResizableBehavior
+       * @memberof Nuxeo
+       */
       class Layout extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Nuxeo.Element) {
 
         static get is() {

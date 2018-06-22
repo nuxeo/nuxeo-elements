@@ -28,17 +28,6 @@ limitations under the License.
 <link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
 
-<!--
-A toggle button element for lock/unlock a document.
-
-Example:
-
-    <nuxeo-lock-toggle-button document="[[document]]"></nuxeo-lock-toggle-button>
-
-@group Nuxeo UI
-@element nuxeo-lock-toggle-button
-@demo demo/nuxeo-lock-toggle-button/index.html
--->
 <dom-module id="nuxeo-lock-toggle-button">
   <template>
     <style>
@@ -67,6 +56,19 @@ Example:
 
   <script>
     {
+      /**
+       * A toggle button element for lock/unlock a document.
+       *
+       * Example:
+       *
+       *     <nuxeo-lock-toggle-button document="[[document]]"></nuxeo-lock-toggle-button>
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @appliesMixin Nuxeo.FiltersBehavior
+       * @appliesMixin Nuxeo.FormatBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-lock-toggle-button/index.html
+       */
       class LockToggleButton
         extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior, Nuxeo.FormatBehavior], Nuxeo.Element) {
 

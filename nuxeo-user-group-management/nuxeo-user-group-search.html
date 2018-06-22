@@ -33,11 +33,6 @@ limitations under the License.
 <link rel="import" href="../widgets/nuxeo-input.html">
 <link rel="import" href="../widgets/nuxeo-user-tag.html">
 
-<!--
-Used by `nuxeo-user-management`
-@group Nuxeo Elements
-@element nuxeo-user-group-search
--->
 <dom-module id="nuxeo-user-group-search">
   <template>
     <style include="iron-flex iron-flex-alignment iron-flex-factors">
@@ -193,6 +188,11 @@ Used by `nuxeo-user-management`
 
   <script>
     {
+      /**
+       * Used by `nuxeo-user-management`
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @memberof Nuxeo
+       */
       class UserGroupSearch extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
         static get is() {

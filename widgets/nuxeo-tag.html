@@ -20,17 +20,6 @@ limitations under the License.
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 
-<!--
-An element for showing a tag.
-
-Example:
-
-    <nuxeo-tag icon="icons:home">Home</nuxeo-tag>
-
-@group Nuxeo UI
-@element nuxeo-tag
-@demo demo/nuxeo-tag/index.html
--->
 <dom-module id="nuxeo-tag">
   <template>
     <style>
@@ -71,6 +60,16 @@ Example:
 
   <script>
     {
+      /**
+       * An element for showing a tag.
+       *
+       * Example:
+       *
+       *     <nuxeo-tag icon="icons:home">Home</nuxeo-tag>
+       *
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-tag/index.html
+       */
       class Tag extends Nuxeo.Element {
 
         static get is() {

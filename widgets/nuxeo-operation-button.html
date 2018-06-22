@@ -22,20 +22,6 @@ limitations under the License.
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
 
-<!--
-An element for running an operation.
-
-Example:
-
-    <nuxeo-operation-button
-        icon="icons:account-box" label="Get user"
-        operation="User.Get" response="{{operationResponse}}">
-    </nuxeo-operation-button>
-
-@group Nuxeo UI
-@element nuxeo-operation-button
-@demo demo/nuxeo-operation-button/index.html
--->
 <dom-module id="nuxeo-operation-button">
   <template>
 
@@ -48,6 +34,20 @@ Example:
 
   <script>
     {
+      /**
+       * An element for running an operation.
+       *
+       * Example:
+       *
+       *     <nuxeo-operation-button
+       *         icon="icons:account-box" label="Get user"
+       *         operation="User.Get" response="{{operationResponse}}">
+       *     </nuxeo-operation-button>
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-operation-button/index.html
+       */
       class OperationButton extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
         static get is() {

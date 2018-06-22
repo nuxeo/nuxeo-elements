@@ -22,17 +22,6 @@ limitations under the License.
 <link rel="import" href="nuxeo-user-avatar.html">
 <link rel="import" href="nuxeo-tooltip.html">
 
-<!--
-An element for showing a user entity with a tooltip.
-
-Example:
-
-    <nuxeo-user-tag user="[[user]]"></nuxeo-user-tag>
-
-@group Nuxeo UI
-@element nuxeo-user-tag
-@demo demo/nuxeo-user-tag/index.html
--->
 <dom-module id="nuxeo-user-tag">
   <template>
     <style>
@@ -87,6 +76,17 @@ Example:
 
   <script>
     {
+      /**
+       * An element for showing a user entity with a tooltip.
+       *
+       * Example:
+       *
+       *     <nuxeo-user-tag user="[[user]]"></nuxeo-user-tag>
+       *
+       * @appliesMixin Nuxeo.RoutingBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-user-tag/index.html
+       */
       class UserTag extends Polymer.mixinBehaviors([Nuxeo.RoutingBehavior], Nuxeo.Element) {
 
         static get is() {

@@ -19,31 +19,6 @@ limitations under the License.
 <link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../nuxeo-icons.html">
 
-<!--
-An element that displays a toggleable checkmark.
-
-### Styling
-
-The following custom properties are available for styling:
-
-Custom property | Description | Default
-----------------|-------------|----------
-`--nuxeo-checkmark-width` | Width | 18px
-`--nuxeo-checkmark-height` | Height | 18px
-`--nuxeo-checkmark-background-color` | Background color | transparent
-`--nuxeo-checkmark-background-color-hover` | Background color on hover | transparent
-`--nuxeo-checkmark-background-color-checked` | Background color on checked | --nuxeo-primary-color, blue
-`--nuxeo-checkmark-border-color` | Border color | --nuxeo-border, gray
-`--nuxeo-checkmark-border-color-hover` | Border color on hover | --nuxeo-border, gray
-`--nuxeo-checkmark-border-color-checked` | Border color on checked | --nuxeo-primary-color, blue
-`--nuxeo-checkmark-icon-color` | Icon color | transparent
-`--nuxeo-checkmark-icon-color-hover` | Icon color on hover | black
-`--nuxeo-checkmark-icon-color-checked` | Icon color on checked | white
-
-@group Nuxeo UI
-@element nuxeo-checkmark
-@demo demo/nuxeo-checkmark/index.html
--->
 <dom-module id="nuxeo-checkmark">
   <template>
     <style>
@@ -93,6 +68,30 @@ Custom property | Description | Default
 
   <script>
     {
+      /**
+       * An element that displays a toggleable checkmark.
+       *
+       * ### Styling
+       *
+       * The following custom properties are available for styling:
+       *
+       * Custom property | Description | Default
+       * ----------------|-------------|----------
+       * `--nuxeo-checkmark-width` | Width | 18px
+       * `--nuxeo-checkmark-height` | Height | 18px
+       * `--nuxeo-checkmark-background-color` | Background color | transparent
+       * `--nuxeo-checkmark-background-color-hover` | Background color on hover | transparent
+       * `--nuxeo-checkmark-background-color-checked` | Background color on checked | --nuxeo-primary-color, blue
+       * `--nuxeo-checkmark-border-color` | Border color | --nuxeo-border, gray
+       * `--nuxeo-checkmark-border-color-hover` | Border color on hover | --nuxeo-border, gray
+       * `--nuxeo-checkmark-border-color-checked` | Border color on checked | --nuxeo-primary-color, blue
+       * `--nuxeo-checkmark-icon-color` | Icon color | transparent
+       * `--nuxeo-checkmark-icon-color-hover` | Icon color on hover | black
+       * `--nuxeo-checkmark-icon-color-checked` | Icon color on checked | white
+       *
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-checkmark/index.html
+       */
       class CheckMark extends Nuxeo.Element {
 
         static get is() {

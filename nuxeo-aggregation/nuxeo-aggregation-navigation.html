@@ -19,14 +19,6 @@ limitations under the License.
 <link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 
-<!--
-An element for providing aggregation based navigation.
-
-`nuxeo-aggregation-navigation`
-@group Nuxeo UI
-@element nuxeo-aggregation-navigation
-@demo demo/nuxeo-aggregation-navigation/index.html
--->
 <dom-module id="nuxeo-aggregation-navigation">
   <template>
 
@@ -106,6 +98,13 @@ An element for providing aggregation based navigation.
 
   <script>
     {
+      /**
+       * An element for providing aggregation based navigation.
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-aggregation-navigation/index.html
+       */
       class AggregationNavigation extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
         static get is() {

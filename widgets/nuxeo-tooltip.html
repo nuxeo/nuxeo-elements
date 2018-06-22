@@ -18,23 +18,6 @@ limitations under the License.
 <link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-tooltip/paper-tooltip.html">
 
-<!--
-Example:
-
-    <div>
-      <span>Hover me!</span>
-      <nuxeo-tooltip>Tooltip text</nuxeo-tooltip>
-    </div>
-
-    <div>
-      <span id="btn">Hover me!</span>
-      <nuxeo-tooltip for="btn">Tooltip text</nuxeo-tooltip>
-    </div>
-
-@group Nuxeo UI
-@element nuxeo-tooltip
-@demo demo/nuxeo-tooltip/index.html
--->
 <dom-module id="nuxeo-tooltip">
   <template>
     <style>
@@ -49,6 +32,22 @@ Example:
 
   <script>
     {
+      /**
+       * Example:
+       *
+       *     <div>
+       *       <span>Hover me!</span>
+       *       <nuxeo-tooltip>Tooltip text</nuxeo-tooltip>
+       *     </div>
+       *
+       *     <div>
+       *       <span id="btn">Hover me!</span>
+       *       <nuxeo-tooltip for="btn">Tooltip text</nuxeo-tooltip>
+       *     </div>
+       *
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-tooltip/index.html
+       */
       class Tooltip extends Nuxeo.Element {
 
         static get is() {

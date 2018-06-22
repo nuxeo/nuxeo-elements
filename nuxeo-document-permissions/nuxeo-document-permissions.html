@@ -32,15 +32,6 @@ limitations under the License.
 <link rel="import" href="nuxeo-popup-confirm.html">
 <link rel="import" href="nuxeo-popup-permission.html">
 
-<!--
-An element providing document permissions management
-
-    <nuxeo-document-permissions doc-path="/default-domain"></nuxeo-document-permissions>
-
-@group Nuxeo UI
-@element nuxeo-document-permissions
-@demo demo/nuxeo-document-permissions/index.html
--->
 <dom-module id="nuxeo-document-permissions">
   <template>
 
@@ -157,6 +148,15 @@ An element providing document permissions management
 
   <script>
     {
+      /**
+       * An element providing document permissions management
+       *
+       *     <nuxeo-document-permissions doc-path="/default-domain"></nuxeo-document-permissions>
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-document-permissions/index.html
+       */
       class DocumentPermissions extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
         static get is() {

@@ -25,19 +25,6 @@ limitations under the License.
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../../polymer/lib/utils/debounce.html">
 
-<!--
-An element wrapping selectivity.js and relying on an operation for suggestions
-
-   <nuxeo-selectivity operation="Directory.SuggestEntries"
-                  multiple
-                  params='{"directoryName": "subject"}'
-                  value="{{value}}">
-
-@group Nuxeo Widgets
-@element nuxeo-selectivity
-@demo demo/nuxeo-selectivity/index.html
--->
-
 <dom-module id="nuxeo-selectivity">
   <link rel="import" type="css" href="selectivity/selectivity.css">
 
@@ -89,6 +76,19 @@ An element wrapping selectivity.js and relying on an operation for suggestions
 
   <script>
     {
+      /**
+       * An element wrapping selectivity.js and relying on an operation for suggestions
+       *
+       *    <nuxeo-selectivity operation="Directory.SuggestEntries"
+       *                   multiple
+       *                   params='{"directoryName": "subject"}'
+       *                   value="{{value}}">
+       *
+       * @appliesMixin Polymer.IronFormElementBehavior
+       * @appliesMixin Polymer.IronValidatableBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-selectivity/index.html
+       */
       class SelectivityElement
         extends Polymer.mixinBehaviors([Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior], Nuxeo.Element) {
 

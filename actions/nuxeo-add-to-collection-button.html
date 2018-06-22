@@ -32,17 +32,6 @@ limitations under the License.
 <link rel="import" href="../widgets/nuxeo-textarea.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
 
-<!--
-A button element for adding a document to a collection.
-
-Example:
-
-    <nuxeo-add-to-collection-button document="[[document]]"></nuxeo-add-to-collection-button>
-
-@group Nuxeo UI
-@element nuxeo-add-to-collection-button
-@demo demo/nuxeo-add-to-collection-button/index.html
--->
 <dom-module id="nuxeo-add-to-collection-button">
   <template>
     <style>
@@ -102,6 +91,18 @@ Example:
 
   <script>
     {
+      /**
+       * A button element for adding a document to a collection
+       *
+       * Example:
+       *
+       *     <nuxeo-add-to-collection-button document="[[document]]"></nuxeo-add-to-collection-button>
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @appliesMixin Nuxeo.FiltersBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-add-to-collection-button/index.html
+       */
       class AddToCollectionButton
         extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 

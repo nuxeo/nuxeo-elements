@@ -59,6 +59,11 @@ limitations under the License.
   </template>
   <script>
     {
+      /**
+       * @appliesMixin Polymer.Templatizer
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @memberof Nuxeo
+       */
       class TreeNode extends Polymer.mixinBehaviors([Polymer.Templatizer, Nuxeo.I18nBehavior], Nuxeo.Element) {
 
         static get is() {

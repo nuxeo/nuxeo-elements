@@ -33,17 +33,6 @@ limitations under the License.
 <link rel="import" href="../widgets/nuxeo-input.html">
 <link rel="import" href="../widgets/nuxeo-user-tag.html">
 
-<!--
-An element for displaying the most recently created users and groups.
-
-Example:
-
-    <nuxeo-user-group-latest></nuxeo-user-group-latest>
-
-@group Nuxeo Elements
-@element nuxeo-user-group-latest
-@demo demo/nuxeo-user-group-latest/index.html
--->
 <dom-module id="nuxeo-user-group-latest">
 
   <template>
@@ -162,6 +151,17 @@ Example:
 
   <script>
     {
+      /**
+       * An element for displaying the most recently created users and groups.
+       *
+       * Example:
+       *
+       *     <nuxeo-user-group-latest></nuxeo-user-group-latest>
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-user-group-latest/index.html
+       */
       class UserGroupLatest extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
         static get is() {

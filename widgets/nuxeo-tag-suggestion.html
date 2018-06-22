@@ -23,18 +23,6 @@ limitations under the License.
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="nuxeo-selectivity.html">
 
-<!--
-`nuxeo-tag-suggestion` allows selecting one or more tags.
-
-    <nuxeo-tag-suggestion document="[[document]]"
-      placeholder="Search for Tags"
-      value="{{tags}}" allow-new-tags>
-    </nuxeo-tag-suggestion>
-
-@group Nuxeo Widgets
-@element nuxeo-tag-suggestion
-@demo demo/nuxeo-tag-suggestion/index.html
--->
 <dom-module id="nuxeo-tag-suggestion">
   <template>
 
@@ -85,6 +73,17 @@ limitations under the License.
 
   <script>
     {
+      /**
+       * `nuxeo-tag-suggestion` allows selecting one or more tags.
+       *
+       *     <nuxeo-tag-suggestion document="[[document]]"
+       *       placeholder="Search for Tags"
+       *       value="{{tags}}" allow-new-tags>
+       *     </nuxeo-tag-suggestion>
+       *
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-tag-suggestion/index.html
+       */
       class TagSuggestion
         extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Polymer.IronFormElementBehavior,
           Polymer.IronValidatableBehavior], Nuxeo.Element) {

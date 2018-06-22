@@ -23,18 +23,6 @@ limitations under the License.
 <link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../../paper-listbox/paper-listbox.html">
 
-<!--
-An element for selecting options.
-
-Example:
-
-    <nuxeo-select label="Options" options=[[options]] selected={{selected}}></nuxeo-select>
-
-`nuxeo-select`
-@group Nuxeo Widgets
-@element nuxeo-select
-@demo demo/nuxeo-select/index.html
--->
 <dom-module id="nuxeo-select">
   <template>
     <style>
@@ -136,6 +124,18 @@ Example:
 
   <script>
     {
+      /**
+       * An element for selecting options.
+       *
+       * Example:
+       *
+       *     <nuxeo-select label="Options" options=[[options]] selected={{selected}}></nuxeo-select>
+       *
+       * @appliesMixin Polymer.IronResizableBehavior
+       * @appliesMixin Polymer.IronValidatableBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-select/index.html
+       */
       class Select extends
         Polymer.mixinBehaviors([Polymer.IronResizableBehavior, Polymer.IronValidatableBehavior], Nuxeo.Element) {
 

@@ -22,25 +22,6 @@ limitations under the License.
 <link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
 
-<!--
-An element for a generic card
-
-Example:
-
-    <nuxeo-card icon="icons:home" heading="title" collapsible opened>content</nuxeo-card>
-
-### Styling
-
-The following custom properties and mixins are available for styling:
-
-Custom property         | Description | Default
------------------------|------------------|----------
-`--nuxeo-card`         | Mixin applied to the card | `{}`
-
-@group Nuxeo UI
-@element nuxeo-card
-@demo demo/nuxeo-card/index.html
--->
 <dom-module id="nuxeo-card">
   <template>
     <style>
@@ -127,6 +108,25 @@ Custom property         | Description | Default
 
   <script>
     {
+      /**
+       * An element for a generic card
+       *
+       * Example:
+       *
+       *     <nuxeo-card icon="icons:home" heading="title" collapsible opened>content</nuxeo-card>
+       *
+       * ### Styling
+       *
+       * The following custom properties and mixins are available for styling:
+       *
+       * Custom property         | Description | Default
+       * -----------------------|------------------|----------
+       * `--nuxeo-card`         | Mixin applied to the card | `{}`
+       *
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-card/index.html
+       *
+       */
       class Card extends Nuxeo.Element {
 
         static get is() {

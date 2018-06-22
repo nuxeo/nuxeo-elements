@@ -15,29 +15,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../polymer/lib/utils/debounce.html">
 <link rel="import" href="nuxeo-filters-behavior.html">
 <script>
   /* eslint-disable no-new-func,no-restricted-syntax,guard-for-in */
 
-  /**
-   * Stamps the template if and only if all of its conditions are met.
-   *
-   * Evaluation context includes `document` and `user` which need to be set if used.
-   *
-   * Example:
-   *
-   *     <nuxeo-filter document="[[document]]" type="Picture"
-   *                   user="[[user]]" group="Administrator">
-   *       <template>
-   *         ...
-   *       </template>
-   *     </nuxeo-filter>
-   *
-   * @demo demo/nuxeo-filter/index.html
-   */
   {
+    /**
+     * Stamps the template if and only if all of its conditions are met.
+     *
+     * Evaluation context includes `document` and `user` which need to be set if used.
+     *
+     * Example:
+     *
+     *     <nuxeo-filter document="[[document]]" type="Picture"
+     *                   user="[[user]]" group="Administrator">
+     *       <template>
+     *         ...
+     *       </template>
+     *     </nuxeo-filter>
+     *
+     * @appliesMixin Polymer.Templatizer
+     * @appliesMixin Nuxeo.FiltersBehavior
+     * @memberof Nuxeo
+     * @demo demo/nuxeo-filter/index.html
+     */
     class Filter extends Polymer.mixinBehaviors([Polymer.Templatizer, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 
       static get is() {

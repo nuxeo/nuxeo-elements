@@ -27,21 +27,6 @@ limitations under the License.
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../widgets/nuxeo-tag.html">
 
-<!--
-An element to list the permissions of an entity.
-
-Example:
-
-    <nuxeo-user-group-permissions-table entity="Administrator"></nuxeo-user-group-permissions-table>
-
-Example:
-
-    <nuxeo-user-group-permissions-table entity="members"></nuxeo-user-group-permissions-table>
-
-Used by `nuxeo-user-group-management`
-@group Nuxeo Elements
-@element nuxeo-user-group-permissions-table
--->
 <dom-module id="nuxeo-user-group-permissions-table">
   <template>
     <style include="iron-flex iron-flex-factors">
@@ -232,6 +217,22 @@ Used by `nuxeo-user-group-management`
 
   <script>
     {
+      /**
+       * An element to list the permissions of an entity.
+       *
+       * Example:
+       *
+       *     <nuxeo-user-group-permissions-table entity="Administrator"></nuxeo-user-group-permissions-table>
+       *
+       * Example:
+       *
+       *     <nuxeo-user-group-permissions-table entity="members"></nuxeo-user-group-permissions-table>
+       *
+       * Used by `nuxeo-user-group-management`
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @memberof Nuxeo
+       */
       class UserGroupPermissionsTable extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
         static get is() {

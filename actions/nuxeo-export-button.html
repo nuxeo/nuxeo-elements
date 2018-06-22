@@ -28,17 +28,6 @@ limitations under the License.
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
 
-<!--
-A button element for exporting document's content.
-
-Example:
-
-    <nuxeo-export-button document="[[document]]"></nuxeo-export-button>
-
-@group Nuxeo UI
-@element nuxeo-export-button
-@demo demo/nuxeo-export-button/index.html
--->
 <dom-module id="nuxeo-export-button">
   <template>
     <style>
@@ -85,6 +74,18 @@ Example:
 
   <script>
     {
+      /**
+       * A button element for exporting document's content.
+       *
+       * Example:
+       *
+       *     <nuxeo-export-button document="[[document]]"></nuxeo-export-button>
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @appliesMixin Nuxeo.FiltersBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-export-button/index.html
+       */
       class ExportButton extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 
         static get is() {

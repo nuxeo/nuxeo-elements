@@ -22,17 +22,6 @@ limitations under the License.
 <link rel="import" href="viewers/nuxeo-pdf-viewer.html">
 <link rel="import" href="viewers/nuxeo-video-viewer.html">
 
-<!--
-An element to display a preview of a document.
-
-Example:
-
-    <nuxeo-document-preview document="[[document]]"></nuxeo-document-preview>
-
-@group Nuxeo UI
-@element nuxeo-document-preview
-@demo demo/nuxeo-document-preview/index.html
--->
 <dom-module id="nuxeo-document-preview">
   <template>
     <style>
@@ -123,6 +112,18 @@ Example:
 
   <script>
     {
+      /**
+       * An element to display a preview of a document.
+       *
+       * Example:
+       *
+       *     <nuxeo-document-preview document="[[document]]"></nuxeo-document-preview>
+       *
+       * @appliesMixin Polymer.Templatizer
+       * @appliesMixin Polymer.IronResizableBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-document-preview/index.html
+       */
       class DocumentPreview
         extends Polymer.mixinBehaviors([Polymer.Templatizer, Polymer.IronResizableBehavior], Nuxeo.Element) {
 

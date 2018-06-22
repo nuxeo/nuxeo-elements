@@ -25,17 +25,6 @@ limitations under the License.
 <link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
 
-<!--
-A button element for downloading the main file from a document.
-
-Example:
-
-    <nuxeo-download-button document="[[document]]"></nuxeo-download-button>
-
-@group Nuxeo UI
-@element nuxeo-download-button
-@demo demo/nuxeo-download-button/index.html
--->
 <dom-module id="nuxeo-download-button">
   <template>
     <style>
@@ -55,6 +44,18 @@ Example:
 
   <script>
     {
+      /**
+       * A button element for downloading the main file from a document.
+       *
+       * Example:
+       *
+       *     <nuxeo-download-button document="[[document]]"></nuxeo-download-button>
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @appliesMixin Nuxeo.FiltersBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-download-button/index.html
+       */
       class DownloadButton extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 
         static get is() {

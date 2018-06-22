@@ -23,22 +23,6 @@ limitations under the License.
 <script src="../../d3/d3.min.js"></script>
 <script src="../../randomcolor/randomColor.js"></script>
 
-<!--
-A sunburst chart presenting Nuxeo Document Distribution.
-
-Example:
-
-    <nuxeo-document-distribution-chart index="nuxeo"
-      path="/default-domain" mode="count" max-depth="7"
-      chart-hue="red" chart-lumonisity="light"
-      include-version include-hidden"
-      include-deleted only-folder">
-    </nuxeo-document-distribution-chart>
-
-@group Nuxeo UI
-@element nuxeo-document-distribution-chart
-@demo demo/nuxeo-document-distribution-chart/index.html
--->
 <dom-module id="nuxeo-document-distribution-chart">
   <template>
 
@@ -152,6 +136,22 @@ Example:
 
       const colors = {};
 
+      /**
+       * A sunburst chart presenting Nuxeo Document Distribution.
+       *
+       * Example:
+       *
+       *     <nuxeo-document-distribution-chart index="nuxeo"
+       *       path="/default-domain" mode="count" max-depth="7"
+       *       chart-hue="red" chart-lumonisity="light"
+       *       include-version include-hidden"
+       *       include-deleted only-folder">
+       *     </nuxeo-document-distribution-chart>
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-document-distribution-chart/index.html
+       */
       class DocumentDistributionChart extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
         static get is() {

@@ -23,17 +23,6 @@ limitations under the License.
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
 <link rel="import" href="nuxeo-tag.html">
 
-<!--
-An element for showing a group entity with a tooltip.
-
-Example:
-
-    <nuxeo-group-tag group="[[group]]"></nuxeo-group-tag>
-
-@group Nuxeo UI
-@element nuxeo-group-tag
-@demo demo/nuxeo-group-tag/index.html
--->
 <dom-module id="nuxeo-group-tag">
   <template>
     <style>
@@ -67,6 +56,17 @@ Example:
 
   <script>
     {
+      /**
+       * An element for showing a group entity with a tooltip.
+       *
+       * Example:
+       *
+       *     <nuxeo-group-tag group="[[group]]"></nuxeo-group-tag>
+       *
+       * @appliesMixin Nuxeo.RoutingBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-group-tag/index.html
+       */
       class GroupTag extends Polymer.mixinBehaviors([Nuxeo.RoutingBehavior], Nuxeo.Element) {
 
         static get is() {

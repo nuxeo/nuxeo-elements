@@ -21,17 +21,6 @@ limitations under the License.
 <link rel="import" href="../../vaadin-date-picker/vaadin-date-picker.html">
 <link rel="import" href="../moment-import.html">
 
-<!--
-An element for picking a W3C YYYY-MM-DDThh:mm:ss.sTZD based date (eg 1997-07-16T19:20:30.45+01:00).
-
-Example:
-
-    <nuxeo-date-picker value="{{value}}" label="My label"></nuxeo-date-picker>
-
-@group Nuxeo UI
-@element nuxeo-date-picker
-@demo demo/nuxeo-date-picker/index.html
--->
 <dom-module id="nuxeo-date-picker" theme-for="vaadin-date-picker vaadin-text-field vaadin-month-calendar vaadin-date-picker-overlay-content">
   <template>
     <style>
@@ -115,6 +104,18 @@ Example:
 
   <script>
     {
+      /**
+       * An element for picking a W3C YYYY-MM-DDThh:mm:ss.sTZD based date (eg 1997-07-16T19:20:30.45+01:00).
+       *
+       * Example:
+       *
+       *     <nuxeo-date-picker value="{{value}}" label="My label"></nuxeo-date-picker>
+       *
+       * @appliesMixin Polymer.IronFormElementBehavior
+       * @appliesMixin Polymer.IronValidatableBehavior
+       * @memberof Nuxeo UI
+       * @demo demo/nuxeo-date-picker/index.html
+       */
       class DatePicker
         extends Polymer.mixinBehaviors([Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior], Nuxeo.Element) {
 

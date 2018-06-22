@@ -20,13 +20,6 @@ limitations under the License.
 <link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 
-<!--
-An element for toggling quickfilters.
-
-@group Nuxeo UI
-@element nuxeo-quick-filters
-@demo demo/nuxeo-quick-filters/index.html
--->
 <dom-module id="nuxeo-quick-filters">
   <template>
     <style>
@@ -66,6 +59,13 @@ An element for toggling quickfilters.
 
   <script>
     {
+      /**
+       * An element for toggling quickfilters.
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-quick-filters/index.html
+       */
       class QuickFilters extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
         static get is() {

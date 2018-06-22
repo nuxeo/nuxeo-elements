@@ -20,13 +20,6 @@ limitations under the License.
 <link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-input/paper-input.html">
 
-<!--
-An element for generic input in forms
-
-@group Nuxeo UI
-@element nuxeo-input
-@demo demo/nuxeo-input/index.html
--->
 <dom-module id="nuxeo-input">
   <template>
 
@@ -87,6 +80,14 @@ An element for generic input in forms
 
   <script>
     {
+      /**
+       * An element for generic input in forms
+       *
+       * @appliesMixin Polymer.IronFormElementBehavior
+       * @appliesMixin Polymer.IronValidatableBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-input/index.html
+       */
       class Input
         extends Polymer.mixinBehaviors([Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior], Nuxeo.Element) {
 

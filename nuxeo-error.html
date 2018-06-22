@@ -17,17 +17,7 @@ limitations under the License.
 
 <link rel="import" href="../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="nuxeo-i18n-behavior.html">
-<!--
-An element to display errors.
 
-Example:
-
-    <nuxeo-error code="404"></nuxeo-error>
-
-@group Nuxeo UI
-@element nuxeo-error
-@demo demo/nuxeo-error/index.html
--->
 <dom-module id="nuxeo-error">
   <template>
     <style>
@@ -89,6 +79,17 @@ Example:
 
   <script>
     {
+      /**
+       * An element to display errors.
+       *
+       * Example:
+       *
+       *     <nuxeo-error code="404"></nuxeo-error>
+       *
+       * @appliesMixin Nuxeo.I18nBehavior
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-error/index.html
+       */
       class Error extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
         static get is() {
