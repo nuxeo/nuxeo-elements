@@ -59,11 +59,9 @@ An element for selecting one directory entry with a radio group widget.
       }
 
       .label[required]::after {
-        display: block;
+        display: inline-block;
         content: '*';
-        position: absolute;
-        right: 0;
-        top: 0;
+        margin-left: 4px;
         color: var(--paper-input-container-invalid-color, red);
         font-size: 1.2em;
       }
