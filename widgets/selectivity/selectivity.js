@@ -3494,7 +3494,7 @@ var callSuper = Selectivity.inherits(SingleInput, Selectivity, {
      * @return The corresponding value. Will be an ID or null.
      */
     getValueForData: function(data) {
-        return data ? data.id : undefined;
+        return data ? data.id : null;
     },
 
     /**
