@@ -328,7 +328,7 @@ element.
             Object.keys(this.params).forEach((key) => {
               if (typeof this.params[key] === 'string') {
                 params[key] = this.params[key];
-              } else {
+              } else if (this.params[key]) {
                 params[key] = JSON.stringify(this.params[key]);
               }
             }, this);
