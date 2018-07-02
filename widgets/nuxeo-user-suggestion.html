@@ -20,6 +20,7 @@ limitations under the License.
 <link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-card/paper-card.html">
 <link rel="import" href="nuxeo-selectivity.html">
+<link rel="import" href="nuxeo-user-group-formatter.html">
 
 <!--
 `nuxeo-user-suggestion` allows selecting one or more users.
@@ -254,7 +255,11 @@ limitations under the License.
         }
 
         _resultFormatter(item) {
-          return (item.displayLabel || item.title) + ((item.type && item.type === 'USER_TYPE') ? `<br>${item.email}` : '');
+          if (item.type && (item.type === 'USER_TYPE' || item.type === 'GROUP_TYPE')) {
+            return `<nuxeo-user-group-formatter entity='${JSON.stringify(item)}'></nuxeo-user-group-formatter>`;
+          }
+          // fallback, if entities are not available
+          return item.displayLabel || item.title;
         }
 
         _resolveEntry(item) {
