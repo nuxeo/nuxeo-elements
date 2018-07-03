@@ -122,6 +122,7 @@
   "groupManagement.removeFrom": "Remover de {0}",
   "groupManagement.removeUserFromGroup.confirm": "Você realmente deseja remover {0} deste grupo?",
   "groupManagement.users.heading": "Utilizadores",
+  "label.group": "Group",
   "label.no": "Não",
   "label.yes": "Sim",
   "label.ui.state.accepted": "Aceite",

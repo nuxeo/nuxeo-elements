@@ -122,6 +122,7 @@
   "groupManagement.removeFrom": "Hapus dari {0}",
   "groupManagement.removeUserFromGroup.confirm": "Apakah anda benar-benar ingin menghapus {0} dari kelompok ini?",
   "groupManagement.users.heading": "Pengguna",
+  "label.group": "Group",
   "label.no": "Tidak",
   "label.yes": "Ya",
   "label.ui.state.accepted": "Diterima",
