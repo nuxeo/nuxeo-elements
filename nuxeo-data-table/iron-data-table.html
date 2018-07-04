@@ -891,7 +891,7 @@ Example:
               }
               const result = this._fetchPage(this.nxProvider.page, this.nxProvider.pageSize);
               if (result) {
-                result.then(() => {
+                return result.then(() => {
                   this.nxProvider.page += 1;
                   this.$.scrollThreshold.clearTriggers();
                   this.$.list.notifyResize();
