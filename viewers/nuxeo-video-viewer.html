@@ -52,9 +52,14 @@ Example:
         @apply --layout-flex;
       }
 
+      #video.hasStoryboard {
+        height: calc(100% - 85px);
+      }
+
       #storyboard {
         display: block;
         background: var(--primary-background-color);
+        height: 85px;
         @apply --layout-horizontal;
         @apply --layout-center-justified;
       }
@@ -80,7 +85,7 @@ Example:
         </dom-repeat>
       </video>
 
-      <dom-if if="[[_showStoryboard(storyboard)]]">
+      <dom-if if="[[_hasStoryboard(storyboard)]]">
         <template>
           <div id="storyboard">
             <div id="thumbnails">
@@ -159,8 +164,14 @@ Example:
           return this.$.video.paused;
         }
 
-        _showStoryboard() {
-          return this.storyboard && this.storyboard.length > 0;
+        _hasStoryboard() {
+          const hasStoryboard = this.storyboard && this.storyboard.length > 0;
+          if (hasStoryboard) {
+            this.$.video.classList.add('hasStoryboard');
+          } else {
+            this.$.video.classList.remove('hasStoryboard');
+          }
+          return hasStoryboard;
         }
 
         _jumpTo(e) {
