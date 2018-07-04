@@ -499,6 +499,9 @@ limitations under the License.
        */
       _fetchPage(page, pageSize) {
         if (this._hasPageProvider()) {
+          const options = {
+            skipAggregates: page && page > 1,
+          };
           if (page) {
             this.nxProvider.page = page;
             if (page === 1) {
@@ -509,7 +512,7 @@ limitations under the License.
             this.nxProvider.pageSize = pageSize;
           }
           this.nxProvider.offset = 0;
-          return this.nxProvider.fetch().then((response) => {
+          return this.nxProvider.fetch(options).then((response) => {
             for (let i = 0; i < response.entries.length; i++) {
               this.push('items', response.entries[i]);
             }
