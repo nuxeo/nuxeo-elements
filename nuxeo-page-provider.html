@@ -94,6 +94,14 @@ element.
             },
 
             /**
+             * If `true`, aggregations are not computed if params are empty.
+             */
+            noParamNoAgg: {
+              type: Boolean,
+              value: false,
+            },
+
+            /**
              * The delay in milliseconds to debounce the auto fetch call when provider, params, etc. changes.
              */
             autoDelay: {
@@ -317,18 +325,22 @@ element.
             params.sortBy = this._sortKeys.join(',');
             params.sortOrder = this._sortValues.join(',');
           }
-
+          let hasParams = false;
           if (this.query) {
+            hasParams = true;
             params.query = this.query;
           }
-
           if (Array.isArray(this.params)) {
             params.queryParams = this.params;
           } else {
             Object.keys(this.params).forEach((key) => {
               if (typeof this.params[key] === 'string') {
+                hasParams = true;
                 params[key] = this.params[key];
               } else if (this.params[key]) {
+                if (Array.isArray(this.params[key]) && this.params[key].length > 0) {
+                  hasParams = true;
+                }
                 params[key] = JSON.stringify(this.params[key]);
               }
             }, this);
@@ -339,6 +351,7 @@ element.
             const retainedFilters = [];
             for (let i = 0; i < this.quickFilters.length; i++) {
               if (this.quickFilters[i].active === true) {
+                hasParams = true;
                 retainedFilters.push(this.quickFilters[i].name);
               }
             }
@@ -347,19 +360,18 @@ element.
           if (!this.headers) {
             this.headers = {};
           }
-          if (options && options.skipAggregates) {
+          if ((options && options.skipAggregates) || (this.noParamNoAgg && !hasParams)) {
             this.headers.skipAggregates = 'true';
           } else {
             delete this.headers.skipAggregates;
           }
-
           this.$.nxResource.params = params;
           return this.$.nxResource.execute()
             .then((response) => {
               this.currentPage = response.entries.slice(0);
               this.numberOfPages = response.numberOfPages;
               this.resultsCount = response.resultsCount;
-              if (!options || !options.skipAggregates) {
+              if (!options || !options.skipAggregates || (this.noParamNoAgg && !hasParams)) {
                 this.aggregations = response.aggregations;
               }
               this.quickFilters = response.quickFilters;
