@@ -235,6 +235,9 @@ element.
           this.success = false;
           this._setActiveRequests(this.activeRequests - 1);
           if (error.response) {
+            if (error.response.status === 401) {
+              this.fire('unauthorized-request', error);
+            }
             return error.response.text().then(function (text) {
               if (text) {
                 try {
