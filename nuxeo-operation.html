@@ -225,6 +225,13 @@ element.
               return this.response;
             })
             .catch((error) => {
+              if (error.response.status === 401) {
+                this.dispatchEvent(new CustomEvent('unauthorized-request', {
+                  bubbles: true,
+                  composed: true,
+                  detail: error,
+                }));
+              }
               this.success = false;
               this.error = error;
               console.log(`Operation request failed: ${error}`);
