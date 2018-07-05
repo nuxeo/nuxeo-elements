@@ -300,6 +300,13 @@ limitations under the License.
               this.success = false;
               this._setActiveRequests(this.activeRequests - 1);
               if (error.response) {
+                if (error.response.status === 401) {
+                  this.dispatchEvent(new CustomEvent('unauthorized-request', {
+                    bubbles: true,
+                    composed: true,
+                    detail: error,
+                  }));
+                }
                 return error.response.text().then((text) => {
                   if (text) {
                     try {
