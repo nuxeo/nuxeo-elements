@@ -184,6 +184,9 @@ element.
             return this.response;
           }.bind(this))
           .catch(function(error) {
+            if (error.response.status === 401) {
+              this.fire('unauthorized-request', error);
+            }
             this.success = false;
             this.error = error;
             console.log("Operation request failed: " + error);
