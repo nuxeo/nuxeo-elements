@@ -16,64 +16,64 @@ limitations under the License.
 -->
 
 <link rel="import" href="nuxeo-aggregate-data-element.html">
-<!--
-An element providing metrics data on searches.
 
-A query is a configurable nested aggregation with 3 aggregation levels:
-
-- `grouped-by`: top level term aggregations (comma-separated values)
-- `with-*`: nested multi-bucket aggregation (with-ranges | with-date-intervals)
-- `metrics`: leaf single-value metrics aggregation (max, min, avg, sum)
-
-Example:
-
-    <nuxeo-search-data grouped-by="pageProviderName"
-                       with-ranges='{
-                         "resultsCount":[
-                           {"key":"no result", "to":"0"},
-                           {"key":"less than 50", "from" : 1, "to": 50}
-                           {"key":"more than 50", "from" : 51}
-                       ]}'
-                       metrics="avg(executionTimeMs)"
-                       start-date="[[startDate]]"
-                       end-date="[[endDate]]"
-                       data="{{data}}">
-    </nuxeo-search-data>
-
-If all the aggregation levels are configured it will produce a query like:
-
-    {
-      query: { bool: { must: [...] },
-      aggs: {
-        by: { // grouped-by
-          terms: {
-            field: "extended.resultsCount"
-          },
-          aggs: {
-            by: {  // with-ranges | with-date-intervals
-              range : {
-                field : "extended.resultsCount",
-                ranges: [...]
-              },
-              aggs: {
-                metric: { // metric
-                  avg: {
-                    field : "extended.executionTimeMs"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-@group Nuxeo Data Visualization Elements
-@element nuxeo-search-data
-@demo demo/search.html
--->
 <script>
   {
+    /**
+     * An element providing metrics data on searches.
+     *
+     * A query is a configurable nested aggregation with 3 aggregation levels:
+     *
+     * - `grouped-by`: top level term aggregations (comma-separated values)
+     * - `with-*`: nested multi-bucket aggregation (with-ranges | with-date-intervals)
+     * - `metrics`: leaf single-value metrics aggregation (max, min, avg, sum)
+     *
+     * Example:
+     *
+     *     <nuxeo-search-data grouped-by="pageProviderName"
+     *                        with-ranges='{
+     *                          "resultsCount":[
+     *                            {"key":"no result", "to":"0"},
+     *                            {"key":"less than 50", "from" : 1, "to": 50}
+     *                            {"key":"more than 50", "from" : 51}
+     *                        ]}'
+     *                        metrics="avg(executionTimeMs)"
+     *                        start-date="[[startDate]]"
+     *                        end-date="[[endDate]]"
+     *                        data="{{data}}">
+     *     </nuxeo-search-data>
+     *
+     * If all the aggregation levels are configured it will produce a query like:
+     *
+     *     {
+     *       query: { bool: { must: [...] },
+     *       aggs: {
+     *         by: { // grouped-by
+     *           terms: {
+     *             field: "extended.resultsCount"
+     *           },
+     *           aggs: {
+     *             by: {  // with-ranges | with-date-intervals
+     *               range : {
+     *                 field : "extended.resultsCount",
+     *                 ranges: [...]
+     *               },
+     *               aggs: {
+     *                 metric: { // metric
+     *                   avg: {
+     *                     field : "extended.executionTimeMs"
+     *                   }
+     *                 }
+     *               }
+     *             }
+     *           }
+     *         }
+     *       }
+     *     }
+     *
+     * @memberof Nuxeo
+     * @demo demo/search.html
+     */
     class SearchData extends Nuxeo.AggregateDataElement {
 
       static get is() {
