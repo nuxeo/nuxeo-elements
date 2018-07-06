@@ -15,23 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<!--
-`nuxeo-connection` wraps a `nuxeo.Client`.
-
-    <nuxeo-connection
-      id="nx_connection"
-      url="http://demo.nuxeo.com"
-      username="Administrator"
-      password="Administrator">
-    </nuxeo-connection>
-
-Note: Elements that depend on a connectionId use `nx` as default.
-
-@group Nuxeo Elements
-@element nuxeo-connection
-@homepage http://www.nuxeo.org
--->
-
 <link rel="import" href="nuxeo-element.html">
 <script src="../nuxeo/dist/nuxeo.js"></script>
 
@@ -51,6 +34,20 @@ Note: Elements that depend on a connectionId use `nx` as default.
       // This map is shared between all instances of nuxeo-connection.
       const nxClients = {};
 
+      /**
+       * `nuxeo-connection` wraps a `nuxeo.Client`.
+       *
+       *     <nuxeo-connection
+       *       id="nx_connection"
+       *       url="http://demo.nuxeo.com"
+       *       username="Administrator"
+       *       password="Administrator">
+       *     </nuxeo-connection>
+       *
+       * Note: Elements that depend on a connectionId use `nx` as default.
+       *
+       * @memberof Nuxeo
+       */
       class Connection extends Nuxeo.Element {
 
         static get is() {

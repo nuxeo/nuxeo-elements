@@ -15,22 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<!--
-`nuxeo-document` allows managing Documents on a Nuxeo server.
-
-    <nuxeo-document auto doc-path="/default-domain"></nuxeo-document>
-
-With `auto` set to `true`, the GET method is executed whenever
-its `docPath` or `docId` properties are changed.
-
-You can trigger a method explicitly by calling `get`, `post`, `put` or `delete` on the
-element.
-
-@group Nuxeo Elements
-@element nuxeo-document
-@homepage http://www.nuxeo.org
--->
-
 <link rel="import" href="nuxeo-element.html">
 <link rel="import" href="nuxeo-resource.html">
 
@@ -60,6 +44,19 @@ element.
 
   <script>
     {
+      /**
+       * `nuxeo-document` allows managing Documents on a Nuxeo server.
+       *
+       *     <nuxeo-document auto doc-path="/default-domain"></nuxeo-document>
+       *
+       * With `auto` set to `true`, the GET method is executed whenever
+       * its `docPath` or `docId` properties are changed.
+       *
+       * You can trigger a method explicitly by calling `get`, `post`, `put` or `delete` on the
+       * element.
+       *
+       * @memberof Nuxeo
+       */
       class DocumentElement extends Nuxeo.Element {
 
         static get is() {
