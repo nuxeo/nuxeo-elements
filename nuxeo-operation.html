@@ -15,28 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<!--
-`nuxeo-operation` allows calling an operation on a Nuxeo server.
-
-    <nuxeo-operation auto
-                     op="Document.Query"
-                     params='{"query": "select * from Document"}'
-                     on-response="handleResponse"
-                     enrichers="documentURL, preview"></nuxeo-operation>
-
-With `auto` set to `true`, the operation is executed whenever
-its `url` or `params` properties are changed.
-
-Note: The `params` attribute must be double quoted JSON.
-
-You can trigger an operation explicitly by calling `execute` on the
-element.
-
-@group Nuxeo Elements
-@element nuxeo-operation
-@homepage http://www.nuxeo.org
--->
-
 <link rel="import" href="nuxeo-element.html">
 <link rel="import" href="nuxeo-connection.html">
 
@@ -52,6 +30,25 @@ element.
 
   <script>
     {
+      /**
+       * `nuxeo-operation` allows calling an operation on a Nuxeo server.
+       *
+       *     <nuxeo-operation auto
+       *                      op="Document.Query"
+       *                      params='{"query": "select * from Document"}'
+       *                      on-response="handleResponse"
+       *                      enrichers="documentURL, preview"></nuxeo-operation>
+       *
+       * With `auto` set to `true`, the operation is executed whenever
+       * its `url` or `params` properties are changed.
+       *
+       * Note: The `params` attribute must be double quoted JSON.
+       *
+       * You can trigger an operation explicitly by calling `execute` on the
+       * element.
+       *
+       * @memberof Nuxeo
+       */
       class Operation extends Nuxeo.Element {
 
         static get is() {

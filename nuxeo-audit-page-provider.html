@@ -15,24 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<!--
-`nuxeo-audit-page-provider` performs an audit query with the given parameters against audit logs.
-If the property docId is set, the provider DOCUMENT_HISTORY_PROVIDER is used with docId as queryParameter.
-If the property docId is not set, the EVENTS_VIEW provider is used instead.
-
-    <nuxeo-audit-page-provider
-        current-page="{{entries}}" params="{...}" page-size="40'">
-    </nuxeo-audit-page-provider>
-
-    <nuxeo-audit-page-provider
-        current-page="{{entries}}" docId="..." page-size="40'">
-    </nuxeo-audit-page-provider>
-
-@group Nuxeo Elements
-@element nuxeo-audit-page-provider
-@homepage http://www.nuxeo.org
--->
-
 <link rel="import" href="nuxeo-element.html">
 <link rel="import" href="nuxeo-operation.html">
 <link rel="import" href="nuxeo-resource.html">
@@ -66,6 +48,21 @@ If the property docId is not set, the EVENTS_VIEW provider is used instead.
 
   <script>
     {
+      /**
+       * `nuxeo-audit-page-provider` performs an audit query with the given parameters against audit logs.
+       * If the property docId is set, the provider DOCUMENT_HISTORY_PROVIDER is used with docId as queryParameter.
+       * If the property docId is not set, the EVENTS_VIEW provider is used instead.
+       *
+       *     <nuxeo-audit-page-provider
+       *         current-page="{{entries}}" params="{...}" page-size="40'">
+       *     </nuxeo-audit-page-provider>
+       *
+       *     <nuxeo-audit-page-provider
+       *         current-page="{{entries}}" docId="..." page-size="40'">
+       *     </nuxeo-audit-page-provider>
+       *
+       * @memberof Nuxeo
+       */
       class AuditPageProvider extends Nuxeo.Element {
 
         static get is() {

@@ -65,6 +65,29 @@ element.
 
   <script>
     {
+      /**
+       * `nuxeo-search` allows managing saved searches on a Nuxeo server.
+       *
+       *     <nuxeo-search></nuxeo-search>
+       *
+       * Example - Get all saved searches accessible by the current user:
+       *
+       *     <nuxeo-search auto searches="{{searches}}"></nuxeo-nuxeo-search>
+       *
+       * Example - Get a saved search by id:
+       *
+       *     <nuxeo-search auto search-id="[[id]]" search="{{search}}"></nuxeo-search>
+       *
+       * Example - Execute a saved search:
+       *
+       *     <nuxeo-search auto search-id="[[id]]" results="{{results}}"></nuxeo-search>
+       *
+       * You can trigger a method explicitly by calling `get`, `post`, `put`, `remove` or `execute` on the
+       * element.
+       *
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-search.html
+       */
       class Search extends Nuxeo.Element {
 
         static get is() {

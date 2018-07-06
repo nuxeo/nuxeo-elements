@@ -15,39 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<!--
-`nuxeo-page-provider` performs queries on the repository and provides paginated results.
-
-    <nuxeo-page-provider auto
-                         query="select * from Document"
-                         page-size="5"
-                         sort="dc:modified">
-    </nuxeo-page-provider>
-
-    <nuxeo-page-provider auto page="1"
-                         provider="default_search"
-                         page-size="25">
-    </nuxeo-page-provider>
-
-    <nuxeo-page-provider auto offset="2"
-                         provider="default_search"
-                         page-size="25">
-    </nuxeo-page-provider>
-
-With `auto` set to `true`, results are fetched whenever
-the `provider`, `query`, `params`, `page` or `pageSize` properties are changed.
-
-When using current page `offset`, the `page` property is ignored.
-
-You can fetch results explicitly by calling `fetch` on the
-element.
-
-@group Nuxeo Elements
-@element nuxeo-page-provider
-@demo demo/nuxeo-page-provider.html
-@homepage http://www.nuxeo.org
--->
-
 <link rel="import" href="nuxeo-element.html">
 <link rel="import" href="nuxeo-resource.html">
 
@@ -71,6 +38,36 @@ element.
 
   <script>
     {
+      /**
+       * `nuxeo-page-provider` performs queries on the repository and provides paginated results.
+       *
+       *     <nuxeo-page-provider auto
+       *                          query="select * from Document"
+       *                          page-size="5"
+       *                          sort="dc:modified">
+       *     </nuxeo-page-provider>
+       *
+       *     <nuxeo-page-provider auto page="1"
+       *                          provider="default_search"
+       *                          page-size="25">
+       *     </nuxeo-page-provider>
+       *
+       *     <nuxeo-page-provider auto offset="2"
+       *                          provider="default_search"
+       *                          page-size="25">
+       *     </nuxeo-page-provider>
+       *
+       * With `auto` set to `true`, results are fetched whenever
+       * the `provider`, `query`, `params`, `page` or `pageSize` properties are changed.
+       *
+       * When using current page `offset`, the `page` property is ignored.
+       *
+       * You can fetch results explicitly by calling `fetch` on the
+       * element.
+       *
+       * @memberof Nuxeo
+       * @demo demo/nuxeo-page-provider.html
+       */
       class PageProvider extends Nuxeo.Element {
 
         static get is() {
