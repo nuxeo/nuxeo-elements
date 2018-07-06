@@ -13,7 +13,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "polymer": "polymer/polymer#^2.0.0",
-    "nuxeo": "^3.2.1",
+    "nuxeo": "fix-NXJS-135-json-circular",
     "es6-promise": "2.2.0"
   },
   "ignore": [
