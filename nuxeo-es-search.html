@@ -18,16 +18,6 @@ limitations under the License.
 <link rel="import" href="../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../nuxeo-elements/nuxeo-connection.html">
 
-<!--
-An element allowing querying the Nuxeo ES passthrough.
-
-Example:
-
-    <nuxeo-es-search></nuxeo-es-search>
-
-@group Nuxeo Data Elements
-@element nuxeo-es-search
--->
 <dom-module id="nuxeo-es-search">
   <template>
     <style>
@@ -40,6 +30,15 @@ Example:
 
   <script>
     {
+      /**
+       * An element allowing querying the Nuxeo ES passthrough.
+       *
+       * Example:
+       *
+       *    <nuxeo-es-search></nuxeo-es-search>
+       *
+       * @memberof Nuxeo
+       */
       class ESSearch extends Nuxeo.Element {
 
         static get is() {

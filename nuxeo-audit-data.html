@@ -17,66 +17,65 @@ limitations under the License.
 
 <link rel="import" href="nuxeo-aggregate-data-element.html">
 
-<!--
-An element providing data from the audit index.
-
-The possible values for `event-id` are available as contributions to the `event` extension point of the `org.nuxeo.ecm.platform.audit.service.NXAuditEventsService` service.
-
-A query supports additional terms:
-
-- `where`: array of additional terms for the `must` clause
-
-A query is a configurable nested aggregation with 2 aggregation levels:
-
-- `grouped-by`: top level term aggregations (comma-separated values)
-- `metrics`: leaf single-value metrics aggregation (max, min, avg, sum)
-
-Example:
-
-    <nuxeo-audit-data event-id="eventId"
-                      where='[{"term": {"downloadReason": "download"}},{"term": {"blobXPath": "blobholder:0"}}]'
-                      grouped-by="field"
-                      group-limit=[[groupLimit]]
-                      metrics="sum(amount)"
-                      start-date="[[startDate]]"
-                      end-date="[[endDate]]"
-                      data="{{data}}">
-    </nuxeo-audit-data>
-
-If all the aggregation levels are configured it will produce a query like:
-
-    {
-      query: { bool: { must: [...] },
-      aggs: {
-        by: { // aggregated-on
-          terms: {
-            field: "extended.action"
-          },
-          aggs: {
-            by: {  // with-ranges | with-date-intervals
-              range : {
-                field : "extended.duration",
-                ranges: [...]
-              },
-              aggs: {
-                metric: { // metric
-                  sum: {
-                    field : "extended.workflowVariables.amount"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-@group Nuxeo Data Visualization Elements
-@element nuxeo-audit-data
-@demo demo/audit.html
--->
 <script>
   {
+    /**
+     * An element providing data from the audit index.
+     *
+     * The possible values for `event-id` are available as contributions to the `event` extension point of the `org.nuxeo.ecm.platform.audit.service.NXAuditEventsService` service.
+     *
+     * A query supports additional terms:
+     *
+     * - `where`: array of additional terms for the `must` clause
+     *
+     * A query is a configurable nested aggregation with 2 aggregation levels:
+     *
+     * - `grouped-by`: top level term aggregations (comma-separated values)
+     * - `metrics`: leaf single-value metrics aggregation (max, min, avg, sum)
+     *
+     * Example:
+     *
+     *     <nuxeo-audit-data event-id="eventId"
+     *                       where='[{"term": {"downloadReason": "download"}},{"term": {"blobXPath": "blobholder:0"}}]'
+     *                       grouped-by="field"
+     *                       group-limit=[[groupLimit]]
+     *                       metrics="sum(amount)"
+     *                       start-date="[[startDate]]"
+     *                       end-date="[[endDate]]"
+     *                       data="{{data}}">
+     *     </nuxeo-audit-data>
+     *
+     * If all the aggregation levels are configured it will produce a query like:
+     *
+     *     {
+     *       query: { bool: { must: [...] },
+     *       aggs: {
+     *         by: { // aggregated-on
+     *           terms: {
+     *             field: "extended.action"
+     *           },
+     *           aggs: {
+     *             by: {  // with-ranges | with-date-intervals
+     *               range : {
+     *                 field : "extended.duration",
+     *                 ranges: [...]
+     *               },
+     *               aggs: {
+     *                 metric: { // metric
+     *                   sum: {
+     *                     field : "extended.workflowVariables.amount"
+     *                   }
+     *                 }
+     *               }
+     *             }
+     *           }
+     *         }
+     *       }
+     *     }
+     *
+     * @memberof Nuxeo
+     * @demo demo/audit.html
+     */
     class AuditData extends Nuxeo.AggregateDataElement {
 
       static get is() {

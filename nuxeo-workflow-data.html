@@ -16,65 +16,65 @@ limitations under the License.
 -->
 
 <link rel="import" href="nuxeo-aggregate-data-element.html">
-<!--
-An element providing metrics data on workflows.
 
-A query is a configurable nested aggregation with 3 aggregation levels:
-
-- `grouped-by`: top level term aggregations (comma-separated values)
-- `with-*`: nested multi-bucket aggregation (with-ranges | with-date-intervals)
-- `metrics`: leaf single-value metrics aggregation (max, min, avg, sum)
-
-Example:
-
-    <nuxeo-workflow-data workflow="worflowModelName"
-                            task="taskName"
-                            grouped-by="action"
-                            with-ranges='{
-                              "duration":[
-                                {"key":"quick", "to":"1500"},
-                                {"key":"slow", "from":"1500"}
-                              ]}'
-                            metrics="sum(amount)"
-                            start-date="[[startDate]]"
-                            end-date="[[endDate]]"
-                            data="{{data}}">
-    </nuxeo-workflow-data>
-
-If all the aggregation levels are configured it will produce a query like:
-
-    {
-      query: { bool: { must: [...] },
-      aggs: {
-        by: { // aggregated-on
-          terms: {
-            field: "extended.action"
-          },
-          aggs: {
-            by: {  // with-ranges | with-date-intervals
-              range : {
-                field : "extended.duration",
-                ranges: [...]
-              },
-              aggs: {
-                metric: { // metric
-                  sum: {
-                    field : "extended.workflowVariables.amount"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-@group Nuxeo Data Visualization Elements
-@element nuxeo-workflow-data
-@demo demo/workflow.html
--->
 <script>
   {
+    /**
+     * An element providing metrics data on workflows.
+     *
+     * A query is a configurable nested aggregation with 3 aggregation levels:
+     *
+     * - `grouped-by`: top level term aggregations (comma-separated values)
+     * - `with-*`: nested multi-bucket aggregation (with-ranges | with-date-intervals)
+     * - `metrics`: leaf single-value metrics aggregation (max, min, avg, sum)
+     *
+     * Example:
+     *
+     *     <nuxeo-workflow-data workflow="worflowModelName"
+     *                             task="taskName"
+     *                             grouped-by="action"
+     *                             with-ranges='{
+     *                               "duration":[
+     *                                 {"key":"quick", "to":"1500"},
+     *                                 {"key":"slow", "from":"1500"}
+     *                               ]}'
+     *                             metrics="sum(amount)"
+     *                             start-date="[[startDate]]"
+     *                             end-date="[[endDate]]"
+     *                             data="{{data}}">
+     *     </nuxeo-workflow-data>
+     *
+     * If all the aggregation levels are configured it will produce a query like:
+     *
+     *     {
+     *       query: { bool: { must: [...] },
+     *       aggs: {
+     *         by: { // aggregated-on
+     *           terms: {
+     *             field: "extended.action"
+     *           },
+     *           aggs: {
+     *             by: {  // with-ranges | with-date-intervals
+     *               range : {
+     *                 field : "extended.duration",
+     *                 ranges: [...]
+     *               },
+     *               aggs: {
+     *                 metric: { // metric
+     *                   sum: {
+     *                     field : "extended.workflowVariables.amount"
+     *                   }
+     *                 }
+     *               }
+     *             }
+     *           }
+     *         }
+     *       }
+     *     }
+     *
+     * @memberof Nuxeo
+     * @demo demo/workflow.html
+     */
     class WorkflowData extends Nuxeo.AggregateDataElement {
 
       static get is() {

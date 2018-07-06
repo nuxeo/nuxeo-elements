@@ -16,53 +16,53 @@ limitations under the License.
 -->
 
 <link rel="import" href="nuxeo-aggregate-data-element.html">
-<!--
-An element providing metrics on repository data.
 
-A `metrics` query is a configurable nested aggregation with 3 aggregation levels:
-
-- `grouped-by`: top level term aggregations (comma-separated values)
-- `with-*`: nested multi-bucket aggregation (with-ranges | with-date-intervals)
-- `metrics`: leaf single-value metrics aggregation (count, max, min, avg, sum)
-
-Filtering of the data is possible by using the document property helper attributes: `ecm-primary-type`, `ecm-lifecycle-state` or `ecm-mixin-type`
-
-It is also possible to use a `where` attribute which takes a list of clauses to include in query.
-
-Example:
-
-    <nuxeo-repository-data ecm-primary-type="Note"
-                           where='[{"range": {"dc:created": {"gte": startDate, "lte": endDate}}}]'
-                           grouped-by="dc:creator"
-                           data="{{data}}">
-    </nuxeo-repository-data>
-
-The previous example would produce a query like:
-
-    {
-      query: {
-        bool: {
-          must:[
-            {term: {"ecm:primaryType": "File"}}, // ecm-primary-type
-            {"range": {"dc:created": {"gte": start, "lte": end}}} // where
-          ]
-        }
-      }
-      aggs: {
-        by: { // grouped-by
-          terms: {
-            field: "dc:creator"
-          }
-        }
-      }
-    }
-
-@group Nuxeo Data Elements
-@element nuxeo-repository-data
-@demo demo/repository.html
--->
 <script>
   {
+    /**
+     * An element providing metrics on repository data.
+     *
+     * A `metrics` query is a configurable nested aggregation with 3 aggregation levels:
+     *
+     * - `grouped-by`: top level term aggregations (comma-separated values)
+     * - `with-*`: nested multi-bucket aggregation (with-ranges | with-date-intervals)
+     * - `metrics`: leaf single-value metrics aggregation (count, max, min, avg, sum)
+     *
+     * Filtering of the data is possible by using the document property helper attributes: `ecm-primary-type`, `ecm-lifecycle-state` or `ecm-mixin-type`
+     *
+     * It is also possible to use a `where` attribute which takes a list of clauses to include in query.
+     *
+     * Example:
+     *
+     *     <nuxeo-repository-data ecm-primary-type="Note"
+     *                            where='[{"range": {"dc:created": {"gte": startDate, "lte": endDate}}}]'
+     *                            grouped-by="dc:creator"
+     *                            data="{{data}}">
+     *     </nuxeo-repository-data>
+     *
+     * The previous example would produce a query like:
+     *
+     *     {
+     *       query: {
+     *         bool: {
+     *           must:[
+     *             {term: {"ecm:primaryType": "File"}}, // ecm-primary-type
+     *             {"range": {"dc:created": {"gte": start, "lte": end}}} // where
+     *           ]
+     *         }
+     *       }
+     *       aggs: {
+     *         by: { // grouped-by
+     *           terms: {
+     *             field: "dc:creator"
+     *           }
+     *         }
+     *       }
+     *     }
+     *
+     * @memberof Nuxeo
+     * @demo demo/repository.html
+     */
     class RepositoryData extends Nuxeo.AggregateDataElement {
 
       static get is() {
