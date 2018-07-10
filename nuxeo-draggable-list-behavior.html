@@ -58,7 +58,11 @@ limitations under the License.
       const bodyEl = document.querySelector('body');
       // mouse move handler
       const moveFn = (e) => {
-      // block list pointer events while dragging and apply grabbing cursor
+        // ELEMENTS-723: prevent dragging from beginning too early, which can interfere with other mouse events
+        if (((new Date()).getTime() - this._mouseDownStarted) <= 150) {
+          return;
+        }
+        // block list pointer events while dragging and apply grabbing cursor
         this.style.pointerEvents = 'none';
         bodyEl.setAttribute('style', 'cursor: grabbing; cursor: -webkit-grabbing;');
         // create proxy with number of items that are being dragged
@@ -95,7 +99,8 @@ limitations under the License.
 
       // mouse up handler
       const upFn = () => {
-      // restore list pointer events, restore cursor and remove proxy
+        // restore list pointer events, restore cursor and remove proxy
+        this._mouseDownStarted = null;
         this.style.pointerEvents = '';
         bodyEl.style.cursor = '';
         if (proxy) {
@@ -120,6 +125,7 @@ limitations under the License.
           // prevent default behavior to make sure cursors are applied across all browsers
           e.preventDefault();
           if (e.target && this.draggableFilter(e.target)) {
+            this._mouseDownStarted = this._mouseDownStarted || (new Date()).getTime();
             // setup listeners when drag starts
             document.addEventListener('mousemove', moveFn);
             document.addEventListener('mouseup', upFn);
