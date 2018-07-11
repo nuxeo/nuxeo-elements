@@ -122,7 +122,7 @@
   "groupManagement.removeFrom": "{0}から削除",
   "groupManagement.removeUserFromGroup.confirm": "このグループから{0}を削除しますか？",
   "groupManagement.users.heading": "ユーザ",
-  "label.group": "Group",
+  "label.group": "グループ",
   "label.no": "なし",
   "label.yes": "あり",
   "label.ui.state.accepted": "承諾済み",
