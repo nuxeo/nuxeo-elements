@@ -541,7 +541,7 @@ limitations under the License.
           } else if (firstIndex > 0) {
             lastIndex += this._fetchAheadLimit;
             if (this.maxItems) {
-              lastIndex = Math.min(lastIndex, this.size);
+              lastIndex = Math.min(lastIndex, this.maxItems - 1);
             }
           }
 
