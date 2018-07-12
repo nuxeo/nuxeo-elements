@@ -112,6 +112,12 @@ limitations under the License.
 
   <script>
     {
+      const urlRegex = new RegExp([
+        /^(https?):\/\/((?:[a-z0-9.-]|%[0-9A-F]{2}){3,})/,
+        /(?::(\d+))?((?:\/(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})*)*)/,
+        /(?:\?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?/,
+        /(?:#((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?$/,
+      ].map((r) => r.source).join(''), 'i');
       /**
        * An element to display a preview of a document.
        *
@@ -227,8 +233,10 @@ limitations under the License.
           const previewers = Polymer.dom(this.root).querySelectorAll('template');
           for (let i = 0; i < previewers.length; i++) {
             const previewer = previewers[i];
-            const regex = new RegExp(previewer.getAttribute('mime-pattern'));
-            if (regex.test(this._blob && this._blob['mime-type'])) {
+            const mimetype = previewer.getAttribute('mime-pattern');
+            const mimetypeRegex = new RegExp(mimetype);
+            if (mimetypeRegex.test(this._blob && this._blob['mime-type']) &&
+               (!mimetype.startsWith('text/') || !urlRegex.test(this._blob.data))) {
               // Insert our previewer
               delete previewer.__templatizeOwner;
               this.templatize(previewer);
