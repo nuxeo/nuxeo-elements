@@ -79,23 +79,25 @@ limitations under the License.
 
     <!-- Our available preview templates. First match will be used -->
     <template mime-pattern="image.*|application/photoshop|illustrator|postscript">
-      <nuxeo-image-viewer src="[[_imageSource]]" controls responsive></nuxeo-image-viewer>
+      <nuxeo-image-viewer src="[[_computeImageSource(_blob)]]" controls responsive></nuxeo-image-viewer>
     </template>
 
     <template mime-pattern="video.*">
-      <nuxeo-video-viewer id="video" controls sources="[[_videoSources]]" storyboard="[[_storyboard]]"></nuxeo-video-viewer>
+      <nuxeo-video-viewer id="video" controls
+                          sources="[[_computeVideoSources(_blob)]]"
+                          storyboard="[[_computeStoryboard(_blob)]]"></nuxeo-video-viewer>
     </template>
 
     <template mime-pattern="audio.*">
-      <audio id="audio" controls><source src="[[_audioSource]]">AUDIO</audio>
+      <audio id="audio" controls><source src="[[_computeAudioSource(_blob)]]">AUDIO</audio>
     </template>
 
     <template mime-pattern="text/(?:.*-)?(markdown|html|plain)">
-      <marked-element markdown="[[_blob.data]]"></marked-element>
+      <marked-element markdown="[[_blob.text]]"></marked-element>
     </template>
 
     <template mime-pattern="text/xml">
-      <div id="xml">[[_blob.data]]</div>
+      <div id="xml">[[_blob.text]]</div>
     </template>
 
     <template mime-pattern="application/pdf">
@@ -103,7 +105,7 @@ limitations under the License.
     </template>
 
     <template mime-pattern=".*">
-      <iframe id="frame" src="[[_iFrameSource]]"></iframe>
+      <iframe id="frame" src="[[_computeIFrameSource(_blob)]]"></iframe>
     </template>
 
     <div id="preview"></div>
@@ -112,12 +114,6 @@ limitations under the License.
 
   <script>
     {
-      const urlRegex = new RegExp([
-        /^(https?):\/\/((?:[a-z0-9.-]|%[0-9A-F]{2}){3,})/,
-        /(?::(\d+))?((?:\/(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})*)*)/,
-        /(?:\?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?/,
-        /(?:#((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?$/,
-      ].map((r) => r.source).join(''), 'i');
       /**
        * An element to display a preview of a document.
        *
@@ -154,31 +150,6 @@ limitations under the License.
             },
 
             _blob: Object,
-
-            _imageSource: {
-              type: String,
-              computed: '_computeImageSource(document)',
-            },
-
-            _videoSources: {
-              type: Array,
-              computed: '_computeVideoSources(document)',
-            },
-
-            _storyboard: {
-              type: Array,
-              computed: '_computeStoryboard(document)',
-            },
-
-            _audioSource: {
-              type: String,
-              computed: '_computeAudioSource(document)',
-            },
-
-            _iFrameSource: {
-              type: String,
-              computed: '_computeIFrameSource(document)',
-            },
           };
         }
 
@@ -211,7 +182,7 @@ limitations under the License.
             // adapt the Note to mimic a Blob
             if (this.document.type === 'Note' && this.xpath === 'file:content') {
               this._blob = {
-                data: this.document.properties['note:note'],
+                text: this.document.properties['note:note'],
                 'mime-type': this.document.properties['note:mime_type'],
               };
             } else {
@@ -236,7 +207,7 @@ limitations under the License.
             const mimetype = previewer.getAttribute('mime-pattern');
             const mimetypeRegex = new RegExp(mimetype);
             if (mimetypeRegex.test(this._blob && this._blob['mime-type']) &&
-               (!mimetype.startsWith('text/') || !urlRegex.test(this._blob.data))) {
+               (!mimetype.startsWith('text/') || 'text' in this._blob)) {
               // Insert our previewer
               delete previewer.__templatizeOwner;
               this.templatize(previewer);
@@ -268,7 +239,6 @@ limitations under the License.
             }
           }
           if (this.xpath) {
-            this._updateBlob();
             if (this._blob && this._blob['mime-type'] && this._blob['mime-type'].match('image.*')) {
               return this._blob.data;
             }
@@ -291,7 +261,6 @@ limitations under the License.
           }
           // fallback to blob data if there are no transcoded videos (e.g. video documents managed by liveconnect)
           if (this.xpath) {
-            this._updateBlob();
             if (this._blob && this._blob['mime-type'] && this._blob['mime-type'].match('video.*')) {
               return [{
                 data: this._blob.data,
