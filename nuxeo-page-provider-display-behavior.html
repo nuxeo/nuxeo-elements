@@ -465,15 +465,13 @@ limitations under the License.
         if (this.maxItems && size && size > this.maxItems) {
           size = this.maxItems;
         }
-
+        this.set('items', []);
         if (typeof size === 'number' && size > 0) {
           const arr = new Array(size);
           for (let i = 0; i < arr.length; i++) {
             arr[i] = {};
           }
           this.set('items', arr);
-        } else {
-          this.set('items', []);
         }
         Polymer.dom.flush();
         this.size = this.items.length;
