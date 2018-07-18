@@ -17,11 +17,12 @@ limitations under the License.
 
 <link rel="import" href="../../iron-icons/image-icons.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
+<link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
-<link rel="stylesheet" href="../../cropperjs/dist/cropper.css" >
+<link rel="stylesheet" href="../../cropperjs/dist/cropper.css">
 <script src="../../cropperjs/dist/cropper.js"></script>
 
 <dom-module id="nuxeo-image-viewer">
@@ -46,8 +47,9 @@ limitations under the License.
       #toolbar {
         position: absolute;
         bottom: 16px;
-        width: 150px;
-        left: calc(50% - 75px);
+        max-width: 300px;
+        left: 50%;
+        transform: translateX(-50%);
         color: #fff;
         z-index: 25;
         text-align: center;
@@ -76,9 +78,12 @@ limitations under the License.
         <template>
           <div id="toolbar">
             <paper-icon-button on-click="_click" icon="zoom-out" data-action="zoom-out"></paper-icon-button>
+            <paper-icon-button on-click="_click" icon="[[_getFitIcon(_fitToRealSize)]]"
+                               data-action$="[[_computeFitAction(_fitToRealSize)]]"></paper-icon-button>
             <paper-icon-button on-click="_click" icon="zoom-in" data-action="zoom-in"></paper-icon-button>
             <paper-icon-button on-click="_click" icon="image:rotate-left" data-action="rotate-left"></paper-icon-button>
-            <paper-icon-button on-click="_click" icon="image:rotate-right" data-action="rotate-right"></paper-icon-button>
+            <paper-icon-button on-click="_click" icon="image:rotate-right"
+                               data-action="rotate-right"></paper-icon-button>
           </div>
         </template>
       </dom-if>
@@ -139,6 +144,15 @@ limitations under the License.
               type: Boolean,
               value: false,
             },
+
+            /**
+             * If false, the element will show the image in order to fit the viewer.
+             * If true, the element will show the image in real size.
+             */
+            _fitToRealSize: {
+              type: Boolean,
+              value: false,
+            },
           };
         }
 
@@ -164,6 +178,7 @@ limitations under the License.
               toggleDragModeOnDblclick: false,
               viewMode: 1,
               zoomOnWheel: this.zoomOnWheel,
+              zoom: (data) => this._verifyZoomRatio(data),
             };
             this._el = new Cropper(this.$.image, options);
           }
@@ -178,6 +193,12 @@ limitations under the License.
             case 'zoom-out':
               this._el.zoom(-0.1);
               break;
+            case 'fit-to-viewer':
+              this._el.zoomTo(this._getOriginalZoomRatio());
+              break;
+            case 'fit-to-real-size':
+              this._el.zoomTo(1);
+              break;
             case 'rotate-left':
               this._el.rotate(-90);
               break;
@@ -189,12 +210,36 @@ limitations under the License.
           }
         }
 
-        _resize() {
+        _computeFitAction(fitToRealSize) {
+          return fitToRealSize ? 'fit-to-viewer' : 'fit-to-real-size';
+        }
+
+        _getFitIcon(fitToRealSize) {
+          return `nuxeo:${this._computeFitAction(fitToRealSize)}`;
+        }
+
+        _getOriginalZoomRatio() {
           if (this._el) {
-            this._el.resize();
+            const canvasData = this._el.initialCanvasData;
+            return canvasData.width / canvasData.naturalWidth;
           }
         }
 
+        _resize() {
+          if (this._el) {
+            this._el.resize();
+            this._fitToRealSize = false;
+          }
+        }
+
+        _verifyZoomRatio(data) {
+          if (this._el) {
+            // Cropper.js not always return the same number of decimal places and rounding.
+            // In order to ensure our calculations, we will use 5 decimal places.
+            const decimalPlaces = 5;
+            this._fitToRealSize = this._getOriginalZoomRatio().toFixed(decimalPlaces) !== data.ratio.toFixed(decimalPlaces);
+          }
+        }
       }
 
       customElements.define(ImageViewer.is, ImageViewer);
