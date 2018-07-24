@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../iron-icon/iron-icon.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
 <link rel="import" href="../../iron-icons/social-icons.html">
@@ -35,6 +36,17 @@ limitations under the License.
       :host {
         display: inline-block;
       }
+
+      #copyLink {
+        cursor: pointer;
+        color: var(--nuxeo-primary-color, #0066ff);
+      }
+
+      .heading {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        @apply --layout-justified;
+      }
     </style>
 
     <dom-if if="[[_isAvailable(document)]]">
@@ -45,12 +57,16 @@ limitations under the License.
     </dom-if>
 
     <nuxeo-dialog id="dialog" with-backdrop>
-      <h2>[[i18n('shareButton.dialog.heading')]]</h2>
-      <paper-input id="permalink" label="[[i18n('shareButton.copy.label', document.properties.dc:title)]]"
+      <div class="heading">
+        <h2>[[i18n('shareButton.dialog.heading')]]</h2>
+        <span id="copyLink" on-click="_copyPermalink">[[i18n('shareButton.operation.copy')]]</span>
+      </div>
+      <nuxeo-input id="permalink"
                    value="[[_buildPermalink(document)]]"
+                   on-click="_copyPermalink"
                    autofocus
                    readonly>
-      </paper-input>
+      </nuxeo-input>
       <div class="buttons">
         <paper-button dialog-dismiss>[[i18n('shareButton.dialog.close')]]</paper-button>
       </div>
@@ -101,11 +117,31 @@ limitations under the License.
 
         _toggleDialog() {
           this.$.dialog.toggle();
-          this.$.permalink.inputElement.inputElement.select();
+          this._selectPermalink();
         }
 
         _buildPermalink(document) {
           return document ? `${location.origin + location.pathname}#!/doc/${document.uid}` : '';
+        }
+
+        _copyPermalink() {
+          this._selectPermalink();
+          if (!window.document.execCommand('copy')) {
+            return;
+          }
+
+          const link = this.$.copyLink;
+          this._debouncer = Polymer.Debouncer.debounce(
+            this._debouncer,
+            Polymer.Async.timeOut.after(3000), () => {
+              link.innerText = this.i18n('shareButton.operation.copy');
+            },
+          );
+          link.innerText = this.i18n('shareButton.operation.copied');
+        }
+
+        _selectPermalink() {
+          this.$.permalink.$.paperInput.inputElement.inputElement.select();
         }
 
       }
