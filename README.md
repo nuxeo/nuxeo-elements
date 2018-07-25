@@ -48,7 +48,7 @@ We are glad to welcome new developers on this initiative, and even simple usage 
 
 ## Big Thanks
 
-Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs][https://saucelabs.com]
+Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs](https://saucelabs.com)
 
 ## License
 
