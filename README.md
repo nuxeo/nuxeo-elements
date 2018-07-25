@@ -52,6 +52,10 @@ We are glad to welcome new developers on this initiative, and even simple usage 
 - Report issues on our [JIRA](https://jira.nuxeo.com/browse/ELEMENTS)
 - Contribute: Send pull requests!
 
+## Big Thanks
+
+Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs](https://saucelabs.com)
+
 ## License
 
 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt) (C) Copyright Nuxeo Corp. (http://nuxeo.com/)
