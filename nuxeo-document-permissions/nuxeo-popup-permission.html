@@ -78,8 +78,9 @@ limitations under the License.
         <div hidden$="{{updatingACE}}">
           <div hidden$="{{shareWithExternal}}">
             <nuxeo-user-suggestion name="userGroup" label="[[i18n('popupPermission.userGroup')]]"
-                                   value="{{params.username}}"
-                                   placeholder="[[i18n('popupPermission.userGroup.placeholder')]]">
+                                   value="{{params.users}}"
+                                   placeholder="[[i18n('popupPermission.userGroup.placeholder')]]"
+                                   multiple>
             </nuxeo-user-suggestion>
           </div>
           <div hidden$="{{!shareWithExternal}}">
@@ -195,8 +196,8 @@ limitations under the License.
             },
 
             /*
-         * The title of the dialog
-         */
+             * The title of the dialog
+             */
             _computedTitle: {
               type: String,
               computed: '_computeTitle(shareWithExternal, updatingACE)',
@@ -232,10 +233,10 @@ limitations under the License.
 
         _doSend(togglePopup) {
           if (this.shareWithExternal &&
-            ((!this.updatingACE && !this.params.email) || (this.updatingACE && !this.params.username))) {
+              ((!this.updatingACE && !this.params.email) || (this.updatingACE && !this.params.username))) {
             return;
           }
-          if (!this.shareWithExternal && !this.params.username) {
+          if (!this.shareWithExternal && !this.params.username && (!this.params.users || this.params.users.length === 0)) {
             return;
           }
 
@@ -248,15 +249,12 @@ limitations under the License.
 
           if (this.params.begin && dateBased) {
             this.params.begin = this.params.begin.length > 0 ? moment(new Date(this.params.begin)).format() : null;
-          } else {
-            this.params.begin = null;
           }
 
           if (this.params.end && dateBased) {
             this.params.end = this.params.end.length > 0 ? moment(new Date(this.params.end)).format() : null;
-          } else {
-            this.params.end = null;
           }
+
           if (this.params.end === null && this.shareWithExternal) {
             // do nothing, we need an end date
             return;
@@ -284,32 +282,17 @@ limitations under the License.
               composed: true,
               bubbles: true,
             }));
-            this.set('params.username', null);
-            this.set('params.email', null);
-            this.set('params.permission', 'Read');
-            this.set('params.begin', null);
-            this.set('params.end', null);
-            this.set('params.notify', true);
-            this.set('params.comment', '');
-            this.set('selectedTimeFrame', this.shareWithExternal ? 'datebased' : 'permanent');
-
+            this.params = this._getResetParams();
+            this.selectedTimeFrame = this.shareWithExternal ? 'datebased' : 'permanent';
           }
         }
 
         computeParams(ace, shareWithExternal) {
-          const params = {
-            username: null,
-            email: null,
-            permission: 'Read',
-            begin: '',
-            end: '',
-            notify: true,
-            comment: '',
-          };
+          const params = this._getResetParams();
 
           // force datebased and notification for external share
           if (shareWithExternal) {
-            this.set('selectedTimeFrame', 'datebased');
+            this.selectedTimeFrame = 'datebased';
           }
 
           if (ace !== null) {
@@ -333,7 +316,7 @@ limitations under the License.
             }
 
             if (dateBased) {
-              this.set('selectedTimeFrame', 'datebased');
+              this.selectedTimeFrame = 'datebased';
             }
           }
           return params;
@@ -345,6 +328,23 @@ limitations under the License.
 
         _selectedTimeFrameChanged() {
           this.permissionIsPermanent = this.selectedTimeFrame === 'permanent';
+          if (this.permissionIsPermanent) {
+            this.set('params.begin', null);
+            this.set('params.end', null);
+          }
+        }
+
+        _getResetParams() {
+          return {
+            users: [],
+            username: null,
+            email: null,
+            permission: 'Read',
+            begin: null,
+            end: null,
+            notify: true,
+            comment: '',
+          };
         }
 
       }
