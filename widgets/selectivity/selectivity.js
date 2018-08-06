@@ -5727,6 +5727,7 @@ assign(Selectivity.prototype, {
             // large, but after trial and error, this now seems to work reliably...
             this._clearCloseTimeout();
             this._closeTimeout = setTimeout(this.close.bind(this), 166);
+            this.input.value = '';
         }
     },
 
