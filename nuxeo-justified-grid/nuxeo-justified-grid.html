@@ -99,11 +99,26 @@ limitations under the License.
       [hidden] {
         display: none !important;
       }
+
+      .emptyResult {
+        opacity: .5;
+        display: block;
+        font-weight: 300;
+        padding: 1.5em .7em;
+        text-align: center;
+        font-size: 1.1rem;
+      }
     </style>
 
     <dom-if if="[[displaySort]]">
       <template>
         <nuxeo-sort-select label="[[sortLabel]]" options="[[sortOptions]]" selected="{{sortSelected}}"></nuxeo-sort-select>
+      </template>
+    </dom-if>
+
+    <dom-if if="[[_isEmpty]]">
+      <template>
+        <div class="emptyResult">[[_computedEmptyLabel]]</div>
       </template>
     </dom-if>
 

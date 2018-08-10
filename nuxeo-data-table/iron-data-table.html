@@ -20,7 +20,6 @@ limitations under the License.
 <link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
 <link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../../paper-button/paper-button.html">
-<link rel="import" href="../../paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
 <link rel="import" href="../../paper-input/paper-input.html">
@@ -132,21 +131,6 @@ limitations under the License.
 
       #list .item {
         background: var(--nuxeo-table-items-background, #ffffff);
-      }
-
-      :host([loading]) .loadable {
-        opacity: 0.25;
-      }
-
-      :host(:not([loading])) paper-spinner-lite {
-        display: none;
-      }
-
-      :host([loading]) paper-spinner-lite {
-        position: absolute;
-        top: 45%;
-        left: 50%;
-        --paper-spinner-color: var(--default-primary-color);
       }
 
       .emptyResult {
@@ -291,7 +275,6 @@ limitations under the License.
       <iron-scroll-threshold id="scrollThreshold" scroll-target="list" on-lower-threshold="_threshold"></iron-scroll-threshold>
 
     </div>
-    <paper-spinner-lite active></paper-spinner-lite>
 
     <slot id="columns"></slot>
 
@@ -357,7 +340,6 @@ limitations under the License.
        * @appliesMixin Polymer.IronResizableBehavior
        * @appliesMixin Polymer.IronFormElementBehavior
        * @appliesMixin Polymer.IronValidatableBehavior
-       * @appliesMixin Nuxeo.I18nBehavior
        * @appliesMixin Nuxeo.PageProviderDisplayBehavior
        * @appliesMixin Nuxeo.DraggableListBehavior
        * @memberof Nuxeo
@@ -365,7 +347,7 @@ limitations under the License.
        */
       class DataTable
         extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior, Polymer.IronFormElementBehavior,
-          Polymer.IronValidatableBehavior, Nuxeo.PageProviderDisplayBehavior, Nuxeo.I18nBehavior,
+          Polymer.IronValidatableBehavior, Nuxeo.PageProviderDisplayBehavior,
           Nuxeo.DraggableListBehavior], Nuxeo.Element) {
 
         static get is() {

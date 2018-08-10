@@ -25,7 +25,7 @@ limitations under the License.
     /**
     * @polymerBehavior Nuxeo.PageProviderDisplayBehavior
     */
-    Nuxeo.PageProviderDisplayBehavior = {
+    Nuxeo.PageProviderDisplayBehavior = [Nuxeo.I18nBehavior, {
 
       properties: {
 
@@ -198,6 +198,7 @@ limitations under the License.
 
       detached() {
         this.unlisten(this.nxProvider, 'update', '_updateResults');
+        this.unlisten(this.nxProvider, 'loading-changed', '_updateLoading');
         this.$.list.unlisten.call(this.$.list, this.$.list, 'selected', '_selectionHandler');
         this.$.list.unlisten.call(this.$.list, this.$.list, 'tap', '_selectionHandler');
       },
@@ -211,8 +212,13 @@ limitations under the License.
           }
         } else if (nxProvider) {
           this._pageSize = this.nxProvider.pageSize;
+          this.listen(this.nxProvider, 'loading-changed', '_updateLoading');
           this.listen(this.nxProvider, 'update', '_updateResults');
         }
+      },
+
+      _updateLoading() {
+        this._setLoading(this.nxProvider.loading);
       },
 
       _hasPageProvider() {
@@ -450,6 +456,8 @@ limitations under the License.
           this._isEmpty = this.size === 0;
           this._computedEmptyLabel = (this.filters && this.filters.length > 0) ?
             this.emptyLabelWhenFiltered : this.emptyLabel;
+        } else {
+          this._computedEmptyLabel = this.i18n('label.loading');
         }
       },
 
@@ -650,6 +658,6 @@ limitations under the License.
         return this.$.list.modelForElement(el);
       },
 
-    };
+    }];
   })();
 </script>
