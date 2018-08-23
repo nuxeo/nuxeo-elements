@@ -4,10 +4,10 @@
   },
   "globals": {
     "WCT": false,
-    "sinon": true,
     "fixture": true,
     "expect": true,
     "waitChanged": true,
-    "waitForEvent": true
+    "waitForEvent": true,
+    "fetch": true
   }
 }

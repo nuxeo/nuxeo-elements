@@ -17,6 +17,9 @@
 
 /* eslint-disable no-unused-vars,no-param-reassign */
 
+// Force polyfill so we can rely on Sinon
+window.fetch = null;
+
 function timePasses(ms) {
   return new Promise((resolve) => {
     window.setTimeout(() => {
