@@ -123,6 +123,7 @@
   "groupManagement.removeUserFromGroup.confirm": "Eliminare {0} dal gruppo?",
   "groupManagement.users.heading": "Utenti",
   "label.group": "Gruppo",
+  "label.loading": "Loading",
   "label.no": "No",
   "label.yes": "Sì",
   "label.ui.state.accepted": "Accettato",

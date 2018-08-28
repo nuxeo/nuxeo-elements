@@ -123,6 +123,7 @@
   "groupManagement.removeUserFromGroup.confirm": "Weet u zeker dat u {0} uit deze groep wilt verwijderen?",
   "groupManagement.users.heading": "Gebruikers",
   "label.group": "Groep",
+  "label.loading": "Loading",
   "label.no": "Nee",
   "label.yes": "Ja",
   "label.ui.state.accepted": "Geaccepteerd",

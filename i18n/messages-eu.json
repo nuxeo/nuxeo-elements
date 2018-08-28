@@ -123,6 +123,7 @@
   "groupManagement.removeUserFromGroup.confirm": "Ziur {0} talde honetatik kendu nahi duzula?",
   "groupManagement.users.heading": "Erabiltzaileak",
   "label.group": "Taldea",
+  "label.loading": "Loading",
   "label.no": "Ez",
   "label.yes": "Bai",
   "label.ui.state.accepted": "Onartuta",

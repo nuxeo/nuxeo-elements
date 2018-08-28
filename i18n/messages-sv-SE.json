@@ -123,6 +123,7 @@
   "groupManagement.removeUserFromGroup.confirm": "Vill du verkligen ta bort {0} från den här gruppen?",
   "groupManagement.users.heading": "Användare",
   "label.group": "Grupp",
+  "label.loading": "Loading",
   "label.no": "Nej",
   "label.yes": "Ja",
   "label.ui.state.accepted": "Accepterad",

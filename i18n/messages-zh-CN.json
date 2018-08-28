@@ -123,6 +123,7 @@
   "groupManagement.removeUserFromGroup.confirm": "您真的要从此组中删除 {0} 吗？",
   "groupManagement.users.heading": "用户",
   "label.group": "群组:",
+  "label.loading": "Loading",
   "label.no": "不",
   "label.yes": "是",
   "label.ui.state.accepted": "已接受",
