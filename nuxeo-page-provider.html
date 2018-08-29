@@ -325,7 +325,7 @@ limitations under the License.
             Object.keys(this.params).forEach((key) => {
               if (typeof this.params[key] === 'string') {
                 params[key] = this.params[key];
-              } else if (this.params[key]) {
+              } else if (this.params[key] != null) {
                 params[key] = JSON.stringify(this.params[key]);
               }
             }, this);
