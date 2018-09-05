@@ -1,0 +1,70 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+  <head>
+    <title>nuxeo-actions-menu</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="../../../webcomponentsjs/webcomponents-loader.js"></script>
+
+    <!-- polymer elements -->
+    <link rel="import" href="../../../polymer/polymer.html">
+
+    <!-- nuxeo elements -->
+    <link rel="import" href="../nuxeo-demo.html">
+    <link rel="import" href="../../../nuxeo-elements/nuxeo-connection.html">
+    <link rel="import" href="../../../nuxeo-elements/nuxeo-document.html">
+    <link rel="import" href="../../actions/nuxeo-preview-button.html">
+    <link rel="import" href="../../widgets/nuxeo-actions-menu.html">
+  </head>
+
+  <body>
+    <dom-bind>
+      <template>
+
+        <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
+        <nuxeo-document auto doc-path="/default-domain/workspaces/demo/file" response="{{document}}"></nuxeo-document>
+        <nuxeo-demo-section heading="Actions Menu" size="small">
+          <nuxeo-actions-menu>
+            <nuxeo-preview-button document="[[document]]" label="action1"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action2"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action3"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action4"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action5"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action6"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action7"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action8"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action9"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action10"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action11"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action12"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action13"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action14"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action15"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action16"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action17"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action18"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action19"></nuxeo-preview-button>
+            <nuxeo-preview-button document="[[document]]" label="action20"></nuxeo-preview-button>
+          </nuxeo-actions-menu>
+        </nuxeo-demo-section>
+        
+      </template>
+    </dom-bind>
+  </body>
+</html>

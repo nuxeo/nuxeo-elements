@@ -98,7 +98,10 @@ limitations under the License.
           if (!this._instance) {
             const template = Polymer.dom(this).querySelector('nuxeo-dialog > template');
             if (template) {
-              this.templatize(template);
+              // prevent "A <template> can only be templatized once" error
+              if (!this._templatizerTemplate) {
+                this.templatize(template);
+              }
               this._instance = this.stamp();
               this.appendChild(this._instance.root);
             }
