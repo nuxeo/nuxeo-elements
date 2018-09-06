@@ -23,7 +23,7 @@ limitations under the License.
 <dom-module id="nuxeo-date">
   <template>
     <span id="datetime" hidden$="[[!datetime]]">[[formatDate(datetime, format)]]</span>
-    <nuxeo-tooltip for="datetime">[[formatDate(datetime, tooltipFormat)]]</nuxeo-tooltip>
+    <nuxeo-tooltip for="datetime">[[formatDateTime(datetime, tooltipFormat)]]</nuxeo-tooltip>
   </template>
 
   <script>
@@ -61,19 +61,13 @@ limitations under the License.
              * The format of datetime output text representation. Options are "relative" or the
              * [moment Format](http://momentjs.com/docs/#/displaying/format/).
              */
-            format: {
-              type: String,
-              value: 'MMMM D, YYYY',
-            },
+            format: String,
 
             /*
              * The format of datetime output text tooltip. Options are "relative" or the
              * [moment Format](http://momentjs.com/docs/#/displaying/format/).
              */
-            tooltipFormat: {
-              type: String,
-              value: 'MMMM D, YYYY HH:mm',
-            },
+            tooltipFormat: String,
           };
         }
 

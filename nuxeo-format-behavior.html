@@ -43,17 +43,39 @@ limitations under the License.
       }
     },
 
-    /**
-     * Formats a date as a string. Default format is 'MMM D, YYYY'.
-     * Use format "relative" to show date relative to current time
-     */
-    formatDate(date, fmt) {
+    _formatDate(date, fmt) {
       if (!date) return;
       moment.locale(this._languageCode());
       if (fmt && fmt === 'relative') {
         return moment().to(date);
       }
-      return moment(date).format(fmt || 'MMMM D, YYYY');
+      return moment(date).format(fmt);
+    },
+
+    /**
+     * Formats a date as a string. Default format is 'MMM D, YYYY'.
+     * Use format "relative" to show date relative to current time
+     *
+     * @param {string} date the date
+     * @param {string} format the format, falls back on Nuxeo.UI.config.dateFormat or 'MMM D, YYYY' if null.
+     */
+    formatDate(date, format) {
+      return this._formatDate(date, format ||
+        (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.dateFormat) ||
+        'MMM D, YYYY');
+    },
+
+    /**
+     * Formats a date time as a string. Default format is 'MMMM D, YYYY HH:mm'.
+     * Use format "relative" to show date relative to current time
+     *
+     * @param {string} date the date
+     * @param {string} format the format, falls back on Nuxeo.UI.config.dateFormat or 'MMMM D, YYYY HH:mm' if null.
+     */
+    formatDateTime(date, format) {
+      return this._formatDate(date, format ||
+        (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.dateTimeFormat) ||
+        'MMMM D, YYYY HH:mm');
     },
 
     /**
