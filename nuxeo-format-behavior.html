@@ -62,7 +62,7 @@ limitations under the License.
     formatDate(date, format) {
       return this._formatDate(date, format ||
         (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.dateFormat) ||
-        'MMM D, YYYY');
+        'LL');
     },
 
     /**
@@ -75,7 +75,7 @@ limitations under the License.
     formatDateTime(date, format) {
       return this._formatDate(date, format ||
         (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.dateTimeFormat) ||
-        'MMMM D, YYYY HH:mm');
+        'LLL');
     },
 
     /**
