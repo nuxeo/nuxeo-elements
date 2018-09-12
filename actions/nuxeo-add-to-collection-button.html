@@ -31,14 +31,11 @@ limitations under the License.
 <link rel="import" href="../widgets/nuxeo-selectivity.html">
 <link rel="import" href="../widgets/nuxeo-textarea.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
+<link rel="import" href="nuxeo-action-button-styles.html">
 
 <dom-module id="nuxeo-add-to-collection-button">
   <template>
-    <style>
-      :host {
-        display: inline-block;
-      }
-
+    <style include="nuxeo-action-button-styles">
       /* Fix known stacking issue in iOS (NXP-24600)
          https://github.com/PolymerElements/paper-dialog-scrollable/issues/72 */
       paper-dialog-scrollable {
@@ -53,8 +50,11 @@ limitations under the License.
 
     <dom-if if="[[_isAvailable(document)]]">
       <template>
-        <paper-icon-button icon="[[icon]]" on-click="_toggleDialog" noink></paper-icon-button>
-        <nuxeo-tooltip>[[i18n('addToCollectionButton.tooltip')]]</nuxeo-tooltip>
+        <div class="action" on-click="_toggleDialog">
+          <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
+          <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
+        </div>
+        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
       </template>
     </dom-if>
 
@@ -157,11 +157,28 @@ limitations under the License.
                 return this._newEntryFormatter.bind(this);
               },
             },
+
+            /**
+             * `true` if the action should display the label, `false` otherwise.
+             */
+            showLabel: {
+              type: Boolean,
+              value: false,
+            },
+
+            _label: {
+              type: String,
+              computed: '_computeLabel(i18n)',
+            },
           };
         }
 
         _isAvailable(doc) {
           return this.isCollectionMember(doc);
+        }
+
+        _computeLabel() {
+          return this.i18n('addToCollectionButton.tooltip');
         }
 
         _toggleDialog() {

@@ -27,23 +27,23 @@ limitations under the License.
 <link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
+<link rel="import" href="nuxeo-action-button-styles.html">
 
 <dom-module id="nuxeo-untrash-document-button">
 
   <template>
-    <style>
-      :host {
-        display: inline-block;
-      }
-    </style>
+    <style include="nuxeo-action-button-styles"></style>
 
     <nuxeo-operation id="operation" op="Document.Untrash" input="[[document.uid]]" sync-indexing>
     </nuxeo-operation>
 
     <dom-if if="[[_isAvailable(document)]]">
       <template>
-        <paper-icon-button icon="[[icon]]" on-click="_untrash" noink id="untrashButton"></paper-icon-button>
-        <nuxeo-tooltip>[[i18n('untrashButton.tooltip')]]</nuxeo-tooltip>
+        <div class="action" on-click="_untrash">
+          <paper-icon-button icon="[[icon]]" noink id="untrashButton"></paper-icon-button>
+          <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
+        </div>
+        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
       </template>
     </dom-if>
 
@@ -84,11 +84,28 @@ limitations under the License.
               type: String,
               value: 'nuxeo:restore-deleted',
             },
+
+            /**
+             * `true` if the action should display the label, `false` otherwise.
+             */
+            showLabel: {
+              type: Boolean,
+              value: false,
+            },
+
+            _label: {
+              type: String,
+              computed: '_computeLabel(i18n)',
+            },
           };
         }
 
         _isAvailable(doc) {
           return doc && this.isTrashed(doc) && this.hasPermission(doc, 'Write');
+        }
+
+        _computeLabel() {
+          return this.i18n('untrashButton.tooltip');
         }
 
         _untrash() {

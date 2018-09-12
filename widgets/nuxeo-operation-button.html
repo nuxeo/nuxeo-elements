@@ -21,15 +21,20 @@ limitations under the License.
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
+<link rel="import" href="../actions/nuxeo-action-button-styles.html">
 
 <dom-module id="nuxeo-operation-button">
   <template>
+    <style include="nuxeo-action-button-styles"></style>
 
     <nuxeo-operation id="op" op="[[operation]]" input="[[input]]" params="[[params]]" sync-indexing$="[[syncIndexing]]">
     </nuxeo-operation>
 
-    <paper-icon-button id="bt" icon="[[icon]]" on-click="_execute"></paper-icon-button>
-    <nuxeo-tooltip for="bt">[[i18n(label)]]</nuxeo-tooltip>
+    <div class="action" on-click="_execute">
+      <paper-icon-button id="bt" icon="[[icon]]"></paper-icon-button>
+      <span class="label" hidden$="[[!showLabel]]">[[i18n(label)]]</span>
+    </div>
+    <nuxeo-tooltip>[[i18n(_tooltip)]]</nuxeo-tooltip>
   </template>
 
   <script>
@@ -59,8 +64,19 @@ limitations under the License.
             /* Icon name, can be anything taken from the [material icons](https://material.io/icons/), e.g. "chat", "description". */
             icon: String,
 
-            /* Label (shown as tooltip) */
+            /* Label (shown inside menu dropdowns and on tooltips) */
             label: String,
+
+            /* Tooltip label. If `undefined`, `label` will be used instead. */
+            tooltip: String,
+
+            /**
+             * `true` if the action should display the label, `false` otherwise.
+             */
+            showLabel: {
+              type: Boolean,
+              value: false,
+            },
 
             /* The id of the operation, automation chain or script to call. */
             operation: String,
@@ -112,6 +128,11 @@ limitations under the License.
             /* The detail of the event fired on completion.  */
             detail: {
               type: String,
+            },
+
+            _tooltip: {
+              type: String,
+              computed: '_computeTooltip(tooltip, label)',
             },
           };
         }
@@ -174,6 +195,10 @@ limitations under the License.
           } else {
             return Promise.reject(new Error('missing Content-Disposition header'));
           }
+        }
+
+        _computeTooltip(tooltip, label) {
+          return tooltip || label;
         }
 
       }

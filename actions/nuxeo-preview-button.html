@@ -20,20 +20,17 @@ limitations under the License.
 <link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
-<link rel="import" href="../nuxeo-document-preview.html">
 <link rel="import" href="../nuxeo-filters-behavior.html">
+<link rel="import" href="../nuxeo-document-preview.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
+<link rel="import" href="nuxeo-action-button-styles.html">
 
 <dom-module id="nuxeo-preview-button">
   <template>
-    <style>
-      :host {
-        display: inline-block;
-      }
-
+    <style include="nuxeo-action-button-styles">
       #close-icon {
         position: absolute;
         right: -12px;
@@ -72,8 +69,11 @@ limitations under the License.
 
     <dom-if if="[[_isAvailable(document)]]">
       <template>
-        <paper-icon-button icon="[[icon]]" on-click="_toggleDialog" noink></paper-icon-button>
-        <nuxeo-tooltip>[[i18n('previewButton.tooltip')]]</nuxeo-tooltip>
+        <div class="action" on-click="_toggleDialog">
+          <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
+          <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
+        </div>
+        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
 
         <nuxeo-dialog on-iron-overlay-closed="_previewClosed" id="dialog" with-backdrop>
           <template>
@@ -128,6 +128,19 @@ limitations under the License.
               type: String,
               value: 'nuxeo:preview',
             },
+
+            /**
+             * `true` if the action should display the label, `false` otherwise.
+             */
+            showLabel: {
+              type: Boolean,
+              value: false,
+            },
+
+            _label: {
+              type: String,
+              computed: '_computeLabel(i18n)',
+            },
           };
         }
 
@@ -137,6 +150,10 @@ limitations under the License.
 
         _isAvailable(document) {
           return !(this.hasFacet(document, 'Folderish') || this.hasFacet(document, 'Collection'));
+        }
+
+        _computeLabel() {
+          return this.i18n('previewButton.tooltip');
         }
 
         _toggleDialog() {

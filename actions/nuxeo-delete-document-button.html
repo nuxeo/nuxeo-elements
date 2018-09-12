@@ -27,15 +27,12 @@ limitations under the License.
 <link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
+<link rel="import" href="nuxeo-action-button-styles.html">
 
 <dom-module id="nuxeo-delete-document-button">
 
   <template>
-    <style>
-      :host {
-        display: inline-block;
-      }
-    </style>
+    <style include="nuxeo-action-button-styles"></style>
 
     <nuxeo-operation id="deleteOp" op="Document.Delete" input="[[document.uid]]" sync-indexing></nuxeo-operation>
 
@@ -43,8 +40,11 @@ limitations under the License.
 
     <dom-if if="[[_isAvailable(document)]]">
       <template>
-        <paper-icon-button icon="[[icon]]" on-click="_delete" noink id="deleteButton"></paper-icon-button>
-        <nuxeo-tooltip>[[_tooltip]]</nuxeo-tooltip>
+        <div class="action" on-click="_delete">
+          <paper-icon-button icon="[[icon]]" noink id="deleteButton"></paper-icon-button>
+          <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
+        </div>
+        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
       </template>
     </dom-if>
 
@@ -97,9 +97,17 @@ limitations under the License.
               value: false,
             },
 
-            _tooltip: {
+            /**
+             * `true` if the action should display the label, `false` otherwise.
+             */
+            showLabel: {
+              type: Boolean,
+              value: false,
+            },
+
+            _label: {
               type: String,
-              computed: '_computeTooltip(hard)',
+              computed: '_computeLabel(hard, i18n)',
             },
           };
         }
@@ -112,7 +120,7 @@ limitations under the License.
           return hard ? 'nuxeo:delete-permanently' : 'nuxeo:delete';
         }
 
-        _computeTooltip(hard) {
+        _computeLabel(hard) {
           return this.i18n(hard ? 'deleteButton.tooltip.permanently' : 'deleteButton.tooltip');
         }
 

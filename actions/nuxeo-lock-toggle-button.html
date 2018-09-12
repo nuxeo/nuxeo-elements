@@ -27,15 +27,12 @@ limitations under the License.
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
+<link rel="import" href="nuxeo-action-button-styles.html">
 
 <dom-module id="nuxeo-lock-toggle-button">
   <template>
-    <style>
-      :host {
-        display: inline-block;
-      }
-
-      :host([locked]) {
+    <style include="nuxeo-action-button-styles">
+      :host([locked]) paper-icon-button {
         color: var(--icon-toggle-outline-color, var(--nuxeo-action-color-activated));
       }
     </style>
@@ -47,8 +44,11 @@ limitations under the License.
 
     <dom-if if="[[_isAvailable(document)]]">
       <template>
-        <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
-        <nuxeo-tooltip>[[_tooltip]]</nuxeo-tooltip>
+        <div class="action">
+          <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
+          <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
+        </div>
+        <nuxeo-tooltip>[[tooltip]]</nuxeo-tooltip>
       </template>
     </dom-if>
 
@@ -100,9 +100,26 @@ limitations under the License.
               reflectToAttribute: true,
             },
 
-            _tooltip: {
+            /**
+             * The translated label to be displayed by the action.
+             */
+            tooltip: {
               type: String,
-              computed: '_computeTooltip(locked)',
+              notify: true,
+              computed: '_computeTooltip(locked, i18n)',
+            },
+
+            /**
+             * `true` if the action should display the label, `false` otherwise.
+             */
+            showLabel: {
+              type: Boolean,
+              value: false,
+            },
+
+            _label: {
+              type: String,
+              computed: '_computeLabel(locked, i18n)',
             },
           };
         }
@@ -148,7 +165,10 @@ limitations under the License.
           } else {
             return this.i18n(`lockToggleButton.tooltip.${locked ? 'unlock' : 'lock'}`);
           }
+        }
 
+        _computeLabel(locked) {
+          return this.i18n(`lockToggleButton.tooltip.${locked ? 'unlock' : 'lock'}`);
         }
 
         _computeIcon(locked) {

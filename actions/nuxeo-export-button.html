@@ -22,19 +22,15 @@ limitations under the License.
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
-<link rel="import" href="../nuxeo-filters-behavior.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
+<link rel="import" href="nuxeo-action-button-styles.html">
 
 <dom-module id="nuxeo-export-button">
   <template>
-    <style>
-      :host {
-        display: inline-block;
-      }
-
+    <style include="nuxeo-action-button-styles">
       .item {
         @apply --layout-horizontal;
         @apply --layout-center;
@@ -49,8 +45,11 @@ limitations under the License.
 
     <dom-if if="[[_isAvailable(document)]]">
       <template>
-        <paper-icon-button icon="[[icon]]" on-click="_toggleDialog" noink></paper-icon-button>
-        <nuxeo-tooltip>[[i18n('exportButton.tooltip')]]</nuxeo-tooltip>
+        <div class="action" on-click="_toggleDialog">
+          <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
+          <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
+        </div>
+        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
       </template>
     </dom-if>
 
@@ -82,11 +81,10 @@ limitations under the License.
        *     <nuxeo-export-button document="[[document]]"></nuxeo-export-button>
        *
        * @appliesMixin Nuxeo.I18nBehavior
-       * @appliesMixin Nuxeo.FiltersBehavior
        * @memberof Nuxeo
        * @demo demo/nuxeo-export-button/index.html
        */
-      class ExportButton extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
+      class ExportButton extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
         static get is() {
           return 'nuxeo-export-button';
@@ -106,11 +104,28 @@ limitations under the License.
               type: String,
               value: 'nuxeo:export',
             },
+
+            /**
+             * `true` if the action should display the label, `false` otherwise.
+             */
+            showLabel: {
+              type: Boolean,
+              value: false,
+            },
+
+            _label: {
+              type: String,
+              computed: '_computeLabel(i18n)',
+            },
           };
         }
 
         _isAvailable(document) {
           return document;
+        }
+
+        _computeLabel() {
+          return this.i18n('exportButton.tooltip');
         }
 
         _toggleDialog() {

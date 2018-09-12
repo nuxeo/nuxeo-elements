@@ -22,20 +22,17 @@ limitations under the License.
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
-<link rel="import" href="../nuxeo-filters-behavior.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../nuxeo-filters-behavior.html">
 <link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
+<link rel="import" href="nuxeo-action-button-styles.html">
 
 <dom-module id="nuxeo-notifications-toggle-button">
   <template>
 
-    <style>
-      :host {
-        display: inline-block;
-      }
-
-      :host([subscribed]) {
+    <style include="nuxeo-action-button-styles">
+      :host([subscribed]) paper-icon-button {
         color: var(--icon-toggle-outline-color, var(--nuxeo-action-color-activated));
       }
     </style>
@@ -45,8 +42,11 @@ limitations under the License.
 
     <dom-if if="[[_isAvailable(document)]]">
       <template>
-        <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
-        <nuxeo-tooltip>[[_tooltip]]</nuxeo-tooltip>
+        <div class="action">
+          <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
+          <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
+        </div>
+        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
       </template>
     </dom-if>
 
@@ -97,9 +97,17 @@ limitations under the License.
               reflectToAttribute: true,
             },
 
-            _tooltip: {
+            /**
+             * `true` if the action should display the label, `false` otherwise.
+             */
+            showLabel: {
+              type: Boolean,
+              value: false,
+            },
+
+            _label: {
               type: String,
-              computed: '_computeTooltip(subscribed)',
+              computed: '_computeLabel(subscribed, i18n)',
             },
           };
         }
@@ -147,7 +155,7 @@ limitations under the License.
           }
         }
 
-        _computeTooltip(isSubscribed) {
+        _computeLabel(isSubscribed) {
           return this.i18n(`notificationsToggleButton.tooltip.${isSubscribed ? 'doNotNotify' : 'notify'}`);
         }
 

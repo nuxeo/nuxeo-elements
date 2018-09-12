@@ -25,20 +25,16 @@ limitations under the License.
 <link rel="import" href="../../paper-item/paper-item.html">
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
-<link rel="import" href="../nuxeo-filters-behavior.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../widgets/nuxeo-select.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
+<link rel="import" href="nuxeo-action-button-styles.html">
 
 <dom-module id="nuxeo-workflow-button">
   <template>
-    <style>
-      :host {
-        display: inline-block;
-      }
-
+    <style include="nuxeo-action-button-styles">
       nuxeo-select {
         max-width: 380px;
       }
@@ -48,8 +44,11 @@ limitations under the License.
 
     <dom-if if="[[_isAvailable(document)]]">
       <template>
-        <paper-icon-button icon="[[icon]]" on-click="_toggleDialog" noink></paper-icon-button>
-        <nuxeo-tooltip>[[i18n('workflowButton.tooltip')]]</nuxeo-tooltip>
+        <div class="action" on-click="_toggleDialog">
+          <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
+          <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
+        </div>
+        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
 
         <nuxeo-dialog id="dialog" with-backdrop>
           <h2>[[i18n('workflowButton.dialog.heading')]]</h2>
@@ -81,11 +80,10 @@ limitations under the License.
        *     <nuxeo-workflow-button document="[[document]]"></nuxeo-workflow-button>
        *
        * @appliesMixin Nuxeo.I18nBehavior
-       * @appliesMixin Nuxeo.FiltersBehavior
        * @memberof Nuxeo
        * @demo demo/nuxeo-workflow-button/index.html
        */
-      class WorkflowButton extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
+      class WorkflowButton extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
         static get is() {
           return 'nuxeo-workflow-button';
@@ -122,6 +120,19 @@ limitations under the License.
               type: String,
               value: 'nuxeo:workflow',
             },
+
+            /**
+             * `true` if the action should display the label, `false` otherwise.
+             */
+            showLabel: {
+              type: Boolean,
+              value: false,
+            },
+
+            _label: {
+              type: String,
+              computed: '_computeLabel(i18n)',
+            },
           };
         }
 
@@ -133,6 +144,10 @@ limitations under the License.
           this.workflows = document.contextParameters.runningWorkflows;
           this.hasWorkflowRunning = this.workflows && this.workflows.length > 0;
           return document && !this.hasWorkflowRunning && this.processes && this.processes.length > 0;
+        }
+
+        _computeLabel() {
+          return this.i18n('workflowButton.tooltip');
         }
 
         _toggleDialog() {

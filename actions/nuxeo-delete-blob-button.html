@@ -27,22 +27,22 @@ limitations under the License.
 <link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
+<link rel="import" href="nuxeo-action-button-styles.html">
 
 <dom-module id="nuxeo-delete-blob-button">
 
   <template>
-    <style>
-      :host {
-        display: inline-block;
-      }
-    </style>
+    <style include="nuxeo-action-button-styles"></style>
 
     <nuxeo-operation id="operation" op="Blob.RemoveFromDocument" input="[[document.uid]]" params="[[_params(xpath)]]"></nuxeo-operation>
 
     <dom-if if="[[_isAvailable(document)]]">
       <template>
-        <paper-icon-button icon="[[icon]]" on-click="_toggleDialog" noink></paper-icon-button>
-        <nuxeo-tooltip>[[i18n('deleteBlobButton.tooltip')]]</nuxeo-tooltip>
+        <div class="action" on-click="_toggleDialog">
+          <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
+          <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
+        </div>
+        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
       </template>
     </dom-if>
 
@@ -100,12 +100,29 @@ limitations under the License.
               type: String,
               value: 'nuxeo:remove',
             },
+
+            /**
+             * `true` if the action should display the label, `false` otherwise.
+             */
+            showLabel: {
+              type: Boolean,
+              value: false,
+            },
+
+            _label: {
+              type: String,
+              computed: '_computeLabel(i18n)',
+            },
           };
         }
 
         _isAvailable(doc) {
           return doc && this.hasPermission(doc, 'Write') && !this.isImmutable(doc) &&
               doc.type !== 'Root' && doc.state !== 'deleted';
+        }
+
+        _computeLabel() {
+          return this.i18n('deleteBlobButton.tooltip');
         }
 
         _toggleDialog() {

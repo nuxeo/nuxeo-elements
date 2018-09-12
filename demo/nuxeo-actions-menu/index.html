@@ -37,9 +37,23 @@ limitations under the License.
     <dom-bind>
       <template>
 
+        <custom-style>
+          <style>
+            nuxeo-demo-section {
+              --nuxeo-action-button-label: {
+                padding-right: 8px;
+              };
+      
+              --nuxeo-actions-menu-dropdown: {
+                padding: 0 8px;
+              };
+            }
+          </style>
+        </custom-style>
+
         <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
         <nuxeo-document auto doc-path="/default-domain/workspaces/demo/file" response="{{document}}"></nuxeo-document>
-        <nuxeo-demo-section heading="Actions Menu" size="small">
+        <nuxeo-demo-section heading="Responsive Actions Menu" size="small">
           <nuxeo-actions-menu>
             <nuxeo-preview-button document="[[document]]" label="action1"></nuxeo-preview-button>
             <nuxeo-preview-button document="[[document]]" label="action2"></nuxeo-preview-button>

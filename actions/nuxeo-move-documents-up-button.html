@@ -19,19 +19,15 @@ limitations under the License.
 <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
-<link rel="import" href="../nuxeo-filters-behavior.html">
 <link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
+<link rel="import" href="nuxeo-action-button-styles.html">
 
 <dom-module id="nuxeo-move-documents-up-button">
   <template>
 
-    <style>
-      :host {
-        display: inline-block;
-      }
-
+    <style include="nuxeo-action-button-styles">
       iron-icon:hover {
         fill: var(--nuxeo-link-hover-color);
       }
@@ -46,13 +42,11 @@ limitations under the License.
 
     <dom-if id="availability" if="[[_available]]">
       <template>
-        <paper-icon-button noink
-          id="upButton"
-          icon="icons:arrow-upward">
-        </paper-icon-button>
-        <nuxeo-tooltip for="upButton" position="[[tooltipPosition]]">
-          [[i18n('moveDocumentButton.up.tooltip')]]
-        </nuxeo-tooltip>
+        <div class="action">
+          <paper-icon-button noink icon="icons:arrow-upward"></paper-icon-button>
+          <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
+        </div>
+        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
       </template>
     </dom-if>
 
@@ -64,11 +58,10 @@ limitations under the License.
        * A button element for moving documents up within an OrderedFolder.
        *
        * @appliesMixin Nuxeo.I18nBehavior
-       * @appliesMixin Nuxeo.FiltersBehavior
        * @memberof Nuxeo
        * @demo demo/nuxeo-move-documents-up-button/index.html
        */
-      class MoveDocumentsUp extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
+      class MoveDocumentsUp extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
         static get is() {
           return 'nuxeo-move-documents-up-button';
@@ -90,6 +83,17 @@ limitations under the License.
             tooltipPosition: {
               type: String,
               value: 'bottom',
+            },
+            /**
+             * `true` if the action should display the label, `false` otherwise.
+             */
+            showLabel: {
+              type: Boolean,
+              value: false,
+            },
+            _label: {
+              type: String,
+              computed: '_computeLabel(i18n)',
             },
             _available: Boolean,
             _beforeUid: Document,
@@ -175,6 +179,10 @@ limitations under the License.
             this._beforeUid = this.documents[this._focusIndex].uid;
             this._available = true;
           }
+        }
+
+        _computeLabel() {
+          return this.i18n('moveDocumentButton.up.tooltip');
         }
 
       }

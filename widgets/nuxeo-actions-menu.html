@@ -24,7 +24,7 @@ limitations under the License.
 <dom-module id="nuxeo-actions-menu">
   <template>
     <style>
-      :host {
+      :host, #main {
         @apply --layout-horizontal;
         @apply --layout-center;
       }
@@ -39,12 +39,17 @@ limitations under the License.
         overflow: hidden;
       }
 
-      #dropdown::slotted(*) {
-        cursor: pointer;
-        outline: none;
-        user-select: none;
+      #slot::slotted(*), /* chrome, safari */
+      #main::slotted(*) { /* firefox, edge */
+        @apply --nuxeo-actions-menu-main;
       }
 
+      #dropdown::slotted(*), /* chrome, safari */
+      paper-listbox::slotted(*) { /* firefox, edge */
+        outline: none;
+        user-select: none;
+        @apply --nuxeo-actions-menu-dropdown;
+      }
 
       paper-menu-button {
         --paper-menu-button: {
@@ -57,7 +62,9 @@ limitations under the License.
       }
     </style>
     
-    <slot id="slot"></slot>
+    <div id="main">
+      <slot id="slot"></slot>
+    </div>
     <div id="reparent"></div>
     <paper-menu-button id="dropdownButton" close-on-activate no-overlap horizontal-align="right">
       <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger" alt="dropdown"></paper-icon-button>
@@ -152,13 +159,12 @@ limitations under the License.
 
         _moveToMenu(el) {
           el.slot = '';
-          el.showLabel = false;
           el.removeAttribute('show-label');
         }
 
         _moveToDropdown(el) {
           el.slot = 'dropdown';
-          el.showLabel = true;
+          el.setAttribute('show-label', '');
         }
 
         _layout(e) {
