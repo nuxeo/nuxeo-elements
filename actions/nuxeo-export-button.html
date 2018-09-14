@@ -60,7 +60,7 @@ limitations under the License.
       <dom-repeat items="[[_filterRenditions(document)]]">
         <template>
           <div class="item">
-            <iron-icon src="[[item.icon]]"></iron-icon> <a href="[[item.url]]">[[i18n(item.name)]]</a>
+            <iron-icon src="[[item.icon]]"></iron-icon> <a href="[[item.url]]" download>[[i18n(item.name)]]</a>
           </div>
         </template>
       </dom-repeat>
