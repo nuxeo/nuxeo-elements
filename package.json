@@ -16,13 +16,16 @@
     "polylint": "polymer lint",
     "lint": "npm run eslint && npm run polylint",
     "test": "polymer test --simpleOutput --expanded -l chrome",
-    "docs": "polymer analyze > analysis.json && polymer serve"
+    "docs": "polymer analyze > analysis.json && polymer serve",
+    "coveralls": "cat coverage/lcov.info | coveralls"
   },
   "devDependencies": {
+    "coveralls": "^3.0.2",
     "eslint": "^4.14.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-html": "^4.0.1",
     "eslint-plugin-import": "^2.8.0",
-    "polymer-cli": "^1.8.0"
+    "polymer-cli": "^1.8.0",
+    "wct-istanbul": "^0.14.3"
   }
 }
