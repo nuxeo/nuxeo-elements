@@ -29,11 +29,11 @@ limitations under the License.
     <nuxeo-resource
       id="nxResource"
       connection-id="[[connectionId]]"
-      path="{{path}}"
       enrichers="{{enrichers}}"
       schemas="[[schemas]]"
       headers="{{headers}}">
     </nuxeo-resource>
+
   </template>
 
   <script>
@@ -265,6 +265,9 @@ limitations under the License.
               notify: true,
               readOnly: true,
             },
+
+            actionId: String,
+
           };
         }
 
@@ -293,15 +296,7 @@ limitations under the License.
           });
         }
 
-        /**
-         * Fetch the currentPage.
-         *
-         * @method fetch
-         * @param {Object} options
-         *   The options of the fetch:
-         *   - "skipAggregates" to do not compute aggregations (boolean)
-         */
-        fetch(options) {
+        _prepare(options) {
           const params = {
             currentPageIndex: this.page - 1,
             offset: this.offset,
@@ -349,9 +344,29 @@ limitations under the License.
           } else {
             delete this.headers.skipAggregates;
           }
-
+          // Force sync indexing
+          if (options && options.synchronous) {
+            this.headers.nx_es_sync = true;
+            this.headers.synchronous = true;
+          } else {
+            delete this.headers.nx_es_sync;
+            delete this.headers.synchronous;
+          }
           this.$.nxResource.params = params;
-          return this.$.nxResource.execute()
+        }
+
+        /**
+         * Fetch the currentPage.
+         *
+         * @method fetch
+         * @param {Object} options
+         *   The options of the fetch:
+         *   - "skipAggregates" to do not compute aggregations (boolean)
+         */
+        fetch(options) {
+          this.$.nxResource.path = this.path;
+          this._prepare(options);
+          return this.$.nxResource.get()
             .then((response) => {
               this.currentPage = response.entries.slice(0);
               this.numberOfPages = response.numberOfPages;
@@ -367,6 +382,38 @@ limitations under the License.
                 composed: true,
               }));
               return response;
+            })
+            .catch((err) => {
+              this.dispatchEvent(new CustomEvent('response', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                  error: err,
+                },
+              }));
+            });
+        }
+
+        execute(options) {
+          if (!this.actionId) {
+            throw new Error('Missing actionId');
+          }
+          if (this.query) {
+            this.$.nxResource.path = `/search/bulk/${this.actionId}`;
+          } else if (this.provider) {
+            this.$.nxResource.path = `/search/pp/${this.provider}/bulk/${this.actionId}`;
+          }
+          this._prepare(options);
+          return this.$.nxResource.post()
+            .then((res) => {
+              this.dispatchEvent(new CustomEvent('response', {
+                bubbles: true,
+                composed: true,
+                detail: {
+                  response: res,
+                },
+              }));
+              return res;
             })
             .catch((err) => {
               this.dispatchEvent(new CustomEvent('response', {
