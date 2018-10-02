@@ -1,5 +1,13 @@
 {
   "plugins": {
+    "istanbul": {
+      "dir": "./coverage",
+      "reporters": ["text-summary", "lcov"],
+      "include": [
+        "**/nuxeo-ui-elements/**/*.html"
+      ],
+      "exclude": []
+    },
     "sauce": {
       "disabled": true,
       "browsers": [
