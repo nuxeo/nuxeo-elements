@@ -94,7 +94,7 @@ limitations under the License.
 
     <script>
       const app = document.querySelector('dom-bind');
-      app.query = (docType) => `select * from ${docType} where ecm:currentLifeCycleState != 'deleted'`;
+      app.query = (docType) => `select * from ${docType} where ecm:isTrashed = 0`;
       app.docType = 'File';
     </script>
   </body>
