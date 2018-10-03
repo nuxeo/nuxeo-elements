@@ -1,4 +1,5 @@
 [![Build Status](https://qa.nuxeo.org/jenkins/buildStatus/icon?job=master/nuxeo-dataviz-elements-master)](https://qa.nuxeo.org/jenkins/job/master/job/nuxeo-dataviz-elements-master/)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b5cefb3efb9940eca1c10bbd64db609b)](https://www.codacy.com/app/Nuxeo/nuxeo-dataviz-elements)
 
 # About nuxeo-dataviz-elements
 
