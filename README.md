@@ -1,5 +1,6 @@
 [![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/nuxeo/nuxeo-ui-elements)
 [![Build Status](https://qa.nuxeo.org/jenkins/buildStatus/icon?job=master/nuxeo-ui-elements-master)](https://qa.nuxeo.org/jenkins/job/master/job/nuxeo-ui-elements-master/)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/20579b3ca52a4665b23709f50da5574f)](https://www.codacy.com/app/Nuxeo/nuxeo-ui-elements)
 
 [![Browser Status](https://badges.herokuapp.com/sauce/nuxeo-ui-elements?name=nuxeo-ui-elements-master)](https://saucelabs.com/u/nuxeo-ui-elements)
 
