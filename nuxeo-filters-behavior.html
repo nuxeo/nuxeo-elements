@@ -54,7 +54,14 @@ limitations under the License.
      * Checks if the document is trashed.
      */
     isTrashed(doc) {
-      return doc && (this.hasState(doc, 'deleted') || doc.isTrashed);
+      if (doc) {
+        if (typeof doc.isTrashed === 'undefined') {
+          return this.hasState(doc, 'deleted');
+        } else {
+          return doc.isTrashed;
+        }
+      }
+      return false;
     },
 
     /**

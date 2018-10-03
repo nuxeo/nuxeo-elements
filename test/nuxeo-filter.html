@@ -168,6 +168,39 @@ limitations under the License.
   </nuxeo-filter>
 </div>
 
+<div id="trashFilter">
+  <nuxeo-filter document='{"title":"Title", "state": "project"}' expression="!this.isTrashed(document)">
+    <template>
+      <div class="notDeletedTrashUndefined trashFilter"></div>
+    </template>
+  </nuxeo-filter>
+  <nuxeo-filter document='{"title":"Title", "state": "deleted"}' expression="this.isTrashed(document)">
+    <template>
+      <div class="deletedTrashUndefined trashFilter"></div>
+    </template>
+  </nuxeo-filter>
+  <nuxeo-filter document='{"title":"Title", "state": "project", "isTrashed": false}' expression="!this.isTrashed(document)">
+    <template>
+      <div class="notDeletedTrashFalse trashFilter"></div>
+    </template>
+  </nuxeo-filter>
+  <nuxeo-filter document='{"title":"Title", "state": "project", "isTrashed": true}' expression="this.isTrashed(document)">
+    <template>
+      <div class="notDeletedTrashTrue trashFilter"></div>
+    </template>
+  </nuxeo-filter>
+  <nuxeo-filter document='{"title":"Title", "state": "deleted", "isTrashed": false}' expression="!this.isTrashed(document)">
+    <template>
+      <div class="deletedTrashFalse trashFilter"></div>
+    </template>
+  </nuxeo-filter>
+  <nuxeo-filter document='{"title":"Title", "state": "deleted", "isTrashed": true}' expression="this.isTrashed(document)">
+    <template>
+      <div class="deletedTrashTrue trashFilter"></div>
+    </template>
+  </nuxeo-filter>
+</div>
+
 <div id="multipleFilter">
   <nuxeo-filter document='{"type":"File", "title":"Title"}' expression="document.title === 'Title'">
     <template>
@@ -262,6 +295,17 @@ limitations under the License.
     test('expression filter', () => {
       expect(stamped(expressionFilter, '.ok').length).to.be.equal(3);
       expect(stamped(expressionFilter, 'notok')).to.be.empty;
+    });
+
+    /* global trashFilter */
+    test('trashed expression filter', () => {
+      expect(stamped(trashFilter, '.trashFilter').length).to.be.equal(6);
+      expect(stamped(trashFilter, '.notDeletedTrashUndefined').length).to.be.equal(1);
+      expect(stamped(trashFilter, '.deletedTrashUndefined').length).to.be.equal(1);
+      expect(stamped(trashFilter, '.notDeletedTrashFalse').length).to.be.equal(1);
+      expect(stamped(trashFilter, '.notDeletedTrashTrue').length).to.be.equal(1);
+      expect(stamped(trashFilter, '.deletedTrashFalse').length).to.be.equal(1);
+      expect(stamped(trashFilter, '.deletedTrashTrue').length).to.be.equal(1);
     });
 
     /* global multipleFilter */
