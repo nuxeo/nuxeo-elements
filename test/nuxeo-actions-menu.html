@@ -1,0 +1,187 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+<head>
+  <title>nuxeo-user-management tests</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script>
+    window.fetch = null;
+  </script>
+  <script src="../../nuxeo-elements/test/test-helpers.js"></script>
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../iron-test-helpers/mock-interactions.html">
+  <link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
+  <link rel="import" href="../widgets/nuxeo-actions-menu.html">
+  <link rel="import" href="../actions/nuxeo-preview-button.html">
+</head>
+<body>
+
+<test-fixture id="nx">
+  <template>
+    <nuxeo-connection url="/dummy"></nuxeo-connection>
+  </template>
+</test-fixture>
+
+<test-fixture id="menu3">
+    <template>
+      <div style="max-width: 160px;">
+        <nuxeo-actions-menu>
+          <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+          <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+          <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        </nuxeo-actions-menu>
+      </div>
+    </template>
+  </test-fixture>
+
+<test-fixture id="menu5">
+  <template>
+    <div style="max-width: 160px;">
+      <nuxeo-actions-menu>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+      </nuxeo-actions-menu>
+    </div>
+  </template>
+</test-fixture>
+
+
+<test-fixture id="menu4">
+  <template>
+    <div style="max-width: 160px;">
+      <nuxeo-actions-menu>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+      </nuxeo-actions-menu>
+    </div>
+  </template>
+</test-fixture>
+
+<script>
+  /* eslint-disable no-unused-expressions */
+  suite('<nuxeo-actions-meny>', () => {
+    let server;
+
+    setup(() => {
+      server = sinon.fakeServer.create();
+      server.autoRespond = true;
+      const nx = fixture('nx');
+      return login(server, nx);
+    });
+
+    test('menu for 4 with 3 elements', () => {
+      const menu = fixture('menu3');
+      Polymer.dom.flush(menu);
+      return flush().then(() => {
+        expect(menuActions(menu).length).to.be.equal(3);
+        expect(dropdownActions(menu).length).to.be.equal(0);
+        expect(dropdownButton(menu).hidden).to.be.true;
+      });
+    });
+
+    test('menu for 4 with 5 elements', () => {
+      const menu = fixture('menu5');
+      return flush().then(() => {
+        expect(menuActions(menu).length).to.be.equal(3);
+        expect(dropdownActions(menu).length).to.be.equal(2);
+        expect(dropdownButton(menu).hidden).to.be.false;
+      });
+    });
+
+    test('menu of 4 with 4 elements (no dropdown button should be visible)', () => {
+      const menu = fixture('menu4');
+      return flush().then(() => {
+        expect(menuActions(menu).length).to.be.equal(4);
+        expect(dropdownActions(menu).length).to.be.equal(0);
+        expect(dropdownButton(menu).hidden).to.be.true;
+      });
+    });
+
+    test('menu of 4 with varying number of elements', () => {
+      const menu = fixture('menu4');
+      return flush()
+        .then(() => {
+          expect(menuActions(menu).length).to.be.equal(4);
+          expect(dropdownActions(menu).length).to.be.equal(0);
+          expect(dropdownButton(menu).hidden).to.be.true;
+          removeAction(menu);
+          return flush();
+        })
+        .then(() => {
+          expect(menuActions(menu).length).to.be.equal(3);
+          expect(dropdownActions(menu).length).to.be.equal(0);
+          expect(dropdownButton(menu).hidden).to.be.true;
+          addAction(menu);
+          return flush();
+        })
+        .then(() => {
+          expect(menuActions(menu).length).to.be.equal(4);
+          expect(dropdownActions(menu).length).to.be.equal(0);
+          expect(dropdownButton(menu).hidden).to.be.true;
+          addAction(menu);
+          return flush();
+        })
+        .then(() => {
+          expect(menuActions(menu).length).to.be.equal(3);
+          expect(dropdownActions(menu).length).to.be.equal(2);
+          expect(dropdownButton(menu).hidden).to.be.false;
+          removeAction(menu);
+          return flush();
+        })
+        .then(() => {
+          expect(menuActions(menu).length).to.be.equal(4);
+          expect(dropdownActions(menu).length).to.be.equal(0);
+          expect(dropdownButton(menu).hidden).to.be.true;
+          return flush();
+        });
+    });
+
+    function menuActions(div) {
+      return div.querySelector('nuxeo-actions-menu').querySelectorAll(':not([slot="dropdown"])');
+    }
+
+    function dropdownActions(div) {
+      return div.querySelector('nuxeo-actions-menu').querySelectorAll('[slot="dropdown"]');
+    }
+
+    function dropdownButton(div) {
+      return div.querySelector('nuxeo-actions-menu').$.dropdownButton;
+    }
+
+    function removeAction(div) {
+      const menu = div.querySelector('nuxeo-actions-menu');
+      const lastChild = menu.lastElementChild;
+      menu.removeChild(lastChild);
+    }
+
+    function addAction(div) {
+      const menu = div.querySelector('nuxeo-actions-menu');
+      const action = document.createElement('nuxeo-preview-button');
+      action.document = '{ "entity-type": "document", "facets": [] }';
+      menu.appendChild(action);
+    }
+  });
+</script>

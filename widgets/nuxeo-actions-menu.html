@@ -124,8 +124,7 @@ limitations under the License.
         }
 
         get contentWidth() {
-          return this._getMenuElements()
-            .reduce((sum, current) => sum + current.clientWidth, this.$.dropdownButton.clientWidth);
+          return this._getMenuElements().reduce((sum, current) => sum + current.clientWidth, 0);
         }
 
         _reparent(e) {
@@ -183,12 +182,17 @@ limitations under the License.
               while (els.length && this.contentWidth <= this.clientWidth) {
                 this._moveToMenu(els.shift());
               }
+              if (!els.length) {
+                this.$.dropdownButton.hidden = true;
+              }
               // let's move any element in the menu to the "dropdown" slot if it doesn't fit
               els = this._getMenuElements();
-              while (els.length && this.contentWidth > this.clientWidth) {
+              while (els.length && (this.contentWidth + this.$.dropdownButton.offsetWidth) > this.clientWidth) {
                 this._moveToDropdown(els.pop());
+                if (this.$.dropdownButton.hidden) {
+                  this.$.dropdownButton.hidden = false;
+                }
               }
-              this.$.dropdownButton.hidden = !this._getDropdownElements().length;
             },
           );
         }
