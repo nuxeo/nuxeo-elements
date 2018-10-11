@@ -267,6 +267,11 @@ limitations under the License.
               notify: true,
               readOnly: true,
             },
+
+            /**
+             * If `true`, aggregagtes from page provider definition will not be computed.
+             */
+            skipAggregates: Boolean,
           };
         }
 
@@ -346,7 +351,7 @@ limitations under the License.
           if (!this.headers) {
             this.headers = {};
           }
-          if (options && options.skipAggregates) {
+          if (this.skipAggregates || (options && options.skipAggregates)) {
             this.headers.skipAggregates = 'true';
           } else {
             delete this.headers.skipAggregates;
