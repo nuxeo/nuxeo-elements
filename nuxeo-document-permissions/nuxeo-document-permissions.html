@@ -66,9 +66,13 @@ limitations under the License.
         padding: 8px;
         text-align: center;
       }
+
+      [hidden] {
+        display: none !important;
+      }
     </style>
 
-    <nuxeo-document id="doc" doc-id="{{docId}}" doc-path="{{docPath}}" response="{{doc}}"
+    <nuxeo-document id="doc" doc-id="{{docId}}" doc-path="{{docPath}}" response="{{doc}}" loading="{{loading}}"
       enrichers="acls, permissions, userVisiblePermissions" params="{{params}}"></nuxeo-document>
 
     <!-- Local permissions -->
@@ -85,7 +89,7 @@ limitations under the License.
       <div class="content">
         <nuxeo-document-acl-table doc="[[doc]]" acl-filter="_excludeInheritedAcls" ace-filter="_excludeExternalUserAces"
           show-actions="[[_hasPermission(doc,'Everything')]]">
-          <div slot="emptyResult" class="emptyResult">[[i18n('documentPermissions.noLocalPermissions')]]</div>
+          <div slot="emptyResult" class="emptyResult">[[_emptyLabel('documentPermissions.noLocalPermissions', loading, i18n)]]</div>
         </nuxeo-document-acl-table>
       </div>
     </nuxeo-card>
@@ -111,7 +115,7 @@ limitations under the License.
       <div class="content">
         <div class="tip" hidden$="[[_empty(inheritedAces)]]">[[i18n('documentPermissions.blockDescription')]]</div>
         <nuxeo-document-acl-table doc="[[doc]]" aces="{{inheritedAces}}" acl-filter="_onlyInheritedAcls" show-actions="false">
-          <div slot="emptyResult" class="emptyResult">[[i18n('documentPermissions.noInheritedText')]]</div>
+          <div slot="emptyResult" class="emptyResult">[[_emptyLabel('documentPermissions.noInheritedText', loading, i18n)]]</div>
         </nuxeo-document-acl-table>
       </div>
     </nuxeo-card>
@@ -134,7 +138,7 @@ limitations under the License.
                                   acl-filter="_excludeInheritedAcls"
                                   show-actions="[[_hasPermission(doc,'Everything')]]"
                                   share-with-external="true">
-          <div slot="emptyResult" class="emptyResult">[[i18n('documentPermissions.noExternalPermission')]]</div>
+          <div slot="emptyResult" class="emptyResult">[[_emptyLabel('documentPermissions.noExternalPermission', loading, i18n)]]</div>
         </nuxeo-document-acl-table>
       </div>
     </nuxeo-card>
@@ -203,6 +207,7 @@ limitations under the License.
 
         refresh() {
           if (this.visible) {
+            this.doc = null;
             this.params.time = new Date().getTime();
             this.$.doc.get().then(() => {
               this.dispatchEvent(new CustomEvent('iron-resize', {
@@ -267,6 +272,10 @@ limitations under the License.
 
         unblockInheritance() {
           this.$.unblockOp.execute().then(this.refresh.bind(this));
+        }
+
+        _emptyLabel(label, loading) {
+          return loading ? this.i18n('label.loading') : this.i18n(label);
         }
 
       }
