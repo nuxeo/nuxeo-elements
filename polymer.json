@@ -1,4 +1,5 @@
 {
+  "entrypoint": "nuxeo-dataviz-elements.html",
   "lint": {
     "rules": ["polymer-2"],
     "ignoreWarnings": ["set-unknown-attribute", "databinding-calls-must-be-functions"]
