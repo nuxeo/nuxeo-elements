@@ -165,5 +165,14 @@ limitations under the License.
       return user && user.extendedGroups && user.extendedGroups.find((grp) => grp.name === group);
     },
 
+    /**
+     * Checks if the document can be published.
+     */
+    isPublishable(doc) {
+      return doc && !this.isProxy(doc)
+          && this.hasFacet(doc, 'Publishable')
+          && this.hasPermission(doc, 'Write');
+    },
+
   };
 </script>
