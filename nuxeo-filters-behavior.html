@@ -174,5 +174,13 @@ limitations under the License.
           && this.hasPermission(doc, 'Write');
     },
 
+    /**
+     * Checks if the document is a publication.
+     */
+    isPublication(doc) {
+      return doc && this.isProxy(doc)
+          && this.hasFacet(doc, 'Immutable');
+    },
+
   };
 </script>
