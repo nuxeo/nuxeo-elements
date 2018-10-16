@@ -182,5 +182,14 @@ limitations under the License.
           && this.hasFacet(doc, 'Immutable');
     },
 
+    /**
+     * Checks if the document can be tagged.
+     */
+    isTaggable(doc) {
+      return !this.isProxy(doc)
+        && !doc.isVersion
+        && this.hasPermission(doc, 'Write');
+    },
+
   };
 </script>
