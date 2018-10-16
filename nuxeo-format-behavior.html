@@ -87,6 +87,14 @@ limitations under the License.
     },
 
     /**
+     * Returns the translated rendition name.
+     */
+    formatRendition(value) {
+      if (!value) return;
+      return this.i18n(`exportButton.${value}`);
+    },
+
+    /**
      * Returns the version of a document as <major>.<minor>.
      */
     formatVersion(doc) {
