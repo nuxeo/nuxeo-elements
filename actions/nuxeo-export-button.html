@@ -22,7 +22,7 @@ limitations under the License.
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
-<link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../nuxeo-format-behavior.html">
 <link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
@@ -56,10 +56,10 @@ limitations under the License.
     <nuxeo-dialog id="dialog" with-backdrop>
       <h2>[[i18n('exportButton.dialog.heading')]]</h2>
 
-      <dom-repeat items="[[_filterRenditions(document)]]">
+      <dom-repeat items="[[_filterRenditions(document, i18n)]]">
         <template>
           <div class="item">
-            <iron-icon src="[[item.icon]]"></iron-icon> <a href="[[item.url]]" download>[[i18n(item.name)]]</a>
+            <iron-icon src="[[item.icon]]"></iron-icon> <a href="[[item.url]]" download>[[item.label]]</a>
           </div>
         </template>
       </dom-repeat>
@@ -84,7 +84,7 @@ limitations under the License.
        * @memberof Nuxeo
        * @demo demo/nuxeo-export-button/index.html
        */
-      class ExportButton extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
+      class ExportButton extends Polymer.mixinBehaviors([Nuxeo.FormatBehavior], Nuxeo.Element) {
 
         static get is() {
           return 'nuxeo-export-button';
@@ -137,7 +137,8 @@ limitations under the License.
             return document.contextParameters.renditions
               .filter((rendition) =>
                 rendition.kind !== 'nuxeo:video:conversion' && rendition.kind !== 'nuxeo:picture:conversion')
-              .map((item) => Object.assign({name: `exportButton.${item.name}`}, item));
+              .map((item) =>
+                Object.assign({label: this.formatRendition(item.name)}, item));
           }
           return [];
         }
