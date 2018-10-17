@@ -20,6 +20,8 @@ limitations under the License.
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-listbox/paper-listbox.html">
 <link rel="import" href="../../paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../widgets/nuxeo-tooltip.html">
 
 <dom-module id="nuxeo-actions-menu">
   <template>
@@ -72,6 +74,7 @@ limitations under the License.
         <slot id="dropdown" name="dropdown"></slot>
       </paper-listbox>
     </paper-menu-button>
+    <paper-tooltip for="dropdownButton">[[i18n('actionsMenu.more')]]</paper-tooltip>
 
   </template>
 
@@ -93,7 +96,7 @@ limitations under the License.
        * @memberof Nuxeo
        * @demo demo/nuxeo-actions-menu/index.html
        */
-      class ActionsMenu extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Nuxeo.Element) {
+      class ActionsMenu extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior, Nuxeo.I18nBehavior], Nuxeo.Element) {
 
         static get is() {
           return 'nuxeo-actions-menu';
