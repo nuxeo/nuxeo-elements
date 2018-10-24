@@ -27,7 +27,6 @@ limitations under the License.
 <link rel="import" href="../../polymer/lib/utils/render-status.html">
 <link rel="import" href="../nuxeo-page-provider-display-behavior.html">
 <link rel="import" href="../nuxeo-routing-behavior.html">
-<link rel="import" href="../widgets/nuxeo-sort-select.html">
 
 <dom-module id="nuxeo-justified-grid">
   <template>
@@ -110,12 +109,6 @@ limitations under the License.
       }
     </style>
 
-    <dom-if if="[[displaySort]]">
-      <template>
-        <nuxeo-sort-select label="[[sortLabel]]" options="[[sortOptions]]" selected="{{sortSelected}}"></nuxeo-sort-select>
-      </template>
-    </dom-if>
-
     <dom-if if="[[_isEmpty]]">
       <template>
         <div class="emptyResult">[[_computedEmptyLabel]]</div>
@@ -186,41 +179,6 @@ limitations under the License.
               type: Number,
               value: 50,
             },
-            /**
-             * If enabled, it allows to sort the results of the search results.
-             */
-            displaySort: {
-              type: Boolean,
-              value: false,
-            },
-            /**
-             * Name of the sort label displayed on Grid view mode "Sort by" at the top
-             * of the search results. If the field is empty, the label will be hidden.
-             */
-            sortLabel: {
-              type: String,
-              value: '',
-            },
-            /**
-             * Sort option selected by default (can retrieve the one configured in sort-options).
-             */
-            sortSelected: {
-              type: Object,
-            },
-            /**
-             * List of properties available to sort the result list.
-             * It should be formatted as a JSON array of objects like:
-             * ```
-             * [
-             *   {field: 'dc:title', label: this.i18n('searchResults.sort.field.title'), order: 'asc'},
-             *   {field: 'dc:created', label: this.i18n('searchResults.sort.field.created'), order: 'asc', selected: true}
-             * ]
-             * ```
-             */
-            sortOptions: {
-              type: Array,
-              value: [],
-            },
 
             rows: {
               type: Array,
@@ -240,7 +198,7 @@ limitations under the License.
 
         static get observers() {
           return [
-            '_refresh(nxProvider, sortSelected)',
+            '_refresh(nxProvider)',
             '_selectedItemsChanged(selectedItems.splices)',
           ];
         }
@@ -358,10 +316,7 @@ limitations under the License.
         }
 
         _refresh() {
-          if (this.sortSelected && this._hasPageProvider()) {
-            const sort = {};
-            sort[this.sortSelected.field] = this.sortSelected.order;
-            this.nxProvider.sort = sort;
+          if (this._hasPageProvider()) {
             this.reset();
             this.fetch();
           }

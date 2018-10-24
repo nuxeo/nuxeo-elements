@@ -31,7 +31,6 @@ limitations under the License.
 <link rel="import" href="../../polymer/lib/utils/async.html">
 <link rel="import" href="../../polymer/lib/utils/debounce.html">
 <link rel="import" href="../widgets/nuxeo-dialog.html">
-<link rel="import" href="../nuxeo-quick-filters/nuxeo-quick-filters.html">
 
 <link rel="import" href="data-table-column.html">
 <link rel="import" href="data-table-column-sort.html">
@@ -178,13 +177,6 @@ limitations under the License.
       </div>
 
       <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
-
-      <dom-if if="[[displayQuickFilters]]">
-        <template>
-          <nuxeo-quick-filters quick-filters="{{quickFilters}}" on-quick-filters-changed="_quickFilterChanged">
-          </nuxeo-quick-filters>
-        </template>
-      </dom-if>
 
       <div id="header">
         <nuxeo-data-table-row header>
@@ -485,6 +477,7 @@ limitations under the License.
 
         constructor() {
           super();
+          this.handlesSorting = true;
           this._observer = Polymer.dom(this).observeNodes((info) => {
             const hasColumns = function (node) {
               return (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'NUXEO-DATA-TABLE-COLUMN');

@@ -166,11 +166,6 @@ limitations under the License.
           value: 'item',
         },
 
-        displayQuickFilters: {
-          type: Boolean,
-          value: false,
-        },
-
         quickFilters: {
           type: Array,
           notify: true,
@@ -179,6 +174,16 @@ limitations under the License.
         scrollThrottle: {
           type: Number,
           value: 60,
+        },
+
+        handlesSorting: {
+          type: Boolean,
+          value: false,
+        },
+
+        handlesFiltering: {
+          type: Boolean,
+          value: false,
         },
 
         _lastSelectedIndex: Number,
