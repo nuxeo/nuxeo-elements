@@ -21,42 +21,57 @@ limitations under the License.
 <link rel="import" href="../../paper-item/paper-item.html">
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../nuxeo-i18n-behavior.html">
 <link rel="import" href="../widgets/nuxeo-select.html">
+<link rel="import" href="../widgets/nuxeo-tooltip.html">
 
 <dom-module id="nuxeo-sort-select">
   <template>
     <style>
       :host {
         display: block;
-      }
-
-      #container {
         @apply --layout-horizontal;
         @apply --layout-center;
       }
 
       nuxeo-select {
-        padding: 0 16px 24px 0;
-        width: 200px;
+        padding-left: 8px;
+        width: 160px;
+        --paper-input-container: {
+          padding: 0;
+        };
+        --paper-input-container-input: {
+          font-size: var(--nuxeo-sort-select-input-font-size, inherit);
+          font-weight: bold;
+        };
+      }
+
+      span {
+        font-size: var(--nuxeo-sort-select-input-font-size, inherit);
+      }
+
+      paper-icon-button {
+        max-width: var(--nuxeo-sort-select-order-toggle-width, 20px);
+        max-height: var(--nuxeo-sort-select-order-toggle-height, 20px);
+        padding: 0;
+        margin: 0 16px;
       }
     </style>
 
-    <div id="container">
+    <nuxeo-select attr-for-selected="option" selected="{{selected}}">
+      <dom-if if="[[options]]">
+        <template>
+          <dom-repeat items="[[options]]" as="item">
+            <template>
+              <paper-item option="[[item]]">[[item.label]]</paper-item>
+            </template>
+          </dom-repeat>
+        </template>
+      </dom-if>
+    </nuxeo-select>
 
-      <nuxeo-select label="[[label]]" attr-for-selected="option" selected="{{selected}}">
-        <dom-if if="[[options]]">
-          <template>
-            <dom-repeat items="[[options]]" as="item">
-              <template>
-                <paper-item option="[[item]]">[[item.label]]</paper-item>
-              </template>
-            </dom-repeat>
-          </template>
-        </dom-if>
-      </nuxeo-select>
-
-      <paper-icon-button noink on-click="_toggleSortOrder" icon="[[_sortOrderIcon(_sortOrder)]]"></paper-icon-button>
-    </div>
+    <paper-icon-button id="reverse" noink on-click="_toggleSortOrder" icon="[[_sortOrderIcon(_sortOrder)]]"></paper-icon-button>
+    <nuxeo-tooltip for="reverse">[[i18n('sortSelect.reverseOrder')]]</nuxeo-tooltip>
 
   </template>
 
@@ -65,10 +80,11 @@ limitations under the License.
       /**
        * An element to select sort field and sort order.
        *
+       * @appliesMixin Nuxeo.I18nBehavior
        * @memberof Nuxeo
        * @demo demo/nuxeo-sort-select/index.html
        */
-      class SortSelect extends Nuxeo.Element {
+      class SortSelect extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior], Nuxeo.Element) {
 
         static get is() {
           return 'nuxeo-sort-select';
@@ -76,11 +92,6 @@ limitations under the License.
 
         static get properties() {
           return {
-            label: {
-              type: String,
-              value: '',
-            },
-
             options: {
               type: Array,
               value: [],
