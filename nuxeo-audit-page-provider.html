@@ -179,11 +179,12 @@ limitations under the License.
             },
 
             /**
-             * List of content enrichers to use.
+             * The `content enricher` of the resource.
+             * Can be an object with entity type as keys or list or string (which defaults to `document` entity type).
              */
             enrichers: {
-              type: String,
-              value: '',
+              type: Object,
+              value: {},
             },
 
             /**
