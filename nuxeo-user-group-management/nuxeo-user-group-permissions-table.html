@@ -134,9 +134,13 @@ limitations under the License.
     <nuxeo-operation id="permissions" op="Repository.Query" enrichers="acls"></nuxeo-operation>
     <nuxeo-operation id="rmPermission" op="Document.RemovePermission"></nuxeo-operation>
 
-    <div class="layout horizontal center">
-      <h3>[[label]]</h3>
-    </div>
+    <dom-if if=[[label]]>
+      <template>
+        <div class="layout horizontal center">
+          <h3>[[label]]</h3>
+        </div>
+      </template>
+    </dom-if>
 
     <div class="table">
       <div class="table-header">

@@ -40,16 +40,6 @@ limitations under the License.
         display: block;
       }
 
-      .user-icon {
-        margin: 8px;
-        width: 1.3rem;
-      }
-
-      .user {
-        font-size: 1.1rem;
-        font-weight: bold;
-      }
-
       .actions {
         @apply --layout-horizontal;
         @apply --layout-flex;
@@ -103,6 +93,38 @@ limitations under the License.
         @apply --buttons-bar;
         margin-top: 2em;
       }
+
+      .header {
+        height: auto;
+        padding: 0;
+      }
+
+      .header .heading {
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+      }
+
+      .user-icon {
+        margin: 8px;
+        width: 1.3rem;
+      }
+
+      /* buttons */
+      paper-button.primary {
+        background-color: var(--nuxeo-button-primary, #00adff);
+        color: #fff;
+        font-weight: 700;
+      }
+
+      paper-button.primary:hover,
+      paper-button.primary:focus {
+        background-color: var(--nuxeo-button-primary-focus, #0079b3);
+        font-weight: inherit;
+        color: #fff !important;
+      }
+
     </style>
 
     <nuxeo-connection id="nxcon"></nuxeo-connection>
@@ -113,11 +135,11 @@ limitations under the License.
 
     <nuxeo-card>
 
-      <div class="horizontal layout center">
+      <div class="horizontal layout center header">
 
         <iron-icon class="user-icon" icon="nuxeo:user"></iron-icon>
         <div class="layout vertical">
-          <div class="user">[[user.id]]</div>
+          <div class="user heading">[[user.id]]</div>
           <div>[[user.properties.firstName]] [[user.properties.lastName]]</div>
         </div>
 
@@ -186,18 +208,16 @@ limitations under the License.
     </nuxeo-card>
 
     <!-- local permissions -->
-    <nuxeo-card>
-      <nuxeo-user-group-permissions-table label="[[i18n('userManagement.localPermissions.heading')]]"
-                                          entity="[[username]]" readonly>
+    <nuxeo-card heading="[[i18n('userManagement.localPermissions.heading')]]">
+      <nuxeo-user-group-permissions-table entity="[[username]]" readonly>
       </nuxeo-user-group-permissions-table>
     </nuxeo-card>
 
     <!-- group permissions -->
-    <nuxeo-card>
+    <nuxeo-card heading="[[i18n('userManagement.entityPermissions', item.name)]]">
       <dom-repeat items="[[groups]]">
         <template>
-          <nuxeo-user-group-permissions-table label="[[i18n('userManagement.entityPermissions', item.name)]]"
-                                              entity="[[item.name]]" readonly>
+          <nuxeo-user-group-permissions-table entity="[[item.name]]" readonly>
           </nuxeo-user-group-permissions-table>
         </template>
       </dom-repeat>
