@@ -253,7 +253,7 @@ limitations under the License.
             },
 
             /**
-             * To take into account deleted Documents (i.e. Documents with lifecycle deleted).
+             * To take into account trashed Documents.
              */
             includeDeleted: {
               type: Boolean,
@@ -411,7 +411,7 @@ limitations under the License.
           if (!this.includeDeleted) {
             result.push({
               term: {
-                'ecm:currentLifeCycleState': 'deleted',
+                'ecm:isTrashed': true,
               },
             });
           }
@@ -430,7 +430,7 @@ limitations under the License.
           if (!this.includeVersion) {
             result.push({
               term: {
-                'ecm:isVersion': '0',
+                'ecm:isVersion': false,
               },
             });
           }

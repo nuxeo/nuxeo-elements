@@ -118,7 +118,7 @@ limitations under the License.
 
         _isAvailable(doc) {
           return doc && this.hasPermission(doc, 'Write') && !this.isImmutable(doc) &&
-              doc.type !== 'Root' && doc.state !== 'deleted';
+              !this.hasType(doc, 'Root') && !this.isTrashed(doc);
         }
 
         _computeLabel() {
