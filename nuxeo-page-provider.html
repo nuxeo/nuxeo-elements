@@ -31,6 +31,7 @@ limitations under the License.
       connection-id="[[connectionId]]"
       path="{{path}}"
       enrichers="{{enrichers}}"
+
       schemas="[[schemas]]"
       headers="{{headers}}">
     </nuxeo-resource>
@@ -223,11 +224,12 @@ limitations under the License.
             },
 
             /**
-             * List of content enrichers to use.
+             * The `content enricher` of the resource.
+             * Can be an object with entity type as keys or list or string (which defaults to `document` entity type).
              */
             enrichers: {
-              type: String,
-              value: '',
+              type: Object,
+              value: {},
             },
 
             /**

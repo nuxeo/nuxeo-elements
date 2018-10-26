@@ -128,10 +128,14 @@ limitations under the License.
               value: null,
             },
 
-            /** The `content enricher` of the resource. */
+            /**
+             * The `content enricher` of the resource.
+             * Can be an object with entity type as keys or list or string with the entity type defined by
+             * `enrichers-entity`.
+             */
             enrichers: {
-              type: String,
-              value: '',
+              type: Object,
+              value: {},
             },
 
             /** The `content enricher` entity-type of the resource. Default value for Nuxeo Document Model */
@@ -245,9 +249,20 @@ limitations under the License.
           options.headers['Content-Type'] = this.contentType;
           // Look up content enrichers parameter
           if (this.enrichers) {
-            options.headers[`enrichers-${this.enrichersEntity}`] = this.enrichers;
-            // NXP-18425: send also header with dot separator for compat with < 7.10-HF01
-            options.headers[`X-NXenrichers.${this.enrichersEntity}`] = this.enrichers;
+            let enrich = {};
+            if (typeof this.enrichers === 'string') {
+              enrich[this.enrichersEntity] = this.enrichers;
+            } else {
+              enrich = this.enrichers;
+            }
+            Object.entries(enrich).forEach(([type, value]) => {
+              let v = value;
+              if (Array.isArray(value)) {
+                v = value.join(',');
+              }
+              options.headers[`enrichers-${type}`] = v;
+            });
+
           }
 
           // resolve with full response to skip default unmarshallers
