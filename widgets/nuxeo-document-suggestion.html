@@ -54,7 +54,8 @@ limitations under the License.
                    invalid="[[invalid]]"
                    init-selection="[[initSelection]]"
                    id-function="[[_idFunction]]"
-                   stay-open-on-select="[[stayOpenOnSelect]]">
+                   stay-open-on-select="[[stayOpenOnSelect]]"
+                   enrichers=[[enrichers]]>
     </nuxeo-selectivity>
 
   </template>
@@ -242,6 +243,14 @@ limitations under the License.
               value() {
                 return this._initSelection.bind(this);
               },
+            },
+
+            /**
+             * The `content enricher` of the operation.
+             */
+            enrichers: {
+              type: String,
+              value: '',
             },
           };
         }

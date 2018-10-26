@@ -64,7 +64,7 @@ limitations under the License.
 
     </style>
 
-    <nuxeo-operation id="op" op="[[operation]]"></nuxeo-operation>
+    <nuxeo-operation id="op" op="[[operation]]" enrichers=[[enrichers]]></nuxeo-operation>
 
     <label class="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
 
@@ -298,6 +298,14 @@ limitations under the License.
              * Error message to show when `invalid` is true.
              */
             errorMessage: String,
+
+            /**
+             * The `content enricher` of the operation.
+             */
+            enrichers: {
+              type: String,
+              value: '',
+            },
           };
         }
 
