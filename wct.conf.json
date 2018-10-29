@@ -4,7 +4,7 @@
       "dir": "./coverage",
       "reporters": ["text-summary", "lcov"],
       "include": [
-        "**/nuxeo-ui-elements/**/*.html"
+        "**/nuxeo-ui-elements/*.html"
       ],
       "exclude": []
     },
@@ -14,31 +14,26 @@
         {
           "browserName": "chrome",
           "platform": "Windows 10",
-          "version": "63"
+          "version": "latest"
         },
         {
           "browserName": "firefox",
           "platform": "Windows 10",
-          "version": "57"
+          "version": "latest"
         },
         {
           "browserName": "microsoftedge",
           "platform": "Windows 10",
-          "version": "15"
-        },
-        {
-          "browserName": "internet explorer",
-          "platform": "Windows 8.1",
-          "version": "11"
+          "version": "latest"
         },
         {
           "browserName": "safari",
           "platform": "macOS 10.13",
-          "version": "11"
+          "version": "latest"
         },
         {
           "browserName": "ipad",
-          "platform": "iOS 11.1"
+          "platform": "iOS 11.3"
         },
         {
           "browserName": "chrome",
