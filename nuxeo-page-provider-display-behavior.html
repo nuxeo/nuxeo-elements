@@ -500,6 +500,7 @@ limitations under the License.
         if (this._hasPageProvider()) {
           return this._fetchRange(0, this._pageSize - 1, true);
         }
+        return Promise.resolve();
       },
 
       /**
@@ -530,6 +531,7 @@ limitations under the License.
             return response;
           });
         }
+        return Promise.resolve();
       },
 
       /**
@@ -650,6 +652,7 @@ limitations under the License.
 
           });
         }
+        return Promise.resolve();
       },
 
       _scrollChanged() {
