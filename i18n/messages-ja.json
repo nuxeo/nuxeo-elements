@@ -175,6 +175,7 @@
   "shareButton.operation.copied": "Link Copied",
   "shareButton.operation.copy": "Copy Link",
   "shareButton.tooltip": "共有",
+  "sortSelect.reverseOrder": "Reverse sort order",
   "tableSettings.columnSettings": "列の設定",
   "tableSettings.columnSettings.close": "閉じる",
   "tableSettings.columnSettings.reset": "リセット",

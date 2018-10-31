@@ -175,6 +175,7 @@
   "shareButton.operation.copied": "Esteka kopiatuta",
   "shareButton.operation.copy": "Kopiatu esteka",
   "shareButton.tooltip": "Partekatu",
+  "sortSelect.reverseOrder": "Reverse sort order",
   "tableSettings.columnSettings": "Zutabe-ezarpenak",
   "tableSettings.columnSettings.close": "Itxi",
   "tableSettings.columnSettings.reset": "Berrezarri",

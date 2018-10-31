@@ -175,6 +175,7 @@
   "shareButton.operation.copied": "已复制链接",
   "shareButton.operation.copy": "复制链接",
   "shareButton.tooltip": "分享",
+  "sortSelect.reverseOrder": "Reverse sort order",
   "tableSettings.columnSettings": "列设置",
   "tableSettings.columnSettings.close": "关闭",
   "tableSettings.columnSettings.reset": "重置",

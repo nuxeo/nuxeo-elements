@@ -175,6 +175,7 @@
   "shareButton.operation.copied": "Link Copied",
   "shareButton.operation.copy": "Copy Link",
   "shareButton.tooltip": "Delen",
+  "sortSelect.reverseOrder": "Reverse sort order",
   "tableSettings.columnSettings": "Kolominstellingen",
   "tableSettings.columnSettings.close": "Sluiten",
   "tableSettings.columnSettings.reset": "Resetten",
