@@ -82,7 +82,7 @@ limitations under the License.
       <nuxeo-image-viewer src="[[_computeImageSource(_blob)]]" controls responsive></nuxeo-image-viewer>
     </template>
 
-    <template mime-pattern="video.*">
+    <template mime-pattern="video.*|application/(g|m)xf">
       <nuxeo-video-viewer id="video" controls
                           sources="[[_computeVideoSources(_blob)]]"
                           storyboard="[[_computeStoryboard(_blob)]]"></nuxeo-video-viewer>
@@ -261,7 +261,7 @@ limitations under the License.
           }
           // fallback to blob data if there are no transcoded videos (e.g. video documents managed by liveconnect)
           if (this.xpath) {
-            if (this._blob && this._blob['mime-type'] && this._blob['mime-type'].match('video.*')) {
+            if (this._blob && this._blob['mime-type'] && this._blob['mime-type'].match('video.*|application/(g|m)xf')) {
               return [{
                 data: this._blob.data,
                 type: this._blob['mime-type'],
