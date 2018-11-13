@@ -1,5 +1,5 @@
 {
-  "actionsMenu.more": "More",
+  "actionsMenu.more": "Plus",
   "addToCollectionButton.dialog.add": "Ajouter",
   "addToCollectionButton.dialog.cancel": "Annuler",
   "addToCollectionButton.dialog.collections": "Collections",
@@ -175,7 +175,7 @@
   "shareButton.operation.copied": "Lien copié",
   "shareButton.operation.copy": "Copier le Lien",
   "shareButton.tooltip": "Partager",
-  "sortSelect.reverseOrder": "Reverse sort order",
+  "sortSelect.reverseOrder": "Inverser l'ordre de tri",
   "tableSettings.columnSettings": "Colonnes",
   "tableSettings.columnSettings.close": "Fermer",
   "tableSettings.columnSettings.reset": "Réinitialiser",
