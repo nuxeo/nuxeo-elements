@@ -43,6 +43,10 @@ limitations under the License.
         @apply --nuxeo-label;
       }
 
+      :host([invalid]) label {
+        color: var(--paper-input-container-invalid-color, red);
+      }
+
       vaadin-date-picker {
         padding-bottom: 8px;
       }
