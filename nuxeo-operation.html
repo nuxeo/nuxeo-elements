@@ -160,6 +160,22 @@ limitations under the License.
               notify: true,
               readOnly: true,
             },
+
+            /**
+             * If true, execute the operation asynchronously.
+             */
+            async: {
+              type: Boolean,
+              value: false,
+            },
+
+            /**
+             * Poll interval in ms.
+             */
+            pollInterval: {
+              type: Number,
+              value: 1000,
+            },
           };
         }
 
@@ -233,10 +249,30 @@ limitations under the License.
             this._operation = this._operation.context(params.context);
           }
 
-          return this._operation
+          if (this.async) {
+            options.url = `${this._operation._computeRequestURL()}/@async`;
+            options.resolveWithFullResponse = true;
+          }
+
+          let promise = this._operation
             .params(params)
             .input(input)
-            .execute(options)
+            .execute(options);
+
+          if (this.async) {
+            promise = promise.then((res) => {
+              if (res.status === 202) {
+                this.dispatchEvent(new CustomEvent('poll-start', {
+                  bubbles: true,
+                  composed: true,
+                }));
+                return this._poll(res.headers.get('location'));
+              }
+              return res;
+            });
+          }
+
+          return promise
             .then((data) => {
               this.dispatchEvent(new CustomEvent('response', {
                 bubbles: true,
@@ -264,6 +300,22 @@ limitations under the License.
               this._setActiveRequests(this.activeRequests - 1);
               throw error;
             });
+        }
+
+        _poll(url) {
+          return new Promise((resolve) => {
+            const fn = () => {
+              this.$.nx.http(url).then((res) => {
+                // 303 - see other (for result)
+                if (res.redirected) {
+                  resolve(res);
+                } else {
+                  window.setTimeout(() => fn(), this.pollInterval, url);
+                }
+              });
+            };
+            fn();
+          });
         }
 
         _isLoading() {
