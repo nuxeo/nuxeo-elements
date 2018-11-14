@@ -23,6 +23,7 @@ limitations under the License.
     <link rel="import" href="../../polymer/polymer.html">
     <script src="test-helpers.js"></script>
     <link rel="import" href="../nuxeo-operation.html">
+    <link rel="import" href="../nuxeo-page-provider.html">
   </head>
 
   <body>
@@ -39,6 +40,11 @@ limitations under the License.
     <test-fixture id="nxc-loading">
       <template>
         <nuxeo-operation id="nxc-loading" connection-id="nxc-loading" op="something"></nuxeo-operation>
+      </template>
+    </test-fixture>
+    <test-fixture id="nx-pp">
+      <template>
+        <nuxeo-page-provider id="nx-pp" provider="test_provider" page="2" page-size="40" sort='{"field": "asc"}' params='{"boolean": false}' ></nuxeo-page-provider>
       </template>
     </test-fixture>
 
@@ -165,7 +171,7 @@ limitations under the License.
             );
           });
 
-          test('should\'t retrieve something valid', () => {
+          test('shouldn\'t retrieve something valid', () => {
             server.respondWith(
               'POST',
               '/api/v1/automation/something',
@@ -185,7 +191,7 @@ limitations under the License.
             });
           });
 
-          test('should\'t retrieve something invalid', () => {
+          test('shouldn\'t retrieve something invalid', () => {
             server.respondWith(
               'POST',
               '/api/v1/automation/something',
@@ -207,6 +213,68 @@ limitations under the License.
 
         });
 
+        suite('when page provider is given as input', () => {
+
+          setup(() => {
+            server.respondWith('GET', '/json/cmis', [
+              200,
+              responseHeaders.json,
+              '{}',
+            ]);
+            server.respondWith(
+              'POST',
+              '/api/v1/automation/login',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"login","username":"Administrator"}',
+              ],
+            );
+            server.respondWith(
+              'GET',
+              '/api/v1/user/Administrator',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"user","username":"Administrator"}',
+              ],
+            );
+          });
+
+          test('it should send provider as parameters', async () => {
+            server.respondWith(
+              'POST',
+              '/api/v1/automation/something',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"documents", "entries": []}',
+              ],
+            );
+
+            const provider = fixture('nx-pp');
+            const operation = fixture('nxc-ok');
+            operation.input = provider;
+            return operation.execute()
+              .then(() => {
+                const last = server.requests.pop();
+                const body = JSON.parse(last.requestBody);
+                expect(body).to.deep.equal({
+                  params: {
+                    providerName: 'test_provider',
+                    currentPageIndex: 1,
+                    pageSize: 40,
+                    sortBy: 'field',
+                    sortOrder: 'asc',
+                    boolean: 'false',
+                  },
+                  context: {},
+                });
+              });
+
+          });
+
+        });
       });
     </script>
   </body>

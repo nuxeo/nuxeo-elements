@@ -89,7 +89,7 @@ limitations under the License.
 
             /** The operation input. */
             input: {
-              type: String,
+              type: Object,
             },
 
             /** If true, automatically execute the operation when either `op` or `params` changes. */
@@ -174,10 +174,21 @@ limitations under the License.
          *
          * @event response
          */
-
         execute() {
           this._setActiveRequests(this.activeRequests + 1);
+
           const params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
+
+          let {input} = this;
+
+          // support page provider as input to operations
+          // relies on parameters naming convention until provider marshaller is available
+          if (input instanceof Nuxeo.PageProvider) {
+            params.providerName = input.provider;
+            Object.assign(params, input._params);
+            input = undefined;
+          }
+
           const options = {};
           // Look up document schemas to be returned
           if (this.schemas && this.schemas.length > 1) {
@@ -206,7 +217,7 @@ limitations under the License.
           }
           return this.$.nx.operation(this.op).then((operation) => {
             this._operation = operation;
-            return this._doExecute(params, options);
+            return this._doExecute(input, params, options);
           });
         }
 
@@ -216,13 +227,14 @@ limitations under the License.
           }
         }
 
-        _doExecute(params, options) {
+        _doExecute(input, params, options) {
           if (params.context) {
             this._operation = this._operation.context(params.context);
           }
+
           return this._operation
             .params(params)
-            .input(this.input)
+            .input(input)
             .execute(options)
             .then((data) => {
               this.dispatchEvent(new CustomEvent('response', {
