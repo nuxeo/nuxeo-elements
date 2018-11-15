@@ -27,7 +27,7 @@ limitations under the License.
   <template>
     <style include="nuxeo-action-button-styles"></style>
 
-    <nuxeo-operation id="op" op="[[operation]]" input="[[input]]" params="[[params]]" sync-indexing$="[[syncIndexing]]">
+    <nuxeo-operation id="op" op="[[operation]]" input="[[input]]" params="[[params]]" sync-indexing$="[[syncIndexing]]" async$=[[async]] poll-interval="[[pollInterval]]">
     </nuxeo-operation>
 
     <div class="action" on-click="_execute">
@@ -82,11 +82,11 @@ limitations under the License.
             operation: String,
 
             /* Pass contextual information that will be forwarded to the operation,
-          * automation chain or script triggered as the input for the first
-          * operation. Possible options depend on the slot chosen.
-          * [Documentation](https://doc.nuxeo.com/nxdoc/web-ui-slots)
-          */
-            input: String,
+             * automation chain or script triggered as the input for the first
+             * operation. Possible options depend on the slot chosen.
+             * [Documentation](https://doc.nuxeo.com/nxdoc/web-ui-slots)
+             */
+            input: Object,
 
             /**
              * If true, documents changed by the operation call will be reindexed synchronously server side.
@@ -128,6 +128,22 @@ limitations under the License.
             /* The detail of the event fired on completion.  */
             detail: {
               type: String,
+            },
+
+            /**
+             * If true, execute the operation asynchronously.
+             */
+            async: {
+              type: Boolean,
+              value: false,
+            },
+
+            /**
+             * Poll interval in ms.
+             */
+            pollInterval: {
+              type: Number,
+              value: 1000,
             },
 
             _tooltip: {
