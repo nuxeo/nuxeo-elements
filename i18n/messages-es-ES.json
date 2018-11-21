@@ -90,6 +90,7 @@
   "error.500": "Error Interno del servidor",
   "exportButton.dialog.cancel": "Cancelar",
   "exportButton.dialog.heading": "Exportar",
+  "exportButton.imageToPDF": "PDF",
   "exportButton.pdf": "PDF",
   "exportButton.thumbnail": "Miniatura",
   "exportButton.tooltip": "Exportar",

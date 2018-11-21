@@ -90,6 +90,7 @@
   "error.500": "Erreur serveur",
   "exportButton.dialog.cancel": "Annuler",
   "exportButton.dialog.heading": "Export",
+  "exportButton.imageToPDF": "PDF",
   "exportButton.pdf": "PDF",
   "exportButton.thumbnail": "Vignette",
   "exportButton.tooltip": "Export",

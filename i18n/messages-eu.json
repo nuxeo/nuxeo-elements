@@ -90,6 +90,7 @@
   "error.500": "Zerbitzariaren barne-errorea",
   "exportButton.dialog.cancel": "Utzi",
   "exportButton.dialog.heading": "Esportatu",
+  "exportButton.imageToPDF": "PDF",
   "exportButton.pdf": "PDF",
   "exportButton.thumbnail": "Aurrebista",
   "exportButton.tooltip": "Esportatu",

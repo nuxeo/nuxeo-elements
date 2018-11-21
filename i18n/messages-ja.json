@@ -90,6 +90,7 @@
   "error.500": "内部サーバエラー",
   "exportButton.dialog.cancel": "キャンセル",
   "exportButton.dialog.heading": "エクスポート",
+  "exportButton.imageToPDF": "PDF",
   "exportButton.pdf": "PDF",
   "exportButton.thumbnail": "サムネイル",
   "exportButton.tooltip": "エクスポート",
