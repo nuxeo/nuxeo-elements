@@ -105,7 +105,14 @@ limitations under the License.
         connectedCallback() {
           super.connectedCallback();
           this._observer = new Polymer.FlattenedNodesObserver(this, ({addedNodes, removedNodes}) => {
-            if (addedNodes.length > 0 || removedNodes.length > 0) {
+            // mark unresolved custom elements
+            const unresolved = addedNodes.filter((node) => node.tagName && node.tagName.includes('-') &&
+              !customElements.get(node.tagName.toLowerCase()));
+            // defer rendering for non resolved elements
+            unresolved.forEach((node) =>
+              customElements.whenDefined(node.tagName.toLowerCase()).then(this._layout.bind(this)));
+            if ((addedNodes.length > 0 && unresolved.length === 0) || removedNodes.length > 0) {
+              // do instant rendering if we're removing nodes or adding at least one resolved element
               this._layout();
             }
           });
@@ -182,7 +189,7 @@ limitations under the License.
         }
 
         _layout(e) {
-          if (e && e.composedPath().find((el) => el.id === 'reparent' || el.id === 'dropdownButton')) {
+          if (e && e.type && e.composedPath().find((el) => el.id === 'reparent' || el.id === 'dropdownButton')) {
             return; // skip events from within reparented actions
           }
           this.__layoutDebouncer = Polymer.Debouncer.debounce(
