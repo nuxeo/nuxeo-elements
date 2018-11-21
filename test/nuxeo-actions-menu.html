@@ -29,6 +29,7 @@ limitations under the License.
   <link rel="import" href="../../polymer/polymer.html">
   <link rel="import" href="../../iron-test-helpers/mock-interactions.html">
   <link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
+  <link rel="import" href="../nuxeo-slots.html">
   <link rel="import" href="../widgets/nuxeo-actions-menu.html">
   <link rel="import" href="../actions/nuxeo-preview-button.html">
 </head>
@@ -79,6 +80,55 @@ limitations under the License.
     </div>
   </template>
 </test-fixture>
+
+<test-fixture id="menuSlotted1">
+  <template>
+    <div style="max-width: 160px;">
+      <nuxeo-actions-menu>
+        <nuxeo-slot slot="SLOT"></nuxeo-slot>
+      </nuxeo-actions-menu>
+    </div>
+  </template>
+</test-fixture>
+
+<test-fixture id="menuSlottedContent1">
+  <template>
+    <nuxeo-slot-content name="content" slot="SLOT">
+      <template>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+      </template>
+    </nuxeo-slot-content>
+  </template>
+</test-fixture>
+
+<test-fixture id="menuSlotted2">
+    <template>
+      <div style="max-width: 160px;">
+        <nuxeo-actions-menu>
+          <nuxeo-slot slot="SLOT"></nuxeo-slot>
+        </nuxeo-actions-menu>
+      </div>
+    </template>
+  </test-fixture>
+  
+  <test-fixture id="menuSlottedContent2">
+    <template>
+      <nuxeo-slot-content name="content" slot="SLOT">
+        <template>
+          <nuxeo-operation-button icon="icons:home"></nuxeo-operation-button>
+          <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+          <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+          <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+          <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+          <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        </template>
+      </nuxeo-slot-content>
+    </template>
+  </test-fixture>
 
 <script>
   /* eslint-disable no-unused-expressions */
@@ -159,12 +209,44 @@ limitations under the License.
         });
     });
 
+    test('menu with slotted content', () => {
+      const menu = fixture('menuSlotted1');
+      return flush()
+        .then(() => {
+          fixture('menuSlottedContent1');
+          return flush();
+        })
+        .then(() => {
+          expect(menuActions(menu).length).to.be.equal(3);
+          expect(dropdownActions(menu).length).to.be.equal(2);
+          expect(dropdownButton(menu).hidden).to.be.false;
+        });
+    });
+
+    test('menu with unresolved slotted content', () => {
+      const menu = fixture('menuSlotted2');
+      return flush()
+        .then(() => {
+          fixture('menuSlottedContent2');
+          return new Promise((resolve) =>
+            Polymer.importHref(
+              '../widgets/nuxeo-operation-button.html',
+              () => flush().then(() => customElements.whenDefined('nuxeo-operation-button')).then(resolve),
+            ));
+        })
+        .then(() => {
+          expect(menuActions(menu).length).to.be.equal(3);
+          expect(dropdownActions(menu).length).to.be.equal(3);
+          expect(dropdownButton(menu).hidden).to.be.false;
+        });
+    });
+
     function menuActions(div) {
-      return div.querySelector('nuxeo-actions-menu').querySelectorAll(':not([slot="dropdown"])');
+      return div.querySelector('nuxeo-actions-menu').querySelectorAll(':not([slot="dropdown"]):not(nuxeo-slot)');
     }
 
     function dropdownActions(div) {
-      return div.querySelector('nuxeo-actions-menu').querySelectorAll('[slot="dropdown"]');
+      return div.querySelector('nuxeo-actions-menu').querySelectorAll('[slot="dropdown"]:not(nuxeo-slot)');
     }
 
     function dropdownButton(div) {
