@@ -16,7 +16,7 @@ limitations under the License.
 -->
 <html>
 <head>
-  <title>nuxeo-user-management tests</title>
+  <title>nuxeo-actions-menu tests</title>
 
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
@@ -29,9 +29,11 @@ limitations under the License.
   <link rel="import" href="../../polymer/polymer.html">
   <link rel="import" href="../../iron-test-helpers/mock-interactions.html">
   <link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
+  <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
   <link rel="import" href="../nuxeo-slots.html">
-  <link rel="import" href="../widgets/nuxeo-actions-menu.html">
+  <link rel="import" href="../actions/nuxeo-action-button-styles.html">
   <link rel="import" href="../actions/nuxeo-preview-button.html">
+  <link rel="import" href="../widgets/nuxeo-actions-menu.html">
 </head>
 <body>
 
@@ -81,7 +83,7 @@ limitations under the License.
   </template>
 </test-fixture>
 
-<test-fixture id="menuSlotted1">
+<test-fixture id="menuSlotted">
   <template>
     <div style="max-width: 160px;">
       <nuxeo-actions-menu>
@@ -104,35 +106,56 @@ limitations under the License.
     </nuxeo-slot-content>
   </template>
 </test-fixture>
-
-<test-fixture id="menuSlotted2">
-    <template>
-      <div style="max-width: 160px;">
-        <nuxeo-actions-menu>
-          <nuxeo-slot slot="SLOT"></nuxeo-slot>
-        </nuxeo-actions-menu>
-      </div>
-    </template>
-  </test-fixture>
   
-  <test-fixture id="menuSlottedContent2">
-    <template>
-      <nuxeo-slot-content name="content" slot="SLOT">
-        <template>
-          <nuxeo-operation-button icon="icons:home"></nuxeo-operation-button>
-          <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
-          <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
-          <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
-          <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
-          <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
-        </template>
-      </nuxeo-slot-content>
-    </template>
-  </test-fixture>
+<test-fixture id="menuSlottedContent2">
+  <template>
+    <nuxeo-slot-content name="content" slot="SLOT">
+      <template>
+        <nuxeo-test-button icon="icons:home"></nuxeo-test-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+      </template>
+    </nuxeo-slot-content>
+  </template>
+</test-fixture>
+
+<test-fixture id="contribution">
+  <template>
+    <dom-module id="nuxeo-test-button">
+      <template>
+        <style include="nuxeo-action-button-styles"></style>
+        <div class="action">
+          <paper-icon-button icon="[[icon]]"></paper-icon-button>
+          <span class="label" hidden$="[[!showLabel]]">Label</span>
+        </div>
+      </template>
+      <script>
+        {
+          class TestButton extends Nuxeo.Element {
+            static get is() { return 'nuxeo-test-button'; }
+            static get properties() {
+              return {
+                icon: String,
+                showLabel: {
+                  type: Boolean,
+                  value: false,
+                },
+              };
+            }
+          }
+          customElements.define(TestButton.is, TestButton);
+        }
+      </script>
+    </dom-module>
+  </template>
+</test-fixture>
 
 <script>
   /* eslint-disable no-unused-expressions */
-  suite('<nuxeo-actions-meny>', () => {
+  suite('<nuxeo-actions-menu>', () => {
     let server;
 
     setup(() => {
@@ -210,7 +233,7 @@ limitations under the License.
     });
 
     test('menu with slotted content', () => {
-      const menu = fixture('menuSlotted1');
+      const menu = fixture('menuSlotted');
       return flush()
         .then(() => {
           fixture('menuSlottedContent1');
@@ -224,15 +247,14 @@ limitations under the License.
     });
 
     test('menu with unresolved slotted content', () => {
-      const menu = fixture('menuSlotted2');
+      const menu = fixture('menuSlotted');
       return flush()
         .then(() => {
           fixture('menuSlottedContent2');
-          return new Promise((resolve) =>
-            Polymer.importHref(
-              '../widgets/nuxeo-operation-button.html',
-              () => flush().then(() => customElements.whenDefined('nuxeo-operation-button')).then(resolve),
-            ));
+          return flush().then(() => {
+            fixture('contribution');
+            return customElements.whenDefined('nuxeo-test-button');
+          });
         })
         .then(() => {
           expect(menuActions(menu).length).to.be.equal(3);
