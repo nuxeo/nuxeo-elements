@@ -317,7 +317,13 @@ limitations under the License.
             delete this.headers.skipAggregates;
           }
 
-          this.$.nxResource.params = this._params;
+          const params = this._params;
+          // move named parameters
+          if (params.namedParameters) {
+            Object.assign(params, params.namedParameters);
+            delete params.namedParameters;
+          }
+          this.$.nxResource.params = params;
           return this.$.nxResource.execute()
             .then((response) => {
               this.currentPage = response.entries.slice(0);
@@ -367,13 +373,15 @@ limitations under the License.
           if (Array.isArray(this.params)) {
             params.queryParams = this.params;
           } else {
+            const namedParams = {};
             Object.keys(this.params).forEach((key) => {
               if (typeof this.params[key] === 'string') {
-                params[key] = this.params[key];
+                namedParams[key] = this.params[key];
               } else if (this.params[key] != null) {
-                params[key] = JSON.stringify(this.params[key]);
+                namedParams[key] = JSON.stringify(this.params[key]);
               }
             }, this);
+            params.namedParameters = namedParams;
           }
 
           // Append quick filters if any
