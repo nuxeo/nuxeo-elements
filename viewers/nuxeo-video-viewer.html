@@ -16,6 +16,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
 
@@ -38,14 +39,14 @@ limitations under the License.
 
       #video {
         background: var(--primary-background-color);
-        height: 100%;
+        max-height: 100%;
         width: 100%;
         outline: none;
         @apply --layout-flex;
       }
 
       #video.hasStoryboard {
-        height: calc(100% - 85px);
+        max-height: calc(100% - 85px);
       }
 
       #storyboard {
