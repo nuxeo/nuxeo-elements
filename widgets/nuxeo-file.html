@@ -41,13 +41,22 @@ limitations under the License.
     #dropZone.hover {
       @apply --nuxeo-drop-zone-hover;
     }
+
+    a {
+      @apply --nuxeo-link;
+    }
+
+    a:hover {
+      @apply --nuxeo-link-hover;
+    }
+
     </style>
 
     <nuxeo-connection id="nx"></nuxeo-connection>
 
     <input hidden id="input" type="file" multiple$="[[multiple]]" accept$="[[accept]]" on-change="_filesChanged">
 
-    <div id="dropZone">
+    <div id="dropZone" hidden$="[[readonly]]">
       <dom-if if="[[!uploading]]">
         <template>
           <paper-button id="button" raised on-click="_pick">
@@ -67,19 +76,35 @@ limitations under the License.
       </dom-if>
     </div>
 
-    <dom-repeat items="[[files]]" as="file">
+    <dom-if if="[[!multiple]]">
       <template>
-        <div class="file">
-          <div class="layout horizontal">
-            <span>[[file.name]]</span>
-            <iron-icon icon="autorenew" title="Retry" on-click="retry" hidden$="[[!file.error]]"></iron-icon>
-            <iron-icon icon="nuxeo:remove" title="Remove" on-click="cancel" hidden$="[[file.complete]]"></iron-icon>
-            <iron-icon icon="check-circle" title="Done" hidden$="[[!file.complete]]"></iron-icon>
-          </div>
-          <paper-progress value="[[file.progress]]" error="[[file.error]]" hidden="[[file.complete]]"></paper-progress>
-        </div>
+        <dom-if if="[[value]]">
+          <template>
+            <div class="file">
+              <div class="layout horizontal">
+                <a href$="[[value.data]]">[[_fileName(value)]]</a>
+                <iron-icon icon="nuxeo:remove" title="Remove" on-click="remove" hidden$="[[readonly]]"></iron-icon>
+              </div>
+            </div>
+          </template>
+        </dom-if>
       </template>
-    </dom-repeat>
+    </dom-if>
+
+    <dom-if if="[[multiple]]">
+      <template>
+        <dom-repeat items="[[value]]" as="file">
+          <template>
+            <div class="file">
+              <div class="layout horizontal">
+                <a href$="[[file.data]]">[[_fileName(file)]]</a>
+                <iron-icon icon="nuxeo:remove" title="Remove" on-click="remove" hidden$="[[readonly]]"></iron-icon>
+              </div>
+            </div>
+          </template>
+        </dom-repeat>
+      </template>
+    </dom-if>
 
   </template>
 
@@ -117,6 +142,12 @@ limitations under the License.
               type: Boolean,
               value: false,
             },
+
+            readonly: {
+              type: Boolean,
+              value: false,
+              reflectToAttribute: true,
+            },
           };
         }
 
@@ -141,10 +172,25 @@ limitations under the License.
         }
 
         _updateValue() {
-          this.value = {
-            'upload-batch': this.batchId,
-            'upload-fileId': (this.files.length - 1).toString(),
-          };
+          if (this.multiple) {
+            if (!this.value || !Array.isArray(this.value)) {
+              this.value = [];
+            }
+            for (let i = 0; i < this.files.length; i++) {
+              this.push('value', {
+                'upload-batch': this.batchId,
+                'upload-fileId': i.toString(),
+                _name: this.files[i].name,
+              });
+            }
+
+          } else {
+            this.value = {
+              'upload-batch': this.batchId,
+              'upload-fileId': (this.files.length - 1).toString(),
+              _name: this.files[this.files.length - 1].name,
+            };
+          }
         }
 
         pause() {
@@ -152,12 +198,17 @@ limitations under the License.
           alert('Upload paused');
         }
 
-        retry() {
-          alert('Upload paused');
+        remove(e) {
+          if (this.multiple) {
+            this.splice('value', e.model.__data, 1);
+          } else {
+            this.value = null;
+            this.files = null;
+          }
         }
 
-        cancel() {
-          alert('Upload paused');
+        _fileName(file) {
+          return file._name || file.name;
         }
 
       }
