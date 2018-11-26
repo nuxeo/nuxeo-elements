@@ -1,32 +1,78 @@
 # PDF.js viewer
 
-The PDF.js viewer is built from the [PDF.js](https://github.com/mozilla/pdf.js/) GitHub repository and integrated into `src/main/resources/web/nuxeo.war/viewer`.
+The PDF.js viewer is built from the [PDF.js](https://github.com/mozilla/pdf.js/) GitHub repository and integrated into the current directory.
 
-The current version is built from this [tag](https://github.com/mozilla/pdf.js/tree/v1.5.188).
+The current version is built from the [v2.0.943](https://github.com/mozilla/pdf.js/releases/tag/v2.0.943) tag.
 
-## How to update
+## How to Update
 
-For now this is done manually as there is no npm / bower package with the full minified PDF.js viewer.
+Clone the Repository:
 
-The integrated version is minified with Google Closure Compiler, see https://github.com/mozilla/pdf.js/wiki/Frequently-Asked-Questions#minified.
+    $ git clone git@github.com:mozilla/pdf.js.git
+    $ cd pdf.js
 
-* Clone repository
+Checkout the wanted commit/tag:
 
-      $ git clone git@github.com:mozilla/pdf.js.git
-      $ cd pdf.js
+    $ git checkout v2.0.943
 
-* Checkout the commit / tag wanted.
+Apply the following patch to allow viewing a file in a static UI connected to a remote server with a CORS configuration allowing cross-domain requests:
+- Revert file origin validation.
+- Make cross-site Access-Control requests use credentials.
 
-      $ git checkout v1.5.188
+```
+diff --git a/web/app.js b/web/app.js
+index b04eebf..9608fde 100644
+--- a/web/app.js
++++ b/web/app.js
+@@ -1501,7 +1501,9 @@ function webViewerInitialized() {
+     let queryString = document.location.search.substring(1);
+     let params = parseQueryString(queryString);
+     file = 'file' in params ? params.file : AppOptions.get('defaultUrl');
+-    validateFileURL(file);
++    // Revert https://github.com/mozilla/pdf.js/pull/6916 to allow viewing a file from a remote server
++    // with CORS headers properly configured in a static UI.
++    // validateFileURL(file);
+   } else if (PDFJSDev.test('FIREFOX || MOZCENTRAL')) {
+     file = window.location.href.split('#')[0];
+   } else if (PDFJSDev.test('CHROME')) {
+@@ -1626,7 +1628,7 @@ if (typeof PDFJSDev === 'undefined' || PDFJSDev.test('GENERIC')) {
+     }
 
-* Update web/viewer.js to empty the `DEFAULT_URL` variable.
+     if (file) {
+-      PDFViewerApplication.open(file);
++      PDFViewerApplication.open(file, { withCredentials: true, });
+     }
+   };
+ } else if (PDFJSDev.test('FIREFOX || MOZCENTRAL || CHROME')) {
+```
 
-* Then build and copy the viewer (here you need `closure-compiler`):
+Install the gulp package globally:
 
-      $ CLOSURE_COMPILER=/usr/local/Cellar/closure-compiler/20160517/libexec/build/compiler.jar node make minified
-      $ cp -r build/minified/build build/minified/web /path/to/repo/nuxeo-ui-elements/viewers/pdfjs/
-      $ rm /path/to/repo/nuxeo-ui-elements/viewers/pdfjs/web/compressed.tracemonkey-pldi-09.pdf
-      $ git commit -am "ELEMENTS-XXXXX: update PDF.js version"
+    $ npm install -g gulp-cli
+
+Install all dependencies for PDF.js:
+
+    $ npm install
+
+Build the generic viewer:
+
+    $ gulp generic
+
+[Minify](https://github.com/mozilla/pdf.js/wiki/Frequently-Asked-Questions#minified) the JS files:
+
+    $ gulp minified
+
+Clean the viewer directory:
+
+    $ rm -rf /path/to/repo/nuxeo-ui-elements/viewers/pdfjs/*/
+
+Copy the generic viewer:
+
+    $ rsync -av build/minified/ /path/to/repo/nuxeo-ui-elements/viewers/pdfjs/ --exclude=\*.{map,pdf}
+
+Commit your changes:
+
+    $ git commit -am "ELEMENTS-XXX: update PDF.js to 2.0.943"
 
 # About Nuxeo
 
