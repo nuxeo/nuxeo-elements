@@ -34,9 +34,21 @@ limitations under the License.
     <dom-bind>
       <template>
 
-        <nuxeo-demo-section heading="File upload button" size="small">
-          <nuxeo-file value="{{upload}}"></nuxeo-file>
+        <nuxeo-connection id="nx" url="http://localhost:8080/nuxeo"></nuxeo-connection>
+
+        <nuxeo-demo-section heading="File upload button multiple" size="small">
+          <nuxeo-file value="{{upload}}" multiple></nuxeo-file>
           <div>[[upload.upload-batch]]</div>
+        </nuxeo-demo-section>
+
+        <nuxeo-demo-section heading="File upload button required invalid" size="small">
+          <nuxeo-file value="{{uploadSingle}}" required invalid error-message="Upload a file please!"></nuxeo-file>
+          <br/>
+          <small><i>The widget stays invalid for demo purpose</i></small>
+        </nuxeo-demo-section>
+
+        <nuxeo-demo-section heading="File upload button readonly" size="small">
+          <nuxeo-file readonly empty-label="No files"></nuxeo-file>
         </nuxeo-demo-section>
 
       </template>
