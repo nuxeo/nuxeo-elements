@@ -50,11 +50,26 @@ limitations under the License.
       @apply --nuxeo-link-hover;
     }
 
+    :host([required]) #button::after {
+      display: inline-block;
+      content: '*';
+      margin-left: 4px;
+      color: var(--paper-input-container-invalid-color, red);
+    }
+
+    :host([invalid]) paper-button {
+      color: var(--paper-input-container-invalid-color, red);
+      margin-bottom: 5px;
+    }
+
+    :host([invalid]) .error {
+      color: var(--paper-input-container-invalid-color, red);
+    }
     </style>
 
     <nuxeo-connection id="nx"></nuxeo-connection>
 
-    <input hidden id="input" type="file" multiple$="[[multiple]]" accept$="[[accept]]" on-change="_filesChanged">
+    <input hidden id="input" type="file" multiple$="[[multiple]]" accept$="[[accept]]" on-change="_filesChanged" required$="[[required]]">
 
     <div id="dropZone" hidden$="[[readonly]]">
       <dom-if if="[[!uploading]]">
@@ -75,6 +90,8 @@ limitations under the License.
         </template>
       </dom-if>
     </div>
+
+    <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
 
     <dom-if if="[[!multiple]]">
       <template>
@@ -119,7 +136,8 @@ limitations under the License.
        * @memberof Nuxeo
        * @demo demo/nuxeo-file/index.html
        */
-      class File extends Polymer.mixinBehaviors([Nuxeo.UploaderBehavior], Nuxeo.Element) {
+      class File extends Polymer.mixinBehaviors([Nuxeo.UploaderBehavior, Polymer.IronFormElementBehavior,
+        Polymer.IronValidatableBehavior], Nuxeo.Element) {
 
         static get is() {
           return 'nuxeo-file';
@@ -143,11 +161,28 @@ limitations under the License.
               value: false,
             },
 
+            /**
+             * Read only.
+             */
             readonly: {
               type: Boolean,
               value: false,
               reflectToAttribute: true,
             },
+
+            /**
+             * Required.
+             */
+            required: {
+              type: Boolean,
+              value: false,
+              reflectToAttribute: true,
+            },
+
+            /**
+             * Error message to show when `invalid` is true.
+             */
+            errorMessage: String,
           };
         }
 
@@ -209,6 +244,13 @@ limitations under the License.
 
         _fileName(file) {
           return file._name || file.name;
+        }
+
+        _getValidity() {
+          if (!this.required) {
+            return true;
+          }
+          return this.multiple ? !!this.value && this.value.length > 0 : !!this.value;
         }
 
       }
