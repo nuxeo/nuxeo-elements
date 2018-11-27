@@ -170,6 +170,7 @@ limitations under the License.
      */
     isPublishable(doc) {
       return doc && !this.isProxy(doc)
+          && !this.isTrashed(doc)
           && this.hasFacet(doc, 'Publishable')
           && this.hasPermission(doc, 'Write');
     },
