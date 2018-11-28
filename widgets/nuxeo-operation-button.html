@@ -187,6 +187,9 @@ limitations under the License.
                 bubbles: true,
                 detail: { message: this.errorLabel ? this.i18n(this.errorLabel, error) : error },
               }));
+              if (error.status !== 404) {
+                throw error;
+              }
             });
         }
 
