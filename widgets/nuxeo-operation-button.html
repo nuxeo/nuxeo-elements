@@ -146,6 +146,10 @@ limitations under the License.
               value: 1000,
             },
 
+            errorLabel: {
+              type: String,
+            },
+
             _tooltip: {
               type: String,
               computed: '_computeTooltip(tooltip, label)',
@@ -181,7 +185,7 @@ limitations under the License.
               this.dispatchEvent(new CustomEvent('notify', {
                 composed: true,
                 bubbles: true,
-                detail: { message: error },
+                detail: { message: this.errorLabel ? this.i18n(this.errorLabel, error) : error },
               }));
             });
         }
