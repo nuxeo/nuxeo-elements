@@ -1,6 +1,6 @@
 {
   "name": "nuxeo-ui-elements",
-  "version": "2.3.3",
+  "version": "2.4.0-SNAPSHOT",
   "description": "Nuxeo UI Web Components.",
   "repository": {
     "type": "git",
