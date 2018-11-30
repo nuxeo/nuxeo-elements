@@ -99,6 +99,7 @@
   "exportButton.zipTreeExport": "ZIP-export",
   "favoritesToggleButton.tooltip.add": "Lägg till i Favoriter",
   "favoritesToggleButton.tooltip.remove": "Ta bort från Favoriter",
+  "file.upload": "Upload",
   "groupManagement.addedToGroup": "har lagts till i gruppen",
   "groupManagement.addedUserToGroup": "{0} lades till {1}",
   "groupManagement.addEntity": "Lägg till en användare eller en grupp",
