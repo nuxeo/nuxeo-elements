@@ -154,5 +154,16 @@ limitations under the License.
       return ((window.nuxeo.I18n.language) ? window.nuxeo.I18n.language.split('-')[0] : 'en');
     },
 
+    /**
+     * Formats a xpath string by doing replacements according to a given RegEx.
+     * The default behaviour is to replace all '/' by '.'.
+     *
+     * @param {string} xpath the property xpath
+     * @param {string} regex the RegEx to transform the xpath. If not provided it will fallback to the default behaviour.
+     */
+    formatPropertyXpath(xpath, regex) {
+      return xpath.replace(regex || /\//g, '.');
+    },
+
   }];
 </script>

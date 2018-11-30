@@ -132,8 +132,8 @@ limitations under the License.
     /**
      * Checks if the document has a main blob.
      */
-    hasContent(doc) {
-      return (doc && doc.properties) ? doc.properties['file:content'] : false;
+    hasContent(doc, xpath) {
+      return (doc && doc.properties) ? this.get(xpath || 'file:content', doc.properties) : false;
     },
 
     /**

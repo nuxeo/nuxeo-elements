@@ -21,7 +21,7 @@ limitations under the License.
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../nuxeo-filters-behavior.html">
-<link rel="import" href="../nuxeo-i18n-behavior.html">
+<link rel="import" href="../nuxeo-format-behavior.html">
 <link rel="import" href="../nuxeo-icons.html">
 <link rel="import" href="../widgets/nuxeo-tooltip.html">
 <link rel="import" href="nuxeo-action-button-styles.html">
@@ -51,12 +51,12 @@ limitations under the License.
        *
        *     <nuxeo-download-button document="[[document]]"></nuxeo-download-button>
        *
-       * @appliesMixin Nuxeo.I18nBehavior
+       * @appliesMixin Nuxeo.FormatBehavior
        * @appliesMixin Nuxeo.FiltersBehavior
        * @memberof Nuxeo
        * @demo demo/nuxeo-download-button/index.html
        */
-      class DownloadButton extends Polymer.mixinBehaviors([Nuxeo.I18nBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
+      class DownloadButton extends Polymer.mixinBehaviors([Nuxeo.FormatBehavior, Nuxeo.FiltersBehavior], Nuxeo.Element) {
 
         static get is() {
           return 'nuxeo-download-button';
@@ -103,7 +103,7 @@ limitations under the License.
         }
 
         _isAvailable(doc) {
-          return this.hasContent(doc);
+          return this.hasContent(doc, this.formatPropertyXpath(this.xpath));
         }
 
         _computeLabel() {
