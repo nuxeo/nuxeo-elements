@@ -99,7 +99,7 @@
   "exportButton.zipTreeExport": "Zip arborescent",
   "favoritesToggleButton.tooltip.add": "Ajouter aux favoris",
   "favoritesToggleButton.tooltip.remove": "Enlever des favoris",
-  "file.upload": "Upload",
+  "file.upload": "Charger",
   "groupManagement.addedToGroup": "a été ajouté au groupe",
   "groupManagement.addedUserToGroup": "{0} a été ajouté à {1}.",
   "groupManagement.addEntity": "Ajouter un utilisateur ou un groupe",
