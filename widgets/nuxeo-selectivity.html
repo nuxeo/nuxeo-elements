@@ -453,7 +453,6 @@ limitations under the License.
         _updateSelection(e) {
           this._inUpdateSelection = true;
           this.value = this.multiple ? e.value.slice(0) : e.value;
-          this._inUpdateSelection = true;
           if (this.multiple) {
             const items = [];
             const valS = e.items.slice(0);
@@ -466,6 +465,7 @@ limitations under the License.
           } else {
             this.set('selectedItem', e.items ? e.items.item : null);
           }
+          this._inUpdateSelection = false;
           if (e.added) {
             if (this.addedEntryHandler) {
               this.addedEntryHandler(e.added);
@@ -489,7 +489,6 @@ limitations under the License.
               }
             }
           }
-          this._inUpdateSelection = false;
         }
 
         _dataChanged() {
