@@ -1,5 +1,5 @@
 {
-  "actionsMenu.more": "Mas",
+  "actionsMenu.more": "Más",
   "addToCollectionButton.dialog.add": "Añadir",
   "addToCollectionButton.dialog.cancel": "Cancelar",
   "addToCollectionButton.dialog.collections": "Colecciones",
@@ -99,7 +99,7 @@
   "exportButton.zipTreeExport": "Exportar a ZIP",
   "favoritesToggleButton.tooltip.add": "Añadir a Favoritos",
   "favoritesToggleButton.tooltip.remove": "Eliminar de Favoritos",
-  "file.upload": "Upload",
+  "file.upload": "Subir",
   "groupManagement.addedToGroup": "se ha añadido al grupo",
   "groupManagement.addedUserToGroup": "{0} ha sido añadido a {1}",
   "groupManagement.addEntity": "Añadir un usuario o un grupo",
