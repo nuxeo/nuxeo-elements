@@ -370,7 +370,10 @@ limitations under the License.
             params.query = this.query;
           }
 
-          if (Array.isArray(this.params)) {
+          if (this.params.queryParams) {
+            // these should've simply been passed as an array instead
+            params.queryParams = this.params.queryParams;
+          } else if (Array.isArray(this.params)) {
             params.queryParams = this.params;
           } else {
             const namedParams = {};
