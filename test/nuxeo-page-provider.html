@@ -25,6 +25,12 @@ limitations under the License.
   </head>
 
   <body>
+    <test-fixture id="nx-pp">
+      <template>
+        <nuxeo-page-provider id="nxpp" provider="test_provider" page-size="40">
+        </nuxeo-page-provider>
+      </template>
+    </test-fixture>
     <test-fixture id="nx-pp-falseParam">
       <template>
         <nuxeo-page-provider id="nxpp" provider="test_provider" params='{"boolean": false}' page-size="40">
@@ -92,6 +98,56 @@ limitations under the License.
               expect(res['entity-type']).to.be.eq('documents');
             }).catch(() => {
               throw new Error('Expected to a valid response!');
+            });
+          });
+
+        });
+
+        suite('when page provider returns an error response', () => {
+
+          setup(() => {
+            server.respondWith('GET', '/json/cmis', [
+              200,
+              responseHeaders.json,
+              '{}',
+            ]);
+            server.respondWith(
+              'POST',
+              '/api/v1/automation/login',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"login","username":"Administrator"}',
+              ],
+            );
+            server.respondWith(
+              'GET',
+              '/api/v1/user/Administrator',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"login","username":"Administrator"}',
+              ],
+            );
+          });
+
+          test('it should throw an error', () => {
+            server.respondWith(
+              'GET',
+              '/api/v1/search/pp/test_provider/execute?currentPageIndex=0&pageSize=40',
+              [
+                500,
+                responseHeaders.json,
+                '{"entity-type":"exception", "message":"Internal Server Error", "status": 500}',
+              ],
+            );
+            const pp = fixture('nx-pp');
+            return pp.fetch().then(() => {
+              throw new Error('Expected to have an error response!');
+            }).catch((error) => {
+              expect(error).to.exist; // eslint-disable-line no-unused-expressions
+              expect(error.status).to.be.eq(500);
+              expect(error.message).to.be.eq('Internal Server Error');
             });
           });
 
