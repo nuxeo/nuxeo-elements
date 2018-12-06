@@ -341,14 +341,15 @@ limitations under the License.
               }));
               return response;
             })
-            .catch((err) => {
-              this.dispatchEvent(new CustomEvent('response', {
+            .catch((error) => {
+              this.dispatchEvent(new CustomEvent('error', {
                 bubbles: true,
                 composed: true,
                 detail: {
-                  error: err,
+                  error,
                 },
               }));
+              throw error;
             });
         }
 
