@@ -342,7 +342,13 @@ limitations under the License.
             templates: {
               resultItem: (opts) => (
                 `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
+                      style="padding-left: ${7 + (10 * opts.depth)}px"
                       data-item-id="${this.escapeHTML(opts.id)}">${this.resultFormatter(opts.item)}</div>`
+              ),
+
+              resultLabel: (opts) => (
+                `<div class="selectivity-result-label"
+                      style="padding-left: ${7 + (10 * opts.depth)}px">${this.escapeHTML(opts.text)}</div>`
               ),
 
               singleSelectedItem: (opts) => (
@@ -524,19 +530,21 @@ limitations under the License.
         }
 
         _wrap(value) {
-          const fn = (item) => {
+          const fn = (item, level) => {
+            const depth = level || 0;
             const id = this.idFunction(item);
             const entry = {
               id,
               text: item.displayLabel || item.text || id || '',
               item,
+              depth,
             };
             if (item.children) {
-              entry.children = item.children.map(fn.bind(this));
+              entry.children = item.children.map((child) => fn(child, depth + 1));
             }
             return entry;
           };
-          return Array.isArray(value) ? value.map(fn.bind(this)) : fn.call(this, value);
+          return Array.isArray(value) ? value.map((item) => fn(item)) : fn(value);
         }
 
         // Implements abstract Nuxeo.Select2 methods
