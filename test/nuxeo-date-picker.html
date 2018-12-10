@@ -112,6 +112,15 @@ limitations under the License.
       expect(getInput(element).value).to.be.equal('');
     });
 
+    test('the input changes takes default time into account', () => {
+      element.defaultTime = '14:35:19';
+      getInput(element).value = '2003-02-20';
+      const localEltValue = moment(element.value).local();
+      expect(localEltValue.hour()).to.be.equal(14);
+      expect(localEltValue.minute()).to.be.equal(35);
+      expect(localEltValue.second()).to.be.equal(19);
+    });
+
   });
 </script>
 </body>
