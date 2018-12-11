@@ -132,6 +132,13 @@ limitations under the License.
           });
 
           test('it should throw an error', () => {
+            /*
+             * This workaround is needed on Firefox due to the 'error' event fired in component.
+             * More Details: https://github.com/webcomponents/webcomponentsjs/issues/138
+             */
+            const eventHandler = (e) => e.stopPropagation();
+            document.addEventListener('error', eventHandler);
+
             server.respondWith(
               'GET',
               '/api/v1/search/pp/test_provider/execute?currentPageIndex=0&pageSize=40',
@@ -148,6 +155,7 @@ limitations under the License.
               expect(error).to.exist; // eslint-disable-line no-unused-expressions
               expect(error.status).to.be.eq(500);
               expect(error.message).to.be.eq('Internal Server Error');
+              document.removeEventListener('error', eventHandler); // Cleaning the workaround listener
             });
           });
 
