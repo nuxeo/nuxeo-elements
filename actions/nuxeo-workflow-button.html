@@ -165,10 +165,11 @@ limitations under the License.
             attachedDocumentIds: [this.document.uid],
           };
 
-          this.workflows.post().then(() => {
+          this.workflows.post().then((workflow) => {
             this.dispatchEvent(new CustomEvent('workflowStarted', {
               composed: true,
               bubbles: true,
+              detail: { workflow },
             }));
             this.$$('#dialog').toggle();
           });
