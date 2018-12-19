@@ -166,5 +166,14 @@ limitations under the License.
       return xpath.replace(regex || /\//g, '.');
     },
 
+    /**
+     * Escapes a RegExp string by replacing expression's special characters.
+     *
+     * @param {string} text the RegExp to be escaped
+     */
+    escapeRegExp(text) {
+      return text && text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    },
+
   }];
 </script>
