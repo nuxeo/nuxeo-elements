@@ -244,8 +244,8 @@ limitations under the License.
 
         _resetFields() {
           this.user = { groups: [] };
-          if (this.$.passwordEditor) {
-            this.$.passwordEditor.resetFields();
+          if (this.$$('#passwordEditor')) {
+            this.$$('#passwordEditor').resetFields();
           }
           this.errors = '';
           this.usePassword = false;
