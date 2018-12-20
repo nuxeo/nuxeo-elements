@@ -121,15 +121,13 @@ limitations under the License.
       };
 
       this.addEventListener('mousedown', (e) => {
-        if (this.draggable) {
+        if (this.draggable && e.target && this.draggableFilter(e.target)) {
           // prevent default behavior to make sure cursors are applied across all browsers
           e.preventDefault();
-          if (e.target && this.draggableFilter(e.target)) {
-            this._mouseDownStarted = this._mouseDownStarted || (new Date()).getTime();
-            // setup listeners when drag starts
-            document.addEventListener('mousemove', moveFn);
-            document.addEventListener('mouseup', upFn);
-          }
+          this._mouseDownStarted = this._mouseDownStarted || (new Date()).getTime();
+          // setup listeners when drag starts
+          document.addEventListener('mousemove', moveFn);
+          document.addEventListener('mouseup', upFn);
         }
       });
     },
