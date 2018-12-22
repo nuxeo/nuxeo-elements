@@ -79,6 +79,7 @@
   "editPassword.password": "Lösenord",
   "editPassword.verify": "Lösenord (bekräfta)",
   "editPassword.noMatch": "Lösenordet matchar inte.",
+  "editPassword.required": "Password cannot be an empty string.",
   "editUser.company": "Företag",
   "editUser.email": "E-post",
   "editUser.firstName": "Förnamn",

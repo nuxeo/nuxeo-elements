@@ -79,6 +79,7 @@
   "editPassword.password": "Kata sandi",
   "editPassword.verify": "Kata sandi (verifikasi)",
   "editPassword.noMatch": "Kata sandi tidak cocok.",
+  "editPassword.required": "Password cannot be an empty string.",
   "editUser.company": "Perusahaan",
   "editUser.email": "Email",
   "editUser.firstName": "Nama Depan",

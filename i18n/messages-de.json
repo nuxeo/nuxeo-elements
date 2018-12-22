@@ -79,6 +79,7 @@
   "editPassword.password": "Kennwort",
   "editPassword.verify": "Kennwort (prüfen)",
   "editPassword.noMatch": "Kennwort stimmt nicht überein",
+  "editPassword.required": "Password cannot be an empty string.",
   "editUser.company": "Unternehmen",
   "editUser.email": "E-Mail",
   "editUser.firstName": "Vorname",

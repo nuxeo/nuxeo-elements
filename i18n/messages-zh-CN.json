@@ -79,6 +79,7 @@
   "editPassword.password": "密码",
   "editPassword.verify": "密码 (验证)",
   "editPassword.noMatch": "密码不匹配。",
+  "editPassword.required": "Password cannot be an empty string.",
   "editUser.company": "公司",
   "editUser.email": "邮件",
   "editUser.firstName": "姓",

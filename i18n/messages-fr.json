@@ -79,6 +79,7 @@
   "editPassword.password": "Mot de passe",
   "editPassword.verify": "Mot de passe (Vérification)",
   "editPassword.noMatch": "Les mots de passe ne correspondent pas.",
+  "editPassword.required": "Password cannot be an empty string.",
   "editUser.company": "Entreprise",
   "editUser.email": "Email",
   "editUser.firstName": "Prénom",

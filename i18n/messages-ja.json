@@ -79,6 +79,7 @@
   "editPassword.password": "パスワード",
   "editPassword.verify": "パスワード（確認）",
   "editPassword.noMatch": "パスワードが一致していません",
+  "editPassword.required": "Password cannot be an empty string.",
   "editUser.company": "会社",
   "editUser.email": "メール",
   "editUser.firstName": "名",

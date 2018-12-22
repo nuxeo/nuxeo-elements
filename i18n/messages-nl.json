@@ -79,6 +79,7 @@
   "editPassword.password": "Wachtwoord",
   "editPassword.verify": "Wachtwoord (controleren)",
   "editPassword.noMatch": "Wachtwoord komt niet overeen.",
+  "editPassword.required": "Password cannot be an empty string.",
   "editUser.company": "Onderneming",
   "editUser.email": "E-mail",
   "editUser.firstName": "Voornaam",
