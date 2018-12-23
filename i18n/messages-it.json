@@ -79,7 +79,7 @@
   "editPassword.password": "Password",
   "editPassword.verify": "Password (verifica)",
   "editPassword.noMatch": "La password non corrisponde.",
-  "editPassword.required": "Password cannot be an empty string.",
+  "editPassword.required": "La password non può essere una stringa vuota.",
   "editUser.company": "Società",
   "editUser.email": "E-mail",
   "editUser.firstName": "Nome",
