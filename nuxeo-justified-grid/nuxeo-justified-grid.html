@@ -198,7 +198,6 @@ limitations under the License.
 
         static get observers() {
           return [
-            '_refresh(nxProvider)',
             '_selectedItemsChanged(selectedItems.splices)',
           ];
         }
@@ -313,13 +312,6 @@ limitations under the License.
         clearSelection() {
           this.$.selector.clearSelection();
           this._updateFlags();
-        }
-
-        _refresh() {
-          if (this._hasPageProvider()) {
-            this.reset();
-            this.fetch();
-          }
         }
 
         _check(e) {
