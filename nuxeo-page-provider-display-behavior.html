@@ -584,12 +584,11 @@ limitations under the License.
             }
 
             // get results count, and reset the array if it differs from current array length
-            let count = response.currentPageSize;
-            if (response.resultsCountLimit === 0) {
-              if (response.resultsCount > 0) {
-                count = response.resultsCount;
-              }
-            } else if (response.resultsCountLimit < response.resultsCount) {
+            let count;
+            if (response.resultsCount < 0) {
+              // negative resultCount means unknown value, fall back on currentPageSize
+              count = response.currentPageSize;
+            } else if (response.resultsCountLimit > 0 && response.resultsCountLimit < response.resultsCount) {
               count = response.resultsCountLimit;
             } else {
               count = response.resultsCount;
