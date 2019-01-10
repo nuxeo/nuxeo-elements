@@ -587,7 +587,7 @@ limitations under the License.
             let count;
             if (response.resultsCount < 0) {
               // negative resultCount means unknown value, fall back on currentPageSize
-              count = response.currentPageSize;
+              count = response.resultsCountLimit > 0 ? response.resultsCountLimit : response.currentPageSize;
             } else if (response.resultsCountLimit > 0 && response.resultsCountLimit < response.resultsCount) {
               count = response.resultsCountLimit;
             } else {
