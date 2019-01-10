@@ -140,8 +140,12 @@ limitations under the License.
      * Returns the label for the given document type.
      */
     formatDocType(type) {
-      var t = this.i18n(`label.document.type.${type}`);
-      return t === `label.document.type.${type}` ? type : t;
+      if (!type) {
+        return;
+      }
+      var key = `label.document.type.${type.toLowerCase()}`;
+      var value = this.i18n(key);
+      return value === key ? type : value;
     },
 
     /**
