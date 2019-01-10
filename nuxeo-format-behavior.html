@@ -143,8 +143,8 @@ limitations under the License.
       if (!type) {
         return;
       }
-      var key = `label.document.type.${type.toLowerCase()}`;
-      var value = this.i18n(key);
+      const key = `label.document.type.${type.toLowerCase()}`;
+      const value = this.i18n(key);
       return value === key ? type : value;
     },
 
