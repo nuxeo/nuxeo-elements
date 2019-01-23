@@ -62,6 +62,10 @@ limitations under the License.
         font-size: 1.2em;
       }
 
+      .preserve-white-space {
+        white-space: pre;
+      }
+
     </style>
 
     <nuxeo-operation id="op" op="[[operation]]" enrichers=[[enrichers]]></nuxeo-operation>
@@ -341,20 +345,20 @@ limitations under the License.
             // override templates since formatter should already escape text
             templates: {
               resultItem: (opts) => (
-                `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
+                `<div class="preserve-white-space selectivity-result-item${opts.disabled ? ' disabled' : ''}"
                       style="padding-left: ${7 + (10 * opts.depth)}px"
                       data-item-id="${this.escapeHTML(opts.id)}">${this.resultFormatter(opts.item)}</div>`
               ),
 
               resultLabel: (opts) => (
-                `<div class="selectivity-result-label"
+                `<div class="preserve-white-space selectivity-result-label"
                       style="padding-left: ${7 + (10 * opts.depth)}px">${this.escapeHTML(opts.text)}</div>`
               ),
 
               singleSelectedItem: (opts) => (
-                `${'<span class="selectivity-single-selected-item" ' +
+                `${'<span class="preserve-white-space selectivity-single-selected-item" ' +
                 'data-item-id="'}${this.escapeHTML(opts.id)}">${
-                  opts.removable ? '<a class="selectivity-single-selected-item-remove">' +
+                  opts.removable ? '<a class="preserve-white-space selectivity-single-selected-item-remove">' +
                       '<i class="selectivity-remove"></i>' +
                       '</a>'
                     : ''
@@ -364,9 +368,9 @@ limitations under the License.
               multipleSelectedItem: (opts) => {
                 const extraClass = opts.highlighted ? ' highlighted' : '';
                 return (
-                  `<span class="selectivity-multiple-selected-item${extraClass}"
+                  `<span class="preserve-white-space selectivity-multiple-selected-item${extraClass}"
                          data-item-id="${this.escapeHTML(opts.id)}">${
-                    opts.removable ? '<a class="selectivity-multiple-selected-item-remove">' +
+                    opts.removable ? '<a class="preserve-white-space selectivity-multiple-selected-item-remove">' +
                         '<i class="selectivity-remove"></i>' +
                         '</a>'
                       : ''

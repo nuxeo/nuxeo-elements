@@ -183,6 +183,10 @@ limitations under the License.
         text-align: center;
       }
 
+      .preserve-white-space {
+        white-space: pre;
+      }
+
       /* buttons */
       paper-button.primary {
         background-color: var(--nuxeo-button-primary, #00adff);
@@ -249,8 +253,8 @@ limitations under the License.
       <div class="header horizontal layout">
         <iron-icon icon="nuxeo:user" class="avatar"></iron-icon>
         <div class="layout vertical flex">
-          <h3 class="groupname">[[group.groupname]]</h3>
-          <h4 class="grouplabel">[[group.grouplabel]]</h4>
+          <h3 class="groupname preserve-white-space">[[group.groupname]]</h3>
+          <h4 class="grouplabel preserve-white-space">[[group.grouplabel]]</h4>
           <h5 class="counter">[[_countUsers(group.memberUsers)]] + [[_countGroups(group.memberGroups)]]</h5>
         </div>
 
@@ -283,7 +287,9 @@ limitations under the License.
       <dom-repeat items="[[activity]]">
         <template>
           <div class="activity-entry">
-            <nuxeo-tag icon="[[_icon(item)]]">[[item.displayLabel]]</nuxeo-tag>
+            <nuxeo-tag icon="[[_icon(item)]]">
+              <span class="preserve-white-space">[[item.displayLabel]]</span>
+            </nuxeo-tag>
             <span>[[i18n('groupManagement.addedToGroup')]]</span>
             <span class="remove" on-click="_toggleDeleteDialog">[[i18n('groupManagement.remove')]]</span>
           </div>
@@ -318,7 +324,7 @@ limitations under the License.
                         </template>
                       </dom-if>
                     </div>
-                    <div class="flex-4">[[item.id]]</div>
+                    <div class="flex-4 preserve-white-space">[[item.id]]</div>
                     <div class="table-actions">
                       <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
                         <template>
@@ -369,7 +375,7 @@ limitations under the License.
                     <div class="flex-4">
                       <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
                     </div>
-                    <div class="flex-4">[[item.grouplabel]]</div>
+                    <div class="flex-4 preserve-white-space">[[item.grouplabel]]</div>
                     <div class="table-actions">
                       <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
                         <template>
