@@ -33,16 +33,20 @@ limitations under the License.
       a:hover {
         @apply --nuxeo-link-hover;
       }
+
+      .preserve-white-space {
+        white-space: pre;
+      }
     </style>
     <nuxeo-tag icon="nuxeo:group">
       <dom-if if="[[!disabled]]">
         <template>
-          <a href$="[[_href(group)]]" on-click="_preventPropagation">[[_label(group)]]</a>
+          <a class="preserve-white-space" href$="[[_href(group)]]" on-click="_preventPropagation">[[_label(group)]]</a>
         </template>
       </dom-if>
       <dom-if if="[[disabled]]">
         <template>
-          [[_label(group)]]
+          <span class="preserve-white-space">[[_label(group)]]</span>
         </template>
       </dom-if>
       <dom-if if="[[_isEntity(group)]]">

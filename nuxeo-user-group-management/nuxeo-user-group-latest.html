@@ -95,6 +95,10 @@ limitations under the License.
         padding: 1.5em .7em;
         text-align: center;
       }
+
+      .preserve-white-space {
+        white-space: pre;
+      }
     </style>
 
     <nuxeo-resource id="latestCreatedUsersGroups" auto
@@ -132,7 +136,7 @@ limitations under the License.
                     </template>
                   </dom-if>
                 </div>
-                <div class="flex-2">[[item.uid]]</div>
+                <div class="flex-2 preserve-white-space">[[item.uid]]</div>
                 <div class="table-actions"></div>
               </div>
             </template>

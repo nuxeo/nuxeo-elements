@@ -94,6 +94,10 @@ limitations under the License.
         padding: 1.5em .7em;
         text-align: center;
       }
+
+      .preserve-white-space {
+        white-space: pre;
+      }
     </style>
 
     <nuxeo-resource id="userSearch" auto path="/user/search" response="{{users}}"></nuxeo-resource>
@@ -127,7 +131,7 @@ limitations under the License.
                     <div class="flex-4">
                       <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
                     </div>
-                    <div name="id" class="flex-2">[[item.groupname]]</div>
+                    <div name="id" class="flex-2 preserve-white-space">[[item.groupname]]</div>
                     <div class="flex-4">
                       <span class="counter">[[_countUsers(item.memberUsers)]]</span>
                       <span class="counter">[[_countGroups(item.memberGroups)]]</span>
@@ -166,7 +170,7 @@ limitations under the License.
                         </template>
                       </dom-if>
                     </div>
-                    <div name="id" class="flex-2">[[item.id]]</div>
+                    <div name="id" class="flex-2 preserve-white-space">[[item.id]]</div>
                     <div class="flex-4">[[item.properties.email]]</div>
                   </div>
                 </template>
