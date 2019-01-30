@@ -456,7 +456,7 @@ limitations under the License.
               }
             }
           } else {
-            return { id: entry, displayLabel: entry };
+            return { id: this.idFunction(entry), displayLabel: this.resultFormatter(entry) };
           }
         }
 
