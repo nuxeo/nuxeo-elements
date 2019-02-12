@@ -124,10 +124,12 @@ limitations under the License.
      * @return {Boolean} true if the current file is accepted by the current provider, false otherwise
      * */
     DefaultUploadProvider.prototype.accepts = function (file) {
-      const mimeType = ((file.type !== '') ? file.type.match(/^[^/]*\//)[0] : null);
-      const fileType = file.name.match(/\.[^.]*$/)[0];
-
-      return !(this.accept && !(this.accept.indexOf(mimeType) > -1 || this.accept.indexOf(fileType) > -1));
+      if (!this.accept) {
+        return true;
+      }
+      const mimeType = (file.type !== '') ? file.type.match(/^[^/]*\//)[0] : null;
+      const fileType = (file.name.indexOf('.') !== -1) ? file.name.match(/\.[^.]*$/)[0] : null;
+      return this.accept.indexOf(mimeType) > -1 || this.accept.indexOf(fileType) > -1;
     };
 
     /**
