@@ -153,7 +153,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
     }
 
     _computeLabel(favorite) {
-      return this.i18n(`favoritesToggleButton.tooltip.${favorite ? 'remove' : 'add'}`);
+      return this.i18n && this.i18n(`favoritesToggleButton.tooltip.${favorite ? 'remove' : 'add'}`);
     }
 
     _documentChanged() {
