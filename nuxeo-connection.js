@@ -17,7 +17,7 @@ limitations under the License.
 import './nuxeo-element.js';
 
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import 'nuxeo/dist/nuxeo.js';
+import 'nuxeo/nuxeo.js';
 {
 
   // A global map of clients with connectionId as key.
