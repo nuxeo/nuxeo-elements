@@ -23,7 +23,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-import 'cropperjs/dist/cropper.js';
+import 'cropperjs/dist/cropper.esm.js';
 const $_documentContainer = document.createElement('template');
 
 $_documentContainer.innerHTML = `<dom-module id="nuxeo-image-viewer">
