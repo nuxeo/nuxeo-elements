@@ -18,18 +18,22 @@ limitations under the License.
 <head>
   <title>nuxeo-aggregation-widgets</title>
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
-  <script>
-    // force use of polyfill: see ELEMENTS-56
-    window.fetch = null;
-  </script>
-  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-  <script src="../../web-component-tester/browser.js"></script>
-  <script src="../../nuxeo-elements/test/test-helpers.js"></script>
+  <script type="module">
+import '@polymer/polymer/polymer-legacy.js';
+import '@polymer/iron-test-helpers/mock-interactions.js';
+import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+import '../nuxeo-aggregation/nuxeo-checkbox-aggregation.js';
+// force use of polyfill: see ELEMENTS-56
+window.fetch = null;
+</script>
+  <script src="../../../@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+  <script src="../../../wct-browser-legacy/browser.js"></script>
+  <script src="../../../@nuxeo/nuxeo-elements/test/test-helpers.js"></script>
 
-  <link rel="import" href="../../polymer/polymer.html">
-  <link rel="import" href="../../iron-test-helpers/mock-interactions.html">
-  <link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
-  <link rel="import" href="../nuxeo-aggregation/nuxeo-checkbox-aggregation.html">
+  <script type="module" src="../../../@polymer/polymer/polymer-legacy.js"></script>
+  <script type="module" src="../../../@polymer/iron-test-helpers/mock-interactions.js"></script>
+  <script type="module" src="../../../@nuxeo/nuxeo-elements/nuxeo-connection.js"></script>
+  <script type="module" src="../nuxeo-aggregation/nuxeo-checkbox-aggregation.js"></script>
 </head>
 <body>
 
@@ -53,86 +57,91 @@ limitations under the License.
     </template>
   </test-fixture>
 
-  <script>
-    const data = {
-      'entity-type': 'aggregate',
-      extendedBuckets: [
-        {
-          docCount: 2,
-          fetchedKey: {
-            'entity-type': 'document',
-            properties: {
-              'dc:title': 'Tolkien',
-            },
-            uid: '59cf794f-6875-45ca-a837-053c196b2292',
-          },
-          key: '59cf794f-6875-45ca-a837-053c196b2292',
+  <script type="module">
+import '@polymer/polymer/polymer-legacy.js';
+import '@polymer/iron-test-helpers/mock-interactions.js';
+import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+import '../nuxeo-aggregation/nuxeo-checkbox-aggregation.js';
+import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
+const data = {
+  'entity-type': 'aggregate',
+  extendedBuckets: [
+    {
+      docCount: 2,
+      fetchedKey: {
+        'entity-type': 'document',
+        properties: {
+          'dc:title': 'Tolkien',
         },
-        {
-          docCount: 1,
-          fetchedKey: {
-            'entity-type': 'document',
-            properties: {
-              'dc:title': 'Asimov',
-            },
-            uid: '59cf794f-6875-45ca-a837-053c196b2291',
-          },
-          key: '59cf794f-6875-45ca-a837-053c196b2291',
-        },
-      ],
-      field: 'book:author',
-      id: 'book_author_agg',
-      properties: {
-        order: 'count desc',
-        size: '20',
+        uid: '59cf794f-6875-45ca-a837-053c196b2292',
       },
-      ranges: [],
-      selection: [],
-      type: 'terms',
-    };
+      key: '59cf794f-6875-45ca-a837-053c196b2292',
+    },
+    {
+      docCount: 1,
+      fetchedKey: {
+        'entity-type': 'document',
+        properties: {
+          'dc:title': 'Asimov',
+        },
+        uid: '59cf794f-6875-45ca-a837-053c196b2291',
+      },
+      key: '59cf794f-6875-45ca-a837-053c196b2291',
+    },
+  ],
+  field: 'book:author',
+  id: 'book_author_agg',
+  properties: {
+    order: 'count desc',
+    size: '20',
+  },
+  ranges: [],
+  selection: [],
+  type: 'terms',
+};
 
-    suite('Given a nuxeo-checkbox-aggregation widget on document aggregations', () => {
-      let documentAggs;
-      let server;
+suite('Given a nuxeo-checkbox-aggregation widget on document aggregations', () => {
+  let documentAggs;
+  let server;
 
-      setup(() => {
-        server = sinon.fakeServer.create();
-        server.autoRespond = true;
-        documentAggs = fixture('documentAggs');
-        documentAggs.data = data;
-        const nx = fixture('nx');
-        return login(server, nx);
-      });
+  setup(() => {
+    server = sinon.fakeServer.create();
+    server.autoRespond = true;
+    documentAggs = fixture('documentAggs');
+    documentAggs.data = data;
+    const nx = fixture('nx');
+    return login(server, nx);
+  });
 
-      test('It displays the title of the document', () => {
-        const choices = Polymer.dom(documentAggs.root).querySelectorAll('paper-checkbox');
-        expect(choices.length).to.be.equal(2);
-        expect(choices[0].textContent.trim()).to.be.equal('Tolkien (2)');
-        expect(choices[1].textContent.trim()).to.be.equal('Asimov (1)');
-      });
+  test('It displays the title of the document', () => {
+    const choices = dom(documentAggs.root).querySelectorAll('paper-checkbox');
+    expect(choices.length).to.be.equal(2);
+    expect(choices[0].textContent.trim()).to.be.equal('Tolkien (2)');
+    expect(choices[1].textContent.trim()).to.be.equal('Asimov (1)');
+  });
 
-    });
+});
 
-    suite('Given a nuxeo-checkbox-aggregation widget on document aggregations sorted by label', () => {
-      let documentAggsSorted;
-      let server;
+suite('Given a nuxeo-checkbox-aggregation widget on document aggregations sorted by label', () => {
+  let documentAggsSorted;
+  let server;
 
-      setup(() => {
-        server = sinon.fakeServer.create();
-        server.autoRespond = true;
-        documentAggsSorted = fixture('documentAggsSorted');
-        documentAggsSorted.data = data;
-        const nx = fixture('nx');
-        return login(server, nx);
-      });
+  setup(() => {
+    server = sinon.fakeServer.create();
+    server.autoRespond = true;
+    documentAggsSorted = fixture('documentAggsSorted');
+    documentAggsSorted.data = data;
+    const nx = fixture('nx');
+    return login(server, nx);
+  });
 
-      test('It displays the aggregations sorted by document title', () => {
-        const choices = Polymer.dom(documentAggsSorted.root).querySelectorAll('paper-checkbox');
-        expect(choices.length).to.be.equal(2);
-        expect(choices[0].textContent.trim()).to.be.equal('Asimov (1)');
-        expect(choices[1].textContent.trim()).to.be.equal('Tolkien (2)');
-      });
+  test('It displays the aggregations sorted by document title', () => {
+    const choices = dom(documentAggsSorted.root).querySelectorAll('paper-checkbox');
+    expect(choices.length).to.be.equal(2);
+    expect(choices[0].textContent.trim()).to.be.equal('Asimov (1)');
+    expect(choices[1].textContent.trim()).to.be.equal('Tolkien (2)');
+  });
 
-    });
-  </script>
+});
+</script>
 </body>

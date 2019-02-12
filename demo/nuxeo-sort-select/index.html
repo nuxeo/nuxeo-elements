@@ -20,14 +20,14 @@ limitations under the License.
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-    <script src="../../../webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
 
     <!-- polymer elements -->
-    <link rel="import" href="../../../polymer/polymer.html">
+    <script type="module" src="../../../../@polymer/polymer/polymer-legacy.js"></script>
 
     <!-- nuxeo elements -->
-    <link rel="import" href="../nuxeo-demo.html">
-    <link rel="import" href="../../widgets/nuxeo-sort-select.html">
+    <script type="module" src="../nuxeo-demo.js"></script>
+    <script type="module" src="../../widgets/nuxeo-sort-select.js"></script>
   </head>
 
   <body>
@@ -43,18 +43,21 @@ limitations under the License.
       </template>
     </dom-bind>
 
-    <script>
-      document.querySelector('dom-bind').options = [
-        { field: 'dc:title', label: 'Title', order: 'asc' },
-        {
-          field: 'dc:created', label: 'Created', order: 'asc', selected: true,
-        },
-        { field: 'dc:modified', label: 'Modified', order: 'desc' },
-        { field: 'dc:lastContributor', label: 'Last Contributor', order: 'asc' },
-        { field: 'state', label: 'State', order: 'asc' },
-        { field: 'dc:nature', label: 'Nature', order: 'asc' },
-        { field: 'dc:coverage', label: 'Coverage', order: 'asc' },
-      ];
-    </script>
+    <script type="module">
+import '@polymer/polymer/polymer-legacy.js';
+import '../nuxeo-demo.js';
+import '../../widgets/nuxeo-sort-select.js';
+document.querySelector('dom-bind').options = [
+  { field: 'dc:title', label: 'Title', order: 'asc' },
+  {
+    field: 'dc:created', label: 'Created', order: 'asc', selected: true,
+  },
+  { field: 'dc:modified', label: 'Modified', order: 'desc' },
+  { field: 'dc:lastContributor', label: 'Last Contributor', order: 'asc' },
+  { field: 'state', label: 'State', order: 'asc' },
+  { field: 'dc:nature', label: 'Nature', order: 'asc' },
+  { field: 'dc:coverage', label: 'Coverage', order: 'asc' },
+];
+</script>
   </body>
 </html>

@@ -20,18 +20,18 @@ limitations under the License.
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-    <script src="../../../webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
 
     <!-- polymer elements -->
-    <link rel="import" href="../../../polymer/polymer.html">
+    <script type="module" src="../../../../@polymer/polymer/polymer-legacy.js"></script>
 
     <!-- nuxeo elements -->
-    <link rel="import" href="../nuxeo-demo.html">
-    <link rel="import" href="../../../nuxeo-elements/nuxeo-connection.html">
-    <link rel="import" href="../../../nuxeo-elements/nuxeo-document.html">
-    <link rel="import" href="../../nuxeo-icons.html">
-    <link rel="import" href="../../nuxeo-path-suggestion/nuxeo-path-suggestion.html">
-    <link rel="import" href="../../widgets/nuxeo-operation-button.html">
+    <script type="module" src="../nuxeo-demo.js"></script>
+    <script type="module" src="../../../../@nuxeo/nuxeo-elements/nuxeo-connection.js"></script>
+    <script type="module" src="../../../../@nuxeo/nuxeo-elements/nuxeo-document.js"></script>
+    <script type="module" src="../../nuxeo-icons.js"></script>
+    <script type="module" src="../../nuxeo-path-suggestion/nuxeo-path-suggestion.js"></script>
+    <script type="module" src="../../widgets/nuxeo-operation-button.js"></script>
   </head>
 
   <body>
@@ -87,18 +87,25 @@ limitations under the License.
       </template>
     </dom-bind>
 
-    <script>
-      const t = document.querySelector('dom-bind');
-      t.docpath = '/default-domain/workspaces/';
+    <script type="module">
+import '@polymer/polymer/polymer-legacy.js';
+import '../nuxeo-demo.js';
+import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+import '@nuxeo/nuxeo-elements/nuxeo-document.js';
+import '../../nuxeo-icons.js';
+import '../../nuxeo-path-suggestion/nuxeo-path-suggestion.js';
+import '../../widgets/nuxeo-operation-button.js';
+const t = document.querySelector('dom-bind');
+t.docpath = '/default-domain/workspaces/';
 
-      window.addEventListener('document-updated', () => {
-        this.doc.get();
-      });
+window.addEventListener('document-updated', () => {
+  window.doc.get();
+});
 
-      window.addEventListener('document-downloaded', (e) => {
-        console.log('Received "document-downloaded" event with detail ', e.detail);
-      });
-    </script>
+window.addEventListener('document-downloaded', (e) => {
+  console.log('Received "document-downloaded" event with detail ', e.detail);
+});
+</script>
 
   </body>
 </html>
