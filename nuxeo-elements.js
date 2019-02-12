@@ -1,4 +1,12 @@
-<!--
+import './nuxeo-connection.js';
+import './nuxeo-resource.js';
+import './nuxeo-document.js';
+import './nuxeo-operation.js';
+import './nuxeo-page-provider.js';
+import './nuxeo-audit-page-provider.js';
+import './nuxeo-search.js';
+
+/**
 @license
 (C) Copyright Nuxeo Corp. (http://nuxeo.com/)
 
@@ -13,18 +21,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
-
-<link rel="import" href="../polymer/polymer-element.html">
-
-<script>
-  /**
-   * Nuxeo namespace
-   */
-  window.Nuxeo = window.Nuxeo || {};
-
-  /**
-   * @memberof Nuxeo
-   */
-  Nuxeo.Element = class Element extends Polymer.Element {};
-</script>
+*/
+/*
+  FIXME(polymer-modulizer): the above comments were extracted
+  from HTML and may be out of place here. Review them and
+  then delete this comment!
+*/
+;

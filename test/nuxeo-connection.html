@@ -17,12 +17,12 @@ limitations under the License.
 <html>
   <head>
     <meta charset="utf-8">
-    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
-    <script src="../../web-component-tester/browser.js"></script>
-    <script src="../../es6-promise/promise.min.js"></script>
-    <link rel="import" href="../../polymer/polymer.html">
-    <script src="test-helpers.js"></script>
-    <link rel="import" href="../nuxeo-connection.html">
+    <script src="../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../../../wct-browser-legacy/browser.js"></script>
+    <script src="../../../es6-promise/promise.min.js"></script>
+    <script type="module" src="../../../@polymer/polymer/polymer-legacy.js"></script>
+    <script src="./test-helpers.js"></script>
+    <script type="module" src="../nuxeo-connection.js"></script>
   </head>
 
   <body>
@@ -46,146 +46,148 @@ limitations under the License.
         <nuxeo-connection></nuxeo-connection>
       </template>
     </test-fixture>
-    <script>
-      suite('<nuxeo-connection>', () => {
+    <script type="module">
+import '@polymer/polymer/polymer-legacy.js';
+import '../nuxeo-connection.js';
+suite('<nuxeo-connection>', () => {
 
-        const responseHeaders = {
-          json: {'Content-Type': 'application/json'},
-          plain: {'Content-Type': 'text/plain'},
-        };
+  const responseHeaders = {
+    json: {'Content-Type': 'application/json'},
+    plain: {'Content-Type': 'text/plain'},
+  };
 
-        const loginResponse = [
-          200,
-          responseHeaders.json,
-          '{"entity-type":"login","username":"Administrator"}',
-        ];
+  const loginResponse = [
+    200,
+    responseHeaders.json,
+    '{"entity-type":"login","username":"Administrator"}',
+  ];
 
-        const userResponse = [
-          200,
-          responseHeaders.json,
-          '{"entity-type":"user","username":"Administrator"}',
-        ];
+  const userResponse = [
+    200,
+    responseHeaders.json,
+    '{"entity-type":"user","username":"Administrator"}',
+  ];
 
-        const cmisResponse = [
-          200,
-          responseHeaders.json,
-          '{}',
-        ];
+  const cmisResponse = [
+    200,
+    responseHeaders.json,
+    '{}',
+  ];
 
-        function timePasses(ms) {
-          return new Promise((resolve) => {
-            window.setTimeout(() => {
-              resolve();
-            }, ms);
-          });
-        }
+  function timePasses(ms) {
+    return new Promise((resolve) => {
+      window.setTimeout(() => {
+        resolve();
+      }, ms);
+    });
+  }
 
-        let server;
-        setup(() => {
-          server = sinon.fakeServer.create();
-          server.autoRespond = true;
-        });
+  let server;
+  setup(() => {
+    server = sinon.fakeServer.create();
+    server.autoRespond = true;
+  });
 
-        teardown(() => {
-          server.restore();
-        });
+  teardown(() => {
+    server.restore();
+  });
 
-        suite('when login request succeed', () => {
+  suite('when login request succeed', () => {
 
-          setup(() => {
-            server.respondWith('GET', '/json/cmis', cmisResponse);
-            server.respondWith('POST', '/api/v1/automation/login', loginResponse);
-            server.respondWith('GET', '/api/v1/user/Administrator', userResponse);
-          });
+    setup(() => {
+      server.respondWith('GET', '/json/cmis', cmisResponse);
+      server.respondWith('POST', '/api/v1/automation/login', loginResponse);
+      server.respondWith('GET', '/api/v1/user/Administrator', userResponse);
+    });
 
-          test('should run the next', () => {
-            const connection = fixture('nxc-ok');
-            return timePasses(100).then(() => {
-              // Test if component succeeded to log in
-              expect(connection.connected).to.be.equal(true);
+    test('should run the next', () => {
+      const connection = fixture('nxc-ok');
+      return timePasses(100).then(() => {
+        // Test if component succeeded to log in
+        expect(connection.connected).to.be.equal(true);
 
-              // Return current connection
-              return connection.connect();
-            }).catch(() => {
-              // We shouldn't be there
-              throw new Error('Expected to run something after a succeeded connection!');
-            });
-          });
-
-        });
-
-        suite('when login request fail', () => {
-
-          setup(() => {
-            server.respondWith('GET', '/json/cmis', [
-              401,
-              responseHeaders.json,
-              '{"error":true,"message":"An error occurred"}',
-            ]);
-            server.respondWith(
-              'POST',
-              '/api/v1/automation/login',
-              [
-                401,
-                responseHeaders.json,
-                '{"error":true,"message":"An error occurred"}',
-              ],
-            );
-          });
-
-          test('should not run the next', () => {
-            const connection = fixture('nxc-ko');
-            return timePasses(10).then(() => {
-              // Test if component failed to log in
-              expect(connection.connected).to.be.equal(false);
-
-              // Return current connection
-              return connection.connect();
-            }).then(() => {
-              // We shouldn't be there
-              throw new Error('Expected to not run something after a failed connection!');
-            }, (error) => {
-              expect(error).to.be.instanceof(Error);
-              expect(error.message).to.be.eq('Unauthorized');
-            });
-          });
-
-        });
-
-        suite('when using multiple connections', () => {
-
-          setup(() => {
-            server.respondWith('GET', '/json/cmis', cmisResponse);
-            server.respondWith('POST', '/api/v1/automation/login', loginResponse);
-            server.respondWith('GET', '/api/v1/user/Administrator', userResponse);
-          });
-
-          test('first connection should succeed', () => {
-            const connection = fixture('nxc');
-            return timePasses(100).then(() => {
-              // Ensure two requests are done so far
-              expect(server.requests.length).to.be.equal(3);
-              // Test if component succeeded to log in
-              expect(connection.connected).to.be.equal(true);
-              // Return current connection
-              return connection.connect();
-            });
-          });
-
-          test('similar connections should not issue requests', () => {
-            const connection = fixture('nxc-dup');
-            return timePasses(100).then(() => {
-              // Ensure no requests were done
-              expect(server.requests.length).to.be.equal(0);
-              // Test if component succeeded to log in
-              expect(connection.connected).to.be.equal(true);
-              // Return current connection
-              return connection.connect();
-            });
-          });
-        });
-
+        // Return current connection
+        return connection.connect();
+      }).catch(() => {
+        // We shouldn't be there
+        throw new Error('Expected to run something after a succeeded connection!');
       });
-    </script>
+    });
+
+  });
+
+  suite('when login request fail', () => {
+
+    setup(() => {
+      server.respondWith('GET', '/json/cmis', [
+        401,
+        responseHeaders.json,
+        '{"error":true,"message":"An error occurred"}',
+      ]);
+      server.respondWith(
+        'POST',
+        '/api/v1/automation/login',
+        [
+          401,
+          responseHeaders.json,
+          '{"error":true,"message":"An error occurred"}',
+        ],
+      );
+    });
+
+    test('should not run the next', () => {
+      const connection = fixture('nxc-ko');
+      return timePasses(10).then(() => {
+        // Test if component failed to log in
+        expect(connection.connected).to.be.equal(false);
+
+        // Return current connection
+        return connection.connect();
+      }).then(() => {
+        // We shouldn't be there
+        throw new Error('Expected to not run something after a failed connection!');
+      }, (error) => {
+        expect(error).to.be.instanceof(Error);
+        expect(error.message).to.be.eq('Unauthorized');
+      });
+    });
+
+  });
+
+  suite('when using multiple connections', () => {
+
+    setup(() => {
+      server.respondWith('GET', '/json/cmis', cmisResponse);
+      server.respondWith('POST', '/api/v1/automation/login', loginResponse);
+      server.respondWith('GET', '/api/v1/user/Administrator', userResponse);
+    });
+
+    test('first connection should succeed', () => {
+      const connection = fixture('nxc');
+      return timePasses(100).then(() => {
+        // Ensure two requests are done so far
+        expect(server.requests.length).to.be.equal(3);
+        // Test if component succeeded to log in
+        expect(connection.connected).to.be.equal(true);
+        // Return current connection
+        return connection.connect();
+      });
+    });
+
+    test('similar connections should not issue requests', () => {
+      const connection = fixture('nxc-dup');
+      return timePasses(100).then(() => {
+        // Ensure no requests were done
+        expect(server.requests.length).to.be.equal(0);
+        // Test if component succeeded to log in
+        expect(connection.connected).to.be.equal(true);
+        // Return current connection
+        return connection.connect();
+      });
+    });
+  });
+
+});
+</script>
   </body>
 </html>
