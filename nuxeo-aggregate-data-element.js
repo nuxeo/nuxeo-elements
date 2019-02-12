@@ -1,4 +1,4 @@
-<!--
+/**
 @license
 (C) Copyright Nuxeo Corp. (http://nuxeo.com/)
 
@@ -13,10 +13,13 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+*/
+import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 
-<link rel="import" href="../nuxeo-elements/nuxeo-connection.html">
-<link rel="import" href="nuxeo-workflow-data.html">
-<link rel="import" href="nuxeo-repository-data.html">
-<link rel="import" href="nuxeo-search-data.html">
-<link rel="import" href="nuxeo-audit-data.html"/>
+import './nuxeo-aggregate-data-behavior.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+/**
+ * @appliesMixin Nuxeo.AggregateDataBehavior
+ * @memberof Nuxeo
+ */
+Nuxeo.AggregateDataElement = mixinBehaviors([Nuxeo.AggregateDataBehavior], Nuxeo.Element);

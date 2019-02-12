@@ -20,9 +20,9 @@ limitations under the License.
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <title>Nuxeo Workflow Data Elements Demo</title>
-  <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
-  <script src="../../moment/min/moment-with-locales.js"></script>
-  <link rel="import" href="../nuxeo-search-data.html">
+  <script src="../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+  <script src="../../../moment/min/moment-with-locales.js"></script>
+  <script type="module" src="../nuxeo-search-data.js"></script>
   <style>
     table {
       width: 100%;
@@ -192,25 +192,26 @@ limitations under the License.
 
 </template>
 </dom-bind>
-<script>
-  const t = document.querySelector('dom-bind');
-  const currentDate = moment();
-  t.endDate = currentDate.format('YYYY-MM-DD');
-  t.startDate = currentDate.subtract(1, 'week').format('YYYY-MM-DD');
+<script type="module">
+import '../nuxeo-search-data.js';
+const t = document.querySelector('dom-bind');
+const currentDate = moment();
+t.endDate = currentDate.format('YYYY-MM-DD');
+t.startDate = currentDate.subtract(1, 'week').format('YYYY-MM-DD');
 
-  t._aggregateHourOfDay = (entries) => {
-    // aggregate our buckets by key
-    const agg = {};
-    entries.forEach((e) => {
-      agg[e.key] = (agg[e.key] || 0) + e.value;
-    });
-    // build our result data
-    const res = [];
-    for (let i = 0; i < 24; i++) {
-      res.push({key: i, value: agg[i] || 0});
-    }
-    return res;
-  };
+t._aggregateHourOfDay = (entries) => {
+  // aggregate our buckets by key
+  const agg = {};
+  entries.forEach((e) => {
+    agg[e.key] = (agg[e.key] || 0) + e.value;
+  });
+  // build our result data
+  const res = [];
+  for (let i = 0; i < 24; i++) {
+    res.push({key: i, value: agg[i] || 0});
+  }
+  return res;
+};
 </script>
 </body>
 </html>

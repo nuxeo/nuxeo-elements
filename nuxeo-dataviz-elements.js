@@ -1,4 +1,10 @@
-<!--
+import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+import './nuxeo-workflow-data.js';
+import './nuxeo-repository-data.js';
+import './nuxeo-search-data.js';
+import './nuxeo-audit-data.js';
+
+/**
 @license
 (C) Copyright Nuxeo Corp. (http://nuxeo.com/)
 
@@ -13,15 +19,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
-
-<link rel="import" href="../nuxeo-elements/nuxeo-element.html">
-<link rel="import" href="nuxeo-aggregate-data-behavior.html">
-
-<script>
-  /**
-   * @appliesMixin Nuxeo.AggregateDataBehavior
-   * @memberof Nuxeo
-   */
-  Nuxeo.AggregateDataElement = Polymer.mixinBehaviors([Nuxeo.AggregateDataBehavior], Nuxeo.Element);
-</script>
+*/
+/*
+  FIXME(polymer-modulizer): the above comments were extracted
+  from HTML and may be out of place here. Review them and
+  then delete this comment!
+*/
+;
