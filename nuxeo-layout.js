@@ -17,7 +17,7 @@ limitations under the License.
 import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
 
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-import { importHref } from '@polymer/polymer/lib/utils/import-href.js';
+import { importHref } from '@nuxeo/nuxeo-ui-elements/import-href.js';
 import './nuxeo-error.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';

@@ -26,7 +26,7 @@ import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-toast/paper-toast.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
-import { importHref } from '@polymer/polymer/lib/utils/import-href.js';
+import { importHref } from '@nuxeo/nuxeo-ui-elements/import-href.js';
 import '../widgets/nuxeo-card.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-group-tag.js';

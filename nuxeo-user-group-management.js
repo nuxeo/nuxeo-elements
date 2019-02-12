@@ -33,7 +33,7 @@ import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/paper-toast/paper-toast.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
-import { importHref } from '@polymer/polymer/lib/utils/import-href.js';
+import { importHref } from '@nuxeo/nuxeo-ui-elements/import-href.js';
 import { FiltersBehavior } from './nuxeo-filters-behavior.js';
 import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 import './nuxeo-icons.js';
