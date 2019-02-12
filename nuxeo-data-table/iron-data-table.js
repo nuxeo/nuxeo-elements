@@ -620,7 +620,7 @@ import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron
     }
 
     _isFocusable(target) {
-      if (undefined.useNativeShadow) {
+      if (false) {
         // https://nemisj.com/focusable/
         // tabIndex is not reliable in IE.
         return target.tabIndex >= 0;
