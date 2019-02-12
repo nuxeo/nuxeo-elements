@@ -1,4 +1,4 @@
-<!--
+/**
 @license
 (C) Copyright Nuxeo Corp. (http://nuxeo.com/)
 
@@ -13,12 +13,15 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+*/
+import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 
-<link rel="import" href="nuxeo-connection.html">
-<link rel="import" href="nuxeo-resource.html">
-<link rel="import" href="nuxeo-document.html">
-<link rel="import" href="nuxeo-operation.html">
-<link rel="import" href="nuxeo-page-provider.html">
-<link rel="import" href="nuxeo-audit-page-provider.html">
-<link rel="import" href="nuxeo-search.html">
+/**
+ * Nuxeo namespace
+ */
+window.Nuxeo = window.Nuxeo || {};
+
+/**
+ * @memberof Nuxeo
+ */
+Nuxeo.Element = class Element extends PolymerElement {};

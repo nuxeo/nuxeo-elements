@@ -18,10 +18,10 @@ limitations under the License.
   <head>
     <title>nuxeo-page-provider demo</title>
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
-    <link rel="import" href="../../polymer/polymer.html">
-    <link rel="import" href="../nuxeo-connection.html">
-    <link rel="import" href="../nuxeo-page-provider.html">
+    <script src="../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script type="module" src="../../../@polymer/polymer/polymer-legacy.js"></script>
+    <script type="module" src="../nuxeo-connection.js"></script>
+    <script type="module" src="../nuxeo-page-provider.js"></script>
   </head>
 
   <style>
@@ -92,10 +92,13 @@ limitations under the License.
       </template>
     </dom-bind>
 
-    <script>
-      const app = document.querySelector('dom-bind');
-      app.query = (docType) => `select * from ${docType} where ecm:isTrashed = 0`;
-      app.docType = 'File';
-    </script>
+    <script type="module">
+import '@polymer/polymer/polymer-legacy.js';
+import '../nuxeo-connection.js';
+import '../nuxeo-page-provider.js';
+const app = document.querySelector('dom-bind');
+app.query = (docType) => `select * from ${docType} where ecm:isTrashed = 0`;
+app.docType = 'File';
+</script>
   </body>
 </html>
