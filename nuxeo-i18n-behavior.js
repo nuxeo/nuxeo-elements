@@ -63,7 +63,7 @@ window.nuxeo.I18n.loadLocale = function() {
 /**
  * The default locale resolver that reads labels from JSON files in a folder, with format messages.<language>.json
  */
-function XHRLocaleResolver(msgFolder) {
+export function XHRLocaleResolver(msgFolder) {
   return function() {
     return new Promise(function(resolve) {
       // point all english based locales to the reference file
