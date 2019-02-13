@@ -14,11 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import './nuxeo-element.js';
-
 import './nuxeo-connection.js';
 import './nuxeo-page-provider.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
 {
   /**
    * `nuxeo-operation` allows calling an operation on a Nuxeo server.

@@ -49,238 +49,239 @@ limitations under the License.
     </test-fixture>
 
     <script type="module">
-import '@polymer/polymer/polymer-legacy.js';
-import '../nuxeo-operation.js';
-import '../nuxeo-page-provider.js';
-suite('<nuxeo-operation>', () => {
+      import '@polymer/polymer/polymer-legacy.js';
+      import '../nuxeo-operation.js';
+      import '../nuxeo-page-provider.js';
 
-  const responseHeaders = {
-    json: {'Content-Type': 'application/json'},
-    plain: {'Content-Type': 'text/plain'},
-  };
+      suite('<nuxeo-operation>', () => {
 
-  let server;
-  setup(() => {
-    server = sinon.fakeServer.create();
-    server.autoRespond = true;
-  });
+        const responseHeaders = {
+          json: {'Content-Type': 'application/json'},
+          plain: {'Content-Type': 'text/plain'},
+        };
 
-  teardown(() => {
-    server.restore();
-  });
-
-  suite('when login request succeed', () => {
-
-    setup(() => {
-      server.respondWith('GET', '/json/cmis', [
-        200,
-        responseHeaders.json,
-        '{}',
-      ]);
-      server.respondWith(
-        'POST',
-        '/api/v1/automation/login',
-        [
-          200,
-          responseHeaders.json,
-          '{"entity-type":"login","username":"Administrator"}',
-        ],
-      );
-      server.respondWith(
-        'GET',
-        '/api/v1/user/Administrator',
-        [
-          200,
-          responseHeaders.json,
-          '{"entity-type":"user","username":"Administrator"}',
-        ],
-      );
-    });
-
-    test('should retrieve something valid', () => {
-      server.respondWith(
-        'POST',
-        '/api/v1/automation/something',
-        [
-          200,
-          responseHeaders.json,
-          '{"success":true,"entity-type":"login"}',
-        ],
-      );
-
-      const operation = fixture('nxc-ok');
-      return operation.execute().catch(() => {
-        throw new Error('Expected to a valid response!');
-      });
-    });
-
-    test('should tell it is loading', () => {
-      server.respondWith(
-        'POST',
-        '/api/v1/automation/something',
-        [
-          200,
-          responseHeaders.json,
-          '{"success":true,"entity-type":"login"}',
-        ],
-      );
-
-      const operation = fixture('nxc-loading');
-      // wait for loading state to toggle on and off
-      return waitChanged(operation, 'loading', 2).then(operation.execute().catch(() => {
-        throw new Error('Expected to a valid response!');
-      }));
-    });
-
-    // This test fails on firefox due to the 'error' event fired in component
-    // https://github.com/webcomponents/webcomponentsjs/issues/138
-    test('shouldn\'t retrieve something invalid', () => {
-      server.respondWith(
-        'POST',
-        '/api/v1/automation/something',
-        [
-          500,
-          responseHeaders.json,
-          '{"message":"Internal Server Error"}',
-        ],
-      );
-
-      const operation = fixture('nxc-ok');
-      return operation.execute().then(() => {
-        throw new Error('Expected to an invalid response!');
-      }).catch((error) => {
-        expect(error.message).to.be.eq('Internal Server Error');
-      });
-    });
-
-  });
-
-  suite('when login request fail', () => {
-
-    setup(() => {
-      server.respondWith('GET', '/json/cmis', [
-        200,
-        responseHeaders.json,
-        '{}',
-      ]);
-      server.respondWith(
-        'POST',
-        '/api/v1/automation/login',
-        [
-          401,
-          responseHeaders.json,
-          '{"error":true,"message":"An error occurred"}',
-        ],
-      );
-    });
-
-    test('shouldn\'t retrieve something valid', () => {
-      server.respondWith(
-        'POST',
-        '/api/v1/automation/something',
-        [
-          200,
-          responseHeaders.json,
-          '{"success":true,"entity-type":"login"}',
-        ],
-      );
-
-      const operation = fixture('nxc-ko');
-      return operation.execute().then(() => {
-        throw new Error('Expected to fail the login!');
-      }).catch((error) => {
-        expect(error).to.be.instanceof(Error);
-        expect(error.message).to.be.eq('Unauthorized');
-      });
-    });
-
-    test('shouldn\'t retrieve something invalid', () => {
-      server.respondWith(
-        'POST',
-        '/api/v1/automation/something',
-        [
-          500,
-          responseHeaders.json,
-          '{"error":"Internal Error"}',
-        ],
-      );
-
-      const operation = fixture('nxc-ko');
-      return operation.execute().then(() => {
-        throw new Error('Expected to fail the login!');
-      }).catch((error) => {
-        expect(error).to.be.instanceof(Error);
-        expect(error.message).to.be.eq('Unauthorized');
-      });
-    });
-
-  });
-
-  suite('when page provider is given as input', () => {
-
-    setup(() => {
-      server.respondWith('GET', '/json/cmis', [
-        200,
-        responseHeaders.json,
-        '{}',
-      ]);
-      server.respondWith(
-        'POST',
-        '/api/v1/automation/login',
-        [
-          200,
-          responseHeaders.json,
-          '{"entity-type":"login","username":"Administrator"}',
-        ],
-      );
-      server.respondWith(
-        'GET',
-        '/api/v1/user/Administrator',
-        [
-          200,
-          responseHeaders.json,
-          '{"entity-type":"user","username":"Administrator"}',
-        ],
-      );
-    });
-
-    test('it should send provider as parameters', async () => {
-      server.respondWith(
-        'POST',
-        '/api/v1/automation/something',
-        [
-          200,
-          responseHeaders.json,
-          '{"entity-type":"documents", "entries": []}',
-        ],
-      );
-
-      const provider = fixture('nx-pp');
-      const operation = fixture('nxc-ok');
-      operation.input = provider;
-      return operation.execute()
-        .then(() => {
-          const last = server.requests.pop();
-          const body = JSON.parse(last.requestBody);
-          expect(body).to.deep.equal({
-            params: {
-              providerName: 'test_provider',
-              currentPageIndex: 1,
-              pageSize: 40,
-              sortBy: 'field',
-              sortOrder: 'asc',
-              namedParameters: {
-                boolean: 'false',
-              },
-            },
-            context: {},
-          });
+        let server;
+        setup(() => {
+          server = sinon.fakeServer.create();
+          server.autoRespond = true;
         });
 
-    });
+        teardown(() => {
+          server.restore();
+        });
 
-  });
-});
-</script>
+        suite('when login request succeed', () => {
+
+          setup(() => {
+            server.respondWith('GET', '/json/cmis', [
+              200,
+              responseHeaders.json,
+              '{}',
+            ]);
+            server.respondWith(
+              'POST',
+              '/api/v1/automation/login',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"login","username":"Administrator"}',
+              ],
+            );
+            server.respondWith(
+              'GET',
+              '/api/v1/user/Administrator',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"user","username":"Administrator"}',
+              ],
+            );
+          });
+
+          test('should retrieve something valid', () => {
+            server.respondWith(
+              'POST',
+              '/api/v1/automation/something',
+              [
+                200,
+                responseHeaders.json,
+                '{"success":true,"entity-type":"login"}',
+              ],
+            );
+
+            const operation = fixture('nxc-ok');
+            return operation.execute().catch(() => {
+              throw new Error('Expected to a valid response!');
+            });
+          });
+
+          test('should tell it is loading', () => {
+            server.respondWith(
+              'POST',
+              '/api/v1/automation/something',
+              [
+                200,
+                responseHeaders.json,
+                '{"success":true,"entity-type":"login"}',
+              ],
+            );
+
+            const operation = fixture('nxc-loading');
+            // wait for loading state to toggle on and off
+            return waitChanged(operation, 'loading', 2).then(operation.execute().catch(() => {
+              throw new Error('Expected to a valid response!');
+            }));
+          });
+
+          // This test fails on firefox due to the 'error' event fired in component
+          // https://github.com/webcomponents/webcomponentsjs/issues/138
+          test('shouldn\'t retrieve something invalid', () => {
+            server.respondWith(
+              'POST',
+              '/api/v1/automation/something',
+              [
+                500,
+                responseHeaders.json,
+                '{"message":"Internal Server Error"}',
+              ],
+            );
+
+            const operation = fixture('nxc-ok');
+            return operation.execute().then(() => {
+              throw new Error('Expected to an invalid response!');
+            }).catch((error) => {
+              expect(error.message).to.be.eq('Internal Server Error');
+            });
+          });
+
+        });
+
+        suite('when login request fail', () => {
+
+          setup(() => {
+            server.respondWith('GET', '/json/cmis', [
+              200,
+              responseHeaders.json,
+              '{}',
+            ]);
+            server.respondWith(
+              'POST',
+              '/api/v1/automation/login',
+              [
+                401,
+                responseHeaders.json,
+                '{"error":true,"message":"An error occurred"}',
+              ],
+            );
+          });
+
+          test('shouldn\'t retrieve something valid', () => {
+            server.respondWith(
+              'POST',
+              '/api/v1/automation/something',
+              [
+                200,
+                responseHeaders.json,
+                '{"success":true,"entity-type":"login"}',
+              ],
+            );
+
+            const operation = fixture('nxc-ko');
+            return operation.execute().then(() => {
+              throw new Error('Expected to fail the login!');
+            }).catch((error) => {
+              expect(error).to.be.instanceof(Error);
+              expect(error.message).to.be.eq('Unauthorized');
+            });
+          });
+
+          test('shouldn\'t retrieve something invalid', () => {
+            server.respondWith(
+              'POST',
+              '/api/v1/automation/something',
+              [
+                500,
+                responseHeaders.json,
+                '{"error":"Internal Error"}',
+              ],
+            );
+
+            const operation = fixture('nxc-ko');
+            return operation.execute().then(() => {
+              throw new Error('Expected to fail the login!');
+            }).catch((error) => {
+              expect(error).to.be.instanceof(Error);
+              expect(error.message).to.be.eq('Unauthorized');
+            });
+          });
+
+        });
+
+        suite('when page provider is given as input', () => {
+
+          setup(() => {
+            server.respondWith('GET', '/json/cmis', [
+              200,
+              responseHeaders.json,
+              '{}',
+            ]);
+            server.respondWith(
+              'POST',
+              '/api/v1/automation/login',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"login","username":"Administrator"}',
+              ],
+            );
+            server.respondWith(
+              'GET',
+              '/api/v1/user/Administrator',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"user","username":"Administrator"}',
+              ],
+            );
+          });
+
+          test('it should send provider as parameters', async () => {
+            server.respondWith(
+              'POST',
+              '/api/v1/automation/something',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"documents", "entries": []}',
+              ],
+            );
+
+            const provider = fixture('nx-pp');
+            const operation = fixture('nxc-ok');
+            operation.input = provider;
+            return operation.execute()
+              .then(() => {
+                const last = server.requests.pop();
+                const body = JSON.parse(last.requestBody);
+                expect(body).to.deep.equal({
+                  params: {
+                    providerName: 'test_provider',
+                    currentPageIndex: 1,
+                    pageSize: 40,
+                    sortBy: 'field',
+                    sortOrder: 'asc',
+                    namedParameters: {
+                      boolean: 'false',
+                    },
+                  },
+                  context: {},
+                });
+              });
+
+          });
+
+        });
+      });
+    </script>
   </body>
 </html>
