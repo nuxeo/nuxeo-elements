@@ -7,19 +7,14 @@
     "workflow",
     "metrics"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/nuxeo/nuxeo-dataviz-elements.git"
-  },
+  "repository": "https://github.com/nuxeo/nuxeo-dataviz-elements.git",
   "homepage": "https://github.com/nuxeo/nuxeo-dataviz-elements/",
   "name": "@nuxeo/nuxeo-dataviz-elements",
   "version": "3.0.0-SNAPSHOT",
-  "contributors": [
-    "Nelson Silva <nsilva@nuxeo.com>"
-  ],
+  "author": "Nuxeo",
   "license": "Apache 2.0",
   "scripts": {
-    "eslint": "eslint *.html demo/**/*.html test/**/*.html",
+    "eslint": "eslint *.js *.html demo/**/*.html test/**/*.html",
     "polylint": "polymer lint",
     "lint": "npm run eslint && npm run polylint",
     "test": "polymer test --npm --simpleOutput --expanded -l chrome",
@@ -32,8 +27,11 @@
     "eslint-plugin-html": "^4.0.1",
     "eslint-plugin-import": "^2.8.0",
     "moment": "^2.10.6",
+    "husky": "^1.3.1",
+    "lint-staged": "^8.1.3",
     "polymer-cli": "^1.8.0",
     "@polymer/iron-component-page": "^4.0.0",
+    "@polymer/test-fixture": "^4.0.2",
     "wct-browser-legacy": "^1.0.1",
     "@webcomponents/webcomponentsjs": "^2.0.0"
   },
@@ -47,5 +45,16 @@
   "dependencies": {
     "@polymer/polymer": "^3.0.0",
     "@nuxeo/nuxeo-elements": "^3.0.0-SNAPSHOT"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ]
   }
 }

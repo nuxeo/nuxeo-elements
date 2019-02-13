@@ -20,7 +20,8 @@ import './nuxeo-aggregate-data-element.js';
   /**
    * An element providing data from the audit index.
    *
-   * The possible values for `event-id` are available as contributions to the `event` extension point of the `org.nuxeo.ecm.platform.audit.service.NXAuditEventsService` service.
+   * The possible values for `event-id` are available as contributions to the `event` extension point of the
+   * `org.nuxeo.ecm.platform.audit.service.NXAuditEventsService` service.
    *
    * A query supports additional terms:
    *

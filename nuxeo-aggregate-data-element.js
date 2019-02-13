@@ -16,8 +16,9 @@ limitations under the License.
 */
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 
-import './nuxeo-aggregate-data-behavior.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import './nuxeo-aggregate-data-behavior.js';
+
 /**
  * @appliesMixin Nuxeo.AggregateDataBehavior
  * @memberof Nuxeo

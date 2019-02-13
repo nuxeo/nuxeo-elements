@@ -18,6 +18,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 
 import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
 {
   /**
    * An element allowing querying the Nuxeo ES passthrough.

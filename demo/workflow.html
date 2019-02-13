@@ -252,35 +252,36 @@ limitations under the License.
 </template>
 </dom-bind>
 <script type="module">
-import '../nuxeo-dataviz-elements.js';
-const t = document.querySelector('dom-bind');
-const currentDate = moment();
-t.endDate = currentDate.format('YYYY-MM-DD');
-t.startDate = currentDate.subtract(7, 'days').format('YYYY-MM-DD');
+  import '../nuxeo-dataviz-elements.js';
+  
+  const t = document.querySelector('dom-bind');
+  const currentDate = moment();
+  t.endDate = currentDate.format('YYYY-MM-DD');
+  t.startDate = currentDate.subtract(7, 'days').format('YYYY-MM-DD');
 
-t.formatDuration = (duration) => {
-  let seconds = Math.floor(duration / 1000);
-  let minutes = Math.floor(seconds / 60);
-  let hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-  let result = ';';
-  hours -= (days * 24);
-  minutes = minutes - (days * 24 * 60) - (hours * 60);
-  seconds = seconds - (days * 24 * 60 * 60) - (hours * 60 * 60) - (minutes * 60);
-  if (days > 0) {
-    result += `${days} Days `;
-  }
-  if (hours > 0) {
-    result += `${hours} h `;
-  }
-  if (minutes > 0) {
-    result += `${minutes} m `;
-  }
-  if (seconds > 0) {
-    result += `${seconds}  s `;
-  }
-  return result;
-};
+  t.formatDuration = (duration) => {
+    let seconds = Math.floor(duration / 1000);
+    let minutes = Math.floor(seconds / 60);
+    let hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    let result = ';';
+    hours -= (days * 24);
+    minutes = minutes - (days * 24 * 60) - (hours * 60);
+    seconds = seconds - (days * 24 * 60 * 60) - (hours * 60 * 60) - (minutes * 60);
+    if (days > 0) {
+      result += `${days} Days `;
+    }
+    if (hours > 0) {
+      result += `${hours} h `;
+    }
+    if (minutes > 0) {
+      result += `${minutes} m `;
+    }
+    if (seconds > 0) {
+      result += `${seconds}  s `;
+    }
+    return result;
+  };
 </script>
 </body>
 </html>

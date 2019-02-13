@@ -193,25 +193,26 @@ limitations under the License.
 </template>
 </dom-bind>
 <script type="module">
-import '../nuxeo-search-data.js';
-const t = document.querySelector('dom-bind');
-const currentDate = moment();
-t.endDate = currentDate.format('YYYY-MM-DD');
-t.startDate = currentDate.subtract(1, 'week').format('YYYY-MM-DD');
+  import '../nuxeo-search-data.js';
+  
+  const t = document.querySelector('dom-bind');
+  const currentDate = moment();
+  t.endDate = currentDate.format('YYYY-MM-DD');
+  t.startDate = currentDate.subtract(1, 'week').format('YYYY-MM-DD');
 
-t._aggregateHourOfDay = (entries) => {
-  // aggregate our buckets by key
-  const agg = {};
-  entries.forEach((e) => {
-    agg[e.key] = (agg[e.key] || 0) + e.value;
-  });
-  // build our result data
-  const res = [];
-  for (let i = 0; i < 24; i++) {
-    res.push({key: i, value: agg[i] || 0});
-  }
-  return res;
-};
+  t._aggregateHourOfDay = (entries) => {
+    // aggregate our buckets by key
+    const agg = {};
+    entries.forEach((e) => {
+      agg[e.key] = (agg[e.key] || 0) + e.value;
+    });
+    // build our result data
+    const res = [];
+    for (let i = 0; i < 24; i++) {
+      res.push({key: i, value: agg[i] || 0});
+    }
+    return res;
+  };
 </script>
 </body>
 </html>

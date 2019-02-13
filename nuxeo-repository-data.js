@@ -26,7 +26,8 @@ import './nuxeo-aggregate-data-element.js';
    * - `with-*`: nested multi-bucket aggregation (with-ranges | with-date-intervals)
    * - `metrics`: leaf single-value metrics aggregation (count, max, min, avg, sum)
    *
-   * Filtering of the data is possible by using the document property helper attributes: `ecm-primary-type`, `ecm-lifecycle-state` or `ecm-mixin-type`
+   * Filtering of the data is possible by using the document property helper attributes: `ecm-primary-type`,
+   * `ecm-lifecycle-state` or `ecm-mixin-type`
    *
    * It is also possible to use a `where` attribute which takes a list of clauses to include in query.
    *

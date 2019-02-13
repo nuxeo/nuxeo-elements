@@ -15,8 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import '@polymer/polymer/polymer-legacy.js';
-
 import './nuxeo-es-search.js';
+
 window.Nuxeo = window.Nuxeo || {};
 /**
  * `Nuxeo.AggregateDataBehavior` provides the shared aggregate data behavior.

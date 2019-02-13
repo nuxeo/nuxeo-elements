@@ -103,24 +103,25 @@ limitations under the License.
 </template>
 </dom-bind>
 <script type="module">
-import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
-import '@nuxeo/nuxeo-elements/nuxeo-document.js';
-import '@nuxeo/nuxeo-elements/nuxeo-page-provider.js';
-import '../nuxeo-audit-data.js';
-const t = document.querySelector('dom-bind');
-const currentDate = moment();
+  import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+  import '@nuxeo/nuxeo-elements/nuxeo-document.js';
+  import '@nuxeo/nuxeo-elements/nuxeo-page-provider.js';
+  import '../nuxeo-audit-data.js';
+  
+  const t = document.querySelector('dom-bind');
+  const currentDate = moment();
 
-// builds page provider query to get info about downloaded docs
-t.query = (entries) => {
-  if (entries.length > 0) {
-    const values = entries.map((entry) => `'${entry.key}'`).join(',');
-    return `select * from Document WHERE ecm:uuid IN (${values})`;
-  }
-};
+  // builds page provider query to get info about downloaded docs
+  t.query = (entries) => {
+    if (entries.length > 0) {
+      const values = entries.map((entry) => `'${entry.key}'`).join(',');
+      return `select * from Document WHERE ecm:uuid IN (${values})`;
+    }
+  };
 
-t.numberOfDownloads = (doc) => t.downloads.find((entry) => entry.key === doc.uid).value;
-t.endDate = currentDate.format('YYYY-MM-DD');
-t.startDate = currentDate.subtract(1, 'week').format('YYYY-MM-DD');
+  t.numberOfDownloads = (doc) => t.downloads.find((entry) => entry.key === doc.uid).value;
+  t.endDate = currentDate.format('YYYY-MM-DD');
+  t.startDate = currentDate.subtract(1, 'week').format('YYYY-MM-DD');
 </script>
 </body>
 
