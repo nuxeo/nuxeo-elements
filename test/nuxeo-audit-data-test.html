@@ -22,12 +22,7 @@ limitations under the License.
 
     <script src="../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../../../wct-browser-legacy/browser.js"></script>
-    <script src="../../../@polymer/test-fixture/test-fixture-mocha.js"></script>
     <script src="../../../@nuxeo/nuxeo-elements/test/test-helpers.js"></script>
-
-    <script type="module" src="../../../@polymer/polymer/polymer-legacy.js"></script>
-    <script type="module" src="../../../@polymer/test-fixture/test-fixture.js"></script>
-    <script type="module" src="../nuxeo-audit-data.js"></script>
   </head>
   <body>
     <test-fixture id="nx">
@@ -142,21 +137,6 @@ limitations under the License.
           assert.equal(agg1.terms.size, 5);
           assert.equal(agg2.terms.field, 'extended.variable2');
           assert.isUndefined(agg2.terms.size);
-        });
-
-        test('metrics', () => {
-          const search = fixture('metrics');
-          assert.equal(search.aggregates.metrics.avg.field, 'variable');
-
-          return fakeResponse(search, {
-            aggregations: {
-              metrics: {
-                value: 1,
-              },
-            },
-          }).then(() => {
-            assert.equal(search.data, 1);
-          });
         });
 
         test('metrics', () => {

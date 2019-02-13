@@ -25,12 +25,12 @@ limitations under the License.
   </head>
   <body>
     <script>
-      const tests = [
+      WCT.loadSuites([
+        'nuxeo-audit-data-test.html',
         'nuxeo-workflow-data-test.html',
         'nuxeo-repository-data-test.html',
         'nuxeo-search-data-test.html',
-      ];
-      WCT.loadSuites(tests.concat(tests.map((test) => `${test}?dom=shadow`)));
+      ]);
     </script>
   </body>
 </html>
