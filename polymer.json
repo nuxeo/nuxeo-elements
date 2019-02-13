@@ -1,7 +1,7 @@
 {
-  "entrypoint": "nuxeo-dataviz-elements.html",
+  "entrypoint": "nuxeo-dataviz-elements.js",
   "lint": {
-    "rules": ["polymer-2"],
+    "rules": ["polymer-3"],
     "ignoreWarnings": ["set-unknown-attribute", "databinding-calls-must-be-functions"]
   }
 }
