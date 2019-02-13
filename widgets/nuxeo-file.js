@@ -14,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
-
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/av-icons.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -28,8 +29,7 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-icons.js';
 import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * An element for uploading blobs using the batch upload API.
@@ -92,7 +92,14 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
     <nuxeo-connection id="nx"></nuxeo-connection>
 
-    <input hidden="" id="input" type="file" multiple\$="[[multiple]]" accept\$="[[accept]]" on-change="_filesChanged" required\$="[[required]]">
+    <input
+      hidden
+      id="input"
+      type="file"
+      multiple\$="[[multiple]]"
+      accept\$="[[accept]]"
+      on-change="_filesChanged"
+      required\$="[[required]]">
 
     <div id="dropZone" hidden\$="[[readonly]]">
       <dom-if if="[[!uploading]]">
@@ -112,7 +119,12 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
         <div class="file">
           <div class="layout horizontal">
             <a href\$="[[_data(value)]]" download="[[_fileName(value)]]">[[_fileName(value)]]</a>
-            <iron-icon icon="nuxeo:remove" title="[[i18n('command.remove')]]" on-click="remove" hidden\$="[[readonly]]"></iron-icon>
+            <iron-icon
+              icon="nuxeo:remove"
+              title="[[i18n('command.remove')]]"
+              on-click="remove"
+              hidden\$="[[readonly]]">
+            </iron-icon>
           </div>
         </div>
       </template>
@@ -125,7 +137,12 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
             <div class="file">
               <div class="layout horizontal">
                 <a href\$="[[_data(file)]]" download="[[_fileName(file)]]">[[_fileName(file)]]</a>
-                <iron-icon icon="nuxeo:remove" title="[[i18n('command.remove')]]" on-click="remove" hidden\$="[[readonly]]"></iron-icon>
+                <iron-icon
+                  icon="nuxeo:remove"
+                  title="[[i18n('command.remove')]]"
+                  on-click="remove"
+                  hidden\$="[[readonly]]">
+                </iron-icon>
               </div>
             </div>
           </template>

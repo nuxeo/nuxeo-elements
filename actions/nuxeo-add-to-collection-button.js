@@ -14,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-icon/iron-icon.js';
-
 import '@polymer/iron-icons/iron-icons.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
@@ -28,12 +29,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-icons.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-selectivity.js';
-import '../widgets/nuxeo-selectivity.js';
 import '../widgets/nuxeo-textarea.js';
 import '../widgets/nuxeo-tooltip.js';
 import './nuxeo-action-button-styles.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * A button element for adding a document to a collection
@@ -77,14 +76,29 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
     <nuxeo-dialog id="add-to-collection-dialog" with-backdrop="" on-iron-overlay-closed="_resetPopup" no-auto-focus="">
       <h2>[[i18n('addToCollectionButton.dialog.heading')]]</h2>
       <paper-dialog-scrollable>
-        <nuxeo-selectivity id="nxSelect" label="[[i18n('addToCollectionButton.dialog.collections')]]" required="" operation="Collection.Suggestion" min-chars="0" placeholder="[[i18n('addToCollectionButton.dialog.select')]]" value="{{collection}}" tagging="true" query-results-filter="[[resultsFilter]]" result-formatter="[[resultFormatter]]" selection-formatter="[[selectionFormatter]]" new-entry-formatter="[[newEntryFormatter]]">
+        <nuxeo-selectivity
+          id="nxSelect"
+          label="[[i18n('addToCollectionButton.dialog.collections')]]"
+          required
+          operation="Collection.Suggestion"
+          min-chars="0"
+          placeholder="[[i18n('addToCollectionButton.dialog.select')]]"
+          value="{{collection}}"
+          tagging="true"
+          query-results-filter="[[resultsFilter]]"
+          result-formatter="[[resultFormatter]]"
+          selection-formatter="[[selectionFormatter]]"
+          new-entry-formatter="[[newEntryFormatter]]">
         </nuxeo-selectivity>
-        <nuxeo-textarea label="[[i18n('addToCollectionButton.dialog.description')]]" value="{{description::input}}" hidden\$="[[!_isNew(collection)]]">
+        <nuxeo-textarea
+          label="[[i18n('addToCollectionButton.dialog.description')]]"
+          value="{{description::input}}"
+          hidden\$="[[!_isNew(collection)]]">
         </nuxeo-textarea>
       </paper-dialog-scrollable>
       <div class="buttons">
-        <paper-button dialog-dismiss="">[[i18n('addToCollectionButton.dialog.cancel')]]</paper-button>
-        <paper-button dialog-confirm="" class="primary" name="add" on-click="_add" disabled\$="[[!_isValid(collection)]]">
+        <paper-button dialog-dismiss>[[i18n('addToCollectionButton.dialog.cancel')]]</paper-button>
+        <paper-button dialog-confirm class="primary" name="add" on-click="_add" disabled\$="[[!_isValid(collection)]]">
           [[i18n('addToCollectionButton.dialog.add')]]
         </paper-button>
       </div>

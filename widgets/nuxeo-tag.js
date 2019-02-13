@@ -14,12 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import '@polymer/iron-icon/iron-icon.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import '../nuxeo-i18n-behavior.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
 {
   /**
    * An element for showing a tag.

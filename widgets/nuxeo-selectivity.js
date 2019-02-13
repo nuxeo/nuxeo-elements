@@ -15,14 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
-
 import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-const $_documentContainer = document.createElement('template');
+
+const $_documentContainer = document.createElement('template'); // eslint-disable-line camelcase
 
 $_documentContainer.innerHTML = `<dom-module id="nuxeo-selectivity">
   

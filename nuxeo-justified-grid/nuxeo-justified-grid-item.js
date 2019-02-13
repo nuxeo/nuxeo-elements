@@ -14,10 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import '@polymer/iron-image/iron-image.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import '@polymer/iron-image/iron-image.js';
+
 {
   /**
    * An element for displaying an item in nuxeo-justified-grid.
@@ -65,7 +65,8 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
         background: -o-linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.4));
         background: -moz-linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.4));
         background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.4));
-        text-shadow: -1px 0 rgba(0, 0, 0, 0.4), 0 1px rgba(0, 0, 0, 0.4), 1px 0 rgba(0, 0, 0, 0.4), 0 -1px rgba(0, 0, 0, 0.4);
+        text-shadow: -1px 0 rgba(0, 0, 0, 0.4), 0 1px rgba(0, 0, 0, 0.4),
+                      1px 0 rgba(0, 0, 0, 0.4), 0 -1px rgba(0, 0, 0, 0.4);
       }
 
       .item:hover .overlay {

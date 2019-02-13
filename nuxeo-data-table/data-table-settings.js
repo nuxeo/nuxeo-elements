@@ -4,8 +4,9 @@
   from HTML and may be out of place here. Review them and
   then delete this comment!
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-checkbox/paper-checkbox.js';
@@ -13,8 +14,7 @@ import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../widgets/nuxeo-dialog.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   class DataTableSettings extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
@@ -90,13 +90,13 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       </div>
       <div class="buttons horizontal end-justified layout">
         <div class="flex start-justified">
-          <paper-button noink="" on-click="_resetSettings">[[i18n('tableSettings.columnSettings.reset')]]</paper-button>
+          <paper-button noink on-click="_resetSettings">[[i18n('tableSettings.columnSettings.reset')]]</paper-button>
         </div>
-        <paper-button noink="" class="primary" dialog-dismiss="">[[i18n('tableSettings.columnSettings.close')]]</paper-button>
+        <paper-button noink class="primary" dialog-dismiss>[[i18n('tableSettings.columnSettings.close')]]</paper-button>
       </div>
     </nuxeo-dialog>
 
-    <paper-icon-button noink="" icon="nuxeo:settings" id="toggleColSettings" on-click="toggleColsSettingsPopup">
+    <paper-icon-button noink icon="nuxeo:settings" id="toggleColSettings" on-click="toggleColsSettingsPopup">
     </paper-icon-button>
 `;
     }

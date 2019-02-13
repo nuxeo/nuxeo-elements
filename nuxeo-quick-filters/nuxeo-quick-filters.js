@@ -14,13 +14,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * An element for toggling quickfilters.

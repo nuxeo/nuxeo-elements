@@ -19,14 +19,14 @@ limitations under the License.
   <title>nuxeo-favorites-toggle-button tests</title>
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
   <script type="module">
-import '@polymer/polymer/polymer-legacy.js';
-import '@polymer/iron-test-helpers/mock-interactions.js';
-import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
-import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
-import '../actions/nuxeo-favorites-toggle-button.js';
-// force use of polyfill: see ELEMENTS-56
-window.fetch = null;
-</script>
+    import '@polymer/polymer/polymer-legacy.js';
+    import '@polymer/iron-test-helpers/mock-interactions.js';
+    import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+    import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
+    import '../actions/nuxeo-favorites-toggle-button.js';
+    // force use of polyfill: see ELEMENTS-56
+    window.fetch = null;
+  </script>
   <script src="../../../@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
   <script src="../../../wct-browser-legacy/browser.js"></script>
   <script src="../../../@nuxeo/nuxeo-elements/test/test-helpers.js"></script>
@@ -75,78 +75,78 @@ window.fetch = null;
   </test-fixture>
 
   <script type="module">
-import '@polymer/polymer/polymer-legacy.js';
-import '@polymer/iron-test-helpers/mock-interactions.js';
-import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
-import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
-import '../actions/nuxeo-favorites-toggle-button.js';
-/* eslint-disable no-unused-expressions */
+    import '@polymer/polymer/polymer-legacy.js';
+    import '@polymer/iron-test-helpers/mock-interactions.js';
+    import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+    import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
+    import '../actions/nuxeo-favorites-toggle-button.js';
+    /* eslint-disable no-unused-expressions */
 
-suite('<nuxeo-favorites-toggle-button>', () => {
-  let server;
-  setup(() => {
-    server = sinon.fakeServer.create();
-    server.autoRespond = true;
-    // login
-    const nx = fixture('nx');
-    return login(server, nx);
-  });
+    suite('<nuxeo-favorites-toggle-button>', () => {
+      let server;
+      setup(() => {
+        server = sinon.fakeServer.create();
+        server.autoRespond = true;
+        // login
+        const nx = fixture('nx');
+        return login(server, nx);
+      });
 
-  suite('when a document is a favorite', () => {
-    let element;
-    setup(() => {
-      element = fixture('isFavorite');
-      server.respondWith(
-        'POST',
-        '/dummy/api/v1/automation/Document.RemoveFromFavorites',
-        [
-          200,
-          { 'Content-Type': 'application/json' },
-          '{"entity-type": "document","uid": "1"}',
-        ],
-      );
-    });
+      suite('when a document is a favorite', () => {
+        let element;
+        setup(() => {
+          element = fixture('isFavorite');
+          server.respondWith(
+            'POST',
+            '/dummy/api/v1/automation/Document.RemoveFromFavorites',
+            [
+              200,
+              { 'Content-Type': 'application/json' },
+              '{"entity-type": "document","uid": "1"}',
+            ],
+          );
+        });
 
-    test('it should display the document as favorite', () => {
-      expect(element.favorite).to.be.true;
-    });
+        test('it should display the document as favorite', () => {
+          expect(element.favorite).to.be.true;
+        });
 
-    test('toggle should remove document from favorites', () => {
-      // Remove document from favorites by toggling
-      MockInteractions.tap(element);
-      return waitChanged(element, 'favorite').then(() => {
-        expect(element.favorite).to.be.false;
+        test('toggle should remove document from favorites', () => {
+          // Remove document from favorites by toggling
+          MockInteractions.tap(element);
+          return waitChanged(element, 'favorite').then(() => {
+            expect(element.favorite).to.be.false;
+          });
+        });
+      });
+
+      suite('when a document is not in favorites', () => {
+        let element;
+        setup(() => {
+          element = fixture('notFavorite');
+          server.respondWith(
+            'POST',
+            '/dummy/api/v1/automation/Document.AddToFavorites',
+            [
+              200,
+              { 'Content-Type': 'application/json' },
+              '{"entity-type": "document","uid": "1"}',
+            ],
+          );
+        });
+
+        test('it should display the document as not favorite', () => {
+          expect(element.favorite).to.be.false;
+        });
+
+        test('toggle should add the document to favorites', () => {
+          // Add the documents to favorites by toggling
+          MockInteractions.tap(element);
+          return waitChanged(element, 'favorite').then(() => {
+            expect(element.favorite).to.be.true;
+          });
+        });
       });
     });
-  });
-
-  suite('when a document is not in favorites', () => {
-    let element;
-    setup(() => {
-      element = fixture('notFavorite');
-      server.respondWith(
-        'POST',
-        '/dummy/api/v1/automation/Document.AddToFavorites',
-        [
-          200,
-          { 'Content-Type': 'application/json' },
-          '{"entity-type": "document","uid": "1"}',
-        ],
-      );
-    });
-
-    test('it should display the document as not favorite', () => {
-      expect(element.favorite).to.be.false;
-    });
-
-    test('toggle should add the document to favorites', () => {
-      // Add the documents to favorites by toggling
-      MockInteractions.tap(element);
-      return waitChanged(element, 'favorite').then(() => {
-        expect(element.favorite).to.be.true;
-      });
-    });
-  });
-});
-</script>
+  </script>
 </body>

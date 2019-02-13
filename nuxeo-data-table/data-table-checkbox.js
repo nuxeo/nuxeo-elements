@@ -4,10 +4,10 @@
   from HTML and may be out of place here. Review them and
   then delete this comment!
 */
-import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-
-import '../widgets/nuxeo-checkmark.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import '../widgets/nuxeo-checkmark.js';
+
 {
   class DataTableCheckbox extends Nuxeo.Element {
     static get template() {

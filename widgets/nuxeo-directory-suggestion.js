@@ -14,15 +14,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
 
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
 import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import { FormatBehavior } from '../nuxeo-format-behavior.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import './nuxeo-selectivity.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * An element for selecting one or more entries from a given directory.
@@ -54,7 +55,27 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       }
     </style>
 
-    <nuxeo-selectivity id="s2" operation="[[operation]]" label="[[label]]" min-chars="[[minChars]]" frequency="[[frequency]]" multiple="[[multiple]]" params="[[_computeParams(params.*, directoryName, dbl10n)]]" placeholder="[[placeholder]]" error-message="[[errorMessage]]" readonly="[[readonly]]" value="{{value}}" selected-items="{{selectedItems}}" selected-item="{{selectedItem}}" selection-formatter="[[selectionFormatter]]" required="[[required]]" invalid="[[invalid]]" resolve-entry="[[resolveEntry]]" stay-open-on-select="[[stayOpenOnSelect]]" id-function="[[idFunction]]" query-results-filter="[[queryResultsFilter]]">
+    <nuxeo-selectivity
+      id="s2"
+      operation="[[operation]]"
+      label="[[label]]"
+      min-chars="[[minChars]]"
+      frequency="[[frequency]]"
+      multiple="[[multiple]]"
+      params="[[_computeParams(params.*, directoryName, dbl10n)]]"
+      placeholder="[[placeholder]]"
+      error-message="[[errorMessage]]"
+      readonly="[[readonly]]"
+      value="{{value}}"
+      selected-items="{{selectedItems}}"
+      selected-item="{{selectedItem}}"
+      selection-formatter="[[selectionFormatter]]"
+      required="[[required]]"
+      invalid="[[invalid]]"
+      resolve-entry="[[resolveEntry]]"
+      stay-open-on-select="[[stayOpenOnSelect]]"
+      id-function="[[idFunction]]"
+      query-results-filter="[[queryResultsFilter]]">
     </nuxeo-selectivity>
 `;
     }

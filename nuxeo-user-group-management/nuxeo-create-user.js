@@ -14,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-form/iron-form.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-resource.js';
@@ -29,8 +30,7 @@ import '../nuxeo-layout.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-user-suggestion.js';
 import './nuxeo-edit-password.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * Used by `nuxeo-user-group-management`
@@ -80,7 +80,8 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
     <nuxeo-connection user="{{_currentUser}}"></nuxeo-connection>
 
-    <nuxeo-resource id="request" path="/user" headers="{&quot;Content-Type&quot;:&quot;application/json&quot;}"></nuxeo-resource>
+    <nuxeo-resource id="request" path="/user" headers="{&quot;Content-Type&quot;:&quot;application/json&quot;}">
+    </nuxeo-resource>
 
     <nuxeo-operation id="invite" op="User.Invite"></nuxeo-operation>
 
@@ -94,7 +95,12 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
         <nuxeo-input label="[[i18n('createUser.username')]]" value="{{user.username}}" name="username" required="">
         </nuxeo-input>
 
-        <nuxeo-layout id="layout" href="[[_layoutHref('nuxeo-edit-user.html')]]" model="[[_layoutModel(user, new)]]" on-element-changed="_layoutElementChanged"></nuxeo-layout>
+        <nuxeo-layout
+          id="layout"
+          href="[[_layoutHref('nuxeo-edit-user.html')]]"
+          model="[[_layoutModel(user, new)]]"
+          on-element-changed="_layoutElementChanged">
+        </nuxeo-layout>
 
         <label>[[i18n('createUser.setPassword')]]</label>
         <paper-toggle-button checked="{{usePassword}}" name="password-toggle"></paper-toggle-button>
@@ -106,9 +112,11 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
         </dom-if>
 
         <div class="form-buttons">
-          <paper-button noink="" id="cancelButton" on-click="_cancel">[[i18n('command.cancel')]]</paper-button>
-          <paper-button noink="" id="createButton" class="primary" on-click="_submit">[[i18n('command.create')]]</paper-button>
-          <paper-button noink="" id="createAnotherButton" class="primary" on-click="_submitAnother">
+          <paper-button noink id="cancelButton" on-click="_cancel">[[i18n('command.cancel')]]</paper-button>
+          <paper-button noink id="createButton" class="primary" on-click="_submit">
+            [[i18n('command.create')]]
+          </paper-button>
+          <paper-button noink" id="createAnotherButton" class="primary" on-click="_submitAnother">
             [[i18n('createUser.createAnother')]]
           </paper-button>
         </div>

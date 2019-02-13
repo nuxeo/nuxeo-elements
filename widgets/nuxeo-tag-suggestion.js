@@ -14,16 +14,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
-
 import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
 import '@polymer/paper-toast/paper-toast.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import './nuxeo-selectivity.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * `nuxeo-tag-suggestion` allows selecting one or more tags.
@@ -51,7 +51,27 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       }
     </style>
 
-    <nuxeo-selectivity id="s2" operation="[[operation]]" label="[[label]]" min-chars="[[minChars]]" tagging\$="[[allowNewTags]]" multiple="" params="[[params]]" placeholder="[[placeholder]]" error-message="[[errorMessage]]" readonly="[[readonly]]" value="{{value}}" selected-items="{{selectedItems}}" required="[[required]]" invalid="[[invalid]]" new-entry-formatter="[[newEntryFormatter]]" result-formatter="[[resultFormatter]]" added-entry-handler="[[addedTagHandler]]" removed-entry-handler="[[removedTagHandler]]" init-selection="[[initSelection]]" stay-open-on-select="[[stayOpenOnSelect]]">
+    <nuxeo-selectivity
+      id="s2"
+      operation="[[operation]]"
+      label="[[label]]"
+      min-chars="[[minChars]]"
+      tagging\$="[[allowNewTags]]"
+      multiple
+      params="[[params]]"
+      placeholder="[[placeholder]]"
+      error-message="[[errorMessage]]"
+      readonly="[[readonly]]"
+      value="{{value}}"
+      selected-items="{{selectedItems}}"
+      required="[[required]]"
+      invalid="[[invalid]]"
+      new-entry-formatter="[[newEntryFormatter]]"
+      result-formatter="[[resultFormatter]]"
+      added-entry-handler="[[addedTagHandler]]"
+      removed-entry-handler="[[removedTagHandler]]"
+      init-selection="[[initSelection]]"
+      stay-open-on-select="[[stayOpenOnSelect]]">
     </nuxeo-selectivity>
 
     <nuxeo-operation id="addTagOp" op="Services.TagDocument" input="[[document.uid]]">

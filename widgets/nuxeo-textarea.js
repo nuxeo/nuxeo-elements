@@ -14,11 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-input/paper-textarea.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
 {
   /**
    * An element for generic textarea input in forms
@@ -60,7 +60,18 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
     <label>[[label]]</label>
 
-    <paper-textarea id="paperTextarea" name="[[name]]" value="{{value}}" rows\$="[[rows]]" required\$="[[required]]" disabled\$="[[disabled]]" readonly\$="[[readonly]]" error-message="[[errorMessage]]" validator\$="[[validator]]" invalid\$="[[invalid]]" no-label-float="">
+    <paper-textarea
+      id="paperTextarea"
+      name="[[name]]"
+      value="{{value}}"
+      rows\$="[[rows]]"
+      required\$="[[required]]"
+      disabled\$="[[disabled]]"
+      readonly\$="[[readonly]]"
+      error-message="[[errorMessage]]"
+      validator\$="[[validator]]"
+      invalid\$="[[invalid]]"
+      no-label-float>
     </paper-textarea>
 `;
     }

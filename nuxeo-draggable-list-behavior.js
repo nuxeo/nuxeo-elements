@@ -17,7 +17,8 @@ limitations under the License.
 import '@polymer/polymer/polymer-legacy.js';
 
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-const $_documentContainer = document.createElement('template');
+
+const $_documentContainer = document.createElement('template'); // eslint-disable-line camelcase
 
 $_documentContainer.innerHTML = `<dom-module id="nuxeo-drag-proxy">
   <template>

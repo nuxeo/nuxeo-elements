@@ -14,16 +14,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import '@polymer/iron-icon/iron-icon.js';
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
+import '@polymer/iron-icon/iron-icon.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import './nuxeo-tooltip.js';
 import '../actions/nuxeo-action-button-styles.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * An element for running an operation.
@@ -44,7 +45,14 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       return html`
     <style include="nuxeo-action-button-styles"></style>
 
-    <nuxeo-operation id="op" op="[[operation]]" input="[[input]]" params="[[params]]" sync-indexing\$="[[syncIndexing]]" async\$="[[async]]" poll-interval="[[pollInterval]]">
+    <nuxeo-operation
+      id="op"
+      op="[[operation]]"
+      input="[[input]]"
+      params="[[params]]"
+      sync-indexing\$="[[syncIndexing]]"
+      async\$="[[async]]"
+      poll-interval="[[pollInterval]]">
     </nuxeo-operation>
 
     <div class="action" on-click="_execute">

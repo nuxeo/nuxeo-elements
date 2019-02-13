@@ -18,13 +18,14 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
 
 import '@polymer/marked-element/marked-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-import './viewers/nuxeo-image-viewer.js';
-import './viewers/nuxeo-pdf-viewer.js';
-import './viewers/nuxeo-video-viewer.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { Templatizer } from '@polymer/polymer/lib/legacy/templatizer-behavior.js';
+import './viewers/nuxeo-image-viewer.js';
+import './viewers/nuxeo-pdf-viewer.js';
+import './viewers/nuxeo-video-viewer.js';
+
 {
   /**
    * An element to display a preview of a document.
@@ -101,7 +102,13 @@ import { Templatizer } from '@polymer/polymer/lib/legacy/templatizer-behavior.js
     </template>
 
     <template mime-pattern="video.*|application/(g|m)xf">
-      <nuxeo-video-viewer id="video" controls="" sources="[[_computeVideoSources(_blob)]]" storyboard="[[_computeStoryboard(_blob)]]"></nuxeo-video-viewer>
+      <nuxeo-video-viewer
+        id="video"
+        controls
+        sources="[[_computeVideoSources(_blob)]]"
+        storyboard="[[_computeStoryboard(_blob)]]"
+      >
+      </nuxeo-video-viewer>
     </template>
 
     <template mime-pattern="audio.*">

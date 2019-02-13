@@ -14,12 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import '@nuxeo/nuxeo-elements/nuxeo-page-provider.js';
 import '../../nuxeo-data-grid/nuxeo-data-grid.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
 {
   class DataGridDemo extends PolymerElement {
     static get template() {
@@ -37,7 +37,12 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
     <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
 
-    <nuxeo-page-provider id="provider" provider="default_search" page-size="40" enrichers="thumbnail" params="{&quot;ecm_path&quot;: [&quot;/default-domain/workspaces/demo&quot;]}">
+    <nuxeo-page-provider
+      id="provider"
+      provider="default_search"
+      page-size="40"
+      enrichers="thumbnail"
+      params="{&quot;ecm_path&quot;: [&quot;/default-domain/workspaces/demo&quot;]}">
     </nuxeo-page-provider>
 
     <nuxeo-data-grid id="grid" nx-provider="provider">

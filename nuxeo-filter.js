@@ -18,12 +18,12 @@ import '@polymer/polymer/polymer-legacy.js';
 
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
-import { FiltersBehavior } from './nuxeo-filters-behavior.js';
 import { microTask } from '@polymer/polymer/lib/utils/async.js';
 import { enqueueDebouncer } from '@polymer/polymer/lib/utils/flush.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { Templatizer } from '@polymer/polymer/lib/legacy/templatizer-behavior.js';
+import { FiltersBehavior } from './nuxeo-filters-behavior.js';
 /* eslint-disable no-new-func,no-restricted-syntax,guard-for-in */
 
 {

@@ -70,9 +70,9 @@ export const RoutingBehavior = {
    * Returns a computed `urlFor` method, based on the current `router`.
    */
   _computeUrlFor() {
-    return function () {
+    return function (...args) {
       if (this.router) {
-        const route = arguments[0];
+        const route = args[0];
         const baseUrl = this.router.baseUrl || '';
         if (route.startsWith('/')) {
           return baseUrl + route;
@@ -81,7 +81,7 @@ export const RoutingBehavior = {
           console.error(`Could not generate a url for route ${route}`);
           return;
         }
-        const params = Array.prototype.slice.call(arguments, 1);
+        const params = Array.prototype.slice.call(args, 1);
         return baseUrl + (baseUrl.endsWith('/') ? '' : '/') +
                         (this.router.useHashbang ? '#!' : '') +
                         this.router[route].apply(this, params);
@@ -94,9 +94,9 @@ export const RoutingBehavior = {
    * Invokes `router.navigate` to trigger the actual navigation.
    */
   _computeNavigateTo() {
-    return function () {
+    return function (...args) {
       if (this.router) {
-        const route = arguments[0];
+        const route = args[0];
         const baseUrl = this.router.baseUrl || '';
         if (route.startsWith('/')) {
           this.router.navigate(baseUrl + route);
@@ -104,7 +104,7 @@ export const RoutingBehavior = {
         if (!this.router[route]) {
           console.error(`Could not navigate to a url for route ${route}`);
         }
-        const params = Array.prototype.slice.call(arguments, 1);
+        const params = Array.prototype.slice.call(args, 1);
         this.router.navigate(this.router[route].apply(this, params));
       } else {
         console.error('No router defined');

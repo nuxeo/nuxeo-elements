@@ -15,17 +15,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
-
 import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-input/paper-input.js';
 import '@vaadin/vaadin-date-picker/vaadin-date-picker.js';
 import 'moment/src/moment.js';
-import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-const $_documentContainer = document.createElement('template');
+import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
-$_documentContainer.innerHTML = `<dom-module id="nuxeo-date-picker" theme-for="vaadin-date-picker vaadin-text-field vaadin-month-calendar vaadin-date-picker-overlay-content">
+const $_documentContainer = document.createElement('template'); // eslint-disable-line camelcase
+
+$_documentContainer.innerHTML = `<dom-module id="nuxeo-date-picker"
+  theme-for="vaadin-date-picker vaadin-text-field vaadin-month-calendar vaadin-date-picker-overlay-content">
   <template>
     <style>
       :host {
@@ -63,11 +64,11 @@ $_documentContainer.innerHTML = `<dom-module id="nuxeo-date-picker" theme-for="v
       }
 
       /* buttons inside input (clear and open picker) */
-      [part="text-field"] [part\$="button"] {
+      [part="text-field"] [part$="button"] {
         color: var(--nuxeo-text-default) !important;
       }
 
-      [part="text-field"] [part\$="button"]:hover {
+      [part="text-field"] [part$="button"]:hover {
         color: var(--nuxeo-primary-color) !important;
       }
 
@@ -104,7 +105,16 @@ $_documentContainer.innerHTML = `<dom-module id="nuxeo-date-picker" theme-for="v
 
     <label>[[label]]</label>
 
-    <vaadin-date-picker id="date" name="[[name]]" required\$="[[required]]" invalid="[[invalid]]" value="{{_inputValue}}" disabled\$="[[disabled]]" min="[[min]]" max="[[max]]" error-message="[[errorMessage]]">
+    <vaadin-date-picker
+      id="date"
+      name="[[name]]"
+      required$="[[required]]"
+      invalid="[[invalid]]"
+      value="{{_inputValue}}"
+      disabled$="[[disabled]]"
+      min="[[min]]"
+      max="[[max]]"
+      error-message="[[errorMessage]]">
     </vaadin-date-picker>
 
   </template>

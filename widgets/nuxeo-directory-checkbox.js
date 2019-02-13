@@ -15,16 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import '@polymer/iron-flex-layout/iron-flex-layout-classes.js';
-
 import '@polymer/iron-selector/iron-selector.js';
 import '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
 import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
-import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
+
 {
   /**
    * An element for selecting one or more directory entries with checkboxes.
@@ -82,10 +82,20 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
     <label class="label" hidden\$="[[!label]]" required\$="[[required]]">[[label]]</label>
 
-    <iron-selector attr-for-selected="name" multi="" selected-attribute="checked" class="layout vertical flex" selected-values="{{_selected}}" on-selected-items-changed="_updateItems">
+    <iron-selector
+      attr-for-selected="name"
+      multi
+      selected-attribute="checked"
+      class="layout vertical flex"
+      selected-values="{{_selected}}"
+      on-selected-items-changed="_updateItems">
       <dom-repeat items="[[_entries]]">
         <template>
-          <paper-checkbox name="[[idFunction(item)]]" data-index="[[index]]" checked="[[item.checked]]" disabled="[[readonly]]">
+          <paper-checkbox
+            name="[[idFunction(item)]]"
+            data-index="[[index]]"
+            checked="[[item.checked]]"
+            disabled="[[readonly]]">
             [[format(item)]]
           </paper-checkbox>
         </template>

@@ -15,10 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-
-import './nuxeo-tree-node.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
+import './nuxeo-tree-node.js';
+
 {
   /**
    * An element to display a tree.

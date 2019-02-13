@@ -15,16 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import '@polymer/iron-icons/image-icons.js';
-
 import '@polymer/iron-icons/iron-icons.js';
-import '../nuxeo-icons.js';
 import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import 'cropperjs/dist/cropper.esm.js';
-const $_documentContainer = document.createElement('template');
+import '../nuxeo-icons.js';
+
+const $_documentContainer = document.createElement('template'); // eslint-disable-line camelcase
 
 $_documentContainer.innerHTML = `<dom-module id="nuxeo-image-viewer">
   
@@ -74,15 +74,20 @@ $_documentContainer.innerHTML = `<dom-module id="nuxeo-image-viewer">
     </style>
 
     <div id="canvas">
-      <img id="image" src\$="[[src]]" on-load="_init">
+      <img id="image" src$="[[src]]" on-load="_init">
       <dom-if if="[[controls]]">
         <template>
           <div id="toolbar">
             <paper-icon-button on-click="_click" icon="zoom-out" data-action="zoom-out"></paper-icon-button>
-            <paper-icon-button on-click="_click" icon="[[_getFitIcon(_fitToRealSize)]]" data-action\$="[[_computeFitAction(_fitToRealSize)]]"></paper-icon-button>
+            <paper-icon-button
+              on-click="_click"
+              icon="[[_getFitIcon(_fitToRealSize)]]"
+              data-action$="[[_computeFitAction(_fitToRealSize)]]">
+            </paper-icon-button>
             <paper-icon-button on-click="_click" icon="zoom-in" data-action="zoom-in"></paper-icon-button>
             <paper-icon-button on-click="_click" icon="image:rotate-left" data-action="rotate-left"></paper-icon-button>
-            <paper-icon-button on-click="_click" icon="image:rotate-right" data-action="rotate-right"></paper-icon-button>
+            <paper-icon-button on-click="_click" icon="image:rotate-right" data-action="rotate-right">
+            </paper-icon-button>
           </div>
         </template>
       </dom-if>

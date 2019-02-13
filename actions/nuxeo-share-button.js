@@ -14,8 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
+import { timeOut } from '@polymer/polymer/lib/utils/async.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
-
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icons/social-icons.js';
@@ -30,10 +33,7 @@ import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-tooltip.js';
 import './nuxeo-action-button-styles.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
-import { timeOut } from '@polymer/polymer/lib/utils/async.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * A button element for sharing a document.
@@ -77,7 +77,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
         <h2>[[i18n('shareButton.dialog.heading')]]</h2>
         <span id="copyLink" on-click="_copyPermalink">[[i18n('shareButton.operation.copy')]]</span>
       </div>
-      <nuxeo-input id="permalink" value="[[_buildPermalink(document)]]" on-click="_copyPermalink" autofocus="" readonly="">
+      <nuxeo-input id="permalink" value="[[_buildPermalink(document)]]" on-click="_copyPermalink" autofocus readonly>
       </nuxeo-input>
       <div class="buttons">
         <paper-button dialog-dismiss="">[[i18n('shareButton.dialog.close')]]</paper-button>

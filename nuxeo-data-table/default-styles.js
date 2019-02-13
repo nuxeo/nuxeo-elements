@@ -1,4 +1,4 @@
-const $_documentContainer = document.createElement('template');
+const $_documentContainer = document.createElement('template'); // eslint-disable-line camelcase
 
 $_documentContainer.innerHTML = `<custom-style>
   <style>

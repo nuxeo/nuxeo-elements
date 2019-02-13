@@ -78,17 +78,18 @@ limitations under the License.
     </dom-bind>
 
     <script type="module">
-import '@polymer/polymer/polymer-legacy.js';
-import { IronMeta } from '@polymer/iron-meta/iron-meta.js';
-import '../nuxeo-demo.js';
-import '../../nuxeo-icons.js';
-const scope = document.querySelector('#scope');
-scope.getIconNames = (iconset) => iconset.getIconNames();
-scope.getIconName = (name) => name.split(':')[1];
-scope.parentNode.getIconNames = scope.getIconNames;
-const iconsets = document.querySelector('#iconsets');
-iconsets.items = new IronMeta({ type: 'iconset' }).list;
-</script>
+      import '@polymer/polymer/polymer-legacy.js';
+      import { IronMeta } from '@polymer/iron-meta/iron-meta.js';
+      import '../nuxeo-demo.js';
+      import '../../nuxeo-icons.js';
+      
+      const scope = document.querySelector('#scope');
+      scope.getIconNames = (iconset) => iconset.getIconNames();
+      scope.getIconName = (name) => name.split(':')[1];
+      scope.parentNode.getIconNames = scope.getIconNames;
+      const iconsets = document.querySelector('#iconsets');
+      iconsets.items = new IronMeta({ type: 'iconset' }).list;
+    </script>
 
   </body>
 </html>

@@ -14,8 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-flex-layout/iron-flex-layout-classes.js';
-
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-form/iron-form.js';
 import '@polymer/iron-icon/iron-icon.js';
@@ -26,16 +28,14 @@ import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-toast/paper-toast.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
-import { importHref } from '@nuxeo/nuxeo-ui-elements/import-href.js';
+import { importHref } from '../import-href.js';
 import '../widgets/nuxeo-card.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-group-tag.js';
 import '../widgets/nuxeo-input.js';
 import './nuxeo-user-group-permissions-table.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+
 {
   /**
    * An element for viewing and editing a user.
@@ -163,7 +163,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           <!-- change password -->
           <dom-if if="[[!readonly]]">
             <template>
-              <paper-button noink="" id="changePasswordButton" class="horizontal layout center primary" on-click="_openChangePasswordDialog">
+              <paper-button
+                noink
+                id="changePasswordButton"
+                class="horizontal layout center primary"
+                on-click="_openChangePasswordDialog">
                 <iron-icon icon="nuxeo:lock"></iron-icon> [[i18n('userProfile.password.change')]]
               </paper-button>
             </template>
@@ -173,13 +177,23 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
             <iron-form id="changePasswordForm">
               <form class="vertical layout">
-                <nuxeo-input id="passwordOld" type="password" label="[[i18n('userProfile.password.old')]]" required="">
+                <nuxeo-input id="passwordOld" type="password" label="[[i18n('userProfile.password.old')]]" required>
                 </nuxeo-input>
 
-                <nuxeo-input id="passwordNew" type="password" label="[[i18n('userProfile.password.new')]]" required="" value="{{passwordNew}}">
+                <nuxeo-input
+                  id="passwordNew"
+                  type="password"
+                  label="[[i18n('userProfile.password.new')]]"
+                  required
+                  value="{{passwordNew}}">
                 </nuxeo-input>
 
-                <nuxeo-input id="passwordConfirm" type="password" label="[[i18n('userProfile.password.confirm')]]" required="" pattern="[[passwordNew]]">
+                <nuxeo-input
+                  id="passwordConfirm"
+                  type="password"
+                  label="[[i18n('userProfile.password.confirm')]]"
+                  required
+                  pattern="[[passwordNew]]">
                 </nuxeo-input>
               </form>
             </iron-form>

@@ -20,6 +20,7 @@ import '@polymer/iron-icons/iron-icons.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
 {
   /**
    * An element to handle pagination.
@@ -53,14 +54,30 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
     </style>
 
     <div class="horizontal layout end-justified center">
-      <paper-icon-button icon="av:skip-previous" title="First Page" on-click="_first" disabled\$="[[_isFirst(page)]]">
+      <paper-icon-button
+        icon="av:skip-previous"
+        title="First Page"
+        on-click="_first"
+        disabled\$="[[_isFirst(page)]]">
       </paper-icon-button>
-      <paper-icon-button icon="icons:chevron-left" title="Previous Page" on-click="_previous" disabled\$="[[_isFirst(page)]]">
+      <paper-icon-button
+        icon="icons:chevron-left"
+        title="Previous Page"
+        on-click="_previous"
+        disabled\$="[[_isFirst(page)]]">
       </paper-icon-button>
       <span class="controls">[[page]]/[[numberOfPages]]</span>
-      <paper-icon-button icon="icons:chevron-right" title="Next Page" on-click="_next" disabled\$="[[_isLast(page, numberOfPages)]]">
+      <paper-icon-button
+        icon="icons:chevron-right"
+        title="Next Page"
+        on-click="_next"
+        disabled\$="[[_isLast(page, numberOfPages)]]">
       </paper-icon-button>
-      <paper-icon-button icon="av:skip-next" title="Last Page" on-click="_last" disabled\$="[[_isLast(page, numberOfPages)]]">
+      <paper-icon-button
+        icon="av:skip-next"
+        title="Last Page"
+        on-click="_last"
+        disabled\$="[[_isLast(page, numberOfPages)]]">
       </paper-icon-button>
     </div>
 `;

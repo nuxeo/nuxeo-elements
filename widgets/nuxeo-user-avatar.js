@@ -15,9 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-resource.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
 {
   /**
    * An element for showing a user's avatar if available, its initials with background otherwise.

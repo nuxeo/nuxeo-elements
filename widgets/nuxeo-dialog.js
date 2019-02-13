@@ -15,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { NeonAnimationRunnerBehavior } from '@polymer/neon-animation/neon-animation-runner-behavior.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import { PaperDialogBehavior } from '@polymer/paper-dialog-behavior/paper-dialog-behavior.js';
 import '@polymer/paper-dialog-behavior/paper-dialog-shared-styles.js';
@@ -23,6 +22,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { Templatizer } from '@polymer/polymer/lib/legacy/templatizer-behavior.js';
+
 {
   /**
    * A dialog element.

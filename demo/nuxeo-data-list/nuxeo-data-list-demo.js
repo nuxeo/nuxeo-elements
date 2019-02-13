@@ -14,12 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import '@nuxeo/nuxeo-elements/nuxeo-page-provider.js';
 import '../../nuxeo-data-list/nuxeo-data-list.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
 {
   class DataListDemo extends PolymerElement {
     static get template() {
@@ -90,7 +90,13 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
       <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
 
-      <nuxeo-page-provider id="cvProvider" provider="default_search" page-size="40" aggregations="{{aggregations}}" enrichers="thumbnail" params="{&quot;ecm_path&quot;: [&quot;/default-domain/workspaces&quot;]}">
+      <nuxeo-page-provider
+        id="cvProvider"
+        provider="default_search"
+        page-size="40"
+        aggregations="{{aggregations}}"
+        enrichers="thumbnail"
+        params="{&quot;ecm_path&quot;: [&quot;/default-domain/workspaces&quot;]}">
       </nuxeo-page-provider>
 
       <nuxeo-data-list id="dataList" nx-provider="cvProvider" selection-enabled="" select-on-tap="">

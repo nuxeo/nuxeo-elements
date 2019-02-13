@@ -4,15 +4,15 @@
   from HTML and may be out of place here. Review them and
   then delete this comment!
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../widgets/nuxeo-tooltip.js';
 import './data-table-templatizer-behavior.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   class DataTableRowActions
     extends mixinBehaviors([saulis.DataTableTemplatizerBehavior, I18nBehavior], Nuxeo.Element) {
@@ -40,13 +40,14 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
           <div class="orderable">
             <dom-if if="[[isUpVisible(index)]]">
               <template>
-                <paper-icon-button noink="" id="upButton" icon="icons:arrow-upward" on-click="moveUp"></paper-icon-button>
+                <paper-icon-button noink id="upButton" icon="icons:arrow-upward" on-click="moveUp"></paper-icon-button>
                 <nuxeo-tooltip for="upButton" position="left">[[i18n('command.moveUpward')]]</nuxeo-tooltip>
               </template>
             </dom-if>
             <dom-if if="[[isDownVisible(index, size)]]">
               <template>
-                <paper-icon-button noink="" id="downButton" icon="icons:arrow-downward" on-click="moveDown"></paper-icon-button>
+                <paper-icon-button noink id="downButton" icon="icons:arrow-downward" on-click="moveDown">
+                </paper-icon-button>
                 <nuxeo-tooltip for="downButton" position="left">[[i18n('command.moveDownward')]]</nuxeo-tooltip>
               </template>
             </dom-if>
@@ -55,9 +56,10 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       </dom-if>
       <dom-if if="[[editable]]">
         <template>
-          <paper-icon-button id="edit-button" icon="nuxeo:edit" on-click="_editEntry" noink=""></paper-icon-button>
+          <paper-icon-button id="edit-button" icon="nuxeo:edit" on-click="_editEntry" noink></paper-icon-button>
           <nuxeo-tooltip for="edit-button" position="left">[[i18n('command.edit')]]</nuxeo-tooltip>
-          <paper-icon-button id="delete-button" name="delete" icon="nuxeo:delete" on-click="_deleteEntry" noink=""></paper-icon-button>
+          <paper-icon-button id="delete-button" name="delete" icon="nuxeo:delete" on-click="_deleteEntry" noink>
+          </paper-icon-button>
           <nuxeo-tooltip for="delete-button" position="left">[[i18n('command.remove')]]</nuxeo-tooltip>
         </template>
       </dom-if>

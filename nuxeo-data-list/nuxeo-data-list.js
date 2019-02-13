@@ -14,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-icon/iron-icon.js';
-
 import '@polymer/iron-list/iron-list.js';
 import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
 import '@polymer/iron-scroll-threshold/iron-scroll-threshold.js';
@@ -26,8 +27,7 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
 import '../nuxeo-aggregation/nuxeo-aggregation-navigation.js';
 import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
 import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-behavior.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * An element to display page provider results as a list with infinite scrolling.
@@ -154,7 +154,14 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
         </template>
       </dom-if>
 
-      <iron-list id="list" items="[[items]]" as="[[as]]" selection-enabled="" selected-item="{{selectedItem}}" selected-items="{{selectedItems}}" on-scroll="_scrollChanged">
+      <iron-list
+        id="list"
+        items="[[items]]"
+        as="[[as]]"
+        selection-enabled=""
+        selected-item="{{selectedItem}}"
+        selected-items="{{selectedItems}}"
+        on-scroll="_scrollChanged">
         <slot></slot>
       </iron-list>
 

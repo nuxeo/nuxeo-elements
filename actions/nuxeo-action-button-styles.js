@@ -1,29 +1,3 @@
-import '@polymer/polymer/polymer-legacy.js';
-const $_documentContainer = document.createElement('template');
-
-$_documentContainer.innerHTML = `<dom-module id="nuxeo-action-button-styles">
-  <template>
-    <style>
-      :host {
-        display: inline-block;
-      }
-
-      .label {
-        @apply --nuxeo-action-button-label;
-      }
-
-      .action {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        cursor: pointer;
-        @apply --nuxeo-action-button;
-      }
-    </style>
-  </template>
-</dom-module>`;
-
-document.head.appendChild($_documentContainer.content);
-
 /**
 @license
 (C) Copyright Nuxeo Corp. (http://nuxeo.com/)
@@ -53,4 +27,29 @@ limitations under the License.
   from HTML and may be out of place here. Review them and
   then delete this comment!
 */
-;
+import '@polymer/polymer/polymer-legacy.js';
+
+const $_documentContainer = document.createElement('template'); // eslint-disable-line camelcase
+
+$_documentContainer.innerHTML = `<dom-module id="nuxeo-action-button-styles">
+  <template>
+    <style>
+      :host {
+        display: inline-block;
+      }
+
+      .label {
+        @apply --nuxeo-action-button-label;
+      }
+
+      .action {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        cursor: pointer;
+        @apply --nuxeo-action-button;
+      }
+    </style>
+  </template>
+</dom-module>`;
+
+document.head.appendChild($_documentContainer.content);

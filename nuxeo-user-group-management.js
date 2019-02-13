@@ -14,8 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-flex-layout/iron-flex-layout-classes.js';
-
 import '@polymer/iron-form/iron-form.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -33,7 +35,7 @@ import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/paper-toast/paper-toast.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
-import { importHref } from '@nuxeo/nuxeo-ui-elements/import-href.js';
+import { importHref } from './import-href.js';
 import { FiltersBehavior } from './nuxeo-filters-behavior.js';
 import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 import './nuxeo-icons.js';
@@ -45,9 +47,7 @@ import './nuxeo-user-group-management/nuxeo-user-management.js';
 import './nuxeo-user-group-management/nuxeo-user-profile.js';
 import './widgets/nuxeo-card.js';
 import './widgets/nuxeo-user-suggestion.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * An element for managing users and groups in Nuxeo.
@@ -141,7 +141,13 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
           <dom-if if="[[_canCreateUserGroup(readonly, _currentUser)]]">
             <template>
               <div class="flex">
-                <paper-menu-button no-animations="" id="createDropdown" no-overlap="" horizontal-align="right" vertical-align="top" vertical-offset="-4">
+                <paper-menu-button
+                  id="createDropdown"
+                  no-animations
+                  no-overlap
+                  horizontal-align="right"
+                  vertical-align="top"
+                  vertical-offset="-4">
                   <paper-button noink="" class="primary" id="createButton" slot="dropdown-trigger">
                     <iron-icon icon="nuxeo:add"></iron-icon>
                     <div>[[i18n('userGroupManagement.new.usergroup')]]</div>

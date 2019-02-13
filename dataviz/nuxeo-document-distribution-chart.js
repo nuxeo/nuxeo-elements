@@ -20,12 +20,13 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/paper-radio-group/paper-radio-group.js';
 import '@polymer/paper-spinner/paper-spinner-lite.js';
-import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import 'd3/d3.min.js';
 import 'randomcolor/randomColor.js';
+import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+
 {
   let vis;
   let radius;
@@ -138,13 +139,22 @@ import 'randomcolor/randomColor.js';
           <paper-radio-button noink="" name="count">[[i18n('documentDistributionChart.count')]]</paper-radio-button>
         </paper-radio-group>
         <p>
-        <paper-checkbox noink="" on-change="execute" checked="{{includeHidden}}">[[i18n('documentDistributionChart.includeHidden')]]</paper-checkbox>
+        <paper-checkbox noink
+          on-change="execute"
+          checked="{{includeHidden}}">[[i18n('documentDistributionChart.includeHidden')]]</paper-checkbox>
         </p><p>
-        <paper-checkbox noink="" on-change="execute" checked="{{includeDeleted}}">[[i18n('documentDistributionChart.includeDeleted')]]</paper-checkbox>
+        <paper-checkbox noink
+          on-change="execute"
+          checked="{{includeDeleted}}">[[i18n('documentDistributionChart.includeDeleted')]]</paper-checkbox>
         </p><p>
-        <paper-checkbox noink="" on-change="execute" checked="{{includeVersion}}">[[i18n('documentDistributionChart.includeVersions')]]</paper-checkbox>
+        <paper-checkbox noink
+          on-change="execute"
+          checked="{{includeVersion}}">[[i18n('documentDistributionChart.includeVersions')]]</paper-checkbox>
         </p><p>
-        <paper-checkbox noink="" on-change="execute" checked="{{onlyFolder}}" disabled="[[_chechFolderDisabled(mode)]]">[[i18n('documentDistributionChart.foldersOnly')]]</paper-checkbox>
+        <paper-checkbox noink
+          on-change="execute"
+          checked="{{onlyFolder}}"
+          disabled="[[_chechFolderDisabled(mode)]]">[[i18n('documentDistributionChart.foldersOnly')]]</paper-checkbox>
         </p><p>
       </p></div>
 

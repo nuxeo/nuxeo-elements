@@ -14,13 +14,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import '@nuxeo/nuxeo-elements/nuxeo-document.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-page-provider.js';
-import 'paper-typeahead/paper-typeahead.js';
+import '@nuxeo/paper-typeahead/paper-typeahead.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
+
 {
   /**
    * An element that provides path auto completion to nuxeo folderish documents.
@@ -78,7 +79,13 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
         @apply --nuxeo-label;
       }
     </style>
-    <nuxeo-page-provider id="provider" provider="nxql_search" params="[[params]]" page-size="20" current-page="{{children}}"></nuxeo-page-provider>
+    <nuxeo-page-provider
+      id="provider"
+      provider="nxql_search"
+      params="[[params]]"
+      page-size="20"
+      current-page="{{children}}">
+    </nuxeo-page-provider>
     <nuxeo-document id="parent" enrichers="[[enrichers]]"></nuxeo-document>
 
     <dom-if if="[[label]]">
@@ -87,7 +94,16 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
       </template>
     </dom-if>
 
-    <paper-typeahead id="typeahead" value="{{value}}" data="[[data]]" allowed-pattern="[[allowedPattern]]" auto-validate="[[autoValidate]]" on-focus="_onFocus" disabled\$="[[disabled]]" no-label-float=""></paper-typeahead>
+    <paper-typeahead
+      id="typeahead"
+      value="{{value}}"
+      data="[[data]]"
+      allowed-pattern="[[allowedPattern]]"
+      auto-validate="[[autoValidate]]"
+      on-focus="_onFocus"
+      disabled\$="[[disabled]]"
+      no-label-float>
+    </paper-typeahead>
 `;
     }
 

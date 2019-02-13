@@ -14,14 +14,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-
-import '../widgets/nuxeo-input.js';
-import { FormatBehavior } from '../nuxeo-format-behavior.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
 import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
+
+import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import '../widgets/nuxeo-input.js';
+import { FormatBehavior } from '../nuxeo-format-behavior.js';
+
 {
   /**
    * Used by `nuxeo-user-management` and `nuxeo-create-user
@@ -42,9 +43,19 @@ import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron
       }
     </style>
 
-    <nuxeo-input id="password" type="password" label="[[i18n('editPassword.password')]]" value="{{password}}" required=""></nuxeo-input>
+    <nuxeo-input id="password" type="password" label="[[i18n('editPassword.password')]]" value="{{password}}" required>
+    </nuxeo-input>
 
-    <nuxeo-input id="passwordConfirmation" type="password" label="[[i18n('editPassword.verify')]]" value="{{_confirmationPassword}}" required="" auto-validate="" pattern="[[escapeRegExp(password)]]" error-message="[[_computeErrorMessage(password, i18n)]]"></nuxeo-input>
+    <nuxeo-input
+      id="passwordConfirmation"
+      type="password"
+      label="[[i18n('editPassword.verify')]]"
+      value="{{_confirmationPassword}}"
+      required
+      auto-validate
+      pattern="[[escapeRegExp(password)]]"
+      error-message="[[_computeErrorMessage(password, i18n)]]">
+    </nuxeo-input>
 `;
     }
 

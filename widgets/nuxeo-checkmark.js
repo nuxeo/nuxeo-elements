@@ -15,10 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import '@polymer/iron-icon/iron-icon.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-import '../nuxeo-icons.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import '../nuxeo-icons.js';
+
 {
   /**
    * An element that displays a toggleable checkmark.

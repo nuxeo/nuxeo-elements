@@ -14,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-form/iron-form.js';
-
 import '@polymer/iron-icon/iron-icon.js';
 import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
@@ -35,8 +36,7 @@ import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-user-suggestion.js';
 import './nuxeo-edit-password.js';
 import './nuxeo-user-group-permissions-table.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * An element for managing a user.
@@ -239,8 +239,8 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
           <!-- delete -->
           <dom-if if="[[_canDelete(readonly, _currentUser, user)]]">
             <template>
-              <paper-button noink="" id="deleteUserButton" class="horizontal layout center" on-click="_toggleDeleteUser">
-                <iron-icon noink="" icon="nuxeo:delete"></iron-icon> [[i18n('command.delete')]]
+              <paper-button noink id="deleteUserButton" class="horizontal layout center" on-click="_toggleDeleteUser">
+                <iron-icon noink icon="nuxeo:delete"></iron-icon> [[i18n('command.delete')]]
               </paper-button>
             </template>
           </dom-if>
@@ -248,7 +248,11 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
           <!-- change password -->
           <dom-if if="[[_canEdit(readonly, _currentUser, user)]]">
             <template>
-              <paper-button noink="" id="changePasswordButton" class="primary horizontal layout center" on-click="_toggleChangePassword">
+              <paper-button
+                noink
+                id="changePasswordButton"
+                class="primary horizontal layout center"
+                on-click="_toggleChangePassword">
                 <iron-icon icon="nuxeo:lock"></iron-icon> [[i18n('command.change.password')]]
               </paper-button>
             </template>
@@ -257,7 +261,11 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
           <!-- edit -->
           <dom-if if="[[_canEdit(readonly, _currentUser, user)]]">
             <template>
-              <paper-button noink="" id="editUserButton" class="primary horizontal layout center" on-click="_toggleEditUser">
+              <paper-button
+                noink
+                id="editUserButton"
+                class="primary horizontal layout center"
+                on-click="_toggleEditUser">
                 <iron-icon icon="nuxeo:edit"></iron-icon> [[i18n('userManagement.editUser.button')]]
               </paper-button>
             </template>
@@ -286,7 +294,14 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
         </dom-if>
       </div>
       <div class="layout vertical" hidden\$="[[!showEditGroups]]">
-        <nuxeo-user-suggestion id="picker" class="flex" search-type="GROUP_TYPE" placeholder="[[i18n('userManagement.search.groups')]]" selected-item="{{selectedGroup}}" result-formatter="[[resultFormatter]]" query-results-filter="[[resultsFilter]]">
+        <nuxeo-user-suggestion
+          id="picker"
+          class="flex"
+          search-type="GROUP_TYPE"
+          placeholder="[[i18n('userManagement.search.groups')]]"
+          selected-item="{{selectedGroup}}"
+          result-formatter="[[resultFormatter]]"
+          query-results-filter="[[resultsFilter]]">
         </nuxeo-user-suggestion>
         <div id="errors" hidden\$="[[!errors]]">[[errors]]</div>
         <dom-repeat items="[[activity]]">
@@ -317,7 +332,10 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
                   <div class="table-actions">
                     <dom-if if="[[_canEdit(readonly, _currentUser, user)]]">
                       <template>
-                        <paper-icon-button icon="nuxeo:remove" title="[[i18n('userManagement.removeFrom.group', item.label)]]" on-click="_toggleDialog">
+                        <paper-icon-button
+                          icon="nuxeo:remove"
+                          title="[[i18n('userManagement.removeFrom.group', item.label)]]"
+                          on-click="_toggleDialog">
                         </paper-icon-button>
                       </template>
                     </dom-if>
@@ -394,7 +412,12 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       <h2>[[i18n('userManagement.editUser.heading')]]</h2>
       <iron-form id="editUserForm">
         <form class="vertical layout">
-          <nuxeo-input label="[[i18n('userManagement.username')]]" value="[[user.properties.username]]" readonly="" required=""></nuxeo-input>
+          <nuxeo-input
+            label="[[i18n('userManagement.username')]]"
+            value="[[user.properties.username]]"
+            readonly
+            required>
+          </nuxeo-input>
           <nuxeo-layout id="layout" href="[[_layoutHref('nuxeo-edit-user.html')]]"></nuxeo-layout>
         </form>
       </iron-form>

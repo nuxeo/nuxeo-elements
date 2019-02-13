@@ -14,14 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-/* Part of `nuxeo-document-permissions`*/
-/*
-  FIXME(polymer-modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this comment!
-*/
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-autogrow-textarea/iron-autogrow-textarea.js';
-
 import '@polymer/iron-flex-layout/iron-flex-layout-classes.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
@@ -42,9 +37,9 @@ import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-select.js';
 import '../widgets/nuxeo-textarea.js';
 import '../widgets/nuxeo-user-suggestion.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
+  /* Part of `nuxeo-document-permissions` */
   class PopupPermission extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
@@ -62,12 +57,26 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       }
 
     </style>
-    <nuxeo-operation id="createOp" op="Document.AddPermission" input="{{docId}}" params="{{params}}" on-response="handleResponse"></nuxeo-operation>
-    <nuxeo-operation id="replaceOp" op="Document.ReplacePermission" input="{{docId}}" params="{{params}}" on-response="handleResponse"></nuxeo-operation>
+    <nuxeo-operation
+      id="createOp"
+      op="Document.AddPermission"
+      input="{{docId}}"
+      params="{{params}}"
+      on-response="handleResponse">
+    </nuxeo-operation>
+    <nuxeo-operation
+      id="replaceOp"
+      op="Document.ReplacePermission"
+      input="{{docId}}"
+      params="{{params}}"
+      on-response="handleResponse">
+    </nuxeo-operation>
 
     <dom-if if="{{!updatingACE}}">
       <template>
-        <paper-button on-click="togglePopup" id="newPermissionButton">[[i18n('popupPermission.newPermission')]]</paper-button>
+        <paper-button on-click="togglePopup" id="newPermissionButton">
+          [[i18n('popupPermission.newPermission')]]
+        </paper-button>
       </template>
     </dom-if>
     <dom-if if="{{updatingACE}}">
@@ -83,16 +92,32 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       <paper-dialog-scrollable>
         <div hidden\$="{{updatingACE}}">
           <div hidden\$="{{shareWithExternal}}">
-            <nuxeo-user-suggestion name="userGroup" label="[[i18n('popupPermission.userGroup')]]" value="{{params.users}}" placeholder="[[i18n('popupPermission.userGroup.placeholder')]]" multiple="">
+            <nuxeo-user-suggestion
+              name="userGroup"
+              label="[[i18n('popupPermission.userGroup')]]"
+              value="{{params.users}}"
+              placeholder="[[i18n('popupPermission.userGroup.placeholder')]]" multiple>
             </nuxeo-user-suggestion>
           </div>
           <div hidden\$="{{!shareWithExternal}}">
-            <nuxeo-input type="email" id="email" label="[[i18n('popupPermission.email')]]" placeholder="name@company.com" value="{{params.email}}" required="" auto-validate=""></nuxeo-input>
+            <nuxeo-input
+              type="email"
+              id="email"
+              label="[[i18n('popupPermission.email')]]"
+              placeholder="name@company.com"
+              value="{{params.email}}"
+              required
+              auto-validate>
+            </nuxeo-input>
           </div>
         </div>
         <!-- Right row -->
         <div>
-          <nuxeo-select label="[[i18n('popupPermission.right')]]" name="right" selected="{{params.permission}}" options="[[userVisiblePermissions]]">
+          <nuxeo-select
+            label="[[i18n('popupPermission.right')]]"
+            name="right"
+            selected="{{params.permission}}"
+            options="[[userVisiblePermissions]]">
           </nuxeo-select>
         </div>
         <div>
@@ -110,10 +135,21 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
             </template>
           </dom-if>
           <div>
-            <nuxeo-date-picker id="begin" label="[[i18n('popupPermission.from')]]" value="{{params.begin}}" disabled="[[permissionIsPermanent]]"></nuxeo-date-picker>
+            <nuxeo-date-picker
+              id="begin"
+              label="[[i18n('popupPermission.from')]]"
+              value="{{params.begin}}"
+              disabled="[[permissionIsPermanent]]">
+            </nuxeo-date-picker>
           </div>
           <div>
-            <nuxeo-date-picker id="end" label="[[i18n('popupPermission.to')]]" value="{{params.end}}" disabled="[[permissionIsPermanent]]" required="[[shareWithExternal]]"></nuxeo-date-picker>
+            <nuxeo-date-picker
+              id="end"
+              label="[[i18n('popupPermission.to')]]"
+              value="{{params.end}}"
+              disabled="[[permissionIsPermanent]]"
+              required="[[shareWithExternal]]">
+            </nuxeo-date-picker>
           </div>
         </div>
         <div id="notification">
@@ -127,7 +163,15 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
             </template>
           </dom-if>
           <div>
-            <nuxeo-textarea label="[[i18n('popupPermission.notifyLabel')]]" placeholder="[[i18n('popupPermission.notifyPlaceholder')]]" disabled="[[!params.notify]]" name="notifyEmail" id="commentText" value="{{params.comment}}" max-rows="4"></nuxeo-textarea>
+            <nuxeo-textarea
+              label="[[i18n('popupPermission.notifyLabel')]]"
+              placeholder="[[i18n('popupPermission.notifyPlaceholder')]]"
+              disabled="[[!params.notify]]"
+              name="notifyEmail"
+              id="commentText"
+              value="{{params.comment}}"
+              max-rows="4">
+            </nuxeo-textarea>
           </div>
         </div>
       </paper-dialog-scrollable>
@@ -136,14 +180,17 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
         <paper-button dialog-dismiss="">[[i18n('popupPermission.cancel')]]</paper-button>
         <dom-if if="{{!updatingACE}}">
           <template>
-            <paper-button noink="" class="primary" on-click="doCreateAndAdd" id="createAndAddPermissionButton">[[i18n('popupPermission.createAndAdd')]]
+            <paper-button noink class="primary" on-click="doCreateAndAdd" id="createAndAddPermissionButton">
+              [[i18n('popupPermission.createAndAdd')]]
             </paper-button>
-            <paper-button noink="" class="primary" on-click="doCreate" id="createPermissionButton">[[i18n('popupPermission.create')]]</paper-button>
+            <paper-button noink class="primary" on-click="doCreate" id="createPermissionButton">
+              [[i18n('popupPermission.create')]]
+            </paper-button>
           </template>
         </dom-if>
         <dom-if if="{{updatingACE}}">
           <template>
-            <paper-button noink="" class="primary" on-click="doUpdate">[[i18n('popupPermission.update')]]</paper-button>
+            <paper-button noink class="primary" on-click="doUpdate">[[i18n('popupPermission.update')]]</paper-button>
           </template>
         </dom-if>
       </div>

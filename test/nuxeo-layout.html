@@ -39,29 +39,30 @@ limitations under the License.
     </template>
   </test-fixture>
   <script type="module">
-import '@polymer/polymer/polymer-legacy.js';
-import '../nuxeo-layout.js';
-/* eslint-disable no-unused-expressions */
+    import '@polymer/polymer/polymer-legacy.js';
+    import '../nuxeo-layout.js';
+    /* eslint-disable no-unused-expressions */
 
-suite('<nuxeo-layout>', () => {
+    suite('<nuxeo-layout>', () => {
 
-  test('layout not found', () => {
-    const layout = fixture('notfound');
-    return waitForEvent(layout, 'iron-resize').then(() => {
-      expect(layout.$$('nuxeo-error').hidden).to.be.false;
-      expect(layout.element).to.be.undefined;
+      test('layout not found', () => {
+        const layout = fixture('notfound');
+        return waitForEvent(layout, 'iron-resize').then(() => {
+          expect(layout.$$('nuxeo-error').hidden).to.be.false;
+          expect(layout.element).to.be.undefined;
+        });
+      });
+
+      test('layout stamped with model', () => {
+        const layout = fixture('layout');
+
+        return waitChanged(layout, 'element', 1).then(() => {
+          expect(layout.$$('nuxeo-error').hidden).to.be.true;
+          expect(layout.element.localName).to.equal('nuxeo-layout');
+          expect(layout.element.href).to.equal('dummy');
+        });
+
+      });
     });
-  });
-
-  test('layout stamped with model', () => {
-    const layout = fixture('layout');
-
-    return waitChanged(layout, 'element', 1).then(() => {
-      expect(layout.$$('nuxeo-error').hidden).to.be.true;
-      expect(layout.element.localName).to.equal('nuxeo-layout');
-      expect(layout.element.href).to.equal('dummy');
-    });
-
-  });
-});
-</script>
+  </script>
+</body>

@@ -14,20 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-/*
-
-*/
-/*
-  FIXME(polymer-modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this comment!
-*/
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
 {
   /**
    * An element for viewing videos.
@@ -83,7 +75,13 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
     </style>
 
     <div id="container">
-      <video id="video" controls\$="[[controls]]" width="[[width]]" height="[[height]]" preload="[[preload]]" poster="[[poster]]">
+      <video
+        id="video"
+        controls\$="[[controls]]"
+        width="[[width]]"
+        height="[[height]]"
+        preload="[[preload]]"
+        poster="[[poster]]">
         <dom-repeat items="[[sources]]" as="source">
           <template>
             <source src="[[source.data]]" type="[[source.type]]">

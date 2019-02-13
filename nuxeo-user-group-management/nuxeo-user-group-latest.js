@@ -14,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-flex-layout/iron-flex-layout-classes.js';
-
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/editor-icons.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
@@ -32,9 +33,8 @@ import '../widgets/nuxeo-card.js';
 import '../widgets/nuxeo-group-tag.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-user-tag.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+
 {
   /**
    * An element for displaying the most recently created users and groups.
@@ -115,7 +115,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
     </style>
 
-    <nuxeo-resource id="latestCreatedUsersGroups" auto="" path="/query/LATEST_CREATED_USERS_OR_GROUPS_PROVIDER" response="{{latestCreatedUsersGroups}}" headers="{&quot;properties&quot;: &quot;*&quot;}">
+    <nuxeo-resource
+      id="latestCreatedUsersGroups"
+      auto
+      path="/query/LATEST_CREATED_USERS_OR_GROUPS_PROVIDER"
+      response="{{latestCreatedUsersGroups}}"
+      headers="{&quot;properties&quot;: &quot;*&quot;}">
     </nuxeo-resource>
 
     <nuxeo-card icon="nuxeo:recent" heading="[[i18n('userGroupLatest.recentlyCreated')]]">

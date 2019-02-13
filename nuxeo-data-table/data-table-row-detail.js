@@ -4,12 +4,11 @@
   from HTML and may be out of place here. Review them and
   then delete this comment!
 */
-import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-
-import './data-table-templatizer-behavior.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-const $_documentContainer = document.createElement('template');
+import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import './data-table-templatizer-behavior.js';
 
+const $_documentContainer = document.createElement('template'); // eslint-disable-line camelcase
 $_documentContainer.innerHTML = `<dom-module id="data-table-row-detail">
   <template>
     <style>

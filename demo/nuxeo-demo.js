@@ -20,12 +20,12 @@ limitations under the License.
   from HTML and may be out of place here. Review them and
   then delete this comment!
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
-
 import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
 import '../nuxeo-i18n-behavior.js';
 import './nuxeo-demo-theme.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
 RoutingBehavior.router = {
   baseUrl: '',
   useHashbang: true,

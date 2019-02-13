@@ -14,14 +14,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-icon/iron-icon.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-icons.js';
 import './nuxeo-user-avatar.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   class UserGroupFormatter extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
@@ -47,7 +47,13 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
     <div id="container">
       <dom-if if="[[_isUser(entity)]]">
         <template>
-          <nuxeo-user-avatar user="[[entity.displayLabel]]" height="24" width="24" border-radius="50" font-size="11"></nuxeo-user-avatar>
+          <nuxeo-user-avatar
+            user="[[entity.displayLabel]]"
+            height="24"
+            width="24"
+            border-radius="50"
+            font-size="11">
+          </nuxeo-user-avatar>
         </template>
       </dom-if>
 

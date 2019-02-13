@@ -14,12 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-
-import '@polymer/polymer/lib/elements/dom-repeat.js';
-import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import '@polymer/polymer/lib/elements/dom-repeat.js';
+import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+
 {
   /**
    * An element for providing aggregation based navigation.
@@ -92,7 +92,8 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
     <div id="keys" on-mouseout="_mouseOut" on-click="_tap">
       <dom-repeat items="[[_keys]]" as="key">
         <template>
-          <div class="key" on-mousemove="_mouseMove" style\$="top: [[key.top]]px; height: [[key.height]]px; color: [[_color(key.visible)]];">
+          <div class="key" on-mousemove="_mouseMove"
+            style\$="top: [[key.top]]px; height: [[key.height]]px; color: [[_color(key.visible)]];">
             [[_label(key)]]
           </div>
         </template>

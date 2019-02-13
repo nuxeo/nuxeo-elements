@@ -14,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
-
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/editor-icons.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
@@ -32,9 +33,8 @@ import '../widgets/nuxeo-card.js';
 import '../widgets/nuxeo-group-tag.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-user-tag.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+
 {
   /**
    * Used by `nuxeo-user-management`
@@ -110,11 +110,20 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     </style>
 
     <nuxeo-resource id="userSearch" auto="" path="/user/search" response="{{users}}"></nuxeo-resource>
-    <nuxeo-resource id="groupSearch" auto="" path="/group/search" response="{{groups}}" headers="{&quot;fetch.group&quot;: &quot;memberUsers,memberGroups&quot;}">
+    <nuxeo-resource
+      id="groupSearch"
+      auto
+      path="/group/search"
+      response="{{groups}}"
+      headers="{&quot;fetch.group&quot;: &quot;memberUsers,memberGroups&quot;}">
     </nuxeo-resource>
 
     <nuxeo-card class="search">
-      <nuxeo-input autofocus="" value="{{searchTerm}}" type="search" placeholder="[[i18n('userGroupSearch.search.placeholder')]]">
+      <nuxeo-input
+        autofocus
+        value="{{searchTerm}}"
+        type="search"
+        placeholder="[[i18n('userGroupSearch.search.placeholder')]]">
         <iron-icon icon="nuxeo:search" prefix=""></iron-icon>
       </nuxeo-input>
     </nuxeo-card>
@@ -153,7 +162,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               </dom-if>
             </div>
           </div>
-          <nuxeo-pagination-controls page="{{groupsCurrentPage}}" number-of-pages="[[groups.numberOfPages]]"></nuxeo-pagination-controls>
+          <nuxeo-pagination-controls page="{{groupsCurrentPage}}" number-of-pages="[[groups.numberOfPages]]">
+          </nuxeo-pagination-controls>
         </nuxeo-card>
 
         <!-- users -->
@@ -189,7 +199,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               </dom-if>
             </div>
           </div>
-          <nuxeo-pagination-controls page="{{usersCurrentPage}}" number-of-pages="[[users.numberOfPages]]"></nuxeo-pagination-controls>
+          <nuxeo-pagination-controls page="{{usersCurrentPage}}" number-of-pages="[[users.numberOfPages]]">
+          </nuxeo-pagination-controls>
         </nuxeo-card>
       </template>
     </dom-if>

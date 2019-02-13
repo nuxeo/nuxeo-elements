@@ -60,51 +60,52 @@ limitations under the License.
     </dom-bind>
 
     <script type="module">
-import '@polymer/polymer/polymer-legacy.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/hardware-icons.js';
-import '../nuxeo-demo.js';
-import '../../nuxeo-tree/nuxeo-tree.js';
-const t = document.querySelector('dom-bind');
-t.data = {
-  name: 'root',
-  children: [
-    {
-      name: 'a',
-      children: [
-        {
-          name: 'c',
-          children: [
-            {name: 'd'},
-            {name: 'e'},
-          ],
+      import '@polymer/polymer/polymer-legacy.js';
+      import '@polymer/iron-icon/iron-icon.js';
+      import '@polymer/iron-icons/hardware-icons.js';
+      import '../nuxeo-demo.js';
+      import '../../nuxeo-tree/nuxeo-tree.js';
+      
+      const t = document.querySelector('dom-bind');
+      t.data = {
+        name: 'root',
+        children: [
+          {
+            name: 'a',
+            children: [
+              {
+                name: 'c',
+                children: [
+                  {name: 'd'},
+                  {name: 'e'},
+                ],
+              },
+            ],
+          },
+          {
+            name: 'b',
+            children: [
+              {name: 'x'},
+            ],
+          },
+        ],
+      };
+      t.controller = {
+        getChildren(node) {
+          return Promise.resolve(node.children);
         },
-      ],
-    },
-    {
-      name: 'b',
-      children: [
-        {name: 'x'},
-      ],
-    },
-  ],
-};
-t.controller = {
-  getChildren(node) {
-    return Promise.resolve(node.children);
-  },
 
-  shouldExpand() {
-    return false;
-  },
+        shouldExpand() {
+          return false;
+        },
 
-  isLeaf(node) {
-    if (node.children) {
-      return node.children.length === 0;
-    }
-    return true;
-  },
-};
-</script>
+        isLeaf(node) {
+          if (node.children) {
+            return node.children.length === 0;
+          }
+          return true;
+        },
+      };
+    </script>
   </body>
 </html>

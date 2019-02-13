@@ -3,6 +3,7 @@ import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { microTask } from '@polymer/polymer/lib/utils/async.js';
 import { Templatizer } from '@polymer/polymer/lib/legacy/templatizer-behavior.js';
+
 window.saulis = window.saulis || {};
 
 /** @polymerBehavior */

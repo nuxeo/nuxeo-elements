@@ -22,15 +22,15 @@ limitations under the License.
   from HTML and may be out of place here. Review them and
   then delete this comment!
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
-
 import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-card/paper-card.js';
 import './nuxeo-selectivity.js';
 import './nuxeo-user-group-formatter.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * `nuxeo-user-suggestion` allows selecting one or more users.
@@ -59,7 +59,28 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       }
     </style>
 
-    <nuxeo-selectivity id="s2" operation="[[operation]]" label="[[label]]" min-chars="[[minChars]]" frequency="[[frequency]]" multiple="[[multiple]]" params="[[_computeParams(params.*, searchType)]]" placeholder="[[placeholder]]" error-message="[[errorMessage]]" readonly="[[readonly]]" value="{{value}}" selected-items="{{selectedItems}}" selected-item="{{selectedItem}}" required="[[required]]" invalid="[[invalid]]" selection-formatter="[[selectionFormatter]]" result-formatter="[[resultFormatter]]" resolve-entry="[[resolveEntry]]" id-function="[[idFunction]]" query-results-filter="[[queryResultsFilter]]" stay-open-on-select="[[stayOpenOnSelect]]">
+    <nuxeo-selectivity
+      id="s2"
+      operation="[[operation]]"
+      label="[[label]]"
+      min-chars="[[minChars]]"
+      frequency="[[frequency]]"
+      multiple="[[multiple]]"
+      params="[[_computeParams(params.*, searchType)]]"
+      placeholder="[[placeholder]]"
+      error-message="[[errorMessage]]"
+      readonly="[[readonly]]"
+      value="{{value}}"
+      selected-items="{{selectedItems}}"
+      selected-item="{{selectedItem}}"
+      required="[[required]]"
+      invalid="[[invalid]]"
+      selection-formatter="[[selectionFormatter]]"
+      result-formatter="[[resultFormatter]]"
+      resolve-entry="[[resolveEntry]]"
+      id-function="[[idFunction]]"
+      query-results-filter="[[queryResultsFilter]]"
+      stay-open-on-select="[[stayOpenOnSelect]]">
     </nuxeo-selectivity>
 `;
     }

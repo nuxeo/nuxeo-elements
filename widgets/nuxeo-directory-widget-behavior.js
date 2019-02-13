@@ -15,10 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import '@polymer/polymer/polymer-legacy.js';
-
-import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
 import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
+import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
 /**
  * `Nuxeo.DirectoryWidgetBehavior` provides helpers to build a widget to select Nuxeo vocabulary entrie(s).

@@ -241,6 +241,7 @@ limitations under the License.
   </nuxeo-filter>
 </div>
 
+<<<<<<< HEAD
 <test-fixture id="mySlotContent">
   <template>
     <dom-module id="my-custom-element">
@@ -297,11 +298,16 @@ limitations under the License.
   </dom-bind>
 </div>
 
+=======
+>>>>>>> 359bd0a... ELEMENTS-862: fix eslint
 <script type="module">
   import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
   import '@polymer/polymer/polymer-legacy.js';
   import '../nuxeo-filter.js';
+<<<<<<< HEAD
   import '../nuxeo-slots.js';
+=======
+>>>>>>> 359bd0a... ELEMENTS-862: fix eslint
   /* eslint-disable no-unused-expressions */
 
   suite('<nuxeo-filter>', () => {
@@ -310,10 +316,13 @@ limitations under the License.
       return dom(filter).querySelectorAll(`${clazz || '*'}:not(nuxeo-filter):not(template)`);
     }
 
+<<<<<<< HEAD
     function stampedOnShadowRoot(filter, clazz) {
       return dom(filter).node.shadowRoot.querySelectorAll(`${clazz || '*'}:not(nuxeo-filter):not(template)`);
     }
 
+=======
+>>>>>>> 359bd0a... ELEMENTS-862: fix eslint
     /* global emptyFilter */
     test('empty filter', () => {
       expect(stamped(emptyFilter)).to.be.empty;

@@ -15,14 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
-import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
-import './nuxeo-selectivity.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
+import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
+import './nuxeo-selectivity.js';
+
 {
   /**
    * An element for selecting one or more documents.
@@ -52,7 +52,28 @@ import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iro
 
     <nuxeo-operation id="op" op="Document.FetchByProperty"></nuxeo-operation>
 
-    <nuxeo-selectivity id="s2" operation="[[operation]]" label="[[label]]" min-chars="[[minChars]]" frequency="[[frequency]]" multiple="[[multiple]]" params="[[_computeParams(params.*, pageProvider, schemas, repository)]]" placeholder="[[placeholder]]" error-message="[[errorMessage]]" readonly="[[readonly]]" value="{{value}}" selected-items="{{selectedItems}}" selected-item="{{selectedItem}}" selection-formatter="[[selectionFormatter]]" result-formatter="[[resultFormatter]]" required="[[required]]" invalid="[[invalid]]" init-selection="[[initSelection]]" id-function="[[_idFunction]]" stay-open-on-select="[[stayOpenOnSelect]]" enrichers="[[enrichers]]">
+    <nuxeo-selectivity
+      id="s2"
+      operation="[[operation]]"
+      label="[[label]]"
+      min-chars="[[minChars]]"
+      frequency="[[frequency]]"
+      multiple="[[multiple]]"
+      params="[[_computeParams(params.*, pageProvider, schemas, repository)]]"
+      placeholder="[[placeholder]]"
+      error-message="[[errorMessage]]"
+      readonly="[[readonly]]"
+      value="{{value}}"
+      selected-items="{{selectedItems}}"
+      selected-item="{{selectedItem}}"
+      selection-formatter="[[selectionFormatter]]"
+      result-formatter="[[resultFormatter]]"
+      required="[[required]]"
+      invalid="[[invalid]]"
+      init-selection="[[initSelection]]"
+      id-function="[[_idFunction]]"
+      stay-open-on-select="[[stayOpenOnSelect]]"
+      enrichers="[[enrichers]]">
     </nuxeo-selectivity>
 `;
     }

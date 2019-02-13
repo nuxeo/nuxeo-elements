@@ -4,10 +4,10 @@
   from HTML and may be out of place here. Review them and
   then delete this comment!
 */
-import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
+import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+
 {
   class DataTableRow extends Nuxeo.Element {
     static get template() {

@@ -14,15 +14,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-
 import '@polymer/polymer/lib/elements/dom-if.js';
 import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
 import './nuxeo-tag.js';
 import './nuxeo-user-avatar.js';
 import './nuxeo-tooltip.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * An element for showing a user entity with a tooltip.
@@ -59,7 +59,14 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
     </style>
     <nuxeo-tag>
       <div class="tag">
-        <nuxeo-user-avatar user="[[user]]" border-radius="50" height="22" width="22" font-size="10" font-weight="500" fetch-avatar\$="[[fetchAvatar]]">
+        <nuxeo-user-avatar
+          user="[[user]]"
+          border-radius="50"
+          height="22"
+          width="22"
+          font-size="10"
+          font-weight="500"
+          fetch-avatar\$="[[fetchAvatar]]">
         </nuxeo-user-avatar>
         <dom-if if="[[_hasLink(user)]]">
           <template>

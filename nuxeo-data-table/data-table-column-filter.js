@@ -5,11 +5,11 @@
   then delete this comment!
 */
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-
+import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import '@polymer/paper-input/paper-input.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { timeOut } from '@polymer/polymer/lib/utils/async.js';
+
 {
   class DataTableColumnFilter extends Nuxeo.Element {
     static get template() {

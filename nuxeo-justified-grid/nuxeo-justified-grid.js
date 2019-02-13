@@ -14,8 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
+import { timeOut } from '@polymer/polymer/lib/utils/async.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import { Templatizer } from '@polymer/polymer/lib/legacy/templatizer-behavior.js';
 import '@polymer/iron-list/iron-list.js';
-
 import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
 import '@polymer/iron-scroll-threshold/iron-scroll-threshold.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
@@ -27,11 +31,7 @@ import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-behavior.js';
 import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
-import { timeOut } from '@polymer/polymer/lib/utils/async.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-import { Templatizer } from '@polymer/polymer/lib/legacy/templatizer-behavior.js';
+
 {
   /**
    * An element for displaying page provider results in a justified grid with infinite scrolling.
@@ -139,9 +139,20 @@ import { Templatizer } from '@polymer/polymer/lib/legacy/templatizer-behavior.js
           <div class="row">
             <dom-repeat items="[[row]]">
               <template>
-                <div class="item" tabindex="0" on-click="_click" selected\$="[[_isSelected(item, selectedItems.*)]]" style\$="height: [[item._view.height]]px; width: [[item._view.width]]px;">
-                  <div id="item-[[item._view.index]]"></div>[[_itemChanged(item, item._view.width, item._view.height)]]
-                  <paper-icon-button noink="" icon="icons:check" selection-mode\$="[[selectionMode]]" hidden\$="[[!selectionEnabled]]" on-click="_check"></paper-icon-button>
+                <div
+                  class="item"
+                  tabindex="0"
+                  on-click="_click"
+                  selected\$="[[_isSelected(item, selectedItems.*)]]"
+                  style\$="height: [[item._view.height]]px; width: [[item._view.width]]px;">
+                <div id="item-[[item._view.index]]"></div>[[_itemChanged(item, item._view.width, item._view.height)]]
+                  <paper-icon-button
+                    noink
+                    icon="icons:check"
+                    selection-mode\$="[[selectionMode]]"
+                    hidden\$="[[!selectionEnabled]]"
+                    on-click="_check">
+                  </paper-icon-button>
                 </div>
               </template>
             </dom-repeat>
@@ -149,7 +160,8 @@ import { Templatizer } from '@polymer/polymer/lib/legacy/templatizer-behavior.js
         </template>
       </iron-list>
 
-      <iron-scroll-threshold id="scrollThreshold" scroll-target="list" on-lower-threshold="fetch"></iron-scroll-threshold>
+      <iron-scroll-threshold id="scrollThreshold" scroll-target="list" on-lower-threshold="fetch">
+      </iron-scroll-threshold>
       <array-selector id="selector" items="{{items}}" selected="{{selectedItems}}" multi=""></array-selector>
     </div>
 `;

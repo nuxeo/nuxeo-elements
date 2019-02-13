@@ -16,10 +16,10 @@ limitations under the License.
 */
 import '@polymer/polymer/polymer-legacy.js';
 
-import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 import { dom, flush } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
+import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 
 /**
  * @polymerBehavior Nuxeo.PageProviderDisplayBehavior

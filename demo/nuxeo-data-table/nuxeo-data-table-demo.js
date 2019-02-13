@@ -14,13 +14,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import '@nuxeo/nuxeo-elements/nuxeo-page-provider.js';
 import '../../nuxeo-aggregation/nuxeo-dropdown-aggregation.js';
 import '../../nuxeo-data-table/iron-data-table.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
 {
   class DataTableDemo extends PolymerElement {
     static get template() {
@@ -80,7 +80,13 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
       <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
 
-      <nuxeo-page-provider id="cvProvider" provider="default_search" page-size="40" aggregations="{{aggregations}}" enrichers="thumbnail" params="{&quot;ecm_path&quot;: [&quot;/default-domain/workspaces&quot;]}">
+      <nuxeo-page-provider
+        id="cvProvider"
+        provider="default_search"
+        page-size="40"
+        aggregations="{{aggregations}}"
+        enrichers="thumbnail"
+        params="{&quot;ecm_path&quot;: [&quot;/default-domain/workspaces&quot;]}">
       </nuxeo-page-provider>
 
       <nuxeo-data-table id="datatable" nx-provider="cvProvider" selection-enabled="" multi-selection="">
@@ -92,7 +98,11 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
         </nuxeo-data-table-column>
         <nuxeo-data-table-column filter-by="dc_modified_agg" flex="50" sort-by="dc:modified">
           <template is="header">
-            <nuxeo-dropdown-aggregation placeholder="Modified" data="[[aggregations.dc_modified_agg]]" value="{{column.filterValue}}" multiple="">
+            <nuxeo-dropdown-aggregation
+              placeholder="Modified"
+              data="[[aggregations.dc_modified_agg]]"
+              value="{{column.filterValue}}"
+              multiple>
             </nuxeo-dropdown-aggregation>
           </template>
           <template>
@@ -101,7 +111,11 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
         </nuxeo-data-table-column>
         <nuxeo-data-table-column filter-by="dc_creator_agg" flex="50">
           <template is="header">
-            <nuxeo-dropdown-aggregation placeholder="Author" data="[[aggregations.dc_creator_agg]]" value="{{column.filterValue}}" multiple="">
+            <nuxeo-dropdown-aggregation
+              placeholder="Author"
+              data="[[aggregations.dc_creator_agg]]"
+              value="{{column.filterValue}}"
+              multiple>
             </nuxeo-dropdown-aggregation>
           </template>
           <template>

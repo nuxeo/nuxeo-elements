@@ -15,12 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
-
 import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-input/paper-input.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * An element for generic input in forms
@@ -65,7 +65,27 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
     <label>[[label]]</label>
 
-    <paper-input id="paperInput" type="[[type]]" name="[[name]]" value="{{value}}" placeholder\$="[[placeholder]]" error-message="[[errorMessage]]" autofocus\$="[[autofocus]]" readonly\$="[[readonly]]" disabled\$="[[disabled]]" required\$="[[required]]" minlength\$="[[minlength]]" maxlength\$="[[maxlength]]" min\$="[[min]]" max\$="[[max]]" step\$="[[step]]" pattern\$="[[pattern]]" auto-validate\$="[[autoValidate]]" validator\$="[[validator]]" invalid\$="[[invalid]]" no-label-float="">
+    <paper-input
+      id="paperInput"
+      type="[[type]]"
+      name="[[name]]"
+      value="{{value}}"
+      placeholder\$="[[placeholder]]"
+      error-message="[[errorMessage]]"
+      autofocus\$="[[autofocus]]"
+      readonly\$="[[readonly]]"
+      disabled\$="[[disabled]]"
+      required\$="[[required]]"
+      minlength\$="[[minlength]]"
+      maxlength\$="[[maxlength]]"
+      min\$="[[min]]"
+      max\$="[[max]]"
+      step\$="[[step]]"
+      pattern\$="[[pattern]]"
+      auto-validate\$="[[autoValidate]]"
+      validator\$="[[validator]]"
+      invalid\$="[[invalid]]"
+      no-label-float>
     </paper-input>
 `;
     }

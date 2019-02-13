@@ -40,12 +40,13 @@ window.nuxeo.I18n = window.nuxeo.I18n || {};
  * Translates the given key.
  * Also accepts a default value and multiple arguments which will be replaced on the value.
  */
-window.nuxeo.I18n.translate = window.nuxeo.I18n.translate || function (key) {
-  var language = window.nuxeo.I18n.language || 'en';
-  var value = (window.nuxeo.I18n[language] && window.nuxeo.I18n[language][key]) || key;
-  var params = Array.prototype.slice.call(arguments, 1);
-  for (var i = 0; i < params.length; i++) {
-    value = value.replace('{' + i + '}', params[i]);
+window.nuxeo.I18n.translate = window.nuxeo.I18n.translate || function (...args) {
+  const language = window.nuxeo.I18n.language || 'en';
+  const key = args[0];
+  let value = (window.nuxeo.I18n[language] && window.nuxeo.I18n[language][key]) || key;
+  const params = Array.prototype.slice.call(args, 1);
+  for (let i = 0; i < params.length; i++) {
+    value = value.replace(`{${i}}`, params[i]);
   } // improve this to use both numbered and named parameters
   return value;
 };
@@ -53,49 +54,49 @@ window.nuxeo.I18n.translate = window.nuxeo.I18n.translate || function (key) {
 /**
  * loads a locale using a locale resolver
  */
-window.nuxeo.I18n.loadLocale = function() {
-  return window.nuxeo.I18n.localeResolver ? window.nuxeo.I18n.localeResolver().then(function() {
+window.nuxeo.I18n.loadLocale = function () {
+  return window.nuxeo.I18n.localeResolver ? window.nuxeo.I18n.localeResolver().then(() => {
     document.dispatchEvent(new Event('i18n-locale-loaded'));
-  }) : new Promise(function() {});
+  }) : new Promise((() => {}));
 };
 
 /**
  * The default locale resolver that reads labels from JSON files in a folder, with format messages.<language>.json
  */
 export function XHRLocaleResolver(msgFolder) {
-  return function() {
-    return new Promise(function(resolve) {
+  return function () {
+    return new Promise(((resolve) => {
       // point all english based locales to the reference file
       if (window.nuxeo.I18n.language.startsWith('en-')) {
         window.nuxeo.I18n.language = 'en';
       }
+      let language = window.nuxeo.I18n.language || 'en';
       function loadLang(url) {
-        var referenceFile = msgFolder +  '/messages.json';
-        var xhr = new XMLHttpRequest();
+        const referenceFile = `${msgFolder}/messages.json`;
+        const xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
-        xhr.onreadystatechange = function() {
+        xhr.onreadystatechange = function () {
           if (xhr.readyState === 4) {
             if (xhr.status === 200) {
               window.nuxeo.I18n[language] = JSON.parse(this.response); // cache this locale
               window.nuxeo.I18n.language = language;
               resolve(this.response);
             } else if (xhr.status === 404 && url !== referenceFile) {
-              console.log('Could not find locale "' + language + '". Defaulting to "en".');
+              console.log(`Could not find locale "${language}". Defaulting to "en".`);
               language = 'en';
               loadLang(referenceFile); // default to messages.json
             }
           }
         };
-        xhr.onerror = function() {
-          console.error('Failed to load ' + url);
+        xhr.onerror = function () {
+          console.error(`Failed to load ${url}`);
         };
         xhr.send();
       }
-      var language = window.nuxeo.I18n.language || 'en';
-      var url = msgFolder +  '/messages' + (language === 'en' ? '' : '-' + language)  + '.json';
+      const url = `${msgFolder}/messages${language === 'en' ? '' : `-${language}`}.json`;
       loadLang(url);
-    });
-  }
+    }));
+  };
 }
 
 /**

@@ -15,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-dropdown-menu/paper-dropdown-menu.js';
 import '@polymer/paper-item/paper-item.js';
@@ -25,6 +24,7 @@ import '@polymer/paper-listbox/paper-listbox.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
+
 {
   /**
    * An element for selecting options.
@@ -107,9 +107,27 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
 
     <label>[[label]]</label>
 
-    <paper-dropdown-menu id="paperDropdownMenu" placeholder="[[placeholder]]" error-message="[[errorMessage]]" no-label-float="" noink="" no-animations="" restore-focus-on-close="false" horizontal-align="left" on-paper-dropdown-open="_resize" readonly\$="[[readonly]]" disabled\$="[[disabled]]" required\$="[[required]]" validator\$="[[validator]]" invalid\$="[[invalid]]">
+    <paper-dropdown-menu
+      id="paperDropdownMenu"
+      placeholder="[[placeholder]]"
+      error-message="[[errorMessage]]"
+      no-label-float
+      noink
+      no-animations
+      restore-focus-on-close="false"
+      horizontal-align="left"
+      on-paper-dropdown-open="_resize"
+      readonly\$="[[readonly]]"
+      disabled\$="[[disabled]]"
+      required\$="[[required]]"
+      validator\$="[[validator]]"
+      invalid\$="[[invalid]]">
 
-      <paper-listbox id="paperMenu" slot="dropdown-content" attr-for-selected="[[_computeAttrForSelected(attrForSelected, options)]]" selected="{{selected}}">
+      <paper-listbox
+        id="paperMenu"
+        slot="dropdown-content"
+        attr-for-selected="[[_computeAttrForSelected(attrForSelected, options)]]"
+        selected="{{selected}}">
         <dom-if if="[[options]]">
           <template>
             <dom-repeat items="[[options]]" as="item">

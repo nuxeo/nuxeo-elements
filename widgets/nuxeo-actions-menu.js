@@ -14,19 +14,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { FlattenedNodesObserver } from '@polymer/polymer/lib/utils/flattened-nodes-observer.js';
+import { idlePeriod, microTask } from '@polymer/polymer/lib/utils/async.js';
+import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import './nuxeo-tooltip.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { FlattenedNodesObserver } from '@polymer/polymer/lib/utils/flattened-nodes-observer.js';
-import { idlePeriod, microTask } from '@polymer/polymer/lib/utils/async.js';
-import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * A responsive menu that only displays elements fitting the available space. Remaining elements will be placed

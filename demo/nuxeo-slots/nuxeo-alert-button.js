@@ -15,9 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
-
 import '@polymer/paper-button/paper-button.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
 {
   class AlertButtonDemo extends PolymerElement {
     static get template() {

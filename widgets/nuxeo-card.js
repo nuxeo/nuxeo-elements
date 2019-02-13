@@ -24,6 +24,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * An element for a generic card

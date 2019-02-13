@@ -14,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-form/iron-form.js';
-
 import '@polymer/iron-icon/iron-icon.js';
 import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
@@ -36,8 +37,7 @@ import '../widgets/nuxeo-tag.js';
 import '../widgets/nuxeo-user-suggestion.js';
 import '../widgets/nuxeo-user-tag.js';
 import './nuxeo-user-group-permissions-table.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * Used by `nuxeo-user-group-management`
@@ -218,11 +218,20 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
     <nuxeo-connection user="{{_currentUser}}"></nuxeo-connection>
 
-    <nuxeo-resource id="request" path="group/[[groupname]]" response="{{group}}" headers="{&quot;fetch.group&quot;: &quot;memberUsers,memberGroups&quot;}">
+    <nuxeo-resource
+      id="request"
+      path="group/[[groupname]]"
+      response="{{group}}"
+      headers="{&quot;fetch.group&quot;: &quot;memberUsers,memberGroups&quot;}">
     </nuxeo-resource>
     <nuxeo-resource id="users" path="[[_usersPath(groupname)]]" response="{{memberUsers}}" auto=""></nuxeo-resource>
     <nuxeo-resource id="groups" path="[[_groupsPath(groupname)]]" response="{{memberGroups}}" auto=""></nuxeo-resource>
-    <nuxeo-resource id="editRequest" path="group/[[groupname]]" response="{{group}}" headers="{&quot;fetch.group&quot;: &quot;memberUsers,memberGroups&quot;}"></nuxeo-resource>
+    <nuxeo-resource
+      id="editRequest"
+      path="group/[[groupname]]"
+      response="{{group}}"
+      headers="{&quot;fetch.group&quot;: &quot;memberUsers,memberGroups&quot;}">
+    </nuxeo-resource>
 
     <paper-toast id="toast"></paper-toast>
 
@@ -242,7 +251,9 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
         <div class="flex start-justified">
           <paper-button noink="" dialog-dismiss="">[[i18n('label.no')]]</paper-button>
         </div>
-        <paper-button noink="" class="primary" dialog-confirm="" on-click="_removeMember">[[i18n('label.yes')]]</paper-button>
+        <paper-button noink class="primary" dialog-confirm="" on-click="_removeMember">
+          [[i18n('label.yes')]]
+        </paper-button>
       </div>
     </nuxeo-dialog>
 
@@ -250,14 +261,17 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       <h2>[[i18n('groupManagement.editGroup.heading')]]</h2>
       <iron-form id="editForm">
         <form>
-          <nuxeo-input label="[[i18n('groupManagement.group.label')]]" value="{{_editableGroup.grouplabel}}"></nuxeo-input>
+          <nuxeo-input label="[[i18n('groupManagement.group.label')]]" value="{{_editableGroup.grouplabel}}">
+          </nuxeo-input>
         </form>
       </iron-form>
       <div class="buttons horizontal end-justified layout">
         <div class="flex start-justified">
           <paper-button dialog-dismiss="">[[i18n('command.cancel')]]</paper-button>
         </div>
-        <paper-button noink="" class="primary" on-click="_submitEditForm">[[i18n('command.save.changes')]]</paper-button>
+        <paper-button noink class="primary" on-click="_submitEditForm">
+          [[i18n('command.save.changes')]]
+        </paper-button>
       </div>
     </nuxeo-dialog>
 
@@ -289,7 +303,13 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
     </nuxeo-card>
 
     <div class="card layout vertical" hidden\$="[[!showEditMembers]]">
-      <nuxeo-user-suggestion id="picker" search-type="USER_GROUP_TYPE" placeholder="[[i18n('groupManagement.addEntity')]]" selected-item="{{selectedMember}}" result-formatter="[[resultFormatter]]" query-results-filter="[[resultsFilter]]">
+      <nuxeo-user-suggestion
+        id="picker"
+        search-type="USER_GROUP_TYPE"
+        placeholder="[[i18n('groupManagement.addEntity')]]"
+        selected-item="{{selectedMember}}"
+        result-formatter="[[resultFormatter]]"
+        query-results-filter="[[resultsFilter]]">
       </nuxeo-user-suggestion>
       <dom-repeat items="[[activity]]">
         <template>
@@ -307,7 +327,11 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
     <!-- users table -->
     <nuxeo-card icon="nuxeo:user" heading="[[i18n('groupManagement.users.heading')]]">
       <div class="filter-wrapper">
-        <nuxeo-input autofocus="" value="{{usersFilter}}" type="search" placeholder="[[i18n('groupManagement.filterUsers.placeholder')]]">
+        <nuxeo-input
+          autofocus
+          value="{{usersFilter}}"
+          type="search"
+          placeholder="[[i18n('groupManagement.filterUsers.placeholder')]]">
           <iron-icon icon="nuxeo:search" prefix=""></iron-icon>
         </nuxeo-input>
       </div>
@@ -334,7 +358,11 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
                     <div class="table-actions">
                       <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
                         <template>
-                          <paper-icon-button icon="nuxeo:clear" noink="" title="[[i18n('groupManagement.removeFrom', groupname)]]" on-click="_toggleDeleteDialog">
+                          <paper-icon-button
+                            icon="nuxeo:clear"
+                            noink
+                            title="[[i18n('groupManagement.removeFrom', groupname)]]"
+                            on-click="_toggleDeleteDialog">
                           </paper-icon-button>
                         </template>
                       </dom-if>
@@ -353,13 +381,18 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
           </dom-if>
         </div>
       </div>
-      <nuxeo-pagination-controls page="{{usersCurrentPage}}" number-of-pages="[[memberUsers.numberOfPages]]"></nuxeo-pagination-controls>
+      <nuxeo-pagination-controls page="{{usersCurrentPage}}" number-of-pages="[[memberUsers.numberOfPages]]">
+      </nuxeo-pagination-controls>
     </nuxeo-card>
 
     <!-- nested groups -->
     <nuxeo-card icon="nuxeo:group" heading="[[i18n('groupManagement.nestedGroups.heading')]]">
       <div class="filter-wrapper">
-        <nuxeo-input autofocus="" value="{{groupsFilter}}" type="search" placeholder="[[i18n('groupManagement.filterGroups.placeholder')]]">
+        <nuxeo-input
+          autofocus
+          value="{{groupsFilter}}"
+          type="search"
+          placeholder="[[i18n('groupManagement.filterGroups.placeholder')]]">
           <iron-icon icon="nuxeo:search" prefix=""></iron-icon>
         </nuxeo-input>
       </div>
@@ -382,7 +415,11 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
                     <div class="table-actions">
                       <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
                         <template>
-                          <paper-icon-button icon="nuxeo:clear" noink="" title="[[i18n('groupManagement.removeFrom', groupname)]]" on-click="_toggleDeleteDialog">
+                          <paper-icon-button
+                            icon="nuxeo:clear"
+                            noink
+                            title="[[i18n('groupManagement.removeFrom', groupname)]]"
+                            on-click="_toggleDeleteDialog">
                           </paper-icon-button>
                         </template>
                       </dom-if>
@@ -401,7 +438,10 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
           </dom-if>
         </div>
       </div>
-      <nuxeo-pagination-controls page="{{groupsCurrentPage}}" number-of-pages="[[memberGroups.numberOfPages]]"></nuxeo-pagination-controls>
+      <nuxeo-pagination-controls
+        page="{{groupsCurrentPage}}"
+        number-of-pages="[[memberGroups.numberOfPages]]">
+      </nuxeo-pagination-controls>
     </nuxeo-card>
 
     <!-- permissions -->

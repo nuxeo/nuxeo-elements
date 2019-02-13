@@ -14,15 +14,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
 import '@polymer/paper-radio-button/paper-radio-button.js';
 import '@polymer/paper-radio-group/paper-radio-group.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * An element for selecting one directory entry with a radio group widget.
@@ -83,7 +83,11 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
     <paper-radio-group on-selected-item-changed="_updateItem" selected="{{_selected}}">
       <dom-repeat items="[[_entries]]">
         <template>
-          <paper-radio-button name="[[idFunction(item)]]" data-index="[[index]]" checked="[[item.checked]]" disabled="[[readonly]]">
+          <paper-radio-button
+            name="[[idFunction(item)]]"
+            data-index="[[index]]"
+            checked="[[item.checked]]"
+            disabled="[[readonly]]">
             [[format(item)]]
           </paper-radio-button>
         </template>

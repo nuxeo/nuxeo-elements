@@ -4,17 +4,21 @@
   from HTML and may be out of place here. Review them and
   then delete this comment!
 */
-import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-
-import './data-table-column-filter.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
+import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import './data-table-column-filter.js';
+
 {
   class DataTableColumn extends Nuxeo.Element {
     static get template() {
       return html`
     <template id="header">
-      <nuxeo-data-table-column-filter label="[[column.name]]" value="{{column.filterValue}}" hidden\$="[[!column.filterBy]]"></nuxeo-data-table-column-filter>
+      <nuxeo-data-table-column-filter
+        label="[[column.name]]"
+        value="{{column.filterValue}}"
+        hidden\$="[[!column.filterBy]]">
+      </nuxeo-data-table-column-filter>
       <div hidden\$="[[column.filterBy]]">[[column.name]]</div>
     </template>
 `;

@@ -44,20 +44,21 @@ limitations under the License.
     </dom-bind>
 
     <script type="module">
-import '@polymer/polymer/polymer-legacy.js';
-import '../nuxeo-demo.js';
-import '../../widgets/nuxeo-sort-select.js';
-document.querySelector('dom-bind').options = [
-  { field: 'dc:title', label: 'Title', order: 'asc' },
-  {
-    field: 'dc:created', label: 'Created', order: 'asc', selected: true,
-  },
-  { field: 'dc:modified', label: 'Modified', order: 'desc' },
-  { field: 'dc:lastContributor', label: 'Last Contributor', order: 'asc' },
-  { field: 'state', label: 'State', order: 'asc' },
-  { field: 'dc:nature', label: 'Nature', order: 'asc' },
-  { field: 'dc:coverage', label: 'Coverage', order: 'asc' },
-];
-</script>
+      import '@polymer/polymer/polymer-legacy.js';
+      import '../nuxeo-demo.js';
+      import '../../widgets/nuxeo-sort-select.js';
+      
+      document.querySelector('dom-bind').options = [
+        { field: 'dc:title', label: 'Title', order: 'asc' },
+        {
+          field: 'dc:created', label: 'Created', order: 'asc', selected: true,
+        },
+        { field: 'dc:modified', label: 'Modified', order: 'desc' },
+        { field: 'dc:lastContributor', label: 'Last Contributor', order: 'asc' },
+        { field: 'state', label: 'State', order: 'asc' },
+        { field: 'dc:nature', label: 'Nature', order: 'asc' },
+        { field: 'dc:coverage', label: 'Coverage', order: 'asc' },
+      ];
+    </script>
   </body>
 </html>

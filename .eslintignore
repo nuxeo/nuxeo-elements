@@ -1,7 +1,9 @@
 node_modules/
 coverage/
-jquery-import.html
-moment-import.html
+import-href.js
+nuxeo-icons.js
+widgets/alloy/
+widgets/nuxeo-selectivity.js
+viewers/pdfjs
 nuxeo-user-group-management/nuxeo-edit-user.html
 nuxeo-user-group-management/nuxeo-view-user.html
-widgets/nuxeo-select2*

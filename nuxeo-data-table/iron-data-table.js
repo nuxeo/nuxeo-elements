@@ -14,8 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
+import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-
 import '@polymer/iron-list/iron-list.js';
 import '@polymer/iron-scroll-threshold/iron-scroll-threshold.js';
 import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
@@ -45,11 +49,7 @@ import './nuxeo-data-table-row-actions.js';
 import './nuxeo-data-table-form.js';
 import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-behavior.js';
 import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
-import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
+
 {
   /**
    * An element to display a page provider result within a table with infinite scrolling.
@@ -175,7 +175,10 @@ import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron
       }
 
       #header.scrolled {
-        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06), 0 2px 0 rgba(0, 0, 0, 0.075), 0 3px 0 rgba(0, 0, 0, 0.05), 0 4px 0 rgba(0, 0, 0, 0.015);
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06),
+                    0 2px 0 rgba(0, 0, 0, 0.075),
+                    0 3px 0 rgba(0, 0, 0, 0.05),
+                    0 4px 0 rgba(0, 0, 0, 0.015);
       }
 
       #list {
@@ -229,7 +232,9 @@ import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron
         <label>[[label]]</label>
         <dom-if if="[[editable]]">
           <template>
-            <paper-button id="addEntry" noink="" class="primary" on-click="_createEntry">+ [[i18n('command.add')]]</paper-button>
+            <paper-button id="addEntry" noink="" class="primary" on-click="_createEntry">
+              + [[i18n('command.add')]]
+            </paper-button>
           </template>
         </dom-if>
       </div>
@@ -241,8 +246,23 @@ import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron
           <nuxeo-data-table-checkbox header="" hidden\$="[[!selectionEnabled]]"></nuxeo-data-table-checkbox>
           <dom-repeat items="[[columns]]" as="column">
             <template>
-              <nuxeo-data-table-cell header="" align-right="[[column.alignRight]]" before-bind="[[beforeCellBind]]" column="[[column]]" flex="[[column.flex]]" hidden="[[column.hidden]]" order="[[column.order]]" table="[[_this]]" template="[[column.headerTemplate]]" width="[[column.width]]">
-                <nuxeo-data-table-column-sort sort-order="[[sortOrder]]" path="[[column.sortBy]]" on-sort-direction-changed="_sort" hidden\$="[[!column.sortBy]]"></nuxeo-data-table-column-sort>
+              <nuxeo-data-table-cell
+                header=""
+                align-right="[[column.alignRight]]"
+                before-bind="[[beforeCellBind]]"
+                column="[[column]]"
+                flex="[[column.flex]]"
+                hidden="[[column.hidden]]"
+                order="[[column.order]]"
+                table="[[_this]]"
+                template="[[column.headerTemplate]]"
+                width="[[column.width]]">
+                <nuxeo-data-table-column-sort
+                  sort-order="[[sortOrder]]"
+                  path="[[column.sortBy]]"
+                  on-sort-direction-changed="_sort"
+                  hidden\$="[[!column.sortBy]]">
+                </nuxeo-data-table-column-sort>
               </nuxeo-data-table-cell>
             </template>
           </dom-repeat>
@@ -257,30 +277,78 @@ import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron
         </template>
       </dom-if>
 
-      <iron-list id="list" items="[[items]]" as="item" selected-items="{{selectedItems}}" selected-item="{{selectedItem}}" on-scroll="_scroll">
+      <iron-list
+        id="list"
+        items="[[items]]"
+        as="item"
+        selected-items="{{selectedItems}}"
+        selected-item="{{selectedItem}}"
+        on-scroll="_scroll">
 
         <template>
           <div class="item">
-            <nuxeo-data-table-row on-click="_onRowClick" before-bind="[[beforeRowBind]]" even\$="[[!_isEven(index)]]" expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]" index="[[index]]" item="[[item]]" tabindex="-1" selected="[[_isSelected(item, selectedItems, selectedItems.*)]]">
-              <nuxeo-data-table-checkbox hidden\$="[[!selectionEnabled]]" tabindex="0" checked\$="[[selected]]" on-click="_onCheckBoxTap"></nuxeo-data-table-checkbox>
+            <nuxeo-data-table-row
+              on-click="_onRowClick"
+              before-bind="[[beforeRowBind]]"
+              even\$="[[!_isEven(index)]]"
+              expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+              index="[[index]]"
+              item="[[item]]"
+              tabindex="-1"
+              selected="[[_isSelected(item, selectedItems, selectedItems.*)]]">
+              <nuxeo-data-table-checkbox
+                hidden\$="[[!selectionEnabled]]"
+                tabindex="0"
+                checked\$="[[selected]]"
+                on-click="_onCheckBoxTap"></nuxeo-data-table-checkbox>
               <dom-repeat items="[[columns]]" as="column" index-as="colIndex">
                 <template>
-                  <nuxeo-data-table-cell template="[[column.template]]" table="[[_this]]" align-right="[[column.alignRight]]" column="[[column]]" expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]" flex="[[column.flex]]" hidden="[[column.hidden]]" index="[[index]]" item="[[item]]" order="[[column.order]]" selected="[[_isSelected(item, selectedItems, selectedItems.*)]]" width="[[column.width]]" before-bind="[[beforeCellBind]]"></nuxeo-data-table-cell>
+                  <nuxeo-data-table-cell
+                    template="[[column.template]]"
+                    table="[[_this]]"
+                    align-right="[[column.alignRight]]"
+                    column="[[column]]"
+                    expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                    flex="[[column.flex]]"
+                    hidden="[[column.hidden]]"
+                    index="[[index]]"
+                    item="[[item]]"
+                    order="[[column.order]]"
+                    selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                    width="[[column.width]]"
+                    before-bind="[[beforeCellBind]]"></nuxeo-data-table-cell>
                 </template>
               </dom-repeat>
               <dom-if if="[[_isExpanded(item, _expandedItems)]]" on-dom-change="_updateSizeForItem">
                 <template>
-                  <nuxeo-data-table-row-detail index="[[index]]" item="[[item]]" expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]" selected="[[_isSelected(item, selectedItems, selectedItems.*)]]" before-bind="[[beforeDetailsBind]]" table="[[_this]]" template="[[rowDetail]]"></nuxeo-data-table-row-detail>
+                  <nuxeo-data-table-row-detail
+                    index="[[index]]"
+                    item="[[item]]"
+                    expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                    selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                    before-bind="[[beforeDetailsBind]]"
+                    table="[[_this]]"
+                    template="[[rowDetail]]"></nuxeo-data-table-row-detail>
                 </template>
               </dom-if>
-                <nuxeo-data-table-row-actions index="[[index]]" editable="[[editable]]" orderable="[[orderable]]" template="[[rowForm]]" item="[[item]]" size="[[items.length]]" table="[[_this]]">
+                <nuxeo-data-table-row-actions
+                  index="[[index]]"
+                  editable="[[editable]]"
+                  orderable="[[orderable]]"
+                  template="[[rowForm]]"
+                  item="[[item]]"
+                  size="[[items.length]]"
+                  table="[[_this]]">
                 </nuxeo-data-table-row-actions>
             </nuxeo-data-table-row>
           </div>
         </template>
       </iron-list>
 
-      <iron-scroll-threshold id="scrollThreshold" scroll-target="list" on-lower-threshold="_threshold"></iron-scroll-threshold>
+      <iron-scroll-threshold
+        id="scrollThreshold"
+        scroll-target="list"
+        on-lower-threshold="_threshold"></iron-scroll-threshold>
 
     </div>
 
@@ -620,7 +688,7 @@ import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron
     }
 
     _isFocusable(target) {
-      if (false) {
+      if (false) { // eslint-disable-line no-constant-condition
         // https://nemisj.com/focusable/
         // tabIndex is not reliable in IE.
         return target.tabIndex >= 0;

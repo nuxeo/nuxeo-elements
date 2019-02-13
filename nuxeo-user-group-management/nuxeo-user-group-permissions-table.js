@@ -14,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-flex-layout/iron-flex-layout-classes.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
 import '@polymer/paper-button/paper-button.js';
@@ -26,9 +27,8 @@ import 'moment/src/moment.js';
 import '../nuxeo-pagination-controls.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-tag.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+
 {
   /**
    * An element to list the permissions of an entity.
@@ -201,7 +201,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                         <div class="table-actions">
                           <dom-if if="[[!readonly]]">
                             <template>
-                              <paper-icon-button icon="nuxeo:delete" noink="" title="[[i18n('userGroupPermissions.delete.button')]]" on-click="_toggleDialog" hidden\$="[[!_canDelete(ace)]]">
+                              <paper-icon-button
+                                icon="nuxeo:delete"
+                                noink
+                                title="[[i18n('userGroupPermissions.delete.button')]]"
+                                on-click="_toggleDialog"
+                                hidden\$="[[!_canDelete(ace)]]">
                               </paper-icon-button>
                             </template>
                           </dom-if>
@@ -231,7 +236,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         <div class="flex start-justified">
           <paper-button noink="" dialog-dismiss="">[[i18n('label.no')]]</paper-button>
         </div>
-        <paper-button class="primary" noink="" dialog-confirm="" on-click="_deleteAce">[[i18n('label.yes')]]</paper-button>
+        <paper-button class="primary" noink dialog-confirm on-click="_deleteAce">[[i18n('label.yes')]]</paper-button>
       </div>
     </nuxeo-dialog>
 `;

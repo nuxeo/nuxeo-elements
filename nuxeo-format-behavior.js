@@ -120,8 +120,8 @@ export const FormatBehavior = [I18nBehavior, {
   },
 
   _absoluteDirectoryPath(entry, labelField, separator, subPath) {
-    var parent = entry.properties.parent;
-    var tmp = entry.properties[labelField];
+    const parent = entry.properties.parent;
+    let tmp = entry.properties[labelField];
     if (subPath) {
       tmp += separator + subPath;
     }
@@ -148,7 +148,7 @@ export const FormatBehavior = [I18nBehavior, {
    * Returns the label for the given lifecycle state.
    */
   formatLifecycleState(state) {
-    var t = this.i18n(`label.ui.state.${state}`);
+    const t = this.i18n(`label.ui.state.${state}`);
     return t === `label.ui.state.${state}` ? state : t;
   },
 

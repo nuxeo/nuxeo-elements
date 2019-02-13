@@ -14,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-icons/iron-icons.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-item/paper-item.js';
@@ -24,8 +25,7 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import './nuxeo-select.js';
 import './nuxeo-tooltip.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * An element to select sort field and sort order.
@@ -80,7 +80,8 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       </dom-if>
     </nuxeo-select>
 
-    <paper-icon-button id="reverse" noink="" on-click="_toggleSortOrder" icon="[[_sortOrderIcon(_sortOrder)]]"></paper-icon-button>
+    <paper-icon-button id="reverse" noink on-click="_toggleSortOrder" icon="[[_sortOrderIcon(_sortOrder)]]">
+    </paper-icon-button>
     <nuxeo-tooltip for="reverse">[[i18n('sortSelect.reverseOrder')]]</nuxeo-tooltip>
 `;
     }

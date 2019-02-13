@@ -14,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-icons/editor-icons.js';
-
 import '@polymer/iron-icons/iron-icons.js';
 import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import '@nuxeo/nuxeo-elements/nuxeo-document.js';
@@ -31,8 +32,7 @@ import '../widgets/nuxeo-card.js';
 import './nuxeo-document-acl-table.js';
 import './nuxeo-popup-confirm.js';
 import './nuxeo-popup-permission.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * An element providing document permissions management
@@ -83,21 +83,37 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       }
     </style>
 
-    <nuxeo-document id="doc" doc-id="{{docId}}" doc-path="{{docPath}}" response="{{doc}}" loading="{{loading}}" enrichers="acls, permissions, userVisiblePermissions" params="{{params}}"></nuxeo-document>
+    <nuxeo-document
+      id="doc"
+      doc-id="{{docId}}"
+      doc-path="{{docPath}}"
+      response="{{doc}}"
+      loading="{{loading}}"
+      enrichers="acls, permissions, userVisiblePermissions"
+      params="{{params}}"></nuxeo-document>
 
     <!-- Local permissions -->
     <nuxeo-card heading="[[i18n('documentPermissions.locallyDefined')]]">
       <dom-if if="[[_hasPermission(doc,'Everything')]]">
         <template>
           <div class="actions">
-            <nuxeo-popup-permission id="localPermissions" doc-id="{{doc.uid}}" user-visible-permissions="{{doc.contextParameters.userVisiblePermissions}}">
+            <nuxeo-popup-permission
+              id="localPermissions"
+              doc-id="{{doc.uid}}"
+              user-visible-permissions="{{doc.contextParameters.userVisiblePermissions}}">
             </nuxeo-popup-permission>
           </div>
         </template>
       </dom-if>
       <div class="content">
-        <nuxeo-document-acl-table doc="[[doc]]" acl-filter="_excludeInheritedAcls" ace-filter="_excludeExternalUserAces" show-actions="[[_hasPermission(doc,'Everything')]]">
-          <div slot="emptyResult" class="emptyResult">[[_emptyLabel('documentPermissions.noLocalPermissions', loading, i18n)]]</div>
+        <nuxeo-document-acl-table
+          doc="[[doc]]"
+          acl-filter="_excludeInheritedAcls"
+          ace-filter="_excludeExternalUserAces"
+          show-actions="[[_hasPermission(doc,'Everything')]]">
+          <div slot="emptyResult" class="emptyResult">
+            [[_emptyLabel('documentPermissions.noLocalPermissions', loading, i18n)]]
+          </div>
         </nuxeo-document-acl-table>
       </div>
     </nuxeo-card>
@@ -109,12 +125,16 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
           <div class="actions">
             <dom-if if="[[!_empty(inheritedAces)]]">
               <template>
-                <paper-button id="block" on-click="blockInheritance">[[i18n('documentPermissions.block')]]</paper-button>
+                <paper-button id="block" on-click="blockInheritance">
+                  [[i18n('documentPermissions.block')]]
+                </paper-button>
               </template>
             </dom-if>
             <dom-if if="[[_empty(inheritedAces)]]">
               <template>
-                <paper-button id="unblock" on-click="unblockInheritance">[[i18n('documentPermissions.unblock')]]</paper-button>
+                <paper-button id="unblock" on-click="unblockInheritance">
+                  [[i18n('documentPermissions.unblock')]]
+                </paper-button>
               </template>
             </dom-if>
           </div>
@@ -122,8 +142,14 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       </dom-if>
       <div class="content">
         <div class="tip" hidden\$="[[_empty(inheritedAces)]]">[[i18n('documentPermissions.blockDescription')]]</div>
-        <nuxeo-document-acl-table doc="[[doc]]" aces="{{inheritedAces}}" acl-filter="_onlyInheritedAcls" show-actions="false">
-          <div slot="emptyResult" class="emptyResult">[[_emptyLabel('documentPermissions.noInheritedText', loading, i18n)]]</div>
+        <nuxeo-document-acl-table
+          doc="[[doc]]"
+          aces="{{inheritedAces}}"
+          acl-filter="_onlyInheritedAcls"
+          show-actions="false">
+          <div slot="emptyResult" class="emptyResult">
+            [[_emptyLabel('documentPermissions.noInheritedText', loading, i18n)]]
+          </div>
         </nuxeo-document-acl-table>
       </div>
     </nuxeo-card>
@@ -133,15 +159,27 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       <dom-if if="[[_hasPermission(doc, 'Everything')]]">
         <template>
           <div class="actions">
-            <nuxeo-popup-permission id="externalPermissions" doc-id="{{doc.uid}}" user-visible-permissions="{{doc.contextParameters.userVisiblePermissions}}" share-with-external="true"></nuxeo-popup-permission>
+            <nuxeo-popup-permission
+              id="externalPermissions"
+              doc-id="{{doc.uid}}"
+              user-visible-permissions="{{doc.contextParameters.userVisiblePermissions}}"
+              share-with-external="true">
+            </nuxeo-popup-permission>
           </div>
         </template>
       </dom-if>
 
       <div class="content">
         <div class="tip">[[i18n('documentPermissions.externalDescription')]]</div>
-        <nuxeo-document-acl-table doc="[[doc]]" ace-filter="_onlyExternalUserAces" acl-filter="_excludeInheritedAcls" show-actions="[[_hasPermission(doc,'Everything')]]" share-with-external="true">
-          <div slot="emptyResult" class="emptyResult">[[_emptyLabel('documentPermissions.noExternalPermission', loading, i18n)]]</div>
+        <nuxeo-document-acl-table
+          doc="[[doc]]"
+          ace-filter="_onlyExternalUserAces"
+          acl-filter="_excludeInheritedAcls"
+          show-actions="[[_hasPermission(doc,'Everything')]]"
+          share-with-external="true">
+          <div slot="emptyResult" class="emptyResult">
+            [[_emptyLabel('documentPermissions.noExternalPermission', loading, i18n)]]
+          </div>
         </nuxeo-document-acl-table>
       </div>
     </nuxeo-card>

@@ -1,5 +1,6 @@
 import '@polymer/iron-iconset-svg/iron-iconset-svg.js';
-const $_documentContainer = document.createElement('template');
+
+const $_documentContainer = document.createElement('template'); // eslint-disable-line camelcase
 
 $_documentContainer.innerHTML = `<iron-iconset-svg size="24" name="data-table">
   <svg>

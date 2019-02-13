@@ -14,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-form/iron-form.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-resource.js';
 import '@polymer/paper-button/paper-button.js';
@@ -25,8 +26,7 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-user-suggestion.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * Used by `nuxeo-user-group-management`
@@ -110,10 +110,18 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
     <iron-form id="form">
       <form>
 
-        <nuxeo-input id="groupName" label="[[i18n('createGroup.group.name')]]" value="{{groupName}}" required=""></nuxeo-input>
+        <nuxeo-input id="groupName" label="[[i18n('createGroup.group.name')]]" value="{{groupName}}" required>
+        </nuxeo-input>
         <nuxeo-input id="groupLabel" label="[[i18n('createGroup.group.label')]]" value="{{groupLabel}}"></nuxeo-input>
 
-        <nuxeo-user-suggestion id="picker" label="[[i18n('createGroup.members')]]" search-type="USER_GROUP_TYPE" placeholder="[[i18n('createGroup.search.placeholder')]]" selected-item="{{selectedUser}}" result-formatter="[[resultFormatter]]" query-results-filter="[[resultsFilter]]">
+        <nuxeo-user-suggestion
+          id="picker"
+          label="[[i18n('createGroup.members')]]"
+          search-type="USER_GROUP_TYPE"
+          placeholder="[[i18n('createGroup.search.placeholder')]]"
+          selected-item="{{selectedUser}}"
+          result-formatter="[[resultFormatter]]"
+          query-results-filter="[[resultsFilter]]">
         </nuxeo-user-suggestion>
 
         <!-- selected members -->
@@ -138,9 +146,13 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
         </dom-repeat>
 
         <div class="form-buttons">
-          <paper-button noink="" id="cancelButton" on-click="_cancel">[[i18n('command.cancel')]]</paper-button>
-          <paper-button noink="" id="createButton" class="primary" on-click="_submit">[[i18n('command.create')]]</paper-button>
-          <paper-button noink="" id="createAnotherButton" class="primary" on-click="_submitAnother">[[i18n('createGroup.createAnother')]]</paper-button>
+          <paper-button noink id="cancelButton" on-click="_cancel">[[i18n('command.cancel')]]</paper-button>
+          <paper-button noink id="createButton" class="primary" on-click="_submit">
+            [[i18n('command.create')]]
+          </paper-button>
+          <paper-button noink id="createAnotherButton" class="primary" on-click="_submitAnother">
+            [[i18n('createGroup.createAnother')]]
+          </paper-button>
         </div>
 
         <span id="errors" hidden\$="[[!_hasErrors(errors)]]">[[errors]]</span>

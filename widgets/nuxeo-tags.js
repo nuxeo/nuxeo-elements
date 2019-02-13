@@ -14,14 +14,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-
 import '@polymer/polymer/lib/elements/dom-if.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import './nuxeo-tag.js';
 import './nuxeo-user-tag.js';
 import './nuxeo-group-tag.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
 {
   /**
    * An element to display a list of tags.

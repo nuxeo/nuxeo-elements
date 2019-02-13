@@ -15,14 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-import { importHref } from '@nuxeo/nuxeo-ui-elements/import-href.js';
-import './nuxeo-error.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { flush } from '@polymer/polymer/lib/utils/flush.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import { importHref } from './import-href.js';
+import './nuxeo-error.js';
+
 {
   /**
    * An element to import and stamp layout elements.

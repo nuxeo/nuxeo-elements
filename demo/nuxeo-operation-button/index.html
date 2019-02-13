@@ -88,24 +88,25 @@ limitations under the License.
     </dom-bind>
 
     <script type="module">
-import '@polymer/polymer/polymer-legacy.js';
-import '../nuxeo-demo.js';
-import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
-import '@nuxeo/nuxeo-elements/nuxeo-document.js';
-import '../../nuxeo-icons.js';
-import '../../nuxeo-path-suggestion/nuxeo-path-suggestion.js';
-import '../../widgets/nuxeo-operation-button.js';
-const t = document.querySelector('dom-bind');
-t.docpath = '/default-domain/workspaces/';
+      import '@polymer/polymer/polymer-legacy.js';
+      import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+      import '@nuxeo/nuxeo-elements/nuxeo-document.js';
+      import '../nuxeo-demo.js';
+      import '../../nuxeo-icons.js';
+      import '../../nuxeo-path-suggestion/nuxeo-path-suggestion.js';
+      import '../../widgets/nuxeo-operation-button.js';
 
-window.addEventListener('document-updated', () => {
-  window.doc.get();
-});
+      const t = document.querySelector('dom-bind');
+      t.docpath = '/default-domain/workspaces/';
 
-window.addEventListener('document-downloaded', (e) => {
-  console.log('Received "document-downloaded" event with detail ', e.detail);
-});
-</script>
+      window.addEventListener('document-updated', () => {
+        window.doc.get();
+      });
+
+      window.addEventListener('document-downloaded', (e) => {
+        console.log('Received "document-downloaded" event with detail ', e.detail);
+      });
+    </script>
 
   </body>
 </html>

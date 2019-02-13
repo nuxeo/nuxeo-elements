@@ -127,163 +127,163 @@ limitations under the License.
 </test-fixture>
 
 <script type="module">
-import '@polymer/polymer/polymer-legacy.js';
-import '../nuxeo-slots.js';
-/* eslint-disable no-unused-expressions */
+  import '@polymer/polymer/polymer-legacy.js';
+  import '../nuxeo-slots.js';
+  /* eslint-disable no-unused-expressions */
 
 
-// return all children excluding <nuxeo-slot>
-function _content(container) {
-  return container.querySelectorAll(':not(nuxeo-slot)');
-}
+  // return all children excluding <nuxeo-slot>
+  function _content(container) {
+    return container.querySelectorAll(':not(nuxeo-slot)');
+  }
 
-suite('<nuxeo-slot>', () => {
+  suite('<nuxeo-slot>', () => {
 
-  let slot1;
-  let slot2;
+    let slot1;
+    let slot2;
 
-  setup(() => {
-    slot1 = fixture('slot1');
-    slot2 = fixture('slot2');
-  });
-
-  test('empty slots and content', () => {
-    expect(_content(slot1)).to.be.empty;
-
-    fixture('emptySlotContent');
-
-    return flush().then(() => {
-      expect(_content(slot1)).to.be.empty;
+    setup(() => {
+      slot1 = fixture('slot1');
+      slot2 = fixture('slot2');
     });
-  });
 
-  test('slot content', () => {
-    document.getElementById('slot1Content1').create();
+    test('empty slots and content', () => {
+      expect(_content(slot1)).to.be.empty;
 
-    return flush().then(() => {
-      expect(_content(slot1).length).to.be.equal(1);
-      expect(_content(slot2)).to.be.empty;
+      fixture('emptySlotContent');
+
+      return flush().then(() => {
+        expect(_content(slot1)).to.be.empty;
+      });
+    });
+
+    test('slot content', () => {
+      document.getElementById('slot1Content1').create();
+
+      return flush().then(() => {
+        expect(_content(slot1).length).to.be.equal(1);
+        expect(_content(slot2)).to.be.empty;
+
+        document.getElementById('slot1Content2').create();
+        return flush();
+      }).then(() => {
+        expect(_content(slot1).length).to.be.equal(2);
+        expect(_content(slot2)).to.be.empty;
+
+        document.getElementById('slot2Content').create();
+        return flush();
+      }).then(() => {
+        expect(_content(slot1).length).to.be.equal(2);
+        expect(_content(slot2).length).to.be.equal(1);
+
+        const content1 = _content(slot1);
+        const content2 = _content(slot2);
+        expect(content1[0].textContent).to.be.equal('Content 1');
+        expect(content1[1].textContent).to.be.equal('Content 2');
+        expect(content2[0].textContent).to.be.equal('Content 3');
+
+        document.getElementById('slot1Content1').restore();
+        document.getElementById('slot1Content2').restore();
+        document.getElementById('slot2Content').restore();
+      });
+    });
+
+    test('slot content order', () => {
 
       document.getElementById('slot1Content2').create();
-      return flush();
-    }).then(() => {
-      expect(_content(slot1).length).to.be.equal(2);
-      expect(_content(slot2)).to.be.empty;
 
-      document.getElementById('slot2Content').create();
-      return flush();
-    }).then(() => {
-      expect(_content(slot1).length).to.be.equal(2);
-      expect(_content(slot2).length).to.be.equal(1);
+      return flush().then(() => {
+        expect(_content(slot1).length).to.be.equal(1);
 
-      const content1 = _content(slot1);
-      const content2 = _content(slot2);
-      expect(content1[0].textContent).to.be.equal('Content 1');
-      expect(content1[1].textContent).to.be.equal('Content 2');
-      expect(content2[0].textContent).to.be.equal('Content 3');
+        fixture('slot1Content1');
 
-      document.getElementById('slot1Content1').restore();
-      document.getElementById('slot1Content2').restore();
-      document.getElementById('slot2Content').restore();
+        return flush();
+      }).then(() => {
+        const content = _content(slot1);
+        expect(content.length).to.be.equal(2);
+        // check content 1 was moved to first
+        expect(content[0].textContent).to.be.equal('Content 1');
+
+        document.getElementById('slot1Content2').restore();
+      });
     });
-  });
 
-  test('slot content order', () => {
-
-    document.getElementById('slot1Content2').create();
-
-    return flush().then(() => {
-      expect(_content(slot1).length).to.be.equal(1);
+    test('slot content disabled', () => {
 
       fixture('slot1Content1');
+      return flush().then(() => {
+        expect(_content(slot1).length).to.be.equal(1);
 
-      return flush();
-    }).then(() => {
-      const content = _content(slot1);
-      expect(content.length).to.be.equal(2);
-      // check content 1 was moved to first
-      expect(content[0].textContent).to.be.equal('Content 1');
-
-      document.getElementById('slot1Content2').restore();
+        fixture('slot1Content1Disabled');
+        return flush();
+      }).then(() => {
+        expect(_content(slot1)).to.be.empty;
+      });
     });
-  });
 
-  test('slot content disabled', () => {
+    test('slot content re-enabled', () => {
 
-    fixture('slot1Content1');
-    return flush().then(() => {
-      expect(_content(slot1).length).to.be.equal(1);
+      fixture('disabledSlotContent');
+      return flush().then(() => {
+        expect(_content(slot1)).to.be.empty;
 
-      fixture('slot1Content1Disabled');
-      return flush();
-    }).then(() => {
-      expect(_content(slot1)).to.be.empty;
+        fixture('reenabledSlotContent');
+        return flush();
+      }).then(() => {
+        const content = _content(slot1);
+        expect(content.length).to.be.equal(1);
+        expect(content[0].textContent).to.be.equal('Disabled content');
+      });
     });
-  });
 
-  test('slot content re-enabled', () => {
+    test('slot content override', () => {
 
-    fixture('disabledSlotContent');
-    return flush().then(() => {
-      expect(_content(slot1)).to.be.empty;
+      fixture('slot1Content1');
+      fixture('slot1Content2');
+      let content;
 
-      fixture('reenabledSlotContent');
-      return flush();
-    }).then(() => {
-      const content = _content(slot1);
-      expect(content.length).to.be.equal(1);
-      expect(content[0].textContent).to.be.equal('Disabled content');
+      return flush().then(() => {
+        content = _content(slot1);
+        expect(content.length).to.be.equal(2);
+        expect(content[0].textContent).to.be.equal('Content 1');
+
+        fixture('slot1Content1Override');
+        return flush();
+      }).then(() => {
+        content = _content(slot1);
+        expect(content.length).to.be.equal(2);
+        // check content 1 was moved to last
+        expect(content[1].textContent).to.be.equal('Content 1 override');
+      });
     });
-  });
 
-  test('slot content override', () => {
+    test('slot content priority', () => {
 
-    fixture('slot1Content1');
-    fixture('slot1Content2');
-    let content;
+      fixture('slot1Content1');
+      fixture('slot1Content1Priority');
 
-    return flush().then(() => {
-      content = _content(slot1);
-      expect(content.length).to.be.equal(2);
-      expect(content[0].textContent).to.be.equal('Content 1');
-
-      fixture('slot1Content1Override');
-      return flush();
-    }).then(() => {
-      content = _content(slot1);
-      expect(content.length).to.be.equal(2);
-      // check content 1 was moved to last
-      expect(content[1].textContent).to.be.equal('Content 1 override');
+      return flush().then(() => {
+        const content = _content(slot1);
+        expect(content.length).to.be.equal(1);
+        expect(content[0].textContent).to.be.equal('Content 1 override');
+      });
     });
-  });
 
-  test('slot content priority', () => {
+    test('slot shared model', () => {
 
-    fixture('slot1Content1');
-    fixture('slot1Content1Priority');
+      fixture('slot1Content3');
+      window.nuxeo.slots.setSharedModel({ property: 'test1' });
 
-    return flush().then(() => {
-      const content = _content(slot1);
-      expect(content.length).to.be.equal(1);
-      expect(content[0].textContent).to.be.equal('Content 1 override');
+      return flush().then(() => {
+        const content = _content(slot1);
+        expect(content.length).to.be.equal(1);
+        expect(content[0].textContent).to.be.equal('test1');
+        window.nuxeo.slots.setSharedModel({ property: 'test2' });
+        expect(content[0].textContent).to.be.equal('test2');
+      });
     });
+
   });
-
-  test('slot shared model', () => {
-
-    fixture('slot1Content3');
-    window.nuxeo.slots.setSharedModel({ property: 'test1' });
-
-    return flush().then(() => {
-      const content = _content(slot1);
-      expect(content.length).to.be.equal(1);
-      expect(content[0].textContent).to.be.equal('test1');
-      window.nuxeo.slots.setSharedModel({ property: 'test2' });
-      expect(content[0].textContent).to.be.equal('test2');
-    });
-  });
-
-});
 </script>
 </body>
 </html>

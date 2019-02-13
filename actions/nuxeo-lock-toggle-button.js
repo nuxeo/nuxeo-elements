@@ -14,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-icon/iron-icon.js';
-
 import '@polymer/iron-icons/iron-icons.js';
 import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
@@ -28,8 +29,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-icons.js';
 import '../widgets/nuxeo-tooltip.js';
 import './nuxeo-action-button-styles.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 {
   /**
    * A toggle button element for lock/unlock a document.
@@ -56,8 +56,18 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
     <nuxeo-connection id="nxcon"></nuxeo-connection>
 
-    <nuxeo-operation id="opLock" op="Document.Lock" input="[[document.uid]]" headers="{&quot;X-NXfetch.document&quot;: &quot;lock&quot;}"></nuxeo-operation>
-    <nuxeo-operation id="opUnlock" op="Document.Unlock" input="[[document.uid]]" headers="{&quot;X-NXfetch.document&quot;: &quot;lock&quot;}"></nuxeo-operation>
+    <nuxeo-operation
+      id="opLock"
+      op="Document.Lock"
+      input="[[document.uid]]"
+      headers="{&quot;X-NXfetch.document&quot;: &quot;lock&quot;}">
+    </nuxeo-operation>
+    <nuxeo-operation
+      id="opUnlock"
+      op="Document.Unlock"
+      input="[[document.uid]]"
+      headers="{&quot;X-NXfetch.document&quot;: &quot;lock&quot;}">
+    </nuxeo-operation>
 
     <dom-if if="[[_isAvailable(document)]]">
       <template>

@@ -14,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
-
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
@@ -23,8 +24,7 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import './nuxeo-popup-confirm.js';
 import './nuxeo-popup-permission.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+
 /* eslint-disable prefer-spread, prefer-rest-params */
 {
   /**
@@ -116,23 +116,37 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
           <dom-repeat items="[[aces]]" as="ace" sort="_sortAces" strip-whitespace="">
             <template>
               <div class\$="acl-table-row [[ace.status]]">
-                <div class="flex-2"><span class\$="[[entityClass(ace.username)]]" title="[[entityTooltip(ace.username)]]">[[entityDisplay(ace.username)]]</span>
+                <div class="flex-2">
+                  <span class\$="[[entityClass(ace.username)]]" title="[[entityTooltip(ace.username)]]">
+                    [[entityDisplay(ace.username)]]
+                  </span>
                 </div>
                 <div class="flex-2"><span class="label">[[i18n(ace.permission)]]</span></div>
                 <div class="flex-2"><span>{{formatTimeFrame(ace)}}</span></div>
-                <div class="flex-2"><span class\$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">[[entityDisplay(ace.creator)]]</span>
+                <div class="flex-2">
+                  <span class\$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">
+                    [[entityDisplay(ace.creator)]]
+                  </span>
                 </div>
                 <dom-if if="[[showActions]]">
                   <template>
                     <div class="flex-2">
-                      <nuxeo-popup-permission doc-id="{{doc.uid}}" ace="{{ace}}" user-visible-permissions="{{doc.contextParameters.userVisiblePermissions}}" share-with-external="[[shareWithExternal]]"></nuxeo-popup-permission>
+                      <nuxeo-popup-permission
+                        doc-id="{{doc.uid}}"
+                        ace="{{ace}}"
+                        user-visible-permissions="{{doc.contextParameters.userVisiblePermissions}}"
+                        share-with-external="[[shareWithExternal]]">
+                      </nuxeo-popup-permission>
                       <dom-if if="[[shareWithExternal]]">
                         <template>
                           <paper-icon-button icon="nuxeo:send" on-click="sendEmailExternalSharing"></paper-icon-button>
                         </template>
                       </dom-if>
                       <paper-icon-button icon="nuxeo:delete" on-click="_deleteAce"></paper-icon-button>
-                      <nuxeo-popup-confirm id="confirmation" delete-label="[[i18n('command.delete')]]" cancel-label="[[i18n('documentAclTable.cancel')]]">
+                      <nuxeo-popup-confirm
+                        id="confirmation"
+                        delete-label="[[i18n('command.delete')]]"
+                        cancel-label="[[i18n('documentAclTable.cancel')]]">
                         <div>
                           <h2>[[i18n('documentAclTable.deleteConfirmation')]]</h2>
                           <div class="acl-table">
@@ -143,11 +157,17 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
                               <div class="flex-2 tmp-tab">[[i18n('documentAclTable.grantedBy')]]</div>
                             </div>
                             <div class\$="acl-table-row [[ace.status]]">
-                              <div class="flex-2"><span class\$="[[entityClass(ace.username)]]" title="[[entityTooltip(ace.username)]]">[[entityDisplay(ace.username)]]</span>
+                              <div class="flex-2">
+                                <span class\$="[[entityClass(ace.username)]]" title="[[entityTooltip(ace.username)]]">
+                                  [[entityDisplay(ace.username)]]
+                                </span>
                               </div>
                               <div class="flex-2"><span class="label">[[i18n(ace.permission)]]</span></div>
                               <div class="flex-2"><span>{{formatTimeFrame(ace)}}</span></div>
-                              <div class="flex-2"><span class\$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">[[entityDisplay(ace.creator)]]</span>
+                              <div class="flex-2">
+                                <span class\$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">
+                                  [[entityDisplay(ace.creator)]]
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -164,7 +184,11 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
     </dom-if>
 
     <nuxeo-operation id="rmPermission" op="Document.RemovePermission" input="{{doc.uid}}"></nuxeo-operation>
-    <nuxeo-operation id="sendNotificationEmailPermissionOp" op="Document.SendNotificationEmailForPermission" input="{{doc.uid}}"></nuxeo-operation>
+    <nuxeo-operation
+      id="sendNotificationEmailPermissionOp"
+      op="Document.SendNotificationEmailForPermission"
+      input="{{doc.uid}}">
+    </nuxeo-operation>
 `;
     }
 
