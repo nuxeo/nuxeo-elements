@@ -20,7 +20,6 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-page-provider.js';
 import 'paper-typeahead/paper-typeahead.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
-import '../es6-polyfills.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 {
   /**

@@ -1,7 +1,5 @@
-bower_components/
 node_modules/
 coverage/
-es6-polyfills.html
 jquery-import.html
 moment-import.html
 nuxeo-user-group-management/nuxeo-edit-user.html

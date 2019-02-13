@@ -16,8 +16,6 @@ limitations under the License.
 */
 import '@polymer/polymer/polymer-legacy.js';
 
-import './es6-polyfills.js';
-
 /**
  * `Nuxeo.RoutingBehavior` provides a `urlFor` helper function for reverse routing.
  *

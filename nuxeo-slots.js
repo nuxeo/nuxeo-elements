@@ -18,7 +18,6 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { enqueueDebouncer } from '@polymer/polymer/lib/utils/flush.js';
-import './es6-polyfills.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { templatize } from '@polymer/polymer/lib/utils/templatize.js';
 import { microTask } from '@polymer/polymer/lib/utils/async.js';
