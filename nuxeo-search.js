@@ -14,42 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-/**
-`nuxeo-search` allows managing saved searches on a Nuxeo server.
-
-    <nuxeo-search></nuxeo-search>
-
-Example - Get all saved searches accessible by the current user:
-
-    <nuxeo-search auto searches="{{searches}}"></nuxeo-nuxeo-search>
-
-Example - Get a saved search by id:
-
-    <nuxeo-search auto search-id="[[id]]" search="{{search}}"></nuxeo-search>
-
-Example - Execute a saved search:
-
-    <nuxeo-search auto search-id="[[id]]" results="{{results}}"></nuxeo-search>
-
-You can trigger a method explicitly by calling `get`, `post`, `put`, `remove` or `execute on the
-element.
-
-@group Nuxeo Elements
-@element nuxeo-search
-@demo demo/nuxeo-search.html
-@homepage http://www.nuxeo.org
-*/
-/*
-  FIXME(polymer-modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this comment!
-*/
-import './nuxeo-element.js';
-
-import './nuxeo-resource.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
+import './nuxeo-element.js';
+import './nuxeo-resource.js';
+
 {
   /**
    * `nuxeo-search` allows managing saved searches on a Nuxeo server.
@@ -77,15 +47,23 @@ import { timeOut } from '@polymer/polymer/lib/utils/async.js';
   class Search extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: none;
-      }
-    </style>
+        <style>
+          :host {
+            display: none;
+          }
+        </style>
 
-    <nuxeo-resource id="resource" connection-id="[[connectionId]]" method="[[method]]" path="[[path]]" data="[[data]]" headers="[[headers]]" params="[[params]]">
-    </nuxeo-resource>
-`;
+        <nuxeo-resource
+          id="resource"
+          connection-id="[[connectionId]]"
+          method="[[method]]"
+          path="[[path]]"
+          data="[[data]]"
+          headers="[[headers]]"
+          params="[[params]]"
+        >
+        </nuxeo-resource>
+      `;
     }
 
     static get is() {

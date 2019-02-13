@@ -36,153 +36,154 @@ limitations under the License.
       </template>
     </test-fixture>
     <script type="module">
-import '@polymer/polymer/polymer-legacy.js';
-import '../nuxeo-resource.js';
-suite('<nuxeo-resource>', () => {
+      import '@polymer/polymer/polymer-legacy.js';
+      import '../nuxeo-resource.js';
 
-  const responseHeaders = {
-    json: {'Content-Type': 'application/json'},
-    plain: {'Content-Type': 'text/plain'},
-  };
+      suite('<nuxeo-resource>', () => {
 
-  let server;
-  setup(() => {
-    server = sinon.fakeServer.create();
-    server.autoRespond = true;
-  });
+        const responseHeaders = {
+          json: {'Content-Type': 'application/json'},
+          plain: {'Content-Type': 'text/plain'},
+        };
 
-  teardown(() => {
-    server.restore();
-  });
+        let server;
+        setup(() => {
+          server = sinon.fakeServer.create();
+          server.autoRespond = true;
+        });
 
-  suite('when login request succeed', () => {
+        teardown(() => {
+          server.restore();
+        });
 
-    setup(() => {
-      server.respondWith('GET', '/json/cmis', [
-        200,
-        responseHeaders.json,
-        '{}',
-      ]);
-      server.respondWith(
-        'POST',
-        '/api/v1/automation/login',
-        [
-          200,
-          responseHeaders.json,
-          '{"entity-type":"login","username":"Administrator"}',
-        ],
-      );
-      server.respondWith(
-        'GET',
-        '/api/v1/user/Administrator',
-        [
-          200,
-          responseHeaders.json,
-          '{"entity-type":"user","username":"Administrator"}',
-        ],
-      );
-    });
+        suite('when login request succeed', () => {
 
-    test('should retrieve something valid', () => {
-      server.respondWith(
-        'GET',
-        '/api/v1/something',
-        [
-          200,
-          responseHeaders.json,
-          '{"success":true,"entity-type":"login"}',
-        ],
-      );
+          setup(() => {
+            server.respondWith('GET', '/json/cmis', [
+              200,
+              responseHeaders.json,
+              '{}',
+            ]);
+            server.respondWith(
+              'POST',
+              '/api/v1/automation/login',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"login","username":"Administrator"}',
+              ],
+            );
+            server.respondWith(
+              'GET',
+              '/api/v1/user/Administrator',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"user","username":"Administrator"}',
+              ],
+            );
+          });
 
-      const resource = fixture('nxc-ok');
-      return resource.get().catch(() => {
-        throw new Error('Expected to a valid response!');
+          test('should retrieve something valid', () => {
+            server.respondWith(
+              'GET',
+              '/api/v1/something',
+              [
+                200,
+                responseHeaders.json,
+                '{"success":true,"entity-type":"login"}',
+              ],
+            );
+
+            const resource = fixture('nxc-ok');
+            return resource.get().catch(() => {
+              throw new Error('Expected to a valid response!');
+            });
+          });
+
+          // This test fails on firefox due to the 'error' event fired in component
+          // https://github.com/webcomponents/webcomponentsjs/issues/138
+          test('shouldn\'t retrieve something invalid', () => {
+            server.respondWith(
+              'GET',
+              '/api/v1/something',
+              [
+                500,
+                responseHeaders.json,
+                '{"message":"Internal Server Error"}',
+              ],
+            );
+
+            const resource = fixture('nxc-ok');
+            return resource.get().then(() => {
+              throw new Error('Expected to an invalid response!');
+            }).catch((error) => {
+              expect(error.message).to.be.eq('Internal Server Error');
+            });
+          });
+
+        });
+
+        suite('when login request fail', () => {
+
+          setup(() => {
+            server.respondWith('GET', '/json/cmis', [
+              200,
+              responseHeaders.json,
+              '{}',
+            ]);
+            server.respondWith(
+              'POST',
+              '/api/v1/automation/login',
+              [
+                401,
+                responseHeaders.json,
+                '{"error":true,"message":"An error occurred"}',
+              ],
+            );
+          });
+
+          test('should\'t retrieve something valid', () => {
+            server.respondWith(
+              'GET',
+              '/api/v1/something',
+              [
+                200,
+                responseHeaders.json,
+                '{"success":true,"entity-type":"login"}',
+              ],
+            );
+
+            const resource = fixture('nxc-ko');
+            return resource.get().then(() => {
+              throw new Error('Expected to fail the login!');
+            }).catch((error) => {
+              expect(error.message).to.be.eq('Unauthorized');
+            });
+          });
+
+          test('should\'t retrieve something invalid', () => {
+            server.respondWith(
+              'GET',
+              '/api/v1/something',
+              [
+                500,
+                responseHeaders.json,
+                '{"message":"Unauthorized"}',
+              ],
+            );
+
+            const resource = fixture('nxc-ko');
+            return resource.get().then(() => {
+              throw new Error('Expected to fail the login!');
+            }).catch((error) => {
+              expect(error.message).to.be.eq('Unauthorized');
+            });
+          });
+
+        });
+
       });
-    });
-
-    // This test fails on firefox due to the 'error' event fired in component
-    // https://github.com/webcomponents/webcomponentsjs/issues/138
-    test('shouldn\'t retrieve something invalid', () => {
-      server.respondWith(
-        'GET',
-        '/api/v1/something',
-        [
-          500,
-          responseHeaders.json,
-          '{"message":"Internal Server Error"}',
-        ],
-      );
-
-      const resource = fixture('nxc-ok');
-      return resource.get().then(() => {
-        throw new Error('Expected to an invalid response!');
-      }).catch((error) => {
-        expect(error.message).to.be.eq('Internal Server Error');
-      });
-    });
-
-  });
-
-  suite('when login request fail', () => {
-
-    setup(() => {
-      server.respondWith('GET', '/json/cmis', [
-        200,
-        responseHeaders.json,
-        '{}',
-      ]);
-      server.respondWith(
-        'POST',
-        '/api/v1/automation/login',
-        [
-          401,
-          responseHeaders.json,
-          '{"error":true,"message":"An error occurred"}',
-        ],
-      );
-    });
-
-    test('should\'t retrieve something valid', () => {
-      server.respondWith(
-        'GET',
-        '/api/v1/something',
-        [
-          200,
-          responseHeaders.json,
-          '{"success":true,"entity-type":"login"}',
-        ],
-      );
-
-      const resource = fixture('nxc-ko');
-      return resource.get().then(() => {
-        throw new Error('Expected to fail the login!');
-      }).catch((error) => {
-        expect(error.message).to.be.eq('Unauthorized');
-      });
-    });
-
-    test('should\'t retrieve something invalid', () => {
-      server.respondWith(
-        'GET',
-        '/api/v1/something',
-        [
-          500,
-          responseHeaders.json,
-          '{"message":"Unauthorized"}',
-        ],
-      );
-
-      const resource = fixture('nxc-ko');
-      return resource.get().then(() => {
-        throw new Error('Expected to fail the login!');
-      }).catch((error) => {
-        expect(error.message).to.be.eq('Unauthorized');
-      });
-    });
-
-  });
-
-});
-</script>
+    </script>
   </body>
 </html>

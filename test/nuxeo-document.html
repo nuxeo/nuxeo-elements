@@ -51,186 +51,187 @@ limitations under the License.
       </template>
     </test-fixture>
     <script type="module">
-import '@polymer/polymer/polymer-legacy.js';
-import '../nuxeo-document.js';
-suite('<nuxeo-document>', () => {
+      import '@polymer/polymer/polymer-legacy.js';
+      import '../nuxeo-document.js';
 
-  const responseHeaders = {
-    json: {'Content-Type': 'application/json'},
-    plain: {'Content-Type': 'text/plain'},
-  };
+      suite('<nuxeo-document>', () => {
 
-  let server;
-  setup(() => {
-    server = sinon.fakeServer.create();
-    server.autoRespond = true;
-  });
+        const responseHeaders = {
+          json: {'Content-Type': 'application/json'},
+          plain: {'Content-Type': 'text/plain'},
+        };
 
-  teardown(() => {
-    server.restore();
-  });
+        let server;
+        setup(() => {
+          server = sinon.fakeServer.create();
+          server.autoRespond = true;
+        });
 
-  suite('when login request succeed', () => {
+        teardown(() => {
+          server.restore();
+        });
 
-    setup(() => {
-      server.respondWith('GET', '/json/cmis', [
-        200,
-        responseHeaders.json,
-        '{}',
-      ]);
-      server.respondWith(
-        'POST',
-        '/api/v1/automation/login',
-        [
-          200,
-          responseHeaders.json,
-          '{"entity-type":"login","username":"Administrator"}',
-        ],
-      );
-      server.respondWith(
-        'GET',
-        '/api/v1/user/Administrator',
-        [
-          200,
-          responseHeaders.json,
-          '{"entity-type":"login","username":"Administrator"}',
-        ],
-      );
-    });
+        suite('when login request succeed', () => {
 
-    test('should retrieve something valid', () => {
-      server.respondWith('GET', '/json/cmis', [
-        200,
-        responseHeaders.json,
-        '{}',
-      ]);
-      server.respondWith(
-        'GET',
-        '/api/v1/path/something',
-        [
-          200,
-          responseHeaders.json,
-          '{"success":true,"entity-type":"login"}',
-        ],
-      );
+          setup(() => {
+            server.respondWith('GET', '/json/cmis', [
+              200,
+              responseHeaders.json,
+              '{}',
+            ]);
+            server.respondWith(
+              'POST',
+              '/api/v1/automation/login',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"login","username":"Administrator"}',
+              ],
+            );
+            server.respondWith(
+              'GET',
+              '/api/v1/user/Administrator',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"login","username":"Administrator"}',
+              ],
+            );
+          });
 
-      const document = fixture('nxc-ok');
-      return document.get().catch(() => {
-        throw new Error('Expected to a valid response!');
+          test('should retrieve something valid', () => {
+            server.respondWith('GET', '/json/cmis', [
+              200,
+              responseHeaders.json,
+              '{}',
+            ]);
+            server.respondWith(
+              'GET',
+              '/api/v1/path/something',
+              [
+                200,
+                responseHeaders.json,
+                '{"success":true,"entity-type":"login"}',
+              ],
+            );
+
+            const document = fixture('nxc-ok');
+            return document.get().catch(() => {
+              throw new Error('Expected to a valid response!');
+            });
+          });
+
+          // This test fails on firefox due to the 'error' event fired in component
+          // https://github.com/webcomponents/webcomponentsjs/issues/138
+          test('shouldn\'t retrieve something invalid', () => {
+            server.respondWith(
+              'GET',
+              '/api/v1/path/something',
+              [
+                500,
+                responseHeaders.json,
+                '{"message":"Internal Server Error"}',
+              ],
+            );
+
+            const document = fixture('nxc-ok');
+            return document.get().then(() => {
+              throw new Error('Expected to an invalid response!');
+            }).catch((error) => {
+              expect(error.message).to.be.eq('Internal Server Error');
+            });
+          });
+
+        });
+
+        suite('when login request fail', () => {
+
+          setup(() => {
+            server.respondWith('GET', '/json/cmis', [
+              200,
+              responseHeaders.json,
+              '{}',
+            ]);
+            server.respondWith(
+              'POST',
+              '/api/v1/automation/login',
+              [
+                401,
+                responseHeaders.json,
+                '{"error":true,"message":"An error occurred"}',
+              ],
+            );
+          });
+
+          test('should\'t retrieve something valid', () => {
+            server.respondWith(
+              'GET',
+              '/api/v1/path/something?',
+              [
+                200,
+                responseHeaders.json,
+                '{"success":true,"entity-type":"login"}',
+              ],
+            );
+
+            const document = fixture('nxc-ko');
+            return document.get().then(() => {
+              throw new Error('Expected to fail the login!');
+            }).catch((error) => {
+              expect(error).to.be.instanceof(Error);
+              expect(error.message).to.be.eq('Unauthorized');
+            });
+          });
+
+          test('should\'t retrieve something invalid', () => {
+            server.respondWith(
+              'GET',
+              '/api/v1/path/something?',
+              [
+                500,
+                responseHeaders.json,
+                '{"error":"Internal Error"}',
+              ],
+            );
+
+            const document = fixture('nxc-ko');
+            return document.get().then(() => {
+              throw new Error('Expected to fail the login!');
+            }).catch((error) => {
+              expect(error).to.be.instanceof(Error);
+              expect(error.message).to.be.eq('Unauthorized');
+            });
+          });
+
+        });
+
+        suite('when generating the path', () => {
+
+          test('should build a path from an id', () => {
+            const document = fixture('nxd-id');
+            expect(document.path).to.be.eq('/id/something');
+          });
+
+          test('should build a path from a path', () => {
+            const document = fixture('nxd-path');
+            expect(document.path).to.be.eq('/path/something');
+          });
+
+        });
+
+        suite('when requesting a document', () => {
+
+          test('should tell it is loading', () => {
+            const document = fixture('nxd-loading');
+            // wait for loading state to toggle on and off
+            return waitChanged(document, 'loading', 2)
+              .then(document.get().then(() => {
+                expect(document.path).to.be.eq('/id/something');
+              }));
+          });
+
+        });
       });
-    });
-
-    // This test fails on firefox due to the 'error' event fired in component
-    // https://github.com/webcomponents/webcomponentsjs/issues/138
-    test('shouldn\'t retrieve something invalid', () => {
-      server.respondWith(
-        'GET',
-        '/api/v1/path/something',
-        [
-          500,
-          responseHeaders.json,
-          '{"message":"Internal Server Error"}',
-        ],
-      );
-
-      const document = fixture('nxc-ok');
-      return document.get().then(() => {
-        throw new Error('Expected to an invalid response!');
-      }).catch((error) => {
-        expect(error.message).to.be.eq('Internal Server Error');
-      });
-    });
-
-  });
-
-  suite('when login request fail', () => {
-
-    setup(() => {
-      server.respondWith('GET', '/json/cmis', [
-        200,
-        responseHeaders.json,
-        '{}',
-      ]);
-      server.respondWith(
-        'POST',
-        '/api/v1/automation/login',
-        [
-          401,
-          responseHeaders.json,
-          '{"error":true,"message":"An error occurred"}',
-        ],
-      );
-    });
-
-    test('should\'t retrieve something valid', () => {
-      server.respondWith(
-        'GET',
-        '/api/v1/path/something?',
-        [
-          200,
-          responseHeaders.json,
-          '{"success":true,"entity-type":"login"}',
-        ],
-      );
-
-      const document = fixture('nxc-ko');
-      return document.get().then(() => {
-        throw new Error('Expected to fail the login!');
-      }).catch((error) => {
-        expect(error).to.be.instanceof(Error);
-        expect(error.message).to.be.eq('Unauthorized');
-      });
-    });
-
-    test('should\'t retrieve something invalid', () => {
-      server.respondWith(
-        'GET',
-        '/api/v1/path/something?',
-        [
-          500,
-          responseHeaders.json,
-          '{"error":"Internal Error"}',
-        ],
-      );
-
-      const document = fixture('nxc-ko');
-      return document.get().then(() => {
-        throw new Error('Expected to fail the login!');
-      }).catch((error) => {
-        expect(error).to.be.instanceof(Error);
-        expect(error.message).to.be.eq('Unauthorized');
-      });
-    });
-
-  });
-
-  suite('when generating the path', () => {
-
-    test('should build a path from an id', () => {
-      const document = fixture('nxd-id');
-      expect(document.path).to.be.eq('/id/something');
-    });
-
-    test('should build a path from a path', () => {
-      const document = fixture('nxd-path');
-      expect(document.path).to.be.eq('/path/something');
-    });
-
-  });
-
-  suite('when requesting a document', () => {
-
-    test('should tell it is loading', () => {
-      const document = fixture('nxd-loading');
-      // wait for loading state to toggle on and off
-      return waitChanged(document, 'loading', 2)
-        .then(document.get().then(() => {
-          expect(document.path).to.be.eq('/id/something');
-        }));
-    });
-
-  });
-});
-</script>
+    </script>
   </body>
 </html>

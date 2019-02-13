@@ -38,132 +38,133 @@ limitations under the License.
       </template>
     </test-fixture>
     <script type="module">
-import '@polymer/polymer/polymer-legacy.js';
-import '../nuxeo-page-provider.js';
-suite('<nuxeo-page-provider>', () => {
+      import '@polymer/polymer/polymer-legacy.js';
+      import '../nuxeo-page-provider.js';
 
-  const responseHeaders = {
-    json: {'Content-Type': 'application/json'},
-    plain: {'Content-Type': 'text/plain'},
-  };
+      suite('<nuxeo-page-provider>', () => {
 
-  let server;
-  setup(() => {
-    server = sinon.fakeServer.create();
-    server.autoRespond = true;
-  });
+        const responseHeaders = {
+          json: {'Content-Type': 'application/json'},
+          plain: {'Content-Type': 'text/plain'},
+        };
 
-  teardown(() => {
-    server.restore();
-  });
+        let server;
+        setup(() => {
+          server = sinon.fakeServer.create();
+          server.autoRespond = true;
+        });
 
-  suite('when page provider has a false boolean param', () => {
+        teardown(() => {
+          server.restore();
+        });
 
-    setup(() => {
-      server.respondWith('GET', '/json/cmis', [
-        200,
-        responseHeaders.json,
-        '{}',
-      ]);
-      server.respondWith(
-        'POST',
-        '/api/v1/automation/login',
-        [
-          200,
-          responseHeaders.json,
-          '{"entity-type":"login","username":"Administrator"}',
-        ],
-      );
-      server.respondWith(
-        'GET',
-        '/api/v1/user/Administrator',
-        [
-          200,
-          responseHeaders.json,
-          '{"entity-type":"login","username":"Administrator"}',
-        ],
-      );
-    });
+        suite('when page provider has a false boolean param', () => {
 
-    test('it should be sent to the server', () => {
-      server.respondWith(
-        'GET',
-        '/api/v1/search/pp/test_provider/execute?currentPageIndex=0&pageSize=40&boolean=false',
-        [
-          200,
-          responseHeaders.json,
-          '{"entity-type":"documents", "entries": []}',
-        ],
-      );
-      const pp = fixture('nx-pp-falseParam');
-      return pp.fetch().then((res) => {
-        expect(res['entity-type']).to.be.eq('documents');
-      }).catch(() => {
-        throw new Error('Expected to a valid response!');
+          setup(() => {
+            server.respondWith('GET', '/json/cmis', [
+              200,
+              responseHeaders.json,
+              '{}',
+            ]);
+            server.respondWith(
+              'POST',
+              '/api/v1/automation/login',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"login","username":"Administrator"}',
+              ],
+            );
+            server.respondWith(
+              'GET',
+              '/api/v1/user/Administrator',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"login","username":"Administrator"}',
+              ],
+            );
+          });
+
+          test('it should be sent to the server', () => {
+            server.respondWith(
+              'GET',
+              '/api/v1/search/pp/test_provider/execute?currentPageIndex=0&pageSize=40&boolean=false',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"documents", "entries": []}',
+              ],
+            );
+            const pp = fixture('nx-pp-falseParam');
+            return pp.fetch().then((res) => {
+              expect(res['entity-type']).to.be.eq('documents');
+            }).catch(() => {
+              throw new Error('Expected to a valid response!');
+            });
+          });
+
+        });
+
+        suite('when page provider returns an error response', () => {
+
+          setup(() => {
+            server.respondWith('GET', '/json/cmis', [
+              200,
+              responseHeaders.json,
+              '{}',
+            ]);
+            server.respondWith(
+              'POST',
+              '/api/v1/automation/login',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"login","username":"Administrator"}',
+              ],
+            );
+            server.respondWith(
+              'GET',
+              '/api/v1/user/Administrator',
+              [
+                200,
+                responseHeaders.json,
+                '{"entity-type":"login","username":"Administrator"}',
+              ],
+            );
+          });
+
+          test('it should throw an error', () => {
+            /*
+            * This workaround is needed on Firefox due to the 'error' event fired in component.
+            * More Details: https://github.com/webcomponents/webcomponentsjs/issues/138
+            */
+            const eventHandler = (e) => e.stopPropagation();
+            document.addEventListener('error', eventHandler);
+
+            server.respondWith(
+              'GET',
+              '/api/v1/search/pp/test_provider/execute?currentPageIndex=0&pageSize=40',
+              [
+                500,
+                responseHeaders.json,
+                '{"entity-type":"exception", "message":"Internal Server Error", "status": 500}',
+              ],
+            );
+            const pp = fixture('nx-pp');
+            return pp.fetch().then(() => {
+              throw new Error('Expected to have an error response!');
+            }).catch((error) => {
+              expect(error).to.exist; // eslint-disable-line no-unused-expressions
+              expect(error.status).to.be.eq(500);
+              expect(error.message).to.be.eq('Internal Server Error');
+              document.removeEventListener('error', eventHandler); // Cleaning the workaround listener
+            });
+          });
+
+        });
+
       });
-    });
-
-  });
-
-  suite('when page provider returns an error response', () => {
-
-    setup(() => {
-      server.respondWith('GET', '/json/cmis', [
-        200,
-        responseHeaders.json,
-        '{}',
-      ]);
-      server.respondWith(
-        'POST',
-        '/api/v1/automation/login',
-        [
-          200,
-          responseHeaders.json,
-          '{"entity-type":"login","username":"Administrator"}',
-        ],
-      );
-      server.respondWith(
-        'GET',
-        '/api/v1/user/Administrator',
-        [
-          200,
-          responseHeaders.json,
-          '{"entity-type":"login","username":"Administrator"}',
-        ],
-      );
-    });
-
-    test('it should throw an error', () => {
-      /*
-       * This workaround is needed on Firefox due to the 'error' event fired in component.
-       * More Details: https://github.com/webcomponents/webcomponentsjs/issues/138
-       */
-      const eventHandler = (e) => e.stopPropagation();
-      document.addEventListener('error', eventHandler);
-
-      server.respondWith(
-        'GET',
-        '/api/v1/search/pp/test_provider/execute?currentPageIndex=0&pageSize=40',
-        [
-          500,
-          responseHeaders.json,
-          '{"entity-type":"exception", "message":"Internal Server Error", "status": 500}',
-        ],
-      );
-      const pp = fixture('nx-pp');
-      return pp.fetch().then(() => {
-        throw new Error('Expected to have an error response!');
-      }).catch((error) => {
-        expect(error).to.exist; // eslint-disable-line no-unused-expressions
-        expect(error.status).to.be.eq(500);
-        expect(error.message).to.be.eq('Internal Server Error');
-        document.removeEventListener('error', eventHandler); // Cleaning the workaround listener
-      });
-    });
-
-  });
-
-});
-</script>
+    </script>
   </body>
 </html>

@@ -93,12 +93,13 @@ limitations under the License.
     </dom-bind>
 
     <script type="module">
-import '@polymer/polymer/polymer-legacy.js';
-import '../nuxeo-connection.js';
-import '../nuxeo-page-provider.js';
-const app = document.querySelector('dom-bind');
-app.query = (docType) => `select * from ${docType} where ecm:isTrashed = 0`;
-app.docType = 'File';
-</script>
+      import '@polymer/polymer/polymer-legacy.js';
+      import '../nuxeo-connection.js';
+      import '../nuxeo-page-provider.js';
+
+      const app = document.querySelector('dom-bind');
+      app.query = (docType) => `select * from ${docType} where ecm:isTrashed = 0`;
+      app.docType = 'File';
+    </script>
   </body>
 </html>

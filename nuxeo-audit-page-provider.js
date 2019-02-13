@@ -14,13 +14,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import './nuxeo-element.js';
-
-import './nuxeo-operation.js';
-import './nuxeo-resource.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
+import './nuxeo-element.js';
+import './nuxeo-operation.js';
+import './nuxeo-resource.js';
+
 {
   /**
    * `nuxeo-audit-page-provider` performs an audit query with the given parameters against audit logs.
@@ -40,18 +40,32 @@ import { timeOut } from '@polymer/polymer/lib/utils/async.js';
   class AuditPageProvider extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: none;
-      }
-    </style>
+        <style>
+          :host {
+            display: none;
+          }
+        </style>
 
-    <nuxeo-resource id="res" path="/id/[[docId]]/@audit" enrichers="{{enrichers}}" schemas="[[schemas]]" loading="{{loading}}" headers="{{headers}}">
-    </nuxeo-resource>
+        <nuxeo-resource
+          id="res"
+          path="/id/[[docId]]/@audit"
+          enrichers="{{enrichers}}"
+          schemas="[[schemas]]"
+          loading="{{loading}}"
+          headers="{{headers}}"
+        >
+        </nuxeo-resource>
 
-    <nuxeo-operation id="auditOp" op="Audit.QueryWithPageProvider" enrichers="{{enrichers}}" schemas="[[schemas]]" loading="{{loading}}" headers="{{headers}}">
-    </nuxeo-operation>
-`;
+        <nuxeo-operation
+          id="auditOp"
+          op="Audit.QueryWithPageProvider"
+          enrichers="{{enrichers}}"
+          schemas="[[schemas]]"
+          loading="{{loading}}"
+          headers="{{headers}}"
+        >
+        </nuxeo-operation>
+      `;
     }
 
     static get is() {

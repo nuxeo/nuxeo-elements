@@ -14,10 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import './nuxeo-element.js';
-
-import './nuxeo-resource.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import './nuxeo-element.js';
+import './nuxeo-resource.js';
+
 {
   /**
    * `nuxeo-document` allows managing Documents on a Nuxeo server.
@@ -35,14 +35,28 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
   class DocumentElement extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: none;
-      }
-    </style>
-    <nuxeo-resource id="nxResource" connection-id="{{connectionId}}" method="{{method}}" auto="{{auto}}" path="{{path}}" data="{{data}}" enrichers="{{enrichers}}" params="{{params}}" headers="{{headers}}" type="{{type}}" response="{{response}}" schemas="[[schemas]]" sync-indexing\$="[[syncIndexing]]">
-    </nuxeo-resource>
-`;
+        <style>
+          :host {
+            display: none;
+          }
+        </style>
+        <nuxeo-resource
+          id="nxResource"
+          connection-id="{{connectionId}}"
+          method="{{method}}"
+          auto="{{auto}}"
+          path="{{path}}"
+          data="{{data}}"
+          enrichers="{{enrichers}}"
+          params="{{params}}"
+          headers="{{headers}}"
+          type="{{type}}"
+          response="{{response}}"
+          schemas="[[schemas]]"
+          sync-indexing\$="[[syncIndexing]]"
+        >
+        </nuxeo-resource>
+      `;
     }
 
     static get is() {
