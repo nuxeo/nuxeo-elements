@@ -23,14 +23,14 @@ limitations under the License.
 
   <title>Nuxeo Audit Metrics Demo</title>
 
-  <script src="../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
-  <script src="../../../moment/min/moment-with-locales.js"></script>
+  <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+  <script src="/node_modules/moment/min/moment-with-locales.js"></script>
 
-  <script type="module" src="../../../@nuxeo/nuxeo-elements/nuxeo-connection.js"></script>
-  <script type="module" src="../../../@nuxeo/nuxeo-elements/nuxeo-document.js"></script>
-  <script type="module" src="../../../@nuxeo/nuxeo-elements/nuxeo-page-provider.js"></script>
-
-  <script type="module" src="../nuxeo-audit-data.js"></script>
+  <script type="module">
+    import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+    import '@nuxeo/nuxeo-elements/nuxeo-page-provider.js';
+    import '../nuxeo-audit-data.js';
+  </script>
 
   <style>
     table {
@@ -62,52 +62,47 @@ limitations under the License.
 
 <body unresolved>
 <dom-bind>
-<template>
+  <template>
 
-  <nuxeo-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
+    <nuxeo-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
 
-  <input type="date" value="{{startDate::change}}">
-  <input type="date" value="{{endDate::change}}">
+    <input type="date" value="{{startDate::change}}">
+    <input type="date" value="{{endDate::change}}">
 
-  <h2>Top Downloads</h2>
+    <h2>Top Downloads</h2>
 
-  <nuxeo-audit-data event-id="download"
-                    where='{"downloadReason": "download"}'
-                    grouped-by="docUUID"
-                    group-limit="10"
-                    start-date="[[startDate]]" end-date="[[endDate]]"
-                    data="{{downloads}}">
-  </nuxeo-audit-data>
+    <nuxeo-audit-data event-id="download"
+                      where='{"downloadReason": "download"}'
+                      grouped-by="docUUID"
+                      group-limit="10"
+                      start-date="[[startDate]]" end-date="[[endDate]]"
+                      data="{{downloads}}">
+    </nuxeo-audit-data>
 
-  <nuxeo-page-provider auto
-                       page-size="10"
-                       query="[[query(downloads)]]"
-                       current-page="{{downloadedDocs}}">
-  </nuxeo-page-provider>
+    <nuxeo-page-provider auto
+                        page-size="10"
+                        query="[[query(downloads)]]"
+                        current-page="{{downloadedDocs}}">
+    </nuxeo-page-provider>
 
-  <table>
-    <tr>
-      <th>File</th>
-      <th>Count</th>
-    </tr>
-    <template is="dom-repeat" items="{{downloadedDocs}}" as="downloadedDoc">
+    <table>
       <tr>
-        <td>
-          <span>[[downloadedDoc.title]]</span>
-        </td>
-        <td>[[numberOfDownloads(downloadedDoc)]]</td>
+        <th>File</th>
+        <th>Count</th>
       </tr>
-    </template>
-  </table>
+      <template is="dom-repeat" items="{{downloadedDocs}}" as="downloadedDoc">
+        <tr>
+          <td>
+            <span>[[downloadedDoc.title]]</span>
+          </td>
+          <td>[[numberOfDownloads(downloadedDoc)]]</td>
+        </tr>
+      </template>
+    </table>
 
-</template>
+  </template>
 </dom-bind>
-<script type="module">
-  import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
-  import '@nuxeo/nuxeo-elements/nuxeo-document.js';
-  import '@nuxeo/nuxeo-elements/nuxeo-page-provider.js';
-  import '../nuxeo-audit-data.js';
-  
+<script>
   const t = document.querySelector('dom-bind');
   const currentDate = moment();
 
