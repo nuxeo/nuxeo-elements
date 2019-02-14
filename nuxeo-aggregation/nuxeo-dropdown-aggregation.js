@@ -72,7 +72,6 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
       return {
         value: {
           type: Array,
-          value: [],
           notify: true,
         },
 
