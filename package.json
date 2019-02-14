@@ -22,6 +22,10 @@
     "docs": "polymer analyze > analysis.json && polymer serve"
   },
   "devDependencies": {
+    "@polymer/iron-component-page": "^4.0.0",
+    "@polymer/iron-test-helpers": "^3.0.0",
+    "@webcomponents/webcomponentsjs": "^2.0.0",
+    "babel-eslint": "^10.0.1",
     "coveralls": "^3.0.2",
     "eslint": "^4.14.0",
     "eslint-config-airbnb-base": "^12.1.0",
@@ -30,11 +34,8 @@
     "husky": "^1.3.1",
     "lint-staged": "^8.1.3",
     "polymer-cli": "^1.8.0",
-    "wct-istanbul": "^0.14.3",
-    "@polymer/iron-component-page": "^4.0.0",
-    "@polymer/iron-test-helpers": "^3.0.0",
     "wct-browser-legacy": "^1.0.1",
-    "@webcomponents/webcomponentsjs": "^2.0.0"
+    "wct-istanbul": "^0.14.3"
   },
   "main": "nuxeo-ui-elements.js",
   "dependencies": {

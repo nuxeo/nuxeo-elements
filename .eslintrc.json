@@ -53,5 +53,6 @@
     "CKEDITOR": false,
     "Selectivity": false,
     "saulis": false
-  }
+  },
+  "parser": "babel-eslint"
 }
