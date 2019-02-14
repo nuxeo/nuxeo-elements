@@ -501,6 +501,10 @@ import './nuxeo-user-group-permissions-table.js';
       };
     }
 
+    static get importMeta() {
+      return import.meta;
+    }
+
     static get observers() {
       return [
         '_userRemovedFromGroup(groups.splices)',

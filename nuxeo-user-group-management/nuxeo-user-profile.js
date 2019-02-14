@@ -277,6 +277,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       };
     }
 
+    static get importMeta() {
+      return import.meta;
+    }
+
     ready() {
       super.ready();
       if (!this._isRegistered('nuxeo-view-user')) {

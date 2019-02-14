@@ -236,6 +236,10 @@ import './widgets/nuxeo-user-suggestion.js';
       };
     }
 
+    static get importMeta() {
+      return import.meta;
+    }
+
     ready() {
       super.ready();
       // dynamic loading of user layouts

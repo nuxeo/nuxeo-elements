@@ -163,6 +163,10 @@ import './nuxeo-edit-password.js';
       };
     }
 
+    static get importMeta() {
+      return import.meta;
+    }
+
     ready() {
       super.ready();
       this.$.form.addEventListener('iron-form-presubmit', (event) => {
