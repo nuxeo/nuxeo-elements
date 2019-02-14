@@ -227,6 +227,12 @@ limitations under the License.
             for (const prop in this.constructor.properties) {
               this._instance._setPendingProperty(prop, this[prop]);
             }
+            // Ensure element specific properties are forwarded
+            if (this.__dataHost && this.__dataHost.__data) {
+              for (const [key, value] of Object.entries(this.__dataHost.__data)) {
+                this._instance._setPendingProperty(key, value);
+              }
+            }
             this._instance._flushProperties();
             const root = this._instance.root;
             parent.insertBefore(root, this);
