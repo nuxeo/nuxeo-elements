@@ -7025,7 +7025,7 @@ module.exports = function(el, className, force) {
         // override templates since formatter should already escape text
         templates: {
           resultItem: (opts) => (
-            `<div class="preserve-white-space selectivity-result-item${opts.disabled ? ' disabled' : ''}"
+            `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
                   style="padding-left: ${7 + (10 * opts.depth)}px"
                   data-item-id="${this.escapeHTML(opts.id)}">${this.resultFormatter(opts.item)}</div>`
           ),

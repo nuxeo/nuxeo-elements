@@ -42,6 +42,10 @@ import './nuxeo-user-avatar.js';
       .header {
         font-weight: 700;
       }
+
+      .preserve-white-space {
+        white-space: pre;
+      }
     </style>
 
     <div id="container">
@@ -64,9 +68,9 @@ import './nuxeo-user-avatar.js';
       </dom-if>
 
       <div>
-        <div class="header">[[entity.displayLabel]]</div>
+        <div class="header preserve-white-space">[[entity.displayLabel]]</div>
         <div>
-          <span>[[_computeInfo(entity)]]</span>
+          <span class="preserve-white-space">[[_computeInfo(entity)]]</span>
         </div>
       </div>
     </div>
