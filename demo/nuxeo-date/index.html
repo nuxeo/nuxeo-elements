@@ -25,9 +25,18 @@ limitations under the License.
     <script type="module">
       import '@polymer/polymer/polymer-legacy.js';
       import '../nuxeo-demo.js';
-      import '../../widgets/nuxeo-date.js';
       import '../../widgets/nuxeo-date-picker.js';
+      import '../../widgets/nuxeo-date.js';
     </script>
+    <style>
+      nuxeo-demo-section {
+        height: 25px;
+      }
+
+      nuxeo-demo-section ~ nuxeo-demo-section {
+        margin-top: 150px;
+      }
+    </style>
   </head>
 
   <body unresolved>
