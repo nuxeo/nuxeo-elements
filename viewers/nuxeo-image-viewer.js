@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import '@polymer/iron-icons/image-icons.js';
 import '@polymer/iron-icons/iron-icons.js';
 import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
@@ -24,80 +25,6 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import 'cropperjs/dist/cropper.esm.js';
 import '../nuxeo-icons.js';
 
-const $_documentContainer = document.createElement('template'); // eslint-disable-line camelcase
-
-$_documentContainer.innerHTML = `<dom-module id="nuxeo-image-viewer">
-  
-  <template>
-    <style>
-      :host {
-        display: block;
-        position: relative;
-      }
-
-      #canvas {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-      }
-
-      #toolbar {
-        position: absolute;
-        bottom: 16px;
-        max-width: 300px;
-        left: 50%;
-        transform: translateX(-50%);
-        color: #fff;
-        z-index: 25;
-        text-align: center;
-        padding: 2px;
-        border-radius: 4px;
-        background-color: rgba(0, 0, 0, 0.5);
-      }
-
-      paper-icon-button {
-        width: 34px;
-        height: 34px;
-        color: white !important;
-        --paper-icon-button-ink-color: white;
-      }
-
-      #image {
-        display: none;
-        max-width: 100%;
-        max-height: 100%;
-      }
-    </style>
-
-    <div id="canvas">
-      <img id="image" src$="[[src]]" on-load="_init">
-      <dom-if if="[[controls]]">
-        <template>
-          <div id="toolbar">
-            <paper-icon-button on-click="_click" icon="zoom-out" data-action="zoom-out"></paper-icon-button>
-            <paper-icon-button
-              on-click="_click"
-              icon="[[_getFitIcon(_fitToRealSize)]]"
-              data-action$="[[_computeFitAction(_fitToRealSize)]]">
-            </paper-icon-button>
-            <paper-icon-button on-click="_click" icon="zoom-in" data-action="zoom-in"></paper-icon-button>
-            <paper-icon-button on-click="_click" icon="image:rotate-left" data-action="rotate-left"></paper-icon-button>
-            <paper-icon-button on-click="_click" icon="image:rotate-right" data-action="rotate-right">
-            </paper-icon-button>
-          </div>
-        </template>
-      </dom-if>
-    </div>
-  </template>
-
-  
-</dom-module>`;
-
-document.head.appendChild($_documentContainer.content);
 {
   /**
    * An element for viewing images.
@@ -161,6 +88,80 @@ document.head.appendChild($_documentContainer.content);
           value: false,
         },
       };
+    }
+
+    static get importMeta() {
+      return import.meta;
+    }
+
+    static get template() {
+      return html`
+        <link rel="stylesheet" href="/node_modules/cropperjs/dist/cropper.css">
+        <style>
+          :host {
+            display: block;
+            position: relative;
+          }
+
+          #canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+          }
+
+          #toolbar {
+            position: absolute;
+            bottom: 16px;
+            max-width: 300px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            z-index: 25;
+            text-align: center;
+            padding: 2px;
+            border-radius: 4px;
+            background-color: rgba(0, 0, 0, 0.5);
+          }
+
+          paper-icon-button {
+            width: 34px;
+            height: 34px;
+            color: white !important;
+            --paper-icon-button-ink-color: white;
+          }
+
+          #image {
+            display: none;
+            max-width: 100%;
+            max-height: 100%;
+          }
+        </style>
+
+        <div id="canvas">
+          <img id="image" src$="[[src]]" on-load="_init">
+          <dom-if if="[[controls]]">
+            <template>
+              <div id="toolbar">
+                <paper-icon-button on-click="_click" icon="zoom-out" data-action="zoom-out"></paper-icon-button>
+                <paper-icon-button
+                  on-click="_click"
+                  icon="[[_getFitIcon(_fitToRealSize)]]"
+                  data-action$="[[_computeFitAction(_fitToRealSize)]]">
+                </paper-icon-button>
+                <paper-icon-button on-click="_click" icon="zoom-in" data-action="zoom-in"></paper-icon-button>
+                <paper-icon-button on-click="_click" icon="image:rotate-left" data-action="rotate-left">
+                </paper-icon-button>
+                <paper-icon-button on-click="_click" icon="image:rotate-right" data-action="rotate-right">
+                </paper-icon-button>
+              </div>
+            </template>
+          </dom-if>
+        </div>
+      `;
     }
 
     ready() {
