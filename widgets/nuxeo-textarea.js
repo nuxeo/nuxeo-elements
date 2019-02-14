@@ -141,6 +141,15 @@ import '@polymer/paper-input/paper-textarea.js';
           value: false,
           reflectToAttribute: true,
         },
+
+        /**
+         * Invalid.
+         */
+        invalid: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+        },
       };
     }
 
