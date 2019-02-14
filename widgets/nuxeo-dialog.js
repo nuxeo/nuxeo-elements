@@ -44,6 +44,7 @@ import { Templatizer } from '@polymer/polymer/lib/legacy/templatizer-behavior.js
         @apply --nuxeo-dialog;
       }
 
+      :host > ::slotted(h2),
       :host > ::slotted(*) {
         margin-top: 16px;
       }
