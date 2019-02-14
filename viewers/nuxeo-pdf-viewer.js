@@ -41,22 +41,22 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
   class PDFViewer extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-        @apply --nuxeo-pdf-viewer-layout;
-      }
+        <style>
+          :host {
+            display: block;
+            @apply --nuxeo-pdf-viewer-layout;
+          }
 
-      iframe {
-        width: 100%;
-        height: 100%;
-        border: 0;
-        @apply --nuxeo-pdf-viewer-iframe;
-      }
-    </style>
+          iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            @apply --nuxeo-pdf-viewer-iframe;
+          }
+        </style>
 
-    <iframe src\$="[[_path(src)]]"></iframe>
-`;
+        <iframe src\$="[[_path(src)]]"></iframe>
+      `;
     }
 
     static get is() {
@@ -72,6 +72,10 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
           type: String,
         },
       };
+    }
+
+    static get importMeta() {
+      return import.meta;
     }
 
     _path(file) {
