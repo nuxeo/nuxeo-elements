@@ -23,7 +23,7 @@ limitations under the License.
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
-import '../nuxeo-i18n-behavior.js';
+import { XHRLocaleResolver } from '../nuxeo-i18n-behavior.js';
 import './nuxeo-demo-theme.js';
 
 RoutingBehavior.router = {

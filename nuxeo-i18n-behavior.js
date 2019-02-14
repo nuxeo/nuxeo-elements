@@ -129,7 +129,7 @@ export const I18nBehavior = {
   },
 
   refreshI18n() {
-    this.i18n = null;
+    // this.i18n = null;
     this.set('i18n', window.nuxeo.I18n.translate);
   },
 };

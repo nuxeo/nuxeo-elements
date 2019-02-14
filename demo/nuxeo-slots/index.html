@@ -20,20 +20,20 @@ limitations under the License.
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-    <script src="../../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
-
-    <!-- polymer elements -->
-    <script type="module" src="../../../../@polymer/polymer/polymer-legacy.js"></script>
-    <script type="module" src="../../../../@polymer/paper-listbox/paper-listbox.js"></script>
-    <script type="module" src="../../../../@polymer/paper-item/paper-item.js"></script>
-    <script type="module" src="../../../../@polymer/paper-toggle-button/paper-toggle-button.js"></script>
-
-    <!-- nuxeo elements -->
-    <script type="module" src="../nuxeo-demo.js"></script>
-    <script type="module" src="../../widgets/nuxeo-card.js"></script>
-    <script type="module" src="../../widgets/nuxeo-input.js"></script>
-    <script type="module" src="../../nuxeo-slots.js"></script>
-    <script type="module" src="./nuxeo-alert-button.js"></script>
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script type="module">
+      import '@polymer/polymer/polymer-legacy.js';
+      import '@polymer/paper-listbox/paper-listbox.js';
+      import '@polymer/paper-item/paper-item.js';
+      import '@polymer/paper-toggle-button/paper-toggle-button.js';
+      import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+      import '@nuxeo/nuxeo-elements/nuxeo-document.js';
+      import '../nuxeo-demo.js';
+      import '../../widgets/nuxeo-card.js';
+      import '../../widgets/nuxeo-input.js';
+      import '../../nuxeo-slots.js';
+      import './nuxeo-alert-button.js';
+    </script>
   </head>
 
   <body unresolved>
