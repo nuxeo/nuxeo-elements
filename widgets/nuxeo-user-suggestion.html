@@ -245,6 +245,9 @@ limitations under the License.
           if (item) {
             switch (item['entity-type']) {
               case 'user':
+                if (item.properties && item.properties.firstName && item.properties.lastName) {
+                  return `${item.properties.firstName} ${item.properties.lastName}`;
+                }
                 return item.id;
               case 'group':
                 return item.grouplabel ? item.grouplabel : item.groupname;
@@ -277,7 +280,11 @@ limitations under the License.
         }
 
         _idFunction(item) {
-          return this.prefixed ? item.prefixed_id : item.id;
+          if (this.prefixed) {
+            return item.prefixed_id ? item.prefixed_id : `${item['entity-type']}:${item.id}`;
+          } else {
+            return item.id;
+          }
         }
 
       }

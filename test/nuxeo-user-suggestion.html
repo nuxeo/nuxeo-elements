@@ -1,0 +1,103 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+<head>
+  <title>nuxeo-directory-widgets</title>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script>
+    // force use of polyfill: see ELEMENTS-56
+    window.fetch = null;
+  </script>
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../nuxeo-elements/test/test-helpers.js"></script>
+
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../iron-test-helpers/mock-interactions.html">
+  <link rel="import" href="../../nuxeo-elements/nuxeo-connection.html">
+  <link rel="import" href="../../nuxeo-elements/nuxeo-operation.html">
+  <link rel="import" href="../widgets/nuxeo-user-suggestion.html">
+</head>
+<body>
+  <test-fixture id="nx">
+    <template>
+      <nuxeo-connection url="/dummy"></nuxeo-connection>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="prefixed">
+    <template>
+        <nuxeo-user-suggestion multiple prefixed>
+        </nuxeo-user-suggestion>
+    </template>
+  </test-fixture>
+
+  <script>
+    suite('<nuxeo-user-suggestion>', () => {
+
+      test('prefixed mode intialization', () => {
+        const prefixedWidget = fixture('prefixed');
+        prefixedWidget.value = [
+          {
+            'entity-type': 'user',
+            extendedGroups: [
+              {
+                label: 'My awesome group',
+                name: 'awesome',
+                url: 'group/awesome',
+              },
+            ],
+            id: 'jdoe',
+            isAdministrator: false,
+            isAnonymous: false,
+            properties: {
+              company: 'nuxeo',
+              email: 'jdoe@nuxeo.com',
+              firstName: 'John',
+              groups: [
+                'awesome',
+              ],
+              lastName: 'Doe',
+              tenantId: null,
+              username: 'jdoe',
+            },
+          },
+          {
+            'entity-type': 'group',
+            grouplabel: 'Awesome group',
+            groupname: 'awesome',
+            id: 'awesome',
+            properties: {
+              description: 'Group of awesome users',
+              grouplabel: 'Awesome group',
+              groupname: 'awesome',
+              tenantId: null,
+            },
+          },
+        ];
+        return flush().then(() => {
+          const s2 = Polymer.dom(prefixedWidget.root).querySelector('#s2');
+          const items = Polymer.dom(s2.root).querySelectorAll('.selectivity-multiple-selected-item');
+          expect(items.length).to.be.equal(2);
+          expect(items[0].textContent).to.be.equal('John Doe');
+          expect(items[1].textContent).to.be.equal('Awesome group');
+        });
+      });
+
+    });
+  </script>
+</body>
