@@ -272,6 +272,9 @@ limitations under the License.
         }
 
         _selectionFormatter(doc) {
+          if (typeof doc === 'string') {
+            return `<span>${doc}</span>`;
+          }
           return `<a href="${this.urlFor('browse', doc.path)}">${doc.title}</a>`;
         }
 
@@ -320,11 +323,10 @@ limitations under the License.
         }
 
         _docIdFunction(doc) {
-          if (this.idProperty === 'ecm:uuid') {
-            return doc.uid;
-          } else {
-            return doc.properties[this.idProperty];
+          if (typeof doc === 'string') {
+            return doc;
           }
+          return this.idProperty === 'ecm:uuid' ? doc.uid : doc.properties[this.idProperty];
         }
 
       }
