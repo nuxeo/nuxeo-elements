@@ -84,7 +84,7 @@
     "@polymer/test-fixture": "^4.0.2",
     "@vaadin/vaadin-date-picker": "^3.0.0",
     "cropperjs": "1.0.0",
-    "d3": "3.5.17",
+    "d3": "^4.13.0",
     "moment": "2.23.0"
   },
   "husky": {

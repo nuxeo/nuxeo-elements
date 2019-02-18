@@ -23,8 +23,8 @@ import '@polymer/paper-spinner/paper-spinner-lite.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-import 'd3/d3.min.js';
-import 'randomcolor/randomColor.js';
+import * as d3 from 'd3';
+import { randomColor } from './randomColor.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
 {
@@ -555,15 +555,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         .attr('id', 'container')
         .attr('transform', `translate(${this.width / 2},${this.height / 2})`);
 
-      partition = d3.layout.partition()
-        .size([2 * Math.PI, radius * radius])
-        .value((d) => d.size);
+      partition = d3.partition()
+        .size([2 * Math.PI, radius * radius]);
 
-      arc = d3.svg.arc()
-        .startAngle((d) => d.x)
-        .endAngle((d) => d.x + d.dx)
-        .innerRadius((d) => Math.sqrt(d.y))
-        .outerRadius((d) => Math.sqrt(d.y + d.dy));
+      arc = d3.arc()
+        .startAngle((d) => d.x0)
+        .endAngle((d) => d.x1)
+        .innerRadius((d) => Math.sqrt(d.y0))
+        .outerRadius((d) => Math.sqrt(d.y1));
 
       this._createVisualization();
     }
@@ -598,14 +597,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Data join; key function combines name and depth (= position in sequence).
       const g = d3.select(dom(this.root).querySelector('#trail'))
         .selectAll('g')
-        .data(nodeArray, (d) => d.name + d.depth);
+        .data(nodeArray, (d) => d.data.name + d.data.depth);
 
       // Add breadcrumb and label for entering nodes.
       const entering = g.enter().append('svg:g');
 
       entering.append('svg:polygon')
         .attr('points', this._breadcrumbPoints)
-        .style('fill', (d) => d.color);
+        .style('fill', (d) => d.data.color);
 
       entering.append('svg:text')
         .attr('x', (b.w + b.t) / 2)
@@ -613,10 +612,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         .attr('dy', '0.35em')
         .attr('text-anchor', 'middle')
         .text((d) => {
-          if (d.name.length > 10) {
-            return `${d.name.substring(0, 9)}...`;
+          if (d.data.name.length > 10) {
+            return `${d.data.name.substring(0, 9)}...`;
           } else {
-            return d.name;
+            return d.data.name;
           }
         });
 
@@ -651,8 +650,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         .attr('r', radius)
         .style('opacity', 0);
 
+      // Turn the data into a d3 hierarchy and calculate the sums.
+      const root = d3.hierarchy(this._chartData)
+        .sum((d) => d.size)
+        .sort((c, d) => d.value - c.value);
+
       // For efficiency, filter nodes to keep only those large enough to see.
-      const nodes = partition.nodes(this._chartData).filter((d) => (d.dx > 0.005)); // 0.005 radians = 0.29 degrees
+      const nodes = partition(root).descendants().filter((d) => (d.x1 - d.x0 > 0.005)); // 0.005 radians = 0.29 degrees
 
       const path = vis.data([this._chartData]).selectAll('path')
         .data(nodes)
@@ -661,7 +665,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         .attr('display', (d) => (d.depth ? null : 'none'))
         .attr('d', arc)
         .attr('fill-rule', 'evenodd')
-        .style('fill', (d) => d.color)
+        .style('fill', (d) => d.data.color)
         .style('opacity', 1)
         .on('mouseover', this._mouseover.bind(this));
 
@@ -669,7 +673,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       d3.select(dom(this.root).querySelector('#container')).on('mouseleave', this._mouseleave);
 
       // Get total size of the tree = value of root node from partition.
-      this.totalSize = path.node().__data__.value;
+      this.totalSize = path.datum().value;
     }
 
     // Fade all but the current sequence, and show it in the breadcrumb trail.
