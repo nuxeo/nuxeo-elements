@@ -46,22 +46,19 @@ Used by `nuxeo-user-management`
     </div>
   </template>
 
-  <script type="module">
-    import { Polymer } from '@polymer/polymer/lib/legacy/polymer-fn.js';
-    import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
-    
+  <script>
     Polymer({
       is: 'nuxeo-view-user',
-      behaviors: [I18nBehavior],
+      behaviors: [Nuxeo.I18nBehavior],
       properties: {
         /**
          * The user object to be displayed.
          */
         user: {
           type: Object,
-          value: {},
-        },
-      },
+          value: {}
+        }
+      }
     });
   </script>
 </dom-module>

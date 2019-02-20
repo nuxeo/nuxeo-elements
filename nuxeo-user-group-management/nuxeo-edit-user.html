@@ -54,12 +54,10 @@ Used by `nuxeo-user-management` and `nuxeo-create-user`
 
   </template>
 
-  <script type="module">
-    import { Polymer } from '@polymer/polymer/lib/legacy/polymer-fn.js';
-    import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+  <script>
     Polymer({
       is: 'nuxeo-edit-user',
-      behaviors: [I18nBehavior],
+      behaviors: [Nuxeo.I18nBehavior],
       properties: {
         /**
          * The user object to be edited or created.
@@ -95,5 +93,5 @@ Used by `nuxeo-user-management` and `nuxeo-create-user`
         return item.displayLabel + ' (' + (item.groupname || item.username) + ')';
       }
     });
-    </script>
+  </script>
 </dom-module>
