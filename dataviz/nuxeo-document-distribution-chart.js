@@ -23,15 +23,17 @@ import '@polymer/paper-spinner/paper-spinner-lite.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-import * as d3 from 'd3';
+import { arc } from 'd3-shape';
+import { select, selectAll } from 'd3-selection';
+import { hierarchy, partition } from 'd3-hierarchy';
 import { randomColor } from './randomColor.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
 {
   let vis;
   let radius;
-  let partition;
-  let arc;
+  let _partition;
+  let _arc;
 
   // Breadcrumb dimensions: width, height, spacing, width of tip/tail.
   const b = {
@@ -548,17 +550,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         svg.parentNode.removeChild(svg);
       }
 
-      vis = d3.select(this.$.chart).append('svg:svg')
+      vis = select(this.$.chart).append('svg:svg')
         .attr('width', this.width)
         .attr('height', this.height)
         .append('svg:g')
         .attr('id', 'container')
         .attr('transform', `translate(${this.width / 2},${this.height / 2})`);
 
-      partition = d3.partition()
+      _partition = partition()
         .size([2 * Math.PI, radius * radius]);
 
-      arc = d3.arc()
+      _arc = arc()
         .startAngle((d) => d.x0)
         .endAngle((d) => d.x1)
         .innerRadius((d) => Math.sqrt(d.y0))
@@ -595,7 +597,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _updateBreadcrumbs(nodeArray, percentageString) {
 
       // Data join; key function combines name and depth (= position in sequence).
-      const g = d3.select(dom(this.root).querySelector('#trail'))
+      const g = select(dom(this.root).querySelector('#trail'))
         .selectAll('g')
         .data(nodeArray, (d) => d.data.name + d.data.depth);
 
@@ -626,7 +628,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       g.exit().remove();
 
       // Now move and update the percentage at the end.
-      d3.select(dom(this.root).querySelector('#trail').querySelector('#endlabel'))
+      select(dom(this.root).querySelector('#trail').querySelector('#endlabel'))
         .attr('x', (nodeArray.length + 0.5) * (b.w + b.s))
         .attr('y', b.h / 2)
         .attr('dy', '0.35em')
@@ -634,7 +636,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         .text(percentageString);
 
       // Make the breadcrumb trail visible, if it's hidden.
-      d3.select(dom(this.root).querySelector('#trail'))
+      select(dom(this.root).querySelector('#trail'))
         .style('visibility', '');
 
     }
@@ -651,26 +653,26 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         .style('opacity', 0);
 
       // Turn the data into a d3 hierarchy and calculate the sums.
-      const root = d3.hierarchy(this._chartData)
+      const root = hierarchy(this._chartData)
         .sum((d) => d.size)
         .sort((c, d) => d.value - c.value);
 
       // For efficiency, filter nodes to keep only those large enough to see.
-      const nodes = partition(root).descendants().filter((d) => (d.x1 - d.x0 > 0.005)); // 0.005 radians = 0.29 degrees
+      const nodes = _partition(root).descendants().filter((d) => (d.x1 - d.x0 > 0.005)); // 0.005 radians = 0.29 degrees
 
       const path = vis.data([this._chartData]).selectAll('path')
         .data(nodes)
         .enter()
         .append('svg:path')
         .attr('display', (d) => (d.depth ? null : 'none'))
-        .attr('d', arc)
+        .attr('d', _arc)
         .attr('fill-rule', 'evenodd')
         .style('fill', (d) => d.data.color)
         .style('opacity', 1)
         .on('mouseover', this._mouseover.bind(this));
 
       // Add the mouseleave handler to the bounding circle.
-      d3.select(dom(this.root).querySelector('#container')).on('mouseleave', this._mouseleave);
+      select(dom(this.root).querySelector('#container')).on('mouseleave', this._mouseleave);
 
       // Get total size of the tree = value of root node from partition.
       this.totalSize = path.datum().value;
@@ -685,19 +687,19 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         percentageString = '< 0.1%';
       }
 
-      d3.select(this.$.cl)
+      select(this.$.cl)
         .text(this._formatValue(d.value, true));
-      d3.select(this.$.clb)
+      select(this.$.clb)
         .text(`(${percentageString})`);
 
-      d3.select(this.$.ex)
+      select(this.$.ex)
         .style('visibility', '');
 
       const sequenceArray = this._getAncestors(d);
       this._updateBreadcrumbs(sequenceArray, percentageString);
 
       // Fade all the segments.
-      d3.selectAll(dom(this.root).querySelectorAll('#chart path'))
+      selectAll(dom(this.root).querySelectorAll('#chart path'))
         .style('opacity', 0.3);
 
       // Then highlight only those that are an ancestor of the current segment.
@@ -736,7 +738,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
 
       // Add the svg area.
-      const trail = d3.select(this.$.sequence).append('svg:svg')
+      const trail = select(this.$.sequence).append('svg:svg')
         .attr('width', '100%')
         .attr('height', 50)
         .attr('id', 'trail');
@@ -745,9 +747,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         .attr('id', 'endlabel')
         .style('fill', '#000');
 
-      d3.select(this.$.cl)
+      select(this.$.cl)
         .text('');
-      d3.select(this.$.clb)
+      select(this.$.clb)
         .text('');
     }
 
