@@ -74,11 +74,22 @@ import './alloy/alloy-ocean.js';
       };
     }
 
+    static get importMeta() {
+      return import.meta;
+    }
+
     connectedCallback() {
       super.connectedCallback();
-      setTimeout(() => {
-        this._init();
-      }, 100);
+      AlloyEditor._langResourceRequested = true; // skip loading of language file
+      const alloyI18Nscript = document.createElement('script');
+      alloyI18Nscript.async = true;
+      alloyI18Nscript.src = this.resolveUrl(`alloy/lang/alloy-editor/${CKEDITOR.config.language}.js`);
+      document.head.appendChild(alloyI18Nscript);
+      alloyI18Nscript.onload = () => {
+        setTimeout(() => {
+          this._init();
+        }, 100);
+      };
     }
 
     _init() {
