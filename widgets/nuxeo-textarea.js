@@ -64,13 +64,14 @@ import '@polymer/paper-input/paper-textarea.js';
       id="paperTextarea"
       name="[[name]]"
       value="{{value}}"
-      rows\$="[[rows]]"
-      required\$="[[required]]"
-      disabled\$="[[disabled]]"
-      readonly\$="[[readonly]]"
+      rows$="[[rows]]"
+      required$="[[required]]"
+      disabled$="[[disabled]]"
+      readonly$="[[readonly]]"
       error-message="[[errorMessage]]"
-      validator\$="[[validator]]"
-      invalid\$="[[invalid]]"
+      validator$="[[validator]]"
+      placeholder$="[[placeholder]]"
+      invalid$="[[invalid]]"
       no-label-float>
     </paper-textarea>
 `;
