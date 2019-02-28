@@ -20,7 +20,7 @@ import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { enqueueDebouncer } from '@polymer/polymer/lib/utils/flush.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { templatize } from '@polymer/polymer/lib/utils/templatize.js';
-import { microTask } from '@polymer/polymer/lib/utils/async.js';
+import { idlePeriod } from '@polymer/polymer/lib/utils/async.js';
 
 // global slot registry
 const REGISTRY = {};
@@ -197,7 +197,7 @@ window.nuxeo.slots.setSharedModel = ((model) => {
 
     _updateContent() {
       this.__renderDebouncer = Debouncer.debounce(
-        this.__renderDebouncer, microTask,
+        this.__renderDebouncer, idlePeriod,
         () => {
           this._clearContent();
           this._render();
