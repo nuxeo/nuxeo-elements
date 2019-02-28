@@ -22,6 +22,17 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { Templatizer } from '@polymer/polymer/lib/legacy/templatizer-behavior.js';
+import { IronOverlayManager } from '@polymer/iron-overlay-behavior/iron-overlay-manager.js';
+
+// ELEMENTS-884 - fix backdrops
+// revert https://github.com/PolymerElements/iron-overlay-behavior/commit/ac1cb
+IronOverlayManager._overlayWithBackdrop = function () {
+  for (let i = 0; i < this._overlays.length; i++) {
+    if (this._overlays[i].withBackdrop) {
+      return this._overlays[i];
+    }
+  }
+};
 
 {
   /**

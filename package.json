@@ -53,6 +53,7 @@
     "@polymer/iron-input": "^3.0.1",
     "@polymer/iron-list": "^3.0.0",
     "@polymer/iron-meta": "^3.0.1",
+    "@polymer/iron-overlay-behavior": "^3.0.2",
     "@polymer/iron-pages": "^3.0.0",
     "@polymer/iron-resizable-behavior": "^3.0.1",
     "@polymer/iron-scroll-threshold": "^3.0.0",
