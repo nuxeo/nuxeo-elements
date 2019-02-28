@@ -30,7 +30,11 @@ function timePasses(ms) {
 const flushCb = window.flush;
 window.flush = () => new Promise((resolve) => {
   flushCb(() => {
-    resolve();
+    if (window.requestIdleCallback) {
+      window.requestIdleCallback(() => resolve());
+    } else {
+      window.setTimeout(() => resolve(), 16);
+    }
   });
 });
 
