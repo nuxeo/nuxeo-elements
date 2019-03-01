@@ -1,0 +1,48 @@
+{
+  "plugins": {
+    "istanbul": {
+      "dir": "./coverage",
+      "reporters": ["text-summary", "lcov"],
+      "include": [
+        "**/nuxeo-ui-elements/*.html"
+      ],
+      "exclude": []
+    },
+    "sauce": {
+      "disabled": true,
+      "browsers": [
+        {
+          "browserName": "chrome",
+          "platform": "Windows 10",
+          "version": "latest"
+        },
+        {
+          "browserName": "firefox",
+          "platform": "Windows 10",
+          "version": "latest"
+        },
+        {
+          "browserName": "microsoftedge",
+          "platform": "Windows 10",
+          "version": "latest"
+        },
+        {
+          "browserName": "safari",
+          "platform": "macOS 10.13",
+          "version": "latest"
+        },
+        {
+          "browserName": "ipad",
+          "platform": "iOS 11.3"
+        },
+        {
+          "browserName": "chrome",
+          "platform": "android",
+          "version": "7.1",
+          "deviceName": "Android GoogleAPI Emulator",
+          "deviceType": "tablet"
+        }
+      ]
+    }
+  }
+}

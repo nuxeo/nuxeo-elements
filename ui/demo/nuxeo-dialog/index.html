@@ -1,0 +1,77 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+  <head>
+    <title>nuxeo-dialog</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script type="module">
+      import '@polymer/polymer/polymer-legacy.js';
+      import '@polymer/paper-button/paper-button.js';
+      import '../nuxeo-demo.js';
+      import '../../widgets/nuxeo-dialog.js';
+    </script>
+  </head>
+
+  <body unresolved>
+    <dom-bind>
+      <template>
+
+        <nuxeo-demo-section heading="Simple dialog" size="small">
+          <paper-button primary toggles active="{{dialogOpened1}}" noink>OPEN DIALOG</paper-button>
+          <nuxeo-dialog opened="{{dialogOpened1}}" with-backdrop>
+            <h2>Simple dialog</h2>
+            <div>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+              sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+              reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+            </div>
+            <div class="buttons">
+              <paper-button dialog-dismiss noink>DISMISS</paper-button>
+              <paper-button dialog-confirm noink primary>CONFIRM</paper-button>
+            </div>
+          </nuxeo-dialog>
+        </nuxeo-demo-section>
+
+        <nuxeo-demo-section heading="Simple dialog (with lazy loaded template)" size="small">
+          <paper-button primary toggles active="{{dialogOpened2}}" noink>OPEN DIALOG</paper-button>
+          <nuxeo-dialog opened="{{dialogOpened2}}" with-backdrop>
+            <template>
+              <h2>Simple dialog (with lazy loaded template)</h2>
+              <div>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+                sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+                reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+              </div>
+              <div class="buttons">
+                <paper-button dialog-dismiss noink>DISMISS</paper-button>
+                <paper-button dialog-confirm noink primary>CONFIRM</paper-button>
+              </div>
+            </template>
+          </nuxeo-dialog>
+        </nuxeo-demo-section>
+
+      </template>
+    </dom-bind>
+  </body>
+</html>

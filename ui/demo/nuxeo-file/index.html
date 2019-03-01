@@ -1,0 +1,55 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+  <head>
+    <title>nuxeo-file</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script type="module">
+      import '@polymer/polymer/polymer-legacy.js';
+      import '../nuxeo-demo.js';
+      import '../../widgets/nuxeo-file.js';
+    </script>
+  </head>
+
+  <body unresolved>
+    <dom-bind>
+      <template>
+
+        <nuxeo-connection id="nx" url="http://localhost:8080/nuxeo"></nuxeo-connection>
+
+        <nuxeo-demo-section heading="File upload button multiple" size="small">
+          <nuxeo-file value="{{upload}}" multiple></nuxeo-file>
+          <div>[[upload.upload-batch]]</div>
+        </nuxeo-demo-section>
+
+        <nuxeo-demo-section heading="File upload button required invalid" size="small">
+          <nuxeo-file value="{{uploadSingle}}" required invalid error-message="Upload a file please!"></nuxeo-file>
+          <br/>
+          <small><i>The widget stays invalid for demo purpose</i></small>
+        </nuxeo-demo-section>
+
+        <nuxeo-demo-section heading="File upload button readonly" size="small">
+          <nuxeo-file readonly empty-label="No files"></nuxeo-file>
+        </nuxeo-demo-section>
+
+      </template>
+    </dom-bind>
+  </body>
+</html>

@@ -1,0 +1,443 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+<head>
+  <title>nuxeo-filter tests</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script src="../../../@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+  <script src="../../../wct-browser-legacy/browser.js"></script>
+  <script src="../../../@nuxeo/nuxeo-elements/test/test-helpers.js"></script>
+</head>
+<body>
+
+<div id="emptyFilter">
+  <nuxeo-filter></nuxeo-filter>
+  <nuxeo-filter><template></template></nuxeo-filter>
+</div>
+
+<div id="facetFilter">
+  <!-- single -->
+  <nuxeo-filter document='{"facets":["Folderish"]}' facet="Folderish">
+    <template>
+      <div class="ok"></div>
+    </template>
+  </nuxeo-filter>
+  <nuxeo-filter document='{"facets":["Folderish"]}' facet="Commentable">
+    <template>
+      <div class="notok"></div>
+    </template>
+  </nuxeo-filter>
+
+  <!-- multiple -->
+  <nuxeo-filter document='{"facets":["Folderish"]}' facet="Folderish, Commentable">
+    <template>
+      <div class="ok"></div>
+    </template>
+  </nuxeo-filter>
+  <nuxeo-filter document='{"facets":["Commentable"]}' facet="Folderish,Commentable,Versionable">
+    <template>
+      <div class="ok"></div>
+    </template>
+  </nuxeo-filter>
+  <nuxeo-filter document='{"facets":[]}' facet="Folderish,Commentable">
+    <template>
+      <div class="notok"></div>
+    </template>
+  </nuxeo-filter>
+</div>
+
+<div id="typeFilter">
+  <nuxeo-filter document='{"type":"Folder"}' type="Folder">
+    <template>
+      <div class="ok"></div>
+    </template>
+  </nuxeo-filter>
+  <nuxeo-filter document='{"type":"Folder"}' type="File">
+    <template>
+      <div class="notok"></div>
+    </template>
+  </nuxeo-filter>
+  <nuxeo-filter document='{"type":"Folder"}' type="Folder,File">
+    <template>
+      <div class="ok"></div>
+    </template>
+  </nuxeo-filter>
+</div>
+
+<div id="permissionFilter">
+  <nuxeo-filter document='{"contextParameters":{"permissions":["Write"]}}' permission="Write">
+    <template>
+      <div class="ok"></div>
+    </template>
+  </nuxeo-filter>
+  <nuxeo-filter document='{"contextParameters":{"permissions":["Read"]}}' permission="Write">
+    <template>
+      <div class="notok"></div>
+    </template>
+  </nuxeo-filter>
+</div>
+
+<div id="stateFilter">
+  <nuxeo-filter document='{"state":"project"}' state="project">
+    <template>
+      <div class="ok"></div>
+    </template>
+  </nuxeo-filter>
+  <nuxeo-filter document='{"state":"project"}' state="deleted">
+    <template>
+      <div class="notok"></div>
+    </template>
+  </nuxeo-filter>
+</div>
+
+<div id="pathFilter">
+  <nuxeo-filter document='{"path":"/default-domain/workspaces/"}' path="/default-domain">
+    <template>
+      <div class="ok"></div>
+    </template>
+  </nuxeo-filter>
+  <nuxeo-filter document='{"path":"/default-domain/workspaces/"}' path="/another-domain">
+    <template>
+      <div class="notok"></div>
+    </template>
+  </nuxeo-filter>
+</div>
+
+<div id="groupFilter">
+  <nuxeo-filter user='{"extendedGroups":[{"name":"Administrators"}]}' group="Administrators">
+    <template>
+      <div class="ok"></div>
+    </template>
+  </nuxeo-filter>
+
+  <nuxeo-filter user='{"extendedGroups":[{"name":"Members"}]}' group="Administrators">
+    <template>
+      <div class="notok"></div>
+    </template>
+  </nuxeo-filter>
+
+  <nuxeo-filter user='{"extendedGroups":[{"name":"Members"}]}' group="Administrators,Members">
+    <template>
+      <div class="ok"></div>
+    </template>
+  </nuxeo-filter>
+
+</div>
+
+<div id="expressionFilter">
+  <nuxeo-filter document='{"title":"Title"}' expression="document.title === 'Title'">
+    <template>
+      <div class="ok"></div>
+    </template>
+  </nuxeo-filter>
+
+  <nuxeo-filter document='{"title":"Title"}' expression="document.title !== 'Title'">
+    <template>
+      <div class="notok"></div>
+    </template>
+  </nuxeo-filter>
+
+  <nuxeo-filter document='{"type":"File", "title":"Title"}' expression="document.type === 'File' && document.title == 'Title'">
+    <template>
+      <div class="ok"></div>
+    </template>
+  </nuxeo-filter>
+
+  <nuxeo-filter document='{"facets":["Folderish","Commentable"]}' expression="document.facets.indexOf('Folderish') !== -1">
+    <template>
+      <div class="ok"></div>
+    </template>
+  </nuxeo-filter>
+</div>
+
+<div id="trashFilter">
+  <nuxeo-filter document='{"title":"Title", "state": "project"}' expression="!this.isTrashed(document)">
+    <template>
+      <div class="notDeletedTrashUndefined trashFilter"></div>
+    </template>
+  </nuxeo-filter>
+  <nuxeo-filter document='{"title":"Title", "state": "deleted"}' expression="this.isTrashed(document)">
+    <template>
+      <div class="deletedTrashUndefined trashFilter"></div>
+    </template>
+  </nuxeo-filter>
+  <nuxeo-filter document='{"title":"Title", "state": "project", "isTrashed": false}' expression="!this.isTrashed(document)">
+    <template>
+      <div class="notDeletedTrashFalse trashFilter"></div>
+    </template>
+  </nuxeo-filter>
+  <nuxeo-filter document='{"title":"Title", "state": "project", "isTrashed": true}' expression="this.isTrashed(document)">
+    <template>
+      <div class="notDeletedTrashTrue trashFilter"></div>
+    </template>
+  </nuxeo-filter>
+  <nuxeo-filter document='{"title":"Title", "state": "deleted", "isTrashed": false}' expression="!this.isTrashed(document)">
+    <template>
+      <div class="deletedTrashFalse trashFilter"></div>
+    </template>
+  </nuxeo-filter>
+  <nuxeo-filter document='{"title":"Title", "state": "deleted", "isTrashed": true}' expression="this.isTrashed(document)">
+    <template>
+      <div class="deletedTrashTrue trashFilter"></div>
+    </template>
+  </nuxeo-filter>
+</div>
+
+<div id="multipleFilter">
+  <nuxeo-filter document='{"type":"File", "title":"Title"}' expression="document.title === 'Title'">
+    <template>
+      <div class="ok"></div>
+    </template>
+  </nuxeo-filter>
+
+  <nuxeo-filter document='{"type":"File", "title":"Title"}' expression="document.title !== 'Title'">
+    <template>
+      <div class="notok"></div>
+    </template>
+  </nuxeo-filter>
+
+  <nuxeo-filter document='{"type":"File"}' type="File" user='{"extendedGroups":[{"name":"Administrators"}]}' group="Administrators">
+    <template>
+      <div class="ok"></div>
+    </template>
+  </nuxeo-filter>
+
+  <nuxeo-filter document='{"type":"File"}' type="File" user='{"extendedGroups":[]}' group="Administrators">
+    <template>
+      <div class="notok"></div>
+    </template>
+  </nuxeo-filter>
+
+  <nuxeo-filter document='{"type":"File", "title":"Title", "facets":["Folderish"]}' type="File" facet="Folderish" expression="document.title === 'Title'">
+    <template>
+      <div class="ok"></div>
+    </template>
+  </nuxeo-filter>
+</div>
+
+<div id="removalContainer">
+  <nuxeo-filter>
+    <template>
+      <div class="toRemove"></div>
+    </template>
+  </nuxeo-filter>
+</div>
+
+<test-fixture id="mySlotContent">
+  <template>
+    <dom-module id="my-custom-element">
+      <template>
+        <span id="label">[[label]]</span>
+      </template>
+      <script>
+        {
+          class CustomElement extends Nuxeo.Element {
+            static get is() { return 'my-custom-element'; }
+            static get properties() {
+              return {
+                label: {
+                  type: String,
+                  value: 'default',
+                },
+              };
+            }
+          }
+          customElements.define(CustomElement.is, CustomElement);
+        }
+      </script>
+    </dom-module>
+
+    <nuxeo-slot-content id='slot' name="test" slot="TEST_SLOT" order="1" model>
+      <template>
+        <nuxeo-filter document="[[document]]" type="Folder">
+          <template>
+            <my-custom-element class="custom" document="[[document]]" label="[[text]]"></my-custom-element>
+          </template>
+        </nuxeo-filter>
+      </template>
+    </nuxeo-slot-content>
+  </template>
+</test-fixture>
+
+<test-fixture id="customElementsAndBehaviorsContainer">
+  <template>
+    <div>
+      <nuxeo-slot slot="TEST_SLOT" model='{"document": {"type": "Folder"}, "text": "A simple test"}'></nuxeo-slot>
+    </div>
+  </template>
+</test-fixture>
+
+<div id="domHostData">
+  <dom-bind>
+    <template>
+      <nuxeo-filter document='{"type":"File"}' type="Folder">
+        <template>
+          <span class="text">[[text]]</span>
+        </template>
+      </nuxeo-filter>
+    </template>
+  </dom-bind>
+</div>
+
+<script type="module">
+  import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
+  import '@polymer/polymer/polymer-legacy.js';
+  import '../nuxeo-filter.js';
+  import '../nuxeo-slots.js';
+  /* eslint-disable no-unused-expressions */
+
+  suite('<nuxeo-filter>', () => {
+
+    function stamped(filter, clazz) {
+      return dom(filter).querySelectorAll(`${clazz || '*'}:not(nuxeo-filter):not(template)`);
+    }
+
+    function stampedOnShadowRoot(filter, clazz) {
+      return dom(filter).node.shadowRoot.querySelectorAll(`${clazz || '*'}:not(nuxeo-filter):not(template)`);
+    }
+
+    /* global emptyFilter */
+    test('empty filter', () => {
+      expect(stamped(emptyFilter)).to.be.empty;
+    });
+
+    /* global facetFilter */
+    test('facet filter', () => {
+      expect(stamped(facetFilter, '.ok').length).to.be.equal(3);
+      expect(stamped(facetFilter, 'notok')).to.be.empty;
+    });
+
+    /* global typeFilter */
+    test('type filter', () => {
+      expect(stamped(typeFilter, '.ok').length).to.be.equal(2);
+      expect(stamped(typeFilter, 'notok')).to.be.empty;
+    });
+
+    /* global permissionFilter */
+    test('permission filter', () => {
+      expect(stamped(permissionFilter, '.ok').length).to.be.equal(1);
+      expect(stamped(permissionFilter, 'notok')).to.be.empty;
+    });
+
+    /* global stateFilter */
+    test('state filter', () => {
+      expect(stamped(stateFilter, '.ok').length).to.be.equal(1);
+      expect(stamped(stateFilter, 'notok')).to.be.empty;
+    });
+
+    /* global pathFilter */
+    test('path filter', () => {
+      expect(stamped(pathFilter, '.ok').length).to.be.equal(1);
+      expect(stamped(pathFilter, 'notok')).to.be.empty;
+    });
+
+    /* global groupFilter */
+    test('user group filter', () => {
+      expect(stamped(groupFilter, '.ok').length).to.be.equal(2);
+      expect(stamped(groupFilter, 'notok')).to.be.empty;
+    });
+
+    /* global expressionFilter */
+    test('expression filter', () => {
+      expect(stamped(expressionFilter, '.ok').length).to.be.equal(3);
+      expect(stamped(expressionFilter, 'notok')).to.be.empty;
+    });
+
+    /* global trashFilter */
+    test('trashed expression filter', () => {
+      expect(stamped(trashFilter, '.trashFilter').length).to.be.equal(6);
+      expect(stamped(trashFilter, '.notDeletedTrashUndefined').length).to.be.equal(1);
+      expect(stamped(trashFilter, '.deletedTrashUndefined').length).to.be.equal(1);
+      expect(stamped(trashFilter, '.notDeletedTrashFalse').length).to.be.equal(1);
+      expect(stamped(trashFilter, '.notDeletedTrashTrue').length).to.be.equal(1);
+      expect(stamped(trashFilter, '.deletedTrashFalse').length).to.be.equal(1);
+      expect(stamped(trashFilter, '.deletedTrashTrue').length).to.be.equal(1);
+    });
+
+    /* global multipleFilter */
+    test('multiple filters', () => {
+      expect(stamped(multipleFilter, '.ok').length).to.be.equal(3);
+      expect(stamped(multipleFilter, 'notok')).to.be.empty;
+    });
+
+    /* global removalContainer */
+    test('filter removal', () => {
+      expect(stamped(removalContainer, '.toRemove').length).to.be.equal(1);
+      const filter = dom(removalContainer).querySelector('nuxeo-filter');
+      removalContainer.removeChild(filter);
+      expect(stamped(removalContainer, '.toRemove').length).to.be.equal(0);
+    });
+
+    /* global customElementsAndBehaviorsContainer */
+    test('filter custom elements', () => {
+      fixture('customElementsAndBehaviorsContainer');
+      document.getElementById('mySlotContent').create();
+      let myElement;
+      let slot;
+      return flush().then(() => {
+        const stampedElements = stamped(customElementsAndBehaviorsContainer, '.custom');
+        expect(stampedElements.length).to.be.equal(1);
+        myElement = stampedElements[0];
+        expect(stampedOnShadowRoot(myElement, '#label').length).to.be.equal(1);
+        expect(myElement.label).to.be.equal('A simple test');
+        slot = stamped(customElementsAndBehaviorsContainer, 'nuxeo-slot')[0];
+        slot.set('model', {document: {type: 'File'}, text: 'A simple test'});
+        return flush();
+      }).then(() => {
+        expect(stampedOnShadowRoot(myElement, '#label').length).to.be.equal(1);
+        slot.set('model', {document: {type: 'Folder'}, text: 'A simple test'});
+        return flush();
+      }).then(() => {
+        myElement = stamped(customElementsAndBehaviorsContainer, '.custom')[0];
+        expect(stampedOnShadowRoot(myElement, '#label').length).to.be.equal(1);
+        expect(myElement.label).to.be.equal('A simple test');
+      });
+    });
+
+    /* global domHostData */
+    test('text should be set', () => {
+      const filter = dom(domHostData).querySelector('nuxeo-filter');
+      expect(stamped(domHostData, '.text').length).to.be.equal(0);
+      filter.set('__dataHost', {});
+      filter.set('__dataHost.__data', {text: 'is this working?'});
+      filter.set('document', {type: 'Folder'});
+      return flush().then(() => {
+        const span = stamped(domHostData, '.text');
+        expect(span.length).to.be.equal(1);
+        expect(span[0].innerHTML).to.be.equal('is this working?');
+      });
+    });
+    test('text should be undefined', () => {
+      const filter = dom(domHostData).querySelector('nuxeo-filter');
+      filter.set('__dataHost', {});
+      filter.set('document', {type: 'File'});
+      return flush().then(() => {
+        expect(stamped(domHostData, '.text').length).to.be.equal(0);
+        filter.set('document', {type: 'Folder'});
+        return flush().then(() => {
+          const span = stamped(domHostData, '.text');
+          expect(span.length).to.be.equal(1);
+          expect(span[0].innerHTML).to.be.equal(' ');
+        });
+      });
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+<head>
+  <title>nuxeo-selectivity</title>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script src="../../../@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+  <script src="../../../wct-browser-legacy/browser.js"></script>
+  <script src="../../../@nuxeo/nuxeo-elements/test/test-helpers.js"></script>
+</head>
+<body>
+  <test-fixture id="selectivity">
+    <template>
+      <nuxeo-selectivity
+        placeholder="No city selected"
+        allow-clear>
+      </nuxeo-selectivity>
+    </template>
+  </test-fixture>
+
+  <script type="module">
+    import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
+    import '@polymer/polymer/polymer-legacy.js';
+    import '@polymer/iron-test-helpers/mock-interactions.js';
+    import '../widgets/nuxeo-selectivity.js';
+
+    suite('Given I have a selectivity widget', () => {
+      let selectivityWidget;
+      const data = [
+        'Berlin',
+        'Lisbon',
+        'London',
+        'Rennes',
+        'Rome',
+      ];
+      setup(() => {
+        selectivityWidget = fixture('selectivity');
+        selectivityWidget.data = data;
+      });
+
+      test('Its value can be set programmatically multiple times', () => {
+        let i;
+        const getSelectedItem = () =>
+          dom(selectivityWidget.root).querySelector('.selectivity-single-selected-item');
+        const resetValue = () =>
+          dom(selectivityWidget.root).querySelector('a.selectivity-single-selected-item-remove').click();
+        for (i = 0; i < data.length; i++) {
+          selectivityWidget.value = data[i];
+          const item = getSelectedItem();
+          expect(item).not.to.be.equal(null);
+          expect(item.textContent).to.be.equal(data[i]);
+          resetValue();
+          expect(getSelectedItem()).to.be.equal(null);
+        }
+      });
+    });
+  </script>
+</body>

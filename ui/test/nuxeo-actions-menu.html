@@ -1,0 +1,290 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+<head>
+  <title>nuxeo-actions-menu tests</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script src="../../../@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+  <script src="../../../wct-browser-legacy/browser.js"></script>
+  <script src="../../../@nuxeo/nuxeo-elements/test/test-helpers.js"></script>
+</head>
+<body>
+
+<test-fixture id="nx">
+  <template>
+    <nuxeo-connection url="/dummy"></nuxeo-connection>
+  </template>
+</test-fixture>
+
+<test-fixture id="menu3">
+    <template>
+      <div style="max-width: 160px;">
+        <nuxeo-actions-menu>
+          <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+          <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+          <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        </nuxeo-actions-menu>
+      </div>
+    </template>
+  </test-fixture>
+
+<test-fixture id="menu5">
+  <template>
+    <div style="max-width: 160px;">
+      <nuxeo-actions-menu>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+      </nuxeo-actions-menu>
+    </div>
+  </template>
+</test-fixture>
+
+
+<test-fixture id="menu4">
+  <template>
+    <div style="max-width: 160px;">
+      <nuxeo-actions-menu>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+      </nuxeo-actions-menu>
+    </div>
+  </template>
+</test-fixture>
+
+<test-fixture id="menuSlotted">
+  <template>
+    <div style="max-width: 160px;">
+      <nuxeo-actions-menu>
+        <nuxeo-slot slot="SLOT"></nuxeo-slot>
+      </nuxeo-actions-menu>
+    </div>
+  </template>
+</test-fixture>
+
+<test-fixture id="menuSlottedContent1">
+  <template>
+    <nuxeo-slot-content name="content" slot="SLOT">
+      <template>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+      </template>
+    </nuxeo-slot-content>
+  </template>
+</test-fixture>
+  
+<test-fixture id="menuSlottedContent2">
+  <template>
+    <nuxeo-slot-content name="content" slot="SLOT">
+      <template>
+        <nuxeo-test-button icon="icons:home"></nuxeo-test-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+        <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+      </template>
+    </nuxeo-slot-content>
+  </template>
+</test-fixture>
+
+<test-fixture id="contribution">
+  <template>
+    <dom-module id="nuxeo-test-button">
+      <template>
+        <style include="nuxeo-action-button-styles"></style>
+        <div class="action">
+          <paper-icon-button icon="[[icon]]"></paper-icon-button>
+          <span class="label" hidden$="[[!showLabel]]">Label</span>
+        </div>
+      </template>
+      <script>
+        {
+          class TestButton extends Nuxeo.Element {
+            static get is() { return 'nuxeo-test-button'; }
+            static get properties() {
+              return {
+                icon: String,
+                showLabel: {
+                  type: Boolean,
+                  value: false,
+                },
+              };
+            }
+          }
+          customElements.define(TestButton.is, TestButton);
+        }
+      </script>
+    </dom-module>
+  </template>
+</test-fixture>
+
+<script type="module">
+  import '@polymer/polymer/polymer-legacy.js';
+  import { flush as flush$0 } from '@polymer/polymer/lib/legacy/polymer.dom.js';
+  import '@polymer/iron-test-helpers/mock-interactions.js';
+  import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+  import '@polymer/paper-icon-button/paper-icon-button.js';
+  import '../nuxeo-slots.js';
+  import '../actions/nuxeo-action-button-styles.js';
+  import '../actions/nuxeo-preview-button.js';
+  import '../widgets/nuxeo-actions-menu.js';
+
+  /* eslint-disable no-unused-expressions */
+  suite('<nuxeo-actions-menu>', () => {
+    let server;
+
+    setup(() => {
+      server = sinon.fakeServer.create();
+      server.autoRespond = true;
+      const nx = fixture('nx');
+      return login(server, nx);
+    });
+
+    test('menu for 4 with 3 elements', () => {
+      const menu = fixture('menu3');
+      flush$0(menu);
+      return flush().then(() => {
+        expect(menuActions(menu).length).to.be.equal(3);
+        expect(dropdownActions(menu).length).to.be.equal(0);
+        expect(dropdownButton(menu).hidden).to.be.true;
+      });
+    });
+
+    test('menu for 4 with 5 elements', () => {
+      const menu = fixture('menu5');
+      return flush().then(() => {
+        expect(menuActions(menu).length).to.be.equal(3);
+        expect(dropdownActions(menu).length).to.be.equal(2);
+        expect(dropdownButton(menu).hidden).to.be.false;
+      });
+    });
+
+    test('menu of 4 with 4 elements (no dropdown button should be visible)', () => {
+      const menu = fixture('menu4');
+      return flush().then(() => {
+        expect(menuActions(menu).length).to.be.equal(4);
+        expect(dropdownActions(menu).length).to.be.equal(0);
+        expect(dropdownButton(menu).hidden).to.be.true;
+      });
+    });
+
+    test('menu of 4 with varying number of elements', () => {
+      const menu = fixture('menu4');
+      return flush()
+        .then(() => {
+          expect(menuActions(menu).length).to.be.equal(4);
+          expect(dropdownActions(menu).length).to.be.equal(0);
+          expect(dropdownButton(menu).hidden).to.be.true;
+          removeAction(menu);
+          return flush();
+        })
+        .then(() => {
+          expect(menuActions(menu).length).to.be.equal(3);
+          expect(dropdownActions(menu).length).to.be.equal(0);
+          expect(dropdownButton(menu).hidden).to.be.true;
+          addAction(menu);
+          return flush();
+        })
+        .then(() => {
+          expect(menuActions(menu).length).to.be.equal(4);
+          expect(dropdownActions(menu).length).to.be.equal(0);
+          expect(dropdownButton(menu).hidden).to.be.true;
+          addAction(menu);
+          return flush();
+        })
+        .then(() => {
+          expect(menuActions(menu).length).to.be.equal(3);
+          expect(dropdownActions(menu).length).to.be.equal(2);
+          expect(dropdownButton(menu).hidden).to.be.false;
+          removeAction(menu);
+          return flush();
+        })
+        .then(() => {
+          expect(menuActions(menu).length).to.be.equal(4);
+          expect(dropdownActions(menu).length).to.be.equal(0);
+          expect(dropdownButton(menu).hidden).to.be.true;
+          return flush();
+        });
+    });
+
+    test('menu with slotted content', () => {
+      const menu = fixture('menuSlotted');
+      return flush()
+        .then(() => {
+          fixture('menuSlottedContent1');
+          return flush();
+        })
+        .then(() => {
+          expect(menuActions(menu).length).to.be.equal(3);
+          expect(dropdownActions(menu).length).to.be.equal(2);
+          expect(dropdownButton(menu).hidden).to.be.false;
+        });
+    });
+
+    test('menu with unresolved slotted content', () => {
+      const menu = fixture('menuSlotted');
+      return flush()
+        .then(() => {
+          fixture('menuSlottedContent2');
+          return flush().then(() => {
+            fixture('contribution');
+            return customElements.whenDefined('nuxeo-test-button');
+          });
+        })
+        .then(() => {
+          expect(menuActions(menu).length).to.be.equal(3);
+          expect(dropdownActions(menu).length).to.be.equal(3);
+          expect(dropdownButton(menu).hidden).to.be.false;
+        });
+    });
+
+    function menuActions(div) {
+      return div.querySelector('nuxeo-actions-menu').querySelectorAll(':not([slot="dropdown"]):not(nuxeo-slot)');
+    }
+
+    function dropdownActions(div) {
+      return div.querySelector('nuxeo-actions-menu').querySelectorAll('[slot="dropdown"]:not(nuxeo-slot)');
+    }
+
+    function dropdownButton(div) {
+      return div.querySelector('nuxeo-actions-menu').$.dropdownButton;
+    }
+
+    function removeAction(div) {
+      const menu = div.querySelector('nuxeo-actions-menu');
+      const lastChild = menu.lastElementChild;
+      menu.removeChild(lastChild);
+    }
+
+    function addAction(div) {
+      const menu = div.querySelector('nuxeo-actions-menu');
+      const action = document.createElement('nuxeo-preview-button');
+      action.document = '{ "entity-type": "document", "facets": [] }';
+      menu.appendChild(action);
+    }
+  });
+</script>

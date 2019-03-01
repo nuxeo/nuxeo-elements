@@ -1,0 +1,101 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+  <head>
+    <title>nuxeo-operation-button</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+  </head>
+
+  <body>
+    <dom-bind>
+      <template>
+
+        <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
+
+        <nuxeo-document auto id="doc" headers='{"fetch.document": "lock,properties"}' doc-path="[[docpath]]" response="{{document}}"></nuxeo-document>
+
+        <nuxeo-demo-section heading="Custom operation button" size="small">
+          <nuxeo-path-suggestion label="Path of the document" value="{{docpath}}"></nuxeo-path-suggestion>
+
+          <template is="dom-if" if="[[!document.lockCreated]]">
+            <nuxeo-operation-button
+              icon="nuxeo:lock"
+              label="Lock"
+              operation="Document.Lock"
+              input="[[docpath]]"
+              notification="Document locked"
+              event="document-updated">
+            </nuxeo-operation-button>
+          </template>
+
+          <template is="dom-if" if="[[document.lockCreated]]">
+            <nuxeo-operation-button
+              icon="nuxeo:unlock"
+              label="Unlock"
+              operation="Document.Unlock"
+              input="[[docpath]]"
+              notification="Document unlocked"
+              event="document-updated">
+            </nuxeo-operation-button>
+          </template>
+
+          <template is="dom-if" if="[[document.properties.file:content]]">
+            <nuxeo-operation-button
+              icon="nuxeo:download"
+              label="Get Blob"
+              operation="Document.GetBlob"
+              input="[[docpath]]"
+              params='{"xpath": "file:content"}'
+              download
+              event="document-downloaded"
+              detail='{"filename": "[[document.properties.file:content.name]]"}'>
+            </nuxeo-operation-button>
+          </template>
+
+          <label>Click button to lock/unlock the selected document</label>
+
+        </nuxeo-demo-section>
+
+      </template>
+    </dom-bind>
+
+    <script type="module">
+      import '@polymer/polymer/polymer-legacy.js';
+      import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+      import '@nuxeo/nuxeo-elements/nuxeo-document.js';
+      import '../nuxeo-demo.js';
+      import '../../nuxeo-icons.js';
+      import '../../nuxeo-path-suggestion/nuxeo-path-suggestion.js';
+      import '../../widgets/nuxeo-operation-button.js';
+
+      const t = document.querySelector('dom-bind');
+      t.docpath = '/default-domain/workspaces/';
+
+      window.addEventListener('document-updated', () => {
+        window.doc.get();
+      });
+
+      window.addEventListener('document-downloaded', (e) => {
+        console.log('Received "document-downloaded" event with detail ', e.detail);
+      });
+    </script>
+
+  </body>
+</html>

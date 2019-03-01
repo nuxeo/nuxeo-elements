@@ -1,0 +1,61 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+  <head>
+    <title>nuxeo-directory-checkbox</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script type="module">
+      import '@polymer/polymer/polymer-legacy.js';
+      import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+      import '../nuxeo-demo.js';
+      import '../../widgets/nuxeo-directory-checkbox.js';
+    </script>
+  </head>
+
+  <body unresolved>
+    <dom-bind>
+      <template>
+
+        <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
+
+        <nuxeo-demo-section heading="Simple directory selector with checkboxes" size="small">
+          <nuxeo-directory-checkbox directory-name="continent"
+                                    label="Select continents"
+                                    value="{{selectedIds}}"
+                                    selected-items="{{selectedItems}}">
+          </nuxeo-directory-checkbox>
+
+          <h3>Item Labels</h3>
+          <template is="dom-repeat" items="[[selectedItems]]">
+            [[item.absoluteLabel]]
+            <br/>
+          </template>
+          <br/>
+          <h3>Ids</h3>
+          <template is="dom-repeat" items="[[selectedIds]]">
+            [[item]]
+            <br/>
+          </template>
+        </nuxeo-demo-section>
+
+      </template>
+    </dom-bind>
+  </body>
+</html>

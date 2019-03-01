@@ -1,0 +1,50 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+<head>
+  <title>nuxeo-card</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+  <script type="module">
+    import '@polymer/polymer/polymer-legacy.js';
+    import '../nuxeo-demo.js';
+    import '../../nuxeo-icons.js';
+    import '../../widgets/nuxeo-card.js';
+  </script>
+</head>
+
+<body>
+  <nuxeo-demo-section heading="Simple card">
+    <nuxeo-card heading="Title here">Content here</nuxeo-card>
+  </nuxeo-demo-section>
+
+  <nuxeo-demo-section heading="Simple card with icon">
+    <nuxeo-card heading="Title here" icon="nuxeo:dashboard">Content here</nuxeo-card>
+  </nuxeo-demo-section>
+
+  <nuxeo-demo-section heading="Collapsible card">
+    <nuxeo-card heading="Title here" icon="nuxeo:dashboard" collapsible>
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+      Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+      Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+    </nuxeo-card>
+  </nuxeo-demo-section>
+</body>
+
+</html>

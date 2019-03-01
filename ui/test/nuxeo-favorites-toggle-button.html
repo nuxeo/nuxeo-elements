@@ -1,0 +1,137 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+<head>
+  <title>nuxeo-favorites-toggle-button tests</title>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script src="../../../@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+  <script src="../../../wct-browser-legacy/browser.js"></script>
+  <script src="../../../@nuxeo/nuxeo-elements/test/test-helpers.js"></script>
+</head>
+<body>
+  <test-fixture id="nx">
+    <template>
+      <nuxeo-connection url="/dummy"></nuxeo-connection>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="isFavorite">
+    <template>
+       <nuxeo-favorites-toggle-button document='{
+        "entity-type": "document",
+        "uid": "1",
+        "contextParameters": {
+          "favorites": {
+            "isFavorite": true
+          }
+        },
+        "facets": []
+      }'></nuxeo-favorites-toggle-button>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="notFavorite">
+    <template>
+      <nuxeo-favorites-toggle-button document='{
+        "entity-type": "document",
+        "uid": "1",
+        "contextParameters": {
+          "favorites": {
+            "isFavorite": false
+          }
+        },
+        "facets": []
+      }'></nuxeo-favorites-toggle-button>
+    </template>
+  </test-fixture>
+
+  <script type="module">
+    import '@polymer/polymer/polymer-legacy.js';
+    import '@polymer/iron-test-helpers/mock-interactions.js';
+    import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+    import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
+    import '../actions/nuxeo-favorites-toggle-button.js';
+    /* eslint-disable no-unused-expressions */
+
+    suite('<nuxeo-favorites-toggle-button>', () => {
+      let server;
+      setup(() => {
+        server = sinon.fakeServer.create();
+        server.autoRespond = true;
+        // login
+        const nx = fixture('nx');
+        return login(server, nx);
+      });
+
+      suite('when a document is a favorite', () => {
+        let element;
+        setup(() => {
+          element = fixture('isFavorite');
+          server.respondWith(
+            'POST',
+            '/dummy/api/v1/automation/Document.RemoveFromFavorites',
+            [
+              200,
+              { 'Content-Type': 'application/json' },
+              '{"entity-type": "document","uid": "1"}',
+            ],
+          );
+        });
+
+        test('it should display the document as favorite', () => {
+          expect(element.favorite).to.be.true;
+        });
+
+        test('toggle should remove document from favorites', () => {
+          // Remove document from favorites by toggling
+          MockInteractions.tap(element);
+          return waitChanged(element, 'favorite').then(() => {
+            expect(element.favorite).to.be.false;
+          });
+        });
+      });
+
+      suite('when a document is not in favorites', () => {
+        let element;
+        setup(() => {
+          element = fixture('notFavorite');
+          server.respondWith(
+            'POST',
+            '/dummy/api/v1/automation/Document.AddToFavorites',
+            [
+              200,
+              { 'Content-Type': 'application/json' },
+              '{"entity-type": "document","uid": "1"}',
+            ],
+          );
+        });
+
+        test('it should display the document as not favorite', () => {
+          expect(element.favorite).to.be.false;
+        });
+
+        test('toggle should add the document to favorites', () => {
+          // Add the documents to favorites by toggling
+          MockInteractions.tap(element);
+          return waitChanged(element, 'favorite').then(() => {
+            expect(element.favorite).to.be.true;
+          });
+        });
+      });
+    });
+  </script>
+</body>

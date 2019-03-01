@@ -1,0 +1,64 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+  <head>
+    <title>nuxeo-justified-grid</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script type="module">
+      import '@polymer/polymer/polymer-legacy.js';
+      import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+      import '@nuxeo/nuxeo-elements/nuxeo-page-provider.js';
+      import '../nuxeo-demo.js';
+      import '../../nuxeo-justified-grid/nuxeo-justified-grid.js';
+      import '../../nuxeo-justified-grid/nuxeo-justified-grid-item.js';
+    </script>
+  </head>
+
+  <body>
+    <dom-bind>
+      <template>
+
+        <style>
+          nuxeo-justified-grid {
+            height: 800px;
+          }
+        </style>
+
+        <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
+
+        <nuxeo-page-provider id="provider"
+                             provider="default_search"
+                             page-size="50"
+                             enrichers="thumbnail"
+                             params='{"ecm_path": ["/default-domain/workspaces/demo"]}'>
+        </nuxeo-page-provider>
+
+        <nuxeo-demo-section heading="Justified grid" size="large">
+          <nuxeo-justified-grid id="grid" nx-provider="provider" selection-enabled>
+            <template>
+              <nuxeo-justified-grid-item></nuxeo-justified-grid-item>
+            </template>
+          </nuxeo-justified-grid>
+        </nuxeo-demo-section>
+
+      </template>
+    </dom-bind>
+  </body>
+</html>

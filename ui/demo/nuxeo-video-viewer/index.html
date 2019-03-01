@@ -1,0 +1,186 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+  <head>
+    <title>nuxeo-video-viewer</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+  </head>
+
+  <body unresolved>
+    <dom-bind>
+      <template>
+
+        <style>
+          nuxeo-video-viewer {
+            height: 380px;
+          }
+        </style>
+
+        <nuxeo-demo-section heading="Video viewer">
+          <nuxeo-video-viewer controls poster="poster.jpg" sources="[[sources]]" storyboard="[[storyboard]]"></nuxeo-video-viewer>
+          <pre>(c) copyright 2008, Blender Foundation / <a href="http://www.bigbuckbunny.org/" target="_blank">www.bigbuckbunny.org</a>.</pre>
+        </nuxeo-demo-section>
+
+      </template>
+    </dom-bind>
+
+    <script type="module">
+      import '@polymer/polymer/polymer-legacy.js';
+      import '../nuxeo-demo.js';
+      import '../../viewers/nuxeo-video-viewer.js';
+      
+      document.querySelector('dom-bind').sources = [
+        { data: 'sample.mp4', type: 'video/mp4' },
+        { data: 'sample.webm', type: 'video/webm' },
+        { data: 'sample.ogg', type: 'video/ogg' },
+      ];
+
+      // Hardcoded storyboard for demo and testing purposes
+      document.querySelector('dom-bind').storyboard = JSON.parse('[' +
+        '{' +
+        '    "comment": "sample.mp4 0",' +
+        '    "content": {' +
+        '        "name": "0.00-seconds.jpeg",' +
+        '        "mime-type": "image/jpeg",' +
+        '        "encoding": null,' +
+        '        "digestAlgorithm": "MD5",' +
+        '        "digest": "f2ea7e41bb54e27387c1458d137c5ec3",' +
+        '        "length": "3167",' +
+        '        "data": "/demo/nuxeo-video-viewer/storyboard/0.00-seconds.jpeg",' +
+        '        "appLinks": []' +
+        '    },' +
+        '    "timecode": 0' +
+        '},' +
+        '{' +
+        '    "comment": "sample.mp4 1",' +
+        '    "content": {' +
+        '        "name": "1.11-seconds.jpeg",' +
+        '        "mime-type": "image/jpeg",' +
+        '        "encoding": null,' +
+        '        "digestAlgorithm": "MD5",' +
+        '        "digest": "ecce32c724dc6fafe66291da04b3ab17",' +
+        '        "length": "3369",' +
+        '        "data": "/demo/nuxeo-video-viewer/storyboard/1.11-seconds.jpeg",' +
+        '        "appLinks": []' +
+        '    },' +
+        '    "timecode": 1.11' +
+        '},' +
+        '{' +
+        '    "comment": "sample.mp4 2",' +
+        '    "content": {' +
+        '        "name": "2.23-seconds.jpeg",' +
+        '        "mime-type": "image/jpeg",' +
+        '        "encoding": null,' +
+        '        "digestAlgorithm": "MD5",' +
+        '        "digest": "50efde2d1521ef710d7cef436a223ba9",' +
+        '        "length": "4207",' +
+        '        "data": "/demo/nuxeo-video-viewer/storyboard/2.23-seconds.jpeg",' +
+        '        "appLinks": []' +
+        '    },' +
+        '    "timecode": 2.23' +
+        '},' +
+        '{' +
+        '    "comment": "sample.mp4 3",' +
+        '    "content": {' +
+        '        "name": "3.34-seconds.jpeg",' +
+        '        "mime-type": "image/jpeg",' +
+        '        "encoding": null,' +
+        '        "digestAlgorithm": "MD5",' +
+        '        "digest": "ecfca5747dd765b4eefcfb4db95d33b7",' +
+        '        "length": "3279",' +
+        '        "data": "/demo/nuxeo-video-viewer/storyboard/3.34-seconds.jpeg",' +
+        '        "appLinks": []' +
+        '    },' +
+        '    "timecode": 3.34' +
+        '},' +
+        '{' +
+        '    "comment": "sample.mp4 4",' +
+        '    "content": {' +
+        '        "name": "4.46-seconds.jpeg",' +
+        '        "mime-type": "image/jpeg",' +
+        '        "encoding": null,' +
+        '        "digestAlgorithm": "MD5",' +
+        '        "digest": "7f0ad3dfbd99b5b293a93ba4307df946",' +
+        '        "length": "3542",' +
+        '        "data": "/demo/nuxeo-video-viewer/storyboard/4.46-seconds.jpeg",' +
+        '        "appLinks": []' +
+        '    },' +
+        '    "timecode": 4.46' +
+        '},' +
+        '{' +
+        '    "comment": "sample.mp4 5",' +
+        '    "content": {' +
+        '        "name": "5.57-seconds.jpeg",' +
+        '        "mime-type": "image/jpeg",' +
+        '        "encoding": null,' +
+        '        "digestAlgorithm": "MD5",' +
+        '        "digest": "3943cfeb728332aac01f8e3902af6a2f",' +
+        '        "length": "3614",' +
+        '        "data": "/demo/nuxeo-video-viewer/storyboard/5.57-seconds.jpeg",' +
+        '        "appLinks": []' +
+        '    },' +
+        '    "timecode": 5.57' +
+        '},' +
+        '{' +
+        '    "comment": "sample.mp4 6",' +
+        '    "content": {' +
+        '        "name": "6.69-seconds.jpeg",' +
+        '        "mime-type": "image/jpeg",' +
+        '        "encoding": null,' +
+        '        "digestAlgorithm": "MD5",' +
+        '        "digest": "9e8541bb590981503cb7419f779e00f8",' +
+        '        "length": "2858",' +
+        '        "data": "/demo/nuxeo-video-viewer/storyboard/6.69-seconds.jpeg",' +
+        '        "appLinks": []' +
+        '    },' +
+        '    "timecode": 6.69' +
+        '},' +
+        '{' +
+        '    "comment": "sample.mp4 7",' +
+        '    "content": {' +
+        '        "name": "7.80-seconds.jpeg",' +
+        '        "mime-type": "image/jpeg",' +
+        '        "encoding": null,' +
+        '        "digestAlgorithm": "MD5",' +
+        '        "digest": "7020c87f368a296539b12cd24168cce2",' +
+        '        "length": "3705",' +
+        '        "data": "/demo/nuxeo-video-viewer/storyboard/7.80-seconds.jpeg",' +
+        '        "appLinks": []' +
+        '    },' +
+        '    "timecode": 7.8' +
+        '},' +
+        '{' +
+        '    "comment": "sample.mp4 8",' +
+        '    "content": {' +
+        '        "name": "8.92-seconds.jpeg",' +
+        '        "mime-type": "image/jpeg",' +
+        '        "encoding": null,' +
+        '        "digestAlgorithm": "MD5",' +
+        '        "digest": "875e98cf626aad7a44921453b355e37e",' +
+        '        "length": "3734",' +
+        '        "data": "/demo/nuxeo-video-viewer/storyboard/8.92-seconds.jpeg",' +
+        '        "appLinks": []' +
+        '    },' +
+        '    "timecode": 8.92' +
+        '}' +
+        ']');
+    </script>
+  </body>
+</html>

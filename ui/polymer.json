@@ -1,0 +1,14 @@
+{
+  "entrypoint": "nuxeo-ui-elements.js",
+  "lint": {
+    "rules": ["polymer-3"],
+    "ignoreWarnings" : [
+      "databind-with-unknown-property",
+      "databinding-calls-must-be-functions",
+      "polymer-expression-parse-error",
+      "set-unknown-attribute",
+      "undefined-elements",
+      "unknown-polymer-behavior"
+    ]
+  }
+}
