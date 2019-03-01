@@ -1,0 +1,25 @@
+{
+  "description": "Nuxeo Web Components Library",
+  "repository": "nuxeo/nuxeo-elements.git",
+  "name": "nuxeo-elements",
+  "private": true,
+  "version": "3.0.0-SNAPSHOT",
+  "author": "Nuxeo",
+  "license": "Apache 2.0",
+  "scripts": {
+    "bootstrap": "lerna bootstrap",
+    "nuke": "rm -rf package-lock.json node_modules && npm install && lerna exec \"rm -f package-lock.json\" && lerna clean --yes && lerna bootstrap && lerna exec --stream -- \"test -f package-lock.json || npm install --package-lock-only\"",
+    "lint": "lerna run lint --stream",
+    "test": "lerna run test --stream",
+    "docs": "lerna run docs --parallel"
+  },
+  "devDependencies": {
+    "husky": "^1.3.1",
+    "lerna": "^3.13.1"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lerna run --concurrency 1 --stream precommit"
+    }
+  }
+}

@@ -11,6 +11,7 @@
   "author": "Nuxeo",
   "license": "Apache 2.0",
   "scripts": {
+    "precommit": "lint-staged",
     "eslint": "eslint *.js *.html demo/**/*.html test/**/*.html",
     "polylint": "polymer lint",
     "lint": "npm run eslint && npm run polylint",
@@ -32,22 +33,16 @@
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-html": "^4.0.1",
     "eslint-plugin-import": "^2.8.0",
-    "husky": "^1.3.1",
     "lint-staged": "^8.1.3",
     "polymer-cli": "^1.8.0",
     "wct-browser-legacy": "^1.0.1",
     "wct-istanbul": "^0.14.3"
-  },
-  "main": "nuxeo-elements.js",
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   },
   "lint-staged": {
     "*.js": [
       "eslint --fix",
       "git add"
     ]
-  }
+  },
+  "main": "nuxeo-elements.js"
 }
