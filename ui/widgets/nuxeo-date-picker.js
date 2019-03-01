@@ -20,109 +20,10 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-input/paper-input.js';
 import '@vaadin/vaadin-date-picker/vaadin-date-picker.js';
 import 'moment/src/moment.js';
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
-const $_documentContainer = document.createElement('template'); // eslint-disable-line camelcase
-
-$_documentContainer.innerHTML = `<dom-module id="nuxeo-date-picker"
-  theme-for="vaadin-date-picker vaadin-text-field vaadin-month-calendar vaadin-date-picker-overlay-content">
-  <template>
-    <style>
-      :host {
-        position: relative;
-      }
-
-      :host([hidden]) {
-        display: none;
-      }
-
-      :host([required]) label::after {
-        display: inline-block;
-        content: '*';
-        margin-left: 4px;
-        color: var(--paper-input-container-invalid-color, red);
-      }
-
-      label {
-        @apply --nuxeo-label;
-      }
-
-      :host([invalid]) label {
-        color: var(--paper-input-container-invalid-color, red);
-      }
-
-      vaadin-date-picker {
-        padding-bottom: 8px;
-      }
-
-      /* picker input */
-      [part="input-field"] {
-        background-color: var(--nuxeo-page-background) !important;
-        border: 1px solid var(--nuxeo-border) !important;
-        color: var(--nuxeo-text-default) !important;
-      }
-
-      /* buttons inside input (clear and open picker) */
-      [part="text-field"] [part$="button"] {
-        color: var(--nuxeo-text-default) !important;
-      }
-
-      [part="text-field"] [part$="button"]:hover {
-        color: var(--nuxeo-primary-color) !important;
-      }
-
-      /* buttons inside the overlay (cancel and today), plus highlights for current year and today's date */
-      [part="cancel-button"],
-      [part="today-button"],
-      [part="years"] [part="year-number"][current],
-      [part="date"][today] {
-        color: var(--nuxeo-primary-color) !important;
-      }
-
-      /* keyboard focus for buttons inside the overlay */
-      [part="cancel-button"][focus-ring],
-      [part="today-button"][focus-ring] {
-        box-shadow: 0 0 0 2px var(--nuxeo-primary-color) !important;
-      }
-
-      /* date selected */
-      [part="date"][selected]:before {
-        background-color: var(--nuxeo-primary-color) !important;
-        box-shadow: 0 0 0 2px var(--nuxeo-primary-color) !important;
-      }
-
-      [part="date"][selected][today] {
-        color: var(--nuxeo-button-primary-text) !important;
-      }
-
-      /* hover any date that is not disabled or currently selected */
-      [part="date"]:not([disabled]):not([selected]):hover::before {
-        background-color: var(--nuxeo-primary-color) !important;
-        opacity: .1 !important;
-      }
-    </style>
-
-    <label>[[label]]</label>
-
-    <vaadin-date-picker
-      id="date"
-      name="[[name]]"
-      required$="[[required]]"
-      invalid="[[invalid]]"
-      value="{{_inputValue}}"
-      disabled$="[[disabled]]"
-      min="[[min]]"
-      max="[[max]]"
-      error-message="[[errorMessage]]">
-    </vaadin-date-picker>
-
-  </template>
-
-  
-</dom-module>`;
-
-document.head.appendChild($_documentContainer.content);
 {
   /**
    * An element for picking a W3C YYYY-MM-DDThh:mm:ss.sTZD based date (eg 1997-07-16T19:20:30.45+01:00).
@@ -191,6 +92,99 @@ document.head.appendChild($_documentContainer.content);
           value: false,
         },
       };
+    }
+
+    static get template() {
+      return html`
+        <style>
+          :host {
+            position: relative;
+          }
+
+          :host([hidden]) {
+            display: none;
+          }
+
+          :host([required]) label::after {
+            display: inline-block;
+            content: '*';
+            margin-left: 4px;
+            color: var(--paper-input-container-invalid-color, red);
+          }
+
+          label {
+            @apply --nuxeo-label;
+          }
+
+          :host([invalid]) label {
+            color: var(--paper-input-container-invalid-color, red);
+          }
+
+          vaadin-date-picker {
+            padding-bottom: 8px;
+          }
+
+          /* picker input */
+          [part="input-field"] {
+            background-color: var(--nuxeo-page-background) !important;
+            border: 1px solid var(--nuxeo-border) !important;
+            color: var(--nuxeo-text-default) !important;
+          }
+
+          /* buttons inside input (clear and open picker) */
+          [part="text-field"] [part$="button"] {
+            color: var(--nuxeo-text-default) !important;
+          }
+
+          [part="text-field"] [part$="button"]:hover {
+            color: var(--nuxeo-primary-color) !important;
+          }
+
+          /* buttons inside the overlay (cancel and today), plus highlights for current year and today's date */
+          [part="cancel-button"],
+          [part="today-button"],
+          [part="years"] [part="year-number"][current],
+          [part="date"][today] {
+            color: var(--nuxeo-primary-color) !important;
+          }
+
+          /* keyboard focus for buttons inside the overlay */
+          [part="cancel-button"][focus-ring],
+          [part="today-button"][focus-ring] {
+            box-shadow: 0 0 0 2px var(--nuxeo-primary-color) !important;
+          }
+
+          /* date selected */
+          [part="date"][selected]:before {
+            background-color: var(--nuxeo-primary-color) !important;
+            box-shadow: 0 0 0 2px var(--nuxeo-primary-color) !important;
+          }
+
+          [part="date"][selected][today] {
+            color: var(--nuxeo-button-primary-text) !important;
+          }
+
+          /* hover any date that is not disabled or currently selected */
+          [part="date"]:not([disabled]):not([selected]):hover::before {
+            background-color: var(--nuxeo-primary-color) !important;
+            opacity: .1 !important;
+          }
+        </style>
+
+        <label>[[label]]</label>
+
+        <vaadin-date-picker
+          id="date"
+          name="[[name]]"
+          required$="[[required]]"
+          invalid="[[invalid]]"
+          value="{{_inputValue}}"
+          disabled$="[[disabled]]"
+          min="[[min]]"
+          max="[[max]]"
+          error-message="[[errorMessage]]">
+        </vaadin-date-picker>
+      `;
     }
 
     ready() {

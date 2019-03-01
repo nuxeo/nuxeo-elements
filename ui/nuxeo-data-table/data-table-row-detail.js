@@ -5,25 +5,10 @@
   then delete this comment!
 */
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import './data-table-templatizer-behavior.js';
 
-const $_documentContainer = document.createElement('template'); // eslint-disable-line camelcase
-$_documentContainer.innerHTML = `<dom-module id="data-table-row-detail">
-  <template>
-    <style>
-      :host {
-        padding: 0 24px 0 24px;
-        display: flex;
-        align-items: center;
-      }
-    </style>
-    <slot></slot>
-  </template>
-  
-</dom-module>`;
-
-document.head.appendChild($_documentContainer.content);
 {
   class DataTableRowDetail extends mixinBehaviors([saulis.DataTableTemplatizerBehavior], Nuxeo.Element) {
 
@@ -41,6 +26,19 @@ document.head.appendChild($_documentContainer.content);
       return [
         '_beforeBind(beforeBind, item.*, index, selected, expanded)',
       ];
+    }
+
+    static get template() {
+      return html`
+        <style>
+          :host {
+            padding: 0 24px 0 24px;
+            display: flex;
+            align-items: center;
+          }
+        </style>
+        <slot></slot>
+      `;
     }
 
     _beforeBind(beforeBind, item, index, selected, expanded) {
