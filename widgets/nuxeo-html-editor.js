@@ -16,7 +16,7 @@ limitations under the License.
 */
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-import './alloy/alloy-import.js';
+import './alloy/ckeditor-init.js';
 import './alloy/alloy-ocean.js';
 
 {
