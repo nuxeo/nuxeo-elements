@@ -9,11 +9,11 @@
     "metrics",
     "d3js"
   ],
-  "repository": "nuxeo/nuxeo-ui-elements",
-  "homepage": "https://github.com/nuxeo/nuxeo-ui-elements/",
+  "repository": "nuxeo/nuxeo-elements.git",
   "author": "Nuxeo",
   "license": "Apache 2.0",
   "scripts": {
+    "precommit": "lint-staged",
     "coveralls": "cat coverage/lcov.info | coveralls",
     "eslint": "eslint . --ext js,html",
     "polylint": "polymer lint",
@@ -31,7 +31,6 @@
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-html": "^4.0.1",
     "eslint-plugin-import": "^2.8.0",
-    "husky": "^1.3.1",
     "lint-staged": "^8.1.3",
     "polymer-cli": "^1.8.0",
     "wct-browser-legacy": "^1.0.1",
@@ -89,11 +88,6 @@
     "d3-selection": "^1.3.0",
     "d3-shape": "^1.2.0",
     "moment": "2.23.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   },
   "lint-staged": {
     "*.js": [
