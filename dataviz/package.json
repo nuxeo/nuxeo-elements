@@ -1,0 +1,60 @@
+{
+  "description": "A set of elements for Nuxeo Data Visualization.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "nuxeo",
+    "workflow",
+    "metrics"
+  ],
+  "repository": "https://github.com/nuxeo/nuxeo-dataviz-elements.git",
+  "homepage": "https://github.com/nuxeo/nuxeo-dataviz-elements/",
+  "name": "@nuxeo/nuxeo-dataviz-elements",
+  "version": "3.0.0-SNAPSHOT",
+  "author": "Nuxeo",
+  "license": "Apache 2.0",
+  "scripts": {
+    "eslint": "eslint *.js *.html demo/**/*.html test/**/*.html",
+    "polylint": "polymer lint",
+    "lint": "npm run eslint && npm run polylint",
+    "test": "polymer test --npm --simpleOutput --expanded -l chrome",
+    "docs": "polymer analyze > analysis.json && polymer serve"
+  },
+  "devDependencies": {
+    "eslint": "^4.14.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-config-google": "^0.9.1",
+    "eslint-plugin-html": "^4.0.1",
+    "eslint-plugin-import": "^2.8.0",
+    "moment": "^2.10.6",
+    "husky": "^1.3.1",
+    "lint-staged": "^8.1.3",
+    "polymer-cli": "^1.8.0",
+    "@polymer/iron-component-page": "^4.0.0",
+    "@polymer/test-fixture": "^4.0.2",
+    "wct-browser-legacy": "^1.0.1",
+    "@webcomponents/webcomponentsjs": "^2.0.0"
+  },
+  "resolutions": {
+    "inherits": "2.0.3",
+    "samsam": "1.1.3",
+    "supports-color": "3.1.2",
+    "type-detect": "1.0.0"
+  },
+  "main": "nuxeo-dataviz-elements.js",
+  "dependencies": {
+    "@polymer/polymer": "^3.0.0",
+    "@nuxeo/nuxeo-elements": "^3.0.0-SNAPSHOT"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ]
+  }
+}
