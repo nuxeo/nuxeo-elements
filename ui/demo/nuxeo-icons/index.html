@@ -1,0 +1,95 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+  <head>
+    <title>nuxeo-icons</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+
+    <!-- polymer elements -->
+    <script type="module" src="../../../../@polymer/polymer/polymer-legacy.js"></script>
+    <script type="module" src="../../../../@polymer/iron-meta/iron-meta.js"></script>
+
+    <!-- nuxeo elements -->
+    <script type="module" src="../nuxeo-demo.js"></script>
+    <script type="module" src="../../nuxeo-icons.js"></script>
+
+
+  </head>
+
+  <body unresolved>
+    <dom-bind id="scope">
+      <template is="dom-bind">
+
+        <style>
+          .icon {
+            display: inline-block;
+            @apply --layout-vertical;
+            @apply --layout-center;
+            text-align: center;
+            width: 170px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            margin: 8px;
+            padding: 4px;
+            background-color: white;
+          }
+          iron-icon {
+            padding: 8px;
+            color: black;
+          }
+          label {
+            display: block;
+            margin: 0 0 8px;
+          }
+        </style>
+
+        <nuxeo-demo-section heading="ICONSET" size="large" center>
+          <template is="dom-repeat" id="iconsets">
+            <h2>{{item.name}}</h2>
+            <div class="set">
+              <template is="dom-repeat" items="{{getIconNames(item)}}">
+                <div class="icon">
+                  <iron-icon icon="{{item}}"></iron-icon>
+                  <label>{{getIconName(item)}}</label>
+                </div>
+              </template>
+            </div>
+          </template>
+        </nuxeo-demo-section>
+
+      </template>
+    </dom-bind>
+
+    <script type="module">
+      import '@polymer/polymer/polymer-legacy.js';
+      import { IronMeta } from '@polymer/iron-meta/iron-meta.js';
+      import '../nuxeo-demo.js';
+      import '../../nuxeo-icons.js';
+      
+      const scope = document.querySelector('#scope');
+      scope.getIconNames = (iconset) => iconset.getIconNames();
+      scope.getIconName = (name) => name.split(':')[1];
+      scope.parentNode.getIconNames = scope.getIconNames;
+      const iconsets = document.querySelector('#iconsets');
+      iconsets.items = new IronMeta({ type: 'iconset' }).list;
+    </script>
+
+  </body>
+</html>

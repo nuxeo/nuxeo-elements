@@ -1,0 +1,288 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+  <head>
+    <title>nuxeo-filter</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+
+    <!-- FIXME(polymer-modulizer):
+        These imperative modules that innerHTML your HTML are
+        a hacky way to be sure that any mixins in included style
+        modules are ready before any elements that reference them are
+        instantiated, otherwise the CSS @apply mixin polyfill won't be
+        able to expand the underlying CSS custom properties.
+        See: https://github.com/Polymer/polymer-modulizer/issues/154
+        -->
+    <script type="module">
+      const $_documentContainer = document.createElement('template'); // eslint-disable-line camelcase
+
+      $_documentContainer.innerHTML = `<custom-style>
+            <style is="custom-style" include="iron-flex">
+              h2 {
+                margin: 8px 0;
+              }
+              h3 {
+                margin-top: 0;
+                margin-bottom: 16px;
+              }
+              h4 {
+                margin-top: 16px;
+                margin-bottom: 4px;
+              }
+              nuxeo-input {
+                max-width: 340px;
+              }
+              paper-listbox {
+                max-width: 200px;
+                cursor: pointer;
+              }
+              paper-button {
+                background-color: #00adff;
+                color: white;
+              }
+              iron-icon {
+                color: green;
+              }
+            </style>
+          </custom-style>`;
+
+      document.body.appendChild($_documentContainer.content);
+    </script>
+  </head>
+
+  <body>
+    <script type="module">
+      const $_documentContainer = document.createElement('template'); // eslint-disable-line camelcase
+
+      /* eslint-disable max-len */
+      $_documentContainer.innerHTML = `<dom-bind>
+            <template>
+
+              <nuxeo-demo-section>
+                <div class="layout horizontal">
+
+                  <div class="layout flex">
+                    <h3>Document</h3>
+                    <nuxeo-input label="Title" value="{{title}}" always-float-label=""></nuxeo-input>
+
+                    <h4>Type</h4>
+                    <paper-listbox selected="{{type}}" attr-for-selected="value" elevation="4">
+                      <paper-item value="File">File</paper-item>
+                      <paper-item value="Folder">Folder</paper-item>
+                      <paper-item value="Note">Note</paper-item>
+                    </paper-listbox>
+
+                    <h4>Facets</h4>
+                    <paper-listbox multi="" selected-values="{{facets}}" attr-for-selected="value">
+                      <paper-item value="Folderish">Folderish</paper-item>
+                      <paper-item value="Commentable">Commentable</paper-item>
+                    </paper-listbox>
+
+                    <h4>Permissions</h4>
+                    <paper-listbox multi="" selected-values="{{permissions}}" attr-for-selected="value">
+                      <paper-item value="Read">Read</paper-item>
+                      <paper-item value="Write">Write</paper-item>
+                    </paper-listbox>
+                  </div>
+
+                  <div class="layout flex">
+                    <h3>User</h3>
+
+                    <nuxeo-input label="Username" value="{{username}}"></nuxeo-input>
+                    <h4>Groups</h4>
+                    <paper-listbox multi="" selected-values="{{groups}}" attr-for-selected="value">
+                      <paper-item value="Administrators">Administrators</paper-item>
+                      <paper-item value="Members">Members</paper-item>
+                      <paper-item value="Others">Others</paper-item>
+                    </paper-listbox>
+                  </div>
+
+                </div>
+
+                <div class="layout horizontal justified center">
+                  <h4 class="layout flex">Result</h4>
+                  <paper-button raised="" noink="" on-tap="save">Apply</paper-button>
+                </div>
+
+                <ul>
+                  <li>facet="Folderish"
+                    <nuxeo-filter document="[[document]]" facet="Folderish">
+                      <template>
+                        <iron-icon icon="icons:check"></iron-icon>
+                      </template>
+                    </nuxeo-filter>
+                  </li>
+
+                  <li>facet="Folderish,Commentable"
+                    <nuxeo-filter document="[[document]]" facet="Folderish,Commentable">
+                      <template>
+                        <iron-icon icon="icons:check"></iron-icon>
+                      </template>
+                    </nuxeo-filter>
+                  </li>
+
+                  <li>type="Folder"
+                    <nuxeo-filter document="[[document]]" type="Folder">
+                      <template>
+                        <iron-icon icon="icons:check"></iron-icon>
+                      </template>
+                    </nuxeo-filter>
+                  </li>
+
+                  <li>type="File,Folder"
+                    <nuxeo-filter document="[[document]]" type="Folder,File">
+                      <template>
+                        <iron-icon icon="icons:check"></iron-icon>
+                      </template>
+                    </nuxeo-filter>
+                  </li>
+
+                  <li>permission="Write"
+                    <nuxeo-filter document="[[document]]" permission="Write">
+                      <template>
+                        <iron-icon icon="icons:check"></iron-icon>
+                      </template>
+                    </nuxeo-filter>
+                  </li>
+
+                  <li>groups="Administrators"
+                    <nuxeo-filter user="[[user]]" group="Administrators">
+                      <template>
+                        <iron-icon icon="icons:check"></iron-icon>
+                      </template>
+                    </nuxeo-filter>
+                  </li>
+
+                  <li>groups="Administrators,Members"
+                    <nuxeo-filter user="[[user]]" group="Administrators,Members">
+                      <template>
+                        <iron-icon icon="icons:check"></iron-icon>
+                      </template>
+                    </nuxeo-filter>
+                  </li>
+
+                  <li>expression="this.isMember(user, 'Administrators')"
+                    <nuxeo-filter user="[[user]]" expression="this.isMember(user, 'Administrators')">
+                      <template>
+                        <iron-icon icon="icons:check"></iron-icon>
+                      </template>
+                    </nuxeo-filter>
+                  </li>
+
+                  <li>facet="Folderish" expression="document.title === 'Title'"
+                    <nuxeo-filter document="[[document]]" facet="Folderish" expression="document.title === 'Title'">
+                      <template>
+                        <iron-icon icon="icons:check"></iron-icon>
+                      </template>
+                    </nuxeo-filter>
+                  </li>
+
+                  <li>type="Folder" facet="Folderish" expression="document.title === 'Title'"
+                    <nuxeo-filter
+                      document="[[document]]"
+                      type="Folder"
+                      facet="Folderish"
+                      expression="document.title === 'Title'">
+                      <template>
+                        <iron-icon icon="icons:check"></iron-icon>
+                      </template>
+                    </nuxeo-filter>
+                  </li>
+
+                  <li>type="Folder" facet="Folderish" expression="document.title === 'Title'"
+                    <nuxeo-filter
+                      document="[[document]]"
+                      expression="this.hasType(document, 'Folder') &amp;&amp; this.hasFacet(document, 'Folderish') &amp;&amp; document.title === 'Title'">
+                      <template>
+                        <iron-icon icon="icons:check"></iron-icon>
+                      </template>
+                    </nuxeo-filter>
+                  </li>
+
+                  <li>group="Administrators"
+                      type="Folder"
+                      facet="Folderish"
+                      expression="user.id === 'Administrator' &amp;&amp; document.title === 'Title'"
+                    <nuxeo-filter
+                      user="[[user]]"
+                      group="Administrators"
+                      document="[[document]]"
+                      type="Folder"
+                      facet="Folderish"
+                      expression="user.id === 'Administrator' &amp;&amp; document.title === 'Title'">
+                      <template>
+                        <iron-icon icon="icons:check"></iron-icon>
+                      </template>
+                    </nuxeo-filter>
+                  </li>
+                </ul>
+              </nuxeo-demo-section>
+
+            </template>
+          </dom-bind>`;
+
+      document.body.appendChild($_documentContainer.content);
+    </script>
+
+    <script type="module">
+      import '@polymer/polymer/polymer-legacy.js';
+      import '@polymer/iron-icons/iron-icons.js';
+      import '@polymer/paper-button/paper-button.js';
+      import '@polymer/paper-item/paper-item.js';
+      import '@polymer/paper-listbox/paper-listbox.js';
+      import '@polymer/iron-flex-layout/iron-flex-layout-classes.js';
+      import '../nuxeo-demo.js';
+      import '../../widgets/nuxeo-input.js';
+      import '../../nuxeo-filter.js';
+
+      const t = document.querySelector('dom-bind');
+
+      // default document properties
+      t.title = 'Title';
+      t.type = 'Folder';
+      t.facets = ['Folderish'];
+      t.permissions = ['Read', 'Write'];
+
+      // default user properties
+      t.username = 'Administrator';
+      t.groups = ['Administrators', 'Members'];
+
+      t.save = () => {
+        t.document = {
+          title: t.title,
+          type: t.type,
+          facets: t.facets,
+          contextParameters: {
+            permissions: t.permissions,
+          },
+        };
+
+        t.user = {
+          id: t.username,
+          properties: {
+            groups: t.groups,
+          },
+        };
+      };
+
+      t.save();
+    </script>
+  </body>
+</html>

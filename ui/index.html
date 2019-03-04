@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Nuxeo UI Elements</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+
+    <link rel="icon" href="favicon.ico">
+    <script type="module" src="/node_modules/@polymer/iron-component-page/iron-component-page.js"></script>
+
+    <style>
+      body {
+        --iron-component-page-header-color: #0066ff;
+      }
+
+      iron-component-page {
+        --iron-doc-accent-color: #0066ff;
+      }
+
+      header[main] {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 15px 20px;
+        background-color: #fff;
+        box-sizing: border-box;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+      }
+      #logo {
+        background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAZlBMVEUAAAAAZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ/8AZ//////zyGY4AAAAIHRSTlMAAAIDd7KVHyGXcwGutB0guKmWHJAetru+vBq6kq2Tb6qqIsgAAAABYktHRCHEbA0WAAAACXBIWXMAABYlAAAWJQFJUiTwAAAAB3RJTUUH4QkZEyYdj3XqNwAAAIdJREFUGNNdjuESgjAMg0lxTpjOKSiKIn3/p7RhOO/Ij13zXZemqrYCpBbgP0B2bu9hOjSuDQbqo+opAuekehED4apGOm9ee37B7W7j8LDHdTlsIcWTxCd9GrM34Lmvr7LAfIq3ik/DjyA0zBsjk99YizGft5Zi0k59ZHX/mWZWR5CQw9Zhoy/j9AuFPCKUUgAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNy0wOS0yNVQxOTozODoyOSswMjowMIKd9s0AAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTctMDktMjVUMTk6Mzg6MjkrMDI6MDDzwE5xAAAAV3pUWHRSYXcgcHJvZmlsZSB0eXBlIGlwdGMAAHic4/IMCHFWKCjKT8vMSeVSAAMjCy5jCxMjE0uTFAMTIESANMNkAyOzVCDL2NTIxMzEHMQHy4BIoEouAOoXEXTyQjWVAAAAAElFTkSuQmCC') no-repeat;
+        background-size: cover;
+        display: inline-block;
+        height: 28px;
+        width: 160px;
+      }
+    </style>
+  </head>
+
+  <body unresolved>
+    <header main>
+      <a href="#" id="logo"></a>
+    </header>
+    <iron-component-page></iron-component-page>
+  </body>
+</html>

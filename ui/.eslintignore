@@ -1,0 +1,10 @@
+node_modules/
+coverage/
+import-href.js
+nuxeo-icons.js
+widgets/alloy/
+widgets/nuxeo-selectivity.js
+viewers/pdfjs
+dataviz/randomColor.js
+nuxeo-user-group-management/nuxeo-edit-user.html
+nuxeo-user-group-management/nuxeo-view-user.html

@@ -1,0 +1,58 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+  <head>
+    <title>nuxeo-tooltip</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script type="module">
+      import '@polymer/polymer/polymer-legacy.js';
+      import '../nuxeo-demo.js';
+      import '../../widgets/nuxeo-tooltip.js';
+    </script>
+  </head>
+
+  <body unresolved>
+    <dom-bind>
+      <template>
+
+        <nuxeo-demo-section heading="Tooltip" size="small">
+          <span id="el1">Hover me</span>
+          <nuxeo-tooltip for="el1" offset="40">I'm a tooltip!</nuxeo-tooltip>
+        </nuxeo-demo-section>
+
+        <nuxeo-demo-section heading="Tooltip in a different position" size="small">
+          <span id="el2">Hover me</span>
+          <nuxeo-tooltip for="el2" position="left">I'm a tooltip in a different position!</nuxeo-tooltip>
+        </nuxeo-demo-section>
+
+        <nuxeo-demo-section heading="Instant Tooltip (no delay)" size="small">
+          <span id="el3">Hover me</span>
+          <nuxeo-tooltip for="el3" offset="40" animation-delay="0">I'm an instant tooltip!</nuxeo-tooltip>
+        </nuxeo-demo-section>
+
+        <nuxeo-demo-section heading="Tooltip with a bigger delay" size="small">
+          <span id="el4">Hover me</span>
+          <nuxeo-tooltip for="el4" offset="40" animation-delay="2000">I'm a tooltip with a bigger delay!</nuxeo-tooltip>
+        </nuxeo-demo-section>
+
+      </template>
+    </dom-bind>
+  </body>
+</html>

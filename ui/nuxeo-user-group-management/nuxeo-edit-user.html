@@ -1,0 +1,97 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<!--
+An element for creating and editing user data, which is dynamically loaded by `nuxeo-user-group-management`.
+This element can be overridden with custom fields.
+
+Example:
+
+    <nuxeo-edit-user user=[[user]] new></nuxeo-edit-user>
+
+Used by `nuxeo-user-management` and `nuxeo-create-user`
+@group Nuxeo Elements
+@element nuxeo-edit-user
+-->
+<dom-module id="nuxeo-edit-user">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+    <nuxeo-input label="[[i18n('editUser.firstName')]]" value="{{user.firstName}}" name="firstname"></nuxeo-input>
+    <nuxeo-input label="[[i18n('editUser.lastName')]]" value="{{user.lastName}}" name="lastname"></nuxeo-input>
+    <nuxeo-input label="[[i18n('editUser.company')]]" value="{{user.company}}" name="company"></nuxeo-input>
+    <nuxeo-input label="[[i18n('editUser.email')]]" value="{{user.email}}" name="email" type="email" required></nuxeo-input>
+
+    <template is="dom-if" if="[[new]]">
+      <nuxeo-user-suggestion id="picker"
+                             name="group"
+                             search-type="GROUP_TYPE"
+                             label="[[i18n('editUser.groups')]]"
+                             placeholder="[[i18n('editUser.searchGroups')]]"
+                             value="{{user.groups}}"
+                             multiple
+                             result-formatter="[[resultFormatter]]">
+      </nuxeo-user-suggestion>
+    </template>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-edit-user',
+      behaviors: [Nuxeo.I18nBehavior],
+      properties: {
+        /**
+         * The user object to be edited or created.
+         */
+        user: {
+          type: Object,
+          value: {}
+        },
+        /**
+         * If true, a new user is being created; if false, an already existing user is being edited.
+         */
+        new: {
+          type: Boolean,
+          value: false
+        },
+
+        resultFormatter: {
+          type: Function,
+          value: function() {
+            return this._resultFormatter.bind(this);
+          }
+        }
+      },
+
+      /**
+       * Resets the form fields to empty values.
+       */
+      resetFields: function() {
+        this.user = {};
+      },
+
+      _resultFormatter: function(item) {
+        return item.displayLabel + ' (' + (item.groupname || item.username) + ')';
+      }
+    });
+  </script>
+</dom-module>

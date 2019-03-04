@@ -1,0 +1,56 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+  <head>
+    <title>nuxeo-directory-suggestion</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script type="module">
+      import '@polymer/polymer/polymer-legacy.js';
+      import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+      import '../nuxeo-demo.js';
+      import '../../widgets/nuxeo-directory-suggestion.js';
+    </script>
+  </head>
+
+  <body unresolved>
+    <dom-bind>
+      <template>
+
+        <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
+
+        <nuxeo-demo-section heading="Simple directory suggestion" size="small">
+          <nuxeo-directory-suggestion directory-name="subject" value="{{simpleDirectory}}" min-chars="0"></nuxeo-directory-suggestion>
+          <div>Selected directory: [[simpleDirectory]]</div>
+        </nuxeo-demo-section>
+
+        <nuxeo-demo-section heading="Directory suggestion (single)" size="small">
+          <nuxeo-directory-suggestion directory-name="subject" value="{{singleDirectory}}"></nuxeo-directory-suggestion>
+          <div>Selected directory: [[singleDirectory]]</div>
+        </nuxeo-demo-section>
+
+        <nuxeo-demo-section heading="Directory suggestion (multiple)" size="small">
+          <nuxeo-directory-suggestion directory-name="subject" value="{{multipleDirectories}}" multiple="true"></nuxeo-directory-suggestion>
+          <div>Selected directories: [[multipleDirectories]]</div>
+        </nuxeo-demo-section>
+
+      </template>
+    </dom-bind>
+  </body>
+</html>

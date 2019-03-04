@@ -1,0 +1,47 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+  <head>
+    <title>nuxeo-date-picker</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="/node_modules/moment/min/moment-with-locales.min.js"></script>
+    <script type="module">
+      import '@polymer/polymer/polymer-legacy.js';
+      import '../nuxeo-demo.js';
+      import '../../widgets/nuxeo-date-picker.js';
+    </script>
+    <style>
+      nuxeo-demo-section {
+        height: 25px;
+      }
+    </style>
+  </head>
+
+  <body unresolved>
+    <dom-bind>
+      <template>
+        <nuxeo-demo-section heading="Date picker with 14:35:19 default time" size="small">
+          <nuxeo-date-picker label="Pick a date" value="{{dateValue}}" default-time="14:35:19"></nuxeo-date-picker>
+          <div>Selected date: [[dateValue]]</div>
+        </nuxeo-demo-section>
+      </template>
+    </dom-bind>
+  </body>
+</html>

@@ -1,0 +1,287 @@
+<!--
+@license
+(C) Copyright Nuxeo Corp. (http://nuxeo.com/)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+<head>
+  <title>nuxeo-slots tests</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script src="../../../@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+  <script src="../../../wct-browser-legacy/browser.js"></script>
+  <script src="../../../@nuxeo/nuxeo-elements/test/test-helpers.js"></script>
+</head>
+<body>
+
+<test-fixture id="slot1">
+  <template>
+    <div>
+      <nuxeo-slot slot="SLOT1"></nuxeo-slot>
+    </div>
+  </template>
+</test-fixture>
+
+<test-fixture id="slot2">
+  <template>
+    <div>
+      <nuxeo-slot slot="SLOT2"></nuxeo-slot>
+    </div>
+  </template>
+</test-fixture>
+
+<test-fixture id="emptySlotContent">
+  <template>
+    <nuxeo-slot-content name="empty" slot="SLOT1"></nuxeo-slot-content>
+  </template>
+</test-fixture>
+
+<test-fixture id="slot1Content1">
+  <template>
+    <nuxeo-slot-content name="content1" slot="SLOT1" order="1">
+      <template><span>Content 1</span></template>
+    </nuxeo-slot-content>
+  </template>
+</test-fixture>
+
+<test-fixture id="slot1Content2">
+  <template>
+    <nuxeo-slot-content name="content2" slot="SLOT1" order="2">
+      <template><span>Content 2</span></template>
+    </nuxeo-slot-content>
+  </template>
+</test-fixture>
+
+<test-fixture id="slot1Content3">
+  <template>
+    <nuxeo-slot-content name="content3" slot="SLOT1" order="3">
+      <template><span>[[property]]</span></template>
+    </nuxeo-slot-content>
+  </template>
+</test-fixture>
+
+<test-fixture id="slot2Content">
+  <template>
+    <nuxeo-slot-content name="content3" slot="SLOT2">
+      <template><span>Content 3</span></template>
+    </nuxeo-slot-content>
+  </template>
+</test-fixture>
+
+<test-fixture id="slot1Content1Disabled">
+  <template>
+    <nuxeo-slot-content name="content1" slot="SLOT1" disabled>
+    </nuxeo-slot-content>
+  </template>
+</test-fixture>
+
+<test-fixture id="slot1Content1Override">
+  <template>
+    <nuxeo-slot-content name="content1" slot="SLOT1" order="3">
+      <template><span>Content 1 override</span></template>
+    </nuxeo-slot-content>
+  </template>
+</test-fixture>
+
+<test-fixture id="slot1Content1Priority">
+  <template>
+    <nuxeo-slot-content name="content1" slot="SLOT1" priority="10">
+      <template><span>Content 1 override</span></template>
+    </nuxeo-slot-content>
+    <nuxeo-slot-content name="content1" slot="SLOT1">
+      <template><span>No content</span></template>
+    </nuxeo-slot-content>
+  </template>
+</test-fixture>
+
+<test-fixture id="disabledSlotContent">
+  <template>
+    <div>
+      <nuxeo-slot-content name="content" slot="SLOT1" disabled>
+        <template><span>Disabled content</span></template>
+      </nuxeo-slot-content>
+    </div>
+  </template>
+</test-fixture>
+
+<test-fixture id="reenabledSlotContent">
+  <template>
+    <div>
+      <nuxeo-slot-content name="content" slot="SLOT1"></nuxeo-slot-content>
+    </div>
+  </template>
+</test-fixture>
+
+<script type="module">
+  import '@polymer/polymer/polymer-legacy.js';
+  import '../nuxeo-slots.js';
+  /* eslint-disable no-unused-expressions */
+
+
+  // return all children excluding <nuxeo-slot>
+  function _content(container) {
+    return container.querySelectorAll(':not(nuxeo-slot)');
+  }
+
+  suite('<nuxeo-slot>', () => {
+
+    let slot1;
+    let slot2;
+
+    setup(() => {
+      slot1 = fixture('slot1');
+      slot2 = fixture('slot2');
+    });
+
+    test('empty slots and content', () => {
+      expect(_content(slot1)).to.be.empty;
+
+      fixture('emptySlotContent');
+
+      return flush().then(() => {
+        expect(_content(slot1)).to.be.empty;
+      });
+    });
+
+    test('slot content', () => {
+      document.getElementById('slot1Content1').create();
+
+      return flush().then(() => {
+        expect(_content(slot1).length).to.be.equal(1);
+        expect(_content(slot2)).to.be.empty;
+
+        document.getElementById('slot1Content2').create();
+        return flush();
+      }).then(() => {
+        expect(_content(slot1).length).to.be.equal(2);
+        expect(_content(slot2)).to.be.empty;
+
+        document.getElementById('slot2Content').create();
+        return flush();
+      }).then(() => {
+        expect(_content(slot1).length).to.be.equal(2);
+        expect(_content(slot2).length).to.be.equal(1);
+
+        const content1 = _content(slot1);
+        const content2 = _content(slot2);
+        expect(content1[0].textContent).to.be.equal('Content 1');
+        expect(content1[1].textContent).to.be.equal('Content 2');
+        expect(content2[0].textContent).to.be.equal('Content 3');
+
+        document.getElementById('slot1Content1').restore();
+        document.getElementById('slot1Content2').restore();
+        document.getElementById('slot2Content').restore();
+      });
+    });
+
+    test('slot content order', () => {
+
+      document.getElementById('slot1Content2').create();
+
+      return flush().then(() => {
+        expect(_content(slot1).length).to.be.equal(1);
+
+        fixture('slot1Content1');
+
+        return flush();
+      }).then(() => {
+        const content = _content(slot1);
+        expect(content.length).to.be.equal(2);
+        // check content 1 was moved to first
+        expect(content[0].textContent).to.be.equal('Content 1');
+
+        document.getElementById('slot1Content2').restore();
+      });
+    });
+
+    test('slot content disabled', () => {
+
+      fixture('slot1Content1');
+      return flush().then(() => {
+        expect(_content(slot1).length).to.be.equal(1);
+
+        fixture('slot1Content1Disabled');
+        return flush();
+      }).then(() => {
+        expect(_content(slot1)).to.be.empty;
+      });
+    });
+
+    test('slot content re-enabled', () => {
+
+      fixture('disabledSlotContent');
+      return flush().then(() => {
+        expect(_content(slot1)).to.be.empty;
+
+        fixture('reenabledSlotContent');
+        return flush();
+      }).then(() => {
+        const content = _content(slot1);
+        expect(content.length).to.be.equal(1);
+        expect(content[0].textContent).to.be.equal('Disabled content');
+      });
+    });
+
+    test('slot content override', () => {
+
+      fixture('slot1Content1');
+      fixture('slot1Content2');
+      let content;
+
+      return flush().then(() => {
+        content = _content(slot1);
+        expect(content.length).to.be.equal(2);
+        expect(content[0].textContent).to.be.equal('Content 1');
+
+        fixture('slot1Content1Override');
+        return flush();
+      }).then(() => {
+        content = _content(slot1);
+        expect(content.length).to.be.equal(2);
+        // check content 1 was moved to last
+        expect(content[1].textContent).to.be.equal('Content 1 override');
+      });
+    });
+
+    test('slot content priority', () => {
+
+      fixture('slot1Content1');
+      fixture('slot1Content1Priority');
+
+      return flush().then(() => {
+        const content = _content(slot1);
+        expect(content.length).to.be.equal(1);
+        expect(content[0].textContent).to.be.equal('Content 1 override');
+      });
+    });
+
+    test('slot shared model', () => {
+
+      fixture('slot1Content3');
+      window.nuxeo.slots.setSharedModel({ property: 'test1' });
+
+      return flush().then(() => {
+        const content = _content(slot1);
+        expect(content.length).to.be.equal(1);
+        expect(content[0].textContent).to.be.equal('test1');
+        window.nuxeo.slots.setSharedModel({ property: 'test2' });
+        expect(content[0].textContent).to.be.equal('test2');
+      });
+    });
+
+  });
+</script>
+</body>
+</html>

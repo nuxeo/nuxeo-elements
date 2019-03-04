@@ -1,0 +1,17 @@
+{
+  "env": {
+    "mocha": true
+  },
+  "globals": {
+    "WCT": false,
+    "sinon": true,
+    "fixture": true,
+    "expect": true,
+    "assert": true,
+    "MockInteractions": true,
+    "login": true,
+    "waitChanged": true,
+    "waitForEvent": true,
+    "flush": true
+  }
+}
