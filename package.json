@@ -9,8 +9,8 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "nuke": "rm -rf package-lock.json node_modules && npm install && lerna exec \"rm -f package-lock.json\" && lerna clean --yes && lerna bootstrap && lerna exec --stream -- \"test -f package-lock.json || npm install --package-lock-only\"",
-    "lint": "lerna run lint --stream",
-    "test": "lerna run test --stream",
+    "lint": "lerna run lint --concurrency 1 --stream",
+    "test": "lerna run test --concurrency 1 --stream",
     "docs": "lerna run docs --parallel"
   },
   "devDependencies": {

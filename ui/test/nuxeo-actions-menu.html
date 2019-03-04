@@ -114,36 +114,38 @@ limitations under the License.
 
 <test-fixture id="contribution">
   <template>
-    <dom-module id="nuxeo-test-button">
-      <template>
-        <style include="nuxeo-action-button-styles"></style>
-        <div class="action">
-          <paper-icon-button icon="[[icon]]"></paper-icon-button>
-          <span class="label" hidden$="[[!showLabel]]">Label</span>
-        </div>
-      </template>
-      <script>
-        {
-          class TestButton extends Nuxeo.Element {
-            static get is() { return 'nuxeo-test-button'; }
-            static get properties() {
-              return {
-                icon: String,
-                showLabel: {
-                  type: Boolean,
-                  value: false,
-                },
-              };
-            }
+    <script>
+      {
+        class TestButton extends Nuxeo.Element {
+          static get is() { return 'nuxeo-test-button'; }
+          static get template() {
+            // eslint-disable-next-line no-undef
+            return html`
+            <style include="nuxeo-action-button-styles"></style>
+            <div class="action">
+              <paper-icon-button icon="[[icon]]"></paper-icon-button>
+              <span class="label" hidden$="[[!showLabel]]">Label</span>
+            </div>
+            `;
           }
-          customElements.define(TestButton.is, TestButton);
+          static get properties() {
+            return {
+              icon: String,
+              showLabel: {
+                type: Boolean,
+                value: false,
+              },
+            };
+          }
         }
-      </script>
-    </dom-module>
+        customElements.define(TestButton.is, TestButton);
+      }
+    </script>
   </template>
 </test-fixture>
 
 <script type="module">
+  import { html } from '@polymer/polymer/lib/utils/html-tag.js';
   import '@polymer/polymer/polymer-legacy.js';
   import { flush as flush$0 } from '@polymer/polymer/lib/legacy/polymer.dom.js';
   import '@polymer/iron-test-helpers/mock-interactions.js';
@@ -153,6 +155,8 @@ limitations under the License.
   import '../actions/nuxeo-action-button-styles.js';
   import '../actions/nuxeo-preview-button.js';
   import '../widgets/nuxeo-actions-menu.js';
+
+  window.html = html; // make it available for building custom elements inline
 
   /* eslint-disable no-unused-expressions */
   suite('<nuxeo-actions-menu>', () => {
