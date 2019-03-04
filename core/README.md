@@ -1,56 +1,6 @@
-[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/nuxeo/nuxeo-elements)
-[![Build Status](https://qa.nuxeo.org/jenkins/buildStatus/icon?job=master/nuxeo-elements-master)](https://qa.nuxeo.org/jenkins/job/master/job/nuxeo-elements-master/)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b6e719e30d53435e8a76230067aade3b)](https://www.codacy.com/app/Nuxeo/nuxeo-elements)
-[![Coverage Status](https://coveralls.io/repos/github/nuxeo/nuxeo-elements/badge.svg)](https://coveralls.io/github/nuxeo/nuxeo-elements)
-
-[![Browser Status](https://badges.herokuapp.com/sauce/nuxeo-elements?name=nuxeo-elements-master)](https://saucelabs.com/u/nuxeo-elements)
-
 # About nuxeo-elements
 
-**Nuxeo Elements** is an ongoing work to develop a set of elements for building Polymer applications with Nuxeo.
-
-## Dependencies
-
-Element dependencies are managed via [Bower](http://bower.io/). You can
-install that via:
-
-    npm install -g bower
-
-Then, go ahead and download the element's dependencies:
-
-    bower install
-
-## Reference nuxeo-elements in your Bower dependencies
-
-    bower install -S nuxeo/nuxeo-elements
-
-## Quickstart
-
-We recommend that you use [Polyserve](https://github.com/PolymerLabs/polyserve) which you can install via:
-
-    npm install -g polyserve
-
-And you can run it via:
-
-    polyserve -p 3000
-
-Once running, you can checkout the docs and demo at `http://localhost:3000/components/nuxeo-elements/`.
-
-## Documentation
-
-- [Nuxeo Elements](https://doc.nuxeo.com/x/XJCRAQ) in our Developer Documentation Center.
-- [Online](http://nuxeo.github.io/nuxeo-elements) reference and demos.
-
-## Report & Contribute
-
-We are glad to welcome new developers on this initiative, and even simple usage feedback is great.
-- Ask your questions on [Nuxeo Answers](http://answers.nuxeo.com)
-- Report issues on our [JIRA](https://jira.nuxeo.com/browse/ELEMENTS)
-- Contribute: Send pull requests!
-
-## Big Thanks
-
-Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs](https://saucelabs.com)
+**Nuxeo Elements** is [web components](https://developer.mozilla.org/en-US/docs/Web/Web_Components) library of core data elements to develop custom elements with Nuxeo.
 
 ## License
 
