@@ -242,27 +242,23 @@ limitations under the License.
 
 <test-fixture id="mySlotContent">
   <template>
-    <dom-module id="my-custom-element">
-      <template>
-        <span id="label">[[label]]</span>
-      </template>
-      <script>
-        {
-          class CustomElement extends Nuxeo.Element {
-            static get is() { return 'my-custom-element'; }
-            static get properties() {
-              return {
-                label: {
-                  type: String,
-                  value: 'default',
-                },
-              };
-            }
+    <script>
+      {
+        class CustomElement extends Nuxeo.Element {
+          static get is() { return 'my-custom-element'; }
+          static get template() { return html`<span id="label">[[label]]</span>`; } // eslint-disable-line no-undef
+          static get properties() {
+            return {
+              label: {
+                type: String,
+                value: 'default',
+              },
+            };
           }
-          customElements.define(CustomElement.is, CustomElement);
         }
-      </script>
-    </dom-module>
+        customElements.define(CustomElement.is, CustomElement);
+      }
+    </script>
 
     <nuxeo-slot-content id='slot' name="test" slot="TEST_SLOT" order="1" model>
       <template>
@@ -297,10 +293,13 @@ limitations under the License.
 </div>
 
 <script type="module">
+  import { html } from '@polymer/polymer/lib/utils/html-tag.js';
   import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
   import '@polymer/polymer/polymer-legacy.js';
   import '../nuxeo-filter.js';
   import '../nuxeo-slots.js';
+
+  window.html = html; // make it available for building custom elements inline
   /* eslint-disable no-unused-expressions */
 
   suite('<nuxeo-filter>', () => {
