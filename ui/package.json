@@ -18,7 +18,7 @@
     "eslint": "eslint . --ext js,html",
     "polylint": "polymer lint",
     "lint": "npm run eslint && npm run polylint",
-    "test": "polymer test --npm --simpleOutput --expanded -l chrome",
+    "test": "polymer test --npm --simpleOutput --expanded -l chrome,firefox",
     "docs": "polymer analyze > analysis.json && polymer serve"
   },
   "devDependencies": {
