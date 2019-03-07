@@ -4,7 +4,7 @@
       "dir": "./coverage",
       "reporters": ["text-summary", "lcov"],
       "include": [
-        "**/nuxeo-elements/*.html"
+        "**/*.js"
       ],
       "exclude": []
     },
@@ -30,6 +30,13 @@
           "browserName": "safari",
           "platform": "macOS 10.13",
           "version": "latest"
+        },
+        {
+          "browserName": "chrome",
+          "platform": "android",
+          "version": "7.1",
+          "deviceName": "Android GoogleAPI Emulator",
+          "deviceType": "tablet"
         }
       ]
     }
