@@ -4,7 +4,7 @@
       "dir": "./coverage",
       "reporters": ["text-summary", "lcov"],
       "include": [
-        "**/nuxeo-elements/*.html"
+        "**/*.js"
       ],
       "exclude": []
     },

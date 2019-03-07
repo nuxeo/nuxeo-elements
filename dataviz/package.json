@@ -14,6 +14,7 @@
   "license": "Apache 2.0",
   "scripts": {
     "precommit": "lint-staged",
+    "coveralls": "cat coverage/lcov.info | coveralls",
     "eslint": "eslint *.js *.html demo/**/*.html test/**/*.html",
     "polylint": "polymer lint",
     "lint": "npm run eslint && npm run polylint",
@@ -21,6 +22,7 @@
     "docs": "polymer analyze > analysis.json && polymer serve"
   },
   "devDependencies": {
+    "coveralls": "^3.0.2",
     "eslint": "^4.14.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-config-google": "^0.9.1",
@@ -32,6 +34,7 @@
     "@polymer/iron-component-page": "^4.0.0",
     "@polymer/test-fixture": "^4.0.2",
     "wct-browser-legacy": "^1.0.1",
+    "wct-istanbul": "^0.14.3",
     "@webcomponents/webcomponentsjs": "^2.0.0"
   },
   "resolutions": {
