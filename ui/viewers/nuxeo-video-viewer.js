@@ -55,11 +55,12 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
       }
 
       #video.hasStoryboard {
-        max-height: calc(100% - 85px);
+        max-height: calc(100% - 110px);
       }
 
       #storyboard {
         background: var(--primary-background-color);
+        max-height: 110px;
       }
 
       #thumbnails {
