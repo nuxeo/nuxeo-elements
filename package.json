@@ -23,7 +23,8 @@
     "lint": "npm run lint:polymer && npm run lint:eslint && npm run lint:prettier",
     "win-lint": "npm run win-lint:polymer && npm run lint:eslint && npm run lint:prettier",
     "format": "npm run format:polymer && npm run format:prettier && npm run format:eslint",
-    "win-format": "npm run win-format:polymer && npm run format:prettier && npm run format:eslint "
+    "win-format": "npm run win-format:polymer && npm run format:prettier && npm run format:eslint ",
+    "storybook": "lerna run analysis --parallel && cd storybook && npm start"
   },
   "devDependencies": {
     "@open-wc/eslint-config": "^0.3.0",

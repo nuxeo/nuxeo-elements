@@ -13,7 +13,8 @@
   "author": "Nuxeo",
   "license": "Apache 2.0",
   "scripts": {
-    "docs": "polymer analyze . > analysis.json && npm run serve",
+    "analysis": "polymer analyze . > analysis.json",
+    "docs": "npm run analysis && npm run serve",
     "serve": "polymer serve --npm -c ../node_modules"
   },
   "devDependencies": {
