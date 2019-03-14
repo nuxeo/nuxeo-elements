@@ -1,0 +1,32 @@
+{
+  "description": "Nuxeo Web Components Storybook",
+  "repository": "nuxeo/nuxeo-elements.git",
+  "name": "@nuxeo/nuxeo-elements-storybook",
+  "private": true,
+  "version": "3.0.0-SNAPSHOT",
+  "author": "Nuxeo",
+  "license": "Apache 2.0",
+  "dependencies": {
+    "@babel/core": "^7.3.4",
+    "@nuxeo/nuxeo-ui-elements": "^3.0.0-SNAPSHOT",
+    "@storybook/addon-actions": "^5.0.1",
+    "@storybook/addon-knobs": "^5.0.1",
+    "@storybook/addon-notes": "^5.0.1",
+    "@storybook/addon-storysource": "^5.0.1",
+    "@storybook/addons": "^5.0.1",
+    "@storybook/core": "^5.0.1",
+    "@storybook/polymer": "^5.0.1",
+    "babel-loader": "^8.0.5",
+    "lit-html": "^1.0.0",
+    "polymer-webpack-loader": "^2.0.3",
+    "sinon": "^7.2.7"
+  },
+  "scripts": {
+    "start": "start-storybook -p 6006",
+    "build": "build-storybook",
+    "deploy": "storybook-to-ghpages"
+  },
+  "devDependencies": {
+    "@storybook/storybook-deployer": "^2.8.1"
+  }
+}
