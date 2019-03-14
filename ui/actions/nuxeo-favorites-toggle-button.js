@@ -36,6 +36,10 @@ import './nuxeo-action-button-styles.js';
    *
    *     <nuxeo-favorites-toggle-button document="[[document]]"></nuxeo-favorites-toggle-button>
    *
+   * Custom property | Description | Default
+   * ----------------|-------------|----------
+   * `--nuxeo-action-color-activated` | Color of the icon when activated | #00aded
+   *
    * @appliesMixin Nuxeo.I18nBehavior
    * @appliesMixin Nuxeo.FiltersBehavior
    * @memberof Nuxeo
@@ -89,12 +93,14 @@ import './nuxeo-action-button-styles.js';
 
         favorite: {
           type: Boolean,
+          readOnly: true,
           notify: true,
           reflectToAttribute: true,
         },
 
         /**
          * `true` if the action should display the label, `false` otherwise.
+         * @private
          */
         showLabel: {
           type: Boolean,
@@ -112,7 +118,7 @@ import './nuxeo-action-button-styles.js';
       super.ready();
       this.removeFromFavoritesHandler = (e) => {
         if (this.document && e.detail.docUid && e.detail.docUid === this.document.uid) {
-          this.favorite = false;
+          this._setFavorite(false);
         }
       };
       window.addEventListener('removed-from-favorites', this.removeFromFavoritesHandler);
@@ -129,6 +135,14 @@ import './nuxeo-action-button-styles.js';
       return this.isCollectionMember(doc);
     }
 
+    /**
+     * Fired when a document is added to favorites.
+     * @event added-to-favorites
+     */
+    /**
+     * Fired when a document is removed from favorites.
+     * @event removed-from-favorites
+     */
     _toggle() {
       if (!this.favorite) {
         this.$.opAdd.execute().then(() => {
@@ -139,7 +153,7 @@ import './nuxeo-action-button-styles.js';
               detail: { doc: this.document },
             }),
           );
-          this.favorite = true;
+          this._setFavorite(true);
         });
       } else {
         this.$.opRemove.execute().then(() => {
@@ -150,7 +164,7 @@ import './nuxeo-action-button-styles.js';
               detail: { doc: this.document },
             }),
           );
-          this.favorite = false;
+          this._setFavorite(false);
         });
       }
     }
@@ -160,7 +174,7 @@ import './nuxeo-action-button-styles.js';
     }
 
     _documentChanged() {
-      this.favorite = this.isFavorite(this.document);
+      this._setFavorite(this.isFavorite(this.document));
     }
   }
 
