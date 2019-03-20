@@ -46,7 +46,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
     _valueChanged(e) {
       // store value in a variable, referring to e.detail.value inside the debounce
       // function results in weird outcomes. event object might be reused by Polymer?
-      const value = e.detail.value;
+      const {value} = e.detail;
       this._debouncer = Debouncer.debounce(this._debouncer, timeOut.after(250), () => {
         this.value = value;
       });

@@ -165,6 +165,7 @@ window.nuxeo.slots.setSharedModel = ((model) => {
         if (c$ && c$.length) {
           // use first child parent, for case when dom-if may have been detached
           const p = dom(dom(c$[0]).parentNode);
+          // eslint-disable-next-line no-cond-assign
           for (let i = 0, n; (i < c$.length) && (n = c$[i]); i++) {
             p.removeChild(n);
           }
@@ -178,7 +179,7 @@ window.nuxeo.slots.setSharedModel = ((model) => {
       // keep track of stamped instances
       this._instances = [];
       _getRegistry(this.slot).nodes.forEach((node) => {
-        const template = node.template;
+        const {template} = node;
         if (!node.disabled && template) {
           delete template.__templatizeOwner;
           const ctor = templatize(template, this);

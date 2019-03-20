@@ -84,6 +84,26 @@ limitations under the License.
 
         let server;
 
+        function fakeResponse(search, json) {
+          server.respondWith(
+            'POST',
+            '/dummy/site/es/audit_wf/_search',
+            [
+              200,
+              {'Content-Type': 'application/json'},
+              JSON.stringify(json),
+            ],
+          );
+
+          const promise = search.fetch();
+
+          Base.async(() => {
+            server.respond();
+          });
+
+          return promise;
+        }
+
         setup(() => {
           server = sinon.fakeServer.create();
           server.autoRespond = true;
@@ -219,26 +239,6 @@ limitations under the License.
               {key: '1980-01-03', value: 3}]);
           });
         });
-
-        function fakeResponse(search, json) {
-          server.respondWith(
-            'POST',
-            '/dummy/site/es/audit_wf/_search',
-            [
-              200,
-              {'Content-Type': 'application/json'},
-              JSON.stringify(json),
-            ],
-          );
-
-          const promise = search.fetch();
-
-          Base.async(() => {
-            server.respond();
-          });
-
-          return promise;
-        }
 
       });
     </script>

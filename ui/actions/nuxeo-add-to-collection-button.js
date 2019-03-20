@@ -198,9 +198,9 @@ import './nuxeo-action-button-styles.js';
           this.collection = response.uid;
           this._addToCollection();
         });
-      } else {
+      } 
         this._addToCollection();
-      }
+      
     }
 
     _addToCollection() {

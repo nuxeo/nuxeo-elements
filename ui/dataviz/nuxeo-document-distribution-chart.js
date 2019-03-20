@@ -616,9 +616,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         .text((d) => {
           if (d.data.name.length > 10) {
             return `${d.data.name.substring(0, 9)}...`;
-          } else {
+          } 
             return d.data.name;
-          }
+          
         });
 
       // Set position for entering and updating nodes.
@@ -782,7 +782,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           ++u;
         } while (Math.abs(value) >= thresh && u < units.length - 1);
         return `${value.toFixed(1)} ${units[u]}`;
-      } else if (this.mode === 'count') {
+      } if (this.mode === 'count') {
         let result = value + (value === this.maxDocSize ? '+ ' : ' ');
         if (value > 1) {
           result += this.i18n('documentDistributionChart.documents');
@@ -790,9 +790,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           result += this.i18n('documentDistributionChart.document');
         }
         return result;
-      } else {
+      } 
         return value;
-      }
+      
     }
   }
 

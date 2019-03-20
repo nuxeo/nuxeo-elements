@@ -78,9 +78,9 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
     _computeErrorMessage(password) {
       if (!password) {
         return this.i18n('editPassword.required');
-      } else {
+      } 
         return this.i18n('editPassword.noMatch');
-      }
+      
     }
 
     _getValidity() {

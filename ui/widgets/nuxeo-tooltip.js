@@ -142,7 +142,7 @@ import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
      * Code adapted from paper-tooltip.
      */
     get target() {
-      const parentNode = dom(this).parentNode;
+      const {parentNode} = dom(this);
       // If the parentNode is a document fragment, then we need to use the host.
       const ownerRoot = dom(this).getOwnerRoot();
       let target;

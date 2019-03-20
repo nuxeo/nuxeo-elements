@@ -215,11 +215,11 @@ import '@polymer/polymer/lib/elements/dom-if.js';
             throw error;
           }
         });
-      } else {
+      } 
         return new Promise(((resolve) => {
           resolve();
         }));
-      }
+      
     }
 
     _queryChildren(parent, term) {

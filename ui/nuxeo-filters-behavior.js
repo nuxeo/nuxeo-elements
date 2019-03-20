@@ -52,9 +52,9 @@ export const FiltersBehavior = {
     if (doc) {
       if (typeof doc.isTrashed === 'undefined') {
         return this.hasState(doc, 'deleted');
-      } else {
+      } 
         return doc.isTrashed;
-      }
+      
     }
     return false;
   },

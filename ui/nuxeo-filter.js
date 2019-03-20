@@ -190,7 +190,8 @@ import { FiltersBehavior } from './nuxeo-filters-behavior.js';
           // pass if any check returns true, basically Array.some()
           let pass = false;
           for (let i = 0; i < values.length; i++) {
-            if ((pass = fn.apply(this, args.concat(values[i])))) {
+            pass = fn.apply(this, args.concat(values[i]))
+            if (pass) {
               break;
             }
           }
@@ -220,7 +221,7 @@ import { FiltersBehavior } from './nuxeo-filters-behavior.js';
       if (this._instance) {
         return;
       }
-      const parentNode = dom(this).parentNode;
+      const {parentNode} = dom(this);
       if (parentNode) {
         const template = dom(this).querySelector('template');
         const parent = dom(parentNode);
@@ -238,7 +239,7 @@ import { FiltersBehavior } from './nuxeo-filters-behavior.js';
             }
           }
           this._instance._flushProperties();
-          const root = this._instance.root;
+          const {root} = this._instance;
           parent.insertBefore(root, this);
         }
       }
@@ -260,6 +261,7 @@ import { FiltersBehavior } from './nuxeo-filters-behavior.js';
         if (c$ && c$.length) {
           // use first child parent, for case when dom-if may have been detached
           const parent = dom(dom(c$[0]).parentNode);
+          // eslint-disable-next-line no-cond-assign
           for (let i = 0, n; (i < c$.length) && (n = c$[i]); i++) {
             parent.removeChild(n);
           }

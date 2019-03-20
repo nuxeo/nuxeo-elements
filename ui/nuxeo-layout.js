@@ -94,17 +94,18 @@ import './nuxeo-error.js';
     validate() {
       if (this.element && (typeof this.element.validate === 'function')) {
         return this.element.validate();
-      } else {
+      } 
         // workaroud for https://github.com/PolymerElements/iron-form/issues/218, adapted from iron-form.html
         let valid = true;
         if (this.element) {
           const elements = this._getValidatableElements(this.element.root);
-          for (let el, i = 0; el = elements[i], i < elements.length; i++) {
+          for (let el, i = 0; i < elements.length; i++) {
+            el = elements[i];
             valid = (el.validate ? el.validate() : el.checkValidity()) && valid;
           }
         }
         return valid;
-      }
+      
     }
 
     _getValidatableElements(parent) {

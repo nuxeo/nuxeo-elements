@@ -285,8 +285,8 @@ import './nuxeo-connection.js';
       return this._request
         .path(this.path)
         .queryParams(params)
-        .repositoryName(this._request._baseOptions.repositoryName === 'default' ?
-          undefined : this._request._baseOptions.repositoryName)
+        .repositoryName(this._request._baseOptions.repositoryName === 'default'
+          ? undefined : this._request._baseOptions.repositoryName)
         .execute(options)
         .then((response) => response.text().then((text) => {
           try {
@@ -324,7 +324,7 @@ import './nuxeo-connection.js';
                 try {
                   this.error = JSON.parse(text);
                   this.error.status = error.response.status;
-                  console.log(`Resource request failed: ${this.error.message}`);
+                  console.warn(`Resource request failed: ${this.error.message}`);
                 } catch (e) {
                   this.error = {message: 'Invalid json', status: error.response.status};
                 }
@@ -333,9 +333,9 @@ import './nuxeo-connection.js';
               }
               throw this.error;
             });
-          } else {
-            throw error;
           }
+            throw error;
+
         });
     }
 

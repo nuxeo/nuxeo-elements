@@ -189,7 +189,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // fill keys array based on buckets
       this.set('_keys', []);
       let offset = 1;
-      let granularity = this.granularity;
+      let {granularity} = this;
       buckets.forEach((bucket) => {
 
         let visible = false;

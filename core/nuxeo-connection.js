@@ -130,16 +130,16 @@ import './nuxeo-element.js';
           this.repositoryName = this.client._baseOptions.repositoryName;
         }
         // if properties match the existing client use it
-        if (this.client._baseURL === this.url &&
-          this.client._username === this.username &&
-          this.client._password === this.password &&
-          this.client._baseOptions.repositoryName === this.repositoryName) {
+        if (this.client._baseURL === this.url
+          && this.client._username === this.username
+          && this.client._password === this.password
+          && this.client._baseOptions.repositoryName === this.repositoryName) {
           // return the stored connection request promise and chain _handleConnected to update instance properties
           return this.client._promise.then(this._handleConnected.bind(this));
-        } else {
+        }
           // otherwise override the client with the new properties
           this.client = null;
-        }
+
       }
       const options = {
         baseURL: this.url,
@@ -164,7 +164,7 @@ import './nuxeo-element.js';
       // share the connect promise between all instances (one per client)
       this.client._promise = this.client.connect()
         .catch((error) => {
-          console.log(`Nuxeo connection refused: ${error}`);
+          console.warn(`Nuxeo connection refused: ${error}`);
           throw error;
         });
 

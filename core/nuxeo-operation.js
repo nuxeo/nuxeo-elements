@@ -295,7 +295,7 @@ import './nuxeo-page-provider.js';
           }
           this.success = false;
           this.error = error;
-          console.log(`Operation request failed: ${error}`);
+          console.warn(`Operation request failed: ${error}`);
           this._setActiveRequests(this.activeRequests - 1);
           throw error;
         });

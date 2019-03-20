@@ -158,10 +158,10 @@ import './nuxeo-action-button-styles.js';
           if (idx > 0) {
             if (this._sortedDocuments[idx - 1].uid === this.documents[this.documents.indexOf(doc) + 1].uid) {
               return true;
-            } else {
+            } 
               sequenceBreakIdx = idx;
               return false;
-            }
+            
           }
           return true;
         });

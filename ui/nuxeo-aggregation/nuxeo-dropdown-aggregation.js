@@ -99,9 +99,9 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
             displayLabel: label,
           };
         });
-      } else {
+      } 
         return [];
-      }
+      
     }
   }
 

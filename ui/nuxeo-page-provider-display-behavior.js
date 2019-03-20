@@ -246,7 +246,7 @@ export const PageProviderDisplayBehavior = [I18nBehavior, {
   },
 
   _selected(e) {
-    const index = e.detail.index;
+    const {index} = e.detail;
     if (typeof index === 'number') {
       if (e.detail.shiftKey && typeof this._lastSelectedIndex === 'number') {
 
@@ -635,7 +635,7 @@ export const PageProviderDisplayBehavior = [I18nBehavior, {
                   aggregation.properties && aggregation.properties.order) {
                 const order = aggregation.properties.order.split(' ');
                 if (order.length > 0 && order[0] === 'key') {
-                  buckets = aggregation.buckets;
+                  ({ buckets} = aggregation);
                 }
                 if (order.length > 1 && order[1] !== providerOrder) {
                   buckets.reverse();

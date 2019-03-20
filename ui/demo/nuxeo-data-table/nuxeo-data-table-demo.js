@@ -151,10 +151,10 @@ import '../../nuxeo-data-table/iron-data-table.js';
       if (doc && doc.uid) {
         if (doc.contextParameters && doc.contextParameters.thumbnail.url) {
           return doc.contextParameters.thumbnail.url;
-        } else {
+        } 
           const baseUrl = document.querySelector('nuxeo-connection').url;
           return `${baseUrl}/nxthumb/default/${doc.uid}/blobholder:0/`;
-        }
+        
       }
     }
 

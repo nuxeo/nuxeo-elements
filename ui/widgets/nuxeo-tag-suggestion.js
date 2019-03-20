@@ -231,9 +231,9 @@ import './nuxeo-selectivity.js';
     _resultFormatter(tag) {
       if (tag.newTag) {
         return `<span class='s2newTag'>+ ${this.$.s2.escapeHTML(tag.displayLabel)}</span>`;
-      } else {
+      } 
         return `<span class='s2existingTag'>${this.$.s2.escapeHTML(tag.displayLabel)}</span>`;
-      }
+      
     }
 
     _newEntryFormatter(term) {

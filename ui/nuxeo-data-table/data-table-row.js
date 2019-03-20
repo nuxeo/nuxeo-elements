@@ -122,7 +122,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 
     connectedCallback() {
       super.connectedCallback();
-      const host = dom(this).getOwnerRoot().host;
+      const {host} = dom(this).getOwnerRoot();
       if (host && host.tagName === 'NUXEO-DATA-TABLE') {
         const id = this._static.id++;
         const item = this.parentElement;

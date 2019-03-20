@@ -137,18 +137,18 @@ import './nuxeo-tooltip.js';
         const lastName = user.properties.lastName || user.properties['user:lastName'];
         const email = user.properties.email || user.properties['user:email'];
         return (firstName || lastName) ? `${firstName} ${lastName}` : email || this._id(user);
-      } else {
+      } 
         return this._id(user);
-      }
+      
     }
 
     _email(user) {
       if (this._isEntity(user)) {
         const email = user.properties.email || user.properties['user:email'];
         return email !== this._id(user) ? email : '';
-      } else {
+      } 
         return '';
-      }
+      
     }
 
     _href(user) {

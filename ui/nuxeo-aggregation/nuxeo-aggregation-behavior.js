@@ -81,7 +81,7 @@ export const AggregationBehavior = {
         buckets.sort((a, b) => {
           if (a.label < b.label) {
             return -1;
-          } else if (a.label > b.label) {
+          } if (a.label > b.label) {
             return 1;
           }
           return 0;
@@ -107,24 +107,24 @@ export const AggregationBehavior = {
       const entry = item.fetchedKey;
       if (entry['entity-type'] === 'directoryEntry') {
         return this.labelForDirectoryEntry(entry);
-      } else if (entry['entity-type'] === 'user') {
+      } if (entry['entity-type'] === 'user') {
         return this.labelForUserEntry(entry);
-      } else if (entry['entity-type'] === 'document') {
+      } if (entry['entity-type'] === 'document') {
         return entry.properties['dc:title'] || this.i18n('aggregation.format.document.field.unknown', 'dc:title');
-      } else {
+      } 
         i18nKey = this.i18n(`label.ui.aggregate.${item.key}`);
         return i18nKey === `label.ui.aggregate.${item.key}` ? item.key : i18nKey;
-      }
-    } else {
+      
+    } 
       i18nKey = this.i18n(`label.ui.aggregate.${item.key}`);
       return i18nKey === `label.ui.aggregate.${item.key}` ? item.key : i18nKey;
-    }
+    
   },
 
   labelForDirectoryEntry(entry) {
     let lang = window.nuxeo.I18n.language || 'en';
     if (lang.indexOf('-') > -1) {
-      lang = lang.split('-')[0];
+      [ lang ] = lang.split('-');
     }
     const labels = [];
     while (entry) {
@@ -145,12 +145,12 @@ export const AggregationBehavior = {
   labelForUserEntry(entry) {
     if (entry.properties === undefined) {
       return entry.id;
-    } else if (entry.properties.firstName && entry.properties.firstName.length > 0
+    } if (entry.properties.firstName && entry.properties.firstName.length > 0
      && entry.properties.lastName && entry.properties.lastName.length > 0) {
       return `${entry.properties.firstName} ${entry.properties.lastName}`;
-    } else {
+    } 
       return entry.properties.username;
-    }
+    
   },
 
 };

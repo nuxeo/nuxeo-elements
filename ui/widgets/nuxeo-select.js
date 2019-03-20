@@ -238,7 +238,7 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
       const button = this.$.paperDropdownMenu.$.menuButton;
       button.noOverlap = true;
       button.verticalOffset = -8;
-      const width = this.getBoundingClientRect().width;
+      const {width} = this.getBoundingClientRect();
       if (width > 0) {
         this.$.paperDropdownMenu.style.width = this.$.paperMenu.style.width = `${width}px`;
       }
