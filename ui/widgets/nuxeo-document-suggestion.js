@@ -290,7 +290,7 @@ import './nuxeo-selectivity.js';
           if (element.length > 0) {
             if (element[0].title) {
               return callback(element);
-            } else if (typeof element[0] === 'string' && element[0].length > 0) {
+            } if (typeof element[0] === 'string' && element[0].length > 0) {
               return this._resolveDocs(element, callback);
             }
           } else {
@@ -301,11 +301,11 @@ import './nuxeo-selectivity.js';
         } else if (typeof element === 'string') {
           if (element.length > 0) {
             return this._resolveDocs(element, callback);
-          } else {
+          } 
             return callback('');
-          }
+          
         }
-        console.log('Unable to resolve such entry. Write your own resolver');
+        console.warn('Unable to resolve such entry. Write your own resolver');
       }
     }
 

@@ -31,13 +31,13 @@ export const FormatBehavior = [I18nBehavior, {
   formatSize(size) {
     if (!size || size < 0) {
       return '';
-    } else if (size > 1048576) {
+    } if (size > 1048576) {
       return `${parseFloat(size / 1048576).toFixed(2)} MB`;
-    } else if (size > 1024) {
+    } if (size > 1024) {
       return `${parseFloat(size / 1024).toFixed(2)} KB`;
-    } else {
+    } 
       return `${size.toString()} Bytes`;
-    }
+    
   },
 
   _formatDate(date, fmt) {
@@ -98,9 +98,9 @@ export const FormatBehavior = [I18nBehavior, {
     if (doc && doc.properties
         && doc.properties['uid:major_version'] !== undefined && doc.properties['uid:minor_version'] !== undefined) {
       return `${doc.properties['uid:major_version']}.${doc.properties['uid:minor_version']}`;
-    } else {
+    } 
       return '';
-    }
+    
   },
 
   /**
@@ -110,26 +110,26 @@ export const FormatBehavior = [I18nBehavior, {
     if (value && value['entity-type'] && value['entity-type'] === 'directoryEntry') {
       if (value.properties && value.properties.label) {
         return this._absoluteDirectoryPath(value, 'label', separator || '/');
-      } else {
+      } 
         const label = `label_${this._languageCode()}`;
         return this._absoluteDirectoryPath(value, label || 'label_en', separator || '/');
-      }
-    } else {
+      
+    } 
       return value;
-    }
+    
   },
 
   _absoluteDirectoryPath(entry, labelField, separator, subPath) {
-    const parent = entry.properties.parent;
+    const {parent} = entry.properties;
     let tmp = entry.properties[labelField];
     if (subPath) {
       tmp += separator + subPath;
     }
     if (parent && parent['entity-type'] && parent['entity-type'] === 'directoryEntry') {
       return this._absoluteDirectoryPath(parent, labelField, separator, tmp);
-    } else {
+    } 
       return tmp;
-    }
+    
   },
 
   /**

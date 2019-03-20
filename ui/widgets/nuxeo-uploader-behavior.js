@@ -34,9 +34,9 @@ DefaultUploadProvider.prototype._ensureBatch = function () {
     return this.connection.batchUpload().then((uploader) => {
       this.uploader = uploader;
     });
-  } else {
+  } 
     return Promise.resolve();
-  }
+  
 };
 
 DefaultUploadProvider.prototype._newBatch = function () {
@@ -329,7 +329,7 @@ export const UploaderBehavior = {
         return this.response;
       }).catch((error) => {
         this.fire('error', error);
-        console.log(`Batch Execute operation failed: ${error}`);
+        console.error(`Batch Execute operation failed: ${error}`);
         throw error;
       });
   },
@@ -353,9 +353,9 @@ export const UploaderBehavior = {
         }
       }
       return true;
-    } else {
+    } 
       return this._accepts(files);
-    }
+    
   },
 
   _accepts(file) {

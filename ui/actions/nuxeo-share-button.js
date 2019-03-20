@@ -134,7 +134,7 @@ import './nuxeo-action-button-styles.js';
     }
 
     _buildPermalink(document) {
-      return document ? `${location.origin + location.pathname}#!/doc/${document.uid}` : '';
+      return document ? `${window.location.origin + window.location.pathname}#!/doc/${document.uid}` : '';
     }
 
     _copyPermalink() {

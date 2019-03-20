@@ -337,7 +337,7 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
     }
 
     _click(e) {
-      const index = e.model.item._view.index;
+      const {index} = e.model.item._view;
       if (this.selectionEnabled && this.selectionMode) {
         // since we are using Object.assign() when creating items for the grid, we cannot really use
         // selector.selectItem()/deselectItem() because it relies on indexOf and since the e.model.item is not a

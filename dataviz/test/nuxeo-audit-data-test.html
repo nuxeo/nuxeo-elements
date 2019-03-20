@@ -86,8 +86,28 @@ limitations under the License.
       import '../nuxeo-audit-data.js';
 
       suite('<nuxeo-audit-data>', () => {
-
+        
         let server;
+
+        function fakeResponse(search, json) {
+          server.respondWith(
+            'POST',
+            '/dummy/site/es/audit/_search',
+            [
+              200,
+              {'Content-Type': 'application/json'},
+              JSON.stringify(json),
+            ],
+          );
+
+          const promise = search.fetch();
+
+          Base.async(() => {
+            server.respond();
+          });
+
+          return promise;
+        }
 
         setup(() => {
           server = sinon.fakeServer.create();
@@ -223,27 +243,6 @@ limitations under the License.
             {term: {anotherKey: 'anotherValue'}},
           ]);
         });
-
-        function fakeResponse(search, json) {
-          server.respondWith(
-            'POST',
-            '/dummy/site/es/audit/_search',
-            [
-              200,
-              {'Content-Type': 'application/json'},
-              JSON.stringify(json),
-            ],
-          );
-
-          const promise = search.fetch();
-
-          Base.async(() => {
-            server.respond();
-          });
-
-          return promise;
-        }
-
       });
     </script>
   </body>

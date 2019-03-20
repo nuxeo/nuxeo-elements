@@ -123,7 +123,7 @@ import './nuxeo-action-button-styles.js';
     }
 
     _delete() {
-      if (!confirm(this.i18n('deleteButton.confirm'))) {
+      if (!window.confirm(this.i18n('deleteButton.confirm'))) {
         return;
       }
       const op = this.hard ? this.$.deleteOp : this.$.trashOp;

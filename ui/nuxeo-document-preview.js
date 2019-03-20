@@ -291,12 +291,12 @@ import './viewers/nuxeo-video-viewer.js';
 
     _computeIFrameSource() {
       if (this.document && this.document.contextParameters && this.document.contextParameters.preview) {
-        let url = this.document.contextParameters.preview.url;
+        let {url} = this.document.contextParameters.preview;
         if (this.xpath !== 'file:content') {
           url = url.replace('/@preview/', `/@blob/${this.xpath}/@preview/`);
         }
         return url;
-      } else if (this._blob) {
+      } if (this._blob) {
         return this._blob.data;
       }
     }

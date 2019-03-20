@@ -2,7 +2,11 @@
   "env": {
     "mocha": true
   },
+  "rules": {
+    "import/no-extraneous-dependencies": ["error", { "devDependencies": true }]
+  },
   "globals": {
+    "moment": true,
     "WCT": false,
     "sinon": true,
     "fixture": true,

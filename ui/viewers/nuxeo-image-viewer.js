@@ -22,7 +22,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-import 'cropperjs/dist/cropper.esm.js';
+import 'cropperjs/dist/cropper.esm.js'; /* global Cropper */
 import '../nuxeo-icons.js';
 
 {

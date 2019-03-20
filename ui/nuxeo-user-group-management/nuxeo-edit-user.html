@@ -64,34 +64,34 @@ Used by `nuxeo-user-management` and `nuxeo-create-user`
          */
         user: {
           type: Object,
-          value: {}
+          value: {},
         },
         /**
          * If true, a new user is being created; if false, an already existing user is being edited.
          */
         new: {
           type: Boolean,
-          value: false
+          value: false,
         },
 
         resultFormatter: {
           type: Function,
-          value: function() {
-            return this._resultFormatter.bind(this);
-          }
-        }
+          value() {
+        return this._resultFormatter.bind(this);
+      },
+        },
       },
 
       /**
        * Resets the form fields to empty values.
        */
-      resetFields: function() {
+      resetFields() {
         this.user = {};
       },
 
-      _resultFormatter: function(item) {
-        return item.displayLabel + ' (' + (item.groupname || item.username) + ')';
-      }
+      _resultFormatter(item) {
+        return `${item.displayLabel  } (${  item.groupname || item.username  })`;
+      },
     });
   </script>
 </dom-module>

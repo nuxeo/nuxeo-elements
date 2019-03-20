@@ -171,9 +171,9 @@ import './nuxeo-action-button-styles.js';
           'lockToggleButton.tooltip.lockedBy',
           this.document.lockOwner, this.formatDate(this.document.lockCreated),
         );
-      } else {
+      } 
         return this.i18n(`lockToggleButton.tooltip.${locked ? 'unlock' : 'lock'}`);
-      }
+      
     }
 
     _computeLabel(locked) {
@@ -192,10 +192,10 @@ import './nuxeo-action-button-styles.js';
       return this.$.nxcon.connect().then((currentUser) => {
         if (this.document.isProxy || this.document.isVersion) {
           return false;
-        } else {
+        } 
           return currentUser.isAdministrator || this.document.contextParameters.permissions.indexOf('Everything') > -1
           || this.document.contextParameters.permissions.indexOf('Write') > -1;
-        }
+        
       });
     }
 
@@ -203,14 +203,14 @@ import './nuxeo-action-button-styles.js';
       return this.$.nxcon.connect().then((currentUser) => {
         if (this.document.isProxy) {
           return false;
-        } else {
+        } 
           return (currentUser.isAdministrator
           || this.document.contextParameters.permissions.indexOf('Everything') > -1
             ? true
             : (currentUser.id === this.document.lockOwner)
           && this.document.contextParameters.permissions.indexOf('Write') > -1)
           && !document.isVersion;
-        }
+        
       });
     }
   }

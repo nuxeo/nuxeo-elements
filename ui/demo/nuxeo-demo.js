@@ -99,6 +99,7 @@ window.nuxeo.I18n.loadLocale();
     static get is() {
       return 'nuxeo-demo-section';
     }
+
     static get properties() {
       return {
         heading: {

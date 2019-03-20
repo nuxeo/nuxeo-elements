@@ -350,14 +350,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const untilMiddleStr = ` ${this.i18n('userGroupPermissions.untilMiddle')} `;
       if (begin !== null && end === null) {
         return (now.isAfter(begin) ? sinceStr : fromStr) + moment(begin).format(format);
-      } else if (begin === null && end !== null) {
+      } if (begin === null && end !== null) {
         return untilStr + moment(end).format(format);
-      } else if (begin !== null && end !== null) {
+      } if (begin !== null && end !== null) {
         return (now.isAfter(begin) ? sinceStr : fromStr) + moment(begin).format(format) + untilMiddleStr
             + moment(end).format(format);
-      } else {
+      } 
         return this.i18n('userGroupPermissions.permanent');
-      }
+      
     }
 
     _deleteAce() {

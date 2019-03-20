@@ -226,7 +226,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           result += docModel.properties['user:lastName'];
         }
         return result;
-      } else if (this._isGroup(docModel)) {
+      } if (this._isGroup(docModel)) {
         return docModel.properties['group:grouplabel'];
       }
     }

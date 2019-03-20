@@ -244,9 +244,13 @@ limitations under the License.
   <template>
     <script>
       {
+        /* global html */
         class CustomElement extends Nuxeo.Element {
           static get is() { return 'my-custom-element'; }
-          static get template() { return html`<span id="label">[[label]]</span>`; } // eslint-disable-line no-undef
+
+          static get template() { return html`<span id="label">[[label]]</span>`; }
+
+          // eslint-disable-line no-undef
           static get properties() {
             return {
               label: {
@@ -393,10 +397,10 @@ limitations under the License.
       return flush().then(() => {
         const stampedElements = stamped(customElementsAndBehaviorsContainer, '.custom');
         expect(stampedElements.length).to.be.equal(1);
-        myElement = stampedElements[0];
+        [ myElement ] = stampedElements;
         expect(stampedOnShadowRoot(myElement, '#label').length).to.be.equal(1);
         expect(myElement.label).to.be.equal('A simple test');
-        slot = stamped(customElementsAndBehaviorsContainer, 'nuxeo-slot')[0];
+        [ slot ] = stamped(customElementsAndBehaviorsContainer, 'nuxeo-slot');
         slot.set('model', {document: {type: 'File'}, text: 'A simple test'});
         return flush();
       }).then(() => {
@@ -404,7 +408,7 @@ limitations under the License.
         slot.set('model', {document: {type: 'Folder'}, text: 'A simple test'});
         return flush();
       }).then(() => {
-        myElement = stamped(customElementsAndBehaviorsContainer, '.custom')[0];
+        [ myElement ] = stamped(customElementsAndBehaviorsContainer, '.custom');
         expect(stampedOnShadowRoot(myElement, '#label').length).to.be.equal(1);
         expect(myElement.label).to.be.equal('A simple test');
       });

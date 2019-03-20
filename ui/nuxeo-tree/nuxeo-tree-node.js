@@ -287,7 +287,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _teardownInstance() {
-      const children = this._instance.children;
+      const {children} = this._instance;
       if (children && children.length) {
         const parent = dom(dom(children[0]).parentNode);
         for (let i = 0; i < children.length; i++) {

@@ -101,21 +101,21 @@ import './nuxeo-tag.js';
     _name(group) {
       if (this._isEntity(group)) {
         return group.groupname || group.properties['group:groupname'];
-      } else if (group.name) {
+      } if (group.name) {
         return group.name.replace('group:', '');
-      } else {
+      } 
         return group.replace('group:', '');
-      }
+      
     }
 
     _label(group) {
       if (this._isEntity(group)) {
         return group.grouplabel || group.properties['group:grouplabel'] || this._name(group);
-      } else if (group.label) {
+      } if (group.label) {
         return group.label.replace('group:', '');
-      } else {
+      } 
         return group.replace('group:', '');
-      }
+      
     }
 
     _href(group) {

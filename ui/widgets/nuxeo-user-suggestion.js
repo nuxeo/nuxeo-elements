@@ -259,9 +259,9 @@ import './nuxeo-user-group-formatter.js';
           default:
             if (item.displayLabel) {
               return item.displayLabel;
-            } else {
+            } 
               return item.id ? item.id : item;
-            }
+            
         }
       }
     }
@@ -277,19 +277,19 @@ import './nuxeo-user-group-formatter.js';
     _resolveEntry(item) {
       if (item && item['entity-type']) {
         return item;
-      } else {
+      } 
         return this.prefixed
           ? { id: item, displayLabel: item, prefixed_id: item }
           : { id: item, displayLabel: item };
-      }
+      
     }
 
     _idFunction(item) {
       if (this.prefixed) {
         return item.prefixed_id ? item.prefixed_id : `${item['entity-type']}:${item.id}`;
-      } else {
+      } 
         return item.id;
-      }
+      
     }
   }
 

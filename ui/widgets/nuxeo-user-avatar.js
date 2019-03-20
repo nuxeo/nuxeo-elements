@@ -156,46 +156,53 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
         const firstName = user.properties.firstName || user.properties['user:firstName'];
         const lastName = user.properties.lastName || user.properties['user:lastName'];
         return (firstName || lastName) ? `${firstName} ${lastName}` : this._id(user);
-      } else {
+      } 
         return this._id(user);
-      }
+      
     }
 
     _email(user) {
       if (this._isEntity(user)) {
         const email = user.properties.email || user.properties['user:email'];
         return email !== this._id(user) ? email : '';
-      } else {
+      } 
         return '';
-      }
+      
     }
 
     __obsHeight() {
       this.$.container.style.height = `${this.height}px`;
     }
+
     __obsWidth() {
       this.$.container.style.width = `${this.width}px`;
     }
+
     __obsTextColor() {
       this.$.character.style.color = this.textColor;
     }
+
     __obsFontSize() {
       this.$.character.style.fontSize = `${this.fontSize}px`;
     }
+
     __obsFontWeight() {
       this.$.character.style.fontWeight = this.fontWeight;
     }
+
     __obsBorderRadius() {
       if (this.borderRadius === '' || this.borderRadius == null) {
         this.borderRadius = 0;
       }
       this.$.container.style.borderRadius = `${this.borderRadius}%`;
     }
+
     __obsBoxShadow() {
       this.$.container.style.webkitBoxShadow = this.boxShadow;
       this.$.container.style.mozBoxShadow = this.boxShadow;
       this.$.container.style.boxShadow = this.boxShadow;
     }
+
     __obsTextShadow() {
       this.$.character.style.webkitTextShadow = this.textShadow;
       this.$.character.style.mozTextShadow = this.textShadow;

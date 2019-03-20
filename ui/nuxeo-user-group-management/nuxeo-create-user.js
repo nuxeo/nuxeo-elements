@@ -233,7 +233,7 @@ import './nuxeo-edit-password.js';
             detail: newUser,
           }));
         });
-      } else {
+      } 
         this.$.invite.input = entity;
         return this.$.invite.execute().then(() => {
           entity.id = user.username;
@@ -243,7 +243,7 @@ import './nuxeo-edit-password.js';
             detail: entity,
           }));
         });
-      }
+      
     }
 
     _cancel() {

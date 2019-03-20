@@ -560,7 +560,7 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
 
     _itemChanged(e) {
       if (this.items) {
-        let index = e.target.index;
+        let {index} = e.target;
         if (index === undefined) {
           index = this.items.indexOf(e.detail.item);
         }
@@ -586,11 +586,11 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
           item,
           index,
         };
-      } else {
+      } 
         return {
           column: item,
         };
-      }
+      
     }
 
     _isEven(index) {
@@ -692,12 +692,12 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
         // https://nemisj.com/focusable/
         // tabIndex is not reliable in IE.
         return target.tabIndex >= 0;
-      } else {
+      } 
         // unreliable with Shadow, document.activeElement doesn't go inside
         // the shadow root.
         return target.contains(dom(document.activeElement).node) ||
             target.tagName === 'NUXEO-DATA-TABLE-CHECKBOX' || target.tagName === 'A';
-      }
+      
     }
 
     /**
@@ -917,10 +917,10 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
               this.$.scrollThreshold.clearTriggers();
               this.$.list.notifyResize();
             });
-          } else {
+          } 
             this.$.scrollThreshold.clearTriggers();
             this.$.list.notifyResize();
-          }
+          
         } else {
           return this._fetchRange(0, this.nxProvider.pageSize, true);
         }

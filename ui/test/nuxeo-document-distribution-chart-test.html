@@ -64,6 +64,19 @@ limitations under the License.
 
         let server;
 
+        function fakeResponse(distribution, json) {
+          server.respondWith(
+            'POST',
+            '/dummy/site/es/nuxeo/doc/_search',
+            [
+              200,
+              { 'Content-Type': 'application/json' },
+              JSON.stringify(json),
+            ],
+          );
+          return distribution.execute();
+        }
+
         const includeAllCountResp = {
           aggregations: {
             subLevel: {
@@ -191,19 +204,6 @@ limitations under the License.
             assert.equal(5, dom(distribution.root).querySelectorAll('path').length);
           });
         });
-
-        function fakeResponse(distribution, json) {
-          server.respondWith(
-            'POST',
-            '/dummy/site/es/nuxeo/doc/_search',
-            [
-              200,
-              { 'Content-Type': 'application/json' },
-              JSON.stringify(json),
-            ],
-          );
-          return distribution.execute();
-        }
 
       });
     </script>

@@ -118,6 +118,7 @@ limitations under the License.
       {
         class TestButton extends Nuxeo.Element {
           static get is() { return 'nuxeo-test-button'; }
+
           static get template() {
             // eslint-disable-next-line no-undef
             return html`
@@ -128,6 +129,7 @@ limitations under the License.
             </div>
             `;
           }
+
           static get properties() {
             return {
               icon: String,
@@ -161,6 +163,31 @@ limitations under the License.
   /* eslint-disable no-unused-expressions */
   suite('<nuxeo-actions-menu>', () => {
     let server;
+    
+    function menuActions(div) {
+      return div.querySelector('nuxeo-actions-menu').querySelectorAll(':not([slot="dropdown"]):not(nuxeo-slot)');
+    }
+
+    function dropdownActions(div) {
+      return div.querySelector('nuxeo-actions-menu').querySelectorAll('[slot="dropdown"]:not(nuxeo-slot)');
+    }
+
+    function dropdownButton(div) {
+      return div.querySelector('nuxeo-actions-menu').$.dropdownButton;
+    }
+
+    function removeAction(div) {
+      const menu = div.querySelector('nuxeo-actions-menu');
+      const lastChild = menu.lastElementChild;
+      menu.removeChild(lastChild);
+    }
+
+    function addAction(div) {
+      const menu = div.querySelector('nuxeo-actions-menu');
+      const action = document.createElement('nuxeo-preview-button');
+      action.document = '{ "entity-type": "document", "facets": [] }';
+      menu.appendChild(action);
+    }
 
     setup(() => {
       server = sinon.fakeServer.create();
@@ -267,29 +294,5 @@ limitations under the License.
         });
     });
 
-    function menuActions(div) {
-      return div.querySelector('nuxeo-actions-menu').querySelectorAll(':not([slot="dropdown"]):not(nuxeo-slot)');
-    }
-
-    function dropdownActions(div) {
-      return div.querySelector('nuxeo-actions-menu').querySelectorAll('[slot="dropdown"]:not(nuxeo-slot)');
-    }
-
-    function dropdownButton(div) {
-      return div.querySelector('nuxeo-actions-menu').$.dropdownButton;
-    }
-
-    function removeAction(div) {
-      const menu = div.querySelector('nuxeo-actions-menu');
-      const lastChild = menu.lastElementChild;
-      menu.removeChild(lastChild);
-    }
-
-    function addAction(div) {
-      const menu = div.querySelector('nuxeo-actions-menu');
-      const action = document.createElement('nuxeo-preview-button');
-      action.document = '{ "entity-type": "document", "facets": [] }';
-      menu.appendChild(action);
-    }
   });
 </script>

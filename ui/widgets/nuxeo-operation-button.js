@@ -228,9 +228,9 @@ import '../actions/nuxeo-action-button-styles.js';
             URL.revokeObjectURL(a.href);
           }
         });
-      } else {
+      } 
         return Promise.reject(new Error('missing Content-Disposition header'));
-      }
+      
     }
 
     _computeTooltip(tooltip, label) {

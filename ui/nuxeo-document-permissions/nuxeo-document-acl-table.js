@@ -274,13 +274,13 @@ import './nuxeo-popup-permission.js';
     _sortAces(a, b) {
       if (a.begin === null) {
         return -1;
-      } else if (b.begin === null) {
+      } if (b.begin === null) {
         return 1;
-      } else {
+      } 
         const aBegin = moment(a.begin);
         const bBegin = moment(b.begin);
         return aBegin.isBefore(bBegin) ? -1 : 1;
-      }
+      
     }
 
     _deleteAce(e) {
@@ -300,8 +300,8 @@ import './nuxeo-popup-permission.js';
 
     formatTimeFrame(ace) {
       const now = moment();
-      const begin = ace.begin;
-      const end = ace.end;
+      const {begin} = ace;
+      const {end} = ace;
       const format = 'D MMM YYYY';
 
       const sinceStr = `${this.i18n('documentAclTable.since')} `;
@@ -311,14 +311,14 @@ import './nuxeo-popup-permission.js';
 
       if (begin !== null && end === null) {
         return (now.isAfter(begin) ? sinceStr : fromStr) + moment(begin).format(format);
-      } else if (begin === null && end !== null) {
+      } if (begin === null && end !== null) {
         return untilStr + moment(end).format(format);
-      } else if (begin !== null && end !== null) {
+      } if (begin !== null && end !== null) {
         return (now.isAfter(begin) ? sinceStr : fromStr) + moment(begin).format(format) + untilMiddleStr
             + moment(end).format(format);
-      } else {
+      } 
         return this.i18n('documentAclTable.permanent');
-      }
+      
     }
 
     entityDisplay(entity) {
@@ -328,21 +328,21 @@ import './nuxeo-popup-permission.js';
 
       if (typeof entity === 'object') {
         if (entity['entity-type'] === 'user') {
-          const id = entity.id;
+          const {id} = entity;
           const first = entity.properties.firstName;
           const last = entity.properties.lastName;
           if (first === null || first.length === 0) {
             if (last === null || last.length === 0) {
               return id;
-            } else {
+            } 
               return last;
-            }
-          } else if (last === null || last.length === 0) {
+            
+          } if (last === null || last.length === 0) {
             return first;
-          } else {
+          } 
             return `${first} ${last}`;
-          }
-        } else if (entity['entity-type'] === 'group') {
+          
+        } if (entity['entity-type'] === 'group') {
           const groupLabel = entity.grouplabel;
           return groupLabel !== null && groupLabel.length > 0 ? groupLabel : entity.groupname;
         }
@@ -358,7 +358,7 @@ import './nuxeo-popup-permission.js';
       if (typeof entity === 'object') {
         if (entity['entity-type'] === 'user') {
           return 'tag user';
-        } else if (entity['entity-type'] === 'group') {
+        } if (entity['entity-type'] === 'group') {
           return 'tag group';
         }
       }
@@ -372,9 +372,9 @@ import './nuxeo-popup-permission.js';
 
       if (typeof entity === 'object') {
         if (entity['entity-type'] === 'user') {
-          const email = entity.properties.email;
+          const {email} = entity.properties;
           return entity.id + (email !== null && email.length > 0 ? ` - ${email}` : '');
-        } else if (entity['entity-type'] === 'group') {
+        } if (entity['entity-type'] === 'group') {
           return entity.groupname;
         }
       }

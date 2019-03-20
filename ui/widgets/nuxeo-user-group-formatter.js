@@ -100,9 +100,9 @@ import './nuxeo-user-avatar.js';
     _computeInfo() {
       if (this._isUser()) {
         return `${this.entity.email} - ${this.entity.id}`;
-      } else {
+      } 
         return `${this.i18n('label.group')} - ${this.entity.id}`;
-      }
+      
     }
   }
   customElements.define(UserGroupFormatter.is, UserGroupFormatter);
