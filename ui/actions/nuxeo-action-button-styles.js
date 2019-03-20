@@ -27,29 +27,29 @@ limitations under the License.
   from HTML and may be out of place here. Review them and
   then delete this comment!
 */
-import '@polymer/polymer/polymer-legacy.js';
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
-const $_documentContainer = document.createElement('template'); // eslint-disable-line camelcase
+const template = html`
+  <dom-module id="nuxeo-action-button-styles">
+    <template>
+      <style>
+        :host {
+          display: inline-block;
+        }
 
-$_documentContainer.innerHTML = `<dom-module id="nuxeo-action-button-styles">
-  <template>
-    <style>
-      :host {
-        display: inline-block;
-      }
+        .label {
+          @apply --nuxeo-action-button-label;
+        }
 
-      .label {
-        @apply --nuxeo-action-button-label;
-      }
+        .action {
+          @apply --layout-horizontal;
+          @apply --layout-center;
+          cursor: pointer;
+          @apply --nuxeo-action-button;
+        }
+      </style>
+    </template>
+  </dom-module>
+`;
 
-      .action {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        cursor: pointer;
-        @apply --nuxeo-action-button;
-      }
-    </style>
-  </template>
-</dom-module>`;
-
-document.head.appendChild($_documentContainer.content);
+document.head.appendChild(template.content);

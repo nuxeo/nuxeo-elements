@@ -15,45 +15,42 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import '@polymer/polymer/polymer-legacy.js';
-
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 
-const $_documentContainer = document.createElement('template'); // eslint-disable-line camelcase
+const template = html`
+  <dom-module id="nuxeo-drag-proxy">
+    <template>
+      <style include="nuxeo-styles">
+        :host {
+          display: inline-block;
+          position: absolute;
+        }
 
-$_documentContainer.innerHTML = `<dom-module id="nuxeo-drag-proxy">
-  <template>
-    <style include="nuxeo-styles">
-      :host {
-        display: inline-block;
-        position: absolute;
-      }
+        :host([hidden]) {
+          display: none !important;
+        }
 
-      :host([hidden]) {
-        display: none !important;
-      }
+        span {
+          background-color: var(--nuxeo-primary-color);
+          border-radius: 50%;
+          color: white;
+          display: inline-block;
+          font-size: 10px;
+          margin: 7px;
+          text-align: center;
+          line-height: 16px;
+          height: 16px;
+          width: 16px;
+        }
+      </style>
 
-      span {
-        background-color: var(--nuxeo-primary-color);
-        border-radius: 50%;
-        color: white;
-        display: inline-block;
-        font-size: 10px;
-        margin: 7px;
-        text-align: center;
-        line-height: 16px;
-        height: 16px;
-        width: 16px;
-      }
-    </style>
+      <span>[[counter]]</span>
+    </template>
+  </dom-module>
+`;
 
-    <span>[[counter]]</span>
-  </template>
-
-  
-  
-</dom-module>`;
-
-document.head.appendChild($_documentContainer.content);
+document.head.appendChild(template.content);
 
 /**
  * @polymerBehavior
