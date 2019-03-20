@@ -225,13 +225,8 @@ import './nuxeo-user-group-permissions-table.js';
           headers='{"fetch.group": "memberUsers,memberGroups"}'
         >
         </nuxeo-resource>
-        <nuxeo-resource id="users" path="[[_usersPath(groupname)]]" response="{{memberUsers}}" auto=""></nuxeo-resource>
-        <nuxeo-resource
-          id="groups"
-          path="[[_groupsPath(groupname)]]"
-          response="{{memberGroups}}"
-          auto=""
-        ></nuxeo-resource>
+        <nuxeo-resource id="users" path="[[_usersPath(groupname)]]" response="{{memberUsers}}" auto></nuxeo-resource>
+        <nuxeo-resource id="groups" path="[[_groupsPath(groupname)]]" response="{{memberGroups}}" auto></nuxeo-resource>
         <nuxeo-resource
           id="editRequest"
           path="group/[[groupname]]"
@@ -242,29 +237,29 @@ import './nuxeo-user-group-permissions-table.js';
 
         <paper-toast id="toast"></paper-toast>
 
-        <nuxeo-dialog id="deleteGroupDialog" with-backdrop="">
+        <nuxeo-dialog id="deleteGroupDialog" with-backdrop>
           <h2>[[i18n('groupManagement.delete.confirm')]]</h2>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button noink="" dialog-dismiss="">[[i18n('label.no')]]</paper-button>
+              <paper-button noink dialog-dismiss>[[i18n('label.no')]]</paper-button>
             </div>
-            <paper-button noink="" class="primary" on-click="_deleteGroup">[[i18n('label.yes')]]</paper-button>
+            <paper-button noink class="primary" on-click="_deleteGroup">[[i18n('label.yes')]]</paper-button>
           </div>
         </nuxeo-dialog>
 
-        <nuxeo-dialog id="rmFromGroupDialog" with-backdrop="" class="vertical layout">
+        <nuxeo-dialog id="rmFromGroupDialog" with-backdrop class="vertical layout">
           <h2>[[i18n('groupManagement.removeUserFromGroup.confirm', _removedMember.id)]]</h2>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button noink="" dialog-dismiss="">[[i18n('label.no')]]</paper-button>
+              <paper-button noink dialog-dismiss>[[i18n('label.no')]]</paper-button>
             </div>
-            <paper-button noink class="primary" dialog-confirm="" on-click="_removeMember">
+            <paper-button noink class="primary" dialog-confirm on-click="_removeMember">
               [[i18n('label.yes')]]
             </paper-button>
           </div>
         </nuxeo-dialog>
 
-        <nuxeo-dialog id="editGroupDialog" with-backdrop="">
+        <nuxeo-dialog id="editGroupDialog" with-backdrop>
           <h2>[[i18n('groupManagement.editGroup.heading')]]</h2>
           <iron-form id="editForm">
             <form>
@@ -274,7 +269,7 @@ import './nuxeo-user-group-permissions-table.js';
           </iron-form>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button dialog-dismiss="">[[i18n('command.cancel')]]</paper-button>
+              <paper-button dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
             </div>
             <paper-button noink class="primary" on-click="_submitEditForm">
               [[i18n('command.save.changes')]]
@@ -294,13 +289,13 @@ import './nuxeo-user-group-permissions-table.js';
             <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
               <template>
                 <div class="layout horizontal header-actions">
-                  <paper-button id="deleteGroupButton" noink="" class="flex-end" on-click="_toggleDeleteGroup">
+                  <paper-button id="deleteGroupButton" noink class="flex-end" on-click="_toggleDeleteGroup">
                     <iron-icon icon="nuxeo:delete"></iron-icon> [[i18n('command.delete')]]
                   </paper-button>
-                  <paper-button id="addMembersButton" noink="" class="flex-end primary" on-click="_toggleEditMembers">
+                  <paper-button id="addMembersButton" noink class="flex-end primary" on-click="_toggleEditMembers">
                     <iron-icon icon="nuxeo:add"></iron-icon> [[i18n('groupManagement.addMembers')]]
                   </paper-button>
-                  <paper-button id="editGroupButton" noink="" on-click="_toggleEditGroup" class="primary">
+                  <paper-button id="editGroupButton" noink on-click="_toggleEditGroup" class="primary">
                     <iron-icon icon="nuxeo:edit"></iron-icon> [[i18n('groupManagement.editGroup')]]
                   </paper-button>
                 </div>
@@ -341,7 +336,7 @@ import './nuxeo-user-group-permissions-table.js';
               type="search"
               placeholder="[[i18n('groupManagement.filterUsers.placeholder')]]"
             >
-              <iron-icon icon="nuxeo:search" prefix=""></iron-icon>
+              <iron-icon icon="nuxeo:search" prefix></iron-icon>
             </nuxeo-input>
           </div>
           <div class="table">
@@ -404,7 +399,7 @@ import './nuxeo-user-group-permissions-table.js';
               type="search"
               placeholder="[[i18n('groupManagement.filterGroups.placeholder')]]"
             >
-              <iron-icon icon="nuxeo:search" prefix=""></iron-icon>
+              <iron-icon icon="nuxeo:search" prefix></iron-icon>
             </nuxeo-input>
           </div>
           <div class="table">

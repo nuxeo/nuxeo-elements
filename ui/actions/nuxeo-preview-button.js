@@ -85,19 +85,19 @@ import './nuxeo-action-button-styles.js';
         <dom-if if="[[_isAvailable(document)]]">
           <template>
             <div class="action" on-click="_toggleDialog">
-              <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
+              <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
               <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
             </div>
             <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
 
-            <nuxeo-dialog on-iron-overlay-closed="_previewClosed" id="dialog" with-backdrop="">
+            <nuxeo-dialog on-iron-overlay-closed="_previewClosed" id="dialog" with-backdrop>
               <template>
                 <nuxeo-document-preview id="preview" document="[[document]]" xpath="[[xpath]]"></nuxeo-document-preview>
                 <paper-icon-button
                   id="close-icon"
                   icon="nuxeo:clear"
                   on-click="_toggleDialog"
-                  noink=""
+                  noink
                 ></paper-icon-button>
               </template>
             </nuxeo-dialog>

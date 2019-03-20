@@ -59,19 +59,19 @@ import './nuxeo-action-button-styles.js';
         <dom-if if="[[_isAvailable(document)]]">
           <template>
             <div class="action" on-click="_toggleDialog">
-              <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
+              <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
               <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
             </div>
             <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
           </template>
         </dom-if>
 
-        <nuxeo-dialog id="dialog" with-backdrop="">
+        <nuxeo-dialog id="dialog" with-backdrop>
           <h2>[[i18n('deleteBlobButton.dialog.heading')]]</h2>
           <div>[[i18n('deleteBlobButton.dialog.message')]]</div>
           <div class="buttons">
-            <paper-button dialog-dismiss="">[[i18n('deleteBlobButton.dialog.no')]]</paper-button>
-            <paper-button dialog-confirm="" on-click="_remove">[[i18n('deleteBlobButton.dialog.yes')]]</paper-button>
+            <paper-button dialog-dismiss>[[i18n('deleteBlobButton.dialog.no')]]</paper-button>
+            <paper-button dialog-confirm on-click="_remove">[[i18n('deleteBlobButton.dialog.yes')]]</paper-button>
           </div>
         </nuxeo-dialog>
       `;

@@ -60,26 +60,26 @@ import './nuxeo-action-button-styles.js';
         <dom-if if="[[_isAvailable(document)]]">
           <template>
             <div class="action" on-click="_toggleDialog">
-              <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
+              <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
               <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
             </div>
             <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
           </template>
         </dom-if>
 
-        <nuxeo-dialog id="dialog" with-backdrop="">
+        <nuxeo-dialog id="dialog" with-backdrop>
           <h2>[[i18n('exportButton.dialog.heading')]]</h2>
 
           <dom-repeat items="[[_filterRenditions(document, i18n)]]">
             <template>
               <div class="item">
-                <iron-icon src="[[item.icon]]"></iron-icon><a href="[[item.url]]" download="">[[item.label]]</a>
+                <iron-icon src="[[item.icon]]"></iron-icon><a href="[[item.url]]" download>[[item.label]]</a>
               </div>
             </template>
           </dom-repeat>
 
           <div class="buttons">
-            <paper-button dialog-dismiss="">[[i18n('exportButton.dialog.cancel')]]</paper-button>
+            <paper-button dialog-dismiss>[[i18n('exportButton.dialog.cancel')]]</paper-button>
           </div>
         </nuxeo-dialog>
       `;

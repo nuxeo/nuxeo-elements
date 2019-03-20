@@ -139,8 +139,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           </div>
           <div id="sb" class="loadable">
             <paper-radio-group selected="{{mode}}" on-paper-radio-group-changed="execute">
-              <paper-radio-button noink="" name="size">[[i18n('documentDistributionChart.size')]]</paper-radio-button>
-              <paper-radio-button noink="" name="count">[[i18n('documentDistributionChart.count')]]</paper-radio-button>
+              <paper-radio-button noink name="size">[[i18n('documentDistributionChart.size')]]</paper-radio-button>
+              <paper-radio-button noink name="count">[[i18n('documentDistributionChart.count')]]</paper-radio-button>
             </paper-radio-group>
             <p>
               <paper-checkbox noink on-change="execute" checked="{{includeHidden}}"

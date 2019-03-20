@@ -96,7 +96,7 @@ import './viewers/nuxeo-video-viewer.js';
 
         <!-- Our available preview templates. First match will be used -->
         <template mime-pattern="image.*|application/photoshop|illustrator|postscript">
-          <nuxeo-image-viewer src="[[_computeImageSource(_blob)]]" controls="" responsive=""></nuxeo-image-viewer>
+          <nuxeo-image-viewer src="[[_computeImageSource(_blob)]]" controls responsive></nuxeo-image-viewer>
         </template>
 
         <template mime-pattern="video.*|application/(g|m)xf">
@@ -110,7 +110,7 @@ import './viewers/nuxeo-video-viewer.js';
         </template>
 
         <template mime-pattern="audio.*">
-          <audio id="audio" controls="">
+          <audio id="audio" controls>
             <source src="[[_computeAudioSource(_blob)]]" />
             AUDIO
           </audio>

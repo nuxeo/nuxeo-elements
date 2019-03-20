@@ -92,7 +92,7 @@ import './nuxeo-tooltip.js';
           <slot id="slot"></slot>
         </div>
         <div id="reparent"></div>
-        <paper-menu-button id="dropdownButton" close-on-activate="" no-overlap="" horizontal-align="right">
+        <paper-menu-button id="dropdownButton" close-on-activate no-overlap horizontal-align="right">
           <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger" alt="dropdown"></paper-icon-button>
           <paper-listbox slot="dropdown-content">
             <slot id="dropdown" name="dropdown"></slot>

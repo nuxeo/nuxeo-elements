@@ -99,7 +99,7 @@ import '../../nuxeo-data-list/nuxeo-data-list.js';
           >
           </nuxeo-page-provider>
 
-          <nuxeo-data-list id="dataList" nx-provider="cvProvider" selection-enabled="" select-on-tap="">
+          <nuxeo-data-list id="dataList" nx-provider="cvProvider" selection-enabled select-on-tap>
             <template>
               <div tabindex$="[[tabIndex]]" class$="[[_computedClass(selected)]]">
                 <div class="list-item-box">

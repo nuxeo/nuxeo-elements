@@ -22,7 +22,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
   class AlertButtonDemo extends PolymerElement {
     static get template() {
       return html`
-        <paper-button raised="" on-tap="_act">
+        <paper-button raised on-tap="_act">
           <slot></slot>
         </paper-button>
       `;

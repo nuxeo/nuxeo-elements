@@ -57,7 +57,7 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
 
         <dom-repeat items="{{buckets}}">
           <template>
-            <paper-checkbox noink="" checked="{{item.checked}}" on-change="_computeValues">
+            <paper-checkbox noink checked="{{item.checked}}" on-change="_computeValues">
               [[item.label]] ([[item.docCount]])
             </paper-checkbox>
           </template>

@@ -75,7 +75,7 @@ import '@polymer/iron-image/iron-image.js';
         </style>
 
         <div class="item">
-          <iron-image src="[[_url(document)]]" sizing="cover" preload="" fade=""></iron-image>
+          <iron-image src="[[_url(document)]]" sizing="cover" preload fade></iron-image>
           <div class="overlay">[[document.title]]</div>
         </div>
       `;

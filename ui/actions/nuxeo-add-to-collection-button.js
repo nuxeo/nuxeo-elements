@@ -69,19 +69,14 @@ import './nuxeo-action-button-styles.js';
         <dom-if if="[[_isAvailable(document)]]">
           <template>
             <div class="action" on-click="_toggleDialog">
-              <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
+              <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
               <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
             </div>
             <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
           </template>
         </dom-if>
 
-        <nuxeo-dialog
-          id="add-to-collection-dialog"
-          with-backdrop=""
-          on-iron-overlay-closed="_resetPopup"
-          no-auto-focus=""
-        >
+        <nuxeo-dialog id="add-to-collection-dialog" with-backdrop on-iron-overlay-closed="_resetPopup" no-auto-focus>
           <h2>[[i18n('addToCollectionButton.dialog.heading')]]</h2>
           <paper-dialog-scrollable>
             <nuxeo-selectivity

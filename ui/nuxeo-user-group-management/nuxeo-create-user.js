@@ -92,7 +92,7 @@ import './nuxeo-edit-password.js';
 
     <iron-form id="form">
       <form>
-        <nuxeo-input label="[[i18n('createUser.username')]]" value="{{user.username}}" name="username" required="">
+        <nuxeo-input label="[[i18n('createUser.username')]]" value="{{user.username}}" name="username" required>
         </nuxeo-input>
 
         <nuxeo-layout
@@ -105,9 +105,9 @@ import './nuxeo-edit-password.js';
         <label>[[i18n('createUser.setPassword')]]</label>
         <paper-toggle-button checked="{{usePassword}}" name="password-toggle"></paper-toggle-button>
 
-        <dom-if if="[[usePassword]]" restamp="">
+        <dom-if if="[[usePassword]]" restamp>
           <template>
-            <nuxeo-edit-password id="passwordEditor" password="{{user.password}}" required=""></nuxeo-edit-password>
+            <nuxeo-edit-password id="passwordEditor" password="{{user.password}}" required></nuxeo-edit-password>
           </template>
         </dom-if>
 

@@ -110,7 +110,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
             <h3 class="header" on-click="_toggle">
               <iron-icon class="icon" icon="[[icon]]" hidden$="[[!icon]]"></iron-icon>
               <span class="heading">[[heading]]</span>
-              <iron-icon class="toggle" icon="[[_toggleIcon(opened)]]" toggle="" hidden$="[[!collapsible]]"></iron-icon>
+              <iron-icon class="toggle" icon="[[_toggleIcon(opened)]]" toggle hidden$="[[!collapsible]]"></iron-icon>
             </h3>
           </template>
         </dom-if>
