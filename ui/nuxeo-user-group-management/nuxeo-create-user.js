@@ -80,7 +80,7 @@ import './nuxeo-edit-password.js';
 
     <nuxeo-connection user="{{_currentUser}}"></nuxeo-connection>
 
-    <nuxeo-resource id="request" path="/user" headers="{&quot;Content-Type&quot;:&quot;application/json&quot;}">
+    <nuxeo-resource id="request" path="/user" headers='{"Content-Type": "application/json"}'>
     </nuxeo-resource>
 
     <nuxeo-operation id="invite" op="User.Invite"></nuxeo-operation>
