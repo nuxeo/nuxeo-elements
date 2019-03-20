@@ -1,6 +1,6 @@
-const $_documentContainer = document.createElement('template');
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
-$_documentContainer.innerHTML = `<style>
+const template = html`<style>
   @font-face {
     font-family: 'alloyeditor-ocean';
     src:url('fonts/alloyeditor-ocean.eot');
@@ -694,4 +694,4 @@ $_documentContainer.innerHTML = `<style>
   </template>
 </dom-module>`;
 
-document.head.appendChild($_documentContainer.content);
+document.head.appendChild(template.content);
