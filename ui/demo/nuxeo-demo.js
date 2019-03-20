@@ -14,18 +14,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-/* default routing */
-/*
-  FIXME(polymer-modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this comment!
-*/
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
 import { XHRLocaleResolver } from '../nuxeo-i18n-behavior.js';
 import './nuxeo-demo-theme.js';
 
+/* default routing */
 RoutingBehavior.router = {
   baseUrl: '',
   useHashbang: true,
@@ -39,21 +34,12 @@ RoutingBehavior.router = {
     return '#';
   },
 };
+
 /* default i18n */
-/*
-  FIXME(polymer-modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this comment!
-*/
 window.nuxeo.I18n.language = navigator.language || navigator.userLanguage || 'en';
 window.nuxeo.I18n.localeResolver = new XHRLocaleResolver('../../i18n');
 window.nuxeo.I18n.loadLocale();
 /* demo helper elements */
-/*
-  FIXME(polymer-modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this comment!
-*/
 {
   class DemoSection extends PolymerElement {
     static get template() {

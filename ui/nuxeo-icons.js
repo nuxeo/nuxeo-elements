@@ -14,6 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import '@polymer/iron-iconset-svg/iron-iconset-svg.js';
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
 /**
 
 Nuxeo icons
@@ -26,14 +29,6 @@ Example:
 @pseudoElement nuxeo-icons
 @demo demo/nuxeo-icons/index.html
 */
-/*
-  FIXME(polymer-modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this comment!
-*/
-import '@polymer/iron-iconset-svg/iron-iconset-svg.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-
 const template = html`
   <iron-iconset-svg size="24" name="nuxeo">
     <svg>

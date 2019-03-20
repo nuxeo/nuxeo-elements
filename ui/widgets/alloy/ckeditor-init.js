@@ -1,17 +1,9 @@
-/*  XXX CKEditor causes firefox to crash when scripts are inlined, moved to index.html */
-/* <script src="alloy-editor-all.js"></script> */
-/*
-  FIXME(polymer-modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this comment!
-*/
-CKEDITOR.config.customConfig = ''; // skip loading config.js
-CKEDITOR.config.language = (window.nuxeo.I18n.language) ? window.nuxeo.I18n.language.split('-')[0] : 'en';
-
 /**
  * @license Copyright (c) 2003-2016, CKSource - Frederico Knabben. All rights reserved.
  * For licensing, see LICENSE.md or http://ckeditor.com/license
  */
+CKEDITOR.config.customConfig = ''; // skip loading config.js
+CKEDITOR.config.language = (window.nuxeo.I18n.language) ? window.nuxeo.I18n.language.split('-')[0] : 'en';
 
 CKEDITOR.editorConfig = function( config ) {
     // Define changes to default configuration here.

@@ -6532,12 +6532,6 @@ typedArrayTags[weakMapTag] = false;
     }, {}],
   }, {}, [75]))(75);
 }));
-/* browsers without native shadow dom */
-/*
-  FIXME(polymer-modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this comment!
-*/
 {
   /**
    * An element wrapping selectivity.js and relying on an operation for suggestions

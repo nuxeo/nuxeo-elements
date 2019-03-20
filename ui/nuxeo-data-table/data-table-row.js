@@ -1,13 +1,8 @@
-/* Part of `nuxeo-data-table` */
-/*
-  FIXME(polymer-modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this comment!
-*/
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 
+/* Part of `nuxeo-data-table` */
 {
   class DataTableRow extends Nuxeo.Element {
     static get template() {
