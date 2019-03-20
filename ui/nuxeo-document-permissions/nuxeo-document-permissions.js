@@ -143,7 +143,7 @@ import './nuxeo-popup-permission.js';
             </template>
           </dom-if>
           <div class="content">
-            <div class="tip" hidden\$="[[_empty(inheritedAces)]]">[[i18n('documentPermissions.blockDescription')]]</div>
+            <div class="tip" hidden$="[[_empty(inheritedAces)]]">[[i18n('documentPermissions.blockDescription')]]</div>
             <nuxeo-document-acl-table
               doc="[[doc]]"
               aces="{{inheritedAces}}"

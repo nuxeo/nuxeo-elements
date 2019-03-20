@@ -169,7 +169,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             <p></p>
           </div>
 
-          <paper-spinner-lite active\$="[[loading]]"></paper-spinner-lite>
+          <paper-spinner-lite active$="[[loading]]"></paper-spinner-lite>
         </div>
       `;
     }

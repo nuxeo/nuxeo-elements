@@ -206,7 +206,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                                     noink
                                     title="[[i18n('userGroupPermissions.delete.button')]]"
                                     on-click="_toggleDialog"
-                                    hidden\$="[[!_canDelete(ace)]]"
+                                    hidden$="[[!_canDelete(ace)]]"
                                   >
                                   </paper-icon-button>
                                 </template>

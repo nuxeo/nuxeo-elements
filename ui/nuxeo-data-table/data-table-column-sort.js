@@ -55,7 +55,7 @@ import '@polymer/paper-icon-button/paper-icon-button.js';
         </style>
 
         <div style="position: relative">
-          <paper-icon-button id="sortIcon" on-click="_sort" icon="data-table:arrow-upward" direction\$="[[direction]]">
+          <paper-icon-button id="sortIcon" on-click="_sort" icon="data-table:arrow-upward" direction$="[[direction]]">
           </paper-icon-button>
           <div class="order">[[order]]</div>
         </div>

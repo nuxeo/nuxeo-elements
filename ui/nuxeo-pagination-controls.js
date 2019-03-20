@@ -58,14 +58,14 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
             icon="av:skip-previous"
             title="First Page"
             on-click="_first"
-            disabled\$="[[_isFirst(page)]]"
+            disabled$="[[_isFirst(page)]]"
           >
           </paper-icon-button>
           <paper-icon-button
             icon="icons:chevron-left"
             title="Previous Page"
             on-click="_previous"
-            disabled\$="[[_isFirst(page)]]"
+            disabled$="[[_isFirst(page)]]"
           >
           </paper-icon-button>
           <span class="controls">[[page]]/[[numberOfPages]]</span>
@@ -73,14 +73,14 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
             icon="icons:chevron-right"
             title="Next Page"
             on-click="_next"
-            disabled\$="[[_isLast(page, numberOfPages)]]"
+            disabled$="[[_isLast(page, numberOfPages)]]"
           >
           </paper-icon-button>
           <paper-icon-button
             icon="av:skip-next"
             title="Last Page"
             on-click="_last"
-            disabled\$="[[_isLast(page, numberOfPages)]]"
+            disabled$="[[_isLast(page, numberOfPages)]]"
           >
           </paper-icon-button>
         </div>

@@ -101,7 +101,7 @@ import '@polymer/polymer/lib/elements/dom-if.js';
           allowed-pattern="[[allowedPattern]]"
           auto-validate="[[autoValidate]]"
           on-focus="_onFocus"
-          disabled\$="[[disabled]]"
+          disabled$="[[disabled]]"
           no-label-float
         >
         </paper-typeahead>

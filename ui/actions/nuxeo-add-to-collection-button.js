@@ -70,7 +70,7 @@ import './nuxeo-action-button-styles.js';
           <template>
             <div class="action" on-click="_toggleDialog">
               <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
-              <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
+              <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
             </div>
             <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
           </template>
@@ -102,7 +102,7 @@ import './nuxeo-action-button-styles.js';
             <nuxeo-textarea
               label="[[i18n('addToCollectionButton.dialog.description')]]"
               value="{{description::input}}"
-              hidden\$="[[!_isNew(collection)]]"
+              hidden$="[[!_isNew(collection)]]"
             >
             </nuxeo-textarea>
           </paper-dialog-scrollable>
@@ -113,7 +113,7 @@ import './nuxeo-action-button-styles.js';
               class="primary"
               name="add"
               on-click="_add"
-              disabled\$="[[!_isValid(collection)]]"
+              disabled$="[[!_isValid(collection)]]"
             >
               [[i18n('addToCollectionButton.dialog.add')]]
             </paper-button>

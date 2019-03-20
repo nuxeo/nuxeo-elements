@@ -55,7 +55,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
           }
         </style>
 
-        <iframe src\$="[[_path(src)]]"></iframe>
+        <iframe src$="[[_path(src)]]"></iframe>
       `;
     }
 

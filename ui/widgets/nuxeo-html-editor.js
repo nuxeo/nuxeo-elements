@@ -45,7 +45,7 @@ import './alloy/alloy-ocean.js';
           }
         </style>
 
-        <div id="editor" data-placeholder\$="[[placeholder]]"></div>
+        <div id="editor" data-placeholder$="[[placeholder]]"></div>
       `;
     }
 

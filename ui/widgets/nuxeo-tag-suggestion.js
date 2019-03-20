@@ -57,7 +57,7 @@ import './nuxeo-selectivity.js';
           operation="[[operation]]"
           label="[[label]]"
           min-chars="[[minChars]]"
-          tagging\$="[[allowNewTags]]"
+          tagging$="[[allowNewTags]]"
           multiple
           params="[[params]]"
           placeholder="[[placeholder]]"

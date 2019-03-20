@@ -78,7 +78,7 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
 
         <nuxeo-operation id="op" op="Directory.SuggestEntries"></nuxeo-operation>
 
-        <label class="label" hidden\$="[[!label]]" required\$="[[required]]">[[label]]</label>
+        <label class="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
 
         <iron-selector
           attr-for-selected="name"
@@ -102,7 +102,7 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
           </dom-repeat>
         </iron-selector>
 
-        <label class="error" hidden\$="[[!invalid]]">[[errorMessage]]</label>
+        <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
       `;
     }
 

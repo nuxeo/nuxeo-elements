@@ -96,7 +96,7 @@ import './nuxeo-popup-permission.js';
           }
         </style>
 
-        <div hidden\$="[[!_empty(aces)]]">
+        <div hidden$="[[!_empty(aces)]]">
           <slot name="emptyResult"></slot>
         </div>
 
@@ -116,16 +116,16 @@ import './nuxeo-popup-permission.js';
               </div>
               <dom-repeat items="[[aces]]" as="ace" sort="_sortAces" strip-whitespace="">
                 <template>
-                  <div class\$="acl-table-row [[ace.status]]">
+                  <div class$="acl-table-row [[ace.status]]">
                     <div class="flex-2">
-                      <span class\$="[[entityClass(ace.username)]]" title="[[entityTooltip(ace.username)]]">
+                      <span class$="[[entityClass(ace.username)]]" title="[[entityTooltip(ace.username)]]">
                         [[entityDisplay(ace.username)]]
                       </span>
                     </div>
                     <div class="flex-2"><span class="label">[[i18n(ace.permission)]]</span></div>
                     <div class="flex-2"><span>{{formatTimeFrame(ace)}}</span></div>
                     <div class="flex-2">
-                      <span class\$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">
+                      <span class$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">
                         [[entityDisplay(ace.creator)]]
                       </span>
                     </div>
@@ -162,10 +162,10 @@ import './nuxeo-popup-permission.js';
                                   <div class="flex-2 tmp-tab">[[i18n('documentAclTable.timeFrame')]]</div>
                                   <div class="flex-2 tmp-tab">[[i18n('documentAclTable.grantedBy')]]</div>
                                 </div>
-                                <div class\$="acl-table-row [[ace.status]]">
+                                <div class$="acl-table-row [[ace.status]]">
                                   <div class="flex-2">
                                     <span
-                                      class\$="[[entityClass(ace.username)]]"
+                                      class$="[[entityClass(ace.username)]]"
                                       title="[[entityTooltip(ace.username)]]"
                                     >
                                       [[entityDisplay(ace.username)]]
@@ -174,7 +174,7 @@ import './nuxeo-popup-permission.js';
                                   <div class="flex-2"><span class="label">[[i18n(ace.permission)]]</span></div>
                                   <div class="flex-2"><span>{{formatTimeFrame(ace)}}</span></div>
                                   <div class="flex-2">
-                                    <span class\$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">
+                                    <span class$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">
                                       [[entityDisplay(ace.creator)]]
                                     </span>
                                   </div>

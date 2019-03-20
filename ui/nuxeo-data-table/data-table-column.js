@@ -17,10 +17,10 @@ import './data-table-column-filter.js';
           <nuxeo-data-table-column-filter
             label="[[column.name]]"
             value="{{column.filterValue}}"
-            hidden\$="[[!column.filterBy]]"
+            hidden$="[[!column.filterBy]]"
           >
           </nuxeo-data-table-column-filter>
-          <div hidden\$="[[column.filterBy]]">[[column.name]]</div>
+          <div hidden$="[[column.filterBy]]">[[column.name]]</div>
         </template>
       `;
     }

@@ -146,16 +146,16 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
                       class="item"
                       tabindex="0"
                       on-click="_click"
-                      selected\$="[[_isSelected(item, selectedItems.*)]]"
-                      style\$="height: [[item._view.height]]px; width: [[item._view.width]]px;"
+                      selected$="[[_isSelected(item, selectedItems.*)]]"
+                      style$="height: [[item._view.height]]px; width: [[item._view.width]]px;"
                     >
                       <div id="item-[[item._view.index]]"></div>
                       [[_itemChanged(item, item._view.width, item._view.height)]]
                       <paper-icon-button
                         noink
                         icon="icons:check"
-                        selection-mode\$="[[selectionMode]]"
-                        hidden\$="[[!selectionEnabled]]"
+                        selection-mode$="[[selectionMode]]"
+                        hidden$="[[!selectionEnabled]]"
                         on-click="_check"
                       >
                       </paper-icon-button>

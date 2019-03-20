@@ -92,8 +92,8 @@ import '../widgets/nuxeo-user-suggestion.js';
 
           <!-- Give access to row -->
           <paper-dialog-scrollable>
-            <div hidden\$="{{updatingACE}}">
-              <div hidden\$="{{shareWithExternal}}">
+            <div hidden$="{{updatingACE}}">
+              <div hidden$="{{shareWithExternal}}">
                 <nuxeo-user-suggestion
                   name="userGroup"
                   label="[[i18n('popupPermission.userGroup')]]"
@@ -103,7 +103,7 @@ import '../widgets/nuxeo-user-suggestion.js';
                 >
                 </nuxeo-user-suggestion>
               </div>
-              <div hidden\$="{{!shareWithExternal}}">
+              <div hidden$="{{!shareWithExternal}}">
                 <nuxeo-input
                   type="email"
                   id="email"
