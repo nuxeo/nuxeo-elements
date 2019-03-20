@@ -1,0 +1,8 @@
+**/node_modules/
+**/coverage/
+ui/import-href.js
+ui/nuxeo-icons.js
+ui/widgets/alloy/
+ui/widgets/nuxeo-selectivity.js
+ui/viewers/pdfjs
+ui/dataviz/randomColor.js

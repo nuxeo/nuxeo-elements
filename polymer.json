@@ -1,0 +1,9 @@
+{
+  "lint": {
+    "rules": ["polymer-3"],
+    "ignoreWarnings": [
+      "databinding-calls-must-be-functions",
+      "could-not-resolve-reference"
+    ]
+  }
+}
