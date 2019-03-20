@@ -18,8 +18,8 @@ limitations under the License.
   <head>
     <title>nuxeo-add-to-collection-button</title>
 
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" />
     <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="/node_modules/@nuxeo/nuxeo-elements/dedup.js"></script>
     <script type="module">
@@ -33,7 +33,6 @@ limitations under the License.
   <body>
     <dom-bind>
       <template>
-
         <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
 
         <nuxeo-document auto doc-path="/default-domain/workspaces/demo" response="{{document}}"></nuxeo-document>
@@ -41,7 +40,6 @@ limitations under the License.
         <nuxeo-demo-section heading="Add a document to a collection" size="small">
           <nuxeo-add-to-collection-button document="[[document]]"></nuxeo-add-to-collection-button>
         </nuxeo-demo-section>
-
       </template>
     </dom-bind>
   </body>

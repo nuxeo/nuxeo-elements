@@ -25,113 +25,116 @@ import '../../nuxeo-data-table/iron-data-table.js';
   class DataTableDemo extends PolymerElement {
     static get template() {
       return html`
-    <style>
+        <style>
+          nuxeo-data-table {
+            width: 100%;
+            height: 800px;
+          }
 
-      nuxeo-data-table {
-        width: 100%;
-        height: 800px;
-      }
+          nuxeo-dropdown-aggregation {
+            width: 100%;
+          }
 
-      nuxeo-dropdown-aggregation {
-        width: 100%;
-      }
+          .thumbnail {
+            height: 32px;
+            width: 32px;
+            border-radius: 20px;
+            box-sizing: border-box;
+            margin-right: 1em;
+          }
+          .title {
+          }
+          .ellipsis {
+            width: 100%;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            display: block;
+          }
 
-      .thumbnail {
-        height: 32px;
-        width: 32px;
-        border-radius: 20px;
-        box-sizing: border-box;
-        margin-right: 1em;
-      }
-      .title {
+          .tag {
+            display: inline-block;
+            text-transform: uppercase;
+            background-color: #edf1f5;
+            color: #6d7684;
+            padding: 0.2rem 0.4rem;
+            margin: 0 0.3em 0.1em 0;
+            font-size: 0.8rem;
+            border-radius: 2px;
+            line-height: initial;
+          }
+          .tag.user {
+            color: #213f7d;
+            border-radius: 2.5em;
+            text-transform: capitalize;
+          }
 
-      }
-      .ellipsis {
-        width: 100%;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-        display: block;
-      }
+          .tag.user:hover {
+            color: #00adff;
+          }
+        </style>
 
-      .tag {
-        display: inline-block;
-        text-transform: uppercase;
-        background-color: #edf1f5;
-        color: #6d7684;
-        padding: .2rem .4rem;
-        margin: 0 .3em .1em 0;
-        font-size: .8rem;
-        border-radius: 2px;
-        line-height: initial;
-      }
-      .tag.user {
-        color: #213f7d;
-        border-radius: 2.5em;
-        text-transform: capitalize;
-      }
+        <div class="content-view">
+          <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
 
-      .tag.user:hover {
-        color: #00adff;
-      }
-    </style>
+          <nuxeo-page-provider
+            id="cvProvider"
+            provider="default_search"
+            page-size="40"
+            aggregations="{{aggregations}}"
+            enrichers="thumbnail"
+            params='{"ecm_path": ["/default-domain/workspaces"]}'
+          >
+          </nuxeo-page-provider>
 
-    <div class="content-view">
-
-      <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
-
-      <nuxeo-page-provider
-        id="cvProvider"
-        provider="default_search"
-        page-size="40"
-        aggregations="{{aggregations}}"
-        enrichers="thumbnail"
-        params="{&quot;ecm_path&quot;: [&quot;/default-domain/workspaces&quot;]}">
-      </nuxeo-page-provider>
-
-      <nuxeo-data-table id="datatable" nx-provider="cvProvider" selection-enabled="" multi-selection="">
-        <nuxeo-data-table-column name="Full text search" flex="100" filter-by="ecm_fulltext" sort-by="dc:title">
-          <template>
-            <img class="thumbnail" src="[[_thumbnail(item)]]">
-            <a class="title ellipsis">[[item.title]]</a>
-          </template>
-        </nuxeo-data-table-column>
-        <nuxeo-data-table-column filter-by="dc_modified_agg" flex="50" sort-by="dc:modified">
-          <template is="header">
-            <nuxeo-dropdown-aggregation
-              placeholder="Modified"
-              data="[[aggregations.dc_modified_agg]]"
-              value="{{column.filterValue}}"
-              multiple>
-            </nuxeo-dropdown-aggregation>
-          </template>
-          <template>
-            [[_formatDate(item.properties.dc:modified)]]
-          </template>
-        </nuxeo-data-table-column>
-        <nuxeo-data-table-column filter-by="dc_creator_agg" flex="50">
-          <template is="header">
-            <nuxeo-dropdown-aggregation
-              placeholder="Author"
-              data="[[aggregations.dc_creator_agg]]"
-              value="{{column.filterValue}}"
-              multiple>
-            </nuxeo-dropdown-aggregation>
-          </template>
-          <template>
-            <span class="tag user">[[item.properties.dc:creator]]</span>
-          </template>
-        </nuxeo-data-table-column>
-        <nuxeo-data-table-column name="Version">
-          <template>[[_displayVersion(item)]]</template>
-        </nuxeo-data-table-column>
-        <nuxeo-data-table-column name="State">
-          <template>[[item.state]]</template>
-        </nuxeo-data-table-column>
-      </nuxeo-data-table>
-
-    </div>
-`;
+          <nuxeo-data-table id="datatable" nx-provider="cvProvider" selection-enabled="" multi-selection="">
+            <nuxeo-data-table-column name="Full text search" flex="100" filter-by="ecm_fulltext" sort-by="dc:title">
+              <template>
+                <img class="thumbnail" src="[[_thumbnail(item)]]" />
+                <a class="title ellipsis">[[item.title]]</a>
+              </template>
+            </nuxeo-data-table-column>
+            <nuxeo-data-table-column filter-by="dc_modified_agg" flex="50" sort-by="dc:modified">
+              <template is="header">
+                <nuxeo-dropdown-aggregation
+                  placeholder="Modified"
+                  data="[[aggregations.dc_modified_agg]]"
+                  value="{{column.filterValue}}"
+                  multiple
+                >
+                </nuxeo-dropdown-aggregation>
+              </template>
+              <template>
+                [[_formatDate(item.properties.dc:modified)]]
+              </template>
+            </nuxeo-data-table-column>
+            <nuxeo-data-table-column filter-by="dc_creator_agg" flex="50">
+              <template is="header">
+                <nuxeo-dropdown-aggregation
+                  placeholder="Author"
+                  data="[[aggregations.dc_creator_agg]]"
+                  value="{{column.filterValue}}"
+                  multiple
+                >
+                </nuxeo-dropdown-aggregation>
+              </template>
+              <template>
+                <span class="tag user">[[item.properties.dc:creator]]</span>
+              </template>
+            </nuxeo-data-table-column>
+            <nuxeo-data-table-column name="Version">
+              <template
+                >[[_displayVersion(item)]]</template
+              >
+            </nuxeo-data-table-column>
+            <nuxeo-data-table-column name="State">
+              <template
+                >[[item.state]]</template
+              >
+            </nuxeo-data-table-column>
+          </nuxeo-data-table>
+        </div>
+      `;
     }
 
     static get is() {
@@ -151,10 +154,9 @@ import '../../nuxeo-data-table/iron-data-table.js';
       if (doc && doc.uid) {
         if (doc.contextParameters && doc.contextParameters.thumbnail.url) {
           return doc.contextParameters.thumbnail.url;
-        } 
-          const baseUrl = document.querySelector('nuxeo-connection').url;
-          return `${baseUrl}/nxthumb/default/${doc.uid}/blobholder:0/`;
-        
+        }
+        const baseUrl = document.querySelector('nuxeo-connection').url;
+        return `${baseUrl}/nxthumb/default/${doc.uid}/blobholder:0/`;
       }
     }
 

@@ -21,28 +21,32 @@ limitations under the License.
  * @polymerBehavior
  */
 export const FiltersBehavior = {
-
   /**
    * Checks if the document is a favorite.
    */
   isFavorite(doc) {
-    return doc && doc.contextParameters && doc.contextParameters.favorites &&
-      doc.contextParameters.favorites.isFavorite;
+    return (
+      doc && doc.contextParameters && doc.contextParameters.favorites && doc.contextParameters.favorites.isFavorite
+    );
   },
 
   /**
    * Checks if the current user is subscribed to document notifications.
    */
   isSubscribed(doc) {
-    return doc && doc.contextParameters && doc.contextParameters.subscribedNotifications &&
-      doc.contextParameters.subscribedNotifications.length > 0;
+    return (
+      doc &&
+      doc.contextParameters &&
+      doc.contextParameters.subscribedNotifications &&
+      doc.contextParameters.subscribedNotifications.length > 0
+    );
   },
 
   /**
    * Checks if the document can be added to a collection.
    */
   isCollectionMember(doc) {
-    return (doc && doc.facets) ? doc.facets.indexOf('NotCollectionMember') === -1 : false;
+    return doc && doc.facets ? doc.facets.indexOf('NotCollectionMember') === -1 : false;
   },
 
   /**
@@ -52,9 +56,8 @@ export const FiltersBehavior = {
     if (doc) {
       if (typeof doc.isTrashed === 'undefined') {
         return this.hasState(doc, 'deleted');
-      } 
-        return doc.isTrashed;
-      
+      }
+      return doc.isTrashed;
     }
     return false;
   },
@@ -108,7 +111,6 @@ export const FiltersBehavior = {
     return doc && doc.state === state;
   },
 
-
   /**
    * Checks if the document has the given facet.
    */
@@ -120,15 +122,19 @@ export const FiltersBehavior = {
    * Checks if the document has the given permission.
    */
   hasPermission(doc, permission) {
-    return doc && doc.contextParameters && doc.contextParameters.permissions &&
-        doc.contextParameters.permissions.indexOf(permission) !== -1;
+    return (
+      doc &&
+      doc.contextParameters &&
+      doc.contextParameters.permissions &&
+      doc.contextParameters.permissions.indexOf(permission) !== -1
+    );
   },
 
   /**
    * Checks if the document has a main blob.
    */
   hasContent(doc, xpath) {
-    return (doc && doc.properties) ? this.get(xpath || 'file:content', doc.properties) : false;
+    return doc && doc.properties ? this.get(xpath || 'file:content', doc.properties) : false;
   },
 
   /**
@@ -149,8 +155,9 @@ export const FiltersBehavior = {
    * Checks if the document belongs to a collection.
    */
   hasCollections(doc) {
-    return doc && doc.contextParameters && doc.contextParameters.collections &&
-        doc.contextParameters.collections.length > 0;
+    return (
+      doc && doc.contextParameters && doc.contextParameters.collections && doc.contextParameters.collections.length > 0
+    );
   },
 
   /**
@@ -164,27 +171,26 @@ export const FiltersBehavior = {
    * Checks if the document can be published.
    */
   isPublishable(doc) {
-    return doc && !this.isProxy(doc)
-        && !this.isTrashed(doc)
-        && this.hasFacet(doc, 'Publishable')
-        && this.hasPermission(doc, 'Write');
+    return (
+      doc &&
+      !this.isProxy(doc) &&
+      !this.isTrashed(doc) &&
+      this.hasFacet(doc, 'Publishable') &&
+      this.hasPermission(doc, 'Write')
+    );
   },
 
   /**
    * Checks if the document is a publication.
    */
   isPublication(doc) {
-    return doc && this.isProxy(doc)
-        && this.hasFacet(doc, 'Immutable');
+    return doc && this.isProxy(doc) && this.hasFacet(doc, 'Immutable');
   },
 
   /**
    * Checks if the document can be tagged.
    */
   isTaggable(doc) {
-    return !this.isProxy(doc)
-      && !doc.isVersion
-      && this.hasPermission(doc, 'Write');
+    return !this.isProxy(doc) && !doc.isVersion && this.hasPermission(doc, 'Write');
   },
-
 };

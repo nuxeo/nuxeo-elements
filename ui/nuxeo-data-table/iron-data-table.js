@@ -103,268 +103,283 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-data-table/index.html
    */
-  class DataTable
-    extends mixinBehaviors([IronResizableBehavior, IronFormElementBehavior,
-      IronValidatableBehavior, PageProviderDisplayBehavior,
-      DraggableListBehavior], Nuxeo.Element) {
+  class DataTable extends mixinBehaviors(
+    [
+      IronResizableBehavior,
+      IronFormElementBehavior,
+      IronValidatableBehavior,
+      PageProviderDisplayBehavior,
+      DraggableListBehavior,
+    ],
+    Nuxeo.Element,
+  ) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-        position: relative;
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        width: 100%;
-        min-height: 300px;
-        @apply --iron-data-table;
-      }
+        <style>
+          :host {
+            display: block;
+            position: relative;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+            min-height: 300px;
+            @apply --iron-data-table;
+          }
 
-      :host([draggable]) ::slotted(nuxeo-data-table-row[selected]) {
-        cursor: -webkit-grab;
-        cursor: grab;
-      }
+          :host([draggable]) ::slotted(nuxeo-data-table-row[selected]) {
+            cursor: -webkit-grab;
+            cursor: grab;
+          }
 
-      :host .droptarget-hover ::slotted(nuxeo-data-table-row) {
-        border: 2px dashed var(--nuxeo-primary-color, blue);
-      }
+          :host .droptarget-hover ::slotted(nuxeo-data-table-row) {
+            border: 2px dashed var(--nuxeo-primary-color, blue);
+          }
 
-      /* scrollbars */
-      :host ::-webkit-scrollbar-track {
-        width: 12px !important;
-        height: 3px;
-      }
-      :host ::-webkit-scrollbar {
-        background-color: rgba(0, 0, 0, 0.03);
-        width: 12px !important;
-        height: 3px;
-      }
-      :host ::-webkit-scrollbar-thumb {
-        background-color: rgba(0, 0, 0, 0.15);
-        border-radius: 1px !important;
-      }
+          /* scrollbars */
+          :host ::-webkit-scrollbar-track {
+            width: 12px !important;
+            height: 3px;
+          }
+          :host ::-webkit-scrollbar {
+            background-color: rgba(0, 0, 0, 0.03);
+            width: 12px !important;
+            height: 3px;
+          }
+          :host ::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.15);
+            border-radius: 1px !important;
+          }
 
-      :host([required]) label::after {
-        display: inline-block;
-        content: '*';
-        margin-left: 4px;
-        color: var(--paper-input-container-invalid-color, red);
-      }
+          :host([required]) label::after {
+            display: inline-block;
+            content: '*';
+            margin-left: 4px;
+            color: var(--paper-input-container-invalid-color, red);
+          }
 
-      [hidden] {
-        display: none !important;
-      }
+          [hidden] {
+            display: none !important;
+          }
 
-      #container {
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 0;
-        bottom: 0;
-        display: flex;
-        flex-direction: column;
-      }
+          #container {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+          }
 
-      #header {
-        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
-        transition: box-shadow 200ms;
-        -webkit-transition: box-shadow 200ms;
-        @apply --iron-data-table-header;
-        background: var(--nuxeo-table-header-background, #efefef);
-      }
+          #header {
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+            transition: box-shadow 200ms;
+            -webkit-transition: box-shadow 200ms;
+            @apply --iron-data-table-header;
+            background: var(--nuxeo-table-header-background, #efefef);
+          }
 
-      #header.scrolled {
-        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06),
-                    0 2px 0 rgba(0, 0, 0, 0.075),
-                    0 3px 0 rgba(0, 0, 0, 0.05),
-                    0 4px 0 rgba(0, 0, 0, 0.015);
-      }
+          #header.scrolled {
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06), 0 2px 0 rgba(0, 0, 0, 0.075), 0 3px 0 rgba(0, 0, 0, 0.05),
+              0 4px 0 rgba(0, 0, 0, 0.015);
+          }
 
-      #list {
-        overflow-x: hidden !important;
-        overflow-y: auto !important;
-        flex: 1;
-        transition: opacity 200ms;
-        -webkit-transition: opacity 200ms;
-      }
+          #list {
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            flex: 1;
+            transition: opacity 200ms;
+            -webkit-transition: opacity 200ms;
+          }
 
-      #list .item {
-        background: var(--nuxeo-table-items-background, #ffffff);
-      }
+          #list .item {
+            background: var(--nuxeo-table-items-background, #ffffff);
+          }
 
-      .emptyResult {
-        opacity: .5;
-        display: block;
-        font-weight: 300;
-        padding: 1.5em .7em;
-        text-align: center;
-        font-size: 1.1em;
-      }
+          .emptyResult {
+            opacity: 0.5;
+            display: block;
+            font-weight: 300;
+            padding: 1.5em 0.7em;
+            text-align: center;
+            font-size: 1.1em;
+          }
 
-      .top-actions {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        @apply --layout-justified;
-        margin-right: 8px;
-      }
+          .top-actions {
+            @apply --layout-horizontal;
+            @apply --layout-center;
+            @apply --layout-justified;
+            margin-right: 8px;
+          }
 
-      .top-actions paper-button {
-        padding: 0;
-        margin-right: 6px;
-      }
+          .top-actions paper-button {
+            padding: 0;
+            margin-right: 6px;
+          }
 
-      .error {
-        color: var(--paper-input-container-invalid-color, red);
-      }
+          .error {
+            color: var(--paper-input-container-invalid-color, red);
+          }
 
-      label {
-        display: block;
-        @apply --nuxeo-label;
-      }
-    </style>
+          label {
+            display: block;
+            @apply --nuxeo-label;
+          }
+        </style>
 
-    <div id="container">
+        <div id="container">
+          <slot name="nuxeo-selection-toolbar"></slot>
 
-      <slot name="nuxeo-selection-toolbar"></slot>
+          <div class="top-actions">
+            <label>[[label]]</label>
+            <dom-if if="[[editable]]">
+              <template>
+                <paper-button id="addEntry" noink="" class="primary" on-click="_createEntry">
+                  + [[i18n('command.add')]]
+                </paper-button>
+              </template>
+            </dom-if>
+          </div>
 
-      <div class="top-actions">
-        <label>[[label]]</label>
-        <dom-if if="[[editable]]">
-          <template>
-            <paper-button id="addEntry" noink="" class="primary" on-click="_createEntry">
-              + [[i18n('command.add')]]
-            </paper-button>
-          </template>
-        </dom-if>
-      </div>
+          <label class="error" hidden\$="[[!invalid]]">[[errorMessage]]</label>
 
-      <label class="error" hidden\$="[[!invalid]]">[[errorMessage]]</label>
-
-      <div id="header">
-        <nuxeo-data-table-row header="">
-          <nuxeo-data-table-checkbox header="" hidden\$="[[!selectionEnabled]]"></nuxeo-data-table-checkbox>
-          <dom-repeat items="[[columns]]" as="column">
-            <template>
-              <nuxeo-data-table-cell
-                header=""
-                align-right="[[column.alignRight]]"
-                before-bind="[[beforeCellBind]]"
-                column="[[column]]"
-                flex="[[column.flex]]"
-                hidden="[[column.hidden]]"
-                order="[[column.order]]"
-                table="[[_this]]"
-                template="[[column.headerTemplate]]"
-                width="[[column.width]]">
-                <nuxeo-data-table-column-sort
-                  sort-order="[[sortOrder]]"
-                  path="[[column.sortBy]]"
-                  on-sort-direction-changed="_sort"
-                  hidden\$="[[!column.sortBy]]">
-                </nuxeo-data-table-column-sort>
-              </nuxeo-data-table-cell>
-            </template>
-          </dom-repeat>
-          <nuxeo-data-table-cell flex="0" hidden\$="[[!editable]]"></nuxeo-data-table-cell>
-          <nuxeo-data-table-settings columns="{{columns}}" hidden\$="[[!settingsEnabled]]"></nuxeo-data-table-settings>
-        </nuxeo-data-table-row>
-      </div>
-
-      <dom-if if="[[_isEmpty]]">
-        <template>
-          <div class="emptyResult">[[_computedEmptyLabel]]</div>
-        </template>
-      </dom-if>
-
-      <iron-list
-        id="list"
-        items="[[items]]"
-        as="item"
-        selected-items="{{selectedItems}}"
-        selected-item="{{selectedItem}}"
-        on-scroll="_scroll">
-
-        <template>
-          <div class="item">
-            <nuxeo-data-table-row
-              on-click="_onRowClick"
-              before-bind="[[beforeRowBind]]"
-              even\$="[[!_isEven(index)]]"
-              expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
-              index="[[index]]"
-              item="[[item]]"
-              tabindex="-1"
-              selected="[[_isSelected(item, selectedItems, selectedItems.*)]]">
-              <nuxeo-data-table-checkbox
-                hidden\$="[[!selectionEnabled]]"
-                tabindex="0"
-                checked\$="[[selected]]"
-                on-click="_onCheckBoxTap"></nuxeo-data-table-checkbox>
-              <dom-repeat items="[[columns]]" as="column" index-as="colIndex">
+          <div id="header">
+            <nuxeo-data-table-row header="">
+              <nuxeo-data-table-checkbox header="" hidden\$="[[!selectionEnabled]]"></nuxeo-data-table-checkbox>
+              <dom-repeat items="[[columns]]" as="column">
                 <template>
                   <nuxeo-data-table-cell
-                    template="[[column.template]]"
-                    table="[[_this]]"
+                    header=""
                     align-right="[[column.alignRight]]"
+                    before-bind="[[beforeCellBind]]"
                     column="[[column]]"
-                    expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
                     flex="[[column.flex]]"
                     hidden="[[column.hidden]]"
-                    index="[[index]]"
-                    item="[[item]]"
                     order="[[column.order]]"
-                    selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                    table="[[_this]]"
+                    template="[[column.headerTemplate]]"
                     width="[[column.width]]"
-                    before-bind="[[beforeCellBind]]"></nuxeo-data-table-cell>
+                  >
+                    <nuxeo-data-table-column-sort
+                      sort-order="[[sortOrder]]"
+                      path="[[column.sortBy]]"
+                      on-sort-direction-changed="_sort"
+                      hidden\$="[[!column.sortBy]]"
+                    >
+                    </nuxeo-data-table-column-sort>
+                  </nuxeo-data-table-cell>
                 </template>
               </dom-repeat>
-              <dom-if if="[[_isExpanded(item, _expandedItems)]]" on-dom-change="_updateSizeForItem">
-                <template>
-                  <nuxeo-data-table-row-detail
-                    index="[[index]]"
-                    item="[[item]]"
-                    expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
-                    selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
-                    before-bind="[[beforeDetailsBind]]"
-                    table="[[_this]]"
-                    template="[[rowDetail]]"></nuxeo-data-table-row-detail>
-                </template>
-              </dom-if>
-                <nuxeo-data-table-row-actions
-                  index="[[index]]"
-                  editable="[[editable]]"
-                  orderable="[[orderable]]"
-                  template="[[rowForm]]"
-                  item="[[item]]"
-                  size="[[items.length]]"
-                  table="[[_this]]">
-                </nuxeo-data-table-row-actions>
+              <nuxeo-data-table-cell flex="0" hidden\$="[[!editable]]"></nuxeo-data-table-cell>
+              <nuxeo-data-table-settings
+                columns="{{columns}}"
+                hidden\$="[[!settingsEnabled]]"
+              ></nuxeo-data-table-settings>
             </nuxeo-data-table-row>
           </div>
-        </template>
-      </iron-list>
 
-      <iron-scroll-threshold
-        id="scrollThreshold"
-        scroll-target="list"
-        on-lower-threshold="_threshold"></iron-scroll-threshold>
+          <dom-if if="[[_isEmpty]]">
+            <template>
+              <div class="emptyResult">[[_computedEmptyLabel]]</div>
+            </template>
+          </dom-if>
 
-    </div>
+          <iron-list
+            id="list"
+            items="[[items]]"
+            as="item"
+            selected-items="{{selectedItems}}"
+            selected-item="{{selectedItem}}"
+            on-scroll="_scroll"
+          >
+            <template>
+              <div class="item">
+                <nuxeo-data-table-row
+                  on-click="_onRowClick"
+                  before-bind="[[beforeRowBind]]"
+                  even\$="[[!_isEven(index)]]"
+                  expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                  index="[[index]]"
+                  item="[[item]]"
+                  tabindex="-1"
+                  selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                >
+                  <nuxeo-data-table-checkbox
+                    hidden\$="[[!selectionEnabled]]"
+                    tabindex="0"
+                    checked\$="[[selected]]"
+                    on-click="_onCheckBoxTap"
+                  ></nuxeo-data-table-checkbox>
+                  <dom-repeat items="[[columns]]" as="column" index-as="colIndex">
+                    <template>
+                      <nuxeo-data-table-cell
+                        template="[[column.template]]"
+                        table="[[_this]]"
+                        align-right="[[column.alignRight]]"
+                        column="[[column]]"
+                        expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                        flex="[[column.flex]]"
+                        hidden="[[column.hidden]]"
+                        index="[[index]]"
+                        item="[[item]]"
+                        order="[[column.order]]"
+                        selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                        width="[[column.width]]"
+                        before-bind="[[beforeCellBind]]"
+                      ></nuxeo-data-table-cell>
+                    </template>
+                  </dom-repeat>
+                  <dom-if if="[[_isExpanded(item, _expandedItems)]]" on-dom-change="_updateSizeForItem">
+                    <template>
+                      <nuxeo-data-table-row-detail
+                        index="[[index]]"
+                        item="[[item]]"
+                        expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                        selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                        before-bind="[[beforeDetailsBind]]"
+                        table="[[_this]]"
+                        template="[[rowDetail]]"
+                      ></nuxeo-data-table-row-detail>
+                    </template>
+                  </dom-if>
+                  <nuxeo-data-table-row-actions
+                    index="[[index]]"
+                    editable="[[editable]]"
+                    orderable="[[orderable]]"
+                    template="[[rowForm]]"
+                    item="[[item]]"
+                    size="[[items.length]]"
+                    table="[[_this]]"
+                  >
+                  </nuxeo-data-table-row-actions>
+                </nuxeo-data-table-row>
+              </div>
+            </template>
+          </iron-list>
 
-    <slot id="columns"></slot>
+          <iron-scroll-threshold
+            id="scrollThreshold"
+            scroll-target="list"
+            on-lower-threshold="_threshold"
+          ></iron-scroll-threshold>
+        </div>
 
-    <nuxeo-dialog id="dialog" with-backdrop="" on-opened-changed="_formDialogOpenedChanged">
-      <h2>[[i18n('command.add')]]</h2>
-      <paper-dialog-scrollable>
-        <slot id="form" name="form"></slot>
-      </paper-dialog-scrollable>
-      <div class="buttons">
-        <paper-button noink="" dialog-dismiss="">[[i18n('command.cancel')]]</paper-button>
-        <paper-button id="save" noink="" on-click="_validateEntry" class="primary">[[i18n('command.ok')]]</paper-button>
-      </div>
-    </nuxeo-dialog>
-`;
+        <slot id="columns"></slot>
+
+        <nuxeo-dialog id="dialog" with-backdrop="" on-opened-changed="_formDialogOpenedChanged">
+          <h2>[[i18n('command.add')]]</h2>
+          <paper-dialog-scrollable>
+            <slot id="form" name="form"></slot>
+          </paper-dialog-scrollable>
+          <div class="buttons">
+            <paper-button noink="" dialog-dismiss="">[[i18n('command.cancel')]]</paper-button>
+            <paper-button id="save" noink="" on-click="_validateEntry" class="primary"
+              >[[i18n('command.ok')]]</paper-button
+            >
+          </div>
+        </nuxeo-dialog>
+      `;
     }
 
     static get is() {
@@ -504,18 +519,20 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
       super();
       this.handlesSorting = true;
       this._observer = dom(this).observeNodes((info) => {
-        const hasColumns = function (node) {
-          return (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'NUXEO-DATA-TABLE-COLUMN');
+        const hasColumns = function(node) {
+          return node.nodeType === Node.ELEMENT_NODE && node.tagName === 'NUXEO-DATA-TABLE-COLUMN';
         };
 
-        const hasDetails = function (node) {
-          return (node.nodeType === Node.ELEMENT_NODE &&
-              node.tagName === 'TEMPLATE' && node.hasAttribute('is') &&
-              node.getAttribute('is') === 'row-detail');
+        const hasDetails = function(node) {
+          return (
+            node.nodeType === Node.ELEMENT_NODE &&
+            node.tagName === 'TEMPLATE' &&
+            node.hasAttribute('is') &&
+            node.getAttribute('is') === 'row-detail'
+          );
         };
 
-        if (info.addedNodes.filter(hasColumns).length > 0 ||
-            info.removedNodes.filter(hasColumns).length > 0) {
+        if (info.addedNodes.filter(hasColumns).length > 0 || info.removedNodes.filter(hasColumns).length > 0) {
           this.set('columns', this.$.columns.assignedNodes().filter(hasColumns));
           this._backupColumnsState();
           this.notifyResize();
@@ -527,7 +544,7 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
           // assuming parent element is always a Polymer element.
           // set dataHost to the same context the template was declared in
           const parent = dom(this.rowDetail).parentNode;
-          this.rowDetail._rootDataHost = parent.dataHost ? (parent.dataHost._rootDataHost || parent.dataHost) : parent;
+          this.rowDetail._rootDataHost = parent.dataHost ? parent.dataHost._rootDataHost || parent.dataHost : parent;
         }
       });
     }
@@ -541,7 +558,7 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
       this.addEventListener('delete-entry', this._deleteEntry);
       this.addEventListener('move-upward', this._moveItemUpward);
       this.addEventListener('move-downward', this._moveItemDownward);
-      this.$.list._selectionHandler = function (e) {
+      this.$.list._selectionHandler = function(e) {
         const model = this.modelForElement(e.target);
         if (!model) {
           return;
@@ -560,7 +577,7 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
 
     _itemChanged(e) {
       if (this.items) {
-        let {index} = e.target;
+        let { index } = e.target;
         if (index === undefined) {
           index = this.items.indexOf(e.detail.item);
         }
@@ -586,11 +603,10 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
           item,
           index,
         };
-      } 
-        return {
-          column: item,
-        };
-      
+      }
+      return {
+        column: item,
+      };
     }
 
     _isEven(index) {
@@ -626,13 +642,10 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
     _onHorizontalScroll() {
       if (!this.isDebouncerActive('scrolling')) {
         this.$.container.style.width = `${this.scrollWidth}px`;
-        this._debouncer = Debouncer.debounce(
-          this._debouncer,
-          timeOut.after(1000), () => {
-            // long timeout here to prevent jerkiness with the rubberband effect on iOS especially.
-            this.$.container.style.width = `${Math.min(this.scrollWidth, this.clientWidth + this.scrollLeft)}px`;
-          },
-        );
+        this._debouncer = Debouncer.debounce(this._debouncer, timeOut.after(1000), () => {
+          // long timeout here to prevent jerkiness with the rubberband effect on iOS especially.
+          this.$.container.style.width = `${Math.min(this.scrollWidth, this.clientWidth + this.scrollLeft)}px`;
+        });
       }
     }
 
@@ -663,7 +676,6 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
      */
     expandItem(item) {
       if (this.rowDetail && this._expandedItems && !this._isExpanded(item, this._expandedItems)) {
-
         // replacing the whole array here to simplify the observers.
         this._expandedItems.push(item);
         this._expandedItems = this._expandedItems.slice(0);
@@ -688,16 +700,19 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
     }
 
     _isFocusable(target) {
-      if (false) { // eslint-disable-line no-constant-condition
+      // eslint-disable-next-line no-constant-condition
+      if (false) {
         // https://nemisj.com/focusable/
         // tabIndex is not reliable in IE.
         return target.tabIndex >= 0;
-      } 
-        // unreliable with Shadow, document.activeElement doesn't go inside
-        // the shadow root.
-        return target.contains(dom(document.activeElement).node) ||
-            target.tagName === 'NUXEO-DATA-TABLE-CHECKBOX' || target.tagName === 'A';
-      
+      }
+      // unreliable with Shadow, document.activeElement doesn't go inside
+      // the shadow root.
+      return (
+        target.contains(dom(document.activeElement).node) ||
+        target.tagName === 'NUXEO-DATA-TABLE-CHECKBOX' ||
+        target.tagName === 'A'
+      );
     }
 
     /**
@@ -743,7 +758,7 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
       // Mobile devices don't move focus from body unless it's an input element that is focused, so this element
       // will never get focused.
       if (!this._isFocusable(dom(ev).localTarget)) {
-        const fireEvent = function (eventName, item, defaultAction) {
+        const fireEvent = function(eventName, item, defaultAction) {
           const e = new CustomEvent(eventName, {
             cancelable: true,
             composed: true,
@@ -763,11 +778,13 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
             fireEvent('expanding-item', ev.model.item, this.expandItem);
           }
         } else {
-          this.dispatchEvent(new CustomEvent('row-clicked', {
-            composed: true,
-            bubbles: true,
-            detail: { item: ev.model.item, index: ev.model.index },
-          }));
+          this.dispatchEvent(
+            new CustomEvent('row-clicked', {
+              composed: true,
+              bubbles: true,
+              detail: { item: ev.model.item, index: ev.model.index },
+            }),
+          );
         }
       }
     }
@@ -786,11 +803,8 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
     set settings(settings) {
       if (settings) {
         if (this.columns && settings.columns) {
-          this.columns.forEach(function (column, idx) {
-            this.set(
-              `columns.${idx}.hidden`,
-              settings.columns[column.field ? column.field : `col-${idx}`].hidden,
-            );
+          this.columns.forEach(function(column, idx) {
+            this.set(`columns.${idx}.hidden`, settings.columns[column.field ? column.field : `col-${idx}`].hidden);
           }, this);
         }
       }
@@ -800,11 +814,13 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
       if (this.selectionEnabled) {
         this.$.list.toggleSelectionForIndex(e.model.index);
         const target = e.target || e.srcElement;
-        target.dispatchEvent(new CustomEvent('selected', {
-          composed: true,
-          bubbles: true,
-          detail: { index: e.model.index, shiftKey: e.shiftKey },
-        }));
+        target.dispatchEvent(
+          new CustomEvent('selected', {
+            composed: true,
+            bubbles: true,
+            detail: { index: e.model.index, shiftKey: e.shiftKey },
+          }),
+        );
         this._updateFlags();
       }
     }
@@ -830,17 +846,19 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
 
     _deepCopy(obj) {
       let cache = [];
-      const result = JSON.parse(JSON.stringify(obj, (key, value) => {
-        if (typeof value === 'object' && value !== null) {
-          if (cache.indexOf(value) !== -1) {
-            // Circular reference found, discard key
-            return;
+      const result = JSON.parse(
+        JSON.stringify(obj, (key, value) => {
+          if (typeof value === 'object' && value !== null) {
+            if (cache.indexOf(value) !== -1) {
+              // Circular reference found, discard key
+              return;
+            }
+            // Store value in our collection
+            cache.push(value);
           }
-          // Store value in our collection
-          cache.push(value);
-        }
-        return value;
-      }));
+          return value;
+        }),
+      );
       // Allow GC
       cache = null;
       return result;
@@ -889,7 +907,7 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
 
     _moveItemDownward(e) {
       e.stopPropagation();
-      if ((this.items.length - 1) > e.detail.index) {
+      if (this.items.length - 1 > e.detail.index) {
         const item = this.items[e.detail.index];
         this.splice('items', e.detail.index, 1);
         this.splice('items', e.detail.index + 1, 0, item);
@@ -917,10 +935,9 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
               this.$.scrollThreshold.clearTriggers();
               this.$.list.notifyResize();
             });
-          } 
-            this.$.scrollThreshold.clearTriggers();
-            this.$.list.notifyResize();
-          
+          }
+          this.$.scrollThreshold.clearTriggers();
+          this.$.list.notifyResize();
         } else {
           return this._fetchRange(0, this.nxProvider.pageSize, true);
         }

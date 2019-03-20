@@ -38,72 +38,72 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
   class DirectoryCheckbox extends mixinBehaviors([DirectoryWidgetBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="iron-flex iron-flex-alignment">
-      :host {
-        display: block;
-        position: relative;
-        padding-bottom: 8px;
-      }
+        <style include="iron-flex iron-flex-alignment">
+          :host {
+            display: block;
+            position: relative;
+            padding-bottom: 8px;
+          }
 
-      [hidden] {
-        display: none !important;
-      }
+          [hidden] {
+            display: none !important;
+          }
 
-      :host([invalid]) .label,
-      .error {
-        color: var(--paper-input-container-invalid-color, red);
-      }
+          :host([invalid]) .label,
+          .error {
+            color: var(--paper-input-container-invalid-color, red);
+          }
 
-      :host([invalid]) .error {
-        opacity: 1;
-        font-size: .923rem;
-      }
+          :host([invalid]) .error {
+            opacity: 1;
+            font-size: 0.923rem;
+          }
 
-      .label {
-         @apply --nuxeo-label;
-      }
+          .label {
+            @apply --nuxeo-label;
+          }
 
-      .label[required]::after {
-        display: inline-block;
-        content: '*';
-        margin-left: 4px;
-        color: var(--paper-input-container-invalid-color, red);
-        font-size: 1.2em;
-      }
+          .label[required]::after {
+            display: inline-block;
+            content: '*';
+            margin-left: 4px;
+            color: var(--paper-input-container-invalid-color, red);
+            font-size: 1.2em;
+          }
 
-      paper-checkbox {
-        margin-top: 10px
-      }
+          paper-checkbox {
+            margin-top: 10px;
+          }
+        </style>
 
-    </style>
+        <nuxeo-operation id="op" op="Directory.SuggestEntries"></nuxeo-operation>
 
-    <nuxeo-operation id="op" op="Directory.SuggestEntries">
-    </nuxeo-operation>
+        <label class="label" hidden\$="[[!label]]" required\$="[[required]]">[[label]]</label>
 
-    <label class="label" hidden\$="[[!label]]" required\$="[[required]]">[[label]]</label>
+        <iron-selector
+          attr-for-selected="name"
+          multi
+          selected-attribute="checked"
+          class="layout vertical flex"
+          selected-values="{{_selected}}"
+          on-selected-items-changed="_updateItems"
+        >
+          <dom-repeat items="[[_entries]]">
+            <template>
+              <paper-checkbox
+                name="[[idFunction(item)]]"
+                data-index="[[index]]"
+                checked="[[item.checked]]"
+                disabled="[[readonly]]"
+              >
+                [[format(item)]]
+              </paper-checkbox>
+            </template>
+          </dom-repeat>
+        </iron-selector>
 
-    <iron-selector
-      attr-for-selected="name"
-      multi
-      selected-attribute="checked"
-      class="layout vertical flex"
-      selected-values="{{_selected}}"
-      on-selected-items-changed="_updateItems">
-      <dom-repeat items="[[_entries]]">
-        <template>
-          <paper-checkbox
-            name="[[idFunction(item)]]"
-            data-index="[[index]]"
-            checked="[[item.checked]]"
-            disabled="[[readonly]]">
-            [[format(item)]]
-          </paper-checkbox>
-        </template>
-      </dom-repeat>
-    </iron-selector>
-
-    <label class="error" hidden\$="[[!invalid]]">[[errorMessage]]</label>
-`;
+        <label class="error" hidden\$="[[!invalid]]">[[errorMessage]]</label>
+      `;
     }
 
     static get is() {
@@ -159,13 +159,16 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
 
     _isChecked(entry) {
       const value = this.value || this.selectedItems;
-      return value && value.some((el) => {
-        if (this.idFunction(el) === this.idFunction(entry)) {
-          this._selected.push(this.idFunction(entry));
-          return true;
-        }
-        return false;
-      });
+      return (
+        value &&
+        value.some((el) => {
+          if (this.idFunction(el) === this.idFunction(entry)) {
+            this._selected.push(this.idFunction(entry));
+            return true;
+          }
+          return false;
+        })
+      );
     }
   }
 

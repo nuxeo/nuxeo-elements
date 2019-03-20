@@ -18,8 +18,8 @@ limitations under the License.
   <head>
     <title>nuxeo-dropdown-aggregation</title>
 
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" />
     <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="/node_modules/@nuxeo/nuxeo-elements/dedup.js"></script>
     <script type="module">
@@ -34,16 +34,17 @@ limitations under the License.
   <body>
     <dom-bind>
       <template>
-
         <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
 
-        <nuxeo-page-provider auto
-                             provider="default_search"
-                             page-size="40"
-                             enrichers="thumbnail"
-                             aggregations="{{aggregations}}"
-                             fetch-aggregates
-                             params='{"ecm_path": ["/default-domain/workspaces/demo"]}'>
+        <nuxeo-page-provider
+          auto
+          provider="default_search"
+          page-size="40"
+          enrichers="thumbnail"
+          aggregations="{{aggregations}}"
+          fetch-aggregates
+          params='{"ecm_path": ["/default-domain/workspaces/demo"]}'
+        >
         </nuxeo-page-provider>
 
         <nuxeo-demo-section heading="Dropdown aggregation" size="small">
@@ -53,7 +54,6 @@ limitations under the License.
         <nuxeo-demo-section heading="Dropdown aggregation (multiple)" size="small">
           <nuxeo-dropdown-aggregation data="[[aggregations.dc_modified_agg]]" multiple></nuxeo-dropdown-aggregation>
         </nuxeo-demo-section>
-
       </template>
     </dom-bind>
   </body>

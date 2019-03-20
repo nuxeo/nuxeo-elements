@@ -24,33 +24,34 @@ import '../../nuxeo-data-grid/nuxeo-data-grid.js';
   class DataGridDemo extends PolymerElement {
     static get template() {
       return html`
-    <style>
-      nuxeo-data-grid {
-        height: 800px;
-      }
-      img {
-        width: 250px;
-        height: 200px;
-        border: 4px solid white;
-      }
-    </style>
+        <style>
+          nuxeo-data-grid {
+            height: 800px;
+          }
+          img {
+            width: 250px;
+            height: 200px;
+            border: 4px solid white;
+          }
+        </style>
 
-    <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
+        <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
 
-    <nuxeo-page-provider
-      id="provider"
-      provider="default_search"
-      page-size="40"
-      enrichers="thumbnail"
-      params="{&quot;ecm_path&quot;: [&quot;/default-domain/workspaces/demo&quot;]}">
-    </nuxeo-page-provider>
+        <nuxeo-page-provider
+          id="provider"
+          provider="default_search"
+          page-size="40"
+          enrichers="thumbnail"
+          params='{"ecm_path": ["/default-domain/workspaces/demo"]}'
+        >
+        </nuxeo-page-provider>
 
-    <nuxeo-data-grid id="grid" nx-provider="provider">
-      <template>
-        <img src="[[_url(item)]]">
-      </template>
-    </nuxeo-data-grid>
-`;
+        <nuxeo-data-grid id="grid" nx-provider="provider">
+          <template>
+            <img src="[[_url(item)]]" />
+          </template>
+        </nuxeo-data-grid>
+      `;
     }
 
     static get is() {
@@ -64,7 +65,8 @@ import '../../nuxeo-data-grid/nuxeo-data-grid.js';
 
     _url(doc) {
       return doc && doc.contextParameters && doc.contextParameters.thumbnail && doc.contextParameters.thumbnail.url
-        ? doc.contextParameters.thumbnail.url : '';
+        ? doc.contextParameters.thumbnail.url
+        : '';
     }
   }
   customElements.define(DataGridDemo.is, DataGridDemo);

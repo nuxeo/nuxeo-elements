@@ -40,122 +40,127 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-file/index.html
    */
-  class File extends mixinBehaviors([UploaderBehavior, I18nBehavior,
-    IronFormElementBehavior, IronValidatableBehavior], Nuxeo.Element) {
+  class File extends mixinBehaviors(
+    [UploaderBehavior, I18nBehavior, IronFormElementBehavior, IronValidatableBehavior],
+    Nuxeo.Element,
+  ) {
     static get template() {
       return html`
-    <style>
-    :host {
-      @apply --layout-flex;
-    }
+        <style>
+          :host {
+            @apply --layout-flex;
+          }
 
-    [hidden] {
-      display: none;
-    }
+          [hidden] {
+            display: none;
+          }
 
-    #dropZone.hover {
-      @apply --nuxeo-drop-zone-hover;
-    }
+          #dropZone.hover {
+            @apply --nuxeo-drop-zone-hover;
+          }
 
-    a {
-      @apply --nuxeo-link;
-    }
+          a {
+            @apply --nuxeo-link;
+          }
 
-    a:hover {
-      @apply --nuxeo-link-hover;
-    }
+          a:hover {
+            @apply --nuxeo-link-hover;
+          }
 
-    :host([required]) #button::after {
-      display: inline-block;
-      content: '*';
-      margin-left: 4px;
-      color: var(--paper-input-container-invalid-color, red);
-    }
+          :host([required]) #button::after {
+            display: inline-block;
+            content: '*';
+            margin-left: 4px;
+            color: var(--paper-input-container-invalid-color, red);
+          }
 
-    :host([invalid]) paper-button {
-      color: var(--paper-input-container-invalid-color, red);
-      margin-bottom: 5px;
-    }
+          :host([invalid]) paper-button {
+            color: var(--paper-input-container-invalid-color, red);
+            margin-bottom: 5px;
+          }
 
-    :host([invalid]) .error {
-      color: var(--paper-input-container-invalid-color, red);
-    }
+          :host([invalid]) .error {
+            color: var(--paper-input-container-invalid-color, red);
+          }
 
-    #button {
-      margin-bottom: 5px;
-    }
+          #button {
+            margin-bottom: 5px;
+          }
 
-    iron-icon {
-      cursor: pointer;
-    }
-    </style>
+          iron-icon {
+            cursor: pointer;
+          }
+        </style>
 
-    <nuxeo-connection id="nx"></nuxeo-connection>
+        <nuxeo-connection id="nx"></nuxeo-connection>
 
-    <input
-      hidden
-      id="input"
-      type="file"
-      multiple\$="[[multiple]]"
-      accept\$="[[accept]]"
-      on-change="_filesChanged"
-      required\$="[[required]]">
+        <input
+          hidden
+          id="input"
+          type="file"
+          multiple\$="[[multiple]]"
+          accept\$="[[accept]]"
+          on-change="_filesChanged"
+          required\$="[[required]]"
+        />
 
-    <div id="dropZone" hidden\$="[[readonly]]">
-      <dom-if if="[[!uploading]]">
-        <template>
-          <paper-button id="button" raised="" on-click="_pick">
-            <iron-icon icon="nuxeo:upload"></iron-icon>
-            <span>[[i18n('file.upload')]]</span>
-          </paper-button>
-        </template>
-      </dom-if>
-    </div>
-
-    <label class="error" hidden\$="[[!invalid]]">[[errorMessage]]</label>
-
-    <dom-if if="[[_hasSingleValue(multiple, value)]]">
-      <template>
-        <div class="file">
-          <div class="layout horizontal">
-            <a href\$="[[_data(value)]]" download="[[_fileName(value)]]">[[_fileName(value)]]</a>
-            <iron-icon
-              icon="nuxeo:remove"
-              title="[[i18n('command.remove')]]"
-              on-click="remove"
-              hidden\$="[[readonly]]">
-            </iron-icon>
-          </div>
+        <div id="dropZone" hidden\$="[[readonly]]">
+          <dom-if if="[[!uploading]]">
+            <template>
+              <paper-button id="button" raised="" on-click="_pick">
+                <iron-icon icon="nuxeo:upload"></iron-icon>
+                <span>[[i18n('file.upload')]]</span>
+              </paper-button>
+            </template>
+          </dom-if>
         </div>
-      </template>
-    </dom-if>
 
-    <dom-if if="[[multiple]]">
-      <template>
-        <dom-repeat items="[[value]]" as="file">
+        <label class="error" hidden\$="[[!invalid]]">[[errorMessage]]</label>
+
+        <dom-if if="[[_hasSingleValue(multiple, value)]]">
           <template>
             <div class="file">
               <div class="layout horizontal">
-                <a href\$="[[_data(file)]]" download="[[_fileName(file)]]">[[_fileName(file)]]</a>
+                <a href\$="[[_data(value)]]" download="[[_fileName(value)]]">[[_fileName(value)]]</a>
                 <iron-icon
                   icon="nuxeo:remove"
                   title="[[i18n('command.remove')]]"
                   on-click="remove"
-                  hidden\$="[[readonly]]">
+                  hidden\$="[[readonly]]"
+                >
                 </iron-icon>
               </div>
             </div>
           </template>
-        </dom-repeat>
-      </template>
-    </dom-if>
+        </dom-if>
 
-    <dom-if if="[[readonly]]">
-      <template>
-        <label class="empty" hidden\$="[[!_hasValue(value)]]">[[emptyLabel]]</label>
-      </template>
-    </dom-if>
-`;
+        <dom-if if="[[multiple]]">
+          <template>
+            <dom-repeat items="[[value]]" as="file">
+              <template>
+                <div class="file">
+                  <div class="layout horizontal">
+                    <a href\$="[[_data(file)]]" download="[[_fileName(file)]]">[[_fileName(file)]]</a>
+                    <iron-icon
+                      icon="nuxeo:remove"
+                      title="[[i18n('command.remove')]]"
+                      on-click="remove"
+                      hidden\$="[[readonly]]"
+                    >
+                    </iron-icon>
+                  </div>
+                </div>
+              </template>
+            </dom-repeat>
+          </template>
+        </dom-if>
+
+        <dom-if if="[[readonly]]">
+          <template>
+            <label class="empty" hidden\$="[[!_hasValue(value)]]">[[emptyLabel]]</label>
+          </template>
+        </dom-if>
+      `;
     }
 
     static get is() {
@@ -241,7 +246,6 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
             'upload-fileId': i.toString(),
           });
         }
-
       } else {
         this.value = {
           'upload-batch': this.batchId,

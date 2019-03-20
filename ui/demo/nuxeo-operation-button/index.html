@@ -18,8 +18,8 @@ limitations under the License.
   <head>
     <title>nuxeo-operation-button</title>
 
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" />
     <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="/node_modules/@nuxeo/nuxeo-elements/dedup.js"></script>
   </head>
@@ -27,10 +27,15 @@ limitations under the License.
   <body>
     <dom-bind>
       <template>
-
         <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
 
-        <nuxeo-document auto id="doc" headers='{"fetch.document": "lock,properties"}' doc-path="[[docpath]]" response="{{document}}"></nuxeo-document>
+        <nuxeo-document
+          auto
+          id="doc"
+          headers='{"fetch.document": "lock,properties"}'
+          doc-path="[[docpath]]"
+          response="{{document}}"
+        ></nuxeo-document>
 
         <nuxeo-demo-section heading="Custom operation button" size="small">
           <nuxeo-path-suggestion label="Path of the document" value="{{docpath}}"></nuxeo-path-suggestion>
@@ -42,7 +47,8 @@ limitations under the License.
               operation="Document.Lock"
               input="[[docpath]]"
               notification="Document locked"
-              event="document-updated">
+              event="document-updated"
+            >
             </nuxeo-operation-button>
           </template>
 
@@ -53,7 +59,8 @@ limitations under the License.
               operation="Document.Unlock"
               input="[[docpath]]"
               notification="Document unlocked"
-              event="document-updated">
+              event="document-updated"
+            >
             </nuxeo-operation-button>
           </template>
 
@@ -66,14 +73,13 @@ limitations under the License.
               params='{"xpath": "file:content"}'
               download
               event="document-downloaded"
-              detail='{"filename": "[[document.properties.file:content.name]]"}'>
+              detail='{"filename": "[[document.properties.file:content.name]]"}'
+            >
             </nuxeo-operation-button>
           </template>
 
           <label>Click button to lock/unlock the selected document</label>
-
         </nuxeo-demo-section>
-
       </template>
     </dom-bind>
 
@@ -97,6 +103,5 @@ limitations under the License.
         console.warn('Received "document-downloaded" event with detail ', e.detail);
       });
     </script>
-
   </body>
 </html>

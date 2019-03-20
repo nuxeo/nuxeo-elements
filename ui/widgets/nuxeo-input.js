@@ -30,64 +30,64 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-input/index.html
    */
-  class Input
-    extends mixinBehaviors([IronFormElementBehavior, IronValidatableBehavior], Nuxeo.Element) {
+  class Input extends mixinBehaviors([IronFormElementBehavior, IronValidatableBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-        position: relative;
-        padding-bottom: 8px;
-      }
+        <style>
+          :host {
+            display: block;
+            position: relative;
+            padding-bottom: 8px;
+          }
 
-      :host([hidden]) {
-        display: none;
-      }
+          :host([hidden]) {
+            display: none;
+          }
 
-      :host([required]) label::after {
-        display: inline-block;
-        content: '*';
-        margin-left: 4px; 
-        color: var(--paper-input-container-invalid-color, red);
-      }
+          :host([required]) label::after {
+            display: inline-block;
+            content: '*';
+            margin-left: 4px;
+            color: var(--paper-input-container-invalid-color, red);
+          }
 
-      paper-input {
-        --paper-input-container: {
-          padding: 0;
-        }
-      }
+          paper-input {
+            --paper-input-container: {
+              padding: 0;
+            }
+          }
 
-      label {
-        @apply --nuxeo-label;
-      }
-    </style>
+          label {
+            @apply --nuxeo-label;
+          }
+        </style>
 
-    <label>[[label]]</label>
+        <label>[[label]]</label>
 
-    <paper-input
-      id="paperInput"
-      type="[[type]]"
-      name="[[name]]"
-      value="{{value}}"
-      placeholder\$="[[placeholder]]"
-      error-message="[[errorMessage]]"
-      autofocus\$="[[autofocus]]"
-      readonly\$="[[readonly]]"
-      disabled\$="[[disabled]]"
-      required\$="[[required]]"
-      minlength\$="[[minlength]]"
-      maxlength\$="[[maxlength]]"
-      min\$="[[min]]"
-      max\$="[[max]]"
-      step\$="[[step]]"
-      pattern\$="[[pattern]]"
-      auto-validate\$="[[autoValidate]]"
-      validator\$="[[validator]]"
-      invalid\$="[[invalid]]"
-      no-label-float>
-    </paper-input>
-`;
+        <paper-input
+          id="paperInput"
+          type="[[type]]"
+          name="[[name]]"
+          value="{{value}}"
+          placeholder\$="[[placeholder]]"
+          error-message="[[errorMessage]]"
+          autofocus\$="[[autofocus]]"
+          readonly\$="[[readonly]]"
+          disabled\$="[[disabled]]"
+          required\$="[[required]]"
+          minlength\$="[[minlength]]"
+          maxlength\$="[[maxlength]]"
+          min\$="[[min]]"
+          max\$="[[max]]"
+          step\$="[[step]]"
+          pattern\$="[[pattern]]"
+          auto-validate\$="[[autoValidate]]"
+          validator\$="[[validator]]"
+          invalid\$="[[invalid]]"
+          no-label-float
+        >
+        </paper-input>
+      `;
     }
 
     static get is() {

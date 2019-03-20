@@ -41,7 +41,6 @@ import '../nuxeo-icons.js';
    * @demo demo/nuxeo-image-viewer/index.html
    */
   class ImageViewer extends mixinBehaviors([IronResizableBehavior], Nuxeo.Element) {
-
     static get is() {
       return 'nuxeo-image-viewer';
     }
@@ -96,7 +95,7 @@ import '../nuxeo-icons.js';
 
     static get template() {
       return html`
-        <link rel="stylesheet" href="/node_modules/cropperjs/dist/cropper.css">
+        <link rel="stylesheet" href="/node_modules/cropperjs/dist/cropper.css" />
         <style>
           :host {
             display: block;
@@ -142,7 +141,7 @@ import '../nuxeo-icons.js';
         </style>
 
         <div id="canvas">
-          <img id="image" src$="[[src]]" on-load="_init">
+          <img id="image" src$="[[src]]" on-load="_init" />
           <dom-if if="[[controls]]">
             <template>
               <div id="toolbar">
@@ -150,7 +149,8 @@ import '../nuxeo-icons.js';
                 <paper-icon-button
                   on-click="_click"
                   icon="[[_getFitIcon(_fitToRealSize)]]"
-                  data-action$="[[_computeFitAction(_fitToRealSize)]]">
+                  data-action$="[[_computeFitAction(_fitToRealSize)]]"
+                >
                 </paper-icon-button>
                 <paper-icon-button on-click="_click" icon="zoom-in" data-action="zoom-in"></paper-icon-button>
                 <paper-icon-button on-click="_click" icon="image:rotate-left" data-action="rotate-left">
@@ -214,7 +214,7 @@ import '../nuxeo-icons.js';
           this._el.rotate(90);
           break;
         default:
-          // do nothing
+        // do nothing
       }
     }
 

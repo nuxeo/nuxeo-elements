@@ -63,7 +63,6 @@ import './nuxeo-aggregate-data-element.js';
    * @demo demo/repository.html
    */
   class RepositoryData extends Nuxeo.AggregateDataElement {
-
     static get is() {
       return 'nuxeo-repository-data';
     }
@@ -82,7 +81,6 @@ import './nuxeo-aggregate-data-element.js';
           type: String,
           value: 'dc:created',
         },
-
 
         // Document property filter terms helpers
         /**
@@ -124,13 +122,13 @@ import './nuxeo-aggregate-data-element.js';
 
       // push document properties terms
       if (this.ecmPrimaryType) {
-        terms.push({terms: {'ecm:primaryType': this._splitTerms(this.ecmPrimaryType)}});
+        terms.push({ terms: { 'ecm:primaryType': this._splitTerms(this.ecmPrimaryType) } });
       }
       if (this.ecmLifecycleState) {
-        terms.push({terms: {'ecm:currentLifeCycleState': this._splitTerms(this.ecmLifecycleState)}});
+        terms.push({ terms: { 'ecm:currentLifeCycleState': this._splitTerms(this.ecmLifecycleState) } });
       }
       if (this.ecmMixinType) {
-        terms.push({terms: {'ecm:mixinType': this._splitTerms(this.ecmMixinType)}});
+        terms.push({ terms: { 'ecm:mixinType': this._splitTerms(this.ecmMixinType) } });
       }
 
       // filter by date (dc:created by default)

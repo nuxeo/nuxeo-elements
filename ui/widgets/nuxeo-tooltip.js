@@ -39,14 +39,14 @@ import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
   class Tooltip extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: none;
-      }
-    </style>
+        <style>
+          :host {
+            display: none;
+          }
+        </style>
 
-    <slot id="content"></slot>
-`;
+        <slot id="content"></slot>
+      `;
     }
 
     static get is() {
@@ -142,15 +142,14 @@ import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
      * Code adapted from paper-tooltip.
      */
     get target() {
-      const {parentNode} = dom(this);
+      const { parentNode } = dom(this);
       // If the parentNode is a document fragment, then we need to use the host.
       const ownerRoot = dom(this).getOwnerRoot();
       let target;
       if (this.for) {
         target = dom(ownerRoot).querySelector(`#${this.for}`);
       } else {
-        target = parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE ?
-          ownerRoot.host : parentNode;
+        target = parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE ? ownerRoot.host : parentNode;
       }
       return target;
     }

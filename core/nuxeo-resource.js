@@ -41,13 +41,13 @@ import './nuxeo-connection.js';
   class Resource extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: none;
-      }
-    </style>
-    <nuxeo-connection id="nx" connection-id="{{connectionId}}"></nuxeo-connection>
-`;
+        <style>
+          :host {
+            display: none;
+          }
+        </style>
+        <nuxeo-connection id="nx" connection-id="{{connectionId}}"></nuxeo-connection>
+      `;
     }
 
     static get is() {
@@ -56,7 +56,6 @@ import './nuxeo-connection.js';
 
     static get properties() {
       return {
-
         /** The id of a nuxeo-connection to use. */
         connectionId: {
           type: String,
@@ -224,7 +223,7 @@ import './nuxeo-connection.js';
     /** Execute the request */
     execute() {
       this._setActiveRequests(this.activeRequests + 1);
-      const options = {method: this.method || 'get'};
+      const options = { method: this.method || 'get' };
 
       if (this.data && this.method !== 'get') {
         options.body = this.data;
@@ -259,7 +258,6 @@ import './nuxeo-connection.js';
           }
           options.headers[`enrichers-${type}`] = v;
         });
-
       }
 
       // resolve with full response to skip default unmarshallers
@@ -274,10 +272,7 @@ import './nuxeo-connection.js';
 
     _autoGet() {
       if (this.auto && this.path) {
-        this._debouncer = Debouncer.debounce(
-          this._debouncer,
-          timeOut.after(this.autoDelay), () => this.get(),
-        );
+        this._debouncer = Debouncer.debounce(this._debouncer, timeOut.after(this.autoDelay), () => this.get());
       }
     }
 
@@ -285,24 +280,31 @@ import './nuxeo-connection.js';
       return this._request
         .path(this.path)
         .queryParams(params)
-        .repositoryName(this._request._baseOptions.repositoryName === 'default'
-          ? undefined : this._request._baseOptions.repositoryName)
+        .repositoryName(
+          this._request._baseOptions.repositoryName === 'default'
+            ? undefined
+            : this._request._baseOptions.repositoryName,
+        )
         .execute(options)
-        .then((response) => response.text().then((text) => {
-          try {
-            return text ? JSON.parse(text) : {};
-          } catch (e) {
-            return {error: 'Invalid json'};
-          }
-        }))
+        .then((response) =>
+          response.text().then((text) => {
+            try {
+              return text ? JSON.parse(text) : {};
+            } catch (e) {
+              return { error: 'Invalid json' };
+            }
+          }),
+        )
         .then((data) => {
-          this.dispatchEvent(new CustomEvent('response', {
-            bubbles: true,
-            composed: true,
-            detail: {
-              response: data,
-            },
-          }));
+          this.dispatchEvent(
+            new CustomEvent('response', {
+              bubbles: true,
+              composed: true,
+              detail: {
+                response: data,
+              },
+            }),
+          );
           this.response = data;
           this.success = true;
           this._setActiveRequests(this.activeRequests - 1);
@@ -313,11 +315,13 @@ import './nuxeo-connection.js';
           this._setActiveRequests(this.activeRequests - 1);
           if (error.response) {
             if (error.response.status === 401) {
-              this.dispatchEvent(new CustomEvent('unauthorized-request', {
-                bubbles: true,
-                composed: true,
-                detail: error,
-              }));
+              this.dispatchEvent(
+                new CustomEvent('unauthorized-request', {
+                  bubbles: true,
+                  composed: true,
+                  detail: error,
+                }),
+              );
             }
             return error.response.text().then((text) => {
               if (text) {
@@ -326,16 +330,15 @@ import './nuxeo-connection.js';
                   this.error.status = error.response.status;
                   console.warn(`Resource request failed: ${this.error.message}`);
                 } catch (e) {
-                  this.error = {message: 'Invalid json', status: error.response.status};
+                  this.error = { message: 'Invalid json', status: error.response.status };
                 }
               } else {
-                this.error = {message: 'No message', status: error.response.status};
+                this.error = { message: 'No message', status: error.response.status };
               }
               throw this.error;
             });
           }
-            throw error;
-
+          throw error;
         });
     }
 

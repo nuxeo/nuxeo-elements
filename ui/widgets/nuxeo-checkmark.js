@@ -47,49 +47,49 @@ import '../nuxeo-icons.js';
   class CheckMark extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: inline-block;
-        width: var(--nuxeo-checkmark-width, 18px);
-        height: var(--nuxeo-checkmark-height, 18px);
-        cursor: pointer;
-        border-radius: 50%;
-        border: 2px solid var(--nuxeo-checkmark-border-color, var(--nuxeo-border, gray));
-        background-color: var(--nuxeo-checkmark-background-color, transparent);
-        color: var(--nuxeo-icon-color, transparent);
-        padding: 0;
-        margin: 0;
-      }
+        <style>
+          :host {
+            display: inline-block;
+            width: var(--nuxeo-checkmark-width, 18px);
+            height: var(--nuxeo-checkmark-height, 18px);
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid var(--nuxeo-checkmark-border-color, var(--nuxeo-border, gray));
+            background-color: var(--nuxeo-checkmark-background-color, transparent);
+            color: var(--nuxeo-icon-color, transparent);
+            padding: 0;
+            margin: 0;
+          }
 
-      :host([hidden]) {
-        display: none !important;
-      }
+          :host([hidden]) {
+            display: none !important;
+          }
 
-      :host(:focus) {
-        outline: none;
-      }
+          :host(:focus) {
+            outline: none;
+          }
 
-      :host(:hover) {
-        border: 2px solid var(--nuxeo-checkmark-border-color, var(--nuxeo-border, gray));
-        background-color: var(--nuxeo-checkmark-background-color-hover, transparent);
-        color: var(--nuxeo-icon-color-hover, black);
-      }
+          :host(:hover) {
+            border: 2px solid var(--nuxeo-checkmark-border-color, var(--nuxeo-border, gray));
+            background-color: var(--nuxeo-checkmark-background-color-hover, transparent);
+            color: var(--nuxeo-icon-color-hover, black);
+          }
 
-      :host([checked]) {
-        border: 2px solid var(--nuxeo-checkmark-border-color-checked, var(--nuxeo-primary-color, blue));
-        background-color: var(--nuxeo-checkmark-background-color-checked, var(--nuxeo-primary-color, blue));
-        color: var(--nuxeo-icon-color-checked, white);
-      }
+          :host([checked]) {
+            border: 2px solid var(--nuxeo-checkmark-border-color-checked, var(--nuxeo-primary-color, blue));
+            background-color: var(--nuxeo-checkmark-background-color-checked, var(--nuxeo-primary-color, blue));
+            color: var(--nuxeo-icon-color-checked, white);
+          }
 
-      iron-icon {
-        --iron-icon-width: 100%;
-        --iron-icon-height: 100%;
-        vertical-align: top;
-      }
-    </style>
+          iron-icon {
+            --iron-icon-width: 100%;
+            --iron-icon-height: 100%;
+            vertical-align: top;
+          }
+        </style>
 
-    <iron-icon icon="nuxeo:check" on-click="_tap"></iron-icon>
-`;
+        <iron-icon icon="nuxeo:check" on-click="_tap"></iron-icon>
+      `;
     }
 
     static get is() {

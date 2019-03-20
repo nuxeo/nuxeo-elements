@@ -35,47 +35,49 @@ import './nuxeo-selectivity.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-document-suggestion/index.html
    */
-  class DocumentSuggestion extends
-    mixinBehaviors([IronFormElementBehavior, IronValidatableBehavior,
-      RoutingBehavior], Nuxeo.Element) {
+  class DocumentSuggestion extends mixinBehaviors(
+    [IronFormElementBehavior, IronValidatableBehavior, RoutingBehavior],
+    Nuxeo.Element,
+  ) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-      }
+        <style>
+          :host {
+            display: block;
+          }
 
-      :host([hidden]) {
-        display: none;
-      }
-    </style>
+          :host([hidden]) {
+            display: none;
+          }
+        </style>
 
-    <nuxeo-operation id="op" op="Document.FetchByProperty"></nuxeo-operation>
+        <nuxeo-operation id="op" op="Document.FetchByProperty"></nuxeo-operation>
 
-    <nuxeo-selectivity
-      id="s2"
-      operation="[[operation]]"
-      label="[[label]]"
-      min-chars="[[minChars]]"
-      frequency="[[frequency]]"
-      multiple="[[multiple]]"
-      params="[[_computeParams(params.*, pageProvider, schemas, repository)]]"
-      placeholder="[[placeholder]]"
-      error-message="[[errorMessage]]"
-      readonly="[[readonly]]"
-      value="{{value}}"
-      selected-items="{{selectedItems}}"
-      selected-item="{{selectedItem}}"
-      selection-formatter="[[selectionFormatter]]"
-      result-formatter="[[resultFormatter]]"
-      required="[[required]]"
-      invalid="[[invalid]]"
-      init-selection="[[initSelection]]"
-      id-function="[[_idFunction]]"
-      stay-open-on-select="[[stayOpenOnSelect]]"
-      enrichers="[[enrichers]]">
-    </nuxeo-selectivity>
-`;
+        <nuxeo-selectivity
+          id="s2"
+          operation="[[operation]]"
+          label="[[label]]"
+          min-chars="[[minChars]]"
+          frequency="[[frequency]]"
+          multiple="[[multiple]]"
+          params="[[_computeParams(params.*, pageProvider, schemas, repository)]]"
+          placeholder="[[placeholder]]"
+          error-message="[[errorMessage]]"
+          readonly="[[readonly]]"
+          value="{{value}}"
+          selected-items="{{selectedItems}}"
+          selected-item="{{selectedItem}}"
+          selection-formatter="[[selectionFormatter]]"
+          result-formatter="[[resultFormatter]]"
+          required="[[required]]"
+          invalid="[[invalid]]"
+          init-selection="[[initSelection]]"
+          id-function="[[_idFunction]]"
+          stay-open-on-select="[[stayOpenOnSelect]]"
+          enrichers="[[enrichers]]"
+        >
+        </nuxeo-selectivity>
+      `;
     }
 
     static get is() {
@@ -262,14 +264,18 @@ import './nuxeo-selectivity.js';
     }
 
     _computeParams() {
-      return Object.assign({}, {
-        documentSchemas: this.schemas,
-        repository: this.repository,
-        providerName: this.pageProvider,
-        pageProviderName: this.pageProvider,
-        page: 0,
-        pageSize: 20,
-      }, this.params);
+      return Object.assign(
+        {},
+        {
+          documentSchemas: this.schemas,
+          repository: this.repository,
+          providerName: this.pageProvider,
+          pageProviderName: this.pageProvider,
+          page: 0,
+          pageSize: 20,
+        },
+        this.params,
+      );
     }
 
     _selectionFormatter(doc) {
@@ -283,14 +289,14 @@ import './nuxeo-selectivity.js';
       return `${doc.title}<br/>${doc.path}`;
     }
 
-
     _initSelection(element, callback) {
       if (element) {
         if (this.multiple) {
           if (element.length > 0) {
             if (element[0].title) {
               return callback(element);
-            } if (typeof element[0] === 'string' && element[0].length > 0) {
+            }
+            if (typeof element[0] === 'string' && element[0].length > 0) {
               return this._resolveDocs(element, callback);
             }
           } else {
@@ -301,9 +307,8 @@ import './nuxeo-selectivity.js';
         } else if (typeof element === 'string') {
           if (element.length > 0) {
             return this._resolveDocs(element, callback);
-          } 
-            return callback('');
-          
+          }
+          return callback('');
         }
         console.warn('Unable to resolve such entry. Write your own resolver');
       }

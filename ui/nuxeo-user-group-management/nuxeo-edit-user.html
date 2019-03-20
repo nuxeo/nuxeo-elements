@@ -38,20 +38,27 @@ Used by `nuxeo-user-management` and `nuxeo-create-user`
     <nuxeo-input label="[[i18n('editUser.firstName')]]" value="{{user.firstName}}" name="firstname"></nuxeo-input>
     <nuxeo-input label="[[i18n('editUser.lastName')]]" value="{{user.lastName}}" name="lastname"></nuxeo-input>
     <nuxeo-input label="[[i18n('editUser.company')]]" value="{{user.company}}" name="company"></nuxeo-input>
-    <nuxeo-input label="[[i18n('editUser.email')]]" value="{{user.email}}" name="email" type="email" required></nuxeo-input>
+    <nuxeo-input
+      label="[[i18n('editUser.email')]]"
+      value="{{user.email}}"
+      name="email"
+      type="email"
+      required
+    ></nuxeo-input>
 
     <template is="dom-if" if="[[new]]">
-      <nuxeo-user-suggestion id="picker"
-                             name="group"
-                             search-type="GROUP_TYPE"
-                             label="[[i18n('editUser.groups')]]"
-                             placeholder="[[i18n('editUser.searchGroups')]]"
-                             value="{{user.groups}}"
-                             multiple
-                             result-formatter="[[resultFormatter]]">
+      <nuxeo-user-suggestion
+        id="picker"
+        name="group"
+        search-type="GROUP_TYPE"
+        label="[[i18n('editUser.groups')]]"
+        placeholder="[[i18n('editUser.searchGroups')]]"
+        value="{{user.groups}}"
+        multiple
+        result-formatter="[[resultFormatter]]"
+      >
       </nuxeo-user-suggestion>
     </template>
-
   </template>
 
   <script>
@@ -77,8 +84,8 @@ Used by `nuxeo-user-management` and `nuxeo-create-user`
         resultFormatter: {
           type: Function,
           value() {
-        return this._resultFormatter.bind(this);
-      },
+            return this._resultFormatter.bind(this);
+          },
         },
       },
 
@@ -90,7 +97,7 @@ Used by `nuxeo-user-management` and `nuxeo-create-user`
       },
 
       _resultFormatter(item) {
-        return `${item.displayLabel  } (${  item.groupname || item.username  })`;
+        return `${item.displayLabel} (${item.groupname || item.username})`;
       },
     });
   </script>

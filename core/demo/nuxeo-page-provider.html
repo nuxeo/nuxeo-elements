@@ -17,15 +17,16 @@ limitations under the License.
 <html>
   <head>
     <title>nuxeo-page-provider demo</title>
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" />
     <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
   </head>
 
   <style>
-    html, body {
+    html,
+    body {
       height: 100%;
       margin: 0;
-      background-color: #E5E5E5;
+      background-color: #e5e5e5;
       font-family: 'RobotoDraft', sans-serif;
     }
 
@@ -59,20 +60,32 @@ limitations under the License.
   <body>
     <dom-bind>
       <template>
-        <nuxeo-connection id="nx" url="http://localhost:8080/nuxeo" username="Administrator"
-                          password="Administrator"></nuxeo-connection>
-        <nuxeo-page-provider auto page-size="5" current-page="{{docs}}"
-                             query="[[query(docType)]]"></nuxeo-page-provider>
-        <nuxeo-page-provider auto page-size="5" offset="2" current-page="{{docsWithOffset}}"
-                             query="[[query(docType)]]"></nuxeo-page-provider>
+        <nuxeo-connection
+          id="nx"
+          url="http://localhost:8080/nuxeo"
+          username="Administrator"
+          password="Administrator"
+        ></nuxeo-connection>
+        <nuxeo-page-provider
+          auto
+          page-size="5"
+          current-page="{{docs}}"
+          query="[[query(docType)]]"
+        ></nuxeo-page-provider>
+        <nuxeo-page-provider
+          auto
+          page-size="5"
+          offset="2"
+          current-page="{{docsWithOffset}}"
+          query="[[query(docType)]]"
+        ></nuxeo-page-provider>
         <div class="container" class="layout vertical center">
-
           <select flex two value="{{docType::change}}">
             <option value="Note">Notes</option>
             <option value="File">Files</option>
           </select>
 
-          <hr/>
+          <hr />
           <h2>First five results</h2>
           <template is="dom-repeat" items="{{docs}}">
             <div class="card layout horizontal center">

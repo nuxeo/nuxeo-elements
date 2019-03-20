@@ -40,34 +40,38 @@ window.nuxeo.I18n = window.nuxeo.I18n || {};
  * Translates the given key.
  * Also accepts a default value and multiple arguments which will be replaced on the value.
  */
-window.nuxeo.I18n.translate = window.nuxeo.I18n.translate || function (...args) {
-  const language = window.nuxeo.I18n.language || 'en';
-  const key = args[0];
-  let value = (window.nuxeo.I18n[language] && window.nuxeo.I18n[language][key]) || key;
-  const params = Array.prototype.slice.call(args, 1);
-  for (let i = 0; i < params.length; i++) {
-    value = value.replace(`{${i}}`, params[i]);
-  } // improve this to use both numbered and named parameters
-  return value;
-};
+window.nuxeo.I18n.translate =
+  window.nuxeo.I18n.translate ||
+  function(...args) {
+    const language = window.nuxeo.I18n.language || 'en';
+    const key = args[0];
+    let value = (window.nuxeo.I18n[language] && window.nuxeo.I18n[language][key]) || key;
+    const params = Array.prototype.slice.call(args, 1);
+    for (let i = 0; i < params.length; i++) {
+      value = value.replace(`{${i}}`, params[i]);
+    } // improve this to use both numbered and named parameters
+    return value;
+  };
 
 /**
  * loads a locale using a locale resolver
  */
-window.nuxeo.I18n.loadLocale = function () {
-  return window.nuxeo.I18n.localeResolver ? window.nuxeo.I18n.localeResolver().then(() => {
-    // TODO we should refactor this later to use a factory function instead; it requires factoring the resolver as well.
-    window.nuxeo.I18n.translate = window.nuxeo.I18n.translate.bind(null);
-    document.dispatchEvent(new Event('i18n-locale-loaded'));
-  }) : new Promise((() => {}));
+window.nuxeo.I18n.loadLocale = function() {
+  return window.nuxeo.I18n.localeResolver
+    ? window.nuxeo.I18n.localeResolver().then(() => {
+        // TODO we should refactor this later to use a factory function instead; it requires factoring the resolver as well.
+        window.nuxeo.I18n.translate = window.nuxeo.I18n.translate.bind(null);
+        document.dispatchEvent(new Event('i18n-locale-loaded'));
+      })
+    : new Promise(() => {});
 };
 
 /**
  * The default locale resolver that reads labels from JSON files in a folder, with format messages.<language>.json
  */
 export function XHRLocaleResolver(msgFolder) {
-  return function () {
-    return new Promise(((resolve) => {
+  return function() {
+    return new Promise((resolve) => {
       // point all english based locales to the reference file
       if (window.nuxeo.I18n.language.startsWith('en-')) {
         window.nuxeo.I18n.language = 'en';
@@ -77,7 +81,7 @@ export function XHRLocaleResolver(msgFolder) {
         const referenceFile = `${msgFolder}/messages.json`;
         const xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
-        xhr.onreadystatechange = function () {
+        xhr.onreadystatechange = function() {
           if (xhr.readyState === 4) {
             if (xhr.status === 200) {
               window.nuxeo.I18n[language] = JSON.parse(this.response); // cache this locale
@@ -90,14 +94,14 @@ export function XHRLocaleResolver(msgFolder) {
             }
           }
         };
-        xhr.onerror = function () {
+        xhr.onerror = function() {
           console.error(`Failed to load ${url}`);
         };
         xhr.send();
       }
       const url = `${msgFolder}/messages${language === 'en' ? '' : `-${language}`}.json`;
       loadLang(url);
-    }));
+    });
   };
 }
 

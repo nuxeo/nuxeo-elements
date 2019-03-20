@@ -43,128 +43,134 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
    * @appliesMixin Nuxeo.RoutingBehavior
    * @demo demo/nuxeo-justified-grid/index.html
    */
-  class JustifiedGrid
-    extends mixinBehaviors([IronResizableBehavior, Templatizer,
-      PageProviderDisplayBehavior, RoutingBehavior], Nuxeo.Element) {
+  class JustifiedGrid extends mixinBehaviors(
+    [IronResizableBehavior, Templatizer, PageProviderDisplayBehavior, RoutingBehavior],
+    Nuxeo.Element,
+  ) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-      }
+        <style>
+          :host {
+            display: block;
+          }
 
-      #container {
-        position: relative;
-        height: 100%;
-        width: 100%;
-      }
+          #container {
+            position: relative;
+            height: 100%;
+            width: 100%;
+          }
 
-      #list {
-        @apply --layout-fit;
-      }
+          #list {
+            @apply --layout-fit;
+          }
 
-      #list::after {
-        content: '';
-        flex-grow: 999999999;
-      }
+          #list::after {
+            content: '';
+            flex-grow: 999999999;
+          }
 
-      #list .row {
-        display: flex;
-        flex-direction: row;
-      }
+          #list .row {
+            display: flex;
+            flex-direction: row;
+          }
 
-      #list .item {
-        position: relative;
-        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.04);
-        border: 2px solid transparent;
-        cursor: pointer;
-        outline: none;
-      }
+          #list .item {
+            position: relative;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.04);
+            border: 2px solid transparent;
+            cursor: pointer;
+            outline: none;
+          }
 
-      #list .item[selected], #list .item:hover, #list .item:focus {
-        border: 2px solid var(--nuxeo-grid-selected, transparent);
-        background-color: var(--nuxeo-grid-selected, transparent);
-        color: white;
-      }
+          #list .item[selected],
+          #list .item:hover,
+          #list .item:focus {
+            border: 2px solid var(--nuxeo-grid-selected, transparent);
+            background-color: var(--nuxeo-grid-selected, transparent);
+            color: white;
+          }
 
-      #list .item paper-icon-button {
-        position: absolute;
-        left: 10px;
-        top: 10px;
-        background-color: rgba(255, 255, 255, 0.95);
-        border: 2px solid var(--nuxeo-grid-selected);
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-        padding: 2px;
-        color: var(--nuxeo-grid-selected);
-        display: none;
-      }
+          #list .item paper-icon-button {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--nuxeo-grid-selected);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            padding: 2px;
+            color: var(--nuxeo-grid-selected);
+            display: none;
+          }
 
-      #list .item[selected] paper-icon-button {
-        border: 2px solid var(--nuxeo-grid-selected);
-        background-color: var(--nuxeo-grid-selected);
-        color: white;
-        display: block;
-      }
+          #list .item[selected] paper-icon-button {
+            border: 2px solid var(--nuxeo-grid-selected);
+            background-color: var(--nuxeo-grid-selected);
+            color: white;
+            display: block;
+          }
 
-      #list .item:hover paper-icon-button,
-      #list .item paper-icon-button[selection-mode] {
-        display: block;
-      }
+          #list .item:hover paper-icon-button,
+          #list .item paper-icon-button[selection-mode] {
+            display: block;
+          }
 
-      [hidden] {
-        display: none !important;
-      }
+          [hidden] {
+            display: none !important;
+          }
 
-      .emptyResult {
-        opacity: .5;
-        display: block;
-        font-weight: 300;
-        padding: 1.5em .7em;
-        text-align: center;
-        font-size: 1.1rem;
-      }
-    </style>
+          .emptyResult {
+            opacity: 0.5;
+            display: block;
+            font-weight: 300;
+            padding: 1.5em 0.7em;
+            text-align: center;
+            font-size: 1.1rem;
+          }
+        </style>
 
-    <dom-if if="[[_isEmpty]]">
-      <template>
-        <div class="emptyResult">[[_computedEmptyLabel]]</div>
-      </template>
-    </dom-if>
+        <dom-if if="[[_isEmpty]]">
+          <template>
+            <div class="emptyResult">[[_computedEmptyLabel]]</div>
+          </template>
+        </dom-if>
 
-    <div id="container">
-      <iron-list id="list" items="[[rows]]" as="row" on-iron-resize="_resize">
-        <template>
-          <div class="row">
-            <dom-repeat items="[[row]]">
-              <template>
-                <div
-                  class="item"
-                  tabindex="0"
-                  on-click="_click"
-                  selected\$="[[_isSelected(item, selectedItems.*)]]"
-                  style\$="height: [[item._view.height]]px; width: [[item._view.width]]px;">
-                <div id="item-[[item._view.index]]"></div>[[_itemChanged(item, item._view.width, item._view.height)]]
-                  <paper-icon-button
-                    noink
-                    icon="icons:check"
-                    selection-mode\$="[[selectionMode]]"
-                    hidden\$="[[!selectionEnabled]]"
-                    on-click="_check">
-                  </paper-icon-button>
-                </div>
-              </template>
-            </dom-repeat>
-          </div>
-        </template>
-      </iron-list>
+        <div id="container">
+          <iron-list id="list" items="[[rows]]" as="row" on-iron-resize="_resize">
+            <template>
+              <div class="row">
+                <dom-repeat items="[[row]]">
+                  <template>
+                    <div
+                      class="item"
+                      tabindex="0"
+                      on-click="_click"
+                      selected\$="[[_isSelected(item, selectedItems.*)]]"
+                      style\$="height: [[item._view.height]]px; width: [[item._view.width]]px;"
+                    >
+                      <div id="item-[[item._view.index]]"></div>
+                      [[_itemChanged(item, item._view.width, item._view.height)]]
+                      <paper-icon-button
+                        noink
+                        icon="icons:check"
+                        selection-mode\$="[[selectionMode]]"
+                        hidden\$="[[!selectionEnabled]]"
+                        on-click="_check"
+                      >
+                      </paper-icon-button>
+                    </div>
+                  </template>
+                </dom-repeat>
+              </div>
+            </template>
+          </iron-list>
 
-      <iron-scroll-threshold id="scrollThreshold" scroll-target="list" on-lower-threshold="fetch">
-      </iron-scroll-threshold>
-      <array-selector id="selector" items="{{items}}" selected="{{selectedItems}}" multi=""></array-selector>
-    </div>
-`;
+          <iron-scroll-threshold id="scrollThreshold" scroll-target="list" on-lower-threshold="fetch">
+          </iron-scroll-threshold>
+          <array-selector id="selector" items="{{items}}" selected="{{selectedItems}}" multi=""></array-selector>
+        </div>
+      `;
     }
 
     static get is() {
@@ -212,9 +218,7 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
     }
 
     static get observers() {
-      return [
-        '_selectedItemsChanged(selectedItems.splices)',
-      ];
+      return ['_selectedItemsChanged(selectedItems.splices)'];
     }
 
     ready() {
@@ -337,7 +341,7 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
     }
 
     _click(e) {
-      const {index} = e.model.item._view;
+      const { index } = e.model.item._view;
       if (this.selectionEnabled && this.selectionMode) {
         // since we are using Object.assign() when creating items for the grid, we cannot really use
         // selector.selectItem()/deselectItem() because it relies on indexOf and since the e.model.item is not a
@@ -348,11 +352,13 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
           this.selectIndex(index);
         }
       } else {
-        this.dispatchEvent(new CustomEvent('navigate', {
-          composed: true,
-          bubbles: true,
-          detail: { doc: this.items[index], index },
-        }));
+        this.dispatchEvent(
+          new CustomEvent('navigate', {
+            composed: true,
+            bubbles: true,
+            detail: { doc: this.items[index], index },
+          }),
+        );
       }
       e.stopPropagation();
     }
@@ -411,7 +417,7 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
 
         // compute item width to fit a row with `rowHeight`
         // new width = original width * rowHeight / original height
-        clone._view.width = clone.size.width * this.rowHeight / clone.size.height;
+        clone._view.width = (clone.size.width * this.rowHeight) / clone.size.height;
         clone._view.height = this.rowHeight;
 
         // if item fits, add it to current row
@@ -427,7 +433,7 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
           currentRowWidth = clone._view.width;
         }
 
-        if (idx === (items.length - 1)) {
+        if (idx === items.length - 1) {
           // fit items do width and push current row to rows
           rows.push(this._fitItemsToWidth(currentRow, currentRowWidth, gridWidth));
         }
@@ -440,10 +446,10 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
      * remaining width space.
      */
     _fitItemsToWidth(currentRow, currentRowWidth, gridWidth) {
-      const computedHeight = gridWidth * this.rowHeight / currentRowWidth;
+      const computedHeight = (gridWidth * this.rowHeight) / currentRowWidth;
       currentRow.forEach((item) => {
         item._view.height = computedHeight;
-        item._view.width = item._view.width / currentRowWidth * gridWidth;
+        item._view.width = (item._view.width / currentRowWidth) * gridWidth;
       });
       return currentRow;
     }
@@ -453,12 +459,9 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
      */
     _resize() {
       if (this.$.list.offsetWidth || this.$.list.offsetHeight) {
-        this._debouncer = Debouncer.debounce(
-          this._debouncer,
-          timeOut.after(150), () => {
-            this.rows = this._computeRows(this.items);
-          },
-        );
+        this._debouncer = Debouncer.debounce(this._debouncer, timeOut.after(150), () => {
+          this.rows = this._computeRows(this.items);
+        });
       }
     }
   }

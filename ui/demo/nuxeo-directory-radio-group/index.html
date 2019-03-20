@@ -15,39 +15,39 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <html>
-<head>
-  <title>nuxeo-directory-radio-group</title>
+  <head>
+    <title>nuxeo-directory-radio-group</title>
 
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
-  <script src="/node_modules/@nuxeo/nuxeo-elements/dedup.js"></script>
-  <script type="module">
-    import '@polymer/polymer/polymer-legacy.js';
-    import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
-    import '../nuxeo-demo.js';
-    import '../../widgets/nuxeo-directory-radio-group.js';
-  </script>
-</head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" />
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="/node_modules/@nuxeo/nuxeo-elements/dedup.js"></script>
+    <script type="module">
+      import '@polymer/polymer/polymer-legacy.js';
+      import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+      import '../nuxeo-demo.js';
+      import '../../widgets/nuxeo-directory-radio-group.js';
+    </script>
+  </head>
 
-<body unresolved>
-<dom-bind>
-  <template>
+  <body unresolved>
+    <dom-bind>
+      <template>
+        <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
 
-    <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
+        <nuxeo-demo-section heading="Simple directory selector with a radio group" size="small">
+          <nuxeo-directory-radio-group
+            directory-name="language"
+            label="Select language"
+            value="{{id}}"
+            selected-item="{{item}}"
+          >
+          </nuxeo-directory-radio-group>
 
-    <nuxeo-demo-section heading="Simple directory selector with a radio group" size="small">
-      <nuxeo-directory-radio-group directory-name="language"
-                                   label="Select language"
-                                   value="{{id}}"
-                                   selected-item="{{item}}">
-      </nuxeo-directory-radio-group>
-
-      <div>Selected directory id: [[id]]</div>
-      <div>Selected directory label: [[item.absoluteLabel]]</div>
-    </nuxeo-demo-section>
-
-  </template>
-</dom-bind>
-</body>
+          <div>Selected directory id: [[id]]</div>
+          <div>Selected directory label: [[item.absoluteLabel]]</div>
+        </nuxeo-demo-section>
+      </template>
+    </dom-bind>
+  </body>
 </html>

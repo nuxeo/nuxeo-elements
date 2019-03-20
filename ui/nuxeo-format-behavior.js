@@ -23,164 +23,162 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
  *
  * @polymerBehavior
  */
-export const FormatBehavior = [I18nBehavior, {
-
-  /**
-   * Formats a size given in bytes in MB, KB, or bytes.
-   */
-  formatSize(size) {
-    if (!size || size < 0) {
-      return '';
-    } if (size > 1048576) {
-      return `${parseFloat(size / 1048576).toFixed(2)} MB`;
-    } if (size > 1024) {
-      return `${parseFloat(size / 1024).toFixed(2)} KB`;
-    } 
+export const FormatBehavior = [
+  I18nBehavior,
+  {
+    /**
+     * Formats a size given in bytes in MB, KB, or bytes.
+     */
+    formatSize(size) {
+      if (!size || size < 0) {
+        return '';
+      }
+      if (size > 1048576) {
+        return `${parseFloat(size / 1048576).toFixed(2)} MB`;
+      }
+      if (size > 1024) {
+        return `${parseFloat(size / 1024).toFixed(2)} KB`;
+      }
       return `${size.toString()} Bytes`;
-    
-  },
+    },
 
-  _formatDate(date, fmt) {
-    if (!date) return;
-    moment.locale(this._languageCode());
-    if (fmt && fmt === 'relative') {
-      return moment().to(date);
-    }
-    return moment(date).format(fmt);
-  },
+    _formatDate(date, fmt) {
+      if (!date) return;
+      moment.locale(this._languageCode());
+      if (fmt && fmt === 'relative') {
+        return moment().to(date);
+      }
+      return moment(date).format(fmt);
+    },
 
-  /**
-   * Formats a date as a string. Default format is 'MMM D, YYYY'.
-   * Use format "relative" to show date relative to current time
-   *
-   * @param {string} date the date
-   * @param {string} format the format, falls back on Nuxeo.UI.config.dateFormat or 'MMM D, YYYY' if null.
-   */
-  formatDate(date, format) {
-    return this._formatDate(date, format ||
-      (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.dateFormat) ||
-      'LL');
-  },
+    /**
+     * Formats a date as a string. Default format is 'MMM D, YYYY'.
+     * Use format "relative" to show date relative to current time
+     *
+     * @param {string} date the date
+     * @param {string} format the format, falls back on Nuxeo.UI.config.dateFormat or 'MMM D, YYYY' if null.
+     */
+    formatDate(date, format) {
+      return this._formatDate(date, format || (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.dateFormat) || 'LL');
+    },
 
-  /**
-   * Formats a date time as a string. Default format is 'MMMM D, YYYY HH:mm'.
-   * Use format "relative" to show date relative to current time
-   *
-   * @param {string} date the date
-   * @param {string} format the format, falls back on Nuxeo.UI.config.dateFormat or 'MMMM D, YYYY HH:mm' if null.
-   */
-  formatDateTime(date, format) {
-    return this._formatDate(date, format ||
-      (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.dateTimeFormat) ||
-      'LLL');
-  },
+    /**
+     * Formats a date time as a string. Default format is 'MMMM D, YYYY HH:mm'.
+     * Use format "relative" to show date relative to current time
+     *
+     * @param {string} date the date
+     * @param {string} format the format, falls back on Nuxeo.UI.config.dateFormat or 'MMMM D, YYYY HH:mm' if null.
+     */
+    formatDateTime(date, format) {
+      return this._formatDate(date, format || (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.dateTimeFormat) || 'LLL');
+    },
 
-  /**
-   * Returns the translated mimetype. Message key is 'mimetype.<value>'.
-   */
-  formatMimeType(value) {
-    if (!value) return;
-    return this.i18n(`mimetype.${value}`);
-  },
+    /**
+     * Returns the translated mimetype. Message key is 'mimetype.<value>'.
+     */
+    formatMimeType(value) {
+      if (!value) return;
+      return this.i18n(`mimetype.${value}`);
+    },
 
-  /**
-   * Returns the translated rendition name.
-   */
-  formatRendition(value) {
-    if (!value) return;
-    return this.i18n(`exportButton.${value}`);
-  },
+    /**
+     * Returns the translated rendition name.
+     */
+    formatRendition(value) {
+      if (!value) return;
+      return this.i18n(`exportButton.${value}`);
+    },
 
-  /**
-   * Returns the version of a document as <major>.<minor>.
-   */
-  formatVersion(doc) {
-    if (doc && doc.properties
-        && doc.properties['uid:major_version'] !== undefined && doc.properties['uid:minor_version'] !== undefined) {
-      return `${doc.properties['uid:major_version']}.${doc.properties['uid:minor_version']}`;
-    } 
+    /**
+     * Returns the version of a document as <major>.<minor>.
+     */
+    formatVersion(doc) {
+      if (
+        doc &&
+        doc.properties &&
+        doc.properties['uid:major_version'] !== undefined &&
+        doc.properties['uid:minor_version'] !== undefined
+      ) {
+        return `${doc.properties['uid:major_version']}.${doc.properties['uid:minor_version']}`;
+      }
       return '';
-    
-  },
+    },
 
-  /**
-   * Returns the label for the given directory entry.
-   */
-  formatDirectory(value, separator) {
-    if (value && value['entity-type'] && value['entity-type'] === 'directoryEntry') {
-      if (value.properties && value.properties.label) {
-        return this._absoluteDirectoryPath(value, 'label', separator || '/');
-      } 
+    /**
+     * Returns the label for the given directory entry.
+     */
+    formatDirectory(value, separator) {
+      if (value && value['entity-type'] && value['entity-type'] === 'directoryEntry') {
+        if (value.properties && value.properties.label) {
+          return this._absoluteDirectoryPath(value, 'label', separator || '/');
+        }
         const label = `label_${this._languageCode()}`;
         return this._absoluteDirectoryPath(value, label || 'label_en', separator || '/');
-      
-    } 
+      }
       return value;
-    
-  },
+    },
 
-  _absoluteDirectoryPath(entry, labelField, separator, subPath) {
-    const {parent} = entry.properties;
-    let tmp = entry.properties[labelField];
-    if (subPath) {
-      tmp += separator + subPath;
-    }
-    if (parent && parent['entity-type'] && parent['entity-type'] === 'directoryEntry') {
-      return this._absoluteDirectoryPath(parent, labelField, separator, tmp);
-    } 
+    _absoluteDirectoryPath(entry, labelField, separator, subPath) {
+      const { parent } = entry.properties;
+      let tmp = entry.properties[labelField];
+      if (subPath) {
+        tmp += separator + subPath;
+      }
+      if (parent && parent['entity-type'] && parent['entity-type'] === 'directoryEntry') {
+        return this._absoluteDirectoryPath(parent, labelField, separator, tmp);
+      }
       return tmp;
-    
-  },
+    },
 
-  /**
-   * Returns the label for the given document type.
-   */
-  formatDocType(type) {
-    if (!type) {
-      return;
-    }
-    const key = `label.document.type.${type.toLowerCase()}`;
-    const value = this.i18n(key);
-    return value === key ? type : value;
-  },
+    /**
+     * Returns the label for the given document type.
+     */
+    formatDocType(type) {
+      if (!type) {
+        return;
+      }
+      const key = `label.document.type.${type.toLowerCase()}`;
+      const value = this.i18n(key);
+      return value === key ? type : value;
+    },
 
-  /**
-   * Returns the label for the given lifecycle state.
-   */
-  formatLifecycleState(state) {
-    const t = this.i18n(`label.ui.state.${state}`);
-    return t === `label.ui.state.${state}` ? state : t;
-  },
+    /**
+     * Returns the label for the given lifecycle state.
+     */
+    formatLifecycleState(state) {
+      const t = this.i18n(`label.ui.state.${state}`);
+      return t === `label.ui.state.${state}` ? state : t;
+    },
 
-  /**
-   * Returns sanitized fulltext
-   */
-  formatFulltext(text) {
-    return text.replace(/-/g, ' ');
-  },
+    /**
+     * Returns sanitized fulltext
+     */
+    formatFulltext(text) {
+      return text.replace(/-/g, ' ');
+    },
 
-  _languageCode() {
-    return ((window.nuxeo.I18n.language) ? window.nuxeo.I18n.language.split('-')[0] : 'en');
-  },
+    _languageCode() {
+      return window.nuxeo.I18n.language ? window.nuxeo.I18n.language.split('-')[0] : 'en';
+    },
 
-  /**
-   * Formats a xpath string by doing replacements according to a given RegEx.
-   * The default behaviour is to replace all '/' by '.'.
-   *
-   * @param {string} xpath the property xpath
-   * @param {string} regex the RegEx to transform the xpath. If not provided it will fallback to the default behaviour.
-   */
-  formatPropertyXpath(xpath, regex) {
-    return xpath.replace(regex || /\//g, '.');
-  },
+    /**
+     * Formats a xpath string by doing replacements according to a given RegEx.
+     * The default behaviour is to replace all '/' by '.'.
+     *
+     * @param {string} xpath the property xpath
+     * @param {string} regex the RegEx to transform the xpath. If not provided it will fallback to the default behaviour.
+     */
+    formatPropertyXpath(xpath, regex) {
+      return xpath.replace(regex || /\//g, '.');
+    },
 
-  /**
-   * Escapes a RegExp string by replacing expression's special characters.
-   *
-   * @param {string} text the RegExp to be escaped
-   */
-  escapeRegExp(text) {
-    return text && text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    /**
+     * Escapes a RegExp string by replacing expression's special characters.
+     *
+     * @param {string} text the RegExp to be escaped
+     */
+    escapeRegExp(text) {
+      return text && text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    },
   },
-
-}];
+];

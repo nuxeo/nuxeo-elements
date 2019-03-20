@@ -276,9 +276,7 @@ import './nuxeo-resource.js';
     }
 
     static get observers() {
-      return [
-        '_autoFetch(auto, provider, query, params.*, pageSize, page, sort)',
-      ];
+      return ['_autoFetch(auto, provider, query, params.*, pageSize, page, sort)'];
     }
 
     /**
@@ -325,7 +323,8 @@ import './nuxeo-resource.js';
         delete params.namedParameters;
       }
       this.$.nxResource.params = params;
-      return this.$.nxResource.execute()
+      return this.$.nxResource
+        .execute()
         .then((response) => {
           this.currentPage = response.entries.slice(0);
           this.numberOfPages = response.numberOfPages;
@@ -336,20 +335,24 @@ import './nuxeo-resource.js';
           this.quickFilters = response.quickFilters;
           this.isNextPageAvailable = response.isNextPageAvailable;
           this.currentPageSize = response.currentPageSize;
-          this.dispatchEvent(new CustomEvent('update', {
-            bubbles: true,
-            composed: true,
-          }));
+          this.dispatchEvent(
+            new CustomEvent('update', {
+              bubbles: true,
+              composed: true,
+            }),
+          );
           return response;
         })
         .catch((error) => {
-          this.dispatchEvent(new CustomEvent('error', {
-            bubbles: true,
-            composed: true,
-            detail: {
-              error,
-            },
-          }));
+          this.dispatchEvent(
+            new CustomEvent('error', {
+              bubbles: true,
+              composed: true,
+              detail: {
+                error,
+              },
+            }),
+          );
           throw error;
         });
     }
@@ -412,17 +415,18 @@ import './nuxeo-resource.js';
 
     _autoFetch() {
       // Reset the page if the query changes
-      if (this.$.nxResource.params
-        && this.query && this.query.length === 0 && this.query !== this.$.nxResource.params.query) {
+      if (
+        this.$.nxResource.params &&
+        this.query &&
+        this.query.length === 0 &&
+        this.query !== this.$.nxResource.params.query
+      ) {
         this.page = 1;
       }
       if (this.auto && (this.query || this.provider)) {
         // debounce in case of multiple param changes
 
-        this._debouncer = Debouncer.debounce(
-          this._debouncer,
-          timeOut.after(this.autoDelay), () => this.fetch(),
-        );
+        this._debouncer = Debouncer.debounce(this._debouncer, timeOut.after(this.autoDelay), () => this.fetch());
       }
     }
 

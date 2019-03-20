@@ -36,30 +36,31 @@ import './nuxeo-action-button-styles.js';
   class MoveDocumentsUp extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="nuxeo-action-button-styles">
-      iron-icon:hover {
-        fill: var(--nuxeo-link-hover-color);
-      }
-    </style>
+        <style include="nuxeo-action-button-styles">
+          iron-icon:hover {
+            fill: var(--nuxeo-link-hover-color);
+          }
+        </style>
 
-    <nuxeo-operation
-      id="moveUpOp"
-      op="Document.Order"
-      params="{&quot;before&quot;: &quot;[[_beforeUid]]&quot;}"
-      input="[[_sortedDocuments]]"
-      sync-indexing>
-    </nuxeo-operation>
+        <nuxeo-operation
+          id="moveUpOp"
+          op="Document.Order"
+          params='{"before": "[[_beforeUid]]"}'
+          input="[[_sortedDocuments]]"
+          sync-indexing
+        >
+        </nuxeo-operation>
 
-    <dom-if id="availability" if="[[_available]]">
-      <template>
-        <div class="action">
-          <paper-icon-button noink="" icon="icons:arrow-upward"></paper-icon-button>
-          <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
-        </div>
-        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
-      </template>
-    </dom-if>
-`;
+        <dom-if id="availability" if="[[_available]]">
+          <template>
+            <div class="action">
+              <paper-icon-button noink="" icon="icons:arrow-upward"></paper-icon-button>
+              <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
+            </div>
+            <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
+          </template>
+        </dom-if>
+      `;
     }
 
     static get is() {
@@ -101,9 +102,7 @@ import './nuxeo-action-button-styles.js';
     }
 
     static get observers() {
-      return [
-        '_isAvailable(selectedDocuments.splices)',
-      ];
+      return ['_isAvailable(selectedDocuments.splices)'];
     }
 
     ready() {
@@ -112,24 +111,31 @@ import './nuxeo-action-button-styles.js';
     }
 
     move() {
-      this.$.moveUpOp.execute().then(() => {
-        for (let i = this._sortedDocuments.length - 1; i >= 0; i--) {
-          this.documents.splice(this.documents.indexOf(this._sortedDocuments[i]), 1);
-          this.documents.splice(this._focusIndex, 0, this._sortedDocuments[i]);
-        }
-        this._sortedDocuments = [];
-        this.dispatchEvent(new CustomEvent('refresh-display', {
-          composed: true,
-          bubbles: true,
-          detail: { focusIndex: this._focusIndex },
-        }));
-      }).catch(() => {
-        this.dispatchEvent(new CustomEvent('notify', {
-          composed: true,
-          bubbles: true,
-          detail: { message: this.i18n('moveDocumentButton.error')},
-        }));
-      });
+      this.$.moveUpOp
+        .execute()
+        .then(() => {
+          for (let i = this._sortedDocuments.length - 1; i >= 0; i--) {
+            this.documents.splice(this.documents.indexOf(this._sortedDocuments[i]), 1);
+            this.documents.splice(this._focusIndex, 0, this._sortedDocuments[i]);
+          }
+          this._sortedDocuments = [];
+          this.dispatchEvent(
+            new CustomEvent('refresh-display', {
+              composed: true,
+              bubbles: true,
+              detail: { focusIndex: this._focusIndex },
+            }),
+          );
+        })
+        .catch(() => {
+          this.dispatchEvent(
+            new CustomEvent('notify', {
+              composed: true,
+              bubbles: true,
+              detail: { message: this.i18n('moveDocumentButton.error') },
+            }),
+          );
+        });
     }
 
     _isAvailable() {
@@ -147,11 +153,13 @@ import './nuxeo-action-button-styles.js';
             return idxa - idxb;
           });
         } catch (e) {
-          this.dispatchEvent(new CustomEvent('clear-selected-items', {
-            composed: true,
-            bubbles: true,
-            detail: {},
-          }));
+          this.dispatchEvent(
+            new CustomEvent('clear-selected-items', {
+              composed: true,
+              bubbles: true,
+              detail: {},
+            }),
+          );
           return;
         }
         let sequenceBreakIdx;
@@ -159,10 +167,9 @@ import './nuxeo-action-button-styles.js';
           if (idx > 0) {
             if (this._sortedDocuments[idx - 1].uid === this.documents[this.documents.indexOf(doc) - 1].uid) {
               return true;
-            } 
-              sequenceBreakIdx = idx;
-              return false;
-            
+            }
+            sequenceBreakIdx = idx;
+            return false;
           }
           return true;
         });

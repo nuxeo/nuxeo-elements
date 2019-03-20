@@ -48,48 +48,47 @@ import './nuxeo-action-button-styles.js';
   class WorkflowButton extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="nuxeo-action-button-styles">
-      nuxeo-select {
-        max-width: 380px;
-      }
-    </style>
+        <style include="nuxeo-action-button-styles">
+          nuxeo-select {
+            max-width: 380px;
+          }
+        </style>
 
-    <nuxeo-resource id="workflows" path="/id/[[document.uid]]/@workflow"></nuxeo-resource>
+        <nuxeo-resource id="workflows" path="/id/[[document.uid]]/@workflow"></nuxeo-resource>
 
-    <dom-if if="[[_isAvailable(document)]]">
-      <template>
-        <div class="action" on-click="_toggleDialog">
-          <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
-          <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
-        </div>
-        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
+        <dom-if if="[[_isAvailable(document)]]">
+          <template>
+            <div class="action" on-click="_toggleDialog">
+              <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
+              <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
+            </div>
+            <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
 
-        <nuxeo-dialog id="dialog" with-backdrop="">
-          <h2>[[i18n('workflowButton.dialog.heading')]]</h2>
+            <nuxeo-dialog id="dialog" with-backdrop="">
+              <h2>[[i18n('workflowButton.dialog.heading')]]</h2>
 
-          <nuxeo-select
-            label="[[i18n('workflowButton.dialog.placeholder')]]"
-            selected="{{selectedProcess}}"
-            attr-for-selected="key">
-            <dom-repeat items="[[processes]]" as="process">
-              <template>
-                <paper-item key="[[process.workflowModelName]]">[[i18n(process.title)]]</paper-item>
-              </template>
-            </dom-repeat>
-          </nuxeo-select>
+              <nuxeo-select
+                label="[[i18n('workflowButton.dialog.placeholder')]]"
+                selected="{{selectedProcess}}"
+                attr-for-selected="key"
+              >
+                <dom-repeat items="[[processes]]" as="process">
+                  <template>
+                    <paper-item key="[[process.workflowModelName]]">[[i18n(process.title)]]</paper-item>
+                  </template>
+                </dom-repeat>
+              </nuxeo-select>
 
-          <div class="buttons">
-            <paper-button dialog-dismiss="">[[i18n('workflowButton.dialog.close')]]</paper-button>
-            <paper-button
-              id="startButton"
-              class="primary"
-              disabled="[[!selectedProcess]]"
-              on-click="_startWorkflow">[[i18n('workflowButton.dialog.start')]]</paper-button>
-          </div>
-        </nuxeo-dialog>
-      </template>
-    </dom-if>
-`;
+              <div class="buttons">
+                <paper-button dialog-dismiss="">[[i18n('workflowButton.dialog.close')]]</paper-button>
+                <paper-button id="startButton" class="primary" disabled="[[!selectedProcess]]" on-click="_startWorkflow"
+                  >[[i18n('workflowButton.dialog.start')]]</paper-button
+                >
+              </div>
+            </nuxeo-dialog>
+          </template>
+        </dom-if>
+      `;
     }
 
     static get is() {
@@ -173,11 +172,13 @@ import './nuxeo-action-button-styles.js';
       };
 
       this.workflows.post().then((workflow) => {
-        this.dispatchEvent(new CustomEvent('workflowStarted', {
-          composed: true,
-          bubbles: true,
-          detail: { workflow },
-        }));
+        this.dispatchEvent(
+          new CustomEvent('workflowStarted', {
+            composed: true,
+            bubbles: true,
+            detail: { workflow },
+          }),
+        );
         this.$$('#dialog').toggle();
       });
     }

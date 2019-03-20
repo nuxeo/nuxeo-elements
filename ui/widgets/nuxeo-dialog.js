@@ -26,7 +26,7 @@ import { IronOverlayManager } from '@polymer/iron-overlay-behavior/iron-overlay-
 
 // ELEMENTS-884 - fix backdrops
 // revert https://github.com/PolymerElements/iron-overlay-behavior/commit/ac1cb
-IronOverlayManager._overlayWithBackdrop = function () {
+IronOverlayManager._overlayWithBackdrop = function() {
   for (let i = 0; i < this._overlays.length; i++) {
     if (this._overlays[i].withBackdrop) {
       return this._overlays[i];
@@ -45,31 +45,29 @@ IronOverlayManager._overlayWithBackdrop = function () {
    * @memberof Nuxeo
    * @demo demo/nuxeo-dialog/index.html
    */
-  class Dialog
-    extends mixinBehaviors([
-      PaperDialogBehavior, NeonAnimationRunnerBehavior, Templatizer], Nuxeo.Element) {
+  class Dialog extends mixinBehaviors([PaperDialogBehavior, NeonAnimationRunnerBehavior, Templatizer], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="paper-dialog-shared-styles">
-      :host {
-        @apply --nuxeo-dialog;
-      }
+        <style include="paper-dialog-shared-styles">
+          :host {
+            @apply --nuxeo-dialog;
+          }
 
-      :host > ::slotted(h2),
-      :host > ::slotted(*) {
-        margin-top: 16px;
-      }
+          :host > ::slotted(h2),
+          :host > ::slotted(*) {
+            margin-top: 16px;
+          }
 
-      :host > ::slotted(.buttons) {
-        @apply --layout-horizontal;
-        @apply --layout-justified;
-        margin-top: 16px;
-        background-color: var(--nuxeo-dialog-buttons-bar, white);
-      }
-    </style>
+          :host > ::slotted(.buttons) {
+            @apply --layout-horizontal;
+            @apply --layout-justified;
+            margin-top: 16px;
+            background-color: var(--nuxeo-dialog-buttons-bar, white);
+          }
+        </style>
 
-    <slot></slot>
-`;
+        <slot></slot>
+      `;
     }
 
     static get is() {

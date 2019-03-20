@@ -64,131 +64,133 @@ import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-beha
    * @memberof Nuxeo
    * @demo demo/nuxeo-data-grid/index.html
    */
-  class DataGrid
-    extends mixinBehaviors([IronResizableBehavior, PageProviderDisplayBehavior,
-      DraggableListBehavior], Nuxeo.Element) {
+  class DataGrid extends mixinBehaviors(
+    [IronResizableBehavior, PageProviderDisplayBehavior, DraggableListBehavior],
+    Nuxeo.Element,
+  ) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-        min-height: 500px;
-        position: relative;
-      }
+        <style>
+          :host {
+            display: block;
+            min-height: 500px;
+            position: relative;
+          }
 
-      /* scrollbars */
-      :host ::-webkit-scrollbar-track {
-        width: 12px !important;
-        height: 3px;
-      }
-      :host ::-webkit-scrollbar {
-        background-color: rgba(0, 0, 0, 0.03);
-        width: 12px !important;
-        height: 3px;
-      }
-      :host ::-webkit-scrollbar-thumb {
-        background-color: rgba(0, 0, 0, 0.15);
-        border-radius: 1px !important;
-      }
+          /* scrollbars */
+          :host ::-webkit-scrollbar-track {
+            width: 12px !important;
+            height: 3px;
+          }
+          :host ::-webkit-scrollbar {
+            background-color: rgba(0, 0, 0, 0.03);
+            width: 12px !important;
+            height: 3px;
+          }
+          :host ::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.15);
+            border-radius: 1px !important;
+          }
 
-      #container {
-        @apply --layout-vertical;
-        @apply --layout-fit;
-      }
+          #container {
+            @apply --layout-vertical;
+            @apply --layout-fit;
+          }
 
-      .header {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-      }
+          .header {
+            @apply --layout-horizontal;
+            @apply --layout-center;
+          }
 
-      .emptyResult {
-        opacity: .5;
-        display: block;
-        font-weight: 300;
-        padding: 1.5em .7em;
-        text-align: center;
-        font-size: 1.1rem;
-      }
+          .emptyResult {
+            opacity: 0.5;
+            display: block;
+            font-weight: 300;
+            padding: 1.5em 0.7em;
+            text-align: center;
+            font-size: 1.1rem;
+          }
 
-      .filters > * {
-        margin: 1em 0 0 2.3em;
-      }
+          .filters > * {
+            margin: 1em 0 0 2.3em;
+          }
 
-      .filter {
-        display: inline-block;
-        background-color: var(--nuxeo-tag-background);
-        padding: .2rem .4rem;
-        margin: 0 .3em .1em 0;
-        font-size: .8rem;
-        border-radius: 2.5em;
-        line-height: initial;
-      }
+          .filter {
+            display: inline-block;
+            background-color: var(--nuxeo-tag-background);
+            padding: 0.2rem 0.4rem;
+            margin: 0 0.3em 0.1em 0;
+            font-size: 0.8rem;
+            border-radius: 2.5em;
+            line-height: initial;
+          }
 
-      .filter .remove:hover {
-        cursor: pointer;
-      }
+          .filter .remove:hover {
+            cursor: pointer;
+          }
 
-      iron-list {
-        height: 100%;
-      }
+          iron-list {
+            height: 100%;
+          }
 
-      nuxeo-aggregation-navigation {
-        position: absolute;
-        top: 82px;
-        bottom: 0;
-        right: 12px;
-      }
+          nuxeo-aggregation-navigation {
+            position: absolute;
+            top: 82px;
+            bottom: 0;
+            right: 12px;
+          }
 
-      :host([draggable]) ::slotted([selected]) {
-        cursor: -webkit-grab;
-        cursor: grab;
-      }
-    </style>
+          :host([draggable]) ::slotted([selected]) {
+            cursor: -webkit-grab;
+            cursor: grab;
+          }
+        </style>
 
-    <div id="container">
+        <div id="container">
+          <slot name="nuxeo-selection-toolbar"></slot>
 
-      <slot name="nuxeo-selection-toolbar"></slot>
+          <div class="header">
+            <div id="filters" class="filters">
+              <dom-repeat items="[[filters]]" as="filter">
+                <template>
+                  <span class="tag filter">
+                    [[filter.name]]: [[filter.value]]
+                    <iron-icon icon="nuxeo:remove" class="remove" on-click="_removeFilter"></iron-icon>
+                  </span>
+                </template>
+              </dom-repeat>
+            </div>
+          </div>
 
-      <div class="header">
-
-        <div id="filters" class="filters">
-          <dom-repeat items="[[filters]]" as="filter">
+          <dom-if if="[[_isEmpty]]">
             <template>
-              <span class="tag filter">
-                [[filter.name]]: [[filter.value]]
-                <iron-icon icon="nuxeo:remove" class="remove" on-click="_removeFilter"></iron-icon>
-              </span>
+              <div class="emptyResult">[[_computedEmptyLabel]]</div>
             </template>
-          </dom-repeat>
+          </dom-if>
+
+          <iron-list
+            id="list"
+            items="[[items]]"
+            as="[[as]]"
+            grid=""
+            selection-enabled=""
+            selected-item="{{selectedItem}}"
+            selected-items="{{selectedItems}}"
+            on-scroll="_scrollChanged"
+          >
+            <slot></slot>
+          </iron-list>
+
+          <dom-if if="[[displayNavigation]]">
+            <template>
+              <nuxeo-aggregation-navigation
+                buckets="[[buckets]]"
+                on-scroll-to="_onScrollTo"
+              ></nuxeo-aggregation-navigation>
+            </template>
+          </dom-if>
         </div>
-      </div>
-
-      <dom-if if="[[_isEmpty]]">
-        <template>
-          <div class="emptyResult">[[_computedEmptyLabel]]</div>
-        </template>
-      </dom-if>
-
-      <iron-list
-        id="list"
-        items="[[items]]"
-        as="[[as]]"
-        grid=""
-        selection-enabled=""
-        selected-item="{{selectedItem}}"
-        selected-items="{{selectedItems}}"
-        on-scroll="_scrollChanged">
-        <slot></slot>
-      </iron-list>
-
-      <dom-if if="[[displayNavigation]]">
-        <template>
-          <nuxeo-aggregation-navigation buckets="[[buckets]]" on-scroll-to="_onScrollTo"></nuxeo-aggregation-navigation>
-        </template>
-      </dom-if>
-
-    </div>
-`;
+      `;
     }
 
     static get is() {
@@ -218,11 +220,13 @@ import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-beha
     }
 
     _removeFilter(e) {
-      this.dispatchEvent(new CustomEvent('column-filter-changed', {
-        composed: true,
-        bubbles: true,
-        detail: { value: '', filterBy: e.model.filter.path },
-      }));
+      this.dispatchEvent(
+        new CustomEvent('column-filter-changed', {
+          composed: true,
+          bubbles: true,
+          detail: { value: '', filterBy: e.model.filter.path },
+        }),
+      );
     }
 
     _onScrollTo(e) {

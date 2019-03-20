@@ -37,9 +37,9 @@ import './nuxeo-error.js';
   class Layout extends mixinBehaviors([IronResizableBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <nuxeo-error id="error" code="404" url="[[href]]" message="[[error]]" hidden=""></nuxeo-error>
-    <div id="container"></div>
-`;
+        <nuxeo-error id="error" code="404" url="[[href]]" message="[[error]]" hidden=""></nuxeo-error>
+        <div id="container"></div>
+      `;
     }
 
     static get is() {
@@ -85,27 +85,24 @@ import './nuxeo-error.js';
     }
 
     static get observers() {
-      return [
-        '_update(model.*)',
-      ];
+      return ['_update(model.*)'];
     }
 
     // Trigger the layout validation if it exists.
     validate() {
-      if (this.element && (typeof this.element.validate === 'function')) {
+      if (this.element && typeof this.element.validate === 'function') {
         return this.element.validate();
-      } 
-        // workaroud for https://github.com/PolymerElements/iron-form/issues/218, adapted from iron-form.html
-        let valid = true;
-        if (this.element) {
-          const elements = this._getValidatableElements(this.element.root);
-          for (let el, i = 0; i < elements.length; i++) {
-            el = elements[i];
-            valid = (el.validate ? el.validate() : el.checkValidity()) && valid;
-          }
+      }
+      // workaroud for https://github.com/PolymerElements/iron-form/issues/218, adapted from iron-form.html
+      let valid = true;
+      if (this.element) {
+        const elements = this._getValidatableElements(this.element.root);
+        for (let el, i = 0; i < elements.length; i++) {
+          el = elements[i];
+          valid = (el.validate ? el.validate() : el.checkValidity()) && valid;
         }
-        return valid;
-      
+      }
+      return valid;
     }
 
     _getValidatableElements(parent) {

@@ -71,126 +71,126 @@ import './widgets/nuxeo-user-suggestion.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-user-group-management/index.html
    */
-  class UserGroupManagement
-    extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
+  class UserGroupManagement extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="iron-flex iron-flex-alignment">
-      :host {
-        display: block;
-        position: relative;
-        @apply --layout-flex;
-      }
+        <style include="iron-flex iron-flex-alignment">
+          :host {
+            display: block;
+            position: relative;
+            @apply --layout-flex;
+          }
 
-      #createDropdown {
-        position: absolute;
-        right: 0;
-        padding: 0;
-        top: 15px;
-      }
+          #createDropdown {
+            position: absolute;
+            right: 0;
+            padding: 0;
+            top: 15px;
+          }
 
-      paper-menu-button {
-        width: 130px;
-        height: 48px;
-        margin-bottom: 16px;
-      }
+          paper-menu-button {
+            width: 130px;
+            height: 48px;
+            margin-bottom: 16px;
+          }
 
-      paper-button {
-        width: 100%;
-      }
+          paper-button {
+            width: 100%;
+          }
 
-      paper-button iron-icon {
-        padding-right: 8px;
-      }
+          paper-button iron-icon {
+            padding-right: 8px;
+          }
 
-      paper-listbox {
-        width: 130px;
-        outline: none;
-      }
+          paper-listbox {
+            width: 130px;
+            outline: none;
+          }
 
-      paper-listbox paper-icon-item iron-icon {
-        width: 1.5rem;
-        height: 1.5rem;
-      }
+          paper-listbox paper-icon-item iron-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+          }
 
-      paper-listbox paper-icon-item:hover {
-        background: var(--nuxeo-container-hover, #fafafa);
-        cursor: pointer;
-      }
+          paper-listbox paper-icon-item:hover {
+            background: var(--nuxeo-container-hover, #fafafa);
+            cursor: pointer;
+          }
 
-      /* buttons */
-      paper-button.primary {
-        background-color: var(--nuxeo-button-primary, #00adff);
-        color: #fff;
-      }
+          /* buttons */
+          paper-button.primary {
+            background-color: var(--nuxeo-button-primary, #00adff);
+            color: #fff;
+          }
 
-      paper-button.primary:hover,
-      paper-button.primary:focus {
-        background-color: var(--nuxeo-button-primary-focus, #0079b3);
-        font-weight: inherit;
-        color: #fff !important;
-      }
-    </style>
+          paper-button.primary:hover,
+          paper-button.primary:focus {
+            background-color: var(--nuxeo-button-primary-focus, #0079b3);
+            font-weight: inherit;
+            color: #fff !important;
+          }
+        </style>
 
-    <nuxeo-connection user="{{_currentUser}}"></nuxeo-connection>
+        <nuxeo-connection user="{{_currentUser}}"></nuxeo-connection>
 
-    <paper-toast id="toast"></paper-toast>
-    <iron-pages selected="[[page]]" attr-for-selected="name">
-      <section name="search">
-        <div class="horizontal layout center">
-          <dom-if if="[[_canCreateUserGroup(readonly, _currentUser)]]">
-            <template>
-              <div class="flex">
-                <paper-menu-button
-                  id="createDropdown"
-                  no-animations
-                  no-overlap
-                  horizontal-align="right"
-                  vertical-align="top"
-                  vertical-offset="-4">
-                  <paper-button noink="" class="primary" id="createButton" slot="dropdown-trigger">
-                    <iron-icon icon="nuxeo:add"></iron-icon>
-                    <div>[[i18n('userGroupManagement.new.usergroup')]]</div>
-                  </paper-button>
-                  <paper-listbox no-animations="" id="menu" selectable="item" slot="dropdown-content">
-                    <paper-icon-item name="user" on-click="_createUser">
-                      <iron-icon icon="nuxeo:user" slot="item-icon">&gt;</iron-icon>
-                      <span>[[i18n('userGroupManagement.new.user')]]</span>
-                    </paper-icon-item>
-                    <paper-icon-item name="group" on-click="_createGroup">
-                      <iron-icon icon="nuxeo:group" slot="item-icon">&gt;</iron-icon>
-                      <span>[[i18n('userGroupManagement.new.group')]]</span>
-                    </paper-icon-item>
-                  </paper-listbox>
-                </paper-menu-button>
-              </div>
-            </template>
-          </dom-if>
-        </div>
-        <nuxeo-user-group-search></nuxeo-user-group-search>
-      </section>
+        <paper-toast id="toast"></paper-toast>
+        <iron-pages selected="[[page]]" attr-for-selected="name">
+          <section name="search">
+            <div class="horizontal layout center">
+              <dom-if if="[[_canCreateUserGroup(readonly, _currentUser)]]">
+                <template>
+                  <div class="flex">
+                    <paper-menu-button
+                      id="createDropdown"
+                      no-animations
+                      no-overlap
+                      horizontal-align="right"
+                      vertical-align="top"
+                      vertical-offset="-4"
+                    >
+                      <paper-button noink="" class="primary" id="createButton" slot="dropdown-trigger">
+                        <iron-icon icon="nuxeo:add"></iron-icon>
+                        <div>[[i18n('userGroupManagement.new.usergroup')]]</div>
+                      </paper-button>
+                      <paper-listbox no-animations="" id="menu" selectable="item" slot="dropdown-content">
+                        <paper-icon-item name="user" on-click="_createUser">
+                          <iron-icon icon="nuxeo:user" slot="item-icon">&gt;</iron-icon>
+                          <span>[[i18n('userGroupManagement.new.user')]]</span>
+                        </paper-icon-item>
+                        <paper-icon-item name="group" on-click="_createGroup">
+                          <iron-icon icon="nuxeo:group" slot="item-icon">&gt;</iron-icon>
+                          <span>[[i18n('userGroupManagement.new.group')]]</span>
+                        </paper-icon-item>
+                      </paper-listbox>
+                    </paper-menu-button>
+                  </div>
+                </template>
+              </dom-if>
+            </div>
+            <nuxeo-user-group-search></nuxeo-user-group-search>
+          </section>
 
-      <section name="create-user">
-        <nuxeo-card>
-          <nuxeo-create-user readonly\$="[[readonly]]"></nuxeo-create-user>
-        </nuxeo-card>
-      </section>
+          <section name="create-user">
+            <nuxeo-card>
+              <nuxeo-create-user readonly\$="[[readonly]]"></nuxeo-create-user>
+            </nuxeo-card>
+          </section>
 
-      <section name="manage-user">
-        <nuxeo-user-management username="[[selectedUser]]" readonly\$="[[readonly]]"></nuxeo-user-management>
-      </section>
+          <section name="manage-user">
+            <nuxeo-user-management username="[[selectedUser]]" readonly\$="[[readonly]]"></nuxeo-user-management>
+          </section>
 
-      <section name="create-group">
-        <nuxeo-card>
-          <nuxeo-create-group></nuxeo-create-group>
-        </nuxeo-card>
-      </section>
+          <section name="create-group">
+            <nuxeo-card>
+              <nuxeo-create-group></nuxeo-create-group>
+            </nuxeo-card>
+          </section>
 
-      <section name="manage-group">
-        <nuxeo-group-management groupname="[[selectedGroup]]" readonly\$="[[readonly]]"></nuxeo-group-management>
-      </section>
-    </iron-pages>
-`;
+          <section name="manage-group">
+            <nuxeo-group-management groupname="[[selectedGroup]]" readonly\$="[[readonly]]"></nuxeo-group-management>
+          </section>
+        </iron-pages>
+      `;
     }
 
     static get is() {
@@ -321,7 +321,7 @@ import './widgets/nuxeo-user-suggestion.js';
           msg = `Group ${event.detail.groupname} created`;
           break;
         default:
-          // do nothing
+        // do nothing
       }
       if (msg) {
         this.$.toast.text = msg;

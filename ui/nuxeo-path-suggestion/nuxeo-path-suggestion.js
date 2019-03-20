@@ -21,7 +21,6 @@ import '@nuxeo/nuxeo-elements/nuxeo-page-provider.js';
 import '@nuxeo/paper-typeahead/paper-typeahead.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 
-
 {
   /**
    * An element that provides path auto completion to nuxeo folderish documents.
@@ -43,68 +42,70 @@ import '@polymer/polymer/lib/elements/dom-if.js';
   class PathSuggestion extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-        padding-bottom: 8px;
-      }
+        <style>
+          :host {
+            display: block;
+            padding-bottom: 8px;
+          }
 
-      paper-typeahead {
-        --paper-typeahead-results: {
-          background-color: white;
-          z-index: 100;
-          @apply --nuxeo-path-suggestion-results;
-        };
+          paper-typeahead {
+            --paper-typeahead-results: {
+              background-color: white;
+              z-index: 100;
+              @apply --nuxeo-path-suggestion-results;
+            }
 
-        --paper-typeahead-result: {
-          display: block;
-          overflow: hidden;
-          white-space: nowrap;
-          direction: rtl;
-          text-align: left;
-          @apply --nuxeo-path-suggestion-result;
-        };
+            --paper-typeahead-result: {
+              display: block;
+              overflow: hidden;
+              white-space: nowrap;
+              direction: rtl;
+              text-align: left;
+              @apply --nuxeo-path-suggestion-result;
+            }
 
-        --paper-input-container-underline: {
-          z-index: 0;
-        };
-      }
+            --paper-input-container-underline: {
+              z-index: 0;
+            }
+          }
 
-      paper-typeahead:focus {
-        outline: none;
-        @apply --nuxeo-path-suggestion-focus;
-      }
+          paper-typeahead:focus {
+            outline: none;
+            @apply --nuxeo-path-suggestion-focus;
+          }
 
-      label {
-        @apply --nuxeo-label;
-      }
-    </style>
-    <nuxeo-page-provider
-      id="provider"
-      provider="nxql_search"
-      params="[[params]]"
-      page-size="20"
-      current-page="{{children}}">
-    </nuxeo-page-provider>
-    <nuxeo-document id="parent" enrichers="[[enrichers]]"></nuxeo-document>
+          label {
+            @apply --nuxeo-label;
+          }
+        </style>
+        <nuxeo-page-provider
+          id="provider"
+          provider="nxql_search"
+          params="[[params]]"
+          page-size="20"
+          current-page="{{children}}"
+        >
+        </nuxeo-page-provider>
+        <nuxeo-document id="parent" enrichers="[[enrichers]]"></nuxeo-document>
 
-    <dom-if if="[[label]]">
-      <template>
-        <label>[[label]]</label>
-      </template>
-    </dom-if>
+        <dom-if if="[[label]]">
+          <template>
+            <label>[[label]]</label>
+          </template>
+        </dom-if>
 
-    <paper-typeahead
-      id="typeahead"
-      value="{{value}}"
-      data="[[data]]"
-      allowed-pattern="[[allowedPattern]]"
-      auto-validate="[[autoValidate]]"
-      on-focus="_onFocus"
-      disabled\$="[[disabled]]"
-      no-label-float>
-    </paper-typeahead>
-`;
+        <paper-typeahead
+          id="typeahead"
+          value="{{value}}"
+          data="[[data]]"
+          allowed-pattern="[[allowedPattern]]"
+          auto-validate="[[autoValidate]]"
+          on-focus="_onFocus"
+          disabled\$="[[disabled]]"
+          no-label-float
+        >
+        </paper-typeahead>
+      `;
     }
 
     static get is() {
@@ -192,14 +193,16 @@ import '@polymer/polymer/lib/elements/dom-if.js';
       if (this.value && !this.disabled) {
         const idx = this.value.lastIndexOf('/');
         if (idx > -1) {
-          const newParentPath = (idx === 0 ? '/' : this.value.substring(0, idx));
-          this._updateParent(newParentPath).then(() => {
-            this._queryChildren(this.parent, this.value.substring(idx + 1));
-          }).catch((err) => {
-            if (err.status === 403) {
-              this.children = [];
-            }
-          });
+          const newParentPath = idx === 0 ? '/' : this.value.substring(0, idx);
+          this._updateParent(newParentPath)
+            .then(() => {
+              this._queryChildren(this.parent, this.value.substring(idx + 1));
+            })
+            .catch((err) => {
+              if (err.status === 403) {
+                this.children = [];
+              }
+            });
         }
       }
     }
@@ -207,27 +210,31 @@ import '@polymer/polymer/lib/elements/dom-if.js';
     _updateParent(newParentPath) {
       if (!this.parent || newParentPath !== this.$.parent.docPath) {
         this.$.parent.docPath = newParentPath;
-        return this.$.parent.get().then((response) => {
-          this.parent = response;
-        }).catch((error) => {
-          if (!(error.code === 'org.nuxeo.ecm.core.api.DocumentNotFoundException' &&
-              error.message === newParentPath)) {
-            throw error;
-          }
-        });
-      } 
-        return new Promise(((resolve) => {
-          resolve();
-        }));
-      
+        return this.$.parent
+          .get()
+          .then((response) => {
+            this.parent = response;
+          })
+          .catch((error) => {
+            if (
+              !(error.code === 'org.nuxeo.ecm.core.api.DocumentNotFoundException' && error.message === newParentPath)
+            ) {
+              throw error;
+            }
+          });
+      }
+      return new Promise((resolve) => {
+        resolve();
+      });
     }
 
     _queryChildren(parent, term) {
       this.params = {
-        queryParams: `SELECT * FROM Document WHERE ecm:parentId = '${parent.uid}' ` +
-        `AND ecm:name LIKE '${term}%' AND ecm:mixinType = 'Folderish' ` +
-        'AND ecm:mixinType != \'HiddenInNavigation\' AND ecm:isVersion = 0 ' +
-        'AND ecm:isTrashed = 0',
+        queryParams:
+          `SELECT * FROM Document WHERE ecm:parentId = '${parent.uid}' ` +
+          `AND ecm:name LIKE '${term}%' AND ecm:mixinType = 'Folderish' ` +
+          "AND ecm:mixinType != 'HiddenInNavigation' AND ecm:isVersion = 0 " +
+          'AND ecm:isTrashed = 0',
       };
       return this.$.provider.fetch();
     }

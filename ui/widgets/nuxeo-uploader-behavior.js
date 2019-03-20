@@ -29,17 +29,16 @@ function DefaultUploadProvider(connection, accept, batchAppend) {
   this.batchId = null;
 }
 
-DefaultUploadProvider.prototype._ensureBatch = function () {
+DefaultUploadProvider.prototype._ensureBatch = function() {
   if (!this.batchAppend || !this.uploader) {
     return this.connection.batchUpload().then((uploader) => {
       this.uploader = uploader;
     });
-  } 
-    return Promise.resolve();
-  
+  }
+  return Promise.resolve();
 };
 
-DefaultUploadProvider.prototype._newBatch = function () {
+DefaultUploadProvider.prototype._newBatch = function() {
   return this.connection.batchUpload().then((uploader) => {
     this.uploader = uploader;
   });
@@ -52,7 +51,7 @@ DefaultUploadProvider.prototype._newBatch = function () {
  * @param {Function} callback a callback function that should be called when a file upload starts,
  * when progress is updated, when a file upload ends, and when an upload batch is complete
  * */
-DefaultUploadProvider.prototype.upload = function (files, callback) {
+DefaultUploadProvider.prototype.upload = function(files, callback) {
   if (files) {
     this._ensureBatch().then(() => {
       for (let i = 0; i < files.length; i++) {
@@ -61,17 +60,23 @@ DefaultUploadProvider.prototype.upload = function (files, callback) {
         if (typeof callback === 'function') {
           callback({ type: 'uploadStarted', file });
         }
-        this.uploader.upload(blob).then((result) => {
-          callback({ type: 'uploadCompleted', fileIdx: result.blob.fileIdx });
-        }).catch((error) => {
-          callback({ type: 'uploadInterrupted', file, error });
-        });
+        this.uploader
+          .upload(blob)
+          .then((result) => {
+            callback({ type: 'uploadCompleted', fileIdx: result.blob.fileIdx });
+          })
+          .catch((error) => {
+            callback({ type: 'uploadInterrupted', file, error });
+          });
       }
-      this.uploader.done().then((result) => {
-        callback({ type: 'batchFinished', batchId: result.batch._batchId });
-      }).catch((error) => {
-        callback({ type: 'batchFailed', error });
-      });
+      this.uploader
+        .done()
+        .then((result) => {
+          callback({ type: 'batchFinished', batchId: result.batch._batchId });
+        })
+        .catch((error) => {
+          callback({ type: 'batchFailed', error });
+        });
     });
   }
 };
@@ -79,7 +84,7 @@ DefaultUploadProvider.prototype.upload = function (files, callback) {
 /**
  * Cancels the current batch.
  * */
-DefaultUploadProvider.prototype.cancelBatch = function () {
+DefaultUploadProvider.prototype.cancelBatch = function() {
   if (this.uploader) {
     if (this.uploader._batchId) {
       this.uploader.cancel();
@@ -96,7 +101,7 @@ DefaultUploadProvider.prototype.cancelBatch = function () {
  * @param {Object} params the operation params
  * @param {Object} headers the request headers
  * */
-DefaultUploadProvider.prototype.batchExecute = function (operationId, params, headers) {
+DefaultUploadProvider.prototype.batchExecute = function(operationId, params, headers) {
   return this.connection.operation(operationId).then((operation) => {
     const options = {};
     if (headers) {
@@ -105,7 +110,8 @@ DefaultUploadProvider.prototype.batchExecute = function (operationId, params, he
     if (params.context) {
       operation = operation.context(params.context);
     }
-    return operation.input(this.uploader)
+    return operation
+      .input(this.uploader)
       .params(params)
       .execute(options);
   });
@@ -117,12 +123,12 @@ DefaultUploadProvider.prototype.batchExecute = function (operationId, params, he
  * @param {Object} file the file to be checked
  * @return {Boolean} true if the current file is accepted by the current provider, false otherwise
  * */
-DefaultUploadProvider.prototype.accepts = function (file) {
+DefaultUploadProvider.prototype.accepts = function(file) {
   if (!this.accept) {
     return true;
   }
-  const mimeType = (file.type !== '') ? file.type.match(/^[^/]*\//)[0] : null;
-  const fileType = (file.name.indexOf('.') !== -1) ? file.name.match(/\.[^.]*$/)[0] : null;
+  const mimeType = file.type !== '' ? file.type.match(/^[^/]*\//)[0] : null;
+  const fileType = file.name.indexOf('.') !== -1 ? file.name.match(/\.[^.]*$/)[0] : null;
   return this.accept.indexOf(mimeType) > -1 || this.accept.indexOf(fileType) > -1;
 };
 
@@ -131,7 +137,7 @@ DefaultUploadProvider.prototype.accepts = function (file) {
  *
  * @return {Boolean} true if the provider reports progress, false otherwise
  * */
-DefaultUploadProvider.prototype.hasProgress = function () {
+DefaultUploadProvider.prototype.hasProgress = function() {
   return false;
 };
 
@@ -142,7 +148,6 @@ let _defaultProvider = 'default';
  * @polymerBehavior Nuxeo.UploaderBehavior
  */
 export const UploaderBehavior = {
-
   properties: {
     /**
      * Accepted file extensions or mime types (comma separated values).
@@ -316,18 +321,20 @@ export const UploaderBehavior = {
           this._batchFailed(event.error);
           break;
         default:
-          // do nothing
+        // do nothing
       }
     });
   },
 
   batchExecute(operationId, params, headers) {
-    return this._instance.batchExecute(operationId, params, headers)
+    return this._instance
+      .batchExecute(operationId, params, headers)
       .then((data) => {
         this.fire('response', { response: data });
         this.response = data;
         return this.response;
-      }).catch((error) => {
+      })
+      .catch((error) => {
         this.fire('error', error);
         console.error(`Batch Execute operation failed: ${error}`);
         throw error;
@@ -353,9 +360,8 @@ export const UploaderBehavior = {
         }
       }
       return true;
-    } 
-      return this._accepts(files);
-    
+    }
+    return this._accepts(files);
   },
 
   _accepts(file) {

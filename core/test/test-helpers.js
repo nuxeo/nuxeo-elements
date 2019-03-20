@@ -28,16 +28,16 @@ function timePasses(ms) {
 }
 
 const flushCb = window.flush;
-window.flush = () => new Promise((resolve) => {
-  flushCb(() => {
-    if (window.requestIdleCallback) {
-      window.requestIdleCallback(() => resolve());
-    } else {
-      window.setTimeout(() => resolve(), 16);
-    }
+window.flush = () =>
+  new Promise((resolve) => {
+    flushCb(() => {
+      if (window.requestIdleCallback) {
+        window.requestIdleCallback(() => resolve());
+      } else {
+        window.setTimeout(() => resolve(), 16);
+      }
+    });
   });
-});
-
 
 function waitForEvent(el, event, times) {
   times = times || 1;
@@ -57,35 +57,19 @@ function waitChanged(el, prop, times) {
 }
 
 function login(server, loginFixture) {
+  server.respondWith('GET', '/dummy/json/cmis', [200, { 'Content-Type': 'application/json' }, '{}']);
 
-  server.respondWith(
-    'GET',
-    '/dummy/json/cmis', [
-      200,
-      {'Content-Type': 'application/json'},
-      '{}',
-    ],
-  );
+  server.respondWith('POST', '/dummy/api/v1/automation/login', [
+    200,
+    { 'Content-Type': 'application/json' },
+    '{"entity-type":"login","username":"Administrator"}',
+  ]);
 
-  server.respondWith(
-    'POST',
-    '/dummy/api/v1/automation/login',
-    [
-      200,
-      {'Content-Type': 'application/json'},
-      '{"entity-type":"login","username":"Administrator"}',
-    ],
-  );
-
-  server.respondWith(
-    'GET',
-    '/dummy/api/v1/user/Administrator',
-    [
-      200,
-      {'Content-Type': 'application/json'},
-      '{"entity-type":"user","username":"Administrator", "isAdministrator": true}',
-    ],
-  );
+  server.respondWith('GET', '/dummy/api/v1/user/Administrator', [
+    200,
+    { 'Content-Type': 'application/json' },
+    '{"entity-type":"user","username":"Administrator", "isAdministrator": true}',
+  ]);
 
   return loginFixture.connect();
 }

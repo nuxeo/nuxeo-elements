@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <!--
 @license
 (C) Copyright Nuxeo Corp. (http://nuxeo.com/)
@@ -16,141 +16,158 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <title>Nuxeo Workflow Data Elements Demo</title>
-  <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
-  <script src="/node_modules/@nuxeo/nuxeo-elements/dedup.js"></script>
-  <script type="module">
-    import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
-    import '../nuxeo-repository-data.js';
-  </script>
-  <style>
-    table {
-      width: 100%;
-      background-color: transparent;
-      border-collapse: collapse;
-      border-spacing: 0;
-    }
-    th {
-      vertical-align: bottom;
-      border-bottom: 2px solid #ddd;
-      text-align: left;
-    }
-    td {
-      padding: 8px;
-      line-height: 1.5em;
-      vertical-align: top;
-      border-top: 1px solid #ddd;
-    }
-    tr:nth-child(odd)>td {
-      background-color: #f9f9f9;
-    }
-  </style>
-</head>
-<body unresolved>
-<dom-bind>
-<template is="dom-bind">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" />
+    <title>Nuxeo Workflow Data Elements Demo</title>
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="/node_modules/@nuxeo/nuxeo-elements/dedup.js"></script>
+    <script type="module">
+      import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+      import '../nuxeo-repository-data.js';
+    </script>
+    <style>
+      table {
+        width: 100%;
+        background-color: transparent;
+        border-collapse: collapse;
+        border-spacing: 0;
+      }
+      th {
+        vertical-align: bottom;
+        border-bottom: 2px solid #ddd;
+        text-align: left;
+      }
+      td {
+        padding: 8px;
+        line-height: 1.5em;
+        vertical-align: top;
+        border-top: 1px solid #ddd;
+      }
+      tr:nth-child(odd) > td {
+        background-color: #f9f9f9;
+      }
+    </style>
+  </head>
+  <body unresolved>
+    <dom-bind>
+      <template is="dom-bind">
+        <nuxeo-connection
+          url="http://localhost:8080/nuxeo"
+          username="Administrator"
+          password="Administrator"
+        ></nuxeo-connection>
 
-  <nuxeo-connection url="http://localhost:8080/nuxeo" username="Administrator" password="Administrator"></nuxeo-connection>
+        <input type="date" value="{{startDate::change}}" />
+        <input type="date" value="{{endDate::change}}" />
 
-  <input type="date" value="{{startDate::change}}">
-  <input type="date" value="{{endDate::change}}">
+        <h2>Document count</h2>
 
-  <h2>Document count</h2>
+        <nuxeo-repository-data
+          start-date="[[startDate]]"
+          end-date="[[endDate]]"
+          metrics="cardinality(ecm:uuid)"
+          data="{{totalCount}}"
+        >
+        </nuxeo-repository-data>
 
-  <nuxeo-repository-data start-date="[[startDate]]" end-date="[[endDate]]"
-                         metrics="cardinality(ecm:uuid)" data="{{totalCount}}">
-  </nuxeo-repository-data>
+        <span>[[totalCount]]</span>
 
-  <span>[[totalCount]]</span>
+        <h2>Document count per type</h2>
 
+        <nuxeo-repository-data
+          start-date="[[startDate]]"
+          end-date="[[endDate]]"
+          grouped-by="ecm:primaryType"
+          data="{{typeCount}}"
+        >
+        </nuxeo-repository-data>
 
-  <h2>Document count per type</h2>
+        <table>
+          <tr>
+            <th>Type</th>
+            <th>#</th>
+          </tr>
+          <template is="dom-repeat" items="[[typeCount]]" as="entry">
+            <tr>
+              <td>[[entry.key]]</td>
+              <td>[[entry.value]]</td>
+            </tr>
+          </template>
+        </table>
 
-  <nuxeo-repository-data start-date="[[startDate]]" end-date="[[endDate]]"
-                         grouped-by="ecm:primaryType"
-                         data="{{typeCount}}">
-  </nuxeo-repository-data>
+        <h2>Top 10 creators</h2>
 
-  <table>
-    <tr>
-      <th>Type</th>
-      <th>#</th>
-    </tr>
-    <template is="dom-repeat" items="[[typeCount]]" as="entry">
-      <tr>
-        <td>[[entry.key]]</td>
-        <td>[[entry.value]]</td>
-      </tr>
-    </template>
-  </table>
+        <nuxeo-repository-data
+          start-date="[[startDate]]"
+          end-date="[[endDate]]"
+          grouped-by="dc:creator"
+          group-limit="3"
+          data="{{topCreators}}"
+        >
+        </nuxeo-repository-data>
 
-  <h2>Top 10 creators</h2>
+        <table>
+          <tr>
+            <th>Creator</th>
+            <th>#</th>
+          </tr>
+          <template is="dom-repeat" items="[[topCreators]]" as="entry">
+            <tr>
+              <td>[[entry.key]]</td>
+              <td>[[entry.value]]</td>
+            </tr>
+          </template>
+        </table>
 
-  <nuxeo-repository-data start-date="[[startDate]]" end-date="[[endDate]]"
-                         grouped-by="dc:creator"
-                         group-limit="3"
-                         data="{{topCreators}}">
-  </nuxeo-repository-data>
+        <h2>Documents created per week</h2>
 
-  <table>
-    <tr>
-      <th>Creator</th>
-      <th>#</th>
-    </tr>
-    <template is="dom-repeat" items="[[topCreators]]" as="entry">
-      <tr>
-        <td>[[entry.key]]</td>
-        <td>[[entry.value]]</td>
-      </tr>
-    </template>
-  </table>
+        <nuxeo-repository-data
+          start-date="[[startDate]]"
+          end-date="[[endDate]]"
+          with-date-intervals="week"
+          date-field="dc:created"
+          data="{{docsCreatedPerWeek}}"
+        >
+        </nuxeo-repository-data>
 
-  <h2>Documents created per week</h2>
+        <table>
+          <tr>
+            <th>Week</th>
+            <th># docs created</th>
+          </tr>
+          <template is="dom-repeat" items="[[docsCreatedPerWeek]]" as="entry">
+            <tr>
+              <td>[[entry.key]]</td>
+              <td>[[entry.value]]</td>
+            </tr>
+          </template>
+        </table>
 
-  <nuxeo-repository-data start-date="[[startDate]]" end-date="[[endDate]]"
-                         with-date-intervals="week"
-                         date-field="dc:created"
-                         data="{{docsCreatedPerWeek}}">
-  </nuxeo-repository-data>
+        <h2>Documents modified per week</h2>
 
-  <table>
-    <tr>
-      <th>Week</th>
-      <th># docs created</th>
-    </tr>
-    <template is="dom-repeat" items="[[docsCreatedPerWeek]]" as="entry">
-      <tr>
-        <td>[[entry.key]]</td>
-        <td>[[entry.value]]</td>
-      </tr>
-    </template>
-  </table>
+        <nuxeo-repository-data
+          start-date="[[startDate]]"
+          end-date="[[endDate]]"
+          with-date-intervals="week"
+          date-field="dc:modified"
+          data="{{docsModifiedPerWeek}}"
+        >
+        </nuxeo-repository-data>
 
-  <h2>Documents modified per week</h2>
-
-  <nuxeo-repository-data start-date="[[startDate]]" end-date="[[endDate]]"
-                         with-date-intervals="week"
-                         date-field="dc:modified"
-                         data="{{docsModifiedPerWeek}}">
-  </nuxeo-repository-data>
-
-  <table>
-    <tr>
-      <th>Week</th>
-      <th># docs modified</th>
-    </tr>
-    <template is="dom-repeat" items="[[docsModifiedPerWeek]]" as="entry">
-      <tr>
-        <td>[[entry.key]]</td>
-        <td>[[entry.value]]</td>
-      </tr>
-    </template>
-  </table>
-
-</template>
-</dom-bind>
-</body>
+        <table>
+          <tr>
+            <th>Week</th>
+            <th># docs modified</th>
+          </tr>
+          <template is="dom-repeat" items="[[docsModifiedPerWeek]]" as="entry">
+            <tr>
+              <td>[[entry.key]]</td>
+              <td>[[entry.value]]</td>
+            </tr>
+          </template>
+        </table>
+      </template>
+    </dom-bind>
+  </body>
 </html>

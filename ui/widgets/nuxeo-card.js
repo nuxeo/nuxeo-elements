@@ -49,86 +49,91 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
   class Card extends mixinBehaviors([IronResizableBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-        -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-        -moz-box-sizing: border-box;    /* Firefox, other Gecko */
-        box-sizing: border-box;         /* Opera/IE 8+ */
-        background-color: white;
-        padding: 16px;
-        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.04);
-        @apply --nuxeo-card;
-      }
+        <style>
+          :host {
+            display: block;
+            -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+            -moz-box-sizing: border-box; /* Firefox, other Gecko */
+            box-sizing: border-box; /* Opera/IE 8+ */
+            background-color: white;
+            padding: 16px;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.04);
+            @apply --nuxeo-card;
+          }
 
-      :host([collapsible]) {
-        padding-bottom: 1px;
-      }
+          :host([collapsible]) {
+            padding-bottom: 1px;
+          }
 
-      :host([opened]) {
-        padding-bottom: 16px;
-      }
+          :host([opened]) {
+            padding-bottom: 16px;
+          }
 
-      :host([collapsible]) h3:hover {
-        cursor: pointer;
-        @apply --nuxeo-link-hover;
-      }
+          :host([collapsible]) h3:hover {
+            cursor: pointer;
+            @apply --nuxeo-link-hover;
+          }
 
-      [hidden] {
-        display: none !important;
-      }
+          [hidden] {
+            display: none !important;
+          }
 
-      .header {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        margin: 0 0 1em;
-      }
+          .header {
+            @apply --layout-horizontal;
+            @apply --layout-center;
+            margin: 0 0 1em;
+          }
 
-      .header .icon {
-        display: inline-block;
-        margin-right: 8px;
-        --iron-icon-width: 16px;
-        --iron-icon-height: 16px;
-      }
+          .header .icon {
+            display: inline-block;
+            margin-right: 8px;
+            --iron-icon-width: 16px;
+            --iron-icon-height: 16px;
+          }
 
-      .header .heading {
-        @apply --layout-flex;
-        font-size: 1rem;
-        font-weight: 700;
-        letter-spacing: .04em;
-        text-transform: uppercase;
-      }
+          .header .heading {
+            @apply --layout-flex;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+          }
 
-      .header .toggle {
-        --iron-icon-width: 20px;
-        --iron-icon-height: 20px;
-      }
-    </style>
+          .header .toggle {
+            --iron-icon-width: 20px;
+            --iron-icon-height: 20px;
+          }
+        </style>
 
-    <dom-if if="[[_hasHeading(icon, heading, collapsible)]]">
-      <template>
-        <h3 class="header" on-click="_toggle">
-          <iron-icon class="icon" icon="[[icon]]" hidden\$="[[!icon]]"></iron-icon>
-          <span class="heading">[[heading]]</span>
-          <iron-icon class="toggle" icon="[[_toggleIcon(opened)]]" toggle="" hidden\$="[[!collapsible]]"></iron-icon>
-        </h3>
-      </template>
-    </dom-if>
+        <dom-if if="[[_hasHeading(icon, heading, collapsible)]]">
+          <template>
+            <h3 class="header" on-click="_toggle">
+              <iron-icon class="icon" icon="[[icon]]" hidden\$="[[!icon]]"></iron-icon>
+              <span class="heading">[[heading]]</span>
+              <iron-icon
+                class="toggle"
+                icon="[[_toggleIcon(opened)]]"
+                toggle=""
+                hidden\$="[[!collapsible]]"
+              ></iron-icon>
+            </h3>
+          </template>
+        </dom-if>
 
-    <dom-if if="[[collapsible]]">
-      <template>
-        <iron-collapse opened="[[_opened(opened, collapsible)]]">
-          <slot></slot>
-        </iron-collapse>
-      </template>
-    </dom-if>
+        <dom-if if="[[collapsible]]">
+          <template>
+            <iron-collapse opened="[[_opened(opened, collapsible)]]">
+              <slot></slot>
+            </iron-collapse>
+          </template>
+        </dom-if>
 
-    <dom-if if="[[!collapsible]]">
-      <template>
-        <slot></slot>
-      </template>
-    </dom-if>
-`;
+        <dom-if if="[[!collapsible]]">
+          <template>
+            <slot></slot>
+          </template>
+        </dom-if>
+      `;
     }
 
     static get is() {

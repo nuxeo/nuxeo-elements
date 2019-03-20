@@ -18,8 +18,8 @@ limitations under the License.
   <head>
     <title>nuxeo-textarea</title>
 
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" />
     <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="/node_modules/@nuxeo/nuxeo-elements/dedup.js"></script>
     <script type="module">
@@ -30,7 +30,6 @@ limitations under the License.
   </head>
 
   <body unresolved>
-
     <nuxeo-demo-section heading="Textarea" size="small">
       <nuxeo-textarea label="Label" placeholder="Placeholder"></nuxeo-textarea>
     </nuxeo-demo-section>
@@ -40,7 +39,13 @@ limitations under the License.
     </nuxeo-demo-section>
 
     <nuxeo-demo-section heading="Error" size="small">
-      <nuxeo-textarea label="Label" placeholder="Placeholder" required error-message="Error message here" invalid></nuxeo-textarea>
+      <nuxeo-textarea
+        label="Label"
+        placeholder="Placeholder"
+        required
+        error-message="Error message here"
+        invalid
+      ></nuxeo-textarea>
     </nuxeo-demo-section>
 
     <nuxeo-demo-section heading="Readonly" size="small">
@@ -50,6 +55,5 @@ limitations under the License.
     <nuxeo-demo-section heading="Disabled" size="small">
       <nuxeo-textarea label="Label" placeholder="Placeholder" disabled></nuxeo-textarea>
     </nuxeo-demo-section>
-
   </body>
 </html>

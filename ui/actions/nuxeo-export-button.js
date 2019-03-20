@@ -44,45 +44,45 @@ import './nuxeo-action-button-styles.js';
   class ExportButton extends mixinBehaviors([FormatBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="nuxeo-action-button-styles">
-      .item {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        padding-top: 0.4em;
-        padding-bottom: 0.4em;
-      }
+        <style include="nuxeo-action-button-styles">
+          .item {
+            @apply --layout-horizontal;
+            @apply --layout-center;
+            padding-top: 0.4em;
+            padding-bottom: 0.4em;
+          }
 
-      .item iron-icon {
-        margin-right: 1em;
-      }
-    </style>
+          .item iron-icon {
+            margin-right: 1em;
+          }
+        </style>
 
-    <dom-if if="[[_isAvailable(document)]]">
-      <template>
-        <div class="action" on-click="_toggleDialog">
-          <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
-          <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
-        </div>
-        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
-      </template>
-    </dom-if>
+        <dom-if if="[[_isAvailable(document)]]">
+          <template>
+            <div class="action" on-click="_toggleDialog">
+              <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
+              <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
+            </div>
+            <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
+          </template>
+        </dom-if>
 
-    <nuxeo-dialog id="dialog" with-backdrop="">
-      <h2>[[i18n('exportButton.dialog.heading')]]</h2>
+        <nuxeo-dialog id="dialog" with-backdrop="">
+          <h2>[[i18n('exportButton.dialog.heading')]]</h2>
 
-      <dom-repeat items="[[_filterRenditions(document, i18n)]]">
-        <template>
-          <div class="item">
-            <iron-icon src="[[item.icon]]"></iron-icon> <a href="[[item.url]]" download="">[[item.label]]</a>
+          <dom-repeat items="[[_filterRenditions(document, i18n)]]">
+            <template>
+              <div class="item">
+                <iron-icon src="[[item.icon]]"></iron-icon><a href="[[item.url]]" download="">[[item.label]]</a>
+              </div>
+            </template>
+          </dom-repeat>
+
+          <div class="buttons">
+            <paper-button dialog-dismiss="">[[i18n('exportButton.dialog.cancel')]]</paper-button>
           </div>
-        </template>
-      </dom-repeat>
-
-      <div class="buttons">
-        <paper-button dialog-dismiss="">[[i18n('exportButton.dialog.cancel')]]</paper-button>
-      </div>
-    </nuxeo-dialog>
-`;
+        </nuxeo-dialog>
+      `;
     }
 
     static get is() {
@@ -134,10 +134,10 @@ import './nuxeo-action-button-styles.js';
     _filterRenditions(document) {
       if (document && document.contextParameters && document.contextParameters.renditions) {
         return document.contextParameters.renditions
-          .filter((rendition) =>
-            rendition.kind !== 'nuxeo:video:conversion' && rendition.kind !== 'nuxeo:picture:conversion')
-          .map((item) =>
-            Object.assign({label: this.formatRendition(item.name)}, item));
+          .filter(
+            (rendition) => rendition.kind !== 'nuxeo:video:conversion' && rendition.kind !== 'nuxeo:picture:conversion',
+          )
+          .map((item) => Object.assign({ label: this.formatRendition(item.name) }, item));
       }
       return [];
     }

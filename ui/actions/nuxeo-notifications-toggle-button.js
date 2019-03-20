@@ -42,29 +42,28 @@ import './nuxeo-action-button-styles.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-notifications-toggle-button/index.html
    */
-  class NotificationsToggleButton
-    extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
+  class NotificationsToggleButton extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="nuxeo-action-button-styles">
-      :host([subscribed]) paper-icon-button {
-        color: var(--icon-toggle-outline-color, var(--nuxeo-action-color-activated));
-      }
-    </style>
+        <style include="nuxeo-action-button-styles">
+          :host([subscribed]) paper-icon-button {
+            color: var(--icon-toggle-outline-color, var(--nuxeo-action-color-activated));
+          }
+        </style>
 
-    <nuxeo-operation id="opSubscribe" op="Document.Subscribe" input="[[document.uid]]"></nuxeo-operation>
-    <nuxeo-operation id="opUnsubscribe" op="Document.Unsubscribe" input="[[document.uid]]"></nuxeo-operation>
+        <nuxeo-operation id="opSubscribe" op="Document.Subscribe" input="[[document.uid]]"></nuxeo-operation>
+        <nuxeo-operation id="opUnsubscribe" op="Document.Unsubscribe" input="[[document.uid]]"></nuxeo-operation>
 
-    <dom-if if="[[_isAvailable(document)]]">
-      <template>
-        <div class="action">
-          <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
-          <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
-        </div>
-        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
-      </template>
-    </dom-if>
-`;
+        <dom-if if="[[_isAvailable(document)]]">
+          <template>
+            <div class="action">
+              <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
+              <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
+            </div>
+            <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
+          </template>
+        </dom-if>
+      `;
     }
 
     static get is() {
@@ -134,20 +133,24 @@ import './nuxeo-action-button-styles.js';
     _toggle() {
       if (!this.subscribed) {
         this.$.opSubscribe.execute().then(() => {
-          this.dispatchEvent(new CustomEvent('document-subscribed', {
-            composed: true,
-            bubbles: true,
-            detail: { doc: this.document },
-          }));
+          this.dispatchEvent(
+            new CustomEvent('document-subscribed', {
+              composed: true,
+              bubbles: true,
+              detail: { doc: this.document },
+            }),
+          );
           this.subscribed = true;
         });
       } else {
         this.$.opUnsubscribe.execute().then(() => {
-          this.dispatchEvent(new CustomEvent('document-unsubscribed', {
-            composed: true,
-            bubbles: true,
-            detail: { doc: this.document },
-          }));
+          this.dispatchEvent(
+            new CustomEvent('document-unsubscribed', {
+              composed: true,
+              bubbles: true,
+              detail: { doc: this.document },
+            }),
+          );
           this.subscribed = false;
         });
       }

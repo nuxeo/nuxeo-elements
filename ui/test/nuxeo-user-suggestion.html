@@ -15,87 +15,83 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <html>
-<head>
-  <title>nuxeo-directory-widgets</title>
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
-  <script src="../../../@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
-  <script src="../../../wct-browser-legacy/browser.js"></script>
-  <script src="../../../@nuxeo/nuxeo-elements/dedup.js"></script>
-  <script src="../../../@nuxeo/nuxeo-elements/test/test-helpers.js"></script>
-</head>
-<body>
-  <test-fixture id="nx">
-    <template>
-      <nuxeo-connection url="/dummy"></nuxeo-connection>
-    </template>
-  </test-fixture>
+  <head>
+    <title>nuxeo-directory-widgets</title>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes" />
+    <script src="../../../@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+    <script src="../../../wct-browser-legacy/browser.js"></script>
+    <script src="../../../@nuxeo/nuxeo-elements/dedup.js"></script>
+    <script src="../../../@nuxeo/nuxeo-elements/test/test-helpers.js"></script>
+  </head>
+  <body>
+    <test-fixture id="nx">
+      <template>
+        <nuxeo-connection url="/dummy"></nuxeo-connection>
+      </template>
+    </test-fixture>
 
-  <test-fixture id="prefixed">
-    <template>
-        <nuxeo-user-suggestion multiple prefixed>
-        </nuxeo-user-suggestion>
-    </template>
-  </test-fixture>
+    <test-fixture id="prefixed">
+      <template>
+        <nuxeo-user-suggestion multiple prefixed></nuxeo-user-suggestion>
+      </template>
+    </test-fixture>
 
-  <script type="module">
-    import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
-    import '@polymer/polymer/polymer-legacy.js';
-    import '@polymer/iron-test-helpers/mock-interactions.js';
-    import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
-    import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
-    import '../widgets/nuxeo-user-suggestion.js';
+    <script type="module">
+      import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
+      import '@polymer/polymer/polymer-legacy.js';
+      import '@polymer/iron-test-helpers/mock-interactions.js';
+      import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
+      import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
+      import '../widgets/nuxeo-user-suggestion.js';
 
-    suite('<nuxeo-user-suggestion>', () => {
-
-      test('prefixed mode intialization', () => {
-        const prefixedWidget = fixture('prefixed');
-        prefixedWidget.value = [
-          {
-            'entity-type': 'user',
-            extendedGroups: [
-              {
-                label: 'My awesome group',
-                name: 'awesome',
-                url: 'group/awesome',
-              },
-            ],
-            id: 'jdoe',
-            isAdministrator: false,
-            isAnonymous: false,
-            properties: {
-              company: 'nuxeo',
-              email: 'jdoe@nuxeo.com',
-              firstName: 'John',
-              groups: [
-                'awesome',
+      suite('<nuxeo-user-suggestion>', () => {
+        test('prefixed mode intialization', () => {
+          const prefixedWidget = fixture('prefixed');
+          prefixedWidget.value = [
+            {
+              'entity-type': 'user',
+              extendedGroups: [
+                {
+                  label: 'My awesome group',
+                  name: 'awesome',
+                  url: 'group/awesome',
+                },
               ],
-              lastName: 'Doe',
-              tenantId: null,
-              username: 'jdoe',
+              id: 'jdoe',
+              isAdministrator: false,
+              isAnonymous: false,
+              properties: {
+                company: 'nuxeo',
+                email: 'jdoe@nuxeo.com',
+                firstName: 'John',
+                groups: ['awesome'],
+                lastName: 'Doe',
+                tenantId: null,
+                username: 'jdoe',
+              },
             },
-          },
-          {
-            'entity-type': 'group',
-            grouplabel: 'Awesome group',
-            groupname: 'awesome',
-            id: 'awesome',
-            properties: {
-              description: 'Group of awesome users',
+            {
+              'entity-type': 'group',
               grouplabel: 'Awesome group',
               groupname: 'awesome',
-              tenantId: null,
+              id: 'awesome',
+              properties: {
+                description: 'Group of awesome users',
+                grouplabel: 'Awesome group',
+                groupname: 'awesome',
+                tenantId: null,
+              },
             },
-          },
-        ];
-        return flush().then(() => {
-          const s2 = dom(prefixedWidget.root).querySelector('#s2');
-          const items = dom(s2.root).querySelectorAll('.selectivity-multiple-selected-item');
-          expect(items.length).to.be.equal(2);
-          expect(items[0].textContent).to.be.equal('John Doe');
-          expect(items[1].textContent).to.be.equal('Awesome group');
+          ];
+          return flush().then(() => {
+            const s2 = dom(prefixedWidget.root).querySelector('#s2');
+            const items = dom(s2.root).querySelectorAll('.selectivity-multiple-selected-item');
+            expect(items.length).to.be.equal(2);
+            expect(items[0].textContent).to.be.equal('John Doe');
+            expect(items[1].textContent).to.be.equal('Awesome group');
+          });
         });
       });
-
-    });
-  </script>
-</body>
+    </script>
+  </body>
+</html>

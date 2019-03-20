@@ -38,109 +38,110 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
    * @memberof Nuxeo
    * @demo demo/nuxeo-select/index.html
    */
-  class Select extends
-    mixinBehaviors([IronResizableBehavior, IronValidatableBehavior], Nuxeo.Element) {
+  class Select extends mixinBehaviors([IronResizableBehavior, IronValidatableBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-        position: relative;
-        --paper-input-container-underline: {
-          border-bottom: 1px solid var(--paper-input-container-input-color) !important;
-        };
-      }
+        <style>
+          :host {
+            display: block;
+            position: relative;
+            --paper-input-container-underline: {
+              border-bottom: 1px solid var(--paper-input-container-input-color) !important;
+            }
+          }
 
-      :host([hidden]) {
-        display: none;
-      }
+          :host([hidden]) {
+            display: none;
+          }
 
-      :host([required]) label::after {
-        display: inline-block;
-        content: '*';
-        margin-left: 4px; 
-        color: var(--paper-input-container-invalid-color, red);
-      }
+          :host([required]) label::after {
+            display: inline-block;
+            content: '*';
+            margin-left: 4px;
+            color: var(--paper-input-container-invalid-color, red);
+          }
 
-      paper-listbox {
-        padding: 0;
-        --paper-listbox-selected-item: {
-          font-weight: normal;
-        };
-        --paper-listbox-focused-item: {
-          font-weight: normal;
-          color: var(--paper-input-container-input-color);
-        };
-        --paper-listbox-focused-item-after: {
-          font-weight: normal;
-          color: var(--nuxeo-box, white);
-        }
-      }
+          paper-listbox {
+            padding: 0;
+            --paper-listbox-selected-item: {
+              font-weight: normal;
+            }
+            --paper-listbox-focused-item: {
+              font-weight: normal;
+              color: var(--paper-input-container-input-color);
+            }
+            --paper-listbox-focused-item-after: {
+              font-weight: normal;
+              color: var(--nuxeo-box, white);
+            }
+          }
 
-      paper-dropdown-menu {
-        --paper-input-container: {
-          padding-top: 0;
-        }
-      }
+          paper-dropdown-menu {
+            --paper-input-container: {
+              padding-top: 0;
+            }
+          }
 
-      label {
-        @apply --nuxeo-label;
-      }
+          label {
+            @apply --nuxeo-label;
+          }
 
-      ::slotted(paper-item) {
-        font-weight: normal !important;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        height: 32px;
-        min-height: 32px;
-        padding: 0 12px;
-        cursor: pointer;
-        color: var(--paper-input-container-input-color);
-      }
+          ::slotted(paper-item) {
+            font-weight: normal !important;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            height: 32px;
+            min-height: 32px;
+            padding: 0 12px;
+            cursor: pointer;
+            color: var(--paper-input-container-input-color);
+          }
 
-      ::slotted(paper-item:hover), ::slotted(paper-item[pressed]) {
-        background: var(--paper-input-container-focus-color);
-        color: var(--nuxeo-box, white) !important;
-      }
-    </style>
+          ::slotted(paper-item:hover),
+          ::slotted(paper-item[pressed]) {
+            background: var(--paper-input-container-focus-color);
+            color: var(--nuxeo-box, white) !important;
+          }
+        </style>
 
-    <label>[[label]]</label>
+        <label>[[label]]</label>
 
-    <paper-dropdown-menu
-      id="paperDropdownMenu"
-      placeholder="[[placeholder]]"
-      error-message="[[errorMessage]]"
-      no-label-float
-      noink
-      no-animations
-      restore-focus-on-close="false"
-      horizontal-align="left"
-      on-paper-dropdown-open="_resize"
-      readonly\$="[[readonly]]"
-      disabled\$="[[disabled]]"
-      required\$="[[required]]"
-      validator\$="[[validator]]"
-      invalid\$="[[invalid]]">
-
-      <paper-listbox
-        id="paperMenu"
-        slot="dropdown-content"
-        attr-for-selected="[[_computeAttrForSelected(attrForSelected, options)]]"
-        selected="{{selected}}">
-        <dom-if if="[[options]]">
-          <template>
-            <dom-repeat items="[[options]]" as="item">
+        <paper-dropdown-menu
+          id="paperDropdownMenu"
+          placeholder="[[placeholder]]"
+          error-message="[[errorMessage]]"
+          no-label-float
+          noink
+          no-animations
+          restore-focus-on-close="false"
+          horizontal-align="left"
+          on-paper-dropdown-open="_resize"
+          readonly\$="[[readonly]]"
+          disabled\$="[[disabled]]"
+          required\$="[[required]]"
+          validator\$="[[validator]]"
+          invalid\$="[[invalid]]"
+        >
+          <paper-listbox
+            id="paperMenu"
+            slot="dropdown-content"
+            attr-for-selected="[[_computeAttrForSelected(attrForSelected, options)]]"
+            selected="{{selected}}"
+          >
+            <dom-if if="[[options]]">
               <template>
-                <paper-item option="[[_id(item)]]">[[_label(item)]]</paper-item>
+                <dom-repeat items="[[options]]" as="item">
+                  <template>
+                    <paper-item option="[[_id(item)]]">[[_label(item)]]</paper-item>
+                  </template>
+                </dom-repeat>
               </template>
-            </dom-repeat>
-          </template>
-        </dom-if>
-        <slot></slot>
-      </paper-listbox>
-    </paper-dropdown-menu>
-`;
+            </dom-if>
+            <slot></slot>
+          </paper-listbox>
+        </paper-dropdown-menu>
+      `;
     }
 
     static get is() {
@@ -238,21 +239,22 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
       const button = this.$.paperDropdownMenu.$.menuButton;
       button.noOverlap = true;
       button.verticalOffset = -8;
-      const {width} = this.getBoundingClientRect();
+      const { width } = this.getBoundingClientRect();
       if (width > 0) {
         this.$.paperDropdownMenu.style.width = this.$.paperMenu.style.width = `${width}px`;
       }
     }
 
     _id(item) {
-      if (!this.selected) { // select first item as default selection
-        this.selected = (item && item.id) ? item.id : item;
+      if (!this.selected) {
+        // select first item as default selection
+        this.selected = item && item.id ? item.id : item;
       }
-      return (item && item.id) ? item.id : item;
+      return item && item.id ? item.id : item;
     }
 
     _label(item) {
-      return (item && item.label) ? item.label : item;
+      return item && item.label ? item.label : item;
     }
 
     _computeAttrForSelected(attrForSelected, options) {

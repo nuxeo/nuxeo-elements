@@ -219,10 +219,7 @@ import './nuxeo-resource.js';
     }
 
     static get observers() {
-      return [
-        '_resetAndAutoFetch(params.*, docId, pageSize, sort)',
-        '_autoFetch(page)',
-      ];
+      return ['_resetAndAutoFetch(params.*, docId, pageSize, sort)', '_autoFetch(page)'];
     }
 
     /**
@@ -291,10 +288,12 @@ import './nuxeo-resource.js';
         this.resultsCount = response.resultsCount;
         this.isNextPageAvailable = response.isNextPageAvailable;
         this.currentPageSize = response.currentPageSize;
-        this.dispatchEvent(new CustomEvent('update', {
-          bubbles: true,
-          composed: true,
-        }));
+        this.dispatchEvent(
+          new CustomEvent('update', {
+            bubbles: true,
+            composed: true,
+          }),
+        );
         return response;
       });
     }
@@ -319,10 +318,7 @@ import './nuxeo-resource.js';
     _autoFetch() {
       if (this.auto) {
         // debounce in case of multiple param changes
-        this._debouncer = Debouncer.debounce(
-          this._debouncer,
-          timeOut.after(this.autoDelay), () => this.fetch(),
-        );
+        this._debouncer = Debouncer.debounce(this._debouncer, timeOut.after(this.autoDelay), () => this.fetch());
       }
     }
   }

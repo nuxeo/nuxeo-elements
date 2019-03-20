@@ -26,14 +26,14 @@ import { idlePeriod } from '@polymer/polymer/lib/utils/async.js';
 const REGISTRY = {};
 
 function _getRegistry(slot) {
-  REGISTRY[slot] = REGISTRY[slot] || {nodes: [], slots: []};
+  REGISTRY[slot] = REGISTRY[slot] || { nodes: [], slots: [] };
   return REGISTRY[slot];
 }
 
 function _same(n1, n2) {
   const k1 = n1.getAttribute('name');
   const k2 = n2.getAttribute('name');
-  return k1 && k2 && (k1 === k2);
+  return k1 && k2 && k1 === k2;
 }
 
 function _registerContent(node, slot) {
@@ -46,7 +46,8 @@ function _registerContent(node, slot) {
       // if content has a template replace existing one
       if (node.template) {
         registry.nodes[idx] = node;
-      } else { // merge
+      } else {
+        // merge
         registry.nodes[idx]._merge(node);
       }
     }
@@ -54,7 +55,9 @@ function _registerContent(node, slot) {
     registry.nodes.push(node);
   }
   registry.nodes.sort((a, b) => a.order - b.order);
-  registry.slots.forEach((s) => { s._updateContent(); });
+  registry.slots.forEach((s) => {
+    s._updateContent();
+  });
 }
 
 function _unregisterContent(node, slot) {
@@ -62,7 +65,9 @@ function _unregisterContent(node, slot) {
   const idx = registry.nodes.findIndex((n) => _same(node, n));
   if (idx !== -1) {
     registry.nodes.splice(idx, 1);
-    registry.slots.forEach((s) => { s._updateContent(); });
+    registry.slots.forEach((s) => {
+      s._updateContent();
+    });
   }
 }
 
@@ -70,12 +75,17 @@ function _unregisterContent(node, slot) {
 let sharedModel = {};
 window.nuxeo = window.nuxeo || {};
 window.nuxeo.slots = window.nuxeo.slots || {};
-window.nuxeo.slots.setSharedModel = ((model) => {
+window.nuxeo.slots.setSharedModel = (model) => {
   sharedModel = model;
-  Object.keys(REGISTRY).forEach((k) => REGISTRY[k] && REGISTRY[k].slots && REGISTRY[k].slots.forEach((slot) => {
-    slot._updateSharedModel();
-  }));
-});
+  Object.keys(REGISTRY).forEach(
+    (k) =>
+      REGISTRY[k] &&
+      REGISTRY[k].slots &&
+      REGISTRY[k].slots.forEach((slot) => {
+        slot._updateSharedModel();
+      }),
+  );
+};
 
 {
   /**
@@ -92,7 +102,6 @@ window.nuxeo.slots.setSharedModel = ((model) => {
    * @demo demo/nuxeo-slots/index.html
    */
   class Slot extends Nuxeo.Element {
-
     static get is() {
       return 'nuxeo-slot';
     }
@@ -129,9 +138,7 @@ window.nuxeo.slots.setSharedModel = ((model) => {
     }
 
     static get observers() {
-      return [
-        '_updateModel(model.*)',
-      ];
+      return ['_updateModel(model.*)'];
     }
 
     connectedCallback() {
@@ -166,7 +173,7 @@ window.nuxeo.slots.setSharedModel = ((model) => {
           // use first child parent, for case when dom-if may have been detached
           const p = dom(dom(c$[0]).parentNode);
           // eslint-disable-next-line no-cond-assign
-          for (let i = 0, n; (i < c$.length) && (n = c$[i]); i++) {
+          for (let i = 0, n; i < c$.length && (n = c$[i]); i++) {
             p.removeChild(n);
           }
         }
@@ -179,7 +186,7 @@ window.nuxeo.slots.setSharedModel = ((model) => {
       // keep track of stamped instances
       this._instances = [];
       _getRegistry(this.slot).nodes.forEach((node) => {
-        const {template} = node;
+        const { template } = node;
         if (!node.disabled && template) {
           delete template.__templatizeOwner;
           const ctor = templatize(template, this);
@@ -197,13 +204,10 @@ window.nuxeo.slots.setSharedModel = ((model) => {
     }
 
     _updateContent() {
-      this.__renderDebouncer = Debouncer.debounce(
-        this.__renderDebouncer, idlePeriod,
-        () => {
-          this._clearContent();
-          this._render();
-        },
-      );
+      this.__renderDebouncer = Debouncer.debounce(this.__renderDebouncer, idlePeriod, () => {
+        this._clearContent();
+        this._render();
+      });
       // enqueuing is needed for testing, as it allows content to be stamped on flush
       enqueueDebouncer(this.__renderDebouncer);
     }
@@ -259,7 +263,6 @@ window.nuxeo.slots.setSharedModel = ((model) => {
    * @demo demo/nuxeo-slots/index.html
    */
   class SlotContent extends Nuxeo.Element {
-
     static get is() {
       return 'nuxeo-slot-content';
     }
@@ -303,9 +306,7 @@ window.nuxeo.slots.setSharedModel = ((model) => {
     }
 
     static get observers() {
-      return [
-        '_register(disabled, order, priority)',
-      ];
+      return ['_register(disabled, order, priority)'];
     }
 
     disconnectedCallback() {
@@ -342,7 +343,6 @@ window.nuxeo.slots.setSharedModel = ((model) => {
         _unregisterContent(this, slot);
       });
     }
-
   }
 
   customElements.define(SlotContent.is, SlotContent);

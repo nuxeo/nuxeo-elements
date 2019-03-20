@@ -43,24 +43,25 @@ import '../actions/nuxeo-action-button-styles.js';
   class OperationButton extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="nuxeo-action-button-styles"></style>
+        <style include="nuxeo-action-button-styles"></style>
 
-    <nuxeo-operation
-      id="op"
-      op="[[operation]]"
-      input="[[input]]"
-      params="[[params]]"
-      sync-indexing\$="[[syncIndexing]]"
-      async\$="[[async]]"
-      poll-interval="[[pollInterval]]">
-    </nuxeo-operation>
+        <nuxeo-operation
+          id="op"
+          op="[[operation]]"
+          input="[[input]]"
+          params="[[params]]"
+          sync-indexing\$="[[syncIndexing]]"
+          async\$="[[async]]"
+          poll-interval="[[pollInterval]]"
+        >
+        </nuxeo-operation>
 
-    <div class="action" on-click="_execute">
-      <paper-icon-button id="bt" icon="[[icon]]"></paper-icon-button>
-      <span class="label" hidden\$="[[!showLabel]]">[[i18n(label)]]</span>
-    </div>
-    <nuxeo-tooltip>[[i18n(_tooltip)]]</nuxeo-tooltip>
-`;
+        <div class="action" on-click="_execute">
+          <paper-icon-button id="bt" icon="[[icon]]"></paper-icon-button>
+          <span class="label" hidden\$="[[!showLabel]]">[[i18n(label)]]</span>
+        </div>
+        <nuxeo-tooltip>[[i18n(_tooltip)]]</nuxeo-tooltip>
+      `;
     }
 
     static get is() {
@@ -171,35 +172,43 @@ import '../actions/nuxeo-action-button-styles.js';
     }
 
     _execute() {
-      this.$.op.execute().then((response) => {
-        if (this.notification) {
-          this.dispatchEvent(new CustomEvent('notify', {
-            composed: true,
-            bubbles: true,
-            detail: { message: this.i18n(this.notification) },
-          }));
-        }
-        let detail = { response };
-        if (this.detail) {
-          // if the supplied params are a string, parse them as JSON
-          detail = typeof this.detail === 'string' ? JSON.parse(this.detail) : this.detail;
-        }
-        this.dispatchEvent(new CustomEvent(this.event, {
-          composed: true,
-          bubbles: true,
-          detail,
-        }));
+      this.$.op
+        .execute()
+        .then((response) => {
+          if (this.notification) {
+            this.dispatchEvent(
+              new CustomEvent('notify', {
+                composed: true,
+                bubbles: true,
+                detail: { message: this.i18n(this.notification) },
+              }),
+            );
+          }
+          let detail = { response };
+          if (this.detail) {
+            // if the supplied params are a string, parse them as JSON
+            detail = typeof this.detail === 'string' ? JSON.parse(this.detail) : this.detail;
+          }
+          this.dispatchEvent(
+            new CustomEvent(this.event, {
+              composed: true,
+              bubbles: true,
+              detail,
+            }),
+          );
 
-        if (this.download) {
-          return this._download(response);
-        }
-      })
+          if (this.download) {
+            return this._download(response);
+          }
+        })
         .catch((error) => {
-          this.dispatchEvent(new CustomEvent('notify', {
-            composed: true,
-            bubbles: true,
-            detail: { message: this.errorLabel ? this.i18n(this.errorLabel, error) : error },
-          }));
+          this.dispatchEvent(
+            new CustomEvent('notify', {
+              composed: true,
+              bubbles: true,
+              detail: { message: this.errorLabel ? this.i18n(this.errorLabel, error) : error },
+            }),
+          );
           if (error.status !== 404) {
             throw error;
           }
@@ -211,7 +220,8 @@ import '../actions/nuxeo-action-button-styles.js';
       const contentDisposition = response.headers.get('Content-Disposition');
       if (contentDisposition) {
         const filenameMatches = contentDisposition
-          .match(/filename[^;=\n]*=([^;\n]*''([^;\n]*)|[^;\n]*)/).filter((match) => !!match);
+          .match(/filename[^;=\n]*=([^;\n]*''([^;\n]*)|[^;\n]*)/)
+          .filter((match) => !!match);
         const filename = decodeURI(filenameMatches[filenameMatches.length - 1]);
         return response.blob().then((blob) => {
           if (navigator.msSaveBlob) {
@@ -228,9 +238,8 @@ import '../actions/nuxeo-action-button-styles.js';
             URL.revokeObjectURL(a.href);
           }
         });
-      } 
-        return Promise.reject(new Error('missing Content-Disposition header'));
-      
+      }
+      return Promise.reject(new Error('missing Content-Disposition header'));
     }
 
     _computeTooltip(tooltip, label) {

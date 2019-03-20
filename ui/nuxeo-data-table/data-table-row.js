@@ -12,81 +12,80 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
   class DataTableRow extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: flex;
-        flex-direction: column;
-        opacity: 1;
-        cursor: pointer;
-        border: 2px solid transparent;
-        border-bottom: 1px solid var(--nuxeo-border, #e3e3e3);
-        padding-bottom: 1px;
-        @apply --iron-data-table-row;
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-      }
+        <style>
+          :host {
+            display: flex;
+            flex-direction: column;
+            opacity: 1;
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-bottom: 1px solid var(--nuxeo-border, #e3e3e3);
+            padding-bottom: 1px;
+            @apply --iron-data-table-row;
+            @apply --layout-horizontal;
+            @apply --layout-center;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+          }
 
-      :host([selected]) {
-        border: 2px solid var(--nuxeo-primary-color, blue);
-        padding-bottom: 0;
-        background-color: var(--nuxeo-page-background, red);
-      }
+          :host([selected]) {
+            border: 2px solid var(--nuxeo-primary-color, blue);
+            padding-bottom: 0;
+            background-color: var(--nuxeo-page-background, red);
+          }
 
-      :host([selected]) .cells {
-        @apply --iron-data-table-row-selected;
-      }
+          :host([selected]) .cells {
+            @apply --iron-data-table-row-selected;
+          }
 
-      :host(:not([header])[even]) {
-        @apply --iron-data-table-row-even;
-      }
+          :host(:not([header])[even]) {
+            @apply --iron-data-table-row-even;
+          }
 
-      :host(:not([header]):not([even])) {
-        @apply --iron-data-table-row-odd;
-      }
+          :host(:not([header]):not([even])) {
+            @apply --iron-data-table-row-odd;
+          }
 
-      :host(:focus) {
-        outline: none;
-        @apply --iron-data-table-row-focused;
-      }
+          :host(:focus) {
+            outline: none;
+            @apply --iron-data-table-row-focused;
+          }
 
-      :host(:not([header]):hover) {
-        @apply --iron-data-table-row-hover;
-        @apply --nuxeo-block-hover;
-      }
+          :host(:not([header]):hover) {
+            @apply --iron-data-table-row-hover;
+            @apply --nuxeo-block-hover;
+          }
 
-      :host(:focus):after {
-        @apply --iron-data-table-row-focused-after;
-      }
+          :host(:focus):after {
+            @apply --iron-data-table-row-focused-after;
+          }
 
-      :host:after {
-        @apply --iron-data-table-row-after;
-      }
+          :host:after {
+            @apply --iron-data-table-row-after;
+          }
 
-      .cells {
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-      }
+          .cells {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+          }
+        </style>
 
-    </style>
-
-    <div class="cells">
-      <slot name="checkbox"></slot>
-      <slot></slot>
-      <slot name="settings"></slot>
-    </div>
-    <div class="details">
-      <slot name="detail"></slot>
-    </div>
-    <div class="actions">
-      <slot name="action"></slot>
-    </div>
-`;
+        <div class="cells">
+          <slot name="checkbox"></slot>
+          <slot></slot>
+          <slot name="settings"></slot>
+        </div>
+        <div class="details">
+          <slot name="detail"></slot>
+        </div>
+        <div class="actions">
+          <slot name="action"></slot>
+        </div>
+      `;
     }
 
     static get is() {
@@ -115,14 +114,12 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
     }
 
     static get observers() {
-      return [
-        '_beforeBind(beforeBind, index, item.*, selected, expanded)',
-      ];
+      return ['_beforeBind(beforeBind, index, item.*, selected, expanded)'];
     }
 
     connectedCallback() {
       super.connectedCallback();
-      const {host} = dom(this).getOwnerRoot();
+      const { host } = dom(this).getOwnerRoot();
       if (host && host.tagName === 'NUXEO-DATA-TABLE') {
         const id = this._static.id++;
         const item = this.parentElement;

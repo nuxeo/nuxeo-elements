@@ -36,31 +36,31 @@ import './nuxeo-group-tag.js';
   class Tags extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-        :host {
-          display: inline-block;
-        }
-      </style>
-    <dom-repeat items="[[items]]" as="item">
-      <template>
-        <dom-if if="[[_type('tag')]]">
+        <style>
+          :host {
+            display: inline-block;
+          }
+        </style>
+        <dom-repeat items="[[items]]" as="item">
           <template>
-            <nuxeo-tag>[[item]]</nuxeo-tag>
+            <dom-if if="[[_type('tag')]]">
+              <template>
+                <nuxeo-tag>[[item]]</nuxeo-tag>
+              </template>
+            </dom-if>
+            <dom-if if="[[_type('user')]]">
+              <template>
+                <nuxeo-user-tag user="[[item]]"></nuxeo-user-tag>
+              </template>
+            </dom-if>
+            <dom-if if="[[_type('group')]]">
+              <template>
+                <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
+              </template>
+            </dom-if>
           </template>
-        </dom-if>
-        <dom-if if="[[_type('user')]]">
-          <template>
-            <nuxeo-user-tag user="[[item]]"></nuxeo-user-tag>
-          </template>
-        </dom-if>
-        <dom-if if="[[_type('group')]]">
-          <template>
-            <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
-          </template>
-        </dom-if>
-      </template>
-    </dom-repeat>
-`;
+        </dom-repeat>
+      `;
     }
 
     static get is() {

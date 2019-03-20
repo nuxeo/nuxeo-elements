@@ -17,17 +17,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
   class DataTableForm extends mixinBehaviors([Templatizer, I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      #container {
-        margin: 24px;
-      }
-    </style>
-    <iron-form id="editForm">
-      <form>
-        <div id="container"></div>
-      </form>
-    </iron-form>
-`;
+        <style>
+          #container {
+            margin: 24px;
+          }
+        </style>
+        <iron-form id="editForm">
+          <form>
+            <div id="container"></div>
+          </form>
+        </iron-form>
+      `;
     }
 
     static get is() {
@@ -58,8 +58,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._instanceProps = { item: true };
       this.templatize(template);
       this.instance = this.stamp({ item: this.item });
-      this.instance.dispatchEvent = function () {
-      };
+      this.instance.dispatchEvent = function() {};
       dom(this.$.container).appendChild(this.instance.root);
     }
 

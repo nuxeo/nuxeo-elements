@@ -22,7 +22,6 @@ import '@polymer/polymer/polymer-legacy.js';
  * @polymerBehavior Nuxeo.RoutingBehavior
  */
 export const RoutingBehavior = {
-
   properties: {
     router: {
       type: Object,
@@ -42,7 +41,7 @@ export const RoutingBehavior = {
   },
 
   attached() {
-  // initialize router
+    // initialize router
     this._updateRouter();
 
     this.routerChangedHandler = this._updateRouter.bind(this);
@@ -70,7 +69,7 @@ export const RoutingBehavior = {
    * Returns a computed `urlFor` method, based on the current `router`.
    */
   _computeUrlFor() {
-    return function (...args) {
+    return function(...args) {
       if (this.router) {
         const route = args[0];
         const baseUrl = this.router.baseUrl || '';
@@ -82,9 +81,12 @@ export const RoutingBehavior = {
           return;
         }
         const params = Array.prototype.slice.call(args, 1);
-        return baseUrl + (baseUrl.endsWith('/') ? '' : '/') +
-                        (this.router.useHashbang ? '#!' : '') +
-                        this.router[route].apply(this, params);
+        return (
+          baseUrl +
+          (baseUrl.endsWith('/') ? '' : '/') +
+          (this.router.useHashbang ? '#!' : '') +
+          this.router[route].apply(this, params)
+        );
       }
     };
   },
@@ -94,7 +96,7 @@ export const RoutingBehavior = {
    * Invokes `router.navigate` to trigger the actual navigation.
    */
   _computeNavigateTo() {
-    return function (...args) {
+    return function(...args) {
       if (this.router) {
         const route = args[0];
         const baseUrl = this.router.baseUrl || '';

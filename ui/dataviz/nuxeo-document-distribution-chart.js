@@ -37,7 +37,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
   // Breadcrumb dimensions: width, height, spacing, width of tip/tail.
   const b = {
-    w: 100, h: 30, s: 3, t: 10,
+    w: 100,
+    h: 30,
+    s: 3,
+    t: 10,
   };
 
   const colors = {};
@@ -61,109 +64,114 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
   class DocumentDistributionChart extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      :host {
-        color: var(--nuxeo-text-default, #000);
-      }
+        <style>
+          :host {
+            color: var(--nuxeo-text-default, #000);
+          }
 
-      #du {
-        font-size: 1rem;
-        font-weight: 400;
-        width: 100%;
-        height: 700px;
-        margin-top: 10px;
-      }
+          #du {
+            font-size: 1rem;
+            font-weight: 400;
+            width: 100%;
+            height: 700px;
+            margin-top: 10px;
+          }
 
-      #main {
-        float: left;
-        width: 70%;
-      }
+          #main {
+            float: left;
+            width: 70%;
+          }
 
-      #sb {
-        float: right;
-        width: 30%;
-      }
+          #sb {
+            float: right;
+            width: 30%;
+          }
 
-      #sequence {
-        width: 100%;
-        height: 70px;
-      }
+          #sequence {
+            width: 100%;
+            height: 70px;
+          }
 
-      #chart {
-        position: relative;
-      }
+          #chart {
+            position: relative;
+          }
 
-      #chart path {
-        stroke: #fff;
-      }
+          #chart path {
+            stroke: #fff;
+          }
 
-      #ex {
-        position: absolute;
-        top: 260px;
-        left: 305px;
-        width: 140px;
-        text-align: center;
-        z-index: 10;
-      }
+          #ex {
+            position: absolute;
+            top: 260px;
+            left: 305px;
+            width: 140px;
+            text-align: center;
+            z-index: 10;
+          }
 
-      #cl {
-        font-size: 2rem;
-      }
+          #cl {
+            font-size: 2rem;
+          }
 
-      :host([loading]) .loadable {
-        opacity: 0.25;
-      }
+          :host([loading]) .loadable {
+            opacity: 0.25;
+          }
 
-      :host([loading]) paper-spinner-lite {
-        position: absolute;
-        top: 45%;
-        left: 50%;
-        --paper-spinner-color: var(--default-primary-color);
-      }
+          :host([loading]) paper-spinner-lite {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            --paper-spinner-color: var(--default-primary-color);
+          }
+        </style>
 
-    </style>
+        <nuxeo-connection id="nx" connection-id="[[connectionId]]"></nuxeo-connection>
 
-    <nuxeo-connection id="nx" connection-id="[[connectionId]]"></nuxeo-connection>
-
-    <div id="du">
-      <div id="main" class="loadable">
-        <div id="sequence"></div>
-        <div id="chart">
-          <div id="ex" style="visibility: hidden;">
-            <span id="cl"></span><br>
-            <span id="clb"></span>
+        <div id="du">
+          <div id="main" class="loadable">
+            <div id="sequence"></div>
+            <div id="chart">
+              <div id="ex" style="visibility: hidden;">
+                <span id="cl"></span><br />
+                <span id="clb"></span>
+              </div>
+            </div>
           </div>
+          <div id="sb" class="loadable">
+            <paper-radio-group selected="{{mode}}" on-paper-radio-group-changed="execute">
+              <paper-radio-button noink="" name="size">[[i18n('documentDistributionChart.size')]]</paper-radio-button>
+              <paper-radio-button noink="" name="count">[[i18n('documentDistributionChart.count')]]</paper-radio-button>
+            </paper-radio-group>
+            <p>
+              <paper-checkbox noink on-change="execute" checked="{{includeHidden}}"
+                >[[i18n('documentDistributionChart.includeHidden')]]</paper-checkbox
+              >
+            </p>
+            <p>
+              <paper-checkbox noink on-change="execute" checked="{{includeDeleted}}"
+                >[[i18n('documentDistributionChart.includeDeleted')]]</paper-checkbox
+              >
+            </p>
+            <p>
+              <paper-checkbox noink on-change="execute" checked="{{includeVersion}}"
+                >[[i18n('documentDistributionChart.includeVersions')]]</paper-checkbox
+              >
+            </p>
+            <p>
+              <paper-checkbox
+                noink
+                on-change="execute"
+                checked="{{onlyFolder}}"
+                disabled="[[_chechFolderDisabled(mode)]]"
+                >[[i18n('documentDistributionChart.foldersOnly')]]</paper-checkbox
+              >
+            </p>
+            <p></p>
+          </div>
+
+          <paper-spinner-lite active\$="[[loading]]"></paper-spinner-lite>
         </div>
-      </div>
-      <div id="sb" class="loadable">
-        <paper-radio-group selected="{{mode}}" on-paper-radio-group-changed="execute">
-          <paper-radio-button noink="" name="size">[[i18n('documentDistributionChart.size')]]</paper-radio-button>
-          <paper-radio-button noink="" name="count">[[i18n('documentDistributionChart.count')]]</paper-radio-button>
-        </paper-radio-group>
-        <p>
-        <paper-checkbox noink
-          on-change="execute"
-          checked="{{includeHidden}}">[[i18n('documentDistributionChart.includeHidden')]]</paper-checkbox>
-        </p><p>
-        <paper-checkbox noink
-          on-change="execute"
-          checked="{{includeDeleted}}">[[i18n('documentDistributionChart.includeDeleted')]]</paper-checkbox>
-        </p><p>
-        <paper-checkbox noink
-          on-change="execute"
-          checked="{{includeVersion}}">[[i18n('documentDistributionChart.includeVersions')]]</paper-checkbox>
-        </p><p>
-        <paper-checkbox noink
-          on-change="execute"
-          checked="{{onlyFolder}}"
-          disabled="[[_chechFolderDisabled(mode)]]">[[i18n('documentDistributionChart.foldersOnly')]]</paper-checkbox>
-        </p><p>
-      </p></div>
-
-      <paper-spinner-lite active\$="[[loading]]"></paper-spinner-lite>
-
-    </div>
-`;
+      `;
     }
 
     static get is() {
@@ -326,7 +334,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           },
         },
       };
-      for (let depth = (pathDepth - 1) + this.maxDepth; depth > pathDepth; depth--) {
+      for (let depth = pathDepth - 1 + this.maxDepth; depth > pathDepth; depth--) {
         subPart = {
           size: {
             sum: {
@@ -372,7 +380,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       let subPart = {
         subLevel: {
           terms: {
-            field: `ecm:path@level${(pathDepth - 1) + this.maxDepth}`,
+            field: `ecm:path@level${pathDepth - 1 + this.maxDepth}`,
             size: this.maxDocSize,
             order: {
               _count: 'desc',
@@ -381,7 +389,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         },
       };
 
-      for (let depth = (pathDepth - 2) + this.maxDepth; depth >= pathDepth; depth--) {
+      for (let depth = pathDepth - 2 + this.maxDepth; depth >= pathDepth; depth--) {
         subPart = {
           subLevel: {
             terms: {
@@ -475,23 +483,27 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       const options = {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: query,
         url,
       };
-      return this.$.nx.request().then((request) => request
-        .execute(options)
-        .then(this._handleResponse.bind(this))
-        .catch(this._handleError.bind(this)));
+      return this.$.nx.request().then((request) =>
+        request
+          .execute(options)
+          .then(this._handleResponse.bind(this))
+          .catch(this._handleError.bind(this)),
+      );
     }
 
     _handleError(reason) {
       console.error(reason);
-      this.dispatchEvent(new CustomEvent('error', {
-        composed: true,
-        bubbles: true,
-        detail: { reason, error: reason },
-      }));
+      this.dispatchEvent(
+        new CustomEvent('error', {
+          composed: true,
+          bubbles: true,
+          detail: { reason, error: reason },
+        }),
+      );
       this.loading = false;
     }
 
@@ -550,15 +562,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         svg.parentNode.removeChild(svg);
       }
 
-      vis = select(this.$.chart).append('svg:svg')
+      vis = select(this.$.chart)
+        .append('svg:svg')
         .attr('width', this.width)
         .attr('height', this.height)
         .append('svg:g')
         .attr('id', 'container')
         .attr('transform', `translate(${this.width / 2},${this.height / 2})`);
 
-      _partition = partition()
-        .size([2 * Math.PI, radius * radius]);
+      _partition = partition().size([2 * Math.PI, radius * radius]);
 
       _arc = arc()
         .startAngle((d) => d.x0)
@@ -595,7 +607,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     // Update the breadcrumb trail to show the current sequence and percentage.
     _updateBreadcrumbs(nodeArray, percentageString) {
-
       // Data join; key function combines name and depth (= position in sequence).
       const g = select(dom(this.root).querySelector('#trail'))
         .selectAll('g')
@@ -604,11 +615,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Add breadcrumb and label for entering nodes.
       const entering = g.enter().append('svg:g');
 
-      entering.append('svg:polygon')
+      entering
+        .append('svg:polygon')
         .attr('points', this._breadcrumbPoints)
         .style('fill', (d) => d.data.color);
 
-      entering.append('svg:text')
+      entering
+        .append('svg:text')
         .attr('x', (b.w + b.t) / 2)
         .attr('y', b.h / 2)
         .attr('dy', '0.35em')
@@ -616,9 +629,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         .text((d) => {
           if (d.data.name.length > 10) {
             return `${d.data.name.substring(0, 9)}...`;
-          } 
-            return d.data.name;
-          
+          }
+          return d.data.name;
         });
 
       // Set position for entering and updating nodes.
@@ -628,7 +640,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       g.exit().remove();
 
       // Now move and update the percentage at the end.
-      select(dom(this.root).querySelector('#trail').querySelector('#endlabel'))
+      select(
+        dom(this.root)
+          .querySelector('#trail')
+          .querySelector('#endlabel'),
+      )
         .attr('x', (nodeArray.length + 0.5) * (b.w + b.s))
         .attr('y', b.h / 2)
         .attr('dy', '0.35em')
@@ -636,19 +652,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         .text(percentageString);
 
       // Make the breadcrumb trail visible, if it's hidden.
-      select(dom(this.root).querySelector('#trail'))
-        .style('visibility', '');
-
+      select(dom(this.root).querySelector('#trail')).style('visibility', '');
     }
 
     // Main function to draw and set up the visualization, once we have the data.
     _createVisualization() {
-
       this._initializeBreadcrumbTrail();
 
       // Bounding circle underneath the sunburst, to make it easier to detect
       // when the mouse leaves the parent g.
-      vis.append('svg:circle')
+      vis
+        .append('svg:circle')
         .attr('r', radius)
         .style('opacity', 0);
 
@@ -658,9 +672,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         .sort((c, d) => d.value - c.value);
 
       // For efficiency, filter nodes to keep only those large enough to see.
-      const nodes = _partition(root).descendants().filter((d) => (d.x1 - d.x0 > 0.005)); // 0.005 radians = 0.29 degrees
+      const nodes = _partition(root)
+        .descendants()
+        .filter((d) => d.x1 - d.x0 > 0.005); // 0.005 radians = 0.29 degrees
 
-      const path = vis.data([this._chartData]).selectAll('path')
+      const path = vis
+        .data([this._chartData])
+        .selectAll('path')
         .data(nodes)
         .enter()
         .append('svg:path')
@@ -680,31 +698,27 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     // Fade all but the current sequence, and show it in the breadcrumb trail.
     _mouseover(d) {
-
       const percentage = ((100 * d.value) / this.totalSize).toPrecision(3);
       let percentageString = `${percentage}%`;
       if (percentage < 0.1) {
         percentageString = '< 0.1%';
       }
 
-      select(this.$.cl)
-        .text(this._formatValue(d.value, true));
-      select(this.$.clb)
-        .text(`(${percentageString})`);
+      select(this.$.cl).text(this._formatValue(d.value, true));
+      select(this.$.clb).text(`(${percentageString})`);
 
-      select(this.$.ex)
-        .style('visibility', '');
+      select(this.$.ex).style('visibility', '');
 
       const sequenceArray = this._getAncestors(d);
       this._updateBreadcrumbs(sequenceArray, percentageString);
 
       // Fade all the segments.
-      selectAll(dom(this.root).querySelectorAll('#chart path'))
-        .style('opacity', 0.3);
+      selectAll(dom(this.root).querySelectorAll('#chart path')).style('opacity', 0.3);
 
       // Then highlight only those that are an ancestor of the current segment.
-      vis.selectAll('#chart path')
-        .filter((node) => (sequenceArray.indexOf(node) >= 0))
+      vis
+        .selectAll('#chart path')
+        .filter((node) => sequenceArray.indexOf(node) >= 0)
         .style('opacity', 1);
     }
 
@@ -738,19 +752,19 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
 
       // Add the svg area.
-      const trail = select(this.$.sequence).append('svg:svg')
+      const trail = select(this.$.sequence)
+        .append('svg:svg')
         .attr('width', '100%')
         .attr('height', 50)
         .attr('id', 'trail');
       // Add the label at the end, for the percentage.
-      trail.append('svg:text')
+      trail
+        .append('svg:text')
         .attr('id', 'endlabel')
         .style('fill', '#000');
 
-      select(this.$.cl)
-        .text('');
-      select(this.$.clb)
-        .text('');
+      select(this.$.cl).text('');
+      select(this.$.clb).text('');
     }
 
     // Generate a string that describes the points of a breadcrumb polygon.
@@ -761,7 +775,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       points.push(`${b.w + b.t},${b.h / 2}`);
       points.push(`${b.w},${b.h}`);
       points.push(`0,${b.h}`);
-      if (i > 0) { // Leftmost breadcrumb; don't include 6th vertex.
+      if (i > 0) {
+        // Leftmost breadcrumb; don't include 6th vertex.
         points.push(`${b.t},${b.h / 2}`);
       }
       return points.join(' ');
@@ -782,7 +797,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           ++u;
         } while (Math.abs(value) >= thresh && u < units.length - 1);
         return `${value.toFixed(1)} ${units[u]}`;
-      } if (this.mode === 'count') {
+      }
+      if (this.mode === 'count') {
         let result = value + (value === this.maxDocSize ? '+ ' : ' ');
         if (value > 1) {
           result += this.i18n('documentDistributionChart.documents');
@@ -790,9 +806,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           result += this.i18n('documentDistributionChart.document');
         }
         return result;
-      } 
-        return value;
-      
+      }
+      return value;
     }
   }
 

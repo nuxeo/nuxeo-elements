@@ -15,27 +15,27 @@ import './data-table-templatizer-behavior.js';
   class DataTableCell extends mixinBehaviors([saulis.DataTableTemplatizerBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      :host {
-        flex: 1 0 100px;
-        padding: 0 24px;
-        min-height: 48px;
-        display: flex;
-        align-items: center;
-        overflow: hidden;
-        transition: flex-basis 200ms, flex-grow 200ms;
-      }
+        <style>
+          :host {
+            flex: 1 0 100px;
+            padding: 0 24px;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            transition: flex-basis 200ms, flex-grow 200ms;
+          }
 
-      :host([header]) {
-        height: 56px;
-      }
+          :host([header]) {
+            height: 56px;
+          }
 
-      :host([hidden]) {
-        display: none;
-      }
-    </style>
-    <slot></slot>
-`;
+          :host([hidden]) {
+            display: none;
+          }
+        </style>
+        <slot></slot>
+      `;
     }
 
     static get is() {
@@ -56,7 +56,7 @@ import './data-table-templatizer-behavior.js';
         beforeBind: {
           type: Object,
           value() {
-            return function (data, cell) { }; // eslint-disable-line no-unused-vars
+            return function(data, cell) {}; // eslint-disable-line no-unused-vars
           },
         },
       };

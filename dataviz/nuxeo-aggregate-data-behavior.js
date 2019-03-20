@@ -51,7 +51,6 @@ Nuxeo.AggregateDataBehavior = {
       },
     },
 
-
     /**
      * Top level term aggregation(s).
      * Comma-separated values..
@@ -155,7 +154,6 @@ Nuxeo.AggregateDataBehavior = {
       value: () => [],
       notify: true,
     },
-
   },
 
   observers: [
@@ -247,7 +245,6 @@ Nuxeo.AggregateDataBehavior = {
         },
       };
     }
-
   },
 
   // return ordered list of top level term aggregations
@@ -271,7 +268,6 @@ Nuxeo.AggregateDataBehavior = {
   },
 
   _aggregates() {
-
     const levels = [];
 
     if (this.groupedBy) {
@@ -348,8 +344,8 @@ Nuxeo.AggregateDataBehavior = {
     if (!this.startDate && !this.endDate) {
       return;
     }
-    const term = {range: {}};
-    const range = term.range[this.dateField] = {};
+    const term = { range: {} };
+    const range = (term.range[this.dateField] = {});
     if (this.startDate) {
       range.gte = this.startDate;
     }
@@ -375,6 +371,6 @@ Nuxeo.AggregateDataBehavior = {
         terms.push({ term });
       }, this);
     }
-    return {bool: {must: terms}};
+    return { bool: { must: terms } };
   },
 };

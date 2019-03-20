@@ -31,32 +31,40 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
    * @appliesMixin Nuxeo.FormatBehavior
    * @memberof Nuxeo
    */
-  class EditPassword
-    extends mixinBehaviors([IronFormElementBehavior, IronValidatableBehavior,
-      FormatBehavior], Nuxeo.Element) {
+  class EditPassword extends mixinBehaviors(
+    [IronFormElementBehavior, IronValidatableBehavior, FormatBehavior],
+    Nuxeo.Element,
+  ) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-        width: 100%;
-      }
-    </style>
+        <style>
+          :host {
+            display: block;
+            width: 100%;
+          }
+        </style>
 
-    <nuxeo-input id="password" type="password" label="[[i18n('editPassword.password')]]" value="{{password}}" required>
-    </nuxeo-input>
+        <nuxeo-input
+          id="password"
+          type="password"
+          label="[[i18n('editPassword.password')]]"
+          value="{{password}}"
+          required
+        >
+        </nuxeo-input>
 
-    <nuxeo-input
-      id="passwordConfirmation"
-      type="password"
-      label="[[i18n('editPassword.verify')]]"
-      value="{{_confirmationPassword}}"
-      required
-      auto-validate
-      pattern="[[escapeRegExp(password)]]"
-      error-message="[[_computeErrorMessage(password, i18n)]]">
-    </nuxeo-input>
-`;
+        <nuxeo-input
+          id="passwordConfirmation"
+          type="password"
+          label="[[i18n('editPassword.verify')]]"
+          value="{{_confirmationPassword}}"
+          required
+          auto-validate
+          pattern="[[escapeRegExp(password)]]"
+          error-message="[[_computeErrorMessage(password, i18n)]]"
+        >
+        </nuxeo-input>
+      `;
     }
 
     static get is() {
@@ -78,9 +86,8 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
     _computeErrorMessage(password) {
       if (!password) {
         return this.i18n('editPassword.required');
-      } 
-        return this.i18n('editPassword.noMatch');
-      
+      }
+      return this.i18n('editPassword.noMatch');
     }
 
     _getValidity() {

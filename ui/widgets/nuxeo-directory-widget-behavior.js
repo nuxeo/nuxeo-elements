@@ -24,9 +24,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
  *
  * @polymerBehavior
  */
-export const DirectoryWidgetBehavior = [I18nBehavior, IronFormElementBehavior,
-  IronValidatableBehavior, {
-
+export const DirectoryWidgetBehavior = [
+  I18nBehavior,
+  IronFormElementBehavior,
+  IronValidatableBehavior,
+  {
     properties: {
       /**
        * Name of the directory.
@@ -94,9 +96,7 @@ export const DirectoryWidgetBehavior = [I18nBehavior, IronFormElementBehavior,
       _entries: Array,
     },
 
-    observers: [
-      '_fetchEntries(directoryName)',
-    ],
+    observers: ['_fetchEntries(directoryName)'],
 
     _fetchEntries() {
       if (this.directoryName) {
@@ -107,17 +107,19 @@ export const DirectoryWidgetBehavior = [I18nBehavior, IronFormElementBehavior,
             dbl10n: this.dbl10n,
             canSelectParent: this.canSelectParent,
             localize: true,
-            lang: (window.nuxeo.I18n.language) ? window.nuxeo.I18n.language.split('-')[0] : 'en',
+            lang: window.nuxeo.I18n.language ? window.nuxeo.I18n.language.split('-')[0] : 'en',
           };
           this.$.op.execute().then((resp) => {
             this._entries = [];
             resp.forEach((entry) => {
               this._populate(entry);
             });
-            this.dispatchEvent(new CustomEvent('directory-entries-loaded', {
-              composed: true,
-              bubbles: true,
-            }));
+            this.dispatchEvent(
+              new CustomEvent('directory-entries-loaded', {
+                composed: true,
+                bubbles: true,
+              }),
+            );
           });
         });
       }
@@ -142,4 +144,5 @@ export const DirectoryWidgetBehavior = [I18nBehavior, IronFormElementBehavior,
         });
       }
     },
-  }];
+  },
+];

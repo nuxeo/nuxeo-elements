@@ -42,13 +42,13 @@ import './nuxeo-page-provider.js';
   class Operation extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: none;
-      }
-    </style>
-    <nuxeo-connection id="nx" connection-id="{{connectionId}}"></nuxeo-connection>
-`;
+        <style>
+          :host {
+            display: none;
+          }
+        </style>
+        <nuxeo-connection id="nx" connection-id="{{connectionId}}"></nuxeo-connection>
+      `;
     }
 
     static get is() {
@@ -179,10 +179,7 @@ import './nuxeo-page-provider.js';
     }
 
     static get observers() {
-      return [
-        '_autoExecute(op, params, enrichers, enrichersEntity)',
-        '_isLoading(activeRequests)',
-      ];
+      return ['_autoExecute(op, params, enrichers, enrichersEntity)', '_isLoading(activeRequests)'];
     }
 
     /**
@@ -193,9 +190,9 @@ import './nuxeo-page-provider.js';
     execute() {
       this._setActiveRequests(this.activeRequests + 1);
 
-      const params = (!this.params || (typeof this.params === 'object')) ? this.params : JSON.parse(this.params);
+      const params = !this.params || typeof this.params === 'object' ? this.params : JSON.parse(this.params);
 
-      let {input} = this;
+      let { input } = this;
 
       // support page provider as input to operations
       // relies on parameters naming convention until provider marshaller is available
@@ -261,10 +258,12 @@ import './nuxeo-page-provider.js';
       if (this.async) {
         promise = promise.then((res) => {
           if (res.status === 202) {
-            this.dispatchEvent(new CustomEvent('poll-start', {
-              bubbles: true,
-              composed: true,
-            }));
+            this.dispatchEvent(
+              new CustomEvent('poll-start', {
+                bubbles: true,
+                composed: true,
+              }),
+            );
             return this._poll(res.headers.get('location'));
           }
           return res;
@@ -273,13 +272,15 @@ import './nuxeo-page-provider.js';
 
       return promise
         .then((data) => {
-          this.dispatchEvent(new CustomEvent('response', {
-            bubbles: true,
-            composed: true,
-            detail: {
-              response: data,
-            },
-          }));
+          this.dispatchEvent(
+            new CustomEvent('response', {
+              bubbles: true,
+              composed: true,
+              detail: {
+                response: data,
+              },
+            }),
+          );
           this.response = data;
           this.success = true;
           this._setActiveRequests(this.activeRequests - 1);
@@ -287,11 +288,13 @@ import './nuxeo-page-provider.js';
         })
         .catch((error) => {
           if (error.response.status === 401) {
-            this.dispatchEvent(new CustomEvent('unauthorized-request', {
-              bubbles: true,
-              composed: true,
-              detail: error,
-            }));
+            this.dispatchEvent(
+              new CustomEvent('unauthorized-request', {
+                bubbles: true,
+                composed: true,
+                detail: error,
+              }),
+            );
           }
           this.success = false;
           this.error = error;

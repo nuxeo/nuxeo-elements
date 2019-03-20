@@ -37,50 +37,54 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
   class PaginationControls extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-      }
+        <style>
+          :host {
+            display: block;
+          }
 
-      .controls {
-        color: var(--nuxeo-text-default, #000);
-        font-size: 1rem;
-        padding: 0 4px;
-      }
+          .controls {
+            color: var(--nuxeo-text-default, #000);
+            font-size: 1rem;
+            padding: 0 4px;
+          }
 
-      paper-icon-button {
-        padding: 8px;
-      }
-    </style>
+          paper-icon-button {
+            padding: 8px;
+          }
+        </style>
 
-    <div class="horizontal layout end-justified center">
-      <paper-icon-button
-        icon="av:skip-previous"
-        title="First Page"
-        on-click="_first"
-        disabled\$="[[_isFirst(page)]]">
-      </paper-icon-button>
-      <paper-icon-button
-        icon="icons:chevron-left"
-        title="Previous Page"
-        on-click="_previous"
-        disabled\$="[[_isFirst(page)]]">
-      </paper-icon-button>
-      <span class="controls">[[page]]/[[numberOfPages]]</span>
-      <paper-icon-button
-        icon="icons:chevron-right"
-        title="Next Page"
-        on-click="_next"
-        disabled\$="[[_isLast(page, numberOfPages)]]">
-      </paper-icon-button>
-      <paper-icon-button
-        icon="av:skip-next"
-        title="Last Page"
-        on-click="_last"
-        disabled\$="[[_isLast(page, numberOfPages)]]">
-      </paper-icon-button>
-    </div>
-`;
+        <div class="horizontal layout end-justified center">
+          <paper-icon-button
+            icon="av:skip-previous"
+            title="First Page"
+            on-click="_first"
+            disabled\$="[[_isFirst(page)]]"
+          >
+          </paper-icon-button>
+          <paper-icon-button
+            icon="icons:chevron-left"
+            title="Previous Page"
+            on-click="_previous"
+            disabled\$="[[_isFirst(page)]]"
+          >
+          </paper-icon-button>
+          <span class="controls">[[page]]/[[numberOfPages]]</span>
+          <paper-icon-button
+            icon="icons:chevron-right"
+            title="Next Page"
+            on-click="_next"
+            disabled\$="[[_isLast(page, numberOfPages)]]"
+          >
+          </paper-icon-button>
+          <paper-icon-button
+            icon="av:skip-next"
+            title="Last Page"
+            on-click="_last"
+            disabled\$="[[_isLast(page, numberOfPages)]]"
+          >
+          </paper-icon-button>
+        </div>
+      `;
     }
 
     static get is() {

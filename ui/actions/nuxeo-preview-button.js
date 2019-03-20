@@ -45,60 +45,65 @@ import './nuxeo-action-button-styles.js';
   class PreviewButton extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="nuxeo-action-button-styles">
-      #close-icon {
-        position: absolute;
-        right: -12px;
-        top: -12px;
-        width: 25px;
-        height: 25px;
-        border: 1px solid rgba(0, 0, 0, 0.4);
-        padding: 3px;
-        background: var(--nuxeo-secondary-color);
-        color: var(--nuxeo-button-primary-text);
-      }
+        <style include="nuxeo-action-button-styles">
+          #close-icon {
+            position: absolute;
+            right: -12px;
+            top: -12px;
+            width: 25px;
+            height: 25px;
+            border: 1px solid rgba(0, 0, 0, 0.4);
+            padding: 3px;
+            background: var(--nuxeo-secondary-color);
+            color: var(--nuxeo-button-primary-text);
+          }
 
-      #close-icon:hover {
-        border-color: var(--nuxeo-primary-color);
-      }
+          #close-icon:hover {
+            border-color: var(--nuxeo-primary-color);
+          }
 
-      nuxeo-dialog {
-        width: 100%;
-        height: 100%;
-        min-width: 480px;
-      }
+          nuxeo-dialog {
+            width: 100%;
+            height: 100%;
+            min-width: 480px;
+          }
 
-      nuxeo-dialog > nuxeo-document-preview {
-        height: 100%;
-      }
+          nuxeo-dialog > nuxeo-document-preview {
+            height: 100%;
+          }
 
-      nuxeo-dialog > * {
-        margin: 0;
-        padding: 0;
-      }
+          nuxeo-dialog > * {
+            margin: 0;
+            padding: 0;
+          }
 
-      nuxeo-dialog > nuxeo-document-preview ::slotted(audio) {
-        height: 50%;
-      }
-    </style>
+          nuxeo-dialog > nuxeo-document-preview ::slotted(audio) {
+            height: 50%;
+          }
+        </style>
 
-    <dom-if if="[[_isAvailable(document)]]">
-      <template>
-        <div class="action" on-click="_toggleDialog">
-          <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
-          <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
-        </div>
-        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
-
-        <nuxeo-dialog on-iron-overlay-closed="_previewClosed" id="dialog" with-backdrop="">
+        <dom-if if="[[_isAvailable(document)]]">
           <template>
-            <nuxeo-document-preview id="preview" document="[[document]]" xpath="[[xpath]]"></nuxeo-document-preview>
-            <paper-icon-button id="close-icon" icon="nuxeo:clear" on-click="_toggleDialog" noink=""></paper-icon-button>
+            <div class="action" on-click="_toggleDialog">
+              <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
+              <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
+            </div>
+            <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
+
+            <nuxeo-dialog on-iron-overlay-closed="_previewClosed" id="dialog" with-backdrop="">
+              <template>
+                <nuxeo-document-preview id="preview" document="[[document]]" xpath="[[xpath]]"></nuxeo-document-preview>
+                <paper-icon-button
+                  id="close-icon"
+                  icon="nuxeo:clear"
+                  on-click="_toggleDialog"
+                  noink=""
+                ></paper-icon-button>
+              </template>
+            </nuxeo-dialog>
           </template>
-        </nuxeo-dialog>
-      </template>
-    </dom-if>
-`;
+        </dom-if>
+      `;
     }
 
     static get is() {

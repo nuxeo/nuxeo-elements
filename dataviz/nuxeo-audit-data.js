@@ -76,7 +76,6 @@ import './nuxeo-aggregate-data-element.js';
    * @demo demo/audit.html
    */
   class AuditData extends Nuxeo.AggregateDataElement {
-
     static get is() {
       return 'nuxeo-audit-data';
     }
@@ -118,9 +117,7 @@ import './nuxeo-aggregate-data-element.js';
     }
 
     _query() {
-      const terms = [
-        {term: {eventId: this.eventId}},
-      ];
+      const terms = [{ term: { eventId: this.eventId } }];
 
       if (this._dateRange) {
         terms.push(this._dateRange);

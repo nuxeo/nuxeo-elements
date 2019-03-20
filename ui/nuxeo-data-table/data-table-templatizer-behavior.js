@@ -52,7 +52,6 @@ saulis.DataTableTemplatizerBehaviorImpl = {
   },
 
   _templatize(template) {
-
     if (!template) {
       return;
     }
@@ -63,13 +62,12 @@ saulis.DataTableTemplatizerBehaviorImpl = {
 
     // fix _rootDataHost to the context where template has been defined
     if (template._rootDataHost) {
-      this._getRootDataHost = function () {
+      this._getRootDataHost = function() {
         return template._rootDataHost;
       };
     }
 
     const instance = this.stamp({});
-
 
     // initializing new template instance with previously forwarded parent props.
     // could be done with observers, but this is simpler.
@@ -154,17 +152,16 @@ saulis.DataTableTemplatizerBehaviorImpl = {
     if (path.indexOf('item') === 0) {
       // instance.notifyPath above will call _forwardInstancePath recursively,
       // so need to debounce to avoid firing the same event multiple times.
-      this.table._debouncer = Debouncer.debounce(
-        this.table._debouncer,
-        microTask, () => {
-          this.table.dispatchEvent(new CustomEvent('item-changed', {
+      this.table._debouncer = Debouncer.debounce(this.table._debouncer, microTask, () => {
+        this.table.dispatchEvent(
+          new CustomEvent('item-changed', {
             composed: true,
             bubbles: true,
             // stripping 'item.' from path.
             detail: { item: inst.item, path: path.substring(5), value },
-          }));
-        },
-      );
+          }),
+        );
+      });
     }
   },
 };
