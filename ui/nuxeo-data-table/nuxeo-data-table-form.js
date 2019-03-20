@@ -1,9 +1,3 @@
-/* Part of `nuxeo-data-table` */
-/*
-  FIXME(polymer-modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this comment!
-*/
 import '@polymer/iron-form/iron-form.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-button/paper-button.js';
@@ -13,6 +7,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { Templatizer } from '@polymer/polymer/lib/legacy/templatizer-behavior.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
+/* Part of `nuxeo-data-table` */
 {
   class DataTableForm extends mixinBehaviors([Templatizer, I18nBehavior], Nuxeo.Element) {
     static get template() {

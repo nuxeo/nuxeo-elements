@@ -1,9 +1,3 @@
-/* Part of `nuxeo-data-table` */
-/*
-  FIXME(polymer-modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this comment!
-*/
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
@@ -13,6 +7,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../widgets/nuxeo-tooltip.js';
 import './data-table-templatizer-behavior.js';
 
+/* Part of `nuxeo-data-table` */
 {
   class DataTableRowActions extends mixinBehaviors([saulis.DataTableTemplatizerBehavior, I18nBehavior], Nuxeo.Element) {
     static get template() {

@@ -1,15 +1,10 @@
-/* Part of `nuxeo-data-table` */
-/*
-  FIXME(polymer-modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this comment!
-*/
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import '@polymer/paper-input/paper-input.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
+/* Part of `nuxeo-data-table` */
 {
   class DataTableColumnFilter extends Nuxeo.Element {
     static get template() {

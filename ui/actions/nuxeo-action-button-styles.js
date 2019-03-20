@@ -14,6 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
 /*
   Styles module to be used by action elements.
 
@@ -22,13 +24,6 @@ limitations under the License.
   `--nuxeo-action-button` | Mixin applied to the action element | { display: inline-block; }
   `--nuxeo-action-button-label` | Mixin applied to action label | {}
 */
-/*
-  FIXME(polymer-modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this comment!
-*/
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-
 const template = html`
   <dom-module id="nuxeo-action-button-styles">
     <template>

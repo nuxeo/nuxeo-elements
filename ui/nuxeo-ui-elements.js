@@ -67,22 +67,3 @@ import './nuxeo-routing-behavior.js';
 import './nuxeo-filters-behavior.js';
 import './nuxeo-format-behavior.js';
 import './nuxeo-layout-behavior.js';
-
-/* Icons */
-/* Viewers */
-/* User & Group Management */
-/* Dataviz */
-/* Widgets */
-/* Document Actions */
-/* Other */
-/* Datatable */
-/* Permissions */
-/* Document */
-/* Slots */
-/* Layout */
-/* Behaviors */
-/*
-  FIXME(polymer-modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this comment!
-*/
