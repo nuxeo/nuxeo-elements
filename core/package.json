@@ -11,10 +11,6 @@
   "author": "Nuxeo",
   "license": "Apache 2.0",
   "scripts": {
-    "precommit": "lint-staged",
-    "eslint": "eslint *.js *.html demo/**/*.html test/**/*.html",
-    "polylint": "polymer lint",
-    "lint": "npm run eslint && npm run polylint",
     "test": "polymer test --npm --simpleOutput --expanded -l chrome,firefox",
     "docs": "polymer analyze > analysis.json && polymer serve",
     "coveralls": "cat coverage/lcov.info | coveralls"
@@ -29,20 +25,9 @@
     "@polymer/test-fixture": "^4.0.0",
     "coveralls": "^3.0.2",
     "es6-promise": "^4.0.0",
-    "eslint": "^4.14.0",
-    "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-html": "^4.0.1",
-    "eslint-plugin-import": "^2.8.0",
-    "lint-staged": "^8.1.3",
     "polymer-cli": "^1.8.0",
     "wct-browser-legacy": "^1.0.1",
     "wct-istanbul": "^0.14.3"
-  },
-  "lint-staged": {
-    "*.js": [
-      "eslint --fix",
-      "git add"
-    ]
   },
   "main": "nuxeo-elements.js"
 }

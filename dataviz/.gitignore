@@ -1,5 +1,3 @@
-bower_components
 node_modules
-*.iml
 analysis.json
 coverage
