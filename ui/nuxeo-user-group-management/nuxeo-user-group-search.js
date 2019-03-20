@@ -109,7 +109,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           }
         </style>
 
-        <nuxeo-resource id="userSearch" auto="" path="/user/search" response="{{users}}"></nuxeo-resource>
+        <nuxeo-resource id="userSearch" auto path="/user/search" response="{{users}}"></nuxeo-resource>
         <nuxeo-resource
           id="groupSearch"
           auto
@@ -126,7 +126,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             type="search"
             placeholder="[[i18n('userGroupSearch.search.placeholder')]]"
           >
-            <iron-icon icon="nuxeo:search" prefix=""></iron-icon>
+            <iron-icon icon="nuxeo:search" prefix></iron-icon>
           </nuxeo-input>
         </nuxeo-card>
 

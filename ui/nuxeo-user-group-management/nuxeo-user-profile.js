@@ -169,7 +169,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                   </paper-button>
                 </template>
               </dom-if>
-              <nuxeo-dialog id="changePasswordDialog" with-backdrop="">
+              <nuxeo-dialog id="changePasswordDialog" with-backdrop>
                 <h3>[[i18n('userProfile.password.change')]]</h3>
 
                 <iron-form id="changePasswordForm">
@@ -199,9 +199,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
                 <div class="buttons">
                   <div class="flex start-justified">
-                    <paper-button noink="" dialog-dismiss="">[[i18n('command.cancel')]]</paper-button>
+                    <paper-button noink dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
                   </div>
-                  <paper-button noink="" class="primary" on-click="_submitChangePassword">
+                  <paper-button noink class="primary" on-click="_submitChangePassword">
                     [[i18n('command.save.changes')]]
                   </paper-button>
                 </div>
@@ -233,15 +233,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         <!-- local permissions -->
         <nuxeo-card heading="[[i18n('userManagement.localPermissions.heading')]]">
-          <nuxeo-user-group-permissions-table entity="[[username]]" readonly=""></nuxeo-user-group-permissions-table>
+          <nuxeo-user-group-permissions-table entity="[[username]]" readonly></nuxeo-user-group-permissions-table>
         </nuxeo-card>
 
         <!-- group permissions -->
         <nuxeo-card heading="[[i18n('userManagement.entityPermissions', item.name)]]">
           <dom-repeat items="[[groups]]">
             <template>
-              <nuxeo-user-group-permissions-table entity="[[item.name]]" readonly="">
-              </nuxeo-user-group-permissions-table>
+              <nuxeo-user-group-permissions-table entity="[[item.name]]" readonly> </nuxeo-user-group-permissions-table>
             </template>
           </dom-repeat>
         </nuxeo-card>

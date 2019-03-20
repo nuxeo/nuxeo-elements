@@ -148,11 +148,11 @@ import './widgets/nuxeo-user-suggestion.js';
                       vertical-align="top"
                       vertical-offset="-4"
                     >
-                      <paper-button noink="" class="primary" id="createButton" slot="dropdown-trigger">
+                      <paper-button noink class="primary" id="createButton" slot="dropdown-trigger">
                         <iron-icon icon="nuxeo:add"></iron-icon>
                         <div>[[i18n('userGroupManagement.new.usergroup')]]</div>
                       </paper-button>
-                      <paper-listbox no-animations="" id="menu" selectable="item" slot="dropdown-content">
+                      <paper-listbox no-animations id="menu" selectable="item" slot="dropdown-content">
                         <paper-icon-item name="user" on-click="_createUser">
                           <iron-icon icon="nuxeo:user" slot="item-icon">&gt;</iron-icon>
                           <span>[[i18n('userGroupManagement.new.user')]]</span>

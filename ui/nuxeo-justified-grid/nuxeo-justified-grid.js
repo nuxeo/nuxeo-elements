@@ -168,7 +168,7 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
 
           <iron-scroll-threshold id="scrollThreshold" scroll-target="list" on-lower-threshold="fetch">
           </iron-scroll-threshold>
-          <array-selector id="selector" items="{{items}}" selected="{{selectedItems}}" multi=""></array-selector>
+          <array-selector id="selector" items="{{items}}" selected="{{selectedItems}}" multi></array-selector>
         </div>
       `;
     }

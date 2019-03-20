@@ -157,7 +157,7 @@ import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-beha
             id="list"
             items="[[items]]"
             as="[[as]]"
-            selection-enabled=""
+            selection-enabled
             selected-item="{{selectedItem}}"
             selected-items="{{selectedItems}}"
             on-scroll="_scrollChanged"

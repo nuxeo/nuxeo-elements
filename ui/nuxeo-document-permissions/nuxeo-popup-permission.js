@@ -87,7 +87,7 @@ import '../widgets/nuxeo-user-suggestion.js';
           </template>
         </dom-if>
 
-        <nuxeo-dialog id="popupRight" with-backdrop="" no-auto-focus="">
+        <nuxeo-dialog id="popupRight" with-backdrop no-auto-focus>
           <h2>[[_computedTitle]]</h2>
 
           <!-- Give access to row -->
@@ -131,10 +131,10 @@ import '../widgets/nuxeo-user-suggestion.js';
                 <template>
                   <label>[[i18n('popupPermission.timeFrame')]]</label>
                   <paper-radio-group selected="{{selectedTimeFrame}}">
-                    <paper-radio-button noink="" name="permanent">
+                    <paper-radio-button noink name="permanent">
                       [[i18n('popupPermission.permanent')]]
                     </paper-radio-button>
-                    <paper-radio-button noink="" name="datebased">
+                    <paper-radio-button noink name="datebased">
                       [[i18n('popupPermission.dateBased')]]
                     </paper-radio-button>
                   </paper-radio-group>
@@ -164,7 +164,7 @@ import '../widgets/nuxeo-user-suggestion.js';
               <dom-if if="{{!shareWithExternal}}">
                 <template>
                   <div>
-                    <paper-checkbox noink="" checked="{{params.notify}}" name="notify">
+                    <paper-checkbox noink checked="{{params.notify}}" name="notify">
                       [[i18n('popupPermission.notify')]]
                     </paper-checkbox>
                   </div>
@@ -186,7 +186,7 @@ import '../widgets/nuxeo-user-suggestion.js';
           </paper-dialog-scrollable>
 
           <div class="buttons">
-            <paper-button dialog-dismiss="">[[i18n('popupPermission.cancel')]]</paper-button>
+            <paper-button dialog-dismiss>[[i18n('popupPermission.cancel')]]</paper-button>
             <dom-if if="{{!updatingACE}}">
               <template>
                 <paper-button noink class="primary" on-click="doCreateAndAdd" id="createAndAddPermissionButton">

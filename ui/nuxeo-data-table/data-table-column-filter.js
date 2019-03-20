@@ -24,12 +24,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
             }
           }
         </style>
-        <paper-input
-          no-label-float=""
-          label="[[label]]"
-          value="[[value]]"
-          on-value-changed="_valueChanged"
-        ></paper-input>
+        <paper-input no-label-float label="[[label]]" value="[[value]]" on-value-changed="_valueChanged"></paper-input>
       `;
     }
 

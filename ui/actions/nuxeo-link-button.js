@@ -29,7 +29,7 @@ import './nuxeo-action-button-styles.js';
    *
    * Example:
    *
-   *     <nnuxeo-link-button href="http://www.nuxeo.org" icon=""></nuxeo-link-button>
+   *     <nnuxeo-link-button href="http://www.nuxeo.org" icon></nuxeo-link-button>
    *
    * @appliesMixin Nuxeo.I18nBehavior
    * @memberof Nuxeo
@@ -46,7 +46,7 @@ import './nuxeo-action-button-styles.js';
 
         <template is="dom-if" if="[[_isAvailable(href, icon, iconSrc)]]">
           <a class="action" href="[[href]]" tabindex="-1" target="[[target]]">
-            <paper-icon-button src="[[iconSrc]]" icon="[[icon]]" noink=""></paper-icon-button>
+            <paper-icon-button src="[[iconSrc]]" icon="[[icon]]" noink></paper-icon-button>
             <span class="label" hidden$="[[!showLabel]]">[[i18n(label)]]</span>
           </a>
           <nuxeo-tooltip>[[i18n(label)]]</nuxeo-tooltip>

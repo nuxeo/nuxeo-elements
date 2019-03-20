@@ -37,7 +37,7 @@ import './nuxeo-error.js';
   class Layout extends mixinBehaviors([IronResizableBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <nuxeo-error id="error" code="404" url="[[href]]" message="[[error]]" hidden=""></nuxeo-error>
+        <nuxeo-error id="error" code="404" url="[[href]]" message="[[error]]" hidden></nuxeo-error>
         <div id="container"></div>
       `;
     }

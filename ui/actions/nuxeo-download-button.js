@@ -48,7 +48,7 @@ import './nuxeo-action-button-styles.js';
         <dom-if if="[[_isAvailable(document)]]">
           <template>
             <div class="action" on-click="_download">
-              <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
+              <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
               <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
             </div>
             <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>

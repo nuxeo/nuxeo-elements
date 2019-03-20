@@ -81,7 +81,7 @@ limitations under the License.
               <div class="layout horizontal">
                 <div class="layout flex">
                   <h3>Document</h3>
-                  <nuxeo-input label="Title" value="{{title}}" always-float-label=""></nuxeo-input>
+                  <nuxeo-input label="Title" value="{{title}}" always-float-label></nuxeo-input>
 
                   <h4>Type</h4>
                   <paper-listbox selected="{{type}}" attr-for-selected="value" elevation="4">
@@ -91,13 +91,13 @@ limitations under the License.
                   </paper-listbox>
 
                   <h4>Facets</h4>
-                  <paper-listbox multi="" selected-values="{{facets}}" attr-for-selected="value">
+                  <paper-listbox multi selected-values="{{facets}}" attr-for-selected="value">
                     <paper-item value="Folderish">Folderish</paper-item>
                     <paper-item value="Commentable">Commentable</paper-item>
                   </paper-listbox>
 
                   <h4>Permissions</h4>
-                  <paper-listbox multi="" selected-values="{{permissions}}" attr-for-selected="value">
+                  <paper-listbox multi selected-values="{{permissions}}" attr-for-selected="value">
                     <paper-item value="Read">Read</paper-item>
                     <paper-item value="Write">Write</paper-item>
                   </paper-listbox>
@@ -108,7 +108,7 @@ limitations under the License.
 
                   <nuxeo-input label="Username" value="{{username}}"></nuxeo-input>
                   <h4>Groups</h4>
-                  <paper-listbox multi="" selected-values="{{groups}}" attr-for-selected="value">
+                  <paper-listbox multi selected-values="{{groups}}" attr-for-selected="value">
                     <paper-item value="Administrators">Administrators</paper-item>
                     <paper-item value="Members">Members</paper-item>
                     <paper-item value="Others">Others</paper-item>
@@ -118,7 +118,7 @@ limitations under the License.
 
               <div class="layout horizontal justified center">
                 <h4 class="layout flex">Result</h4>
-                <paper-button raised="" noink="" on-tap="save">Apply</paper-button>
+                <paper-button raised noink on-tap="save">Apply</paper-button>
               </div>
 
               <ul>

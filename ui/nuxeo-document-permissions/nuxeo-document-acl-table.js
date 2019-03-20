@@ -114,7 +114,7 @@ import './nuxeo-popup-permission.js';
                   </template>
                 </dom-if>
               </div>
-              <dom-repeat items="[[aces]]" as="ace" sort="_sortAces" strip-whitespace="">
+              <dom-repeat items="[[aces]]" as="ace" sort="_sortAces" strip-whitespace>
                 <template>
                   <div class$="acl-table-row [[ace.status]]">
                     <div class="flex-2">

@@ -59,12 +59,12 @@ import './nuxeo-action-button-styles.js';
         <dom-if if="[[_isAvailable(document)]]">
           <template>
             <div class="action" on-click="_toggleDialog">
-              <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
+              <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
               <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
             </div>
             <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
 
-            <nuxeo-dialog id="dialog" with-backdrop="">
+            <nuxeo-dialog id="dialog" with-backdrop>
               <h2>[[i18n('workflowButton.dialog.heading')]]</h2>
 
               <nuxeo-select
@@ -80,7 +80,7 @@ import './nuxeo-action-button-styles.js';
               </nuxeo-select>
 
               <div class="buttons">
-                <paper-button dialog-dismiss="">[[i18n('workflowButton.dialog.close')]]</paper-button>
+                <paper-button dialog-dismiss>[[i18n('workflowButton.dialog.close')]]</paper-button>
                 <paper-button id="startButton" class="primary" disabled="[[!selectedProcess]]" on-click="_startWorkflow"
                   >[[i18n('workflowButton.dialog.start')]]</paper-button
                 >

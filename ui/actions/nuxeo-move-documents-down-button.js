@@ -54,7 +54,7 @@ import './nuxeo-action-button-styles.js';
         <dom-if id="availability" if="[[_available]]">
           <template>
             <div class="action">
-              <paper-icon-button noink="" icon="icons:arrow-downward"></paper-icon-button>
+              <paper-icon-button noink icon="icons:arrow-downward"></paper-icon-button>
               <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
             </div>
             <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>

@@ -290,7 +290,7 @@ import './nuxeo-user-group-permissions-table.js';
             </h3>
             <dom-if if="[[_canEdit(readonly, _currentUser, user)]]">
               <template>
-                <paper-button noink="" id="addGroup" class="flex-end" on-click="_toggleEditGroups">
+                <paper-button noink id="addGroup" class="flex-end" on-click="_toggleEditGroups">
                   <iron-icon icon="nuxeo:add"></iron-icon> [[i18n('userManagement.addToGroup.button')]]
                 </paper-button>
               </template>
@@ -376,46 +376,44 @@ import './nuxeo-user-group-permissions-table.js';
           </template>
         </dom-repeat>
 
-        <nuxeo-dialog id="dialog" with-backdrop="">
+        <nuxeo-dialog id="dialog" with-backdrop>
           <h2>[[i18n('userManagement.removeUserFromGroup.confirm', user.id, _removedGroup.name)]]</h2>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button noink="" dialog-dismiss="">[[i18n('label.no')]]</paper-button>
+              <paper-button noink dialog-dismiss>[[i18n('label.no')]]</paper-button>
             </div>
-            <paper-button noink="" dialog-confirm="" on-click="_remove" class="primary"
-              >[[i18n('label.yes')]]</paper-button
-            >
+            <paper-button noink dialog-confirm on-click="_remove" class="primary">[[i18n('label.yes')]]</paper-button>
           </div>
         </nuxeo-dialog>
 
-        <nuxeo-dialog id="deleteUserDialog" with-backdrop="">
+        <nuxeo-dialog id="deleteUserDialog" with-backdrop>
           <h2>[[i18n('userManagement.delete.user.confirm')]]</h2>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button noink="" dialog-dismiss="">[[i18n('label.no')]]</paper-button>
+              <paper-button noink dialog-dismiss>[[i18n('label.no')]]</paper-button>
             </div>
-            <paper-button noink="" class="primary" on-click="_deleteUser">[[i18n('label.yes')]]</paper-button>
+            <paper-button noink class="primary" on-click="_deleteUser">[[i18n('label.yes')]]</paper-button>
           </div>
         </nuxeo-dialog>
 
-        <nuxeo-dialog id="changePasswordDialog" with-backdrop="">
+        <nuxeo-dialog id="changePasswordDialog" with-backdrop>
           <h2>[[i18n('command.change.password')]]</h2>
           <iron-form id="changePasswordForm">
             <form class="vertical layout">
-              <nuxeo-edit-password required="" id="passwordEditor"></nuxeo-edit-password>
+              <nuxeo-edit-password required id="passwordEditor"></nuxeo-edit-password>
             </form>
           </iron-form>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button noink="" dialog-dismiss="">[[i18n('command.cancel')]]</paper-button>
+              <paper-button noink dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
             </div>
-            <paper-button noink="" class="primary" on-click="_submitChangePassword">
+            <paper-button noink class="primary" on-click="_submitChangePassword">
               [[i18n('command.save.changes')]]
             </paper-button>
           </div>
         </nuxeo-dialog>
 
-        <nuxeo-dialog id="editUserDialog" with-backdrop="">
+        <nuxeo-dialog id="editUserDialog" with-backdrop>
           <h2>[[i18n('userManagement.editUser.heading')]]</h2>
           <iron-form id="editUserForm">
             <form class="vertical layout">
@@ -431,9 +429,9 @@ import './nuxeo-user-group-permissions-table.js';
           </iron-form>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button noink="" dialog-dismiss="">[[i18n('command.cancel')]]</paper-button>
+              <paper-button noink dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
             </div>
-            <paper-button noink="" class="primary" on-click="_submitEditUser">
+            <paper-button noink class="primary" on-click="_submitEditUser">
               [[i18n('command.save.changes')]]
             </paper-button>
           </div>

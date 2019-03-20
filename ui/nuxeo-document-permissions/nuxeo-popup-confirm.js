@@ -29,13 +29,13 @@ import '../widgets/nuxeo-dialog.js';
   class PopupConfirm extends Nuxeo.Element {
     static get template() {
       return html`
-        <nuxeo-dialog id="dialog" with-backdrop="">
+        <nuxeo-dialog id="dialog" with-backdrop>
           <paper-dialog-scrollable>
             <slot></slot>
           </paper-dialog-scrollable>
           <div class="buttons">
-            <paper-button dialog-dismissive="" on-click="_onCancel">{{cancelLabel}}</paper-button>
-            <paper-button dialog-affirmative="" class="colorful" on-click="_onConfirm">{{deleteLabel}}</paper-button>
+            <paper-button dialog-dismissive on-click="_onCancel">{{cancelLabel}}</paper-button>
+            <paper-button dialog-affirmative class="colorful" on-click="_onConfirm">{{deleteLabel}}</paper-button>
           </div>
         </nuxeo-dialog>
       `;

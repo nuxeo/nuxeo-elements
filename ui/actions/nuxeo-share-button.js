@@ -65,14 +65,14 @@ import './nuxeo-action-button-styles.js';
         <dom-if if="[[_isAvailable(document)]]">
           <template>
             <div class="action" on-click="_toggleDialog">
-              <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
+              <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
               <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
             </div>
             <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
           </template>
         </dom-if>
 
-        <nuxeo-dialog id="dialog" with-backdrop="">
+        <nuxeo-dialog id="dialog" with-backdrop>
           <div class="heading">
             <h2>[[i18n('shareButton.dialog.heading')]]</h2>
             <span id="copyLink" on-click="_copyPermalink">[[i18n('shareButton.operation.copy')]]</span>
@@ -86,7 +86,7 @@ import './nuxeo-action-button-styles.js';
           >
           </nuxeo-input>
           <div class="buttons">
-            <paper-button dialog-dismiss="">[[i18n('shareButton.dialog.close')]]</paper-button>
+            <paper-button dialog-dismiss>[[i18n('shareButton.dialog.close')]]</paper-button>
           </div>
         </nuxeo-dialog>
       `;

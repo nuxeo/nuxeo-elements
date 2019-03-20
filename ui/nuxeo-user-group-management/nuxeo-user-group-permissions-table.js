@@ -234,11 +234,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           number-of-pages="[[_numberOfPages]]"
         ></nuxeo-pagination-controls>
 
-        <nuxeo-dialog id="dialog" with-backdrop="">
+        <nuxeo-dialog id="dialog" with-backdrop>
           <h2>[[i18n('userGroupPermissions.delete.confirm')]]</h2>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button noink="" dialog-dismiss="">[[i18n('label.no')]]</paper-button>
+              <paper-button noink dialog-dismiss>[[i18n('label.no')]]</paper-button>
             </div>
             <paper-button class="primary" noink dialog-confirm on-click="_deleteAce"
               >[[i18n('label.yes')]]</paper-button

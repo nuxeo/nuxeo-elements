@@ -63,7 +63,7 @@ import '../widgets/nuxeo-dialog.js';
 
         <nuxeo-connection id="nxcon"></nuxeo-connection>
 
-        <nuxeo-dialog id="columnsSettingsPopup" with-backdrop="" on-iron-overlay-closed="_onSettingsClosed">
+        <nuxeo-dialog id="columnsSettingsPopup" with-backdrop on-iron-overlay-closed="_onSettingsClosed">
           <h2>[[i18n('tableSettings.columnSettings')]]</h2>
           <div class="paper-content layout horizontal">
             <div class="layout vertical">
@@ -75,7 +75,7 @@ import '../widgets/nuxeo-dialog.js';
                   <template>
                     <tr>
                       <td>
-                        <paper-checkbox noink="" checked="{{!column.hidden}}"></paper-checkbox>
+                        <paper-checkbox noink checked="{{!column.hidden}}"></paper-checkbox>
                       </td>
                       <td>
                         [[column.name]]

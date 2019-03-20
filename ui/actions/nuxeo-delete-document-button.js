@@ -50,14 +50,14 @@ import './nuxeo-action-button-styles.js';
       return html`
         <style include="nuxeo-action-button-styles"></style>
 
-        <nuxeo-operation id="deleteOp" op="Document.Delete" input="[[document.uid]]" sync-indexing=""></nuxeo-operation>
+        <nuxeo-operation id="deleteOp" op="Document.Delete" input="[[document.uid]]" sync-indexing></nuxeo-operation>
 
-        <nuxeo-operation id="trashOp" op="Document.Trash" input="[[document.uid]]" sync-indexing=""></nuxeo-operation>
+        <nuxeo-operation id="trashOp" op="Document.Trash" input="[[document.uid]]" sync-indexing></nuxeo-operation>
 
         <dom-if if="[[_isAvailable(document)]]">
           <template>
             <div class="action" on-click="_delete">
-              <paper-icon-button icon="[[icon]]" noink="" id="deleteButton"></paper-icon-button>
+              <paper-icon-button icon="[[icon]]" noink id="deleteButton"></paper-icon-button>
               <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
             </div>
             <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>

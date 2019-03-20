@@ -58,13 +58,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         <div id="filters">
           <dom-repeat items="[[quickFilters]]" as="filter" id="filterList">
             <template>
-              <paper-button
-                toggles=""
-                noink=""
-                class="quick-filters"
-                active$="[[filter.active]]"
-                on-click="_selectFilter"
-              >
+              <paper-button toggles noink class="quick-filters" active$="[[filter.active]]" on-click="_selectFilter">
                 [[_computeFilterLabel(filter)]]
               </paper-button>
             </template>

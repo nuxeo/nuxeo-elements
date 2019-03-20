@@ -235,7 +235,7 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
             <label>[[label]]</label>
             <dom-if if="[[editable]]">
               <template>
-                <paper-button id="addEntry" noink="" class="primary" on-click="_createEntry">
+                <paper-button id="addEntry" noink class="primary" on-click="_createEntry">
                   + [[i18n('command.add')]]
                 </paper-button>
               </template>
@@ -245,12 +245,12 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
           <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
 
           <div id="header">
-            <nuxeo-data-table-row header="">
-              <nuxeo-data-table-checkbox header="" hidden$="[[!selectionEnabled]]"></nuxeo-data-table-checkbox>
+            <nuxeo-data-table-row header>
+              <nuxeo-data-table-checkbox header hidden$="[[!selectionEnabled]]"></nuxeo-data-table-checkbox>
               <dom-repeat items="[[columns]]" as="column">
                 <template>
                   <nuxeo-data-table-cell
-                    header=""
+                    header
                     align-right="[[column.alignRight]]"
                     before-bind="[[beforeCellBind]]"
                     column="[[column]]"
@@ -367,14 +367,14 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
 
         <slot id="columns"></slot>
 
-        <nuxeo-dialog id="dialog" with-backdrop="" on-opened-changed="_formDialogOpenedChanged">
+        <nuxeo-dialog id="dialog" with-backdrop on-opened-changed="_formDialogOpenedChanged">
           <h2>[[i18n('command.add')]]</h2>
           <paper-dialog-scrollable>
             <slot id="form" name="form"></slot>
           </paper-dialog-scrollable>
           <div class="buttons">
-            <paper-button noink="" dialog-dismiss="">[[i18n('command.cancel')]]</paper-button>
-            <paper-button id="save" noink="" on-click="_validateEntry" class="primary"
+            <paper-button noink dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
+            <paper-button id="save" noink on-click="_validateEntry" class="primary"
               >[[i18n('command.ok')]]</paper-button
             >
           </div>
