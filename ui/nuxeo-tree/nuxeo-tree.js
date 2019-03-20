@@ -100,15 +100,15 @@ import './nuxeo-tree-node.js';
   class Tree extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-        @apply --nuxeo-tree-theme;
-      }
-    </style>
+        <style>
+          :host {
+            display: block;
+            @apply --nuxeo-tree-theme;
+          }
+        </style>
 
-    <slot></slot>
-`;
+        <slot></slot>
+      `;
     }
 
     static get is() {
@@ -140,9 +140,7 @@ import './nuxeo-tree-node.js';
     }
 
     static get observers() {
-      return [
-        '_update(data, controller)',
-      ];
+      return ['_update(data, controller)'];
     }
 
     /**

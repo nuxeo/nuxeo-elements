@@ -18,8 +18,8 @@ limitations under the License.
   <head>
     <title>nuxeo-icons</title>
 
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" />
     <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="/node_modules/@nuxeo/nuxeo-elements/dedup.js"></script>
 
@@ -30,14 +30,11 @@ limitations under the License.
     <!-- nuxeo elements -->
     <script type="module" src="../nuxeo-demo.js"></script>
     <script type="module" src="../../nuxeo-icons.js"></script>
-
-
   </head>
 
   <body unresolved>
     <dom-bind id="scope">
       <template is="dom-bind">
-
         <style>
           .icon {
             display: inline-block;
@@ -74,7 +71,6 @@ limitations under the License.
             </div>
           </template>
         </nuxeo-demo-section>
-
       </template>
     </dom-bind>
 
@@ -83,7 +79,7 @@ limitations under the License.
       import { IronMeta } from '@polymer/iron-meta/iron-meta.js';
       import '../nuxeo-demo.js';
       import '../../nuxeo-icons.js';
-      
+
       const scope = document.querySelector('#scope');
       scope.getIconNames = (iconset) => iconset.getIconNames();
       scope.getIconName = (name) => name.split(':')[1];
@@ -91,6 +87,5 @@ limitations under the License.
       const iconsets = document.querySelector('#iconsets');
       iconsets.items = new IronMeta({ type: 'iconset' }).list;
     </script>
-
   </body>
 </html>

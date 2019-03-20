@@ -11,7 +11,6 @@ import './data-table-templatizer-behavior.js';
 
 {
   class DataTableRowDetail extends mixinBehaviors([saulis.DataTableTemplatizerBehavior], Nuxeo.Element) {
-
     static get is() {
       return 'nuxeo-data-table-row-detail';
     }
@@ -23,9 +22,7 @@ import './data-table-templatizer-behavior.js';
     }
 
     static get observers() {
-      return [
-        '_beforeBind(beforeBind, item.*, index, selected, expanded)',
-      ];
+      return ['_beforeBind(beforeBind, item.*, index, selected, expanded)'];
     }
 
     static get template() {
@@ -42,14 +39,16 @@ import './data-table-templatizer-behavior.js';
     }
 
     _beforeBind(beforeBind, item, index, selected, expanded) {
-      beforeBind({
-        index,
-        item: item.base,
-        expanded,
-        selected,
-      }, this);
+      beforeBind(
+        {
+          index,
+          item: item.base,
+          expanded,
+          selected,
+        },
+        this,
+      );
     }
-
   }
 
   customElements.define(DataTableRowDetail.is, DataTableRowDetail);

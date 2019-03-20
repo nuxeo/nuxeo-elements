@@ -42,33 +42,32 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-checkbox-aggregation/index.html
    */
-  class CheckboxAggregation
-    extends mixinBehaviors([I18nBehavior, AggregationBehavior], Nuxeo.Element) {
+  class CheckboxAggregation extends mixinBehaviors([I18nBehavior, AggregationBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-   <style>
-     :host {
-       @apply --layout-vertical;
-     }
-     paper-checkbox {
-       --paper-checkbox-label-spacing: 10px;
-       margin-bottom: 5px;
-     }
-   </style>
+        <style>
+          :host {
+            @apply --layout-vertical;
+          }
+          paper-checkbox {
+            --paper-checkbox-label-spacing: 10px;
+            margin-bottom: 5px;
+          }
+        </style>
 
-    <dom-repeat items="{{buckets}}">
-      <template>
-        <paper-checkbox noink="" checked="{{item.checked}}" on-change="_computeValues">
-          [[item.label]] ([[item.docCount]])
-        </paper-checkbox>
-      </template>
-    </dom-repeat>
-    <dom-if if="[[_isEmpty]]">
-      <template>
-        <label>[[i18n('checkboxAggregation.noResults')]]</label>
-      </template>
-    </dom-if>
-`;
+        <dom-repeat items="{{buckets}}">
+          <template>
+            <paper-checkbox noink="" checked="{{item.checked}}" on-change="_computeValues">
+              [[item.label]] ([[item.docCount]])
+            </paper-checkbox>
+          </template>
+        </dom-repeat>
+        <dom-if if="[[_isEmpty]]">
+          <template>
+            <label>[[i18n('checkboxAggregation.noResults')]]</label>
+          </template>
+        </dom-if>
+      `;
     }
 
     static get is() {

@@ -32,39 +32,45 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
   class QuickFilters extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-      }
+        <style>
+          :host {
+            display: block;
+          }
 
-      .quick-filters {
-        background-color: var(--nuxeo-pill-filter-background, #fff);
-        color: var(--nuxeo-pill-text, #6d7684);
-        border-radius: 3em;
-        box-shadow: none;
-        font-size: 1rem;
-        padding: .2em .7em .3em;
-        margin: .1em .1em .1em 0;
-        text-transform: none;
-      }
+          .quick-filters {
+            background-color: var(--nuxeo-pill-filter-background, #fff);
+            color: var(--nuxeo-pill-text, #6d7684);
+            border-radius: 3em;
+            box-shadow: none;
+            font-size: 1rem;
+            padding: 0.2em 0.7em 0.3em;
+            margin: 0.1em 0.1em 0.1em 0;
+            text-transform: none;
+          }
 
-      .quick-filters[active] {
-        box-shadow: none;
-        background-color: var(--nuxeo-pill-filter-background-active, #00adff );
-        color: var(--nuxeo-pill-text-active, #fff);
-      }
-    </style>
+          .quick-filters[active] {
+            box-shadow: none;
+            background-color: var(--nuxeo-pill-filter-background-active, #00adff);
+            color: var(--nuxeo-pill-text-active, #fff);
+          }
+        </style>
 
-    <div id="filters">
-      <dom-repeat items="[[quickFilters]]" as="filter" id="filterList">
-        <template>
-          <paper-button toggles="" noink="" class="quick-filters" active\$="[[filter.active]]" on-click="_selectFilter">
-              [[_computeFilterLabel(filter)]]
-          </paper-button>
-        </template>
-      </dom-repeat>
-    </div>
-`;
+        <div id="filters">
+          <dom-repeat items="[[quickFilters]]" as="filter" id="filterList">
+            <template>
+              <paper-button
+                toggles=""
+                noink=""
+                class="quick-filters"
+                active\$="[[filter.active]]"
+                on-click="_selectFilter"
+              >
+                [[_computeFilterLabel(filter)]]
+              </paper-button>
+            </template>
+          </dom-repeat>
+        </div>
+      `;
     }
 
     static get is() {

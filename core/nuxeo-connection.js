@@ -19,7 +19,6 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import './nuxeo-element.js';
 
 {
-
   // A global map of clients with connectionId as key.
   // This map is shared between all instances of nuxeo-connection.
   const nxClients = {};
@@ -41,12 +40,12 @@ import './nuxeo-element.js';
   class Connection extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: none;
-      }
-    </style>
-`;
+        <style>
+          :host {
+            display: none;
+          }
+        </style>
+      `;
     }
 
     static get is() {
@@ -119,7 +118,7 @@ import './nuxeo-element.js';
     connect() {
       // Create the client if needed
       // If we already have a client with the same connection info just keep it
-      const id = (this.connectionId) ? this.connectionId : Object.keys(nxClients)[0];
+      const id = this.connectionId ? this.connectionId : Object.keys(nxClients)[0];
       this.client = nxClients[id];
       if (this.client) {
         // if this instance does not have any properties set properties from the client
@@ -130,16 +129,17 @@ import './nuxeo-element.js';
           this.repositoryName = this.client._baseOptions.repositoryName;
         }
         // if properties match the existing client use it
-        if (this.client._baseURL === this.url
-          && this.client._username === this.username
-          && this.client._password === this.password
-          && this.client._baseOptions.repositoryName === this.repositoryName) {
+        if (
+          this.client._baseURL === this.url &&
+          this.client._username === this.username &&
+          this.client._password === this.password &&
+          this.client._baseOptions.repositoryName === this.repositoryName
+        ) {
           // return the stored connection request promise and chain _handleConnected to update instance properties
           return this.client._promise.then(this._handleConnected.bind(this));
         }
-          // otherwise override the client with the new properties
-          this.client = null;
-
+        // otherwise override the client with the new properties
+        this.client = null;
       }
       const options = {
         baseURL: this.url,
@@ -162,11 +162,10 @@ import './nuxeo-element.js';
       nxClients[id] = this.client = this.client || new Nuxeo(options);
 
       // share the connect promise between all instances (one per client)
-      this.client._promise = this.client.connect()
-        .catch((error) => {
-          console.warn(`Nuxeo connection refused: ${error}`);
-          throw error;
-        });
+      this.client._promise = this.client.connect().catch((error) => {
+        console.warn(`Nuxeo connection refused: ${error}`);
+        throw error;
+      });
 
       return this.client._promise.then(this._handleConnected.bind(this));
     }
@@ -191,7 +190,7 @@ import './nuxeo-element.js';
       if (this.client.connected) {
         this._setUser(nuxeo.user);
         this._setPlatformVersion(nuxeo.nuxeoVersion);
-        this.dispatchEvent(new CustomEvent('connected', {bubbles: true, composed: true}));
+        this.dispatchEvent(new CustomEvent('connected', { bubbles: true, composed: true }));
       }
       return nuxeo.user;
     }

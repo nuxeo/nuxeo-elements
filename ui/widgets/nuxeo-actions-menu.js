@@ -47,57 +47,59 @@ import './nuxeo-tooltip.js';
   class ActionsMenu extends mixinBehaviors([IronResizableBehavior, I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      :host, #main {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-      }
+        <style>
+          :host,
+          #main {
+            @apply --layout-horizontal;
+            @apply --layout-center;
+          }
 
-      [hidden] {
-        display: none !important;
-      }
+          [hidden] {
+            display: none !important;
+          }
 
-      #reparent, #reparent > * {
-        width: 0;
-        height: 0;
-        overflow: hidden;
-      }
+          #reparent,
+          #reparent > * {
+            width: 0;
+            height: 0;
+            overflow: hidden;
+          }
 
-      #slot::slotted(*), /* chrome, safari */
-      #main::slotted(*) { /* firefox, edge */
-        @apply --nuxeo-actions-menu-main;
-      }
+          #slot::slotted(*), /* chrome, safari */
+          #main::slotted(*) /* firefox, edge */ {
+            @apply --nuxeo-actions-menu-main;
+          }
 
-      #dropdown::slotted(*), /* chrome, safari */
-      paper-listbox::slotted(*) { /* firefox, edge */
-        outline: none;
-        user-select: none;
-        @apply --nuxeo-actions-menu-dropdown;
-      }
+          #dropdown::slotted(*), /* chrome, safari */
+          paper-listbox::slotted(*) /* firefox, edge */ {
+            outline: none;
+            user-select: none;
+            @apply --nuxeo-actions-menu-dropdown;
+          }
 
-      paper-menu-button {
-        --paper-menu-button: {
-          padding: 0;
-        }
-      }
+          paper-menu-button {
+            --paper-menu-button: {
+              padding: 0;
+            }
+          }
 
-      paper-listbox {
-        @apply --layout-vertical;
-      }
-    </style>
-    
-    <div id="main">
-      <slot id="slot"></slot>
-    </div>
-    <div id="reparent"></div>
-    <paper-menu-button id="dropdownButton" close-on-activate="" no-overlap="" horizontal-align="right">
-      <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger" alt="dropdown"></paper-icon-button>
-      <paper-listbox slot="dropdown-content">
-        <slot id="dropdown" name="dropdown"></slot>
-      </paper-listbox>
-    </paper-menu-button>
-    <paper-tooltip for="dropdownButton">[[i18n('actionsMenu.more')]]</paper-tooltip>
-`;
+          paper-listbox {
+            @apply --layout-vertical;
+          }
+        </style>
+
+        <div id="main">
+          <slot id="slot"></slot>
+        </div>
+        <div id="reparent"></div>
+        <paper-menu-button id="dropdownButton" close-on-activate="" no-overlap="" horizontal-align="right">
+          <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger" alt="dropdown"></paper-icon-button>
+          <paper-listbox slot="dropdown-content">
+            <slot id="dropdown" name="dropdown"></slot>
+          </paper-listbox>
+        </paper-menu-button>
+        <paper-tooltip for="dropdownButton">[[i18n('actionsMenu.more')]]</paper-tooltip>
+      `;
     }
 
     static get is() {
@@ -106,13 +108,15 @@ import './nuxeo-tooltip.js';
 
     connectedCallback() {
       super.connectedCallback();
-      this._observer = new FlattenedNodesObserver(this, ({addedNodes, removedNodes}) => {
+      this._observer = new FlattenedNodesObserver(this, ({ addedNodes, removedNodes }) => {
         // mark unresolved custom elements
-        const unresolved = addedNodes.filter((node) => node.tagName && node.tagName.includes('-') &&
-          !customElements.get(node.tagName.toLowerCase()));
+        const unresolved = addedNodes.filter(
+          (node) => node.tagName && node.tagName.includes('-') && !customElements.get(node.tagName.toLowerCase()),
+        );
         // defer rendering for non resolved elements
         unresolved.forEach((node) =>
-          customElements.whenDefined(node.tagName.toLowerCase()).then(this._layout.bind(this)));
+          customElements.whenDefined(node.tagName.toLowerCase()).then(this._layout.bind(this)),
+        );
         if ((addedNodes.length > 0 && unresolved.length === 0) || removedNodes.length > 0) {
           // do instant rendering if we're removing nodes or adding at least one resolved element
           this._layout();
@@ -154,30 +158,32 @@ import './nuxeo-tooltip.js';
          */
         idlePeriod.run(() => {
           this.$.reparent.appendChild(action);
-          action._actionsMenuReparent = action._actionsMenuReparent || ((evt) => {
-            let path = evt.composedPath();
-            if (path[0].tagName !== 'NUXEO-DIALOG' && path[0].tagName !== 'PAPER-DIALOG') {
-              // we don't want to move the action back if the event is comming from a non-dialog element
-              return;
-            }
-            path = path.slice(0, path.findIndex((el) => el === action));
-            if (path.filter((el) => el.tagName === 'NUXEO-DIALOG' || el.tagName === 'PAPER-DIALOG').length > 1) {
-              // nor if it comes from an inner dialog
-              return;
-            }
-            parent.insertBefore(action, sibling);
-          });
+          action._actionsMenuReparent =
+            action._actionsMenuReparent ||
+            ((evt) => {
+              let path = evt.composedPath();
+              if (path[0].tagName !== 'NUXEO-DIALOG' && path[0].tagName !== 'PAPER-DIALOG') {
+                // we don't want to move the action back if the event is comming from a non-dialog element
+                return;
+              }
+              path = path.slice(0, path.findIndex((el) => el === action));
+              if (path.filter((el) => el.tagName === 'NUXEO-DIALOG' || el.tagName === 'PAPER-DIALOG').length > 1) {
+                // nor if it comes from an inner dialog
+                return;
+              }
+              parent.insertBefore(action, sibling);
+            });
           action.addEventListener('iron-overlay-closed', action._actionsMenuReparent);
         });
       }
     }
 
     _getMenuElements() {
-      return this.$.slot.assignedNodes({flatten: true}).filter((node) => node.nodeType === Node.ELEMENT_NODE);
+      return this.$.slot.assignedNodes({ flatten: true }).filter((node) => node.nodeType === Node.ELEMENT_NODE);
     }
 
     _getDropdownElements() {
-      return this.$.dropdown.assignedNodes({flatten: true}).filter((node) => node.nodeType === Node.ELEMENT_NODE);
+      return this.$.dropdown.assignedNodes({ flatten: true }).filter((node) => node.nodeType === Node.ELEMENT_NODE);
     }
 
     _moveToMenu(el) {
@@ -194,31 +200,28 @@ import './nuxeo-tooltip.js';
       if (e && e.type && e.composedPath().find((el) => el.id === 'reparent' || el.id === 'dropdownButton')) {
         return; // skip events from within reparented actions
       }
-      this.__layoutDebouncer = Debouncer.debounce(
-        this.__layoutDebouncer, microTask,
-        () => {
-          let els = this._getDropdownElements();
-          /**
-           * XXX: We're using this.contentWidth instead of this.scrollWidth because it takes too much time to be
-           * updated on polyfilled browsers (Firex and Edge), leading to an empty menu if there's a single element
-           * that doesn't fit on the menu.
-           */
-          while (els.length && this.contentWidth <= this.clientWidth) {
-            this._moveToMenu(els.shift());
+      this.__layoutDebouncer = Debouncer.debounce(this.__layoutDebouncer, microTask, () => {
+        let els = this._getDropdownElements();
+        /**
+         * XXX: We're using this.contentWidth instead of this.scrollWidth because it takes too much time to be
+         * updated on polyfilled browsers (Firex and Edge), leading to an empty menu if there's a single element
+         * that doesn't fit on the menu.
+         */
+        while (els.length && this.contentWidth <= this.clientWidth) {
+          this._moveToMenu(els.shift());
+        }
+        if (!els.length) {
+          this.$.dropdownButton.hidden = true;
+        }
+        // let's move any element in the menu to the "dropdown" slot if it doesn't fit
+        els = this._getMenuElements();
+        while (els.length && this.contentWidth + this.$.dropdownButton.offsetWidth > this.clientWidth) {
+          this._moveToDropdown(els.pop());
+          if (this.$.dropdownButton.hidden) {
+            this.$.dropdownButton.hidden = false;
           }
-          if (!els.length) {
-            this.$.dropdownButton.hidden = true;
-          }
-          // let's move any element in the menu to the "dropdown" slot if it doesn't fit
-          els = this._getMenuElements();
-          while (els.length && (this.contentWidth + this.$.dropdownButton.offsetWidth) > this.clientWidth) {
-            this._moveToDropdown(els.pop());
-            if (this.$.dropdownButton.hidden) {
-              this.$.dropdownButton.hidden = false;
-            }
-          }
-        },
-      );
+        }
+      });
     }
   }
 

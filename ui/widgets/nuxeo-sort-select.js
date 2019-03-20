@@ -37,53 +37,53 @@ import './nuxeo-tooltip.js';
   class SortSelect extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-        @apply --layout-horizontal;
-        @apply --layout-center;
-      }
+        <style>
+          :host {
+            display: block;
+            @apply --layout-horizontal;
+            @apply --layout-center;
+          }
 
-      nuxeo-select {
-        padding-left: 8px;
-        width: 160px;
-        --paper-input-container: {
-          padding: 0;
-        };
-        --paper-input-container-input: {
-          font-size: var(--nuxeo-sort-select-input-font-size, inherit);
-          font-weight: bold;
-        };
-      }
+          nuxeo-select {
+            padding-left: 8px;
+            width: 160px;
+            --paper-input-container: {
+              padding: 0;
+            }
+            --paper-input-container-input: {
+              font-size: var(--nuxeo-sort-select-input-font-size, inherit);
+              font-weight: bold;
+            }
+          }
 
-      span {
-        font-size: var(--nuxeo-sort-select-input-font-size, inherit);
-      }
+          span {
+            font-size: var(--nuxeo-sort-select-input-font-size, inherit);
+          }
 
-      paper-icon-button {
-        max-width: var(--nuxeo-sort-select-order-toggle-width, 20px);
-        max-height: var(--nuxeo-sort-select-order-toggle-height, 20px);
-        padding: 0;
-        margin: 0 16px;
-      }
-    </style>
+          paper-icon-button {
+            max-width: var(--nuxeo-sort-select-order-toggle-width, 20px);
+            max-height: var(--nuxeo-sort-select-order-toggle-height, 20px);
+            padding: 0;
+            margin: 0 16px;
+          }
+        </style>
 
-    <nuxeo-select attr-for-selected="option" selected="{{selected}}">
-      <dom-if if="[[options]]">
-        <template>
-          <dom-repeat items="[[options]]" as="item">
+        <nuxeo-select attr-for-selected="option" selected="{{selected}}">
+          <dom-if if="[[options]]">
             <template>
-              <paper-item option="[[item]]">[[item.label]]</paper-item>
+              <dom-repeat items="[[options]]" as="item">
+                <template>
+                  <paper-item option="[[item]]">[[item.label]]</paper-item>
+                </template>
+              </dom-repeat>
             </template>
-          </dom-repeat>
-        </template>
-      </dom-if>
-    </nuxeo-select>
+          </dom-if>
+        </nuxeo-select>
 
-    <paper-icon-button id="reverse" noink on-click="_toggleSortOrder" icon="[[_sortOrderIcon(_sortOrder)]]">
-    </paper-icon-button>
-    <nuxeo-tooltip for="reverse">[[i18n('sortSelect.reverseOrder')]]</nuxeo-tooltip>
-`;
+        <paper-icon-button id="reverse" noink on-click="_toggleSortOrder" icon="[[_sortOrderIcon(_sortOrder)]]">
+        </paper-icon-button>
+        <nuxeo-tooltip for="reverse">[[i18n('sortSelect.reverseOrder')]]</nuxeo-tooltip>
+      `;
     }
 
     static get is() {
@@ -129,11 +129,13 @@ import './nuxeo-tooltip.js';
       this._sortOrder = this._sortOrder === 'asc' ? 'desc' : 'asc';
       if (this.selected) {
         this.set('selected.order', this._sortOrder);
-        this.dispatchEvent(new CustomEvent('sort-order-changed', {
-          composed: true,
-          bubbles: true,
-          detail: { sort: this.selected },
-        }));
+        this.dispatchEvent(
+          new CustomEvent('sort-order-changed', {
+            composed: true,
+            bubbles: true,
+            detail: { sort: this.selected },
+          }),
+        );
       }
     }
 

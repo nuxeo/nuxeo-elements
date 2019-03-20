@@ -12,33 +12,33 @@ import '../widgets/nuxeo-checkmark.js';
   class DataTableCheckbox extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        min-height: 48px;
-        flex-basis: 48px;
-        flex-grow: 0;
-        flex-shrink: 0;
-        padding: 0 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+        <style>
+          :host {
+            min-height: 48px;
+            flex-basis: 48px;
+            flex-grow: 0;
+            flex-shrink: 0;
+            padding: 0 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
 
-      :host([hidden]) {
-        display: none;
-      }
+          :host([hidden]) {
+            display: none;
+          }
 
-      :host(:focus) {
-        outline: none;
-      }
+          :host(:focus) {
+            outline: none;
+          }
 
-      :host([header]) {
-        visibility: hidden !important;
-      }
-    </style>
+          :host([header]) {
+            visibility: hidden !important;
+          }
+        </style>
 
-    <nuxeo-checkmark checked="{{checked}}"></nuxeo-checkmark>
-`;
+        <nuxeo-checkmark checked="{{checked}}"></nuxeo-checkmark>
+      `;
     }
 
     static get is() {

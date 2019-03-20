@@ -43,25 +43,24 @@ import './nuxeo-action-button-styles.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-untrash-document-button/index.html
    */
-  class UntrashDocumentButton
-    extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
+  class UntrashDocumentButton extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="nuxeo-action-button-styles"></style>
+        <style include="nuxeo-action-button-styles"></style>
 
-    <nuxeo-operation id="operation" op="Document.Untrash" input="[[document.uid]]" sync-indexing="">
-    </nuxeo-operation>
+        <nuxeo-operation id="operation" op="Document.Untrash" input="[[document.uid]]" sync-indexing="">
+        </nuxeo-operation>
 
-    <dom-if if="[[_isAvailable(document)]]">
-      <template>
-        <div class="action" on-click="_untrash">
-          <paper-icon-button icon="[[icon]]" noink="" id="untrashButton"></paper-icon-button>
-          <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
-        </div>
-        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
-      </template>
-    </dom-if>
-`;
+        <dom-if if="[[_isAvailable(document)]]">
+          <template>
+            <div class="action" on-click="_untrash">
+              <paper-icon-button icon="[[icon]]" noink="" id="untrashButton"></paper-icon-button>
+              <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
+            </div>
+            <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
+          </template>
+        </dom-if>
+      `;
     }
 
     static get is() {
@@ -107,19 +106,26 @@ import './nuxeo-action-button-styles.js';
     }
 
     _untrash() {
-      this.$.operation.execute().then((res) => {
-        this.dispatchEvent(new CustomEvent('document-untrashed', {
-          composed: true,
-          bubbles: true,
-          detail: { doc: res },
-        }));
-      }).catch((error) => {
-        this.dispatchEvent(new CustomEvent('document-untrashed', {
-          composed: true,
-          bubbles: true,
-          detail: { error },
-        }));
-      });
+      this.$.operation
+        .execute()
+        .then((res) => {
+          this.dispatchEvent(
+            new CustomEvent('document-untrashed', {
+              composed: true,
+              bubbles: true,
+              detail: { doc: res },
+            }),
+          );
+        })
+        .catch((error) => {
+          this.dispatchEvent(
+            new CustomEvent('document-untrashed', {
+              composed: true,
+              bubbles: true,
+              detail: { error },
+            }),
+          );
+        });
     }
   }
 

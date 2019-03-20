@@ -39,29 +39,29 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-dropdown-aggregation/index.html
    */
-  class DropdownAggregation
-    extends mixinBehaviors([I18nBehavior, AggregationBehavior], Nuxeo.Element) {
+  class DropdownAggregation extends mixinBehaviors([I18nBehavior, AggregationBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-        width: 100%;
-      }
+        <style>
+          :host {
+            display: block;
+            width: 100%;
+          }
 
-      [hidden] {
-        display: none;
-      }
-    </style>
+          [hidden] {
+            display: none;
+          }
+        </style>
 
-    <nuxeo-selectivity
-      data="[[_computeData(buckets)]]"
-      min-chars="[[minChars]]"
-      multiple="[[multiple]]"
-      placeholder="[[placeholder]]"
-      value="{{value}}">
-    </nuxeo-selectivity>
-`;
+        <nuxeo-selectivity
+          data="[[_computeData(buckets)]]"
+          min-chars="[[minChars]]"
+          multiple="[[multiple]]"
+          placeholder="[[placeholder]]"
+          value="{{value}}"
+        >
+        </nuxeo-selectivity>
+      `;
     }
 
     static get is() {
@@ -99,9 +99,8 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
             displayLabel: label,
           };
         });
-      } 
-        return [];
-      
+      }
+      return [];
     }
   }
 

@@ -31,78 +31,81 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
   class AggregationNavigation extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-        width: 80px;
-      }
+        <style>
+          :host {
+            display: block;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            width: 80px;
+          }
 
-      #keys {
-        visibility: hidden;
-        position: relative;
-        height: calc(100% - 32px);
-      }
+          #keys {
+            visibility: hidden;
+            position: relative;
+            height: calc(100% - 32px);
+          }
 
-      .key {
-        position: absolute;
-        right: 0;
-        width: 64px;
-        color: black;
-        margin: 0;
-        padding: 0 8px 0 0;
-        font-size: 0.7rem;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        pointer-events: all;
-        text-align: right;
-        cursor: ns-resize;
-      }
+          .key {
+            position: absolute;
+            right: 0;
+            width: 64px;
+            color: black;
+            margin: 0;
+            padding: 0 8px 0 0;
+            font-size: 0.7rem;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            pointer-events: all;
+            text-align: right;
+            cursor: ns-resize;
+          }
 
-      #cursor {
-        display: none;
-        position: absolute;
-        right: 0;
-        width: 56px;
-        height: 2px;
-        background: rgba(0, 0, 0, 0.15);
-        pointer-events: none;
-      }
+          #cursor {
+            display: none;
+            position: absolute;
+            right: 0;
+            width: 56px;
+            height: 2px;
+            background: rgba(0, 0, 0, 0.15);
+            pointer-events: none;
+          }
 
-      #cursor .label {
-        position: absolute;
-        right: 56px;
-        top: -14px;
-        white-space: nowrap;
-        text-align: center;
-        background: black;
-        color: white;
-        padding: 6px 8px;
-        font-size: 0.8rem;
-        font-weight: bold;
-        border-radius: 4px;
-        min-width: 64px;
-      }
-    </style>
+          #cursor .label {
+            position: absolute;
+            right: 56px;
+            top: -14px;
+            white-space: nowrap;
+            text-align: center;
+            background: black;
+            color: white;
+            padding: 6px 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            border-radius: 4px;
+            min-width: 64px;
+          }
+        </style>
 
-    <div id="keys" on-mouseout="_mouseOut" on-click="_tap">
-      <dom-repeat items="[[_keys]]" as="key">
-        <template>
-          <div class="key" on-mousemove="_mouseMove"
-            style\$="top: [[key.top]]px; height: [[key.height]]px; color: [[_color(key.visible)]];">
-            [[_label(key)]]
+        <div id="keys" on-mouseout="_mouseOut" on-click="_tap">
+          <dom-repeat items="[[_keys]]" as="key">
+            <template>
+              <div
+                class="key"
+                on-mousemove="_mouseMove"
+                style\$="top: [[key.top]]px; height: [[key.height]]px; color: [[_color(key.visible)]];"
+              >
+                [[_label(key)]]
+              </div>
+            </template>
+          </dom-repeat>
+          <div id="cursor">
+            <div class="label">[[_cursorLabel]]</div>
           </div>
-        </template>
-      </dom-repeat>
-      <div id="cursor">
-        <div class="label">[[_cursorLabel]]</div>
-      </div>
-    </div>
-`;
+        </div>
+      `;
     }
 
     static get is() {
@@ -150,7 +153,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         _rect: {
           type: Object,
           value: {
-            top: 0, right: 0, left: 0, bottom: 0,
+            top: 0,
+            right: 0,
+            left: 0,
+            bottom: 0,
           },
         },
       };
@@ -189,9 +195,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // fill keys array based on buckets
       this.set('_keys', []);
       let offset = 1;
-      let {granularity} = this;
+      let { granularity } = this;
       buckets.forEach((bucket) => {
-
         let visible = false;
         if (granularity >= this.granularity) {
           visible = true;
@@ -211,23 +216,24 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         offset += bucket.docCount;
         granularity += height;
-
       });
     }
 
     _tap() {
-      this.dispatchEvent(new CustomEvent('scroll-to', {
-        composed: true,
-        bubbles: true,
-        detail: { index: this._cursorIndex },
-      }));
+      this.dispatchEvent(
+        new CustomEvent('scroll-to', {
+          composed: true,
+          bubbles: true,
+          detail: { index: this._cursorIndex },
+        }),
+      );
     }
 
     _mouseMove(e) {
-      const y = (e.y - this._rect.top);
+      const y = e.y - this._rect.top;
       this.$.cursor.style.display = 'block';
       this.$.cursor.style.top = `${y}px`;
-      this._cursorIndex = Math.round(this._count * y / this._rect.height);
+      this._cursorIndex = Math.round((this._count * y) / this._rect.height);
       this._cursorLabel = this._label(e.model.key);
     }
 

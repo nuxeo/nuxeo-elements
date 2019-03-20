@@ -37,21 +37,21 @@ import './nuxeo-action-button-styles.js';
   class LinkButton extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="nuxeo-action-button-styles">
-      .action {
-        text-decoration: none;
-        color: var(--nuxeo-text-default);
-      }
-    </style>
+        <style include="nuxeo-action-button-styles">
+          .action {
+            text-decoration: none;
+            color: var(--nuxeo-text-default);
+          }
+        </style>
 
-    <template is="dom-if" if="[[_isAvailable(href, icon, iconSrc)]]">
-      <a class="action" href="[[href]]" tabindex="-1" target="[[target]]">
-        <paper-icon-button src="[[iconSrc]]" icon="[[icon]]" noink=""></paper-icon-button>
-        <span class="label" hidden\$="[[!showLabel]]">[[i18n(label)]]</span>
-      </a>
-      <nuxeo-tooltip>[[i18n(label)]]</nuxeo-tooltip>
-    </template>
-`;
+        <template is="dom-if" if="[[_isAvailable(href, icon, iconSrc)]]">
+          <a class="action" href="[[href]]" tabindex="-1" target="[[target]]">
+            <paper-icon-button src="[[iconSrc]]" icon="[[icon]]" noink=""></paper-icon-button>
+            <span class="label" hidden\$="[[!showLabel]]">[[i18n(label)]]</span>
+          </a>
+          <nuxeo-tooltip>[[i18n(label)]]</nuxeo-tooltip>
+        </template>
+      `;
     }
 
     static get is() {

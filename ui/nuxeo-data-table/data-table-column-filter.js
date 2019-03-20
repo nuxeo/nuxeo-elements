@@ -14,18 +14,23 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
   class DataTableColumnFilter extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host([hidden]) {
-        display: none;
-      }
-      paper-input {
-        --paper-input-container-label: {
-          font-size: inherit;
-        }
-      }
-    </style>
-    <paper-input no-label-float="" label="[[label]]" value="[[value]]" on-value-changed="_valueChanged"></paper-input>
-`;
+        <style>
+          :host([hidden]) {
+            display: none;
+          }
+          paper-input {
+            --paper-input-container-label: {
+              font-size: inherit;
+            }
+          }
+        </style>
+        <paper-input
+          no-label-float=""
+          label="[[label]]"
+          value="[[value]]"
+          on-value-changed="_valueChanged"
+        ></paper-input>
+      `;
     }
 
     static get is() {
@@ -46,7 +51,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
     _valueChanged(e) {
       // store value in a variable, referring to e.detail.value inside the debounce
       // function results in weird outcomes. event object might be reused by Polymer?
-      const {value} = e.detail;
+      const { value } = e.detail;
       this._debouncer = Debouncer.debounce(this._debouncer, timeOut.after(250), () => {
         this.value = value;
       });

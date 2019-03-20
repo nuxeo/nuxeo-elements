@@ -40,44 +40,46 @@ import './nuxeo-selectivity.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-directory-suggestion/index.html
    */
-  class DirectorySuggestion
-    extends mixinBehaviors([I18nBehavior, FormatBehavior, IronFormElementBehavior,
-      IronValidatableBehavior], Nuxeo.Element) {
+  class DirectorySuggestion extends mixinBehaviors(
+    [I18nBehavior, FormatBehavior, IronFormElementBehavior, IronValidatableBehavior],
+    Nuxeo.Element,
+  ) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-      }
+        <style>
+          :host {
+            display: block;
+          }
 
-      :host([hidden]) {
-        display: none;
-      }
-    </style>
+          :host([hidden]) {
+            display: none;
+          }
+        </style>
 
-    <nuxeo-selectivity
-      id="s2"
-      operation="[[operation]]"
-      label="[[label]]"
-      min-chars="[[minChars]]"
-      frequency="[[frequency]]"
-      multiple="[[multiple]]"
-      params="[[_computeParams(params.*, directoryName, dbl10n)]]"
-      placeholder="[[placeholder]]"
-      error-message="[[errorMessage]]"
-      readonly="[[readonly]]"
-      value="{{value}}"
-      selected-items="{{selectedItems}}"
-      selected-item="{{selectedItem}}"
-      selection-formatter="[[selectionFormatter]]"
-      required="[[required]]"
-      invalid="[[invalid]]"
-      resolve-entry="[[resolveEntry]]"
-      stay-open-on-select="[[stayOpenOnSelect]]"
-      id-function="[[idFunction]]"
-      query-results-filter="[[queryResultsFilter]]">
-    </nuxeo-selectivity>
-`;
+        <nuxeo-selectivity
+          id="s2"
+          operation="[[operation]]"
+          label="[[label]]"
+          min-chars="[[minChars]]"
+          frequency="[[frequency]]"
+          multiple="[[multiple]]"
+          params="[[_computeParams(params.*, directoryName, dbl10n)]]"
+          placeholder="[[placeholder]]"
+          error-message="[[errorMessage]]"
+          readonly="[[readonly]]"
+          value="{{value}}"
+          selected-items="{{selectedItems}}"
+          selected-item="{{selectedItem}}"
+          selection-formatter="[[selectionFormatter]]"
+          required="[[required]]"
+          invalid="[[invalid]]"
+          resolve-entry="[[resolveEntry]]"
+          stay-open-on-select="[[stayOpenOnSelect]]"
+          id-function="[[idFunction]]"
+          query-results-filter="[[queryResultsFilter]]"
+        >
+        </nuxeo-selectivity>
+      `;
     }
 
     static get is() {
@@ -245,13 +247,17 @@ import './nuxeo-selectivity.js';
     }
 
     _computeParams() {
-      return Object.assign({}, {
-        directoryName: this.directoryName,
-        dbl10n: this.dbl10n,
-        canSelectParent: this.canSelectParent,
-        localize: true,
-        lang: (window.nuxeo.I18n.language) ? window.nuxeo.I18n.language.split('-')[0] : 'en',
-      }, this.params);
+      return Object.assign(
+        {},
+        {
+          directoryName: this.directoryName,
+          dbl10n: this.dbl10n,
+          canSelectParent: this.canSelectParent,
+          localize: true,
+          lang: window.nuxeo.I18n.language ? window.nuxeo.I18n.language.split('-')[0] : 'en',
+        },
+        this.params,
+      );
     }
 
     _selectionFormatter(entry) {

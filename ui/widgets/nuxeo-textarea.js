@@ -29,52 +29,53 @@ import '@polymer/paper-input/paper-textarea.js';
   class Textarea extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-        position: relative;
-        padding-bottom: 8px;
-      }
+        <style>
+          :host {
+            display: block;
+            position: relative;
+            padding-bottom: 8px;
+          }
 
-      :host([hidden]) {
-        display: none;
-      }
+          :host([hidden]) {
+            display: none;
+          }
 
-      :host([required]) label::after {
-        display: inline-block;
-        content: '*';
-        margin-left: 4px; 
-        color: var(--paper-input-container-invalid-color, red);
-      }
+          :host([required]) label::after {
+            display: inline-block;
+            content: '*';
+            margin-left: 4px;
+            color: var(--paper-input-container-invalid-color, red);
+          }
 
-      paper-textarea {
-        --paper-input-container: {
-          padding: 0;
-        }
-      }
+          paper-textarea {
+            --paper-input-container: {
+              padding: 0;
+            }
+          }
 
-      label {
-        @apply --nuxeo-label;
-      }
-    </style>
+          label {
+            @apply --nuxeo-label;
+          }
+        </style>
 
-    <label>[[label]]</label>
+        <label>[[label]]</label>
 
-    <paper-textarea
-      id="paperTextarea"
-      name="[[name]]"
-      value="{{value}}"
-      rows$="[[rows]]"
-      required$="[[required]]"
-      disabled$="[[disabled]]"
-      readonly$="[[readonly]]"
-      error-message="[[errorMessage]]"
-      validator$="[[validator]]"
-      placeholder$="[[placeholder]]"
-      invalid$="[[invalid]]"
-      no-label-float>
-    </paper-textarea>
-`;
+        <paper-textarea
+          id="paperTextarea"
+          name="[[name]]"
+          value="{{value}}"
+          rows$="[[rows]]"
+          required$="[[required]]"
+          disabled$="[[disabled]]"
+          readonly$="[[readonly]]"
+          error-message="[[errorMessage]]"
+          validator$="[[validator]]"
+          placeholder$="[[placeholder]]"
+          invalid$="[[invalid]]"
+          no-label-float
+        >
+        </paper-textarea>
+      `;
     }
 
     static get is() {

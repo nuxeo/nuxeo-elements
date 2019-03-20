@@ -175,7 +175,6 @@ import './nuxeo-resource.js';
           readOnly: true,
         },
       };
-
     }
 
     ready() {
@@ -247,9 +246,8 @@ import './nuxeo-resource.js';
 
     _autoChanged() {
       if (this.auto && this.path) {
-        this._debouncer = Debouncer.debounce(
-          this._debouncer,
-          timeOut.after(this.autoDelay), () => this.get().then(() => this.execute()),
+        this._debouncer = Debouncer.debounce(this._debouncer, timeOut.after(this.autoDelay), () =>
+          this.get().then(() => this.execute()),
         );
       }
     }

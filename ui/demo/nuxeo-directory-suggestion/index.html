@@ -18,8 +18,8 @@ limitations under the License.
   <head>
     <title>nuxeo-directory-suggestion</title>
 
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" />
     <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="/node_modules/@nuxeo/nuxeo-elements/dedup.js"></script>
     <script type="module">
@@ -33,11 +33,14 @@ limitations under the License.
   <body unresolved>
     <dom-bind>
       <template>
-
         <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
 
         <nuxeo-demo-section heading="Simple directory suggestion" size="small">
-          <nuxeo-directory-suggestion directory-name="subject" value="{{simpleDirectory}}" min-chars="0"></nuxeo-directory-suggestion>
+          <nuxeo-directory-suggestion
+            directory-name="subject"
+            value="{{simpleDirectory}}"
+            min-chars="0"
+          ></nuxeo-directory-suggestion>
           <div>Selected directory: [[simpleDirectory]]</div>
         </nuxeo-demo-section>
 
@@ -47,10 +50,13 @@ limitations under the License.
         </nuxeo-demo-section>
 
         <nuxeo-demo-section heading="Directory suggestion (multiple)" size="small">
-          <nuxeo-directory-suggestion directory-name="subject" value="{{multipleDirectories}}" multiple="true"></nuxeo-directory-suggestion>
+          <nuxeo-directory-suggestion
+            directory-name="subject"
+            value="{{multipleDirectories}}"
+            multiple="true"
+          ></nuxeo-directory-suggestion>
           <div>Selected directories: [[multipleDirectories]]</div>
         </nuxeo-demo-section>
-
       </template>
     </dom-bind>
   </body>

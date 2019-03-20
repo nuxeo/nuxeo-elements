@@ -45,44 +45,44 @@ import './nuxeo-user-group-formatter.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-user-suggestion/index.html
    */
-  class UserSuggestion
-    extends mixinBehaviors([IronFormElementBehavior, IronValidatableBehavior], Nuxeo.Element) {
+  class UserSuggestion extends mixinBehaviors([IronFormElementBehavior, IronValidatableBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-      }
+        <style>
+          :host {
+            display: block;
+          }
 
-      :host([hidden]) {
-        display: none;
-      }
-    </style>
+          :host([hidden]) {
+            display: none;
+          }
+        </style>
 
-    <nuxeo-selectivity
-      id="s2"
-      operation="[[operation]]"
-      label="[[label]]"
-      min-chars="[[minChars]]"
-      frequency="[[frequency]]"
-      multiple="[[multiple]]"
-      params="[[_computeParams(params.*, searchType)]]"
-      placeholder="[[placeholder]]"
-      error-message="[[errorMessage]]"
-      readonly="[[readonly]]"
-      value="{{value}}"
-      selected-items="{{selectedItems}}"
-      selected-item="{{selectedItem}}"
-      required="[[required]]"
-      invalid="[[invalid]]"
-      selection-formatter="[[selectionFormatter]]"
-      result-formatter="[[resultFormatter]]"
-      resolve-entry="[[resolveEntry]]"
-      id-function="[[idFunction]]"
-      query-results-filter="[[queryResultsFilter]]"
-      stay-open-on-select="[[stayOpenOnSelect]]">
-    </nuxeo-selectivity>
-`;
+        <nuxeo-selectivity
+          id="s2"
+          operation="[[operation]]"
+          label="[[label]]"
+          min-chars="[[minChars]]"
+          frequency="[[frequency]]"
+          multiple="[[multiple]]"
+          params="[[_computeParams(params.*, searchType)]]"
+          placeholder="[[placeholder]]"
+          error-message="[[errorMessage]]"
+          readonly="[[readonly]]"
+          value="{{value}}"
+          selected-items="{{selectedItems}}"
+          selected-item="{{selectedItem}}"
+          required="[[required]]"
+          invalid="[[invalid]]"
+          selection-formatter="[[selectionFormatter]]"
+          result-formatter="[[resultFormatter]]"
+          resolve-entry="[[resolveEntry]]"
+          id-function="[[idFunction]]"
+          query-results-filter="[[queryResultsFilter]]"
+          stay-open-on-select="[[stayOpenOnSelect]]"
+        >
+        </nuxeo-selectivity>
+      `;
     }
 
     static get is() {
@@ -241,9 +241,13 @@ import './nuxeo-user-group-formatter.js';
     }
 
     _computeParams() {
-      return Object.assign({}, {
-        searchType: this.searchType,
-      }, this.params);
+      return Object.assign(
+        {},
+        {
+          searchType: this.searchType,
+        },
+        this.params,
+      );
     }
 
     _selectionFormatter(item) {
@@ -259,9 +263,8 @@ import './nuxeo-user-group-formatter.js';
           default:
             if (item.displayLabel) {
               return item.displayLabel;
-            } 
-              return item.id ? item.id : item;
-            
+            }
+            return item.id ? item.id : item;
         }
       }
     }
@@ -277,19 +280,15 @@ import './nuxeo-user-group-formatter.js';
     _resolveEntry(item) {
       if (item && item['entity-type']) {
         return item;
-      } 
-        return this.prefixed
-          ? { id: item, displayLabel: item, prefixed_id: item }
-          : { id: item, displayLabel: item };
-      
+      }
+      return this.prefixed ? { id: item, displayLabel: item, prefixed_id: item } : { id: item, displayLabel: item };
     }
 
     _idFunction(item) {
       if (this.prefixed) {
         return item.prefixed_id ? item.prefixed_id : `${item['entity-type']}:${item.id}`;
-      } 
-        return item.id;
-      
+      }
+      return item.id;
     }
   }
 

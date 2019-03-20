@@ -34,61 +34,61 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
   class Error extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-        padding: 24px;
-        background: rgba(0, 0, 0, 0.025);
-        border-radius: 4px;
-        border: 1px dashed rgba(0, 0, 0, 0.1);
-      }
+        <style>
+          :host {
+            display: block;
+            padding: 24px;
+            background: rgba(0, 0, 0, 0.025);
+            border-radius: 4px;
+            border: 1px dashed rgba(0, 0, 0, 0.1);
+          }
 
-      :host([hidden]) {
-        display: none !important;
-      }
+          :host([hidden]) {
+            display: none !important;
+          }
 
-      .code {
-        @apply --layout-flex;
-        text-transform: uppercase;
-        color: var(--nuxeo-text-default, rgba(0,0,0,0.3));
-        text-align: center;
-        font-size: 1.4rem;
-        font-weight: 700;
-      }
+          .code {
+            @apply --layout-flex;
+            text-transform: uppercase;
+            color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.3));
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+          }
 
-      .description {
-        @apply --layout-flex;
-        text-transform: uppercase;
-        color: var(--nuxeo-text-default, rgba(0,0,0,0.3));
-        text-align: center;
-        font-size: 1.2rem;
-        font-weight: 500;
-        padding: 8px;
-      }
+          .description {
+            @apply --layout-flex;
+            text-transform: uppercase;
+            color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.3));
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 500;
+            padding: 8px;
+          }
 
-      .url {
-        @apply --layout-flex;
-        color: var(--nuxeo-text-default, rgba(0,0,0,0.3));
-        text-align: center;
-        padding: 16px 0;
-        font-size: .8rem;
-      }
+          .url {
+            @apply --layout-flex;
+            color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.3));
+            text-align: center;
+            padding: 16px 0;
+            font-size: 0.8rem;
+          }
 
-      .message {
-        @apply --layout-flex;
-        color: var(--nuxeo-text-default, rgba(0,0,0,0.3));
-        text-align: center;
-        padding: 8px 0;
-        font-size: 1rem;
-        font-weight: 500;
-      }
-    </style>
+          .message {
+            @apply --layout-flex;
+            color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.3));
+            text-align: center;
+            padding: 8px 0;
+            font-size: 1rem;
+            font-weight: 500;
+          }
+        </style>
 
-    <div class="code" hidden\$="[[!code]]">[[code]]</div>
-    <div class="description" hidden\$="[[!code]]">[[_label(code)]]</div>
-    <div class="url" hidden\$="[[!url]]">[[url]]</div>
-    <div class="message" hidden\$="[[!message]]">[[message]]</div>
-`;
+        <div class="code" hidden\$="[[!code]]">[[code]]</div>
+        <div class="description" hidden\$="[[!code]]">[[_label(code)]]</div>
+        <div class="url" hidden\$="[[!url]]">[[url]]</div>
+        <div class="message" hidden\$="[[!message]]">[[message]]</div>
+      `;
     }
 
     static get is() {

@@ -19,7 +19,6 @@ limitations under the License.
  */
 export const AggregationBehavior = {
   properties: {
-
     data: {
       type: Object,
     },
@@ -54,12 +53,9 @@ export const AggregationBehavior = {
         return this._computeLabel.bind(this);
       },
     },
-
   },
 
-  observers: [
-    '_observeData(data)',
-  ],
+  observers: ['_observeData(data)'],
 
   _observeData() {
     if (this.data && this.data.extendedBuckets) {
@@ -81,7 +77,8 @@ export const AggregationBehavior = {
         buckets.sort((a, b) => {
           if (a.label < b.label) {
             return -1;
-          } if (a.label > b.label) {
+          }
+          if (a.label > b.label) {
             return 1;
           }
           return 0;
@@ -107,24 +104,24 @@ export const AggregationBehavior = {
       const entry = item.fetchedKey;
       if (entry['entity-type'] === 'directoryEntry') {
         return this.labelForDirectoryEntry(entry);
-      } if (entry['entity-type'] === 'user') {
+      }
+      if (entry['entity-type'] === 'user') {
         return this.labelForUserEntry(entry);
-      } if (entry['entity-type'] === 'document') {
+      }
+      if (entry['entity-type'] === 'document') {
         return entry.properties['dc:title'] || this.i18n('aggregation.format.document.field.unknown', 'dc:title');
-      } 
-        i18nKey = this.i18n(`label.ui.aggregate.${item.key}`);
-        return i18nKey === `label.ui.aggregate.${item.key}` ? item.key : i18nKey;
-      
-    } 
+      }
       i18nKey = this.i18n(`label.ui.aggregate.${item.key}`);
       return i18nKey === `label.ui.aggregate.${item.key}` ? item.key : i18nKey;
-    
+    }
+    i18nKey = this.i18n(`label.ui.aggregate.${item.key}`);
+    return i18nKey === `label.ui.aggregate.${item.key}` ? item.key : i18nKey;
   },
 
   labelForDirectoryEntry(entry) {
     let lang = window.nuxeo.I18n.language || 'en';
     if (lang.indexOf('-') > -1) {
-      [ lang ] = lang.split('-');
+      [lang] = lang.split('-');
     }
     const labels = [];
     while (entry) {
@@ -145,12 +142,15 @@ export const AggregationBehavior = {
   labelForUserEntry(entry) {
     if (entry.properties === undefined) {
       return entry.id;
-    } if (entry.properties.firstName && entry.properties.firstName.length > 0
-     && entry.properties.lastName && entry.properties.lastName.length > 0) {
+    }
+    if (
+      entry.properties.firstName &&
+      entry.properties.firstName.length > 0 &&
+      entry.properties.lastName &&
+      entry.properties.lastName.length > 0
+    ) {
       return `${entry.properties.firstName} ${entry.properties.lastName}`;
-    } 
-      return entry.properties.username;
-    
+    }
+    return entry.properties.username;
   },
-
 };

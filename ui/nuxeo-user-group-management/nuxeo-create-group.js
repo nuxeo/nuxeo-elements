@@ -36,130 +36,133 @@ import '../widgets/nuxeo-user-suggestion.js';
   class CreateGroup extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="iron-flex">
-      :host {
-        display: block;
-      }
+        <style include="iron-flex">
+          :host {
+            display: block;
+          }
 
-      .header {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        margin-bottom: 16px;
-      }
+          .header {
+            @apply --layout-horizontal;
+            @apply --layout-center;
+            margin-bottom: 16px;
+          }
 
-      .header > iron-icon {
-        padding: 8px;
-      }
+          .header > iron-icon {
+            padding: 8px;
+          }
 
-      .row {
-        font-size: 0.8rem;
-        border: 1px solid var(--nuxeo-border, #aaa);
-        @apply --layout-horizontal;
-        @apply --layout-center;
-      }
+          .row {
+            font-size: 0.8rem;
+            border: 1px solid var(--nuxeo-border, #aaa);
+            @apply --layout-horizontal;
+            @apply --layout-center;
+          }
 
-      .row .label {
-        font-weight: 400;
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        @apply --layout-flex;
-      }
+          .row .label {
+            font-weight: 400;
+            @apply --layout-horizontal;
+            @apply --layout-center;
+            @apply --layout-flex;
+          }
 
-      .row .label iron-icon {
-        margin: 0 8px;
-      }
+          .row .label iron-icon {
+            margin: 0 8px;
+          }
 
-      .row .name {
-        @apply --layout-flex;
-      }
+          .row .name {
+            @apply --layout-flex;
+          }
 
-      .row .email {
-        @apply --layout-flex;
-      }
+          .row .email {
+            @apply --layout-flex;
+          }
 
-      .form-buttons {
-        margin-top: 16px;
-      }
+          .form-buttons {
+            margin-top: 16px;
+          }
 
-      #errors {
-        color: red;
-        margin: 1em 0;
-      }
+          #errors {
+            color: red;
+            margin: 1em 0;
+          }
 
-      /* buttons */
-      paper-button.primary {
-        background-color: var(--nuxeo-button-primary, #00adff);
-        color: #fff;
-      }
+          /* buttons */
+          paper-button.primary {
+            background-color: var(--nuxeo-button-primary, #00adff);
+            color: #fff;
+          }
 
-      paper-button.primary:hover,
-      paper-button.primary:focus {
-        background-color: var(--nuxeo-button-primary-focus, #0079b3);
-        font-weight: inherit;
-        color: #fff !important;
-      }
-    </style>
+          paper-button.primary:hover,
+          paper-button.primary:focus {
+            background-color: var(--nuxeo-button-primary-focus, #0079b3);
+            font-weight: inherit;
+            color: #fff !important;
+          }
+        </style>
 
-    <nuxeo-resource id="request" path="/group"></nuxeo-resource>
+        <nuxeo-resource id="request" path="/group"></nuxeo-resource>
 
-    <div class="header">
-      <iron-icon icon="nuxeo:group"></iron-icon>
-      <h3>[[i18n('createGroup.heading')]]</h3>
-    </div>
-
-    <iron-form id="form">
-      <form>
-
-        <nuxeo-input id="groupName" label="[[i18n('createGroup.group.name')]]" value="{{groupName}}" required>
-        </nuxeo-input>
-        <nuxeo-input id="groupLabel" label="[[i18n('createGroup.group.label')]]" value="{{groupLabel}}"></nuxeo-input>
-
-        <nuxeo-user-suggestion
-          id="picker"
-          label="[[i18n('createGroup.members')]]"
-          search-type="USER_GROUP_TYPE"
-          placeholder="[[i18n('createGroup.search.placeholder')]]"
-          selected-item="{{selectedUser}}"
-          result-formatter="[[resultFormatter]]"
-          query-results-filter="[[resultsFilter]]">
-        </nuxeo-user-suggestion>
-
-        <!-- selected members -->
-        <dom-repeat items="[[selectedUsers]]">
-          <template>
-            <div class="row">
-              <div class="label">
-                <iron-icon icon="nuxeo:user" hidden="[[item.groupname]]"></iron-icon>
-                <iron-icon icon="nuxeo:group" hidden="[[item.username]]"></iron-icon>
-                <span>[[item.displayLabel]]</span>
-              </div>
-              <div class="name">
-                <span hidden="[[item.groupname]]">[[item.username]]</span>
-                <span hidden="[[item.username]]">[[item.groupname]]</span>
-              </div>
-              <div class="email">
-                <span>[[item.email]]</span>
-              </div>
-              <paper-icon-button icon="nuxeo:remove" title="remove" on-click="_remove"></paper-icon-button>
-            </div>
-          </template>
-        </dom-repeat>
-
-        <div class="form-buttons">
-          <paper-button noink id="cancelButton" on-click="_cancel">[[i18n('command.cancel')]]</paper-button>
-          <paper-button noink id="createButton" class="primary" on-click="_submit">
-            [[i18n('command.create')]]
-          </paper-button>
-          <paper-button noink id="createAnotherButton" class="primary" on-click="_submitAnother">
-            [[i18n('createGroup.createAnother')]]
-          </paper-button>
+        <div class="header">
+          <iron-icon icon="nuxeo:group"></iron-icon>
+          <h3>[[i18n('createGroup.heading')]]</h3>
         </div>
 
-        <span id="errors" hidden\$="[[!_hasErrors(errors)]]">[[errors]]</span>
+        <iron-form id="form">
+          <form>
+            <nuxeo-input id="groupName" label="[[i18n('createGroup.group.name')]]" value="{{groupName}}" required>
+            </nuxeo-input>
+            <nuxeo-input
+              id="groupLabel"
+              label="[[i18n('createGroup.group.label')]]"
+              value="{{groupLabel}}"
+            ></nuxeo-input>
 
-      </form>
-    </iron-form>
-`;
+            <nuxeo-user-suggestion
+              id="picker"
+              label="[[i18n('createGroup.members')]]"
+              search-type="USER_GROUP_TYPE"
+              placeholder="[[i18n('createGroup.search.placeholder')]]"
+              selected-item="{{selectedUser}}"
+              result-formatter="[[resultFormatter]]"
+              query-results-filter="[[resultsFilter]]"
+            >
+            </nuxeo-user-suggestion>
+
+            <!-- selected members -->
+            <dom-repeat items="[[selectedUsers]]">
+              <template>
+                <div class="row">
+                  <div class="label">
+                    <iron-icon icon="nuxeo:user" hidden="[[item.groupname]]"></iron-icon>
+                    <iron-icon icon="nuxeo:group" hidden="[[item.username]]"></iron-icon>
+                    <span>[[item.displayLabel]]</span>
+                  </div>
+                  <div class="name">
+                    <span hidden="[[item.groupname]]">[[item.username]]</span>
+                    <span hidden="[[item.username]]">[[item.groupname]]</span>
+                  </div>
+                  <div class="email">
+                    <span>[[item.email]]</span>
+                  </div>
+                  <paper-icon-button icon="nuxeo:remove" title="remove" on-click="_remove"></paper-icon-button>
+                </div>
+              </template>
+            </dom-repeat>
+
+            <div class="form-buttons">
+              <paper-button noink id="cancelButton" on-click="_cancel">[[i18n('command.cancel')]]</paper-button>
+              <paper-button noink id="createButton" class="primary" on-click="_submit">
+                [[i18n('command.create')]]
+              </paper-button>
+              <paper-button noink id="createAnotherButton" class="primary" on-click="_submitAnother">
+                [[i18n('createGroup.createAnother')]]
+              </paper-button>
+            </div>
+
+            <span id="errors" hidden\$="[[!_hasErrors(errors)]]">[[errors]]</span>
+          </form>
+        </iron-form>
+      `;
     }
 
     static get is() {
@@ -219,9 +222,7 @@ import '../widgets/nuxeo-user-suggestion.js';
     }
 
     static get observers() {
-      return [
-        '_observeSelectedUser(selectedUser)',
-      ];
+      return ['_observeSelectedUser(selectedUser)'];
     }
 
     ready() {
@@ -233,10 +234,12 @@ import '../widgets/nuxeo-user-suggestion.js';
     }
 
     _goHome() {
-      this.dispatchEvent(new CustomEvent('goHome', {
-        composed: true,
-        bubbles: true,
-      }));
+      this.dispatchEvent(
+        new CustomEvent('goHome', {
+          composed: true,
+          bubbles: true,
+        }),
+      );
     }
 
     _observeSelectedUser() {
@@ -273,19 +276,24 @@ import '../widgets/nuxeo-user-suggestion.js';
      */
     _create() {
       this.$.request.data = this._computeData();
-      this.$.request.post().then((response) => {
-        this.dispatchEvent(new CustomEvent('nuxeo-group-created', {
-          composed: true,
-          bubbles: true,
-          detail: response,
-        }));
-        this._resetFields();
-        if (!this._createAnother) {
-          this._goHome();
-        }
-      }).catch((error) => {
-        this.errors = error.message;
-      });
+      this.$.request
+        .post()
+        .then((response) => {
+          this.dispatchEvent(
+            new CustomEvent('nuxeo-group-created', {
+              composed: true,
+              bubbles: true,
+              detail: response,
+            }),
+          );
+          this._resetFields();
+          if (!this._createAnother) {
+            this._goHome();
+          }
+        })
+        .catch((error) => {
+          this.errors = error.message;
+        });
     }
 
     _cancel() {
@@ -305,9 +313,11 @@ import '../widgets/nuxeo-user-suggestion.js';
         'entity-type': 'group',
         groupname: this.groupName,
         grouplabel: this.groupLabel,
-        memberUsers: this.selectedUsers.filter((record) => record.type === 'USER_TYPE')
+        memberUsers: this.selectedUsers
+          .filter((record) => record.type === 'USER_TYPE')
           .map((record) => record.username),
-        memberGroups: this.selectedUsers.filter((record) => record.type === 'GROUP_TYPE')
+        memberGroups: this.selectedUsers
+          .filter((record) => record.type === 'GROUP_TYPE')
           .map((record) => record.groupname),
       };
     }

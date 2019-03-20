@@ -18,8 +18,8 @@ limitations under the License.
   <head>
     <title>nuxeo-select</title>
 
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" />
     <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="/node_modules/@nuxeo/nuxeo-elements/dedup.js"></script>
     <script type="module">
@@ -32,22 +32,19 @@ limitations under the License.
   <body unresolved>
     <dom-bind>
       <template>
-
         <nuxeo-demo-section heading="Select (required)" size="small">
-          <nuxeo-select label="Select an option"
-                        options='[{"id": 1, "label": "Option 1"}, {"id": 2, "label": "Option 2"}, {"id": 3, "label": "Option 3"}]'
-                        selected="{{optionSelected}}"
-                        required>
+          <nuxeo-select
+            label="Select an option"
+            options='[{"id": 1, "label": "Option 1"}, {"id": 2, "label": "Option 2"}, {"id": 3, "label": "Option 3"}]'
+            selected="{{optionSelected}}"
+            required
+          >
           </nuxeo-select>
         </nuxeo-demo-section>
 
         <nuxeo-demo-section heading="Select (disabled)" size="small">
-          <nuxeo-select label="Select an option"
-                        options='[{"id": 1, "label": "Option 1"}]'
-                        disabled>
-          </nuxeo-select>
+          <nuxeo-select label="Select an option" options='[{"id": 1, "label": "Option 1"}]' disabled></nuxeo-select>
         </nuxeo-demo-section>
-
       </template>
     </dom-bind>
   </body>

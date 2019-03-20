@@ -176,10 +176,12 @@ import './nuxeo-edit-password.js';
     }
 
     _goHome() {
-      this.dispatchEvent(new CustomEvent('goHome', {
-        composed: true,
-        bubbles: true,
-      }));
+      this.dispatchEvent(
+        new CustomEvent('goHome', {
+          composed: true,
+          bubbles: true,
+        }),
+      );
     }
 
     /**
@@ -202,17 +204,21 @@ import './nuxeo-edit-password.js';
      * Creates a new user if the form was successfully submitted.
      */
     _create() {
-      if (!this._isAdministrator(this._currentUser) &&
-          this.user.groups && this.user.groups.indexOf('administrators') !== -1) {
+      if (
+        !this._isAdministrator(this._currentUser) &&
+        this.user.groups &&
+        this.user.groups.indexOf('administrators') !== -1
+      ) {
         this.errors = this.i18n('createUser.errorAdministratorsGroup');
         return;
       }
-      this._doCreate(this.user).then(() => {
-        this._resetFields();
-        if (!this._createAnother) {
-          this._goHome();
-        }
-      })
+      this._doCreate(this.user)
+        .then(() => {
+          this._resetFields();
+          if (!this._createAnother) {
+            this._goHome();
+          }
+        })
         .catch((error) => {
           this.errors = error.message;
         });
@@ -227,23 +233,26 @@ import './nuxeo-edit-password.js';
       if (this.usePassword) {
         this.$.request.data = entity;
         return this.$.request.post().then((newUser) => {
-          this.dispatchEvent(new CustomEvent('nuxeo-user-created', {
-            composed: true,
-            bubbles: true,
-            detail: newUser,
-          }));
+          this.dispatchEvent(
+            new CustomEvent('nuxeo-user-created', {
+              composed: true,
+              bubbles: true,
+              detail: newUser,
+            }),
+          );
         });
-      } 
-        this.$.invite.input = entity;
-        return this.$.invite.execute().then(() => {
-          entity.id = user.username;
-          this.dispatchEvent(new CustomEvent('nuxeo-user-invited', {
+      }
+      this.$.invite.input = entity;
+      return this.$.invite.execute().then(() => {
+        entity.id = user.username;
+        this.dispatchEvent(
+          new CustomEvent('nuxeo-user-invited', {
             composed: true,
             bubbles: true,
             detail: entity,
-          }));
-        });
-      
+          }),
+        );
+      });
     }
 
     _cancel() {

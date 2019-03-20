@@ -33,39 +33,38 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
   class TreeNode extends mixinBehaviors([Templatizer, I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-        @apply --nuxeo-tree-node-theme;
-      }
+        <style>
+          :host {
+            display: block;
+            @apply --nuxeo-tree-node-theme;
+          }
 
-      ::slotted(iron-collapse) {
-        padding-left: 1em;
-        @apply --nuxeo-tree-children-theme;
-      }
+          ::slotted(iron-collapse) {
+            padding-left: 1em;
+            @apply --nuxeo-tree-children-theme;
+          }
 
-      ::slotted(.more) {
-        @apply --nuxeo-tree-node-more-theme;
-      }
+          ::slotted(.more) {
+            @apply --nuxeo-tree-node-more-theme;
+          }
 
-      ::slotted(#content) {
-        position: relative;
-        margin: .1rem 0 .2rem;
-      }
+          ::slotted(#content) {
+            position: relative;
+            margin: 0.1rem 0 0.2rem;
+          }
 
-      ::slotted(#content iron-icon) {
-        margin-top: -0.25rem;
-      }
+          ::slotted(#content iron-icon) {
+            margin-top: -0.25rem;
+          }
 
-      ::slotted(span iron-icon) {
-        width: .95rem;
-        margin: 0 .1rem .3rem 0;
-      }
+          ::slotted(span iron-icon) {
+            width: 0.95rem;
+            margin: 0 0.1rem 0.3rem 0;
+          }
+        </style>
 
-    </style>
-
-    <slot></slot>
-`;
+        <slot></slot>
+      `;
     }
 
     static get is() {
@@ -126,9 +125,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     static get observers() {
-      return [
-        '_renderNodeContent(data)',
-      ];
+      return ['_renderNodeContent(data)'];
     }
 
     toggle() {
@@ -147,11 +144,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       } else {
         detail = { item: e.detail.item };
       }
-      this.dispatchEvent(new CustomEvent('select', {
-        composed: true,
-        bubbles: true,
-        detail,
-      }));
+      this.dispatchEvent(
+        new CustomEvent('select', {
+          composed: true,
+          bubbles: true,
+          detail,
+        }),
+      );
     }
 
     open() {
@@ -205,7 +204,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _renderChildNodes() {
       if (this.template) {
-        return new Promise(((resolve) => {
+        return new Promise((resolve) => {
           // clear <iron-collapse> content in case we are re-rendering
           const children = dom(this).querySelector('#children');
           while (children.lastChild) {
@@ -231,7 +230,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           }
           resolve();
           this.loading = false;
-        }));
+        });
       }
     }
 
@@ -267,11 +266,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _setupToggleListener() {
       flush();
-      const selectElts = dom(this).querySelector('#content').querySelectorAll('[select]');
+      const selectElts = dom(this)
+        .querySelector('#content')
+        .querySelectorAll('[select]');
       for (let i = 0; i < selectElts.length; i++) {
         this.listen(selectElts[i], 'click', '_selectNode');
       }
-      const toggleEls = dom(this).querySelector('#content').querySelectorAll('[toggle]');
+      const toggleEls = dom(this)
+        .querySelector('#content')
+        .querySelectorAll('[toggle]');
       for (let i = 0; i < toggleEls.length; i++) {
         this.listen(toggleEls[i], 'click', 'toggle');
       }
@@ -287,7 +290,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _teardownInstance() {
-      const {children} = this._instance;
+      const { children } = this._instance;
       if (children && children.length) {
         const parent = dom(dom(children[0]).parentNode);
         for (let i = 0; i < children.length; i++) {

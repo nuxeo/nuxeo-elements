@@ -12,54 +12,54 @@ import '@polymer/paper-icon-button/paper-icon-button.js';
   class DataTableColumnSort extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-        margin: 4px;
-      }
+        <style>
+          :host {
+            display: block;
+            margin: 4px;
+          }
 
-      :host([hidden]) {
-        display: none;
-      }
+          :host([hidden]) {
+            display: none;
+          }
 
-      paper-icon-button {
-        position: relative;
-        opacity: .84;
-        transition: all .2s;
-      }
+          paper-icon-button {
+            position: relative;
+            opacity: 0.84;
+            transition: all 0.2s;
+          }
 
-      paper-icon-button:hover,
-      paper-icon-button[focused] {
-        color: var(--default-primary-color);
-      }
+          paper-icon-button:hover,
+          paper-icon-button[focused] {
+            color: var(--default-primary-color);
+          }
 
-      paper-icon-button:not([direction]) {
-        opacity: .16;
-      }
+          paper-icon-button:not([direction]) {
+            opacity: 0.16;
+          }
 
-      paper-icon-button[direction='desc'] {
-        transform: rotate(-180deg);
-      }
+          paper-icon-button[direction='desc'] {
+            transform: rotate(-180deg);
+          }
 
-      paper-icon-button[hidden] {
-        display: none;
-      }
+          paper-icon-button[hidden] {
+            display: none;
+          }
 
-      .order {
-        font-size: .8rem;
-        font-weight: bold;
-        position: absolute;
-        right: 4px;
-        bottom: 8px;
-      }
-    </style>
+          .order {
+            font-size: 0.8rem;
+            font-weight: bold;
+            position: absolute;
+            right: 4px;
+            bottom: 8px;
+          }
+        </style>
 
-    <div style="position: relative">
-      <paper-icon-button id="sortIcon" on-click="_sort" icon="data-table:arrow-upward" direction\$="[[direction]]">
-      </paper-icon-button>
-      <div class="order">[[order]]</div>
-    </div>
-`;
+        <div style="position: relative">
+          <paper-icon-button id="sortIcon" on-click="_sort" icon="data-table:arrow-upward" direction\$="[[direction]]">
+          </paper-icon-button>
+          <div class="order">[[order]]</div>
+        </div>
+      `;
     }
 
     static get is() {
@@ -82,9 +82,7 @@ import '@polymer/paper-icon-button/paper-icon-button.js';
     }
 
     static get observers() {
-      return [
-        '_sortOrderChanged(sortOrder.*)',
-      ];
+      return ['_sortOrderChanged(sortOrder.*)'];
     }
 
     _order(path, sortOrder, length) {
@@ -125,14 +123,16 @@ import '@polymer/paper-icon-button/paper-icon-button.js';
           break;
       }
 
-      this.dispatchEvent(new CustomEvent('sort-direction-changed', {
-        composed: true,
-        bubbles: true,
-        detail: {
-          path: this.path,
-          direction: this.direction,
-        },
-      }));
+      this.dispatchEvent(
+        new CustomEvent('sort-direction-changed', {
+          composed: true,
+          bubbles: true,
+          detail: {
+            path: this.path,
+            direction: this.direction,
+          },
+        }),
+      );
     }
   }
 

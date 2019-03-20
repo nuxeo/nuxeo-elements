@@ -39,158 +39,167 @@ import './nuxeo-popup-permission.js';
   class DocumentACLTable extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      .acl-table-headers {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        background-color: var(--nuxeo-table-header-background, #fafafa);
-        color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.54));
-        font-weight: 700;
-        min-height: 48px;
-        padding: 0 0 0 12px;
-        border-bottom: 2px solid var(--nuxeo-border, #eee);
-        box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2) inset;
-      }
+        <style>
+          .acl-table-headers {
+            @apply --layout-horizontal;
+            @apply --layout-center;
+            background-color: var(--nuxeo-table-header-background, #fafafa);
+            color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.54));
+            font-weight: 700;
+            min-height: 48px;
+            padding: 0 0 0 12px;
+            border-bottom: 2px solid var(--nuxeo-border, #eee);
+            box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2) inset;
+          }
 
-      .acl-table-row {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        border-bottom: 1px solid var(--nuxeo-border, #e3e3e3);
-        background-color: var(--nuxeo-table-items-background, #fafafa);
-        cursor: pointer;
-        min-height: 48px;
-        padding: 0 0 0 12px;
-      }
+          .acl-table-row {
+            @apply --layout-horizontal;
+            @apply --layout-center;
+            border-bottom: 1px solid var(--nuxeo-border, #e3e3e3);
+            background-color: var(--nuxeo-table-items-background, #fafafa);
+            cursor: pointer;
+            min-height: 48px;
+            padding: 0 0 0 12px;
+          }
 
-      .acl-table-row:hover {
-        background: var(--nuxeo-container-hover, #fafafa);
-      }
+          .acl-table-row:hover {
+            background: var(--nuxeo-container-hover, #fafafa);
+          }
 
-      .acl-table {
-        border: 1px solid var(--nuxeo-border, #eee);
-      }
+          .acl-table {
+            border: 1px solid var(--nuxeo-border, #eee);
+          }
 
-      .acl-table-row:last-of-type {
-        border-bottom: none;
-      }
+          .acl-table-row:last-of-type {
+            border-bottom: none;
+          }
 
-      .table-headers > div {
-        background-color: var(--nuxeo-table-header-background, #f8f9fb);
-        font-weight: bold;
-      }
+          .table-headers > div {
+            background-color: var(--nuxeo-table-header-background, #f8f9fb);
+            font-weight: bold;
+          }
 
-      .buttons {
-        @apply --buttons-bar;
-      }
+          .buttons {
+            @apply --buttons-bar;
+          }
 
-      .emptyResult {
-        opacity: .5;
-        display: block;
-        font-weight: 300;
-        padding: 1.5em .7em;
-        text-align: center;
-      }
+          .emptyResult {
+            opacity: 0.5;
+            display: block;
+            font-weight: 300;
+            padding: 1.5em 0.7em;
+            text-align: center;
+          }
 
-      .flex-2 {
-        @apply --layout-flex-2;
-      }
-    </style>
+          .flex-2 {
+            @apply --layout-flex-2;
+          }
+        </style>
 
-    <div hidden\$="[[!_empty(aces)]]">
-      <slot name="emptyResult"></slot>
-    </div>
+        <div hidden\$="[[!_empty(aces)]]">
+          <slot name="emptyResult"></slot>
+        </div>
 
-    <dom-if if="[[!_empty(aces)]]">
-      <template>
-        <div class="acl-table">
-          <div class="acl-table-headers">
-            <div class="flex-2 tmp-tab">[[i18n('documentAclTable.userGroup')]]</div>
-            <div class="flex-2 tmp-tab">[[i18n('documentAclTable.right')]]</div>
-            <div class="flex-2 tmp-tab">[[i18n('documentAclTable.timeFrame')]]</div>
-            <div class="flex-2 tmp-tab">[[i18n('documentAclTable.grantedBy')]]</div>
-            <dom-if if="[[showActions]]">
-              <template>
-                <div class="flex-2 tmp-tab">[[i18n('documentAclTable.actions')]]</div>
-              </template>
-            </dom-if>
-          </div>
-          <dom-repeat items="[[aces]]" as="ace" sort="_sortAces" strip-whitespace="">
-            <template>
-              <div class\$="acl-table-row [[ace.status]]">
-                <div class="flex-2">
-                  <span class\$="[[entityClass(ace.username)]]" title="[[entityTooltip(ace.username)]]">
-                    [[entityDisplay(ace.username)]]
-                  </span>
-                </div>
-                <div class="flex-2"><span class="label">[[i18n(ace.permission)]]</span></div>
-                <div class="flex-2"><span>{{formatTimeFrame(ace)}}</span></div>
-                <div class="flex-2">
-                  <span class\$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">
-                    [[entityDisplay(ace.creator)]]
-                  </span>
-                </div>
+        <dom-if if="[[!_empty(aces)]]">
+          <template>
+            <div class="acl-table">
+              <div class="acl-table-headers">
+                <div class="flex-2 tmp-tab">[[i18n('documentAclTable.userGroup')]]</div>
+                <div class="flex-2 tmp-tab">[[i18n('documentAclTable.right')]]</div>
+                <div class="flex-2 tmp-tab">[[i18n('documentAclTable.timeFrame')]]</div>
+                <div class="flex-2 tmp-tab">[[i18n('documentAclTable.grantedBy')]]</div>
                 <dom-if if="[[showActions]]">
                   <template>
-                    <div class="flex-2">
-                      <nuxeo-popup-permission
-                        doc-id="{{doc.uid}}"
-                        ace="{{ace}}"
-                        user-visible-permissions="{{doc.contextParameters.userVisiblePermissions}}"
-                        share-with-external="[[shareWithExternal]]">
-                      </nuxeo-popup-permission>
-                      <dom-if if="[[shareWithExternal]]">
-                        <template>
-                          <paper-icon-button icon="nuxeo:send" on-click="sendEmailExternalSharing"></paper-icon-button>
-                        </template>
-                      </dom-if>
-                      <paper-icon-button icon="nuxeo:delete" on-click="_deleteAce"></paper-icon-button>
-                      <nuxeo-popup-confirm
-                        id="confirmation"
-                        delete-label="[[i18n('command.delete')]]"
-                        cancel-label="[[i18n('documentAclTable.cancel')]]">
-                        <div>
-                          <h2>[[i18n('documentAclTable.deleteConfirmation')]]</h2>
-                          <div class="acl-table">
-                            <div class="acl-table-headers">
-                              <div class="flex-2 tmp-tab">[[i18n('documentAclTable.userGroup')]]</div>
-                              <div class="flex-2 tmp-tab">[[i18n('documentAclTable.right')]]</div>
-                              <div class="flex-2 tmp-tab">[[i18n('documentAclTable.timeFrame')]]</div>
-                              <div class="flex-2 tmp-tab">[[i18n('documentAclTable.grantedBy')]]</div>
-                            </div>
-                            <div class\$="acl-table-row [[ace.status]]">
-                              <div class="flex-2">
-                                <span class\$="[[entityClass(ace.username)]]" title="[[entityTooltip(ace.username)]]">
-                                  [[entityDisplay(ace.username)]]
-                                </span>
-                              </div>
-                              <div class="flex-2"><span class="label">[[i18n(ace.permission)]]</span></div>
-                              <div class="flex-2"><span>{{formatTimeFrame(ace)}}</span></div>
-                              <div class="flex-2">
-                                <span class\$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">
-                                  [[entityDisplay(ace.creator)]]
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </nuxeo-popup-confirm>
-                    </div>
+                    <div class="flex-2 tmp-tab">[[i18n('documentAclTable.actions')]]</div>
                   </template>
                 </dom-if>
               </div>
-            </template>
-          </dom-repeat>
-        </div>
-      </template>
-    </dom-if>
+              <dom-repeat items="[[aces]]" as="ace" sort="_sortAces" strip-whitespace="">
+                <template>
+                  <div class\$="acl-table-row [[ace.status]]">
+                    <div class="flex-2">
+                      <span class\$="[[entityClass(ace.username)]]" title="[[entityTooltip(ace.username)]]">
+                        [[entityDisplay(ace.username)]]
+                      </span>
+                    </div>
+                    <div class="flex-2"><span class="label">[[i18n(ace.permission)]]</span></div>
+                    <div class="flex-2"><span>{{formatTimeFrame(ace)}}</span></div>
+                    <div class="flex-2">
+                      <span class\$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">
+                        [[entityDisplay(ace.creator)]]
+                      </span>
+                    </div>
+                    <dom-if if="[[showActions]]">
+                      <template>
+                        <div class="flex-2">
+                          <nuxeo-popup-permission
+                            doc-id="{{doc.uid}}"
+                            ace="{{ace}}"
+                            user-visible-permissions="{{doc.contextParameters.userVisiblePermissions}}"
+                            share-with-external="[[shareWithExternal]]"
+                          >
+                          </nuxeo-popup-permission>
+                          <dom-if if="[[shareWithExternal]]">
+                            <template>
+                              <paper-icon-button
+                                icon="nuxeo:send"
+                                on-click="sendEmailExternalSharing"
+                              ></paper-icon-button>
+                            </template>
+                          </dom-if>
+                          <paper-icon-button icon="nuxeo:delete" on-click="_deleteAce"></paper-icon-button>
+                          <nuxeo-popup-confirm
+                            id="confirmation"
+                            delete-label="[[i18n('command.delete')]]"
+                            cancel-label="[[i18n('documentAclTable.cancel')]]"
+                          >
+                            <div>
+                              <h2>[[i18n('documentAclTable.deleteConfirmation')]]</h2>
+                              <div class="acl-table">
+                                <div class="acl-table-headers">
+                                  <div class="flex-2 tmp-tab">[[i18n('documentAclTable.userGroup')]]</div>
+                                  <div class="flex-2 tmp-tab">[[i18n('documentAclTable.right')]]</div>
+                                  <div class="flex-2 tmp-tab">[[i18n('documentAclTable.timeFrame')]]</div>
+                                  <div class="flex-2 tmp-tab">[[i18n('documentAclTable.grantedBy')]]</div>
+                                </div>
+                                <div class\$="acl-table-row [[ace.status]]">
+                                  <div class="flex-2">
+                                    <span
+                                      class\$="[[entityClass(ace.username)]]"
+                                      title="[[entityTooltip(ace.username)]]"
+                                    >
+                                      [[entityDisplay(ace.username)]]
+                                    </span>
+                                  </div>
+                                  <div class="flex-2"><span class="label">[[i18n(ace.permission)]]</span></div>
+                                  <div class="flex-2"><span>{{formatTimeFrame(ace)}}</span></div>
+                                  <div class="flex-2">
+                                    <span class\$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">
+                                      [[entityDisplay(ace.creator)]]
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </nuxeo-popup-confirm>
+                        </div>
+                      </template>
+                    </dom-if>
+                  </div>
+                </template>
+              </dom-repeat>
+            </div>
+          </template>
+        </dom-if>
 
-    <nuxeo-operation id="rmPermission" op="Document.RemovePermission" input="{{doc.uid}}"></nuxeo-operation>
-    <nuxeo-operation
-      id="sendNotificationEmailPermissionOp"
-      op="Document.SendNotificationEmailForPermission"
-      input="{{doc.uid}}">
-    </nuxeo-operation>
-`;
+        <nuxeo-operation id="rmPermission" op="Document.RemovePermission" input="{{doc.uid}}"></nuxeo-operation>
+        <nuxeo-operation
+          id="sendNotificationEmailPermissionOp"
+          op="Document.SendNotificationEmailForPermission"
+          input="{{doc.uid}}"
+        >
+        </nuxeo-operation>
+      `;
     }
 
     static get is() {
@@ -229,18 +238,24 @@ import './nuxeo-popup-permission.js';
     }
 
     static get observers() {
-      return [
-        '_updateAces(doc)',
-      ];
+      return ['_updateAces(doc)'];
     }
 
     aclFilterChanged(fn) {
-      this._aclFilter = fn && function () { return this.__dataHost[fn].apply(this.__dataHost, arguments); };
+      this._aclFilter =
+        fn &&
+        function() {
+          return this.__dataHost[fn].apply(this.__dataHost, arguments);
+        };
       this._updateAces();
     }
 
     aceFilterChanged(fn) {
-      this._aceFilter = fn && function () { return this.__dataHost[fn].apply(this.__dataHost, arguments); };
+      this._aceFilter =
+        fn &&
+        function() {
+          return this.__dataHost[fn].apply(this.__dataHost, arguments);
+        };
       this._updateAces();
     }
 
@@ -274,13 +289,13 @@ import './nuxeo-popup-permission.js';
     _sortAces(a, b) {
       if (a.begin === null) {
         return -1;
-      } if (b.begin === null) {
+      }
+      if (b.begin === null) {
         return 1;
-      } 
-        const aBegin = moment(a.begin);
-        const bBegin = moment(b.begin);
-        return aBegin.isBefore(bBegin) ? -1 : 1;
-      
+      }
+      const aBegin = moment(a.begin);
+      const bBegin = moment(b.begin);
+      return aBegin.isBefore(bBegin) ? -1 : 1;
     }
 
     _deleteAce(e) {
@@ -290,18 +305,20 @@ import './nuxeo-popup-permission.js';
           id: e.model.ace.id,
         };
         this.$.rmPermission.execute().then(() => {
-          this.dispatchEvent(new CustomEvent('acedeleted', {
-            composed: true,
-            bubbles: true,
-          }));
+          this.dispatchEvent(
+            new CustomEvent('acedeleted', {
+              composed: true,
+              bubbles: true,
+            }),
+          );
         });
       });
     }
 
     formatTimeFrame(ace) {
       const now = moment();
-      const {begin} = ace;
-      const {end} = ace;
+      const { begin } = ace;
+      const { end } = ace;
       const format = 'D MMM YYYY';
 
       const sinceStr = `${this.i18n('documentAclTable.since')} `;
@@ -311,14 +328,19 @@ import './nuxeo-popup-permission.js';
 
       if (begin !== null && end === null) {
         return (now.isAfter(begin) ? sinceStr : fromStr) + moment(begin).format(format);
-      } if (begin === null && end !== null) {
+      }
+      if (begin === null && end !== null) {
         return untilStr + moment(end).format(format);
-      } if (begin !== null && end !== null) {
-        return (now.isAfter(begin) ? sinceStr : fromStr) + moment(begin).format(format) + untilMiddleStr
-            + moment(end).format(format);
-      } 
-        return this.i18n('documentAclTable.permanent');
-      
+      }
+      if (begin !== null && end !== null) {
+        return (
+          (now.isAfter(begin) ? sinceStr : fromStr) +
+          moment(begin).format(format) +
+          untilMiddleStr +
+          moment(end).format(format)
+        );
+      }
+      return this.i18n('documentAclTable.permanent');
     }
 
     entityDisplay(entity) {
@@ -328,21 +350,21 @@ import './nuxeo-popup-permission.js';
 
       if (typeof entity === 'object') {
         if (entity['entity-type'] === 'user') {
-          const {id} = entity;
+          const { id } = entity;
           const first = entity.properties.firstName;
           const last = entity.properties.lastName;
           if (first === null || first.length === 0) {
             if (last === null || last.length === 0) {
               return id;
-            } 
-              return last;
-            
-          } if (last === null || last.length === 0) {
+            }
+            return last;
+          }
+          if (last === null || last.length === 0) {
             return first;
-          } 
-            return `${first} ${last}`;
-          
-        } if (entity['entity-type'] === 'group') {
+          }
+          return `${first} ${last}`;
+        }
+        if (entity['entity-type'] === 'group') {
           const groupLabel = entity.grouplabel;
           return groupLabel !== null && groupLabel.length > 0 ? groupLabel : entity.groupname;
         }
@@ -358,7 +380,8 @@ import './nuxeo-popup-permission.js';
       if (typeof entity === 'object') {
         if (entity['entity-type'] === 'user') {
           return 'tag user';
-        } if (entity['entity-type'] === 'group') {
+        }
+        if (entity['entity-type'] === 'group') {
           return 'tag group';
         }
       }
@@ -372,9 +395,10 @@ import './nuxeo-popup-permission.js';
 
       if (typeof entity === 'object') {
         if (entity['entity-type'] === 'user') {
-          const {email} = entity.properties;
+          const { email } = entity.properties;
           return entity.id + (email !== null && email.length > 0 ? ` - ${email}` : '');
-        } if (entity['entity-type'] === 'group') {
+        }
+        if (entity['entity-type'] === 'group') {
           return entity.groupname;
         }
       }
@@ -387,10 +411,12 @@ import './nuxeo-popup-permission.js';
         id: item.id,
       };
       this.$.sendNotificationEmailPermissionOp.execute().then(() => {
-        this.dispatchEvent(new CustomEvent('notification', {
-          composed: true,
-          bubbles: true,
-        }));
+        this.dispatchEvent(
+          new CustomEvent('notification', {
+            composed: true,
+            bubbles: true,
+          }),
+        );
       });
     }
 

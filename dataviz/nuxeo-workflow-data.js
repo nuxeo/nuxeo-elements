@@ -74,7 +74,6 @@ import './nuxeo-aggregate-data-element.js';
    * @demo demo/workflow.html
    */
   class WorkflowData extends Nuxeo.AggregateDataElement {
-
     static get is() {
       return 'nuxeo-workflow-data';
     }
@@ -127,13 +126,10 @@ import './nuxeo-aggregate-data-element.js';
     _query() {
       const event = this.event || (this.task ? 'afterWorkflowTaskEnded' : 'afterWorkflowFinish');
 
-      const terms = [
-        {term: {eventId: event}},
-        {term: {'extended.modelName': this.workflow}},
-      ];
+      const terms = [{ term: { eventId: event } }, { term: { 'extended.modelName': this.workflow } }];
 
       if (this.task) {
-        terms.push({term: {'extended.taskName': this.task}});
+        terms.push({ term: { 'extended.taskName': this.task } });
       }
       if (this._dateRange) {
         terms.push(this._dateRange);
@@ -147,7 +143,6 @@ import './nuxeo-aggregate-data-element.js';
       // TODO: limit 'exposed' fields to system field (ex: 'user', 'taskName', 'action', etc) and 'workflowVariables.*'
       return `extended.${column}`;
     }
-
   }
 
   customElements.define(WorkflowData.is, WorkflowData);

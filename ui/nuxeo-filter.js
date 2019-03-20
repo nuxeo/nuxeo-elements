@@ -47,7 +47,6 @@ import { FiltersBehavior } from './nuxeo-filters-behavior.js';
    * @demo demo/nuxeo-filter/index.html
    */
   class Filter extends mixinBehaviors([Templatizer, FiltersBehavior], Nuxeo.Element) {
-
     static get is() {
       return 'nuxeo-filter';
     }
@@ -162,9 +161,7 @@ import { FiltersBehavior } from './nuxeo-filters-behavior.js';
     }
 
     static get observers() {
-      return [
-        '_update(document, user, facet, type, state, path, permission, expression, group)',
-      ];
+      return ['_update(document, user, facet, type, state, path, permission, expression, group)'];
     }
 
     _evaluate(document, user, expression) {
@@ -190,7 +187,7 @@ import { FiltersBehavior } from './nuxeo-filters-behavior.js';
           // pass if any check returns true, basically Array.some()
           let pass = false;
           for (let i = 0; i < values.length; i++) {
-            pass = fn.apply(this, args.concat(values[i]))
+            pass = fn.apply(this, args.concat(values[i]));
             if (pass) {
               break;
             }
@@ -221,7 +218,7 @@ import { FiltersBehavior } from './nuxeo-filters-behavior.js';
       if (this._instance) {
         return;
       }
-      const {parentNode} = dom(this);
+      const { parentNode } = dom(this);
       if (parentNode) {
         const template = dom(this).querySelector('template');
         const parent = dom(parentNode);
@@ -239,7 +236,7 @@ import { FiltersBehavior } from './nuxeo-filters-behavior.js';
             }
           }
           this._instance._flushProperties();
-          const {root} = this._instance;
+          const { root } = this._instance;
           parent.insertBefore(root, this);
         }
       }
@@ -262,7 +259,7 @@ import { FiltersBehavior } from './nuxeo-filters-behavior.js';
           // use first child parent, for case when dom-if may have been detached
           const parent = dom(dom(c$[0]).parentNode);
           // eslint-disable-next-line no-cond-assign
-          for (let i = 0, n; (i < c$.length) && (n = c$[i]); i++) {
+          for (let i = 0, n; i < c$.length && (n = c$[i]); i++) {
             parent.removeChild(n);
           }
         }
@@ -275,7 +272,6 @@ import { FiltersBehavior } from './nuxeo-filters-behavior.js';
         this._instance.forwardHostProp(prop, value);
       }
     }
-
   }
 
   customElements.define(Filter.is, Filter);

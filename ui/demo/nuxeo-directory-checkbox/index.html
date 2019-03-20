@@ -18,8 +18,8 @@ limitations under the License.
   <head>
     <title>nuxeo-directory-checkbox</title>
 
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" />
     <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="/node_modules/@nuxeo/nuxeo-elements/dedup.js"></script>
     <script type="module">
@@ -33,29 +33,29 @@ limitations under the License.
   <body unresolved>
     <dom-bind>
       <template>
-
         <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
 
         <nuxeo-demo-section heading="Simple directory selector with checkboxes" size="small">
-          <nuxeo-directory-checkbox directory-name="continent"
-                                    label="Select continents"
-                                    value="{{selectedIds}}"
-                                    selected-items="{{selectedItems}}">
+          <nuxeo-directory-checkbox
+            directory-name="continent"
+            label="Select continents"
+            value="{{selectedIds}}"
+            selected-items="{{selectedItems}}"
+          >
           </nuxeo-directory-checkbox>
 
           <h3>Item Labels</h3>
           <template is="dom-repeat" items="[[selectedItems]]">
             [[item.absoluteLabel]]
-            <br/>
+            <br />
           </template>
-          <br/>
+          <br />
           <h3>Ids</h3>
           <template is="dom-repeat" items="[[selectedIds]]">
             [[item]]
-            <br/>
+            <br />
           </template>
         </nuxeo-demo-section>
-
       </template>
     </dom-bind>
   </body>

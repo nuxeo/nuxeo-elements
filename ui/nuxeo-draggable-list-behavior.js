@@ -59,7 +59,6 @@ document.head.appendChild($_documentContainer.content);
  * @polymerBehavior
  */
 export const DraggableListBehavior = {
-
   properties: {
     draggable: {
       type: Boolean,
@@ -94,7 +93,7 @@ export const DraggableListBehavior = {
     // mouse move handler
     const moveFn = (e) => {
       // ELEMENTS-723: prevent dragging from beginning too early, which can interfere with other mouse events
-      if (((new Date()).getTime() - this._mouseDownStarted) <= 150) {
+      if (new Date().getTime() - this._mouseDownStarted <= 150) {
         return;
       }
       // block list pointer events while dragging and apply grabbing cursor
@@ -115,13 +114,17 @@ export const DraggableListBehavior = {
       this.droptargets.forEach((target) => {
         target.classList.remove('droptarget-hover');
         const boundingClientRect = target.getBoundingClientRect();
-        if (e.clientX > boundingClientRect.left && e.clientX < boundingClientRect.right &&
-        e.clientY > boundingClientRect.top && e.clientY < boundingClientRect.bottom) {
+        if (
+          e.clientX > boundingClientRect.left &&
+          e.clientX < boundingClientRect.right &&
+          e.clientY > boundingClientRect.top &&
+          e.clientY < boundingClientRect.bottom
+        ) {
           this.target = target;
         }
       });
       if (this.target) {
-      // block DnD if mouse target belongs to the selected items
+        // block DnD if mouse target belongs to the selected items
         if (this.selectedItems.indexOf(this.modelForElement(this.target).item) > -1) {
           this.target = null;
           proxy.hidden = true;
@@ -159,7 +162,7 @@ export const DraggableListBehavior = {
       if (this.draggable && e.target && this.draggableFilter(e.target)) {
         // prevent default behavior to make sure cursors are applied across all browsers
         e.preventDefault();
-        this._mouseDownStarted = this._mouseDownStarted || (new Date()).getTime();
+        this._mouseDownStarted = this._mouseDownStarted || new Date().getTime();
         // setup listeners when drag starts
         document.addEventListener('mousemove', moveFn);
         document.addEventListener('mouseup', upFn);
@@ -168,19 +171,18 @@ export const DraggableListBehavior = {
   },
 
   get droptargets() {
-    return Array.from(this.$.list.queryAllEffectiveChildren('*')).filter((el) => this.dropTargetFilter(
-      el,
-      this.modelForElement(el),
-    ));
+    return Array.from(this.$.list.queryAllEffectiveChildren('*')).filter((el) =>
+      this.dropTargetFilter(el, this.modelForElement(el)),
+    );
   },
 
   // override with custom logic
-  dropTargetFilter(el, model) { // eslint-disable-line no-unused-vars
+  dropTargetFilter() {
     return true;
   },
 
   // override with custom logic
-  draggableFilter(el) { // eslint-disable-line no-unused-vars
+  draggableFilter() {
     return true;
   },
 
@@ -189,9 +191,11 @@ export const DraggableListBehavior = {
     const threshold = 100;
     const boundingClientRect = container.getBoundingClientRect();
     const scrollRate = 30; // increase or decrease this to speed up or slow down scrolling
-    if (boundingClientRect.bottom - e.pageY <= threshold) { // scroll down
+    if (boundingClientRect.bottom - e.pageY <= threshold) {
+      // scroll down
       container.scrollTop += scrollRate;
-    } else if (e.pageY >= boundingClientRect.top && e.pageY <= (boundingClientRect.top + threshold)) { // scroll up
+    } else if (e.pageY >= boundingClientRect.top && e.pageY <= boundingClientRect.top + threshold) {
+      // scroll up
       container.scrollTop -= scrollRate;
     }
   },
@@ -199,7 +203,6 @@ export const DraggableListBehavior = {
 
 {
   class DragProxy extends Nuxeo.Element {
-
     static get is() {
       return 'nuxeo-drag-proxy';
     }
@@ -214,7 +217,6 @@ export const DraggableListBehavior = {
       this.style.left = `${x}px`;
       this.style.top = `${y}px`;
     }
-
   }
 
   customElements.define(DragProxy.is, DragProxy);

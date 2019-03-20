@@ -36,66 +36,65 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
   class DirectoryRadioGroup extends mixinBehaviors([DirectoryWidgetBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-        position: relative;
-        padding-bottom: 8px;
-      }
+        <style>
+          :host {
+            display: block;
+            position: relative;
+            padding-bottom: 8px;
+          }
 
-      [hidden] {
-        display: none !important;
-      }
+          [hidden] {
+            display: none !important;
+          }
 
-      :host([invalid]) .label,
-      .error {
-        color: var(--paper-input-container-invalid-color, red);
-      }
+          :host([invalid]) .label,
+          .error {
+            color: var(--paper-input-container-invalid-color, red);
+          }
 
-      :host([invalid]) .error {
-        opacity: 1;
-        font-size: .923rem;
-      }
+          :host([invalid]) .error {
+            opacity: 1;
+            font-size: 0.923rem;
+          }
 
-      .label {
-         @apply --nuxeo-label;
-      }
+          .label {
+            @apply --nuxeo-label;
+          }
 
-      .label[required]::after {
-        display: inline-block;
-        content: '*';
-        margin-left: 4px;
-        color: var(--paper-input-container-invalid-color, red);
-        font-size: 1.2em;
-      }
+          .label[required]::after {
+            display: inline-block;
+            content: '*';
+            margin-left: 4px;
+            color: var(--paper-input-container-invalid-color, red);
+            font-size: 1.2em;
+          }
 
-      paper-checkbox {
-        margin-top: 10px
-      }
+          paper-checkbox {
+            margin-top: 10px;
+          }
+        </style>
 
-    </style>
+        <nuxeo-operation id="op" op="Directory.SuggestEntries"></nuxeo-operation>
 
-    <nuxeo-operation id="op" op="Directory.SuggestEntries">
-    </nuxeo-operation>
+        <label class="label" hidden\$="[[!label]]" required\$="[[required]]">[[label]]</label>
 
-    <label class="label" hidden\$="[[!label]]" required\$="[[required]]">[[label]]</label>
+        <paper-radio-group on-selected-item-changed="_updateItem" selected="{{_selected}}">
+          <dom-repeat items="[[_entries]]">
+            <template>
+              <paper-radio-button
+                name="[[idFunction(item)]]"
+                data-index="[[index]]"
+                checked="[[item.checked]]"
+                disabled="[[readonly]]"
+              >
+                [[format(item)]]
+              </paper-radio-button>
+            </template>
+          </dom-repeat>
+        </paper-radio-group>
 
-    <paper-radio-group on-selected-item-changed="_updateItem" selected="{{_selected}}">
-      <dom-repeat items="[[_entries]]">
-        <template>
-          <paper-radio-button
-            name="[[idFunction(item)]]"
-            data-index="[[index]]"
-            checked="[[item.checked]]"
-            disabled="[[readonly]]">
-            [[format(item)]]
-          </paper-radio-button>
-        </template>
-      </dom-repeat>
-    </paper-radio-group>
-
-    <label class="error" hidden\$="[[!invalid]]">[[errorMessage]]</label>
-`;
+        <label class="error" hidden\$="[[!invalid]]">[[errorMessage]]</label>
+      `;
     }
 
     static get is() {

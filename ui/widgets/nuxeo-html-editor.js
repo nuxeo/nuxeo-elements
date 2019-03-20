@@ -28,25 +28,25 @@ import './alloy/alloy-ocean.js';
   class HTMLEditor extends Nuxeo.Element {
     static get template() {
       return html`
-    <style include="alloy-ocean">
-      #editor {
-        outline: none;
-        height: 100%;
-        min-height: 30em;
-      }
+        <style include="alloy-ocean">
+          #editor {
+            outline: none;
+            height: 100%;
+            min-height: 30em;
+          }
 
-      .ae-placeholder:empty:not(:focus):before {
-        color: grey;
-        font-style: italic;
-      }
+          .ae-placeholder:empty:not(:focus):before {
+            color: grey;
+            font-style: italic;
+          }
 
-      div#editor > * {
-        margin-top: 0;
-      }
-    </style>
+          div#editor > * {
+            margin-top: 0;
+          }
+        </style>
 
-    <div id="editor" data-placeholder\$="[[placeholder]]"></div>
-`;
+        <div id="editor" data-placeholder\$="[[placeholder]]"></div>
+      `;
     }
 
     static get is() {
@@ -94,40 +94,55 @@ import './alloy/alloy-ocean.js';
 
     _init() {
       // init editor
-      const toolbars = this.hideToolbars ? {} : {
-        add: {
-          buttons: ['image', 'camera', 'hline', 'table'],
-          tabIndex: 2,
-        },
-        styles: {
-          selections: [
-            {
-              name: 'link',
-              buttons: ['linkEdit'],
-              test: AlloyEditor.SelectionTest.link,
+      const toolbars = this.hideToolbars
+        ? {}
+        : {
+            add: {
+              buttons: ['image', 'camera', 'hline', 'table'],
+              tabIndex: 2,
             },
-            {
-              name: 'image',
-              buttons: ['imageLeft', 'imageCenter', 'imageRight'],
-              test: AlloyEditor.SelectionTest.image,
+            styles: {
+              selections: [
+                {
+                  name: 'link',
+                  buttons: ['linkEdit'],
+                  test: AlloyEditor.SelectionTest.link,
+                },
+                {
+                  name: 'image',
+                  buttons: ['imageLeft', 'imageCenter', 'imageRight'],
+                  test: AlloyEditor.SelectionTest.image,
+                },
+                {
+                  name: 'text',
+                  buttons: [
+                    'styles',
+                    'bold',
+                    'italic',
+                    'underline',
+                    'strike',
+                    'paragraphLeft',
+                    'paragraphCenter',
+                    'paragraphJustify',
+                    'ul',
+                    'ol',
+                    'quote',
+                    'link',
+                    'removeFormat',
+                  ],
+                  test: AlloyEditor.SelectionTest.text,
+                },
+                {
+                  name: 'table',
+                  buttons: ['tableRow', 'tableColumn', 'tableCell', 'tableRemove'],
+                  getArrowBoxClasses: AlloyEditor.SelectionGetArrowBoxClasses.table,
+                  setPosition: AlloyEditor.SelectionSetPosition.table,
+                  test: AlloyEditor.SelectionTest.table,
+                },
+              ],
+              tabIndex: 1,
             },
-            {
-              name: 'text',
-              buttons: ['styles', 'bold', 'italic', 'underline', 'strike', 'paragraphLeft', 'paragraphCenter',
-                'paragraphJustify', 'ul', 'ol', 'quote', 'link', 'removeFormat'],
-              test: AlloyEditor.SelectionTest.text,
-            },
-            {
-              name: 'table',
-              buttons: ['tableRow', 'tableColumn', 'tableCell', 'tableRemove'],
-              getArrowBoxClasses: AlloyEditor.SelectionGetArrowBoxClasses.table,
-              setPosition: AlloyEditor.SelectionSetPosition.table,
-              test: AlloyEditor.SelectionTest.table,
-            },
-          ],
-          tabIndex: 1,
-        },
-      };
+          };
       const editor = AlloyEditor.editable(this.$.editor, {
         readOnly: this.readOnly,
         uiNode: this.root,

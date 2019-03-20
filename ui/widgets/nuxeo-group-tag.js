@@ -39,37 +39,39 @@ import './nuxeo-tag.js';
   class GroupTag extends mixinBehaviors([RoutingBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      a {
-        @apply --nuxeo-link;
-      }
+        <style>
+          a {
+            @apply --nuxeo-link;
+          }
 
-      a:hover {
-        @apply --nuxeo-link-hover;
-      }
+          a:hover {
+            @apply --nuxeo-link-hover;
+          }
 
-      .preserve-white-space {
-        white-space: pre;
-      }
-    </style>
-    <nuxeo-tag icon="nuxeo:group">
-      <dom-if if="[[!disabled]]">
-        <template>
-          <a class="preserve-white-space" href\$="[[_href(group)]]" on-click="_preventPropagation">[[_label(group)]]</a>
-        </template>
-      </dom-if>
-      <dom-if if="[[disabled]]">
-        <template>
-          <span class="preserve-white-space">[[_label(group)]]</span>
-        </template>
-      </dom-if>
-      <dom-if if="[[_isEntity(group)]]">
-        <template>
-          <nuxeo-tooltip position="top" offset="0" animation-delay="0">[[_name(group)]]</nuxeo-tooltip>
-        </template>
-      </dom-if>
-    </nuxeo-tag>
-`;
+          .preserve-white-space {
+            white-space: pre;
+          }
+        </style>
+        <nuxeo-tag icon="nuxeo:group">
+          <dom-if if="[[!disabled]]">
+            <template>
+              <a class="preserve-white-space" href\$="[[_href(group)]]" on-click="_preventPropagation"
+                >[[_label(group)]]</a
+              >
+            </template>
+          </dom-if>
+          <dom-if if="[[disabled]]">
+            <template>
+              <span class="preserve-white-space">[[_label(group)]]</span>
+            </template>
+          </dom-if>
+          <dom-if if="[[_isEntity(group)]]">
+            <template>
+              <nuxeo-tooltip position="top" offset="0" animation-delay="0">[[_name(group)]]</nuxeo-tooltip>
+            </template>
+          </dom-if>
+        </nuxeo-tag>
+      `;
     }
 
     static get is() {
@@ -94,28 +96,31 @@ import './nuxeo-tag.js';
     }
 
     _isEntity(group) {
-      return group && group['entity-type'] && (group['entity-type'] === 'group'
-          || (group['entity-type'] === 'document' && group.type === 'group'));
+      return (
+        group &&
+        group['entity-type'] &&
+        (group['entity-type'] === 'group' || (group['entity-type'] === 'document' && group.type === 'group'))
+      );
     }
 
     _name(group) {
       if (this._isEntity(group)) {
         return group.groupname || group.properties['group:groupname'];
-      } if (group.name) {
+      }
+      if (group.name) {
         return group.name.replace('group:', '');
-      } 
-        return group.replace('group:', '');
-      
+      }
+      return group.replace('group:', '');
     }
 
     _label(group) {
       if (this._isEntity(group)) {
         return group.grouplabel || group.properties['group:grouplabel'] || this._name(group);
-      } if (group.label) {
+      }
+      if (group.label) {
         return group.label.replace('group:', '');
-      } 
-        return group.replace('group:', '');
-      
+      }
+      return group.replace('group:', '');
     }
 
     _href(group) {

@@ -34,77 +34,78 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
   class VideoViewer extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-      }
+        <style>
+          :host {
+            display: block;
+          }
 
-      #container {
-        display: block;
-        width: 100%;
-        height: 100%;
-        @apply --layout-vertical;
-      }
+          #container {
+            display: block;
+            width: 100%;
+            height: 100%;
+            @apply --layout-vertical;
+          }
 
-      #video {
-        background: var(--primary-background-color);
-        max-height: 100%;
-        width: 100%;
-        outline: none;
-        @apply --layout-flex;
-      }
+          #video {
+            background: var(--primary-background-color);
+            max-height: 100%;
+            width: 100%;
+            outline: none;
+            @apply --layout-flex;
+          }
 
-      #video.hasStoryboard {
-        max-height: calc(100% - 110px);
-      }
+          #video.hasStoryboard {
+            max-height: calc(100% - 110px);
+          }
 
-      #storyboard {
-        background: var(--primary-background-color);
-        max-height: 110px;
-      }
+          #storyboard {
+            background: var(--primary-background-color);
+            max-height: 110px;
+          }
 
-      #thumbnails {
-        overflow-x: auto;
-        @apply --layout-horizontal;
-      }
+          #thumbnails {
+            overflow-x: auto;
+            @apply --layout-horizontal;
+          }
 
-      .thumbnail {
-        cursor: pointer;
-        height: 85px;
-        padding: 4px 4px 2px 0;
-      }
-    </style>
+          .thumbnail {
+            cursor: pointer;
+            height: 85px;
+            padding: 4px 4px 2px 0;
+          }
+        </style>
 
-    <div id="container">
-      <video
-        id="video"
-        controls\$="[[controls]]"
-        width="[[width]]"
-        height="[[height]]"
-        preload="[[preload]]"
-        poster="[[poster]]">
-        <dom-repeat items="[[sources]]" as="source">
-          <template>
-            <source src="[[source.data]]" type="[[source.type]]">
-          </template>
-        </dom-repeat>
-      </video>
+        <div id="container">
+          <video
+            id="video"
+            controls\$="[[controls]]"
+            width="[[width]]"
+            height="[[height]]"
+            preload="[[preload]]"
+            poster="[[poster]]"
+          >
+            <dom-repeat items="[[sources]]" as="source">
+              <template>
+                <source src="[[source.data]]" type="[[source.type]]" />
+              </template>
+            </dom-repeat>
+          </video>
 
-      <dom-if if="[[_hasStoryboard(storyboard)]]">
-        <template>
-          <div id="storyboard">
-            <div id="thumbnails">
-              <dom-repeat items="[[storyboard]]" as="thumbnail">
-                <template>
-                  <img class="thumbnail" on-click="_jumpTo" src="[[thumbnail.content.data]]">
-                </template>
-              </dom-repeat>
-            </div>
-          </div>
-        </template>
-      </dom-if>
-    </div>
-`;
+          <dom-if if="[[_hasStoryboard(storyboard)]]">
+            <template>
+              <div id="storyboard">
+                <div id="thumbnails">
+                  <dom-repeat items="[[storyboard]]" as="thumbnail">
+                    <template>
+                      <img class="thumbnail" on-click="_jumpTo" src="[[thumbnail.content.data]]" />
+                    </template>
+                  </dom-repeat>
+                </div>
+              </div>
+            </template>
+          </dom-if>
+        </div>
+      `;
     }
 
     static get is() {

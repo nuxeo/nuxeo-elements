@@ -18,8 +18,8 @@ limitations under the License.
   <head>
     <title>nuxeo-selectivity</title>
 
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" />
     <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="/node_modules/@nuxeo/nuxeo-elements/dedup.js"></script>
     <script type="module">
@@ -36,21 +36,13 @@ limitations under the License.
         <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
 
         <nuxeo-demo-section heading="Select a single city" size="small">
-          <nuxeo-selectivity
-            value="{{selectedCity}}"
-            data="[[cities]]"
-            placeholder="No city selected"
-            allow-clear>
+          <nuxeo-selectivity value="{{selectedCity}}" data="[[cities]]" placeholder="No city selected" allow-clear>
           </nuxeo-selectivity>
           <div>Selected city: [[selectedCity]]</div>
         </nuxeo-demo-section>
 
         <nuxeo-demo-section heading="Select multiple cities" size="small">
-          <nuxeo-selectivity
-            value="{{selectedCities}}"
-            data="[[cities]]"
-            placeholder="Type to search a city"
-            multiple>
+          <nuxeo-selectivity value="{{selectedCities}}" data="[[cities]]" placeholder="Type to search a city" multiple>
           </nuxeo-selectivity>
           <div>Selected cities: [[selectedCities]]</div>
         </nuxeo-demo-section>
@@ -60,11 +52,11 @@ limitations under the License.
             value="{{selectedCityByCountry}}"
             data="[[citiesByCountry]]"
             placeholder="No city selected"
-            allow-clear>
+            allow-clear
+          >
           </nuxeo-selectivity>
           <div>Selected city by country: [[selectedCityByCountry]]</div>
         </nuxeo-demo-section>
-
       </template>
     </dom-bind>
 
@@ -72,7 +64,7 @@ limitations under the License.
       import '@polymer/polymer/polymer-legacy.js';
       import '../nuxeo-demo.js';
       import '../../widgets/nuxeo-selectivity.js';
-      
+
       const t = document.querySelector('dom-bind');
       t.cities = [
         'Amsterdam',
@@ -139,40 +131,27 @@ limitations under the License.
       t.citiesByCountry = [
         {
           text: 'Austria',
-          children: [
-            { id: 54, text: 'Vienna' },
-          ],
+          children: [{ id: 54, text: 'Vienna' }],
         },
         {
           text: 'Belgium',
-          children: [
-            { id: 2, text: 'Antwerp' },
-            { id: 9, text: 'Brussels' },
-          ],
+          children: [{ id: 2, text: 'Antwerp' }, { id: 9, text: 'Brussels' }],
         },
         {
           text: 'Bulgaria',
-          children: [
-            { id: 48, text: 'Sofia' },
-          ],
+          children: [{ id: 48, text: 'Sofia' }],
         },
         {
           text: 'Croatia',
-          children: [
-            { id: 58, text: 'Zagreb' },
-          ],
+          children: [{ id: 58, text: 'Zagreb' }],
         },
         {
           text: 'Czech Republic',
-          children: [
-            { id: 42, text: 'Prague' },
-          ],
+          children: [{ id: 42, text: 'Prague' }],
         },
         {
           text: 'Denmark',
-          children: [
-            { id: 13, text: 'Copenhagen' },
-          ],
+          children: [{ id: 13, text: 'Copenhagen' }],
         },
         {
           text: 'England',
@@ -187,16 +166,11 @@ limitations under the License.
         },
         {
           text: 'Finland',
-          children: [
-            { id: 25, text: 'Helsinki' },
-          ],
+          children: [{ id: 25, text: 'Helsinki' }],
         },
         {
           text: 'France',
-          children: [
-            { id: 35, text: 'Marseille' },
-            { id: 40, text: 'Paris' },
-          ],
+          children: [{ id: 35, text: 'Marseille' }, { id: 40, text: 'Paris' }],
         },
         {
           text: 'Germany',
@@ -218,21 +192,15 @@ limitations under the License.
         },
         {
           text: 'Greece',
-          children: [
-            { id: 3, text: 'Athens' },
-          ],
+          children: [{ id: 3, text: 'Athens' }],
         },
         {
           text: 'Hungary',
-          children: [
-            { id: 11, text: 'Budapest' },
-          ],
+          children: [{ id: 11, text: 'Budapest' }],
         },
         {
           text: 'Ireland',
-          children: [
-            { id: 16, text: 'Dublin' },
-          ],
+          children: [{ id: 16, text: 'Dublin' }],
         },
         {
           text: 'Italy',
@@ -247,23 +215,15 @@ limitations under the License.
         },
         {
           text: 'Latvia',
-          children: [
-            { id: 43, text: 'Riga' },
-          ],
+          children: [{ id: 43, text: 'Riga' }],
         },
         {
           text: 'Lithuania',
-          children: [
-            { id: 55, text: 'Vilnius' },
-          ],
+          children: [{ id: 55, text: 'Vilnius' }],
         },
         {
           text: 'Netherlands',
-          children: [
-            { id: 1, text: 'Amsterdam' },
-            { id: 45, text: 'Rotterdam' },
-            { id: 51, text: 'The Hague' },
-          ],
+          children: [{ id: 1, text: 'Amsterdam' }, { id: 45, text: 'Rotterdam' }, { id: 51, text: 'The Hague' }],
         },
         {
           text: 'Poland',
@@ -277,21 +237,15 @@ limitations under the License.
         },
         {
           text: 'Portugal',
-          children: [
-            { id: 28, text: 'Lisbon' },
-          ],
+          children: [{ id: 28, text: 'Lisbon' }],
         },
         {
           text: 'Romania',
-          children: [
-            { id: 10, text: 'Bucharest' },
-          ],
+          children: [{ id: 10, text: 'Bucharest' }],
         },
         {
           text: 'Scotland',
-          children: [
-            { id: 21, text: 'Glasgow' },
-          ],
+          children: [{ id: 21, text: 'Glasgow' }],
         },
         {
           text: 'Spain',
@@ -306,10 +260,7 @@ limitations under the License.
         },
         {
           text: 'Sweden',
-          children: [
-            { id: 22, text: 'Gothenburg' },
-            { id: 49, text: 'Stockholm' },
-          ],
+          children: [{ id: 22, text: 'Gothenburg' }, { id: 49, text: 'Stockholm' }],
         },
       ];
     </script>

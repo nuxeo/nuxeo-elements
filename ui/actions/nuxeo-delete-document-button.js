@@ -45,26 +45,25 @@ import './nuxeo-action-button-styles.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-delete-document-button/index.html
    */
-  class DeleteDocumentButton
-    extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
+  class DeleteDocumentButton extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="nuxeo-action-button-styles"></style>
+        <style include="nuxeo-action-button-styles"></style>
 
-    <nuxeo-operation id="deleteOp" op="Document.Delete" input="[[document.uid]]" sync-indexing=""></nuxeo-operation>
+        <nuxeo-operation id="deleteOp" op="Document.Delete" input="[[document.uid]]" sync-indexing=""></nuxeo-operation>
 
-    <nuxeo-operation id="trashOp" op="Document.Trash" input="[[document.uid]]" sync-indexing=""></nuxeo-operation>
+        <nuxeo-operation id="trashOp" op="Document.Trash" input="[[document.uid]]" sync-indexing=""></nuxeo-operation>
 
-    <dom-if if="[[_isAvailable(document)]]">
-      <template>
-        <div class="action" on-click="_delete">
-          <paper-icon-button icon="[[icon]]" noink="" id="deleteButton"></paper-icon-button>
-          <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
-        </div>
-        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
-      </template>
-    </dom-if>
-`;
+        <dom-if if="[[_isAvailable(document)]]">
+          <template>
+            <div class="action" on-click="_delete">
+              <paper-icon-button icon="[[icon]]" noink="" id="deleteButton"></paper-icon-button>
+              <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
+            </div>
+            <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
+          </template>
+        </dom-if>
+      `;
     }
 
     static get is() {
@@ -127,19 +126,25 @@ import './nuxeo-action-button-styles.js';
         return;
       }
       const op = this.hard ? this.$.deleteOp : this.$.trashOp;
-      op.execute().then(() => {
-        this.dispatchEvent(new CustomEvent('document-deleted', {
-          composed: true,
-          bubbles: true,
-          detail: { doc: this.document },
-        }));
-      }).catch((error) => {
-        this.dispatchEvent(new CustomEvent('document-deleted', {
-          composed: true,
-          bubbles: true,
-          detail: { doc: this.document, error },
-        }));
-      });
+      op.execute()
+        .then(() => {
+          this.dispatchEvent(
+            new CustomEvent('document-deleted', {
+              composed: true,
+              bubbles: true,
+              detail: { doc: this.document },
+            }),
+          );
+        })
+        .catch((error) => {
+          this.dispatchEvent(
+            new CustomEvent('document-deleted', {
+              composed: true,
+              bubbles: true,
+              detail: { doc: this.document, error },
+            }),
+          );
+        });
     }
   }
 

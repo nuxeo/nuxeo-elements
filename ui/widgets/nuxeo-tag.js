@@ -34,40 +34,40 @@ import '../nuxeo-i18n-behavior.js';
   class Tag extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: inline-block;
-        background-color: var(--nuxeo-tag-background, transparent);
-        color: var(--nuxeo-default-text, #000);
-        padding: 4px 6px;
-        font-size: .8rem;
-        margin-bottom: .3em;
-        border-radius: 2em;
-        line-height: initial;
-        text-decoration: none;
+        <style>
+          :host {
+            display: inline-block;
+            background-color: var(--nuxeo-tag-background, transparent);
+            color: var(--nuxeo-default-text, #000);
+            padding: 4px 6px;
+            font-size: 0.8rem;
+            margin-bottom: 0.3em;
+            border-radius: 2em;
+            line-height: initial;
+            text-decoration: none;
 
-        @apply --nuxeo-tag;
-      }
+            @apply --nuxeo-tag;
+          }
 
-      :host([uppercase]) {
-        text-transform: uppercase;
-      }
+          :host([uppercase]) {
+            text-transform: uppercase;
+          }
 
-      iron-icon {
-        width: 14px;
-        height: 14px;
-        margin: 0;
-        padding: 0;
-      }
-    </style>
+          iron-icon {
+            width: 14px;
+            height: 14px;
+            margin: 0;
+            padding: 0;
+          }
+        </style>
 
-    <dom-if if="[[icon]]">
-      <template>
-        <iron-icon icon="[[icon]]"></iron-icon>
-      </template>
-    </dom-if>
-    <slot></slot>
-`;
+        <dom-if if="[[icon]]">
+          <template>
+            <iron-icon icon="[[icon]]"></iron-icon>
+          </template>
+        </dom-if>
+        <slot></slot>
+      `;
     }
 
     static get is() {

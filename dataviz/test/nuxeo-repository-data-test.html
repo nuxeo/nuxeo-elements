@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <!--
 @license
 (C) Copyright Nuxeo Corp. (http://nuxeo.com/)
@@ -17,8 +17,8 @@ limitations under the License.
 -->
 <html>
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" />
 
     <script src="../../../@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
     <script src="../../../wct-browser-legacy/browser.js"></script>
@@ -34,18 +34,18 @@ limitations under the License.
 
     <test-fixture id="ecm-terms">
       <template>
-        <nuxeo-repository-data ecm-primary-type="Note"
-                               ecm-lifecycle-state="project"
-                               ecm-mixin-type="Versionable">
+        <nuxeo-repository-data ecm-primary-type="Note" ecm-lifecycle-state="project" ecm-mixin-type="Versionable">
         </nuxeo-repository-data>
       </template>
     </test-fixture>
 
     <test-fixture id="ecm-multiple-terms">
       <template>
-        <nuxeo-repository-data ecm-primary-type="File,Note"
-                               ecm-lifecycle-state="project,approved"
-                               ecm-mixin-type="Versionable, Downloadable">
+        <nuxeo-repository-data
+          ecm-primary-type="File,Note"
+          ecm-lifecycle-state="project,approved"
+          ecm-mixin-type="Versionable, Downloadable"
+        >
         </nuxeo-repository-data>
       </template>
     </test-fixture>
@@ -70,18 +70,22 @@ limitations under the License.
 
     <test-fixture id="ranges">
       <template>
-        <nuxeo-repository-data with-ranges='{"schema:field":[{"key": "low", "to": 1500 },{"key": "high", "from": 1500}]}'>
+        <nuxeo-repository-data
+          with-ranges='{"schema:field":[{"key": "low", "to": 1500 },{"key": "high", "from": 1500}]}'
+        >
         </nuxeo-repository-data>
       </template>
     </test-fixture>
 
     <test-fixture id="date-intervals">
       <template>
-        <nuxeo-repository-data with-date-intervals="day"
-                               date-field="schema:field"
-                               date-format="yyyy-MM-dd"
-                               start-date="1980-01-01"
-                               end-date="1980-01-03">
+        <nuxeo-repository-data
+          with-date-intervals="day"
+          date-field="schema:field"
+          date-format="yyyy-MM-dd"
+          start-date="1980-01-01"
+          end-date="1980-01-03"
+        >
         </nuxeo-repository-data>
       </template>
     </test-fixture>
@@ -90,19 +94,14 @@ limitations under the License.
       import '../nuxeo-repository-data.js';
 
       suite('<nuxeo-repository-data>', () => {
-
         let server;
 
         function fakeResponse(search, json) {
-          server.respondWith(
-            'POST',
-            '/dummy/site/es/nuxeo/_search',
-            [
-              200,
-              {'Content-Type': 'application/json'},
-              JSON.stringify(json),
-            ],
-          );
+          server.respondWith('POST', '/dummy/site/es/nuxeo/_search', [
+            200,
+            { 'Content-Type': 'application/json' },
+            JSON.stringify(json),
+          ]);
 
           const promise = search.fetch();
 
@@ -124,18 +123,18 @@ limitations under the License.
         test('ecm-terms', () => {
           const search = fixture('ecm-terms');
           assert.deepEqual(search.query.bool.must, [
-            {terms: {'ecm:primaryType': ['Note']}},
-            {terms: {'ecm:currentLifeCycleState': ['project']}},
-            {terms: {'ecm:mixinType': ['Versionable']}},
+            { terms: { 'ecm:primaryType': ['Note'] } },
+            { terms: { 'ecm:currentLifeCycleState': ['project'] } },
+            { terms: { 'ecm:mixinType': ['Versionable'] } },
           ]);
         });
 
         test('ecm-multiple-terms', () => {
           const search = fixture('ecm-multiple-terms');
           assert.deepEqual(search.query.bool.must, [
-            {terms: {'ecm:primaryType': ['File', 'Note']}},
-            {terms: {'ecm:currentLifeCycleState': ['project', 'approved']}},
-            {terms: {'ecm:mixinType': ['Versionable', 'Downloadable']}},
+            { terms: { 'ecm:primaryType': ['File', 'Note'] } },
+            { terms: { 'ecm:currentLifeCycleState': ['project', 'approved'] } },
+            { terms: { 'ecm:mixinType': ['Versionable', 'Downloadable'] } },
           ]);
         });
 
@@ -146,20 +145,23 @@ limitations under the License.
           return fakeResponse(search, {
             aggregations: {
               by: {
-                buckets: [{
-                  key: 'group1',
-                  doc_count: 1,
-                }, {
-                  key: 'group2',
-                  doc_count: 2,
-                }],
+                buckets: [
+                  {
+                    key: 'group1',
+                    doc_count: 1,
+                  },
+                  {
+                    key: 'group2',
+                    doc_count: 2,
+                  },
+                ],
               },
             },
           }).then(() => {
             assert.isArray(search.data);
             assert.equal(search.data.length, 2);
-            assert.deepEqual(search.data[0], {key: 'group1', value: 1});
-            assert.deepEqual(search.data[1], {key: 'group2', value: 2});
+            assert.deepEqual(search.data[0], { key: 'group1', value: 1 });
+            assert.deepEqual(search.data[1], { key: 'group2', value: 2 });
           });
         });
 
@@ -191,28 +193,28 @@ limitations under the License.
         test('ranges', () => {
           const search = fixture('ranges');
           assert.equal(search.aggregates.by.range.field, 'schema:field');
-          assert.deepEqual(search.aggregates.by.range.ranges, [
-            {key: 'low', to: 1500},
-            {key: 'high', from: 1500},
-          ]);
+          assert.deepEqual(search.aggregates.by.range.ranges, [{ key: 'low', to: 1500 }, { key: 'high', from: 1500 }]);
 
           return fakeResponse(search, {
             aggregations: {
               by: {
-                buckets: [{
-                  key: 'low',
-                  doc_count: 1,
-                }, {
-                  key: 'high',
-                  doc_count: 2,
-                }],
+                buckets: [
+                  {
+                    key: 'low',
+                    doc_count: 1,
+                  },
+                  {
+                    key: 'high',
+                    doc_count: 2,
+                  },
+                ],
               },
             },
           }).then(() => {
             assert.isArray(search.data);
             assert.equal(search.data.length, 2);
-            assert.deepEqual(search.data[0], {key: 'low', value: 1});
-            assert.deepEqual(search.data[1], {key: 'high', value: 2});
+            assert.deepEqual(search.data[0], { key: 'low', value: 1 });
+            assert.deepEqual(search.data[1], { key: 'high', value: 2 });
           });
         });
 
@@ -233,9 +235,9 @@ limitations under the License.
             aggregations: {
               by: {
                 buckets: [
-                  {key_as_string: '1980-01-01', doc_count: 1},
-                  {key_as_string: '1980-01-02', doc_count: 2},
-                  {key_as_string: '1980-01-03', doc_count: 3},
+                  { key_as_string: '1980-01-01', doc_count: 1 },
+                  { key_as_string: '1980-01-02', doc_count: 2 },
+                  { key_as_string: '1980-01-03', doc_count: 3 },
                 ],
               },
             },
@@ -243,14 +245,13 @@ limitations under the License.
             assert.isArray(search.data);
             assert.equal(search.data.length, 3);
             assert.deepEqual(search.data, [
-              {key: '1980-01-01', value: 1},
-              {key: '1980-01-02', value: 2},
-              {key: '1980-01-03', value: 3}]);
+              { key: '1980-01-01', value: 1 },
+              { key: '1980-01-02', value: 2 },
+              { key: '1980-01-03', value: 3 },
+            ]);
           });
         });
-
       });
     </script>
-
   </body>
 </html>

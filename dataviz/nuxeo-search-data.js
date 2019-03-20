@@ -73,7 +73,6 @@ import './nuxeo-aggregate-data-element.js';
    * @demo demo/search.html
    */
   class SearchData extends Nuxeo.AggregateDataElement {
-
     static get is() {
       return 'nuxeo-search-data';
     }
@@ -101,18 +100,14 @@ import './nuxeo-aggregate-data-element.js';
     }
 
     static get observers() {
-      return [
-        '_query(startDate, endDate)',
-      ];
+      return ['_query(startDate, endDate)'];
     }
 
     _query() {
-      const terms = [
-        {term: {eventId: 'search'}},
-      ];
+      const terms = [{ term: { eventId: 'search' } }];
 
       if (this.pageProvider) {
-        terms.push({term: {'extended.pageProviderName': this.pageProvider}});
+        terms.push({ term: { 'extended.pageProviderName': this.pageProvider } });
       }
 
       if (this._dateRange) {
@@ -126,7 +121,6 @@ import './nuxeo-aggregate-data-element.js';
     _fieldFor(column) {
       return `extended.${column}`;
     }
-
   }
 
   customElements.define(SearchData.is, SearchData);

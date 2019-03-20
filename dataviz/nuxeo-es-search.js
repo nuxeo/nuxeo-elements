@@ -32,13 +32,13 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
   class ESSearch extends Nuxeo.Element {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: none;
-      }
-    </style>
-    <nuxeo-connection id="nx" connection-id="[[connectionId]]"></nuxeo-connection>
-`;
+        <style>
+          :host {
+            display: none;
+          }
+        </style>
+        <nuxeo-connection id="nx" connection-id="[[connectionId]]"></nuxeo-connection>
+      `;
     }
 
     static get is() {
@@ -89,9 +89,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
     }
 
     static get observers() {
-      return [
-        '_auto(connectionId, auto, index, query, aggregates)',
-      ];
+      return ['_auto(connectionId, auto, index, query, aggregates)'];
     }
 
     /**
@@ -125,40 +123,47 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
       }
       const options = {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: {
           query: this.query,
           aggs: this.aggregates,
         },
         url,
       };
-      return this.$.nx.request().then((request) => request.execute(options)
-        .then(this._handleResponse.bind(this))
-        .catch(this._handleError.bind(this)));
+      return this.$.nx.request().then((request) =>
+        request
+          .execute(options)
+          .then(this._handleResponse.bind(this))
+          .catch(this._handleError.bind(this)),
+      );
     }
 
     _handleError(request, error) {
       console.error(error);
-      this.dispatchEvent(new CustomEvent('error', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          request,
-          error,
-        },
-      }));
+      this.dispatchEvent(
+        new CustomEvent('error', {
+          bubbles: true,
+          composed: true,
+          detail: {
+            request,
+            error,
+          },
+        }),
+      );
     }
 
     _handleResponse(response) {
       this._setHits(response.hits);
       this._setAggregations(response.aggregations);
-      this.dispatchEvent(new CustomEvent('results', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          response,
-        },
-      }));
+      this.dispatchEvent(
+        new CustomEvent('results', {
+          bubbles: true,
+          composed: true,
+          detail: {
+            response,
+          },
+        }),
+      );
       return response;
     }
   }

@@ -41,29 +41,28 @@ import './nuxeo-action-button-styles.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-favorites-toggle-button/index.html
    */
-  class FavoritesToggleButton
-    extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
+  class FavoritesToggleButton extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="nuxeo-action-button-styles">
-      :host([favorite]) paper-icon-button {
-        color: var(--icon-toggle-pressed-color, var(--nuxeo-action-color-activated));
-      }
-    </style>
+        <style include="nuxeo-action-button-styles">
+          :host([favorite]) paper-icon-button {
+            color: var(--icon-toggle-pressed-color, var(--nuxeo-action-color-activated));
+          }
+        </style>
 
-    <nuxeo-operation id="opAdd" op="Document.AddToFavorites" input="[[document.uid]]"></nuxeo-operation>
-    <nuxeo-operation id="opRemove" op="Document.RemoveFromFavorites" input="[[document.uid]]"></nuxeo-operation>
+        <nuxeo-operation id="opAdd" op="Document.AddToFavorites" input="[[document.uid]]"></nuxeo-operation>
+        <nuxeo-operation id="opRemove" op="Document.RemoveFromFavorites" input="[[document.uid]]"></nuxeo-operation>
 
-    <dom-if if="[[_isAvailable(document)]]">
-      <template>
-        <div class="action">
-          <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
-          <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
-        </div>
-        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
-      </template>
-    </dom-if>
-`;
+        <dom-if if="[[_isAvailable(document)]]">
+          <template>
+            <div class="action">
+              <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
+              <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
+            </div>
+            <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
+          </template>
+        </dom-if>
+      `;
     }
 
     static get is() {
@@ -133,20 +132,24 @@ import './nuxeo-action-button-styles.js';
     _toggle() {
       if (!this.favorite) {
         this.$.opAdd.execute().then(() => {
-          this.dispatchEvent(new CustomEvent('added-to-favorites', {
-            composed: true,
-            bubbles: true,
-            detail: { doc: this.document },
-          }));
+          this.dispatchEvent(
+            new CustomEvent('added-to-favorites', {
+              composed: true,
+              bubbles: true,
+              detail: { doc: this.document },
+            }),
+          );
           this.favorite = true;
         });
       } else {
         this.$.opRemove.execute().then(() => {
-          this.dispatchEvent(new CustomEvent('removed-from-favorites', {
-            composed: true,
-            bubbles: true,
-            detail: { doc: this.document },
-          }));
+          this.dispatchEvent(
+            new CustomEvent('removed-from-favorites', {
+              composed: true,
+              bubbles: true,
+              detail: { doc: this.document },
+            }),
+          );
           this.favorite = false;
         });
       }

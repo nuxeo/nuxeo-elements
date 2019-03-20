@@ -50,205 +50,202 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
   class UserProfile extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="iron-flex iron-flex-alignment iron-flex-factors">
-      :host {
-        display: block;
-      }
+        <style include="iron-flex iron-flex-alignment iron-flex-factors">
+          :host {
+            display: block;
+          }
 
-      .actions {
-        @apply --layout-horizontal;
-        @apply --layout-flex;
-        @apply --layout-center;
-        @apply --layout-end-justified;
-      }
+          .actions {
+            @apply --layout-horizontal;
+            @apply --layout-flex;
+            @apply --layout-center;
+            @apply --layout-end-justified;
+          }
 
-      .actions paper-button {
-        margin-left: 1em;
-      }
+          .actions paper-button {
+            margin-left: 1em;
+          }
 
-      .actions iron-icon {
-        width: 1.3rem;
-        margin-right: .5rem;
-      }
+          .actions iron-icon {
+            width: 1.3rem;
+            margin-right: 0.5rem;
+          }
 
-      .table {
-        border: 1px solid var(--nuxeo-border, #e6e9ef);
-        margin-top: 1em;
-      }
+          .table {
+            border: 1px solid var(--nuxeo-border, #e6e9ef);
+            margin-top: 1em;
+          }
 
-      .table .header {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        background-color: var(--nuxeo-table-header-background, #e6e9ef);
-        padding: 1.3em 1em;
-        font-weight: 400;
-        border-bottom: 2px solid var(--nuxeo-border, #eee);
-        box-shadow: 0 -1px 0 rgba(0,0,0,0.2) inset;
-      }
+          .table .header {
+            @apply --layout-horizontal;
+            @apply --layout-center;
+            background-color: var(--nuxeo-table-header-background, #e6e9ef);
+            padding: 1.3em 1em;
+            font-weight: 400;
+            border-bottom: 2px solid var(--nuxeo-border, #eee);
+            box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2) inset;
+          }
 
-      .table .row {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        background-color: var(--nuxeo-table-items-background, #e6e9ef);
-        border-bottom: 1px solid var(--nuxeo-border, #eee);
-        padding: 0 1em;
-        min-height: 48px;
-      }
+          .table .row {
+            @apply --layout-horizontal;
+            @apply --layout-center;
+            background-color: var(--nuxeo-table-items-background, #e6e9ef);
+            border-bottom: 1px solid var(--nuxeo-border, #eee);
+            padding: 0 1em;
+            min-height: 48px;
+          }
 
-      nuxeo-view-user {
-        margin: 2em;
-      }
+          nuxeo-view-user {
+            margin: 2em;
+          }
 
-      nuxeo-dialog {
-        min-width: 400px;
-        padding-top: 24px;
-      }
+          nuxeo-dialog {
+            min-width: 400px;
+            padding-top: 24px;
+          }
 
-      .buttons {
-        @apply --buttons-bar;
-        margin-top: 2em;
-      }
+          .buttons {
+            @apply --buttons-bar;
+            margin-top: 2em;
+          }
 
-      .header {
-        height: auto;
-        padding: 0;
-      }
+          .header {
+            height: auto;
+            padding: 0;
+          }
 
-      .header .heading {
-        font-size: 1rem;
-        font-weight: 700;
-        letter-spacing: .04em;
-        text-transform: uppercase;
-      }
+          .header .heading {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+          }
 
-      .user-icon {
-        margin: 8px;
-        width: 1.3rem;
-      }
+          .user-icon {
+            margin: 8px;
+            width: 1.3rem;
+          }
 
-      /* buttons */
-      paper-button.primary {
-        background-color: var(--nuxeo-button-primary, #00adff);
-        color: #fff;
-        font-weight: 700;
-      }
+          /* buttons */
+          paper-button.primary {
+            background-color: var(--nuxeo-button-primary, #00adff);
+            color: #fff;
+            font-weight: 700;
+          }
 
-      paper-button.primary:hover,
-      paper-button.primary:focus {
-        background-color: var(--nuxeo-button-primary-focus, #0079b3);
-        font-weight: inherit;
-        color: #fff !important;
-      }
+          paper-button.primary:hover,
+          paper-button.primary:focus {
+            background-color: var(--nuxeo-button-primary-focus, #0079b3);
+            font-weight: inherit;
+            color: #fff !important;
+          }
+        </style>
 
-    </style>
+        <nuxeo-connection id="nxcon"></nuxeo-connection>
+        <nuxeo-resource id="request" path="me/" enrichers="userprofile" enrichers-entity="user"></nuxeo-resource>
+        <nuxeo-resource id="changePassword" path="me/changepassword"></nuxeo-resource>
 
-    <nuxeo-connection id="nxcon"></nuxeo-connection>
-    <nuxeo-resource id="request" path="me/" enrichers="userprofile" enrichers-entity="user"></nuxeo-resource>
-    <nuxeo-resource id="changePassword" path="me/changepassword"></nuxeo-resource>
+        <paper-toast id="toast"></paper-toast>
 
-    <paper-toast id="toast"></paper-toast>
+        <nuxeo-card>
+          <div class="horizontal layout center header">
+            <iron-icon class="user-icon" icon="nuxeo:user"></iron-icon>
+            <div class="layout vertical">
+              <div class="user heading">[[user.id]]</div>
+              <div>[[user.properties.firstName]] [[user.properties.lastName]]</div>
+            </div>
 
-    <nuxeo-card>
+            <div class="actions">
+              <!-- change password -->
+              <dom-if if="[[!readonly]]">
+                <template>
+                  <paper-button
+                    noink
+                    id="changePasswordButton"
+                    class="horizontal layout center primary"
+                    on-click="_openChangePasswordDialog"
+                  >
+                    <iron-icon icon="nuxeo:lock"></iron-icon> [[i18n('userProfile.password.change')]]
+                  </paper-button>
+                </template>
+              </dom-if>
+              <nuxeo-dialog id="changePasswordDialog" with-backdrop="">
+                <h3>[[i18n('userProfile.password.change')]]</h3>
 
-      <div class="horizontal layout center header">
+                <iron-form id="changePasswordForm">
+                  <form class="vertical layout">
+                    <nuxeo-input id="passwordOld" type="password" label="[[i18n('userProfile.password.old')]]" required>
+                    </nuxeo-input>
 
-        <iron-icon class="user-icon" icon="nuxeo:user"></iron-icon>
-        <div class="layout vertical">
-          <div class="user heading">[[user.id]]</div>
-          <div>[[user.properties.firstName]] [[user.properties.lastName]]</div>
-        </div>
+                    <nuxeo-input
+                      id="passwordNew"
+                      type="password"
+                      label="[[i18n('userProfile.password.new')]]"
+                      required
+                      value="{{passwordNew}}"
+                    >
+                    </nuxeo-input>
 
-        <div class="actions">
+                    <nuxeo-input
+                      id="passwordConfirm"
+                      type="password"
+                      label="[[i18n('userProfile.password.confirm')]]"
+                      required
+                      pattern="[[passwordNew]]"
+                    >
+                    </nuxeo-input>
+                  </form>
+                </iron-form>
 
-          <!-- change password -->
-          <dom-if if="[[!readonly]]">
+                <div class="buttons">
+                  <div class="flex start-justified">
+                    <paper-button noink="" dialog-dismiss="">[[i18n('command.cancel')]]</paper-button>
+                  </div>
+                  <paper-button noink="" class="primary" on-click="_submitChangePassword">
+                    [[i18n('command.save.changes')]]
+                  </paper-button>
+                </div>
+              </nuxeo-dialog>
+            </div>
+          </div>
+
+          <!-- user -->
+          <nuxeo-view-user user="[[user]]"></nuxeo-view-user>
+        </nuxeo-card>
+
+        <!-- groups -->
+        <nuxeo-card heading="[[i18n('userManagement.groups')]]">
+          <div class="table">
+            <div class="header">
+              <div class="flex">[[i18n('userManagement.name')]]</div>
+              <div class="flex-4">[[i18n('userManagement.identifier')]]</div>
+            </div>
+            <dom-repeat items="[[groups]]">
+              <template>
+                <div class="row">
+                  <div class="flex"><nuxeo-group-tag group="[[item]]"></nuxeo-group-tag></div>
+                  <div class="flex-4">[[item.name]]</div>
+                </div>
+              </template>
+            </dom-repeat>
+          </div>
+        </nuxeo-card>
+
+        <!-- local permissions -->
+        <nuxeo-card heading="[[i18n('userManagement.localPermissions.heading')]]">
+          <nuxeo-user-group-permissions-table entity="[[username]]" readonly=""></nuxeo-user-group-permissions-table>
+        </nuxeo-card>
+
+        <!-- group permissions -->
+        <nuxeo-card heading="[[i18n('userManagement.entityPermissions', item.name)]]">
+          <dom-repeat items="[[groups]]">
             <template>
-              <paper-button
-                noink
-                id="changePasswordButton"
-                class="horizontal layout center primary"
-                on-click="_openChangePasswordDialog">
-                <iron-icon icon="nuxeo:lock"></iron-icon> [[i18n('userProfile.password.change')]]
-              </paper-button>
+              <nuxeo-user-group-permissions-table entity="[[item.name]]" readonly="">
+              </nuxeo-user-group-permissions-table>
             </template>
-          </dom-if>
-          <nuxeo-dialog id="changePasswordDialog" with-backdrop="">
-            <h3>[[i18n('userProfile.password.change')]]</h3>
-
-            <iron-form id="changePasswordForm">
-              <form class="vertical layout">
-                <nuxeo-input id="passwordOld" type="password" label="[[i18n('userProfile.password.old')]]" required>
-                </nuxeo-input>
-
-                <nuxeo-input
-                  id="passwordNew"
-                  type="password"
-                  label="[[i18n('userProfile.password.new')]]"
-                  required
-                  value="{{passwordNew}}">
-                </nuxeo-input>
-
-                <nuxeo-input
-                  id="passwordConfirm"
-                  type="password"
-                  label="[[i18n('userProfile.password.confirm')]]"
-                  required
-                  pattern="[[passwordNew]]">
-                </nuxeo-input>
-              </form>
-            </iron-form>
-
-            <div class="buttons">
-              <div class="flex start-justified">
-                <paper-button noink="" dialog-dismiss="">[[i18n('command.cancel')]]</paper-button>
-              </div>
-              <paper-button noink="" class="primary" on-click="_submitChangePassword">
-                [[i18n('command.save.changes')]]
-              </paper-button>
-            </div>
-          </nuxeo-dialog>
-        </div>
-      </div>
-
-      <!-- user -->
-      <nuxeo-view-user user="[[user]]"></nuxeo-view-user>
-
-    </nuxeo-card>
-
-    <!-- groups -->
-    <nuxeo-card heading="[[i18n('userManagement.groups')]]">
-      <div class="table">
-        <div class="header">
-          <div class="flex">[[i18n('userManagement.name')]]</div>
-          <div class="flex-4">[[i18n('userManagement.identifier')]]</div>
-        </div>
-        <dom-repeat items="[[groups]]">
-          <template>
-            <div class="row">
-              <div class="flex"><nuxeo-group-tag group="[[item]]"></nuxeo-group-tag></div>
-              <div class="flex-4">[[item.name]]</div>
-            </div>
-          </template>
-        </dom-repeat>
-      </div>
-    </nuxeo-card>
-
-    <!-- local permissions -->
-    <nuxeo-card heading="[[i18n('userManagement.localPermissions.heading')]]">
-      <nuxeo-user-group-permissions-table entity="[[username]]" readonly="">
-      </nuxeo-user-group-permissions-table>
-    </nuxeo-card>
-
-    <!-- group permissions -->
-    <nuxeo-card heading="[[i18n('userManagement.entityPermissions', item.name)]]">
-      <dom-repeat items="[[groups]]">
-        <template>
-          <nuxeo-user-group-permissions-table entity="[[item.name]]" readonly="">
-          </nuxeo-user-group-permissions-table>
-        </template>
-      </dom-repeat>
-    </nuxeo-card>
-`;
+          </dom-repeat>
+        </nuxeo-card>
+      `;
     }
 
     static get is() {
@@ -324,23 +321,25 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         oldPassword: this.$.passwordOld.value,
         newPassword: this.$.passwordNew.value,
       };
-      this.$.changePassword.put().then((response) => {
-        this.user = response;
-        this._toast(this.i18n('userProfile.password.changed'));
-        this.$.changePasswordDialog.close();
+      this.$.changePassword
+        .put()
+        .then((response) => {
+          this.user = response;
+          this._toast(this.i18n('userProfile.password.changed'));
+          this.$.changePasswordDialog.close();
 
-        // update connection
-        this.$.nxcon.username = this.user.id;
-        this.$.nxcon.password = this.$.passwordNew.value;
-        this.$.nxcon.connect();
-
-      }).catch((error) => {
-        if (error.status === 401) {
-          this._toast(this.i18n('userProfile.password.wrong'), true);
-        } else {
-          this._toast(this.i18n('userProfile.password.error'), true);
-        }
-      });
+          // update connection
+          this.$.nxcon.username = this.user.id;
+          this.$.nxcon.password = this.$.passwordNew.value;
+          this.$.nxcon.connect();
+        })
+        .catch((error) => {
+          if (error.status === 401) {
+            this._toast(this.i18n('userProfile.password.wrong'), true);
+          } else {
+            this._toast(this.i18n('userProfile.password.error'), true);
+          }
+        });
     }
 
     _toast(msg) {

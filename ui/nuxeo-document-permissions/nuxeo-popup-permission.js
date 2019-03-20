@@ -44,159 +44,169 @@ import '../widgets/nuxeo-user-suggestion.js';
   class PopupPermission extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="iron-positioning">
-      /* Fix polyfill behavior for inputs disabled at initialization */
-      span.btr-dateinput-value {
-         color: #212121 !important;
-         line-height: 35px !important;
-      }
+        <style include="iron-positioning">
+          /* Fix polyfill behavior for inputs disabled at initialization */
+          span.btr-dateinput-value {
+            color: #212121 !important;
+            line-height: 35px !important;
+          }
 
-      .buttons {
-        background-color: var(--nuxeo-dialog-buttons-bar, white);
-        @apply --buttons-bar;
-        margin-top: 2em;
-      }
+          .buttons {
+            background-color: var(--nuxeo-dialog-buttons-bar, white);
+            @apply --buttons-bar;
+            margin-top: 2em;
+          }
+        </style>
+        <nuxeo-operation
+          id="createOp"
+          op="Document.AddPermission"
+          input="{{docId}}"
+          params="{{params}}"
+          on-response="handleResponse"
+        >
+        </nuxeo-operation>
+        <nuxeo-operation
+          id="replaceOp"
+          op="Document.ReplacePermission"
+          input="{{docId}}"
+          params="{{params}}"
+          on-response="handleResponse"
+        >
+        </nuxeo-operation>
 
-    </style>
-    <nuxeo-operation
-      id="createOp"
-      op="Document.AddPermission"
-      input="{{docId}}"
-      params="{{params}}"
-      on-response="handleResponse">
-    </nuxeo-operation>
-    <nuxeo-operation
-      id="replaceOp"
-      op="Document.ReplacePermission"
-      input="{{docId}}"
-      params="{{params}}"
-      on-response="handleResponse">
-    </nuxeo-operation>
-
-    <dom-if if="{{!updatingACE}}">
-      <template>
-        <paper-button on-click="togglePopup" id="newPermissionButton">
-          [[i18n('popupPermission.newPermission')]]
-        </paper-button>
-      </template>
-    </dom-if>
-    <dom-if if="{{updatingACE}}">
-      <template>
-        <paper-icon-button on-click="togglePopup" icon="nuxeo:edit"></paper-icon-button>
-      </template>
-    </dom-if>
-
-    <nuxeo-dialog id="popupRight" with-backdrop="" no-auto-focus="">
-      <h2>[[_computedTitle]]</h2>
-
-      <!-- Give access to row -->
-      <paper-dialog-scrollable>
-        <div hidden\$="{{updatingACE}}">
-          <div hidden\$="{{shareWithExternal}}">
-            <nuxeo-user-suggestion
-              name="userGroup"
-              label="[[i18n('popupPermission.userGroup')]]"
-              value="{{params.users}}"
-              placeholder="[[i18n('popupPermission.userGroup.placeholder')]]" multiple>
-            </nuxeo-user-suggestion>
-          </div>
-          <div hidden\$="{{!shareWithExternal}}">
-            <nuxeo-input
-              type="email"
-              id="email"
-              label="[[i18n('popupPermission.email')]]"
-              placeholder="name@company.com"
-              value="{{params.email}}"
-              required
-              auto-validate>
-            </nuxeo-input>
-          </div>
-        </div>
-        <!-- Right row -->
-        <div>
-          <nuxeo-select
-            label="[[i18n('popupPermission.right')]]"
-            name="right"
-            selected="{{params.permission}}"
-            options="[[userVisiblePermissions]]">
-          </nuxeo-select>
-        </div>
-        <div>
-          <dom-if if="{{!shareWithExternal}}">
-            <template>
-              <label>[[i18n('popupPermission.timeFrame')]]</label>
-              <paper-radio-group selected="{{selectedTimeFrame}}">
-                <paper-radio-button noink="" name="permanent">
-                  [[i18n('popupPermission.permanent')]]
-                </paper-radio-button>
-                <paper-radio-button noink="" name="datebased">
-                  [[i18n('popupPermission.dateBased')]]
-                </paper-radio-button>
-              </paper-radio-group>
-            </template>
-          </dom-if>
-          <div>
-            <nuxeo-date-picker
-              id="begin"
-              label="[[i18n('popupPermission.from')]]"
-              value="{{params.begin}}"
-              disabled="[[permissionIsPermanent]]">
-            </nuxeo-date-picker>
-          </div>
-          <div>
-            <nuxeo-date-picker
-              id="end"
-              label="[[i18n('popupPermission.to')]]"
-              value="{{params.end}}"
-              disabled="[[permissionIsPermanent]]"
-              required="[[shareWithExternal]]">
-            </nuxeo-date-picker>
-          </div>
-        </div>
-        <div id="notification">
-          <dom-if if="{{!shareWithExternal}}">
-            <template>
-              <div>
-                <paper-checkbox noink="" checked="{{params.notify}}" name="notify">
-                  [[i18n('popupPermission.notify')]]
-                </paper-checkbox>
-              </div>
-            </template>
-          </dom-if>
-          <div>
-            <nuxeo-textarea
-              label="[[i18n('popupPermission.notifyLabel')]]"
-              placeholder="[[i18n('popupPermission.notifyPlaceholder')]]"
-              disabled="[[!params.notify]]"
-              name="notifyEmail"
-              id="commentText"
-              value="{{params.comment}}"
-              max-rows="4">
-            </nuxeo-textarea>
-          </div>
-        </div>
-      </paper-dialog-scrollable>
-
-      <div class="buttons">
-        <paper-button dialog-dismiss="">[[i18n('popupPermission.cancel')]]</paper-button>
         <dom-if if="{{!updatingACE}}">
           <template>
-            <paper-button noink class="primary" on-click="doCreateAndAdd" id="createAndAddPermissionButton">
-              [[i18n('popupPermission.createAndAdd')]]
-            </paper-button>
-            <paper-button noink class="primary" on-click="doCreate" id="createPermissionButton">
-              [[i18n('popupPermission.create')]]
+            <paper-button on-click="togglePopup" id="newPermissionButton">
+              [[i18n('popupPermission.newPermission')]]
             </paper-button>
           </template>
         </dom-if>
         <dom-if if="{{updatingACE}}">
           <template>
-            <paper-button noink class="primary" on-click="doUpdate">[[i18n('popupPermission.update')]]</paper-button>
+            <paper-icon-button on-click="togglePopup" icon="nuxeo:edit"></paper-icon-button>
           </template>
         </dom-if>
-      </div>
-    </nuxeo-dialog>
-`;
+
+        <nuxeo-dialog id="popupRight" with-backdrop="" no-auto-focus="">
+          <h2>[[_computedTitle]]</h2>
+
+          <!-- Give access to row -->
+          <paper-dialog-scrollable>
+            <div hidden\$="{{updatingACE}}">
+              <div hidden\$="{{shareWithExternal}}">
+                <nuxeo-user-suggestion
+                  name="userGroup"
+                  label="[[i18n('popupPermission.userGroup')]]"
+                  value="{{params.users}}"
+                  placeholder="[[i18n('popupPermission.userGroup.placeholder')]]"
+                  multiple
+                >
+                </nuxeo-user-suggestion>
+              </div>
+              <div hidden\$="{{!shareWithExternal}}">
+                <nuxeo-input
+                  type="email"
+                  id="email"
+                  label="[[i18n('popupPermission.email')]]"
+                  placeholder="name@company.com"
+                  value="{{params.email}}"
+                  required
+                  auto-validate
+                >
+                </nuxeo-input>
+              </div>
+            </div>
+            <!-- Right row -->
+            <div>
+              <nuxeo-select
+                label="[[i18n('popupPermission.right')]]"
+                name="right"
+                selected="{{params.permission}}"
+                options="[[userVisiblePermissions]]"
+              >
+              </nuxeo-select>
+            </div>
+            <div>
+              <dom-if if="{{!shareWithExternal}}">
+                <template>
+                  <label>[[i18n('popupPermission.timeFrame')]]</label>
+                  <paper-radio-group selected="{{selectedTimeFrame}}">
+                    <paper-radio-button noink="" name="permanent">
+                      [[i18n('popupPermission.permanent')]]
+                    </paper-radio-button>
+                    <paper-radio-button noink="" name="datebased">
+                      [[i18n('popupPermission.dateBased')]]
+                    </paper-radio-button>
+                  </paper-radio-group>
+                </template>
+              </dom-if>
+              <div>
+                <nuxeo-date-picker
+                  id="begin"
+                  label="[[i18n('popupPermission.from')]]"
+                  value="{{params.begin}}"
+                  disabled="[[permissionIsPermanent]]"
+                >
+                </nuxeo-date-picker>
+              </div>
+              <div>
+                <nuxeo-date-picker
+                  id="end"
+                  label="[[i18n('popupPermission.to')]]"
+                  value="{{params.end}}"
+                  disabled="[[permissionIsPermanent]]"
+                  required="[[shareWithExternal]]"
+                >
+                </nuxeo-date-picker>
+              </div>
+            </div>
+            <div id="notification">
+              <dom-if if="{{!shareWithExternal}}">
+                <template>
+                  <div>
+                    <paper-checkbox noink="" checked="{{params.notify}}" name="notify">
+                      [[i18n('popupPermission.notify')]]
+                    </paper-checkbox>
+                  </div>
+                </template>
+              </dom-if>
+              <div>
+                <nuxeo-textarea
+                  label="[[i18n('popupPermission.notifyLabel')]]"
+                  placeholder="[[i18n('popupPermission.notifyPlaceholder')]]"
+                  disabled="[[!params.notify]]"
+                  name="notifyEmail"
+                  id="commentText"
+                  value="{{params.comment}}"
+                  max-rows="4"
+                >
+                </nuxeo-textarea>
+              </div>
+            </div>
+          </paper-dialog-scrollable>
+
+          <div class="buttons">
+            <paper-button dialog-dismiss="">[[i18n('popupPermission.cancel')]]</paper-button>
+            <dom-if if="{{!updatingACE}}">
+              <template>
+                <paper-button noink class="primary" on-click="doCreateAndAdd" id="createAndAddPermissionButton">
+                  [[i18n('popupPermission.createAndAdd')]]
+                </paper-button>
+                <paper-button noink class="primary" on-click="doCreate" id="createPermissionButton">
+                  [[i18n('popupPermission.create')]]
+                </paper-button>
+              </template>
+            </dom-if>
+            <dom-if if="{{updatingACE}}">
+              <template>
+                <paper-button noink class="primary" on-click="doUpdate"
+                  >[[i18n('popupPermission.update')]]</paper-button
+                >
+              </template>
+            </dom-if>
+          </div>
+        </nuxeo-dialog>
+      `;
     }
 
     static get is() {
@@ -245,9 +255,7 @@ import '../widgets/nuxeo-user-suggestion.js';
     }
 
     static get observers() {
-      return [
-        '_computeParams(ace, shareWithExternal)',
-      ];
+      return ['_computeParams(ace, shareWithExternal)'];
     }
 
     togglePopup() {
@@ -277,8 +285,10 @@ import '../widgets/nuxeo-user-suggestion.js';
     }
 
     _doSend(togglePopup) {
-      if (this.shareWithExternal &&
-          ((!this.updatingACE && !this.params.email) || (this.updatingACE && !this.params.username))) {
+      if (
+        this.shareWithExternal &&
+        ((!this.updatingACE && !this.params.email) || (this.updatingACE && !this.params.username))
+      ) {
         return;
       }
       if (!this.shareWithExternal && !this.params.username && (!this.params.users || this.params.users.length === 0)) {
@@ -318,15 +328,19 @@ import '../widgets/nuxeo-user-suggestion.js';
 
     handleResponse() {
       if (this.updatingACE) {
-        this.dispatchEvent(new CustomEvent('aceupdated', {
-          composed: true,
-          bubbles: true,
-        }));
+        this.dispatchEvent(
+          new CustomEvent('aceupdated', {
+            composed: true,
+            bubbles: true,
+          }),
+        );
       } else {
-        this.dispatchEvent(new CustomEvent('acecreated', {
-          composed: true,
-          bubbles: true,
-        }));
+        this.dispatchEvent(
+          new CustomEvent('acecreated', {
+            composed: true,
+            bubbles: true,
+          }),
+        );
         this.params = this._getResetParams();
         this.selectedTimeFrame = this.shareWithExternal ? 'datebased' : 'permanent';
       }

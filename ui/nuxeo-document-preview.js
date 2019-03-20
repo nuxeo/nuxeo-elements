@@ -39,100 +39,101 @@ import './viewers/nuxeo-video-viewer.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-document-preview/index.html
    */
-  class DocumentPreview
-    extends mixinBehaviors([Templatizer, IronResizableBehavior], Nuxeo.Element) {
+  class DocumentPreview extends mixinBehaviors([Templatizer, IronResizableBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-      }
+        <style>
+          :host {
+            display: block;
+          }
 
-      nuxeo-image-viewer {
-        width: 100%;
-        height: 100%;
-        min-height: var(--nuxeo-viewer-min-height, 60vh);
-      }
+          nuxeo-image-viewer {
+            width: 100%;
+            height: 100%;
+            min-height: var(--nuxeo-viewer-min-height, 60vh);
+          }
 
-      nuxeo-video-viewer {
-        width: 100%;
-        height: 100%;
-      }
+          nuxeo-video-viewer {
+            width: 100%;
+            height: 100%;
+          }
 
-      audio {
-        width: calc(100% - 16px);
-        margin: 8px;
-      }
+          audio {
+            width: calc(100% - 16px);
+            margin: 8px;
+          }
 
-      marked-element {
-        background-color: white;
-      }
+          marked-element {
+            background-color: white;
+          }
 
-      nuxeo-pdf-viewer {
-        width: 100%;
-        height: 100%;
-        min-height: var(--nuxeo-viewer-min-height, 60vh);
-      }
+          nuxeo-pdf-viewer {
+            width: 100%;
+            height: 100%;
+            min-height: var(--nuxeo-viewer-min-height, 60vh);
+          }
 
-      iframe {
-        height: 100%;
-        min-height: var(--nuxeo-viewer-min-height, 60vh);
-        width: 100%;
-        border: none;
-        padding: 0;
-        margin: 0;
-      }
+          iframe {
+            height: 100%;
+            min-height: var(--nuxeo-viewer-min-height, 60vh);
+            width: 100%;
+            border: none;
+            padding: 0;
+            margin: 0;
+          }
 
-      #xml {
-        font-family: monospace;
-        white-space: pre;
-      }
+          #xml {
+            font-family: monospace;
+            white-space: pre;
+          }
 
-      #preview {
-        border: none;
-        width: 100%;
-        height: 100%;
-      }
+          #preview {
+            border: none;
+            width: 100%;
+            height: 100%;
+          }
+        </style>
 
-    </style>
+        <!-- Our available preview templates. First match will be used -->
+        <template mime-pattern="image.*|application/photoshop|illustrator|postscript">
+          <nuxeo-image-viewer src="[[_computeImageSource(_blob)]]" controls="" responsive=""></nuxeo-image-viewer>
+        </template>
 
-    <!-- Our available preview templates. First match will be used -->
-    <template mime-pattern="image.*|application/photoshop|illustrator|postscript">
-      <nuxeo-image-viewer src="[[_computeImageSource(_blob)]]" controls="" responsive=""></nuxeo-image-viewer>
-    </template>
+        <template mime-pattern="video.*|application/(g|m)xf">
+          <nuxeo-video-viewer
+            id="video"
+            controls
+            sources="[[_computeVideoSources(_blob)]]"
+            storyboard="[[_computeStoryboard(_blob)]]"
+          >
+          </nuxeo-video-viewer>
+        </template>
 
-    <template mime-pattern="video.*|application/(g|m)xf">
-      <nuxeo-video-viewer
-        id="video"
-        controls
-        sources="[[_computeVideoSources(_blob)]]"
-        storyboard="[[_computeStoryboard(_blob)]]"
-      >
-      </nuxeo-video-viewer>
-    </template>
+        <template mime-pattern="audio.*">
+          <audio id="audio" controls="">
+            <source src="[[_computeAudioSource(_blob)]]" />
+            AUDIO
+          </audio>
+        </template>
 
-    <template mime-pattern="audio.*">
-      <audio id="audio" controls=""><source src="[[_computeAudioSource(_blob)]]">AUDIO</audio>
-    </template>
+        <template mime-pattern="text/(?:.*-)?(markdown|html|plain)">
+          <marked-element markdown="[[_blob.text]]"></marked-element>
+        </template>
 
-    <template mime-pattern="text/(?:.*-)?(markdown|html|plain)">
-      <marked-element markdown="[[_blob.text]]"></marked-element>
-    </template>
+        <template mime-pattern="text/xml">
+          <div id="xml">[[_blob.text]]</div>
+        </template>
 
-    <template mime-pattern="text/xml">
-      <div id="xml">[[_blob.text]]</div>
-    </template>
+        <template mime-pattern="application/pdf">
+          <nuxeo-pdf-viewer src="[[_blob.data]]"></nuxeo-pdf-viewer>
+        </template>
 
-    <template mime-pattern="application/pdf">
-      <nuxeo-pdf-viewer src="[[_blob.data]]"></nuxeo-pdf-viewer>
-    </template>
+        <template mime-pattern=".*">
+          <iframe id="frame" src="[[_computeIFrameSource(_blob)]]"></iframe>
+        </template>
 
-    <template mime-pattern=".*">
-      <iframe id="frame" src="[[_computeIFrameSource(_blob)]]"></iframe>
-    </template>
-
-    <div id="preview"></div>
-`;
+        <div id="preview"></div>
+      `;
     }
 
     static get is() {
@@ -160,9 +161,7 @@ import './viewers/nuxeo-video-viewer.js';
     }
 
     static get observers() {
-      return [
-        '_updateBlob(document, xpath)',
-      ];
+      return ['_updateBlob(document, xpath)'];
     }
 
     ready() {
@@ -212,8 +211,10 @@ import './viewers/nuxeo-video-viewer.js';
         const previewer = previewers[i];
         const mimetype = previewer.getAttribute('mime-pattern');
         const mimetypeRegex = new RegExp(mimetype);
-        if (mimetypeRegex.test(this._blob && this._blob['mime-type']) &&
-           (!mimetype.startsWith('text/') || 'text' in this._blob)) {
+        if (
+          mimetypeRegex.test(this._blob && this._blob['mime-type']) &&
+          (!mimetype.startsWith('text/') || 'text' in this._blob)
+        ) {
           // Insert our previewer
           delete previewer.__templatizeOwner;
           this.templatize(previewer);
@@ -237,8 +238,12 @@ import './viewers/nuxeo-video-viewer.js';
     }
 
     _computeImageSource() {
-      if (this.document && this.document.properties && this.document.properties['picture:views']
-          && this.xpath === 'file:content') {
+      if (
+        this.document &&
+        this.document.properties &&
+        this.document.properties['picture:views'] &&
+        this.xpath === 'file:content'
+      ) {
         const filteredViews = this.document.properties['picture:views'].filter((view) => view.title === 'FullHD');
         if (filteredViews.length > 0) {
           return filteredViews[0].content.data;
@@ -252,8 +257,12 @@ import './viewers/nuxeo-video-viewer.js';
     }
 
     _computeVideoSources() {
-      if (this.document && this.document.properties && this.document.properties['vid:transcodedVideos']
-          && this.xpath === 'file:content') {
+      if (
+        this.document &&
+        this.document.properties &&
+        this.document.properties['vid:transcodedVideos'] &&
+        this.xpath === 'file:content'
+      ) {
         const conversions = [];
         this.document.properties['vid:transcodedVideos'].forEach((conversion) => {
           if (conversion && conversion.content && conversion.content.data && conversion.content['mime-type']) {
@@ -268,17 +277,23 @@ import './viewers/nuxeo-video-viewer.js';
       // fallback to blob data if there are no transcoded videos (e.g. video documents managed by liveconnect)
       if (this.xpath) {
         if (this._blob && this._blob['mime-type'] && this._blob['mime-type'].match('video.*|application/(g|m)xf')) {
-          return [{
-            data: this._blob.data,
-            type: this._blob['mime-type'],
-          }];
+          return [
+            {
+              data: this._blob.data,
+              type: this._blob['mime-type'],
+            },
+          ];
         }
       }
     }
 
     _computeStoryboard() {
-      if (this.document && this.document.properties && this.document.properties['vid:storyboard']
-          && this.xpath === 'file:content') {
+      if (
+        this.document &&
+        this.document.properties &&
+        this.document.properties['vid:storyboard'] &&
+        this.xpath === 'file:content'
+      ) {
         return this.document.properties['vid:storyboard'];
       }
     }
@@ -291,12 +306,13 @@ import './viewers/nuxeo-video-viewer.js';
 
     _computeIFrameSource() {
       if (this.document && this.document.contextParameters && this.document.contextParameters.preview) {
-        let {url} = this.document.contextParameters.preview;
+        let { url } = this.document.contextParameters.preview;
         if (this.xpath !== 'file:content') {
           url = url.replace('/@preview/', `/@blob/${this.xpath}/@preview/`);
         }
         return url;
-      } if (this._blob) {
+      }
+      if (this._blob) {
         return this._blob.data;
       }
     }

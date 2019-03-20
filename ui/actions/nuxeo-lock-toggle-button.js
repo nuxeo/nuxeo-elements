@@ -44,41 +44,42 @@ import './nuxeo-action-button-styles.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-lock-toggle-button/index.html
    */
-  class LockToggleButton
-    extends mixinBehaviors([I18nBehavior, FiltersBehavior, FormatBehavior], Nuxeo.Element) {
+  class LockToggleButton extends mixinBehaviors([I18nBehavior, FiltersBehavior, FormatBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="nuxeo-action-button-styles">
-      :host([locked]) paper-icon-button {
-        color: var(--icon-toggle-outline-color, var(--nuxeo-action-color-activated));
-      }
-    </style>
+        <style include="nuxeo-action-button-styles">
+          :host([locked]) paper-icon-button {
+            color: var(--icon-toggle-outline-color, var(--nuxeo-action-color-activated));
+          }
+        </style>
 
-    <nuxeo-connection id="nxcon"></nuxeo-connection>
+        <nuxeo-connection id="nxcon"></nuxeo-connection>
 
-    <nuxeo-operation
-      id="opLock"
-      op="Document.Lock"
-      input="[[document.uid]]"
-      headers="{&quot;X-NXfetch.document&quot;: &quot;lock&quot;}">
-    </nuxeo-operation>
-    <nuxeo-operation
-      id="opUnlock"
-      op="Document.Unlock"
-      input="[[document.uid]]"
-      headers="{&quot;X-NXfetch.document&quot;: &quot;lock&quot;}">
-    </nuxeo-operation>
+        <nuxeo-operation
+          id="opLock"
+          op="Document.Lock"
+          input="[[document.uid]]"
+          headers='{"X-NXfetch.document": "lock"}'
+        >
+        </nuxeo-operation>
+        <nuxeo-operation
+          id="opUnlock"
+          op="Document.Unlock"
+          input="[[document.uid]]"
+          headers='{"X-NXfetch.document": "lock"}'
+        >
+        </nuxeo-operation>
 
-    <dom-if if="[[_isAvailable(document)]]">
-      <template>
-        <div class="action">
-          <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
-          <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
-        </div>
-        <nuxeo-tooltip>[[tooltip]]</nuxeo-tooltip>
-      </template>
-    </dom-if>
-`;
+        <dom-if if="[[_isAvailable(document)]]">
+          <template>
+            <div class="action">
+              <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
+              <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
+            </div>
+            <nuxeo-tooltip>[[tooltip]]</nuxeo-tooltip>
+          </template>
+        </dom-if>
+      `;
     }
 
     static get is() {
@@ -139,28 +140,31 @@ import './nuxeo-action-button-styles.js';
     }
 
     _isAvailable(doc) {
-      return doc && !doc.isVersion && this.hasPermission(doc, 'Write') && !this.isImmutable(doc)
-          && doc.type !== 'Root';
+      return doc && !doc.isVersion && this.hasPermission(doc, 'Write') && !this.isImmutable(doc) && doc.type !== 'Root';
     }
 
     _toggle() {
       if (!this.locked && this._canLock()) {
         this.$.opLock.execute().then((doc) => {
           this.locked = true;
-          this.dispatchEvent(new CustomEvent('document-locked', {
-            composed: true,
-            bubbles: true,
-            detail: { doc },
-          }));
+          this.dispatchEvent(
+            new CustomEvent('document-locked', {
+              composed: true,
+              bubbles: true,
+              detail: { doc },
+            }),
+          );
         });
       } else if (this._canUnlock()) {
         this.$.opUnlock.execute().then((doc) => {
           this.locked = false;
-          this.dispatchEvent(new CustomEvent('document-unlocked', {
-            composed: true,
-            bubbles: true,
-            detail: { doc },
-          }));
+          this.dispatchEvent(
+            new CustomEvent('document-unlocked', {
+              composed: true,
+              bubbles: true,
+              detail: { doc },
+            }),
+          );
         });
       }
     }
@@ -169,11 +173,11 @@ import './nuxeo-action-button-styles.js';
       if (locked && this.document.lockOwner && this.document.lockCreated) {
         return this.i18n(
           'lockToggleButton.tooltip.lockedBy',
-          this.document.lockOwner, this.formatDate(this.document.lockCreated),
+          this.document.lockOwner,
+          this.formatDate(this.document.lockCreated),
         );
-      } 
-        return this.i18n(`lockToggleButton.tooltip.${locked ? 'unlock' : 'lock'}`);
-      
+      }
+      return this.i18n(`lockToggleButton.tooltip.${locked ? 'unlock' : 'lock'}`);
     }
 
     _computeLabel(locked) {
@@ -192,10 +196,12 @@ import './nuxeo-action-button-styles.js';
       return this.$.nxcon.connect().then((currentUser) => {
         if (this.document.isProxy || this.document.isVersion) {
           return false;
-        } 
-          return currentUser.isAdministrator || this.document.contextParameters.permissions.indexOf('Everything') > -1
-          || this.document.contextParameters.permissions.indexOf('Write') > -1;
-        
+        }
+        return (
+          currentUser.isAdministrator ||
+          this.document.contextParameters.permissions.indexOf('Everything') > -1 ||
+          this.document.contextParameters.permissions.indexOf('Write') > -1
+        );
       });
     }
 
@@ -203,14 +209,13 @@ import './nuxeo-action-button-styles.js';
       return this.$.nxcon.connect().then((currentUser) => {
         if (this.document.isProxy) {
           return false;
-        } 
-          return (currentUser.isAdministrator
-          || this.document.contextParameters.permissions.indexOf('Everything') > -1
+        }
+        return (
+          (currentUser.isAdministrator || this.document.contextParameters.permissions.indexOf('Everything') > -1
             ? true
-            : (currentUser.id === this.document.lockOwner)
-          && this.document.contextParameters.permissions.indexOf('Write') > -1)
-          && !document.isVersion;
-        
+            : currentUser.id === this.document.lockOwner &&
+              this.document.contextParameters.permissions.indexOf('Write') > -1) && !document.isVersion
+        );
       });
     }
   }

@@ -50,124 +50,125 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
   class UserGroupLatest extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="iron-flex-factors">
-      :host {
-        display: block;
-        @apply --nuxeo-user-group-latest-layout;
-      }
+        <style include="iron-flex-factors">
+          :host {
+            display: block;
+            @apply --nuxeo-user-group-latest-layout;
+          }
 
-      .title {
-        margin: 0 0 .8em;
-        padding: 0;
-      }
+          .title {
+            margin: 0 0 0.8em;
+            padding: 0;
+          }
 
-      .table {
-        border: 1px solid var(--divider-color);
-      }
+          .table {
+            border: 1px solid var(--divider-color);
+          }
 
-      .table-header {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        background-color: var(--nuxeo-table-header-background, #fafafa);
-        color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.54));
-        font-weight: 400;
-        min-height: 48px;
-        padding: 0 0 0 12px;
-        border-bottom: 2px solid var(--nuxeo-border, #eee);
-        box-shadow: 0 -1px 0 rgba(0,0,0,0.2) inset;
-      }
+          .table-header {
+            @apply --layout-horizontal;
+            @apply --layout-center;
+            background-color: var(--nuxeo-table-header-background, #fafafa);
+            color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.54));
+            font-weight: 400;
+            min-height: 48px;
+            padding: 0 0 0 12px;
+            border-bottom: 2px solid var(--nuxeo-border, #eee);
+            box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2) inset;
+          }
 
-      .table-row {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        padding: 12px 0 12px 12px;
-        border-bottom: 1px solid var(--nuxeo-border, #eee);
-        cursor: pointer;
-      }
+          .table-row {
+            @apply --layout-horizontal;
+            @apply --layout-center;
+            padding: 12px 0 12px 12px;
+            border-bottom: 1px solid var(--nuxeo-border, #eee);
+            cursor: pointer;
+          }
 
-      .table-row:hover {
-        background: var(--nuxeo-container-hover, #fafafa);
-      }
+          .table-row:hover {
+            background: var(--nuxeo-container-hover, #fafafa);
+          }
 
-      .table-actions {
-        width: 3em;
-      }
+          .table-actions {
+            width: 3em;
+          }
 
-      .table {
-        border: 1px solid var(--nuxeo-border, #eee);
-      }
+          .table {
+            border: 1px solid var(--nuxeo-border, #eee);
+          }
 
-      h3 iron-icon {
-         width: 1.3em;
-         margin-right: .2rem;
-      }
+          h3 iron-icon {
+            width: 1.3em;
+            margin-right: 0.2rem;
+          }
 
-      .emptyResult {
-        opacity: .5;
-        display: block;
-        font-weight: 300;
-        padding: 1.5em .7em;
-        text-align: center;
-      }
+          .emptyResult {
+            opacity: 0.5;
+            display: block;
+            font-weight: 300;
+            padding: 1.5em 0.7em;
+            text-align: center;
+          }
 
-      .preserve-white-space {
-        white-space: pre;
-      }
-    </style>
+          .preserve-white-space {
+            white-space: pre;
+          }
+        </style>
 
-    <nuxeo-resource
-      id="latestCreatedUsersGroups"
-      auto
-      path="/query/LATEST_CREATED_USERS_OR_GROUPS_PROVIDER"
-      response="{{latestCreatedUsersGroups}}"
-      headers="{&quot;properties&quot;: &quot;*&quot;}">
-    </nuxeo-resource>
+        <nuxeo-resource
+          id="latestCreatedUsersGroups"
+          auto
+          path="/query/LATEST_CREATED_USERS_OR_GROUPS_PROVIDER"
+          response="{{latestCreatedUsersGroups}}"
+          headers='{"properties": "*"}'
+        >
+        </nuxeo-resource>
 
-    <nuxeo-card icon="nuxeo:recent" heading="[[i18n('userGroupLatest.recentlyCreated')]]">
-      <div class="table">
-        <div class="table-header">
-          <div class="flex">[[i18n('userGroupLatest.name')]]</div>
-          <div class="flex-2">[[i18n('userGroupLatest.identifier')]]</div>
-          <div class="table-actions">
-            <paper-icon-button noink="" icon="nuxeo:refresh" on-click="_refreshLatest"></paper-icon-button>
-          </div>
-        </div>
-        <div class="table-rows">
-          <dom-repeat items="[[latestCreatedUsersGroups.entries]]" as="item">
-            <template>
-              <div class="table-row" on-click="_manageUserOrGroup">
-                <div class="flex">
-                  <dom-if if="[[_isUser(item)]]">
-                    <template>
-                      <dom-if if="[[_userHasName(item)]]">
+        <nuxeo-card icon="nuxeo:recent" heading="[[i18n('userGroupLatest.recentlyCreated')]]">
+          <div class="table">
+            <div class="table-header">
+              <div class="flex">[[i18n('userGroupLatest.name')]]</div>
+              <div class="flex-2">[[i18n('userGroupLatest.identifier')]]</div>
+              <div class="table-actions">
+                <paper-icon-button noink="" icon="nuxeo:refresh" on-click="_refreshLatest"></paper-icon-button>
+              </div>
+            </div>
+            <div class="table-rows">
+              <dom-repeat items="[[latestCreatedUsersGroups.entries]]" as="item">
+                <template>
+                  <div class="table-row" on-click="_manageUserOrGroup">
+                    <div class="flex">
+                      <dom-if if="[[_isUser(item)]]">
                         <template>
-                          <nuxeo-user-tag user="[[item]]"></nuxeo-user-tag>
+                          <dom-if if="[[_userHasName(item)]]">
+                            <template>
+                              <nuxeo-user-tag user="[[item]]"></nuxeo-user-tag>
+                            </template>
+                          </dom-if>
                         </template>
                       </dom-if>
-                    </template>
-                  </dom-if>
-                  <dom-if if="[[_isGroup(item)]]">
-                    <template>
-                      <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
-                    </template>
-                  </dom-if>
-                </div>
-                <div class="flex-2 preserve-white-space">[[item.uid]]</div>
-                <div class="table-actions"></div>
-              </div>
-            </template>
-          </dom-repeat>
-          <dom-if if="[[_empty(latestCreatedUsersGroups.entries)]]">
-            <template>
-              <div class="table-row">
-                <div class="emptyResult">[[i18n('userGroupLatest.emptyRecentUserOrGroup')]]</div>
-              </div>
-            </template>
-          </dom-if>
-        </div>
-      </div>
-    </nuxeo-card>
-`;
+                      <dom-if if="[[_isGroup(item)]]">
+                        <template>
+                          <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
+                        </template>
+                      </dom-if>
+                    </div>
+                    <div class="flex-2 preserve-white-space">[[item.uid]]</div>
+                    <div class="table-actions"></div>
+                  </div>
+                </template>
+              </dom-repeat>
+              <dom-if if="[[_empty(latestCreatedUsersGroups.entries)]]">
+                <template>
+                  <div class="table-row">
+                    <div class="emptyResult">[[i18n('userGroupLatest.emptyRecentUserOrGroup')]]</div>
+                  </div>
+                </template>
+              </dom-if>
+            </div>
+          </div>
+        </nuxeo-card>
+      `;
     }
 
     static get is() {
@@ -226,24 +227,29 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           result += docModel.properties['user:lastName'];
         }
         return result;
-      } if (this._isGroup(docModel)) {
+      }
+      if (this._isGroup(docModel)) {
         return docModel.properties['group:grouplabel'];
       }
     }
 
     _manageUserOrGroup(e) {
       if (this._isUser(e.model.item)) {
-        this.dispatchEvent(new CustomEvent('manageUser', {
-          composed: true,
-          bubbles: true,
-          detail: { user: e.model.item.uid },
-        }));
+        this.dispatchEvent(
+          new CustomEvent('manageUser', {
+            composed: true,
+            bubbles: true,
+            detail: { user: e.model.item.uid },
+          }),
+        );
       } else if (this._isGroup(e.model.item)) {
-        this.dispatchEvent(new CustomEvent('manageGroup', {
-          composed: true,
-          bubbles: true,
-          detail: { group: e.model.item.uid },
-        }));
+        this.dispatchEvent(
+          new CustomEvent('manageGroup', {
+            composed: true,
+            bubbles: true,
+            detail: { group: e.model.item.uid },
+          }),
+        );
       }
     }
 

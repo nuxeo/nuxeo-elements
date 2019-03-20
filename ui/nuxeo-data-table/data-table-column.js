@@ -13,15 +13,16 @@ import './data-table-column-filter.js';
   class DataTableColumn extends Nuxeo.Element {
     static get template() {
       return html`
-    <template id="header">
-      <nuxeo-data-table-column-filter
-        label="[[column.name]]"
-        value="{{column.filterValue}}"
-        hidden\$="[[!column.filterBy]]">
-      </nuxeo-data-table-column-filter>
-      <div hidden\$="[[column.filterBy]]">[[column.name]]</div>
-    </template>
-`;
+        <template id="header">
+          <nuxeo-data-table-column-filter
+            label="[[column.name]]"
+            value="{{column.filterValue}}"
+            hidden\$="[[!column.filterBy]]"
+          >
+          </nuxeo-data-table-column-filter>
+          <div hidden\$="[[column.filterBy]]">[[column.name]]</div>
+        </template>
+      `;
     }
 
     static get is() {
@@ -206,11 +207,13 @@ import './data-table-column-filter.js';
     _filterValueChanged(table, filterValue, filterBy) {
       if (table && filterBy && filterValue !== undefined) {
         this._notifyTable(table, 'filterValue', filterValue);
-        this.dispatchEvent(new CustomEvent('column-filter-changed', {
-          composed: true,
-          bubbles: true,
-          detail: { value: filterValue, filterBy },
-        }));
+        this.dispatchEvent(
+          new CustomEvent('column-filter-changed', {
+            composed: true,
+            bubbles: true,
+            detail: { value: filterValue, filterBy },
+          }),
+        );
       }
     }
   }

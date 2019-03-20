@@ -19,86 +19,89 @@ import '../widgets/nuxeo-dialog.js';
   class DataTableSettings extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      :host {
-        position: relative;
-      }
+        <style>
+          :host {
+            position: relative;
+          }
 
-      .paper-content {
-        min-width: 20vw;
-        margin-bottom: 2em;
-      }
+          .paper-content {
+            min-width: 20vw;
+            margin-bottom: 2em;
+          }
 
-      paper-icon-button {
-        position: absolute;
-        top: 1.5em;
-        right: 8px;
-        width: 1.5em;
-        height: 1.5em;
-        padding: 0;
-      }
+          paper-icon-button {
+            position: absolute;
+            top: 1.5em;
+            right: 8px;
+            width: 1.5em;
+            height: 1.5em;
+            padding: 0;
+          }
 
-      paper-button {
-        margin: 0;
-        padding: 8px 16px;
-      }
+          paper-button {
+            margin: 0;
+            padding: 8px 16px;
+          }
 
-      paper-button:hover {
-        @apply --nx-button-hover;
-      }
+          paper-button:hover {
+            @apply --nx-button-hover;
+          }
 
-      paper-button.primary {
-        @apply --nx-button-primary;
-      }
+          paper-button.primary {
+            @apply --nx-button-primary;
+          }
 
-      paper-button.primary:hover,
-      paper-button.primary:focus {
-        @apply --nx-button-primary-hover;
-      }
+          paper-button.primary:hover,
+          paper-button.primary:focus {
+            @apply --nx-button-primary-hover;
+          }
 
-      .buttons {
-        @apply --buttons-bar;
-      }
-    </style>
+          .buttons {
+            @apply --buttons-bar;
+          }
+        </style>
 
-    <nuxeo-connection id="nxcon"></nuxeo-connection>
+        <nuxeo-connection id="nxcon"></nuxeo-connection>
 
-    <nuxeo-dialog id="columnsSettingsPopup" with-backdrop="" on-iron-overlay-closed="_onSettingsClosed">
-      <h2>[[i18n('tableSettings.columnSettings')]]</h2>
-      <div class="paper-content layout horizontal">
-        <div class="layout vertical">
-          <div class="row layout horizontal">
-            <div class="label-container">
-              <label></label>
+        <nuxeo-dialog id="columnsSettingsPopup" with-backdrop="" on-iron-overlay-closed="_onSettingsClosed">
+          <h2>[[i18n('tableSettings.columnSettings')]]</h2>
+          <div class="paper-content layout horizontal">
+            <div class="layout vertical">
+              <div class="row layout horizontal">
+                <div class="label-container">
+                  <label></label>
+                </div>
+                <dom-repeat items="[[columns]]" as="column">
+                  <template>
+                    <tr>
+                      <td>
+                        <paper-checkbox noink="" checked="{{!column.hidden}}"></paper-checkbox>
+                      </td>
+                      <td>
+                        [[column.name]]
+                      </td>
+                    </tr>
+                  </template>
+                </dom-repeat>
+                <table></table>
+              </div>
             </div>
-            <dom-repeat items="[[columns]]" as="column">
-                <template>
-                  <tr>
-                    <td>
-                      <paper-checkbox noink="" checked="{{!column.hidden}}"></paper-checkbox>
-                    </td>
-                    <td>
-                      [[column.name]]
-                    </td>
-                  </tr>
-                </template>
-              </dom-repeat><table>
-              
-            </table>
           </div>
-        </div>
-      </div>
-      <div class="buttons horizontal end-justified layout">
-        <div class="flex start-justified">
-          <paper-button noink on-click="_resetSettings">[[i18n('tableSettings.columnSettings.reset')]]</paper-button>
-        </div>
-        <paper-button noink class="primary" dialog-dismiss>[[i18n('tableSettings.columnSettings.close')]]</paper-button>
-      </div>
-    </nuxeo-dialog>
+          <div class="buttons horizontal end-justified layout">
+            <div class="flex start-justified">
+              <paper-button noink on-click="_resetSettings"
+                >[[i18n('tableSettings.columnSettings.reset')]]</paper-button
+              >
+            </div>
+            <paper-button noink class="primary" dialog-dismiss
+              >[[i18n('tableSettings.columnSettings.close')]]</paper-button
+            >
+          </div>
+        </nuxeo-dialog>
 
-    <paper-icon-button noink icon="nuxeo:settings" id="toggleColSettings" on-click="toggleColsSettingsPopup">
-    </paper-icon-button>
-`;
+        <paper-icon-button noink icon="nuxeo:settings" id="toggleColSettings" on-click="toggleColsSettingsPopup">
+        </paper-icon-button>
+      `;
     }
 
     static get is() {
@@ -115,9 +118,7 @@ import '../widgets/nuxeo-dialog.js';
     }
 
     static get observers() {
-      return [
-        '_columnDisplayChanged(columns.*)',
-      ];
+      return ['_columnDisplayChanged(columns.*)'];
     }
 
     toggleColsSettingsPopup() {
@@ -126,10 +127,12 @@ import '../widgets/nuxeo-dialog.js';
 
     _columnDisplayChanged(change) {
       if (change.path.endsWith('hidden')) {
-        this.dispatchEvent(new CustomEvent('settings-changed', {
-          composed: true,
-          bubbles: true,
-        }));
+        this.dispatchEvent(
+          new CustomEvent('settings-changed', {
+            composed: true,
+            bubbles: true,
+          }),
+        );
       }
     }
 

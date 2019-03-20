@@ -58,42 +58,44 @@ window.nuxeo.I18n.loadLocale();
   class DemoSection extends PolymerElement {
     static get template() {
       return html`
-    <style>
-      :host {
-        font-family: 'Open Sans', Arial, sans-serif;
-        display: block;
-      }
+        <style>
+          :host {
+            font-family: 'Open Sans', Arial, sans-serif;
+            display: block;
+          }
 
-      :host([center]) #content {
-        text-align: center;
-      }
+          :host([center]) #content {
+            text-align: center;
+          }
 
-      #container {
-        min-width: 480px;
-        margin: 0 auto;
-      }
+          #container {
+            min-width: 480px;
+            margin: 0 auto;
+          }
 
-      #heading {
-        font-size: 20px;
-        font-weight: 400;
-        margin: 24px 0 8px;
-      }
+          #heading {
+            font-size: 20px;
+            font-weight: 400;
+            margin: 24px 0 8px;
+          }
 
-      #content {
-        background-color: #efefef;
-        border-radius: 3px;
-        padding: 16px;
-        margin-bottom: 16px;
-      }
-    </style>
+          #content {
+            background-color: #efefef;
+            border-radius: 3px;
+            padding: 16px;
+            margin-bottom: 16px;
+          }
+        </style>
 
-    <div id="container">
-      <template is="dom-if" if="[[heading]]"><div id="heading">[[heading]]</div></template>
-      <div id="content">
-        <slot></slot>
-      </div>
-    </div>
-`;
+        <div id="container">
+          <template is="dom-if" if="[[heading]]"
+            ><div id="heading">[[heading]]</div></template
+          >
+          <div id="content">
+            <slot></slot>
+          </div>
+        </div>
+      `;
     }
 
     static get is() {
@@ -122,7 +124,10 @@ window.nuxeo.I18n.loadLocale();
         _sizes: {
           type: Object,
           value: {
-            small: '480px', medium: '768px', large: '960px', full: '100vw',
+            small: '480px',
+            medium: '768px',
+            large: '960px',
+            full: '100vw',
           },
         },
       };

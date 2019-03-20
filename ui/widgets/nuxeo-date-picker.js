@@ -37,10 +37,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
    * @memberof Nuxeo UI
    * @demo demo/nuxeo-date-picker/index.html
    */
-  class DatePicker
-    extends mixinBehaviors([I18nBehavior, IronFormElementBehavior,
-      IronValidatableBehavior], Nuxeo.Element) {
-
+  class DatePicker extends mixinBehaviors(
+    [I18nBehavior, IronFormElementBehavior, IronValidatableBehavior],
+    Nuxeo.Element,
+  ) {
     static get is() {
       return 'nuxeo-date-picker';
     }
@@ -125,49 +125,49 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           }
 
           /* picker input */
-          [part="input-field"] {
+          [part='input-field'] {
             background-color: var(--nuxeo-page-background) !important;
             border: 1px solid var(--nuxeo-border) !important;
             color: var(--nuxeo-text-default) !important;
           }
 
           /* buttons inside input (clear and open picker) */
-          [part="text-field"] [part$="button"] {
+          [part='text-field'] [part$='button'] {
             color: var(--nuxeo-text-default) !important;
           }
 
-          [part="text-field"] [part$="button"]:hover {
+          [part='text-field'] [part$='button']:hover {
             color: var(--nuxeo-primary-color) !important;
           }
 
           /* buttons inside the overlay (cancel and today), plus highlights for current year and today's date */
-          [part="cancel-button"],
-          [part="today-button"],
-          [part="years"] [part="year-number"][current],
-          [part="date"][today] {
+          [part='cancel-button'],
+          [part='today-button'],
+          [part='years'] [part='year-number'][current],
+          [part='date'][today] {
             color: var(--nuxeo-primary-color) !important;
           }
 
           /* keyboard focus for buttons inside the overlay */
-          [part="cancel-button"][focus-ring],
-          [part="today-button"][focus-ring] {
+          [part='cancel-button'][focus-ring],
+          [part='today-button'][focus-ring] {
             box-shadow: 0 0 0 2px var(--nuxeo-primary-color) !important;
           }
 
           /* date selected */
-          [part="date"][selected]:before {
+          [part='date'][selected]:before {
             background-color: var(--nuxeo-primary-color) !important;
             box-shadow: 0 0 0 2px var(--nuxeo-primary-color) !important;
           }
 
-          [part="date"][selected][today] {
+          [part='date'][selected][today] {
             color: var(--nuxeo-button-primary-text) !important;
           }
 
           /* hover any date that is not disabled or currently selected */
-          [part="date"]:not([disabled]):not([selected]):hover::before {
+          [part='date']:not([disabled]):not([selected]):hover::before {
             background-color: var(--nuxeo-primary-color) !important;
-            opacity: .1 !important;
+            opacity: 0.1 !important;
           }
         </style>
 
@@ -182,14 +182,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           disabled$="[[disabled]]"
           min="[[min]]"
           max="[[max]]"
-          error-message="[[errorMessage]]">
+          error-message="[[errorMessage]]"
+        >
         </vaadin-date-picker>
       `;
     }
 
     ready() {
       super.ready();
-      moment.locale((window.nuxeo.I18n.language) ? window.nuxeo.I18n.language.split('-')[0] : 'en');
+      moment.locale(window.nuxeo.I18n.language ? window.nuxeo.I18n.language.split('-')[0] : 'en');
       // tell vaadin-date-picker how to display dates since default behavior is US locales (MM-DD-YYYY)
       // this way we can take advantage of moment locale and use the date format that is most suitable for the user
       this.$.date.set('i18n.formatDate', (date) => moment(date).format(moment.localeData().longDateFormat('L')));
@@ -251,7 +252,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
       this._preventInputUpdate = false;
     }
-
   }
 
   customElements.define(DatePicker.is, DatePicker);

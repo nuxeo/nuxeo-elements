@@ -49,41 +49,47 @@ import './nuxeo-action-button-styles.js';
   class ShareButton extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="nuxeo-action-button-styles">
-      #copyLink {
-        cursor: pointer;
-        color: var(--nuxeo-primary-color, #0066ff);
-      }
+        <style include="nuxeo-action-button-styles">
+          #copyLink {
+            cursor: pointer;
+            color: var(--nuxeo-primary-color, #0066ff);
+          }
 
-      .heading {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        @apply --layout-justified;
-      }
-    </style>
+          .heading {
+            @apply --layout-horizontal;
+            @apply --layout-center;
+            @apply --layout-justified;
+          }
+        </style>
 
-    <dom-if if="[[_isAvailable(document)]]">
-      <template>
-        <div class="action" on-click="_toggleDialog">
-          <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
-          <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
-        </div>
-        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
-      </template>
-    </dom-if>
+        <dom-if if="[[_isAvailable(document)]]">
+          <template>
+            <div class="action" on-click="_toggleDialog">
+              <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
+              <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
+            </div>
+            <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
+          </template>
+        </dom-if>
 
-    <nuxeo-dialog id="dialog" with-backdrop="">
-      <div class="heading">
-        <h2>[[i18n('shareButton.dialog.heading')]]</h2>
-        <span id="copyLink" on-click="_copyPermalink">[[i18n('shareButton.operation.copy')]]</span>
-      </div>
-      <nuxeo-input id="permalink" value="[[_buildPermalink(document)]]" on-click="_copyPermalink" autofocus readonly>
-      </nuxeo-input>
-      <div class="buttons">
-        <paper-button dialog-dismiss="">[[i18n('shareButton.dialog.close')]]</paper-button>
-      </div>
-    </nuxeo-dialog>
-`;
+        <nuxeo-dialog id="dialog" with-backdrop="">
+          <div class="heading">
+            <h2>[[i18n('shareButton.dialog.heading')]]</h2>
+            <span id="copyLink" on-click="_copyPermalink">[[i18n('shareButton.operation.copy')]]</span>
+          </div>
+          <nuxeo-input
+            id="permalink"
+            value="[[_buildPermalink(document)]]"
+            on-click="_copyPermalink"
+            autofocus
+            readonly
+          >
+          </nuxeo-input>
+          <div class="buttons">
+            <paper-button dialog-dismiss="">[[i18n('shareButton.dialog.close')]]</paper-button>
+          </div>
+        </nuxeo-dialog>
+      `;
     }
 
     static get is() {
@@ -144,12 +150,9 @@ import './nuxeo-action-button-styles.js';
       }
 
       const link = this.$.copyLink;
-      this._debouncer = Debouncer.debounce(
-        this._debouncer,
-        timeOut.after(3000), () => {
-          link.innerText = this.i18n('shareButton.operation.copy');
-        },
-      );
+      this._debouncer = Debouncer.debounce(this._debouncer, timeOut.after(3000), () => {
+        link.innerText = this.i18n('shareButton.operation.copy');
+      });
       link.innerText = this.i18n('shareButton.operation.copied');
     }
 

@@ -18,8 +18,8 @@ limitations under the License.
   <head>
     <title>nuxeo-sort-select</title>
 
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes" />
     <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="/node_modules/@nuxeo/nuxeo-elements/dedup.js"></script>
     <script type="module">
@@ -32,13 +32,11 @@ limitations under the License.
   <body>
     <dom-bind>
       <template>
-
         <nuxeo-demo-section heading="Select sort field and sort order" size="small">
           <nuxeo-sort-select label="Sort" options="[[options]]" selected="{{selected}}"></nuxeo-sort-select>
           <div>Selected option: [[selected.label]]</div>
           <div>Selected order: [[selected.order]]</div>
         </nuxeo-demo-section>
-
       </template>
     </dom-bind>
 
@@ -46,11 +44,14 @@ limitations under the License.
       import '@polymer/polymer/polymer-legacy.js';
       import '../nuxeo-demo.js';
       import '../../widgets/nuxeo-sort-select.js';
-      
+
       document.querySelector('dom-bind').options = [
         { field: 'dc:title', label: 'Title', order: 'asc' },
         {
-          field: 'dc:created', label: 'Created', order: 'asc', selected: true,
+          field: 'dc:created',
+          label: 'Created',
+          order: 'asc',
+          selected: true,
         },
         { field: 'dc:modified', label: 'Modified', order: 'desc' },
         { field: 'dc:lastContributor', label: 'Last Contributor', order: 'asc' },

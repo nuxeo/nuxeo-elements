@@ -36,52 +36,52 @@ import './nuxeo-selectivity.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-tag-suggestion/index.html
    */
-  class TagSuggestion
-    extends mixinBehaviors([I18nBehavior, IronFormElementBehavior,
-      IronValidatableBehavior], Nuxeo.Element) {
+  class TagSuggestion extends mixinBehaviors(
+    [I18nBehavior, IronFormElementBehavior, IronValidatableBehavior],
+    Nuxeo.Element,
+  ) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-      }
+        <style>
+          :host {
+            display: block;
+          }
 
-      :host([hidden]) {
-        display: none;
-      }
-    </style>
+          :host([hidden]) {
+            display: none;
+          }
+        </style>
 
-    <nuxeo-selectivity
-      id="s2"
-      operation="[[operation]]"
-      label="[[label]]"
-      min-chars="[[minChars]]"
-      tagging\$="[[allowNewTags]]"
-      multiple
-      params="[[params]]"
-      placeholder="[[placeholder]]"
-      error-message="[[errorMessage]]"
-      readonly="[[readonly]]"
-      value="{{value}}"
-      selected-items="{{selectedItems}}"
-      required="[[required]]"
-      invalid="[[invalid]]"
-      new-entry-formatter="[[newEntryFormatter]]"
-      result-formatter="[[resultFormatter]]"
-      added-entry-handler="[[addedTagHandler]]"
-      removed-entry-handler="[[removedTagHandler]]"
-      init-selection="[[initSelection]]"
-      stay-open-on-select="[[stayOpenOnSelect]]">
-    </nuxeo-selectivity>
+        <nuxeo-selectivity
+          id="s2"
+          operation="[[operation]]"
+          label="[[label]]"
+          min-chars="[[minChars]]"
+          tagging\$="[[allowNewTags]]"
+          multiple
+          params="[[params]]"
+          placeholder="[[placeholder]]"
+          error-message="[[errorMessage]]"
+          readonly="[[readonly]]"
+          value="{{value}}"
+          selected-items="{{selectedItems}}"
+          required="[[required]]"
+          invalid="[[invalid]]"
+          new-entry-formatter="[[newEntryFormatter]]"
+          result-formatter="[[resultFormatter]]"
+          added-entry-handler="[[addedTagHandler]]"
+          removed-entry-handler="[[removedTagHandler]]"
+          init-selection="[[initSelection]]"
+          stay-open-on-select="[[stayOpenOnSelect]]"
+        >
+        </nuxeo-selectivity>
 
-    <nuxeo-operation id="addTagOp" op="Services.TagDocument" input="[[document.uid]]">
-    </nuxeo-operation>
+        <nuxeo-operation id="addTagOp" op="Services.TagDocument" input="[[document.uid]]"></nuxeo-operation>
 
-    <nuxeo-operation id="removeTagOp" op="Services.UntagDocument" input="[[document.uid]]">
-    </nuxeo-operation>
+        <nuxeo-operation id="removeTagOp" op="Services.UntagDocument" input="[[document.uid]]"></nuxeo-operation>
 
-    <paper-toast id="toast"></paper-toast>
-`;
+        <paper-toast id="toast"></paper-toast>
+      `;
     }
 
     static get is() {
@@ -117,8 +117,8 @@ import './nuxeo-selectivity.js';
         },
 
         /*
-     * Set to true for allowing to add new tags.
-     */
+         * Set to true for allowing to add new tags.
+         */
         allowNewTags: Boolean,
 
         /**
@@ -231,9 +231,8 @@ import './nuxeo-selectivity.js';
     _resultFormatter(tag) {
       if (tag.newTag) {
         return `<span class='s2newTag'>+ ${this.$.s2.escapeHTML(tag.displayLabel)}</span>`;
-      } 
-        return `<span class='s2existingTag'>${this.$.s2.escapeHTML(tag.displayLabel)}</span>`;
-      
+      }
+      return `<span class='s2existingTag'>${this.$.s2.escapeHTML(tag.displayLabel)}</span>`;
     }
 
     _newEntryFormatter(term) {
@@ -263,9 +262,11 @@ import './nuxeo-selectivity.js';
     }
 
     _initSelection(element, callback) {
-      return callback(this.value.map((entry) => {
-        return { id: entry, displayLabel: entry };
-      }));
+      return callback(
+        this.value.map((entry) => {
+          return { id: entry, displayLabel: entry };
+        }),
+      );
     }
 
     _observeDocument() {
@@ -274,8 +275,10 @@ import './nuxeo-selectivity.js';
           this.value = this.document.contextParameters.tags;
         } else {
           this.value = [];
-          console.warn('Cannot use nuxeo-tag-element on a document that has no tag in its contextParameters. ' +
-              "Make sure you use the 'tags' enricher to fetch the document");
+          console.warn(
+            'Cannot use nuxeo-tag-element on a document that has no tag in its contextParameters. ' +
+              "Make sure you use the 'tags' enricher to fetch the document",
+          );
         }
       } else {
         this.value = [];

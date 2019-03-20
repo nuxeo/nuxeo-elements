@@ -46,64 +46,80 @@ import './nuxeo-action-button-styles.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-add-to-collection-button/index.html
    */
-  class AddToCollectionButton
-    extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
+  class AddToCollectionButton extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style include="nuxeo-action-button-styles">
-      /* Fix known stacking issue in iOS (NXP-24600)
+        <style include="nuxeo-action-button-styles">
+          /* Fix known stacking issue in iOS (NXP-24600)
          https://github.com/PolymerElements/paper-dialog-scrollable/issues/72 */
-      paper-dialog-scrollable {
-        --paper-dialog-scrollable: {
-          -webkit-overflow-scrolling: auto;
-        };
-      }
-    </style>
+          paper-dialog-scrollable {
+            --paper-dialog-scrollable: {
+              -webkit-overflow-scrolling: auto;
+            }
+          }
+        </style>
 
-    <nuxeo-operation id="addToCollectionOp" op="Document.AddToCollection" input="[[document.uid]]"></nuxeo-operation>
-    <nuxeo-operation id="createCollectionOp" op="Collection.Create"></nuxeo-operation>
+        <nuxeo-operation
+          id="addToCollectionOp"
+          op="Document.AddToCollection"
+          input="[[document.uid]]"
+        ></nuxeo-operation>
+        <nuxeo-operation id="createCollectionOp" op="Collection.Create"></nuxeo-operation>
 
-    <dom-if if="[[_isAvailable(document)]]">
-      <template>
-        <div class="action" on-click="_toggleDialog">
-          <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
-          <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
-        </div>
-        <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
-      </template>
-    </dom-if>
+        <dom-if if="[[_isAvailable(document)]]">
+          <template>
+            <div class="action" on-click="_toggleDialog">
+              <paper-icon-button icon="[[icon]]" noink=""></paper-icon-button>
+              <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
+            </div>
+            <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
+          </template>
+        </dom-if>
 
-    <nuxeo-dialog id="add-to-collection-dialog" with-backdrop="" on-iron-overlay-closed="_resetPopup" no-auto-focus="">
-      <h2>[[i18n('addToCollectionButton.dialog.heading')]]</h2>
-      <paper-dialog-scrollable>
-        <nuxeo-selectivity
-          id="nxSelect"
-          label="[[i18n('addToCollectionButton.dialog.collections')]]"
-          required
-          operation="Collection.Suggestion"
-          min-chars="0"
-          placeholder="[[i18n('addToCollectionButton.dialog.select')]]"
-          value="{{collection}}"
-          tagging="true"
-          query-results-filter="[[resultsFilter]]"
-          result-formatter="[[resultFormatter]]"
-          selection-formatter="[[selectionFormatter]]"
-          new-entry-formatter="[[newEntryFormatter]]">
-        </nuxeo-selectivity>
-        <nuxeo-textarea
-          label="[[i18n('addToCollectionButton.dialog.description')]]"
-          value="{{description::input}}"
-          hidden\$="[[!_isNew(collection)]]">
-        </nuxeo-textarea>
-      </paper-dialog-scrollable>
-      <div class="buttons">
-        <paper-button dialog-dismiss>[[i18n('addToCollectionButton.dialog.cancel')]]</paper-button>
-        <paper-button dialog-confirm class="primary" name="add" on-click="_add" disabled\$="[[!_isValid(collection)]]">
-          [[i18n('addToCollectionButton.dialog.add')]]
-        </paper-button>
-      </div>
-    </nuxeo-dialog>
-`;
+        <nuxeo-dialog
+          id="add-to-collection-dialog"
+          with-backdrop=""
+          on-iron-overlay-closed="_resetPopup"
+          no-auto-focus=""
+        >
+          <h2>[[i18n('addToCollectionButton.dialog.heading')]]</h2>
+          <paper-dialog-scrollable>
+            <nuxeo-selectivity
+              id="nxSelect"
+              label="[[i18n('addToCollectionButton.dialog.collections')]]"
+              required
+              operation="Collection.Suggestion"
+              min-chars="0"
+              placeholder="[[i18n('addToCollectionButton.dialog.select')]]"
+              value="{{collection}}"
+              tagging="true"
+              query-results-filter="[[resultsFilter]]"
+              result-formatter="[[resultFormatter]]"
+              selection-formatter="[[selectionFormatter]]"
+              new-entry-formatter="[[newEntryFormatter]]"
+            >
+            </nuxeo-selectivity>
+            <nuxeo-textarea
+              label="[[i18n('addToCollectionButton.dialog.description')]]"
+              value="{{description::input}}"
+              hidden\$="[[!_isNew(collection)]]"
+            >
+            </nuxeo-textarea>
+          </paper-dialog-scrollable>
+          <div class="buttons">
+            <paper-button dialog-dismiss>[[i18n('addToCollectionButton.dialog.cancel')]]</paper-button>
+            <paper-button
+              dialog-confirm
+              class="primary"
+              name="add"
+              on-click="_add"
+              disabled\$="[[!_isValid(collection)]]"
+            >
+              [[i18n('addToCollectionButton.dialog.add')]]
+            </paper-button>
+          </div>
+        </nuxeo-dialog>
+      `;
     }
 
     static get is() {
@@ -198,9 +214,8 @@ import './nuxeo-action-button-styles.js';
           this.collection = response.uid;
           this._addToCollection();
         });
-      } 
-        this._addToCollection();
-      
+      }
+      this._addToCollection();
     }
 
     _addToCollection() {
@@ -209,11 +224,13 @@ import './nuxeo-action-button-styles.js';
         collection: this.collection,
       };
       return op.execute().then(() => {
-        this.dispatchEvent(new CustomEvent('added-to-collection', {
-          composed: true,
-          bubbles: true,
-          detail: { docId: this.document.uid, collectionId: this.collection },
-        }));
+        this.dispatchEvent(
+          new CustomEvent('added-to-collection', {
+            composed: true,
+            bubbles: true,
+            detail: { docId: this.document.uid, collectionId: this.collection },
+          }),
+        );
         this._resetPopup();
       });
     }
@@ -226,7 +243,8 @@ import './nuxeo-action-button-styles.js';
       const label = item.displayLabel || item.title;
 
       // if we are adding a new entry with the _newEntryFormatter we don't want to escape the HTML
-      return item.id === -1 ? `<iron-icon icon="nuxeo:add" item-icon></iron-icon>${label}`
+      return item.id === -1
+        ? `<iron-icon icon="nuxeo:add" item-icon></iron-icon>${label}`
         : this.$.nxSelect.escapeHTML(label);
     }
 
