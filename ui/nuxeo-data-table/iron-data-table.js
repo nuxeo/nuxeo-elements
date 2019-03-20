@@ -242,11 +242,11 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
             </dom-if>
           </div>
 
-          <label class="error" hidden\$="[[!invalid]]">[[errorMessage]]</label>
+          <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
 
           <div id="header">
             <nuxeo-data-table-row header="">
-              <nuxeo-data-table-checkbox header="" hidden\$="[[!selectionEnabled]]"></nuxeo-data-table-checkbox>
+              <nuxeo-data-table-checkbox header="" hidden$="[[!selectionEnabled]]"></nuxeo-data-table-checkbox>
               <dom-repeat items="[[columns]]" as="column">
                 <template>
                   <nuxeo-data-table-cell
@@ -265,16 +265,16 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
                       sort-order="[[sortOrder]]"
                       path="[[column.sortBy]]"
                       on-sort-direction-changed="_sort"
-                      hidden\$="[[!column.sortBy]]"
+                      hidden$="[[!column.sortBy]]"
                     >
                     </nuxeo-data-table-column-sort>
                   </nuxeo-data-table-cell>
                 </template>
               </dom-repeat>
-              <nuxeo-data-table-cell flex="0" hidden\$="[[!editable]]"></nuxeo-data-table-cell>
+              <nuxeo-data-table-cell flex="0" hidden$="[[!editable]]"></nuxeo-data-table-cell>
               <nuxeo-data-table-settings
                 columns="{{columns}}"
-                hidden\$="[[!settingsEnabled]]"
+                hidden$="[[!settingsEnabled]]"
               ></nuxeo-data-table-settings>
             </nuxeo-data-table-row>
           </div>
@@ -298,7 +298,7 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
                 <nuxeo-data-table-row
                   on-click="_onRowClick"
                   before-bind="[[beforeRowBind]]"
-                  even\$="[[!_isEven(index)]]"
+                  even$="[[!_isEven(index)]]"
                   expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
                   index="[[index]]"
                   item="[[item]]"
@@ -306,9 +306,9 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
                   selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
                 >
                   <nuxeo-data-table-checkbox
-                    hidden\$="[[!selectionEnabled]]"
+                    hidden$="[[!selectionEnabled]]"
                     tabindex="0"
-                    checked\$="[[selected]]"
+                    checked$="[[selected]]"
                     on-click="_onCheckBoxTap"
                   ></nuxeo-data-table-checkbox>
                   <dom-repeat items="[[columns]]" as="column" index-as="colIndex">

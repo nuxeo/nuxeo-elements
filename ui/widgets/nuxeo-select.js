@@ -117,11 +117,11 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
           restore-focus-on-close="false"
           horizontal-align="left"
           on-paper-dropdown-open="_resize"
-          readonly\$="[[readonly]]"
-          disabled\$="[[disabled]]"
-          required\$="[[required]]"
-          validator\$="[[validator]]"
-          invalid\$="[[invalid]]"
+          readonly$="[[readonly]]"
+          disabled$="[[disabled]]"
+          required$="[[required]]"
+          validator$="[[validator]]"
+          invalid$="[[invalid]]"
         >
           <paper-listbox
             id="paperMenu"

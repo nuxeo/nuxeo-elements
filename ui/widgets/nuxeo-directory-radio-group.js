@@ -76,7 +76,7 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
 
         <nuxeo-operation id="op" op="Directory.SuggestEntries"></nuxeo-operation>
 
-        <label class="label" hidden\$="[[!label]]" required\$="[[required]]">[[label]]</label>
+        <label class="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
 
         <paper-radio-group on-selected-item-changed="_updateItem" selected="{{_selected}}">
           <dom-repeat items="[[_entries]]">
@@ -93,7 +93,7 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
           </dom-repeat>
         </paper-radio-group>
 
-        <label class="error" hidden\$="[[!invalid]]">[[errorMessage]]</label>
+        <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
       `;
     }
 

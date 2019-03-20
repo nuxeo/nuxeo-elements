@@ -309,7 +309,7 @@ import './nuxeo-user-group-permissions-table.js';
           </div>
         </nuxeo-card>
 
-        <div class="card layout vertical" hidden\$="[[!showEditMembers]]">
+        <div class="card layout vertical" hidden$="[[!showEditMembers]]">
           <nuxeo-user-suggestion
             id="picker"
             search-type="USER_GROUP_TYPE"

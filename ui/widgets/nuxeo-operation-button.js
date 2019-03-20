@@ -50,15 +50,15 @@ import '../actions/nuxeo-action-button-styles.js';
           op="[[operation]]"
           input="[[input]]"
           params="[[params]]"
-          sync-indexing\$="[[syncIndexing]]"
-          async\$="[[async]]"
+          sync-indexing$="[[syncIndexing]]"
+          async$="[[async]]"
           poll-interval="[[pollInterval]]"
         >
         </nuxeo-operation>
 
         <div class="action" on-click="_execute">
           <paper-icon-button id="bt" icon="[[icon]]"></paper-icon-button>
-          <span class="label" hidden\$="[[!showLabel]]">[[i18n(label)]]</span>
+          <span class="label" hidden$="[[!showLabel]]">[[i18n(label)]]</span>
         </div>
         <nuxeo-tooltip>[[i18n(_tooltip)]]</nuxeo-tooltip>
       `;

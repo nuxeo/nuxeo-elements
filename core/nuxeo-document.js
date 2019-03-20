@@ -53,7 +53,7 @@ import './nuxeo-resource.js';
           type="{{type}}"
           response="{{response}}"
           schemas="[[schemas]]"
-          sync-indexing\$="[[syncIndexing]]"
+          sync-indexing$="[[syncIndexing]]"
         >
         </nuxeo-resource>
       `;

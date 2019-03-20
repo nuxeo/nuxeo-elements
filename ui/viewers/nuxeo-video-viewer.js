@@ -78,7 +78,7 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
         <div id="container">
           <video
             id="video"
-            controls\$="[[controls]]"
+            controls$="[[controls]]"
             width="[[width]]"
             height="[[height]]"
             preload="[[preload]]"

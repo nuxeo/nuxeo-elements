@@ -62,7 +62,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                 toggles=""
                 noink=""
                 class="quick-filters"
-                active\$="[[filter.active]]"
+                active$="[[filter.active]]"
                 on-click="_selectFilter"
               >
                 [[_computeFilterLabel(filter)]]

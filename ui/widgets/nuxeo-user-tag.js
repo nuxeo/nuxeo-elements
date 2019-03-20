@@ -66,12 +66,12 @@ import './nuxeo-tooltip.js';
               width="22"
               font-size="10"
               font-weight="500"
-              fetch-avatar\$="[[fetchAvatar]]"
+              fetch-avatar$="[[fetchAvatar]]"
             >
             </nuxeo-user-avatar>
             <dom-if if="[[_hasLink(user)]]">
               <template>
-                <a href\$="[[_href(user)]]" on-click="_preventPropagation">[[_name(user)]]</a>
+                <a href$="[[_href(user)]]" on-click="_preventPropagation">[[_name(user)]]</a>
               </template>
             </dom-if>
             <dom-if if="[[!_hasLink(user)]]">

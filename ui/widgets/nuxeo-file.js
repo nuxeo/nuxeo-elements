@@ -98,13 +98,13 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
           hidden
           id="input"
           type="file"
-          multiple\$="[[multiple]]"
-          accept\$="[[accept]]"
+          multiple$="[[multiple]]"
+          accept$="[[accept]]"
           on-change="_filesChanged"
-          required\$="[[required]]"
+          required$="[[required]]"
         />
 
-        <div id="dropZone" hidden\$="[[readonly]]">
+        <div id="dropZone" hidden$="[[readonly]]">
           <dom-if if="[[!uploading]]">
             <template>
               <paper-button id="button" raised="" on-click="_pick">
@@ -115,18 +115,18 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
           </dom-if>
         </div>
 
-        <label class="error" hidden\$="[[!invalid]]">[[errorMessage]]</label>
+        <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
 
         <dom-if if="[[_hasSingleValue(multiple, value)]]">
           <template>
             <div class="file">
               <div class="layout horizontal">
-                <a href\$="[[_data(value)]]" download="[[_fileName(value)]]">[[_fileName(value)]]</a>
+                <a href$="[[_data(value)]]" download="[[_fileName(value)]]">[[_fileName(value)]]</a>
                 <iron-icon
                   icon="nuxeo:remove"
                   title="[[i18n('command.remove')]]"
                   on-click="remove"
-                  hidden\$="[[readonly]]"
+                  hidden$="[[readonly]]"
                 >
                 </iron-icon>
               </div>
@@ -140,12 +140,12 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
               <template>
                 <div class="file">
                   <div class="layout horizontal">
-                    <a href\$="[[_data(file)]]" download="[[_fileName(file)]]">[[_fileName(file)]]</a>
+                    <a href$="[[_data(file)]]" download="[[_fileName(file)]]">[[_fileName(file)]]</a>
                     <iron-icon
                       icon="nuxeo:remove"
                       title="[[i18n('command.remove')]]"
                       on-click="remove"
-                      hidden\$="[[readonly]]"
+                      hidden$="[[readonly]]"
                     >
                     </iron-icon>
                   </div>
@@ -157,7 +157,7 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
 
         <dom-if if="[[readonly]]">
           <template>
-            <label class="empty" hidden\$="[[!_hasValue(value)]]">[[emptyLabel]]</label>
+            <label class="empty" hidden$="[[!_hasValue(value)]]">[[emptyLabel]]</label>
           </template>
         </dom-if>
       `;

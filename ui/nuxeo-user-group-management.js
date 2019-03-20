@@ -172,12 +172,12 @@ import './widgets/nuxeo-user-suggestion.js';
 
           <section name="create-user">
             <nuxeo-card>
-              <nuxeo-create-user readonly\$="[[readonly]]"></nuxeo-create-user>
+              <nuxeo-create-user readonly$="[[readonly]]"></nuxeo-create-user>
             </nuxeo-card>
           </section>
 
           <section name="manage-user">
-            <nuxeo-user-management username="[[selectedUser]]" readonly\$="[[readonly]]"></nuxeo-user-management>
+            <nuxeo-user-management username="[[selectedUser]]" readonly$="[[readonly]]"></nuxeo-user-management>
           </section>
 
           <section name="create-group">
@@ -187,7 +187,7 @@ import './widgets/nuxeo-user-suggestion.js';
           </section>
 
           <section name="manage-group">
-            <nuxeo-group-management groupname="[[selectedGroup]]" readonly\$="[[readonly]]"></nuxeo-group-management>
+            <nuxeo-group-management groupname="[[selectedGroup]]" readonly$="[[readonly]]"></nuxeo-group-management>
           </section>
         </iron-pages>
       `;

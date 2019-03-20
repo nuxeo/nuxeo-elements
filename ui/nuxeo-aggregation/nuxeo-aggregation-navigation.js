@@ -95,7 +95,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               <div
                 class="key"
                 on-mousemove="_mouseMove"
-                style\$="top: [[key.top]]px; height: [[key.height]]px; color: [[_color(key.visible)]];"
+                style$="top: [[key.top]]px; height: [[key.height]]px; color: [[_color(key.visible)]];"
               >
                 [[_label(key)]]
               </div>

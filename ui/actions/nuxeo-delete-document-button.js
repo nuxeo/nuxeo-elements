@@ -58,7 +58,7 @@ import './nuxeo-action-button-styles.js';
           <template>
             <div class="action" on-click="_delete">
               <paper-icon-button icon="[[icon]]" noink="" id="deleteButton"></paper-icon-button>
-              <span class="label" hidden\$="[[!showLabel]]">[[_label]]</span>
+              <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
             </div>
             <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
           </template>

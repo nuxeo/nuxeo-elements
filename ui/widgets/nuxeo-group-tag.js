@@ -55,7 +55,7 @@ import './nuxeo-tag.js';
         <nuxeo-tag icon="nuxeo:group">
           <dom-if if="[[!disabled]]">
             <template>
-              <a class="preserve-white-space" href\$="[[_href(group)]]" on-click="_preventPropagation"
+              <a class="preserve-white-space" href$="[[_href(group)]]" on-click="_preventPropagation"
                 >[[_label(group)]]</a
               >
             </template>

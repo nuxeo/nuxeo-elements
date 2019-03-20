@@ -159,7 +159,7 @@ import '../widgets/nuxeo-user-suggestion.js';
               </paper-button>
             </div>
 
-            <span id="errors" hidden\$="[[!_hasErrors(errors)]]">[[errors]]</span>
+            <span id="errors" hidden$="[[!_hasErrors(errors)]]">[[errors]]</span>
           </form>
         </iron-form>
       `;

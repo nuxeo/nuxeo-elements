@@ -7066,11 +7066,11 @@ input[type='text'].selectivity-multiple-input:focus {
 
         <nuxeo-operation id="op" op="[[operation]]" enrichers="[[enrichers]]"></nuxeo-operation>
 
-        <label class="label" hidden\$="[[!label]]" required\$="[[required]]">[[label]]</label>
+        <label class="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
 
-        <div id="input" readonly\$="[[readonly]]"></div>
+        <div id="input" readonly$="[[readonly]]"></div>
 
-        <label class="error" hidden\$="[[!invalid]]">[[errorMessage]]</label>
+        <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
       `;
     }
 

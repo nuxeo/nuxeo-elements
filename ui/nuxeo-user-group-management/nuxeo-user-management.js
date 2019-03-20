@@ -296,7 +296,7 @@ import './nuxeo-user-group-permissions-table.js';
               </template>
             </dom-if>
           </div>
-          <div class="layout vertical" hidden\$="[[!showEditGroups]]">
+          <div class="layout vertical" hidden$="[[!showEditGroups]]">
             <nuxeo-user-suggestion
               id="picker"
               class="flex"
@@ -307,7 +307,7 @@ import './nuxeo-user-group-permissions-table.js';
               query-results-filter="[[resultsFilter]]"
             >
             </nuxeo-user-suggestion>
-            <div id="errors" hidden\$="[[!errors]]">[[errors]]</div>
+            <div id="errors" hidden$="[[!errors]]">[[errors]]</div>
             <dom-repeat items="[[activity]]">
               <template>
                 <div class="activity-entry">

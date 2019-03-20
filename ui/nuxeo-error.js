@@ -84,10 +84,10 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
           }
         </style>
 
-        <div class="code" hidden\$="[[!code]]">[[code]]</div>
-        <div class="description" hidden\$="[[!code]]">[[_label(code)]]</div>
-        <div class="url" hidden\$="[[!url]]">[[url]]</div>
-        <div class="message" hidden\$="[[!message]]">[[message]]</div>
+        <div class="code" hidden$="[[!code]]">[[code]]</div>
+        <div class="description" hidden$="[[!code]]">[[_label(code)]]</div>
+        <div class="url" hidden$="[[!url]]">[[url]]</div>
+        <div class="message" hidden$="[[!message]]">[[message]]</div>
       `;
     }
 
