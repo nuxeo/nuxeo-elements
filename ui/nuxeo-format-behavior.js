@@ -166,7 +166,8 @@ export const FormatBehavior = [
      * The default behaviour is to replace all '/' by '.'.
      *
      * @param {string} xpath the property xpath
-     * @param {string} regex the RegEx to transform the xpath. If not provided it will fallback to the default behaviour.
+     * @param {string} regex the RegEx to transform the xpath. If not provided it will fallback to the default
+     * behaviour.
      */
     formatPropertyXpath(xpath, regex) {
       return xpath.replace(regex || /\//g, '.');
