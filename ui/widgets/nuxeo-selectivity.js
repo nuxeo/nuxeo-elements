@@ -6879,15 +6879,10 @@ typedArrayTags[weakMapTag] = false;
 
 .selectivity-multiple-input-container {
   cursor: text;
+  min-height: 2em;
   max-height: 10em;
-  min-height: calc(2em + 4px);
   overflow: auto;
-  padding: 5px;
-}
-
-.selectivity-multiple-input-container .selectivity-placeholder {
-  height: calc(2em + 4px);
-  line-height: calc(2em + 4px);
+  padding: 14px 2px 0px 2px;
 }
 
 .selectivity-multiple-input,
@@ -6896,7 +6891,6 @@ input[type='text'].selectivity-multiple-input {
   border: none;
   float: left;
   font: inherit;
-  height: calc(2em + 4px);
   max-width: 100%;
   outline: 0;
   padding: 0;
@@ -6956,7 +6950,7 @@ input[type='text'].selectivity-multiple-input:focus {
 
 .selectivity-single-select {
   cursor: pointer;
-  min-height: 2em;
+  min-height: calc(2em + 4px);
   padding: 5px;
   position: relative;
   -webkit-box-sizing: content-box;
@@ -6969,8 +6963,8 @@ input[type='text'].selectivity-multiple-input:focus {
 
 .selectivity-single-result-container {
   position: absolute;
-  top: 0.8em;
-  right: 15px;
+  top: 1.05em;
+  right: 5px;
   left: 5px;
   overflow: hidden;
   -o-text-overflow: ellipsis;
@@ -6980,13 +6974,14 @@ input[type='text'].selectivity-multiple-input:focus {
 
 .selectivity-single-selected-item {
   color: #000;
+  margin: 2px 2px 0px 2px;
   @apply --nuxeo-tag;
 }
 
 .selectivity-caret {
   position: absolute;
+  top: 1.05em;
   right: 5px;
-  top: 0.7em;
 }
 
 @media only screen and (max-device-width: 480px) {
