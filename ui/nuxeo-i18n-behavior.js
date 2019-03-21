@@ -59,7 +59,8 @@ window.nuxeo.I18n.translate =
 window.nuxeo.I18n.loadLocale = function() {
   return window.nuxeo.I18n.localeResolver
     ? window.nuxeo.I18n.localeResolver().then(() => {
-        // TODO we should refactor this later to use a factory function instead; it requires factoring the resolver as well.
+        // TODO we should refactor this later to use a factory function instead; it requires factoring the resolver
+        // as well.
         window.nuxeo.I18n.translate = window.nuxeo.I18n.translate.bind(null);
         document.dispatchEvent(new Event('i18n-locale-loaded'));
       })
