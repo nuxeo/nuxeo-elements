@@ -244,20 +244,21 @@ import './nuxeo-user-group-formatter.js';
 
     _selectionFormatter(item) {
       if (item) {
-        switch (item['entity-type']) {
-          case 'user':
-            if (item.properties && item.properties.firstName && item.properties.lastName) {
-              return `${item.properties.firstName} ${item.properties.lastName}`;
-            }
-            return item.id;
-          case 'group':
-            return item.grouplabel ? item.grouplabel : item.groupname;
-          default:
-            if (item.displayLabel) {
-              return item.displayLabel;
-            }
-            return item.id ? item.id : item;
+        if (
+          item['entity-type'] === 'user' &&
+          item.properties &&
+          item.properties.firstName &&
+          item.properties.lastName
+        ) {
+          return `${item.properties.firstName} ${item.properties.lastName}`;
         }
+        if (item['entity-type'] === 'group') {
+          return item.grouplabel ? item.grouplabel : item.groupname;
+        }
+        if (item.displayLabel) {
+          return item.displayLabel;
+        }
+        return item.id ? item.id : item;
       }
     }
 

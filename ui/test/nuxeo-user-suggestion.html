@@ -71,6 +71,21 @@ limitations under the License.
               },
             },
             {
+              company: 'Nux',
+              displayIcon: true,
+              displayLabel: 'Bob Jones',
+              email: 'bob@jones.com',
+              'entity-type': 'user',
+              firstName: 'Bob',
+              groups: [],
+              id: 'bjones',
+              lastName: 'Jones',
+              prefixed_id: 'user:bjones',
+              tenantId: null,
+              type: 'USER_TYPE',
+              username: 'bjones',
+            },
+            {
               'entity-type': 'group',
               grouplabel: 'Awesome group',
               groupname: 'awesome',
@@ -86,9 +101,10 @@ limitations under the License.
           return flush().then(() => {
             const s2 = dom(prefixedWidget.root).querySelector('#s2');
             const items = dom(s2.root).querySelectorAll('.selectivity-multiple-selected-item');
-            expect(items.length).to.be.equal(2);
+            expect(items.length).to.be.equal(3);
             expect(items[0].textContent).to.be.equal('John Doe');
-            expect(items[1].textContent).to.be.equal('Awesome group');
+            expect(items[1].textContent).to.be.equal('Bob Jones');
+            expect(items[2].textContent).to.be.equal('Awesome group');
           });
         });
       });
