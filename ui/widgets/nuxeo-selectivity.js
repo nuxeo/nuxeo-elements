@@ -6880,7 +6880,6 @@ typedArrayTags[weakMapTag] = false;
 
 #input:not([readonly]) .selectivity-multiple-input-container {
   border-bottom: 1px solid #3a3a54;
-  border-radius: 2px;
 }
 
 .selectivity-multiple-input-container {
@@ -6912,6 +6911,10 @@ input[type='text'].selectivity-multiple-input:focus {
 
 .selectivity-multiple-input::-ms-clear {
   display: none;
+}
+
+.selectivity-multiple-input::placeholder {
+  color: #999;
 }
 
 .selectivity-multiple-selected-item {
@@ -6947,7 +6950,6 @@ input[type='text'].selectivity-multiple-input:focus {
 
 #input:not([readonly]) .selectivity-single-select {
   border-bottom: 1px solid #3a3a54;
-  border-radius: 2px;
 }
 
 #input[readonly] .selectivity-caret {
@@ -6991,11 +6993,6 @@ input[type='text'].selectivity-multiple-input:focus {
 }
 
 @media only screen and (max-device-width: 480px) {
-  .selectivity-single-select {
-    background: #eee;
-    border-radius: 2px;
-  }
-
   .selectivity-single-result-container {
     right: 5px;
   }
