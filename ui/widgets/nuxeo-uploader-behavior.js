@@ -118,6 +118,16 @@ DefaultUploadProvider.prototype.batchExecute = function(operationId, params, hea
 };
 
 /**
+ * Aborts pending upload of the given file.
+ *
+ * @param {Object} file the file of which upload should be aborted
+ * */
+// eslint-disable-next-line no-unused-vars
+DefaultUploadProvider.prototype.abort = function(file) {
+  // default impl does not have ability to abort
+};
+
+/**
  * Returns whether the provider accepts a given file for upload or not.
  *
  * @param {Object} file the file to be checked
@@ -130,6 +140,15 @@ DefaultUploadProvider.prototype.accepts = function(file) {
   const mimeType = file.type !== '' ? file.type.match(/^[^/]*\//)[0] : null;
   const fileType = file.name.indexOf('.') !== -1 ? file.name.match(/\.[^.]*$/)[0] : null;
   return this.accept.indexOf(mimeType) > -1 || this.accept.indexOf(fileType) > -1;
+};
+
+/**
+ * Returns whether or not the provider has abort capabilities.
+ *
+ * @return {Boolean} true if the provider has abort capabilities, false otherwise
+ * */
+DefaultUploadProvider.prototype.hasAbort = function() {
+  return false;
 };
 
 /**
@@ -341,8 +360,16 @@ export const UploaderBehavior = {
       });
   },
 
+  abort(file) {
+    return this._instance.abort(file);
+  },
+
   cancelBatch() {
     return this._instance.cancelBatch();
+  },
+
+  hasAbort() {
+    return this._instance.hasAbort();
   },
 
   hasProgress() {
