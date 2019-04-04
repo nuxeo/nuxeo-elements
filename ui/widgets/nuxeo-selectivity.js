@@ -6763,6 +6763,14 @@ typedArrayTags[weakMapTag] = false;
           type: String,
           value: '',
         },
+
+        /**
+         *  The headers of the request.
+         */
+        headers: {
+          type: Object,
+          value: null,
+        },
       };
     }
 
@@ -7050,7 +7058,7 @@ input[type='text'].selectivity-multiple-input:focus {
 
         </style>
 
-        <nuxeo-operation id="op" op="[[operation]]" enrichers="[[enrichers]]"></nuxeo-operation>
+        <nuxeo-operation id="op" op="[[operation]]" enrichers="[[enrichers]]" headers="[[headers]]"></nuxeo-operation>
 
         <label class="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
 
