@@ -302,37 +302,48 @@ import './nuxeo-selectivity.js';
       if (element) {
         if (this.multiple) {
           if (element.length > 0) {
-            if (element[0].title) {
-              return callback(element);
-            }
-            if (typeof element[0] === 'string' && element[0].length > 0) {
-              return this._resolveDocs(element, callback);
-            }
-          } else {
-            return callback([]);
+            if (element.some((e) => e.title)) return callback(element);
           }
-        } else if (element.title) {
-          return callback(element);
-        } else if (typeof element === 'string') {
-          if (element.length > 0) {
+          if (element.some((e) => typeof e === 'string' && e.length > 0)) {
             return this._resolveDocs(element, callback);
           }
-          return callback('');
+        } else {
+          return callback([]);
         }
-        console.warn('Unable to resolve such entry. Write your own resolver');
+      } else if (element.title) {
+        return callback(element);
+      } else if (typeof element === 'string') {
+        if (element.length > 0) {
+          return this._resolveDocs(element, callback);
+        }
+        return callback('');
       }
+      console.warn('Unable to resolve such entry. Write your own resolver');
     }
 
     _resolveDocs(docs, callback) {
       this.$.op.params = {
-        values: this.value,
+        values: docs,
         property: this.idProperty,
       };
       this.$.op.execute().then((res) => {
         if (this.multiple) {
-          callback(res.entries);
+          /**
+           * XXX
+           * When a user does not have permissions to see a document
+           * the operation will not return that document (ELEMENTS-897)
+           */
+          if (res.entries.length < docs.length) {
+            const reconciliatedArray = docs.map((element) => {
+              const doc = res.entries.find((entry) => this._idFunction(entry) === element);
+              return doc || element;
+            });
+            callback(reconciliatedArray);
+          } else {
+            callback(res.entries);
+          }
         } else {
-          callback(res.entries.length > 0 ? res.entries[0] : null);
+          callback(res.entries.length > 0 ? res.entries[0] : docs);
         }
       });
     }
