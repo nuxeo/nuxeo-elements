@@ -300,25 +300,20 @@ import './nuxeo-selectivity.js';
 
     _initSelection(element, callback) {
       if (element) {
-        if (this.multiple) {
-          if (element.length > 0) {
-            if (element.some((e) => e.title)) return callback(element);
-          }
-          if (element.some((e) => typeof e === 'string' && e.length > 0)) {
-            return this._resolveDocs(element, callback);
-          }
-        } else {
-          return callback([]);
-        }
-      } else if (element.title) {
-        return callback(element);
-      } else if (typeof element === 'string') {
-        if (element.length > 0) {
+        const hasUnknownFormatEntries = this.multiple
+          ? element.some((e) => typeof e !== 'string' && typeof e !== 'object' && !e.title)
+          : typeof element !== 'string' && typeof element !== 'object' && !element.title;
+        const hasOnlyIdReferences = this.multiple
+          ? element.length > 0 && element.every((e) => typeof e === 'string' && e.length > 0)
+          : typeof element === 'string' && element.length > 0;
+        if (!hasUnknownFormatEntries && hasOnlyIdReferences) {
           return this._resolveDocs(element, callback);
         }
-        return callback('');
+        if (!hasUnknownFormatEntries && !hasOnlyIdReferences) {
+          return callback(element);
+        }
+        console.warn('Unable to resolve such entry. Write your own resolver');
       }
-      console.warn('Unable to resolve such entry. Write your own resolver');
     }
 
     _resolveDocs(docs, callback) {
