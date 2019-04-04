@@ -36,7 +36,10 @@ limitations under the License.
         <nuxeo-connection url="http://localhost:8080/nuxeo"></nuxeo-connection>
 
         <nuxeo-demo-section heading="Document suggestion (single)" size="small">
-          <nuxeo-document-suggestion value="{{singleDocument}}"></nuxeo-document-suggestion>
+          <nuxeo-document-suggestion
+            value="{{singleDocument}}"
+            headers='{"X-NXfetch.document": "properties", "translate-directoryEntry": "label"}'
+          ></nuxeo-document-suggestion>
           <div>Selected document: [[singleDocument]]</div>
         </nuxeo-demo-section>
 

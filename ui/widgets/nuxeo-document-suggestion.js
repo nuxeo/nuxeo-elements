@@ -74,6 +74,7 @@ import './nuxeo-selectivity.js';
           init-selection="[[initSelection]]"
           id-function="[[_idFunction]]"
           stay-open-on-select="[[stayOpenOnSelect]]"
+          headers="[[headers]]"
           enrichers="[[enrichers]]"
         >
         </nuxeo-selectivity>
@@ -254,6 +255,14 @@ import './nuxeo-selectivity.js';
         enrichers: {
           type: String,
           value: '',
+        },
+
+        /**
+         *  The headers of the request.
+         */
+        headers: {
+          type: Object,
+          value: null,
         },
       };
     }
