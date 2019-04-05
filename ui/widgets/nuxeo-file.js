@@ -255,6 +255,7 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
     }
 
     remove(e) {
+      this.$.input.value = null;
       if (this.multiple) {
         this.splice('value', e.model.__data.index, 1);
       } else {
