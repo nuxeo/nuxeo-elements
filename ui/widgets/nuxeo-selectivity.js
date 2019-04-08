@@ -7111,7 +7111,7 @@ input[type='text'].selectivity-multiple-input:focus {
           ),
 
           singleSelectedItem: (opts) => (
-            `${'<span class="preserve-white-space selectivity-single-selected-item" ' +
+            `${'<span class="selectivity-single-selected-item" ' +
             'data-item-id="'}${escapeHTML(opts.id)}">${
               opts.removable ? '<a class="preserve-white-space selectivity-single-selected-item-remove">' +
                   '<i class="selectivity-remove"></i>' +
@@ -7123,7 +7123,7 @@ input[type='text'].selectivity-multiple-input:focus {
           multipleSelectedItem: (opts) => {
             const extraClass = opts.highlighted ? ' highlighted' : '';
             return (
-              `<span class="preserve-white-space selectivity-multiple-selected-item${extraClass}"
+              `<span class="selectivity-multiple-selected-item${extraClass}"
                      data-item-id="${escapeHTML(opts.id)}">${
                 opts.removable ? '<a class="preserve-white-space selectivity-multiple-selected-item-remove">' +
                     '<i class="selectivity-remove"></i>' +
