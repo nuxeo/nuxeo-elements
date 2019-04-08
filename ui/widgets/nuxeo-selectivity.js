@@ -7302,44 +7302,33 @@ input[type='text'].selectivity-multiple-input:focus {
       return Array.isArray(value) ? value.map((item) => fn(item)) : fn(value);
     }
 
+    _triggerQueryCallback(query, results) {
+      if (this.queryResultsFilter) {
+        results = results.filter(this.queryResultsFilter);
+      }
+      if (this.tagging && query.term) {
+        const exists = results.some((item) => item.id === query.term);
+        if (!exists) {
+          results.push(this.newEntryFormatter(query.term));
+        }
+      }
+      query.callback({
+        results: this._wrap(results),
+      });
+    }
+
     // Implements abstract Nuxeo.Select2 methods
     _query(query) {
       if (this.data) {
-        let results = this.data;
-        if (this.queryResultsFilter) {
-          results = results.filter(this.queryResultsFilter);
-        }
-        if (this.tagging && query.term) {
-          const exists = results.some((item) => item.id === query.term);
-          if (!exists) {
-            results.push(this.newEntryFormatter(query.term));
-          }
-        }
-        query.callback({
-          results: this._wrap(results),
-        });
-      } else {
-        const params = this.params || {};
-        params.searchTerm = query.term;
-        this.$.op.params = params;
-
-        this.$.op.execute().then((response) => {
-          let results = Array.isArray(response.entries) ? response.entries : response;
-          if (this.queryResultsFilter) {
-            results = results.filter(this.queryResultsFilter);
-          }
-          if (this.tagging && query.term) {
-            const exists = results.some((item) => item.id === query.term);
-            if (!exists) {
-              results.push(this.newEntryFormatter(query.term));
-            }
-          }
-
-          query.callback({
-            results: this._wrap(results),
-          });
-        });
+        return this._triggerQueryCallback(query, this.data);
       }
+      const params = this.params || {};
+      params.searchTerm = query.term;
+      this.$.op.params = params;
+      this.$.op.execute().then((response) => {
+        let results = Array.isArray(response.entries) ? response.entries : response;
+        this._triggerQueryCallback(query, results);
+      });
     }
   }
 
