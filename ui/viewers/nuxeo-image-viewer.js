@@ -241,11 +241,12 @@ import '../nuxeo-icons.js';
     }
 
     _verifyZoomRatio(data) {
-      if (this._el) {
-        // Cropper.js not always return the same number of decimal places and rounding.
+      if (this._el && data && data.detail && data.detail.ratio) {
+        // Cropper.js does not return always the same number of decimal places when rounding.
         // In order to ensure our calculations, we will use 5 decimal places.
         const decimalPlaces = 5;
-        this._fitToRealSize = this._getOriginalZoomRatio().toFixed(decimalPlaces) !== data.ratio.toFixed(decimalPlaces);
+        this._fitToRealSize =
+          this._getOriginalZoomRatio().toFixed(decimalPlaces) !== data.detail.ratio.toFixed(decimalPlaces);
       }
     }
   }
