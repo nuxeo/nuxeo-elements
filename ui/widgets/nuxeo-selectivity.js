@@ -7144,23 +7144,19 @@ input[type='text'].selectivity-multiple-input:focus {
         options.allowClear = !this.required;
       }
 
-      if (this.data) {
-        options.items = this._wrap(this.data);
-      } else {
-        options.query = (query) => {
-          if (query.term.length < this.minChars) {
-            query.error(`Please enter ${this.minChars} or more character`);
-            return;
-          }
-          // debounce requests
-          this._debouncer = Debouncer.debounce(
-            this._debouncer,
-            timeOut.after(this.frequency), () => {
-              this._query(query);
-            },
-          );
-        };
-      }
+      options.query = (query) => {
+        if (query.term.length < this.minChars) {
+          query.error(`Please enter ${this.minChars} or more character`);
+          return;
+        }
+        // debounce requests
+        this._debouncer = Debouncer.debounce(
+          this._debouncer,
+          timeOut.after(this.frequency), () => {
+            this._query(query);
+          },
+        );
+      };
 
       // createTokenItem is not supported in single inputs in selectivity
       if (this.multiple && this.tagging) {
@@ -7308,12 +7304,8 @@ input[type='text'].selectivity-multiple-input:focus {
 
     // Implements abstract Nuxeo.Select2 methods
     _query(query) {
-      const params = this.params || {};
-      params.searchTerm = query.term;
-      this.$.op.params = params;
-
-      this.$.op.execute().then((response) => {
-        let results = Array.isArray(response.entries) ? response.entries : response;
+      if (this.data) {
+        let results = this.data;
         if (this.queryResultsFilter) {
           results = results.filter(this.queryResultsFilter);
         }
@@ -7323,11 +7315,31 @@ input[type='text'].selectivity-multiple-input:focus {
             results.push(this.newEntryFormatter(query.term));
           }
         }
-
         query.callback({
           results: this._wrap(results),
         });
-      });
+      } else {
+        const params = this.params || {};
+        params.searchTerm = query.term;
+        this.$.op.params = params;
+
+        this.$.op.execute().then((response) => {
+          let results = Array.isArray(response.entries) ? response.entries : response;
+          if (this.queryResultsFilter) {
+            results = results.filter(this.queryResultsFilter);
+          }
+          if (this.tagging && query.term) {
+            const exists = results.some((item) => item.id === query.term);
+            if (!exists) {
+              results.push(this.newEntryFormatter(query.term));
+            }
+          }
+
+          query.callback({
+            results: this._wrap(results),
+          });
+        });
+      }
     }
   }
 
