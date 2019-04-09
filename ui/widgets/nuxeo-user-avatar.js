@@ -14,9 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import '@polymer/iron-icon/iron-icon.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-resource.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import '../nuxeo-icons.js';
 
 {
   /**
@@ -50,12 +52,23 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
             transform: translate(-50%, -50%);
             text-transform: uppercase;
           }
+
+          iron-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            height: 12px;
+            width: 12px;
+            fill: white;
+          }
         </style>
 
         <nuxeo-resource id="getUserProfile" enrichers="userprofile" enrichers-entity="user"></nuxeo-resource>
 
         <div id="container">
-          <span id="character">{{_output}}</span>
+          <span id="character" hidden$="[[!_isInTheAlphabet]]">{{_output}}</span>
+          <iron-icon hidden$="[[_isInTheAlphabet]]" icon="nuxeo:user"></iron-icon>
         </div>
       `;
     }
@@ -72,7 +85,6 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
         user: {
           type: Object,
         },
-
         /**
          * Fetch avatar from profile if not already loaded.
          */
@@ -80,7 +92,6 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
           type: Boolean,
           value: false,
         },
-
         height: {
           type: Number,
           value: 48,
@@ -296,14 +307,20 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
             '9',
             '0',
           ];
-          let tempName = '';
-          const splitName = name.split(' ');
+
           const alphabetPosition = alphabet.indexOf(name.charAt(0).toLowerCase());
-          this.$.container.style.backgroundColor = colors[alphabetPosition];
-          for (let i = 0; i < splitName.length; i++) {
-            tempName += splitName[i].charAt(0);
+          this._isInTheAlphabet = alphabetPosition > -1;
+          this.$.container.style.backgroundColor =
+            colors[this._isInTheAlphabet ? alphabetPosition : Math.floor(Math.random() * colors.length)];
+          if (this._isInTheAlphabet) {
+            let tempName = '';
+            const splitName = name.split(' ');
+            for (let i = 0; i < splitName.length; i++) {
+              tempName += splitName[i].charAt(0);
+            }
+            this._output = tempName;
           }
-          this._output = tempName;
+
           if (this.fetchAvatar) {
             this.$.getUserProfile.path = `user/${this._username(this.user)}`;
             this.$.getUserProfile
@@ -325,7 +342,6 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
       }
     }
   }
-
   customElements.define(UserAvatar.is, UserAvatar);
   Nuxeo.UserAvatar = UserAvatar;
 }
