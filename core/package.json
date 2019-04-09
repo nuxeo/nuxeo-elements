@@ -11,23 +11,18 @@
   "author": "Nuxeo",
   "license": "Apache 2.0",
   "scripts": {
-    "test": "polymer test --npm --simpleOutput --expanded -l chrome,firefox",
-    "docs": "polymer analyze -i nuxeo-elements.js > analysis.json && polymer serve",
-    "coveralls": "cat coverage/lcov.info | coveralls"
+    "docs": "polymer analyze . > analysis.json && npm run serve",
+    "serve": "polymer serve --npm -c ../node_modules"
   },
   "dependencies": {
     "@polymer/polymer": "^3.0.0",
-    "nuxeo": "^3.2.1",
-    "@webcomponents/webcomponentsjs": "^2.0.0"
+    "@webcomponents/webcomponentsjs": "^2.0.0",
+    "nuxeo": "^3.2.1"
   },
   "devDependencies": {
+    "@open-wc/testing-helpers": "^0.8.3",
     "@polymer/iron-component-page": "^4.0.0",
-    "@polymer/test-fixture": "^4.0.0",
-    "coveralls": "^3.0.2",
-    "es6-promise": "^4.0.0",
-    "polymer-cli": "^1.8.0",
-    "wct-browser-legacy": "^1.0.1",
-    "wct-istanbul": "^0.14.3"
+    "polymer-cli": "^1.8.0"
   },
   "main": "nuxeo-elements.js"
 }

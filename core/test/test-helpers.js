@@ -14,37 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { fixture, fixtureCleanup, html } from '@open-wc/testing-helpers';
+import * as utils from '@polymer/polymer/lib/utils/flush.js';
 
 /* eslint-disable no-unused-vars,no-param-reassign */
 
 window.fetch = null;
 
-function timePasses(ms) {
+function timePasses(ms = 1) {
   return new Promise((resolve) => {
     window.setTimeout(() => {
       resolve();
-    }, ms || 1);
+    }, ms);
   });
 }
 
-const flushCb = window.flush;
-window.flush = () =>
-  new Promise((resolve) => {
-    flushCb(() => {
-      if (window.requestIdleCallback) {
-        window.requestIdleCallback(() => resolve());
-      } else {
-        window.setTimeout(() => resolve(), 16);
-      }
-    });
-  });
+const flush = async () => {
+  utils.flush();
+  await timePasses(0);
+};
 
-function waitForEvent(el, event, times) {
-  times = times || 1;
+function waitForEvent(el, event, times = 1) {
   return new Promise((resolve) => {
     const listener = (e) => {
       if (--times === 0) {
-        el.removeEventListener(e, listener);
+        el.removeEventListener(event, listener);
         resolve(e);
       }
     };
@@ -52,24 +46,49 @@ function waitForEvent(el, event, times) {
   });
 }
 
-function waitChanged(el, prop, times) {
+function waitChanged(el, prop, times = 1) {
   return waitForEvent(el, `${prop}-changed`, times).then((e) => e.detail);
 }
 
-function login(server, loginFixture) {
-  server.respondWith('GET', '/dummy/json/cmis', [200, { 'Content-Type': 'application/json' }, '{}']);
+let server;
 
-  server.respondWith('POST', '/dummy/api/v1/automation/login', [
+async function login() {
+  server = sinon.fakeServer.create();
+  server.autoRespond = true;
+
+  server.respondWith('GET', '/json/cmis', [200, { 'Content-Type': 'application/json' }, '{}']);
+
+  server.respondWith('POST', '/api/v1/automation/login', [
     200,
     { 'Content-Type': 'application/json' },
     '{"entity-type":"login","username":"Administrator"}',
   ]);
 
-  server.respondWith('GET', '/dummy/api/v1/user/Administrator', [
+  server.respondWith('GET', '/api/v1/user/Administrator', [
     200,
     { 'Content-Type': 'application/json' },
     '{"entity-type":"user","username":"Administrator", "isAdministrator": true}',
   ]);
 
-  return loginFixture.connect();
+  const nx = await fixture(
+    html`
+      <nuxeo-connection url="/"></nuxeo-connection>
+    `,
+  );
+
+  await nx.connect();
+
+  return server;
 }
+
+/**
+ * This registers the fixture cleanup for Mocha's TDD interface
+ */
+teardown(() => {
+  if (server) {
+    server.restore();
+  }
+  fixtureCleanup();
+});
+
+export { timePasses, waitForEvent, waitChanged, login, fixture, fixtureCleanup, flush, html };

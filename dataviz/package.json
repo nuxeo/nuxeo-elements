@@ -13,17 +13,14 @@
   "author": "Nuxeo",
   "license": "Apache 2.0",
   "scripts": {
-    "coveralls": "cat coverage/lcov.info | coveralls",
-    "test": "polymer test --npm --simpleOutput --expanded -l chrome,firefox",
-    "docs": "polymer analyze -i nuxeo-dataviz-elements.js > analysis.json && polymer serve"
+    "docs": "polymer analyze . > analysis.json && npm run serve",
+    "serve": "polymer serve --npm -c ../node_modules"
   },
   "devDependencies": {
-    "coveralls": "^3.0.2",
+    "moment": "^2.10.6",
     "polymer-cli": "^1.8.0",
     "@polymer/iron-component-page": "^4.0.0",
     "@polymer/test-fixture": "^4.0.2",
-    "wct-browser-legacy": "^1.0.1",
-    "wct-istanbul": "^0.14.3",
     "@webcomponents/webcomponentsjs": "^2.0.0"
   },
   "resolutions": {

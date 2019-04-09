@@ -139,7 +139,6 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
     }
 
     _handleError(request, error) {
-      console.error(error);
       this.dispatchEvent(
         new CustomEvent('error', {
           bubbles: true,

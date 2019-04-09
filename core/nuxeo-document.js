@@ -54,6 +54,7 @@ import './nuxeo-resource.js';
           response="{{response}}"
           schemas="[[schemas]]"
           sync-indexing$="[[syncIndexing]]"
+          loading$="{{loading}}"
         >
         </nuxeo-resource>
       `;
@@ -166,12 +167,14 @@ import './nuxeo-resource.js';
           type: Boolean,
           notify: true,
           readOnly: true,
+          value: false,
         },
       };
     }
 
     ready() {
       super.ready();
+
       this.$.nxResource.addEventListener('loading-changed', () => {
         this._setLoading(this.$.nxResource.loading);
       });
