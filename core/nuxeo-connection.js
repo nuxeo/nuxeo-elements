@@ -109,7 +109,9 @@ import './nuxeo-element.js';
 
     ready() {
       super.ready();
-      this.connect();
+      this.connect().catch((error) => {
+        console.warn(`Nuxeo connection refused: ${error}`);
+      });
     }
 
     /**
@@ -162,10 +164,7 @@ import './nuxeo-element.js';
       nxClients[id] = this.client = this.client || new Nuxeo(options);
 
       // share the connect promise between all instances (one per client)
-      this.client._promise = this.client.connect().catch((error) => {
-        console.warn(`Nuxeo connection refused: ${error}`);
-        throw error;
-      });
+      this.client._promise = this.client.connect();
 
       return this.client._promise.then(this._handleConnected.bind(this));
     }

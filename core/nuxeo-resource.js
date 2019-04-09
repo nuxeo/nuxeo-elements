@@ -185,6 +185,7 @@ import './nuxeo-connection.js';
           type: Boolean,
           notify: true,
           readOnly: true,
+          value: false,
         },
       };
     }

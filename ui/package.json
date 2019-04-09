@@ -13,18 +13,14 @@
   "author": "Nuxeo",
   "license": "Apache 2.0",
   "scripts": {
-    "coveralls": "cat coverage/lcov.info | coveralls",
-    "test": "polymer test --npm --simpleOutput --expanded -l chrome,firefox",
-    "docs": "polymer analyze -i nuxeo-ui-elements.js > analysis.json && polymer serve"
+    "docs": "polymer analyze . > analysis.json && npm run serve",
+    "serve": "polymer serve --npm -c ../node_modules"
   },
   "devDependencies": {
     "@polymer/iron-component-page": "^4.0.0",
     "@polymer/iron-test-helpers": "^3.0.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
-    "coveralls": "^3.0.2",
-    "polymer-cli": "^1.8.0",
-    "wct-browser-legacy": "^1.0.1",
-    "wct-istanbul": "^0.14.3"
+    "polymer-cli": "^1.8.0"
   },
   "main": "nuxeo-ui-elements.js",
   "dependencies": {
@@ -71,12 +67,12 @@
     "@polymer/paper-toggle-button": "^3.0.0",
     "@polymer/paper-tooltip": "^3.0.0",
     "@polymer/polymer": "^3.0.0",
-    "@polymer/test-fixture": "^4.0.2",
     "@vaadin/vaadin-date-picker": "^3.0.0",
     "cropperjs": "1.0.0",
     "d3-hierarchy": "^1.1.5",
     "d3-selection": "^1.3.0",
     "d3-shape": "^1.2.0",
-    "moment": "2.23.0"
+    "moment": "2.23.0",
+    "nuxeo": "^3.2.1"
   }
 }
