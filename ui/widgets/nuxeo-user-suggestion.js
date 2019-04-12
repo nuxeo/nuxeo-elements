@@ -260,7 +260,7 @@ import './nuxeo-user-group-formatter.js';
             if (item.displayLabel) {
               return item.displayLabel;
             }
-            return item.id ? item.id : item;
+            return `<span class="preserve-white-space">${item.id ? item.id : item})</span>`;
           }
         })(value),
       );
