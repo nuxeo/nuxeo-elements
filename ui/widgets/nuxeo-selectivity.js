@@ -2313,33 +2313,33 @@ typedArrayTags[weakMapTag] = false;
         search(term) {
           this.term = term;
 
-          if (this.options.items) {
-            term = Selectivity.transformText(term);
-            const matcher = this.selectivity.options.matcher || Selectivity.matcher;
-            this._showResults(
-              this.options.items
-                .map((item) => matcher(item, term))
-                .filter((item) => !!item),
-              { term },
-            );
-          } else if (this.options.query) {
-            this.options.query({
-              callback: function (response) {
-                if (response && response.results) {
+          this.options.query({
+            callback: function (response) {
+              if (response && response.results) {
+                if (this.options.items) {
+                  term = Selectivity.transformText(term);
+                  const matcher = this.selectivity.options.matcher || Selectivity.matcher;
+                  this._showResults(
+                    this.options.items
+                      .map((item) => matcher(item, term))
+                      .filter((item) => !!item),
+                    { term },
+                  );
+                } else {
                   this._showResults(Selectivity.processItems(response.results), {
                     hasMore: !!response.more,
                     term,
                   });
-                } else {
-                  throw new Error('callback must be passed a response object');
                 }
-              }.bind(this),
-              error: this.showError.bind(this),
-              offset: 0,
-              selectivity: this.selectivity,
-              term,
-            });
-          }
+              } else {
+                throw new Error('callback must be passed a response object');
+              }
+            }.bind(this),
+            error: this.showError.bind(this),
+            offset: 0,
+            selectivity: this.selectivity,
+            term,
+          });
         },
 
         /**
@@ -7142,6 +7142,10 @@ input[type='text'].selectivity-multiple-input:focus {
       if (!this.readonly) {
         options.placeholder = this.placeholder;
         options.allowClear = !this.required;
+      }
+
+      if (this.data) {
+        options.items = this._wrap(this.data);
       }
 
       options.query = (query) => {
