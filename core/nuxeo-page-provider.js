@@ -216,6 +216,15 @@ import './nuxeo-resource.js';
         },
 
         /**
+         * Returns true if a previous page is available.
+         */
+        isPreviousPageAvailable: {
+          type: Boolean,
+          value: false,
+          notify: true,
+        },
+
+        /**
          * Current page's size
          */
         currentPageSize: {
@@ -334,6 +343,9 @@ import './nuxeo-resource.js';
           }
           this.quickFilters = response.quickFilters;
           this.isNextPageAvailable = response.isNextPageAvailable;
+          this.offset = response.currentPageOffset;
+          this.pageSize = response.pageSize;
+          this.isPreviousPageAvailable = response.isPreviousPageAvailable;
           this.currentPageSize = response.currentPageSize;
           this.dispatchEvent(
             new CustomEvent('update', {
