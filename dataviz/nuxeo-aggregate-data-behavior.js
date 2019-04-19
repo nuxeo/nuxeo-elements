@@ -16,6 +16,7 @@ limitations under the License.
 */
 import '@polymer/polymer/polymer-legacy.js';
 import './nuxeo-es-search.js';
+import moment from 'moment';
 
 window.Nuxeo = window.Nuxeo || {};
 /**
@@ -145,6 +146,19 @@ Nuxeo.AggregateDataBehavior = {
       value: 'count',
     },
 
+    /**
+     * Timezone to use for key in the date intervals aggregates.
+     * Format is either an ISO 8601 UTC offset (e.g. +01:00 or -08:00)
+     * or a timezone ID as specified in the IANA timezone database.
+     * Default is the client's browser timezone.
+     */
+    timezone: {
+      type: Function,
+      value() {
+        return moment().format('Z');
+      },
+    },
+
     query: Object,
 
     aggregates: Object,
@@ -214,6 +228,7 @@ Nuxeo.AggregateDataBehavior = {
         interval: this.withDateIntervals,
         format: this.dateFormat,
         min_doc_count: 0,
+        time_zone: this.timezone,
       };
 
       if (!this.withoutExtendedBounds) {
