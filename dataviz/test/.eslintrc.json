@@ -10,6 +10,7 @@
     "login": true,
     "waitChanged": true,
     "waitForEvent": true,
-    "assert": false
+    "assert": false,
+    "moment": true
   }
 }

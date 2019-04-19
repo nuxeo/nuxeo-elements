@@ -24,6 +24,7 @@ limitations under the License.
     <script src="../../../wct-browser-legacy/browser.js"></script>
     <script src="../../../@nuxeo/nuxeo-elements/dedup.js"></script>
     <script src="../../../@nuxeo/nuxeo-elements/test/test-helpers.js"></script>
+    <script src="../../../moment/min/moment-with-locales.js"></script>
   </head>
   <body>
     <test-fixture id="nx">
@@ -229,6 +230,7 @@ limitations under the License.
               min: '1980-01-01',
               max: '1980-01-03',
             },
+            time_zone: moment().format('Z'),
           });
 
           return fakeResponse(search, {

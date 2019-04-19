@@ -19,7 +19,6 @@
   },
   "devDependencies": {
     "coveralls": "^3.0.2",
-    "moment": "^2.10.6",
     "polymer-cli": "^1.8.0",
     "@polymer/iron-component-page": "^4.0.0",
     "@polymer/test-fixture": "^4.0.2",
@@ -36,6 +35,7 @@
   "main": "nuxeo-dataviz-elements.js",
   "dependencies": {
     "@polymer/polymer": "^3.0.0",
-    "@nuxeo/nuxeo-elements": "^3.0.0-SNAPSHOT"
+    "@nuxeo/nuxeo-elements": "^3.0.0-SNAPSHOT",
+    "moment": "2.23.0"
   }
 }
