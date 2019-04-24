@@ -20,7 +20,7 @@ import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iro
 import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-card/paper-card.js';
-import './nuxeo-selectivity.js';
+import { escapeHTML } from './nuxeo-selectivity.js';
 import './nuxeo-user-group-formatter.js';
 
 {
@@ -242,24 +242,28 @@ import './nuxeo-user-group-formatter.js';
       );
     }
 
-    _selectionFormatter(item) {
-      if (item) {
-        if (
-          item['entity-type'] === 'user' &&
-          item.properties &&
-          item.properties.firstName &&
-          item.properties.lastName
-        ) {
-          return `${item.properties.firstName} ${item.properties.lastName}`;
-        }
-        if (item['entity-type'] === 'group') {
-          return item.grouplabel ? item.grouplabel : item.groupname;
-        }
-        if (item.displayLabel) {
-          return item.displayLabel;
-        }
-        return item.id ? item.id : item;
-      }
+    _selectionFormatter(value) {
+      return escapeHTML(
+        ((item) => {
+          if (item) {
+            if (
+              item['entity-type'] === 'user' &&
+              item.properties &&
+              item.properties.firstName &&
+              item.properties.lastName
+            ) {
+              return `${item.properties.firstName} ${item.properties.lastName}`;
+            }
+            if (item['entity-type'] === 'group') {
+              return item.grouplabel ? item.grouplabel : item.groupname;
+            }
+            if (item.displayLabel) {
+              return item.displayLabel;
+            }
+            return item.id ? item.id : item;
+          }
+        })(value),
+      );
     }
 
     _resultFormatter(item) {
@@ -267,7 +271,7 @@ import './nuxeo-user-group-formatter.js';
         return `<nuxeo-user-group-formatter entity='${JSON.stringify(item)}'></nuxeo-user-group-formatter>`;
       }
       // fallback, if entities are not available
-      return item.displayLabel || item.title;
+      return escapeHTML(item.displayLabel || item.title);
     }
 
     _resolveEntry(item) {

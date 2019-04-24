@@ -97,7 +97,7 @@ Used by `nuxeo-user-management` and `nuxeo-create-user`
       },
 
       _resultFormatter(item) {
-        return `${item.displayLabel} (${item.groupname || item.username})`;
+        return this.$.picker.$.s2.escapeHTML(`${item.displayLabel} (${item.groupname || item.username})`);
       },
     });
   </script>

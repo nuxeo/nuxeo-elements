@@ -22,7 +22,7 @@ import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import { FormatBehavior } from '../nuxeo-format-behavior.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
-import './nuxeo-selectivity.js';
+import { escapeHTML } from './nuxeo-selectivity.js';
 
 {
   /**
@@ -261,7 +261,7 @@ import './nuxeo-selectivity.js';
     }
 
     _selectionFormatter(entry) {
-      return entry.absoluteLabel || entry.displayLabel;
+      return escapeHTML(entry.absoluteLabel || entry.displayLabel);
     }
 
     _resolveEntry(entry) {
