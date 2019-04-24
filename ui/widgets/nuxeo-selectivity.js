@@ -7102,17 +7102,17 @@ input[type='text'].selectivity-multiple-input:focus {
           resultItem: (opts) => (
             `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
                   style="padding-left: ${7 + (10 * opts.depth)}px"
-                  data-item-id="${this.escapeHTML(opts.id)}">${this.resultFormatter(opts.item)}</div>`
+                  data-item-id="${escapeHTML(opts.id)}">${this.resultFormatter(opts.item)}</div>`
           ),
 
           resultLabel: (opts) => (
             `<div class="preserve-white-space selectivity-result-label"
-                  style="padding-left: ${7 + (10 * opts.depth)}px">${this.escapeHTML(opts.text)}</div>`
+                  style="padding-left: ${7 + (10 * opts.depth)}px">${escapeHTML(opts.text)}</div>`
           ),
 
           singleSelectedItem: (opts) => (
             `${'<span class="preserve-white-space selectivity-single-selected-item" ' +
-            'data-item-id="'}${this.escapeHTML(opts.id)}">${
+            'data-item-id="'}${escapeHTML(opts.id)}">${
               opts.removable ? '<a class="preserve-white-space selectivity-single-selected-item-remove">' +
                   '<i class="selectivity-remove"></i>' +
                   '</a>'
@@ -7124,7 +7124,7 @@ input[type='text'].selectivity-multiple-input:focus {
             const extraClass = opts.highlighted ? ' highlighted' : '';
             return (
               `<span class="preserve-white-space selectivity-multiple-selected-item${extraClass}"
-                     data-item-id="${this.escapeHTML(opts.id)}">${
+                     data-item-id="${escapeHTML(opts.id)}">${
                 opts.removable ? '<a class="preserve-white-space selectivity-multiple-selected-item-remove">' +
                     '<i class="selectivity-remove"></i>' +
                     '</a>'
@@ -7281,11 +7281,11 @@ input[type='text'].selectivity-multiple-input:focus {
     }
 
     _selectionFormatter(item) {
-      return this.escapeHTML(item.displayLabel || item.title || item.text || item);
+      return escapeHTML(item.displayLabel || item.title || item.text || item);
     }
 
     _resultFormatter(item) {
-      return this.escapeHTML(item.displayLabel || item.title || item.text || item);
+      return escapeHTML(item.displayLabel || item.title || item.text || item);
     }
 
     _wrap(value) {
@@ -7329,28 +7329,27 @@ input[type='text'].selectivity-multiple-input:focus {
         });
       });
     }
-
-    escapeHTML(markup) {
-      const replaceMap = {
-        '\\': '&#92;',
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        '\'': '&#39;',
-        '/': '&#47;',
-      };
-
-      // Do not try to escape the markup if it's not a string
-      if (typeof markup !== 'string') {
-        return markup;
-      }
-
-      return String(markup).replace(/[&<>"'/\\]/g, (match) => replaceMap[match]);
-    }
-
   }
 
   customElements.define(SelectivityElement.is, SelectivityElement);
   Nuxeo.Selectivity = SelectivityElement;
 }
+
+export function escapeHTML(markup) {
+  const replaceMap = {
+    '\\': '&#92;',
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    '\'': '&#39;',
+    '/': '&#47;',
+  };
+
+  // Do not try to escape the markup if it's not a string
+  if (typeof markup !== 'string') {
+    return markup;
+  }
+
+  return String(markup).replace(/[&<>"'/\\]/g, (match) => replaceMap[match]);
+};

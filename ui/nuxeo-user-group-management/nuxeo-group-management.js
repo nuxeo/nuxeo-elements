@@ -35,6 +35,7 @@ import '../widgets/nuxeo-group-tag.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-tag.js';
 import '../widgets/nuxeo-user-suggestion.js';
+import { escapeHTML } from '../widgets/nuxeo-selectivity.js';
 import '../widgets/nuxeo-user-tag.js';
 import './nuxeo-user-group-permissions-table.js';
 
@@ -770,7 +771,7 @@ import './nuxeo-user-group-permissions-table.js';
     }
 
     _resultFormatter(item) {
-      return `${item.displayLabel} (${item.groupname || item.username})`;
+      return escapeHTML(`${item.displayLabel} (${item.groupname || item.username})`);
     }
 
     _icon(entry) {

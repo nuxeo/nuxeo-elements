@@ -21,7 +21,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
 import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
-import './nuxeo-selectivity.js';
+import { escapeHTML } from './nuxeo-selectivity.js';
 
 {
   /**
@@ -297,13 +297,13 @@ import './nuxeo-selectivity.js';
 
     _selectionFormatter(doc) {
       if (typeof doc === 'string') {
-        return `<span>${doc}</span>`;
+        return `<span>${escapeHTML(doc)}</span>`;
       }
-      return `<a href="${this.urlFor('browse', doc.path)}">${doc.title}</a>`;
+      return `<a href="${this.urlFor('browse', doc.path)}">${escapeHTML(doc.title)}</a>`;
     }
 
     _resultFormatter(doc) {
-      return `${doc.title}<br/>${doc.path}`;
+      return `${escapeHTML(doc.title)}<br/>${escapeHTML(doc.path)}`;
     }
 
     _initSelection(element, callback) {
