@@ -69,6 +69,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         required: {
           type: Boolean,
           value: false,
+          reflectToAttribute: true,
         },
 
         value: {
