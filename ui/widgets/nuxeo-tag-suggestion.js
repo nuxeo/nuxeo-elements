@@ -22,7 +22,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
 import '@polymer/paper-toast/paper-toast.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
-import './nuxeo-selectivity.js';
+import { escapeHTML } from './nuxeo-selectivity.js';
 
 {
   /**
@@ -230,9 +230,9 @@ import './nuxeo-selectivity.js';
 
     _resultFormatter(tag) {
       if (tag.newTag) {
-        return `<span class='s2newTag'>+ ${this.$.s2.escapeHTML(tag.displayLabel)}</span>`;
+        return `<span class='s2newTag'>+ ${escapeHTML(tag.displayLabel)}</span>`;
       }
-      return `<span class='s2existingTag'>${this.$.s2.escapeHTML(tag.displayLabel)}</span>`;
+      return `<span class='s2existingTag'>${escapeHTML(tag.displayLabel)}</span>`;
     }
 
     _newEntryFormatter(term) {
