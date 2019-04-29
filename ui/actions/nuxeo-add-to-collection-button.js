@@ -28,7 +28,7 @@ import { FiltersBehavior } from '../nuxeo-filters-behavior.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-icons.js';
 import '../widgets/nuxeo-dialog.js';
-import '../widgets/nuxeo-selectivity.js';
+import { escapeHTML } from '../widgets/nuxeo-selectivity.js';
 import '../widgets/nuxeo-textarea.js';
 import '../widgets/nuxeo-tooltip.js';
 import './nuxeo-action-button-styles.js';
@@ -238,16 +238,14 @@ import './nuxeo-action-button-styles.js';
       const label = item.displayLabel || item.title;
 
       // if we are adding a new entry with the _newEntryFormatter we don't want to escape the HTML
-      return item.id === -1
-        ? `<iron-icon icon="nuxeo:add" item-icon></iron-icon>${label}`
-        : this.$.nxSelect.escapeHTML(label);
+      return item.id === -1 ? `<iron-icon icon="nuxeo:add" item-icon></iron-icon>${label}` : escapeHTML(label);
     }
 
     _selectionFormatter(item) {
       const label = item.displayLabel || item.title;
 
       // if we are adding a new entry with the _newEntryFormatter we don't want to escape the HTML
-      return item.id === -1 ? label : this.$.nxSelect.escapeHTML(label);
+      return item.id === -1 ? label : escapeHTML(label);
     }
 
     _newEntryFormatter(term) {
