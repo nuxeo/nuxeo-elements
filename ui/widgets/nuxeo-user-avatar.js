@@ -218,6 +218,16 @@ import '../nuxeo-icons.js';
       this.$.character.style.textShadow = this.textShadow;
     }
 
+    __generateHue() {
+      let hash = 0;
+      const userId = this._id(this.user);
+      Object.keys(userId).forEach((user) => {
+        hash &= hash; // eslint-disable-line no-bitwise
+        hash = userId.charCodeAt(user) + ((hash << 5) - hash); // eslint-disable-line no-bitwise
+      });
+      return Math.abs(hash % 360);
+    }
+
     __makeAvatar() {
       if (this.user) {
         if (
@@ -231,44 +241,6 @@ import '../nuxeo-icons.js';
           this.$.container.style.backgroundSize = `${this.height}px ${this.height}px`;
         } else {
           const name = this._name(this.user);
-          const colors = [
-            '#1abc9c',
-            '#16a085',
-            '#f1c40f',
-            '#f39c12',
-            '#2196F3',
-            '#3F51B5',
-            '#673AB7',
-            '#E91E63',
-            '#9C27B0',
-            '#009688',
-            '#4CAF50',
-            '#FF9800',
-            '#795548',
-            '#FF5722',
-            '#2ecc71',
-            '#27ae60',
-            '#e67e22',
-            '#d35400',
-            '#3498db',
-            '#2980b9',
-            '#e74c3c',
-            '#c0392b',
-            '#9b59b6',
-            '#8e44ad',
-            '#bdc3c7',
-            '#34495e',
-            '#2c3e50',
-            '#95a5a6',
-            '#7f8c8d',
-            '#ec87bf',
-            '#d870ad',
-            '#f69785',
-            '#9ba37e',
-            '#b49255',
-            '#b49255',
-            '#a94136',
-          ];
           const alphabet = [
             'a',
             'b',
@@ -309,9 +281,8 @@ import '../nuxeo-icons.js';
           ];
 
           const alphabetPosition = alphabet.indexOf(name.charAt(0).toLowerCase());
+          this.$.container.style.backgroundColor = `hsl(${this.__generateHue()}, 70%, 42%)`;
           this._isInTheAlphabet = alphabetPosition > -1;
-          this.$.container.style.backgroundColor =
-            colors[this._isInTheAlphabet ? alphabetPosition : Math.floor(Math.random() * colors.length)];
           if (this._isInTheAlphabet) {
             let tempName = '';
             const splitName = name.split(' ');
