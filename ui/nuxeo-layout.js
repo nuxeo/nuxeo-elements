@@ -124,6 +124,7 @@ import './nuxeo-error.js';
     _stamp(href) {
       if (!href) {
         this.hidden = true;
+        this._setElement(null);
         return;
       }
 
