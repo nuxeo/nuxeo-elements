@@ -242,28 +242,25 @@ import './nuxeo-user-group-formatter.js';
       );
     }
 
-    _selectionFormatter(value) {
-      return escapeHTML(
-        ((item) => {
-          if (item) {
-            if (
-              item['entity-type'] === 'user' &&
-              item.properties &&
-              item.properties.firstName &&
-              item.properties.lastName
-            ) {
-              return `${item.properties.firstName} ${item.properties.lastName}`;
-            }
-            if (item['entity-type'] === 'group') {
-              return item.grouplabel ? item.grouplabel : item.groupname;
-            }
-            if (item.displayLabel) {
-              return item.displayLabel;
-            }
-            return `<span class="preserve-white-space">${item.id ? item.id : item})</span>`;
-          }
-        })(value),
-      );
+    _selectionFormatter(item) {
+      let content;
+      if (item) {
+        if (
+          item['entity-type'] === 'user' &&
+          item.properties &&
+          item.properties.firstName &&
+          item.properties.lastName
+        ) {
+          content = `${item.properties.firstName} ${item.properties.lastName}`;
+        } else if (item['entity-type'] === 'group') {
+          content = item.grouplabel ? item.grouplabel : item.groupname;
+        } else if (item.displayLabel) {
+          content = item.displayLabel;
+        } else {
+          content = item.id ? item.id : item;
+        }
+      }
+      return `<span class="preserve-white-space">${escapeHTML(content)}</span>`;
     }
 
     _resultFormatter(item) {
