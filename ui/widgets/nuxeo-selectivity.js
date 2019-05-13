@@ -6802,7 +6802,7 @@ typedArrayTags[weakMapTag] = false;
 */
 
 .selectivity-dropdown {
-  background: #fff;
+  background: var(--nuxeo-dropdown-list-background, #fff);
   border-radius: 4px;
   -webkit-box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.15), 0 10px 16px 0 rgba(0, 0, 0, 0.2);
   box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.15), 0 10px 16px 0 rgba(0, 0, 0, 0.2);
@@ -6819,6 +6819,7 @@ typedArrayTags[weakMapTag] = false;
   border: 0;
   outline: 0;
   width: 100%;
+  color: var(--nuxeo-text-default, #3a3a54);
 }
 
 .selectivity-results-container {
@@ -6901,6 +6902,7 @@ input[type='text'].selectivity-multiple-input {
   max-width: 100%;
   outline: 0;
   padding: 0;
+  color: var(--nuxeo-text-default, #3a3a54);
 }
 
 .selectivity-multiple-input:focus,
@@ -7016,6 +7018,7 @@ input[type='text'].selectivity-multiple-input:focus {
 .fa-close:before,
 .fa-times:before {
   content: "\\00d7";
+  color: var(--nuxeo-text-default, #3a3a54);
 }
 .selectivity-caret:before {
   content: "\\25bc";
