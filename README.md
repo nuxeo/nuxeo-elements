@@ -26,6 +26,27 @@ You can run the unit tests via:
 npm run test
 ```
 
+- By default, all packages's (`core`, `ui`, `dataviz`) tests will run with the instruction above.
+
+There is also some flags that can be used to run a specific set of tests.
+
+- To run tests on a specific package -> `package`
+- To select test files according to a pattern -> `grep` 
+
+
+```
+# Runs all tests on "ui" package
+
+npm run test -- --package ui
+```
+
+```
+# Runs all the tests present on "core/test/nuxeo-connection.test.js" file
+
+npm run test -- --grep core/test/nuxeo-connection.test.js
+```
+
+
 Demos can be setup using:
 
 ```

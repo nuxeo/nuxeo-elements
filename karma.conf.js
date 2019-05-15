@@ -54,11 +54,18 @@ if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY) {
   reporters.push('saucelabs');
 }
 
-module.exports = (config) =>
+module.exports = (config) => {
+  let TEST_FILES = ['core/test/*.test.js', 'ui/test/*.test.js', 'dataviz/test/*.test.js'];
+  if (config.grep) {
+    TEST_FILES = [{ pattern: config.grep }];
+  } else if (config.package) {
+    TEST_FILES = [{ pattern: `${config.package}/test/*.test.js` }];
+  }
+
   config.set({
     basePath: '',
     singleRun: true,
-    browsers: Object.keys(customLaunchers), // ["Chrome"], //
+    browsers: config.browsers ? config.browsers.split(',') : Object.keys(customLaunchers),
     customLaunchers,
     frameworks: ['mocha', 'sinon-chai', 'source-map-support', 'webpack'],
     middleware: ['static'],
@@ -70,9 +77,7 @@ module.exports = (config) =>
         pattern: 'node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js',
         watched: false,
       },
-      'core/test/*.test.js',
-      'ui/test/*.test.js',
-      'dataviz/test/*.test.js',
+      ...TEST_FILES,
     ],
     preprocessors: {
       '*/test/*.test.js': ['webpack', 'sourcemap'],
@@ -147,3 +152,4 @@ module.exports = (config) =>
       noInfo: true,
     },
   });
+};
