@@ -7276,7 +7276,8 @@ input[type='text'].selectivity-multiple-input:focus {
     }
 
     _idFunction(item) {
-      return item.computedId || item.uid || item.id || item;
+      const id = ['computeId', 'uid', 'id'].find((key) => item.hasOwnProperty(key));
+      return id ? item[id] : item;
     }
 
     _newEntryFormatter(term) {
