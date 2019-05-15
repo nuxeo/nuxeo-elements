@@ -299,12 +299,8 @@ import './widgets/nuxeo-user-suggestion.js';
       this.page = 'manage-group';
     }
 
-    _hasAdministrationPermissions(user) {
-      return user && (user.isAdministrator || this.isMember(user, 'powerusers'));
-    }
-
     _canCreateUserGroup(readonly, currentUser) {
-      return !readonly && this._hasAdministrationPermissions(currentUser);
+      return !readonly && this.hasAdministrationPermissions(currentUser);
     }
 
     /**

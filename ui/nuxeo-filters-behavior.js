@@ -193,4 +193,11 @@ export const FiltersBehavior = {
   isTaggable(doc) {
     return !this.isProxy(doc) && !doc.isVersion && this.hasPermission(doc, 'Write');
   },
+
+  /**
+   * Checks if the given user has an administrator permissions.
+   */
+  hasAdministrationPermissions(user) {
+    return user && (user.isAdministrator || this.isMember(user, 'powerusers'));
+  },
 };
