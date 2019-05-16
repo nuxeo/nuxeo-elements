@@ -132,7 +132,7 @@ import './nuxeo-action-button-styles.js';
             new CustomEvent('document-deleted', {
               composed: true,
               bubbles: true,
-              detail: { doc: this.document },
+              detail: { doc: this.document, hard: this.hard },
             }),
           );
         })
@@ -141,7 +141,7 @@ import './nuxeo-action-button-styles.js';
             new CustomEvent('document-deleted', {
               composed: true,
               bubbles: true,
-              detail: { doc: this.document, error },
+              detail: { doc: this.document, error, hard: this.hard },
             }),
           );
         });
