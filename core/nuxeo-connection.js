@@ -101,12 +101,6 @@ import './nuxeo-element.js';
       };
     }
 
-    static get observers() {
-      return [
-        '_itemsChanged(url, username, password)',
-      ];
-    }
-
     /**
      * Fired when the client is connected.
      *
@@ -115,13 +109,6 @@ import './nuxeo-element.js';
 
     ready() {
       super.ready();
-      this.connect().catch((error) => {
-        console.warn(`Nuxeo connection refused: ${error}`);
-      });
-    }
-
-    _itemsChanged(url, username, password) {
-      if (!url && !username && !password) return;
       this.connect().catch((error) => {
         console.warn(`Nuxeo connection refused: ${error}`);
       });
