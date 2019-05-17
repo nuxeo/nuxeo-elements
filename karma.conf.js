@@ -65,7 +65,7 @@ module.exports = (config) => {
   config.set({
     basePath: '',
     singleRun: true,
-    browsers: config.browsers ? config.browsers.split(',') : Object.keys(customLaunchers),
+    browsers: config.debugBrowsers ? config.debugBrowsers.split(',') : Object.keys(customLaunchers),
     customLaunchers,
     frameworks: ['mocha', 'sinon-chai', 'source-map-support', 'webpack'],
     middleware: ['static'],
