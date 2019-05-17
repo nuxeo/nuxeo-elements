@@ -117,7 +117,7 @@ import './viewers/nuxeo-video-viewer.js';
         </template>
 
         <template mime-pattern="text/(?:.*-)?(markdown|html|plain)">
-          <marked-element markdown="[[_blob.text]]"></marked-element>
+          <marked-element markdown="[[_blob.text]]" sanitize></marked-element>
         </template>
 
         <template mime-pattern="text/xml">
