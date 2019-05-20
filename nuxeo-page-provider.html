@@ -379,10 +379,16 @@ limitations under the License.
           } else {
             const namedParams = {};
             Object.keys(this.params).forEach((key) => {
-              if (typeof this.params[key] === 'string') {
-                namedParams[key] = this.params[key];
-              } else if (this.params[key] != null) {
-                namedParams[key] = JSON.stringify(this.params[key]);
+              const value = this.params[key];
+              if (value != null) {
+                if (typeof value === 'string') {
+                  namedParams[key] = value;
+                } else if (Array.isArray(value)) {
+                  namedParams[key] = JSON.stringify(value.map((item) => (item['entity-type']
+                    ? item.uid || item.id : item)));
+                } else {
+                  namedParams[key] = value['entity-type'] ? value.uid || value.id : JSON.stringify(value);
+                }
               }
             }, this);
             params.namedParameters = namedParams;
