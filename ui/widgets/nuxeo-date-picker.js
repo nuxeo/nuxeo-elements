@@ -83,6 +83,22 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           value: false,
         },
 
+        /*
+         * The first day of week to be displayed (e.g. `"Sunday -> 0"`, ... `"Saturday -> 6"`).
+         * By default, it will be set according the locale.
+         */
+        firstDayOfWeek: {
+          type: Number,
+          value() {
+            return (
+              (Nuxeo.UI && Nuxeo.UI.config && parseInt(Nuxeo.UI.config.firstDayOfWeek, 10)) ||
+              moment.localeData().firstDayOfWeek() ||
+              0
+            );
+          },
+          observer: '_firstDayOfWeekChanged',
+        },
+
         _inputValue: {
           type: String,
           observer: '_inputValueChanged',
@@ -252,6 +268,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         }
       }
       this._preventInputUpdate = false;
+    }
+
+    _firstDayOfWeekChanged() {
+      if (this.firstDayOfWeek != null) {
+        this.$.date.set('i18n.firstDayOfWeek', this.firstDayOfWeek);
+      }
     }
   }
 

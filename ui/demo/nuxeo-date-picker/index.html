@@ -31,6 +31,7 @@ limitations under the License.
     <style>
       nuxeo-demo-section {
         height: 25px;
+        margin-bottom: 150px;
       }
     </style>
   </head>
@@ -39,8 +40,13 @@ limitations under the License.
     <dom-bind>
       <template>
         <nuxeo-demo-section heading="Date picker with 14:35:19 default time" size="small">
-          <nuxeo-date-picker label="Pick a date" value="{{dateValue}}" default-time="14:35:19"></nuxeo-date-picker>
-          <div>Selected date: [[dateValue]]</div>
+          <nuxeo-date-picker label="Pick a date" value="{{dateValueOne}}" default-time="14:35:19"></nuxeo-date-picker>
+          <div>Selected date: [[dateValueOne]]</div>
+        </nuxeo-demo-section>
+
+        <nuxeo-demo-section heading="Date picker starting on Tuesday without default time set" size="small">
+          <nuxeo-date-picker label="Pick a date" value="{{dateValueTwo}}" first-day-of-week="2"></nuxeo-date-picker>
+          <div>Selected date: [[dateValueTwo]]</div>
         </nuxeo-demo-section>
       </template>
     </dom-bind>

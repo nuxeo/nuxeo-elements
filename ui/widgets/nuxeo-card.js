@@ -184,7 +184,12 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
     _toggle() {
       if (this.collapsible) {
         this.opened = !this.opened;
-        this.notifyResize();
+        if (this.$$('iron-collapse')) {
+          this.$$('iron-collapse').addEventListener('transitionend', (fireEvent) => {
+            this.dispatchEvent(new CustomEvent('iron-resize', { bubbles: true, composed: true }));
+            this.removeEventListener('transitionend', fireEvent);
+          });
+        }
       }
     }
 

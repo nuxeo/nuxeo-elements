@@ -43,4 +43,53 @@ suite('<nuxeo-selectivity>', () => {
       expect(getSelectedItem()).to.be.equal(null);
     }
   });
+
+  suite('ID Function', () => {
+    test('Should return the whole object when no known identifiers are present', () => {
+      const item = {
+        unknown: 'id',
+        keyOne: 'valueOne',
+        keyTwo: 'valueTwo',
+      };
+      expect(selectivityWidget.idFunction(item)).to.be.equal(item);
+    });
+
+    test('Should return empty when a known identifier is present and contains empty string', () => {
+      const item = {
+        uid: '',
+      };
+      expect(selectivityWidget.idFunction(item)).to.be.equal('');
+    });
+
+    test('Should return null when a known identifier is present and contains null value', () => {
+      const item = {
+        id: null,
+      };
+      expect(selectivityWidget.idFunction(item)).to.be.equal(null);
+    });
+
+    test('Should return undefined when a known identifier is present and contains undefined value', () => {
+      const item = {
+        computeId: undefined,
+      };
+      expect(selectivityWidget.idFunction(item)).to.be.equal(undefined);
+    });
+
+    test('Should return computeId value when all known identifiers are present', () => {
+      const item = {
+        uid: 'two',
+        id: 'three',
+        computeId: 'one',
+      };
+      expect(selectivityWidget.idFunction(item)).to.be.equal('one');
+    });
+
+    test('Should return uid value when only uid and id are are present', () => {
+      const item = {
+        id: 'three',
+        uid: 'two',
+      };
+      expect(selectivityWidget.idFunction(item)).to.be.equal('two');
+    });
+  });
 });

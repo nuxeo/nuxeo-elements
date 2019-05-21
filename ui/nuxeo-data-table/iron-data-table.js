@@ -520,7 +520,7 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
       this.handlesSorting = true;
       this._observer = dom(this).observeNodes((info) => {
         const hasColumns = function(node) {
-          return node.nodeType === Node.ELEMENT_NODE && node.tagName === 'NUXEO-DATA-TABLE-COLUMN';
+          return node.nodeType === Node.ELEMENT_NODE && node instanceof Nuxeo.DataTableColumn;
         };
 
         const hasDetails = function(node) {
@@ -710,7 +710,7 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
       // the shadow root.
       return (
         target.contains(dom(document.activeElement).node) ||
-        target.tagName === 'NUXEO-DATA-TABLE-CHECKBOX' ||
+        target instanceof Nuxeo.DataTableCheckbox ||
         target.tagName === 'A'
       );
     }
