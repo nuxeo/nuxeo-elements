@@ -2313,33 +2313,33 @@ typedArrayTags[weakMapTag] = false;
         search(term) {
           this.term = term;
 
-          if (this.options.items) {
-            term = Selectivity.transformText(term);
-            const matcher = this.selectivity.options.matcher || Selectivity.matcher;
-            this._showResults(
-              this.options.items
-                .map((item) => matcher(item, term))
-                .filter((item) => !!item),
-              { term },
-            );
-          } else if (this.options.query) {
-            this.options.query({
-              callback: function (response) {
-                if (response && response.results) {
+          this.options.query({
+            callback: function (response) {
+              if (response && response.results) {
+                if (this.options.items) {
+                  term = Selectivity.transformText(term);
+                  const matcher = this.selectivity.options.matcher || Selectivity.matcher;
+                  this._showResults(
+                    this.options.items
+                      .map((item) => matcher(item, term))
+                      .filter((item) => !!item),
+                    { term },
+                  );
+                } else {
                   this._showResults(Selectivity.processItems(response.results), {
                     hasMore: !!response.more,
                     term,
                   });
-                } else {
-                  throw new Error('callback must be passed a response object');
                 }
-              }.bind(this),
-              error: this.showError.bind(this),
-              offset: 0,
-              selectivity: this.selectivity,
-              term,
-            });
-          }
+              } else {
+                throw new Error('callback must be passed a response object');
+              }
+            }.bind(this),
+            error: this.showError.bind(this),
+            offset: 0,
+            selectivity: this.selectivity,
+            term,
+          });
         },
 
         /**
@@ -6802,7 +6802,7 @@ typedArrayTags[weakMapTag] = false;
 */
 
 .selectivity-dropdown {
-  background: #fff;
+  background: var(--nuxeo-dropdown-list-background, #fff);
   border-radius: 4px;
   -webkit-box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.15), 0 10px 16px 0 rgba(0, 0, 0, 0.2);
   box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.15), 0 10px 16px 0 rgba(0, 0, 0, 0.2);
@@ -6819,6 +6819,7 @@ typedArrayTags[weakMapTag] = false;
   border: 0;
   outline: 0;
   width: 100%;
+  color: var(--nuxeo-text-default, #3a3a54);
 }
 
 .selectivity-results-container {
@@ -6901,6 +6902,7 @@ input[type='text'].selectivity-multiple-input {
   max-width: 100%;
   outline: 0;
   padding: 0;
+  color: var(--nuxeo-text-default, #3a3a54);
 }
 
 .selectivity-multiple-input:focus,
@@ -7016,6 +7018,7 @@ input[type='text'].selectivity-multiple-input:focus {
 .fa-close:before,
 .fa-times:before {
   content: "\\00d7";
+  color: var(--nuxeo-text-default, #3a3a54);
 }
 .selectivity-caret:before {
   content: "\\25bc";
@@ -7111,7 +7114,7 @@ input[type='text'].selectivity-multiple-input:focus {
           ),
 
           singleSelectedItem: (opts) => (
-            `${'<span class="preserve-white-space selectivity-single-selected-item" ' +
+            `${'<span class="selectivity-single-selected-item" ' +
             'data-item-id="'}${escapeHTML(opts.id)}">${
               opts.removable ? '<a class="preserve-white-space selectivity-single-selected-item-remove">' +
                   '<i class="selectivity-remove"></i>' +
@@ -7123,7 +7126,7 @@ input[type='text'].selectivity-multiple-input:focus {
           multipleSelectedItem: (opts) => {
             const extraClass = opts.highlighted ? ' highlighted' : '';
             return (
-              `<span class="preserve-white-space selectivity-multiple-selected-item${extraClass}"
+              `<span class="selectivity-multiple-selected-item${extraClass}"
                      data-item-id="${escapeHTML(opts.id)}">${
                 opts.removable ? '<a class="preserve-white-space selectivity-multiple-selected-item-remove">' +
                     '<i class="selectivity-remove"></i>' +
@@ -7146,21 +7149,21 @@ input[type='text'].selectivity-multiple-input:focus {
 
       if (this.data) {
         options.items = this._wrap(this.data);
-      } else {
-        options.query = (query) => {
-          if (query.term.length < this.minChars) {
-            query.error(`Please enter ${this.minChars} or more character`);
-            return;
-          }
-          // debounce requests
-          this._debouncer = Debouncer.debounce(
-            this._debouncer,
-            timeOut.after(this.frequency), () => {
-              this._query(query);
-            },
-          );
-        };
       }
+
+      options.query = (query) => {
+        if (query.term.length < this.minChars) {
+          query.error(`Please enter ${this.minChars} or more character`);
+          return;
+        }
+        // debounce requests
+        this._debouncer = Debouncer.debounce(
+          this._debouncer,
+          timeOut.after(this.frequency), () => {
+            this._query(query);
+          },
+        );
+      };
 
       // createTokenItem is not supported in single inputs in selectivity
       if (this.multiple && this.tagging) {
@@ -7273,7 +7276,8 @@ input[type='text'].selectivity-multiple-input:focus {
     }
 
     _idFunction(item) {
-      return item.computedId || item.uid || item.id || item;
+      const id = ['computeId', 'uid', 'id'].find((key) => item.hasOwnProperty(key));
+      return id ? item[id] : item;
     }
 
     _newEntryFormatter(term) {
@@ -7306,27 +7310,32 @@ input[type='text'].selectivity-multiple-input:focus {
       return Array.isArray(value) ? value.map((item) => fn(item)) : fn(value);
     }
 
+    _triggerQueryCallback(query, results) {
+      if (this.queryResultsFilter) {
+        results = results.filter(this.queryResultsFilter);
+      }
+      if (this.tagging && query.term) {
+        const exists = results.some((item) => item.id === query.term);
+        if (!exists) {
+          results.push(this.newEntryFormatter(query.term));
+        }
+      }
+      query.callback({
+        results: this._wrap(results),
+      });
+    }
+
     // Implements abstract Nuxeo.Select2 methods
     _query(query) {
+      if (this.data) {
+        return this._triggerQueryCallback(query, this.data);
+      }
       const params = this.params || {};
       params.searchTerm = query.term;
       this.$.op.params = params;
-
       this.$.op.execute().then((response) => {
         let results = Array.isArray(response.entries) ? response.entries : response;
-        if (this.queryResultsFilter) {
-          results = results.filter(this.queryResultsFilter);
-        }
-        if (this.tagging && query.term) {
-          const exists = results.some((item) => item.id === query.term);
-          if (!exists) {
-            results.push(this.newEntryFormatter(query.term));
-          }
-        }
-
-        query.callback({
-          results: this._wrap(results),
-        });
+        this._triggerQueryCallback(query, results);
       });
     }
   }
