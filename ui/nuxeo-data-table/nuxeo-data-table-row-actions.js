@@ -95,7 +95,8 @@ import './data-table-templatizer-behavior.js';
       beforeBind(data, this);
     }
 
-    _editEntry() {
+    _editEntry(e) {
+      e.stopPropagation();
       this.dispatchEvent(
         new CustomEvent('edit-entry', {
           composed: true,
@@ -105,7 +106,8 @@ import './data-table-templatizer-behavior.js';
       );
     }
 
-    _deleteEntry() {
+    _deleteEntry(e) {
+      e.stopPropagation();
       this.dispatchEvent(
         new CustomEvent('delete-entry', {
           composed: true,
@@ -115,7 +117,8 @@ import './data-table-templatizer-behavior.js';
       );
     }
 
-    moveUp() {
+    moveUp(e) {
+      e.stopPropagation();
       this.dispatchEvent(
         new CustomEvent('move-upward', {
           composed: true,
@@ -125,7 +128,8 @@ import './data-table-templatizer-behavior.js';
       );
     }
 
-    moveDown() {
+    moveDown(e) {
+      e.stopPropagation();
       this.dispatchEvent(
         new CustomEvent('move-downward', {
           composed: true,
