@@ -141,7 +141,7 @@ import './nuxeo-tooltip.js';
         const firstName = user.properties.firstName || user.properties['user:firstName'];
         const lastName = user.properties.lastName || user.properties['user:lastName'];
         const email = user.properties.email || user.properties['user:email'];
-        return firstName || lastName ? `${firstName} ${lastName}` : email || this._id(user);
+        return [firstName, lastName].join(' ').trim() || email || this._id(user);
       }
       return this._id(user);
     }

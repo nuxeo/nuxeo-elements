@@ -166,7 +166,7 @@ import '../nuxeo-icons.js';
       if (this._isEntity(user)) {
         const firstName = user.properties.firstName || user.properties['user:firstName'];
         const lastName = user.properties.lastName || user.properties['user:lastName'];
-        return firstName || lastName ? `${firstName} ${lastName}` : this._id(user);
+        return [firstName, lastName].join(' ').trim() || this._id(user);
       }
       return this._id(user);
     }

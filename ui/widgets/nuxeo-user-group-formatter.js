@@ -51,13 +51,7 @@ import './nuxeo-user-avatar.js';
         <div id="container">
           <dom-if if="[[_isUser(entity)]]">
             <template>
-              <nuxeo-user-avatar
-                user="[[entity.displayLabel]]"
-                height="24"
-                width="24"
-                border-radius="50"
-                font-size="11"
-              >
+              <nuxeo-user-avatar user="[[entity]]" height="24" width="24" border-radius="50" font-size="11">
               </nuxeo-user-avatar>
             </template>
           </dom-if>
