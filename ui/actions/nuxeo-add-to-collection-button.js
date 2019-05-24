@@ -76,7 +76,7 @@ import './nuxeo-action-button-styles.js';
           </template>
         </dom-if>
 
-        <nuxeo-dialog id="add-to-collection-dialog" with-backdrop on-iron-overlay-closed="_resetPopup" no-auto-focus>
+        <nuxeo-dialog id="dialog" with-backdrop on-iron-overlay-closed="_resetPopup" no-auto-focus>
           <h2>[[i18n('addToCollectionButton.dialog.heading')]]</h2>
           <paper-dialog-scrollable>
             <nuxeo-selectivity
@@ -193,7 +193,7 @@ import './nuxeo-action-button-styles.js';
     }
 
     _toggleDialog() {
-      this.$['add-to-collection-dialog'].toggle();
+      this.$.dialog.toggle();
     }
 
     _add() {
