@@ -35,6 +35,11 @@ limitations under the License.
         <nuxeo-demo-section heading="Simple user tag" size="small">
           <nuxeo-user-tag user="Administrator"></nuxeo-user-tag>
         </nuxeo-demo-section>
+        <nuxeo-demo-section heading="Object user tag" size="small">
+          <nuxeo-user-tag
+            user='{"entity-type":"user","id":"toto","properties":{"firstName":"Foo","tenantId":null,"groups":[],"company":"FooBarCorp","email":"foo@bar.to","username":"toto"},"extendedGroups":[],"isAdministrator":false,"isAnonymous":false,"contextParameters":{"userprofile":{"avatar":null,"phonenumber":null,"gender":false,"locale":null,"birthdate":null}}}'
+          ></nuxeo-user-tag>
+        </nuxeo-demo-section>
       </template>
     </dom-bind>
   </body>
