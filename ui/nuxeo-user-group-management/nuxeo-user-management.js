@@ -738,7 +738,7 @@ import './nuxeo-user-group-permissions-table.js';
 
     _resultFormatter(item) {
       const content = `${item.displayLabel} (${item.groupname || item.username})`;
-      return escapeHTML(`<span class="preserve-white-space">${content}</span>`);
+      return `<span class="preserve-white-space">${escapeHTML(content)}</span>`;
     }
 
     _toast(msg) {
