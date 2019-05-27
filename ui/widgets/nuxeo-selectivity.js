@@ -6971,6 +6971,7 @@ input[type='text'].selectivity-multiple-input:focus {
 
 .selectivity-single-select-input {
   opacity: 0;
+  pointer-events: none;
 }
 
 .selectivity-single-result-container {
