@@ -7145,7 +7145,7 @@ input[type='text'].selectivity-multiple-input:focus {
 
       if (!this.readonly) {
         options.placeholder = this.placeholder;
-        options.allowClear = !this.required;
+        options.allowClear = !this.required && !this.multiple; // allowClear only works on single-value mode
       }
 
       if (this.data) {
