@@ -14,37 +14,114 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, html } from '@nuxeo/nuxeo-elements/test/test-helpers.js';
+
+import {
+  fixture,
+  flush,
+  html,
+  waitForAttrMutation,
+  waitForChildListMutation,
+} from '@nuxeo/nuxeo-elements/test/test-helpers.js';
+import { pressAndReleaseKeyOn } from '@polymer/iron-test-helpers/mock-interactions.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import '../widgets/nuxeo-selectivity.js';
 
+/* eslint-disable no-unused-expressions */
 suite('<nuxeo-selectivity>', () => {
   let selectivityWidget;
   const data = ['Berlin', 'Lisbon', 'London', 'Rennes', 'Rome'];
-  setup(async () => {
-    selectivityWidget = await fixture(html`
-      <nuxeo-selectivity placeholder="No city selected" .data=${data} allow-clear></nuxeo-selectivity>
-    `);
+
+  suite('single value', () => {
+    setup(async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity placeholder="No city selected" .data=${data}></nuxeo-selectivity>
+      `);
+    });
+
+    test('Its value can be set programmatically multiple times', () => {
+      let i;
+      const getSelectedItem = () => dom(selectivityWidget.root).querySelector('.selectivity-single-selected-item');
+      const resetValue = () =>
+        dom(selectivityWidget.root)
+          .querySelector('a.selectivity-single-selected-item-remove')
+          .click();
+      for (i = 0; i < data.length; i++) {
+        selectivityWidget.value = data[i];
+        const item = getSelectedItem();
+        expect(item).not.to.be.equal(null);
+        expect(item.textContent).to.be.equal(data[i]);
+        resetValue();
+        expect(getSelectedItem()).to.be.equal(null);
+      }
+    });
   });
 
-  test('Its value can be set programmatically multiple times', () => {
-    let i;
-    const getSelectedItem = () => dom(selectivityWidget.root).querySelector('.selectivity-single-selected-item');
-    const resetValue = () =>
+  suite('multiple value', () => {
+    setup(async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity placeholder="No city selected" .data=${data} multiple></nuxeo-selectivity>
+      `);
+    });
+
+    test('Backspace higlights and then deletes a single value', async () => {
+      const getSelectedItems = () =>
+        dom(selectivityWidget.root).querySelectorAll('.selectivity-multiple-selected-item');
+      const hitBackspace = () =>
+        pressAndReleaseKeyOn(dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input'), 8);
+
+      // set initial value with two entries
+      selectivityWidget.value = ['Berlin', 'Lisbon'];
+      await flush();
+
+      // ensure that both are present and none are highlighted, then hit backspace
+      let items = getSelectedItems();
+      expect(items.length).to.be.equal(2);
+      expect(items[0].textContent).to.be.equal('Berlin');
+      expect(items[1].textContent).to.be.equal('Lisbon');
+      expect(items[1].classList.contains('highlighted')).to.be.false;
       dom(selectivityWidget.root)
-        .querySelector('a.selectivity-single-selected-item-remove')
-        .click();
-    for (i = 0; i < data.length; i++) {
-      selectivityWidget.value = data[i];
-      const item = getSelectedItem();
-      expect(item).not.to.be.equal(null);
-      expect(item.textContent).to.be.equal(data[i]);
-      resetValue();
-      expect(getSelectedItem()).to.be.equal(null);
-    }
+        .querySelector('input.selectivity-multiple-input')
+        .focus();
+      hitBackspace();
+      await flush();
+
+      // assert that there's still two entries but the last one is highlighted, then hit backspace again
+      items = getSelectedItems();
+      expect(items.length).to.be.equal(2);
+      expect(items[0].textContent).to.be.equal('Berlin');
+      expect(items[1].textContent).to.be.equal('Lisbon');
+      if (!items[1].classList.contains('highlighted')) {
+        // we might have to wait for the attribute to be changed on slower browsers
+        await waitForAttrMutation(items[1], 'class');
+      }
+      expect(items[1].classList.contains('highlighted')).to.be.true;
+      dom(selectivityWidget.root)
+        .querySelector('input.selectivity-multiple-input')
+        .focus();
+      hitBackspace();
+      await flush();
+
+      // check there's only one entry left
+      items = getSelectedItems();
+      if (items.length !== 1) {
+        // we might have to wait for the entries to be removed on slower browsers
+        await waitForChildListMutation(
+          dom(selectivityWidget.root).querySelector('.selectivity-multiple-input-container'),
+        );
+        items = getSelectedItems();
+      }
+      expect(items.length).to.be.equal(1);
+      expect(items[0].textContent).to.be.equal('Berlin');
+    });
   });
 
   suite('ID Function', () => {
+    setup(async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity placeholder="No city selected" .data=${data}></nuxeo-selectivity>
+      `);
+    });
+
     test('Should return the whole object when no known identifiers are present', () => {
       const item = {
         unknown: 'id',
