@@ -52,6 +52,41 @@ function waitChanged(el, prop, times) {
   return waitForEvent(el, `${prop}-changed`, times).then((e) => e.detail);
 }
 
+function waitForAttrMutation(el, attr, value) {
+  return new Promise((resolve) => {
+    if (value == null || el.getAttribute(attr) !== value) {
+      const observer = new MutationObserver((mutationsList) => {
+        const mutation = mutationsList.find(
+          (m) =>
+            m.type === 'attributes' &&
+            (attr ? m.attributeName === attr : true) &&
+            (value != null ? el.getAttribute(attr) === value : true),
+        );
+        if (mutation) {
+          observer.disconnect();
+          resolve(mutation);
+        }
+      });
+      observer.observe(el, { attributes: true });
+    } else {
+      resolve();
+    }
+  });
+}
+
+function waitForChildListMutation(el) {
+  return new Promise((resolve) => {
+    const observer = new MutationObserver((mutationsList) => {
+      const mutation = mutationsList.find((m) => m.type === 'childList');
+      if (mutation) {
+        observer.disconnect();
+        resolve(mutation);
+      }
+    });
+    observer.observe(el, { childList: true });
+  });
+}
+
 function login(server, loginFixture) {
 
   server.respondWith(
