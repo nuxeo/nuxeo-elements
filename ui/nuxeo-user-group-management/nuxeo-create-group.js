@@ -26,7 +26,7 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-user-suggestion.js';
-import { escapeHTML } from '../widgets/nuxeo-selectivity.js';
+import '../widgets/nuxeo-selectivity.js';
 
 {
   /**
@@ -202,9 +202,6 @@ import { escapeHTML } from '../widgets/nuxeo-selectivity.js';
 
         resultFormatter: {
           type: Function,
-          value() {
-            return this._resultFormatter.bind(this);
-          },
         },
 
         errors: {
@@ -330,10 +327,6 @@ import { escapeHTML } from '../widgets/nuxeo-selectivity.js';
         }
       }
       return true;
-    }
-
-    _resultFormatter(item) {
-      return escapeHTML(`${item.displayLabel} (${item.groupname || item.username})`);
     }
 
     _hasErrors() {
