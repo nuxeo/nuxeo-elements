@@ -34,7 +34,7 @@ import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-group-tag.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-user-suggestion.js';
-import { escapeHTML } from '../widgets/nuxeo-selectivity.js';
+import '../widgets/nuxeo-selectivity.js';
 import './nuxeo-edit-password.js';
 import './nuxeo-user-group-permissions-table.js';
 
@@ -477,9 +477,6 @@ import './nuxeo-user-group-permissions-table.js';
 
         resultFormatter: {
           type: Function,
-          value() {
-            return this._resultFormatter.bind(this);
-          },
         },
 
         showEditGroups: {
@@ -734,11 +731,6 @@ import './nuxeo-user-group-permissions-table.js';
         }
       }
       return true;
-    }
-
-    _resultFormatter(item) {
-      const content = `${item.displayLabel} (${item.groupname || item.username})`;
-      return `<span class="preserve-white-space">${escapeHTML(content)}</span>`;
     }
 
     _toast(msg) {
