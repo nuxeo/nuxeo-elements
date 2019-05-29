@@ -138,12 +138,22 @@ import './nuxeo-error.js';
         () => {
           const element = document.createElement(name);
 
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              if (entry.intersectionRatio > 0) {
+                this._applyAutoFocus(element);
+              }
+            });
+          });
+
           if (this.$.container.hasChildNodes()) {
+            observer.unobserve(this.$.container.firstChild);
             this.$.container.replaceChild(element, this.$.container.firstChild);
           } else {
             this.$.container.appendChild(element);
           }
 
+          observer.observe(element);
           this._setElement(element);
           this._update();
           this.notifyResize();
@@ -166,6 +176,15 @@ import './nuxeo-error.js';
         Object.keys(this.model).forEach((prop) => {
           this.element[prop] = this.model[prop];
         });
+      }
+    }
+
+    _applyAutoFocus(element) {
+      if (element && element.root && !element.root.activeElement) {
+        const focusableElement = Array.from(element.root.children).find((el) => el.autofocus);
+        if (focusableElement) {
+          focusableElement.focus();
+        }
       }
     }
   }
