@@ -16,14 +16,15 @@ import './data-table-templatizer-behavior.js';
           :host {
             @apply --layout-horizontal;
             @apply --layout-center;
+            @apply --layout-flex;
           }
           .actions {
-            @apply --layout-horizontal;
-            @apply --layout-end-justified;
+            padding-right: 12px;
           }
-          .actions .orderable {
-            min-width: 80px;
+          .actions,
+          .orderable {
             @apply --layout-horizontal;
+            @apply --layout-flex;
             @apply --layout-end-justified;
           }
         </style>

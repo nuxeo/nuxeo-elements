@@ -33,6 +33,7 @@ import '@polymer/paper-styles/paper-styles-classes.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { microTask, timeOut } from '@polymer/polymer/lib/utils/async.js';
+import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import '../widgets/nuxeo-dialog.js';
 import './data-table-column.js';
@@ -271,7 +272,9 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
                   </nuxeo-data-table-cell>
                 </template>
               </dom-repeat>
-              <nuxeo-data-table-cell flex="0" hidden$="[[!editable]]"></nuxeo-data-table-cell>
+              <div style$="[[_computeActionsStyle(editable, orderable)]]">
+                <nuxeo-data-table-cell></nuxeo-data-table-cell>
+              </div>
               <nuxeo-data-table-settings
                 columns="{{columns}}"
                 hidden$="[[!settingsEnabled]]"
@@ -343,16 +346,18 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
                       ></nuxeo-data-table-row-detail>
                     </template>
                   </dom-if>
-                  <nuxeo-data-table-row-actions
-                    index="[[index]]"
-                    editable="[[editable]]"
-                    orderable="[[orderable]]"
-                    template="[[rowForm]]"
-                    item="[[item]]"
-                    size="[[items.length]]"
-                    table="[[_this]]"
-                  >
-                  </nuxeo-data-table-row-actions>
+                  <div style$="[[_computeActionsStyle(editable, orderable)]]">
+                    <nuxeo-data-table-row-actions
+                      index="[[index]]"
+                      editable="[[editable]]"
+                      orderable="[[orderable]]"
+                      template="[[rowForm]]"
+                      item="[[item]]"
+                      size="[[items.length]]"
+                      table="[[_this]]"
+                    >
+                    </nuxeo-data-table-row-actions>
+                  </div>
                 </nuxeo-data-table-row>
               </div>
             </template>
@@ -515,6 +520,10 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
       };
     }
 
+    static get observers() {
+      return ['_alignHeaderRow(items.length)'];
+    }
+
     constructor() {
       super();
       this.handlesSorting = true;
@@ -572,6 +581,27 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
       slot.addEventListener('slotchange', () => {
         const form = this.getContentChildren('#form')[0];
         form.disabled = true;
+      });
+    }
+
+    _computeActionsStyle() {
+      if (this.editable && this.orderable) {
+        return 'flex: 0 0 172px;';
+      }
+      if (this.editable || this.orderable) {
+        return 'flex: 0 0 92px;';
+      }
+      return 'display: none;';
+    }
+
+    _alignHeaderRow() {
+      afterNextRender(this, () => {
+        if (this.$.list.scrollHeight >= this.$.list.clientHeight) {
+          // add scrollbar width as padding
+          this.$.header.style.paddingRight = `${this.$.list.offsetWidth - this.$.list.clientWidth}px`;
+        } else {
+          this.$.header.style.paddingRight = '0';
+        }
       });
     }
 
