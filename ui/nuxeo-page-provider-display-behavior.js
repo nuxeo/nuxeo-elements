@@ -517,15 +517,15 @@ export const PageProviderDisplayBehavior = [
         };
         if (page) {
           this.nxProvider.page = page;
-          if (page === 1) {
-            this.reset();
-          }
         }
         if (pageSize) {
           this.nxProvider.pageSize = pageSize;
         }
         this.nxProvider.offset = 0;
         return this.nxProvider.fetch(options).then((response) => {
+          if (page === 1) {
+            this.reset();
+          }
           for (let i = 0; i < response.entries.length; i++) {
             this.push('items', response.entries[i]);
           }
