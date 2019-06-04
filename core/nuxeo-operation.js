@@ -75,6 +75,16 @@ import './nuxeo-page-provider.js';
           notify: true,
         },
 
+        /** Indicates if the request behind this operation cannot be canceled.
+         * By default a request is cancelable, which means that if on the same `nuxeo-operation`
+         * we perform two sequential requests: Request A & Request B. The first one will be
+         * aborted and we keep the last one (in our case request B). This is done to avoid
+         * an obsolete responses.
+         * */
+        uncancelable: {
+          type: Boolean,
+        },
+
         /** The id the operation to call. */
         op: {
           type: String,
@@ -228,6 +238,18 @@ import './nuxeo-page-provider.js';
           options.headers[`enrichers-${type}`] = v;
         });
       }
+
+      // Manage the way to abort the request
+      if (!this.uncancelable) {
+        if (this._controller) {
+          this._controller.abort();
+        }
+
+        // For the next request
+        this._controller = new AbortController();
+        options.signal = this._controller.signal;
+      }
+
       return this.$.nx.operation(this.op).then((operation) => {
         this._operation = operation;
         return this._doExecute(input, params, options);

@@ -74,6 +74,16 @@ import './nuxeo-connection.js';
           notify: true,
         },
 
+        /** Indicates if the request behind this resource cannot be canceled.
+         * By default a request is cancelable, which means that if on the same `nuxeo-resource`
+         * we perform two sequential requests: Request A & Request B. The first one will be
+         * aborted and we keep the last one (in our case request B). This is done to avoid
+         * an obsolete responses.
+         * */
+        uncancelable: {
+          type: Boolean,
+        },
+
         /** If true, automatically execute the operation when either `path` or `params` changes. */
         auto: {
           type: Boolean,
@@ -263,6 +273,17 @@ import './nuxeo-connection.js';
 
       // resolve with full response to skip default unmarshallers
       options.resolveWithFullResponse = true;
+
+      // Manage the way to abort the request
+      if (!this.uncancelable) {
+        if (this._controller) {
+          this._controller.abort();
+        }
+
+        // For the next request
+        this._controller = new AbortController();
+        options.signal = this._controller.signal;
+      }
 
       const params = this.params || {};
       return this.$.nx.request().then((request) => {
