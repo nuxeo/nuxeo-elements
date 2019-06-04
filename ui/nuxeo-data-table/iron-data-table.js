@@ -954,10 +954,6 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
     fetch() {
       if (this._hasPageProvider()) {
         if (this.paginable) {
-          if (this.nxProvider.page === 1) {
-            this._reset(0);
-            this.$.scrollThreshold.clearTriggers();
-          }
           const result = this._fetchPage(this.nxProvider.page, this.nxProvider.pageSize);
           if (result) {
             return result.then(() => {
