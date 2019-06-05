@@ -406,9 +406,8 @@ import './nuxeo-popup-permission.js';
     }
 
     sendEmailExternalSharing(e) {
-      const item = e.model.dataHost.dataHost.ace;
       this.$.sendNotificationEmailPermissionOp.params = {
-        id: item.id,
+        id: e.model.ace.id,
       };
       this.$.sendNotificationEmailPermissionOp.execute().then(() => {
         this.dispatchEvent(
