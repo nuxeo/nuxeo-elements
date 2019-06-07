@@ -263,7 +263,7 @@ import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-beha
         new CustomEvent('column-filter-changed', {
           composed: true,
           bubbles: true,
-          detail: { value: '', filterBy: e.model.filter.path },
+          detail: { value: '', filterBy: e.model.filter.path, filterExpression: e.model.filter.expression },
         }),
       );
     }

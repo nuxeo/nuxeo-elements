@@ -82,7 +82,7 @@ export const PageProviderDisplayBehavior = [
       },
 
       /**
-       * An array containing path/filter value pairs that are used to filter the items
+       * An array with objects containing path, filter value, name and expression that are used to filter the items
        */
       filters: {
         type: Array,
@@ -409,6 +409,7 @@ export const PageProviderDisplayBehavior = [
             path: e.detail.filterBy,
             value: e.detail.value,
             name: e.detail.name,
+            expression: e.detail.filterExpression,
           });
         }
 
@@ -420,8 +421,8 @@ export const PageProviderDisplayBehavior = [
           delete this.nxProvider.params[e.detail.filterBy];
           this.fetch();
         } else if (e.detail.value.length > 0) {
-          if (e.detail.filterBy === 'title' || e.detail.filterBy === 'ecm_fulltext') {
-            this.nxProvider.params[e.detail.filterBy] = `${e.detail.value}*`;
+          if (e.detail.filterExpression) {
+            this.nxProvider.params[e.detail.filterBy] = e.detail.filterExpression.replace(/(\$term)/g, e.detail.value);
           } else {
             this.nxProvider.params[e.detail.filterBy] = e.detail.value;
           }
