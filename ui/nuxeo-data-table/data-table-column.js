@@ -55,6 +55,13 @@ import './data-table-column-filter.js';
         filterValue: String,
 
         /**
+         * Filter expression that will be applied to full-text queries.
+         * The syntax for the search term is $term and the wildcards defined for full-text queries can be used (https://doc.nuxeo.com/nxdoc/full-text-queries/)
+         * As an example this filterExpression could be something like: $term*
+         */
+        filterExpression: String,
+
+        /**
          * Minimum width of the column
          */
         width: {
@@ -128,7 +135,7 @@ import './data-table-column-filter.js';
     static get observers() {
       return [
         '_alignRightChanged(table, alignRight)',
-        '_filterValueChanged(table, filterValue, filterBy)',
+        '_filterValueChanged(table, filterValue, filterBy, filterExpression)',
         '_filterByChanged(table, filterBy)',
         '_flexChanged(table, flex)',
         '_headerTemplateChanged(table, headerTemplate)',
@@ -199,14 +206,14 @@ import './data-table-column-filter.js';
       this._notifyTable(table, 'filterBy', filterBy);
     }
 
-    _filterValueChanged(table, filterValue, filterBy) {
+    _filterValueChanged(table, filterValue, filterBy, filterExpression) {
       if (table && filterBy && filterValue !== undefined) {
         this._notifyTable(table, 'filterValue', filterValue);
         this.dispatchEvent(
           new CustomEvent('column-filter-changed', {
             composed: true,
             bubbles: true,
-            detail: { value: filterValue, filterBy },
+            detail: { value: filterValue, filterBy, filterExpression },
           }),
         );
       }
