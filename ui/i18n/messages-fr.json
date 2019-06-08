@@ -192,7 +192,7 @@
   "tags.removedFromDocument": "Le tag {0} a été retiré du document.",
   "today": "Aujourd’hui",
   "tree.loadMore": "...",
-  "untrashButton.tooltip": "Restorer le document",
+  "untrashButton.tooltip": "Restaurer le document",
   "userGroupLatest.emptyRecentUserOrGroup": "Aucun utilisateur ou groupe récent.",
   "userGroupLatest.identifier": "Identifiant",
   "userGroupLatest.name": "Nom",
