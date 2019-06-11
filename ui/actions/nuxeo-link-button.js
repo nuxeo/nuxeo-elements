@@ -29,7 +29,7 @@ import './nuxeo-action-button-styles.js';
    *
    * Example:
    *
-   *     <nnuxeo-link-button href="http://www.nuxeo.org" icon></nuxeo-link-button>
+   *     <nuxeo-link-button href="http://www.nuxeo.org" icon></nuxeo-link-button>
    *
    * @appliesMixin Nuxeo.I18nBehavior
    * @memberof Nuxeo
