@@ -88,7 +88,13 @@ import '../../nuxeo-data-table/iron-data-table.js';
           </nuxeo-page-provider>
 
           <nuxeo-data-table id="datatable" nx-provider="cvProvider" selection-enabled multi-selection>
-            <nuxeo-data-table-column name="Full text search" flex="100" filter-by="ecm_fulltext" sort-by="dc:title">
+            <nuxeo-data-table-column
+              name="Full text search"
+              flex="100"
+              filter-by="ecm_fulltext"
+              filter-expression="$term*"
+              sort-by="dc:title"
+            >
               <template>
                 <img class="thumbnail" src="[[_thumbnail(item)]]" />
                 <a class="title ellipsis">[[item.title]]</a>
