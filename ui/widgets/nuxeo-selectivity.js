@@ -6962,6 +6962,7 @@ input[type='text'].selectivity-multiple-input:focus {
 }
 
 .selectivity-single-select {
+  display: flex;
   cursor: pointer;
   min-height: calc(2em + 4px);
   padding: 5px;
@@ -6970,16 +6971,18 @@ input[type='text'].selectivity-multiple-input:focus {
   box-sizing: content-box;
 }
 
+/**
+* XXX - This ensures the input is reachable through tab navigation
+*/
 .selectivity-single-select-input {
+  position: absolute;
   opacity: 0;
   pointer-events: none;
 }
 
 .selectivity-single-result-container {
-  position: absolute;
-  top: 1.05em;
-  right: 5px;
-  left: 5px;
+  display: flex;
+  align-items: flex-end;
   overflow: hidden;
   -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
