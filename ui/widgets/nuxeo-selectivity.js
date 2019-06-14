@@ -22,6 +22,7 @@ import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import {I18nBehavior} from "../nuxeo-i18n-behavior";
 
 /**
  * @license
@@ -6547,7 +6548,7 @@ typedArrayTags[weakMapTag] = false;
    * @demo demo/nuxeo-selectivity/index.html
    */
   class SelectivityElement
-    extends mixinBehaviors([IronFormElementBehavior, IronValidatableBehavior], Nuxeo.Element) {
+    extends mixinBehaviors([I18nBehavior, IronFormElementBehavior, IronValidatableBehavior], Nuxeo.Element) {
 
     static get is() {
       return 'nuxeo-selectivity';
@@ -7154,7 +7155,7 @@ input[type='text'].selectivity-multiple-input:focus {
 
       options.query = (query) => {
         if (query.term.length < this.minChars) {
-          query.error(`Please enter ${this.minChars} or more character`);
+          query.error(this.i18n('selectivity.minChars', this.minChars));
           return;
         }
         // debounce requests
