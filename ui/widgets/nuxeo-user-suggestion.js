@@ -57,7 +57,7 @@ import './nuxeo-user-group-formatter.js';
           min-chars="[[minChars]]"
           frequency="[[frequency]]"
           multiple="[[multiple]]"
-          params="[[_computeParams(params.*, searchType)]]"
+          params="[[_computeParams(params.*, searchType, groupRestriction)]]"
           placeholder="[[placeholder]]"
           error-message="[[errorMessage]]"
           readonly="[[readonly]]"
@@ -87,6 +87,13 @@ import './nuxeo-user-group-formatter.js';
         searchType: {
           type: String,
           value: 'USER_GROUP_TYPE',
+        },
+
+        /**
+         * Group ID to narrow the user suggestions.
+         */
+        groupRestriction: {
+          type: String,
         },
 
         /**
@@ -237,6 +244,7 @@ import './nuxeo-user-group-formatter.js';
         {},
         {
           searchType: this.searchType,
+          groupRestriction: this.groupRestriction,
         },
         this.params,
       );
