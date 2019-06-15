@@ -179,6 +179,7 @@
   "popupPermission.userGroup": "User / Group",
   "popupPermission.userGroup.placeholder": "Search for users and groups",
   "previewButton.tooltip": "Preview",
+  "selectivity.minChars": "Please enter {0} or more characters",
   "shareButton.dialog.close": "Close",
   "shareButton.dialog.heading": "Share the Document",
   "shareButton.operation.copied": "Link Copied",

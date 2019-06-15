@@ -179,6 +179,7 @@
   "popupPermission.userGroup": "Användare / grupp",
   "popupPermission.userGroup.placeholder": "Sök efter användare och grupper",
   "previewButton.tooltip": "Förhandsgranska",
+  "selectivity.minChars": "Please enter {0} or more characters",
   "shareButton.dialog.close": "Stäng",
   "shareButton.dialog.heading": "Dela dokumentet",
   "shareButton.operation.copied": "Länk kopierad",

@@ -179,6 +179,7 @@
   "popupPermission.userGroup": "Pengguna / Kelompok",
   "popupPermission.userGroup.placeholder": "Cari pengguna dan kelompok",
   "previewButton.tooltip": "Pratinjau",
+  "selectivity.minChars": "Please enter {0} or more characters",
   "shareButton.dialog.close": "Tutup",
   "shareButton.dialog.heading": "Bagikan Dokumen",
   "shareButton.operation.copied": "Tautan Tersalin",

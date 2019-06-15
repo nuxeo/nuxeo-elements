@@ -179,6 +179,7 @@
   "popupPermission.userGroup": "ユーザ/グループ",
   "popupPermission.userGroup.placeholder": "ユーザまたはグループを検索",
   "previewButton.tooltip": "プレビュー",
+  "selectivity.minChars": "Please enter {0} or more characters",
   "shareButton.dialog.close": "閉じる",
   "shareButton.dialog.heading": "文書を共有",
   "shareButton.operation.copied": "リンクがコピーされました",

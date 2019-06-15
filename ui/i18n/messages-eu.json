@@ -179,6 +179,7 @@
   "popupPermission.userGroup": "Erabiltzailea / Taldea",
   "popupPermission.userGroup.placeholder": "Bilatu erabiltzaile eta taldeak",
   "previewButton.tooltip": "Aurreikusi",
+  "selectivity.minChars": "Please enter {0} or more characters",
   "shareButton.dialog.close": "Itxi",
   "shareButton.dialog.heading": "Partekatu dokumentua",
   "shareButton.operation.copied": "Esteka kopiatuta",

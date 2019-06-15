@@ -179,6 +179,7 @@
   "popupPermission.userGroup": "用户和群组",
   "popupPermission.userGroup.placeholder": "查找用户或组",
   "previewButton.tooltip": "预览",
+  "selectivity.minChars": "Please enter {0} or more characters",
   "shareButton.dialog.close": "关闭",
   "shareButton.dialog.heading": "共享文档",
   "shareButton.operation.copied": "已复制链接",
