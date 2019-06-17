@@ -32,6 +32,7 @@ import '@polymer/paper-radio-button/paper-radio-button.js';
 import '@polymer/paper-radio-group/paper-radio-group.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { FormatBehavior } from '../nuxeo-format-behavior.js';
 import '../widgets/nuxeo-date-picker.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-input.js';
@@ -41,7 +42,7 @@ import '../widgets/nuxeo-user-suggestion.js';
 
 {
   /* Part of `nuxeo-document-permissions` */
-  class PopupPermission extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
+  class PopupPermission extends mixinBehaviors([I18nBehavior, FormatBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style include="iron-positioning">
@@ -122,7 +123,7 @@ import '../widgets/nuxeo-user-suggestion.js';
                 label="[[i18n('popupPermission.right')]]"
                 name="right"
                 selected="{{params.permission}}"
-                options="[[userVisiblePermissions]]"
+                options="[[_computedUserVisiblePermissions]]"
               >
               </nuxeo-select>
             </div>
@@ -251,6 +252,10 @@ import '../widgets/nuxeo-user-suggestion.js';
           type: String,
           computed: '_computeTitle(shareWithExternal, updatingACE)',
         },
+        _computedUserVisiblePermissions: {
+          type: Array,
+          computed: '_computeUserVisiblePermissions(userVisiblePermissions, i18n)',
+        },
       };
     }
 
@@ -282,6 +287,16 @@ import '../widgets/nuxeo-user-suggestion.js';
         return this.i18n('popupPermission.shareWithExternalUser');
       }
       return this.i18n('popupPermission.addPermission');
+    }
+
+    _computeUserVisiblePermissions(userVisiblePermissions) {
+      if (!userVisiblePermissions) {
+        return [];
+      }
+
+      return this.userVisiblePermissions.map((perm) =>
+        typeof perm === 'string' ? { id: perm, label: this.formatPermission(perm) } : perm,
+      );
     }
 
     _doSend(togglePopup) {

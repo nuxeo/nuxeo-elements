@@ -137,17 +137,33 @@ export const FormatBehavior = [
       if (!type) {
         return;
       }
-      const key = `label.document.type.${type.toLowerCase()}`;
-      const value = this.i18n(key);
-      return value === key ? type : value;
+      return this._getI18nWithPrefix('label.document.type', type.toLowerCase());
+    },
+
+    /**
+     * Returns the label for the given document permission
+     */
+    formatPermission(permission) {
+      if (!permission) {
+        return;
+      }
+
+      const loweredKey = permission.substring(0, 1).toLowerCase() + permission.substring(1);
+      return this._getI18nWithPrefix('label.security.permission', loweredKey);
     },
 
     /**
      * Returns the label for the given lifecycle state.
      */
     formatLifecycleState(state) {
-      const t = this.i18n(`label.ui.state.${state}`);
-      return t === `label.ui.state.${state}` ? state : t;
+      return this._getI18nWithPrefix('label.ui.state', state);
+    },
+
+    _getI18nWithPrefix(prefix, key, ...args) {
+      const label = `${prefix}.${key}`;
+      const res = this.i18n(label, ...args);
+
+      return res === label ? key : res;
     },
 
     /**
