@@ -23,6 +23,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { FormatBehavior } from '../nuxeo-format-behavior.js';
 import './nuxeo-popup-confirm.js';
 import './nuxeo-popup-permission.js';
 
@@ -36,7 +37,7 @@ import './nuxeo-popup-permission.js';
    * @appliesMixin Nuxeo.I18nBehavior
    * @memberof Nuxeo
    */
-  class DocumentACLTable extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
+  class DocumentACLTable extends mixinBehaviors([I18nBehavior, FormatBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style>
@@ -122,7 +123,9 @@ import './nuxeo-popup-permission.js';
                         [[entityDisplay(ace.username)]]
                       </span>
                     </div>
-                    <div class="flex-2"><span class="label">[[i18n(ace.permission)]]</span></div>
+                    <div class="flex-2">
+                      <span class="label">[[formatPermission(ace.permission, i18n)]]</span>
+                    </div>
                     <div class="flex-2"><span>{{formatTimeFrame(ace)}}</span></div>
                     <div class="flex-2">
                       <span class$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">
@@ -171,7 +174,9 @@ import './nuxeo-popup-permission.js';
                                       [[entityDisplay(ace.username)]]
                                     </span>
                                   </div>
-                                  <div class="flex-2"><span class="label">[[i18n(ace.permission)]]</span></div>
+                                  <div class="flex-2">
+                                    <span class="label">[[formatPermission(ace.permission, i18n)]]</span>
+                                  </div>
                                   <div class="flex-2"><span>{{formatTimeFrame(ace)}}</span></div>
                                   <div class="flex-2">
                                     <span class$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">
