@@ -32,7 +32,6 @@
     "@open-wc/prettier-config": "^0.1.0",
     "@open-wc/webpack-import-meta-loader": "^0.2.0",
     "@polymer/iron-component-page": "^4.0.0",
-    "@storybook/addon-viewport": "^5.1.8",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "babel-eslint": "^10.0.1",
     "chai": "^4.2.0",
