@@ -22,7 +22,7 @@
     "sinon": "^7.2.7"
   },
   "scripts": {
-    "start": "start-storybook -p 6006",
+    "start": "start-storybook -s ./public -p 6006",
     "build": "build-storybook",
     "deploy": "storybook-to-ghpages"
   },
