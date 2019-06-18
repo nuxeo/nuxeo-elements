@@ -54,7 +54,6 @@ import './nuxeo-error.js';
          * */
         href: {
           type: String,
-          observer: '_stamp',
         },
 
         /**
@@ -81,11 +80,15 @@ import './nuxeo-error.js';
           readOnly: true,
           notify: true,
         },
+
+        importFn: {
+          type: Function,
+        },
       };
     }
 
     static get observers() {
-      return ['_update(model.*)'];
+      return ['_update(model.*)', '_stamp(href, importFn)'];
     }
 
     // Trigger the layout validation if it exists.
@@ -121,8 +124,8 @@ import './nuxeo-error.js';
       return submittable;
     }
 
-    _stamp(href) {
-      if (!href) {
+    _stamp(href, importFn) {
+      if (!href && !importFn) {
         this.hidden = true;
         this._setElement(null);
         return;
@@ -131,11 +134,17 @@ import './nuxeo-error.js';
       this.$.error.hidden = true;
       this.hidden = this.$.container.hidden = false;
 
-      const file = href.split('/').pop();
-      const name = file.split('.')[0];
-      importHref(
-        href,
-        () => {
+      (importFn
+        ? importFn()
+        : (() => {
+            const file = href.split('/').pop();
+            const name = file.split('.')[0];
+            return new Promise((resolve, reject) => {
+              importHref(href, resolve(name), reject);
+            });
+          })()
+      )
+        .then((name) => {
           const element = document.createElement(name);
 
           if (this.$.container.hasChildNodes()) {
@@ -148,15 +157,13 @@ import './nuxeo-error.js';
           this._update();
           this.notifyResize();
           flush();
-        },
-        // error handling
-        () => {
+        })
+        .catch(() => {
           this._setElement(undefined);
           this.$.error.hidden = false;
           this.$.container.hidden = true;
           this.notifyResize();
-        },
-      );
+        });
     }
 
     // setup data binding
