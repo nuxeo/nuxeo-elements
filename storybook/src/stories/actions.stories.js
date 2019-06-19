@@ -10,83 +10,31 @@ import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-move-documents-down-button';
 import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-move-documents-up-button';
 import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-notifications-toggle-button';
 
-import '@nuxeo/nuxeo-ui-elements/nuxeo-icons';
-import { storiesOf } from '@storybook/polymer';
-import { color, select } from '@storybook/addon-knobs';
 import { html } from 'lit-html';
+import { storiesOf } from '@storybook/polymer';
+import { color } from '@storybook/addon-knobs';
 import { action } from '@storybook/addon-actions';
-import fakeServer from '../nuxeo.mock';
-
-const stories = storiesOf('UI/Actions', module);
-
-const DOCUMENT = {
-  'entity-type': 'document',
-  uid: '1',
-  facets: [],
-  properties: {
-    'file:content': {
-      name: 'stuff.json',
-      data: '',
-    },
-  },
-  contextParameters: {
-    permissions: ['Write'],
-  },
-};
-
-const DOCUMENT2 = {
-  'entity-type': 'document',
-  uid: '2',
-  facets: [],
-  properties: {
-    'file:content': {
-      name: 'stuff.json',
-      data: '',
-    },
-  },
-  contextParameters: {
-    favorites: {
-      isFavorite: false,
-    },
-    permissions: ['Write'],
-  },
-};
-
-const DOCUMENT3 = {
-  'entity-type': 'document',
-  uid: '3',
-  facets: [],
-  properties: {
-    'file:content': {
-      name: 'stuff.json',
-      data: '',
-    },
-  },
-  contextParameters: {
-    favorites: {
-      isFavorite: false,
-    },
-    permissions: ['Write'],
-  },
-};
-
-const DOCUMENTS = [DOCUMENT, DOCUMENT2, DOCUMENT3];
-
-const TARGET = ['_blank', '_self', '_parent', '_top'];
+import '@nuxeo/nuxeo-ui-elements/nuxeo-icons';
+import fakeServer from '../mock/nuxeo.mock';
+import { DOCUMENT1, DOCUMENT2, DOCUMENTS, DOCUMENT_DOWNLOAD } from '../mock/documents.mock';
+import { TARGET } from '../lists/target';
+import { listOfIcons } from '../lists/icons';
 
 const server = fakeServer.create();
-server.respondWith('POST', '/api/v1/automation/Document.AddToFavorites', DOCUMENT);
-server.respondWith('POST', '/api/v1/automation/Document.RemoveFromFavorites', DOCUMENT);
-server.respondWith('POST', '/api/v1/automation/Blob.RemoveFromDocument', DOCUMENT);
-server.respondWith('POST', '/api/v1/automation/Document.Lock', DOCUMENT);
-server.respondWith('POST', '/api/v1/automation/Document.Unlock', DOCUMENT);
-server.respondWith('POST', '/api/v1/automation/Document.Subscribe', DOCUMENT);
-server.respondWith('POST', '/api/v1/automation/Document.Unsubscribe', DOCUMENT);
+server.respondWith('POST', '/api/v1/automation/Document.AddToFavorites', DOCUMENT1);
+server.respondWith('POST', '/api/v1/automation/Document.RemoveFromFavorites', DOCUMENT1);
+server.respondWith('POST', '/api/v1/automation/Blob.RemoveFromDocument', DOCUMENT1);
+server.respondWith('POST', '/api/v1/automation/Document.Lock', DOCUMENT1);
+server.respondWith('POST', '/api/v1/automation/Document.Unlock', DOCUMENT1);
+server.respondWith('POST', '/api/v1/automation/Document.Subscribe', DOCUMENT1);
+server.respondWith('POST', '/api/v1/automation/Document.Unsubscribe', DOCUMENT1);
 
+const stories = storiesOf('UI/Actions', module);
 stories
   .addElement('nuxeo-add-to-collection-button', ({ knobs }) => {
-    const { icon, document } = knobs({
-      document: { value: DOCUMENT },
+    const { document, icon } = knobs({
+      document: { value: DOCUMENT1 },
+      icon: { type: 'select', options: listOfIcons },
     });
 
     return html`
@@ -100,8 +48,9 @@ stories
   })
 
   .addElement('nuxeo-delete-blob-button', ({ knobs }) => {
-    const { icon, document } = knobs({
-      document: { value: DOCUMENT },
+    const { document, icon } = knobs({
+      document: { value: DOCUMENT1 },
+      icon: { type: 'select', options: listOfIcons },
     });
     return html`
       <nuxeo-delete-blob-button @click=${action('clicked')} .document="${document}" icon="${icon}">
@@ -110,8 +59,9 @@ stories
   })
 
   .addElement('nuxeo-delete-document-button', ({ knobs }) => {
-    const { icon, document } = knobs({
-      document: { value: DOCUMENT },
+    const { document, icon } = knobs({
+      document: { value: DOCUMENT1 },
+      icon: { type: 'select', options: listOfIcons },
     });
     return html`
       <nuxeo-delete-document-button @click=${action('clicked')} .document="${document}" icon="${icon}">
@@ -120,8 +70,9 @@ stories
   })
 
   .addElement('nuxeo-download-button', ({ knobs }) => {
-    const { icon, document } = knobs({
-      document: { value: DOCUMENT },
+    const { document, icon } = knobs({
+      document: { value: DOCUMENT_DOWNLOAD },
+      icon: { type: 'select', options: listOfIcons },
     });
     return html`
       <nuxeo-download-button @click=${action('clicked')} .document="${document}" icon="${icon}">
@@ -130,8 +81,9 @@ stories
   })
 
   .addElement('nuxeo-export-button', ({ knobs }) => {
-    const { icon, document } = knobs({
-      document: { value: DOCUMENT },
+    const { document, icon } = knobs({
+      document: { value: DOCUMENT1 },
+      icon: { type: 'select', options: listOfIcons },
     });
     return html`
       <nuxeo-export-button @click=${action('clicked')} .document="${document}" icon="${icon}"> </nuxeo-export-button>
@@ -139,8 +91,9 @@ stories
   })
 
   .addElement('nuxeo-favorites-toggle-button', ({ knobs }) => {
-    const { icon, document, favorite } = knobs({
-      document: { value: DOCUMENT },
+    const { document, icon, favorite } = knobs({
+      document: { value: DOCUMENT1 },
+      icon: { type: 'select', options: listOfIcons },
       favorite: { value: false },
     });
     return html`
@@ -155,11 +108,11 @@ stories
   })
 
   .addElement('nuxeo-link-button', ({ knobs }) => {
-    const { href, icon, document, target } = knobs({
+    const { document, href, icon, target } = knobs({
+      document: { value: DOCUMENT1 },
       href: { value: 'https://nuxeo.com' },
-      icon: { value: 'nuxeo:share' },
-      document: { value: DOCUMENT },
-      target: { type: select, options: TARGET },
+      icon: { type: 'select', options: listOfIcons, default: 'nuxeo:share' },
+      target: { type: 'select', options: TARGET },
     });
 
     return html`
@@ -175,7 +128,7 @@ stories
 
   .addElement('nuxeo-lock-toggle-button', ({ knobs }) => {
     const { document, locked } = knobs({
-      document: { value: DOCUMENT },
+      document: { value: DOCUMENT1 },
       locked: { value: false },
     });
     return html`
@@ -212,7 +165,7 @@ stories
 
   .addElement('nuxeo-notifications-toggle-button', ({ knobs }) => {
     const { document, subscribed } = knobs({
-      document: { value: DOCUMENT },
+      document: { value: DOCUMENT1 },
       subscribed: false,
     });
     return html`
@@ -225,23 +178,3 @@ stories
       </nuxeo-notifications-toggle-button>
     `;
   });
-
-// .addElement('nuxeo-preview-button', ({ knobs }) => {
-//   const { document, subscribed } = knobs({
-//     document: { value: DOCUMENT },
-//     subscribed: false,
-//   });
-//   return html`
-//     <style>
-//       * {
-//         --nuxeo-action-color-activated: ${color('--nuxeo-action-color-activated', '#00aded', 'CSS variables')};
-//       }
-//     </style>
-//     <nuxeo-preview-button
-//       @click=${action('clicked')}
-//       .document="${document}"
-//       ?subscribed=${subscribed}
-//     >
-//     </nuxeo-preview-button>
-//   `;
-// })
