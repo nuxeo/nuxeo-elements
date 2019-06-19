@@ -98,6 +98,7 @@ suite('<nuxeo-search-data>', () => {
   });
 
   test('multiple-groups', async () => {
+    fakeResponse({}); // even if we do not check the result, we still need to send a response to the request
     const search = await fixture(html`
       <nuxeo-search-data grouped-by="variable1,variable2" group-limit="5"></nuxeo-search-data>
     `);
