@@ -53,7 +53,7 @@ export const DOCUMENT3 = {
 
 export const DOCUMENT_DOWNLOAD = {
   'entity-type': 'document',
-  uid: '3',
+  uid: '4',
   facets: [],
   properties: {
     'file:content': {
@@ -68,4 +68,13 @@ export const DOCUMENT_DOWNLOAD = {
   },
 };
 
-export const DOCUMENTS = [DOCUMENT1, DOCUMENT2, DOCUMENT3, DOCUMENT_DOWNLOAD];
+export const DOCUMENT_TRASHED = {
+  'entity-type': 'document',
+  isTrashed: true,
+  uid: '5',
+  contextParameters: {
+    permissions: ['Write', 'ManageWorkflows'],
+  },
+};
+
+export const DOCUMENTS = [DOCUMENT1, DOCUMENT2, DOCUMENT3];
