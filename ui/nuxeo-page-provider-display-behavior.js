@@ -143,9 +143,9 @@ export const PageProviderDisplayBehavior = [
        * Use this property to limit the maximum number of items.
        */
       maxItems: {
-        type: Function,
+        type: Number,
         value() {
-          return (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.listingMaxItems) || 10000;
+          return (Nuxeo.UI && Nuxeo.UI.config && Number(Nuxeo.UI.config.listingMaxItems)) || 10000;
         },
       },
 
