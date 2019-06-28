@@ -244,12 +244,16 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
           this.push('value', {
             'upload-batch': this.batchId,
             'upload-fileId': i.toString(),
+            _name: this.files[i].name,
+            _url: URL.createObjectURL(this.files[i]),
           });
         }
       } else {
         this.value = {
           'upload-batch': this.batchId,
           'upload-fileId': (this.files.length - 1).toString(),
+          _name: this.files[this.files.length - 1].name,
+          _url: URL.createObjectURL(this.files[this.files.length - 1]),
         };
       }
     }
@@ -265,11 +269,15 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
     }
 
     _fileName(file) {
-      return file.name || ('upload-fileId' in file && this.files[Number(file['upload-fileId'])].name);
+      return file.name || file._name || ('upload-fileId' in file && this.files[Number(file['upload-fileId'])].name);
     }
 
     _data(file) {
-      return file.data || ('upload-fileId' in file && URL.createObjectURL(this.files[Number(file['upload-fileId'])]));
+      return (
+        file.data ||
+        file._url ||
+        ('upload-fileId' in file && URL.createObjectURL(this.files[Number(file['upload-fileId'])]))
+      );
     }
 
     _getValidity() {
