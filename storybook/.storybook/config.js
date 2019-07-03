@@ -16,13 +16,13 @@ setAddon({
 });
 
 addParameters({
-  options: { theme },
   backgrounds: [
     { name: 'Default', value: '#f5f5f5' },
     { name: 'Dark', value: '#060826' },
     { name: 'Kawai', value: '#f8d3e0' },
     { name: 'Light', value: '#f7f7f7' },
   ],
+  options: { theme },
 });
 
 // automatically import all files ending in *.stories.js
