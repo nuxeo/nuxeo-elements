@@ -8,7 +8,10 @@
   "private": true,
   "dependencies": {
     "@babel/core": "^7.3.4",
+    "@nuxeo/nuxeo-elements": "3.0.0-SNAPSHOT",
     "@nuxeo/nuxeo-ui-elements": "3.0.0-SNAPSHOT",
+    "@polymer/iron-icon": "^3.0.1",
+    "@polymer/iron-meta": "^3.0.1",
     "@storybook/addon-actions": "^5.0.1",
     "@storybook/addon-backgrounds": "^5.1.8",
     "@storybook/addon-knobs": "^5.0.1",
@@ -21,7 +24,8 @@
     "lit-html": "^1.0.0",
     "nuxeo": "^3.2.1",
     "polymer-webpack-loader": "^2.0.3",
-    "sinon": "^7.2.7"
+    "sinon": "^7.2.7",
+    "uuid": "^3.3.2"
   },
   "scripts": {
     "start": "start-storybook -s ./public -p 6006",
