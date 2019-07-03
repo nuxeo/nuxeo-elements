@@ -18,6 +18,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-tooltip/paper-tooltip.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
+import { microTask } from '@polymer/polymer/lib/utils/async.js';
 
 {
   /**
@@ -124,7 +125,9 @@ import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
         this._tooltip.offset = this.offset;
         this._tooltip.position = this.position;
         this._tooltip.fitToVisibleBounds = true;
-        this._tooltip.show();
+        microTask.run(() => {
+          this._tooltip.show();
+        });
       }
     }
 
