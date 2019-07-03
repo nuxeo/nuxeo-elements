@@ -6,6 +6,7 @@ import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-date-picker';
 import { storiesOf } from '@storybook/polymer';
 import { color, text, number } from '@storybook/addon-knobs';
 import { html } from 'lit-html';
+import '../../../.storybook/i18n';
 
 const ICONS = {
   attachment: 'nuxeo:attachment',

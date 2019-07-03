@@ -16,17 +16,17 @@ setAddon({
 });
 
 addParameters({
-  options: { theme },
   backgrounds: [
     { name: 'Default', value: '#f5f5f5' },
     { name: 'Dark', value: '#060826' },
     { name: 'Kawai', value: '#f8d3e0' },
     { name: 'Light', value: '#f7f7f7' },
   ],
+  options: { theme },
 });
 
 // automatically import all files ending in *.stories.js
-const req = require.context('../src/stories', true, /.stories.js$/);
+const req = require.context('../src/elements', true, /.stories.js$/);
 function loadStories() {
   req.keys().forEach((filename) => req(filename));
 }
