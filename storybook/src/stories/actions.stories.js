@@ -1,3 +1,13 @@
+import { html } from 'lit-html';
+import { storiesOf } from '@storybook/polymer';
+import { color } from '@storybook/addon-knobs';
+import { action } from '@storybook/addon-actions';
+import '@nuxeo/nuxeo-ui-elements/nuxeo-icons';
+import fakeServer from '../mock/nuxeo.mock';
+import { DOCUMENT1, DOCUMENT2, DOCUMENTS, DOCUMENT_DOWNLOAD, DOCUMENT_TRASHED } from '../mock/documents.mock';
+import { TARGET } from '../lists/target';
+import { listOfIcons } from '../lists/icons';
+
 import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-add-to-collection-button';
 import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-favorites-toggle-button';
 import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-delete-blob-button';
@@ -11,16 +21,7 @@ import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-move-documents-up-button';
 import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-notifications-toggle-button';
 import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-share-button.js';
 import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-untrash-document-button.js';
-
-import { html } from 'lit-html';
-import { storiesOf } from '@storybook/polymer';
-import { color } from '@storybook/addon-knobs';
-import { action } from '@storybook/addon-actions';
-import '@nuxeo/nuxeo-ui-elements/nuxeo-icons';
-import fakeServer from '../mock/nuxeo.mock';
-import { DOCUMENT1, DOCUMENT2, DOCUMENTS, DOCUMENT_DOWNLOAD, DOCUMENT_TRASHED } from '../mock/documents.mock';
-import { TARGET } from '../lists/target';
-import { listOfIcons } from '../lists/icons';
+import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-workflow-button.js';
 
 const server = fakeServer.create();
 server.respondWith('POST', '/api/v1/automation/Document.AddToFavorites', DOCUMENT1);
@@ -205,5 +206,14 @@ stories
     return html`
       <nuxeo-untrash-document-button @click=${action('clicked')} .document="${document}" icon="${icon}">
       </nuxeo-untrash-document-button>
+    `;
+  })
+
+  .addElement('nuxeo-workflow-button', ({ knobs }) => {
+    const { document } = knobs({
+      document: { value: DOCUMENT1 },
+    });
+    return html`
+      <nuxeo-workflow-button @click=${action('clicked')} .document="${document}"> </nuxeo-workflow-button>
     `;
   });
