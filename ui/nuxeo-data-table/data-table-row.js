@@ -27,9 +27,9 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
           }
 
           :host([selected]) {
-            border: 2px solid var(--nuxeo-primary-color, blue);
+            border: 2px solid var(--nuxeo-primary-color, #0066ff);
             padding-bottom: 0;
-            background-color: var(--nuxeo-page-background, red);
+            background-color: var(--nuxeo-page-background, #f5f5f5);
           }
 
           :host([selected]) .cells {
