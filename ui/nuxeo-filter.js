@@ -269,6 +269,15 @@ import { FiltersBehavior } from './nuxeo-filters-behavior.js';
 
     _forwardHostPropV2(prop, value) {
       if (this._instance) {
+        const pendingUpdate = this._isPropertyPending('document') || this._isPropertyPending('user');
+        if (pendingUpdate) {
+          // if we have a pending update
+          const toClear = !this.check(); // let's check if instance will be removed
+          if (toClear) {
+            // in which case we skip forwarding the host prop
+            return;
+          }
+        }
         this._instance.forwardHostProp(prop, value);
       }
     }
