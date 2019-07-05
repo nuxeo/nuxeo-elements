@@ -315,7 +315,10 @@ Nuxeo.AggregateDataBehavior = {
     // template is not stamped & data system not initialized until the element has been connected :(
     if (!this._search) {
       this._search = document.createElement('nuxeo-es-search');
-      this._attachDom(this._search);
+      if (!this.shadowRoot) {
+        this.attachShadow({ mode: 'open' });
+      }
+      this.shadowRoot.appendChild(this._search);
     }
     this._search.connectionId = this.connectionId;
     this._search.index = this.index;
