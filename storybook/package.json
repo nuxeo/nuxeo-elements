@@ -8,7 +8,7 @@
   "private": true,
   "dependencies": {
     "@babel/core": "^7.3.4",
-    "@nuxeo/nuxeo-ui-elements": "^3.0.0-SNAPSHOT",
+    "@nuxeo/nuxeo-ui-elements": "3.0.0-SNAPSHOT",
     "@storybook/addon-actions": "^5.0.1",
     "@storybook/addon-knobs": "^5.0.1",
     "@storybook/addon-notes": "^5.0.1",
