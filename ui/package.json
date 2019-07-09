@@ -25,7 +25,7 @@
   },
   "main": "nuxeo-ui-elements.js",
   "dependencies": {
-    "@nuxeo/nuxeo-elements": "^3.0.0-SNAPSHOT",
+    "@nuxeo/nuxeo-elements": "3.0.0-SNAPSHOT",
     "@nuxeo/paper-typeahead": "^0.6.0-SNAPSHOT",
     "@polymer/iron-autogrow-textarea": "^3.0.1",
     "@polymer/iron-collapse": "^3.0.0",
