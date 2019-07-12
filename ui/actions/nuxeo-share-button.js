@@ -50,41 +50,53 @@ import './nuxeo-action-button-styles.js';
     static get template() {
       return html`
         <style include="nuxeo-action-button-styles">
-          #copyLink {
-            cursor: pointer;
-            color: var(--nuxeo-primary-color, #0066ff);
-          }
-
-          .heading {
+          .horizontal {
             @apply --layout-horizontal;
             @apply --layout-center;
             @apply --layout-justified;
+          }
+
+          .selected {
+            color: var(--nuxeo-primary-color, #0066ff);
+            pointer-events: none;
+          }
+
+          iron-icon {
+            cursor: pointer;
+            margin-left: 10px;
+          }
+
+          iron-icon:hover {
+            color: var(--nuxeo-primary-color, #0066ff);
+          }
+
+          nuxeo-input {
+            cursor: pointer;
+            overflow: hidden;
+            @apply --layout-flex;
           }
         </style>
 
         <dom-if if="[[_isAvailable(document)]]">
           <template>
             <div class="action" on-click="_toggleDialog">
-              <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
+              <paper-icon-button id="shareBtn" icon="[[icon]]" noink></paper-icon-button>
               <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
             </div>
-            <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
+            <nuxeo-tooltip for="shareBtn">[[_label]]</nuxeo-tooltip>
           </template>
         </dom-if>
 
         <nuxeo-dialog id="dialog" with-backdrop>
-          <div class="heading">
+          <div>
             <h2>[[i18n('shareButton.dialog.heading')]]</h2>
-            <span id="copyLink" on-click="_copyPermalink">[[i18n('shareButton.operation.copy')]]</span>
           </div>
-          <nuxeo-input
-            id="permalink"
-            value="[[_buildPermalink(document)]]"
-            on-click="_copyPermalink"
-            autofocus
-            readonly
-          >
-          </nuxeo-input>
+          <div id="permanent" class="horizontal">
+            <nuxeo-input id="permalink" value="[[_buildPermalink(document)]]" readonly> </nuxeo-input>
+            <iron-icon id="permalinkIcon" name="permalinkIcon" icon="link" on-tap="_copyLink"></iron-icon>
+            <nuxeo-tooltip id="tooltip" for="permalinkIcon">[[i18n('shareButton.operation.copy')]]</nuxeo-tooltip>
+          </div>
+
           <div class="buttons">
             <paper-button dialog-dismiss>[[i18n('shareButton.dialog.close')]]</paper-button>
           </div>
@@ -136,28 +148,33 @@ import './nuxeo-action-button-styles.js';
 
     _toggleDialog() {
       this.$.dialog.toggle();
-      this._selectPermalink();
     }
 
     _buildPermalink(document) {
       return document ? `${window.location.origin + window.location.pathname}#!/doc/${document.uid}` : '';
     }
 
-    _copyPermalink() {
-      this._selectPermalink();
+    _copyLink(e) {
+      const shareButton = e.currentTarget;
+      const link = shareButton.previousElementSibling;
+
+      // Select Link
+      link.$.paperInput.$.nativeInput.select();
       if (!window.document.execCommand('copy')) {
         return;
       }
 
-      const link = this.$.copyLink;
-      this._debouncer = Debouncer.debounce(this._debouncer, timeOut.after(3000), () => {
-        link.innerText = this.i18n('shareButton.operation.copy');
+      shareButton._debouncer = Debouncer.debounce(shareButton._debouncer, timeOut.after(2000), () => {
+        // Unselect Link
+        link.$.paperInput.$.nativeInput.setSelectionRange(0, 0);
+        link.$.paperInput.blur();
+        shareButton.set('icon', 'link');
+        shareButton.classList.remove('selected');
       });
-      link.innerText = this.i18n('shareButton.operation.copied');
-    }
 
-    _selectPermalink() {
-      this.$.permalink.$.paperInput.inputElement.inputElement.select();
+      shareButton.set('icon', 'check');
+      shareButton.classList.add('selected');
+      this.fire('notify', { message: this.i18n('shareButton.operation.copied'), duration: 2000 });
     }
   }
 
