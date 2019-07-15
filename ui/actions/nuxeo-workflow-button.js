@@ -61,8 +61,8 @@ import './nuxeo-action-button-styles.js';
             <div class="action" on-click="_toggleDialog">
               <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
               <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
+              <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
             </div>
-            <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
 
             <nuxeo-dialog id="dialog" with-backdrop>
               <h2>[[i18n('workflowButton.dialog.heading')]]</h2>

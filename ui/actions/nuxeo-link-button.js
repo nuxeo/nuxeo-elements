@@ -48,8 +48,8 @@ import './nuxeo-action-button-styles.js';
           <a class="action" href="[[href]]" tabindex="-1" target="[[target]]">
             <paper-icon-button src="[[iconSrc]]" icon="[[icon]]" noink></paper-icon-button>
             <span class="label" hidden$="[[!showLabel]]">[[i18n(label)]]</span>
+            <nuxeo-tooltip>[[i18n(label)]]</nuxeo-tooltip>
           </a>
-          <nuxeo-tooltip>[[i18n(label)]]</nuxeo-tooltip>
         </template>
       `;
     }

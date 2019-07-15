@@ -56,8 +56,8 @@ import './nuxeo-action-button-styles.js';
             <div class="action">
               <paper-icon-button noink icon="icons:arrow-downward"></paper-icon-button>
               <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
+              <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
             </div>
-            <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
           </template>
         </dom-if>
       `;
