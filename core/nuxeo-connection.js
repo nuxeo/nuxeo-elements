@@ -85,6 +85,12 @@ import './nuxeo-element.js';
           value: null,
         },
 
+        /** The authentication method to use. */
+        method: {
+          type: String,
+          value: 'basic',
+        },
+
         /** The current user entity */
         user: {
           type: Object,
@@ -148,12 +154,16 @@ import './nuxeo-element.js';
         schemas: ['*'],
       };
 
-      if (this.username) {
-        options.auth = {
-          method: 'basic',
-          username: this.username,
-          password: this.password,
-        };
+      if (this.method === 'basic') {
+        if (this.username) {
+          options.auth = {
+            method: 'basic',
+            username: this.username,
+            password: this.password,
+          };
+        }
+      } else {
+        options.headers = { 'X-No-Basic-Header': true };
       }
 
       if (this.repositoryName) {
@@ -166,7 +176,18 @@ import './nuxeo-element.js';
       // share the connect promise between all instances (one per client)
       this.client._promise = this.client.connect();
 
-      return this.client._promise.then(this._handleConnected.bind(this));
+      return this.client._promise.then(this._handleConnected.bind(this)).catch((error) => {
+        if (error.response.status === 401) {
+          if (this.method === 'form') {
+            // store url fragment in cookie
+            document.cookie = `nuxeo.start.url.fragment=${window.location.hash.substring(1) || ''}; path=/`;
+            const loginUrl = `${this.url}/login.jsp?requestedUrl=${window.location.href}`;
+            window.location.replace(loginUrl);
+            return;
+          }
+        }
+        throw error;
+      });
     }
 
     /**
