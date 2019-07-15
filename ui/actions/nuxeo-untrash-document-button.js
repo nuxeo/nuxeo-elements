@@ -55,8 +55,8 @@ import './nuxeo-action-button-styles.js';
             <div class="action" on-click="_untrash">
               <paper-icon-button icon="[[icon]]" noink id="untrashButton"></paper-icon-button>
               <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
+              <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
             </div>
-            <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
           </template>
         </dom-if>
       `;

@@ -87,8 +87,8 @@ import './nuxeo-action-button-styles.js';
             <div class="action" on-click="_toggleDialog">
               <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
               <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
+              <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
             </div>
-            <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
 
             <nuxeo-dialog on-iron-overlay-closed="_previewClosed" id="dialog" with-backdrop>
               <template>
