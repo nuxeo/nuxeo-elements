@@ -93,12 +93,17 @@ import './nuxeo-tooltip.js';
         </div>
         <div id="reparent"></div>
         <paper-menu-button id="dropdownButton" close-on-activate no-overlap horizontal-align="right">
-          <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger" alt="dropdown"></paper-icon-button>
+          <paper-icon-button
+            id="iconButton"
+            icon="icons:more-vert"
+            slot="dropdown-trigger"
+            alt="dropdown"
+          ></paper-icon-button>
           <paper-listbox slot="dropdown-content">
             <slot id="dropdown" name="dropdown"></slot>
           </paper-listbox>
         </paper-menu-button>
-        <paper-tooltip for="dropdownButton">[[i18n('actionsMenu.more')]]</paper-tooltip>
+        <nuxeo-tooltip for="iconButton">[[i18n('actionsMenu.more')]]</nuxeo-tooltip>
       `;
     }
 
