@@ -197,5 +197,21 @@ export const FormatBehavior = [
     escapeRegExp(text) {
       return text && text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     },
+
+    /**
+     * Escapes a NXQL strings by replacing expression's
+     * special characters ' " and \ according to https://doc.nuxeo.com/nxdoc/nxql/
+     *
+     * @param {string} text the NXQL string literal to be escaped
+     */
+    escapeNxqlStringLiteral(text) {
+      const replaceMap = {
+        "'": "\\'",
+        '\\': '\\\\',
+        '"': '\\"',
+      };
+
+      return text && text.replace(/["'\\]/g, (match) => replaceMap[match]);
+    },
   },
 ];

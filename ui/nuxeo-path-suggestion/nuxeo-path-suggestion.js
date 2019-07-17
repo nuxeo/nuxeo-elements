@@ -15,11 +15,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class';
 import '@nuxeo/nuxeo-elements/nuxeo-document.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-page-provider.js';
 import '@nuxeo/paper-typeahead/paper-typeahead.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
+import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
 {
   /**
@@ -39,7 +41,7 @@ import '@polymer/polymer/lib/elements/dom-if.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-path-suggestion/index.html
    */
-  class PathSuggestion extends Nuxeo.Element {
+  class PathSuggestion extends mixinBehaviors([FormatBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style>
@@ -232,7 +234,7 @@ import '@polymer/polymer/lib/elements/dom-if.js';
       this.params = {
         queryParams:
           `SELECT * FROM Document WHERE ecm:parentId = '${parent.uid}' ` +
-          `AND ecm:name LIKE '${term}%' AND ecm:mixinType = 'Folderish' ` +
+          `AND ecm:name LIKE '${this.escapeNxqlStringLiteral(term)}%' AND ecm:mixinType = 'Folderish' ` +
           "AND ecm:mixinType != 'HiddenInNavigation' AND ecm:isVersion = 0 " +
           'AND ecm:isTrashed = 0',
       };
