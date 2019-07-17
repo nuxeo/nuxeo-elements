@@ -96,8 +96,8 @@ export const FormatBehavior = [
       if (
         doc &&
         doc.properties &&
-        doc.properties['uid:major_version'] !== undefined &&
-        doc.properties['uid:minor_version'] !== undefined
+        doc.properties['uid:major_version'] != null &&
+        doc.properties['uid:minor_version'] != null
       ) {
         return `${doc.properties['uid:major_version']}.${doc.properties['uid:minor_version']}`;
       }
