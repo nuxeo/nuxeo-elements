@@ -362,30 +362,30 @@ import '../widgets/nuxeo-user-suggestion.js';
     }
 
     _computeParams(ace, shareWithExternal) {
-      this.params = this._getResetParams();
+      const params = this._getResetParams();
 
       // force datebased and notification for external share
       if (shareWithExternal) {
         this.selectedTimeFrame = 'datebased';
       }
 
-      if (ace !== null) {
-        this.params.id = ace.id;
+      if (this.updatingACE) {
+        params.id = ace.id;
         if (typeof ace.username === 'object') {
-          this.params.username = ace.username['entity-type'] === 'user' ? ace.username.id : ace.username.groupname;
+          params.username = ace.username['entity-type'] === 'user' ? ace.username.id : ace.username.groupname;
         } else {
-          this.params.username = ace.username;
+          params.username = ace.username;
         }
-        this.params.permission = ace.permission;
-        this.params.notify = ace.notify;
-        this.params.comment = ace.comment;
+        params.permission = ace.permission;
+        params.notify = ace.notify;
+        params.comment = ace.comment;
         let dateBased = false;
         if (ace.begin !== null) {
-          this.params.begin = moment(new Date(ace.begin)).format('YYYY-MM-DD');
+          params.begin = moment(new Date(ace.begin)).format('YYYY-MM-DD');
           dateBased = true;
         }
         if (ace.end !== null) {
-          this.params.end = moment(new Date(ace.end)).format('YYYY-MM-DD');
+          params.end = moment(new Date(ace.end)).format('YYYY-MM-DD');
           dateBased = true;
         }
 
@@ -393,10 +393,11 @@ import '../widgets/nuxeo-user-suggestion.js';
           this.selectedTimeFrame = 'datebased';
         }
       }
+      this.set('params', params);
     }
 
     isUpdatingACE(ace) {
-      return ace !== null;
+      return !!ace;
     }
 
     _selectedTimeFrameChanged() {
@@ -412,7 +413,7 @@ import '../widgets/nuxeo-user-suggestion.js';
         users: [],
         username: null,
         email: null,
-        permission: 'Read',
+        permission: null,
         begin: null,
         end: null,
         notify: true,
