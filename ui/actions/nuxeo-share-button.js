@@ -63,7 +63,7 @@ import './nuxeo-action-button-styles.js';
 
           iron-icon {
             cursor: pointer;
-            margin-left: 10px;
+            margin: 20px 0 0 10px;
           }
 
           iron-icon:hover {
@@ -71,7 +71,7 @@ import './nuxeo-action-button-styles.js';
           }
 
           nuxeo-input {
-            cursor: pointer;
+            cursor: text;
             overflow: hidden;
             @apply --layout-flex;
           }
@@ -92,7 +92,13 @@ import './nuxeo-action-button-styles.js';
             <h2>[[i18n('shareButton.dialog.heading')]]</h2>
           </div>
           <div id="permanent" class="horizontal">
-            <nuxeo-input id="permalink" value="[[_buildPermalink(document)]]" readonly> </nuxeo-input>
+            <nuxeo-input
+              id="permalink"
+              label="[[i18n('shareButton.link.label', document.properties.dc:title)]]"
+              value="[[_buildPermalink(document)]]"
+              readonly
+            >
+            </nuxeo-input>
             <iron-icon id="permalinkIcon" name="permalinkIcon" icon="link" on-tap="_copyLink"></iron-icon>
             <nuxeo-tooltip id="tooltip" for="permalinkIcon">[[i18n('shareButton.operation.copy')]]</nuxeo-tooltip>
           </div>
