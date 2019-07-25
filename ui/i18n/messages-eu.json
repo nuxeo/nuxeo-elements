@@ -182,6 +182,7 @@
   "selectivity.minChars": "Idatzi {0} karaktere edo gehiago",
   "shareButton.dialog.close": "Itxi",
   "shareButton.dialog.heading": "Partekatu dokumentua",
+  "shareButton.link.label": "Internal Access link to {0}.",
   "shareButton.operation.copied": "Esteka kopiatuta",
   "shareButton.operation.copy": "Kopiatu esteka",
   "shareButton.tooltip": "Partekatu",

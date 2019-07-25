@@ -182,6 +182,7 @@
   "selectivity.minChars": "Please enter {0} or more characters",
   "shareButton.dialog.close": "关闭",
   "shareButton.dialog.heading": "共享文档",
+  "shareButton.link.label": "Internal Access link to {0}.",
   "shareButton.operation.copied": "已复制链接",
   "shareButton.operation.copy": "复制链接",
   "shareButton.tooltip": "分享",

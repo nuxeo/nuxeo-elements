@@ -182,6 +182,7 @@
   "selectivity.minChars": "Please enter {0} or more characters",
   "shareButton.dialog.close": "Tutup",
   "shareButton.dialog.heading": "Bagikan Dokumen",
+  "shareButton.link.label": "Internal Access link to {0}.",
   "shareButton.operation.copied": "Tautan Tersalin",
   "shareButton.operation.copy": "Salin Tautan",
   "shareButton.tooltip": "Bagikan",

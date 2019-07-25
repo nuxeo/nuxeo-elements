@@ -182,6 +182,7 @@
   "selectivity.minChars": "Please enter {0} or more characters",
   "shareButton.dialog.close": "閉じる",
   "shareButton.dialog.heading": "文書を共有",
+  "shareButton.link.label": "Internal Access link to {0}.",
   "shareButton.operation.copied": "リンクがコピーされました",
   "shareButton.operation.copy": "リンクをコピーする",
   "shareButton.tooltip": "共有",

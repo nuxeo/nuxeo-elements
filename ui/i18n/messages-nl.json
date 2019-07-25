@@ -182,6 +182,7 @@
   "selectivity.minChars": "Please enter {0} or more characters",
   "shareButton.dialog.close": "Sluiten",
   "shareButton.dialog.heading": "Het document delen",
+  "shareButton.link.label": "Internal Access link to {0}.",
   "shareButton.operation.copied": "Link gekopieerd",
   "shareButton.operation.copy": "Kopieer link",
   "shareButton.tooltip": "Delen",

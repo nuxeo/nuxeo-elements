@@ -182,6 +182,7 @@
   "selectivity.minChars": "Please enter {0} or more characters",
   "shareButton.dialog.close": "Stäng",
   "shareButton.dialog.heading": "Dela dokumentet",
+  "shareButton.link.label": "Internal Access link to {0}.",
   "shareButton.operation.copied": "Länk kopierad",
   "shareButton.operation.copy": "Kopiera länk",
   "shareButton.tooltip": "Dela",
