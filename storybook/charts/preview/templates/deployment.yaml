@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: preview
+spec:
+  template:
+    metadata:
+      labels:
+        app: preview
+    spec:
+      containers:
+      - name: preview
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
