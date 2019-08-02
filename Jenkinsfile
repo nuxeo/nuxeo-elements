@@ -34,6 +34,10 @@ pipeline {
   agent {
     label "jenkins-nodejs-nuxeo"
   }
+  environment {
+    ORG = 'nuxeo'
+    APP_NAME = 'nuxeo-elements'
+  }
   stages {
     stage('Install dependencies and run lint') {
       steps {
@@ -76,6 +80,33 @@ pipeline {
         }
         failure {
           setGitHubBuildStatus('webpack', 'Webpack build', 'FAILURE')
+        }
+      }
+    }
+    stage('Build and deploy preview') {
+      when {
+        branch 'PR-*'
+      }
+      steps {
+        container('nodejs') {
+          script {
+            VERSION =  sh(script: 'npx -c \'echo "$npm_package_version"\'', returnStdout: true).trim()
+          }
+          withEnv(["VERSION=$VERSION-${BRANCH_NAME}"]) {
+            echo """
+              -----------------------------------
+              Building preview ${VERSION}
+              -----------------------------------"""
+            sh 'npx lerna run analysis --parallel'
+            dir('storybook') {
+              sh 'npx build-storybook -o dist'
+              sh 'skaffold build'
+              dir('charts/preview') {
+                sh "make preview" // does some env subst before "jx step helm build"
+                sh "jx preview"
+              }
+            }
+          }
         }
       }
     }
