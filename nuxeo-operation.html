@@ -327,7 +327,7 @@ limitations under the License.
             const fn = () => {
               this.$.nx.http(url).then((res) => {
                 // 303 - see other (for result)
-                if (res.redirected) {
+                if (res.redirected || (res['entity-type'] && res['entity-type'] !== 'bulkStatus')) {
                   resolve(res);
                 } else {
                   window.setTimeout(() => fn(), this.pollInterval, url);
