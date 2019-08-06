@@ -15,7 +15,7 @@
   "command.clear": "Clear",
   "command.create": "Create",
   "command.delete": "Delete",
-  "commande.edit": "Edit",
+  "command.edit": "Edit",
   "command.moveUpward": "Move Upward",
   "command.moveDownward": "Move Downward",
   "command.ok": "Ok",

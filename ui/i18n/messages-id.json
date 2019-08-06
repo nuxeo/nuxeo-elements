@@ -15,7 +15,7 @@
   "command.clear": "Clear",
   "command.create": "Membuat",
   "command.delete": "Hapus",
-  "commande.edit": "Sunting",
+  "command.edit": "Edit",
   "command.moveUpward": "Pindah ke atas",
   "command.moveDownward": "Pindah ke bawah",
   "command.ok": "Ok",

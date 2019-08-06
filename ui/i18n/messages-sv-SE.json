@@ -15,7 +15,7 @@
   "command.clear": "Clear",
   "command.create": "Skapa",
   "command.delete": "Ta bort",
-  "commande.edit": "Redigera",
+  "command.edit": "Edit",
   "command.moveUpward": "Flytta uppåt",
   "command.moveDownward": "Flytta nedåt",
   "command.ok": "Ok",

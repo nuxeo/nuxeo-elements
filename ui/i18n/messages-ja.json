@@ -15,7 +15,7 @@
   "command.clear": "クリア",
   "command.create": "作成",
   "command.delete": "削除",
-  "commande.edit": "編集",
+  "command.edit": "Edit",
   "command.moveUpward": "上に移動",
   "command.moveDownward": "下に移動",
   "command.ok": "Ok",

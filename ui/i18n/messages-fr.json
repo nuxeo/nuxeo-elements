@@ -15,7 +15,7 @@
   "command.clear": "Réinitialiser",
   "command.create": "Créer",
   "command.delete": "Supprimer",
-  "commande.edit": "Modifier",
+  "command.edit": "Edit",
   "command.moveUpward": "Déplacer vers le haut",
   "command.moveDownward": "Déplacer vers le bas",
   "command.ok": "Ok",

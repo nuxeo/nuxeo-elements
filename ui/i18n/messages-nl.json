@@ -15,7 +15,7 @@
   "command.clear": "Clear",
   "command.create": "Aanmaken",
   "command.delete": "Wissen",
-  "commande.edit": "Bewerken",
+  "command.edit": "Edit",
   "command.moveUpward": "Omhoog verplaatsen",
   "command.moveDownward": "Omlaag verplaatsen",
   "command.ok": "Ok",
