@@ -1,7 +1,9 @@
 import uuid from 'uuid/v4';
 
 export default class DocumentBuilder {
-  static entityType = 'document';
+  static get entityType() {
+    return 'document';
+  }
 
   systemProperties = {};
 
@@ -26,6 +28,11 @@ export default class DocumentBuilder {
     return this;
   }
 
+  setContextParameters(contextParameters) {
+    this.contextParameters = contextParameters;
+    return this;
+  }
+
   setPermissions(permissions) {
     this.contextParameters.permissions = permissions;
     return this;
@@ -46,7 +53,7 @@ export default class DocumentBuilder {
 
   build() {
     const document = {
-      'entity-type': this.entityType,
+      'entity-type': DocumentBuilder.entityType,
       uid: uuid(),
       properties: this.properties,
       facets: this.facets,

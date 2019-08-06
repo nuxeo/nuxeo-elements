@@ -1,26 +1,35 @@
 import { storiesOf } from '@storybook/polymer';
 import { text, boolean, number } from '@storybook/addon-knobs';
-import { LIST_EMPTY, LIST } from '../../data/lists.data';
+import { LIST } from '../../data/lists.data';
 import { tableTemplate } from './nuxeo-data-table-structure.js';
 
 const stories = storiesOf('UI/nuxeo-data-table', module);
 
 stories
-  .add('Empty', () => tableTemplate(LIST_EMPTY))
-  .add('Basic', () => tableTemplate(LIST))
+  .add('Empty', () => {
+    const numberOfItems = number('Number of items', 0);
+    return tableTemplate(LIST(numberOfItems));
+  })
+  .add('Basic', () => {
+    const numberOfItems = number('Number of items', 50);
+    return tableTemplate(LIST(numberOfItems));
+  })
   .add('Editable and Orderable', () => {
     const orderable = boolean('Orderable', true);
     const editable = boolean('Editable', true);
-    return tableTemplate(Object.assign({}, LIST, { orderable, editable }));
+    const numberOfItems = number('Number of items', 50);
+    return tableTemplate(Object.assign({}, LIST(numberOfItems), { orderable, editable }));
   })
   .add('Settings', () => {
     const settingsEnabled = boolean('Settings', true);
-    return tableTemplate(Object.assign({}, LIST, { settingsEnabled }));
+    const numberOfItems = number('Number of items', 50);
+    return tableTemplate(Object.assign({}, LIST(numberOfItems), { settingsEnabled }));
   })
   .add('Selectable', () => {
     const selectionEnabled = boolean('Selection Enabled', true);
     const multiSelection = boolean('Multi Selection', false);
-    return tableTemplate(Object.assign({}, LIST, { selectionEnabled, multiSelection }));
+    const numberOfItems = number('Number of items', 50);
+    return tableTemplate(Object.assign({}, LIST(numberOfItems), { selectionEnabled, multiSelection }));
   })
   .add('Complex', () => {
     const orderable = boolean('Orderable', true);
@@ -40,8 +49,9 @@ stories
       step: 1,
     };
     const orderColumn = number('Order Department column', 0, columnNumbers);
+    const numberOfItems = number('Number of items', 50);
     return tableTemplate(
-      Object.assign({}, LIST, {
+      Object.assign({}, LIST(numberOfItems), {
         orderable,
         editable,
         settingsEnabled,
