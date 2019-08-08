@@ -116,7 +116,7 @@ import './nuxeo-action-button-styles.js';
         tooltip: {
           type: String,
           notify: true,
-          computed: '_computeTooltip(locked, i18n)',
+          computed: '_computeTooltip(locked, i18n, document)',
         },
 
         /**
@@ -145,28 +145,58 @@ import './nuxeo-action-button-styles.js';
 
     _toggle() {
       if (!this.locked && this._canLock()) {
-        this.$.opLock.execute().then((doc) => {
-          this.locked = true;
-          this.dispatchEvent(
-            new CustomEvent('document-locked', {
-              composed: true,
-              bubbles: true,
-              detail: { doc },
-            }),
-          );
-        });
+        this.$.opLock
+          .execute()
+          .then((doc) => {
+            this.locked = true;
+            this.dispatchEvent(
+              new CustomEvent('document-locked', {
+                composed: true,
+                bubbles: true,
+                detail: { doc },
+              }),
+            );
+          })
+          .catch(this._handleError.bind(this));
       } else if (this._canUnlock()) {
-        this.$.opUnlock.execute().then((doc) => {
-          this.locked = false;
-          this.dispatchEvent(
-            new CustomEvent('document-unlocked', {
-              composed: true,
-              bubbles: true,
-              detail: { doc },
-            }),
-          );
-        });
+        this.$.opUnlock
+          .execute()
+          .then((doc) => {
+            this.locked = false;
+            this.dispatchEvent(
+              new CustomEvent('document-unlocked', {
+                composed: true,
+                bubbles: true,
+                detail: { doc },
+              }),
+            );
+          })
+          .catch(this._handleError.bind(this));
       }
+    }
+
+    _handleError(err) {
+      const operation = this.locked ? 'unlock' : 'lock';
+      let message;
+      switch (err.response.status) {
+        case 403:
+          message = this.i18n(`lockToggleButton.${operation}.error.noPermissions`);
+          break;
+        case 409:
+          message = this.i18n(
+            `lockToggleButton.${operation}.error.${operation === 'lock' ? 'alreadyLocked' : 'lockedByAnotherUser'}`,
+          );
+          break;
+        default:
+          message = this.i18n(`lockToggleButton.${operation}.error.unexpectedError`);
+      }
+      this.dispatchEvent(
+        new CustomEvent('notify', {
+          composed: true,
+          bubbles: true,
+          detail: { message },
+        }),
+      );
     }
 
     _computeTooltip(locked) {
