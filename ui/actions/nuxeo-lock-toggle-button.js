@@ -70,7 +70,7 @@ import './nuxeo-action-button-styles.js';
         >
         </nuxeo-operation>
 
-        <dom-if if="[[_isAvailable(document)]]">
+        <dom-if if="[[_isAvailable(document, locked)]]">
           <template>
             <div class="action">
               <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
@@ -139,8 +139,15 @@ import './nuxeo-action-button-styles.js';
       this.addEventListener('click', this._toggle);
     }
 
-    _isAvailable(doc) {
-      return doc && !doc.isVersion && this.hasPermission(doc, 'Write') && !this.isImmutable(doc) && doc.type !== 'Root';
+    _isAvailable(doc, locked) {
+      return (
+        doc &&
+        !doc.isVersion &&
+        !this.isImmutable(doc) &&
+        doc.type !== 'Root' &&
+        // XXX To be removed after NXP-27822 being solved.
+        (this.hasPermission(doc, 'Write') || (locked && this.hasPermission(doc, 'Read')))
+      );
     }
 
     _toggle() {
@@ -176,19 +183,17 @@ import './nuxeo-action-button-styles.js';
     }
 
     _handleError(err) {
-      const operation = this.locked ? 'unlock' : 'lock';
+      const errorKey = `lockToggleButton.${this.locked ? 'unlock' : 'lock'}.error`;
       let message;
       switch (err.response.status) {
         case 403:
-          message = this.i18n(`lockToggleButton.${operation}.error.noPermissions`);
+          message = this.i18n(`${errorKey}.noPermissions`);
           break;
         case 409:
-          message = this.i18n(
-            `lockToggleButton.${operation}.error.${operation === 'lock' ? 'alreadyLocked' : 'lockedByAnotherUser'}`,
-          );
+          message = this.i18n(`${errorKey}.${this.locked ? 'lockedByAnotherUser' : 'alreadyLocked'}`);
           break;
         default:
-          message = this.i18n(`lockToggleButton.${operation}.error.unexpectedError`);
+          message = this.i18n(`${errorKey}.unexpectedError`);
       }
       this.dispatchEvent(
         new CustomEvent('notify', {
