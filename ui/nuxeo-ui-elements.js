@@ -57,6 +57,7 @@ import './nuxeo-page-provider-display-behavior.js';
 import './nuxeo-quick-filters/nuxeo-quick-filters.js';
 import './nuxeo-justified-grid/nuxeo-justified-grid.js';
 import './nuxeo-document-permissions/nuxeo-document-permissions.js';
+import './nuxeo-document-thumbnail/nuxeo-document-thumbnail.js';
 import './nuxeo-document-preview.js';
 import './nuxeo-slots.js';
 import './nuxeo-filter.js';
