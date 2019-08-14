@@ -41,6 +41,14 @@ if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY) {
       platform: 'macOS 10.13',
       version: 'latest',
     },
+    sl_latest_android: {
+      base: 'SauceLabs',
+      browserName: 'chrome',
+      platformName: 'android',
+      platformVersion: '9',
+      deviceName: 'Android GoogleAPI Emulator',
+      deviceType: 'tablet',
+    },
   };
 
   reporters.push('saucelabs');
