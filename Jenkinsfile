@@ -41,6 +41,7 @@ pipeline {
   stages {
     stage('Install dependencies and run lint') {
       steps {
+        setGitHubBuildStatus('install', 'Install dependencies and run lint', 'PENDING')
         container('nodejs') {
           echo """
           ---------------------------------
@@ -66,20 +67,26 @@ pipeline {
     }
     stage('Run tests') {
       steps {
+        setGitHubBuildStatus('test', 'Unit tests', 'PENDING')
         container('nodejs') {
-          echo """
-          ---------
-          Run tests
-          ---------"""
-          sh 'npm run test -- --debugBrowsers=ChromeHeadlessNoSandbox'
+          script {
+            SAUCE_ACCESS_KEY = sh(script: 'jx step credential -s saucelabs-elements -k key', , returnStdout: true).trim()
+          }
+          withEnv(["SAUCE_USERNAME=nuxeo-elements", "SAUCE_ACCESS_KEY=$SAUCE_ACCESS_KEY"]) {
+            echo """
+            ---------
+            Run tests
+            ---------"""
+            sh 'npm run test'
+          }
         }
       }
       post {
         success {
-          setGitHubBuildStatus('webpack', 'Webpack build', 'SUCCESS')
+          setGitHubBuildStatus('test', 'Unit tests', 'SUCCESS')
         }
         failure {
-          setGitHubBuildStatus('webpack', 'Webpack build', 'FAILURE')
+          setGitHubBuildStatus('test', 'Unit tests', 'FAILURE')
         }
       }
     }
