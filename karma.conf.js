@@ -58,6 +58,7 @@ module.exports = (config) => {
     basePath: '',
     singleRun: true,
     browsers: config.debugBrowsers ? config.debugBrowsers.split(',') : Object.keys(customLaunchers),
+    browserNoActivityTimeout: 5 * 60 * 1000,
     customLaunchers,
     frameworks: ['mocha', 'sinon-chai', 'source-map-support', 'webpack'],
     middleware: ['static'],
