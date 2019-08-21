@@ -40,17 +40,15 @@ export const PageProviderDisplayBehavior = [
 
       emptyLabel: {
         type: String,
-        value: 'No result',
-        observer: '_observeEmptyLabel',
       },
 
       emptyLabelWhenFiltered: {
         type: String,
-        value: 'No result',
       },
 
       _computedEmptyLabel: {
         type: String,
+        computed: '_computeLabel(i18n, emptyLabel, filters, loading)',
       },
 
       _isEmpty: {
@@ -191,7 +189,7 @@ export const PageProviderDisplayBehavior = [
     },
 
     observers: [
-      '_updateFlags(size, loading)',
+      '_updateFlags(size)',
       '_nxProviderChanged(nxProvider)',
       '_selectionEnabledChanged(selectionEnabled, selectOnTap)',
       '_itemsChanged(items.*)',
@@ -447,8 +445,14 @@ export const PageProviderDisplayBehavior = [
       }
     },
 
-    _observeEmptyLabel() {
-      this._computedEmptyLabel = this.emptyLabel;
+    _computeLabel() {
+      if (this.loading) {
+        return this.i18n('label.loading');
+      }
+      if (this.filters && this.filters.length > 0) {
+        return this.emptyLabelWhenFiltered ? this.emptyLabelWhenFiltered : this.i18n('label.noResultsWhenFiltered');
+      }
+      return this.emptyLabel ? this.emptyLabel : this.i18n('label.noResults');
     },
 
     _quickFilterChanged() {
@@ -456,18 +460,11 @@ export const PageProviderDisplayBehavior = [
     },
 
     _updateFlags() {
-      if (!this.loading) {
-        this.size = this.items && this.items.length > 0 ? this.items.length : 0;
-        this._isSelectAllIndeterminate =
-          this.selectedItems && this.selectedItems.length > 0 && this.selectedItems.length < this.size;
-        this._isSelectAllChecked =
-          this.selectedItems && this.selectedItems.length > 0 && this.selectedItems.length === this.size;
-        this._isEmpty = this.size === 0;
-        this._computedEmptyLabel =
-          this.filters && this.filters.length > 0 ? this.emptyLabelWhenFiltered : this.emptyLabel;
-      } else {
-        this._computedEmptyLabel = this.i18n('label.loading');
-      }
+      this.size = Array.isArray(this.items) ? this.items.length : 0;
+      const selectedItemsSize = Array.isArray(this.selectedItems) ? this.selectedItems.length : 0;
+      this._isSelectAllIndeterminate = selectedItemsSize < this.size;
+      this._isSelectAllChecked = selectedItemsSize === this.size;
+      this._isEmpty = this.size === 0;
     },
 
     /**
