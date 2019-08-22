@@ -136,6 +136,8 @@
   "groupManagement.users.heading": "Pengguna",
   "label.group": "Grup",
   "label.loading": "Memuat",
+  "label.noResults": "No results.",
+  "label.noResultsWhenFiltered": "No results with these search criteria.",
   "label.no": "Tidak",
   "label.yes": "Ya",
   "label.ui.state.accepted": "Diterima",

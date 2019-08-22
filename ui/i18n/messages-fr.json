@@ -136,6 +136,8 @@
   "groupManagement.users.heading": "Utilisateurs",
   "label.group": "Groupe",
   "label.loading": "Chargement en cours",
+  "label.noResults": "No results.",
+  "label.noResultsWhenFiltered": "No results with these search criteria.",
   "label.no": "Non",
   "label.yes": "Oui",
   "label.ui.state.accepted": "Accepté",

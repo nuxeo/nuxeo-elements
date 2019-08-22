@@ -136,6 +136,8 @@
   "groupManagement.users.heading": "Usuarios",
   "label.group": "Grupo",
   "label.loading": "Cargando",
+  "label.noResults": "No results.",
+  "label.noResultsWhenFiltered": "No results with these search criteria.",
   "label.no": "No",
   "label.yes": "Si",
   "label.ui.state.accepted": "Aceptado",

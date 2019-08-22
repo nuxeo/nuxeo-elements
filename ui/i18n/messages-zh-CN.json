@@ -136,6 +136,8 @@
   "groupManagement.users.heading": "用户",
   "label.group": "群组:",
   "label.loading": "正在加载",
+  "label.noResults": "No results.",
+  "label.noResultsWhenFiltered": "No results with these search criteria.",
   "label.no": "不",
   "label.yes": "是",
   "label.ui.state.accepted": "已接受",

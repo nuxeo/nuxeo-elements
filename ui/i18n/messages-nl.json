@@ -136,6 +136,8 @@
   "groupManagement.users.heading": "Gebruikers",
   "label.group": "Groep",
   "label.loading": "Laden",
+  "label.noResults": "No results.",
+  "label.noResultsWhenFiltered": "No results with these search criteria.",
   "label.no": "Nee",
   "label.yes": "Ja",
   "label.ui.state.accepted": "Geaccepteerd",

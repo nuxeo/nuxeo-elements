@@ -136,6 +136,8 @@
   "groupManagement.users.heading": "Utilizadores",
   "label.group": "Group",
   "label.loading": "Loading",
+  "label.noResults": "No results.",
+  "label.noResultsWhenFiltered": "No results with these search criteria.",
   "label.no": "Não",
   "label.yes": "Sim",
   "label.ui.state.accepted": "Aceite",

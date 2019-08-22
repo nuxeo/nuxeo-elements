@@ -136,6 +136,8 @@
   "groupManagement.users.heading": "Benutzer",
   "label.group": "Gruppe",
   "label.loading": "Beladen",
+  "label.noResults": "No results.",
+  "label.noResultsWhenFiltered": "No results with these search criteria.",
   "label.no": "Nein",
   "label.yes": "Ja",
   "label.ui.state.accepted": "Angenommen",

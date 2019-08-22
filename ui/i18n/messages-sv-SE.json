@@ -136,6 +136,8 @@
   "groupManagement.users.heading": "Användare",
   "label.group": "Grupp",
   "label.loading": "Laddar",
+  "label.noResults": "No results.",
+  "label.noResultsWhenFiltered": "No results with these search criteria.",
   "label.no": "Nej",
   "label.yes": "Ja",
   "label.ui.state.accepted": "Accepterad",
