@@ -121,12 +121,27 @@ pipeline {
   post {
     success {
       container('nodejs') {
-        // publish
         script {
           if (BRANCH_NAME == 'master') {    
+             // publish elements
+             echo """
+              -----------------
+              Publishing to npm
+              -----------------"""
             def token = sh(script: 'jx step credential -s jenkins-npm-token -k token', returnStdout: true).trim()
             sh "echo '//nexus/repository/npmjs-nuxeo/:_authToken=${token}' >> ~/.npmrc"
             sh "npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --registry=http://nexus/repository/npmjs-nuxeo/ --tag SNAPSHOT"
+            // publish storybook
+            dir('storybook') {
+              echo """
+              -------------------
+              Deploying Storybook
+              -------------------"""
+              sh 'npx lerna run analysis --parallel'
+              withCredentials([string(credentialsId: 'github_token', variable: 'GITHUB_TOKEN')]) {
+                sh 'npm run deploy -- --ci -t GITHUB_TOKEN'
+              }
+            }
           }
         }
       }
