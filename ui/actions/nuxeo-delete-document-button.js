@@ -110,7 +110,7 @@ import './nuxeo-action-button-styles.js';
     }
 
     _isAvailable(doc) {
-      return doc && !this.isVersion(doc) && this.hasPermission(doc, 'Write') && (!this.isTrashed(doc) || this.hard);
+      return doc && !this.isVersion(doc) && this.hasPermission(doc, 'Remove') && (!this.isTrashed(doc) || this.hard);
     }
 
     _computeIcon(hard) {

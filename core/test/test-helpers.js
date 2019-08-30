@@ -85,6 +85,14 @@ function waitForChildListMutation(el) {
   });
 }
 
+function isElementVisible(el) {
+  if (!el) {
+    return false;
+  }
+  const styles = window.getComputedStyle(el);
+  return el.offsetWidth !== 0 && el.offsetHeight !== 0 && styles.opacity > 0 && styles.visibility !== 'hidden';
+}
+
 let server;
 
 async function login() {
@@ -127,6 +135,7 @@ teardown(() => {
 });
 
 export {
+  isElementVisible,
   timePasses,
   waitForEvent,
   waitChanged,
