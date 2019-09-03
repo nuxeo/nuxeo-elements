@@ -76,6 +76,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
           stay-open-on-select="[[stayOpenOnSelect]]"
           headers="[[headers]]"
           enrichers="[[enrichers]]"
+          query-results-filter="[[queryResultsFilter]]"
         >
         </nuxeo-selectivity>
       `;
@@ -272,6 +273,11 @@ import { escapeHTML } from './nuxeo-selectivity.js';
           type: Object,
           value: null,
         },
+
+        /**
+         * Results filtering function (optional).
+         */
+        queryResultsFilter: Function,
       };
     }
 
