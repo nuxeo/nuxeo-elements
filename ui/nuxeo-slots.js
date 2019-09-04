@@ -111,9 +111,19 @@ window.nuxeo.slots.setSharedModel = (model) => {
         /**
          * A unique name for this slot.
          */
-        slot: {
+        name: {
           type: String,
           observer: '_register',
+        },
+
+        /**
+         * @deprecated since version 2.4.14, use `name` instead.
+         * A unique name for this slot.
+         */
+        slot: {
+          type: String,
+          reflectToAttribute: true,
+          observer: '_slotChanged',
         },
 
         /**
@@ -141,6 +151,10 @@ window.nuxeo.slots.setSharedModel = (model) => {
       return ['_updateModel(model.*)'];
     }
 
+    get slotName() {
+      return this.name || this.slot;
+    }
+
     connectedCallback() {
       super.connectedCallback();
       this._updateContent();
@@ -148,14 +162,25 @@ window.nuxeo.slots.setSharedModel = (model) => {
 
     disconnectedCallback() {
       super.disconnectedCallback();
-      this._unregister(this.slot);
+      this._unregister(this.slotName);
     }
 
-    _register(newSlot, oldSlot) {
-      if (oldSlot) {
-        this._unregister(oldSlot);
+    _slotChanged(newSlot, oldSlot) {
+      if (this.name) {
+        // If we have `name` defined, it means that `slot` denotes a native HTML slot to which this element is assigned
+        // to. In this case, we need to update the content so that it is redrawn under this native slot (or its topmost
+        // assigned slot, in case of nested native slots).
+        this._updateContent();
+      } else {
+        this._register(newSlot, oldSlot);
       }
-      _getRegistry(newSlot).slots.push(this);
+    }
+
+    _register(newSlotName, oldSlotName) {
+      if (oldSlotName) {
+        this._unregister(oldSlotName);
+      }
+      _getRegistry(newSlotName).slots.push(this);
     }
 
     _unregister(slot) {
@@ -180,12 +205,35 @@ window.nuxeo.slots.setSharedModel = (model) => {
       });
     }
 
+    /**
+     * Returns a pair with:
+     * 1) parent: the effective parent of this element
+     * 2) parentSlot: the native HTML slot in the parent where this element will be displayed.
+     *
+     * NB: The effective parent consists of the actual parentNode if this element is not assigned to a
+     * native HTML slot, in which case parentSlot is null.
+     */
+    _effectiveParent() {
+      let parent = null;
+      let parentSlot = null;
+      if (!this.assignedSlot) {
+        parent = this.parentNode;
+      } else {
+        parentSlot = this;
+        while (parentSlot.assignedSlot) {
+          parentSlot = parentSlot.assignedSlot;
+        }
+        parent = parentSlot.getRootNode().host;
+      }
+      return { parent, parentSlot };
+    }
+
     _render() {
       // render
-      const parent = dom(dom(this).parentNode);
+      const { parent, parentSlot } = this._effectiveParent();
       // keep track of stamped instances
       this._instances = [];
-      _getRegistry(this.slot).nodes.forEach((node) => {
+      _getRegistry(this.slotName).nodes.forEach((node) => {
         const { template } = node;
         if (!node.disabled && template) {
           delete template.__templatizeOwner;
@@ -197,7 +245,21 @@ window.nuxeo.slots.setSharedModel = (model) => {
           Object.keys(this.model).forEach((prop) => el._setPendingProperty(prop, this.model[prop]));
           el._flushProperties();
           this._instances.push(el);
-          parent.insertBefore(el.root, this);
+          if (parentSlot) {
+            const slotName = parentSlot.getAttribute('name');
+            el.children
+              .filter((c) => c.nodeType === Node.ELEMENT_NODE)
+              .forEach((c) => {
+                if (slotName) {
+                  c.setAttribute('slot', slotName);
+                } else {
+                  c.removeAttribute('slot');
+                }
+              });
+            parent.appendChild(el.root);
+          } else {
+            parent.insertBefore(el.root, this);
+          }
         }
       });
       this.set('empty', this._instances.length === 0);
