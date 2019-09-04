@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { fixture, flush, html } from '@nuxeo/nuxeo-elements/test/test-helpers.js';
+import * as polymer from '@polymer/polymer';
 import '../nuxeo-slots.js';
 /* eslint-disable no-unused-expressions */
 
@@ -23,11 +24,15 @@ function _content(slot) {
   return slot.parentElement.querySelectorAll(':not(nuxeo-slot)');
 }
 
-const makeSlot = (name) =>
+const makeSlot = (name, legacySlotName = false) =>
   fixture(
-    html`
-      <nuxeo-slot slot="${name}"></nuxeo-slot>
-    `,
+    legacySlotName
+      ? html`
+          <nuxeo-slot slot="${name}"></nuxeo-slot>
+        `
+      : html`
+          <nuxeo-slot name="${name}"></nuxeo-slot>
+        `,
   );
 
 const makeContent = async (name, slot, content, options = {}) => {
@@ -56,201 +61,284 @@ const makeContent = async (name, slot, content, options = {}) => {
 };
 
 suite('<nuxeo-slot>', () => {
-  let slot1;
-  let slot2;
+  [{ legacySlotName: false }, { legacySlotName: true }].forEach((conf) => {
+    suite(conf.legacySlotName ? '"slot" attribute as nuxeo-slot name (legacy)' : '', () => {
+      let slot1;
+      let slot2;
 
-  setup(async () => {
-    slot1 = await makeSlot('SLOT1');
-    slot2 = await makeSlot('SLOT2');
+      setup(async () => {
+        slot1 = await makeSlot('SLOT1', conf.legacySlotName);
+        slot2 = await makeSlot('SLOT2', conf.legacySlotName);
+      });
+
+      test('empty slots and content', async () => {
+        expect(_content(slot1)).to.be.empty;
+
+        await makeContent('empty', 'SLOT1');
+
+        expect(_content(slot1)).to.be.empty;
+      });
+
+      test('slot content', async () => {
+        await makeContent(
+          'content1',
+          'SLOT1',
+          html`
+            <span>Content 1</span>
+          `,
+          { order: 1 },
+        );
+
+        expect(_content(slot1).length).to.be.equal(1);
+        expect(_content(slot2)).to.be.empty;
+
+        await makeContent(
+          'content2',
+          'SLOT1',
+          html`
+            <span>Content 2</span>
+          `,
+          { order: 2 },
+        );
+
+        expect(_content(slot1).length).to.be.equal(2);
+        expect(_content(slot2)).to.be.empty;
+
+        await makeContent(
+          'content3',
+          'SLOT2',
+          html`
+            <span>Content 3</span>
+          `,
+        );
+
+        expect(_content(slot1).length).to.be.equal(2);
+        expect(_content(slot2).length).to.be.equal(1);
+
+        const content1 = _content(slot1);
+        const content2 = _content(slot2);
+        expect(content1[0].textContent).to.be.equal('Content 1');
+        expect(content1[1].textContent).to.be.equal('Content 2');
+        expect(content2[0].textContent).to.be.equal('Content 3');
+      });
+
+      test('slot content order', async () => {
+        await makeContent(
+          'content2',
+          'SLOT1',
+          html`
+            <span>Content 2</span>
+          `,
+          { order: 2 },
+        );
+
+        expect(_content(slot1).length).to.be.equal(1);
+
+        await makeContent(
+          'content1',
+          'SLOT1',
+          html`
+            <span>Content 1</span>
+          `,
+          { order: 1 },
+        );
+
+        const content = _content(slot1);
+        expect(content.length).to.be.equal(2);
+
+        // check content 1 was moved to first
+        expect(content[0].textContent).to.be.equal('Content 1');
+      });
+
+      test('slot content disabled', async () => {
+        await makeContent(
+          'content1',
+          'SLOT1',
+          html`
+            <span>Content 1</span>
+          `,
+        );
+
+        expect(_content(slot1).length).to.be.equal(1);
+
+        await makeContent('content1', 'SLOT1', '', { disabled: true });
+
+        expect(_content(slot1)).to.be.empty;
+      });
+
+      test('slot content re-enabled', async () => {
+        await makeContent(
+          'content',
+          'SLOT1',
+          html`
+            <span>Disabled content</span>
+          `,
+          { disabled: true },
+        );
+
+        expect(_content(slot1)).to.be.empty;
+
+        await makeContent('content', 'SLOT1');
+
+        const content = _content(slot1);
+        expect(content.length).to.be.equal(1);
+        expect(content[0].textContent).to.be.equal('Disabled content');
+      });
+
+      test('slot content override', async () => {
+        await makeContent(
+          'content1',
+          'SLOT1',
+          html`
+            <span>Content 1</span>
+          `,
+        );
+        await makeContent(
+          'content2',
+          'SLOT1',
+          html`
+            <span>Content 2</span>
+          `,
+        );
+
+        let content = _content(slot1);
+        expect(content.length).to.be.equal(2);
+        expect(content[0].textContent).to.be.equal('Content 1');
+
+        await makeContent(
+          'content1',
+          'SLOT1',
+          html`
+            <span>Content 1 override</span>
+          `,
+          { order: 3 },
+        );
+        content = _content(slot1);
+        expect(content.length).to.be.equal(2);
+
+        // check content 1 was moved to last
+        expect(content[1].textContent).to.be.equal('Content 1 override');
+      });
+
+      test('slot content priority', async () => {
+        await makeContent(
+          'content1',
+          'SLOT1',
+          html`
+            <span>Content 1</span>
+          `,
+        );
+
+        await makeContent(
+          'content1',
+          'SLOT1',
+          html`
+            <span>Content 1 override</span>
+          `,
+          { priority: 10 },
+        );
+
+        const content = _content(slot1);
+        expect(content.length).to.be.equal(1);
+        expect(content[0].textContent).to.be.equal('Content 1 override');
+      });
+
+      test('slot shared model', async () => {
+        await makeContent(
+          'content3',
+          'SLOT1',
+          html`
+            <span>[[property]]</span>
+          `,
+        );
+
+        window.nuxeo.slots.setSharedModel({ property: 'test1' });
+
+        const content = _content(slot1);
+        expect(content.length).to.be.equal(1);
+        expect(content[0].textContent).to.be.equal('test1');
+        window.nuxeo.slots.setSharedModel({ property: 'test2' });
+        expect(content[0].textContent).to.be.equal('test2');
+      });
+    });
   });
 
-  test('empty slots and content', async () => {
-    expect(_content(slot1)).to.be.empty;
+  suite('compatibility with native HTML slots', () => {
+    let customEl;
 
-    await makeContent('empty', 'SLOT1');
+    class CustomSlottedElement extends Nuxeo.Element {
+      static get is() {
+        return 'my-custom-slotted-element';
+      }
 
-    expect(_content(slot1)).to.be.empty;
-  });
+      static get template() {
+        return polymer.html`
+          <div id="page">
+            <slot></slot>
+            <div id="header">
+              <slot name="header">
+              </slot>
+            </div>
+            <div id="body">
+              <slot name="body">
+              </slot>
+            </div>
+          </div>
+        `;
+      }
+    }
+    customElements.define(CustomSlottedElement.is, CustomSlottedElement);
 
-  test('slot content', async () => {
-    await makeContent(
-      'content1',
-      'SLOT1',
-      html`
-        <span>Content 1</span>
-      `,
-      { order: 1 },
-    );
+    setup(async () => {
+      customEl = await fixture(html`
+        <my-custom-slotted-element>
+          <nuxeo-slot name="SLOT3" slot="header"></nuxeo-slot>
+        </my-custom-slotted-element>
+      `);
+    });
 
-    expect(_content(slot1).length).to.be.equal(1);
-    expect(_content(slot2)).to.be.empty;
+    test('nuxeo-slot can be assigned to native slots', async () => {
+      const nxSlot = customEl.querySelector('nuxeo-slot[name="SLOT3"]');
+      expect(nxSlot).to.not.be.null;
+      expect(nxSlot.name).to.be.equal('SLOT3');
+      expect(nxSlot.parentElement).to.be.equal(customEl);
+      expect(nxSlot.assignedSlot).to.not.be.null;
+      expect(nxSlot.assignedSlot.getAttribute('name')).to.equal('header');
+      expect(nxSlot.slot).to.equal('header');
+    });
 
-    await makeContent(
-      'content2',
-      'SLOT1',
-      html`
-        <span>Content 2</span>
-      `,
-      { order: 2 },
-    );
+    test('nuxeo-slot content is assigned and re-assigned to the same native slot', async () => {
+      const nxSlot = customEl.querySelector('nuxeo-slot[name="SLOT3"]');
+      // let's contribute content to the nuxeo-slot
+      await makeContent(
+        'content',
+        'SLOT3',
+        html`
+          <span>Content</span>
+        `,
+      );
+      let [content] = _content(nxSlot);
+      expect(content.parentElement).to.be.equal(nxSlot.parentElement);
+      expect(content.assignedSlot).to.be.equal(nxSlot.assignedSlot);
 
-    expect(_content(slot1).length).to.be.equal(2);
-    expect(_content(slot2)).to.be.empty;
+      // switch slots and check if the content is correctly updated
+      nxSlot.slot = 'body';
+      await flush();
+      [content] = _content(nxSlot);
+      expect(nxSlot.parentElement).to.be.equal(customEl);
+      expect(nxSlot.assignedSlot).to.not.be.null;
+      expect(nxSlot.assignedSlot.getAttribute('name')).to.equal('body');
+      expect(content.parentElement).to.be.equal(nxSlot.parentElement);
+      expect(content.assignedSlot).to.be.equal(nxSlot.assignedSlot);
 
-    await makeContent(
-      'content3',
-      'SLOT2',
-      html`
-        <span>Content 3</span>
-      `,
-    );
-
-    expect(_content(slot1).length).to.be.equal(2);
-    expect(_content(slot2).length).to.be.equal(1);
-
-    const content1 = _content(slot1);
-    const content2 = _content(slot2);
-    expect(content1[0].textContent).to.be.equal('Content 1');
-    expect(content1[1].textContent).to.be.equal('Content 2');
-    expect(content2[0].textContent).to.be.equal('Content 3');
-  });
-
-  test('slot content order', async () => {
-    await makeContent(
-      'content2',
-      'SLOT1',
-      html`
-        <span>Content 2</span>
-      `,
-      { order: 2 },
-    );
-
-    expect(_content(slot1).length).to.be.equal(1);
-
-    await makeContent(
-      'content1',
-      'SLOT1',
-      html`
-        <span>Content 1</span>
-      `,
-      { order: 1 },
-    );
-
-    const content = _content(slot1);
-    expect(content.length).to.be.equal(2);
-
-    // check content 1 was moved to first
-    expect(content[0].textContent).to.be.equal('Content 1');
-  });
-
-  test('slot content disabled', async () => {
-    await makeContent(
-      'content1',
-      'SLOT1',
-      html`
-        <span>Content 1</span>
-      `,
-    );
-
-    expect(_content(slot1).length).to.be.equal(1);
-
-    await makeContent('content1', 'SLOT1', '', { disabled: true });
-
-    expect(_content(slot1)).to.be.empty;
-  });
-
-  test('slot content re-enabled', async () => {
-    await makeContent(
-      'content',
-      'SLOT1',
-      html`
-        <span>Disabled content</span>
-      `,
-      { disabled: true },
-    );
-
-    expect(_content(slot1)).to.be.empty;
-
-    await makeContent('content', 'SLOT1');
-
-    const content = _content(slot1);
-    expect(content.length).to.be.equal(1);
-    expect(content[0].textContent).to.be.equal('Disabled content');
-  });
-
-  test('slot content override', async () => {
-    await makeContent(
-      'content1',
-      'SLOT1',
-      html`
-        <span>Content 1</span>
-      `,
-    );
-    await makeContent(
-      'content2',
-      'SLOT1',
-      html`
-        <span>Content 2</span>
-      `,
-    );
-
-    let content = _content(slot1);
-    expect(content.length).to.be.equal(2);
-    expect(content[0].textContent).to.be.equal('Content 1');
-
-    await makeContent(
-      'content1',
-      'SLOT1',
-      html`
-        <span>Content 1 override</span>
-      `,
-      { order: 3 },
-    );
-    content = _content(slot1);
-    expect(content.length).to.be.equal(2);
-
-    // check content 1 was moved to last
-    expect(content[1].textContent).to.be.equal('Content 1 override');
-  });
-
-  test('slot content priority', async () => {
-    await makeContent(
-      'content1',
-      'SLOT1',
-      html`
-        <span>Content 1</span>
-      `,
-    );
-
-    await makeContent(
-      'content1',
-      'SLOT1',
-      html`
-        <span>Content 1 override</span>
-      `,
-      { priority: 10 },
-    );
-
-    const content = _content(slot1);
-    expect(content.length).to.be.equal(1);
-    expect(content[0].textContent).to.be.equal('Content 1 override');
-  });
-
-  test('slot shared model', async () => {
-    await makeContent(
-      'content3',
-      'SLOT1',
-      html`
-        <span>[[property]]</span>
-      `,
-    );
-
-    window.nuxeo.slots.setSharedModel({ property: 'test1' });
-
-    const content = _content(slot1);
-    expect(content.length).to.be.equal(1);
-    expect(content[0].textContent).to.be.equal('test1');
-    window.nuxeo.slots.setSharedModel({ property: 'test2' });
-    expect(content[0].textContent).to.be.equal('test2');
+      nxSlot.slot = '';
+      await flush();
+      [content] = _content(nxSlot);
+      expect(nxSlot.parentElement).to.be.equal(customEl);
+      expect(nxSlot.assignedSlot).to.not.be.null;
+      expect(nxSlot.assignedSlot.getAttribute('name')).to.be.null;
+      expect(content.parentElement).to.be.equal(nxSlot.parentElement);
+      expect(content.assignedSlot).to.be.equal(nxSlot.assignedSlot);
+    });
   });
 });
