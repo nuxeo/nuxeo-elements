@@ -48,7 +48,7 @@ suite('<nuxeo-filter>', () => {
         </nuxeo-filter>
         <nuxeo-filter document='{"facets":["Folderish"]}' facet="Commentable">
           <template>
-            <div class="notok"></div>
+            <div class=".notok"></div>
           </template>
         </nuxeo-filter>
 
@@ -65,14 +65,14 @@ suite('<nuxeo-filter>', () => {
         </nuxeo-filter>
         <nuxeo-filter document='{"facets":[]}' facet="Folderish,Commentable">
           <template>
-            <div class="notok"></div>
+            <div class=".notok"></div>
           </template>
         </nuxeo-filter>
       </div>
     `);
 
     expect(stamped(filter, '.ok').length).to.be.equal(3);
-    expect(stamped(filter, 'notok')).to.be.empty;
+    expect(stamped(filter, '.notok')).to.be.empty;
   });
 
   test('schema filter', async () => {
@@ -86,7 +86,7 @@ suite('<nuxeo-filter>', () => {
         </nuxeo-filter>
         <nuxeo-filter document='{"schemas":["files"]}' schema="dublincore">
           <template>
-            <div class="notok"></div>
+            <div class=".notok"></div>
           </template>
         </nuxeo-filter>
 
@@ -103,14 +103,14 @@ suite('<nuxeo-filter>', () => {
         </nuxeo-filter>
         <nuxeo-filter document='{"schemas":[]}' schema="file,common">
           <template>
-            <div class="notok"></div>
+            <div class=".notok"></div>
           </template>
         </nuxeo-filter>
       </div>
     `);
 
     expect(stamped(filter, '.ok').length).to.be.equal(3);
-    expect(stamped(filter, 'notok')).to.be.empty;
+    expect(stamped(filter, '.notok')).to.be.empty;
   });
 
   test('type filter', async () => {
@@ -123,7 +123,7 @@ suite('<nuxeo-filter>', () => {
         </nuxeo-filter>
         <nuxeo-filter document='{"type":"Folder"}' type="File">
           <template>
-            <div class="notok"></div>
+            <div class=".notok"></div>
           </template>
         </nuxeo-filter>
         <nuxeo-filter document='{"type":"Folder"}' type="Folder,File">
@@ -134,7 +134,7 @@ suite('<nuxeo-filter>', () => {
       </div>
     `);
     expect(stamped(filter, '.ok').length).to.be.equal(2);
-    expect(stamped(filter, 'notok')).to.be.empty;
+    expect(stamped(filter, '.notok')).to.be.empty;
   });
 
   test('permission filter', async () => {
@@ -147,13 +147,13 @@ suite('<nuxeo-filter>', () => {
         </nuxeo-filter>
         <nuxeo-filter document='{"contextParameters":{"permissions":["Read"]}}' permission="Write">
           <template>
-            <div class="notok"></div>
+            <div class=".notok"></div>
           </template>
         </nuxeo-filter>
       </div>
     `);
     expect(stamped(filter, '.ok').length).to.be.equal(1);
-    expect(stamped(filter, 'notok')).to.be.empty;
+    expect(stamped(filter, '.notok')).to.be.empty;
   });
 
   test('state filter', async () => {
@@ -166,13 +166,13 @@ suite('<nuxeo-filter>', () => {
         </nuxeo-filter>
         <nuxeo-filter document='{"state":"project"}' state="deleted">
           <template>
-            <div class="notok"></div>
+            <div class=".notok"></div>
           </template>
         </nuxeo-filter>
       </div>
     `);
     expect(stamped(filter, '.ok').length).to.be.equal(1);
-    expect(stamped(filter, 'notok')).to.be.empty;
+    expect(stamped(filter, '.notok')).to.be.empty;
   });
 
   test('path filter', async () => {
@@ -185,13 +185,13 @@ suite('<nuxeo-filter>', () => {
         </nuxeo-filter>
         <nuxeo-filter document='{"path":"/default-domain/workspaces/"}' path="/another-domain">
           <template>
-            <div class="notok"></div>
+            <div class=".notok"></div>
           </template>
         </nuxeo-filter>
       </div>
     `);
     expect(stamped(filter, '.ok').length).to.be.equal(1);
-    expect(stamped(filter, 'notok')).to.be.empty;
+    expect(stamped(filter, '.notok')).to.be.empty;
   });
 
   test('user group filter', async () => {
@@ -205,7 +205,7 @@ suite('<nuxeo-filter>', () => {
 
         <nuxeo-filter user='{"extendedGroups":[{"name":"Members"}]}' group="Administrators">
           <template>
-            <div class="notok"></div>
+            <div class=".notok"></div>
           </template>
         </nuxeo-filter>
 
@@ -217,7 +217,7 @@ suite('<nuxeo-filter>', () => {
       </div>
     `);
     expect(stamped(filter, '.ok').length).to.be.equal(2);
-    expect(stamped(filter, 'notok')).to.be.empty;
+    expect(stamped(filter, '.notok')).to.be.empty;
   });
 
   test('expression filter', async () => {
@@ -231,7 +231,7 @@ suite('<nuxeo-filter>', () => {
 
         <nuxeo-filter document='{"title":"Title"}' expression="document.title !== 'Title'">
           <template>
-            <div class="notok"></div>
+            <div class=".notok"></div>
           </template>
         </nuxeo-filter>
 
@@ -255,7 +255,7 @@ suite('<nuxeo-filter>', () => {
       </div>
     `);
     expect(stamped(filter, '.ok').length).to.be.equal(3);
-    expect(stamped(filter, 'notok')).to.be.empty;
+    expect(stamped(filter, '.notok')).to.be.empty;
   });
 
   test('trashed expression filter', async () => {
@@ -325,7 +325,7 @@ suite('<nuxeo-filter>', () => {
 
         <nuxeo-filter document='{"type":"File", "title":"Title"}' expression="document.title !== 'Title'">
           <template>
-            <div class="notok"></div>
+            <div class=".notok"></div>
           </template>
         </nuxeo-filter>
 
@@ -342,7 +342,7 @@ suite('<nuxeo-filter>', () => {
 
         <nuxeo-filter document='{"type":"File"}' type="File" user='{"extendedGroups":[]}' group="Administrators">
           <template>
-            <div class="notok"></div>
+            <div class=".notok"></div>
           </template>
         </nuxeo-filter>
 
@@ -359,7 +359,7 @@ suite('<nuxeo-filter>', () => {
       </div>
     `);
     expect(stamped(filter, '.ok').length).to.be.equal(3);
-    expect(stamped(filter, 'notok')).to.be.empty;
+    expect(stamped(filter, '.notok')).to.be.empty;
   });
 
   test('filter removal', async () => {
