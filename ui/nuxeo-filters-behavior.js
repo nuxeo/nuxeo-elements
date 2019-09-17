@@ -161,6 +161,13 @@ export const FiltersBehavior = {
   },
 
   /**
+   * Checks if the document has the given schema.
+   */
+  hasSchema(doc, schema) {
+    return doc && doc.schemas && doc.schemas.indexOf(schema) !== -1;
+  },
+
+  /**
    * Checks if given user is member of the group.
    */
   isMember(user, group) {

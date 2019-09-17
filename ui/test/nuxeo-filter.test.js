@@ -75,6 +75,44 @@ suite('<nuxeo-filter>', () => {
     expect(stamped(filter, 'notok')).to.be.empty;
   });
 
+  test('schema filter', async () => {
+    const filter = await fixture(html`
+      <div>
+        <!-- single -->
+        <nuxeo-filter document='{"schemas":["files"]}' schema="files">
+          <template>
+            <div class="ok"></div>
+          </template>
+        </nuxeo-filter>
+        <nuxeo-filter document='{"schemas":["files"]}' schema="dublincore">
+          <template>
+            <div class="notok"></div>
+          </template>
+        </nuxeo-filter>
+
+        <!-- multiple -->
+        <nuxeo-filter document='{"schemas":["files"]}' schema="files, dublincore">
+          <template>
+            <div class="ok"></div>
+          </template>
+        </nuxeo-filter>
+        <nuxeo-filter document='{"schemas":["common"]}' schema="dublincore,common,files">
+          <template>
+            <div class="ok"></div>
+          </template>
+        </nuxeo-filter>
+        <nuxeo-filter document='{"schemas":[]}' schema="file,common">
+          <template>
+            <div class="notok"></div>
+          </template>
+        </nuxeo-filter>
+      </div>
+    `);
+
+    expect(stamped(filter, '.ok').length).to.be.equal(3);
+    expect(stamped(filter, 'notok')).to.be.empty;
+  });
+
   test('type filter', async () => {
     const filter = await fixture(html`
       <div>
