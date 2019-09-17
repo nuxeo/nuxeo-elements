@@ -96,6 +96,19 @@ import { FiltersBehavior } from './nuxeo-filters-behavior.js';
         },
 
         /**
+         * Document has one of these schemas
+         */
+        schema: {
+          type: String,
+          value: '',
+          _filter: {
+            ctx: ['document'],
+            fn: 'hasSchema',
+            multiple: true,
+          },
+        },
+
+        /**
          * Document state
          */
         state: {
