@@ -84,13 +84,13 @@ import './viewers/nuxeo-video-viewer.js';
 
           #xml {
             font-family: monospace;
-            white-space: pre;
           }
 
           #preview {
             border: none;
             width: 100%;
             height: 100%;
+            overflow-wrap: break-word;
           }
         </style>
 
