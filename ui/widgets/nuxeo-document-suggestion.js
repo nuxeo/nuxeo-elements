@@ -362,7 +362,13 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       if (typeof doc === 'string') {
         return doc;
       }
-      return this.idProperty === 'ecm:uuid' ? doc.uid : doc.properties[this.idProperty];
+      if (this.idProperty === 'ecm:uuid') {
+        return doc.uid;
+      }
+      if (this.idProperty === 'ecm:path') {
+        return doc.path;
+      }
+      return doc.properties[this.idProperty];
     }
   }
 
