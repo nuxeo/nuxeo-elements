@@ -161,10 +161,10 @@ export const FiltersBehavior = {
   },
 
   /**
-   * Checks if the document has the given schema.
+   * Checks if the document has the given schema (can be schema name or prefix).
    */
   hasSchema(doc, schema) {
-    return doc && doc.schemas && doc.schemas.indexOf(schema) !== -1;
+    return doc && doc.schemas && doc.schemas.some((sch) => sch.prefix === schema || schema.name === schema);
   },
 
   /**
