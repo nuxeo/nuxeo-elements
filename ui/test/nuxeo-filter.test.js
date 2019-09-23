@@ -79,24 +79,34 @@ suite('<nuxeo-filter>', () => {
     const filter = await fixture(html`
       <div>
         <!-- single -->
-        <nuxeo-filter document='{"schemas":["files"]}' schema="files">
+        <nuxeo-filter document='{"schemas":[{"name": "files", "prefix": "files"}]}' schema="files">
           <template>
             <div class="ok"></div>
           </template>
         </nuxeo-filter>
-        <nuxeo-filter document='{"schemas":["files"]}' schema="dublincore">
+        <nuxeo-filter document='{"schemas":[{"name": "files", "prefix": "files"}]}' schema="dublincore">
           <template>
             <div class="notok"></div>
           </template>
         </nuxeo-filter>
 
         <!-- multiple -->
-        <nuxeo-filter document='{"schemas":["files"]}' schema="files, dublincore">
+        <nuxeo-filter document='{"schemas":[{"name": "files", "prefix": "files"}]}' schema="files, dublincore">
           <template>
             <div class="ok"></div>
           </template>
         </nuxeo-filter>
-        <nuxeo-filter document='{"schemas":["common"]}' schema="dublincore,common,files">
+        <nuxeo-filter document='{"schemas":[{"name": "dublincore", "prefix": "dc"}]}' schema="dc,common,files">
+          <template>
+            <div class="ok"></div>
+          </template>
+        </nuxeo-filter>
+        <nuxeo-filter document='{"schemas":[{"name": "dublincore", "prefix": "dc"}]}' schema="common,files,dc">
+          <template>
+            <div class="ok"></div>
+          </template>
+        </nuxeo-filter>
+        <nuxeo-filter document='{"schemas":[{"name": "common", "prefix": "common"}]}' schema="dublincore,common,files">
           <template>
             <div class="ok"></div>
           </template>
@@ -109,7 +119,7 @@ suite('<nuxeo-filter>', () => {
       </div>
     `);
 
-    expect(stamped(filter, '.ok').length).to.be.equal(3);
+    expect(stamped(filter, '.ok').length).to.be.equal(5);
     expect(stamped(filter, '.notok')).to.be.empty;
   });
 
