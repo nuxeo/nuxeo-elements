@@ -248,7 +248,7 @@ import './nuxeo-connection.js';
       options.headers = this.headers || {};
       // Force sync indexing
       if (this.syncIndexing) {
-        options.headers.nx_es_sync = true;
+        options.headers['nx-es-sync'] = true;
       }
       // add support for plain text responses by default
       options.headers.accept = 'text/plain,application/json';
