@@ -220,7 +220,7 @@ import './nuxeo-page-provider.js';
       options.headers = this.headers || {};
       // Force sync indexing
       if (this.syncIndexing) {
-        options.headers.nx_es_sync = true;
+        options.headers['nx-es-sync'] = true;
       }
       // Look up content enrichers parameter
       if (this.enrichers) {
