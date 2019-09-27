@@ -66,9 +66,6 @@ import '../widgets/nuxeo-dialog.js';
             <div class="paper-content layout horizontal">
               <div class="layout vertical">
                 <div class="row layout horizontal">
-                  <div class="label-container">
-                    <label></label>
-                  </div>
                   <dom-repeat items="[[columns]]" as="column">
                     <template>
                       <tr>
