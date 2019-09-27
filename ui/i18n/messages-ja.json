@@ -198,7 +198,7 @@
   "shareButton.tooltip": "共有",
   "sortSelect.reverseOrder": "ソートの順序を逆にする",
   "tableSettings.columnSettings": "列の設定",
-  "tableSettings.columnSettings.close": "閉じる",
+  "tableSettings.columnSettings.done": "Done",
   "tableSettings.columnSettings.reset": "リセット",
   "tags.addedToDocument": "タグ{0}が文書に追加されました",
   "tags.removedFromDocument": "タグ{0}が文書から削除されました",

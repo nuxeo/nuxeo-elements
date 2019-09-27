@@ -90,7 +90,7 @@ import '../widgets/nuxeo-dialog.js';
               >
             </div>
             <paper-button noink class="primary" dialog-dismiss
-              >[[i18n('tableSettings.columnSettings.close')]]</paper-button
+              >[[i18n('tableSettings.columnSettings.done')]]</paper-button
             >
           </div>
         </nuxeo-dialog>

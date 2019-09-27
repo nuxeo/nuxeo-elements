@@ -198,7 +198,7 @@
   "shareButton.tooltip": "Condividi",
   "sortSelect.reverseOrder": "Inverti ordinamento",
   "tableSettings.columnSettings": "Impostazioni colonne",
-  "tableSettings.columnSettings.close": "Chiudi",
+  "tableSettings.columnSettings.done": "Done",
   "tableSettings.columnSettings.reset": "Ripristina",
   "tags.addedToDocument": "L’etichetta {0} è stata aggiunta al documento.",
   "tags.removedFromDocument": "L’etichetta {0} è stata rimossa dal documento.",

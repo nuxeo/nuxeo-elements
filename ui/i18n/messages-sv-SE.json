@@ -198,7 +198,7 @@
   "shareButton.tooltip": "Dela",
   "sortSelect.reverseOrder": "Vänd sorteringsordning",
   "tableSettings.columnSettings": "Kolumninställningar",
-  "tableSettings.columnSettings.close": "Stäng",
+  "tableSettings.columnSettings.done": "Done",
   "tableSettings.columnSettings.reset": "Återställ",
   "tags.addedToDocument": "Taggen {0} har lagts till i dokumentet",
   "tags.removedFromDocument": "Taggen {0} har tagits bort från dokumentet",

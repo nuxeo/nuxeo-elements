@@ -198,7 +198,7 @@
   "shareButton.tooltip": "Delen",
   "sortSelect.reverseOrder": "Omgekeerde sorteervolgorde",
   "tableSettings.columnSettings": "Kolominstellingen",
-  "tableSettings.columnSettings.close": "Sluiten",
+  "tableSettings.columnSettings.done": "Done",
   "tableSettings.columnSettings.reset": "Resetten",
   "tags.addedToDocument": "De tag {0} is aan het document toegevoegd.",
   "tags.removedFromDocument": "De tag {0} is van het document verwijderd.",
