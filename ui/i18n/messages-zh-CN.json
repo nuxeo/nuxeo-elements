@@ -198,7 +198,7 @@
   "shareButton.tooltip": "分享",
   "sortSelect.reverseOrder": "Reverse sort order",
   "tableSettings.columnSettings": "列设置",
-  "tableSettings.columnSettings.close": "关闭",
+  "tableSettings.columnSettings.done": "Done",
   "tableSettings.columnSettings.reset": "重置",
   "tags.addedToDocument": "标签 {0} 已添加到文档中。",
   "tags.removedFromDocument": "标签 {0} 已从文档中删除。",

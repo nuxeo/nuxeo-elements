@@ -198,7 +198,7 @@
   "shareButton.tooltip": "Compartir",
   "sortSelect.reverseOrder": "Orden Descendente",
   "tableSettings.columnSettings": "Configuración de columnas",
-  "tableSettings.columnSettings.close": "Cerrar",
+  "tableSettings.columnSettings.done": "Done",
   "tableSettings.columnSettings.reset": "Reiniciar",
   "tags.addedToDocument": "La etiqueta {0} se ha agregado al documento",
   "tags.removedFromDocument": "La etiqueta {0} se ha eliminado del documento",

@@ -198,7 +198,7 @@
   "shareButton.tooltip": "Partager",
   "sortSelect.reverseOrder": "Inverser l'ordre de tri",
   "tableSettings.columnSettings": "Colonnes",
-  "tableSettings.columnSettings.close": "Fermer",
+  "tableSettings.columnSettings.done": "Done",
   "tableSettings.columnSettings.reset": "Réinitialiser",
   "tags.addedToDocument": "Le tag {0} a été ajouté au document.",
   "tags.removedFromDocument": "Le tag {0} a été retiré du document.",

@@ -198,7 +198,7 @@
   "shareButton.tooltip": "Partekatu",
   "sortSelect.reverseOrder": "Alderantzizko ordena",
   "tableSettings.columnSettings": "Zutabe-ezarpenak",
-  "tableSettings.columnSettings.close": "Itxi",
+  "tableSettings.columnSettings.done": "Done",
   "tableSettings.columnSettings.reset": "Berrezarri",
   "tags.addedToDocument": "Dokumentuari {0} etiketa gehitu zaio.",
   "tags.removedFromDocument": "Dokumentuari {0} etiketa kendu zaio.",
