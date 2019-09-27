@@ -2,6 +2,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import '@polymer/paper-dialog-scrollable/paper-dialog-scrollable.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
@@ -53,6 +54,7 @@ import '../widgets/nuxeo-dialog.js';
 
           .buttons {
             @apply --buttons-bar;
+            margin-top: 0px;
           }
         </style>
 
@@ -60,28 +62,30 @@ import '../widgets/nuxeo-dialog.js';
 
         <nuxeo-dialog id="columnsSettingsPopup" with-backdrop on-iron-overlay-closed="_onSettingsClosed">
           <h2>[[i18n('tableSettings.columnSettings')]]</h2>
-          <div class="paper-content layout horizontal">
-            <div class="layout vertical">
-              <div class="row layout horizontal">
-                <div class="label-container">
-                  <label></label>
+          <paper-dialog-scrollable>
+            <div class="paper-content layout horizontal">
+              <div class="layout vertical">
+                <div class="row layout horizontal">
+                  <div class="label-container">
+                    <label></label>
+                  </div>
+                  <dom-repeat items="[[columns]]" as="column">
+                    <template>
+                      <tr>
+                        <td>
+                          <paper-checkbox noink checked="{{!column.hidden}}"></paper-checkbox>
+                        </td>
+                        <td>
+                          [[column.name]]
+                        </td>
+                      </tr>
+                    </template>
+                  </dom-repeat>
+                  <table></table>
                 </div>
-                <dom-repeat items="[[columns]]" as="column">
-                  <template>
-                    <tr>
-                      <td>
-                        <paper-checkbox noink checked="{{!column.hidden}}"></paper-checkbox>
-                      </td>
-                      <td>
-                        [[column.name]]
-                      </td>
-                    </tr>
-                  </template>
-                </dom-repeat>
-                <table></table>
               </div>
             </div>
-          </div>
+          </paper-dialog-scrollable>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
               <paper-button noink on-click="_resetSettings"
