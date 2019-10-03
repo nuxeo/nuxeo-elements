@@ -223,7 +223,7 @@ import './nuxeo-user-group-permissions-table.js';
           id="request"
           path="group/[[groupname]]"
           response="{{group}}"
-          headers='{"fetch.group": "memberUsers,memberGroups"}'
+          headers='{"fetch-group": "memberUsers,memberGroups"}'
         >
         </nuxeo-resource>
         <nuxeo-resource id="users" path="[[_usersPath(groupname)]]" response="{{memberUsers}}" auto></nuxeo-resource>
@@ -232,7 +232,7 @@ import './nuxeo-user-group-permissions-table.js';
           id="editRequest"
           path="group/[[groupname]]"
           response="{{group}}"
-          headers='{"fetch.group": "memberUsers,memberGroups"}'
+          headers='{"fetch-group": "memberUsers,memberGroups"}'
         >
         </nuxeo-resource>
 

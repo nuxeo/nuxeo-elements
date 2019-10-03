@@ -221,7 +221,7 @@ import './nuxeo-popup-permission.js';
         params: {
           type: Object,
           value: {
-            'fetch.acls': 'username,creator,extended',
+            'fetch-acls': 'username,creator,extended',
             depth: 'children',
             time: new Date().getTime(),
           },
