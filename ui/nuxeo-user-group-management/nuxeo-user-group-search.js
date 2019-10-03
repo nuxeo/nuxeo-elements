@@ -115,7 +115,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           auto
           path="/group/search"
           response="{{groups}}"
-          headers='{"fetch.group": "memberUsers,memberGroups"}'
+          headers='{"fetch-group": "memberUsers,memberGroups"}'
         >
         </nuxeo-resource>
 

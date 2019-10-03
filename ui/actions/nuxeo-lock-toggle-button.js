@@ -55,18 +55,13 @@ import './nuxeo-action-button-styles.js';
 
         <nuxeo-connection id="nxcon"></nuxeo-connection>
 
-        <nuxeo-operation
-          id="opLock"
-          op="Document.Lock"
-          input="[[document.uid]]"
-          headers='{"X-NXfetch.document": "lock"}'
-        >
+        <nuxeo-operation id="opLock" op="Document.Lock" input="[[document.uid]]" headers='{"fetch-document": "lock"}'>
         </nuxeo-operation>
         <nuxeo-operation
           id="opUnlock"
           op="Document.Unlock"
           input="[[document.uid]]"
-          headers='{"X-NXfetch.document": "lock"}'
+          headers='{"fetch-document": "lock"}'
         >
         </nuxeo-operation>
 

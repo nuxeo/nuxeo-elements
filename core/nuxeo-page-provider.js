@@ -464,9 +464,9 @@ import './nuxeo-resource.js';
         this.headers = {};
       }
       if (this.fetchAggregates === true) {
-        this.headers['X-NXfetch.aggregate'] = 'key';
+        this.headers['fetch-aggregate'] = 'key';
       } else {
-        delete this.headers['X-NXfetch.aggregate'];
+        delete this.headers['fetch-aggregate'];
       }
     }
   }
