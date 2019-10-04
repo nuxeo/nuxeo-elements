@@ -88,6 +88,29 @@ import './nuxeo-error.js';
       return ['_update(model.*)'];
     }
 
+    _getBoundElements(property) {
+      const model = {};
+      for (let i = 0; i < this.element.__templateInfo.nodeInfoList.length; i++) {
+        const nodeInfo = this.element.__templateInfo.nodeInfoList[i];
+        const node = this.element.__templateInfo.nodeList[i];
+        const field = node.hasAttribute('field') && node.getAttribute('field');
+        if (field && field.startsWith(property)) {
+          model[field] = node;
+        }
+        nodeInfo.bindings.forEach((binding) => {
+          if (binding.kind === 'property') {
+            binding.parts.forEach((part) => {
+              if (part.mode === '{' && !part.signature && part.source.startsWith(property)) {
+                model[part.source] = model[part.source] || [];
+                model[part.source] = node;
+              }
+            });
+          }
+        });
+      }
+      return model;
+    }
+
     // Trigger the layout validation if it exists.
     validate() {
       if (this.element && typeof this.element.validate === 'function') {
