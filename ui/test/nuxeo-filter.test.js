@@ -89,6 +89,11 @@ suite('<nuxeo-filter>', () => {
             <div class="notok"></div>
           </template>
         </nuxeo-filter>
+        <nuxeo-filter document='{"schemas":[{"name": "dublincore", "prefix": "dc"}]}' schema="dublincore">
+          <template>
+            <div class="ok"></div>
+          </template>
+        </nuxeo-filter>
 
         <!-- multiple -->
         <nuxeo-filter document='{"schemas":[{"name": "files", "prefix": "files"}]}' schema="files, dublincore">
@@ -119,7 +124,7 @@ suite('<nuxeo-filter>', () => {
       </div>
     `);
 
-    expect(stamped(filter, '.ok').length).to.be.equal(5);
+    expect(stamped(filter, '.ok').length).to.be.equal(6);
     expect(stamped(filter, '.notok')).to.be.empty;
   });
 
