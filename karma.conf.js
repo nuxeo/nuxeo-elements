@@ -99,7 +99,7 @@ module.exports = (config) => {
     },
 
     coverageIstanbulReporter: {
-      reports: ['html', 'lcovonly', 'text-summary'],
+      reports: ['html', 'lcovonly', 'text'],
       dir: path.join(__dirname, 'coverage'),
       combineBrowserReports: true,
       skipFilesWithNoCoverage: true,
