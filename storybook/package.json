@@ -30,10 +30,12 @@
   },
   "scripts": {
     "start": "start-storybook -s ./public -p 6006",
-    "build": "build-storybook",
-    "deploy": "storybook-to-ghpages"
+    "build-storybook": "build-storybook",
+    "deploy": "storybook-to-ghpages",
+    "snapshot": "build-storybook && percy-storybook --widths=320,1280"
   },
   "devDependencies": {
+    "@percy-io/percy-storybook": "^2.1.0",
     "@storybook/storybook-deployer": "^2.8.1"
   }
 }

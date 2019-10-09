@@ -1,8 +1,9 @@
-import { configure, addDecorator, addParameters, setAddon } from '@storybook/polymer';
+import { configure, addDecorator, addParameters, getStorybook, setAddon } from '@storybook/polymer';
 import { withActions } from '@storybook/addon-actions';
 import { withKnobs } from '@storybook/addon-knobs';
 import { analyse } from './analysis';
 import theme from './theme';
+import createPercyAddon from '@percy-io/percy-storybook';
 
 addDecorator(withKnobs);
 
@@ -25,6 +26,9 @@ addParameters({
   options: { theme },
 });
 
+const { percyAddon, serializeStories } = createPercyAddon();
+setAddon(percyAddon);
+
 // automatically import all files ending in *.stories.js
 const req = require.context('../src/elements', true, /.stories.js$/);
 function loadStories() {
@@ -32,3 +36,5 @@ function loadStories() {
 }
 
 configure(loadStories, module);
+
+serializeStories(getStorybook);
