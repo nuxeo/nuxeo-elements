@@ -16,20 +16,20 @@ limitations under the License.
 */
 import { fixture, html, login } from '@nuxeo/nuxeo-elements/test/test-helpers.js';
 import '../widgets/nuxeo-file.js';
-import { UploaderBehavior } from '../widgets/nuxeo-uploader-behavior.js';
+import { UploaderBehaviorImpl } from '../widgets/nuxeo-uploader-behavior.js';
 /* eslint-disable no-unused-expressions */
 
-suite('Nuxeo.UploaderBehavior', () => {
+suite('Nuxeo.UploaderBehaviorImpl', () => {
   let DefaultUploadProvider;
   setup(async () => {
-    DefaultUploadProvider = UploaderBehavior.getProviders().default;
+    DefaultUploadProvider = UploaderBehaviorImpl.getProviders().default;
     const MyProvider = function() {};
     MyProvider.prototype.accepts = DefaultUploadProvider.prototype.accepts;
     MyProvider.prototype.upload = DefaultUploadProvider.prototype.upload;
     MyProvider.prototype.hasProgress = DefaultUploadProvider.prototype.hasProgress;
     MyProvider.prototype.cancelBatch = DefaultUploadProvider.prototype.cancelBatch;
     MyProvider.prototype.batchExecute = DefaultUploadProvider.prototype.batchExecute;
-    UploaderBehavior.registerProvider('myProvider', MyProvider);
+    UploaderBehaviorImpl.registerProvider('myProvider', MyProvider);
 
     await login();
   });
@@ -58,9 +58,9 @@ suite('Nuxeo.UploaderBehavior', () => {
       MyProvider2.prototype.hasProgress = DefaultUploadProvider.prototype.hasProgress;
       MyProvider2.prototype.cancelBatch = DefaultUploadProvider.prototype.cancelBatch;
       MyProvider2.prototype.batchExecute = DefaultUploadProvider.prototype.batchExecute;
-      UploaderBehavior.registerProvider('myProvider2', MyProvider2);
-      expect(UploaderBehavior.defaultProvider).to.be.equal('default');
-      expect(Object.keys(UploaderBehavior.getProviders())).to.have.all.members([
+      UploaderBehaviorImpl.registerProvider('myProvider2', MyProvider2);
+      expect(UploaderBehaviorImpl.defaultProvider).to.be.equal('default');
+      expect(Object.keys(UploaderBehaviorImpl.getProviders())).to.have.all.members([
         'default',
         'myProvider',
         'myProvider2',
@@ -75,13 +75,13 @@ suite('Nuxeo.UploaderBehavior', () => {
     });
 
     test('can switch default provider', () => {
-      UploaderBehavior.defaultProvider = 'myProvider';
+      UploaderBehaviorImpl.defaultProvider = 'myProvider';
       expect(noProvider._provider).to.be.equal('myProvider');
       expect(noProvider.provider).to.be.undefined;
       expect(withProvider._provider).to.be.equal('myProvider');
       expect(withProvider.provider).to.be.equal(withProvider._provider);
 
-      UploaderBehavior.defaultProvider = 'default';
+      UploaderBehaviorImpl.defaultProvider = 'default';
       expect(noProvider._provider).to.be.equal('default');
       expect(noProvider.provider).to.be.undefined;
       expect(withProvider._provider).to.be.equal('myProvider');
@@ -95,7 +95,7 @@ suite('Nuxeo.UploaderBehavior', () => {
       expect(withProvider._provider).to.be.equal('myProvider');
       expect(withProvider.provider).to.be.equal(withProvider._provider);
 
-      UploaderBehavior.defaultProvider = 'myProvider';
+      UploaderBehaviorImpl.defaultProvider = 'myProvider';
       expect(noProvider._provider).to.be.equal('default');
       expect(noProvider.provider).to.be.equal(noProvider._provider);
       expect(withProvider._provider).to.be.equal('myProvider');

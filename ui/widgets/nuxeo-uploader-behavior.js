@@ -14,6 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
+import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
+import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+
 /**
  * Initializes a new default upload provider.
  *
@@ -166,7 +170,7 @@ let _defaultProvider = 'default';
 /**
  * @polymerBehavior Nuxeo.UploaderBehavior
  */
-export const UploaderBehavior = {
+export const UploaderBehaviorImpl = {
   properties: {
     /**
      * Accepted file extensions or mime types (comma separated values).
@@ -226,6 +230,14 @@ export const UploaderBehavior = {
         return _defaultProvider;
       },
     },
+    /**
+     * Error message to show when `invalid` is true.
+     */
+    errorMessage: String,
+    /**
+     * Required.
+     */
+    required: Boolean,
   },
 
   observers: ['_initProvider(_provider, connection, accept, batchAppend)'],
@@ -402,6 +414,8 @@ export const UploaderBehavior = {
   },
 
   _batchFinished(batchId) {
+    this.invalid = false;
+    this.errorMessage = null;
     this.uploading = false;
     this.batchId = batchId;
     this.fire('batchFinished', { batchId });
@@ -409,6 +423,10 @@ export const UploaderBehavior = {
 
   _batchFailed(error) {
     this.uploading = false;
+    if (error.response.status) {
+      this.invalid = true;
+      this.errorMessage = this.i18n(`file.invalid.${error.response.status}`);
+    }
     this.fire('batchFailed', { error });
   },
 
@@ -429,6 +447,11 @@ export const UploaderBehavior = {
   },
 
   _uploadInterrupted(file, error) {
+    if (error.response.status) {
+      this.invalid = true;
+      this.errorMessage = this.i18n(`file.invalid.${error.response.status}`);
+    }
+    this.uploading = false;
     this.fire('uploadInterrupted', { file, error: error || 'Upload Interrupted!' });
   },
 
@@ -455,4 +478,17 @@ export const UploaderBehavior = {
     e.preventDefault();
     this.uploadFiles(e.dataTransfer.files);
   },
+
+  _getValidity() {
+    if (this.uploading) {
+      this.errorMessage = this.i18n('file.invalid.uploading');
+      return false;
+    }
+    if (!this.required) {
+      return true;
+    }
+    return this.files && this.files.length > 0;
+  },
 };
+
+export const UploaderBehavior = [IronValidatableBehavior, I18nBehavior, UploaderBehaviorImpl];
