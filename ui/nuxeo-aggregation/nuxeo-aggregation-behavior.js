@@ -25,7 +25,6 @@ export const AggregationBehavior = {
 
     value: {
       type: Array,
-      value: [],
       notify: true,
     },
 
@@ -95,7 +94,7 @@ export const AggregationBehavior = {
         values.push(item.key);
       }
     });
-    this.value = values;
+    this.value = values.length > 0 ? values : undefined;
   },
 
   _computeLabel(item) {

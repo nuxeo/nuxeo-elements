@@ -75,6 +75,17 @@ suite('<nuxeo-checkbox-aggregation>', () => {
       expect(choices[0].textContent.trim()).to.be.equal('Tolkien (2)');
       expect(choices[1].textContent.trim()).to.be.equal('Asimov (1)');
     });
+
+    test('Its value is undefined when none selected', () => {
+      const choices = dom(documentAggs.root).querySelectorAll('paper-checkbox');
+      const initialValue = documentAggs.value;
+      expect(initialValue).to.be.equal(undefined);
+      // select first
+      choices[0].click();
+      // unselect first
+      choices[0].click();
+      expect(documentAggs.value).to.be.equal(initialValue);
+    });
   });
 
   suite('Given a nuxeo-checkbox-aggregation widget on document aggregations sorted by label', () => {
