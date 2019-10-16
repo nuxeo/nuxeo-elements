@@ -30,7 +30,7 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
    *                          params="[[params]]">
    *     </nuxeo-page-provider>
    *
-   *     <nuxeo-dropdown-aggregation data="[[aggregations.dc_creator_agg]]" multiple
+   *     <nuxeo-dropdown-aggregation data="[[aggregations.dc_creator_agg]]"
    *                                 value="{{params.dc_creator_agg}}">
    *     </nuxeo-dropdown-aggregation>
    *
@@ -56,7 +56,7 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
         <nuxeo-selectivity
           data="[[_computeData(buckets)]]"
           min-chars="[[minChars]]"
-          multiple="[[multiple]]"
+          multiple
           placeholder="[[placeholder]]"
           value="{{value}}"
         >
@@ -73,11 +73,6 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
         value: {
           type: Array,
           notify: true,
-        },
-
-        multiple: {
-          type: Boolean,
-          value: false,
         },
 
         minChars: {
