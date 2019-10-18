@@ -44,7 +44,7 @@ export const FormatBehavior = [
 
     _formatDate(date, fmt) {
       if (!date) return;
-      moment.locale(this._languageCode());
+      moment().locale(this._languageCode());
       if (fmt && fmt === 'relative') {
         return moment().to(date);
       }
