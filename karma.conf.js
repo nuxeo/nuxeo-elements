@@ -13,7 +13,7 @@ let customLaunchers = {
   },
 };
 
-const reporters = ['dots', 'coverage-istanbul'];
+const reporters = ['mocha', 'dots', 'coverage-istanbul'];
 
 if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY) {
   customLaunchers = {
@@ -75,7 +75,7 @@ module.exports = (config) => {
     preprocessors: {
       '*/test/*.test.js': ['webpack', 'sourcemap'],
     },
-    reporters: ['dots', 'coverage-istanbul'],
+    reporters: ['mocha', 'coverage-istanbul'],
     port: 9876,
     colors: true,
     browserConsoleLogOptions: {
