@@ -128,9 +128,9 @@ pipeline {
               -----------------
               Publishing to npm
               -----------------"""
-            def token = sh(script: 'jx step credential -s jenkins-npm-token -k token', returnStdout: true).trim()
-            sh "echo '//nexus/repository/npmjs-nuxeo/:_authToken=${token}' >> ~/.npmrc"
-            sh "npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --registry=http://nexus/repository/npmjs-nuxeo/ --tag SNAPSHOT"
+            def token = sh(script: 'jx step credential -s public-npm-token -k token', returnStdout: true).trim()
+            sh "echo '//packages.nuxeo.com/repository/npmjs-nuxeo/:_authToken=${token}' >> ~/.npmrc"
+            sh "npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --registry=http://packages.nuxeo.com/repository/npmjs-nuxeo/ --tag SNAPSHOT"
             // publish storybook
             dir('storybook') {
               echo """
