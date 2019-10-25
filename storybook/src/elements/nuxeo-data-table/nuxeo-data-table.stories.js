@@ -6,10 +6,7 @@ import { tableTemplate } from './nuxeo-data-table-structure.js';
 const stories = storiesOf('UI/nuxeo-data-table', module);
 
 stories
-  .add('Empty', () => {
-    const numberOfItems = number('Number of items', 0);
-    return tableTemplate(LIST(numberOfItems));
-  })
+  .add('Empty', () => tableTemplate(LIST(0)))
   .add('Basic', () => {
     const numberOfItems = number('Number of items', 50);
     return tableTemplate(LIST(numberOfItems));
