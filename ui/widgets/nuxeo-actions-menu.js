@@ -184,11 +184,15 @@ import './nuxeo-tooltip.js';
     }
 
     _getMenuElements() {
-      return this.$.slot.assignedNodes({ flatten: true }).filter((node) => node.nodeType === Node.ELEMENT_NODE);
+      return this.$.slot
+        .assignedNodes({ flatten: true })
+        .filter((node) => node.nodeType === Node.ELEMENT_NODE && node.tagName !== 'NUXEO-SLOT');
     }
 
     _getDropdownElements() {
-      return this.$.dropdown.assignedNodes({ flatten: true }).filter((node) => node.nodeType === Node.ELEMENT_NODE);
+      return this.$.dropdown
+        .assignedNodes({ flatten: true })
+        .filter((node) => node.nodeType === Node.ELEMENT_NODE && node.tagName !== 'NUXEO-SLOT');
     }
 
     _moveToMenu(el) {
