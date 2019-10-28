@@ -256,7 +256,11 @@ window.nuxeo.slots.setSharedModel = (model) => {
                   c.removeAttribute('slot');
                 }
               });
-            parent.appendChild(el.root);
+            if (this.parentNode === parent) {
+              parent.insertBefore(el.root, this);
+            } else {
+              parent.appendChild(el.root);
+            }
           } else {
             parent.insertBefore(el.root, this);
           }
