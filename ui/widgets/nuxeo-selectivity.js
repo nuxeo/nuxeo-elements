@@ -3793,7 +3793,7 @@ typedArrayTags[weakMapTag] = false;
             }
           })
           .catch((error) => {
-            const formatError = ajax.formatError || Locale.ajaxError;
+            const formatError = ajax.formatError || Selectivity.Locale.ajaxError;
             queryOptions.error(formatError(term, error), { escape: false });
           });
       }
@@ -3809,7 +3809,7 @@ typedArrayTags[weakMapTag] = false;
           options.query = function (queryOptions) {
             const numCharsNeeded = ajax.minimumInputLength - queryOptions.term.length;
             if (numCharsNeeded > 0) {
-              queryOptions.error(Locale.needMoreCharacters(numCharsNeeded));
+              queryOptions.error(Selectivity.Locale.needMoreCharacters(numCharsNeeded));
               return;
             }
 
@@ -6170,7 +6170,7 @@ typedArrayTags[weakMapTag] = false;
      * replaced with actual results.
      */
         loading() {
-          return `<div class="selectivity-loading">${Locale.loading}</div>`;
+          return `<div class="selectivity-loading">${Selectivity.Locale.loading}</div>`;
         },
 
         /**
@@ -6180,7 +6180,7 @@ typedArrayTags[weakMapTag] = false;
      * clicked, will load more results.
      */
         loadMore() {
-          return `<div class="selectivity-load-more">${Locale.loadMore}</div>`;
+          return `<div class="selectivity-load-more">${Selectivity.Locale.loadMore}</div>`;
         },
 
         /**
@@ -6252,7 +6252,7 @@ typedArrayTags[weakMapTag] = false;
         noResults(options) {
           return (
             `<div class="selectivity-error">${
-              options.term ? Locale.noResultsForTerm(options.term) : Locale.noResults
+              options.term ? Selectivity.Locale.noResultsForTerm(options.term) : Selectivity.Locale.noResults
             }</div>`
           );
         },
@@ -7179,6 +7179,25 @@ input[type='text'].selectivity-multiple-input:focus {
       this.$.input.addEventListener('selectivity-change', this._updateSelectionHandler);
 
       this._selectivity = new InputType(options);
+
+      const self = this;
+      Selectivity.Locale = {
+        get loading() { return self.i18n('selectivity.loading'); },
+        get loadMore() { return self.i18n('selectivity.loadMore'); },
+        get noResults() { return self.i18n('selectivity.noResults'); },
+
+        ajaxError: (term) => {
+          if (term) {
+            return this.i18n('selectivity.failedFetchResultsForTerm', `<b>${escapeHTML(term)}</b>`);
+          } else {
+            return this.i18n('selectivity.failedFetchResults');
+          }
+        },
+
+        needMoreCharacters: (numCharacters) => this.i18n('selectivity.minChars', numCharacters),
+
+        noResultsForTerm: (term) => this.i18n('selectivity.noResultsForTerm',`<b>${escapeHTML(term)}</b>`),
+      };
 
       if (this.value || this.selectedItem || this.selectedItems) {
         setTimeout(() => {
