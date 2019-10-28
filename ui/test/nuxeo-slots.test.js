@@ -24,6 +24,15 @@ function _content(slot) {
   return slot.parentElement.querySelectorAll(':not(nuxeo-slot)');
 }
 
+// asserts that all slot contributions are inserted before <nuxeo-slot>
+function _assertPosition(slot) {
+  const siblings = Array.from(slot.parentElement.children);
+  const slotIdx = siblings.indexOf(slot);
+  Array.from(_content(slot))
+    .map((el) => siblings.indexOf(el))
+    .forEach((contentIdx) => expect(contentIdx).to.be.below(slotIdx));
+}
+
 const makeSlot = (name, legacySlotName = false) =>
   fixture(
     legacySlotName
@@ -89,6 +98,7 @@ suite('<nuxeo-slot>', () => {
           { order: 1 },
         );
 
+        _assertPosition(slot1);
         expect(_content(slot1).length).to.be.equal(1);
         expect(_content(slot2)).to.be.empty;
 
@@ -101,6 +111,7 @@ suite('<nuxeo-slot>', () => {
           { order: 2 },
         );
 
+        _assertPosition(slot1);
         expect(_content(slot1).length).to.be.equal(2);
         expect(_content(slot2)).to.be.empty;
 
@@ -113,6 +124,7 @@ suite('<nuxeo-slot>', () => {
         );
 
         expect(_content(slot1).length).to.be.equal(2);
+        _assertPosition(slot2);
         expect(_content(slot2).length).to.be.equal(1);
 
         const content1 = _content(slot1);
@@ -143,6 +155,7 @@ suite('<nuxeo-slot>', () => {
           { order: 1 },
         );
 
+        _assertPosition(slot1);
         const content = _content(slot1);
         expect(content.length).to.be.equal(2);
 
@@ -180,6 +193,7 @@ suite('<nuxeo-slot>', () => {
 
         await makeContent('content', 'SLOT1');
 
+        _assertPosition(slot1);
         const content = _content(slot1);
         expect(content.length).to.be.equal(1);
         expect(content[0].textContent).to.be.equal('Disabled content');
@@ -213,6 +227,7 @@ suite('<nuxeo-slot>', () => {
           `,
           { order: 3 },
         );
+        _assertPosition(slot1);
         content = _content(slot1);
         expect(content.length).to.be.equal(2);
 
@@ -238,6 +253,7 @@ suite('<nuxeo-slot>', () => {
           { priority: 10 },
         );
 
+        _assertPosition(slot1);
         const content = _content(slot1);
         expect(content.length).to.be.equal(1);
         expect(content[0].textContent).to.be.equal('Content 1 override');
@@ -317,6 +333,7 @@ suite('<nuxeo-slot>', () => {
           <span>Content</span>
         `,
       );
+      _assertPosition(nxSlot);
       let [content] = _content(nxSlot);
       expect(content.parentElement).to.be.equal(nxSlot.parentElement);
       expect(content.assignedSlot).to.be.equal(nxSlot.assignedSlot);
@@ -324,6 +341,7 @@ suite('<nuxeo-slot>', () => {
       // switch slots and check if the content is correctly updated
       nxSlot.slot = 'body';
       await flush();
+      _assertPosition(nxSlot);
       [content] = _content(nxSlot);
       expect(nxSlot.parentElement).to.be.equal(customEl);
       expect(nxSlot.assignedSlot).to.not.be.null;
@@ -333,6 +351,7 @@ suite('<nuxeo-slot>', () => {
 
       nxSlot.slot = '';
       await flush();
+      _assertPosition(nxSlot);
       [content] = _content(nxSlot);
       expect(nxSlot.parentElement).to.be.equal(customEl);
       expect(nxSlot.assignedSlot).to.not.be.null;
