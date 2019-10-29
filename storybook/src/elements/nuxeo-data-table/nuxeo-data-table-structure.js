@@ -2,8 +2,9 @@ import { html } from 'lit-html';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-data-table/iron-data-table.js';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-document-thumbnail/nuxeo-document-thumbnail.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-date.js';
-import '../../../../ui/widgets/nuxeo-date-picker';
-import '../../../.storybook/i18n';
+import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-date-picker.js';
+import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-user-tag.js';
+import '../../../.storybook/i18n.js';
 
 export const tableTemplate = (params) =>
   html`
@@ -50,7 +51,7 @@ export const tableTemplate = (params) =>
 
       <nuxeo-data-table-column name="User" flex="${params.flex}">
         <template>
-          [[item.properties.user]]
+          <nuxeo-user-tag user="[[item.properties.user]]" disabled></nuxeo-user-tag>
         </template>
       </nuxeo-data-table-column>
 
