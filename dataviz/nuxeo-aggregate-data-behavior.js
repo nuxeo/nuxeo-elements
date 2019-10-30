@@ -128,7 +128,7 @@ Nuxeo.AggregateDataBehavior = {
     },
 
     /**
-     * The field to use in the single-value metrics aggregation.
+     * The field to use in the metrics aggregation.
      * This can be just the field name or include the `metrics-op` to use as well, ex: `avg(field)`
      */
     metrics: {
@@ -164,7 +164,7 @@ Nuxeo.AggregateDataBehavior = {
     aggregates: Object,
 
     data: {
-      type: Array,
+      type: Object,
       value: () => [],
       notify: true,
     },
@@ -353,7 +353,7 @@ Nuxeo.AggregateDataBehavior = {
 
   // unwrap out metrics value
   _getMetricsValue(bucket) {
-    return bucket.metrics ? bucket.metrics.value : bucket.doc_count;
+    return bucket.metrics ? bucket.metrics.value || bucket.metrics.values : bucket.doc_count;
   },
 
   // Helper functions
