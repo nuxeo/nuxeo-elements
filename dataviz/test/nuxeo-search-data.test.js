@@ -53,7 +53,7 @@ suite('<nuxeo-search-data>', () => {
     ]);
   });
 
-  test('metrics', async () => {
+  test('single-value metrics', async () => {
     fakeResponse({
       aggregations: {
         metrics: {
@@ -67,6 +67,32 @@ suite('<nuxeo-search-data>', () => {
     assert.equal(search.aggregates.metrics.avg.field, 'extended.variable');
     await search.fetch();
     assert.equal(search.data, 1);
+  });
+
+  test('object-value metrics', async () => {
+    fakeResponse({
+      aggregations: {
+        metrics: {
+          values: {
+            '1.0': 1,
+            '5.0': 1,
+            '25.0': 1,
+            '50.0': 5,
+            '75.0': 1,
+            '95.0': 1,
+            '99.0': 2,
+          },
+        },
+      },
+    });
+    const search = await fixture(html`
+      <nuxeo-search-data metrics="percentiles(variable)"></nuxeo-search-data>
+    `);
+    assert.equal(search.aggregates.metrics.percentiles.field, 'extended.variable');
+    await search.fetch();
+    assert.equal(search.data['1.0'], 1);
+    assert.equal(search.data['50.0'], 5);
+    assert.equal(search.data['99.0'], 2);
   });
 
   test('grouped-by', async () => {
