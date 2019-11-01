@@ -37,7 +37,7 @@
   "deleteButton.tooltip": "Supprimer le document",
   "deleteButton.tooltip.permanently": "Supprimer définitivement le document",
   "deleteBlobButton.dialog.heading": "Supprimer le fichier",
-  "deleteBlobButton.dialog.message": "Voulez-vous vraiment supprimer le fichier ?",
+  "deleteBlobButton.dialog.message": "Vous-vous vraiment supprimer le fichier ?",
   "deleteBlobButton.dialog.no": "Non",
   "deleteBlobButton.dialog.yes": "Oui",
   "deleteBlobButton.deleted": "Fichier supprimé",
