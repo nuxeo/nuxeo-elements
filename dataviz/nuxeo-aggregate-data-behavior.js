@@ -168,6 +168,15 @@ Nuxeo.AggregateDataBehavior = {
       value: () => [],
       notify: true,
     },
+
+    /**
+     * Raw json response.
+     */
+    response: {
+      type: Object,
+      readOnly: true,
+      notify: true,
+    },
   },
 
   observers: [
@@ -335,6 +344,7 @@ Nuxeo.AggregateDataBehavior = {
   },
 
   _onResults(result) {
+    this._setResponse(result);
     if (result && result.aggregations) {
       this.data = this._unwrapAggregation(result.aggregations);
     }
