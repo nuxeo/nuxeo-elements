@@ -3,6 +3,7 @@ import { withActions } from '@storybook/addon-actions';
 import { withKnobs } from '@storybook/addon-knobs';
 import { analyse } from './analysis';
 import theme from './theme';
+import './nuxeo-demo-theme';
 
 addDecorator(withKnobs);
 
