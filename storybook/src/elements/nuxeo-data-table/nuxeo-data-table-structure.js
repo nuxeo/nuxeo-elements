@@ -4,8 +4,8 @@ import '@nuxeo/nuxeo-ui-elements/nuxeo-document-thumbnail/nuxeo-document-thumbna
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-date.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-date-picker.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-user-tag.js';
-import '../../../.storybook/routing.js';
 import '../../../.storybook/i18n.js';
+import '../../../.storybook/routing.js';
 
 export const tableTemplate = (params) =>
   html`
