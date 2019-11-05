@@ -69,12 +69,12 @@ import './nuxeo-tooltip.js';
               fetch-avatar$="[[fetchAvatar]]"
             >
             </nuxeo-user-avatar>
-            <dom-if if="[[_hasLink(user)]]">
+            <dom-if if="[[_hasLink(disabled, user)]]">
               <template>
                 <a href$="[[_href(user)]]" on-click="_preventPropagation">[[_name(user)]]</a>
               </template>
             </dom-if>
-            <dom-if if="[[!_hasLink(user)]]">
+            <dom-if if="[[!_hasLink(disabled, user)]]">
               <template>
                 [[_name(user)]]
               </template>
@@ -158,8 +158,8 @@ import './nuxeo-tooltip.js';
       return this.urlFor('user', this._id(user));
     }
 
-    _hasLink(user) {
-      return !(this.disabled || this._name(user) === 'system');
+    _hasLink(disabled, user) {
+      return !(disabled || this._name(user) === 'system');
     }
 
     /**
