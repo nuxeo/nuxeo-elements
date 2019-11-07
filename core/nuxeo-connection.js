@@ -33,7 +33,10 @@ import './nuxeo-element.js';
    *       password="Administrator">
    *     </nuxeo-connection>
    *
-   * Note: Elements that depend on a connectionId use `nx` as default.
+   * Note:
+   * - Elements that depend on a connectionId use `nx` as default.
+   * - a 'token' property can be set for Token Authentication (set method="token")
+   *
    *
    * @memberof Nuxeo
    */
@@ -104,6 +107,12 @@ import './nuxeo-element.js';
           readOnly: true,
           notify: true,
         },
+
+        /** Authentication Token */
+        token: {
+          type: String,
+          value: null,
+        },
       };
     }
 
@@ -163,6 +172,12 @@ import './nuxeo-element.js';
           };
         }
       } else {
+        if (this.method === 'token' && this.token) {
+          options.auth = {
+            method: 'token',
+            token: this.token,
+          };
+        }
         options.headers = { 'X-No-Basic-Header': true };
       }
 
