@@ -129,14 +129,10 @@ import '../../nuxeo-data-table/iron-data-table.js';
               </template>
             </nuxeo-data-table-column>
             <nuxeo-data-table-column name="Version">
-              <template
-                >[[_displayVersion(item)]]</template
-              >
+              <template>[[_displayVersion(item)]]</template>
             </nuxeo-data-table-column>
             <nuxeo-data-table-column name="State">
-              <template
-                >[[item.state]]</template
-              >
+              <template>[[item.state]]</template>
             </nuxeo-data-table-column>
           </nuxeo-data-table>
         </div>

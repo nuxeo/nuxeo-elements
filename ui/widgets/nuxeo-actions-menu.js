@@ -171,7 +171,10 @@ import './nuxeo-tooltip.js';
                 // we don't want to move the action back if the event is comming from a non-dialog element
                 return;
               }
-              path = path.slice(0, path.findIndex((el) => el === action));
+              path = path.slice(
+                0,
+                path.findIndex((el) => el === action),
+              );
               if (path.filter((el) => el.tagName === 'NUXEO-DIALOG' || el.tagName === 'PAPER-DIALOG').length > 1) {
                 // nor if it comes from an inner dialog
                 return;

@@ -134,7 +134,10 @@ suite('<nuxeo-workflow-data>', () => {
       </nuxeo-workflow-data>
     `);
     assert.equal(search.aggregates.by.range.field, 'extended.variable');
-    assert.deepEqual(search.aggregates.by.range.ranges, [{ key: 'low', to: 1500 }, { key: 'high', from: 1500 }]);
+    assert.deepEqual(search.aggregates.by.range.ranges, [
+      { key: 'low', to: 1500 },
+      { key: 'high', from: 1500 },
+    ]);
     await search.fetch();
     assert.isArray(search.data);
     assert.equal(search.data.length, 2);

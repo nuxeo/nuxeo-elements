@@ -48,9 +48,7 @@ const makeContent = async (name, slot, content, options = {}) => {
   const { order, disabled, priority } = options;
   const tmpl = content
     ? html`
-        <template
-          >${content}</template
-        >
+        <template>${content}</template>
       `
     : '';
   const slContent = html`
