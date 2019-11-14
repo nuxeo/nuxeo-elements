@@ -364,27 +364,29 @@ suite('<nuxeo-data-table>', () => {
     });
 
     test('simpleTable', async () => {
-      const table = (await fixture(html`
-        <div>
-          <nuxeo-page-provider
-            id="cvProvider"
-            provider="default_search"
-            page-size="40"
-            aggregations="{{aggregations}}"
-            enrichers="thumbnail"
-            params='{"ecm_path": ["/default-domain/workspaces"]}'
-          >
-          </nuxeo-page-provider>
+      const table = (
+        await fixture(html`
+          <div>
+            <nuxeo-page-provider
+              id="cvProvider"
+              provider="default_search"
+              page-size="40"
+              aggregations="{{aggregations}}"
+              enrichers="thumbnail"
+              params='{"ecm_path": ["/default-domain/workspaces"]}'
+            >
+            </nuxeo-page-provider>
 
-          <nuxeo-data-table nx-provider="cvProvider" selection-enabled multi-selection>
-            <nuxeo-data-table-column name="Full text search" flex="100" filter-by="ecm_fulltext" sort-by="dc:title">
-              <template>
-                <a class="title ellipsis">[[item.title]]</a>
-              </template>
-            </nuxeo-data-table-column>
-          </nuxeo-data-table>
-        </div>
-      `)).querySelector('nuxeo-data-table');
+            <nuxeo-data-table nx-provider="cvProvider" selection-enabled multi-selection>
+              <nuxeo-data-table-column name="Full text search" flex="100" filter-by="ecm_fulltext" sort-by="dc:title">
+                <template>
+                  <a class="title ellipsis">[[item.title]]</a>
+                </template>
+              </nuxeo-data-table-column>
+            </nuxeo-data-table>
+          </div>
+        `)
+      ).querySelector('nuxeo-data-table');
 
       table.fetch();
 

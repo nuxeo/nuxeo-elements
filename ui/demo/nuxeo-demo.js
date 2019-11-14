@@ -74,9 +74,7 @@ window.nuxeo.I18n.loadLocale();
         </style>
 
         <div id="container">
-          <template is="dom-if" if="[[heading]]"
-            ><div id="heading">[[heading]]</div></template
-          >
+          <template is="dom-if" if="[[heading]]"><div id="heading">[[heading]]</div></template>
           <div id="content">
             <slot></slot>
           </div>

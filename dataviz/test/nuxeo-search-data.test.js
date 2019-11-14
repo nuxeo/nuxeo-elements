@@ -158,7 +158,10 @@ suite('<nuxeo-search-data>', () => {
       </nuxeo-search-data>
     `);
     assert.equal(search.aggregates.by.range.field, 'extended.variable');
-    assert.deepEqual(search.aggregates.by.range.ranges, [{ key: 'low', to: 1500 }, { key: 'high', from: 1500 }]);
+    assert.deepEqual(search.aggregates.by.range.ranges, [
+      { key: 'low', to: 1500 },
+      { key: 'high', from: 1500 },
+    ]);
 
     await search.fetch();
 
