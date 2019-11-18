@@ -113,9 +113,6 @@ import './nuxeo-error.js';
 
     // Trigger the layout validation if it exists.
     validate() {
-      if (this.element && typeof this.element.validate === 'function') {
-        return this.element.validate();
-      }
       // workaroud for https://github.com/PolymerElements/iron-form/issues/218, adapted from iron-form.html
       let valid = true;
       if (this.element) {
@@ -125,7 +122,13 @@ import './nuxeo-error.js';
           valid = (el.validate ? el.validate() : el.checkValidity()) && valid;
         }
       }
-      return valid;
+      if (!valid) {
+        return false;
+      }
+      if (this.element && typeof this.element.validate === 'function') {
+        return this.element.validate();
+      }
+      return true;
     }
 
     _getValidatableElements(parent) {
