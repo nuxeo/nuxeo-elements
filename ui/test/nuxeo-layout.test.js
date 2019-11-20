@@ -17,6 +17,7 @@ limitations under the License.
 import { fixture, html, waitForEvent, waitChanged } from '@nuxeo/nuxeo-elements/test/test-helpers.js';
 import { Polymer } from '@polymer/polymer/polymer-legacy.js';
 import '../nuxeo-layout.js';
+import '../widgets/nuxeo-input.js';
 /* eslint-disable no-unused-expressions */
 
 // determine base module path (relies on @open-wc/webpack-import-meta-loader)
@@ -46,5 +47,37 @@ suite.skip('<nuxeo-layout>', () => {
     expect(layout.$$('nuxeo-error').hidden).to.be.true;
     expect(layout.element.localName).to.equal('dummy-layout');
     expect(layout.element.text).to.equal('dummy');
+  });
+
+  test('layout valid field invalid', async () => {
+    const layout = await fixture(html`
+      <nuxeo-layout href="${base}/dummy-layout.html" model='{"text": "valid"}'></nuxeo-layout>
+    `);
+    const validity = await layout.validate();
+    expect(validity).to.equal(false);
+  });
+
+  test('layout valid field valid', async () => {
+    const layout = await fixture(html`
+      <nuxeo-layout href="${base}/dummy-layout.html" model='{"text": "valid", "required": "foo"}'></nuxeo-layout>
+    `);
+    const validity = await layout.validate();
+    expect(validity).to.equal(true);
+  });
+
+  test('layout invalid field valid', async () => {
+    const layout = await fixture(html`
+      <nuxeo-layout href="${base}/dummy-layout.html" model='{"text": "invalid", "required": "foo"}'></nuxeo-layout>
+    `);
+    const validity = await layout.validate();
+    expect(validity).to.equal(false);
+  });
+
+  test('layout invalid field invalid', async () => {
+    const layout = await fixture(html`
+      <nuxeo-layout href="${base}/dummy-layout.html" model='{"text": "invalid"}'></nuxeo-layout>
+    `);
+    const validity = await layout.validate();
+    expect(validity).to.equal(false);
   });
 });

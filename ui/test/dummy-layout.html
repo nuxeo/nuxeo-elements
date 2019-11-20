@@ -1,12 +1,21 @@
 <dom-module id="dummy-layout">
   <template>
     <span>[[text]]</span>
+    <nuxeo-input value="{{required}}" required></nuxeo-input>
   </template>
   <script>
     Polymer({
       is: 'dummy-layout',
       properties: {
         text: String,
+        required: String,
+      },
+      validate() {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(this.text === 'valid');
+          }, 100);
+        });
       },
     });
   </script>
