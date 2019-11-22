@@ -22,7 +22,7 @@ import './data-table-templatizer-behavior.js';
           }
 
           :host([header]) {
-            height: 56px;
+            height: 48px;
           }
 
           :host([hidden]) {

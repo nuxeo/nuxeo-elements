@@ -123,7 +123,6 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
             overflow-x: auto;
             overflow-y: hidden;
             -webkit-overflow-scrolling: touch;
-            width: 100%;
             min-height: 300px;
             @apply --iron-data-table;
           }
@@ -178,7 +177,6 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
             transition: box-shadow 200ms;
             -webkit-transition: box-shadow 200ms;
             @apply --iron-data-table-header;
-            background: var(--nuxeo-table-header-background, #efefef);
           }
 
           #header.scrolled {
@@ -207,16 +205,23 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
             font-size: 1.1em;
           }
 
-          .top-actions {
-            @apply --layout-horizontal;
-            @apply --layout-center;
-            @apply --layout-justified;
-            margin-right: 8px;
+          #addEntry {
+            border: 1px solid var(--nuxeo-primary-color, #0066ff);
+            background-color: var(--nuxeo-table-items-background, #ffffff);
+            color: var(--nuxeo-primary-color, #0066ff);
+            font-weight: 600;
+            height: 32px;
+            box-shadow: 0px -8px 10px 0px rgba(--nuxeo-table-items-background, 0.75);
           }
 
-          .top-actions paper-button {
-            padding: 0;
-            margin-right: 6px;
+          #addEntry[disabled] {
+            border: 1px solid var(--disabled-text-color, #bdbdbd);
+            color: var(--secondary-text-color, #1f28bf);
+          }
+
+          #addEntry:hover {
+            border: 1px solid var(--nuxeo-secondary-color, #1f28bf);
+            color: var(--nuxeo-secondary-color, #1f28bf);
           }
 
           .error {
@@ -232,17 +237,7 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
         <div id="container">
           <slot name="nuxeo-selection-toolbar"></slot>
 
-          <div class="top-actions">
-            <label>[[label]]</label>
-            <dom-if if="[[editable]]">
-              <template>
-                <paper-button id="addEntry" noink class="primary" on-click="_createEntry">
-                  + [[i18n('command.add')]]
-                </paper-button>
-              </template>
-            </dom-if>
-          </div>
-
+          <label>[[label]]</label>
           <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
 
           <div id="header">
@@ -362,6 +357,14 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
               </div>
             </template>
           </iron-list>
+
+          <dom-if if="[[editable]]">
+            <template>
+              <paper-button id="addEntry" class="secondary" noink on-click="_createEntry">
+                + [[i18n('command.add')]]
+              </paper-button>
+            </template>
+          </dom-if>
 
           <iron-scroll-threshold
             id="scrollThreshold"
