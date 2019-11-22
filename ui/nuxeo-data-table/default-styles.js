@@ -5,6 +5,13 @@ const template = html`
     <style>
       html {
         --iron-data-table: {
+          border: 1px solid var(--nuxeo-tag-background, rgba(0, 0, 0, 0.05));
+          box-shadow: var(
+            --nuxeo-app-header-box-shadow,
+            1px 0 0 rgba(0, 0, 0, 0.1) inset,
+            0 3px 5px rgba(0, 0, 0, 0.1)
+          );
+          background-color: #f7f8fa;
           font-weight: 400;
           line-height: 1.1;
           font-family: var(--nuxeo-app-font, 'Open Sans', Arial, sans-serif);
@@ -13,12 +20,12 @@ const template = html`
 
         --iron-data-table-header: {
           background-color: var(--nuxeo-table-header-background, #fafafa);
-          color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.54));
-          font-weight: 700;
+          color: var(--secondary-text-color, #939caa);
+          font-weight: 600;
           font-size: 1rem;
-          height: 56px;
+          height: 48px;
           border-bottom: 2px solid var(--nuxeo-border, #e3e3e3);
-          min-height: 56px;
+          min-height: 48px;
         }
 
         --iron-data-table-row: {
