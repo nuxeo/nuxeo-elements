@@ -106,6 +106,24 @@ const template = html`
           background-color: var(--nuxeo-button-primary-focus);
         }
 
+        --nx-button-secondary: {
+          border: 1px solid var(--nuxeo-primary-color);
+          background-color: #ffffff;
+          color: var(--nuxeo-primary-color);
+          font-weight: 600;
+          box-shadow: 0px -8px 10px 0px rgba(255, 255, 255, 0.75);
+        }
+
+        --nx-button-secondary-hover: {
+          border: 1px solid var(--nuxeo-secondary-color);
+          color: var(--nuxeo-secondary-color);
+        }
+
+        --nx-button-secondary-disabled: {
+          border: 1px solid var(--disabled-text-color);
+          color: var(--secondary-text-color);
+        }
+
         --nuxeo-button-disabled: {
           color: var(--nuxeo-button-disabled-text);
           font-weight: normal;
