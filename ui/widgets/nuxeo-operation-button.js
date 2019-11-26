@@ -70,7 +70,7 @@ import '../actions/nuxeo-action-button-styles.js';
 
     static get properties() {
       return {
-        /* Icon name, can be anything taken from the [material icons](https://material.io/icons/), e.g. "chat", "description". */
+        /* Icon name, can be anything taken from the [material icons](https://material.io/icons/) in the default, communication, editor, hardware, image, notification and social sets. e.g. "chat", "description". */
         icon: String,
 
         /* Label (shown inside menu dropdowns and on tooltips) */
