@@ -100,7 +100,7 @@ import './nuxeo-aggregate-data-element.js';
     }
 
     static get observers() {
-      return ['_query(startDate, endDate)'];
+      return ['_query(startDate, endDate, pageProvider)'];
     }
 
     _query() {
