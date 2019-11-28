@@ -399,6 +399,13 @@ window.nuxeo.slots.setSharedModel = (model) => {
     }
 
     _register() {
+      // Note that nuxeo-slot-content expects to have a template as content, but it is not required. It can
+      // be used without a template for disabling content or redefining priorities or order. Therefore, we should
+      // make sure we wait for the template in case the DOM distribution of the element is not yet complete. An
+      // exception can be made when we're disabling content, in which case the template will always be ignored.
+      if (!this.disabled) {
+        this.__ensureTemplate();
+      }
       this.slot.split(',').forEach((slot) => {
         _registerContent(this, slot);
       });
@@ -408,6 +415,26 @@ window.nuxeo.slots.setSharedModel = (model) => {
       slots.split(',').forEach((slot) => {
         _unregisterContent(this, slot);
       });
+    }
+
+    __ensureTemplate() {
+      // This method returns `true` if there is a template and `false` otherwise. If there's no template,
+      // it sets a mutation observer to re-trigger `_register` when a template is added to this element's dom.
+      // see https://github.com/Polymer/polymer/blob/v3.3.1/lib/elements/dom-repeat.js#L342-L355
+      if (!this.template) {
+        // // Wait until childList changes and template should be there by then
+        this.observer = new MutationObserver(() => {
+          if (this.querySelector('template')) {
+            this.observer.disconnect();
+            this._register();
+          } else {
+            throw new Error('nuxeo-slot-content requires a <template> child');
+          }
+        });
+        this.observer.observe(this, { childList: true });
+        return false;
+      }
+      return true;
     }
   }
 
