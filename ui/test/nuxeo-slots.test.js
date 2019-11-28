@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, flush, html } from '@nuxeo/nuxeo-elements/test/test-helpers.js';
+import { fixture, flush, html, waitForChildListMutation } from '@nuxeo/nuxeo-elements/test/test-helpers.js';
 import * as polymer from '@polymer/polymer';
 import '../nuxeo-slots.js';
 /* eslint-disable no-unused-expressions */
@@ -273,6 +273,19 @@ suite('<nuxeo-slot>', () => {
         expect(content[0].textContent).to.be.equal('test1');
         window.nuxeo.slots.setSharedModel({ property: 'test2' });
         expect(content[0].textContent).to.be.equal('test2');
+      });
+
+      test('slot content with unfinished DOM distribution', async () => {
+        const slotContent = await makeContent('empty', 'SLOT1');
+        const content = _content(slot1);
+        expect(content).to.be.empty;
+        const text = 'I was loaded late.';
+        slotContent.innerHTML = `<template><span>${text}</span></template>`;
+        await flush();
+        const mutation = await waitForChildListMutation(slot1.parentElement);
+        expect(mutation.addedNodes.length).to.be.equal(1);
+        expect(mutation.addedNodes[0].textContent).to.be.equal(text);
+        expect(_content(slot1).length).to.be.equal(1);
       });
     });
   });
