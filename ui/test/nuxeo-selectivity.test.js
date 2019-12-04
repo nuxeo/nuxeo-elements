@@ -57,6 +57,8 @@ suite('<nuxeo-selectivity>', () => {
   });
 
   suite('multiple value', () => {
+    const getSelectedItems = () => dom(selectivityWidget.root).querySelectorAll('.selectivity-multiple-selected-item');
+
     setup(async () => {
       selectivityWidget = await fixture(html`
         <nuxeo-selectivity placeholder="No city selected" .data=${data} multiple></nuxeo-selectivity>
@@ -64,8 +66,6 @@ suite('<nuxeo-selectivity>', () => {
     });
 
     test('Backspace higlights and then deletes a single value', async () => {
-      const getSelectedItems = () =>
-        dom(selectivityWidget.root).querySelectorAll('.selectivity-multiple-selected-item');
       const hitBackspace = () =>
         pressAndReleaseKeyOn(dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input'), 8);
 
@@ -110,6 +110,45 @@ suite('<nuxeo-selectivity>', () => {
         );
         items = getSelectedItems();
       }
+      expect(items.length).to.be.equal(1);
+      expect(items[0].textContent).to.be.equal('Berlin');
+    });
+
+    test('Value is not duplicated after reparent', async () => {
+      // reparent the element
+      const parent = selectivityWidget.parentElement;
+      const div = document.createElement('div');
+      parent.appendChild(div);
+      div.appendChild(selectivityWidget);
+
+      // trigger the dropdown for input: "Ber"
+      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
+      input.value = 'Ber';
+      await flush();
+      input.click();
+
+      // assert we only have one dropdown, which will fail if we do not destroy the Input object on disconnect
+      let dropdown = dom(selectivityWidget.root).querySelectorAll('.selectivity-dropdown');
+      expect(dropdown.length).to.be.equal(1);
+      [dropdown] = dropdown;
+
+      // wait for the dropdown results to be updated
+      const resultsContainer = dropdown.querySelector('.selectivity-results-container');
+      expect(resultsContainer).to.not.be.null;
+      let results = resultsContainer.querySelectorAll('.selectivity-result-item.highlight');
+      if (results.length === 0) {
+        await waitForChildListMutation(resultsContainer);
+        results = resultsContainer.querySelectorAll('.selectivity-result-item.highlight');
+      }
+
+      // check we have "Berlin" as the highlighted result and select it
+      expect(results.length).to.be.equal(1);
+      expect(results[0].textContent).to.be.equal('Berlin');
+      results[0].click();
+      await flush();
+
+      // check the value is correct (and not dupplicated, see ELEMENTS-1090)
+      const items = getSelectedItems();
       expect(items.length).to.be.equal(1);
       expect(items[0].textContent).to.be.equal('Berlin');
     });
