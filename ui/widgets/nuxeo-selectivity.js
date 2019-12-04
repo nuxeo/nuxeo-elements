@@ -2689,6 +2689,10 @@ typedArrayTags[weakMapTag] = false;
      * given event and class are discarded.
      */
         off(eventName, selector, callback) {
+          if (!this.events) {
+            // this means that destruction might be in progress
+            return;
+          }
           if (!isString(selector)) {
             callback = selector;
             selector = '';
@@ -7210,10 +7214,11 @@ input[type='text'].selectivity-multiple-input:focus {
     }
 
     disconnectedCallback() {
-      super.disconnectedCallback();
       this.$.input.removeEventListener('selectivity-change', this._updateSelectionHandler);
       this._updateSelectionHandler = null;
+      this._selectivity.destroy();
       this._selectivity = null;
+      super.disconnectedCallback();
     }
 
     _getValidity() {
