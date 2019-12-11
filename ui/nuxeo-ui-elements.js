@@ -68,3 +68,6 @@ import './nuxeo-routing-behavior.js';
 import './nuxeo-filters-behavior.js';
 import './nuxeo-format-behavior.js';
 import './nuxeo-layout-behavior.js';
+import './nuxeo-document-comments/nuxeo-document-comment.js';
+import './nuxeo-document-comments/nuxeo-document-comment-thread.js';
+import './nuxeo-document-comments/nuxeo-document-comments-styles.js';
