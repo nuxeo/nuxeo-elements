@@ -20,4 +20,5 @@ import './nuxeo-document.js';
 import './nuxeo-operation.js';
 import './nuxeo-page-provider.js';
 import './nuxeo-audit-page-provider.js';
+import './nuxeo-task-page-provider.js';
 import './nuxeo-search.js';
