@@ -22,7 +22,8 @@
   "devDependencies": {
     "@open-wc/testing-helpers": "^0.8.3",
     "@polymer/iron-component-page": "^4.0.0",
-    "polymer-cli": "^1.8.0"
+    "polymer-cli": "^1.8.0",
+    "sinon": "^7.3.1"
   },
   "main": "nuxeo-elements.js"
 }
