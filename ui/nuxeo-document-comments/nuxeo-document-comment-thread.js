@@ -117,6 +117,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
         allCommentsLoaded: {
           type: Boolean,
           readOnly: true,
+          reflectToAttribute: true,
           value: false,
         },
 

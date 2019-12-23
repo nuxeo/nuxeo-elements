@@ -135,126 +135,130 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
           </div>
         </nuxeo-dialog>
 
-        <div class="horizontal">
-          <nuxeo-user-avatar
-            user="[[comment.author]]"
-            height="[[_computeAvatarDimensions(level)]]"
-            width="[[_computeAvatarDimensions(level)]]"
-            border-radius="50"
-            font-size="[[_computeAvatarFontSize(level)]]"
-          >
-          </nuxeo-user-avatar>
-          <div class="info">
-            <div id="body">
-              <div class="horizontal">
-                <span class="author">[[comment.author]]</span>
-                <span class="smaller opaque"
-                  >[[_computeDateLabel(comment, comment.creationDate, comment.modificationDate, i18n)]]</span
-                >
-                <dom-if if="[[_areExtendedOptionsAvailable(comment.author, currentUser)]]">
-                  <template>
-                    <paper-menu-button id="options" no-animations close-on-activate>
-                      <paper-icon-button class="main-option" icon="more-vert" slot="dropdown-trigger" alt="menu">
-                      </paper-icon-button>
-                      <paper-listbox slot="dropdown-content">
-                        <paper-icon-item name="edit" class="smaller no-selection" on-tap="_editComment">
-                          <iron-icon icon="nuxeo:edit" slot="item-icon"></iron-icon>
-                          <span>[[i18n('comments.options.edit')]]</span>
-                        </paper-icon-item>
-                        <paper-icon-item
-                          name="delete"
-                          class="smaller no-selection"
-                          on-tap="_toggleDeletionConfirmation"
+        <dom-if if="[[comment]]">
+          <template>
+            <div id="content" class="horizontal">
+              <nuxeo-user-avatar
+                user="[[comment.author]]"
+                height="[[_computeAvatarDimensions(level)]]"
+                width="[[_computeAvatarDimensions(level)]]"
+                border-radius="50"
+                font-size="[[_computeAvatarFontSize(level)]]"
+              >
+              </nuxeo-user-avatar>
+              <div class="info">
+                <div id="body">
+                  <div id="header" class="horizontal">
+                    <span class="author">[[comment.author]]</span>
+                    <span class="smaller opaque"
+                      >[[_computeDateLabel(comment, comment.creationDate, comment.modificationDate, i18n)]]</span
+                    >
+                    <dom-if if="[[_areExtendedOptionsAvailable(comment.author, currentUser)]]">
+                      <template>
+                        <paper-menu-button id="options" no-animations close-on-activate>
+                          <paper-icon-button class="main-option" icon="more-vert" slot="dropdown-trigger" alt="menu">
+                          </paper-icon-button>
+                          <paper-listbox slot="dropdown-content">
+                            <paper-icon-item name="edit" class="smaller no-selection" on-tap="_editComment">
+                              <iron-icon icon="nuxeo:edit" slot="item-icon"></iron-icon>
+                              <span>[[i18n('comments.options.edit')]]</span>
+                            </paper-icon-item>
+                            <paper-icon-item
+                              name="delete"
+                              class="smaller no-selection"
+                              on-tap="_toggleDeletionConfirmation"
+                            >
+                              <iron-icon icon="nuxeo:delete" slot="item-icon"></iron-icon>
+                              <span>[[i18n('comments.options.delete')]]</span>
+                            </paper-icon-item>
+                          </paper-listbox>
+                        </paper-menu-button>
+                      </template>
+                    </dom-if>
+                  </div>
+                  <dom-if if="[[!editing]]">
+                    <template>
+                      <div id="view-area" class="text">
+                        <span inner-h-t-m-l="[[_computeTextToDisplay(comment.text, maxChars, truncated)]]"></span>
+                        <dom-if if="[[truncated]]">
+                          <template>
+                            <span class="smaller opaque pointer" on-tap="_showFullComment"
+                              >[[i18n('comments.showAll')]]</span
+                            >
+                          </template>
+                        </dom-if>
+                        <dom-if if="[[!truncated]]">
+                          <template>
+                            <iron-icon
+                              name="reply"
+                              class="main-option opaque"
+                              icon="reply"
+                              on-tap="_reply"
+                              hidden$="[[!_isRootElement(level)]]"
+                            ></iron-icon>
+                          </template>
+                        </dom-if>
+                      </div>
+                    </template>
+                  </dom-if>
+                  <dom-if if="[[editing]]">
+                    <template>
+                      <div class="input-area">
+                        <paper-textarea
+                          id="inputContainer"
+                          placeholder="[[_computeTextLabel(level, 'writePlaceholder', null, i18n)]]"
+                          value="{{text}}"
+                          max-rows="[[_computeMaxRows()]]"
+                          no-label-float
+                          on-keydown="_checkForEnter"
                         >
-                          <iron-icon icon="nuxeo:delete" slot="item-icon"></iron-icon>
-                          <span>[[i18n('comments.options.delete')]]</span>
-                        </paper-icon-item>
-                      </paper-listbox>
-                    </paper-menu-button>
+                        </paper-textarea>
+                        <dom-if if="[[!_isBlank(text)]]">
+                          <template>
+                            <iron-icon
+                              id="submit"
+                              name="submit"
+                              class="main-option opaque"
+                              icon="check"
+                              on-tap="_submitComment"
+                            ></iron-icon>
+                            <nuxeo-tooltip for="submit">[[i18n('comments.submit.tooltip')]]</nuxeo-tooltip>
+                            <iron-icon
+                              name="clear"
+                              class="main-option opaque"
+                              icon="clear"
+                              on-tap="_clearInput"
+                            ></iron-icon>
+                          </template>
+                        </dom-if>
+                      </div>
+                    </template>
+                  </dom-if>
+                  <dom-if if="[[_isSummaryVisible(comment.expanded, comment.numberOfReplies)]]">
+                    <template>
+                      <div id="summary" class="horizontal smaller">
+                        <span class="more-content pointer no-selection" on-tap="_expand"
+                          >[[i18n('comments.numberOfReplies', comment.numberOfReplies)]]</span
+                        >
+                        <span class="separator opaque">•</span>
+                        <span class="opaque"
+                          >[[_computeDateLabel(comment, 'lastReplyDate', comment.lastReplyDate, i18n)]]</span
+                        >
+                      </div>
+                    </template>
+                  </dom-if>
+                </div>
+
+                <dom-if if="[[comment.expanded]]">
+                  <template>
+                    <nuxeo-document-comment-thread id="thread" uid="[[comment.id]]" level="[[_computeSubLevel(level)]]">
+                    </nuxeo-document-comment-thread>
                   </template>
                 </dom-if>
               </div>
-              <dom-if if="[[!editing]]">
-                <template>
-                  <div class="text">
-                    <span inner-h-t-m-l="[[_computeTextToDisplay(comment.text, maxChars, truncated)]]"></span>
-                    <dom-if if="[[truncated]]">
-                      <template>
-                        <span class="smaller opaque pointer" on-tap="_showFullComment"
-                          >[[i18n('comments.showAll')]]</span
-                        >
-                      </template>
-                    </dom-if>
-                    <dom-if if="[[!truncated]]">
-                      <template>
-                        <iron-icon
-                          name="reply"
-                          class="main-option opaque"
-                          icon="reply"
-                          on-tap="_reply"
-                          hidden$="[[!_isRootElement(level)]]"
-                        ></iron-icon>
-                      </template>
-                    </dom-if>
-                  </div>
-                </template>
-              </dom-if>
-              <dom-if if="[[editing]]">
-                <template>
-                  <div class="input-area">
-                    <paper-textarea
-                      id="inputContainer"
-                      placeholder="[[_computeTextLabel(level, 'writePlaceholder', null, i18n)]]"
-                      value="{{text}}"
-                      max-rows="[[_computeMaxRows()]]"
-                      no-label-float
-                      on-keydown="_checkForEnter"
-                    >
-                    </paper-textarea>
-                    <dom-if if="[[!_isBlank(text)]]">
-                      <template>
-                        <iron-icon
-                          id="submit"
-                          name="submit"
-                          class="main-option opaque"
-                          icon="check"
-                          on-tap="_submitComment"
-                        ></iron-icon>
-                        <nuxeo-tooltip for="submit">[[i18n('comments.submit.tooltip')]]</nuxeo-tooltip>
-                        <iron-icon
-                          name="clear"
-                          class="main-option opaque"
-                          icon="clear"
-                          on-tap="_clearInput"
-                        ></iron-icon>
-                      </template>
-                    </dom-if>
-                  </div>
-                </template>
-              </dom-if>
-              <dom-if if="[[_isSummaryVisible(comment.expanded, comment.numberOfReplies)]]">
-                <template>
-                  <div id="summary" class="horizontal smaller">
-                    <span class="more-content pointer no-selection" on-tap="_expand"
-                      >[[i18n('comments.numberOfReplies', comment.numberOfReplies)]]</span
-                    >
-                    <span class="separator opaque">•</span>
-                    <span class="opaque"
-                      >[[_computeDateLabel(comment, 'lastReplyDate', comment.lastReplyDate, i18n)]]</span
-                    >
-                  </div>
-                </template>
-              </dom-if>
             </div>
-
-            <dom-if if="[[comment.expanded]]">
-              <template>
-                <nuxeo-document-comment-thread id="thread" uid="[[comment.id]]" level="[[_computeSubLevel(level)]]">
-                </nuxeo-document-comment-thread>
-              </template>
-            </dom-if>
-          </div>
-        </div>
+          </template>
+        </dom-if>
       `;
     }
 
@@ -408,6 +412,8 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
             }),
           );
           this.text = response.text;
+          this.set('comment.modificationDate', response.modificationDate);
+          this.set('comment.text', response.text);
           this._clearInput();
         })
         .catch((error) => {
@@ -493,7 +499,10 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
     /** Visibility Methods * */
 
     _areExtendedOptionsAvailable(author, currentUser) {
-      return currentUser && (currentUser.properties.username === author || currentUser.isAdministrator);
+      return (
+        currentUser &&
+        ((currentUser.properties && currentUser.properties.username === author) || currentUser.isAdministrator)
+      );
     }
 
     _isBlank(text) {
