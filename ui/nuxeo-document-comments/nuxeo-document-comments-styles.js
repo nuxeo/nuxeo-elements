@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
 /*
@@ -27,7 +28,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 const template = html`
   <dom-module id="nuxeo-document-comments-styles">
     <template>
-      <style include="nuxeo-styles">
+      <style>
         :host {
           display: block;
         }
