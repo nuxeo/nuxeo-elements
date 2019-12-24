@@ -93,20 +93,22 @@ import './nuxeo-error.js';
       for (let i = 0; i < this.element.__templateInfo.nodeInfoList.length; i++) {
         const nodeInfo = this.element.__templateInfo.nodeInfoList[i];
         const node = this.element.__templateInfo.nodeList[i];
-        const field = node.hasAttribute('field') && node.getAttribute('field');
-        if (field && field.startsWith(property)) {
-          model[field] = node;
-        }
-        nodeInfo.bindings.forEach((binding) => {
-          if (binding.kind === 'property') {
-            binding.parts.forEach((part) => {
-              if (part.mode === '{' && !part.signature && part.source.startsWith(property)) {
-                model[part.source] = model[part.source] || [];
-                model[part.source] = node;
-              }
-            });
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const field = node.hasAttribute('field') && node.getAttribute('field');
+          if (field && field.startsWith(property)) {
+            model[field] = node;
           }
-        });
+          nodeInfo.bindings.forEach((binding) => {
+            if (binding.kind === 'property') {
+              binding.parts.forEach((part) => {
+                if (part.mode === '{' && !part.signature && part.source.startsWith(property)) {
+                  model[part.source] = model[part.source] || [];
+                  model[part.source] = node;
+                }
+              });
+            }
+          });
+        }
       }
       return model;
     }
