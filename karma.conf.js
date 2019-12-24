@@ -13,7 +13,7 @@ let customLaunchers = {
   },
 };
 
-const reporters = ['dots', 'coverage-istanbul'];
+const reporters = ['mocha', 'coverage-istanbul'];
 
 if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY) {
   customLaunchers = {
@@ -54,10 +54,18 @@ module.exports = (config) => {
     TEST_FILES = [{ pattern: `${config.package}/test/*.test.js` }];
   }
 
+  const sauceLabs = {};
+  if (config.record) {
+    sauceLabs.recordVideo = true;
+  } else if (config.sauceRunName) {
+    sauceLabs.testName = config.sauceRunName;
+  }
+
   config.set({
+    sauceLabs,
     basePath: '',
     singleRun: true,
-    browsers: config.debugBrowsers ? config.debugBrowsers.split(',') : Object.keys(customLaunchers),
+    browsers: config.browsers && config.browsers.length > 0 ? config.browsers : Object.keys(customLaunchers),
     browserNoActivityTimeout: 5 * 60 * 1000,
     customLaunchers,
     frameworks: ['mocha', 'sinon-chai', 'source-map-support', 'webpack'],
@@ -75,7 +83,7 @@ module.exports = (config) => {
     preprocessors: {
       '*/test/*.test.js': ['webpack', 'sourcemap'],
     },
-    reporters: ['dots', 'coverage-istanbul'],
+    reporters,
     port: 9876,
     colors: true,
     browserConsoleLogOptions: {
@@ -109,6 +117,7 @@ module.exports = (config) => {
       mocha: {
         reporter: 'html',
         ui: 'tdd',
+        timeout: 3000,
       },
       chai: {
         includeStack: true,
