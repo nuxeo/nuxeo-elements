@@ -76,7 +76,7 @@ import './nuxeo-action-button-styles.js';
           </template>
         </dom-if>
 
-        <nuxeo-dialog id="dialog" with-backdrop on-iron-overlay-closed="_resetPopup" no-auto-focus>
+        <nuxeo-dialog id="dialog" with-backdrop no-auto-focus>
           <h2>[[i18n('addToCollectionButton.dialog.heading')]]</h2>
           <paper-dialog-scrollable>
             <nuxeo-selectivity
@@ -102,7 +102,9 @@ import './nuxeo-action-button-styles.js';
             </nuxeo-textarea>
           </paper-dialog-scrollable>
           <div class="buttons">
-            <paper-button dialog-dismiss>[[i18n('addToCollectionButton.dialog.cancel')]]</paper-button>
+            <paper-button dialog-dismiss on-click="_resetPopup"
+              >[[i18n('addToCollectionButton.dialog.cancel')]]</paper-button
+            >
             <paper-button
               dialog-confirm
               class="primary"
