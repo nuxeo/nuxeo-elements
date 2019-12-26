@@ -273,7 +273,7 @@ import './nuxeo-user-group-formatter.js';
 
     _resultFormatter(item) {
       if (item.type && (item.type === 'USER_TYPE' || item.type === 'GROUP_TYPE')) {
-        return `<nuxeo-user-group-formatter entity='${JSON.stringify(item)}'></nuxeo-user-group-formatter>`;
+        return `<nuxeo-user-group-formatter entity='${escapeHTML(JSON.stringify(item))}'></nuxeo-user-group-formatter>`;
       }
       // fallback, if entities are not available
       return escapeHTML(item.displayLabel || item.title);
