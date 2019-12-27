@@ -16,11 +16,9 @@ import { html } from 'lit-html';
 import { storiesOf } from '@storybook/polymer';
 import { color, select, text, boolean } from '@storybook/addon-knobs';
 import { action } from '@storybook/addon-actions';
-import fakeServer from '../../data/nuxeo.data';
 import DocumentBuilder from '../../data/documents.data';
 import image from '../../img/nuxeo-elements-catalog.svg';
 import { listOfIcons } from '../../lists/icons';
-import '../../../.storybook/i18n';
 
 const documentBuilder = new DocumentBuilder()
   .setFileContent('Nuxeo Logo', image)
@@ -28,7 +26,7 @@ const documentBuilder = new DocumentBuilder()
 
 const DOCUMENTS = [documentBuilder.build(), documentBuilder.build(), documentBuilder.build()];
 
-const server = fakeServer.create();
+const server = window.nuxeo.mock;
 server.respondWith('POST', '/api/v1/automation/Document.AddToFavorites', DOCUMENTS[0]);
 server.respondWith('POST', '/api/v1/automation/Document.RemoveFromFavorites', DOCUMENTS[0]);
 server.respondWith('POST', '/api/v1/automation/Blob.RemoveFromDocument', DOCUMENTS[0]);

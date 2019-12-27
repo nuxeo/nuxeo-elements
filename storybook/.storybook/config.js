@@ -1,9 +1,12 @@
+import fakeServer from '@nuxeo/nuxeo-elements/test/nuxeo-mock-client';
 import { configure, addDecorator, addParameters, setAddon } from '@storybook/polymer';
 import { withActions } from '@storybook/addon-actions';
 import { withKnobs } from '@storybook/addon-knobs';
 import { analyse } from './analysis';
 import theme from './theme';
 import './nuxeo-demo-theme';
+import './i18n';
+import './routing';
 
 addDecorator(withKnobs);
 
@@ -29,6 +32,10 @@ addParameters({
 // automatically import all files ending in *.stories.js
 const req = require.context('../src/elements', true, /.stories.js$/);
 function loadStories() {
+  if (window.nuxeo.mock) {
+    window.nuxeo.mock.restore();
+  }
+  window.nuxeo.mock = fakeServer.create();
   req.keys().forEach((filename) => req(filename));
 }
 
