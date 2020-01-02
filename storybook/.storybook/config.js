@@ -26,7 +26,10 @@ addParameters({
     { name: 'Kawai', value: '#f8d3e0' },
     { name: 'Light', value: '#f7f7f7' },
   ],
-  options: { theme },
+  options: {
+    enableShortcuts: false,
+    theme,
+  },
 });
 
 // automatically import all files ending in *.stories.js
