@@ -1,158 +1,82 @@
-/*
- * (C) Copyright 2019 Nuxeo (http://nuxeo.com/) and others.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * Contributors:
- *     Nelson Silva <nsilva@nuxeo.com>
- */
-properties([
-  [$class: 'GithubProjectProperty', projectUrlStr: 'https://github.com/nuxeo/nuxeo-elements/'],
-  [$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', daysToKeepStr: '60', numToKeepStr: '60', artifactNumToKeepStr: '5']],
-])
-
-void setGitHubBuildStatus(String context, String message, String state) {
-  step([
-    $class: 'GitHubCommitStatusSetter',
-    reposSource: [$class: 'ManuallyEnteredRepositorySource', url: 'https://github.com/nuxeo/nuxeo-elements'],
-    contextSource: [$class: 'ManuallyEnteredCommitContextSource', context: context],
-    statusResultSource: [$class: 'ConditionalStatusResultSource', results: [[$class: 'AnyBuildResult', message: message, state: state]]],
-  ])
-}
-
 pipeline {
   agent {
-    label "jenkins-nodejs-nuxeo"
+    label "jenkins-nodejs"
   }
   environment {
     ORG = 'nuxeo'
     APP_NAME = 'nuxeo-elements'
+    CHARTMUSEUM_CREDS = credentials('jenkins-x-chartmuseum')
+    DOCKER_REGISTRY_ORG = 'nuxeo'
   }
   stages {
-    stage('Install dependencies and run lint') {
-      steps {
-        setGitHubBuildStatus('install', 'Install dependencies and run lint', 'PENDING')
-        container('nodejs') {
-          echo """
-          ---------------------------------
-          Install dependencies and run lint
-          ---------------------------------"""
-          script {
-            def nodeVersion = sh(script: 'node -v', returnStdout: true).trim()
-            echo "node version: ${nodeVersion}"
-          }
-          sh 'npm install --no-package-lock'
-          sh 'npm run bootstrap -- --no-ci'
-          sh 'npm run lint'
-        }
-      }
-      post {
-        success {
-          setGitHubBuildStatus('install', 'Install dependencies and run lint', 'SUCCESS')
-        }
-        failure {
-          setGitHubBuildStatus('install', 'Install dependencies and run lint', 'FAILURE')
-        }
-      }
-    }
-    stage('Run tests') {
-      steps {
-        setGitHubBuildStatus('test', 'Unit tests', 'PENDING')
-        container('nodejs') {
-          script {
-            SAUCE_ACCESS_KEY = sh(script: 'jx step credential -s saucelabs-elements -k key', , returnStdout: true).trim()
-          }
-          withEnv(["SAUCE_USERNAME=nuxeo-elements", "SAUCE_ACCESS_KEY=$SAUCE_ACCESS_KEY"]) {
-            echo """
-            ---------
-            Run tests
-            ---------"""
-            sh 'npm run test'
-          }
-        }
-      }
-      post {
-        success {
-          setGitHubBuildStatus('test', 'Unit tests', 'SUCCESS')
-        }
-        failure {
-          setGitHubBuildStatus('test', 'Unit tests', 'FAILURE')
-        }
-      }
-    }
-    stage('Build and deploy preview') {
+    stage('CI Build and push snapshot') {
       when {
         branch 'PR-*'
       }
+      environment {
+        PREVIEW_VERSION = "0.0.0-SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER"
+        PREVIEW_NAMESPACE = "$APP_NAME-$BRANCH_NAME".toLowerCase()
+        HELM_RELEASE = "$PREVIEW_NAMESPACE".toLowerCase()
+      }
       steps {
         container('nodejs') {
-          script {
-            VERSION =  sh(script: 'npx -c \'echo "$npm_package_version"\'', returnStdout: true).trim()
+          sh "jx step credential -s npm-token -k file -f /builder/home/.npmrc --optional=true"
+          sh "npm install"
+          sh "CI=true DISPLAY=:99 npm test"
+          sh "export VERSION=$PREVIEW_VERSION && skaffold build -f skaffold.yaml"
+          sh "jx step post build --image $DOCKER_REGISTRY/$ORG/$APP_NAME:$PREVIEW_VERSION"
+          dir('./charts/preview') {
+            sh "make preview"
+            sh "jx preview --app $APP_NAME --dir ../.."
           }
-          withEnv(["VERSION=$VERSION-${BRANCH_NAME}"]) {
-            echo """
-              -----------------------------------
-              Building preview ${VERSION}
-              -----------------------------------"""
-            sh 'npx lerna run analysis --parallel'
-            dir('storybook') {
-              sh 'npx build-storybook -o dist'
-              sh 'skaffold build'
-              dir('charts/preview') {
-                sh "make preview" // does some env subst before "jx step helm build"
-                sh "jx preview"
-              }
-            }
+        }
+      }
+    }
+    stage('Build Release') {
+      when {
+        branch 'master'
+      }
+      steps {
+        container('nodejs') {
+
+          // ensure we're not on a detached head
+          sh "git checkout master"
+          sh "git config --global credential.helper store"
+          sh "jx step git credentials"
+
+          // so we can retrieve the version in later steps
+          sh "echo \$(jx-release-version) > VERSION"
+          sh "jx step tag --version \$(cat VERSION)"
+          sh "jx step credential -s npm-token -k file -f /builder/home/.npmrc --optional=true"
+          sh "npm install"
+          sh "CI=true DISPLAY=:99 npm test"
+          sh "export VERSION=`cat VERSION` && skaffold build -f skaffold.yaml"
+          sh "jx step post build --image $DOCKER_REGISTRY/$ORG/$APP_NAME:\$(cat VERSION)"
+        }
+      }
+    }
+    stage('Promote to Environments') {
+      when {
+        branch 'master'
+      }
+      steps {
+        container('nodejs') {
+          dir('./charts/nuxeo-elements') {
+            sh "jx step changelog --batch-mode --version v\$(cat ../../VERSION)"
+
+            // release the helm chart
+            sh "jx step helm release"
+
+            // promote through all 'Auto' promotion Environments
+            sh "jx promote -b --all-auto --timeout 1h --version \$(cat ../../VERSION)"
           }
         }
       }
     }
   }
   post {
-    success {
-      container('nodejs') {
-        script {
-          if (BRANCH_NAME == 'master') {    
-             // publish elements
-             echo """
-              -----------------
-              Publishing to npm
-              -----------------"""
-            def token = sh(script: 'jx step credential -s public-npm-token -k token', returnStdout: true).trim()
-            sh "echo '//packages.nuxeo.com/repository/npmjs-nuxeo/:_authToken=${token}' >> ~/.npmrc"
-            sh "npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --registry=https://packages.nuxeo.com/repository/npmjs-nuxeo/ --tag SNAPSHOT"
-            // publish storybook
-            dir('storybook') {
-              echo """
-              -------------------
-              Deploying Storybook
-              -------------------"""
-              sh 'npx lerna run analysis --parallel'
-              withCredentials([string(credentialsId: 'github_token', variable: 'GITHUB_TOKEN')]) {
-                sh 'npm run deploy -- --ci -t GITHUB_TOKEN'
-              }
-            }
-          }
+        always {
+          cleanWs()
         }
-      }
-    }
-    always {
-      script {
-        if (BRANCH_NAME == 'master') {
-          // update JIRA issue
-          step([$class: 'JiraIssueUpdater', issueSelector: [$class: 'DefaultIssueSelector'], scm: scm])
-        }
-      }
-    }
   }
 }
