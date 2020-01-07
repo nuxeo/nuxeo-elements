@@ -18,13 +18,19 @@ import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
 /*
-  Styles module to be used by elements related to document's comment feature, providing styles to common needs.
+### Styling
+
+  Styles module to be used by elements related to document's comments feature, providing styles to common needs.
+  The available custom properties and mixins for styling are the following:
 
   Custom property | Description | Default
   ----------------|-------------|----------
-  `--nuxeo-comment-line-height` | Text color for the label         | 20
-  `--nuxeo-comment-max-height`  | Background color of added values | 80
+  `--nuxeo-comment-line-height` | Line height for comment's input area | 20
+  `--nuxeo-comment-max-height`  | Maximum height for comment's input area | 80
+  `--nuxeo-comment-placeholder-color` | Text color for comment's input area placeholder | #939caa
+  `--nuxeo-comment-more-content-color` | Text color for the link to load more content (replies and comments) |  #1f28bf
 */
+
 const template = html`
   <dom-module id="nuxeo-document-comments-styles">
     <template>
@@ -44,7 +50,7 @@ const template = html`
         }
 
         .more-content {
-          color: var(--nuxeo-secondary-color, #1f28bf);
+          color: var(--nuxeo-comment-more-content-color, #1f28bf);
         }
 
         .no-selection {
@@ -81,10 +87,8 @@ const template = html`
             line-height: var(--nuxeo-comment-line-height, 20px);
           }
 
-          --paper-input-container-color: var(--secondary-text-color, #939caa);
-
           --iron-autogrow-textarea-placeholder: {
-            color: var(--secondary-text-color, #939caa);
+            color: var(--nuxeo-comment-placeholder-color, #939caa);
             font-size: 0.86em;
           }
         }
