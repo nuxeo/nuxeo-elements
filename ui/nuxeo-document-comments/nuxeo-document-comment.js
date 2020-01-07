@@ -37,10 +37,17 @@ import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
 /**
-`nuxeo-document-comment`
-@group Nuxeo UI
-@element nuxeo-document-comment
-*/
+ * Element to represent a comment.
+ * It shows comment's data like: author, date, text and available options (reply, edit, delete).
+ *
+ * Example:
+ *
+ *     <nuxeo-document-comment comment="[[comment]]"></nuxeo-document-comment>
+ *
+ * @appliesMixin FormatBehavior
+ * @memberof Nuxeo
+ * @demo https://nuxeo.github.io/nuxeo-elements/?path=/story/ui-nuxeo-document-comments--nuxeo-document-comment
+ */
 {
   class DocumentComment extends mixinBehaviors([FormatBehavior], Nuxeo.Element) {
     static get template() {
@@ -268,26 +275,41 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
     static get properties() {
       return {
+        /**
+         * Document comment object.
+         *
+         * @type {Comment}
+         */
         comment: {
           type: Object,
         },
 
+        /** Level of depth for the comment. */
         level: {
           type: Number,
           value: 1,
         },
 
+        /**
+         * Whether comment's text is not totally displayed, showing only the first 256 characters.
+         * @see {@link maxChars} for more details.
+         */
         truncated: {
           type: Boolean,
           computed: '_computeTruncatedFlag(comment.showFull, comment.text,  maxChars)',
         },
 
+        /**
+         * Limit of characters for comment's text.
+         * When exceeded, the comment will be truncated and an option to "show all" content will be displayed.
+         */
         maxChars: {
           type: Number,
           readOnly: true,
           value: 256,
         },
 
+        /** Whether comment is being edited. */
         editing: {
           type: Boolean,
           readOnly: true,
@@ -296,6 +318,29 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
         },
       };
     }
+
+    /**
+     * Fired when the user confirms the deletion of a comment.
+     *
+     * @event delete-comment
+     * @param {string} commentId Comment's Unique Identifier.
+     */
+
+    /**
+     * Fired when the user edits a comment.
+     *
+     * @event edit-comment
+     * @param {string} commentId Comment's Unique Identifier.
+     * @param {date} modificationDate Date when the comment was modified.
+     * @param {string} text New comment's text accordingly the edition made.
+     */
+
+    /**
+     * Fired when some error occurred and the user needs to be notified.
+     *
+     * @event notify
+     * @param {string} message Informative message to be presented to the user.
+     */
 
     connectedCallback() {
       super.connectedCallback();

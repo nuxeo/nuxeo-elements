@@ -29,9 +29,16 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
 /**
- `nuxeo-document-comment-thread`
- @group Nuxeo UI
- @element nuxeo-document-comment-thread
+ * Element to represent a thread of comments for a specific document (thread's root) on Nuxeo.
+ * It can represent multiple levels of comments and replies.
+ *
+ * Example:
+ *
+ *     <nuxeo-document-comment-thread uid="[[document.uid]]"></nuxeo-document-comment-thread>
+ *
+ * @appliesMixin FormatBehavior
+ * @memberof Nuxeo
+ * @demo https://nuxeo.github.io/nuxeo-elements/?path=/story/ui-nuxeo-document-comments--nuxeo-document-comment-thread
  */
 {
   class DocumentCommentThread extends mixinBehaviors([FormatBehavior], Nuxeo.Element) {
@@ -91,11 +98,17 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
     static get properties() {
       return {
+        /** Document Unique Identifier for comment's thread root. */
         uid: {
           type: String,
           observer: '_refresh',
         },
 
+        /**
+         * List of comments for a specific document (thread's root).
+         *
+         * @type {Array.<Comment>}
+         */
         comments: {
           type: Array,
           value() {
@@ -103,17 +116,20 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
           },
         },
 
+        /** Level of depth for the comment's thread. */
         level: {
           type: Number,
           value: 1,
         },
 
+        /** The number of results per page. */
         pageSize: {
           type: Number,
           readOnly: true,
           value: 10,
         },
 
+        /** Whether all available comments are loaded. */
         allCommentsLoaded: {
           type: Boolean,
           readOnly: true,
@@ -121,6 +137,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
           value: false,
         },
 
+        /** The total number of comments available. */
         total: {
           type: Number,
           readOnly: true,
@@ -128,6 +145,20 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
         },
       };
     }
+
+    /**
+     * Fired when number of comments changes.
+     *
+     * @event number-of-replies
+     * @param {number} total Number of comments thread contains.
+     */
+
+    /**
+     * Fired when some error occurred and the user needs to be notified.
+     *
+     * @event notify
+     * @param {string} message Informative message to be presented to the user.
+     */
 
     connectedCallback() {
       super.connectedCallback();
@@ -143,6 +174,9 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
       super.disconnectedCallback();
     }
 
+    /**
+     * Applies focus on user input.
+     */
     focusInput() {
       this.$$('#inputContainer').focus();
     }
