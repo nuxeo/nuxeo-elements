@@ -12,6 +12,10 @@ module.exports = ({ config }) => {
       enforce: 'pre',
       include: resolve('../'),
     },
+    {
+      test: /layout.html$/,
+      use: 'raw-loader',
+    },
   );
   return config;
 };
