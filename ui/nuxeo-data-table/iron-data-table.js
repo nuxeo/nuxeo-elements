@@ -368,7 +368,7 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
 
         <slot id="columns"></slot>
 
-        <nuxeo-dialog id="dialog" with-backdrop on-opened-changed="_formDialogOpenedChanged">
+        <nuxeo-dialog id="dialog" with-backdrop reparent on-opened-changed="_formDialogOpenedChanged">
           <h2>[[i18n('command.add')]]</h2>
           <paper-dialog-scrollable>
             <slot id="form" name="form"></slot>
