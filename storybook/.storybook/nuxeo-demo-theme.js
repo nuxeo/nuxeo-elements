@@ -473,6 +473,11 @@ const template = html`
         --paper-spinner-layer-2-color: rgba(79, 230, 221, 0.8);
         --paper-spinner-layer-3-color: #1f28bf;
         --paper-spinner-layer-4-color: var(--nuxeo-primary-color);
+
+        /* layout rules */
+        --nuxeo-widget: {
+          margin-bottom: 16px;
+        }
       }
     </style>
   </custom-style>
