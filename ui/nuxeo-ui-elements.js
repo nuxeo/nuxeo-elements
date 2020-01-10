@@ -71,3 +71,4 @@ import './nuxeo-layout-behavior.js';
 import './nuxeo-document-comments/nuxeo-document-comment.js';
 import './nuxeo-document-comments/nuxeo-document-comment-thread.js';
 import './nuxeo-document-comments/nuxeo-document-comments-styles.js';
+import './nuxeo-document-layout.js';
