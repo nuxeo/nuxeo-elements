@@ -5,13 +5,26 @@ export default class DocumentBuilder {
     return 'document';
   }
 
-  systemProperties = {};
+  systemProperties = {
+    type: 'File',
+  };
 
   properties = {};
 
   facets = [];
 
   contextParameters = { favorites: {}, permissions: [] };
+
+  setTitle(title) {
+    this.systemProperties.title = title;
+    this.setProperties({ 'dc:title': title });
+    return this;
+  }
+
+  setType(type) {
+    this.systemProperties.type = type;
+    return this;
+  }
 
   setSystemProperties(systemProperty) {
     this.systemProperties = systemProperty;
