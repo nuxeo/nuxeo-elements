@@ -230,7 +230,7 @@ import './nuxeo-user-group-permissions-table.js';
           <div class="horizontal layout center header">
             <iron-icon icon="nuxeo:user" class="user-icon"></iron-icon>
             <div class="layout vertical">
-              <div class="user heading">[[user.id]]</div>
+              <div class="user heading" name="userHeading">[[user.id]]</div>
               <div>[[user.properties.firstName]] [[user.properties.lastName]]</div>
             </div>
 
