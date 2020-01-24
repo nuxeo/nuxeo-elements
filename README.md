@@ -20,32 +20,31 @@ npm run bootstrap
 
 ## Quickstart
 
-You can run the unit tests via:
+To run all unit tests with:
 
 ```
-npm run test
+npm test
 ```
 
-- By default, all packages's (`core`, `ui`, `dataviz`) tests will run with the instruction above.
-
-There is also some flags that can be used to run a specific set of tests.
-
-- To run tests on a specific package -> `package`
-- To select test files according to a pattern -> `grep` 
-
+You can run the unit tests for a given package (`core`, `ui` or `dataviz`) via:
 
 ```
-# Runs all tests on "ui" package
-
-npm run test -- --package ui
+npm run test:<package>
 ```
+
+There is also a `grep` argument that can be used to run a specific set of tests
 
 ```
 # Runs all the tests present on "core/test/nuxeo-connection.test.js" file
 
-npm run test -- --grep core/test/nuxeo-connection.test.js
+npm run test:core -- --grep nuxeo-connection.test.js
 ```
 
+To watch the tests for changes you can use:
+
+```
+npm run test:watch -- --package=<package>
+```
 
 Demos can be setup using:
 

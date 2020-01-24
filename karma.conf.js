@@ -2,6 +2,8 @@ const path = require('path');
 
 const coverage = process.argv.find((arg) => arg.includes('coverage'));
 
+const reporters = coverage ? ['mocha', 'coverage-istanbul'] : ['mocha'];
+
 let customLaunchers = {
   ChromeHeadlessNoSandbox: {
     base: 'ChromeHeadless',
@@ -12,8 +14,6 @@ let customLaunchers = {
     flags: ['-headless'],
   },
 };
-
-const reporters = ['mocha', 'coverage-istanbul'];
 
 if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY) {
   customLaunchers = {
@@ -47,13 +47,6 @@ if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY) {
 }
 
 module.exports = (config) => {
-  let TEST_FILES = ['core/test/*.test.js', 'ui/test/*.test.js', 'dataviz/test/*.test.js'];
-  if (config.grep) {
-    TEST_FILES = [{ pattern: config.grep }];
-  } else if (config.package) {
-    TEST_FILES = [{ pattern: `${config.package}/test/*.test.js` }];
-  }
-
   const sauceLabs = {};
   if (config.record) {
     sauceLabs.recordVideo = true;
@@ -68,7 +61,6 @@ module.exports = (config) => {
     browsers: config.browsers && config.browsers.length > 0 ? config.browsers : Object.keys(customLaunchers),
     browserNoActivityTimeout: 5 * 60 * 1000,
     customLaunchers,
-    frameworks: ['mocha', 'sinon-chai', 'source-map-support', 'webpack'],
     middleware: ['static'],
     static: {
       path: path.join(process.cwd(), ''),
@@ -78,11 +70,27 @@ module.exports = (config) => {
         pattern: 'node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js',
         watched: false,
       },
-      ...TEST_FILES,
+      {
+        pattern: `${config.package || 'core'}/test/*${config.grep || '*.test.js'}`,
+        type: 'module',
+      },
     ],
-    preprocessors: {
-      '*/test/*.test.js': ['webpack', 'sourcemap'],
+    plugins: [
+      // load plugin
+      require.resolve('@open-wc/karma-esm'),
+
+      // fallback: resolve any karma- plugins
+      'karma-*',
+    ],
+    frameworks: ['esm', 'mocha', 'sinon-chai', 'source-map-support'],
+    esm: {
+      coverage,
+      // if you are using 'bare module imports' you will need this option
+      nodeResolve: true,
+      // needed for npm link or lerna support
+      preserveSymlinks: true,
     },
+
     reporters,
     port: 9876,
     colors: true,
@@ -108,7 +116,7 @@ module.exports = (config) => {
 
     coverageIstanbulReporter: {
       reports: ['html', 'lcovonly', 'text-summary'],
-      dir: path.join(__dirname, 'coverage'),
+      dir: path.join(__dirname, 'coverage', config.package),
       combineBrowserReports: true,
       skipFilesWithNoCoverage: true,
     },
@@ -122,36 +130,6 @@ module.exports = (config) => {
       chai: {
         includeStack: true,
       },
-    },
-
-    webpack: {
-      devtool: 'inline-cheap-module-source-map',
-      mode: 'development',
-      module: {
-        rules: [
-          {
-            test: /\.js$/,
-            loader: require.resolve('@open-wc/webpack-import-meta-loader'),
-          },
-          coverage && {
-            test: /\.js$/,
-            loader: 'istanbul-instrumenter-loader',
-            enforce: 'post',
-            exclude: /node_modules|\.(test)\.js$/,
-            options: {
-              esModules: true,
-            },
-          },
-        ].filter((_) => !!_),
-      },
-    },
-
-    webpackMiddleware: {
-      stats: 'errors-only',
-    },
-
-    webpackServer: {
-      noInfo: true,
     },
   });
 };
