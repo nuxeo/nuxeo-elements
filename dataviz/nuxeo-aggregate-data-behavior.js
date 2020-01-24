@@ -16,7 +16,7 @@ limitations under the License.
 */
 import '@polymer/polymer/polymer-legacy.js';
 import './nuxeo-es-search.js';
-import moment from 'moment';
+import moment from '@nuxeo/moment';
 
 window.Nuxeo = window.Nuxeo || {};
 /**

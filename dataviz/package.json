@@ -32,6 +32,7 @@
   "main": "nuxeo-dataviz-elements.js",
   "dependencies": {
     "@polymer/polymer": "^3.0.0",
+    "@nuxeo/moment": "^2.24.0",
     "@nuxeo/nuxeo-elements": "3.0.0-SNAPSHOT",
     "moment": "2.23.0"
   }

@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { fixture, html, login } from '@nuxeo/nuxeo-elements/test/test-helpers.js';
-import moment from 'moment';
+import moment from '@nuxeo/moment';
 import '../nuxeo-audit-data.js';
 
 suite('<nuxeo-audit-data>', () => {

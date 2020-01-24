@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { fixture, html } from '@nuxeo/nuxeo-elements/test/test-helpers.js';
-import moment from 'moment';
+import moment from '@nuxeo/moment';
 import '../widgets/nuxeo-date-picker.js';
 /* eslint-disable no-unused-expressions */
 
