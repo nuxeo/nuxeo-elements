@@ -9,7 +9,10 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "nuke": "rm -rf package-lock.json node_modules && npm install && lerna exec \"rm -f package-lock.json\" && lerna clean --yes && lerna bootstrap && lerna exec --stream -- \"test -f package-lock.json || npm install --package-lock-only\"",
-    "test": "karma start --coverage",
+    "test": "npm-run-all test:core test:ui test:dataviz",
+    "test:core": "karma start --package core --coverage",
+    "test:ui": "karma start --package ui --coverage",
+    "test:dataviz": "karma start --package dataviz --coverage",
     "test:watch": "karma start --auto-watch=true --single-run=false",
     "docs": "lerna run docs --parallel",
     "lint:eslint": "eslint --ext .js,.html .",
@@ -29,8 +32,8 @@
   },
   "devDependencies": {
     "@open-wc/eslint-config": "^0.3.0",
+    "@open-wc/karma-esm": "^2.12.6",
     "@open-wc/prettier-config": "^0.1.0",
-    "@open-wc/webpack-import-meta-loader": "^0.2.0",
     "@polymer/iron-component-page": "^4.0.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "babel-eslint": "^10.0.1",
@@ -51,15 +54,14 @@
     "karma-source-map-support": "^1.4.0",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-static": "^1.0.1",
-    "karma-webpack": "^5.0.0-alpha.3.0",
     "lerna": "^3.13.1",
     "lint-staged": "^8.0.0",
     "lit-html": "^1.0.0",
     "mocha": "^6.0.2",
+    "npm-run-all": "^4.1.5",
     "polymer-cli": "^1.8.0",
     "sinon": "^7.3.1",
-    "sinon-chai": "^3.3.0",
-    "webpack": "^4.29.6"
+    "sinon-chai": "^3.3.0"
   },
   "husky": {
     "hooks": {
@@ -124,7 +126,7 @@
     "d3-hierarchy": "^1.1.5",
     "d3-selection": "^1.3.0",
     "d3-shape": "^1.2.0",
-    "moment": "2.23.0",
+    "moment": "2.24.0",
     "nuxeo": "^3.2.1"
   }
 }
