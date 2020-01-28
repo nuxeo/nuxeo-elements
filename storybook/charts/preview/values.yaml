@@ -5,7 +5,10 @@ expose:
   config:
     exposer: Ingress
     http: true
-    tlsacme: false
+    domain: webui.dev.nuxeo.com
+    tlsacme: true
+    tlsSecretName: webui-cluster-https-tls
+    urltemplate: '"{{.Service}}-{{.Namespace}}.{{.Domain}}"'
 
 cleanup:
   Args:
