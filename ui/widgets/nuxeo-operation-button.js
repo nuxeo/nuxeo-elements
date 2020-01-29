@@ -198,7 +198,7 @@ import '../actions/nuxeo-action-button-styles.js';
           );
 
           if (this.download) {
-            return this._download(response);
+            this._download(response);
           }
         })
         .catch((error) => {
@@ -218,28 +218,22 @@ import '../actions/nuxeo-action-button-styles.js';
     // https://jira.nuxeo.com/browse/ELEMENTS-370
     _download(response) {
       const contentDisposition = response.headers.get('Content-Disposition');
-      if (contentDisposition) {
-        const filenameMatches = contentDisposition
-          .match(/filename[^;=\n]*=([^;\n]*''([^;\n]*)|[^;\n]*)/)
-          .filter((match) => !!match);
-        const filename = decodeURI(filenameMatches[filenameMatches.length - 1]);
-        return response.blob().then((blob) => {
-          if (navigator.msSaveBlob) {
-            // handle IE11 and Edge
-            navigator.msSaveBlob(blob, filename);
-          } else {
-            const a = document.createElement('a');
-            a.style = 'display: none';
-            a.download = filename;
-            a.href = URL.createObjectURL(blob);
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(a.href);
-          }
-        });
+
+      if (!contentDisposition) {
+        throw new Error('missing Content-Disposition header');
       }
-      return Promise.reject(new Error('missing Content-Disposition header'));
+
+      const filenameMatches = contentDisposition
+        .match(/filename[^;=\n]*=([^;\n]*''([^;\n]*)|[^;\n]*)/)
+        .filter((match) => !!match);
+      const filename = decodeURI(filenameMatches[filenameMatches.length - 1]);
+      const a = document.createElement('a');
+      a.style = 'display: none';
+      a.download = filename;
+      a.href = response.url;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
 
     _computeTooltip(tooltip, label) {
