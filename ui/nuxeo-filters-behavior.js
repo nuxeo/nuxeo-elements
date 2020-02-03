@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import moment from '@nuxeo/moment';
 
 /**
  * `Nuxeo.FilterBehavior` provides a set of helpers to use in filter expressions.
@@ -62,6 +63,31 @@ export const FiltersBehavior = {
     return false;
   },
 
+  canSetRetention(document) {
+    return (
+      document &&
+      !document.hasLegalHold &&
+      this.hasPermission(document, 'MakeRecord') &&
+      this.hasPermission(document, 'SetRetention') &&
+      Object.prototype.hasOwnProperty.call(document.properties, 'file:content')
+    );
+  },
+
+  canSetLegalHold(document) {
+    return (
+      this.hasPermission(document, 'MakeRecord') &&
+      this.hasPermission(document, 'ManageLegalHold') &&
+      Object.prototype.hasOwnProperty.call(document.properties, 'file:content')
+    );
+  },
+
+  /**
+   * Checks if the document retention date is indeterminate.
+   */
+  isRetentionDateIndeterminate(doc) {
+    return doc && doc.retainUntil && moment(doc.retainUntil).diff('9999-01-01T00:00:00.000+00:00') === 0;
+  },
+
   /**
    * Checks if the document is a version.
    */
@@ -74,6 +100,20 @@ export const FiltersBehavior = {
    */
   isImmutable(doc) {
     return this.hasFacet(doc, 'Immutable');
+  },
+
+  /**
+   * Checks if the document is under retention or legal hold.
+   */
+  isUnderRetentionOrLegalHold(doc) {
+    return doc && doc.isUnderRetentionOrLegalHold;
+  },
+
+  /**
+   * Checks if the document is record.
+   */
+  isRecord(doc) {
+    return doc && doc.isRecord;
   },
 
   /**

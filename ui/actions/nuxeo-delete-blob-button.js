@@ -126,7 +126,9 @@ import './nuxeo-action-button-styles.js';
         this.hasPermission(doc, 'Write') &&
         !this.isImmutable(doc) &&
         !this.hasType(doc, 'Root') &&
-        !this.isTrashed(doc)
+        !this.isTrashed(doc) &&
+        !(doc.isRecord && this.xpath !== 'file:content') &&
+        !(this.isUnderRetentionOrLegalHold(doc) && this.xpath === 'file:content')
       );
     }
 
