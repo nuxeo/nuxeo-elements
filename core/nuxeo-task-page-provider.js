@@ -168,7 +168,7 @@ import './nuxeo-resource.js';
         headers: {
           type: Function,
           value: () => {
-            return { 'fetch.task': 'targetDocumentIds,actors' };
+            return { 'fetch-task': 'targetDocumentIds,actors' };
           },
         },
 

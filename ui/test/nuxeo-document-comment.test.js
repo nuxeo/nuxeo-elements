@@ -331,7 +331,7 @@ suite('<nuxeo-document-comment>', () => {
         const request = server.getLastRequest('put', '/api/v1/id/parent-id/@comment/comment-id');
 
         expect(request).to.exist;
-        expect(request.headers).to.not.have.property('fetch.comment', 'repliesSummary');
+        expect(request.headers).to.not.have.property('fetch-comment', 'repliesSummary');
         expect(request.body).to.deep.equal({
           'entity-type': 'comment',
           parentId: 'parent-id',
@@ -348,7 +348,7 @@ suite('<nuxeo-document-comment>', () => {
         const request = server.getLastRequest('put', '/api/v1/id/parent-id/@comment/comment-id');
 
         expect(request).to.exist;
-        expect(request.headers).to.not.have.property('fetch.comment', 'repliesSummary');
+        expect(request.headers).to.not.have.property('fetch-comment', 'repliesSummary');
         expect(request.body).to.deep.equal({
           'entity-type': 'comment',
           parentId: 'parent-id',
@@ -425,7 +425,7 @@ suite('<nuxeo-document-comment>', () => {
         const request = server.getLastRequest('delete', '/api/v1/id/parent-id/@comment/comment-id');
 
         expect(request).to.exist;
-        expect(request.headers).to.not.have.property('fetch.comment', 'repliesSummary');
+        expect(request.headers).to.not.have.property('fetch-comment', 'repliesSummary');
         expect(request.body).to.be.empty;
       });
 

@@ -204,7 +204,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
         currentPageIndex: 0,
       };
       this.$.commentRequest.headers = {
-        'fetch.comment': 'repliesSummary',
+        'fetch-comment': 'repliesSummary',
       };
       this.$.commentRequest
         .get()
