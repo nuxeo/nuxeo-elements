@@ -22,7 +22,7 @@
   "command.ok": "Ok",
   "command.remove": "Supprimer",
   "command.save.changes": "Enregistrer les modifications",
-  "comments.creation.error.comment": "An error occurred while creating the comment.",
+  "comments.creation.error.comment": "Une erreur s'est produite lors de la création du document.",
   "comments.creation.error.reply": "An error occurred while creating the reply.",
   "comments.deletion.dialog.heading": "Delete Comment",
   "comments.deletion.dialog.message.withoutReplies": "Are you sure you want to delete this comment?",
