@@ -286,7 +286,7 @@ suite('<nuxeo-document-comment-thread>', () => {
         const request = server.getLastRequest('post', '/api/v1/id/doc-id/@comment/');
 
         expect(request).to.exist;
-        expect(request.headers).to.not.have.property('fetch.comment', 'repliesSummary');
+        expect(request.headers).to.not.have.property('fetch-comment', 'repliesSummary');
         expect(request.body).to.deep.equal({
           'entity-type': 'comment',
           parentId: 'doc-id',
