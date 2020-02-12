@@ -21,6 +21,7 @@
     "@polymer/iron-component-page": "^4.0.0",
     "@polymer/iron-test-helpers": "^3.0.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
+    "@webcomponents/html-imports": "^1.2.2",
     "polymer-cli": "^1.8.0"
   },
   "main": "nuxeo-ui-elements.js",

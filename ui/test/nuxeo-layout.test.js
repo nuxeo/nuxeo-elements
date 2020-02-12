@@ -14,8 +14,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, html, waitForEvent, waitChanged } from '@nuxeo/nuxeo-elements/test/test-helpers.js';
+import {
+  fixture,
+  flush,
+  html,
+  isElementVisible,
+  waitChanged,
+  waitForAttrMutation,
+} from '@nuxeo/nuxeo-elements/test/test-helpers.js';
 import { Polymer } from '@polymer/polymer/polymer-legacy.js';
+import '@webcomponents/html-imports/html-imports.min.js';
 import '../nuxeo-layout.js';
 import '../widgets/nuxeo-input.js';
 /* eslint-disable no-unused-expressions */
@@ -27,23 +35,33 @@ const base = url.substring(0, url.lastIndexOf('/'));
 // Export Polymer and PolymerElement for 1.x and 2.x compat
 window.Polymer = Polymer;
 
-suite.skip('<nuxeo-layout>', () => {
+suite('<nuxeo-layout>', () => {
   test('layout not found', async () => {
     const layout = await fixture(
       html`
         <nuxeo-layout href="notfound.html"></nuxeo-layout>
       `,
     );
-    await waitForEvent(layout, 'iron-resize');
-    expect(layout.$$('nuxeo-error').hidden).to.be.false;
-    expect(layout.element).to.be.undefined;
+    await flush();
+
+    const container = layout.shadowRoot.querySelector('#container');
+    const nuxeoError = layout.$$('nuxeo-error');
+
+    if (!isElementVisible(nuxeoError)) {
+      await waitForAttrMutation(nuxeoError, 'hidden', null);
+    }
+    expect(isElementVisible(container)).to.be.false;
+    expect(isElementVisible(nuxeoError)).to.be.true;
   });
 
   test('layout stamped with model', async () => {
     const layout = await fixture(html`
       <nuxeo-layout href="${base}/layouts/dummy-layout.html" model='{"text": "dummy"}'></nuxeo-layout>
     `);
-    await waitChanged(layout, 'element');
+
+    if (!layout.element) {
+      await waitChanged(layout, 'element');
+    }
     expect(layout.$$('nuxeo-error').hidden).to.be.true;
     expect(layout.element.localName).to.equal('dummy-layout');
     expect(layout.element.text).to.equal('dummy');
