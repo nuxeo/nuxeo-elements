@@ -1,0 +1,38 @@
+<!--
+`nuxeo-test-edit-layout`
+@group Nuxeo UI
+@element nuxeo-test-edit-layout
+-->
+<dom-module id="nuxeo-test-edit-layout">
+  <template>
+    <style>
+      *[role='widget'] {
+        @apply --nuxeo-widget;
+      }
+    </style>
+
+    <nuxeo-input role="widget" label="Title" value="{{document.properties.dc:title}}" autofocus required> </nuxeo-input>
+
+    <nuxeo-textarea role="widget" label="Description" value="{{document.properties.dc:description}}"> </nuxeo-textarea>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-test-edit-layout',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        /**
+         * @doctype File
+         */
+        document: Object,
+      },
+
+      validate() {
+        if (this.document.properties['dc:description'] === this.document.properties['dc:title']) {
+          return false;
+        }
+        return true;
+      },
+    });
+  </script>
+</dom-module>
