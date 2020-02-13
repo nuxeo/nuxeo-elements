@@ -1,14 +1,14 @@
 <dom-module id="dummy-layout">
   <template>
     <span>[[text]]</span>
-    <nuxeo-input value="{{required}}" required></nuxeo-input>
+    <nuxeo-input value="[[data]]" required></nuxeo-input>
   </template>
   <script>
     Polymer({
       is: 'dummy-layout',
       properties: {
         text: String,
-        required: String,
+        data: String,
       },
       validate() {
         return new Promise((resolve) => {
