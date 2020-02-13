@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import '@webcomponents/html-imports/html-imports.min.js';
 import {
   fixture,
   flush,
@@ -23,7 +24,6 @@ import {
   waitForAttrMutation,
 } from '@nuxeo/nuxeo-elements/test/test-helpers.js';
 import { Polymer } from '@polymer/polymer/polymer-legacy.js';
-import '@webcomponents/html-imports/html-imports.min.js';
 import '../nuxeo-layout.js';
 import '../widgets/nuxeo-input.js';
 /* eslint-disable no-unused-expressions */
@@ -35,67 +35,156 @@ const base = url.substring(0, url.lastIndexOf('/'));
 // Export Polymer and PolymerElement for 1.x and 2.x compat
 window.Polymer = Polymer;
 
+const layoutLoad = async (layout) => (!layout.element ? waitChanged(layout, 'element') : null);
+
 suite('<nuxeo-layout>', () => {
-  test('layout not found', async () => {
-    const layout = await fixture(
-      html`
-        <nuxeo-layout href="notfound.html"></nuxeo-layout>
-      `,
-    );
-    await flush();
+  suite('Error handling', () => {
+    test('Should display nuxeo-error when layout is not found', async () => {
+      const layout = await fixture(
+        html`
+          <nuxeo-layout href="notfound.html"></nuxeo-layout>
+        `,
+      );
+      await flush();
 
-    const container = layout.shadowRoot.querySelector('#container');
-    const nuxeoError = layout.$$('nuxeo-error');
-
-    if (!isElementVisible(nuxeoError)) {
-      await waitForAttrMutation(nuxeoError, 'hidden', null);
-    }
-    expect(isElementVisible(container)).to.be.false;
-    expect(isElementVisible(nuxeoError)).to.be.true;
+      const nuxeoError = layout.$.error;
+      if (!isElementVisible(nuxeoError)) {
+        await waitForAttrMutation(nuxeoError, 'hidden', null);
+      }
+      expect(isElementVisible(layout.$.container)).to.be.false;
+      expect(isElementVisible(nuxeoError)).to.be.true;
+    });
   });
 
-  test('layout stamped with model', async () => {
-    const layout = await fixture(html`
-      <nuxeo-layout href="${base}/layouts/dummy-layout.html" model='{"text": "dummy"}'></nuxeo-layout>
-    `);
+  suite('Stamping', () => {
+    test('Should map model into layout when model is defined', async () => {
+      const layout = await fixture(html`
+        <nuxeo-layout href="${base}/layouts/dummy-layout.html" model='{"text": "dummy"}'></nuxeo-layout>
+      `);
+      await flush();
+      await layoutLoad(layout);
 
-    if (!layout.element) {
-      await waitChanged(layout, 'element');
-    }
-    expect(layout.$$('nuxeo-error').hidden).to.be.true;
-    expect(layout.element.localName).to.equal('dummy-layout');
-    expect(layout.element.text).to.equal('dummy');
+      expect(isElementVisible(layout.$.error)).to.be.false;
+      expect(layout.element.tagName).to.equal('DUMMY-LAYOUT');
+      expect(layout.element.shadowRoot.querySelector('span')).to.exist;
+      expect(layout.element.shadowRoot.querySelector('span').innerText).to.equal('dummy');
+      expect(layout.element.shadowRoot.querySelector('nuxeo-input')).to.exist;
+    });
+
+    test('Should not map model into layout when model is empty', async () => {
+      const layout = await fixture(html`
+        <nuxeo-layout href="${base}/layouts/dummy-layout.html" model=""></nuxeo-layout>
+      `);
+      await flush();
+      await layoutLoad(layout);
+
+      expect(layout.element.shadowRoot.querySelector('span')).to.exist;
+      expect(layout.element.shadowRoot.querySelector('nuxeo-input')).to.exist;
+      expect(layout.element.shadowRoot.querySelector('span').innerText).to.be.empty;
+      expect(layout.element.shadowRoot.querySelector('nuxeo-input').innerText).to.be.empty;
+    });
+
+    test('Should not display the layout when href is empty', async () => {
+      const layout = await fixture(html`
+        <nuxeo-layout href=""></nuxeo-layout>
+      `);
+      await flush();
+
+      expect(isElementVisible(layout)).to.be.false;
+    });
+
+    test('Should stamp a new layout when href changes', async () => {
+      const layout = await fixture(html`
+        <nuxeo-layout href="${base}/layouts/dummy-layout.html"></nuxeo-layout>
+      `);
+      await flush();
+      await layoutLoad(layout);
+
+      expect(layout.element.tagName).to.equal('DUMMY-LAYOUT');
+      expect(layout.element.shadowRoot.querySelector('span')).to.exist;
+      expect(layout.element.shadowRoot.querySelector('nuxeo-input')).to.exist;
+
+      layout.href = `${base}/layouts/document/test/nuxeo-test-view-layout.html`;
+      await flush();
+
+      if (layout.element.tagName === 'DUMMY-LAYOUT') {
+        await waitChanged(layout, 'element');
+      }
+
+      expect(layout.element.tagName).to.equal('NUXEO-TEST-VIEW-LAYOUT');
+      expect(layout.element.shadowRoot.querySelector('h1')).to.exist;
+      expect(layout.element.shadowRoot.querySelector('span')).to.not.exist;
+      expect(layout.element.shadowRoot.querySelector('nuxeo-input')).to.not.exist;
+    });
   });
 
-  test('layout valid field invalid', async () => {
-    const layout = await fixture(html`
-      <nuxeo-layout href="${base}/dummy-layout.html" model='{"text": "valid"}'></nuxeo-layout>
-    `);
-    const validity = await layout.validate();
-    expect(validity).to.equal(false);
-  });
+  suite('Validation', () => {
+    test('Should validate the layout when fields are valid', async () => {
+      const layout = await fixture(html`
+        <nuxeo-layout href="${base}/layouts/dummy-layout.html" model='{"text": "valid", "data": "foo"}'></nuxeo-layout>
+      `);
+      await flush();
+      await layoutLoad(layout);
 
-  test('layout valid field valid', async () => {
-    const layout = await fixture(html`
-      <nuxeo-layout href="${base}/dummy-layout.html" model='{"text": "valid", "required": "foo"}'></nuxeo-layout>
-    `);
-    const validity = await layout.validate();
-    expect(validity).to.equal(true);
-  });
+      const nuxeoInput = layout.element.shadowRoot.querySelector('nuxeo-input');
+      sinon.spy(nuxeoInput, 'validate');
+      sinon.spy(layout.element, 'validate');
 
-  test('layout invalid field valid', async () => {
-    const layout = await fixture(html`
-      <nuxeo-layout href="${base}/dummy-layout.html" model='{"text": "invalid", "required": "foo"}'></nuxeo-layout>
-    `);
-    const validity = await layout.validate();
-    expect(validity).to.equal(false);
-  });
+      const validity = await layout.validate();
+      expect(validity).to.be.true;
+      expect(nuxeoInput.invalid).to.be.false;
+      expect(nuxeoInput.validate.calledOnce).to.be.true;
+      expect(layout.element.validate.calledOnce).to.be.true;
+    });
 
-  test('layout invalid field invalid', async () => {
-    const layout = await fixture(html`
-      <nuxeo-layout href="${base}/dummy-layout.html" model='{"text": "invalid"}'></nuxeo-layout>
-    `);
-    const validity = await layout.validate();
-    expect(validity).to.equal(false);
+    test('Should invalidate the layout when native validation is invalid', async () => {
+      const layout = await fixture(html`
+        <nuxeo-layout href="${base}/layouts/dummy-layout.html" model=""></nuxeo-layout>
+      `);
+      await flush();
+      await layoutLoad(layout);
+
+      const nuxeoInput = layout.element.shadowRoot.querySelector('nuxeo-input');
+      const validity = await layout.validate();
+      expect(validity).to.be.false;
+      expect(nuxeoInput.invalid).to.be.true;
+    });
+
+    test('Should not run custom validation when native validation fails', async () => {
+      const layout = await fixture(html`
+        <nuxeo-layout href="${base}/layouts/dummy-layout.html" model=""></nuxeo-layout>
+      `);
+      await flush();
+      await layoutLoad(layout);
+
+      const nuxeoInput = layout.element.shadowRoot.querySelector('nuxeo-input');
+      sinon.spy(nuxeoInput, 'validate');
+      sinon.spy(layout.element, 'validate');
+      const validity = await layout.validate();
+      expect(validity).to.be.false;
+      expect(nuxeoInput.invalid).to.be.true;
+      expect(nuxeoInput.validate.calledOnce).to.be.true;
+      expect(layout.element.validate.notCalled).to.be.true;
+    });
+
+    test('Should invalidate the layout when custom validation is invalid', async () => {
+      const layout = await fixture(html`
+        <nuxeo-layout
+          href="${base}/layouts/dummy-layout.html"
+          model='{"text": "invalid", "data": "foo"}'
+        ></nuxeo-layout>
+      `);
+      await flush();
+      await layoutLoad(layout);
+
+      const nuxeoInput = layout.element.shadowRoot.querySelector('nuxeo-input');
+      sinon.spy(nuxeoInput, 'validate');
+      sinon.spy(layout.element, 'validate');
+      const validity = await layout.validate();
+      expect(validity).to.be.false;
+      expect(nuxeoInput.invalid).to.be.false;
+      expect(nuxeoInput.validate.calledOnce).to.be.true;
+      expect(layout.element.validate.calledOnce).to.be.true;
+    });
   });
 });
