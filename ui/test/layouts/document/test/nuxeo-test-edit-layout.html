@@ -11,9 +11,11 @@
       }
     </style>
 
-    <nuxeo-input role="widget" label="Title" value="{{document.properties.dc:title}}" autofocus required> </nuxeo-input>
+    <nuxeo-input role="widget" name="Title" label="Title" value="{{document.properties.dc:title}}" autofocus required>
+    </nuxeo-input>
 
-    <nuxeo-textarea role="widget" label="Description" value="{{document.properties.dc:description}}"> </nuxeo-textarea>
+    <nuxeo-textarea role="widget" name="Description" label="Description" value="{{document.properties.dc:description}}">
+    </nuxeo-textarea>
   </template>
 
   <script>
@@ -22,16 +24,13 @@
       behaviors: [Nuxeo.LayoutBehavior],
       properties: {
         /**
-         * @doctype File
+         * @doctype Test
          */
         document: Object,
       },
 
       validate() {
-        if (this.document.properties['dc:description'] === this.document.properties['dc:title']) {
-          return false;
-        }
-        return true;
+        return this.document.properties['dc:description'] !== this.document.properties['dc:title'];
       },
     });
   </script>

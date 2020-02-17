@@ -41,7 +41,7 @@ suite.skip('<nuxeo-layout>', () => {
 
   test('layout stamped with model', async () => {
     const layout = await fixture(html`
-      <nuxeo-layout href="${base}/dummy-layout.html" model='{"text": "dummy"}'></nuxeo-layout>
+      <nuxeo-layout href="${base}/layouts/dummy-layout.html" model='{"text": "dummy"}'></nuxeo-layout>
     `);
     await waitChanged(layout, 'element');
     expect(layout.$$('nuxeo-error').hidden).to.be.true;

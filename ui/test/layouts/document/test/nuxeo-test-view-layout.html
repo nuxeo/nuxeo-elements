@@ -1,0 +1,37 @@
+<!--
+`nuxeo-test-view-layout`
+@group Nuxeo UI
+@element nuxeo-test-view-layout
+-->
+<dom-module id="nuxeo-test-view-layout">
+  <template>
+    <style>
+      *[role='widget'] {
+        @apply --nuxeo-widget;
+      }
+    </style>
+    <h1 role="widget" name="Title">[[document.properties.dc:title]]</h1>
+    <div role="widget" name="Description">[[document.properties.dc:description]]</div>
+    nuxeo-textarea>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-test-view-layout',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        /**
+         * @doctype Test
+         */
+        document: Object,
+      },
+
+      validate() {
+        if (this.document.properties['dc:description'] === this.document.properties['dc:title']) {
+          return false;
+        }
+        return true;
+      },
+    });
+  </script>
+</dom-module>

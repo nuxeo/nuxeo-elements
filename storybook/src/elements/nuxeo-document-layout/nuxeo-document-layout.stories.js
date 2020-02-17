@@ -100,16 +100,18 @@ const codePanel = (type, layout) => html`
   </style>
   <div style="margin-top: 32px">
     <span style="margin-left: 4px; color: #ddd">layout source</span>
-    <pre class="hljs">
-        ${until(
-        import(`!!raw-loader!../../../public/${type}/nuxeo-${type}-${layout}-layout.html`).then((module) => {
-          const val = hljs.highlight('html', module.default).value;
-          return unsafeHTML(val);
-        }),
+    <span class="hljs">
+      ${until(
+        import(`!!raw-loader!../../../public/layouts/document/${type}/nuxeo-${type}-${layout}-layout.html`).then(
+          (module) => {
+            const val = hljs.highlight('html', module.default).value;
+            return unsafeHTML(`<pre>${val}</pre>`);
+          },
+        ),
         html`
           <span>Loading layout source...</span>
         `,
-      )}</pre
+      )}</span
     >
   </div>
 `;
@@ -118,21 +120,41 @@ storiesOf('UI/nuxeo-document-layout', module)
   .add('Default', () => {
     const layout = select('Layout', ['view', 'edit', 'metadata'], 'view');
     return html`
-      <nuxeo-document-layout .document="${documentBuilder.setType('File').build()}" layout="${layout}">
-      </nuxeo-document-layout>
+      <div style="margin: 8px; padding: 8px; border-radius: 8px; border: 2px solid gray;">
+        <nuxeo-document-layout
+          .document="${documentBuilder.setType('File').build()}"
+          layout="${layout}"
+          href-base="layouts/document/"
+        >
+        </nuxeo-document-layout>
+      </div>
       ${codePanel('file', layout)}
     `;
   })
   .add(
     'Custom validation',
     () => html`
-      <p>This layout won't allow Title and Description to have the same value.</p>
+      <p style="margin-left: 16px;">This layout won't allow Title and Description to have the same value.</p>
       <iron-form>
-        <form>
-          <nuxeo-document-layout .document="${documentBuilder.setType('Picture').build()}" layout="edit">
+        <form style="margin: 8px; padding: 8px; border-radius: 8px; border: 2px solid gray;">
+          <nuxeo-document-layout
+            .document="${documentBuilder.setType('Picture').build()}"
+            layout="edit"
+            href-base="layouts/document/"
+          >
           </nuxeo-document-layout>
-          <input type="submit" value="Validate">
-        <form>
+          <button
+            @click=${(e) => {
+              const docLayout = e.target.previousElementSibling;
+              const form = e.target.parentElement;
+              const valid = docLayout.validate();
+              form.style.border = `2px ${valid ? 'dashed green' : 'solid red'}`;
+              e.preventDefault();
+            }}
+          >
+            Validate
+          </button>
+        </form>
       </iron-form>
       ${codePanel('picture', 'edit')}
     `,
@@ -141,7 +163,11 @@ storiesOf('UI/nuxeo-document-layout', module)
     'Missing layout',
     () =>
       html`
-        <nuxeo-document-layout .document="${documentBuilder.setType('MyDoc').build()}" layout="view">
+        <nuxeo-document-layout
+          .document="${documentBuilder.setType('MyDoc').build()}"
+          layout="edit"
+          href-base="layouts/document/"
+        >
         </nuxeo-document-layout>
       `,
   );

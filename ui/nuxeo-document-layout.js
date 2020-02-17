@@ -18,6 +18,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import './nuxeo-layout.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { pathFromUrl } from '@polymer/polymer/lib/utils/resolve-url.js';
 import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class';
 import { I18nBehavior } from './nuxeo-i18n-behavior.js';
@@ -29,11 +30,12 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
  *
  *     <nuxeo-document-layout document='{...}' layout="edit"></nuxeo-document-layout>
  *
- * Layouts are stamped by convetion. The href is built based on the document's type (`document.type`)
- * and the layout's name (`layout`). The layout's href is resolved in relation to this elements `importPath`
- * and it follows the following pattern:
+ * Layouts are stamped by convention. The href is built based on the document's type (`document.type`)
+ * and the layout's name (`layout`). THe layout's href is resolved in relation to`hrefBase`, if defined; otherwise
+ * either the parent or this elements `importPath` will be used, as long as they have `importMeta` defined.
+ * The href pattern can be configured with `hrefTemplate`. The default is:
  *
- * `${doctype}/nuxeo-${doctype)-${layout}-layout.html`
+ * `${document.type}/nuxeo-${document.type)-${layout}-layout.html`
  *
  * @element nuxeo-document-layout
  * @memberof Nuxeo
@@ -65,7 +67,7 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
           id="layout"
           href="[[_href]]"
           model="[[_model]]"
-          error="[[i18n('documentView.layoutNotFound', document.type)]]"
+          error="[[i18n('documentLayout.notFound', layout, document.type)]]"
           on-element-changed="_elementChanged"
         >
         </nuxeo-layout>
@@ -97,6 +99,28 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
           value: 'view',
           reflectToAttribute: true,
         },
+        /**
+         * The template to be used to build the layout href.
+         */
+        hrefTemplate: {
+          type: String,
+          // eslint-disable-next-line no-template-curly-in-string
+          value: () => '${document.type}/nuxeo-${document.type}-${layout}-layout.html',
+        },
+        /**
+         * The base url for the layout href.
+         */
+        hrefBase: {
+          type: String,
+          value: '',
+        },
+        /**
+         * The function used to build the layout href, using `hrefTemplate` as the function body.
+         */
+        hrefFunction: {
+          type: Function,
+          computed: '_buildHrefFn(hrefTemplate)',
+        },
         _model: {
           type: Object,
           value: {},
@@ -115,7 +139,7 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
     }
 
     static get observers() {
-      return ['_loadLayout(document, layout)'];
+      return ['_loadLayout(document, layout, hrefFunction, hrefBase)'];
     }
 
     /**
@@ -153,8 +177,8 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
     }
 
     /**
-     * Displays any errors present in a validation report, and invalidates layout widgets bound to document
-     * fields whose constraints were violated.
+     * Displays any errors present in a validation report and invalidates layout widgets bound to document
+     * fields, whose constraints were violated.
      * @param {object} validationReport The validation report to be displayed.
      */
     reportValidation(validationReport) {
@@ -192,7 +216,12 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
       });
     }
 
-    _loadLayout(document, layout) {
+    _buildHrefFn(tmpl) {
+      // eslint-disable-next-line no-new-func
+      return new Function(['document', 'layout'], `return \`${tmpl}\`.toLowerCase();`);
+    }
+
+    _loadLayout(document, layout, hrefFunction, hrefBase) {
       this._resetValidationErrors();
       if (document) {
         if (!this.previousDocument || document.uid !== this.previousDocument.uid) {
@@ -201,9 +230,9 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
         if (!this.previousDocument || document.type === this.previousDocument.type) {
           this._set_model({ document });
         }
-        const doctype = document.type.toLowerCase();
-        const name = ['nuxeo', doctype, layout, 'layout'].join('-');
-        this._set_href(this.resolveUrl(`${doctype}/${name}.html`));
+        const base = hrefBase || pathFromUrl(this.__dataHost.importPath || this.importPath);
+        const path = [base, hrefFunction(document, layout)].join(base.slice(-1) !== '/' ? '/' : '');
+        this._set_href(path);
       } else if (document === undefined) {
         // XXX undefined is used to notify a cancel to inner elements
         this._set_model({ document });
