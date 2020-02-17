@@ -29,8 +29,15 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
  *
  *     <nuxeo-document-layout document='{...}' layout="edit"></nuxeo-document-layout>
  *
+ * Layouts are stamped by convetion. The href is built based on the document's type (`document.type`)
+ * and the layout's name (`layout`). The layout's href is resolved in relation to this elements `importPath`
+ * and it follows the following pattern:
+ *
+ * `${doctype}/nuxeo-${doctype)-${layout}-layout.html`
+ *
  * @element nuxeo-document-layout
  * @memberof Nuxeo
+ * @demo https://nuxeo.github.io/nuxeo-elements/?path=/story/ui-nuxeo-document-layout--default
  */
 {
   class DocumentLayout extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
@@ -75,10 +82,16 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 
     static get properties() {
       return {
+        /**
+         * The document for which the layout will be stamped.
+         */
         document: {
           type: Object,
           notify: true,
         },
+        /**
+         * An id denoting the name of the layout to be stamped.
+         */
         layout: {
           type: String,
           value: 'view',
@@ -105,10 +118,33 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
       return ['_loadLayout(document, layout)'];
     }
 
+    /**
+     * Fired on the next render after the document layout changes.
+     *
+     * @event document-layout-changed
+     * @param {string} layout The document layout.
+     * @param {object} element The document layout element.
+     */
+
+    /**
+     * Returns the layout element.
+     */
     get element() {
       return this.$.layout.element;
     }
 
+    /**
+     * Runs form validation on the document layout.
+     */
+    validate() {
+      return this.$.layout.validate();
+    }
+
+    /**
+     * Applies focus on the first layout child with the `autofocus` attribute.
+     *
+     * Note: This method won't do anything if there's already a child element focused.
+     */
     applyAutoFocus() {
       const focusableElement = this._getFocusableElement(this.element);
       if (focusableElement) {
@@ -116,10 +152,11 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
       }
     }
 
-    validate() {
-      return this.$.layout.validate();
-    }
-
+    /**
+     * Displays any errors present in a validation report, and invalidates layout widgets bound to document
+     * fields whose constraints were violated.
+     * @param {object} validationReport The validation report to be displayed.
+     */
     reportValidation(validationReport) {
       this._resetValidationErrors();
       validationReport.violations.reverse().forEach((violation) => {
