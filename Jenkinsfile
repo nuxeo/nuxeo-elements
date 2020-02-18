@@ -106,7 +106,7 @@ pipeline {
               -----------------------------------"""
             sh 'npx lerna run analysis --parallel'
             dir('storybook') {
-              sh 'npx build-storybook -o dist'
+              sh 'npx build-storybook -o dist -s ./public'
               sh 'skaffold build'
               dir('charts/preview') {
                 sh "make preview" // does some env subst before "jx step helm build"

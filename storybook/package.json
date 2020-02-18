@@ -34,7 +34,7 @@
   },
   "scripts": {
     "start": "start-storybook -s ./public -p 6006",
-    "build": "build-storybook",
+    "build": "build-storybook -s ./public",
     "deploy": "storybook-to-ghpages"
   },
   "devDependencies": {
