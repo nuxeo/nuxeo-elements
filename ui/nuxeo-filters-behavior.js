@@ -67,6 +67,7 @@ export const FiltersBehavior = {
     return (
       document &&
       !document.hasLegalHold &&
+      !this.isVersion(document) &&
       this.hasPermission(document, 'MakeRecord') &&
       this.hasPermission(document, 'SetRetention') &&
       Object.prototype.hasOwnProperty.call(document.properties, 'file:content')
@@ -75,6 +76,7 @@ export const FiltersBehavior = {
 
   canSetLegalHold(document) {
     return (
+      !this.isVersion(document) &&
       this.hasPermission(document, 'MakeRecord') &&
       this.hasPermission(document, 'ManageLegalHold') &&
       Object.prototype.hasOwnProperty.call(document.properties, 'file:content')
@@ -221,6 +223,7 @@ export const FiltersBehavior = {
     return (
       doc &&
       !this.isProxy(doc) &&
+      !this.isRecord(doc) &&
       !this.isTrashed(doc) &&
       this.hasFacet(doc, 'Publishable') &&
       this.hasPermission(doc, 'Write')
