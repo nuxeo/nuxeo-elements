@@ -66,7 +66,7 @@ window.nuxeo.I18n.loadLocale();
           }
 
           #content {
-            background-color: #efefef;
+            background-color: var(--nuxeo-demo-background-color, #efefef);
             border-radius: 3px;
             padding: 16px;
             margin-bottom: 16px;

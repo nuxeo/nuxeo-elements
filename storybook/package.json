@@ -26,6 +26,7 @@
     "@storybook/polymer": "^5.1.11",
     "babel-loader": "^8.0.5",
     "highlight.js": "^9.18.0",
+    "expose-loader": "^0.7.5",
     "lit-html": "^1.0.0",
     "nuxeo": "^3.2.1",
     "polymer-webpack-loader": "^2.0.3",

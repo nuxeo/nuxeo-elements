@@ -3,6 +3,7 @@ import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-actions-menu';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-card';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-checkmark';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-date-picker';
+import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-html-editor';
 import { storiesOf } from '@storybook/polymer';
 import { color, text, number } from '@storybook/addon-knobs';
 import { html } from 'lit-html';
@@ -85,4 +86,11 @@ storiesOf('UI/Widgets', module)
     return html`
       <nuxeo-date-picker .value="${value}"></nuxeo-date-picker>
     `;
-  });
+  })
+
+  .addElement(
+    'nuxeo-html-editor',
+    () => html`
+      <nuxeo-html-editor></nuxeo-html-editor>
+    `,
+  );

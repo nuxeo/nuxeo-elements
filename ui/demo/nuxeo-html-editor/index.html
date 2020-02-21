@@ -27,8 +27,12 @@ limitations under the License.
       import '../nuxeo-demo.js';
       import '../../widgets/nuxeo-html-editor.js';
     </script>
-    <script src="../../widgets/alloy/alloy-editor-all.js"></script>
-    <!-- NXP-23147: explicitly import alloy -->
+
+    <style include="nuxeo-demo-styles">
+      html {
+        --nuxeo-demo-background-color: white;
+      }
+    </style>
   </head>
 
   <body unresolved>

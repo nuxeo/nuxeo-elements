@@ -16,6 +16,16 @@ module.exports = ({ config }) => {
       test: /layout.html$/,
       use: 'raw-loader',
     },
+    // expose Quill
+    {
+      test: require.resolve('@nuxeo/quill/dist/quill.js'),
+      use: [
+        {
+          loader: 'expose-loader',
+          options: 'Quill',
+        },
+      ],
+    },
   );
   return config;
 };
