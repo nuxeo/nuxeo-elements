@@ -89,6 +89,7 @@
   "documentDistributionChart.includeHidden": "Inkludera dolda dokument",
   "documentDistributionChart.includeVersions": "Inkludera versioner",
   "documentDistributionChart.size": "Storlek",
+  "documentLayout.notFound": "Failed to find {0} layout for {1}.",
   "documentPermissions.block": "Blockera",
   "documentPermissions.blockDescription": "Om du uttryckligen vill styra åtkomst till det här dokumentet kan du blockera behörighetsarvet. De eventuella ändringar som görs på överordnade dokumentet kommer intte påverka villkoren för åtkomst till dokumentet. Du och administratörerna kommer att läggas till lokala behörigheter.",
   "documentPermissions.blocked": "Blockerade",

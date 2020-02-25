@@ -89,6 +89,7 @@
   "documentDistributionChart.includeHidden": "非表示の文書を含む",
   "documentDistributionChart.includeVersions": "バージョンを含む",
   "documentDistributionChart.size": "サイズ",
+  "documentLayout.notFound": "Failed to find {0} layout for {1}.",
   "documentPermissions.block": "ブロック",
   "documentPermissions.blockDescription": "この文書へのアクセスを明示的に制御する場合は、アクセス許可の継承をブロックできます。親文書に行った変更は、この文書へのアクセスの条件には影響を与えません。あなたと管理者が、ローカルのアクセス許可に追加されます。",
   "documentPermissions.blocked": "ブロック済み",

@@ -89,6 +89,7 @@
   "documentDistributionChart.includeHidden": "包含隐藏文档",
   "documentDistributionChart.includeVersions": "包含版本号",
   "documentDistributionChart.size": "文件大小",
+  "documentLayout.notFound": "Failed to find {0} layout for {1}.",
   "documentPermissions.block": "阻止",
   "documentPermissions.blockDescription": "如果您想显式控制此文档的访问权限，您可以阻止权限继承。 对父文档所做的任何更改不会影响到本文档的访问条件。您和管理员将被添加到本地权限中。",
   "documentPermissions.blocked": "已冻结",

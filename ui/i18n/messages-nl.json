@@ -89,6 +89,7 @@
   "documentDistributionChart.includeHidden": "Verborgen documenten opnemen",
   "documentDistributionChart.includeVersions": "Versies opnemen",
   "documentDistributionChart.size": "Omvang",
+  "documentLayout.notFound": "Failed to find {0} layout for {1}.",
   "documentPermissions.block": "Blokkeren",
   "documentPermissions.blockDescription": "Als u expliciet de toegang tot dit document wilt kunnen controleren, kunt u de overname van toestemmingen blokkeren. Geen enkele wijziging van een moederdocument zal van invloed zijn op de toegangsvoorwaarden voor dit document. U en de beheerders worden toegevoegd aan lokale toestemmingen.",
   "documentPermissions.blocked": "Geblokkeerd",

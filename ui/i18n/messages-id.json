@@ -89,6 +89,7 @@
   "documentDistributionChart.includeHidden": "Sertakan dokumen yang tersembunyi",
   "documentDistributionChart.includeVersions": "Include versions",
   "documentDistributionChart.size": "Ukuran",
+  "documentLayout.notFound": "Failed to find {0} layout for {1}.",
   "documentPermissions.block": "Blokir",
   "documentPermissions.blockDescription": "Jika anda ingin secara eksplisit mengontrol akses ke dokumen ini, anda dapat memblokir hak akses perizinan. Setiap perubahan yang dilakukan pada dokumen induk tidak akan mempengaruhi kondisi akses ke dokumen ini. Anda dan pengelola akan ditambahkan ke izin lokal.",
   "documentPermissions.blocked": "Diblokir",

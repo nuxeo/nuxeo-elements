@@ -89,6 +89,7 @@
   "documentDistributionChart.includeHidden": "Verborgene Dokumente einschließen",
   "documentDistributionChart.includeVersions": "Versionen einschließen",
   "documentDistributionChart.size": "Größe",
+  "documentLayout.notFound": "Failed to find {0} layout for {1}.",
   "documentPermissions.block": "Blockieren",
   "documentPermissions.blockDescription": "Wenn Sie den Zugriff auf dieses Dokument explizit steuern möchten, können Sie die Vererbung von Berechtigungen blockieren. Änderungen am übergeordneten Dokument beeinflussen die Bedingungen für den Zugang zu diesem Dokument nicht. Sie und die Administratoren werden zu lokalen Berechtigungen hinzugefügt.",
   "documentPermissions.blocked": "Gesperrt",

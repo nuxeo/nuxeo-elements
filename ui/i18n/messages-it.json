@@ -89,6 +89,7 @@
   "documentDistributionChart.includeHidden": "Includi documenti nascosti",
   "documentDistributionChart.includeVersions": "Includi versioni",
   "documentDistributionChart.size": "Dimensioni",
+  "documentLayout.notFound": "Failed to find {0} layout for {1}.",
   "documentPermissions.block": "Blocco",
   "documentPermissions.blockDescription": "Per controllare in modo esplicito l’accesso al documento, è possibile bloccare l’ereditarietà delle autorizzazioni. Le eventuali modifiche apportate al documento padre non influiranno sulle condizioni di accesso al documento. L’utente e l’amministratore saranno aggiunti alle autorizzazioni locali.",
   "documentPermissions.blocked": "Bloccato",

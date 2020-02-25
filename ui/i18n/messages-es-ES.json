@@ -89,6 +89,7 @@
   "documentDistributionChart.includeHidden": "Incluir documentos ocultos",
   "documentDistributionChart.includeVersions": "Incluir versiones",
   "documentDistributionChart.size": "Tamaño",
+  "documentLayout.notFound": "Failed to find {0} layout for {1}.",
   "documentPermissions.block": "Bloque",
   "documentPermissions.blockDescription": "Si quiere controlar explícitamente el acceso a este documento, puede bloquear la herencia de permisos. Los cambios en el documento padre no afectarán a las condiciones de acceso a este documento. Tanto los administradores como usted se añadirán a los permisos locales.",
   "documentPermissions.blocked": "Bloqueado",
