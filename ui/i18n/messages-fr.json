@@ -89,7 +89,7 @@
   "documentDistributionChart.includeHidden": "Inclure les documents cachés",
   "documentDistributionChart.includeVersions": "Inclure les versions",
   "documentDistributionChart.size": "Taille",
-  "documentLayout.notFound": "Failed to find {0} layout for {1}.",
+  "documentLayout.notFound": "Impossible de trouver la mise en page {0} pour {1}.",
   "documentPermissions.block": "Bloquer",
   "documentPermissions.blockDescription": "Bloquez l'héritage des permissions si vous souhaitez explicitement contrôler l'accès au document. Les modifications faites sur le document parent n'affecteront pas l'accès à ce document. Seuls vous et les administrateurs seront par défaut ajoutés aux permissions locales.",
   "documentPermissions.blocked": "Bloquées",
