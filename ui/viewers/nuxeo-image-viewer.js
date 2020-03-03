@@ -22,7 +22,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-import 'cropperjs/dist/cropper.esm.js'; /* global Cropper */
+import Cropper from 'cropperjs/dist/cropper.esm.js';
 import '../nuxeo-icons.js';
 
 {
@@ -234,8 +234,9 @@ import '../nuxeo-icons.js';
     }
 
     _resize() {
-      if (this._el) {
+      if (this._el && this._isCanvasVisible()) {
         this._el.resize();
+        this._el.zoomTo(this._getOriginalZoomRatio());
         this._fitToRealSize = false;
       }
     }
@@ -248,6 +249,11 @@ import '../nuxeo-icons.js';
         this._fitToRealSize =
           this._getOriginalZoomRatio().toFixed(decimalPlaces) !== data.detail.ratio.toFixed(decimalPlaces);
       }
+    }
+
+    _isCanvasVisible() {
+      const { canvas } = this.$;
+      return canvas && canvas.offsetWidth !== 0 && canvas.offsetHeight !== 0;
     }
   }
 
