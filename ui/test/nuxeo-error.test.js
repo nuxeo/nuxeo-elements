@@ -39,6 +39,26 @@ suite('<nuxeo-error>', () => {
     expect(errorMessage.innerText).to.equal(message);
   };
 
+  const expectNuxeoErrorEmptyContent = (nuxeoError) => {
+    expect(isElementVisible(nuxeoError)).to.be.true;
+
+    const code = nuxeoError.shadowRoot.querySelector('.code');
+    expect(isElementVisible(code)).to.be.false;
+    expect(code.innerText).to.be.empty;
+
+    const description = nuxeoError.shadowRoot.querySelector('.description');
+    expect(isElementVisible(description)).to.be.false;
+    expect(description.innerText).to.be.empty;
+
+    const url = nuxeoError.shadowRoot.querySelector('.url');
+    expect(isElementVisible(url)).to.be.false;
+    expect(url.innerText).to.be.empty;
+
+    const message = nuxeoError.shadowRoot.querySelector('.message');
+    expect(isElementVisible(message)).to.be.false;
+    expect(message.innerText).to.be.empty;
+  };
+
   test('Should display error messages when properties are set', async () => {
     const nuxeoError = await fixture(
       html`
@@ -58,23 +78,7 @@ suite('<nuxeo-error>', () => {
     );
     await flush();
 
-    expect(isElementVisible(nuxeoError)).to.be.true;
-
-    const code = nuxeoError.shadowRoot.querySelector('.code');
-    expect(isElementVisible(code)).to.be.false;
-    expect(code.innerText).to.be.empty;
-
-    const description = nuxeoError.shadowRoot.querySelector('.description');
-    expect(isElementVisible(description)).to.be.true;
-    expect(description.innerText).to.be.empty;
-
-    const url = nuxeoError.shadowRoot.querySelector('.url');
-    expect(isElementVisible(url)).to.be.true;
-    expect(url.innerText).to.be.empty;
-
-    const message = nuxeoError.shadowRoot.querySelector('.message');
-    expect(isElementVisible(message)).to.be.true;
-    expect(message.innerText).to.be.empty;
+    expectNuxeoErrorEmptyContent(nuxeoError);
   });
 
   test('Should not display error messages when properties are empty', async () => {
@@ -85,23 +89,7 @@ suite('<nuxeo-error>', () => {
     );
     await flush();
 
-    expect(isElementVisible(nuxeoError)).to.be.true;
-
-    const code = nuxeoError.shadowRoot.querySelector('.code');
-    expect(isElementVisible(code)).to.be.false;
-    expect(code.innerText).to.be.empty;
-
-    const description = nuxeoError.shadowRoot.querySelector('.description');
-    expect(isElementVisible(description)).to.be.false;
-    expect(description.innerText).to.equal('error.');
-
-    const url = nuxeoError.shadowRoot.querySelector('.url');
-    expect(isElementVisible(url)).to.be.false;
-    expect(url.innerText).to.be.empty;
-
-    const message = nuxeoError.shadowRoot.querySelector('.message');
-    expect(isElementVisible(message)).to.be.false;
-    expect(message.innerText).to.be.empty;
+    expectNuxeoErrorEmptyContent(nuxeoError);
   });
 
   test('Should display error messages when "show" function is run', async () => {

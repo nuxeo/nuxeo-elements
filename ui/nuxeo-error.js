@@ -100,14 +100,23 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
         /**
          * The error code. Description will rely on a label with key 'error.<code>'.
          * */
-        code: String,
+        code: {
+          type: String,
+          value: '',
+        },
 
         /**
          * Error message to display.
          * */
-        message: String,
+        message: {
+          type: String,
+          value: '',
+        },
 
-        url: String,
+        url: {
+          type: String,
+          value: '',
+        },
 
         hidden: {
           type: Boolean,
@@ -131,7 +140,7 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
     }
 
     _label() {
-      return this.i18n(`error.${this.code}`);
+      return this.code ? this.i18n(`error.${this.code}`) : null;
     }
   }
 
