@@ -100,6 +100,8 @@ import '../nuxeo-icons.js';
           :host {
             display: block;
             position: relative;
+            width: 100%;
+            height: 100%;
           }
 
           #canvas {
@@ -142,7 +144,7 @@ import '../nuxeo-icons.js';
 
         <div id="canvas">
           <img id="image" src$="[[src]]" on-load="_init" />
-          <dom-if if="[[controls]]">
+          <dom-if if="[[_isToolbarVisible(controls, src, _el)]]">
             <template>
               <div id="toolbar">
                 <paper-icon-button on-click="_click" icon="zoom-out" data-action="zoom-out"></paper-icon-button>
@@ -254,6 +256,10 @@ import '../nuxeo-icons.js';
     _isCanvasVisible() {
       const { canvas } = this.$;
       return canvas && canvas.offsetWidth !== 0 && canvas.offsetHeight !== 0;
+    }
+
+    _isToolbarVisible(controls, src, el) {
+      return controls && src && el;
     }
   }
 
