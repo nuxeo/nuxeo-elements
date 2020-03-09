@@ -19,7 +19,7 @@ import '../nuxeo-operation.js';
 import '../nuxeo-page-provider.js';
 
 /* eslint-disable no-unused-expressions */
-suite('<nuxeo-operation>', () => {
+suite('nuxeo-operation', () => {
   const responseHeaders = {
     json: { 'Content-Type': 'application/json' },
     plain: { 'Content-Type': 'text/plain' },

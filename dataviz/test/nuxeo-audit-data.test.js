@@ -18,7 +18,7 @@ import { fixture, html, login } from '@nuxeo/nuxeo-elements/test/test-helpers.js
 import moment from '@nuxeo/moment';
 import '../nuxeo-audit-data.js';
 
-suite('<nuxeo-audit-data>', () => {
+suite('nuxeo-audit-data', () => {
   let server;
 
   function fakeResponse(json) {

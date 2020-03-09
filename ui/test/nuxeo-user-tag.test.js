@@ -18,7 +18,7 @@ import { fixture, flush, html } from '@nuxeo/nuxeo-elements/test/test-helpers';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import '../widgets/nuxeo-user-tag.js';
 
-suite('<nuxeo-user-tag>', () => {
+suite('nuxeo-user-tag', () => {
   suite("User's Display Name", () => {
     test('Should display first and last names concatenated when at least one is provided and defined', async () => {
       const userWithFirstAndLastNames = {

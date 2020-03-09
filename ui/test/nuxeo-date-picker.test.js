@@ -44,7 +44,7 @@ function testInput(element, input) {
   // expect(element._pickerValue).to.be.equal(input);
 }
 
-suite('<nuxeo-date-picker>', () => {
+suite('nuxeo-date-picker', () => {
   let element;
   setup(async () => {
     element = await fixture(

@@ -32,7 +32,7 @@ function getCommentContent(element) {
 }
 
 /* eslint-disable no-unused-expressions */
-suite('<nuxeo-document-comment>', () => {
+suite('nuxeo-document-comment', () => {
   const longText =
     'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. ' +
     'Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, ' +

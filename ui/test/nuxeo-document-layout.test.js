@@ -44,7 +44,7 @@ const { url } = import.meta;
 const base = url.substring(0, url.lastIndexOf('/'));
 
 /* eslint-disable no-unused-expressions */
-suite('<nuxeo-document-layout>', () => {
+suite('nuxeo-document-layout', () => {
   let documentLayout;
   const baseUrl = `${base}/layouts/document/`;
 

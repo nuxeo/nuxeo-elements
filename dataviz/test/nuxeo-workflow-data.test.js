@@ -18,7 +18,7 @@ import { fixture, html, login } from '@nuxeo/nuxeo-elements/test/test-helpers.js
 import moment from '@nuxeo/moment';
 import '../nuxeo-workflow-data.js';
 
-suite('<nuxeo-workflow-data>', () => {
+suite('nuxeo-workflow-data', () => {
   let server;
 
   function fakeResponse(json) {

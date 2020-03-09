@@ -55,7 +55,7 @@ const data = {
   type: 'terms',
 };
 
-suite('<nuxeo-checkbox-aggregation>', () => {
+suite('nuxeo-checkbox-aggregation', () => {
   setup(async () => {
     await login();
   });

@@ -67,7 +67,7 @@ const makeContent = async (name, slot, content, options = {}) => {
   return fx;
 };
 
-suite('<nuxeo-slot>', () => {
+suite('nuxeo-slot', () => {
   [{ legacySlotName: false }, { legacySlotName: true }].forEach((conf) => {
     suite(conf.legacySlotName ? '"slot" attribute as nuxeo-slot name (legacy)' : '', () => {
       let slot1;

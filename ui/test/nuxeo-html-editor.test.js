@@ -18,7 +18,7 @@ import { fixture, isElementVisible, html } from '@nuxeo/nuxeo-elements/test/test
 import '../widgets/nuxeo-html-editor.js';
 
 /* eslint-disable no-unused-expressions */
-suite('<nuxeo-html-editor>', () => {
+suite('nuxeo-html-editor', () => {
   test('should display the placeholder when empty', async () => {
     const editor = await fixture(
       html`

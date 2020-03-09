@@ -28,7 +28,7 @@ import fakeServer from '@nuxeo/nuxeo-elements/test/nuxeo-mock-client.js';
 import { pressAndReleaseKeyOn, tap } from '@polymer/iron-test-helpers/mock-interactions';
 
 /* eslint-disable no-unused-expressions */
-suite('<nuxeo-document-comment-thread>', () => {
+suite('nuxeo-document-comment-thread', () => {
   let element;
   let server;
 
