@@ -37,7 +37,7 @@ window.Polymer = Polymer;
 
 const layoutLoad = async (layout) => (!layout.element ? waitChanged(layout, 'element') : null);
 
-suite('<nuxeo-layout>', () => {
+suite('nuxeo-layout', () => {
   suite('Error handling', () => {
     test('Should display nuxeo-error when layout is not found', async () => {
       const layout = await fixture(

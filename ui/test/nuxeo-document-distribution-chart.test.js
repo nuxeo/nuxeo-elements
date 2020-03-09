@@ -19,7 +19,7 @@ import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import '../dataviz/nuxeo-document-distribution-chart.js';
 import { flush } from '@polymer/polymer/lib/utils/render-status';
 
-suite.skip('<nuxeo-document-distribution-chart>', () => {
+suite.skip('nuxeo-document-distribution-chart', () => {
   let server;
 
   const includeAllCountResp = {

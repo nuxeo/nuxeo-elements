@@ -27,7 +27,7 @@ import '../widgets/nuxeo-actions-menu.js';
 window.html = html; // make it available for building custom elements inline
 
 /* eslint-disable no-unused-expressions */
-suite('<nuxeo-actions-menu>', () => {
+suite('nuxeo-actions-menu', () => {
   function makeMenuContent(n = 5) {
     return html`
       ${[...Array(n)].map(

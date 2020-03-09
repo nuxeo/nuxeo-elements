@@ -20,7 +20,7 @@ import '../actions/nuxeo-favorites-toggle-button.js';
 
 /* eslint-disable no-unused-expressions */
 
-suite('<nuxeo-favorites-toggle-button>', () => {
+suite('nuxeo-favorites-toggle-button', () => {
   let server;
   setup(async () => {
     server = await login();

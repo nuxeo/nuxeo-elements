@@ -19,7 +19,7 @@ import fakeServer from './nuxeo-mock-client';
 import { fixture, html, waitForEvent } from './test-helpers';
 
 /* eslint-disable no-unused-expressions */
-suite('<nuxeo-task-page-provider>', () => {
+suite('nuxeo-task-page-provider', () => {
   suite('REST Calls', () => {
     let server;
     setup(() => {

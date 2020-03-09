@@ -18,7 +18,7 @@ import { fixture, flush, html } from '@nuxeo/nuxeo-elements/test/test-helpers';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import '../widgets/nuxeo-user-avatar.js';
 
-suite('<nuxeo-user-avatar>', () => {
+suite('nuxeo-user-avatar', () => {
   test('should get initial characters based on first and last name', async () => {
     const element = await fixture(html`<nuxeo-user-avatar></nuxeo-avatar>`);
     const character = dom(element.root).querySelector('#character');

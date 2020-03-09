@@ -20,7 +20,7 @@ import { tap } from '@polymer/iron-test-helpers/mock-interactions.js';
 import '../nuxeo-user-group-management/nuxeo-create-group.js';
 /* eslint-disable no-unused-expressions */
 
-suite('<nuxeo-create-group>', () => {
+suite('nuxeo-create-group', () => {
   let server;
 
   setup(async () => {

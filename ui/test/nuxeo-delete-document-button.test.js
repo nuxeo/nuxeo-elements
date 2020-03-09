@@ -22,7 +22,7 @@ import '../actions/nuxeo-delete-document-button.js';
 
 const getActionDiv = (button) => dom(button.root).querySelector('.action');
 
-suite('<nuxeo-delete-document-button>', () => {
+suite('nuxeo-delete-document-button', () => {
   let button;
 
   const deletableDocument = {

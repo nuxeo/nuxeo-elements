@@ -45,7 +45,7 @@ const router = {
   group: () => '#',
 };
 
-suite('<nuxeo-document-suggestion>', () => {
+suite('nuxeo-document-suggestion', () => {
   let server;
 
   setup(async () => {

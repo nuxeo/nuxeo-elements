@@ -18,7 +18,7 @@ import { fixture, flush, html, timePasses } from '@nuxeo/nuxeo-elements/test/tes
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import '../widgets/nuxeo-user-suggestion.js';
 
-suite('<nuxeo-user-suggestion>', () => {
+suite('nuxeo-user-suggestion', () => {
   test('prefixed mode intialization', async () => {
     const value = [
       {

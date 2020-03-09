@@ -20,7 +20,7 @@ import { dom } from '@polymer/polymer/lib/legacy/polymer.dom';
 import '../actions/nuxeo-lock-toggle-button.js';
 /* eslint-disable no-unused-expressions */
 
-suite('<nuxeo-lock-toggle-button>', () => {
+suite('nuxeo-lock-toggle-button', () => {
   let button;
   let server;
 

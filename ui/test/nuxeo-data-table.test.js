@@ -350,7 +350,7 @@ const simpleTableResp = {
 };
 
 /* eslint-disable max-len */
-suite('<nuxeo-data-table>', () => {
+suite('nuxeo-data-table', () => {
   let server;
 
   suite('table results', () => {

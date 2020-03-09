@@ -20,7 +20,7 @@ import '../actions/nuxeo-notifications-toggle-button.js';
 
 /* eslint-disable no-unused-expressions */
 
-suite('<nuxeo-notifications-toggle-button>', () => {
+suite('nuxeo-notifications-toggle-button', () => {
   let server;
   setup(async () => {
     server = await login();

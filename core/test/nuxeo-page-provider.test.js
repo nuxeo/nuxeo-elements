@@ -18,7 +18,7 @@ import { fixture, html } from './test-helpers';
 import '../nuxeo-page-provider.js';
 
 /* eslint-disable no-unused-expressions */
-suite('<nuxeo-page-provider>', () => {
+suite('nuxeo-page-provider', () => {
   const responseHeaders = {
     json: { 'Content-Type': 'application/json' },
     plain: { 'Content-Type': 'text/plain' },

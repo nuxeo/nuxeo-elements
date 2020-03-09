@@ -21,7 +21,7 @@ import '../widgets/nuxeo-directory-checkbox.js';
 import '../widgets/nuxeo-directory-radio-group.js';
 import '../widgets/nuxeo-directory-suggestion.js';
 
-suite('<nuxeo-directory-suggestion>', () => {
+suite('nuxeo-directory-suggestion', () => {
   let server;
   let suggestionWidget;
   setup(async () => {

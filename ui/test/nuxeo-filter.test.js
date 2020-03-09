@@ -26,7 +26,7 @@ function stamped(filter, clazz) {
   return dom(filter).querySelectorAll(`${clazz || '*'}:not(nuxeo-filter):not(template)`);
 }
 
-suite('<nuxeo-filter>', () => {
+suite('nuxeo-filter', () => {
   test('empty filter', async () => {
     const filter = await fixture(html`
       <div>

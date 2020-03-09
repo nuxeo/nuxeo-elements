@@ -28,7 +28,7 @@ const userResponse = [200, responseHeaders.json, '{"entity-type":"user","usernam
 
 const cmisResponse = [200, responseHeaders.json, '{}'];
 
-suite('<nuxeo-connection>', () => {
+suite('nuxeo-connection', () => {
   let server;
 
   setup(() => {
