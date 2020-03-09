@@ -1,5 +1,5 @@
 import { storiesOf } from '@storybook/polymer';
-import { text } from '@storybook/addon-knobs';
+import { text, select, boolean } from '@storybook/addon-knobs';
 import { html } from 'lit-html';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-card';
 
@@ -10,32 +10,17 @@ const ICONS = {
   none: '',
 };
 
-storiesOf('UI/nuxeo-card', module).addElement('nuxeo-card', ({ knobs }) => {
-  const { heading, collapsible, icon, opened } = knobs({
-    heading: { value: 'Heading' },
-    icon: { type: 'select', options: ICONS },
-  });
+storiesOf('UI/nuxeo-card', module).add('nuxeo-card', () => {
+  const heading = text('Heading', 'About Nuxeo');
+  const icon = select('Icon', ICONS, ICONS.attachment);
+  const collapsible = boolean('Collapsible', false);
+  const opened = boolean('Opened', false);
   return html`
-    <style>
-      nuxeo-card {
-        --nuxeo-card: {
-          display: block;
-          padding: 16px;
-          margin-bottom: 16px;
-          box-shadow: 0 3px 5px rgba(0, 0, 0, 0.04) !important;
-          font-family: var(--nuxeo-app-font);
-          border-radius: 0;
-          background-color: var(--nuxeo-box) !important;
-        }
-      }
-    </style>
     <nuxeo-card heading="${heading}" icon="${icon}" ?collapsible="${collapsible}" ?opened="${opened}">
       ${text(
         'Content',
-        `	
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit,	
-            sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.	
-          `,
+        `Nuxeo makes it easy to build smart content applications that enhance customer experiences,
+        improve decision making, and accelerate products to market.`,
       )}
     </nuxeo-card>
   `;

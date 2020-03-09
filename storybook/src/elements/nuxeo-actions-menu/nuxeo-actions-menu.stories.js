@@ -4,8 +4,35 @@ import { html } from 'lit-html';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-actions-menu';
 import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-link-button';
 
-storiesOf('UI/Widgets', module).addElement('nuxeo-actions-menu', ({ knobs }) => {
-  knobs();
+const iconsList = [
+  { icon: 'nuxeo:edit', label: 'Edit' },
+  { icon: 'nuxeo:attachment', label: 'Attachment' },
+  { icon: 'nuxeo:dashboard', label: 'Dashboard' },
+  { icon: 'nuxeo:add', label: 'Add' },
+  { icon: 'nuxeo:delete', label: 'Delete' },
+  { icon: 'nuxeo:download', label: 'Download' },
+  { icon: 'nuxeo:export', label: 'Export' },
+  { icon: 'nuxeo:edit', label: 'Edit' },
+  { icon: 'nuxeo:attachment', label: 'Attachment' },
+  { icon: 'nuxeo:dashboard', label: 'Dashboard' },
+  { icon: 'nuxeo:add', label: 'Add' },
+  { icon: 'nuxeo:delete', label: 'Delete' },
+  { icon: 'nuxeo:download', label: 'Download' },
+  { icon: 'nuxeo:export', label: 'Export' },
+];
+
+const label = 'Number of items';
+const defaultValue = 5;
+const options = {
+  range: true,
+  min: 1,
+  max: iconsList.length + 1,
+  step: 1,
+};
+
+storiesOf('UI/nuxeo-actions-menu', module).add('Default', () => {
+  const value = number(label, defaultValue, options);
+  const list = iconsList.slice(0, value);
   return html`
     <style>
       nuxeo-actions-menu {
@@ -13,9 +40,9 @@ storiesOf('UI/Widgets', module).addElement('nuxeo-actions-menu', ({ knobs }) => 
       }
     </style>
     <nuxeo-actions-menu>
-      ${Array.from({ length: number('# actions', 10) }).map(
-        () => html`
-          <nuxeo-link-button href="javascript:void(0)" icon="nuxeo:edit" label="Dummy"></nuxeo-link-button>
+      ${list.map(
+        (i) => html`
+          <nuxeo-link-button href="javascript:void(0)" icon=${i.icon} label=${i.label}> </nuxeo-link-button>
         `,
       )}
     </nuxeo-actions-menu>
