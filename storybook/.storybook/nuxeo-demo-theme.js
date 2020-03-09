@@ -478,6 +478,13 @@ const template = html`
         --nuxeo-widget: {
           margin-bottom: 16px;
         }
+
+        --nuxeo-action-button-label: {
+          padding-right: 8px;
+        }
+        --nuxeo-actions-menu-dropdown: {
+          padding: 0 8px;
+        }
       }
     </style>
   </custom-style>
