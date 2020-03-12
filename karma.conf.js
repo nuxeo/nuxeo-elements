@@ -86,6 +86,8 @@ module.exports = (config) => {
     ],
     frameworks: ['esm', 'mocha', 'sinon-chai', 'source-map-support'],
     esm: {
+      // prevent auto loading of polyfills
+      compatibility: 'none',
       coverage,
       // if you are using 'bare module imports' you will need this option
       nodeResolve: true,
