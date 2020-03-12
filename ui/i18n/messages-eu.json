@@ -89,7 +89,7 @@
   "documentDistributionChart.includeHidden": "Sartu ezkutuko dokumentuak",
   "documentDistributionChart.includeVersions": "Sartu bertsioak",
   "documentDistributionChart.size": "Tamaina",
-  "documentLayout.notFound": "Failed to find {0} layout for {1}.",
+  "documentLayout.notFound": "Ez da {0} diseinurik aurkitu honentzat: {1}.",
   "documentPermissions.block": "Blokeatu",
   "documentPermissions.blockDescription": "Dokumentu honetara sarbidea esplizituki kontrolatu nahi baduzu, baimenen herentzia blokea dezakezu. Guraso dokumentuan egindako aldaketek ez diete dokumentu honen baldintzei eragingo. Zu eta administratzaileak baimen lokaletara gehituak izango zarete.",
   "documentPermissions.blocked": "Blokeatuta",
