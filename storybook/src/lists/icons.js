@@ -1,4 +1,9 @@
 import { IronMeta } from '@polymer/iron-meta/iron-meta.js';
 
-const { value } = new IronMeta({ type: 'iconset', key: 'nuxeo' });
-export const listOfIcons = value.getIconNames();
+const iconMap = {};
+
+new IronMeta({ type: 'iconset' }).list.forEach((item) => {
+  iconMap[item.name] = item.getIconNames();
+});
+
+export default iconMap;
