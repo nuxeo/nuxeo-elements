@@ -3,10 +3,10 @@ import { storiesOf } from '@storybook/polymer';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-icons.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-card.js';
-import { IronMeta } from '@polymer/iron-meta/iron-meta.js';
+import iconMap from '../../lists/icons.js';
 
-const items = new IronMeta({ type: 'iconset' }).list.map((item) => {
-  return { name: item.name, icons: item.getIconNames() };
+const items = Object.keys(iconMap).map((key) => {
+  return { name: key, icons: iconMap[key] };
 });
 
 storiesOf('UI/nuxeo-icons', module).add(

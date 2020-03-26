@@ -3,23 +3,9 @@ import { number } from '@storybook/addon-knobs';
 import { html } from 'lit-html';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-actions-menu';
 import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-link-button';
+import iconMap from '../../lists/icons';
 
-const iconsList = [
-  { icon: 'nuxeo:edit', label: 'Edit' },
-  { icon: 'nuxeo:attachment', label: 'Attachment' },
-  { icon: 'nuxeo:dashboard', label: 'Dashboard' },
-  { icon: 'nuxeo:add', label: 'Add' },
-  { icon: 'nuxeo:delete', label: 'Delete' },
-  { icon: 'nuxeo:download', label: 'Download' },
-  { icon: 'nuxeo:export', label: 'Export' },
-  { icon: 'nuxeo:edit', label: 'Edit' },
-  { icon: 'nuxeo:attachment', label: 'Attachment' },
-  { icon: 'nuxeo:dashboard', label: 'Dashboard' },
-  { icon: 'nuxeo:add', label: 'Add' },
-  { icon: 'nuxeo:delete', label: 'Delete' },
-  { icon: 'nuxeo:download', label: 'Download' },
-  { icon: 'nuxeo:export', label: 'Export' },
-];
+const iconsList = iconMap.nuxeo;
 
 const label = 'Number of items';
 const defaultValue = 5;
@@ -42,7 +28,7 @@ storiesOf('UI/nuxeo-actions-menu', module).add('Default', () => {
     <nuxeo-actions-menu>
       ${list.map(
         (i) => html`
-          <nuxeo-link-button href="javascript:void(0)" icon=${i.icon} label=${i.label}> </nuxeo-link-button>
+          <nuxeo-link-button href="javascript:void(0)" icon=${i} label=${i}> </nuxeo-link-button>
         `,
       )}
     </nuxeo-actions-menu>

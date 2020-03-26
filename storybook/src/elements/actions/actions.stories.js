@@ -18,13 +18,15 @@ import { color, select, text, boolean } from '@storybook/addon-knobs';
 import { action } from '@storybook/addon-actions';
 import DocumentBuilder from '../../data/documents.data';
 import image from '../../img/nuxeo-elements-catalog.svg';
-import { listOfIcons } from '../../lists/icons';
+import iconMap from '../../lists/icons';
 
 const documentBuilder = new DocumentBuilder()
   .setFileContent('Nuxeo Logo', image)
   .setPermissions(['Write', 'ManageWorkflows']);
 
 const DOCUMENTS = [documentBuilder.build(), documentBuilder.build(), documentBuilder.build()];
+
+const listOfIcons = iconMap.nuxeo;
 
 const server = window.nuxeo.mock;
 server.respondWith('POST', '/api/v1/automation/Document.AddToFavorites', DOCUMENTS[0]);
