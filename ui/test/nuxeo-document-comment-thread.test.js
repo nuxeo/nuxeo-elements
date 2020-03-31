@@ -17,15 +17,16 @@ limitations under the License.
 import '../nuxeo-document-comments/nuxeo-document-comment.js';
 import '../nuxeo-document-comments/nuxeo-document-comment-thread.js';
 import {
+  fakeServer,
   fixture,
   flush,
   html,
   isElementVisible,
+  pressAndReleaseKeyOn,
+  tap,
   timePasses,
   waitForEvent,
-} from '@nuxeo/nuxeo-elements/test/test-helpers';
-import fakeServer from '@nuxeo/nuxeo-elements/test/nuxeo-mock-client.js';
-import { pressAndReleaseKeyOn, tap } from '@polymer/iron-test-helpers/mock-interactions';
+} from '@nuxeo/testing-helpers';
 
 /* eslint-disable no-unused-expressions */
 suite('nuxeo-document-comment-thread', () => {

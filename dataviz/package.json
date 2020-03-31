@@ -17,8 +17,8 @@
     "serve": "polymer serve --npm -c ../node_modules"
   },
   "devDependencies": {
-    "moment": "^2.10.6",
     "polymer-cli": "^1.8.0",
+    "@nuxeo/testing-helpers": "3.0.0-SNAPSHOT",
     "@polymer/iron-component-page": "^4.0.0",
     "@polymer/test-fixture": "^4.0.2",
     "@webcomponents/webcomponentsjs": "^2.0.0"

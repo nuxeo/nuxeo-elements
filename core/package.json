@@ -20,10 +20,9 @@
     "nuxeo": "^3.2.1"
   },
   "devDependencies": {
-    "@open-wc/testing-helpers": "^0.8.3",
+    "@nuxeo/testing-helpers": "3.0.0-SNAPSHOT",
     "@polymer/iron-component-page": "^4.0.0",
-    "polymer-cli": "^1.8.0",
-    "sinon": "^7.3.1"
+    "polymer-cli": "^1.8.0"
   },
   "main": "nuxeo-elements.js"
 }

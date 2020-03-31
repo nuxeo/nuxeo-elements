@@ -16,11 +16,15 @@
  */
 import { fixture, fixtureCleanup, html } from '@open-wc/testing-helpers';
 import * as utils from '@polymer/polymer/lib/utils/flush.js';
-
-/* eslint-disable no-unused-vars,no-param-reassign */
+import sinon from 'sinon';
 
 window.fetch = null;
 
+/**
+ * Sets a timeout and waits for its completion.
+ * @param {number} ms - Number of milliseconds to wait for
+ * @returns {Promise}
+ */
 function timePasses(ms = 1) {
   return new Promise((resolve) => {
     window.setTimeout(() => {
@@ -34,6 +38,13 @@ const flush = async () => {
   await timePasses(0);
 };
 
+/**
+ * Waits for an event to trigger in a DOM element.
+ * @param {Object} el - DOM element expecting event
+ * @param {string} event - The expected event type
+ * @param {number} times - The number of expected event occurrences
+ * @returns {Promise<Event>} Promise object represents the listened event
+ */
 function waitForEvent(el, event, times = 1) {
   return new Promise((resolve) => {
     const listener = (e) => {
@@ -46,10 +57,24 @@ function waitForEvent(el, event, times = 1) {
   });
 }
 
+/**
+ * Waits for a property change ('property'-changed) event to trigger in a DOM element.
+ * @param {Object} el - DOM element expecting event
+ * @param {string} prop - The property expected to change
+ * @param {number} times - The number of expected event occurrences
+ * @returns {Promise<Event>} Promise object represents the listened event
+ */
 function waitChanged(el, prop, times = 1) {
   return waitForEvent(el, `${prop}-changed`, times).then((e) => e.detail);
 }
 
+/**
+ * Waits for an attribute to change to a specific value in a DOM element.
+ * @param {Object} el - DOM element expecting attribute mutation
+ * @param {string} attr - The element's attribute
+ * @param {string} value - The expected attribute value
+ * @returns {Promise<MutationRecord>} Promise object represents the occurred mutation
+ */
 function waitForAttrMutation(el, attr, value) {
   return new Promise((resolve) => {
     if (value == null || el.getAttribute(attr) !== value) {
@@ -72,6 +97,11 @@ function waitForAttrMutation(el, attr, value) {
   });
 }
 
+/**
+ * Waits for a child list change to occur in a DOM element.
+ * @param {Object} el - DOM element expecting child list mutation
+ * @returns {Promise<MutationRecord>} Promise object represents the occurred mutation
+ */
 function waitForChildListMutation(el) {
   return new Promise((resolve) => {
     const observer = new MutationObserver((mutationsList) => {
@@ -85,6 +115,11 @@ function waitForChildListMutation(el) {
   });
 }
 
+/**
+ * Checks if a DOM element is visible.
+ * @param {Object} el - DOM element to be checked
+ * @returns {boolean} Whether the DOM element is visible
+ */
 function isElementVisible(el) {
   if (!el) {
     return false;
@@ -95,6 +130,10 @@ function isElementVisible(el) {
 
 let server;
 
+/**
+ * @deprecated since 3.0.0
+ * @see {MockClient}
+ */
 async function login() {
   server = sinon.fakeServer.create();
   server.autoRespond = true;
@@ -135,15 +174,12 @@ teardown(() => {
 });
 
 export {
+  flush,
   isElementVisible,
+  login,
   timePasses,
-  waitForEvent,
   waitChanged,
   waitForAttrMutation,
   waitForChildListMutation,
-  login,
-  fixture,
-  fixtureCleanup,
-  flush,
-  html,
+  waitForEvent,
 };

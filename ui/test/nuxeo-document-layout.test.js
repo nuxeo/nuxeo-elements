@@ -19,14 +19,7 @@ import '../nuxeo-document-layout.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-textarea';
 import { Polymer } from '@polymer/polymer/polymer-legacy.js';
-import {
-  fixture,
-  flush,
-  isElementVisible,
-  html,
-  waitForEvent,
-  waitForAttrMutation,
-} from '@nuxeo/nuxeo-elements/test/test-helpers';
+import { fixture, flush, isElementVisible, html, waitForEvent, waitForAttrMutation } from '@nuxeo/testing-helpers';
 import { LayoutBehavior } from '../nuxeo-layout-behavior.js';
 
 // Export Polymer and PolymerElement for 1.x and 2.x compat

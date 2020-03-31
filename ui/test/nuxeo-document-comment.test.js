@@ -16,16 +16,17 @@ limitations under the License.
 */
 import '../nuxeo-document-comments/nuxeo-document-comment.js';
 import {
+  fakeServer,
   fixture,
   flush,
   html,
   isElementVisible,
+  pressAndReleaseKeyOn,
+  tap,
   timePasses,
   waitForAttrMutation,
   waitForEvent,
-} from '@nuxeo/nuxeo-elements/test/test-helpers';
-import { pressAndReleaseKeyOn, tap } from '@polymer/iron-test-helpers/mock-interactions';
-import fakeServer from '@nuxeo/nuxeo-elements/test/nuxeo-mock-client';
+} from '@nuxeo/testing-helpers';
 
 function getCommentContent(element) {
   return element.shadowRoot.querySelector('#content');

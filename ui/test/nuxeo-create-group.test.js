@@ -14,9 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, flush, html, login, waitChanged } from '@nuxeo/nuxeo-elements/test/test-helpers.js';
+import { fixture, flush, html, login, tap, waitChanged } from '@nuxeo/testing-helpers';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
-import { tap } from '@polymer/iron-test-helpers/mock-interactions.js';
 import '../nuxeo-user-group-management/nuxeo-create-group.js';
 /* eslint-disable no-unused-expressions */
 

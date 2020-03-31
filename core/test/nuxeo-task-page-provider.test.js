@@ -15,8 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 import '../nuxeo-task-page-provider.js';
-import fakeServer from './nuxeo-mock-client';
-import { fixture, html, waitForEvent } from './test-helpers';
+import { fakeServer, fixture, html, waitForEvent } from '@nuxeo/testing-helpers';
 
 /* eslint-disable no-unused-expressions */
 suite('nuxeo-task-page-provider', () => {

@@ -14,9 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, flush, html, login } from '@nuxeo/nuxeo-elements/test/test-helpers.js';
+import { fixture, flush, html, login } from '@nuxeo/testing-helpers';
 import * as polymer from '@polymer/polymer/lib/utils/html-tag.js';
-import '@polymer/iron-test-helpers/mock-interactions.js';
 import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '../nuxeo-slots.js';

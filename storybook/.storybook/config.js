@@ -1,4 +1,4 @@
-import fakeServer from '@nuxeo/nuxeo-elements/test/nuxeo-mock-client';
+import { fakeServer } from '@nuxeo/testing-helpers';
 import { configure, addDecorator, addParameters, setAddon } from '@storybook/polymer';
 import { withActions } from '@storybook/addon-actions';
 import { withKnobs } from '@storybook/addon-knobs';
