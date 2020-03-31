@@ -19,10 +19,10 @@ import {
   fixture,
   flush,
   html,
+  pressAndReleaseKeyOn,
   waitForAttrMutation,
   waitForChildListMutation,
-} from '@nuxeo/nuxeo-elements/test/test-helpers.js';
-import { pressAndReleaseKeyOn } from '@polymer/iron-test-helpers/mock-interactions.js';
+} from '@nuxeo/testing-helpers';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import '../widgets/nuxeo-selectivity.js';
 

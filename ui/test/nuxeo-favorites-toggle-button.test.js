@@ -14,8 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, html, login, waitChanged } from '@nuxeo/nuxeo-elements/test/test-helpers.js';
-import { tap } from '@polymer/iron-test-helpers/mock-interactions.js';
+import { fixture, html, login, tap, waitChanged } from '@nuxeo/testing-helpers';
 import '../actions/nuxeo-favorites-toggle-button.js';
 
 /* eslint-disable no-unused-expressions */

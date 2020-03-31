@@ -1,0 +1,23 @@
+{
+  "name": "@nuxeo/testing-helpers",
+  "version": "3.0.0-SNAPSHOT",
+  "description": "Nuxeo Web Components Testing Helpers",
+  "keywords": [
+    "nuxeo",
+    "web-components",
+    "polymer",
+    "testing",
+    "mocks"
+  ],
+  "license": "Apache 2.0",
+  "author": "Nuxeo",
+  "repository": "nuxeo/nuxeo-elements.git",
+  "dependencies": {
+    "@open-wc/testing-helpers": "^1.6.2",
+    "@polymer/iron-test-helpers": "^3.0.0",
+    "@polymer/polymer": "^3.0.0",
+    "lit-html": "^1.0.0",
+    "nuxeo": "^3.2.1",
+    "sinon": "^9.0.1"
+  }
+}

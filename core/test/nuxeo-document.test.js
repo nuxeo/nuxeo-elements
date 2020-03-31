@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-import { waitChanged, fixture, html } from './test-helpers';
+import { waitChanged, fixture, html } from '@nuxeo/testing-helpers';
 import '../nuxeo-document.js';
 
 /* eslint-disable no-unused-expressions */

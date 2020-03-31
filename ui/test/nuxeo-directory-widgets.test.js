@@ -14,9 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, flush, html, login, waitForEvent } from '@nuxeo/nuxeo-elements/test/test-helpers.js';
+import { fixture, flush, focus, html, login, tap, waitForEvent } from '@nuxeo/testing-helpers';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
-import { focus, tap } from '@polymer/iron-test-helpers/mock-interactions.js';
 import '../widgets/nuxeo-directory-checkbox.js';
 import '../widgets/nuxeo-directory-radio-group.js';
 import '../widgets/nuxeo-directory-suggestion.js';

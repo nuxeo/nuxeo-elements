@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, html } from '@nuxeo/nuxeo-elements/test/test-helpers.js';
+import { fixture, html } from '@nuxeo/testing-helpers';
 import moment from '@nuxeo/moment';
 import '../widgets/nuxeo-date-picker.js';
 /* eslint-disable no-unused-expressions */

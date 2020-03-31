@@ -15,14 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import '@webcomponents/html-imports/html-imports.min.js';
-import {
-  fixture,
-  flush,
-  html,
-  isElementVisible,
-  waitChanged,
-  waitForAttrMutation,
-} from '@nuxeo/nuxeo-elements/test/test-helpers.js';
+import { fixture, flush, html, isElementVisible, waitChanged, waitForAttrMutation } from '@nuxeo/testing-helpers';
 import { Polymer } from '@polymer/polymer/polymer-legacy.js';
 import '../nuxeo-layout.js';
 import '../widgets/nuxeo-input.js';
