@@ -14,9 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, flush, html, waitForChildListMutation } from '@nuxeo/nuxeo-elements/test/test-helpers.js';
+import { fixture, flush, html, waitForChildListMutation, timePasses } from '@nuxeo/nuxeo-elements/test/test-helpers.js';
 import * as polymer from '@polymer/polymer';
+import '@polymer/polymer/lib/elements/dom-bind.js';
 import '../nuxeo-slots.js';
+import '../nuxeo-filter.js';
 /* eslint-disable no-unused-expressions */
 
 // return all children excluding <nuxeo-slot>
@@ -33,14 +35,14 @@ function _assertPosition(slot) {
     .forEach((contentIdx) => expect(contentIdx).to.be.below(slotIdx));
 }
 
-const makeSlot = (name, legacySlotName = false) =>
+const makeSlot = (name, legacySlotName = false, contentKey) =>
   fixture(
     legacySlotName
       ? html`
-          <nuxeo-slot slot="${name}"></nuxeo-slot>
+          <nuxeo-slot slot="${name}" content-key=${contentKey || ''}></nuxeo-slot>
         `
       : html`
-          <nuxeo-slot name="${name}"></nuxeo-slot>
+          <nuxeo-slot name="${name}" content-key=${contentKey || ''}></nuxeo-slot>
         `,
   );
 
@@ -287,6 +289,248 @@ suite('nuxeo-slot', () => {
         expect(mutation.addedNodes[0].textContent).to.be.equal(text);
         expect(_content(slot1).length).to.be.equal(1);
       });
+    });
+  });
+
+  suite('slot content deduplication', () => {
+    let slot3;
+    setup(async () => {
+      slot3 = await makeSlot('SLOT3', false, 'name');
+    });
+
+    test('content dedup by "name" attribute', async () => {
+      sinon.spy(slot3, '_render');
+      sinon.spy(slot3, '_dedup');
+
+      await makeContent(
+        'content1',
+        'SLOT3',
+        html`
+          <p>Content</p>
+        `,
+        { order: 1 },
+      );
+      expect(slot3._render.calledOnce).to.be.true;
+      expect(slot3._dedup.calledOnce).to.be.true;
+      await makeContent(
+        'content2',
+        'SLOT3',
+        html`
+          <span name="name">Contrib 1</span>
+          <span name="name">Contrib 2</span>
+        `,
+        { order: 3 },
+      );
+      expect(slot3._render.calledTwice).to.be.true;
+      expect(slot3._dedup.calledThrice).to.be.true;
+      let content = _content(slot3);
+      expect(content.length).to.be.equal(2);
+      expect(content[0].textContent).to.be.equal('Content');
+      expect(content[1].textContent).to.be.equal('Contrib 1');
+      await makeContent(
+        'content3',
+        'SLOT3',
+        html`
+          <span name="name">Contrib 3</span>
+        `,
+        { order: 4 },
+      );
+      expect(slot3._render.calledThrice).to.be.true;
+      expect(slot3._dedup.callCount).to.equal(6);
+      content = _content(slot3);
+      expect(content.length).to.be.equal(2);
+      expect(content[0].textContent).to.be.equal('Content');
+      expect(content[1].textContent).to.be.equal('Contrib 1');
+      await makeContent(
+        'content3',
+        'SLOT3',
+        html`
+          <span name="name">Contrib 4</span>
+        `,
+        { order: 2 },
+      );
+      expect(slot3._render.callCount).to.equal(4);
+      expect(slot3._dedup.callCount).to.equal(9);
+      content = _content(slot3);
+      expect(content.length).to.be.equal(2);
+      expect(content[0].textContent).to.be.equal('Content');
+      expect(content[1].textContent).to.be.equal('Contrib 4');
+    });
+
+    test('content dedup by "name" attribute using nuxeo-filter', async () => {
+      sinon.spy(slot3, '_render');
+      sinon.spy(slot3, '_dedup');
+
+      await makeContent(
+        'content1',
+        'SLOT3',
+        html`
+          <p>Content</p>
+        `,
+        { order: 1 },
+      );
+      await makeContent(
+        'content2',
+        'SLOT3',
+        html`
+          <span name="name">Contrib 1</span>
+        `,
+        { order: 4 },
+      );
+      expect(slot3._render.calledTwice).to.be.true;
+      expect(slot3._dedup.calledThrice).to.be.true;
+      let content = _content(slot3);
+      expect(content.length).to.be.equal(2);
+      expect(content[0].textContent).to.be.equal('Content');
+      expect(content[1].textContent).to.be.equal('Contrib 1');
+
+      await makeContent(
+        'content3',
+        'SLOT3',
+        html`
+          <nuxeo-filter document='{"facets":["Folderish"]}' facet="Folderish">
+            <template>
+              <span name="name">Contrib 2</span>
+              <span name="name">Contrib 3</span>
+            </template>
+          </nuxeo-filter>
+        `,
+        { order: 2 },
+      );
+      expect(slot3._render.calledThrice).to.be.true;
+      expect(slot3._dedup.callCount).to.equal(7);
+      content = _content(slot3);
+      expect(content.length).to.be.equal(4);
+      expect(content[0].textContent).to.be.equal('Content');
+      expect(content[1].textContent).to.be.equal('Contrib 2');
+      expect(content[2].tagName).to.be.equal('NUXEO-FILTER');
+      expect(content[3].tagName).to.be.equal('TEMPLATE');
+
+      // check that if we have no duplicates amongst filters, contributed in different slot content elements
+      await makeContent(
+        'content4',
+        'SLOT3',
+        html`
+          <nuxeo-filter document='{"facets":["Folderish"]}' facet="Folderish">
+            <template>
+              <span name="name">Contrib 4</span>
+              <span name="name">Contrib 5</span>
+            </template>
+          </nuxeo-filter>
+          <nuxeo-filter document='{"facets":["Folderish"]}' facet="File">
+            <template>
+              <span name="name">Contrib 6</span>
+              <span name="name">Contrib 7</span>
+            </template>
+          </nuxeo-filter>
+          <nuxeo-filter document='{"facets":["Folderish"]}' facet="File">
+            <template>
+              <span>Contrib 8</span>
+            </template>
+          </nuxeo-filter>
+        `,
+        { order: 2 },
+      );
+      expect(slot3._render.callCount).to.equal(4);
+      expect(slot3._dedup.callCount).to.equal(13);
+      content = _content(slot3);
+      expect(content.length).to.be.equal(10);
+      expect(content[0].textContent).to.be.equal('Content');
+      expect(content[1].textContent).to.be.equal('Contrib 2');
+      expect(content[2].tagName).to.be.equal('NUXEO-FILTER');
+      expect(content[3].tagName).to.be.equal('TEMPLATE');
+      expect(content[4].tagName).to.be.equal('NUXEO-FILTER');
+      expect(content[5].tagName).to.be.equal('TEMPLATE');
+      expect(content[6].tagName).to.be.equal('NUXEO-FILTER');
+      expect(content[7].tagName).to.be.equal('TEMPLATE');
+      expect(content[8].tagName).to.be.equal('NUXEO-FILTER');
+      expect(content[9].tagName).to.be.equal('TEMPLATE');
+
+      // check that we have no duplicates on filters contributed in the same slot content, but we still perserve
+      // contributions without a key on filters
+      // the hack above is a dirt workaround for databinding for polymer element with lit-html
+      const filter1 = content[2];
+      filter1.set('document', { facets: ['File'] });
+      const filter2 = content[4];
+      filter2.set('document', { facets: ['File'] });
+      const filter3 = content[6];
+      filter3.set('document', { facets: ['File'] });
+      const filter4 = content[8];
+      filter4.set('document', { facets: ['File'] });
+      await flush();
+      await timePasses(50); // give enough time for re-instate to run
+      expect(slot3._render.callCount).to.equal(4);
+      expect(slot3._dedup.callCount).to.equal(15);
+      content = _content(slot3);
+      expect(content.length).to.be.equal(11);
+      expect(content[0].textContent).to.be.equal('Content');
+      expect(content[1].tagName).to.be.equal('NUXEO-FILTER');
+      expect(content[2].tagName).to.be.equal('TEMPLATE');
+      expect(content[3].tagName).to.be.equal('NUXEO-FILTER');
+      expect(content[4].tagName).to.be.equal('TEMPLATE');
+      expect(content[5].textContent).to.be.equal('Contrib 6');
+      expect(content[6].tagName).to.be.equal('NUXEO-FILTER');
+      expect(content[7].tagName).to.be.equal('TEMPLATE');
+      expect(content[8].textContent).to.be.equal('Contrib 8');
+      expect(content[9].tagName).to.be.equal('NUXEO-FILTER');
+      expect(content[10].tagName).to.be.equal('TEMPLATE');
+
+      // let's invalid all filters and make sure that the first contribution with a key is back
+      filter1.set('document', { facets: ['Picture'] });
+      filter2.set('document', { facets: ['Picture'] });
+      filter3.set('document', { facets: ['Picture'] });
+      filter4.set('document', { facets: ['Picture'] });
+      await flush();
+      await timePasses(50); // give enough time for re-instate to run
+      expect(slot3._render.callCount).to.equal(4);
+      expect(slot3._dedup.callCount).to.equal(15);
+      content = _content(slot3);
+      expect(content.length).to.be.equal(10);
+      expect(content[0].textContent).to.be.equal('Content');
+      expect(content[1].tagName).to.be.equal('NUXEO-FILTER');
+      expect(content[2].tagName).to.be.equal('TEMPLATE');
+      expect(content[3].tagName).to.be.equal('NUXEO-FILTER');
+      expect(content[4].tagName).to.be.equal('TEMPLATE');
+      expect(content[5].tagName).to.be.equal('NUXEO-FILTER');
+      expect(content[6].tagName).to.be.equal('TEMPLATE');
+      expect(content[7].tagName).to.be.equal('NUXEO-FILTER');
+      expect(content[8].tagName).to.be.equal('TEMPLATE');
+      // NOTE: this contribution is back, but in a different position on the DOM
+      // this shouldn't be an issue?
+      expect(content[9].textContent).to.be.equal('Contrib 1');
+
+      // check that a rerender preserves the correct order
+      slot3._updateContent();
+      await flush();
+      await timePasses(50); // give enough time for re-instate to run
+      expect(slot3._render.callCount).to.equal(5);
+      expect(slot3._dedup.callCount).to.equal(21);
+      content = _content(slot3);
+      expect(content.length).to.be.equal(10);
+      expect(content[0].textContent).to.be.equal('Content');
+      expect(content[1].textContent).to.be.equal('Contrib 2');
+      expect(content[2].tagName).to.be.equal('NUXEO-FILTER');
+      expect(content[3].tagName).to.be.equal('TEMPLATE');
+      expect(content[4].tagName).to.be.equal('NUXEO-FILTER');
+      expect(content[5].tagName).to.be.equal('TEMPLATE');
+      expect(content[6].tagName).to.be.equal('NUXEO-FILTER');
+      expect(content[7].tagName).to.be.equal('TEMPLATE');
+      expect(content[8].tagName).to.be.equal('NUXEO-FILTER');
+      expect(content[9].tagName).to.be.equal('TEMPLATE');
+
+      // TODO this won't work with filters with different
+      await makeContent(
+        'content5',
+        'SLOT3',
+        html`
+          <nuxeo-filter user='{"isAdministrator": true}' expression="user.isAdministrator">
+            <template>
+              <span name="name">Contrib 9</span>
+            </template>
+          </nuxeo-filter>
+        `,
+        { order: 2 },
+      );
     });
   });
 
