@@ -17,7 +17,6 @@ limitations under the License.
 import { fixture, flush, html, waitForChildListMutation } from '@nuxeo/testing-helpers';
 import * as polymer from '@polymer/polymer';
 import '../nuxeo-slots.js';
-/* eslint-disable no-unused-expressions */
 
 // return all children excluding <nuxeo-slot>
 function _content(slot) {

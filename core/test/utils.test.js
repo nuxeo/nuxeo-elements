@@ -16,7 +16,6 @@
  */
 import { createNestedObject } from '../utils.js';
 
-/* eslint-disable no-unused-expressions */
 suite('utils', () => {
   suite('"createNestedObject" function', () => {
     suite('Parameters Validation', () => {

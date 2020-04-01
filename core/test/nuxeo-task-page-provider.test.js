@@ -17,7 +17,6 @@ limitations under the License.
 import '../nuxeo-task-page-provider.js';
 import { fakeServer, fixture, html, waitForEvent } from '@nuxeo/testing-helpers';
 
-/* eslint-disable no-unused-expressions */
 suite('nuxeo-task-page-provider', () => {
   suite('REST Calls', () => {
     let server;

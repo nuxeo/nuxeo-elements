@@ -19,7 +19,6 @@ import { fixture, flush, html, isElementVisible, waitChanged, waitForAttrMutatio
 import { Polymer } from '@polymer/polymer/polymer-legacy.js';
 import '../nuxeo-layout.js';
 import '../widgets/nuxeo-input.js';
-/* eslint-disable no-unused-expressions */
 
 // determine base module path (relies on @open-wc/webpack-import-meta-loader)
 const { url } = import.meta;

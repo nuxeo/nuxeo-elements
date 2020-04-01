@@ -17,7 +17,6 @@ limitations under the License.
 import { fixture, html, login } from '@nuxeo/testing-helpers';
 import '../widgets/nuxeo-file.js';
 import { UploaderBehavior } from '../widgets/nuxeo-uploader-behavior.js';
-/* eslint-disable no-unused-expressions */
 
 suite('Nuxeo.UploaderBehavior', () => {
   let DefaultUploadProvider;

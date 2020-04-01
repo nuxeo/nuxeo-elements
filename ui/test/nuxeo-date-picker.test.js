@@ -17,7 +17,6 @@ limitations under the License.
 import { fixture, html } from '@nuxeo/testing-helpers';
 import moment from '@nuxeo/moment';
 import '../widgets/nuxeo-date-picker.js';
-/* eslint-disable no-unused-expressions */
 
 function getInput(element) {
   return element.root.querySelector('#date');

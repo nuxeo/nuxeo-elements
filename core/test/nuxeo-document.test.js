@@ -17,7 +17,6 @@ limitations under the License.
 import { waitChanged, fixture, html } from '@nuxeo/testing-helpers';
 import '../nuxeo-document.js';
 
-/* eslint-disable no-unused-expressions */
 suite('nuxeo-document', () => {
   const responseHeaders = {
     json: { 'Content-Type': 'application/json' },

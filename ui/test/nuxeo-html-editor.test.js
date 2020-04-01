@@ -17,7 +17,6 @@ limitations under the License.
 import { fixture, isElementVisible, html } from '@nuxeo/testing-helpers';
 import '../widgets/nuxeo-html-editor.js';
 
-/* eslint-disable no-unused-expressions */
 suite('nuxeo-html-editor', () => {
   test('should display the placeholder when empty', async () => {
     const editor = await fixture(

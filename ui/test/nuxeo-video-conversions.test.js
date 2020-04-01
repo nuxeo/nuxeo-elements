@@ -17,7 +17,6 @@ limitations under the License.
 import { fixture, flush, html, isElementVisible } from '@nuxeo/testing-helpers';
 import '../nuxeo-video/nuxeo-video-conversions.js';
 import videoProperties from './resources/videoProperties';
-/* eslint-disable no-unused-expressions */
 
 suite('nuxeo-video-conversions', () => {
   suite('Displaying element when no parameters provided', () => {

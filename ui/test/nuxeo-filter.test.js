@@ -20,8 +20,6 @@ import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import '../nuxeo-filter.js';
 import '../nuxeo-slots.js';
 
-/* eslint-disable no-unused-expressions */
-
 function stamped(filter, clazz) {
   return dom(filter).querySelectorAll(`${clazz || '*'}:not(nuxeo-filter):not(template)`);
 }

@@ -60,5 +60,19 @@ module.exports = {
         Polymer: 'readonly',
       },
     },
+    {
+      files: ['**/*.test.js'],
+      env: {
+        mocha: true,
+      },
+      rules: {
+        'no-unused-expressions': 'off',
+      },
+      globals: {
+        assert: 'readable',
+        expect: 'readable',
+        sinon: 'readable',
+      },
+    },
   ],
 };

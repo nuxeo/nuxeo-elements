@@ -26,7 +26,6 @@ import {
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import '../widgets/nuxeo-selectivity.js';
 
-/* eslint-disable no-unused-expressions */
 suite('nuxeo-selectivity', () => {
   let selectivityWidget;
   const data = ['Berlin', 'Lisbon', 'London', 'Rennes', 'Rome'];
