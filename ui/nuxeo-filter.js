@@ -238,19 +238,25 @@ import { FiltersBehavior } from './nuxeo-filters-behavior.js';
         if (template) {
           delete template.__templatizeOwner;
           this.templatize(template);
-          this._instance = this.stamp();
+          const instance = this.stamp();
           for (const prop in this.constructor.properties) {
-            this._instance._setPendingProperty(prop, this[prop]);
+            instance._setPendingProperty(prop, this[prop]);
           }
           // Ensure element specific properties are forwarded
           if (this.__dataHost && this.__dataHost.__data) {
             for (const [key, value] of Object.entries(this.__dataHost.__data)) {
-              this._instance._setPendingProperty(key, value);
+              instance._setPendingProperty(key, value);
             }
           }
-          this._instance._flushProperties();
-          const { root } = this._instance;
-          parent.insertBefore(root, this);
+          instance._flushProperties();
+          if (this._templateMutator) {
+            this._templateMutator(this, instance);
+          }
+          const { root } = instance;
+          if (root.querySelectorAll('*').length > 0) {
+            parent.insertBefore(root, this);
+            this._instance = instance;
+          }
         }
       }
     }
@@ -273,8 +279,13 @@ import { FiltersBehavior } from './nuxeo-filters-behavior.js';
           const parent = dom(dom(c$[0]).parentNode);
           // eslint-disable-next-line no-cond-assign
           for (let i = 0, n; i < c$.length && (n = c$[i]); i++) {
-            parent.removeChild(n);
+            if (n.parentNode) {
+              parent.removeChild(n);
+            }
           }
+        }
+        if (this._onClear) {
+          this._onClear(this._instance);
         }
         this._instance = null;
       }

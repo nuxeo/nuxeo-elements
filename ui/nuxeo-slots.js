@@ -144,6 +144,17 @@ window.nuxeo.slots.setSharedModel = (model) => {
           value: false,
           notify: true,
         },
+
+        /**
+         * Attribute to use as a deduplicationng key of content.
+         *
+         * Only one contribution with the a given value for this attribute will be stamped. And empty value means no
+         * dedupping will occur.
+         */
+        contentKey: {
+          type: String,
+          observer: '_updateContent',
+        },
       };
     }
 
@@ -157,11 +168,13 @@ window.nuxeo.slots.setSharedModel = (model) => {
 
     connectedCallback() {
       super.connectedCallback();
+      this.unAttached = [];
       this._updateContent();
     }
 
     disconnectedCallback() {
       super.disconnectedCallback();
+      this.unAttached = null;
       this._unregister(this.slotName);
     }
 
@@ -199,7 +212,9 @@ window.nuxeo.slots.setSharedModel = (model) => {
           const p = dom(dom(c$[0]).parentNode);
           // eslint-disable-next-line no-cond-assign
           for (let i = 0, n; i < c$.length && (n = c$[i]); i++) {
-            p.removeChild(n);
+            if (n.parentNode) {
+              p.removeChild(n);
+            }
           }
         }
       });
@@ -228,6 +243,167 @@ window.nuxeo.slots.setSharedModel = (model) => {
       return { parent, parentSlot };
     }
 
+    _filterTemplateMutator(filter, instance, pos) {
+      // dedup filter
+      this._dedup(instance, pos);
+      const keys = Array.from(instance.children)
+        .filter((c) => c.nodeType === Node.ELEMENT_NODE && c.hasAttribute(this.contentKey))
+        .map((c) => c.getAttribute(this.contentKey));
+      if (keys.length === 0) {
+        return;
+      }
+      // dedup with previous filters
+      const filters = this._instances
+        .slice(0, pos + 1)
+        .map((i) =>
+          i.children.filter((c) => c.nodeType === Node.ELEMENT_NODE && c.parentNode && c.matches('nuxeo-filter')),
+        )
+        .flat();
+      const idx = filters.indexOf(filter);
+      const dups = [];
+      const consumedValues = new Set();
+      filters
+        .slice(0, idx)
+        .filter((f) => f.check() && f._instance)
+        .forEach((f) => {
+          Array.from(f._instance.children)
+            .filter((c) => c.nodeType === Node.ELEMENT_NODE && c.matches(`[${this.contentKey}]`))
+            .forEach((n) => {
+              const key = n.hasAttribute(this.contentKey) && n.getAttribute(this.contentKey);
+              if (!key || consumedValues.has(key)) {
+                return;
+              }
+              consumedValues.add(key);
+              const results = Array.from(instance.root.children).filter(
+                (c) => c.nodeType === Node.ELEMENT_NODE && c.parentNode && c.matches(`[${this.contentKey}="${key}"]`),
+              );
+              dups.push(...results);
+            });
+        });
+      dups.forEach((d) => instance.root.removeChild(d));
+      // this._filterReinstate(instance, pos);
+      // TODO call update content of filters after pos
+    }
+
+    _filterReinstate(instance) {
+      // do not reinstate this if any of the previous nuxeo-filters in this._instances checks true
+      const filters = this._instances
+        .map((i) =>
+          i.children.filter((c) => c.nodeType === Node.ELEMENT_NODE && c.parentNode && c.matches('nuxeo-filter')),
+        )
+        .flat();
+      if (filters.length === 0 || (filters.length > 0 && !filters.some((f) => f.check()))) {
+        const keys = Array.from(instance.children)
+          .filter((c) => c.nodeType === Node.ELEMENT_NODE && c.hasAttribute(this.contentKey))
+          .map((c) => c.getAttribute(this.contentKey));
+        this._reinstateNodes(keys);
+      }
+    }
+
+    /**
+     * Removes duplicated contributions from this slot's content. It receives as parameters `tmpl`, which represents a
+     * template instance to be stamped by the slot, and `pos`, which represents the position of the content to be
+     * stamped inside the parent element. Contributions are considered unique based on the attribute defined by
+     * `contentKey`. This methods checks for duplicates in the template instance in the parent folder and it takes into
+     * account the insertion position.
+     *
+     * Nuxeo filters are a special case. They lack the ability to dedup content, but they can receive a
+     * `templateMutator`, which modifies the template before stamping. Nuxeo slot add the `_dedup` method as the
+     * template mutator for nuxeo-filters stamped by it.
+     */
+    _dedup(tmpl, pos = this._instances.length) {
+      const consumedValues = new Set();
+      const dups = [];
+      const dupsInParent = [];
+      // add dedup callback to filter
+      Array.from(tmpl.root.children)
+        .filter((c) => c.matches('nuxeo-filter'))
+        .forEach((f) => {
+          f._templateMutator = function(filter, instance) {
+            this._filterTemplateMutator(filter, instance, pos);
+          }.bind(this);
+          f._onClear = this._filterReinstate.bind(this);
+        });
+      // dedup template instance
+      Array.from(tmpl.root.children)
+        .filter((c) => c.nodeType === Node.ELEMENT_NODE && c.matches(`[${this.contentKey}]`))
+        .forEach((n) => {
+          const key = n.hasAttribute(this.contentKey) && n.getAttribute(this.contentKey);
+          if (!key || consumedValues.has(key)) {
+            return;
+          }
+          consumedValues.add(key);
+          const results = Array.from(tmpl.root.children).filter((c) => c.matches(`[${this.contentKey}="${key}"]`));
+          // check if previous instances already have contribs with the same attribute value
+          // contributions after `pos` will be ignored
+          const prevDup =
+            this._instances &&
+            this._instances
+              .slice(0, pos)
+              .some((i) =>
+                i.children
+                  .filter((c) => c.nodeType === Node.ELEMENT_NODE && c.parentNode)
+                  .some((c) => c.matches(`[${this.contentKey}="${key}"]`)),
+              );
+          // if we already have a previous contibution with the same attribute value, then discard those in the current
+          // instance; if not, keep the first with the same value, as the others are dupplicates.
+          dups.push(...(prevDup ? results : results.slice(1)));
+          this._instances.slice(pos).forEach((i) => {
+            const dp = i.children.filter(
+              (c) => c.nodeType === Node.ELEMENT_NODE && c.parentNode && c.matches(`[${this.contentKey}="${key}"]`),
+            );
+            dupsInParent.push(...dp);
+          });
+        });
+      dups.forEach((d) => tmpl.root.removeChild(d));
+      dupsInParent.forEach((d) => this.parentNode.removeChild(d));
+      this.unAttached.push(...dupsInParent);
+    }
+
+    /**
+     * This method checks if any of the unattached nodes (resulting from calling `_dedup`) can be reinserted as slot
+     * content without causing a duplicate. Unattached nodes with contribution key in `excludeKeys` will be skipped.
+     */
+    _reinstateNodes(excludeKeys) {
+      if (!this.unAttached) {
+        return;
+      }
+      const consumedValues = new Set(excludeKeys);
+      Array.from(this.unAttached).forEach((node) => {
+        const name = node.hasAttribute(this.contentKey) && node.getAttribute(this.contentKey);
+        if (!name || consumedValues.has(name)) {
+          return;
+        }
+        consumedValues.add(name);
+        const prevDup =
+          this._instances &&
+          this._instances.some((i) =>
+            i.children
+              .filter((c) => c.nodeType === Node.ELEMENT_NODE && c.parentNode)
+              .some((c) => c.matches(`[${this.contentKey}="${name}"]`)),
+          );
+        if (!prevDup) {
+          const { parent, parentSlot } = this._effectiveParent();
+          if (parentSlot) {
+            const slotName = parentSlot.getAttribute('name');
+            if (slotName) {
+              node.setAttribute('slot', slotName);
+            } else {
+              node.removeAttribute('slot');
+            }
+            if (this.parentNode === parent) {
+              parent.insertBefore(node, this);
+            } else {
+              parent.appendChild(node);
+            }
+          } else {
+            parent.insertBefore(node, this);
+          }
+          this.unAttached.splice(this.unAttached.indexOf(node), 1);
+        }
+      });
+    }
+
     _render() {
       // render
       const { parent, parentSlot } = this._effectiveParent();
@@ -244,25 +420,32 @@ window.nuxeo.slots.setSharedModel = (model) => {
           Object.keys(sharedModel).forEach((shared) => el._setPendingProperty(shared, sharedModel[shared]));
           Object.keys(this.model).forEach((prop) => el._setPendingProperty(prop, this.model[prop]));
           el._flushProperties();
-          this._instances.push(el);
-          if (parentSlot) {
-            const slotName = parentSlot.getAttribute('name');
-            el.children
-              .filter((c) => c.nodeType === Node.ELEMENT_NODE)
-              .forEach((c) => {
-                if (slotName) {
-                  c.setAttribute('slot', slotName);
-                } else {
-                  c.removeAttribute('slot');
-                }
-              });
-            if (this.parentNode === parent) {
-              parent.insertBefore(el.root, this);
+          // dedup
+          if (this.contentKey) {
+            this._dedup(el);
+          }
+          // do not add empty templates
+          if (el.root.querySelectorAll('*').length > 0) {
+            this._instances.push(el);
+            if (parentSlot) {
+              const slotName = parentSlot.getAttribute('name');
+              el.children
+                .filter((c) => c.nodeType === Node.ELEMENT_NODE)
+                .forEach((c) => {
+                  if (slotName) {
+                    c.setAttribute('slot', slotName);
+                  } else {
+                    c.removeAttribute('slot');
+                  }
+                });
+              if (this.parentNode === parent) {
+                parent.insertBefore(el.root, this);
+              } else {
+                parent.appendChild(el.root);
+              }
             } else {
-              parent.appendChild(el.root);
+              parent.insertBefore(el.root, this);
             }
-          } else {
-            parent.insertBefore(el.root, this);
           }
         }
       });
