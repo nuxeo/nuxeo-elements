@@ -18,7 +18,6 @@ import { fixture, html, waitChanged } from '@nuxeo/testing-helpers';
 import '../nuxeo-operation.js';
 import '../nuxeo-page-provider.js';
 
-/* eslint-disable no-unused-expressions */
 suite('nuxeo-operation', () => {
   const responseHeaders = {
     json: { 'Content-Type': 'application/json' },

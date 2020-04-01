@@ -17,7 +17,6 @@ limitations under the License.
 import { fixture, flush, html, login, tap, waitChanged } from '@nuxeo/testing-helpers';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import '../nuxeo-user-group-management/nuxeo-create-group.js';
-/* eslint-disable no-unused-expressions */
 
 suite('nuxeo-create-group', () => {
   let server;

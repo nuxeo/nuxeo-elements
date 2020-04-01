@@ -17,7 +17,6 @@ limitations under the License.
 import { fixture, flush, html, login, tap, waitForEvent } from '@nuxeo/testing-helpers';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom';
 import '../actions/nuxeo-lock-toggle-button.js';
-/* eslint-disable no-unused-expressions */
 
 suite('nuxeo-lock-toggle-button', () => {
   let button;

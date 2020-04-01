@@ -17,7 +17,6 @@ limitations under the License.
 import { fixture, flush, html, isElementVisible, tap, waitForEvent } from '@nuxeo/testing-helpers';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom';
 import '../actions/nuxeo-delete-document-button.js';
-/* eslint-disable no-unused-expressions */
 
 const getActionDiv = (button) => dom(button.root).querySelector('.action');
 

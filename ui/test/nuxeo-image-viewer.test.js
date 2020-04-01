@@ -20,7 +20,6 @@ import '../viewers/nuxeo-image-viewer.js';
 const { url } = import.meta;
 const base = url.substring(0, url.lastIndexOf('/'));
 
-/* eslint-disable no-unused-expressions */
 suite('nuxeo-image-viewer', () => {
   const viewerLoad = (viewer) => {
     if (viewer._el && viewer._el.ready) {

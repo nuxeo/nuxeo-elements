@@ -17,7 +17,6 @@ limitations under the License.
 import { fixture, html } from '@nuxeo/testing-helpers';
 import '../nuxeo-resource.js';
 
-/* eslint-disable no-unused-expressions */
 suite('nuxeo-resource', () => {
   const responseHeaders = {
     json: { 'Content-Type': 'application/json' },

@@ -28,7 +28,6 @@ import {
   waitForEvent,
 } from '@nuxeo/testing-helpers';
 
-/* eslint-disable no-unused-expressions */
 suite('nuxeo-document-comment-thread', () => {
   let element;
   let server;

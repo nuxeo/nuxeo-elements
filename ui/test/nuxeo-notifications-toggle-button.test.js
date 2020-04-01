@@ -17,8 +17,6 @@ limitations under the License.
 import { fixture, html, login, tap, waitChanged } from '@nuxeo/testing-helpers';
 import '../actions/nuxeo-notifications-toggle-button.js';
 
-/* eslint-disable no-unused-expressions */
-
 suite('nuxeo-notifications-toggle-button', () => {
   let server;
   setup(async () => {

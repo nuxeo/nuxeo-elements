@@ -32,7 +32,6 @@ function getCommentContent(element) {
   return element.shadowRoot.querySelector('#content');
 }
 
-/* eslint-disable no-unused-expressions */
 suite('nuxeo-document-comment', () => {
   const longText =
     'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. ' +

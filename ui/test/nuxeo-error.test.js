@@ -16,7 +16,6 @@ limitations under the License.
 */
 import { fixture, flush, html, isElementVisible } from '@nuxeo/testing-helpers';
 import '../nuxeo-error.js';
-/* eslint-disable no-unused-expressions */
 
 suite('<nuxeo-error>', () => {
   const expectNuxeoErrorContent = (nuxeoError, code, description, url, message) => {
