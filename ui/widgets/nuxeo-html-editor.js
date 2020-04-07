@@ -116,7 +116,7 @@ import './quill/quill-snow.js';
 
     _updateValue() {
       this._internalChange = true;
-      this.value = this._editor.root.innerHTML;
+      this.value = this._editor.getSemanticHTML();
       this._internalChange = false;
     }
 

@@ -37,7 +37,7 @@ suite('nuxeo-html-editor', () => {
       editor.addEventListener('value-changed', () => resolve());
       editor._editor.insertText(editor._editor.getLength() - 1, ' world!', 'user');
     });
-    expect(editor.value).to.equal(`<p>Hello world!</p>`);
+    expect(editor.value).to.equal(`Hello world!`);
   });
 
   test('should hide the toolbar when readonly', async () => {
