@@ -41,15 +41,15 @@ class MockClient {
     this.mock('http', ({ method, url, queryParams, body }) => {
       const responses = this._responses;
       let matches;
-      let response = responses.get(url) && responses.get(url)[method];
+      let response = responses.get(url) && responses.get(url)[method.toLowerCase()];
       if (!response) {
         const exp = Array.from(responses.keys()).find(
-          (e) => e instanceof RegExp && e.test(url) && responses.get(e)[method],
+          (e) => e instanceof RegExp && e.test(url) && responses.get(e)[method.toLowerCase()],
         );
         if (exp) {
           matches = url.match(exp);
           if (matches && matches.length > 1) {
-            response = responses.get(exp)[method];
+            response = responses.get(exp)[method.toLowerCase()];
             matches = matches.slice(1);
           }
         }
@@ -61,6 +61,10 @@ class MockClient {
       if (typeof response === 'function') {
         response = response({ method, url, queryParams, body }, matches);
       }
+      if (url.startsWith('/api/v1/automation')) {
+        return Promise.resolve(response);
+      }
+
       return Promise.resolve({
         text: () => Promise.resolve(JSON.stringify(response)),
       });
@@ -77,7 +81,11 @@ class MockClient {
     const stub = this._sandbox.getFakes().find((fake) => fake.propName === 'http');
     return stub
       .getCalls()
-      .filter((call) => (method ? call.lastArg.method === method : true) && (path ? call.lastArg.url === path : true))
+      .filter(
+        (call) =>
+          (method ? call.lastArg.method.toLowerCase() === method.toLowerCase() : true) &&
+          (path ? call.lastArg.url === path : true),
+      )
       .map((call) => call.lastArg);
   }
 
@@ -107,7 +115,7 @@ class MockClient {
    * @param {Object} response - REST call response
    */
   respondWith(method, path, response = {}) {
-    this._responses.set(path, Object.assign(this._responses.get(path) || {}, { [method]: response }));
+    this._responses.set(path, Object.assign(this._responses.get(path) || {}, { [method.toLowerCase()]: response }));
   }
 
   /**
@@ -120,7 +128,7 @@ class MockClient {
     this._responses.set(
       path,
       Object.assign(this._responses.get(path) || {}, {
-        [method]: Object.assign(new Error('This is a generated fake error'), errorPayload),
+        [method.toLowerCase()]: Object.assign(new Error('This is a generated fake error'), errorPayload),
       }),
     );
   }
