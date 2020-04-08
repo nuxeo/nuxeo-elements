@@ -166,12 +166,14 @@ async function login() {
 /**
  * This registers the fixture cleanup for Mocha's TDD interface
  */
-teardown(() => {
-  if (server) {
-    server.restore();
-  }
-  fixtureCleanup();
-});
+if ('teardown' in window) {
+  teardown(() => {
+    if (server) {
+      server.restore();
+    }
+    fixtureCleanup();
+  });
+}
 
 export {
   flush,
