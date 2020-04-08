@@ -130,7 +130,7 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
 
         _selected: {
           type: Array,
-          value: [],
+          value: () => [],
         },
       };
     }
