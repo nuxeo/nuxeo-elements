@@ -65,9 +65,14 @@ class MockClient {
         return Promise.resolve(response);
       }
 
-      return Promise.resolve({
-        text: () => Promise.resolve(JSON.stringify(response)),
-      });
+      const isOperation = url.startsWith('/api/v1/automation');
+      return Promise.resolve(
+        isOperation
+          ? response
+          : {
+              text: () => Promise.resolve(JSON.stringify(response)),
+            },
+      );
     });
   }
 
