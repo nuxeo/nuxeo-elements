@@ -35,6 +35,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { FormatBehavior } from '../nuxeo-format-behavior.js';
+import '../nuxeo-button-styles.js';
 
 /**
  * Element to represent a comment.
@@ -52,7 +53,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
   class DocumentComment extends mixinBehaviors([FormatBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-document-comments-styles">
+        <style include="nuxeo-document-comments-styles nuxeo-button-styles">
           :host {
             margin-top: 5px;
           }
@@ -133,10 +134,10 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
           <h2>[[i18n('comments.deletion.dialog.heading')]]</h2>
           <div>[[_computeConfirmationLabel(comment.numberOfReplies)]]</div>
           <div class="buttons">
-            <paper-button name="dismiss" dialog-dismiss
+            <paper-button name="dismiss" dialog-dismiss class="secondary"
               >[[i18n('comments.deletion.dialog.buttons.cancel')]]</paper-button
             >
-            <paper-button name="confirm" dialog-confirm on-click="_deleteComment"
+            <paper-button name="confirm" dialog-confirm on-click="_deleteComment" class="primary"
               >[[i18n('comments.deletion.dialog.buttons.delete')]]</paper-button
             >
           </div>

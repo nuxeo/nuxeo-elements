@@ -38,6 +38,7 @@ import '../widgets/nuxeo-user-suggestion.js';
 import '../widgets/nuxeo-selectivity.js';
 import '../widgets/nuxeo-user-tag.js';
 import './nuxeo-user-group-permissions-table.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -55,7 +56,7 @@ import './nuxeo-user-group-permissions-table.js';
   class GroupManagement extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="iron-flex iron-flex-alignment iron-flex-factors">
+        <style include="iron-flex iron-flex-alignment iron-flex-factors nuxeo-button-styles">
           :host {
             display: block;
           }
@@ -202,19 +203,6 @@ import './nuxeo-user-group-permissions-table.js';
           .preserve-white-space {
             white-space: pre;
           }
-
-          /* buttons */
-          paper-button.primary {
-            background-color: var(--nuxeo-button-primary, #00adff);
-            color: #fff;
-          }
-
-          paper-button.primary:hover,
-          paper-button.primary:focus {
-            background-color: var(--nuxeo-button-primary-focus, #0079b3);
-            font-weight: inherit;
-            color: #fff !important;
-          }
         </style>
 
         <nuxeo-connection user="{{_currentUser}}"></nuxeo-connection>
@@ -242,7 +230,7 @@ import './nuxeo-user-group-permissions-table.js';
           <h2>[[i18n('groupManagement.delete.confirm')]]</h2>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button noink dialog-dismiss>[[i18n('label.no')]]</paper-button>
+              <paper-button noink dialog-dismiss class="secondary">[[i18n('label.no')]]</paper-button>
             </div>
             <paper-button noink class="primary" on-click="_deleteGroup">[[i18n('label.yes')]]</paper-button>
           </div>
@@ -252,7 +240,7 @@ import './nuxeo-user-group-permissions-table.js';
           <h2>[[i18n('groupManagement.removeUserFromGroup.confirm', _removedMember.id)]]</h2>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button noink dialog-dismiss>[[i18n('label.no')]]</paper-button>
+              <paper-button noink dialog-dismiss class="secondary">[[i18n('label.no')]]</paper-button>
             </div>
             <paper-button noink class="primary" dialog-confirm on-click="_removeMember">
               [[i18n('label.yes')]]

@@ -49,7 +49,7 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
 
           :host([invalid]) .label,
           .error {
-            color: var(--paper-input-container-invalid-color, red);
+            color: var(--paper-input-container-invalid-color, #de350b);
           }
 
           :host([invalid]) .error {
@@ -65,7 +65,7 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
             display: inline-block;
             content: '*';
             margin-left: 4px;
-            color: var(--paper-input-container-invalid-color, red);
+            color: var(--paper-input-container-invalid-color, #de350b);
             font-size: 1.2em;
           }
 

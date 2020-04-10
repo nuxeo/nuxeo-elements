@@ -62,7 +62,6 @@ IronOverlayManager._overlayWithBackdrop = function() {
             @apply --layout-horizontal;
             @apply --layout-justified;
             margin-top: 16px;
-            background-color: var(--nuxeo-dialog-buttons-bar, white);
           }
         </style>
 

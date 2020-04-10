@@ -32,6 +32,7 @@ import { escapeHTML } from '../widgets/nuxeo-selectivity.js';
 import '../widgets/nuxeo-textarea.js';
 import '../widgets/nuxeo-tooltip.js';
 import './nuxeo-action-button-styles.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -49,7 +50,7 @@ import './nuxeo-action-button-styles.js';
   class AddToCollectionButton extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-action-button-styles">
+        <style include="nuxeo-action-button-styles nuxeo-button-styles">
           /* Fix known stacking issue in iOS (NXP-24600)
          https://github.com/PolymerElements/paper-dialog-scrollable/issues/72 */
           paper-dialog-scrollable {
@@ -102,7 +103,7 @@ import './nuxeo-action-button-styles.js';
             </nuxeo-textarea>
           </paper-dialog-scrollable>
           <div class="buttons">
-            <paper-button dialog-dismiss on-click="_resetPopup"
+            <paper-button dialog-dismiss on-click="_resetPopup" class="secondary"
               >[[i18n('addToCollectionButton.dialog.cancel')]]</paper-button
             >
             <paper-button

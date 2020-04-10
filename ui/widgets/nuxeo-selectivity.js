@@ -7044,7 +7044,7 @@ input[type='text'].selectivity-multiple-input:focus {
 
         :host([invalid]) .label,
         .error {
-            color: var(--paper-input-container-invalid-color, red);
+            color: var(--paper-input-container-invalid-color, #de350b);
         }
 
         :host([invalid]) .error {
@@ -7060,7 +7060,7 @@ input[type='text'].selectivity-multiple-input:focus {
             display: inline-block;
             content: '*';
             margin-left: 4px;
-            color: var(--paper-input-container-invalid-color, red);
+            color: var(--paper-input-container-invalid-color, #de350b);
             font-size: 1.2em;
         }
 

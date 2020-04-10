@@ -33,6 +33,7 @@ import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-tooltip.js';
 import './nuxeo-action-button-styles.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -49,7 +50,7 @@ import './nuxeo-action-button-styles.js';
   class ShareButton extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-action-button-styles">
+        <style include="nuxeo-action-button-styles nuxeo-button-styles">
           .horizontal {
             @apply --layout-horizontal;
             @apply --layout-center;
@@ -104,7 +105,7 @@ import './nuxeo-action-button-styles.js';
           </div>
 
           <div class="buttons">
-            <paper-button dialog-dismiss>[[i18n('shareButton.dialog.close')]]</paper-button>
+            <paper-button dialog-dismiss class="primary">[[i18n('shareButton.dialog.close')]]</paper-button>
           </div>
         </nuxeo-dialog>
       `;

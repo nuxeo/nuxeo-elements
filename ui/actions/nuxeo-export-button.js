@@ -28,6 +28,7 @@ import '../nuxeo-icons.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-tooltip.js';
 import './nuxeo-action-button-styles.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -44,7 +45,7 @@ import './nuxeo-action-button-styles.js';
   class ExportButton extends mixinBehaviors([FormatBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-action-button-styles">
+        <style include="nuxeo-action-button-styles nuxeo-button-styles">
           .item {
             @apply --layout-horizontal;
             @apply --layout-center;
@@ -79,7 +80,7 @@ import './nuxeo-action-button-styles.js';
           </dom-repeat>
 
           <div class="buttons">
-            <paper-button dialog-dismiss>[[i18n('exportButton.dialog.cancel')]]</paper-button>
+            <paper-button dialog-dismiss class="secondary">[[i18n('exportButton.dialog.cancel')]]</paper-button>
           </div>
         </nuxeo-dialog>
       `;

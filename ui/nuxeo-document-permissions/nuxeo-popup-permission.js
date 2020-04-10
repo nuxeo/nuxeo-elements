@@ -39,13 +39,14 @@ import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-select.js';
 import '../widgets/nuxeo-textarea.js';
 import '../widgets/nuxeo-user-suggestion.js';
+import '../nuxeo-button-styles.js';
 
 {
   /* Part of `nuxeo-document-permissions` */
   class PopupPermission extends mixinBehaviors([I18nBehavior, FormatBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="iron-positioning">
+        <style include="iron-positioning nuxeo-button-styles">
           /* Fix polyfill behavior for inputs disabled at initialization */
           span.btr-dateinput-value {
             color: #212121 !important;
@@ -53,7 +54,6 @@ import '../widgets/nuxeo-user-suggestion.js';
           }
 
           .buttons {
-            background-color: var(--nuxeo-dialog-buttons-bar, white);
             @apply --buttons-bar;
             margin-top: 2em;
           }
@@ -77,7 +77,7 @@ import '../widgets/nuxeo-user-suggestion.js';
 
         <dom-if if="{{!updatingACE}}">
           <template>
-            <paper-button on-click="togglePopup" id="newPermissionButton">
+            <paper-button on-click="togglePopup" id="newPermissionButton" class="primary small">
               [[i18n('popupPermission.newPermission')]]
             </paper-button>
           </template>
@@ -187,20 +187,20 @@ import '../widgets/nuxeo-user-suggestion.js';
           </paper-dialog-scrollable>
 
           <div class="buttons">
-            <paper-button dialog-dismiss>[[i18n('popupPermission.cancel')]]</paper-button>
+            <paper-button dialog-dismiss class="secondary">[[i18n('popupPermission.cancel')]]</paper-button>
             <dom-if if="{{!updatingACE}}">
               <template>
-                <paper-button noink class="primary" on-click="doCreateAndAdd" id="createAndAddPermissionButton">
+                <paper-button noink class="primary small" on-click="doCreateAndAdd" id="createAndAddPermissionButton">
                   [[i18n('popupPermission.createAndAdd')]]
                 </paper-button>
-                <paper-button noink class="primary" on-click="doCreate" id="createPermissionButton">
+                <paper-button noink class="primary small" on-click="doCreate" id="createPermissionButton">
                   [[i18n('popupPermission.create')]]
                 </paper-button>
               </template>
             </dom-if>
             <dom-if if="{{updatingACE}}">
               <template>
-                <paper-button noink class="primary" on-click="doUpdate"
+                <paper-button noink class="primary small" on-click="doUpdate"
                   >[[i18n('popupPermission.update')]]</paper-button
                 >
               </template>

@@ -28,6 +28,7 @@ import '../nuxeo-pagination-controls.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-tag.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -49,24 +50,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
   class UserGroupPermissionsTable extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="iron-flex iron-flex-factors">
+        <style include="iron-flex iron-flex-factors nuxeo-button-styles">
           :host {
             display: block;
           }
-
-          paper-button:hover {
-            @apply --nx-button-hover;
-          }
-
-          paper-button.primary {
-            @apply --nx-button-primary;
-          }
-
-          paper-button.primary:hover,
-          paper-button.primary:focus {
-            @apply --nx-button-primary-hover;
-          }
-
           h3 {
             @apply --layout-flex;
           }
@@ -238,7 +225,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           <h2>[[i18n('userGroupPermissions.delete.confirm')]]</h2>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button noink dialog-dismiss>[[i18n('label.no')]]</paper-button>
+              <paper-button noink dialog-dismiss class="secondary">[[i18n('label.no')]]</paper-button>
             </div>
             <paper-button class="primary" noink dialog-confirm on-click="_deleteAce"
               >[[i18n('label.yes')]]</paper-button

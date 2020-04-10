@@ -29,6 +29,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-icons.js';
 import '../widgets/nuxeo-tooltip.js';
 import './nuxeo-action-button-styles.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -47,7 +48,7 @@ import './nuxeo-action-button-styles.js';
   class LockToggleButton extends mixinBehaviors([I18nBehavior, FiltersBehavior, FormatBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-action-button-styles">
+        <style include="nuxeo-action-button-styles nuxeo-button-styles">
           :host([locked]) paper-icon-button {
             color: var(--icon-toggle-outline-color, var(--nuxeo-action-color-activated));
           }

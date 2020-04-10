@@ -9,13 +9,14 @@ import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../widgets/nuxeo-dialog.js';
+import '../nuxeo-button-styles.js';
 
 /* Part of `nuxeo-data-table` */
 {
   class DataTableSettings extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style>
+        <style include="nuxeo-button-styles">
           :host {
             position: relative;
           }
@@ -37,19 +38,6 @@ import '../widgets/nuxeo-dialog.js';
           paper-button {
             margin: 0;
             padding: 8px 16px;
-          }
-
-          paper-button:hover {
-            @apply --nx-button-hover;
-          }
-
-          paper-button.primary {
-            @apply --nx-button-primary;
-          }
-
-          paper-button.primary:hover,
-          paper-button.primary:focus {
-            @apply --nx-button-primary-hover;
           }
 
           .buttons {
@@ -85,7 +73,7 @@ import '../widgets/nuxeo-dialog.js';
           </paper-dialog-scrollable>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button noink on-click="_resetSettings"
+              <paper-button noink on-click="_resetSettings" class="secondary"
                 >[[i18n('tableSettings.columnSettings.reset')]]</paper-button
               >
             </div>

@@ -35,6 +35,7 @@ import '../widgets/nuxeo-group-tag.js';
 import '../widgets/nuxeo-input.js';
 import './nuxeo-user-group-permissions-table.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -50,7 +51,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
   class UserProfile extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="iron-flex iron-flex-alignment iron-flex-factors">
+        <style include="iron-flex iron-flex-alignment iron-flex-factors nuxeo-button-styles">
           :host {
             display: block;
           }
@@ -125,20 +126,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             margin: 8px;
             width: 1.3rem;
           }
-
-          /* buttons */
-          paper-button.primary {
-            background-color: var(--nuxeo-button-primary, #00adff);
-            color: #fff;
-            font-weight: 700;
-          }
-
-          paper-button.primary:hover,
-          paper-button.primary:focus {
-            background-color: var(--nuxeo-button-primary-focus, #0079b3);
-            font-weight: inherit;
-            color: #fff !important;
-          }
         </style>
 
         <nuxeo-connection id="nxcon"></nuxeo-connection>
@@ -199,7 +186,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
                 <div class="buttons">
                   <div class="flex start-justified">
-                    <paper-button noink dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
+                    <paper-button noink dialog-dismiss class="secondary">[[i18n('command.cancel')]]</paper-button>
                   </div>
                   <paper-button noink class="primary" on-click="_submitChangePassword">
                     [[i18n('command.save.changes')]]

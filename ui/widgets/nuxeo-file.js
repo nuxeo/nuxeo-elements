@@ -71,16 +71,16 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
             display: inline-block;
             content: '*';
             margin-left: 4px;
-            color: var(--paper-input-container-invalid-color, red);
+            color: var(--paper-input-container-invalid-color, #de350b);
           }
 
           :host([invalid]) paper-button {
-            color: var(--paper-input-container-invalid-color, red);
+            color: var(--paper-input-container-invalid-color, #de350b);
             margin-bottom: 5px;
           }
 
           :host([invalid]) .error {
-            color: var(--paper-input-container-invalid-color, red);
+            color: var(--paper-input-container-invalid-color, #de350b);
           }
 
           #button {

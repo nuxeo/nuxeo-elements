@@ -29,6 +29,7 @@ import '../nuxeo-icons.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-tooltip.js';
 import './nuxeo-action-button-styles.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -46,7 +47,7 @@ import './nuxeo-action-button-styles.js';
   class DeleteBlobButton extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-action-button-styles"></style>
+        <style include="nuxeo-action-button-styles nuxeo-button-styles"></style>
 
         <nuxeo-operation
           id="operation"
@@ -70,8 +71,10 @@ import './nuxeo-action-button-styles.js';
           <h2>[[i18n('deleteBlobButton.dialog.heading')]]</h2>
           <div>[[i18n('deleteBlobButton.dialog.message')]]</div>
           <div class="buttons">
-            <paper-button dialog-dismiss>[[i18n('deleteBlobButton.dialog.no')]]</paper-button>
-            <paper-button dialog-confirm on-click="_remove">[[i18n('deleteBlobButton.dialog.yes')]]</paper-button>
+            <paper-button dialog-dismiss class="secondary">[[i18n('deleteBlobButton.dialog.no')]]</paper-button>
+            <paper-button dialog-confirm on-click="_remove" class="primary"
+              >[[i18n('deleteBlobButton.dialog.yes')]]</paper-button
+            >
           </div>
         </nuxeo-dialog>
       `;

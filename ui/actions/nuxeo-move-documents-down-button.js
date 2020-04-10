@@ -24,6 +24,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-icons.js';
 import '../widgets/nuxeo-tooltip.js';
 import './nuxeo-action-button-styles.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -36,7 +37,7 @@ import './nuxeo-action-button-styles.js';
   class MoveDocumentsDown extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-action-button-styles">
+        <style include="nuxeo-action-button-styles nuxeo-button-styles">
           iron-icon:hover {
             fill: var(--nuxeo-link-hover-color);
           }

@@ -27,6 +27,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-user-suggestion.js';
 import '../widgets/nuxeo-selectivity.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -37,7 +38,7 @@ import '../widgets/nuxeo-selectivity.js';
   class CreateGroup extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="iron-flex">
+        <style include="iron-flex nuxeo-button-styles">
           :host {
             display: block;
           }
@@ -83,21 +84,8 @@ import '../widgets/nuxeo-selectivity.js';
           }
 
           #errors {
-            color: red;
+            color: var(--nuxeo-warn-text, #de350b);
             margin: 1em 0;
-          }
-
-          /* buttons */
-          paper-button.primary {
-            background-color: var(--nuxeo-button-primary, #00adff);
-            color: #fff;
-          }
-
-          paper-button.primary:hover,
-          paper-button.primary:focus {
-            background-color: var(--nuxeo-button-primary-focus, #0079b3);
-            font-weight: inherit;
-            color: #fff !important;
           }
         </style>
 
@@ -151,7 +139,9 @@ import '../widgets/nuxeo-selectivity.js';
             </dom-repeat>
 
             <div class="form-buttons">
-              <paper-button noink id="cancelButton" on-click="_cancel">[[i18n('command.cancel')]]</paper-button>
+              <paper-button noink id="cancelButton" class="secondary" on-click="_cancel"
+                >[[i18n('command.cancel')]]</paper-button
+              >
               <paper-button noink id="createButton" class="primary" on-click="_submit">
                 [[i18n('command.create')]]
               </paper-button>

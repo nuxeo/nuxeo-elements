@@ -32,6 +32,7 @@ import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-select.js';
 import '../widgets/nuxeo-tooltip.js';
 import './nuxeo-action-button-styles.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -48,7 +49,7 @@ import './nuxeo-action-button-styles.js';
   class WorkflowButton extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-action-button-styles">
+        <style include="nuxeo-action-button-styles nuxeo-button-styles">
           nuxeo-select {
             max-width: 380px;
           }
@@ -80,7 +81,7 @@ import './nuxeo-action-button-styles.js';
               </nuxeo-select>
 
               <div class="buttons">
-                <paper-button dialog-dismiss>[[i18n('workflowButton.dialog.close')]]</paper-button>
+                <paper-button dialog-dismiss class="secondary">[[i18n('workflowButton.dialog.close')]]</paper-button>
                 <paper-button id="startButton" class="primary" disabled="[[!selectedProcess]]" on-click="_startWorkflow"
                   >[[i18n('workflowButton.dialog.start')]]</paper-button
                 >
