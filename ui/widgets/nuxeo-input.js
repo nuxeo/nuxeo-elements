@@ -48,7 +48,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
             display: inline-block;
             content: '*';
             margin-left: 4px;
-            color: var(--paper-input-container-invalid-color, red);
+            color: var(--paper-input-container-invalid-color, #de350b);
           }
 
           paper-input {

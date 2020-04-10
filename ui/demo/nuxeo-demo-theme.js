@@ -129,7 +129,6 @@ const template = html`
         }
 
         --buttons-bar: {
-          background-color: var(--nuxeo-dialog-buttons-bar);
           padding: 0.7em 1.8em;
         }
 

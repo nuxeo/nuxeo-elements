@@ -50,6 +50,7 @@ import './nuxeo-data-table-row-actions.js';
 import './nuxeo-data-table-form.js';
 import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-behavior.js';
 import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -116,7 +117,7 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
   ) {
     static get template() {
       return html`
-        <style>
+        <style include="nuxeo-button-styles">
           :host {
             display: block;
             position: relative;
@@ -155,7 +156,7 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
             display: inline-block;
             content: '*';
             margin-left: 4px;
-            color: var(--paper-input-container-invalid-color, red);
+            color: var(--paper-input-container-invalid-color, #de350b);
           }
 
           [hidden] {
@@ -205,20 +206,8 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
             font-size: 1.1em;
           }
 
-          paper-button.secondary {
-            @apply --nx-button-secondary;
-          }
-
-          paper-button.secondary[disabled] {
-            @apply --nx-button-secondary-disabled;
-          }
-
-          paper-button.secondary:hover {
-            @apply --nx-button-secondary-hover;
-          }
-
           .error {
-            color: var(--paper-input-container-invalid-color, red);
+            color: var(--paper-input-container-invalid-color, #de350b);
           }
 
           label {
@@ -374,7 +363,7 @@ import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
             <slot id="form" name="form"></slot>
           </paper-dialog-scrollable>
           <div class="buttons">
-            <paper-button noink dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
+            <paper-button noink dialog-dismiss class="secondary">[[i18n('command.cancel')]]</paper-button>
             <paper-button id="save" noink on-click="_validateEntry" class="primary"
               >[[i18n('command.ok')]]</paper-button
             >

@@ -26,6 +26,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
 import '../nuxeo-icons.js';
 import '../widgets/nuxeo-tooltip.js';
 import './nuxeo-action-button-styles.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -43,7 +44,7 @@ import './nuxeo-action-button-styles.js';
   class DownloadButton extends mixinBehaviors([FormatBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-action-button-styles"></style>
+        <style include="nuxeo-action-button-styles nuxeo-button-styles"></style>
 
         <dom-if if="[[_isAvailable(document)]]">
           <template>

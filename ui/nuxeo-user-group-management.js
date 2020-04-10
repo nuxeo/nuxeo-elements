@@ -47,6 +47,7 @@ import './nuxeo-user-group-management/nuxeo-user-management.js';
 import './nuxeo-user-group-management/nuxeo-user-profile.js';
 import './widgets/nuxeo-card.js';
 import './widgets/nuxeo-user-suggestion.js';
+import './nuxeo-button-styles.js';
 
 {
   /**
@@ -74,7 +75,7 @@ import './widgets/nuxeo-user-suggestion.js';
   class UserGroupManagement extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="iron-flex iron-flex-alignment">
+        <style include="iron-flex iron-flex-alignment nuxeo-button-styles">
           :host {
             display: block;
             position: relative;
@@ -98,10 +99,6 @@ import './widgets/nuxeo-user-suggestion.js';
             width: 100%;
           }
 
-          paper-button iron-icon {
-            padding-right: 8px;
-          }
-
           paper-listbox {
             width: 130px;
             outline: none;
@@ -115,19 +112,6 @@ import './widgets/nuxeo-user-suggestion.js';
           paper-listbox paper-icon-item:hover {
             background: var(--nuxeo-container-hover, #fafafa);
             cursor: pointer;
-          }
-
-          /* buttons */
-          paper-button.primary {
-            background-color: var(--nuxeo-button-primary, #00adff);
-            color: #fff;
-          }
-
-          paper-button.primary:hover,
-          paper-button.primary:focus {
-            background-color: var(--nuxeo-button-primary-focus, #0079b3);
-            font-weight: inherit;
-            color: #fff !important;
           }
         </style>
 

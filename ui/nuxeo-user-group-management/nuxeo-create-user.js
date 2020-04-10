@@ -30,6 +30,7 @@ import '../nuxeo-layout.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-user-suggestion.js';
 import './nuxeo-edit-password.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -40,92 +41,80 @@ import './nuxeo-edit-password.js';
   class CreateUser extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-    <style>
-      :host {
-        display: block;
-      }
+        <style include="nuxeo-button-styles">
+          :host {
+            display: block;
+          }
 
-      .header {
-        @apply --layout-horizontal;
-        @apply --layout-center;
-        margin-bottom: 16px;
-      }
+          .header {
+            @apply --layout-horizontal;
+            @apply --layout-center;
+            margin-bottom: 16px;
+          }
 
-      .header > iron-icon {
-        padding: 8px;
-      }
+          .header > iron-icon {
+            padding: 8px;
+          }
 
-      .form-buttons {
-        margin-top: 16px;
-      }
+          .form-buttons {
+            margin-top: 16px;
+          }
 
-      #errors {
-        color: red;
-        margin: 1em 0;
-      }
+          #errors {
+            color: var(--nuxeo-warn-text, #de350b);
+            margin: 1em 0;
+          }
+        </style>
 
-      /* buttons */
-      paper-button.primary {
-        background-color: var(--nuxeo-button-primary, #00adff);
-        color: #fff;
-      }
+        <nuxeo-connection user="{{_currentUser}}"></nuxeo-connection>
 
-      paper-button.primary:hover,
-      paper-button.primary:focus {
-        background-color: var(--nuxeo-button-primary-focus, #0079b3);
-        font-weight: inherit;
-        color: #fff !important;
-      }
-    </style>
+        <nuxeo-resource id="request" path="/user" headers='{"Content-Type": "application/json"}'> </nuxeo-resource>
 
-    <nuxeo-connection user="{{_currentUser}}"></nuxeo-connection>
+        <nuxeo-operation id="invite" op="User.Invite"></nuxeo-operation>
 
-    <nuxeo-resource id="request" path="/user" headers='{"Content-Type": "application/json"}'>
-    </nuxeo-resource>
-
-    <nuxeo-operation id="invite" op="User.Invite"></nuxeo-operation>
-
-    <div class="header">
-      <iron-icon icon="nuxeo:user"></iron-icon>
-      <h3>[[i18n('createUser.heading')]]</h3>
-    </div>
-
-    <iron-form id="form">
-      <form>
-        <nuxeo-input label="[[i18n('createUser.username')]]" value="{{user.username}}" name="username" required>
-        </nuxeo-input>
-
-        <nuxeo-layout
-          id="layout"
-          href="[[_layoutHref('nuxeo-edit-user.html')]]"
-          model="[[_layoutModel(user, new)]]"
-          on-element-changed="_layoutElementChanged">
-        </nuxeo-layout>
-
-        <label>[[i18n('createUser.setPassword')]]</label>
-        <paper-toggle-button checked="{{usePassword}}" name="password-toggle"></paper-toggle-button>
-
-        <dom-if if="[[usePassword]]" restamp>
-          <template>
-            <nuxeo-edit-password id="passwordEditor" password="{{user.password}}" required></nuxeo-edit-password>
-          </template>
-        </dom-if>
-
-        <div class="form-buttons">
-          <paper-button noink id="cancelButton" on-click="_cancel">[[i18n('command.cancel')]]</paper-button>
-          <paper-button noink id="createButton" class="primary" on-click="_submit">
-            [[i18n('command.create')]]
-          </paper-button>
-          <paper-button noink" id="createAnotherButton" class="primary" on-click="_submitAnother">
-            [[i18n('createUser.createAnother')]]
-          </paper-button>
+        <div class="header">
+          <iron-icon icon="nuxeo:user"></iron-icon>
+          <h3>[[i18n('createUser.heading')]]</h3>
         </div>
 
-        <span id="errors" hidden$="[[!_hasErrors(errors)]]">[[errors]]</span>
+        <iron-form id="form">
+          <form>
+            <nuxeo-input label="[[i18n('createUser.username')]]" value="{{user.username}}" name="username" required>
+            </nuxeo-input>
 
-      </form>
-    </iron-form>
-`;
+            <nuxeo-layout
+              id="layout"
+              href="[[_layoutHref('nuxeo-edit-user.html')]]"
+              model="[[_layoutModel(user, new)]]"
+              on-element-changed="_layoutElementChanged"
+            >
+            </nuxeo-layout>
+
+            <label>[[i18n('createUser.setPassword')]]</label>
+            <paper-toggle-button checked="{{usePassword}}" name="password-toggle"></paper-toggle-button>
+
+            <dom-if if="[[usePassword]]" restamp>
+              <template>
+                <nuxeo-edit-password id="passwordEditor" password="{{user.password}}" required></nuxeo-edit-password>
+              </template>
+            </dom-if>
+
+            <div class="form-buttons">
+              <paper-button noink id="cancelButton" class="secondary" on-click="_cancel"
+                >[[i18n('command.cancel')]]</paper-button
+              >
+              <paper-button noink id="createButton" class="primary" on-click="_submit">
+                [[i18n('command.create')]]
+              </paper-button>
+              <paper-button noink id="createAnotherButton" class="primary" on-click="_submitAnother">
+                [[i18n('createUser.createAnother')]]
+              </paper-button>
+            </div>
+
+            <span id="errors" hidden$="[[!_hasErrors(errors)]]">[[errors]]</span>
+          </form>
+        </iron-form>
+      `;
     }
 
     static get is() {

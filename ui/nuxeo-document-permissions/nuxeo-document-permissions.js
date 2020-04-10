@@ -32,6 +32,7 @@ import '../widgets/nuxeo-card.js';
 import './nuxeo-document-acl-table.js';
 import './nuxeo-popup-confirm.js';
 import './nuxeo-popup-permission.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -46,7 +47,7 @@ import './nuxeo-popup-permission.js';
   class DocumentPermissions extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style>
+        <style include="nuxeo-button-styles">
           nuxeo-card {
             position: relative;
           }
@@ -127,14 +128,14 @@ import './nuxeo-popup-permission.js';
               <div class="actions">
                 <dom-if if="[[!_empty(inheritedAces)]]">
                   <template>
-                    <paper-button id="block" on-click="blockInheritance">
+                    <paper-button id="block" on-click="blockInheritance" class="primary small">
                       [[i18n('documentPermissions.block')]]
                     </paper-button>
                   </template>
                 </dom-if>
                 <dom-if if="[[_empty(inheritedAces)]]">
                   <template>
-                    <paper-button id="unblock" on-click="unblockInheritance">
+                    <paper-button id="unblock" on-click="unblockInheritance" class="secondary small">
                       [[i18n('documentPermissions.unblock')]]
                     </paper-button>
                   </template>

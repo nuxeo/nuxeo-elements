@@ -37,6 +37,7 @@ import '../widgets/nuxeo-user-suggestion.js';
 import '../widgets/nuxeo-selectivity.js';
 import './nuxeo-edit-password.js';
 import './nuxeo-user-group-permissions-table.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -54,7 +55,7 @@ import './nuxeo-user-group-permissions-table.js';
   class UserManagement extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="iron-flex iron-flex-alignment iron-flex-factors">
+        <style include="iron-flex iron-flex-alignment iron-flex-factors nuxeo-button-styles">
           :host {
             display: block;
           }
@@ -96,11 +97,6 @@ import './nuxeo-user-group-permissions-table.js';
             margin-left: 1em;
           }
 
-          paper-button iron-icon {
-            width: 1.3rem;
-            margin-right: 0.5rem;
-          }
-
           .activity-entry:nth-of-type(1) {
             margin-top: 20px;
           }
@@ -110,7 +106,7 @@ import './nuxeo-user-group-permissions-table.js';
           }
 
           .remove {
-            color: red;
+            color: var(--nuxeo-warn-text, #de350b);
             cursor: pointer;
             font-size: 0.8rem;
             margin-left: 10px;
@@ -176,7 +172,7 @@ import './nuxeo-user-group-permissions-table.js';
           }
 
           #errors {
-            color: red;
+            color: var(--nuxeo-warn-text, #de350b);
             margin-top: 20px;
           }
 
@@ -200,20 +196,6 @@ import './nuxeo-user-group-permissions-table.js';
           .user-icon {
             margin: 8px;
             width: 1.3rem;
-          }
-
-          /* buttons */
-          paper-button.primary {
-            background-color: var(--nuxeo-button-primary, #00adff);
-            color: #fff;
-            font-weight: 700;
-          }
-
-          paper-button.primary:hover,
-          paper-button.primary:focus {
-            background-color: var(--nuxeo-button-primary-focus, #0079b3);
-            font-weight: inherit;
-            color: #fff !important;
           }
         </style>
 
@@ -381,7 +363,7 @@ import './nuxeo-user-group-permissions-table.js';
           <h2>[[i18n('userManagement.removeUserFromGroup.confirm', user.id, _removedGroup.name)]]</h2>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button noink dialog-dismiss>[[i18n('label.no')]]</paper-button>
+              <paper-button noink dialog-dismiss class="secondary">[[i18n('label.no')]]</paper-button>
             </div>
             <paper-button noink dialog-confirm on-click="_remove" class="primary">[[i18n('label.yes')]]</paper-button>
           </div>
@@ -391,7 +373,7 @@ import './nuxeo-user-group-permissions-table.js';
           <h2>[[i18n('userManagement.delete.user.confirm')]]</h2>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button noink dialog-dismiss>[[i18n('label.no')]]</paper-button>
+              <paper-button noink dialog-dismiss class="secondary">[[i18n('label.no')]]</paper-button>
             </div>
             <paper-button noink class="primary" on-click="_deleteUser">[[i18n('label.yes')]]</paper-button>
           </div>
@@ -406,7 +388,7 @@ import './nuxeo-user-group-permissions-table.js';
           </iron-form>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button noink dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
+              <paper-button noink dialog-dismiss class="secondary">[[i18n('command.cancel')]]</paper-button>
             </div>
             <paper-button noink class="primary" on-click="_submitChangePassword">
               [[i18n('command.save.changes')]]
@@ -430,7 +412,7 @@ import './nuxeo-user-group-permissions-table.js';
           </iron-form>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button noink dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
+              <paper-button noink dialog-dismiss class="secondary">[[i18n('command.cancel')]]</paper-button>
             </div>
             <paper-button noink class="primary" on-click="_submitEditUser">
               [[i18n('command.save.changes')]]

@@ -22,6 +22,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-tooltip.js';
 import './nuxeo-action-button-styles.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -37,7 +38,7 @@ import './nuxeo-action-button-styles.js';
   class LinkButton extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-action-button-styles">
+        <style include="nuxeo-action-button-styles nuxeo-button-styles">
           .action {
             text-decoration: none;
             color: var(--nuxeo-text-default);

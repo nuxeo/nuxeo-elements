@@ -27,6 +27,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-icons.js';
 import '../widgets/nuxeo-tooltip.js';
 import './nuxeo-action-button-styles.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -48,7 +49,7 @@ import './nuxeo-action-button-styles.js';
   class FavoritesToggleButton extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-action-button-styles">
+        <style include="nuxeo-action-button-styles nuxeo-button-styles">
           :host([favorite]) paper-icon-button {
             color: var(--icon-toggle-pressed-color, var(--nuxeo-action-color-activated));
           }

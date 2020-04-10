@@ -51,8 +51,8 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
           }
 
           .error {
-            border-left: 4px solid var(--paper-input-container-invalid-color, red);
-            color: var(--paper-input-container-invalid-color, red);
+            border-left: 4px solid var(--paper-input-container-invalid-color, #de350b);
+            color: var(--paper-input-container-invalid-color, #de350b);
             padding-left: 8px;
           }
         </style>

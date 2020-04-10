@@ -126,7 +126,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             display: inline-block;
             content: '*';
             margin-left: 4px;
-            color: var(--paper-input-container-invalid-color, red);
+            color: var(--paper-input-container-invalid-color, #de350b);
           }
 
           label {
@@ -134,7 +134,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           }
 
           :host([invalid]) label {
-            color: var(--paper-input-container-invalid-color, red);
+            color: var(--paper-input-container-invalid-color, #de350b);
           }
 
           vaadin-date-picker {

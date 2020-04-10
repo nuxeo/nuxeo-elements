@@ -28,6 +28,7 @@ import { FiltersBehavior } from '../nuxeo-filters-behavior.js';
 import '../nuxeo-icons.js';
 import '../widgets/nuxeo-tooltip.js';
 import './nuxeo-action-button-styles.js';
+import '../nuxeo-button-styles.js';
 
 {
   /**
@@ -45,7 +46,7 @@ import './nuxeo-action-button-styles.js';
   class NotificationsToggleButton extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-action-button-styles">
+        <style include="nuxeo-action-button-styles nuxeo-button-styles">
           :host([subscribed]) paper-icon-button {
             color: var(--icon-toggle-outline-color, var(--nuxeo-action-color-activated));
           }
