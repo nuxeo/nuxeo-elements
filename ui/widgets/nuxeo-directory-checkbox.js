@@ -136,17 +136,17 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
     }
 
     _updateItems(e) {
-      const tmp = [];
-      const tmpIds = [];
-      if (e.detail.value) {
+      if (this._entries && e.detail && e.detail.value) {
+        const tmp = [];
+        const tmpIds = [];
         for (let i = 0; i < e.detail.value.length; i++) {
           const item = this._entries[e.detail.value[i].dataIndex];
           tmp.push(item);
           tmpIds.push(this.idFunction(item));
         }
+        this.selectedItems = tmp;
+        this.value = tmpIds;
       }
-      this.selectedItems = tmp;
-      this.value = tmpIds;
     }
 
     /* Override method from Polymer.IronValidatableBehavior. */
@@ -158,7 +158,7 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
     }
 
     _isChecked(entry) {
-      const value = this.value || this.selectedItems;
+      const value = (this.value && this.value.length > 0 ? this.value : null) || this.selectedItems;
       return (
         value &&
         value.some((el) => {
