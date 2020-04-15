@@ -199,10 +199,7 @@ suite('<nuxeo-directory-checkbox>', () => {
 
   suite('When I have a checkbox widget initialized with English', () => {
     test('Then I can deselect English and select French and Arabic instead', async () => {
-      const checkboxes = await fixture(html`
-        <nuxeo-directory-checkbox directory-name="language"></nuxeo-directory-checkbox>
-      `);
-      checkboxes.value = [
+      const options = [
         {
           absoluteLabel: 'English',
           computedId: 'en',
@@ -221,7 +218,12 @@ suite('<nuxeo-directory-checkbox>', () => {
           },
         },
       ];
-      await waitForEvent(checkboxes, 'directory-entries-loaded');
+      const checkboxes = await fixture(html`
+        <nuxeo-directory-checkbox directory-name="language" .selectedItems="${options}"></nuxeo-directory-checkbox>
+      `);
+      if (!checkboxes._entries || checkboxes._entries.length === 0) {
+        await waitForEvent(checkboxes, 'directory-entries-loaded');
+      }
       await flush();
       const choices = dom(checkboxes.root).querySelectorAll('paper-checkbox');
       expect(choices.length).to.be.equal(4);
@@ -251,10 +253,7 @@ suite('<nuxeo-directory-checkbox>', () => {
 
   suite('When I have a radio group widget initialized with English', () => {
     test('Then I can select French and it deselects English', async () => {
-      const radioGroup = await fixture(html`
-        <nuxeo-directory-radio-group directory-name="language"></nuxeo-directory-radio-group>
-      `);
-      radioGroup.value = {
+      const option = {
         absoluteLabel: 'English',
         computedId: 'en',
         directoryName: 'language',
@@ -271,7 +270,12 @@ suite('<nuxeo-directory-checkbox>', () => {
           ordering: 10000000,
         },
       };
-      await waitForEvent(radioGroup, 'directory-entries-loaded');
+      const radioGroup = await fixture(html`
+        <nuxeo-directory-radio-group directory-name="language" .selectedItem="${option}"></nuxeo-directory-radio-group>
+      `);
+      if (!radioGroup._entries || radioGroup._entries.length === 0) {
+        await waitForEvent(radioGroup, 'directory-entries-loaded');
+      }
       await flush();
       const choices = dom(radioGroup.root).querySelectorAll('paper-radio-button');
       expect(choices.length).to.be.equal(4);
