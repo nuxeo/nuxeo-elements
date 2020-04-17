@@ -217,19 +217,9 @@ import '../actions/nuxeo-action-button-styles.js';
 
     // https://jira.nuxeo.com/browse/ELEMENTS-370
     _download(response) {
-      const contentDisposition = response.headers.get('Content-Disposition');
-
-      if (!contentDisposition) {
-        throw new Error('missing Content-Disposition header');
-      }
-
-      const filenameMatches = contentDisposition
-        .match(/filename[^;=\n]*=([^;\n]*''([^;\n]*)|[^;\n]*)/)
-        .filter((match) => !!match);
-      const filename = decodeURI(filenameMatches[filenameMatches.length - 1]);
       const a = document.createElement('a');
       a.style = 'display: none';
-      a.download = filename;
+      a.download = '';
       a.href = response.url;
       document.body.appendChild(a);
       a.click();
