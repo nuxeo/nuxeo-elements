@@ -326,15 +326,22 @@ import './nuxeo-page-provider.js';
         });
     }
 
+    _isRunning(status) {
+      if (status['entity-type'] === 'bulkStatus') {
+        const { state } = status.value;
+        return state !== 'ABORTED' && state !== 'COMPLETED';
+      }
+      return status === 'RUNNING';
+    }
+
     _poll(url) {
       return new Promise((resolve) => {
         const fn = () => {
           this.$.nx.http(url).then((res) => {
-            // 303 - see other (for result)
-            if (res.redirected) {
-              resolve(res);
-            } else {
+            if (this._isRunning(res)) {
               window.setTimeout(() => fn(), this.pollInterval, url);
+            } else {
+              resolve(res);
             }
           });
         };
