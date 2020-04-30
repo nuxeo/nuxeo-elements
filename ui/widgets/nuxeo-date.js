@@ -39,7 +39,7 @@ import './nuxeo-tooltip.js';
   class Date extends mixinBehaviors([I18nBehavior, FormatBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <span id="datetime" hidden$="[[!datetime]]">[[formatDate(datetime, format)]]</span>
+        <span id="datetime" hidden$="[[!datetime]]">[[formatDateTime(datetime, format)]]</span>
         <nuxeo-tooltip for="datetime">[[formatDateTime(datetime, tooltipFormat)]]</nuxeo-tooltip>
       `;
     }
