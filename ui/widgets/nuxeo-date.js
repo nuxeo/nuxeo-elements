@@ -40,7 +40,9 @@ import './nuxeo-tooltip.js';
     static get template() {
       return html`
         <span id="datetime" hidden$="[[!datetime]]">[[formatDate(datetime, format)]]</span>
-        <nuxeo-tooltip for="datetime">[[formatDateTime(datetime, tooltipFormat)]]</nuxeo-tooltip>
+        <nuxeo-tooltip for="datetime" hidden$="[[_producesSameDateFormat(datetime,format,tooltipFormat)]]">
+          [[formatDateTime(datetime, tooltipFormat)]]
+        </nuxeo-tooltip>
       `;
     }
 
@@ -69,6 +71,10 @@ import './nuxeo-tooltip.js';
          */
         tooltipFormat: String,
       };
+    }
+
+    _producesSameDateFormat(datetime, format, tooltipFormat) {
+      return this.formatDate(datetime, format) === this.formatDateTime(datetime, tooltipFormat);
     }
   }
 

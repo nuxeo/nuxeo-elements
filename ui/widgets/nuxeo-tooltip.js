@@ -109,7 +109,7 @@ import { microTask } from '@polymer/polymer/lib/utils/async.js';
     }
 
     show() {
-      if (!this._tooltip) {
+      if (!this._tooltip && !this.hidden) {
         // create a paper tooltip and append to body
         this._tooltip = document.createElement('paper-tooltip');
         document.body.appendChild(this._tooltip);
