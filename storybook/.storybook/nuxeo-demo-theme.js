@@ -1,8 +1,9 @@
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import '@nuxeo/nuxeo-ui-elements/nuxeo-button-styles.js';
 
 const template = html`
   <custom-style>
-    <style is="custom-style">
+    <style is="custom-style" include="nuxeo-button-styles">
       html {
         -ms-text-size-adjust: 100%;
         -webkit-text-size-adjust: 100%;
@@ -95,28 +96,27 @@ const template = html`
           color: var(--nuxeo-link-hover-color);
         }
 
-        --nuxeo-button-primary: {
-          color: var(--nuxeo-button-primary-text);
-          font-weight: 700;
-          background-color: var(--nuxeo-button-primary);
+        --nx-button-primary: {
+          color: var(--nuxeo-button-primary-text, #ffffff);
+          background-color: var(--nuxeo-button-primary, #0066ff);
+          border: 1px solid var(--nuxeo-primary-color, #0066ff);
         }
 
-        --nuxeo-button-primary-hover: {
-          color: var(--nuxeo-button-primary-text);
-          background-color: var(--nuxeo-button-primary-focus);
+        --nx-button-primary-hover: {
+          color: var(--nuxeo-button-primary-text, #ffffff);
+          background-color: var(--nuxeo-button-primary-focus, #1f28bf);
+          border: 1px solid var(--nuxeo-button-primary-focus, #1f28bf);
         }
 
         --nx-button-secondary: {
-          border: 1px solid var(--nuxeo-primary-color);
-          background-color: #ffffff;
-          color: var(--nuxeo-primary-color);
-          font-weight: 600;
-          box-shadow: 0px -8px 10px 0px rgba(255, 255, 255, 0.75);
+          border: 1px solid var(--nuxeo-button-secondary-text, #0066ff);
+          background-color: transparent;
+          color: var(--nuxeo-button-secondary-text, #0066ff);
         }
 
         --nx-button-secondary-hover: {
-          border: 1px solid var(--nuxeo-secondary-color);
-          color: var(--nuxeo-secondary-color);
+          border: 1px solid var(--nuxeo-secondary-color, #1f28bf);
+          color: var(--nuxeo-secondary-color, #1f28bf);
         }
 
         --nx-button-secondary-disabled: {
@@ -124,10 +124,10 @@ const template = html`
           color: var(--secondary-text-color);
         }
 
-        --nuxeo-button-disabled: {
-          color: var(--nuxeo-button-disabled-text);
-          font-weight: normal;
-          background-color: var(--nuxeo-button-disabled);
+        --nx-button-secondary-disabled: {
+          border: 1px solid var(--disabled-text-color, #bdbdbd);
+          color: var(--secondary-text-color, #939caa);
+          background-color: transparent;
         }
 
         --buttons-bar: {
@@ -207,12 +207,13 @@ const template = html`
 
         --paper-button: {
           font-family: var(--nuxeo-app-font);
-          font-size: 0.8rem;
-          color: var(--nuxeo-link-color);
-          background-color: var(--nuxeo-button);
-          border: 1px solid var(--nuxeo-border);
+          font-weight: 600;
+          font-size: 1rem;
+          text-transform: capitalize;
+          min-height: 40px;
+          padding: 8px 16px;
+          min-width: 96px;
           border-radius: 0.1em;
-          padding: 0.8em 2em;
           margin: 0;
         }
 
@@ -330,29 +331,6 @@ const template = html`
         @apply --nuxeo-label;
       }
 
-      /* paper-button */
-      paper-button {
-        min-width: 96px;
-      }
-      paper-button:hover {
-        @apply --nuxeo-button-hover;
-      }
-      paper-button[primary] {
-        @apply --nuxeo-button-primary;
-        border-color: transparent;
-      }
-      paper-button[primary]:hover,
-      paper-button[primary]:focus {
-        @apply --nuxeo-button-primary-hover;
-        border-color: transparent;
-      }
-      paper-button[disabled] {
-        @apply --nuxeo-button-disabled;
-      }
-      paper-button + paper-button {
-        margin-left: 8px;
-      }
-
       /* -------------------------------------------------------------------------------
     /* DEFAULT THEME */
 
@@ -391,6 +369,8 @@ const template = html`
         --nuxeo-button-primary: var(--nuxeo-primary-color);
         --nuxeo-button-primary-focus: var(--nuxeo-secondary-color);
         --nuxeo-button-primary-text: #ffffff;
+        --nuxeo-button-secondary-text: #0066ff;
+        --nuxeo-button-icon-margin: 4px;
         --nuxeo-button-disabled: rgba(0, 0, 0, 0.05);
         --nuxeo-button-disabled-text: rgba(0, 0, 0, 0.1);
         --nuxeo-link-color: var(--nuxeo-text-default);
@@ -398,13 +378,14 @@ const template = html`
 
         /* Custom Backgrounds */
         --nuxeo-container-hover: var(--nuxeo-page-background);
-        --nuxeo-dialog-buttons-bar: rgba(0, 0, 0, 0.05);
+        --nuxeo-dialog-buttons-bar: transparent;
+        --input-background: rgba(0, 0, 0, 0.05);
 
         /* Warn, Info, Error */
         --nuxeo-action-color-activated: #00aded;
         --nuxeo-toolbar: #191928;
-        --nuxeo-warn-text: #fb6107;
-        --nuxeo-validated: #99d749;
+        --nuxeo-warn-text: #de350b;
+        --nuxeo-validated: #42be65;
         --nuxeo-result-highlight: var(--nuxeo-primary-color);
 
         /*-- Polymer Variables --*/
@@ -445,7 +426,7 @@ const template = html`
 
         --paper-input-container-color: var(--nuxeo-text-default);
         --paper-input-container-focus-color: var(--nuxeo-primary-color);
-        --paper-input-container-invalid-color: #ff003c;
+        --paper-input-container-invalid-color: #de350b;
         --paper-input-container-input-color: var(--nuxeo-text-default);
 
         --paper-slider-knob-color: var(--nuxeo-primary-color);
