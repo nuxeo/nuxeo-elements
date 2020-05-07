@@ -14,10 +14,11 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-export { fixture, fixtureCleanup, html } from '@open-wc/testing-helpers';
+export { fixtureCleanup, html } from '@open-wc/testing-helpers';
 export { focus, pressAndReleaseKeyOn, tap } from '@polymer/iron-test-helpers/mock-interactions';
 export { default as fakeServer } from './nuxeo-mock-client.js';
 export {
+  fixture,
   flush,
   isElementVisible,
   login,

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { fixture, fixtureCleanup, html } from '@open-wc/testing-helpers';
+import { fixture as openWcFixture, fixtureCleanup, html } from '@open-wc/testing-helpers';
 import * as utils from '@polymer/polymer/lib/utils/flush.js';
 import sinon from 'sinon';
 
@@ -37,6 +37,17 @@ const flush = async () => {
   utils.flush();
   await timePasses(0);
 };
+
+function fixture(template, flushNeeded = false) {
+  if (!flushNeeded) {
+    return openWcFixture(template);
+  }
+  return new Promise((resolve) => {
+    openWcFixture(template).then((element) => {
+      flush().then(() => resolve(element));
+    });
+  });
+}
 
 /**
  * Waits for an event to trigger in a DOM element.
@@ -177,6 +188,7 @@ if ('teardown' in window) {
 
 export {
   flush,
+  fixture,
   isElementVisible,
   login,
   timePasses,
