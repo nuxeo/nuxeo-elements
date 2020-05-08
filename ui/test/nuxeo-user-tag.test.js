@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, flush, html } from '@nuxeo/testing-helpers';
+import { fixture, html } from '@nuxeo/testing-helpers';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import '../widgets/nuxeo-user-tag.js';
 
@@ -59,8 +59,6 @@ suite('nuxeo-user-tag', () => {
         <nuxeo-user-tag id="last" disabled user="${JSON.stringify(userWithLastName)}"></nuxeo-user-tag>
       `);
 
-      await flush();
-
       expect(dom(tagWithFirstAndLastNames.root).querySelector('nuxeo-tag').innerText).to.have.string('John Doe');
       expect(dom(tagWithFirstName.root).querySelector('nuxeo-tag').innerText).to.have.string('John');
       expect(dom(tagWithLastName.root).querySelector('nuxeo-tag').innerText).to.have.string('Doe');
@@ -79,8 +77,6 @@ suite('nuxeo-user-tag', () => {
         <nuxeo-user-tag id="email" disabled user="${JSON.stringify(user)}"></nuxeo-user-tag>
       `);
 
-      await flush();
-
       expect(dom(tagWithEmail.root).querySelector('nuxeo-tag').innerText).to.have.string('jdoe@nuxeo.com');
     });
 
@@ -94,8 +90,6 @@ suite('nuxeo-user-tag', () => {
       const tagWithId = await fixture(html`
         <nuxeo-user-tag id="id" disabled user="${JSON.stringify(user)}"></nuxeo-user-tag>
       `);
-
-      await flush();
 
       expect(dom(tagWithId.root).querySelector('nuxeo-tag').innerText).to.have.string('jdoe');
     });

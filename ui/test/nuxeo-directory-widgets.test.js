@@ -109,7 +109,6 @@ suite('nuxeo-directory-suggestion', () => {
         };
         return new Promise(waitForSuggestion);
       };
-      // await flush();
       const val = await getSuggestedValue();
       expect(val).to.be.equal('Brittany');
     });

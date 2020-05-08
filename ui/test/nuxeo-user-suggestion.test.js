@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, flush, html, timePasses } from '@nuxeo/testing-helpers';
+import { fixture, html, timePasses } from '@nuxeo/testing-helpers';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import '../widgets/nuxeo-user-suggestion.js';
 
@@ -74,8 +74,6 @@ suite('nuxeo-user-suggestion', () => {
     const prefixedWidget = await fixture(html`
       <nuxeo-user-suggestion multiple prefixed .value="${value}"></nuxeo-user-suggestion>
     `);
-
-    await flush();
     await timePasses(100);
 
     const s2 = dom(prefixedWidget.root).querySelector('#s2');
