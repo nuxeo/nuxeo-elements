@@ -48,26 +48,30 @@ suite('nuxeo-actions-menu', () => {
   }
 
   async function makeMenuWithNuxeoSlot(slot = 'SLOT') {
-    const menu = await fixture(html`
-      <div style="max-width: 160px;">
-        <nuxeo-actions-menu>
-          <nuxeo-slot slot="${slot}"></nuxeo-slot>
-        </nuxeo-actions-menu>
-      </div>
-    `);
-    await flush();
+    const menu = await fixture(
+      html`
+        <div style="max-width: 160px;">
+          <nuxeo-actions-menu>
+            <nuxeo-slot slot="${slot}"></nuxeo-slot>
+          </nuxeo-actions-menu>
+        </div>
+      `,
+      true,
+    );
     return menu;
   }
 
   async function makeNuxeoSlottedMenuContent(n = 5, slot = 'SLOT') {
-    await fixture(html`
-      <nuxeo-slot-content name="content" slot="${slot}">
-        <template>
-          ${makeMenuContent(n)}
-        </template>
-      </nuxeo-slot-content>
-    `);
-    await flush();
+    await fixture(
+      html`
+        <nuxeo-slot-content name="content" slot="${slot}">
+          <template>
+            ${makeMenuContent(n)}
+          </template>
+        </nuxeo-slot-content>
+      `,
+      true,
+    );
   }
 
   function actionsMenu(el) {
@@ -245,12 +249,14 @@ suite('nuxeo-actions-menu', () => {
       // nuxeo-slot is the only element right now that works in a native slot inside the actions menu,
       // since it has dedicated logics to reallocate its children
       await makeNuxeoSlottedMenuContent();
-      const customEl = await fixture(html`
-        <my-custom-slotted-menu-element>
-          <nuxeo-slot name="SLOT"></nuxeo-slot>
-        </my-custom-slotted-menu-element>
-      `);
-      await flush();
+      const customEl = await fixture(
+        html`
+          <my-custom-slotted-menu-element>
+            <nuxeo-slot name="SLOT"></nuxeo-slot>
+          </my-custom-slotted-menu-element>
+        `,
+        true,
+      );
       expect(menuActions(customEl).length).to.be.equal(3);
       expect(dropdownActions(customEl).length).to.be.equal(2);
       expect(dropdownButton(customEl).hidden).to.be.false;
