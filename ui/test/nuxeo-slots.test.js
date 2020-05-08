@@ -61,9 +61,7 @@ const makeContent = async (name, slot, content, options = {}) => {
       ${tmpl}
     </nuxeo-slot-content>
   `;
-  const fx = await fixture(slContent);
-  await flush();
-  return fx;
+  return fixture(slContent, true);
 };
 
 suite('nuxeo-slot', () => {

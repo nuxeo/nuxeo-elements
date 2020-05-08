@@ -422,20 +422,21 @@ suite('nuxeo-filter', () => {
     }
     customElements.define(CustomElement.is, CustomElement);
 
-    await fixture(html`
-      <nuxeo-slot-content id="slot" name="test" slot="TEST_SLOT" order="1" model>
-        <template>
-          <nuxeo-filter document="[[document]]" type="Folder">
-            <template>
-              <!--div>Hello</div-->
-              <my-custom-element class="custom" document="[[document]]" label="[[text]]"></my-custom-element>
-            </template>
-          </nuxeo-filter>
-        </template>
-      </nuxeo-slot-content>
-    `);
-
-    await flush();
+    await fixture(
+      html`
+        <nuxeo-slot-content id="slot" name="test" slot="TEST_SLOT" order="1" model>
+          <template>
+            <nuxeo-filter document="[[document]]" type="Folder">
+              <template>
+                <!--div>Hello</div-->
+                <my-custom-element class="custom" document="[[document]]" label="[[text]]"></my-custom-element>
+              </template>
+            </nuxeo-filter>
+          </template>
+        </nuxeo-slot-content>
+      `,
+      true,
+    );
 
     const stampedElements = stamped(container, '.custom');
     expect(stampedElements.length).to.be.equal(1);
