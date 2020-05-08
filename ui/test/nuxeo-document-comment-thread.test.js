@@ -45,7 +45,6 @@ suite('nuxeo-document-comment-thread', () => {
         <nuxeo-document-comment-thread uid="doc-id"></nuxeo-document-comment-thread>
       `,
     );
-    await flush();
   });
 
   teardown(() => {

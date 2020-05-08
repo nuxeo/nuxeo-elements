@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, flush, html, isElementVisible } from '@nuxeo/testing-helpers';
+import { fixture, html, isElementVisible } from '@nuxeo/testing-helpers';
 import '../nuxeo-error.js';
 
 suite('<nuxeo-error>', () => {
@@ -64,7 +64,6 @@ suite('<nuxeo-error>', () => {
         <nuxeo-error code="404" url="notfound.html" message="Failed to find layout"></nuxeo-error>
       `,
     );
-    await flush();
 
     expectNuxeoErrorContent(nuxeoError, '404', 'ERROR.404', 'notfound.html', 'Failed to find layout');
   });
@@ -75,7 +74,6 @@ suite('<nuxeo-error>', () => {
         <nuxeo-error></nuxeo-error>
       `,
     );
-    await flush();
 
     expectNuxeoErrorEmptyContent(nuxeoError);
   });
@@ -86,7 +84,6 @@ suite('<nuxeo-error>', () => {
         <nuxeo-error code="" url="" message=""></nuxeo-error>
       `,
     );
-    await flush();
 
     expectNuxeoErrorEmptyContent(nuxeoError);
   });
@@ -97,7 +94,6 @@ suite('<nuxeo-error>', () => {
         <nuxeo-error code="404" url="notfound.html" message="Failed to find layout"></nuxeo-error>
       `,
     );
-    await flush();
 
     nuxeoError.show();
     expectNuxeoErrorContent(nuxeoError, '404', 'ERROR.404', 'notfound.html', 'Failed to find layout');
@@ -109,7 +105,6 @@ suite('<nuxeo-error>', () => {
         <nuxeo-error></nuxeo-error>
       `,
     );
-    await flush();
 
     nuxeoError.show('404', 'notfound.html', 'Failed to find layout');
     expectNuxeoErrorContent(nuxeoError, '404', 'ERROR.404', 'notfound.html', 'Failed to find layout');
@@ -121,7 +116,6 @@ suite('<nuxeo-error>', () => {
         <nuxeo-error></nuxeo-error>
       `,
     );
-    await flush();
 
     nuxeoError.hide();
     expect(isElementVisible(nuxeoError)).to.be.false;

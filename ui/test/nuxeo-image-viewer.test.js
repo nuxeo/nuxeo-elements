@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, flush, isElementVisible, html, tap, timePasses, waitForEvent } from '@nuxeo/testing-helpers';
+import { fixture, isElementVisible, html, tap, timePasses, waitForEvent } from '@nuxeo/testing-helpers';
 import '../viewers/nuxeo-image-viewer.js';
 
 const { url } = import.meta;
@@ -41,7 +41,6 @@ suite('nuxeo-image-viewer', () => {
           <nuxeo-image-viewer></nuxeo-image-viewer>
         `,
       );
-      await flush();
       try {
         await waitViewerLoad(viewer, 500);
       } finally {
@@ -56,7 +55,6 @@ suite('nuxeo-image-viewer', () => {
           <nuxeo-image-viewer src="${base}/resources/nonexistent.png"></nuxeo-image-viewer>
         `,
       );
-      await flush();
       try {
         await waitViewerLoad(viewer, 500);
       } finally {
@@ -82,7 +80,6 @@ suite('nuxeo-image-viewer', () => {
             <nuxeo-image-viewer controls></nuxeo-image-viewer>
           `,
         );
-        await flush();
         expect(isToolbarVisible(viewer)).to.be.false;
       });
 
@@ -92,7 +89,6 @@ suite('nuxeo-image-viewer', () => {
             <nuxeo-image-viewer src="${base}/resources/nonexistent.png" controls></nuxeo-image-viewer>
           `,
         );
-        await flush();
         expect(isToolbarVisible(viewer)).to.be.false;
       });
 

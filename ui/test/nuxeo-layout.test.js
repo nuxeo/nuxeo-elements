@@ -37,7 +37,6 @@ suite('nuxeo-layout', () => {
           <nuxeo-layout href="notfound.html"></nuxeo-layout>
         `,
       );
-      await flush();
 
       const nuxeoError = layout.$.error;
       if (!isElementVisible(nuxeoError)) {
@@ -53,7 +52,6 @@ suite('nuxeo-layout', () => {
       const layout = await fixture(html`
         <nuxeo-layout href="${base}/layouts/dummy-layout.html" model='{"text": "dummy"}'></nuxeo-layout>
       `);
-      await flush();
       await layoutLoad(layout);
 
       expect(isElementVisible(layout.$.error)).to.be.false;
@@ -67,7 +65,6 @@ suite('nuxeo-layout', () => {
       const layout = await fixture(html`
         <nuxeo-layout href="${base}/layouts/dummy-layout.html" model=""></nuxeo-layout>
       `);
-      await flush();
       await layoutLoad(layout);
 
       expect(layout.element.shadowRoot.querySelector('span')).to.exist;
@@ -80,7 +77,6 @@ suite('nuxeo-layout', () => {
       const layout = await fixture(html`
         <nuxeo-layout href=""></nuxeo-layout>
       `);
-      await flush();
 
       expect(isElementVisible(layout)).to.be.false;
     });
@@ -89,7 +85,6 @@ suite('nuxeo-layout', () => {
       const layout = await fixture(html`
         <nuxeo-layout href="${base}/layouts/dummy-layout.html"></nuxeo-layout>
       `);
-      await flush();
       await layoutLoad(layout);
 
       expect(layout.element.tagName).to.equal('DUMMY-LAYOUT');
@@ -115,7 +110,6 @@ suite('nuxeo-layout', () => {
       const layout = await fixture(html`
         <nuxeo-layout href="${base}/layouts/dummy-layout.html" model='{"text": "valid", "data": "foo"}'></nuxeo-layout>
       `);
-      await flush();
       await layoutLoad(layout);
 
       const nuxeoInput = layout.element.shadowRoot.querySelector('nuxeo-input');
@@ -133,7 +127,6 @@ suite('nuxeo-layout', () => {
       const layout = await fixture(html`
         <nuxeo-layout href="${base}/layouts/dummy-layout.html" model=""></nuxeo-layout>
       `);
-      await flush();
       await layoutLoad(layout);
 
       const nuxeoInput = layout.element.shadowRoot.querySelector('nuxeo-input');
@@ -146,7 +139,6 @@ suite('nuxeo-layout', () => {
       const layout = await fixture(html`
         <nuxeo-layout href="${base}/layouts/dummy-layout.html" model=""></nuxeo-layout>
       `);
-      await flush();
       await layoutLoad(layout);
 
       const nuxeoInput = layout.element.shadowRoot.querySelector('nuxeo-input');
@@ -166,7 +158,6 @@ suite('nuxeo-layout', () => {
           model='{"text": "invalid", "data": "foo"}'
         ></nuxeo-layout>
       `);
-      await flush();
       await layoutLoad(layout);
 
       const nuxeoInput = layout.element.shadowRoot.querySelector('nuxeo-input');

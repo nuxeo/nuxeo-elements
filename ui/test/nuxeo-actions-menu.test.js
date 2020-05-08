@@ -44,7 +44,6 @@ suite('nuxeo-actions-menu', () => {
         </nuxeo-actions-menu>
       </div>
     `);
-    await flush();
     return menu;
   }
 
@@ -181,8 +180,6 @@ suite('nuxeo-actions-menu', () => {
         </template>
       </nuxeo-slot-content>
     `);
-
-    await flush();
 
     // define nuxeo-test-button
     customElements.define(

@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, flush, html, isElementVisible } from '@nuxeo/testing-helpers';
+import { fixture, html, isElementVisible } from '@nuxeo/testing-helpers';
 import '../nuxeo-video/nuxeo-video-info.js';
 import videoProperties from './resources/videoProperties';
 
@@ -31,7 +31,6 @@ suite('nuxeo-video-info', () => {
     element = await fixture(html`
       <nuxeo-video-info .document="${document}"></nuxeo-video-info>
     `);
-    await flush();
     const items = element.shadowRoot.querySelectorAll('.item div');
     const labels = element.shadowRoot.querySelectorAll('.item label');
     expect(isElementVisible(items[0])).to.be.true;
@@ -55,7 +54,6 @@ suite('nuxeo-video-info', () => {
     element = await fixture(html`
       <nuxeo-video-info></nuxeo-video-info>
     `);
-    await flush();
     const items = element.shadowRoot.querySelectorAll('.item div');
     const labels = element.shadowRoot.querySelectorAll('.item label');
     expect(isElementVisible(labels[0])).to.be.true;

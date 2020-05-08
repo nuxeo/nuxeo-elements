@@ -128,8 +128,9 @@ suite('nuxeo-delete-document-button', () => {
   });
 
   suite('Operation Calling', () => {
-    setup(() => {
+    setup(async () => {
       button.document = deletableDocument;
+      await flush();
     });
 
     teardown(() => {
@@ -141,7 +142,6 @@ suite('nuxeo-delete-document-button', () => {
       sinon.spy(button.$.deleteOp, 'execute');
       sinon.spy(button.$.trashOp, 'execute');
 
-      await flush();
       const actionDiv = getActionDiv(button);
       tap(actionDiv);
 
@@ -168,7 +168,6 @@ suite('nuxeo-delete-document-button', () => {
       sinon.spy(button.$.deleteOp, 'execute');
       sinon.spy(button.$.trashOp, 'execute');
 
-      await flush();
       const actionDiv = getActionDiv(button);
       tap(actionDiv);
 
@@ -180,7 +179,6 @@ suite('nuxeo-delete-document-button', () => {
       sinon.stub(window, 'confirm').returns(true);
       sinon.stub(button.$.trashOp, 'execute').rejects(new Error('Some error'));
 
-      await flush();
       const actionDiv = getActionDiv(button);
       tap(actionDiv);
 

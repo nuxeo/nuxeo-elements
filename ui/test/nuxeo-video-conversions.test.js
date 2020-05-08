@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, flush, html, isElementVisible } from '@nuxeo/testing-helpers';
+import { fixture, html, isElementVisible } from '@nuxeo/testing-helpers';
 import '../nuxeo-video/nuxeo-video-conversions.js';
 import videoProperties from './resources/videoProperties';
 
@@ -26,7 +26,6 @@ suite('nuxeo-video-conversions', () => {
       element = await fixture(html`
         <nuxeo-video-conversions></nuxeo-video-conversions>
       `);
-      await flush();
     });
 
     test('Should not display the label when label is not provided', () => {
@@ -50,7 +49,6 @@ suite('nuxeo-video-conversions', () => {
       element = await fixture(html`
         <nuxeo-video-conversions .document="${document}" label="video conversions"> </nuxeo-video-conversions>
       `);
-      await flush();
     });
 
     test('Should display the label when the label is provided', () => {
