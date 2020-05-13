@@ -6208,6 +6208,7 @@ typedArrayTags[weakMapTag] = false;
                   'autocapitalize="off" class="selectivity-multiple-input">'
                 : '<div class="selectivity-multiple-input ' + 'selectivity-placeholder"></div>'
             }<div class="selectivity-clearfix"></div>` +
+            '<i class="fa fa-sort-desc selectivity-caret"></i>' +
             '</div>'
           );
         },
