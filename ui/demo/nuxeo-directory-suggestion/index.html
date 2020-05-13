@@ -45,7 +45,11 @@ limitations under the License.
         </nuxeo-demo-section>
 
         <nuxeo-demo-section heading="Directory suggestion (single)" size="small">
-          <nuxeo-directory-suggestion directory-name="subject" value="{{singleDirectory}}"></nuxeo-directory-suggestion>
+          <nuxeo-directory-suggestion
+            directory-name="subject"
+            value="{{singleDirectory}}"
+            min-chars="0"
+          ></nuxeo-directory-suggestion>
           <div>Selected directory: [[singleDirectory]]</div>
         </nuxeo-demo-section>
 
@@ -53,6 +57,7 @@ limitations under the License.
           <nuxeo-directory-suggestion
             directory-name="subject"
             value="{{multipleDirectories}}"
+            min-chars="0"
             multiple="true"
           ></nuxeo-directory-suggestion>
           <div>Selected directories: [[multipleDirectories]]</div>
