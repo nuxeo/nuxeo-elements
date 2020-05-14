@@ -17,7 +17,6 @@ limitations under the License.
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import './nuxeo-element.js';
 import './nuxeo-connection.js';
-import './nuxeo-page-provider.js';
 
 {
   /**

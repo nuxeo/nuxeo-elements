@@ -18,6 +18,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import './nuxeo-element.js';
+import './nuxeo-operation.js';
 import './nuxeo-resource.js';
 
 {
@@ -60,6 +61,7 @@ import './nuxeo-resource.js';
           }
         </style>
 
+        <!-- REST API / GET -->
         <nuxeo-resource
           id="nxResource"
           connection-id="[[connectionId]]"
@@ -69,6 +71,16 @@ import './nuxeo-resource.js';
           headers="{{headers}}"
         >
         </nuxeo-resource>
+
+        <!-- Automation API / POST -->
+        <nuxeo-operation
+          id="op"
+          connection-id="[[connectionId]]"
+          enrichers="{{enrichers}}"
+          schemas="[[schemas]]"
+          headers="{{headers}}"
+        >
+        </nuxeo-operation>
       `;
     }
 
@@ -281,6 +293,20 @@ import './nuxeo-resource.js';
          * If `true`, aggregagtes from page provider definition will not be computed.
          */
         skipAggregates: Boolean,
+
+        /**
+         * The HTTP method to use ('get', 'post'). Default is 'get'.
+         * Use `Nuxeo.UI.config.pageprovider.method = 'post' to change default.
+         */
+        method: {
+          type: String,
+          value() {
+            return (
+              (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.pageprovider && Nuxeo.UI.config.pageprovider.method) ||
+              'get'
+            );
+          },
+        },
       };
     }
 
@@ -326,13 +352,28 @@ import './nuxeo-resource.js';
       }
 
       const params = this._params;
-      // move named parameters
-      if (params.namedParameters) {
-        Object.assign(params, params.namedParameters);
-        delete params.namedParameters;
+
+      // use either REST or Automation API depending on method
+      let target;
+
+      if (this.method.toLowerCase() === 'get') {
+        target = this.$.nxResource;
+        // move named parameters
+        if (params.namedParameters) {
+          Object.assign(params, params.namedParameters);
+          delete params.namedParameters;
+        }
+      } else {
+        target = this.$.op;
+        if (this.query) {
+          target.op = 'Repository.Query';
+        } else {
+          target.op = 'Repository.PageProvider';
+          params.providerName = this.provider;
+        }
       }
-      this.$.nxResource.params = params;
-      return this.$.nxResource
+      target.params = params;
+      return target
         .execute()
         .then((response) => {
           this.currentPage = response.entries.slice(0);
@@ -395,17 +436,14 @@ import './nuxeo-resource.js';
       } else {
         const namedParams = {};
         Object.keys(this.params).forEach((key) => {
-          const value = this.params[key];
+          let value = this.params[key];
           if (value != null) {
-            if (typeof value === 'string') {
-              namedParams[key] = value;
-            } else if (Array.isArray(value)) {
-              namedParams[key] = JSON.stringify(
-                value.map((item) => (item['entity-type'] ? item.uid || item.id : item)),
-              );
-            } else {
-              namedParams[key] = value['entity-type'] ? value.uid || value.id : JSON.stringify(value);
+            if (Array.isArray(value)) {
+              value = JSON.stringify(value.map((item) => (item['entity-type'] ? item.uid || item.id : item)));
+            } else if (typeof value !== 'string') {
+              value = value['entity-type'] ? value.uid || value.id : JSON.stringify(value);
             }
+            namedParams[key] = value;
           }
         }, this);
         params.namedParameters = namedParams;
@@ -452,7 +490,7 @@ import './nuxeo-resource.js';
     _computePath(provider, query) {
       let path = '';
       if (query) {
-        path = '/search/lang/NXQL/execute';
+        path = '/search/execute';
       } else if (provider) {
         path = `/search/pp/${provider}/execute`;
       }
