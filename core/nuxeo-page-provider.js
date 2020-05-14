@@ -18,6 +18,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import './nuxeo-element.js';
+import './nuxeo-operation.js';
 import './nuxeo-resource.js';
 
 {
@@ -60,6 +61,7 @@ import './nuxeo-resource.js';
           }
         </style>
 
+        <!-- REST API / GET -->
         <nuxeo-resource
           id="nxResource"
           connection-id="[[connectionId]]"
@@ -69,6 +71,16 @@ import './nuxeo-resource.js';
           headers="{{headers}}"
         >
         </nuxeo-resource>
+
+        <!-- Automation API / POST -->
+        <nuxeo-operation
+          id="op"
+          connection-id="[[connectionId]]"
+          enrichers="{{enrichers}}"
+          schemas="[[schemas]]"
+          headers="{{headers}}"
+        >
+        </nuxeo-operation>
       `;
     }
 
@@ -281,6 +293,18 @@ import './nuxeo-resource.js';
          * If `true`, aggregagtes from page provider definition will not be computed.
          */
         skipAggregates: Boolean,
+
+        /**
+         * The HTTP method to use ('get', 'post'). Default is 'get'.
+         * Use `Nuxeo.UI.config.pageprovider.method = 'post' to change default.
+         */
+        method: {
+          type: String,
+          value() {
+            const { method } = Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.pageprovider;
+            return method || 'get';
+          },
+        },
       };
     }
 
@@ -331,8 +355,19 @@ import './nuxeo-resource.js';
         Object.assign(params, params.namedParameters);
         delete params.namedParameters;
       }
-      this.$.nxResource.params = params;
-      return this.$.nxResource
+      // use either REST or Automation API depending on method
+      let target = this.$.nxResource;
+      if (this.method.toLowerCase() === 'post') {
+        target = this.$.op;
+        if (this.query) {
+          target.op = 'Repository.Query';
+        } else {
+          target.op = 'Repository.PageProvider';
+          params.providerName = this.provider;
+        }
+      }
+      target.params = params;
+      return target
         .execute()
         .then((response) => {
           this.currentPage = response.entries.slice(0);
