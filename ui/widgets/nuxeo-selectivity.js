@@ -6208,7 +6208,7 @@ typedArrayTags[weakMapTag] = false;
             <div class="selectivity-multiple-input-container">
               ${options.enabled ? enabledTemplate : disabledTemplate}
               <div class="selectivity-clearfix"/>
-              <i class="fa fa-sort-desc selectivity-caret"/>
+              <i class="selectivity-caret"/>
             </div>
           `;
         },
@@ -6328,7 +6328,7 @@ typedArrayTags[weakMapTag] = false;
             <div class="selectivity-single-select">
               <input type="text" class="selectivity-single-select-input" ${options.required ? ' required' : ''}>
               <div class="selectivity-single-result-container"/>
-              <i class="fa fa-sort-desc selectivity-caret"/>
+              <i class="selectivity-caret"/>
             </div>
           `;
         },
