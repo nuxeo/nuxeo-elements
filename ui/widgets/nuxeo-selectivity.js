@@ -6201,16 +6201,16 @@ typedArrayTags[weakMapTag] = false;
      *                enabled - Boolean whether the input is enabled.
      */
         multipleSelectInput(options) {
-          return (
-            `<div class="selectivity-multiple-input-container">${
-              options.enabled
-                ? '<input type="text" autocomplete="off" autocorrect="off" ' +
-                  'autocapitalize="off" class="selectivity-multiple-input">'
-                : '<div class="selectivity-multiple-input ' + 'selectivity-placeholder"></div>'
-            }<div class="selectivity-clearfix"></div>` +
-            '<i class="fa fa-sort-desc selectivity-caret"></i>' +
-            '</div>'
-          );
+          const enabledTemplate = '<input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" ' +
+            'class="selectivity-multiple-input">';
+          const disabledTemplate = '<div class="selectivity-multiple-input selectivity-placeholder"/>';
+          return `
+            <div class="selectivity-multiple-input-container">
+              ${options.enabled ? enabledTemplate : disabledTemplate}
+              <div class="selectivity-clearfix"/>
+              <i class="fa fa-sort-desc selectivity-caret"/>
+            </div>
+          `;
         },
 
         /**
@@ -6324,15 +6324,13 @@ typedArrayTags[weakMapTag] = false;
      * the placeholder.
      */
         singleSelectInput(options) {
-          return (
-            `${'<div class="selectivity-single-select">' +
-            '<input type="text" class="selectivity-single-select-input"'}${
-              options.required ? ' required' : ''
-            }>` +
-            '<div class="selectivity-single-result-container"></div>' +
-            '<i class="fa fa-sort-desc selectivity-caret"></i>' +
-            '</div>'
-          );
+          return `
+            <div class="selectivity-single-select">
+              <input type="text" class="selectivity-single-select-input" ${options.required ? ' required' : ''}>
+              <div class="selectivity-single-result-container"/>
+              <i class="fa fa-sort-desc selectivity-caret"/>
+            </div>
+          `;
         },
 
         /**
