@@ -120,3 +120,11 @@ function login(server, loginFixture) {
 
   return loginFixture.connect();
 }
+
+function isElementVisible(el) {
+  if (!el) {
+    return false;
+  }
+  const styles = window.getComputedStyle(el);
+  return el.offsetWidth !== 0 && el.offsetHeight !== 0 && styles.opacity > 0 && styles.visibility !== 'hidden';
+}
