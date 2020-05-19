@@ -20,7 +20,8 @@
     "nuxeo": "^3.2.1"
   },
   "devDependencies": {
-    "@nuxeo/testing-helpers": "3.0.0-SNAPSHOT",
+    "@nuxeo/moment": "^2.24.0",
+    "@nuxeo/testing-helpers": "3.0.0-SNAPSHOT",    
     "@polymer/iron-component-page": "^4.0.0",
     "polymer-cli": "^1.8.0"
   },
