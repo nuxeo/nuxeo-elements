@@ -41,13 +41,20 @@ import '../widgets/nuxeo-tooltip.js';
           a:hover {
             @apply --nuxeo-link-hover;
           }
-          .container {
-            @apply --layout-flex;
-            @apply --layout-horizontal;
-            @apply --layout-center;
+          .properties label {
+            min-width: 10rem;
+            margin-inline-end: 12px;
           }
-          .item {
+          .properties .item {
+            @apply --layout-horizontal;
             @apply --layout-flex;
+            line-height: 2.2rem;
+            padding: 0 4px;
+            justify-content: space-between;
+            margin-left: -4px;
+          }
+          .properties .item:hover {
+            @apply --nuxeo-block-hover;
           }
         </style>
         <dom-if if="[[label]]">
@@ -55,14 +62,14 @@ import '../widgets/nuxeo-tooltip.js';
             <h3>[[label]]</h3>
           </template>
         </dom-if>
-        <div>
+        <div class="properties">
           <dom-repeat items="[[document.properties.vid:transcodedVideos]]" as="conversion">
             <dom-if if="[[conversion.content]]">
               <template>
-                <div class="container">
-                  <label class="item">[[conversion.name]]</label>
-                  <div class="item">[[conversion.info.width]] x [[conversion.info.height]]</div>
-                  <div class="item">[[formatSize(conversion.content.length)]]</div>
+                <div class="item">
+                  <label>[[conversion.name]]</label>
+                  <span>[[conversion.info.width]] x [[conversion.info.height]]</span>
+                  <span>[[formatSize(conversion.content.length)]]</span>
                   <a href="[[conversion.content.data]]">
                     <iron-icon icon="nuxeo:download"></iron-icon>
                     <nuxeo-tooltip>[[i18n('videoViewLayout.download.tooltip')]]</nuxeo-tooltip>

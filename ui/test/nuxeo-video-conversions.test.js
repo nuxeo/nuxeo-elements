@@ -58,13 +58,14 @@ suite('nuxeo-video-conversions', () => {
     });
 
     test('Should display the video properties when the video contains conversion content', () => {
-      const elements = element.shadowRoot.querySelectorAll('.item');
+      const label = element.shadowRoot.querySelector('.item label');
+      const span = element.shadowRoot.querySelectorAll('.item span')[0];
       const vProperties = videoProperties['vid:transcodedVideos'][0];
 
-      expect(isElementVisible(elements[0])).to.be.true;
-      expect(elements[0].innerText).to.equal(vProperties.name);
-      expect(isElementVisible(elements[1])).to.be.true;
-      expect(elements[1].innerText).to.equal(`${vProperties.info.width} x ${vProperties.info.height}`);
+      expect(isElementVisible(label)).to.be.true;
+      expect(label.innerText).to.equal(vProperties.name);
+      expect(isElementVisible(span)).to.be.true;
+      expect(span.innerText).to.equal(`${vProperties.info.width} x ${vProperties.info.height}`);
     });
 
     test('Should display an anchor tag when the video contains content', () => {

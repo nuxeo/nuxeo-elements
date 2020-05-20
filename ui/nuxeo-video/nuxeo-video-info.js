@@ -30,24 +30,21 @@ import '@polymer/iron-flex-layout/iron-flex-layout.js';
     static get template() {
       return html`
         <style>
-          .properties {
-            column-width: 25em;
-            column-count: 3;
-          }
-
           .properties label {
-            width: 10em;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            min-width: 10rem;
+            margin-inline-end: 12px;
           }
 
-          .item {
+          .properties .item {
             @apply --layout-horizontal;
             @apply --layout-flex;
+            line-height: 2.2rem;
+            padding: 0 4px;
+            justify-content: space-between;
+            margin-left: -4px;
           }
-
-          .item label {
-            color: var(--secondary-text-color, #939caa);
+          .properties .item:hover {
+            @apply --nuxeo-block-hover;
           }
         </style>
         <div class="properties">
