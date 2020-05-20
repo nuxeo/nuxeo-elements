@@ -419,6 +419,12 @@ export const UploaderBehavior = {
 
   _batchFailed(error) {
     this.uploading = false;
+    this.files.forEach((file, index) =>
+      this._updateFile(index, {
+        error: !file.complete && error,
+        index,
+      }),
+    );
     this.fire('batchFailed', { error });
   },
 
@@ -439,6 +445,13 @@ export const UploaderBehavior = {
   },
 
   _uploadInterrupted(file, error) {
+    const index = this.files.indexOf(file);
+    if (index > -1) {
+      this._updateFile(index, {
+        error,
+        index,
+      });
+    }
     this.fire('uploadInterrupted', { file, error: error || 'Upload Interrupted!' });
   },
 
