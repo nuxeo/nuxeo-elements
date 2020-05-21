@@ -76,7 +76,7 @@ DefaultUploadProvider.prototype.upload = function(files, callback) {
           callback({ type: 'batchFinished', batchId: result.batch._batchId });
         })
         .catch((error) => {
-          callback({ type: 'batchFailed', error });
+          callback({ type: 'batchFailed', error, batchId: this.uploader._batchId });
         });
     });
   }
@@ -341,7 +341,7 @@ export const UploaderBehavior = {
           this._uploadInterrupted(event.file, event.error);
           break;
         case 'batchFailed':
-          this._batchFailed(event.error);
+          this._batchFailed(event.error, event.batchId);
           break;
         default:
         // do nothing
@@ -417,7 +417,7 @@ export const UploaderBehavior = {
     this.fire('batchFinished', { batchId });
   },
 
-  _batchFailed(error) {
+  _batchFailed(error, batchId) {
     this.uploading = false;
     this.files.forEach((file, index) =>
       this._updateFile(index, {
@@ -425,7 +425,7 @@ export const UploaderBehavior = {
         index,
       }),
     );
-    this.fire('batchFailed', { error });
+    this.fire('batchFailed', { error, batchId });
   },
 
   _uploadStarted(file) {
