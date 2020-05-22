@@ -89,14 +89,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
          */
         firstDayOfWeek: {
           type: Number,
-          value() {
-            return (
-              (Nuxeo.UI && Nuxeo.UI.config && parseInt(Nuxeo.UI.config.firstDayOfWeek, 10)) ||
-              moment.localeData().firstDayOfWeek() ||
-              0
-            );
-          },
-          observer: '_firstDayOfWeekChanged',
         },
 
         _inputValue: {
@@ -225,6 +217,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this.$.date.set('i18n.cancel', this.i18n('command.cancel'));
       this.$.date.set('i18n.clear', this.i18n('command.clear'));
       this.$.date.set('i18n.today', this.i18n('today'));
+      this.$.date.set(
+        'i18n.firstDayOfWeek',
+        this.firstDayOfWeek ||
+          (Nuxeo.UI && Nuxeo.UI.config && parseInt(Nuxeo.UI.config.firstDayOfWeek, 10)) ||
+          moment.localeData().firstDayOfWeek() ||
+          0,
+      );
     }
 
     _getValidity() {
@@ -268,12 +267,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         }
       }
       this._preventInputUpdate = false;
-    }
-
-    _firstDayOfWeekChanged() {
-      if (this.firstDayOfWeek != null) {
-        this.$.date.set('i18n.firstDayOfWeek', this.firstDayOfWeek);
-      }
     }
   }
 
