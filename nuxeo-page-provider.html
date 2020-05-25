@@ -16,6 +16,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="nuxeo-element.html">
+<link rel="import" href="nuxeo-operation.html">
 <link rel="import" href="nuxeo-resource.html">
 
 <dom-module id="nuxeo-page-provider">
@@ -26,15 +27,25 @@ limitations under the License.
       }
     </style>
 
+    <!-- REST API / GET -->
     <nuxeo-resource
       id="nxResource"
       connection-id="[[connectionId]]"
       path="{{path}}"
       enrichers="{{enrichers}}"
-
       schemas="[[schemas]]"
       headers="{{headers}}">
     </nuxeo-resource>
+
+    <!-- Automation API / POST -->
+    <nuxeo-operation
+      id="op"
+      connection-id="[[connectionId]]"
+      enrichers="{{enrichers}}"
+      schemas="[[schemas]]"
+      headers="{{headers}}">
+    </nuxeo-operation>
+
   </template>
 
   <script>
@@ -271,6 +282,20 @@ limitations under the License.
              * If `true`, aggregagtes from page provider definition will not be computed.
              */
             skipAggregates: Boolean,
+
+            /**
+             * The HTTP method to use ('get', 'post'). Default is 'get'.
+             * Use `Nuxeo.UI.config.pageprovider.method = 'post' to change default.
+             */
+            method: {
+              type: String,
+              value() {
+                return (
+                  (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.pageprovider && Nuxeo.UI.config.pageprovider.method) ||
+                  'get'
+                );
+              },
+            },
           };
         }
 
@@ -318,13 +343,29 @@ limitations under the License.
           }
 
           const params = this._params;
-          // move named parameters
-          if (params.namedParameters) {
-            Object.assign(params, params.namedParameters);
-            delete params.namedParameters;
+
+          // use either REST or Automation API depending on method
+          let target;
+
+          if (this.method.toLowerCase() === 'get') {
+            target = this.$.nxResource;
+            // move named parameters
+            if (params.namedParameters) {
+              Object.assign(params, params.namedParameters);
+              delete params.namedParameters;
+            }
+          } else {
+            target = this.$.op;
+            if (this.query) {
+              target.op = 'Repository.Query';
+            } else {
+              target.op = 'Repository.PageProvider';
+              params.providerName = this.provider;
+            }
           }
-          this.$.nxResource.params = params;
-          return this.$.nxResource.execute()
+          target.params = params;
+          return target
+            .execute()
             .then((response) => {
               this.currentPage = response.entries.slice(0);
               this.numberOfPages = response.numberOfPages;
@@ -379,16 +420,14 @@ limitations under the License.
           } else {
             const namedParams = {};
             Object.keys(this.params).forEach((key) => {
-              const value = this.params[key];
+              let value = this.params[key];
               if (value != null) {
-                if (typeof value === 'string') {
-                  namedParams[key] = value;
-                } else if (Array.isArray(value)) {
-                  namedParams[key] = JSON.stringify(value.map((item) => (item['entity-type']
-                    ? item.uid || item.id : item)));
-                } else {
-                  namedParams[key] = value['entity-type'] ? value.uid || value.id : JSON.stringify(value);
+                if (Array.isArray(value)) {
+                  value = JSON.stringify(value.map((item) => (item['entity-type'] ? item.uid || item.id : item)));
+                } else if (typeof value !== 'string') {
+                  value = value['entity-type'] ? value.uid || value.id : JSON.stringify(value);
                 }
+                namedParams[key] = value;
               }
             }, this);
             params.namedParameters = namedParams;
