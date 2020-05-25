@@ -291,20 +291,34 @@ import './nuxeo-resource.js';
         params.sortOrder = this._sortValues.join(',');
       }
       exec.params = params;
-      return exec.execute().then((response) => {
-        this.currentPage = response.entries.slice(0);
-        this.numberOfPages = response.numberOfPages;
-        this.resultsCount = response.resultsCount;
-        this.isNextPageAvailable = response.isNextPageAvailable;
-        this.currentPageSize = response.currentPageSize;
-        this.dispatchEvent(
-          new CustomEvent('update', {
-            bubbles: true,
-            composed: true,
-          }),
-        );
-        return response;
-      });
+      return exec
+        .execute()
+        .then((response) => {
+          this.currentPage = response.entries.slice(0);
+          this.numberOfPages = response.numberOfPages;
+          this.resultsCount = response.resultsCount;
+          this.isNextPageAvailable = response.isNextPageAvailable;
+          this.currentPageSize = response.currentPageSize;
+          this.dispatchEvent(
+            new CustomEvent('update', {
+              bubbles: true,
+              composed: true,
+            }),
+          );
+          return response;
+        })
+        .catch((error) => {
+          this.dispatchEvent(
+            new CustomEvent('notify', {
+              composed: true,
+              bubbles: true,
+              detail: {
+                error,
+              },
+            }),
+          );
+          throw error;
+        });
     }
 
     get _sortKeys() {
