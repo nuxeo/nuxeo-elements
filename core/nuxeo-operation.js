@@ -205,7 +205,7 @@ import './nuxeo-connection.js';
 
       // support page provider as input to operations
       // relies on parameters naming convention until provider marshaller is available
-      if (input instanceof Nuxeo.PageProvider) {
+      if (Nuxeo.PageProvider && input instanceof Nuxeo.PageProvider) {
         params.providerName = input.provider;
         Object.assign(params, input._params);
         input = undefined;
