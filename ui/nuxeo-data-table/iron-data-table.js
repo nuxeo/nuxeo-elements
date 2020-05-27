@@ -310,6 +310,18 @@ import '../nuxeo-button-styles.js';
                       ></nuxeo-data-table-cell>
                     </template>
                   </dom-repeat>
+                  <div style$="[[_computeActionsStyle(editable, orderable)]]">
+                    <nuxeo-data-table-row-actions
+                      index="[[index]]"
+                      editable="[[editable]]"
+                      orderable="[[orderable]]"
+                      template="[[rowForm]]"
+                      item="[[item]]"
+                      size="[[items.length]]"
+                      table="[[_this]]"
+                    >
+                    </nuxeo-data-table-row-actions>
+                  </div>
                   <dom-if if="[[_isExpanded(item, _expandedItems)]]" on-dom-change="_updateSizeForItem">
                     <template>
                       <nuxeo-data-table-row-detail
@@ -323,18 +335,6 @@ import '../nuxeo-button-styles.js';
                       ></nuxeo-data-table-row-detail>
                     </template>
                   </dom-if>
-                  <div style$="[[_computeActionsStyle(editable, orderable)]]">
-                    <nuxeo-data-table-row-actions
-                      index="[[index]]"
-                      editable="[[editable]]"
-                      orderable="[[orderable]]"
-                      template="[[rowForm]]"
-                      item="[[item]]"
-                      size="[[items.length]]"
-                      table="[[_this]]"
-                    >
-                    </nuxeo-data-table-row-actions>
-                  </div>
                 </nuxeo-data-table-row>
               </div>
             </template>
@@ -533,7 +533,11 @@ import '../nuxeo-button-styles.js';
         }
 
         if (info.addedNodes.filter(hasDetails).length > 0) {
-          this.set('rowDetail', this.getContentChildren('[select="template[is=row-detail]"]')[0]);
+          this.set(
+            'rowDetail',
+            this.getContentChildren('[select="template[is=row-detail]"]')[0] ||
+              this.querySelector('template[is=row-detail]'),
+          );
 
           // assuming parent element is always a Polymer element.
           // set dataHost to the same context the template was declared in

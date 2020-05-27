@@ -10,6 +10,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
         <style>
           :host {
             display: flex;
+            flex-wrap: wrap;
             flex-direction: column;
             opacity: 1;
             cursor: pointer;
@@ -93,6 +94,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
         expanded: {
           type: Boolean,
           reflectToAttribute: true,
+          value: false,
         },
         index: Number,
         item: Object,

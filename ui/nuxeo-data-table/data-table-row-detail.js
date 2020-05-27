@@ -25,8 +25,11 @@ import './data-table-templatizer-behavior.js';
         <style>
           :host {
             padding: 0 24px 0 24px;
-            display: flex;
+            display: block;
             align-items: center;
+            flex: 10 10 100%;
+            flex-grow: 100;
+            flex-basis: 1000px;
           }
         </style>
         <slot></slot>
@@ -34,6 +37,10 @@ import './data-table-templatizer-behavior.js';
     }
 
     _beforeBind(beforeBind, item, index, selected, expanded) {
+      if (!beforeBind) {
+        return;
+      }
+
       beforeBind(
         {
           index,
