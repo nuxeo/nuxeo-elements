@@ -6895,6 +6895,7 @@ typedArrayTags[weakMapTag] = false;
   max-height: 10em;
   overflow: auto;
   padding: 14px 2px 0px 2px;
+  position: relative;
 }
 
 .selectivity-multiple-input,
