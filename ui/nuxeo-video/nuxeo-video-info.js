@@ -39,12 +39,6 @@ import '@polymer/iron-flex-layout/iron-flex-layout.js';
             @apply --layout-horizontal;
             @apply --layout-flex;
             line-height: 2.2rem;
-            padding: 0 4px;
-            justify-content: space-between;
-            margin-left: -4px;
-          }
-          .properties .item:hover {
-            @apply --nuxeo-block-hover;
           }
         </style>
         <div class="properties">
