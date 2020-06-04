@@ -48,13 +48,8 @@ import '../widgets/nuxeo-tooltip.js';
           .properties .item {
             @apply --layout-horizontal;
             @apply --layout-flex;
+            @apply --layout-justified;
             line-height: 2.2rem;
-            padding: 0 4px;
-            justify-content: space-between;
-            margin-left: -4px;
-          }
-          .properties .item:hover {
-            @apply --nuxeo-block-hover;
           }
         </style>
         <dom-if if="[[label]]">
