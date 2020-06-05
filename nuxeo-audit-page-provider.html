@@ -271,6 +271,15 @@ limitations under the License.
           if (this.params.endDate) {
             params.endEventDate = this.params.endDate;
           }
+          if (this.params.eventCategory) {
+            params.category = this.params.eventCategory;
+          }
+          if (this.params.eventIds) {
+            params.eventId = this.params.eventIds;
+          }
+          if (this.params.principalName) {
+            params.principalName = this.params.principalName;
+          }
           params.currentPageIndex = this.page - 1;
           params.pageSize = this.pageSize;
           return this._fetch(this.$.res, params);
