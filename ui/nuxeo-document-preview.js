@@ -128,6 +128,10 @@ import './viewers/nuxeo-video-viewer.js';
           <nuxeo-pdf-viewer src="[[_blob.data]]"></nuxeo-pdf-viewer>
         </template>
 
+        <template rendition="pdf">
+          <nuxeo-pdf-viewer src="[[_computeRendition(document, 'pdf')]]"></nuxeo-pdf-viewer>
+        </template>
+
         <template mime-pattern=".*">
           <iframe id="frame" src="[[_computeIFrameSource(_blob)]]"></iframe>
         </template>
@@ -210,11 +214,13 @@ import './viewers/nuxeo-video-viewer.js';
       for (let i = 0; i < previewers.length; i++) {
         const previewer = previewers[i];
         const mimetype = previewer.getAttribute('mime-pattern');
-        const mimetypeRegex = new RegExp(mimetype);
-        if (
-          mimetypeRegex.test(this._blob && this._blob['mime-type']) &&
-          (!mimetype.startsWith('text/') || 'text' in this._blob)
-        ) {
+        const hasMimetype =
+          mimetype &&
+          new RegExp(mimetype).test(this._blob && this._blob['mime-type']) &&
+          (!mimetype.startsWith('text/') || 'text' in this._blob);
+        const rendition = previewer.getAttribute('rendition');
+        const hasRendition = rendition && this._computeRendition(this.document, rendition);
+        if (hasRendition || hasMimetype) {
           // Insert our previewer
           delete previewer.__templatizeOwner;
           this.templatize(previewer);
@@ -302,6 +308,15 @@ import './viewers/nuxeo-video-viewer.js';
       if (this._blob) {
         return this._blob.data;
       }
+    }
+
+    _computeRendition(document, name) {
+      const rendition =
+        document &&
+        document.contextParameters &&
+        document.contextParameters.renditions &&
+        document.contextParameters.renditions.find((r) => r.name === name);
+      return rendition && rendition.url;
     }
 
     _computeIFrameSource() {
