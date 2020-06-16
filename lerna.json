@@ -1,5 +1,7 @@
 {
-  "packages": ["*"],
-  "version": "3.0.0-SNAPSHOT",
+  "packages": [
+    "*"
+  ],
+  "version": "3.0.0-rc.0",
   "hoist": true
 }
