@@ -45,7 +45,7 @@ def getPackageVersion() {
 def getReleaseVersion() {
   def preid = 'rc'
   def nextPromotion = getPackageVersion().replace("-SNAPSHOT", "")
-  def version = "${currentSnapshot.replace("-SNAPSHOT", "")}-${preid}.0" // first version ever
+  def version = "${nextPromotion}-${preid}.0" // first version ever
 
   // find the latest tag if any
   sh "git fetch origin 'refs/tags/v${nextPromotion}*:refs/tags/v${nextPromotion}*'"
