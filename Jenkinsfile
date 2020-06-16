@@ -169,6 +169,31 @@ pipeline {
         }
       }
     }
+    stage('Deploy storybook') {
+      when {
+        allOf {
+          branch 'master'
+          not {
+            environment name: 'DRY_RUN', value: 'true'
+          }
+        }
+      }
+      steps {
+        container('nodejs') {
+          dir('storybook') {
+            echo """
+            -------------------
+            Deploying Storybook
+            -------------------"""
+            // we're only deploying storybook for the master branch until ELEMENTS-1183 is done
+            sh 'npx lerna run analysis --parallel'
+            withCredentials([string(credentialsId: 'github_token', variable: 'GITHUB_TOKEN')]) {
+              sh 'npm run deploy -- --ci -t GITHUB_TOKEN'
+            }
+          }
+        }
+      }
+    }
     stage('Git commit, tag and push') {
       when {
         allOf {
@@ -221,31 +246,6 @@ pipeline {
             def token = sh(script: 'jx step credential -s public-npm-token -k token', returnStdout: true).trim()
             sh "echo '//packages.nuxeo.com/repository/npm-public/:_authToken=${token}' >> ~/.npmrc"
             sh "npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --registry=https://packages.nuxeo.com/repository/npm-public/ --tag SNAPSHOT"
-          }
-        }
-      }
-    }
-    stage('Deploy storybook') {
-      when {
-        allOf {
-          branch 'master'
-          not {
-            environment name: 'DRY_RUN', value: 'true'
-          }
-        }
-      }
-      steps {
-        container('nodejs') {
-          dir('storybook') {
-            echo """
-            -------------------
-            Deploying Storybook
-            -------------------"""
-            // we're only deplyong storybook for the master branch until ELEMENTS-1183 is done
-            sh 'npx lerna run analysis --parallel'
-            withCredentials([string(credentialsId: 'github_token', variable: 'GITHUB_TOKEN')]) {
-              sh 'npm run deploy -- --ci -t GITHUB_TOKEN'
-            }
           }
         }
       }
