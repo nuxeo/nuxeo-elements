@@ -10,6 +10,8 @@
   "addToCollectionButton.tooltip": "Adicionar a coleção",
   "aggregation.format.document.field.unknown": "No {0} field in document. Define your own label formatter.",
   "checkboxAggregation.noResults": "Sem resultados disponíveis",
+  "checkboxAggregation.showLess": "Show less",
+  "checkboxAggregation.showAll": "Show all",
   "command.add": "Adicionar",
   "command.cancel": "Cancelar",
   "command.change.password": "Alterar Senha",

@@ -10,6 +10,8 @@
   "addToCollectionButton.tooltip": "Ajouter à une collection",
   "aggregation.format.document.field.unknown": "Aucun champ {0} dans le document. Définissez votre propre formateur.",
   "checkboxAggregation.noResults": "Aucun résultat",
+  "checkboxAggregation.showLess": "Show less",
+  "checkboxAggregation.showAll": "Show all",
   "command.add": "Ajouter",
   "command.cancel": "Annuler",
   "command.change.password": "Changer le mot de passe",

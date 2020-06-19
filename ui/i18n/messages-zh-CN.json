@@ -10,6 +10,8 @@
   "addToCollectionButton.tooltip": "添加到集合",
   "aggregation.format.document.field.unknown": "文档中没有 {0} 字段。定义自己的标签格式化程序。",
   "checkboxAggregation.noResults": "没有可用的结果",
+  "checkboxAggregation.showLess": "Show less",
+  "checkboxAggregation.showAll": "Show all",
   "command.add": "添加",
   "command.cancel": "取消",
   "command.change.password": "更改密码",

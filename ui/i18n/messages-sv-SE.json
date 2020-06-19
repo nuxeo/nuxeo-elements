@@ -10,6 +10,8 @@
   "addToCollectionButton.tooltip": "Lägg till i samlingen",
   "aggregation.format.document.field.unknown": "Inget fält i dokumentet. Definiera din egna märkning.",
   "checkboxAggregation.noResults": "Inget tillgängligt resultat",
+  "checkboxAggregation.showLess": "Show less",
+  "checkboxAggregation.showAll": "Show all",
   "command.add": "Lägg till",
   "command.cancel": "Avbryt",
   "command.change.password": "Byt lösenord",

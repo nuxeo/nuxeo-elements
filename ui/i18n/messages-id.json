@@ -10,6 +10,8 @@
   "addToCollectionButton.tooltip": "Masukkan ke dalam koleksi",
   "aggregation.format.document.field.unknown": "Tidak ada kolom {0} di dokumen. Tentukan format label anda sendiri.",
   "checkboxAggregation.noResults": "Tidak ada hasil yang tersedia",
+  "checkboxAggregation.showLess": "Show less",
+  "checkboxAggregation.showAll": "Show all",
   "command.add": "Tambah",
   "command.cancel": "Batal",
   "command.change.password": "Ubah Kata Sandi",

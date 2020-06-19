@@ -10,6 +10,8 @@
   "addToCollectionButton.tooltip": "コレクションに追加",
   "aggregation.format.document.field.unknown": "{0}フィールドが文書内にありません。独自のラベルフォーマッタを定義してください。",
   "checkboxAggregation.noResults": "結果がありません。",
+  "checkboxAggregation.showLess": "Show less",
+  "checkboxAggregation.showAll": "Show all",
   "command.add": "追加",
   "command.cancel": "キャンセル",
   "command.change.password": "パスワードの変更",

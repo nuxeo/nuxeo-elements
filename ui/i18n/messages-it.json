@@ -10,6 +10,8 @@
   "addToCollectionButton.tooltip": "Aggiungi a raccolta",
   "aggregation.format.document.field.unknown": "Nessun campo {0} nel documento. Definire il proprio formattatore di etichette.",
   "checkboxAggregation.noResults": "Nessun risultato disponibile",
+  "checkboxAggregation.showLess": "Show less",
+  "checkboxAggregation.showAll": "Show all",
   "command.add": "Aggiungi",
   "command.cancel": "Annulla",
   "command.change.password": "Modifica password",
