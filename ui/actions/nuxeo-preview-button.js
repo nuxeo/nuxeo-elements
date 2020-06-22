@@ -22,8 +22,8 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import { FiltersBehavior } from '../nuxeo-filters-behavior.js';
+import { FormatBehavior } from '../nuxeo-format-behavior.js';
 import '../nuxeo-document-preview.js';
-import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-icons.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-tooltip.js';
@@ -43,7 +43,7 @@ import '../nuxeo-button-styles.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-preview-button/index.html
    */
-  class PreviewButton extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
+  class PreviewButton extends mixinBehaviors([FormatBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style include="nuxeo-action-button-styles nuxeo-button-styles">
@@ -155,7 +155,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _isAvailable(document) {
-      return !(this.hasFacet(document, 'Folderish') || this.hasFacet(document, 'Collection'));
+      return this.hasContent(document, this.formatPropertyXpath(this.xpath));
     }
 
     _computeLabel() {

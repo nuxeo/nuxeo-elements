@@ -30,7 +30,9 @@ suite('nuxeo-actions-menu', () => {
     return html`
       ${[...Array(n)].map(
         () => html`
-          <nuxeo-preview-button document='{ "entity-type": "document", "facets": [] }'></nuxeo-preview-button>
+          <nuxeo-preview-button
+            document='{ "entity-type": "document", "facets": [], "properties": { "file:content": "document content" } }'
+          ></nuxeo-preview-button>
         `,
       )}
     `;
@@ -107,7 +109,15 @@ suite('nuxeo-actions-menu', () => {
   async function addAction(el) {
     const menu = actionsMenu(el);
     const action = document.createElement('nuxeo-preview-button');
-    action.document = '{ "entity-type": "document", "facets": [] }';
+    action.document = {
+      'entity-type': 'document',
+      facets: [],
+      properties: {
+        'file:content': {
+          content: 'document content',
+        },
+      },
+    };
     menu.appendChild(action);
     await flush();
   }
