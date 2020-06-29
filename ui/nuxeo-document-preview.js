@@ -203,6 +203,15 @@ import './viewers/nuxeo-video-viewer.js';
       }
     }
 
+    _insertPreview(previewer) {
+      delete previewer.__templatizeOwner;
+      this.templatize(previewer);
+      const instance = this.stamp();
+      Object.keys(this.constructor.properties).forEach((prop) => instance._setPendingProperty(prop, this[prop]));
+      instance._flushProperties();
+      this.$.preview.appendChild(instance.root);
+    }
+
     _updatePreview() {
       // clear current previewer
       while (this.$.preview.firstChild) {
@@ -211,6 +220,14 @@ import './viewers/nuxeo-video-viewer.js';
 
       // lookup the preview according to the blob's mimetype
       const previewers = dom(this.root).querySelectorAll('template');
+
+      // Use embed preview when available
+      if ('preview' in this._blob) {
+        const fallback = previewers[previewers.length - 1];
+        this._insertPreview(fallback);
+        return;
+      }
+
       for (let i = 0; i < previewers.length; i++) {
         const previewer = previewers[i];
         const mimetype = previewer.getAttribute('mime-pattern');
@@ -222,12 +239,7 @@ import './viewers/nuxeo-video-viewer.js';
         const hasRendition = rendition && this._computeRendition(this.document, rendition);
         if (hasRendition || hasMimetype) {
           // Insert our previewer
-          delete previewer.__templatizeOwner;
-          this.templatize(previewer);
-          const instance = this.stamp();
-          Object.keys(this.constructor.properties).forEach((prop) => instance._setPendingProperty(prop, this[prop]));
-          instance._flushProperties();
-          this.$.preview.appendChild(instance.root);
+          this._insertPreview(previewer);
           break;
         }
       }
