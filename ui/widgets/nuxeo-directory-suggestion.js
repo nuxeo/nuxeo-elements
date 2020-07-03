@@ -265,22 +265,27 @@ import { escapeHTML } from './nuxeo-selectivity.js';
     }
 
     _resolveEntry(entry) {
-      if (entry && entry['entity-type'] && entry['entity-type'] === 'directoryEntry') {
-        if (entry.properties) {
-          return {
-            id: entry.properties.id,
-            displayLabel: this.formatDirectory(entry, this.separator),
-          };
-        }
-      }
+      const isEntity = entry && entry['entity-type'] && entry['entity-type'] === 'directoryEntry' && entry.properties;
       return {
-        id: entry,
-        displayLabel: entry,
+        id: isEntity ? this.idFunction(entry) : entry,
+        displayLabel: isEntity ? this.formatDirectory(entry, this.separator) : entry,
       };
     }
 
     _idFunction(item) {
-      return item.computedId || item.id || item.uid;
+      if (typeof item === 'string') {
+        return item;
+      }
+      if (item.computedId) {
+        return item.computedId;
+      }
+      let id = item.id || item.uid;
+      // if the entry does not have a computedId but has a parent, then it must be part of the id as well
+      const parent = item.properties && item.properties.parent;
+      if (parent) {
+        id = `${this._idFunction(parent)}/${id}`;
+      }
+      return id;
     }
   }
 
