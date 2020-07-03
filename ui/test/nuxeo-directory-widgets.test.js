@@ -25,97 +25,215 @@ suite('nuxeo-directory-suggestion', () => {
   let suggestionWidget;
   setup(async () => {
     server = await login();
-    // non-balanced hierarchical vocabulary
-    const response = [
-      {
-        absoluteLabel: 'Brittany',
-        computedId: 'breizh',
-        directoryName: 'l10ncoverage',
-        displayLabel: 'Brittany',
-        'entity-type': 'directoryEntry',
-        id: 'breizh',
-        label_en: 'Brittany',
-        label_fr: 'Bretagne',
-        obsolete: 0,
-        ordering: 10000000,
-        parent: '',
-        properties: {
+  });
+
+  const getSuggestedValue = (s2, timeout) => {
+    timeout = timeout || 2000;
+    const start = Date.now();
+    const waitForSuggestion = function(resolve, reject) {
+      const result = dom(s2.root).querySelector('.selectivity-result-item.highlight');
+      if (result) {
+        resolve(result.textContent);
+      } else if (timeout && Date.now() - start >= timeout) {
+        reject(new Error('timeout'));
+      } else {
+        setTimeout(waitForSuggestion.bind(this, resolve, reject), 30);
+      }
+    };
+    return new Promise(waitForSuggestion);
+  };
+
+  const assertSelectedValue = async (widget, input, value) => {
+    const s2 = dom(widget.root).querySelector('#s2');
+    const el = dom(s2.root).querySelector('#input');
+    tap(el);
+    dom(s2.root).querySelector(
+      widget.multiple ? '.selectivity-multiple-input' : '.selectivity-search-input',
+    ).value = input;
+    const val = await getSuggestedValue(s2);
+    expect(val).to.be.equal(value);
+  };
+
+  suite('When I have a sigle-valued suggestion widget', () => {
+    setup(async () => {
+      // non-balanced hierarchical vocabulary
+      const response = [
+        {
+          absoluteLabel: 'Brittany',
+          computedId: 'breizh',
+          directoryName: 'l10ncoverage',
+          displayLabel: 'Brittany',
+          'entity-type': 'directoryEntry',
           id: 'breizh',
           label_en: 'Brittany',
           label_fr: 'Bretagne',
           obsolete: 0,
           ordering: 10000000,
           parent: '',
-        },
-      },
-      {
-        children: [
-          {
-            absoluteLabel: 'South-america/Brazil',
-            computedId: 'south-america/Brazil',
-            directoryName: 'l10ncoverage',
-            displayLabel: 'Brazil',
-            'entity-type': 'directoryEntry',
-            id: 'Brazil',
-            label_en: 'Brazil',
-            label_fr: 'Br\u00e9sil',
+          properties: {
+            id: 'breizh',
+            label_en: 'Brittany',
+            label_fr: 'Bretagne',
             obsolete: 0,
             ordering: 10000000,
-            parent: 'south-america',
-            properties: {
+            parent: '',
+          },
+        },
+        {
+          children: [
+            {
+              absoluteLabel: 'South-america/Brazil',
+              computedId: 'south-america/Brazil',
+              directoryName: 'l10ncoverage',
+              displayLabel: 'Brazil',
+              'entity-type': 'directoryEntry',
               id: 'Brazil',
               label_en: 'Brazil',
               label_fr: 'Br\u00e9sil',
               obsolete: 0,
               ordering: 10000000,
               parent: 'south-america',
+              properties: {
+                id: 'Brazil',
+                label_en: 'Brazil',
+                label_fr: 'Br\u00e9sil',
+                obsolete: 0,
+                ordering: 10000000,
+                parent: 'south-america',
+              },
             },
-          },
-        ],
-        displayLabel: 'South-america',
-      },
-    ];
-    server.respondWith('POST', '/api/v1/automation/Directory.SuggestEntries', [
-      200,
-      { 'Content-Type': 'application/json' },
-      JSON.stringify(response),
-    ]);
-  });
+          ],
+          displayLabel: 'South-america',
+        },
+      ];
+      server.respondWith('POST', '/api/v1/automation/Directory.SuggestEntries', [
+        200,
+        { 'Content-Type': 'application/json' },
+        JSON.stringify(response),
+      ]);
 
-  suite('When I have a suggestion widget', () => {
-    setup(async () => {
       suggestionWidget = await fixture(html`
         <nuxeo-directory-suggestion directory-name="l10coverage" min-chars="0"></nuxeo-directory-suggestion>
       `);
     });
 
-    test('Then it works', async () => {
-      const s2 = dom(suggestionWidget.root).querySelector('#s2');
-      const input = dom(s2.root).querySelector('#input');
-      tap(input);
-      dom(s2.root).querySelector('.selectivity-search-input').value = 'Brittany';
-      const getSuggestedValue = function(timeout) {
-        timeout = timeout || 2000;
-        const start = Date.now();
-        const waitForSuggestion = function(resolve, reject) {
-          const result = dom(s2.root).querySelector('.selectivity-result-item.highlight');
-          if (result) {
-            resolve(result.textContent);
-          } else if (timeout && Date.now() - start >= timeout) {
-            reject(new Error('timeout'));
-          } else {
-            setTimeout(waitForSuggestion.bind(this, resolve, reject), 30);
-          }
-        };
-        return new Promise(waitForSuggestion);
-      };
-      const val = await getSuggestedValue();
-      expect(val).to.be.equal('Brittany');
+    test('Then I can select an entry', async () => {
+      await assertSelectedValue(suggestionWidget, 'Brittany', 'Brittany');
+    });
+  });
+
+  suite('When I have a multi-valued suggestion widget', () => {
+    const response = [
+      {
+        displayLabel: 'Art',
+        children: [
+          {
+            parent: 'art',
+            ordering: 10000000,
+            obsolete: 0,
+            id: 'architecture',
+            displayLabel: 'Architecture',
+            label_en: 'Architecture',
+            label_fr: 'Architecture',
+            directoryName: 'l10nsubjects',
+            properties: {
+              parent: 'art',
+              ordering: 10000000,
+              obsolete: 0,
+              id: 'architecture',
+              label_en: 'Architecture',
+              label_fr: 'Architecture',
+            },
+            'entity-type': 'directoryEntry',
+            computedId: 'art/architecture',
+            absoluteLabel: 'Art/Architecture',
+          },
+          {
+            parent: 'art',
+            ordering: 10000000,
+            obsolete: 0,
+            id: 'art history',
+            displayLabel: 'Art history',
+            label_en: 'Art history',
+            label_fr: "Histoire de l'art",
+            directoryName: 'l10nsubjects',
+            properties: {
+              parent: 'art',
+              ordering: 10000000,
+              obsolete: 0,
+              id: 'art history',
+              label_en: 'Art history',
+              label_fr: "Histoire de l'art",
+            },
+            'entity-type': 'directoryEntry',
+            computedId: 'art/art history',
+            absoluteLabel: 'Art/Art history',
+          },
+        ],
+      },
+    ];
+    suite('bound to directory data with computed ids', () => {
+      setup(async () => {
+        server.respondWith('POST', '/api/v1/automation/Directory.SuggestEntries', [
+          200,
+          { 'Content-Type': 'application/json' },
+          JSON.stringify(response),
+        ]);
+      });
+
+      test('Then I can select an entry', async () => {
+        suggestionWidget = await fixture(html`
+          <nuxeo-directory-suggestion directory-name="l10nsubjects" multiple min-chars="0"></nuxeo-directory-suggestion>
+        `);
+        await assertSelectedValue(suggestionWidget, 'ar', 'Architecture');
+      });
+
+      test('Then I can select a second entry', async () => {
+        // this is how you get data from Directory.SuggestEntries
+        const selected = [response[0].children[0]];
+        suggestionWidget = await fixture(html`
+          <nuxeo-directory-suggestion
+            directory-name="l10nsubjects"
+            .value="${selected}"
+            multiple
+            min-chars="0"
+          ></nuxeo-directory-suggestion>
+        `);
+        await assertSelectedValue(suggestionWidget, 'ar', 'Art history');
+      });
+
+      test("Then I can select a second entry if the first doesn't have a computedId", async () => {
+        // this is how you get data from a document, without the computedId
+        const selected = [
+          {
+            id: 'architecture',
+            directoryName: 'l10nsubjects',
+            properties: {
+              parent: 'art',
+              ordering: 10000000,
+              obsolete: 0,
+              id: 'architecture',
+              label_en: 'Architecture',
+              label_fr: 'Architecture',
+            },
+            'entity-type': 'directoryEntry',
+          },
+        ];
+        suggestionWidget = await fixture(html`
+          <nuxeo-directory-suggestion
+            directory-name="l10nsubjects"
+            .value="${selected}"
+            multiple
+            min-chars="0"
+          ></nuxeo-directory-suggestion>
+        `);
+        await assertSelectedValue(suggestionWidget, 'ar', 'Art history');
+      });
     });
   });
 });
 
-suite('<nuxeo-directory-checkbox>', () => {
+suite('nuxeo-directory-checkbox', () => {
   let server;
   setup(async () => {
     server = await login();
