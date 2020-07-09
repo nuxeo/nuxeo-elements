@@ -1,5 +1,5 @@
 [![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/nuxeo/nuxeo-elements)
-[![Build Status](https://qa.nuxeo.org/jenkins/buildStatus/icon?job=master/nuxeo-elements-master)](https://qa.nuxeo.org/jenkins/job/master/job/nuxeo-elements-master/)
+[![Build Status](https://jenkins.webui.dev.nuxeo.com/buildStatus/icon?job=nuxeo%2Fnuxeo-elements%2Fmaster)](https://jenkins.webui.dev.nuxeo.com/job/nuxeo/job/nuxeo-elements/job/master/)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/b6e719e30d53435e8a76230067aade3b)](https://www.codacy.com/app/Nuxeo/nuxeo-elements)
 [![Coverage Status](https://coveralls.io/repos/github/nuxeo/nuxeo-elements/badge.svg)](https://coveralls.io/github/nuxeo/nuxeo-elements)
 
