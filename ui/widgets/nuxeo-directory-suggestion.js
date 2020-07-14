@@ -25,6 +25,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import { escapeHTML } from './nuxeo-selectivity.js';
 
 {
+  const directoryCache = {};
+
   /**
    * An element for selecting one or more entries from a given directory.
    *
@@ -260,15 +262,26 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       );
     }
 
+    _getItemKey(item) {
+      return `${this.directoryName}:${this.idFunction(item)}`;
+    }
+
     _selectionFormatter(entry) {
+      if (typeof entry !== 'string') {
+        const key = this._getItemKey(entry);
+        const cachedEntry = directoryCache[key];
+        if (!cachedEntry || (!cachedEntry.computedId && entry.computedId)) {
+          // only update the cache if we're getting anything new
+          directoryCache[key] = entry;
+        }
+      }
       return escapeHTML(entry.absoluteLabel || entry.displayLabel);
     }
 
     _resolveEntry(entry) {
-      const isEntity = entry && entry['entity-type'] && entry['entity-type'] === 'directoryEntry' && entry.properties;
       return {
-        id: isEntity ? this.idFunction(entry) : entry,
-        displayLabel: isEntity ? this.formatDirectory(entry, this.separator) : entry,
+        id: this.idFunction(entry),
+        displayLabel: this._fetchLabel(entry),
       };
     }
 
@@ -283,9 +296,14 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       // if the entry does not have a computedId but has a parent, then it must be part of the id as well
       const parent = item.properties && item.properties.parent;
       if (parent) {
-        id = `${this._idFunction(parent)}/${id}`;
+        id = `${this._idFunction(parent)}${this.separator}${id}`;
       }
       return id;
+    }
+
+    _fetchLabel(item) {
+      const entry = typeof item === 'string' ? directoryCache[this._getItemKey(item)] || item : item;
+      return entry.absoluteLabel || entry.displayLabel || this.formatDirectory(entry, this.separator);
     }
   }
 
