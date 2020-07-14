@@ -48,6 +48,19 @@ const template = html`
         paper-button.secondary[disabled] {
           @apply --nx-button-secondary-disabled;
         }
+        
+        paper-button.text {
+          @apply --nx-button-text;
+        }
+
+        paper-button.text:hover,
+        paper-button.text:focus {
+          @apply --nx-button-text-hover;
+        }
+        
+        paper-button.text[disabled] {
+          @apply --nx-button-text-disabled;
+        }
 
         paper-button.small {
           @apply --nx-button-small;
