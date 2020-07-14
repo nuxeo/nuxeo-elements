@@ -172,63 +172,93 @@ suite('nuxeo-directory-suggestion', () => {
         ],
       },
     ];
-    suite('bound to directory data with computed ids', () => {
-      setup(async () => {
-        server.respondWith('POST', '/api/v1/automation/Directory.SuggestEntries', [
-          200,
-          { 'Content-Type': 'application/json' },
-          JSON.stringify(response),
-        ]);
-      });
+    setup(async () => {
+      server.respondWith('POST', '/api/v1/automation/Directory.SuggestEntries', [
+        200,
+        { 'Content-Type': 'application/json' },
+        JSON.stringify(response),
+      ]);
+    });
 
-      test('Then I can select an entry', async () => {
-        suggestionWidget = await fixture(html`
-          <nuxeo-directory-suggestion directory-name="l10nsubjects" multiple min-chars="0"></nuxeo-directory-suggestion>
-        `);
-        await assertSelectedValue(suggestionWidget, 'ar', 'Architecture');
-      });
+    test('Then I can select an entry', async () => {
+      suggestionWidget = await fixture(html`
+        <nuxeo-directory-suggestion directory-name="l10nsubjects" multiple min-chars="0"></nuxeo-directory-suggestion>
+      `);
+      await assertSelectedValue(suggestionWidget, 'ar', 'Architecture');
+    });
 
-      test('Then I can select a second entry', async () => {
-        // this is how you get data from Directory.SuggestEntries
-        const selected = [response[0].children[0]];
-        suggestionWidget = await fixture(html`
-          <nuxeo-directory-suggestion
-            directory-name="l10nsubjects"
-            .value="${selected}"
-            multiple
-            min-chars="0"
-          ></nuxeo-directory-suggestion>
-        `);
-        await assertSelectedValue(suggestionWidget, 'ar', 'Art history');
-      });
+    test('Then I can select and re-select an entry', async () => {
+      suggestionWidget = await fixture(html`
+        <nuxeo-directory-suggestion directory-name="l10nsubjects" multiple min-chars="0"></nuxeo-directory-suggestion>
+      `);
+      await assertSelectedValue(suggestionWidget, 'ar', 'Architecture');
 
-      test("Then I can select a second entry if the first doesn't have a computedId", async () => {
-        // this is how you get data from a document, without the computedId
-        const selected = [
-          {
+      // click on the result
+      const s2 = dom(suggestionWidget.root).querySelector('#s2');
+      const results = s2.shadowRoot.querySelectorAll('.selectivity-result-item');
+      expect(results.length).to.equal(2);
+      tap(results[0]);
+
+      // assert it the label is propery presented
+      let selectedValues = s2.shadowRoot.querySelectorAll('.selectivity-multiple-selected-item');
+      expect(selectedValues.length).to.equal(1);
+      expect(selectedValues[0].innerText).to.equal('Art/Architecture');
+
+      // reset selection
+      const val = suggestionWidget.value;
+      suggestionWidget.value = [];
+      await flush();
+      selectedValues = s2.shadowRoot.querySelectorAll('.selectivity-multiple-selected-item');
+      expect(selectedValues.length).to.equal(0);
+
+      // re-set the value programatically and check that the label is properly displayed (tests entry caching)
+      suggestionWidget.value = val;
+      await flush();
+      selectedValues = s2.shadowRoot.querySelectorAll('.selectivity-multiple-selected-item');
+      expect(selectedValues.length).to.equal(1);
+      expect(selectedValues[0].innerText).to.equal('Art/Architecture');
+    });
+
+    test('Then I can select a second entry', async () => {
+      // this is how you get data from Directory.SuggestEntries
+      const selected = [response[0].children[0]];
+      suggestionWidget = await fixture(html`
+        <nuxeo-directory-suggestion
+          directory-name="l10nsubjects"
+          .value="${selected}"
+          multiple
+          min-chars="0"
+        ></nuxeo-directory-suggestion>
+      `);
+      await assertSelectedValue(suggestionWidget, 'ar', 'Art history');
+    });
+
+    test("Then I can select a second entry if the first doesn't have a computedId", async () => {
+      // this is how you get data from a document, without the computedId
+      const selected = [
+        {
+          id: 'architecture',
+          directoryName: 'l10nsubjects',
+          properties: {
+            parent: 'art',
+            ordering: 10000000,
+            obsolete: 0,
             id: 'architecture',
-            directoryName: 'l10nsubjects',
-            properties: {
-              parent: 'art',
-              ordering: 10000000,
-              obsolete: 0,
-              id: 'architecture',
-              label_en: 'Architecture',
-              label_fr: 'Architecture',
-            },
-            'entity-type': 'directoryEntry',
+            label_en: 'Architecture',
+            label_fr: 'Architecture',
           },
-        ];
-        suggestionWidget = await fixture(html`
-          <nuxeo-directory-suggestion
-            directory-name="l10nsubjects"
-            .value="${selected}"
-            multiple
-            min-chars="0"
-          ></nuxeo-directory-suggestion>
-        `);
-        await assertSelectedValue(suggestionWidget, 'ar', 'Art history');
-      });
+          'entity-type': 'directoryEntry',
+        },
+      ];
+      suggestionWidget = await fixture(html`
+        <nuxeo-directory-suggestion
+          directory-name="l10nsubjects"
+          .value="${selected}"
+          multiple
+          min-chars="0"
+        ></nuxeo-directory-suggestion>
+      `);
+      await assertSelectedValue(suggestionWidget, 'ar', 'Art history');
     });
   });
 });
