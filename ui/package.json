@@ -25,10 +25,10 @@
   },
   "main": "nuxeo-ui-elements.js",
   "dependencies": {
-    "@nuxeo/moment": "^2.24.0",
+    "@nuxeo/moment": "^2.24.0-nx.0",
     "@nuxeo/nuxeo-elements": "^3.0.1-SNAPSHOT",
-    "@nuxeo/paper-typeahead": "^0.6.0-SNAPSHOT",
-    "@nuxeo/quill": "^2.0.0-dev.3",
+    "@nuxeo/paper-typeahead": "^0.6.0-nx.0",
+    "@nuxeo/quill": "^2.0.0-dev.3-nx.0",
     "@polymer/iron-autogrow-textarea": "^3.0.1",
     "@polymer/iron-collapse": "^3.0.0",
     "@polymer/iron-flex-layout": "^3.0.0",
