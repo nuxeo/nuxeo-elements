@@ -224,13 +224,13 @@ import '../nuxeo-button-styles.js';
         </nuxeo-card>
 
         <!-- group permissions -->
-        <nuxeo-card heading="[[i18n('userManagement.entityPermissions', item.name)]]">
-          <dom-repeat items="[[groups]]">
-            <template>
+        <dom-repeat items="[[groups]]">
+          <template>
+            <nuxeo-card heading="[[i18n('userManagement.entityPermissions', item.name)]]">
               <nuxeo-user-group-permissions-table entity="[[item.name]]" readonly> </nuxeo-user-group-permissions-table>
-            </template>
-          </dom-repeat>
-        </nuxeo-card>
+            </nuxeo-card>
+          </template>
+        </dom-repeat>
       `;
     }
 
