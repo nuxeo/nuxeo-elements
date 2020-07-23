@@ -11,7 +11,7 @@
   "aggregation.format.document.field.unknown": "Aucun champ {0} dans le document. Définissez votre propre formateur.",
   "checkboxAggregation.noResults": "Aucun résultat",
   "checkboxAggregation.showLess": "Afficher moins",
-  "checkboxAggregation.showAll": "Afficher tout",
+  "checkboxAggregation.showAll": "Tout afficher",
   "command.add": "Ajouter",
   "command.cancel": "Annuler",
   "command.change.password": "Changer le mot de passe",
