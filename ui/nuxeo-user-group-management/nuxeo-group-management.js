@@ -99,6 +99,13 @@ import '../nuxeo-button-styles.js';
             margin-right: 0.2rem;
           }
 
+          h3 {
+            font-weight: 400;
+            font-size: 1.25rem;
+            letter-spacing: 0;
+            line-height: 1.625rem;
+          }
+
           .groupname {
             margin: 0.5rem 0 0;
           }

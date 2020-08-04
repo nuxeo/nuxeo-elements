@@ -93,10 +93,10 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
           .header .heading {
             @apply --layout-flex;
-            font-size: 1rem;
-            font-weight: 700;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
+            font-weight: 400;
+            font-size: 1.25rem;
+            letter-spacing: 0;
+            line-height: 1.625rem;
           }
 
           .header .toggle {
