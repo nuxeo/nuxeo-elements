@@ -126,7 +126,7 @@ import '../nuxeo-button-styles.js';
     _isAvailable(doc) {
       return (
         doc &&
-        this.hasPermission(doc, 'Write') &&
+        this.hasPermission(doc, 'WriteProperties') &&
         !this.isImmutable(doc) &&
         !this.hasType(doc, 'Root') &&
         !this.isTrashed(doc) &&
