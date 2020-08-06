@@ -87,6 +87,14 @@ import './data-table-column-filter.js';
         },
 
         /**
+         * If `true`, the column cannot be hidden from the settings dialog.
+         */
+        alwaysVisible: {
+          type: Boolean,
+          value: false,
+        },
+
+        /**
          * Display order of the column in relation with the other columns.
          */
         order: {
@@ -140,6 +148,7 @@ import './data-table-column-filter.js';
         '_flexChanged(table, flex)',
         '_headerTemplateChanged(table, headerTemplate)',
         '_hiddenChanged(table, hidden)',
+        '_alwaysVisibleChanged(table, alwaysVisible)',
         '_nameChanged(table, name)',
         '_orderChanged(table, order)',
         '_sortByChanged(table, sortBy)',
@@ -188,6 +197,10 @@ import './data-table-column-filter.js';
 
     _hiddenChanged(table, hidden) {
       this._notifyTable(table, 'hidden', hidden);
+    }
+
+    _alwaysVisibleChanged(table, alwaysVisible) {
+      this._notifyTable(table, 'alwaysVisible', alwaysVisible);
     }
 
     _orderChanged(table, order) {
