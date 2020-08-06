@@ -54,7 +54,7 @@ import '../nuxeo-button-styles.js';
             <div class="paper-content layout horizontal">
               <div class="layout vertical">
                 <div class="row layout horizontal">
-                  <dom-repeat items="[[columns]]" as="column">
+                  <dom-repeat items="[[columns]]" as="column" filter="canChangeVisibility">
                     <template>
                       <tr>
                         <td>
@@ -130,6 +130,10 @@ import '../nuxeo-button-styles.js';
       if (this.columns.every((column) => column.hidden)) {
         this._resetSettings();
       }
+    }
+
+    canChangeVisibility(column) {
+      return !column.alwaysVisible;
     }
   }
 
