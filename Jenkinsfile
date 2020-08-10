@@ -85,6 +85,7 @@ pipeline {
           Update package version
           ----------------------
           """
+          sh "npm version ${VERSION} --no-git-tag-version"
           // XXX: we're using the `--no-git-tag-version` to prevent a detached head error on lerna, which prevents
           // `lerna version` from running; we also cannot specify `--allow-braches`
           sh "npx lerna version ${VERSION} -m 'Release %s' --no-push --force-publish --no-git-tag-version --yes"
@@ -217,6 +218,7 @@ pipeline {
             # create the Git credentials
             jx step git credentials
             git config credential.helper store
+            git add storybook/package-lock.json
             git commit -a -m "Release ${VERSION}"
             git tag -a v${VERSION} -m "Release ${VERSION}"
             git push origin v${VERSION}
