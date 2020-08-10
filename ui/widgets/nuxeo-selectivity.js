@@ -6781,6 +6781,10 @@ typedArrayTags[weakMapTag] = false;
     static get template() {
       return html`
         <style>
+
+          :host {
+            overflow: auto;
+          }
 .selectivity-clearfix {
   clear: both;
 }
@@ -6892,8 +6896,6 @@ typedArrayTags[weakMapTag] = false;
 .selectivity-multiple-input-container {
   cursor: text;
   min-height: 2em;
-  max-height: 10em;
-  overflow: auto;
   padding: 14px 2px 0px 2px;
   position: relative;
 }
@@ -7033,6 +7035,7 @@ input[type='text'].selectivity-multiple-input:focus {
   content: "\\25bc";
 }
         :host {
+            height: 100%;
             display: block;
             position: relative;
             padding-bottom: 8px;
