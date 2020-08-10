@@ -54,7 +54,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         run: |
-          npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://registry.npmjs.org
+          npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://registry.npmjs.org --access public
       
       - uses: actions/checkout@v2
         with:
