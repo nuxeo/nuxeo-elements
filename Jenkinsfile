@@ -218,7 +218,6 @@ pipeline {
             # create the Git credentials
             jx step git credentials
             git config credential.helper store
-            git add storybook/package-lock.json
             git commit -a -m "Release ${VERSION}"
             git tag -a v${VERSION} -m "Release ${VERSION}"
             git push origin v${VERSION}
