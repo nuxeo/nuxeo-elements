@@ -7359,6 +7359,9 @@ input[type='text'].selectivity-multiple-input:focus {
       if (this.data) {
         return this._triggerQueryCallback(query, this.data);
       }
+      if (!this.operation) {
+        return this._triggerQueryCallback(query, []);
+      }
       const params = this.params || {};
       params.searchTerm = query.term;
       this.$.op.params = params;
