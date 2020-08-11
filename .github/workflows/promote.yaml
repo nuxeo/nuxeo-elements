@@ -58,6 +58,7 @@ jobs:
       
       - uses: actions/checkout@v2
         with:
+          token: ${{ secrets.GIT_ADMIN_TOKEN }}
           ref: master
 
       - run: echo "::set-env name=NEW_VERSION::$(npx semver -i patch $VERSION)-SNAPSHOT"
