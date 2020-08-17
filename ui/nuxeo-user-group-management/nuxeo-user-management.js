@@ -223,10 +223,11 @@ import '../nuxeo-button-styles.js';
                   <paper-button
                     noink
                     id="deleteUserButton"
-                    class="horizontal layout center"
+                    class="horizontal layout center horizontal-button"
                     on-click="_toggleDeleteUser"
                   >
-                    <iron-icon noink icon="nuxeo:delete"></iron-icon> [[i18n('command.delete')]]
+                    <iron-icon noink icon="nuxeo:delete"></iron-icon>
+                    <span>[[i18n('command.delete')]]</span>
                   </paper-button>
                 </template>
               </dom-if>
@@ -237,10 +238,11 @@ import '../nuxeo-button-styles.js';
                   <paper-button
                     noink
                     id="changePasswordButton"
-                    class="primary horizontal layout center"
+                    class="primary horizontal layout center horizontal-button"
                     on-click="_toggleChangePassword"
                   >
-                    <iron-icon icon="nuxeo:lock"></iron-icon> [[i18n('command.change.password')]]
+                    <iron-icon icon="nuxeo:lock"></iron-icon>
+                    <span>[[i18n('command.change.password')]]</span>
                   </paper-button>
                 </template>
               </dom-if>
@@ -251,10 +253,11 @@ import '../nuxeo-button-styles.js';
                   <paper-button
                     noink
                     id="editUserButton"
-                    class="primary horizontal layout center"
+                    class="primary horizontal layout center horizontal-button"
                     on-click="_toggleEditUser"
                   >
-                    <iron-icon icon="nuxeo:edit"></iron-icon> [[i18n('userManagement.editUser.button')]]
+                    <iron-icon icon="nuxeo:edit"></iron-icon>
+                    <span>[[i18n('userManagement.editUser.button')]]</span>
                   </paper-button>
                 </template>
               </dom-if>
@@ -273,8 +276,9 @@ import '../nuxeo-button-styles.js';
             </h3>
             <dom-if if="[[_canEdit(readonly, _currentUser, user)]]">
               <template>
-                <paper-button noink id="addGroup" class="flex-end" on-click="_toggleEditGroups">
-                  <iron-icon icon="nuxeo:add"></iron-icon> [[i18n('userManagement.addToGroup.button')]]
+                <paper-button noink id="addGroup" class="flex-end horizontal-button" on-click="_toggleEditGroups">
+                  <iron-icon icon="nuxeo:add"></iron-icon>
+                  <span>[[i18n('userManagement.addToGroup.button')]]</span>
                 </paper-button>
               </template>
             </dom-if>

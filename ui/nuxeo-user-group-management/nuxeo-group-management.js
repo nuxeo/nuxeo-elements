@@ -79,7 +79,6 @@ import '../nuxeo-button-styles.js';
 
           .header-actions iron-icon {
             width: 1.3rem;
-            margin-right: 0.5rem;
           }
 
           .card {
@@ -278,14 +277,32 @@ import '../nuxeo-button-styles.js';
             <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
               <template>
                 <div class="layout horizontal header-actions">
-                  <paper-button id="deleteGroupButton" noink class="flex-end" on-click="_toggleDeleteGroup">
-                    <iron-icon icon="nuxeo:delete"></iron-icon> [[i18n('command.delete')]]
+                  <paper-button
+                    id="deleteGroupButton"
+                    noink
+                    class="flex-end horizontal-button"
+                    on-click="_toggleDeleteGroup"
+                  >
+                    <iron-icon icon="nuxeo:delete"></iron-icon>
+                    <span>[[i18n('command.delete')]]</span>
                   </paper-button>
-                  <paper-button id="addMembersButton" noink class="flex-end primary" on-click="_toggleEditMembers">
-                    <iron-icon icon="nuxeo:add"></iron-icon> [[i18n('groupManagement.addMembers')]]
+                  <paper-button
+                    id="addMembersButton"
+                    noink
+                    class="flex-end primary horizontal-button"
+                    on-click="_toggleEditMembers"
+                  >
+                    <iron-icon icon="nuxeo:add"></iron-icon>
+                    <span>[[i18n('groupManagement.addMembers')]]</span>
                   </paper-button>
-                  <paper-button id="editGroupButton" noink on-click="_toggleEditGroup" class="primary">
-                    <iron-icon icon="nuxeo:edit"></iron-icon> [[i18n('groupManagement.editGroup')]]
+                  <paper-button
+                    id="editGroupButton"
+                    noink
+                    on-click="_toggleEditGroup"
+                    class="primary horizontal-button"
+                  >
+                    <iron-icon icon="nuxeo:edit"></iron-icon>
+                    <span>[[i18n('groupManagement.editGroup')]]</span>
                   </paper-button>
                 </div>
               </template>
