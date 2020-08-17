@@ -69,7 +69,6 @@ import '../nuxeo-button-styles.js';
 
           .actions iron-icon {
             width: 1.3rem;
-            margin-right: 0.5rem;
           }
 
           .table {
@@ -149,10 +148,11 @@ import '../nuxeo-button-styles.js';
                   <paper-button
                     noink
                     id="changePasswordButton"
-                    class="horizontal layout center primary"
+                    class="horizontal layout center primary horizontal-button"
                     on-click="_openChangePasswordDialog"
                   >
-                    <iron-icon icon="nuxeo:lock"></iron-icon> [[i18n('userProfile.password.change')]]
+                    <iron-icon icon="nuxeo:lock"></iron-icon>
+                    <span>[[i18n('userProfile.password.change')]]</span>
                   </paper-button>
                 </template>
               </dom-if>

@@ -69,6 +69,22 @@ const template = html`
         paper-button iron-icon {
           @apply --nx-button-icon;
         }
+
+        paper-button.horizontal-button iron-icon + span {
+          margin-inline-start: var(--nuxeo-button-icon-margin, 4px);
+        }
+
+        paper-button.horizontal-button span ~ iron-icon {
+          margin-inline-start: var(--nuxeo-button-icon-margin, 4px);
+        }
+
+        paper-button.vertical-button iron-icon + span {
+          margin-block-start: var(--nuxeo-button-icon-margin, 4px);
+        }
+
+        paper-button.vertical-button span ~ iron-icon {
+          margin-block-start: var(--nuxeo-button-icon-margin, 4px);
+        }
       </style>
     </template>
   </dom-module>
