@@ -53,6 +53,12 @@ suite('utils', () => {
         createNestedObject(obj, ['first', 'second', 'third', 'fourth']);
         expect(obj).to.deep.equal({ first: { second: { third: { fourth: {} } } } });
       });
+
+      test('Should create an object with not object fields', () => {
+        const obj = { prop1: null, prop2: 'value' };
+        createNestedObject(obj, ['prop1']);
+        expect(obj).to.deep.equal({ prop1: null, prop2: 'value' });
+      });
     });
   });
 });

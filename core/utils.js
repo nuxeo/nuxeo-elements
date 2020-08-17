@@ -16,6 +16,22 @@
  */
 
 /**
+ * Aggregate recursive helper method
+ * @param obj Parent Object where inner nested objects should be created.
+ * @param path Array containing the inner object keys.
+ */
+function _createNestedObject(obj, path) {
+  if (path.length === 0) {
+    return;
+  }
+  if ((!Object.prototype.hasOwnProperty.call(obj, path[0]) && !obj[path[0]]) || typeof obj[path[0]] !== 'object') {
+    obj[path[0]] = {};
+  }
+
+  return _createNestedObject(obj[path[0]], path.slice(1));
+}
+
+/**
  * Recursive method to create nested objects when they don't exist in a parent object.
  * It does not change any other existing objects or inner objects, only the ones referred in 'path'.
  * @param obj Parent Object where inner nested objects should be created.
@@ -46,11 +62,5 @@ export function createNestedObject(obj, path) {
     throw new TypeError('The param "path" must be an array');
   }
 
-  if (path.length === 0) {
-    return;
-  }
-  if ((!Object.prototype.hasOwnProperty.call(obj, path[0]) && !obj[path[0]]) || typeof obj[path[0]] !== 'object') {
-    obj[path[0]] = {};
-  }
-  return createNestedObject(obj[path[0]], path.slice(1));
+  return _createNestedObject(obj, path);
 }
