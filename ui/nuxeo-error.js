@@ -49,7 +49,6 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 
           .code {
             @apply --layout-flex;
-            text-transform: uppercase;
             color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.3));
             text-align: center;
             font-size: 1.4rem;
@@ -58,7 +57,6 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 
           .description {
             @apply --layout-flex;
-            text-transform: uppercase;
             color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.3));
             text-align: center;
             font-size: 1.2rem;

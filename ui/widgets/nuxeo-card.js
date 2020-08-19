@@ -96,7 +96,6 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
             font-size: 1rem;
             font-weight: 700;
             letter-spacing: 0.04em;
-            text-transform: uppercase;
           }
 
           .header .toggle {

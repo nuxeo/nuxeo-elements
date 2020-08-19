@@ -9,7 +9,6 @@ const template = html`
         -webkit-text-size-adjust: 100%;
         font-size: 13px;
         line-height: 20px;
-
         --nuxeo-link: {
           color: var(--nuxeo-link-color);
           text-decoration: none;
@@ -256,7 +255,7 @@ const template = html`
         font-size: 1rem;
         font-weight: 700;
         margin: 0 0 1em;
-        text-transform: uppercase;
+
         letter-spacing: 0.04em;
       }
 
@@ -311,7 +310,6 @@ const template = html`
         font-size: 1rem;
         font-weight: 700;
         margin: 0 0 1em;
-        text-transform: uppercase;
         letter-spacing: 0.04em;
       }
 

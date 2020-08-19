@@ -110,7 +110,6 @@ import '../nuxeo-button-styles.js';
             color: #fff;
             margin: 0 0.2em 0.2em 0;
             padding: 0.06em 0.3em;
-            text-transform: uppercase;
             white-space: nowrap;
             @apply --nuxeo-tag;
           }
