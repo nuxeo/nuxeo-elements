@@ -253,7 +253,7 @@ const template = html`
         font-size: 1rem;
         font-weight: 700;
         margin: 0 0 1em;
-        text-transform: uppercase;
+
         letter-spacing: 0.04em;
       }
 
@@ -308,7 +308,7 @@ const template = html`
         font-size: 1rem;
         font-weight: 700;
         margin: 0 0 1em;
-        text-transform: uppercase;
+
         letter-spacing: 0.04em;
       }
 

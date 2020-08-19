@@ -50,7 +50,6 @@ import '../nuxeo-i18n-behavior.js';
           }
 
           :host([uppercase]) {
-            text-transform: uppercase;
           }
 
           iron-icon {
