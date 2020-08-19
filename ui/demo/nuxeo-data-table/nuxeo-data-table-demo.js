@@ -54,7 +54,6 @@ import '../../nuxeo-data-table/iron-data-table.js';
 
           .tag {
             display: inline-block;
-            text-transform: uppercase;
             background-color: #edf1f5;
             color: #6d7684;
             padding: 0.2rem 0.4rem;
