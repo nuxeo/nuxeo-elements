@@ -246,7 +246,7 @@ pipeline {
             """
             def token = sh(script: 'jx step credential -s public-npm-token -k token', returnStdout: true).trim()
             sh "echo '//packages.nuxeo.com/repository/npm-public/:_authToken=${token}' >> ~/.npmrc"
-            sh "npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --tag SNAPSHOT"
+            sh "npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://packages.nuxeo.com/repository/npm-public --tag SNAPSHOT"
           }
         }
       }
