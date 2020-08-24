@@ -71,22 +71,26 @@ export const RoutingBehavior = {
   _computeUrlFor() {
     return function(...args) {
       if (this.router) {
-        const route = args[0];
+        const [route, ...params] = args;
+        if (!route) {
+          return '';
+        }
         const baseUrl = this.router.baseUrl || '';
-        if (route.startsWith('/')) {
-          return baseUrl + route;
+        let path;
+        if (typeof route === 'object') {
+          path = this._routeEntity(...args);
+        } else {
+          if (route.startsWith('/')) {
+            return baseUrl + route;
+          }
+          if (!this.router[route]) {
+            console.error(`Could not generate a url for route ${route}`);
+            return;
+          }
+          path = this.router[route].apply(this, params);
         }
-        if (!this.router[route]) {
-          console.error(`Could not generate a url for route ${route}`);
-          return;
-        }
-        const params = Array.prototype.slice.call(args, 1);
-        return (
-          baseUrl +
-          (baseUrl.endsWith('/') ? '' : '/') +
-          (this.router.useHashbang ? '#!' : '') +
-          this.router[route].apply(this, params)
-        );
+        const base = `${baseUrl}${this.router.useHashbang ? `${baseUrl.endsWith('/') ? '' : '/'}#!` : ''}`;
+        return `${base}${base.endsWith('/') || path.startsWith('/') ? '' : '/'}${path}`;
       }
     };
   },
@@ -98,19 +102,67 @@ export const RoutingBehavior = {
   _computeNavigateTo() {
     return function(...args) {
       if (this.router) {
-        const route = args[0];
+        const [route, ...params] = args;
         const baseUrl = this.router.baseUrl || '';
-        if (route.startsWith('/')) {
-          this.router.navigate(baseUrl + route);
+        let path;
+        if (typeof route === 'object') {
+          path = this._routeEntity(...args);
+        } else {
+          if (route.startsWith('/')) {
+            this.router.navigate(baseUrl + route);
+          }
+          if (!this.router[route]) {
+            console.error(`Could not navigate to a url for route ${route}`);
+          }
+          path = this.router[route].apply(this, params);
         }
-        if (!this.router[route]) {
-          console.error(`Could not navigate to a url for route ${route}`);
-        }
-        const params = Array.prototype.slice.call(args, 1);
-        this.router.navigate(this.router[route].apply(this, params));
+        this.router.navigate(path);
       } else {
         console.error('No router defined');
       }
     };
+  },
+
+  _routeEntity(...args) {
+    if (args.length === 0) {
+      return;
+    }
+    const [obj, ...params] = args;
+    if (typeof obj !== 'object') {
+      throw new Error(`cannot resolve route: "${obj}" is not a valid entity object`);
+    }
+    let entityType = obj['entity-type'];
+    if (!entityType) {
+      // XXX Sometimes we don't have the entity type. For example, on nuxeo-document-storage, we were not storing it.
+      // In such cases, we'll assume we are dealing with a document if it has both a path and a uid properties.
+      if (obj.path && obj.uid) {
+        entityType = 'document';
+      } else {
+        throw new Error(`cannot resolve route: object does not have an "entity-type"`);
+      }
+    }
+    let routeKey =
+      Nuxeo &&
+      Nuxeo.UI &&
+      Nuxeo.UI.config &&
+      Nuxeo.UI.config.router &&
+      Nuxeo.UI.config.router.key &&
+      Nuxeo.UI.config.router.key[entityType];
+    let fn = this.router[entityType];
+    if (entityType === 'document') {
+      routeKey = routeKey || 'path';
+      if (obj.isProxy || obj.isVersion) {
+        routeKey = 'uid';
+      }
+      // XXX we keep `routeKey === 'path' && this.router.browse` to keep compat routers that override the document
+      // document` method and do not know how to handle paths
+      fn = (routeKey === 'path' && this.router.browse) || fn;
+    }
+    routeKey = routeKey || 'id'; // let `id` be the default key
+    const routeVal = obj[routeKey];
+    if (!routeVal) {
+      throw new Error(`invalid router key: ${routeKey}`);
+    }
+    return fn(routeVal, ...params);
   },
 };

@@ -305,7 +305,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       if (typeof doc === 'string') {
         return `<span>${escapeHTML(doc)}</span>`;
       }
-      return `<a href="${this.urlFor('browse', doc.path)}">${escapeHTML(doc.title)}</a>`;
+      return `<a href="${this.urlFor(doc)}">${escapeHTML(doc.title)}</a>`;
     }
 
     _resultFormatter(doc) {
