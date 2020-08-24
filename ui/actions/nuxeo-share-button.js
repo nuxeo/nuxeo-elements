@@ -50,7 +50,7 @@ import '../nuxeo-button-styles.js';
   class ShareButton extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-action-button-styles nuxeo-button-styles">
+        <style include="nuxeo-action-button-styles nuxeo-button-styles nuxeo-styles">
           .horizontal {
             @apply --layout-horizontal;
             @apply --layout-center;

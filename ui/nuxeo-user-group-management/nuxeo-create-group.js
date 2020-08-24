@@ -93,7 +93,7 @@ import '../nuxeo-button-styles.js';
 
         <div class="header">
           <iron-icon icon="nuxeo:group"></iron-icon>
-          <h3>[[i18n('createGroup.heading')]]</h3>
+          <h3 class="headline-4">[[i18n('createGroup.heading')]]</h3>
         </div>
 
         <iron-form id="form">

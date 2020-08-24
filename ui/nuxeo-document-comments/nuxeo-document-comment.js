@@ -53,7 +53,7 @@ import '../nuxeo-button-styles.js';
   class DocumentComment extends mixinBehaviors([FormatBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-document-comments-styles nuxeo-button-styles">
+        <style include="nuxeo-document-comments-styles nuxeo-button-styles nuxeo-styles">
           :host {
             margin-top: 5px;
           }

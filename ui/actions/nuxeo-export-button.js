@@ -45,7 +45,7 @@ import '../nuxeo-button-styles.js';
   class ExportButton extends mixinBehaviors([FormatBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-action-button-styles nuxeo-button-styles">
+        <style include="nuxeo-action-button-styles nuxeo-button-styles nuxeo-styles">
           .item {
             @apply --layout-horizontal;
             @apply --layout-center;

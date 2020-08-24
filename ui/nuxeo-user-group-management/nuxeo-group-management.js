@@ -56,7 +56,7 @@ import '../nuxeo-button-styles.js';
   class GroupManagement extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="iron-flex iron-flex-alignment iron-flex-factors nuxeo-button-styles">
+        <style include="iron-flex iron-flex-alignment iron-flex-factors nuxeo-button-styles nuxeo-styles">
           :host {
             display: block;
           }
@@ -97,6 +97,13 @@ import '../nuxeo-button-styles.js';
           h3 iron-icon {
             width: 1.3em;
             margin-right: 0.2rem;
+          }
+
+          h3 {
+            font-weight: 400;
+            font-size: 1.25rem;
+            letter-spacing: 0;
+            line-height: 1.625rem;
           }
 
           .groupname {

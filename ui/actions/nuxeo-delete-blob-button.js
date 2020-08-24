@@ -47,7 +47,7 @@ import '../nuxeo-button-styles.js';
   class DeleteBlobButton extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-action-button-styles nuxeo-button-styles"></style>
+        <style include="nuxeo-action-button-styles nuxeo-button-styles nuxeo-styles"></style>
 
         <nuxeo-operation
           id="operation"

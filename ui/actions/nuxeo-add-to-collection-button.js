@@ -50,7 +50,7 @@ import '../nuxeo-button-styles.js';
   class AddToCollectionButton extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-action-button-styles nuxeo-button-styles">
+        <style include="nuxeo-action-button-styles nuxeo-button-styles nuxeo-styles">
           /* Fix known stacking issue in iOS (NXP-24600)
          https://github.com/PolymerElements/paper-dialog-scrollable/issues/72 */
           paper-dialog-scrollable {

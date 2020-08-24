@@ -16,7 +16,7 @@ import '../nuxeo-button-styles.js';
   class DataTableSettings extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-button-styles">
+        <style include="nuxeo-button-styles nuxeo-styles">
           :host {
             position: relative;
           }

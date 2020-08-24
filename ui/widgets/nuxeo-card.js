@@ -49,7 +49,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
   class Card extends mixinBehaviors([IronResizableBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style>
+        <style include="nuxeo-styles">
           :host {
             display: block;
             -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
@@ -93,9 +93,14 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
           .header .heading {
             @apply --layout-flex;
-            font-size: 1rem;
-            font-weight: 700;
-            letter-spacing: 0.04em;
+            font-weight: 400;
+            font-size: 1.25rem;
+            letter-spacing: 0;
+            line-height: 1.625rem;
+          }
+
+          h3 {
+            margin-top: 0;
           }
 
           .header .toggle {
@@ -106,9 +111,9 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
         <dom-if if="[[_hasHeading(icon, heading, collapsible)]]">
           <template>
-            <h3 class="header" on-click="_toggle">
+            <h3 class="headline-4" on-click="_toggle">
               <iron-icon class="icon" icon="[[icon]]" hidden$="[[!icon]]"></iron-icon>
-              <span class="heading">[[heading]]</span>
+              [[heading]]
               <iron-icon class="toggle" icon="[[_toggleIcon(opened)]]" toggle hidden$="[[!collapsible]]"></iron-icon>
             </h3>
           </template>

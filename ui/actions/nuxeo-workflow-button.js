@@ -49,7 +49,7 @@ import '../nuxeo-button-styles.js';
   class WorkflowButton extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="nuxeo-action-button-styles nuxeo-button-styles">
+        <style include="nuxeo-action-button-styles nuxeo-button-styles nuxeo-styles">
           nuxeo-select {
             max-width: 380px;
           }
