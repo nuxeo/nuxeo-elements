@@ -40,10 +40,19 @@ function getSuggestions(suggestionWidget, timeout = 1000) {
 
 // Mock router
 const router = {
-  browse: () => '#',
-  user: () => '#',
-  group: () => '#',
+  browse: (path) => path,
+  document: (uid) => `/doc/${uid}`,
 };
+
+function setNuxeoRouterKey(entityType, value) {
+  window.Nuxeo = window.Nuxeo || {};
+  window.Nuxeo.UI = window.Nuxeo.UI || {};
+  window.Nuxeo.UI.config = window.Nuxeo.UI.config || {};
+  window.Nuxeo.UI.config.router = window.Nuxeo.UI.config.router || {};
+  window.Nuxeo.UI.config.router.key = window.Nuxeo.UI.config.router.key || {};
+  window.Nuxeo.UI.config.router.key = window.Nuxeo.UI.config.router.key || {};
+  window.Nuxeo.UI.config.router.key[entityType] = value;
+}
 
 suite('nuxeo-document-suggestion', () => {
   let server;
@@ -92,6 +101,21 @@ suite('nuxeo-document-suggestion', () => {
       expect(entries[0].childElementCount).to.be.equal(1);
       expect(entries[0].children[0].nodeName.toLowerCase()).to.be.equal('a');
       expect(entries[0].children[0].textContent).to.be.equal('Some Title');
+      expect(entries[0].children[0].href.endsWith('/default-domain/workspaces/toto')).to.be.true;
+      expect(widget._resolveDocs.calledOnce).to.be.equal(true);
+    });
+
+    test('Should be able to resolve document and display its title when resolving with document UID', async () => {
+      setNuxeoRouterKey('document', 'uid');
+      widget.value = 'existingDocId';
+      await flush();
+      const entries = await getSuggestions(widget);
+      setNuxeoRouterKey('document'); // reset document key to undefined
+      expect(entries.length).to.be.equal(1);
+      expect(entries[0].childElementCount).to.be.equal(1);
+      expect(entries[0].children[0].nodeName.toLowerCase()).to.be.equal('a');
+      expect(entries[0].children[0].textContent).to.be.equal('Some Title');
+      expect(entries[0].children[0].href.endsWith('/doc/existingDocId')).to.be.true;
       expect(widget._resolveDocs.calledOnce).to.be.equal(true);
     });
 
@@ -151,6 +175,26 @@ suite('nuxeo-document-suggestion', () => {
       expect(entries[0].childElementCount).to.be.equal(1);
       expect(entries[0].children[0].nodeName.toLowerCase()).to.be.equal('a');
       expect(entries[0].children[0].textContent).to.be.equal('Some Title');
+      expect(entries[0].children[0].href.endsWith('/default-domain/workspaces/toto')).to.be.true;
+
+      expect(entries[1].childElementCount).to.be.equal(1);
+      expect(entries[1].children[0].nodeName.toLowerCase()).to.be.equal('span');
+      expect(entries[1].children[0].textContent).to.be.equal('deletedDocId');
+
+      expect(widget._resolveDocs.calledOnce).to.be.equal(true);
+    });
+
+    test('Should be able to resolve the existing documents and reconciliate when resolving with UID', async () => {
+      setNuxeoRouterKey('document', 'uid');
+      widget.value = ['existingDocId', 'deletedDocId'];
+      await flush();
+      const entries = await getSuggestions(widget);
+      setNuxeoRouterKey('document'); // reset document key to undefined
+      expect(entries.length).to.be.equal(2);
+      expect(entries[0].childElementCount).to.be.equal(1);
+      expect(entries[0].children[0].nodeName.toLowerCase()).to.be.equal('a');
+      expect(entries[0].children[0].textContent).to.be.equal('Some Title');
+      expect(entries[0].children[0].href.endsWith('/doc/existingDocId')).to.be.true;
 
       expect(entries[1].childElementCount).to.be.equal(1);
       expect(entries[1].children[0].nodeName.toLowerCase()).to.be.equal('span');
