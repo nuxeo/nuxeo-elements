@@ -21,7 +21,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 const template = html`
   <dom-module id="nuxeo-drag-proxy">
     <template>
-      <style include="nuxeo-styles">
+      <style>
         :host {
           display: inline-block;
           position: absolute;

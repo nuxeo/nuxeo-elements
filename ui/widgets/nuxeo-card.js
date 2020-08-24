@@ -52,9 +52,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
         <style>
           :host {
             display: block;
-            -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-            -moz-box-sizing: border-box; /* Firefox, other Gecko */
-            box-sizing: border-box; /* Opera/IE 8+ */
+            box-sizing: border-box;
             background-color: white;
             padding: 16px;
             box-shadow: 0 3px 5px rgba(0, 0, 0, 0.04);
@@ -69,7 +67,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
             padding-bottom: 16px;
           }
 
-          :host([collapsible]) h3:hover {
+          :host([collapsible]) h5:hover {
             cursor: pointer;
             @apply --nuxeo-link-hover;
           }
@@ -78,10 +76,19 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
             display: none !important;
           }
 
+          h5 {
+            @apply --layout-flex;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.24px;
+            line-height: 1.25rem;
+            margin: 0 0;
+          }
+
           .header {
             @apply --layout-horizontal;
             @apply --layout-center;
-            margin: 0 0 1em;
+            margin-bottom: 1em;
           }
 
           .header .icon {
@@ -89,13 +96,6 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
             margin-right: 8px;
             --iron-icon-width: 16px;
             --iron-icon-height: 16px;
-          }
-
-          .header .heading {
-            @apply --layout-flex;
-            font-size: 1rem;
-            font-weight: 700;
-            letter-spacing: 0.04em;
           }
 
           .header .toggle {
@@ -106,11 +106,11 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
         <dom-if if="[[_hasHeading(icon, heading, collapsible)]]">
           <template>
-            <h3 class="header" on-click="_toggle">
+            <h5 on-click="_toggle" class="header">
               <iron-icon class="icon" icon="[[icon]]" hidden$="[[!icon]]"></iron-icon>
-              <span class="heading">[[heading]]</span>
+              [[heading]]
               <iron-icon class="toggle" icon="[[_toggleIcon(opened)]]" toggle hidden$="[[!collapsible]]"></iron-icon>
-            </h3>
+            </h5>
           </template>
         </dom-if>
 

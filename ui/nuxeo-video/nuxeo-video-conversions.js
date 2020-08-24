@@ -42,6 +42,7 @@ import '../widgets/nuxeo-tooltip.js';
             @apply --nuxeo-link-hover;
           }
           .properties label {
+            @apply --nuxeo-label;
             min-width: 10rem;
             margin-inline-end: 12px;
           }
