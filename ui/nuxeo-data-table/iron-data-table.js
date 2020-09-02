@@ -828,14 +828,6 @@ import '../nuxeo-button-styles.js';
     _onCheckBoxTap(e) {
       if (this.selectionEnabled) {
         this.$.list.toggleSelectionForIndex(e.model.index);
-        const target = e.target || e.srcElement;
-        target.dispatchEvent(
-          new CustomEvent('selected', {
-            composed: true,
-            bubbles: true,
-            detail: { index: e.model.index, shiftKey: e.shiftKey },
-          }),
-        );
         this._updateFlags();
       }
     }
