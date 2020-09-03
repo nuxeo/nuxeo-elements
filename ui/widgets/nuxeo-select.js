@@ -115,7 +115,9 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
           noink
           no-animations
           restore-focus-on-close="false"
-          horizontal-align="left"
+          horizontal-align="[[horizontalAlign]]"
+          vertical-align="[[verticalAlign]]"
+          dynamic-align="[[dynamicAlign]]"
           on-paper-dropdown-open="_resize"
           readonly$="[[readonly]]"
           disabled$="[[disabled]]"
@@ -195,6 +197,31 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
         attrForSelected: {
           type: String,
           value: null,
+        },
+
+        /**
+         * The orientation against which to align the menu dropdown
+         * horizontally relative to the dropdown trigger.
+         */
+        horizontalAlign: {
+          type: String,
+          value: 'left',
+        },
+
+        /**
+         * The orientation against which to align the menu dropdown
+         * vertically relative to the dropdown trigger.
+         */
+        verticalAlign: {
+          type: String,
+          value: 'top',
+        },
+
+        /**
+         * Dynamically align dropdown menu.
+         */
+        dynamicAlign: {
+          type: Boolean,
         },
 
         /**
