@@ -10,12 +10,39 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
     static get template() {
       return html`
         <style>
+          :host {
+            height: 100%;
+          }
           :host([hidden]) {
             display: none;
           }
+          /* ELEMENTS-1214: Align this element appearance with nuxeo-selectivity */
           paper-input {
+            --paper-input-container: {
+              font-size: inherit;
+              margin: 12px 2px 0 2px;
+            }
+
+            --paper-input-container-input: {
+              min-height: 2em;
+              padding: 0 0 1px 0;
+              font-size: inherit;
+              font-weight: 600;
+            }
+
+            --paper-input-container-color: {
+              color: var(--nuxeo-text-default, #3a3a54);
+            }
+
             --paper-input-container-label: {
               font-size: inherit;
+              color: #999;
+              font-weight: 600;
+              padding: 0;
+            }
+
+            --paper-input-container-underline-focus: {
+              border-bottom: 1px solid black;
             }
           }
         </style>
