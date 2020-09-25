@@ -226,7 +226,7 @@ export const FiltersBehavior = {
       !this.isRecord(doc) &&
       !this.isTrashed(doc) &&
       this.hasFacet(doc, 'Publishable') &&
-      this.hasPermission(doc, 'Write')
+      this.hasPermission(doc, 'WriteVersion')
     );
   },
 
