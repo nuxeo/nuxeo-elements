@@ -101,7 +101,8 @@ IronOverlayManager._overlayWithBackdrop = function() {
 
     _opened(e) {
       const isIOS = /iPhone|iPad|iPod/.test(window.navigator.userAgent);
-      if ((this.reparent && e.target.withBackdrop) || isIOS) {
+      // WEBUI-22: we need to check window.innerWidth to make sure dialog is reparented on smaller screens
+      if ((this.reparent && e.target.withBackdrop) || isIOS || window.innerWidth <= 720) {
         e.target.parentNode.insertBefore(e.target.backdropElement, e.target);
       }
 

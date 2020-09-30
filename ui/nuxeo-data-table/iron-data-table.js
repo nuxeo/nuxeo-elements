@@ -214,6 +214,13 @@ import '../nuxeo-button-styles.js';
             display: block;
             @apply --nuxeo-label;
           }
+
+          /* WEBUI-22: To make sure the overlay backdrop fills the entire screen in mobile */
+          iron-overlay-backdrop {
+            --iron-overlay-backdrop: {
+              width: 100vw;
+            }
+          }
         </style>
 
         <div id="container">
