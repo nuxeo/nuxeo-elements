@@ -91,6 +91,19 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           type: Number,
         },
 
+        /**
+         * The name of the timezone where the user is considered to be, according to the IANA tz database.
+         * Currently valid values are:
+         * - empty: local time will be used, as read from the browser (this is the default)
+         * - Etc/UTC: time specified by the user is assumed to be in UTC
+         */
+        timezone: {
+          type: String,
+          value() {
+            return Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.timezone;
+          },
+        },
+
         _inputValue: {
           type: String,
           observer: '_inputValueChanged',
@@ -202,9 +215,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       moment.locale(window.nuxeo.I18n.language ? window.nuxeo.I18n.language.split('-')[0] : 'en');
       // tell vaadin-date-picker how to display dates since default behavior is US locales (MM-DD-YYYY)
       // this way we can take advantage of moment locale and use the date format that is most suitable for the user
-      this.$.date.set('i18n.formatDate', (date) => moment(date).format(moment.localeData().longDateFormat('L')));
+      this.$.date.set('i18n.formatDate', (date) => this._moment(date).format(moment.localeData().longDateFormat('L')));
       this.$.date.set('i18n.parseDate', (text) => {
-        const date = moment(text, moment.localeData().longDateFormat('L'));
+        const date = this._moment(text, moment.localeData().longDateFormat('L'));
         return {
           day: date.format('D'),
           month: date.format('M') - 1,
@@ -226,6 +239,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       );
     }
 
+    _moment(...args) {
+      const fn = this.timezone === 'Etc/UTC' ? moment.utc : moment;
+      return fn(...args);
+    }
+
     _getValidity() {
       if (!this.required) {
         return true;
@@ -238,7 +256,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         this._inputValue = null;
         return;
       }
-      const date = moment(this.value);
+      const date = this._moment(this.value);
       if (this.value && date.isValid()) {
         this._preventInputUpdate = true;
         this._inputValue = date.format('YYYY-MM-DD');
@@ -249,7 +267,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _inputValueChanged() {
       if (this._inputValue !== null && !this._preventInputUpdate) {
-        const date = moment(this._inputValue);
+        const date = this._moment(this._inputValue);
         if (date.isValid()) {
           if (this.defaultTime) {
             const time = moment(this.defaultTime, 'HH:mm:ss');

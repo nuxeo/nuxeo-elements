@@ -22,71 +22,80 @@ function getInput(element) {
   return element.root.querySelector('#date');
 }
 
-function testValue(element, value) {
+function testValue(element, value, isUTC) {
   element.value = value;
   expect(element.value).to.be.equal(value);
   const inputValue = getInput(element).value;
-  const local = moment(value)
-    .local()
-    .format('YYYY-MM-DD');
-  expect(inputValue).to.be.equal(local);
+  const val = (isUTC ? moment.utc(value) : moment(value).local()).format('YYYY-MM-DD');
+  expect(inputValue).to.be.equal(val);
   // ELEMENTS-599: assertion temporarily disabled owing to third party picker issues
   // expect(element._pickerValue).to.be.equal(local);
 }
 
-function testInput(element, input) {
+function testInput(element, input, isUTC) {
   const i = getInput(element);
   i.value = input;
   expect(i.value).to.be.equal(input);
-  expect(element.value).to.be.equal(moment(input).toJSON());
+  expect(element.value).to.be.equal((isUTC ? moment.utc(input) : moment(input)).toJSON());
   // ELEMENTS-599: assertion temporarily disabled owing to third party picker issues
   // expect(element._pickerValue).to.be.equal(input);
 }
 
 suite('nuxeo-date-picker', () => {
   let element;
-  setup(async () => {
-    element = await fixture(
-      html`
-        <nuxeo-date-picker></nuxeo-date-picker>
-      `,
-    );
-  });
 
-  test('the value can be changed', () => {
-    expect(element.value).to.be.null;
-    testValue(element, '2022-03-12T00:00:00.000Z');
-    testValue(element, '1800-12-28T00:00:00.000Z');
-    testValue(element, '0021-11-07T00:00:00.000Z');
-    testValue(element, '0002-01-01T00:00:00.000Z');
-  });
+  [{ timezone: undefined }, { timezone: 'Etc/UTC' }].forEach((conf) => {
+    suite(!conf.timezone ? 'with no timezone' : `with ${conf.timezone} timezone`, () => {
+      setup(async () => {
+        element = !conf.timezone
+          ? await fixture(
+              html`
+                <nuxeo-date-picker></nuxeo-date-picker>
+              `,
+            )
+          : await fixture(
+              html`
+                <nuxeo-date-picker timezone=${conf.timezone}></nuxeo-date-picker>
+              `,
+            );
+      });
 
-  test('the value set in UCT is correctly converted to local time', () => {
-    testValue(element, '2003-06-12T22:00:00.000Z');
-    testValue(element, '2003-06-12T23:00:00.000Z');
-    testValue(element, '2003-06-13T00:00:00.000Z');
-  });
+      test('the value can be changed', () => {
+        expect(element.value).to.be.null;
+        testValue(element, '2022-03-12T00:00:00.000Z', conf.timezone);
+        testValue(element, '1800-12-28T00:00:00.000Z', conf.timezone);
+        testValue(element, '0021-11-07T00:00:00.000Z', conf.timezone);
+        testValue(element, '0002-01-01T00:00:00.000Z', conf.timezone);
+      });
 
-  test('the input changes reflect on the value', () => {
-    testInput(element, '2003-02-20');
-    testInput(element, '2004-06-12');
-  });
+      test('the value set in UCT is correctly converted to local time', () => {
+        testValue(element, '2003-06-12T22:00:00.000Z', conf.timezone);
+        testValue(element, '2003-06-12T23:00:00.000Z', conf.timezone);
+        testValue(element, '2003-06-13T00:00:00.000Z', conf.timezone);
+      });
 
-  test('the value can be cleared', () => {
-    expect(element.value).to.be.null;
-    testInput(element, '2003-02-20');
-    // now clear the value
-    element.value = null;
-    expect(element.value).to.be.equal(null);
-    expect(getInput(element).value).to.be.equal('');
-  });
+      test('the input changes reflect on the value', () => {
+        testInput(element, '2003-02-20', conf.timezone);
+        testInput(element, '2004-06-12', conf.timezone);
+      });
 
-  test('the input changes takes default time into account', () => {
-    element.defaultTime = '14:35:19';
-    getInput(element).value = '2003-02-20';
-    const localEltValue = moment(element.value).local();
-    expect(localEltValue.hour()).to.be.equal(14);
-    expect(localEltValue.minute()).to.be.equal(35);
-    expect(localEltValue.second()).to.be.equal(19);
+      test('the value can be cleared', () => {
+        expect(element.value).to.be.null;
+        testInput(element, '2003-02-20', conf.timezone);
+        // now clear the value
+        element.value = null;
+        expect(element.value).to.be.equal(null);
+        expect(getInput(element).value).to.be.equal('');
+      });
+
+      test('the input changes takes default time into account', () => {
+        element.defaultTime = '14:35:19';
+        getInput(element).value = '2003-02-20';
+        const localEltValue = moment(element.value).local();
+        expect(localEltValue.hour()).to.be.equal(14);
+        expect(localEltValue.minute()).to.be.equal(35);
+        expect(localEltValue.second()).to.be.equal(19);
+      });
+    });
   });
 });

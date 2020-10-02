@@ -42,13 +42,14 @@ export const FormatBehavior = [
       return `${size.toString()} Bytes`;
     },
 
-    _formatDate(date, fmt) {
+    _formatDate(date, fmt, timezone) {
       if (!date) return;
       moment.locale(this._languageCode());
+      const fn = timezone === 'Etc/UTC' ? moment.utc : moment;
       if (fmt && fmt === 'relative') {
-        return moment().to(date);
+        return fn().to(date);
       }
-      return moment(date).format(fmt);
+      return fn(date).format(fmt);
     },
 
     /**
@@ -57,9 +58,17 @@ export const FormatBehavior = [
      *
      * @param {string} date the date
      * @param {string} format the format, falls back on Nuxeo.UI.config.dateFormat or 'MMM D, YYYY' if null.
+     * @param {string} timezone the name of the timezone of the date, according to the IANA tz database.
+     *     Currently valid values are:
+     *     - empty: local time will be used, as read from the browser (this is the default)
+     *     - Etc/UTC: time specified by the user is assumed to be in UTC
      */
-    formatDate(date, format) {
-      return this._formatDate(date, format || (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.dateFormat) || 'LL');
+    formatDate(date, format, timezone) {
+      return this._formatDate(
+        date,
+        format || (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.dateFormat) || 'LL',
+        timezone || (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.timezone),
+      );
     },
 
     /**
@@ -68,9 +77,17 @@ export const FormatBehavior = [
      *
      * @param {string} date the date
      * @param {string} format the format, falls back on Nuxeo.UI.config.dateFormat or 'MMMM D, YYYY HH:mm' if null.
+     * @param {string} timezone the name of the timezone of the date, according to the IANA tz database.
+     *     Currently valid values are:
+     *     - empty: local time will be used, as read from the browser (this is the default)
+     *     - Etc/UTC: time specified by the user is assumed to be in UTC
      */
-    formatDateTime(date, format) {
-      return this._formatDate(date, format || (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.dateTimeFormat) || 'LLL');
+    formatDateTime(date, format, timezone) {
+      return this._formatDate(
+        date,
+        format || (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.dateTimeFormat) || 'LLL',
+        timezone || (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.timezone),
+      );
     },
 
     /**
