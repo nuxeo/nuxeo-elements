@@ -39,9 +39,9 @@ import './nuxeo-tooltip.js';
   class Date extends mixinBehaviors([I18nBehavior, FormatBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <span id="datetime" hidden$="[[!datetime]]">[[formatDate(datetime, format)]]</span>
-        <nuxeo-tooltip for="datetime" hidden$="[[_producesSameDateFormat(datetime,format,tooltipFormat)]]">
-          [[formatDateTime(datetime, tooltipFormat)]]
+        <span id="datetime" hidden$="[[!datetime]]">[[formatDate(datetime, format, timezone)]]</span>
+        <nuxeo-tooltip for="datetime" hidden$="[[_producesSameDateFormat(datetime, format, tooltipFormat, timezone)]]">
+          [[formatDateTime(datetime, tooltipFormat, timezone)]]
         </nuxeo-tooltip>
       `;
     }
@@ -70,11 +70,24 @@ import './nuxeo-tooltip.js';
          * [moment Format](http://momentjs.com/docs/#/displaying/format/).
          */
         tooltipFormat: String,
+
+        /**
+         * The name of the timezone where the user is considered to be, according to the IANA tz database.
+         * Currently valid values are:
+         * - empty: local time will be used, as read from the browser (this is the default)
+         * - Etc/UTC: time specified by the user is assumed to be in UTC
+         */
+        timezone: {
+          type: String,
+          value() {
+            return Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.timezone;
+          },
+        },
       };
     }
 
-    _producesSameDateFormat(datetime, format, tooltipFormat) {
-      return this.formatDate(datetime, format) === this.formatDateTime(datetime, tooltipFormat);
+    _producesSameDateFormat(datetime, format, tooltipFormat, timezone) {
+      return this.formatDate(datetime, format, timezone) === this.formatDateTime(datetime, tooltipFormat, timezone);
     }
   }
 
