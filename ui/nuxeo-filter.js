@@ -24,6 +24,8 @@ import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { Templatizer } from '@polymer/polymer/lib/legacy/templatizer-behavior.js';
 import { FiltersBehavior } from './nuxeo-filters-behavior.js';
+import Interpreter from './js-interpreter/interpreter.js';
+
 /* eslint-disable no-new-func,no-restricted-syntax,guard-for-in */
 
 {
@@ -178,12 +180,43 @@ import { FiltersBehavior } from './nuxeo-filters-behavior.js';
     }
 
     _evaluate(document, user, expression) {
+      let res = false;
+
       try {
-        const fn = new Function(['document', 'user'], `return ${expression};`);
-        return fn.apply(this, [document, user]);
+        if (
+          Nuxeo.UI &&
+          Nuxeo.UI.config &&
+          Nuxeo.UI.config.expressions &&
+          String(Nuxeo.UI.config.expressions.eval) === 'false'
+        ) {
+          const js = new Interpreter(expression, (interpreter, scope) => {
+            // set scope
+            interpreter.setProperty(scope, 'this', interpreter.nativeToPseudo(FiltersBehavior));
+            Object.entries({ document, user }).forEach(([k, obj]) => {
+              const v = {};
+              // filter out private properties
+              Object.getOwnPropertyNames(obj)
+                .filter((p) => !p.startsWith('_'))
+                .forEach((p) => {
+                  v[p] = obj[p];
+                });
+              interpreter.setProperty(scope, k, interpreter.nativeToPseudo(v));
+            });
+            // XXX: 'this' in the scope of native functions is the interpreter instance
+            Object.assign(interpreter, FiltersBehavior);
+          });
+          js.run();
+          res = js.value;
+        } else {
+          const fn = new Function(['document', 'user'], `return ${expression};`);
+          res = fn.apply(this, [document, user]);
+        }
+        return res;
       } catch (err) {
-        return false;
+        console.error(`${err} in <nuxeo-filter> expression "${expression}"`);
       }
+
+      return res;
     }
 
     // Evaluate the filter
