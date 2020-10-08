@@ -4,3 +4,4 @@ ui/import-href.js
 ui/widgets/nuxeo-selectivity.js
 ui/viewers/pdfjs
 ui/dataviz/randomColor.js
+ui/js-interpreter
