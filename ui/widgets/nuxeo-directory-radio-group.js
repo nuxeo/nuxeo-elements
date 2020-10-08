@@ -117,6 +117,7 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
         value: {
           type: String,
           notify: true,
+          observer: '_updateSelected',
         },
 
         _selected: String,
@@ -127,6 +128,12 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
       if (e.detail && e.detail.value) {
         this.set('selectedItem', this._entries[e.detail.value.dataIndex]);
         this.set('value', this.idFunction(this.selectedItem));
+      }
+    }
+
+    _updateSelected() {
+      if (this.value && this.value.length > 0 && this.value !== this._selected) {
+        this._selected = this.value;
       }
     }
 
