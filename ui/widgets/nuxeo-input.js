@@ -37,7 +37,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
           :host {
             display: block;
             position: relative;
-            padding-bottom: 8px;
+            min-height: 48px;
           }
 
           :host([hidden]) {
@@ -53,6 +53,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
           paper-input {
             --paper-input-container: {
+              margin-top: 2px;
               padding: 0;
             }
           }
