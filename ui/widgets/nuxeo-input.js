@@ -53,6 +53,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
           paper-input {
             --paper-input-container: {
+              margin-top: 5px;
               padding: 0;
             }
           }
