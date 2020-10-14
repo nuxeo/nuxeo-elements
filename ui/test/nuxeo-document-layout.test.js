@@ -183,7 +183,7 @@ suite('nuxeo-document-layout', () => {
     let href = documentLayout.hrefFunction(documentLayout.document, documentLayout.layout);
     expect(href).to.equal(`test/nuxeo-test-edit-layout.html`);
     // eslint-disable-next-line no-template-curly-in-string
-    documentLayout.hrefTemplate = 'folder/nuxeo-${document.properties["myProp"]}-${layout}-layout.html';
+    documentLayout.hrefTemplate = 'folder/nuxeo-${document.properties.myProp}-${layout}-layout.html';
     href = documentLayout.hrefFunction(documentLayout.document, documentLayout.layout);
     expect(href).to.equal(`folder/nuxeo-myvalue-edit-layout.html`);
   });

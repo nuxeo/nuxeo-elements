@@ -116,6 +116,7 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
         },
         /**
          * The function used to build the layout href, using `hrefTemplate` as the function body.
+         * `document` and `layout` are available in the scope.
          */
         hrefFunction: {
           type: Function,
@@ -217,8 +218,16 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
     }
 
     _buildHrefFn(tmpl) {
-      // eslint-disable-next-line no-new-func
-      return new Function(['document', 'layout'], `return \`${tmpl}\`.toLowerCase();`);
+      return () => {
+        const matches = tmpl.matchAll(/\${([^}]+)}/g);
+        let str = tmpl;
+        // eslint-disable-next-line no-restricted-syntax
+        for (const [match, prop] of matches) {
+          const val = prop.match(/^(layout|document)(\.(.+))?$/) ? this.get(prop).toLowerCase() : '';
+          str = str.replace(match, val);
+        }
+        return str;
+      };
     }
 
     _loadLayout(document, layout, hrefFunction, hrefBase) {
