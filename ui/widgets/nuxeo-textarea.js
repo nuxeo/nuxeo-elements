@@ -49,6 +49,10 @@ import '@polymer/paper-input/paper-textarea.js';
 
           paper-textarea {
             --paper-input-container: {
+              margin-top: 5px;
+              padding: 0;
+            }
+            --iron-autogrow-textarea: {
               padding: 0;
             }
           }
