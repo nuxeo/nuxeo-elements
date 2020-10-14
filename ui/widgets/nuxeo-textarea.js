@@ -33,7 +33,7 @@ import '@polymer/paper-input/paper-textarea.js';
           :host {
             display: block;
             position: relative;
-            padding-bottom: 8px;
+            min-height: 48px;
           }
 
           :host([hidden]) {
@@ -49,6 +49,10 @@ import '@polymer/paper-input/paper-textarea.js';
 
           paper-textarea {
             --paper-input-container: {
+              margin-top: 2px;
+              padding: 0;
+            }
+            --iron-autogrow-textarea: {
               padding: 0;
             }
           }
