@@ -130,7 +130,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           }
 
           vaadin-date-picker {
-            padding-bottom: 8px;
+            --lumo-space-xs: 0;
           }
 
           /* picker input */
