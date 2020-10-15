@@ -121,6 +121,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         <style>
           :host {
             position: relative;
+            min-height: 48px;
           }
 
           :host([hidden]) {
@@ -144,6 +145,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           vaadin-date-picker {
             padding-bottom: 8px;
+            --lumo-space-xs: 0;
+            margin-top: -2px;
           }
 
           /* picker input */
