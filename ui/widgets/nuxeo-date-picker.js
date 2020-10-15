@@ -144,6 +144,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           vaadin-date-picker {
             padding-bottom: 8px;
+            --lumo-space-xs: 2px;
+            --lumo-font-family: var(--nuxeo-app-font);
+          }
+
+          vaadin-date-picker::part(text-field) {
+            --lumo-text-field-size: 29px;
           }
 
           /* picker input */
