@@ -6782,8 +6782,10 @@ typedArrayTags[weakMapTag] = false;
       return html`
         <style>
 
+          /* We need to hide overflow-x explicitly here in order to have auto overflow on Y axis */
           :host {
-            overflow: auto;
+            overflow-x: hidden;
+            overflow-y: auto;
           }
 .selectivity-clearfix {
   clear: both;
