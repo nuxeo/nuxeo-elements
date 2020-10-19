@@ -598,7 +598,12 @@ export const PageProviderDisplayBehavior = [
             }
           }
           if (clear || this.items.length !== count) {
-            this.reset(count);
+            if (this.size >= 0) {
+              // size was explicitly set => reset according to the pageSize
+              this.reset(response.pageSize < count ? response.pageSize : count);
+            } else {
+              this.reset(count);
+            }
           }
 
           // fill items range based on response
