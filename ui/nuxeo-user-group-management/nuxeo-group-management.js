@@ -719,14 +719,15 @@ import '../nuxeo-button-styles.js';
     }
 
     _deleteGroup() {
+      const deletedGroup = this.group;
       this.$.deleteGroupDialog.toggle();
-      this.$.editRequest.data = this.group;
+      this.$.editRequest.data = deletedGroup;
       this.$.editRequest.remove().then(() => {
         this.dispatchEvent(
           new CustomEvent('nuxeo-group-deleted', {
             composed: true,
             bubbles: true,
-            detail: this.group,
+            detail: deletedGroup,
           }),
         );
         this._goHome();
