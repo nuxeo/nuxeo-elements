@@ -6781,298 +6781,296 @@ typedArrayTags[weakMapTag] = false;
     static get template() {
       return html`
         <style>
+          .selectivity-clearfix {
+            clear: both;
+          }
+
+          .selectivity-input {
+            display: inline-block;
+            width: 250px;
+          }
+
+          .selectivity-input select {
+            display: none;
+          }
+
+          .selectivity-input:focus {
+            outline: none;
+          }
+
+          .selectivity-placeholder {
+            color: #999;
+          }
+
+          /**
+          * Dropdown
+          */
+          .selectivity-dropdown {
+            background: var(--nuxeo-dropdown-list-background, #fff);
+            border-radius: 4px;
+            -webkit-box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.15), 0 10px 16px 0 rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.15), 0 10px 16px 0 rgba(0, 0, 0, 0.2);
+            position: fixed;
+            z-index: 9999;
+          }
+
+          .selectivity-search-input-container {
+            border-bottom: 1px solid #eee;
+          }
+
+          .selectivity-search-input {
+            background: transparent;
+            border: 0;
+            outline: 0;
+            width: 100%;
+            color: var(--nuxeo-text-default, #3a3a54);
+          }
+
+          .selectivity-results-container {
+            max-height: 28em;
+            overflow: auto;
+            position: relative;
+          }
+
+          .selectivity-load-more,
+          .selectivity-result-item {
+            cursor: pointer;
+            padding: 7px;
+          }
+
+          .selectivity-result-children .selectivity-result-item {
+            padding-left: 17px;
+          }
+
+          .selectivity-load-more.highlight,
+          .selectivity-result-item.highlight {
+            background: var(--nuxeo-primary-color);
+            color: #fff;
+          }
+
+          .selectivity-result-item.disabled {
+            cursor: default;
+            color: #999;
+          }
+
+          .selectivity-result-item:first-child {
+            border-radius: 4px 4px 0 0;
+          }
+
+          .selectivity-dropdown.has-search-input .selectivity-result-item:first-child {
+            border-radius: 0;
+          }
+
+          .selectivity-result-label {
+            font-weight: bold;
+          }
+
+          .selectivity-load-more,
+          .selectivity-result-item:last-child,
+          .selectivity-result-children:last-child .selectivity-result-item:last-child {
+            border-radius: 0 0 4px 4px;
+          }
+
+          .selectivity-result-children .selectivity-result-item:last-child {
+            border-radius: 0;
+          }
+
+          .selectivity-error,
+          .selectivity-loading,
+          .selectivity-search-input-container,
+          .selectivity-result-label {
+            padding: 7px;
+          }
+
+          /**
+          * Multi-selection input
+          */
+          #input:not([readonly]) .selectivity-multiple-input-container {
+            border-bottom: 1px solid #3a3a54;
+          }
+
+          .selectivity-multiple-input-container {
+            cursor: text;
+            min-height: 2em;
+            padding: 14px 2px 0px 2px;
+            position: relative;
+          }
+
+          .selectivity-multiple-input,
+          input[type='text'].selectivity-multiple-input {
+            background-color: transparent;
+            border: none;
+            float: left;
+            font: inherit;
+            max-width: 100%;
+            outline: 0;
+            padding: 0;
+            color: var(--nuxeo-text-default, #3a3a54);
+          }
+
+          .selectivity-multiple-input:focus,
+          input[type='text'].selectivity-multiple-input:focus {
+            background-color: transparent;
+            -webkit-box-shadow: none;
+            box-shadow: none;
+            outline: none;
+          }
+
+          .selectivity-multiple-input::-ms-clear {
+            display: none;
+          }
+
+          .selectivity-multiple-input::placeholder {
+            color: #999;
+          }
+
+          .selectivity-multiple-selected-item {
+            background: none var(--nuxeo-tag-background, #fff);
+            border-radius: 3px;
+            cursor: default;
+            float: left;
+            line-height: 2em;
+            margin: 2px;
+            padding: 0 5px;
+            position: relative;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            -webkit-user-select: none;
+            user-select: none;
+            white-space: nowrap;
+            @apply --nuxeo-tag;
+          }
+
+          .selectivity-multiple-selected-item.highlighted {
+            background-color: #ccc;
+          }
+
+          .selectivity-multiple-selected-item-remove, .selectivity-single-selected-item-remove {
+            color: #000;
+            cursor: pointer;
+            margin-left: -5px;
+            padding: 5px;
+          }
+
+          /**
+          * Single-selection input
+          */
+          #input:not([readonly]) .selectivity-single-select {
+            border-bottom: 1px solid #3a3a54;
+          }
+
+          #input[readonly] .selectivity-caret {
+            display: none;
+          }
+
+          .selectivity-single-select {
+            display: flex;
+            cursor: pointer;
+            min-height: calc(2em + 4px);
+            padding: 5px;
+            position: relative;
+            -webkit-box-sizing: content-box;
+            box-sizing: content-box;
+          }
+
+          /**
+          * XXX - This ensures the input is reachable through tab navigation
+          */
+          .selectivity-single-select-input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+          }
+
+          .selectivity-single-result-container {
+            display: flex;
+            align-items: flex-end;
+            overflow: hidden;
+            -o-text-overflow: ellipsis;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .selectivity-single-selected-item {
+            color: #000;
+            margin: 2px 2px 0px 2px;
+            @apply --nuxeo-tag;
+          }
+
+          .selectivity-caret {
+            position: absolute;
+            top: 1.05em;
+            right: 5px;
+          }
+
+          @media only screen and (max-device-width: 480px) {
+            .selectivity-single-result-container {
+              right: 5px;
+            }
+
+            .selectivity-caret {
+              display: none;
+            }
+          }
+
+          /**
+          * Submenu
+          */
+          .selectivity-submenu-icon {
+            position: absolute;
+            right: 4px;
+          }
+
+          .selectivity-remove:before,
+          .fa-close:before,
+          .fa-times:before {
+            content: "\\00d7";
+            color: var(--nuxeo-text-default, #3a3a54);
+          }
+
+          .selectivity-caret:before {
+            content: "\\25bc";
+          }
 
           /* We need to hide overflow-x explicitly here in order to have auto overflow on Y axis */
           :host {
-            overflow-x: hidden;
-            overflow-y: auto;
+              height: 100%;
+              display: block;
+              position: relative;
+              padding-bottom: 8px;
+              overflow-x: hidden;
+              overflow-y: auto;
           }
-.selectivity-clearfix {
-  clear: both;
-}
 
-.selectivity-input {
-  display: inline-block;
-  width: 250px;
-}
+          :host([hidden]) {
+              display: none;
+          }
 
-.selectivity-input select {
-  display: none;
-}
+          :host([invalid]) .label,
+          .error {
+              color: var(--paper-input-container-invalid-color, #de350b);
+          }
 
-.selectivity-input:focus {
-  outline: none;
-}
+          :host([invalid]) .error {
+              opacity: 1;
+              font-size: .923rem;
+          }
 
-.selectivity-placeholder {
-  color: #999;
-}
-/**
-* Dropdown
-*/
+          .label {
+              @apply --nuxeo-label;
+          }
 
-.selectivity-dropdown {
-  background: var(--nuxeo-dropdown-list-background, #fff);
-  border-radius: 4px;
-  -webkit-box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.15), 0 10px 16px 0 rgba(0, 0, 0, 0.2);
-  box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.15), 0 10px 16px 0 rgba(0, 0, 0, 0.2);
-  position: fixed;
-  z-index: 9999;
-}
+          .label[required]::after {
+              display: inline-block;
+              content: '*';
+              margin-left: 4px;
+              color: var(--paper-input-container-invalid-color, #de350b);
+              font-size: 1.2em;
+          }
 
-.selectivity-search-input-container {
-  border-bottom: 1px solid #eee;
-}
-
-.selectivity-search-input {
-  background: transparent;
-  border: 0;
-  outline: 0;
-  width: 100%;
-  color: var(--nuxeo-text-default, #3a3a54);
-}
-
-.selectivity-results-container {
-  max-height: 28em;
-  overflow: auto;
-  position: relative;
-}
-
-.selectivity-load-more,
-.selectivity-result-item {
-  cursor: pointer;
-  padding: 7px;
-}
-
-.selectivity-result-children .selectivity-result-item {
-  padding-left: 17px;
-}
-
-.selectivity-load-more.highlight,
-.selectivity-result-item.highlight {
-  background: var(--nuxeo-primary-color);
-  color: #fff;
-}
-
-.selectivity-result-item.disabled {
-  cursor: default;
-  color: #999;
-}
-
-.selectivity-result-item:first-child {
-  border-radius: 4px 4px 0 0;
-}
-
-.selectivity-dropdown.has-search-input .selectivity-result-item:first-child {
-  border-radius: 0;
-}
-
-.selectivity-result-label {
-  font-weight: bold;
-}
-
-.selectivity-load-more,
-.selectivity-result-item:last-child,
-.selectivity-result-children:last-child .selectivity-result-item:last-child {
-  border-radius: 0 0 4px 4px;
-}
-
-.selectivity-result-children .selectivity-result-item:last-child {
-  border-radius: 0;
-}
-
-.selectivity-error,
-.selectivity-loading,
-.selectivity-search-input-container,
-.selectivity-result-label {
-  padding: 7px;
-}
-/**
-* Multi-selection input
-*/
-
-#input:not([readonly]) .selectivity-multiple-input-container {
-  border-bottom: 1px solid #3a3a54;
-}
-
-.selectivity-multiple-input-container {
-  cursor: text;
-  min-height: 2em;
-  padding: 14px 2px 0px 2px;
-  position: relative;
-}
-
-.selectivity-multiple-input,
-input[type='text'].selectivity-multiple-input {
-  background-color: transparent;
-  border: none;
-  float: left;
-  font: inherit;
-  max-width: 100%;
-  outline: 0;
-  padding: 0;
-  color: var(--nuxeo-text-default, #3a3a54);
-}
-
-.selectivity-multiple-input:focus,
-input[type='text'].selectivity-multiple-input:focus {
-  background-color: transparent;
-  -webkit-box-shadow: none;
-  box-shadow: none;
-  outline: none;
-}
-
-.selectivity-multiple-input::-ms-clear {
-  display: none;
-}
-
-.selectivity-multiple-input::placeholder {
-  color: #999;
-}
-
-.selectivity-multiple-selected-item {
-  background: none var(--nuxeo-tag-background, #fff);
-  border-radius: 3px;
-  cursor: default;
-  float: left;
-  line-height: 2em;
-  margin: 2px;
-  padding: 0 5px;
-  position: relative;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -webkit-user-select: none;
-  user-select: none;
-  white-space: nowrap;
-  @apply --nuxeo-tag;
-}
-
-.selectivity-multiple-selected-item.highlighted {
-  background-color: #ccc;
-}
-
-.selectivity-multiple-selected-item-remove, .selectivity-single-selected-item-remove {
-  color: #000;
-  cursor: pointer;
-  margin-left: -5px;
-  padding: 5px;
-}
-/**
-* Single-selection input
-*/
-
-#input:not([readonly]) .selectivity-single-select {
-  border-bottom: 1px solid #3a3a54;
-}
-
-#input[readonly] .selectivity-caret {
-  display: none;
-}
-
-.selectivity-single-select {
-  display: flex;
-  cursor: pointer;
-  min-height: calc(2em + 4px);
-  padding: 5px;
-  position: relative;
-  -webkit-box-sizing: content-box;
-  box-sizing: content-box;
-}
-
-/**
-* XXX - This ensures the input is reachable through tab navigation
-*/
-.selectivity-single-select-input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.selectivity-single-result-container {
-  display: flex;
-  align-items: flex-end;
-  overflow: hidden;
-  -o-text-overflow: ellipsis;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.selectivity-single-selected-item {
-  color: #000;
-  margin: 2px 2px 0px 2px;
-  @apply --nuxeo-tag;
-}
-
-.selectivity-caret {
-  position: absolute;
-  top: 1.05em;
-  right: 5px;
-}
-
-@media only screen and (max-device-width: 480px) {
-  .selectivity-single-result-container {
-    right: 5px;
-  }
-
-  .selectivity-caret {
-    display: none;
-  }
-}
-/**
-* Submenu
-*/
-
-.selectivity-submenu-icon {
-  position: absolute;
-  right: 4px;
-}
-
-.selectivity-remove:before,
-.fa-close:before,
-.fa-times:before {
-  content: "\\00d7";
-  color: var(--nuxeo-text-default, #3a3a54);
-}
-.selectivity-caret:before {
-  content: "\\25bc";
-}
-        :host {
-            height: 100%;
-            display: block;
-            position: relative;
-            padding-bottom: 8px;
-        }
-
-        :host([hidden]) {
-            display: none;
-        }
-
-        :host([invalid]) .label,
-        .error {
-            color: var(--paper-input-container-invalid-color, #de350b);
-        }
-
-        :host([invalid]) .error {
-            opacity: 1;
-            font-size: .923rem;
-        }
-
-        .label {
-            @apply --nuxeo-label;
-        }
-
-        .label[required]::after {
-            display: inline-block;
-            content: '*';
-            margin-left: 4px;
-            color: var(--paper-input-container-invalid-color, #de350b);
-            font-size: 1.2em;
-        }
-
-        .preserve-white-space {
-            white-space: pre;
-        }
-
+          .preserve-white-space {
+              white-space: pre;
+          }
         </style>
 
         <nuxeo-operation id="op" op="[[operation]]" enrichers="[[enrichers]]" headers="[[headers]]"></nuxeo-operation>
