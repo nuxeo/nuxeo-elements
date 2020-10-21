@@ -1,5 +1,5 @@
 {
-  "accessibility.thumbnail": "Thumbnail of {0}",
+  "accessibility.thumbnail": "صورة مصغرة لـ {0}",
   "actionsMenu.more": "More",
   "addToCollectionButton.dialog.add": "Add",
   "addToCollectionButton.dialog.cancel": "إلغاء",
@@ -45,8 +45,8 @@
   "comments.notFound.reply": "The selected reply may not be available anymore, please refresh your page.",
   "comments.numberOfReplies": "{0} Replies",
   "comments.options.delete": "Delete",
-  "comments.options.edit": "Edit",
-  "comments.options.reply": "Reply",
+  "comments.options.edit": "تعديل",
+  "comments.options.reply": "رد",
   "comments.showAll": "show all",
   "comments.submit.tooltip": "CTRL + Enter to submit",
   "comments.writePlaceholder.comment": "Write a comment here",
