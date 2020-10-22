@@ -6207,8 +6207,8 @@ typedArrayTags[weakMapTag] = false;
           return `
             <div class="selectivity-multiple-input-container">
               ${options.enabled ? enabledTemplate : disabledTemplate}
-              <div class="selectivity-clearfix"/>
-              <i class="selectivity-caret"/>
+              <div class="selectivity-clearfix"></div>
+              <span class="selectivity-caret"></span>
             </div>
           `;
         },
@@ -6327,8 +6327,8 @@ typedArrayTags[weakMapTag] = false;
           return `
             <div class="selectivity-single-select">
               <input type="text" class="selectivity-single-select-input" ${options.required ? ' required' : ''}>
-              <div class="selectivity-single-result-container"/>
-              <i class="selectivity-caret"/>
+              <div class="selectivity-single-result-container"></div>
+              <span class="selectivity-caret"></span>
             </div>
           `;
         },
