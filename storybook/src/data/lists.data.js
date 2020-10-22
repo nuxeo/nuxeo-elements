@@ -65,7 +65,7 @@ const dates = [
   '9/28/2018',
 ];
 
-const cities = [
+export const cities = [
   'Lisbon',
   'Paris',
   'San Francisco',
