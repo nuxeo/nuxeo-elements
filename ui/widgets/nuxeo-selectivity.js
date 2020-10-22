@@ -6207,8 +6207,9 @@ typedArrayTags[weakMapTag] = false;
           return `
             <div class="selectivity-multiple-input-container">
               ${options.enabled ? enabledTemplate : disabledTemplate}
-              <div class="selectivity-clearfix"/>
-              <i class="selectivity-caret"/>
+              <div class="selectivity-clearfix"></div>
+              <span class="selectivity-caret"></span>
+              <span class="underline"></span>
             </div>
           `;
         },
@@ -6240,7 +6241,7 @@ typedArrayTags[weakMapTag] = false;
             }">${
               options.removable
                 ? '<a class="selectivity-multiple-selected-item-remove">' +
-                  '<i class="fa fa-remove"></i>' +
+                  '<span class="fa fa-remove"></span>' +
                   '</a>'
                 : ''
             }${escape(options.text)
@@ -6297,7 +6298,7 @@ typedArrayTags[weakMapTag] = false;
             }">${
               escape(options.text)
             }${options.submenu
-              ? '<i class="selectivity-submenu-icon fa fa-chevron-right"></i>'
+              ? '<span class="selectivity-submenu-icon fa fa-chevron-right"></span>'
               : ''
             }</div>`
           );
@@ -6327,8 +6328,9 @@ typedArrayTags[weakMapTag] = false;
           return `
             <div class="selectivity-single-select">
               <input type="text" class="selectivity-single-select-input" ${options.required ? ' required' : ''}>
-              <div class="selectivity-single-result-container"/>
-              <i class="selectivity-caret"/>
+              <div class="selectivity-single-result-container"></div>
+              <span class="selectivity-caret"></span>
+              <span class="underline"></span>
             </div>
           `;
         },
@@ -6885,15 +6887,6 @@ typedArrayTags[weakMapTag] = false;
           /**
           * Multi-selection input
           */
-          #input:not([readonly]) .selectivity-multiple-input-container {
-            border-bottom: 1px solid #3a3a54;
-          }
-
-          #input.open .selectivity-multiple-input-container,
-          #input:focus .selectivity-multiple-input-container {
-            border-bottom: 2px solid var(--nuxeo-primary-color, #0066ff);
-          }
-
           .selectivity-multiple-input-container {
             cursor: text;
             min-height: 26px;
@@ -6958,10 +6951,6 @@ typedArrayTags[weakMapTag] = false;
           /**
           * Single-selection input
           */
-          #input:not([readonly]) .selectivity-single-select {
-            border-bottom: 1px solid #3a3a54;
-          }
-
           #input[readonly] .selectivity-caret {
             display: none;
           }
@@ -6975,11 +6964,6 @@ typedArrayTags[weakMapTag] = false;
 
           #input:focus {
             outline: 0;
-          }
-
-          #input.open .selectivity-single-select,
-          #input:focus .selectivity-single-select {
-            border-bottom: 2px solid var(--nuxeo-primary-color, #0066ff);
           }
 
           /**
@@ -7038,6 +7022,7 @@ typedArrayTags[weakMapTag] = false;
 
           .selectivity-caret:before {
             content: "\\25bc";
+            font-size: 10px;
           }
 
           /* We need to hide overflow-x explicitly here in order to have auto overflow on Y axis */
@@ -7078,6 +7063,24 @@ typedArrayTags[weakMapTag] = false;
 
           .preserve-white-space {
               white-space: pre;
+          }
+
+          .underline {
+            height: 1px;
+            width: 100%;
+            position: absolute;
+            bottom: 0;
+            background-color: #3a3a54;
+          }
+
+          #input[readonly] .underline {
+            background-color: transparent;
+          }
+
+          #input.open .underline,
+          #input:focus .underline {
+            height: 2px;
+            background-color: var(--nuxeo-primary-color, #0066ff);
           }
         </style>
 
@@ -7137,7 +7140,7 @@ typedArrayTags[weakMapTag] = false;
             `${'<span class="selectivity-single-selected-item" ' +
             'data-item-id="'}${escapeHTML(opts.id)}">${
               opts.removable ? '<a class="preserve-white-space selectivity-single-selected-item-remove">' +
-                  '<i class="selectivity-remove"></i>' +
+                  '<span class="selectivity-remove"></span>' +
                   '</a>'
                 : ''
             }${this.selectionFormatter(opts.item || opts)}</span>`
@@ -7149,7 +7152,7 @@ typedArrayTags[weakMapTag] = false;
               `<span class="selectivity-multiple-selected-item${extraClass}"
                      data-item-id="${escapeHTML(opts.id)}">${
                 opts.removable ? '<a class="preserve-white-space selectivity-multiple-selected-item-remove">' +
-                    '<i class="selectivity-remove"></i>' +
+                    '<span class="selectivity-remove"></span>' +
                     '</a>'
                   : ''
               }${this.selectionFormatter(opts.item || opts)}</span>`);
