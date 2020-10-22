@@ -4,6 +4,8 @@ import { text } from '@storybook/addon-knobs';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-input.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-textarea.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-date-picker.js';
+import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-selectivity.js';
+import { cities as CITIES } from '../../data/lists.data';
 
 storiesOf('Widgets', module).add('Vertical Alignment Consistency', () => {
   const label = text('Label', 'Label');
@@ -25,6 +27,13 @@ storiesOf('Widgets', module).add('Vertical Alignment Consistency', () => {
         <nuxeo-input label="${label}" placeholder="Placeholder"></nuxeo-input>
         <nuxeo-date-picker label="${label}" placeholder="Placeholder"></nuxeo-date-picker>
         <nuxeo-textarea label="${label}" placeholder="Placeholder"></nuxeo-textarea>
+      </div>
+      <div class="row">
+        <nuxeo-selectivity .data="${CITIES}" label="${label}" placeholder="Placeholder" min-chars="0">
+        </nuxeo-selectivity>
+        <nuxeo-selectivity .data="${CITIES}" label="${label}" placeholder="Placeholder" min-chars="0" multiple>
+        </nuxeo-selectivity>
+        <nuxeo-input label="${label}" placeholder="Placeholder"></nuxeo-input>
       </div>
     </div>
   `;
