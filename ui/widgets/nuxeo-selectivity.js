@@ -6889,15 +6889,21 @@ typedArrayTags[weakMapTag] = false;
             border-bottom: 1px solid #3a3a54;
           }
 
+          #input.open .selectivity-multiple-input-container,
+          #input:focus .selectivity-multiple-input-container {
+            border-bottom: 2px solid var(--nuxeo-primary-color, #0066ff);
+          }
+
           .selectivity-multiple-input-container {
             cursor: text;
-            min-height: 2em;
-            padding: 14px 2px 0px 2px;
+            min-height: 26px;
             position: relative;
+            padding-top: 5px;
           }
 
           .selectivity-multiple-input,
           input[type='text'].selectivity-multiple-input {
+            height: 100%;
             background-color: transparent;
             border: none;
             float: left;
@@ -6905,6 +6911,7 @@ typedArrayTags[weakMapTag] = false;
             max-width: 100%;
             outline: 0;
             padding: 0;
+            padding-top: 1px;
             color: var(--nuxeo-text-default, #3a3a54);
           }
 
@@ -6914,10 +6921,6 @@ typedArrayTags[weakMapTag] = false;
             -webkit-box-shadow: none;
             box-shadow: none;
             outline: none;
-          }
-
-          .selectivity-multiple-input::-ms-clear {
-            display: none;
           }
 
           .selectivity-multiple-input::placeholder {
@@ -6966,11 +6969,17 @@ typedArrayTags[weakMapTag] = false;
           .selectivity-single-select {
             display: flex;
             cursor: pointer;
-            min-height: calc(2em + 4px);
-            padding: 5px;
+            min-height: 31px;
             position: relative;
-            -webkit-box-sizing: content-box;
-            box-sizing: content-box;
+          }
+
+          #input:focus {
+            outline: 0;
+          }
+
+          #input.open .selectivity-single-select,
+          #input:focus .selectivity-single-select {
+            border-bottom: 2px solid var(--nuxeo-primary-color, #0066ff);
           }
 
           /**
@@ -6984,9 +6993,8 @@ typedArrayTags[weakMapTag] = false;
 
           .selectivity-single-result-container {
             display: flex;
-            align-items: flex-end;
+            align-items: center;
             overflow: hidden;
-            -o-text-overflow: ellipsis;
             text-overflow: ellipsis;
             white-space: nowrap;
           }
@@ -6999,8 +7007,8 @@ typedArrayTags[weakMapTag] = false;
 
           .selectivity-caret {
             position: absolute;
-            top: 1.05em;
-            right: 5px;
+            top: 6px;
+            right: 0;
           }
 
           @media only screen and (max-device-width: 480px) {
@@ -7035,6 +7043,7 @@ typedArrayTags[weakMapTag] = false;
           /* We need to hide overflow-x explicitly here in order to have auto overflow on Y axis */
           :host {
               height: 100%;
+              min-height: 100%;
               display: block;
               position: relative;
               padding-bottom: 8px;
@@ -7065,7 +7074,6 @@ typedArrayTags[weakMapTag] = false;
               content: '*';
               margin-left: 4px;
               color: var(--paper-input-container-invalid-color, #de350b);
-              font-size: 1.2em;
           }
 
           .preserve-white-space {
