@@ -6209,6 +6209,7 @@ typedArrayTags[weakMapTag] = false;
               ${options.enabled ? enabledTemplate : disabledTemplate}
               <div class="selectivity-clearfix"></div>
               <span class="selectivity-caret"></span>
+              <span class="underline"></span>
             </div>
           `;
         },
@@ -6329,6 +6330,7 @@ typedArrayTags[weakMapTag] = false;
               <input type="text" class="selectivity-single-select-input" ${options.required ? ' required' : ''}>
               <div class="selectivity-single-result-container"></div>
               <span class="selectivity-caret"></span>
+              <span class="underline"></span>
             </div>
           `;
         },
@@ -6885,15 +6887,6 @@ typedArrayTags[weakMapTag] = false;
           /**
           * Multi-selection input
           */
-          #input:not([readonly]) .selectivity-multiple-input-container {
-            border-bottom: 1px solid #3a3a54;
-          }
-
-          #input.open .selectivity-multiple-input-container,
-          #input:focus .selectivity-multiple-input-container {
-            border-bottom: 2px solid var(--nuxeo-primary-color, #0066ff);
-          }
-
           .selectivity-multiple-input-container {
             cursor: text;
             min-height: 25px;
@@ -6958,10 +6951,6 @@ typedArrayTags[weakMapTag] = false;
           /**
           * Single-selection input
           */
-          #input:not([readonly]) .selectivity-single-select {
-            border-bottom: 1px solid #3a3a54;
-          }
-
           #input[readonly] .selectivity-caret {
             display: none;
           }
@@ -6969,17 +6958,12 @@ typedArrayTags[weakMapTag] = false;
           .selectivity-single-select {
             display: flex;
             cursor: pointer;
-            min-height: 27px;
+            min-height: 28px;
             position: relative;
           }
 
           #input:focus {
             outline: 0;
-          }
-
-          #input.open .selectivity-single-select,
-          #input:focus .selectivity-single-select {
-            border-bottom: 2px solid var(--nuxeo-primary-color, #0066ff);
           }
 
           /**
@@ -7077,6 +7061,24 @@ typedArrayTags[weakMapTag] = false;
 
           .preserve-white-space {
               white-space: pre;
+          }
+
+          .underline {
+            height: 1px;
+            width: 100%;
+            position: absolute;
+            bottom: 0;
+            background-color: #3a3a54;
+          }
+
+          #input[readonly] .underline {
+            background-color: transparent;
+          }
+
+          #input.open .underline,
+          #input:focus .underline {
+            height: 2px;
+            background-color: var(--nuxeo-primary-color, #0066ff);
           }
         </style>
 
