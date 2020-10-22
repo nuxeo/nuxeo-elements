@@ -27,6 +27,7 @@ import '@polymer/paper-item/paper-item.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { FiltersBehavior } from '../nuxeo-filters-behavior.js';
 import '../nuxeo-icons.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-select.js';
@@ -46,7 +47,7 @@ import '../nuxeo-button-styles.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-workflow-button/index.html
    */
-  class WorkflowButton extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
+  class WorkflowButton extends mixinBehaviors([FiltersBehavior, I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style include="nuxeo-action-button-styles nuxeo-button-styles">
@@ -144,13 +145,10 @@ import '../nuxeo-button-styles.js';
     }
 
     _isAvailable(document) {
-      if (!document) {
+      if (!document || this.isRecord(document)) {
         return false;
       }
-      this.processes = document.contextParameters.runnableWorkflows;
-      this.workflows = document.contextParameters.runningWorkflows;
-      this.hasWorkflowRunning = this.workflows && this.workflows.length > 0;
-      return document && !this.hasWorkflowRunning && this.processes && this.processes.length > 0;
+      return this.hasRunnableWorkflows(document) && !this.hasRunningWorkflows(document);
     }
 
     _computeLabel() {

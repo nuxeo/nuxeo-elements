@@ -66,6 +66,7 @@ export const FiltersBehavior = {
   canSetRetention(document) {
     return (
       document &&
+      !this.hasRunningWorkflows(document) &&
       !document.hasLegalHold &&
       !this.isVersion(document) &&
       this.hasPermission(document, 'MakeRecord') &&
@@ -249,5 +250,27 @@ export const FiltersBehavior = {
    */
   hasAdministrationPermissions(user) {
     return user && (user.isAdministrator || this.isMember(user, 'powerusers'));
+  },
+
+  /**
+   * Checks if the given document has running workflows
+   */
+  hasRunningWorkflows(document) {
+    if (!document || !document.contextParameters) {
+      return false;
+    }
+    const workflows = document.contextParameters.runningWorkflows;
+    return workflows && workflows.length > 0;
+  },
+
+  /**
+   * Checks if the given document has runnable workflows
+   */
+  hasRunnableWorkflows(document) {
+    if (!document || !document.contextParameters) {
+      return false;
+    }
+    const processes = document.contextParameters.runnableWorkflows;
+    return processes && processes.length > 0;
   },
 };
