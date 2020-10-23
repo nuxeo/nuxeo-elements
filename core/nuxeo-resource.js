@@ -251,7 +251,7 @@ import './nuxeo-connection.js';
         options.headers['nx-es-sync'] = true;
       }
       // add support for plain text responses by default
-      options.headers.accept = 'text/plain,application/json';
+      options.headers.accept = options.headers.accept || 'text/plain,application/json';
       // set default content-type
       options.headers['Content-Type'] = this.contentType;
       // Look up content enrichers parameter
