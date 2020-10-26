@@ -19,6 +19,8 @@ import '@polymer/iron-icons/av-icons.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
+import '@polymer/iron-flex-layout/iron-flex-layout.js';
+import './widgets/nuxeo-select.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
 {
@@ -42,19 +44,59 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
             display: block;
           }
 
+          .container {
+            @apply --layout-horizontal;
+            @apply --layout-center;
+          }
+
           .controls {
             color: var(--nuxeo-text-default, #000);
             font-size: 1rem;
-            padding: 0 4px;
+            @apply --layout-horizontal;
+            @apply --layout-center;
           }
 
-          paper-icon-button {
-            padding: 8px;
+          nuxeo-select {
+            max-width: 4rem;
+
+            --paper-dropdown-menu-input: {
+              padding: 0;
+              min-width: 2rem;
+              text-align: center;
+            }
+
+            --paper-input-container: {
+              padding: 0;
+            }
+
+            --paper-input-container-underline: {
+              display: none;
+            }
+
+            --paper-input-container-underline-focus: {
+              display: none;
+            }
+
+            --paper-input-container-shared-input-style: {
+              font-size: 1rem;
+              vertical-align: sub;
+              width: inherit;
+              margin: 0 0 1px 0;
+              max-width: 4rem;
+            }
+          }
+
+          .total {
+            margin-inline-start: 2rem;
+            font-size: 1rem;
+            width: 4rem;
+            text-align: center;
           }
         </style>
 
-        <div class="horizontal layout end-justified center">
+        <div class="container">
           <paper-icon-button
+            id="firstPage"
             icon="av:skip-previous"
             title="First Page"
             on-click="_first"
@@ -62,14 +104,20 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
           >
           </paper-icon-button>
           <paper-icon-button
+            id="previousPage"
             icon="icons:chevron-left"
             title="Previous Page"
             on-click="_previous"
             disabled$="[[_isFirst(page)]]"
           >
           </paper-icon-button>
-          <span class="controls">[[page]]/[[numberOfPages]]</span>
+          <div class="controls">
+            <nuxeo-select options="[[_computePageOptions(numberOfPages)]]" selected="{{page}}" vertical-align>
+            </nuxeo-select>
+            <span class="total">/ [[numberOfPages]]</span>
+          </div>
           <paper-icon-button
+            id="nextPage"
             icon="icons:chevron-right"
             title="Next Page"
             on-click="_next"
@@ -77,6 +125,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
           >
           </paper-icon-button>
           <paper-icon-button
+            id="lastPage"
             icon="av:skip-next"
             title="Last Page"
             on-click="_last"
@@ -131,6 +180,10 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
     _isLast(page) {
       return page === this.numberOfPages;
+    }
+
+    _computePageOptions(numberOfPages) {
+      return Array.from({ length: numberOfPages }, (x, i) => i + 1);
     }
   }
 
