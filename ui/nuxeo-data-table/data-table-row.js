@@ -26,6 +26,12 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
             user-select: none;
           }
 
+          :host([header]) {
+            border: none;
+            padding-bottom: 0;
+            border-bottom: none;
+          }
+
           :host([selected]) {
             border: 2px solid var(--nuxeo-primary-color, #0066ff);
             padding-bottom: 0;

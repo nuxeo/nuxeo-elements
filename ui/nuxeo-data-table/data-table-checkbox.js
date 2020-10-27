@@ -9,7 +9,7 @@ import '../widgets/nuxeo-checkmark.js';
       return html`
         <style>
           :host {
-            min-height: 48px;
+            min-height: 44px;
             flex-basis: 48px;
             flex-grow: 0;
             flex-shrink: 0;

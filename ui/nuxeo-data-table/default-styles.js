@@ -23,9 +23,11 @@ const template = html`
           color: var(--secondary-text-color, #939caa);
           font-weight: 600;
           font-size: 1rem;
-          height: 48px;
-          border-bottom: 2px solid var(--nuxeo-border, #e3e3e3);
-          min-height: 48px;
+          height: 46px;
+          border: none;
+          border-bottom: 1px solid var(--nuxeo-border, #e3e3e3);
+          min-height: 46px;
+          padding-bottom: 0;
         }
 
         --iron-data-table-row: {
