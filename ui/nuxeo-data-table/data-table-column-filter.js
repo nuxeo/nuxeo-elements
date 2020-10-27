@@ -12,6 +12,8 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
         <style>
           :host {
             height: 100%;
+            display: flex;
+            align-items: center;
           }
           :host([hidden]) {
             display: none;
@@ -25,7 +27,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
             --paper-input-container-input: {
               min-height: 2em;
-              padding: 0 0 1px 0;
+              padding: 0;
               font-size: inherit;
               font-weight: 600;
             }
@@ -39,10 +41,6 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
               color: #999;
               font-weight: 600;
               padding: 0;
-            }
-
-            --paper-input-container-underline-focus: {
-              border-bottom: 1px solid black;
             }
           }
         </style>
