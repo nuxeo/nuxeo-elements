@@ -56,7 +56,7 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
             padding-left: 8px;
           }
         </style>
-        <div id="error">
+        <div id="error" hidden$="[[!_hasValidationErrors(_errorMessages.splices)]]">
           <dom-repeat items="[[_errorMessages]]">
             <template>
               <span class="error">[[item]]</span>
@@ -300,9 +300,13 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
     }
 
     _addValidationError(message) {
-      this._errorMessages.push(message);
+      this.push('_errorMessages', message);
       this.$.error.scrollIntoView();
       this.$.error.focus();
+    }
+
+    _hasValidationErrors() {
+      return this._errorMessages && this._errorMessages.length > 0;
     }
 
     _resetValidationErrors() {
