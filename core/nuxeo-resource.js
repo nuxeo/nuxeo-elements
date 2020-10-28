@@ -311,6 +311,9 @@ import './nuxeo-connection.js';
         .then((response) =>
           response.text().then((text) => {
             try {
+              if (this.headers.accept.includes('application/xml')) {
+                return text;
+              }
               return text ? JSON.parse(text) : {};
             } catch (e) {
               return { error: 'Invalid json' };
