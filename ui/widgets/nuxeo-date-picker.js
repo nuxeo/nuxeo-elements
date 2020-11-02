@@ -151,52 +151,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           vaadin-date-picker::part(text-field) {
             --lumo-text-field-size: 29px;
           }
-
-          /* picker input */
-          [part='input-field'] {
-            background-color: var(--nuxeo-page-background) !important;
-            border: 1px solid var(--nuxeo-border) !important;
-            color: var(--nuxeo-text-default) !important;
-          }
-
-          /* buttons inside input (clear and open picker) */
-          [part='text-field'] [part$='button'] {
-            color: var(--nuxeo-text-default) !important;
-          }
-
-          [part='text-field'] [part$='button']:hover {
-            color: var(--nuxeo-primary-color) !important;
-          }
-
-          /* buttons inside the overlay (cancel and today), plus highlights for current year and today's date */
-          [part='cancel-button'],
-          [part='today-button'],
-          [part='years'] [part='year-number'][current],
-          [part='date'][today] {
-            color: var(--nuxeo-primary-color) !important;
-          }
-
-          /* keyboard focus for buttons inside the overlay */
-          [part='cancel-button'][focus-ring],
-          [part='today-button'][focus-ring] {
-            box-shadow: 0 0 0 2px var(--nuxeo-primary-color) !important;
-          }
-
-          /* date selected */
-          [part='date'][selected]:before {
-            background-color: var(--nuxeo-primary-color) !important;
-            box-shadow: 0 0 0 2px var(--nuxeo-primary-color) !important;
-          }
-
-          [part='date'][selected][today] {
-            color: var(--nuxeo-button-primary-text) !important;
-          }
-
-          /* hover any date that is not disabled or currently selected */
-          [part='date']:not([disabled]):not([selected]):hover::before {
-            background-color: var(--nuxeo-primary-color) !important;
-            opacity: 0.1 !important;
-          }
         </style>
 
         <label>[[label]]</label>
