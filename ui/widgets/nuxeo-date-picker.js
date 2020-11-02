@@ -245,10 +245,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _getValidity() {
-      if (!this.required) {
-        return true;
-      }
-      return !!this.value;
+      return this.$.date.validate() && (this.required ? !!this.value : true);
     }
 
     _valueChanged() {
