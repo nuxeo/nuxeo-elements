@@ -72,6 +72,10 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
           paper-checkbox {
             margin-top: 10px;
           }
+
+          paper-radio-group {
+            --paper-radio-group-item-padding: 12px 8px 0px 0px;
+          }
         </style>
 
         <nuxeo-operation id="op" op="Directory.SuggestEntries"></nuxeo-operation>
