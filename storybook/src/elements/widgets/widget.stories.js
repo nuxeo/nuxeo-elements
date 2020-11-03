@@ -7,6 +7,7 @@ import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-date-picker.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-selectivity.js';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-data-table/iron-data-table.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-directory-radio-group.js';
+import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-select.js';
 import { cities as CITIES, LIST } from '../../data/lists.data';
 import { DIRECTORY_SUGGESTION_ENTRIES } from '../../data/directory-suggestion.data.js';
 
@@ -103,7 +104,7 @@ storiesOf('Widgets', module).add('Vertical Alignment Consistency', () => {
       <div class="row">
         <nuxeo-selectivity .data="${CITIES}" label="${label}" placeholder="Placeholder" min-chars="0">
         </nuxeo-selectivity>
-        <nuxeo-input label="${label}" placeholder="Placeholder"></nuxeo-input>
+        <nuxeo-select label="${label}" placeholder="Placeholder" .options="${CITIES}"></nuxeo-select>
         <nuxeo-directory-radio-group label="Select language" directory-name="language"> </nuxeo-directory-radio-group>
       </div>
     </div>
