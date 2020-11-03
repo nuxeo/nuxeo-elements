@@ -3,6 +3,7 @@ import { storiesOf } from '@storybook/polymer';
 import { text } from '@storybook/addon-knobs';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-input.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-textarea.js';
+import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-date-picker.js';
 
 storiesOf('Widgets', module).add('Vertical Alignment Consistency', () => {
   const label = text('Label', 'Label');
@@ -21,8 +22,8 @@ storiesOf('Widgets', module).add('Vertical Alignment Consistency', () => {
     </style>
     <div class="container">
       <div class="row">
-        <nuxeo-textarea label="${label}" placeholder="Placeholder"></nuxeo-textarea>
         <nuxeo-input label="${label}" placeholder="Placeholder"></nuxeo-input>
+        <nuxeo-date-picker label="${label}" placeholder="Placeholder"></nuxeo-date-picker>
         <nuxeo-textarea label="${label}" placeholder="Placeholder"></nuxeo-textarea>
       </div>
     </div>
