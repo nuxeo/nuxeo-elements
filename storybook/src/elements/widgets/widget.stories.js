@@ -6,8 +6,12 @@ import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-textarea.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-date-picker.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-selectivity.js';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-data-table/iron-data-table.js';
+import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-directory-radio-group.js';
 import { cities as CITIES, LIST } from '../../data/lists.data';
+import { DIRECTORY_SUGGESTION_ENTRIES } from '../../data/directory-suggestion.data.js';
 
+const server = window.nuxeo.mock;
+server.respondWith('post', '/api/v1/automation/Directory.SuggestEntries', () => DIRECTORY_SUGGESTION_ENTRIES);
 storiesOf('Widgets', module).add('Vertical Alignment Consistency', () => {
   const label = text('Label', 'Label');
   return html`
@@ -95,6 +99,12 @@ storiesOf('Widgets', module).add('Vertical Alignment Consistency', () => {
         <nuxeo-selectivity .data="${CITIES}" label="${label}" placeholder="Placeholder" min-chars="0" multiple>
         </nuxeo-selectivity>
         <nuxeo-input label="${label}" placeholder="Placeholder"></nuxeo-input>
+      </div>
+      <div class="row">
+        <nuxeo-selectivity .data="${CITIES}" label="${label}" placeholder="Placeholder" min-chars="0">
+        </nuxeo-selectivity>
+        <nuxeo-input label="${label}" placeholder="Placeholder"></nuxeo-input>
+        <nuxeo-directory-radio-group label="Select language" directory-name="language"> </nuxeo-directory-radio-group>
       </div>
     </div>
   `;
