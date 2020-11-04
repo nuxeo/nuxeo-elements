@@ -23,6 +23,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
             --paper-input-container: {
               font-size: inherit;
               margin: 12px 2px 0 2px;
+              margin-top: 3px;
             }
 
             --paper-input-container-input: {
