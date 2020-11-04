@@ -65,7 +65,7 @@ suite('<nuxeo-error>', () => {
       `,
     );
 
-    expectNuxeoErrorContent(nuxeoError, '404', 'ERROR.404', 'notfound.html', 'Failed to find layout');
+    expectNuxeoErrorContent(nuxeoError, '404', 'error.404', 'notfound.html', 'Failed to find layout');
   });
 
   test('Should display empty error messages when no proprieties are present', async () => {
@@ -96,7 +96,7 @@ suite('<nuxeo-error>', () => {
     );
 
     nuxeoError.show();
-    expectNuxeoErrorContent(nuxeoError, '404', 'ERROR.404', 'notfound.html', 'Failed to find layout');
+    expectNuxeoErrorContent(nuxeoError, '404', 'error.404', 'notfound.html', 'Failed to find layout');
   });
 
   test('Should display error messages when "show" function is run with arguments', async () => {
@@ -107,7 +107,7 @@ suite('<nuxeo-error>', () => {
     );
 
     nuxeoError.show('404', 'notfound.html', 'Failed to find layout');
-    expectNuxeoErrorContent(nuxeoError, '404', 'ERROR.404', 'notfound.html', 'Failed to find layout');
+    expectNuxeoErrorContent(nuxeoError, '404', 'error.404', 'notfound.html', 'Failed to find layout');
   });
 
   test('Should hide nuxeo-error when "hide" function is run', async () => {
