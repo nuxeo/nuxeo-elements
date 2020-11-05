@@ -17,7 +17,7 @@ limitations under the License.
 import { fixture, html } from '@nuxeo/testing-helpers';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
+import { RoutingBehavior, setRouter } from '../nuxeo-routing-behavior.js';
 
 function setNuxeoRouterKey(entityType, value) {
   window.Nuxeo = window.Nuxeo || {};
@@ -46,13 +46,15 @@ suite('Nuxeo.RoutingBehavior', () => {
 
   suite('urlFor', () => {
     let el;
+    let router;
     setup(async () => {
       await customElements.whenDefined('nuxeo-routed-element');
       // Mock router
-      RoutingBehavior.__router = {
+      router = {
         document: (path, tab) => `${path.startsWith('/') ? 'path' : 'uid/'}${path}${tab ? `?p=${tab}` : ''}`,
       };
-      sinon.spy(RoutingBehavior.__router, 'document');
+      setRouter(router);
+      sinon.spy(router, 'document');
       el = await fixture(
         html`
           <nuxeo-routed-element></nuxeo-routed-element>
@@ -61,94 +63,94 @@ suite('Nuxeo.RoutingBehavior', () => {
     });
 
     test('should generate url for named route', async () => {
-      RoutingBehavior.__router.useHashbang = false;
-      RoutingBehavior.__router.baseUrl = '';
+      router.useHashbang = false;
+      router.baseUrl = '';
       expect(el.urlFor('document', '/default-domain/workspaces/ws')).to.equal(`/path/default-domain/workspaces/ws`);
-      expect(RoutingBehavior.__router.document.calledOnce).to.be.true;
+      expect(router.document.calledOnce).to.be.true;
     });
 
     test('should generate url for named route when using hashbang', async () => {
-      RoutingBehavior.__router.useHashbang = true;
-      RoutingBehavior.__router.baseUrl = '';
+      router.useHashbang = true;
+      router.baseUrl = '';
       expect(el.urlFor('document', '/default-domain/workspaces/ws')).to.equal(`/#!/path/default-domain/workspaces/ws`);
-      expect(RoutingBehavior.__router.document.calledOnce).to.be.true;
+      expect(router.document.calledOnce).to.be.true;
     });
 
     test('should generate url for named route when using base URL', async () => {
-      RoutingBehavior.__router.useHashbang = false;
-      RoutingBehavior.__router.baseUrl = 'base';
+      router.useHashbang = false;
+      router.baseUrl = 'base';
       expect(el.urlFor('document', '/default-domain/workspaces/ws')).to.equal(`base/path/default-domain/workspaces/ws`);
-      expect(RoutingBehavior.__router.document.calledOnce).to.be.true;
+      expect(router.document.calledOnce).to.be.true;
     });
 
     test('should generate url for named route when using hashbang and base URL', async () => {
-      RoutingBehavior.__router.useHashbang = true;
-      RoutingBehavior.__router.baseUrl = 'base';
+      router.useHashbang = true;
+      router.baseUrl = 'base';
       expect(el.urlFor('document', '/default-domain/workspaces/ws')).to.equal(
         `base/#!/path/default-domain/workspaces/ws`,
       );
-      expect(RoutingBehavior.__router.document.calledOnce).to.be.true;
+      expect(router.document.calledOnce).to.be.true;
     });
 
     test('should generate url for named route when passing a param', async () => {
-      RoutingBehavior.__router.useHashbang = false;
-      RoutingBehavior.__router.baseUrl = '';
+      router.useHashbang = false;
+      router.baseUrl = '';
       expect(el.urlFor('document', '/default-domain/workspaces/ws', 'view')).to.equal(
         `/path/default-domain/workspaces/ws?p=view`,
       );
-      expect(RoutingBehavior.__router.document.calledOnce).to.be.true;
+      expect(router.document.calledOnce).to.be.true;
     });
 
     test('should generate url from object', async () => {
-      RoutingBehavior.__router.useHashbang = false;
-      RoutingBehavior.__router.baseUrl = '';
+      router.useHashbang = false;
+      router.baseUrl = '';
       expect(el.urlFor({ 'entity-type': 'document', uid: 'abc123', path: '/default-domain/workspaces/ws' })).to.equal(
         `/path/default-domain/workspaces/ws`,
       );
-      expect(RoutingBehavior.__router.document.calledOnce).to.be.true;
+      expect(router.document.calledOnce).to.be.true;
     });
 
     test('should generate url from object when using hashbang', async () => {
-      RoutingBehavior.__router.useHashbang = true;
-      RoutingBehavior.__router.baseUrl = '';
+      router.useHashbang = true;
+      router.baseUrl = '';
       expect(el.urlFor({ 'entity-type': 'document', uid: 'abc123', path: '/default-domain/workspaces/ws' })).to.equal(
         `/#!/path/default-domain/workspaces/ws`,
       );
-      expect(RoutingBehavior.__router.document.calledOnce).to.be.true;
+      expect(router.document.calledOnce).to.be.true;
     });
 
     test('should generate url from object when using base URL', async () => {
-      RoutingBehavior.__router.useHashbang = false;
-      RoutingBehavior.__router.baseUrl = 'base';
+      router.useHashbang = false;
+      router.baseUrl = 'base';
       expect(el.urlFor({ 'entity-type': 'document', uid: 'abc123', path: '/default-domain/workspaces/ws' })).to.equal(
         `base/path/default-domain/workspaces/ws`,
       );
-      expect(RoutingBehavior.__router.document.calledOnce).to.be.true;
+      expect(router.document.calledOnce).to.be.true;
     });
 
     test('should generate url from object using hashbang and base URL', async () => {
-      RoutingBehavior.__router.useHashbang = true;
-      RoutingBehavior.__router.baseUrl = 'base';
+      router.useHashbang = true;
+      router.baseUrl = 'base';
       expect(el.urlFor({ 'entity-type': 'document', uid: 'abc123', path: '/default-domain/workspaces/ws' })).to.equal(
         `base/#!/path/default-domain/workspaces/ws`,
       );
-      expect(RoutingBehavior.__router.document.calledOnce).to.be.true;
+      expect(router.document.calledOnce).to.be.true;
     });
 
     test('should generate url from object when passing a param', async () => {
-      RoutingBehavior.__router.useHashbang = false;
-      RoutingBehavior.__router.baseUrl = '';
+      router.useHashbang = false;
+      router.baseUrl = '';
       expect(
         el.urlFor({ 'entity-type': 'document', uid: 'abc123', path: '/default-domain/workspaces/ws' }, 'view'),
       ).to.equal(`/path/default-domain/workspaces/ws?p=view`);
-      expect(RoutingBehavior.__router.document.calledOnce).to.be.true;
+      expect(router.document.calledOnce).to.be.true;
     });
 
     test('should generate empty url from undefined route', async () => {
-      RoutingBehavior.__router.useHashbang = false;
-      RoutingBehavior.__router.baseUrl = '';
+      router.useHashbang = false;
+      router.baseUrl = '';
       expect(el.urlFor()).to.equal('');
-      expect(RoutingBehavior.__router.document.notCalled).to.be.true;
+      expect(router.document.notCalled).to.be.true;
     });
 
     suite('with route key for "document" entity-type set to "uid"', async () => {
@@ -161,12 +163,12 @@ suite('Nuxeo.RoutingBehavior', () => {
       });
 
       test('should generate url from object', async () => {
-        RoutingBehavior.__router.useHashbang = false;
-        RoutingBehavior.__router.baseUrl = '';
+        router.useHashbang = false;
+        router.baseUrl = '';
         expect(el.urlFor({ 'entity-type': 'document', uid: 'abc123', path: '/default-domain/workspaces/ws' })).to.equal(
           `/uid/abc123`,
         );
-        expect(RoutingBehavior.__router.document.calledOnce).to.be.true;
+        expect(router.document.calledOnce).to.be.true;
       });
     });
   });
