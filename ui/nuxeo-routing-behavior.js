@@ -60,8 +60,8 @@ export const RoutingBehavior = {
   // Caches the router
   _routerChanged(router) {
     if (router && !RoutingBehavior.__router) {
-      RoutingBehavior.__router = router;
-      document.dispatchEvent(new Event('nuxeo-router-changed'));
+      // eslint-disable-next-line no-use-before-define
+      setRouter(router);
     }
   },
 
@@ -165,4 +165,11 @@ export const RoutingBehavior = {
     }
     return fn(routeVal, ...params);
   },
+};
+
+export const setRouter = (router) => {
+  RoutingBehavior.__router = router;
+  if (document) {
+    document.dispatchEvent(new Event('nuxeo-router-changed'));
+  }
 };

@@ -140,3 +140,10 @@ export const I18nBehavior = {
     this.set('i18n', window.nuxeo.I18n.translate);
   },
 };
+
+export const setI18n = (i18n) => {
+  Object.assign(window.nuxeo.I18n, i18n);
+  if (document) {
+    document.dispatchEvent(new Event('i18n-locale-loaded'));
+  }
+};
