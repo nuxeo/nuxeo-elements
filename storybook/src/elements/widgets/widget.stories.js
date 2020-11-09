@@ -8,13 +8,18 @@ import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-selectivity.js';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-data-table/iron-data-table.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-directory-radio-group.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-select.js';
+import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-user-suggestion.js';
+import { USER_SUGGESTION_ENTRIES } from '../../data/user-suggestion.data';
 import { cities as CITIES, LIST } from '../../data/lists.data';
 import { DIRECTORY_SUGGESTION_ENTRIES } from '../../data/directory-suggestion.data.js';
 
 const server = window.nuxeo.mock;
 server.respondWith('post', '/api/v1/automation/Directory.SuggestEntries', () => DIRECTORY_SUGGESTION_ENTRIES);
+server.respondWith('post', '/api/v1/automation/UserGroup.Suggestion', () => USER_SUGGESTION_ENTRIES);
+
 storiesOf('Widgets', module).add('Vertical Alignment Consistency', () => {
   const label = text('Label', 'Label');
+  const placeholder = text('Placeholder', 'Placeholder');
   return html`
     <style>
       .container {
@@ -30,16 +35,22 @@ storiesOf('Widgets', module).add('Vertical Alignment Consistency', () => {
     </style>
     <div class="container">
       <div class="row">
-        <nuxeo-input label="${label}" placeholder="Placeholder"></nuxeo-input>
-        <nuxeo-date-picker label="${label}" placeholder="Placeholder"></nuxeo-date-picker>
-        <nuxeo-textarea label="${label}" placeholder="Placeholder"></nuxeo-textarea>
+        <nuxeo-input label="${label}" placeholder="${placeholder}"></nuxeo-input>
+        <nuxeo-date-picker label="${label}" placeholder="${placeholder}"></nuxeo-date-picker>
+        <nuxeo-textarea label="${label}" placeholder="${placeholder}"></nuxeo-textarea>
       </div>
       <div class="row">
-        <nuxeo-selectivity .data="${CITIES}" label="${label}" placeholder="Placeholder" min-chars="0">
+        <nuxeo-selectivity .data="${CITIES}" label="${label}" placeholder="${placeholder}" min-chars="0">
         </nuxeo-selectivity>
-        <nuxeo-selectivity .data="${CITIES}" label="${label}" placeholder="Placeholder" min-chars="0" multiple>
+        <nuxeo-selectivity .data="${CITIES}" label="${label}" placeholder="${placeholder}" min-chars="0" multiple>
         </nuxeo-selectivity>
-        <nuxeo-input label="${label}" placeholder="Placeholder"></nuxeo-input>
+        <nuxeo-input label="${label}" placeholder="${placeholder}"></nuxeo-input>
+      </div>
+      <div class="row">
+        <nuxeo-user-suggestion label="${label}" placeholder="${placeholder}"></nuxeo-user-suggestion>
+        <nuxeo-selectivity .data="${CITIES}" label="${label}" placeholder="${placeholder}" min-chars="0" multiple>
+        </nuxeo-selectivity>
+        <nuxeo-input label="${label}" placeholder="${placeholder}"></nuxeo-input>
       </div>
       <div class="row">
         <nuxeo-data-table
@@ -97,15 +108,8 @@ storiesOf('Widgets', module).add('Vertical Alignment Consistency', () => {
             </template>
           </nuxeo-data-table-form>
         </nuxeo-data-table>
-        <nuxeo-selectivity .data="${CITIES}" label="${label}" placeholder="Placeholder" min-chars="0" multiple>
-        </nuxeo-selectivity>
-        <nuxeo-input label="${label}" placeholder="Placeholder"></nuxeo-input>
-      </div>
-      <div class="row">
-        <nuxeo-selectivity .data="${CITIES}" label="${label}" placeholder="Placeholder" min-chars="0">
-        </nuxeo-selectivity>
-        <nuxeo-select label="${label}" placeholder="Placeholder" .options="${CITIES}"></nuxeo-select>
-        <nuxeo-directory-radio-group label="Select language" directory-name="language"> </nuxeo-directory-radio-group>
+        <nuxeo-select label="${label}" placeholder="${placeholder}" .options="${CITIES}"></nuxeo-select>
+        <nuxeo-directory-radio-group label="${label}" directory-name="language"> </nuxeo-directory-radio-group>
       </div>
     </div>
   `;
