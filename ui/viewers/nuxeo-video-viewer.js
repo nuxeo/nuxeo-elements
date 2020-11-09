@@ -37,6 +37,7 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
         <style>
           :host {
             display: block;
+            position: relative;
           }
 
           #container {
@@ -64,6 +65,9 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
           }
 
           #thumbnails {
+            position: absolute;
+            left: 0;
+            right: 0;
             overflow-x: auto;
             @apply --layout-horizontal;
           }
