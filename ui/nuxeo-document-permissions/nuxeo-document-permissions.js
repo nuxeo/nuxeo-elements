@@ -128,14 +128,14 @@ import '../nuxeo-button-styles.js';
               <div class="actions">
                 <dom-if if="[[!_empty(inheritedAces)]]">
                   <template>
-                    <paper-button id="block" on-click="blockInheritance" class="primary small">
+                    <paper-button id="block" on-click="blockInheritance" class="text small">
                       [[i18n('documentPermissions.block')]]
                     </paper-button>
                   </template>
                 </dom-if>
                 <dom-if if="[[_empty(inheritedAces)]]">
                   <template>
-                    <paper-button id="unblock" on-click="unblockInheritance" class="secondary small">
+                    <paper-button id="unblock" on-click="unblockInheritance" class="text small">
                       [[i18n('documentPermissions.unblock')]]
                     </paper-button>
                   </template>

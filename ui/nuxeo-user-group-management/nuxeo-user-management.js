@@ -238,7 +238,7 @@ import '../nuxeo-button-styles.js';
                   <paper-button
                     noink
                     id="changePasswordButton"
-                    class="primary horizontal layout center horizontal-button"
+                    class="text horizontal layout center horizontal-button"
                     on-click="_toggleChangePassword"
                   >
                     <iron-icon icon="nuxeo:lock"></iron-icon>
