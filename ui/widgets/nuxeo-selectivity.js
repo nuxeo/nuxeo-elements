@@ -7310,6 +7310,15 @@ typedArrayTags[weakMapTag] = false;
 
     _placeholderChanged() {
       this.$.input.setAttribute('placeholder', this.placeholder);
+      const multipleInput = this.shadowRoot.querySelector('.selectivity-multiple-input');
+      if (this.multiple && multipleInput) {
+        multipleInput.setAttribute('placeholder', this.placeholder);
+      } else {
+        const singleInputPlaceholder = this.shadowRoot.querySelector('.selectivity-placeholder');
+        if (!this.multiple && singleInputPlaceholder) {
+          singleInputPlaceholder.innerText = this.placeholder;
+        }
+      }
     }
 
     _readonlyChanged() {
