@@ -310,10 +310,15 @@ import './nuxeo-connection.js';
         .execute(options)
         .then((response) =>
           response.text().then((text) => {
-            try {
-              return text ? JSON.parse(text) : {};
-            } catch (e) {
-              return { error: 'Invalid json' };
+            const contentType = response.headers ? response.headers.get('content-type') : options.headers.accept;
+            if (contentType && contentType.includes('application/json')) {
+              try {
+                return text ? JSON.parse(text) : {};
+              } catch (e) {
+                return { error: 'Invalid json' };
+              }
+            } else {
+              return text;
             }
           }),
         )
