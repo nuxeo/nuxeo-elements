@@ -7225,6 +7225,10 @@ typedArrayTags[weakMapTag] = false;
 
       // scope styles
       this.scopeSubtree(this.$.input, true);
+
+      // attach event listener to scroller parent to hide dropdown
+      this._scrollParent = this._getScrollParent(this);
+      this._scrollParent.addEventListener('scroll', this._closeSelectivityDropdown.bind(this));
     }
 
     disconnectedCallback() {
@@ -7232,7 +7236,14 @@ typedArrayTags[weakMapTag] = false;
       this._updateSelectionHandler = null;
       this._selectivity.destroy();
       this._selectivity = null;
+      this._scrollParent.removeEventListener('scroll', this._closeSelectivityDropdown.bind(this));
       super.disconnectedCallback();
+    }
+
+    _closeSelectivityDropdown() {
+      if (this._selectivity) {
+        this._selectivity.close();
+      }
     }
 
     _getValidity() {
@@ -7392,6 +7403,38 @@ typedArrayTags[weakMapTag] = false;
         let results = Array.isArray(response.entries) ? response.entries : response;
         this._triggerQueryCallback(query, results);
       });
+    }
+
+    _getScrollParent() {
+      let scrollParent = window;  // use window by default
+      let style = getComputedStyle(this);
+      const excludeStaticParent = style.position === 'absolute';
+      const overflowRegex = /(auto|scroll)/;
+
+      if (style.position !== 'fixed') {
+        let parent = this;
+        while (parent) {
+          if (parent.parentElement) {
+            parent = parent.parentElement;
+          } else if (parent.getRootNode()) {
+            parent = parent.getRootNode();
+            if (parent) {
+              parent = parent.host;
+            }
+          } else {
+            break;  // break the loop if no scrollable parent was found
+          }
+          if (parent) {
+            style = getComputedStyle(parent);
+            if ((!excludeStaticParent || style.position !== 'static') &&
+              overflowRegex.test(style.overflow + style.overflowY + style.overflowX)) {
+              scrollParent = parent;
+              break;
+            }
+          }
+        }
+      }
+      return scrollParent;
     }
   }
 
