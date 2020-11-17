@@ -7226,9 +7226,24 @@ typedArrayTags[weakMapTag] = false;
       // scope styles
       this.scopeSubtree(this.$.input, true);
 
-      // attach event listener to scroller parent to hide dropdown
-      this._scrollParent = this._getScrollParent(this);
-      this._scrollParent.addEventListener('scroll', this._closeSelectivityDropdown.bind(this));
+      // listen to scroll events in parent node to update selectivity dropdown position
+      this._scrollParent = this._getScrollParent();
+      this._scrollParent.addEventListener('scroll', this._updateDropdownPosition.bind(this));
+
+      // use IntersectionObserver to close the dropdown if selectivity is not visible in the viewport
+      this._visibilityObserver = new IntersectionObserver((entries) => {
+        if (entries && entries.length > 0) {
+          const entry = entries[0];  // there should be only one entry here
+          if (entry.intersectionRatio === 0) { // if the ratio is equal to 0, then the widget is outside the viewport
+            this._selectivity.close();
+          }
+        }
+      }, {
+        root: this._scrollParent,
+        rootMargin: '0px',
+        threshold: 0
+      });
+      this._visibilityObserver.observe(this);
     }
 
     disconnectedCallback() {
@@ -7236,13 +7251,14 @@ typedArrayTags[weakMapTag] = false;
       this._updateSelectionHandler = null;
       this._selectivity.destroy();
       this._selectivity = null;
-      this._scrollParent.removeEventListener('scroll', this._closeSelectivityDropdown.bind(this));
+      this._visibilityObserver.unobserve(this);
+      this._scrollParent.removeEventListener('scroll', this._updateDropdownPosition.bind(this));
       super.disconnectedCallback();
     }
 
-    _closeSelectivityDropdown() {
+    _updateDropdownPosition() {
       if (this._selectivity) {
-        this._selectivity.close();
+        this._selectivity.positionDropdown();
       }
     }
 
@@ -7406,7 +7422,7 @@ typedArrayTags[weakMapTag] = false;
     }
 
     _getScrollParent() {
-      let scrollParent = window;  // use window by default
+      let scrollParent = document.body;  // use the document.body as the default scrollable parent
       let style = getComputedStyle(this);
       const excludeStaticParent = style.position === 'absolute';
       const overflowRegex = /(auto|scroll)/;
@@ -7417,10 +7433,7 @@ typedArrayTags[weakMapTag] = false;
           if (parent.parentElement) {
             parent = parent.parentElement;
           } else if (parent.getRootNode()) {
-            parent = parent.getRootNode();
-            if (parent) {
-              parent = parent.host;
-            }
+            parent = parent.getRootNode().host;
           } else {
             break;  // break the loop if no scrollable parent was found
           }
