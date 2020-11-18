@@ -9,7 +9,7 @@
     "testing",
     "mocks"
   ],
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
   "author": "Nuxeo",
   "repository": "nuxeo/nuxeo-elements.git",
   "dependencies": {

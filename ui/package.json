@@ -11,7 +11,7 @@
   ],
   "repository": "nuxeo/nuxeo-elements.git",
   "author": "Nuxeo",
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
   "scripts": {
     "analysis": "polymer analyze . > analysis.json",
     "docs": "npm run analysis && npm run serve",
