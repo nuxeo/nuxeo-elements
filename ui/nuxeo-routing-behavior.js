@@ -138,7 +138,8 @@ export const RoutingBehavior = {
       if (obj.path && obj.uid) {
         entityType = 'document';
       } else {
-        throw new Error(`cannot resolve route: object does not have an "entity-type"`);
+        console.warn(`cannot resolve route: object "${obj}" does not have an "entity-type"`);
+        return '';
       }
     }
     let routeKey =
