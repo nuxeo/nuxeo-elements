@@ -9,7 +9,7 @@
   "name": "@nuxeo/nuxeo-elements",
   "version": "3.0.2-SNAPSHOT",
   "author": "Nuxeo",
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
   "scripts": {
     "docs": "polymer analyze . > analysis.json && npm run serve",
     "serve": "polymer serve --npm -c ../node_modules"
