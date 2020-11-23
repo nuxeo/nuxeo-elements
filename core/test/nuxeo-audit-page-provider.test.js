@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
+import { expect } from '@esm-bundle/chai';
 import { html, fixture, fakeServer, waitForEvent } from '@nuxeo/testing-helpers';
 import '../nuxeo-audit-page-provider.js';
 import moment from '@nuxeo/moment';

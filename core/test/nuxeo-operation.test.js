@@ -14,7 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { expect } from '@esm-bundle/chai';
 import { fixture, html, waitChanged } from '@nuxeo/testing-helpers';
+import { fakeServer } from 'sinon';
 import '../nuxeo-operation.js';
 import '../nuxeo-page-provider.js';
 
@@ -26,7 +28,7 @@ suite('nuxeo-operation', () => {
 
   let server;
   setup(() => {
-    server = sinon.fakeServer.create();
+    server = fakeServer.create();
     server.autoRespond = true;
   });
 

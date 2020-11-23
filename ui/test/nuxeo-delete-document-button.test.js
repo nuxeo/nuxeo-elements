@@ -14,8 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { expect } from '@esm-bundle/chai';
 import { fixture, flush, html, isElementVisible, tap, waitForEvent } from '@nuxeo/testing-helpers';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom';
+import { spy, stub } from 'sinon';
 import '../actions/nuxeo-delete-document-button.js';
 
 const getActionDiv = (button) => dom(button.root).querySelector('.action');
@@ -138,9 +140,9 @@ suite('nuxeo-delete-document-button', () => {
     });
 
     test('Should not call any operation when the confirmation is not done', async () => {
-      sinon.stub(window, 'confirm').returns(false);
-      sinon.spy(button.$.deleteOp, 'execute');
-      sinon.spy(button.$.trashOp, 'execute');
+      stub(window, 'confirm').returns(false);
+      spy(button.$.deleteOp, 'execute');
+      spy(button.$.trashOp, 'execute');
 
       const actionDiv = getActionDiv(button);
       tap(actionDiv);
@@ -150,9 +152,9 @@ suite('nuxeo-delete-document-button', () => {
     });
 
     test('Should call Document.Delete operation when "hard" property is set', async () => {
-      sinon.stub(window, 'confirm').returns(true);
-      sinon.spy(button.$.deleteOp, 'execute');
-      sinon.spy(button.$.trashOp, 'execute');
+      stub(window, 'confirm').returns(true);
+      spy(button.$.deleteOp, 'execute');
+      spy(button.$.trashOp, 'execute');
 
       button.hard = true;
       await flush();
@@ -164,9 +166,9 @@ suite('nuxeo-delete-document-button', () => {
     });
 
     test('Should call Document.Trash operation when "hard" property is not set', async () => {
-      sinon.stub(window, 'confirm').returns(true);
-      sinon.spy(button.$.deleteOp, 'execute');
-      sinon.spy(button.$.trashOp, 'execute');
+      stub(window, 'confirm').returns(true);
+      spy(button.$.deleteOp, 'execute');
+      spy(button.$.trashOp, 'execute');
 
       const actionDiv = getActionDiv(button);
       tap(actionDiv);
@@ -176,8 +178,8 @@ suite('nuxeo-delete-document-button', () => {
     });
 
     test('Should return "document-deleted" event when operation returns an error', async () => {
-      sinon.stub(window, 'confirm').returns(true);
-      sinon.stub(button.$.trashOp, 'execute').rejects(new Error('Some error'));
+      stub(window, 'confirm').returns(true);
+      stub(button.$.trashOp, 'execute').rejects(new Error('Some error'));
 
       const actionDiv = getActionDiv(button);
       tap(actionDiv);
@@ -192,8 +194,8 @@ suite('nuxeo-delete-document-button', () => {
     });
 
     test('Should also return "document-deleted" event when operation is successful', async () => {
-      sinon.stub(window, 'confirm').returns(true);
-      sinon.stub(button.$.deleteOp, 'execute').resolves();
+      stub(window, 'confirm').returns(true);
+      stub(button.$.deleteOp, 'execute').resolves();
 
       button.hard = true;
       await flush();

@@ -14,8 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { expect } from '@esm-bundle/chai';
 import { fixture, flush, html, login, tap, waitForEvent } from '@nuxeo/testing-helpers';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom';
+import { spy } from 'sinon';
 import '../actions/nuxeo-lock-toggle-button.js';
 
 suite('nuxeo-lock-toggle-button', () => {
@@ -120,8 +122,8 @@ suite('nuxeo-lock-toggle-button', () => {
 
   suite('Server Responds with Exceptions', () => {
     setup(async () => {
-      sinon.spy(button.$.opUnlock, 'execute');
-      sinon.spy(button.$.opLock, 'execute');
+      spy(button.$.opUnlock, 'execute');
+      spy(button.$.opLock, 'execute');
     });
 
     test('Should trigger notify event when trying to unlock document and permissions error is received', async () => {
@@ -262,8 +264,8 @@ suite('nuxeo-lock-toggle-button', () => {
 
   suite('Server Responds Success', () => {
     setup(async () => {
-      sinon.spy(button.$.opUnlock, 'execute');
-      sinon.spy(button.$.opLock, 'execute');
+      spy(button.$.opUnlock, 'execute');
+      spy(button.$.opLock, 'execute');
     });
 
     test('Should unlock the document', async () => {

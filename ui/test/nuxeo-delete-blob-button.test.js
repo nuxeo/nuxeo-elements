@@ -14,6 +14,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
+import { expect } from '@esm-bundle/chai';
 import { fixture, flush, html, isElementVisible } from '@nuxeo/testing-helpers';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom';
 import '../actions/nuxeo-delete-blob-button.js';

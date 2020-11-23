@@ -14,7 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { expect } from '@esm-bundle/chai';
 import { fixture, isElementVisible, html, tap, timePasses, waitForEvent } from '@nuxeo/testing-helpers';
+import { spy } from 'sinon';
 import '../viewers/nuxeo-image-viewer.js';
 
 const { url } = import.meta;
@@ -202,7 +204,7 @@ suite('nuxeo-image-viewer', () => {
         const zoomOutOption = toolbar.children[0];
         expect(zoomOutOption.getAttribute('data-action')).to.equal('zoom-out');
 
-        sinon.spy(viewer._el, 'zoom');
+        spy(viewer._el, 'zoom');
         tap(zoomOutOption);
         expect(viewer._el.zoom.withArgs(-0.1).calledOnce).to.be.true;
       });
@@ -211,7 +213,7 @@ suite('nuxeo-image-viewer', () => {
         const fitToRealSizeOption = toolbar.children[1];
         expect(fitToRealSizeOption.getAttribute('data-action')).to.equal('fit-to-real-size');
 
-        sinon.spy(viewer._el, 'zoomTo');
+        spy(viewer._el, 'zoomTo');
         tap(fitToRealSizeOption);
         expect(viewer._el.zoomTo.withArgs(1).calledOnce).to.be.true;
       });
@@ -222,7 +224,7 @@ suite('nuxeo-image-viewer', () => {
         const fitToViewerOption = toolbar.children[1];
         expect(fitToViewerOption.getAttribute('data-action')).to.equal('fit-to-viewer');
 
-        sinon.spy(viewer._el, 'zoomTo');
+        spy(viewer._el, 'zoomTo');
         tap(fitToViewerOption);
         expect(viewer._el.zoomTo.calledOnce).to.be.true;
       });
@@ -231,7 +233,7 @@ suite('nuxeo-image-viewer', () => {
         const zoomInOption = toolbar.children[2];
         expect(zoomInOption.getAttribute('data-action')).to.equal('zoom-in');
 
-        sinon.spy(viewer._el, 'zoom');
+        spy(viewer._el, 'zoom');
         tap(zoomInOption);
         expect(viewer._el.zoom.withArgs(0.1).calledOnce).to.be.true;
       });
@@ -240,7 +242,7 @@ suite('nuxeo-image-viewer', () => {
         const rotateLeftOption = toolbar.children[3];
         expect(rotateLeftOption.getAttribute('data-action')).to.equal('rotate-left');
 
-        sinon.spy(viewer._el, 'rotate');
+        spy(viewer._el, 'rotate');
         tap(rotateLeftOption);
         expect(viewer._el.rotate.withArgs(-90).calledOnce).to.be.true;
       });
@@ -249,7 +251,7 @@ suite('nuxeo-image-viewer', () => {
         const rotateRightOption = toolbar.children[4];
         expect(rotateRightOption.getAttribute('data-action')).to.equal('rotate-right');
 
-        sinon.spy(viewer._el, 'rotate');
+        spy(viewer._el, 'rotate');
         tap(rotateRightOption);
         expect(viewer._el.rotate.withArgs(90).calledOnce).to.be.true;
       });
@@ -267,8 +269,8 @@ suite('nuxeo-image-viewer', () => {
         const viewer = container.querySelector('nuxeo-image-viewer');
         await viewerLoad(viewer);
 
-        sinon.spy(viewer._el, 'resize');
-        sinon.spy(viewer._el, 'zoomTo');
+        spy(viewer._el, 'resize');
+        spy(viewer._el, 'zoomTo');
 
         viewer.dispatchEvent(new CustomEvent('resize', { bubbles: true }));
 
@@ -287,8 +289,8 @@ suite('nuxeo-image-viewer', () => {
         const viewer = container.querySelector('nuxeo-image-viewer');
         await viewerLoad(viewer);
 
-        sinon.spy(viewer._el, 'resize');
-        sinon.spy(viewer._el, 'zoomTo');
+        spy(viewer._el, 'resize');
+        spy(viewer._el, 'zoomTo');
 
         viewer.dispatchEvent(new CustomEvent('resize', { bubbles: true }));
 
@@ -307,8 +309,8 @@ suite('nuxeo-image-viewer', () => {
         const viewer = container.querySelector('nuxeo-image-viewer');
         await viewerLoad(viewer);
 
-        sinon.spy(viewer._el, 'resize');
-        sinon.spy(viewer._el, 'zoomTo');
+        spy(viewer._el, 'resize');
+        spy(viewer._el, 'zoomTo');
         viewer.dispatchEvent(new CustomEvent('resize', { bubbles: true }));
 
         expect(viewer._el.resize.calledOnce).to.be.true;

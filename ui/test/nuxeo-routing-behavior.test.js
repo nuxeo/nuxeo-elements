@@ -14,8 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { expect } from '@esm-bundle/chai';
 import { fixture, html } from '@nuxeo/testing-helpers';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import { spy } from 'sinon';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import { RoutingBehavior, setRouter } from '../nuxeo-routing-behavior.js';
 
@@ -54,7 +56,7 @@ suite('Nuxeo.RoutingBehavior', () => {
         document: (path, tab) => `${path.startsWith('/') ? 'path' : 'uid/'}${path}${tab ? `?p=${tab}` : ''}`,
       };
       setRouter(router);
-      sinon.spy(router, 'document');
+      spy(router, 'document');
       el = await fixture(
         html`
           <nuxeo-routed-element></nuxeo-routed-element>
