@@ -428,26 +428,26 @@ import './nuxeo-resource.js';
         params.query = this.query;
       }
 
-      if (this.params.queryParams) {
-        // these should've simply been passed as an array instead
-        params.queryParams = this.params.queryParams;
-      } else if (Array.isArray(this.params)) {
-        params.queryParams = this.params;
-      } else {
-        const namedParams = {};
-        Object.keys(this.params).forEach((key) => {
-          let value = this.params[key];
-          if (value != null) {
-            if (Array.isArray(value)) {
-              value = JSON.stringify(value.map((item) => (item['entity-type'] ? item.uid || item.id : item)));
-            } else if (typeof value !== 'string') {
-              value = value['entity-type'] ? value.uid || value.id : JSON.stringify(value);
-            }
-            namedParams[key] = value;
+      const namedParams = {};
+      Object.keys(this.params).forEach((key) => {
+        if (key === 'queryParams') {
+          const queryParams = this.params[key];
+          if (queryParams) {
+            params.queryParams = queryParams;
           }
-        }, this);
-        params.namedParameters = namedParams;
-      }
+          return;
+        }
+        let value = this.params[key];
+        if (value != null) {
+          if (Array.isArray(value)) {
+            value = JSON.stringify(value.map((item) => (item['entity-type'] ? item.uid || item.id : item)));
+          } else if (typeof value !== 'string') {
+            value = value['entity-type'] ? value.uid || value.id : JSON.stringify(value);
+          }
+          namedParams[key] = value;
+        }
+      }, this);
+      params.namedParameters = namedParams;
 
       // Append quick filters if any
       if (this.quickFilters) {
