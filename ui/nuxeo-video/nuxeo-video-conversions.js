@@ -17,8 +17,8 @@ limitations under the License.
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
+import '@polymer/iron-icon/iron-icon.js';
 import { FormatBehavior } from '../nuxeo-format-behavior.js';
-import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-icons.js';
 import '../widgets/nuxeo-tooltip.js';
 
@@ -28,7 +28,7 @@ import '../widgets/nuxeo-tooltip.js';
   @group Nuxeo UI
   @element nuxeo-video-conversions
   */
-  class VideoConversions extends mixinBehaviors([I18nBehavior, FormatBehavior], Nuxeo.Element) {
+  class VideoConversions extends mixinBehaviors([FormatBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style>
