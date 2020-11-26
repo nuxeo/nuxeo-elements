@@ -66,7 +66,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
             }
 
             --paper-input-container: {
-              padding: 0;
+              padding: 0 !important;
             }
 
             --paper-input-container-underline: {
@@ -78,10 +78,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
             }
 
             --paper-input-container-shared-input-style: {
-              font-size: 1rem;
-              vertical-align: sub;
               width: inherit;
-              margin: 0 0 1px 0;
               max-width: 4rem;
             }
           }
@@ -91,6 +88,10 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
             font-size: 1rem;
             width: 4rem;
             text-align: center;
+          }
+
+          paper-icon-button {
+            padding-top: 6px;
           }
         </style>
 
