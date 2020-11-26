@@ -81,6 +81,9 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
               padding-top: 0;
               padding: 5px 0 8px 0;
             }
+            --paper-dropdown-menu-icon: {
+              color: var(--nuxeo-text-default, #3a3a54):
+            }
           }
 
           label {
