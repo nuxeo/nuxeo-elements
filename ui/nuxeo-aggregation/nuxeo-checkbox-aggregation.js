@@ -89,6 +89,7 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
             align-items: center;
             margin: 0;
             padding: 0;
+            padding-inline-end: 2px;
             background: transparent;
             border: none;
             cursor: pointer;
