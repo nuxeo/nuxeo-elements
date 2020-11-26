@@ -23,6 +23,7 @@ import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import {I18nBehavior} from "../nuxeo-i18n-behavior";
+import '@polymer/iron-icon/iron-icon.js';
 
 /**
  * @license
@@ -6208,7 +6209,7 @@ typedArrayTags[weakMapTag] = false;
             <div class="selectivity-multiple-input-container">
               ${options.enabled ? enabledTemplate : disabledTemplate}
               <div class="selectivity-clearfix"></div>
-              <span class="selectivity-caret"></span>
+              <iron-icon icon="icons:arrow-drop-down" class="selectivity-caret"></iron-icon>
               <span class="underline"></span>
             </div>
           `;
@@ -6329,7 +6330,7 @@ typedArrayTags[weakMapTag] = false;
             <div class="selectivity-single-select">
               <input type="text" class="selectivity-single-select-input" ${options.required ? ' required' : ''}>
               <div class="selectivity-single-result-container"></div>
-              <span class="selectivity-caret"></span>
+              <iron-icon icon="icons:arrow-drop-down" class="selectivity-caret"></iron-icon>
               <span class="underline"></span>
             </div>
           `;
@@ -7018,11 +7019,6 @@ typedArrayTags[weakMapTag] = false;
           .fa-times:before {
             content: "\\00d7";
             color: var(--nuxeo-text-default, #3a3a54);
-          }
-
-          .selectivity-caret:before {
-            content: "\\25bc";
-            font-size: 10px;
           }
 
           /* We need to hide overflow-x explicitly here in order to have auto overflow on Y axis */
