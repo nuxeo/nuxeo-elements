@@ -7262,6 +7262,10 @@ typedArrayTags[weakMapTag] = false;
       }
     }
 
+    escapeHTML(...args) {
+      return escapeHTML(...args);
+    }
+
     _getValidity() {
       if (!this.required) {
         return true;
