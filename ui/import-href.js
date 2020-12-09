@@ -93,3 +93,25 @@ export const importHref = function(href, onload, onerror, optAsync) {
   }
   return link;
 };
+
+/**
+ * Convenience method for importing inline HTML.
+ *
+ * This method imports all the elements to the document's head
+ * and inlines all the scripts to allow fot their execution.
+ *
+ * @param {string} html HTML to import.
+ */
+export const importHTML = (html) => {
+  const tmpl = document.createElement('template');
+  tmpl.innerHTML = html;
+  [...tmpl.content.children].forEach((el) => {
+    if (el.tagName === 'SCRIPT' && !el.src) {
+      const script = document.createElement('script');
+      [...el.attributes].forEach((attr) => script.setAttribute(attr.name, attr.value));
+      script.setAttribute('src', `data:text/javascript;charset=utf-8,${encodeURIComponent(el.textContent)}`);
+      el = script;
+    }
+    document.head.appendChild(el);
+  });
+};
