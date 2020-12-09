@@ -21,6 +21,8 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-page-provider.js';
 import '@nuxeo/paper-typeahead/paper-typeahead.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
+import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior';
+import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior';
 import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
 {
@@ -40,8 +42,12 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
    *
    * @memberof Nuxeo
    * @demo demo/nuxeo-path-suggestion/index.html
+   *
    */
-  class PathSuggestion extends mixinBehaviors([FormatBehavior], Nuxeo.Element) {
+  class PathSuggestion extends mixinBehaviors(
+    [FormatBehavior, IronFormElementBehavior, IronValidatableBehavior],
+    Nuxeo.Element,
+  ) {
     static get template() {
       return html`
         <style>
@@ -245,6 +251,15 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
       if (!this.disabled) {
         this._valueChanged();
       }
+    }
+
+    /* Override method from Polymer.IronValidatableBehavior. */
+    _getValidity() {
+      const valid =
+        (this.parent ? this.value.replace(/(.+)\/$/, '$1') === this.parent.path : false) ||
+        (this.children ? this.children.some((child) => this.value.replace(/(.+)\/$/, '$1') === child.path) : false);
+      this.$.typeahead.invalid = !valid;
+      return valid;
     }
   }
 
