@@ -243,6 +243,18 @@ suite('nuxeo-page-provider', () => {
       expect(transformedParams.namedParameters.myBoolean).to.be.equal('false');
     });
 
+    test('Should convert parameters of type array to queryParams', async () => {
+      const params = ['one', 'two', 'three'];
+      const provider = await fixture(html`
+        <nuxeo-page-provider id="nx-pp" params="${JSON.stringify(params)}"></nuxeo-page-provider>
+      `);
+      const transformedParams = provider._params;
+      expect(transformedParams).to.exist.and.to.be.an('object');
+      expect(Object.keys(transformedParams)).to.have.lengthOf(4);
+      expect(transformedParams).to.have.all.keys('currentPageIndex', 'offset', 'pageSize', 'queryParams');
+      expect(transformedParams.queryParams).to.deep.equal(params);
+    });
+
     test('Should include the ID when a parameter is an object with "entity-type"', async () => {
       const params = {
         user: {
