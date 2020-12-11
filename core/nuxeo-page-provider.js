@@ -428,26 +428,28 @@ import './nuxeo-resource.js';
         params.query = this.query;
       }
 
-      const namedParams = {};
-      Object.keys(this.params).forEach((key) => {
-        if (key === 'queryParams') {
-          const queryParams = this.params[key];
-          if (queryParams) {
-            params.queryParams = queryParams;
-          }
-          return;
+      if (Array.isArray(this.params)) {
+        params.queryParams = this.params;
+      } else {
+        const { queryParams, ...otherParams } = this.params;
+        if (queryParams) {
+          params.queryParams = queryParams;
         }
-        let value = this.params[key];
-        if (value != null) {
-          if (Array.isArray(value)) {
-            value = JSON.stringify(value.map((item) => (item['entity-type'] ? item.uid || item.id : item)));
-          } else if (typeof value !== 'string') {
-            value = value['entity-type'] ? value.uid || value.id : JSON.stringify(value);
-          }
-          namedParams[key] = value;
+        if (otherParams) {
+          const namedParams = {};
+          Object.entries(otherParams).forEach(([key, value]) => {
+            if (value != null) {
+              if (Array.isArray(value)) {
+                value = JSON.stringify(value.map((item) => (item['entity-type'] ? item.uid || item.id : item)));
+              } else if (typeof value !== 'string') {
+                value = value['entity-type'] ? value.uid || value.id : JSON.stringify(value);
+              }
+              namedParams[key] = value;
+            }
+          });
+          params.namedParameters = namedParams;
         }
-      }, this);
-      params.namedParameters = namedParams;
+      }
 
       // Append quick filters if any
       if (this.quickFilters) {
