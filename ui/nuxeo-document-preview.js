@@ -236,7 +236,7 @@ import './viewers/nuxeo-video-viewer.js';
           new RegExp(mimetype).test(this._blob && this._blob['mime-type']) &&
           (!mimetype.startsWith('text/') || 'text' in this._blob);
         const rendition = previewer.getAttribute('rendition');
-        const hasRendition = rendition && this._computeRendition(this.document, rendition);
+        const hasRendition = rendition && this._computeRendition(this.document, this.xpath, rendition);
         if (hasRendition || hasMimetype) {
           // Insert our previewer
           this._insertPreview(previewer);
@@ -322,8 +322,9 @@ import './viewers/nuxeo-video-viewer.js';
       }
     }
 
-    _computeRendition(document, name) {
+    _computeRendition(document, xpath, name) {
       const rendition =
+        xpath === 'file:content' &&
         document &&
         document.contextParameters &&
         document.contextParameters.renditions &&
