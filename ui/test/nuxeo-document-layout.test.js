@@ -14,12 +14,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 import '@webcomponents/html-imports/html-imports.min.js';
 import '../nuxeo-document-layout.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-textarea';
+import { expect } from '@esm-bundle/chai';
 import { Polymer } from '@polymer/polymer/polymer-legacy.js';
 import { fixture, flush, isElementVisible, html, waitForEvent, waitForAttrMutation } from '@nuxeo/testing-helpers';
+import { spy } from 'sinon';
 import { LayoutBehavior } from '../nuxeo-layout-behavior.js';
 
 // Export Polymer and PolymerElement for 1.x and 2.x compat
@@ -208,7 +211,7 @@ suite('nuxeo-document-layout', () => {
     );
     // check that validation fails if title and description are the same (custom validation)
     expect(typeof documentLayout.element.validate).to.equal('function');
-    sinon.spy(documentLayout.$.layout, 'validate');
+    spy(documentLayout.$.layout, 'validate');
     expect(documentLayout.validate()).to.be.false;
     expect(documentLayout.$.layout.validate.calledOnce).to.be.true;
     const myDescription = 'My Description';

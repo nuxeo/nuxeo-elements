@@ -14,8 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { expect } from '@esm-bundle/chai';
 import { fixture, flush, html, login } from '@nuxeo/testing-helpers';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
+import { spy } from 'sinon';
 import '../widgets/nuxeo-document-suggestion.js';
 
 // Return Selectivity Entries
@@ -90,7 +92,7 @@ suite('nuxeo-document-suggestion', () => {
       widget = await fixture(html`
         <nuxeo-document-suggestion readonly .router=${router}></nuxeo-document-suggestion>
       `);
-      sinon.spy(widget, '_resolveDocs');
+      spy(widget, '_resolveDocs');
     });
 
     test('Should be able to resolve document and display its title', async () => {
@@ -164,7 +166,7 @@ suite('nuxeo-document-suggestion', () => {
       widget = await fixture(html`
         <nuxeo-document-suggestion readonly multiple .router=${router}></nuxeo-document-suggestion>
       `);
-      sinon.spy(widget, '_resolveDocs');
+      spy(widget, '_resolveDocs');
     });
 
     test('Should be able to resolve the existing documents and reconciliate the deleted ones', async () => {

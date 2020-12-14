@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { expect } from '@esm-bundle/chai';
 import { fixture, html, isElementVisible } from '@nuxeo/testing-helpers';
 import '../nuxeo-video/nuxeo-video-conversions.js';
 import videoProperties from './resources/videoProperties';
@@ -71,7 +72,7 @@ suite('nuxeo-video-conversions', () => {
     test('Should display an anchor tag when the video contains content', () => {
       const anchor = element.shadowRoot.querySelector('a');
       expect(isElementVisible(anchor)).to.be.true;
-      expect(anchor.href).to.equal(`http://localhost:9876/${videoProperties['vid:transcodedVideos'][0].content.data}`);
+      expect(anchor.href).to.have.string(`${videoProperties['vid:transcodedVideos'][0].content.data}`);
     });
   });
 });

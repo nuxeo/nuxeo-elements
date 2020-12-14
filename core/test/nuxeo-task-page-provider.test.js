@@ -14,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-import '../nuxeo-task-page-provider.js';
+import { expect } from '@esm-bundle/chai';
 import { fakeServer, fixture, html, waitForEvent } from '@nuxeo/testing-helpers';
+import '../nuxeo-task-page-provider.js';
 
 suite('nuxeo-task-page-provider', () => {
   suite('REST Calls', () => {

@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import '../nuxeo-document-comments/nuxeo-document-comment.js';
+import { expect } from '@esm-bundle/chai';
 import {
   fakeServer,
   fixture,
@@ -27,6 +27,7 @@ import {
   waitForAttrMutation,
   waitForEvent,
 } from '@nuxeo/testing-helpers';
+import '../nuxeo-document-comments/nuxeo-document-comment.js';
 
 function getCommentContent(element) {
   return element.shadowRoot.querySelector('#content');

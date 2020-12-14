@@ -15,8 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import '@webcomponents/html-imports/html-imports.min.js';
+import { expect } from '@esm-bundle/chai';
 import { fixture, flush, html, isElementVisible, waitChanged, waitForAttrMutation } from '@nuxeo/testing-helpers';
 import { Polymer } from '@polymer/polymer/polymer-legacy.js';
+import { spy } from 'sinon';
 import '../nuxeo-layout.js';
 import '../widgets/nuxeo-input.js';
 
@@ -113,8 +115,8 @@ suite('nuxeo-layout', () => {
       await layoutLoad(layout);
 
       const nuxeoInput = layout.element.shadowRoot.querySelector('nuxeo-input');
-      sinon.spy(nuxeoInput, 'validate');
-      sinon.spy(layout.element, 'validate');
+      spy(nuxeoInput, 'validate');
+      spy(layout.element, 'validate');
 
       const validity = await layout.validate();
       expect(validity).to.be.true;
@@ -142,8 +144,8 @@ suite('nuxeo-layout', () => {
       await layoutLoad(layout);
 
       const nuxeoInput = layout.element.shadowRoot.querySelector('nuxeo-input');
-      sinon.spy(nuxeoInput, 'validate');
-      sinon.spy(layout.element, 'validate');
+      spy(nuxeoInput, 'validate');
+      spy(layout.element, 'validate');
       const validity = await layout.validate();
       expect(validity).to.be.false;
       expect(nuxeoInput.invalid).to.be.true;
@@ -161,8 +163,8 @@ suite('nuxeo-layout', () => {
       await layoutLoad(layout);
 
       const nuxeoInput = layout.element.shadowRoot.querySelector('nuxeo-input');
-      sinon.spy(nuxeoInput, 'validate');
-      sinon.spy(layout.element, 'validate');
+      spy(nuxeoInput, 'validate');
+      spy(layout.element, 'validate');
       const validity = await layout.validate();
       expect(validity).to.be.false;
       expect(nuxeoInput.invalid).to.be.false;

@@ -66,12 +66,12 @@ module.exports = {
         mocha: true,
       },
       rules: {
+        'import/no-unresolved': 'off',
         'no-unused-expressions': 'off',
       },
       globals: {
         assert: 'readable',
         expect: 'readable',
-        sinon: 'readable',
       },
     },
   ],

@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { expect } from '@esm-bundle/chai';
 import { fixture, html, flush } from '@nuxeo/testing-helpers';
 import * as polymer from '@polymer/polymer';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';

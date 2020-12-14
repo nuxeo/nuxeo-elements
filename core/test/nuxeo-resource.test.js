@@ -14,7 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+import { expect } from '@esm-bundle/chai';
 import { fixture, html } from '@nuxeo/testing-helpers';
+import { fakeServer } from 'sinon';
 import '../nuxeo-resource.js';
 
 suite('nuxeo-resource', () => {
@@ -25,7 +27,7 @@ suite('nuxeo-resource', () => {
 
   let server;
   setup(() => {
-    server = sinon.fakeServer.create();
+    server = fakeServer.create();
     server.autoRespond = true;
     server.respondWith('GET', '/json/cmis', [200, responseHeaders.json, '{}']);
     server.respondWith('POST', '/api/v1/automation/login', [
