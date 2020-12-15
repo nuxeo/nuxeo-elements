@@ -62,6 +62,7 @@ module.exports = (config) => {
     browserDisconnectTimeout: 10 * 1000,
     browserDisconnectTolerance: 1,
     browserNoActivityTimeout: 5 * 60 * 1000,
+    captureTimeout: 120000,
     customLaunchers,
     middleware: ['static'],
     static: {
