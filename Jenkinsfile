@@ -160,11 +160,13 @@ pipeline {
             -----------------------------------"""
           sh 'npx lerna run analysis --parallel'
           dir('storybook') {
-            sh 'npx build-storybook -o dist -s ./public'
-            sh 'skaffold build'
-            dir('charts/preview') {
-              sh "make preview" // does some env subst before "jx step helm build"
-              sh "jx preview"
+            catchError(message: 'Preview failed!', buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+              sh 'npx build-storybook -o dist -s ./public'
+              sh 'skaffold build'
+              dir('charts/preview') {
+                sh "make preview" // does some env subst before "jx step helm build"
+                sh "jx preview"
+              }
             }
           }
         }
@@ -189,7 +191,9 @@ pipeline {
             // we're only deploying storybook for the master branch until ELEMENTS-1183 is done
             sh 'npx lerna run analysis --parallel'
             withCredentials([string(credentialsId: 'github_token', variable: 'GITHUB_TOKEN')]) {
-              sh 'npm run deploy -- --ci -t GITHUB_TOKEN'
+              catchError(message: 'Storybook deployment failed!', buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                sh 'npm run deploy -- --ci -t GITHUB_TOKEN'
+              }
             }
           }
         }
