@@ -129,7 +129,7 @@ import './viewers/nuxeo-video-viewer.js';
         </template>
 
         <template rendition="pdf">
-          <nuxeo-pdf-viewer src="[[_computeRendition(document, 'pdf')]]"></nuxeo-pdf-viewer>
+          <nuxeo-pdf-viewer src="[[_computeRendition(document, xpath, 'pdf')]]"></nuxeo-pdf-viewer>
         </template>
 
         <template mime-pattern=".*">
