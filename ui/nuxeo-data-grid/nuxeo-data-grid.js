@@ -24,6 +24,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import '../nuxeo-aggregation/nuxeo-aggregation-navigation.js';
+import { idlePeriod } from '@polymer/polymer/lib/utils/async.js';
 import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
 import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-behavior.js';
 
@@ -217,6 +218,26 @@ import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-beha
           value: false,
         },
       };
+    }
+
+    static get observers() {
+      return ['_fetchMissingItems(loading)'];
+    }
+
+    ready() {
+      super.ready();
+      this.addEventListener('iron-resize', this._fetchMissingItems);
+    }
+
+    // WEBUI-159: Check if there are more items in viewport than the ones set by the provider and load them.
+    _fetchMissingItems() {
+      if (!this.loading && this.$.list.lastVisibleIndex && this._pageSize) {
+        idlePeriod.run(() => {
+          if (this.$.list.lastVisibleIndex > this._pageSize) {
+            this._fetchRange(this._pageSize, this.$.list.lastVisibleIndex);
+          }
+        });
+      }
     }
 
     _removeFilter(e) {
