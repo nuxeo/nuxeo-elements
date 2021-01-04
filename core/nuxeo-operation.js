@@ -326,7 +326,7 @@ import './nuxeo-connection.js';
           this.error = error;
           console.warn(`Operation request failed: ${error}`);
           this._setActiveRequests(this.activeRequests - 1);
-          throw error;
+          throw this.error;
         });
     }
 
@@ -339,15 +339,20 @@ import './nuxeo-connection.js';
     }
 
     _poll(url) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         const fn = () => {
-          this.$.nx.http(url).then((res) => {
-            if (this._isRunning(res)) {
-              window.setTimeout(() => fn(), this.pollInterval, url);
-            } else {
-              resolve(res);
-            }
-          });
+          this.$.nx
+            .http(url)
+            .then((res) => {
+              if (this._isRunning(res)) {
+                window.setTimeout(() => fn(), this.pollInterval, url);
+              } else {
+                resolve(res);
+              }
+            })
+            .catch((error) => {
+              reject(error);
+            });
         };
         fn();
       });
