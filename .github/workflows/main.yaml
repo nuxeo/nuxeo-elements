@@ -1,18 +1,16 @@
-name: CI
+name: Unit Tests
 
 on:
   push:
     branches:
-      - github_actions
+      - github-actions
   pull_request:
     branches:
-      - github_actions
+      - github-actions
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      PREVIEW_URL: nuxeo-elements-pr-${{github.event.number}}.surge.sh
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
@@ -24,7 +22,6 @@ jobs:
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       run: |
-        cat $RUNNER_TEMP/.npmrc
         npm install --no-package-lock
         npm run bootstrap
     - name: Lint
@@ -34,24 +31,6 @@ jobs:
         SAUCE_USERNAME: nuxeo-elements
         SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
       run: npm run test
-    - name: Analysis
-      run: npx lerna run analysis --parallel
-    - name: Preview
-      if: github.event_name == 'pull_request'
-      run: |
-        npx build-storybook -o dist -s ./public
-        npx surge ./public $PREVIEW_URL --token ${{ secrets.SURGE_TOKEN }}
-    - uses: actions/github-script@0.9.0
-      if: github.event_name == 'pull_request'
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          github.issues.createComment({
-            issue_number: context.pull_request.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: `:star: PR built and available [here](${process.env.PREVIEW_URL})`
-          })
     - name: Deploy
       if: github.ref == 'refs/heads/master'
       env:

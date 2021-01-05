@@ -18,5 +18,5 @@ cleanup:
     helm.sh/hook-delete-policy: hook-succeeded
 
 image:
-  repository:
-  tag:
+  repository: $DOCKER_REGISTRY/$DOCKER_IMAGE
+  tag: $VERSION
