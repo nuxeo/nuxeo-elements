@@ -99,7 +99,7 @@ pipeline {
           script {
             VERSION =  sh(script: 'npx -c \'echo "$npm_package_version"\'', returnStdout: true).trim()
           }
-          withEnv(["VERSION=$VERSION-${BRANCH_NAME}"]) {
+          withEnv(["VERSION=$VERSION-${BRANCH_NAME}", "DOCKER_IMAGE=nuxeo/nuxeo-elements/storybook"]) {
             echo """
               -----------------------------------
               Building preview ${VERSION}
