@@ -23,6 +23,7 @@ import '@nuxeo/paper-typeahead/paper-typeahead.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior';
 import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior';
+import { IronMeta } from '@polymer/iron-meta/iron-meta.js';
 import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
 {
@@ -173,6 +174,24 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
       };
     }
 
+    ready() {
+      super.ready();
+      const validateFn = this._validate.bind(this);
+      const validator = {
+        validatorName: `${PathSuggestion.is}-validator`,
+        validatorType: 'validator',
+        validate: validateFn,
+      };
+
+      /* eslint-disable no-new */
+      new IronMeta({
+        type: validator.validatorType,
+        key: validator.validatorName,
+        value: validator,
+      });
+      this.$.typeahead.validator = validator.validatorName;
+    }
+
     displayResults() {
       this.$.typeahead.tryDisplayResults();
     }
@@ -253,13 +272,18 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
       }
     }
 
-    /* Override method from Polymer.IronValidatableBehavior. */
-    _getValidity() {
+    _validate() {
       const valid =
+        (this.value && this.value === '/') ||
         (this.parent ? this.value.replace(/(.+)\/$/, '$1') === this.parent.path : false) ||
         (this.children ? this.children.some((child) => this.value.replace(/(.+)\/$/, '$1') === child.path) : false);
-      this.$.typeahead.invalid = !valid;
       return valid;
+    }
+
+    /* Override method from Polymer.IronValidatableBehavior. */
+    _getValidity() {
+      // XXX - paper-typeahead doesn't implement the IronValidatableBehavior, so there is no validate() method.
+      return this._validate();
     }
   }
 
