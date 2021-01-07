@@ -1,10 +1,8 @@
 name: Preview
 
 on:
-  push:
-    branches:
-      - github-actions
   pull_request:
+    types: [opened, synchronize, reopened, labeled]
     branches:
       - master
       - maintenance-3.0.x
@@ -17,6 +15,8 @@ env:
 
 jobs:
   storybook:
+    name: Setup
+    if: (github.event.action == 'labeled' && github.event.label.name == 'preview') || contains(github.event.pull_request.labels.*.name, 'preview')
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -28,10 +28,10 @@ jobs:
 
     - name: Prepare environment
       run: |
-        BRANCH_NAME=${GITHUB_REF##*/}
+        BRANCH_NAME=${GITHUB_HEAD_REF##*/}
         echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
         echo "VERSION=$(npx -c 'echo "$npm_package_version"')-$BRANCH_NAME" >> $GITHUB_ENV
-        echo "PREVIEW_NAMESPACE=webui-nuxeo-elements-$BRANCH_NAME" >> $GITHUB_ENV
+        echo "PREVIEW_NAMESPACE=nuxeo-elements-${BRANCH_NAME,,}" >> $GITHUB_ENV
 
     - name: Install
       env:
@@ -102,7 +102,7 @@ jobs:
         # install
         helm upgrade --install --namespace ${PREVIEW_NAMESPACE} ${PREVIEW_NAMESPACE} .
         
-        echo "PREVIEW_URL=preview-${PREVIEW_NAMESPACE}.dev.nuxeo.com" >> $GITHUB_ENV
+        echo "PREVIEW_URL=https://preview-${PREVIEW_NAMESPACE}.webui.dev.nuxeo.com" >> $GITHUB_ENV
 
     - uses: actions/github-script@0.9.0
       if: github.event_name == 'pull_request'
@@ -110,7 +110,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           github.issues.createComment({
-            issue_number: context.pull_request.number,
+            issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
             body: `:star: PR built and available [here](${process.env.PREVIEW_URL})`
