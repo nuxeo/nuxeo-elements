@@ -20,6 +20,8 @@ Then, go ahead and download the element's dependencies:
 
     bower install
 
+Note: This version of Nuxeo Elements requires node version >=8.0.0.
+
 ## Reference nuxeo-elements in your Bower dependencies
 
     bower install -S nuxeo/nuxeo-elements
