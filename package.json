@@ -10,14 +10,19 @@
     "Nelson Silva <nsilva@nuxeo.com>"
   ],
   "license": "Apache 2.0",
+  "engines": {
+    "node": ">=6.0.0"
+  },
   "private": true,
   "scripts": {
+    "postinstall": "check-engine || true",
     "eslint": "eslint *.html demo/**/*.html test/**/*.html",
     "polylint": "polymer lint -r 'polymer-1'",
     "lint": "npm run eslint && npm run polylint",
     "test": "polymer test --simpleOutput --expanded -l chrome"
   },
   "devDependencies": {
+    "check-engine": "1.8.1",
     "eslint": "^3.0.0",
     "eslint-plugin-html": "^2.0.0",
     "polymer-cli": "1.6.0"
