@@ -10,8 +10,12 @@
     "Nelson Silva <nsilva@nuxeo.com>"
   ],
   "license": "Apache 2.0",
+  "engines": {
+    "node": ">=8.0.0"
+  },
   "private": true,
   "scripts": {
+    "postinstall": "check-engine || true",
     "eslint": "eslint *.html demo/**/*.html test/**/*.html",
     "polylint": "polymer lint",
     "lint": "npm run eslint && npm run polylint",
@@ -20,6 +24,7 @@
     "coveralls": "cat coverage/lcov.info | coveralls"
   },
   "devDependencies": {
+    "check-engine": "1.8.1",
     "coveralls": "^3.0.2",
     "eslint": "^4.14.0",
     "eslint-config-airbnb-base": "^12.1.0",
