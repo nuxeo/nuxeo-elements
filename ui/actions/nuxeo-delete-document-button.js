@@ -55,7 +55,9 @@ import '../nuxeo-button-styles.js';
 
         <nuxeo-operation id="trashOp" op="Document.Trash" input="[[document.uid]]" sync-indexing></nuxeo-operation>
 
-        <dom-if if="[[_isAvailable(document)]]">
+        <nuxeo-connection id="nx" user="{{currentUser}}"></nuxeo-connection>
+
+        <dom-if if="[[_isAvailable(document, currentUser)]]">
           <template>
             <div class="action" on-click="_delete">
               <paper-icon-button icon="[[icon]]" noink id="deleteButton"></paper-icon-button>
@@ -110,12 +112,12 @@ import '../nuxeo-button-styles.js';
       };
     }
 
-    _isAvailable(doc) {
+    _isAvailable(doc, currentUser) {
       return (
         !this.isVersion(doc) &&
         this.hasPermission(doc, 'Remove') &&
         (!this.isTrashed(doc) || this.hard) &&
-        !this.isUnderRetentionOrLegalHold(doc)
+        this.canDelete(doc, currentUser)
       );
     }
 

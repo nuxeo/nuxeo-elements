@@ -49,6 +49,8 @@ import '../nuxeo-button-styles.js';
       return html`
         <style include="nuxeo-action-button-styles nuxeo-button-styles"></style>
 
+        <nuxeo-connection id="nx" user="{{currentUser}}"></nuxeo-connection>
+
         <nuxeo-operation
           id="operation"
           op="Blob.RemoveFromDocument"
@@ -57,7 +59,7 @@ import '../nuxeo-button-styles.js';
         >
         </nuxeo-operation>
 
-        <dom-if if="[[_isAvailable(document)]]">
+        <dom-if if="[[_isAvailable(document, currentUser)]]">
           <template>
             <div class="action" on-click="_toggleDialog">
               <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
@@ -123,15 +125,14 @@ import '../nuxeo-button-styles.js';
       };
     }
 
-    _isAvailable(doc) {
+    _isAvailable(doc, currentUser) {
       return (
         doc &&
         this.hasPermission(doc, 'WriteProperties') &&
         !this.isImmutable(doc) &&
         !this.hasType(doc, 'Root') &&
         !this.isTrashed(doc) &&
-        !(doc.isRecord && this.xpath !== 'file:content') &&
-        !(this.isUnderRetentionOrLegalHold(doc) && this.xpath === 'file:content')
+        (this.xpath !== 'file:content' || this.canDelete(doc, currentUser))
       );
     }
 
