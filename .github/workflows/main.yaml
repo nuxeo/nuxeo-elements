@@ -52,6 +52,14 @@ jobs:
         SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
       run: npm run test
 
+    - name: Run analysis
+      run: npx lerna run analysis --parallel
+
+    - name: Build storybook
+      working-directory: storybook
+      run: |
+        npx build-storybook -o dist -s ./public
+
     - name: Deploy
       if: github.ref == 'refs/heads/master'
       env:
