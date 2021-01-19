@@ -25,17 +25,22 @@ jobs:
         echo "BRANCH_NAME=${GITHUB_HEAD_REF##*/}" >> $GITHUB_ENV
         echo "PACKAGE_VERSION=$(npx -c 'echo "$npm_package_version"')" >> $GITHUB_ENV
 
-    - name: Set pull request version
+    - name: Get pull request version
       if: github.event_name == 'pull_request'
       run: |
         echo "VERSION=$PACKAGE_VERSION-$BRANCH_NAME" >> $GITHUB_ENV
 
-    - name: Set prerelease version
+    - name: Get prerelease version
       if: github.event_name == 'push'
       run: |
         git fetch origin --tags
         RC_VERSION=$(git tag --sort=taggerdate --list "v${PACKAGE_VERSION/-SNAPSHOT}*" | tail -1 | tr -d '\n')
         echo "VERSION=$(npx semver -i prerelease --preid rc ${RC_VERSION:-$PACKAGE_VERSION}  | tr -d '\n')" >> $GITHUB_ENV
+
+    - name: Set version to ${{ env.VERSION }}
+      run: |
+        npm version $VERSION --no-git-tag-version
+        npx lerna version $VERSION --no-push --force-publish --no-git-tag-version --yes
 
     - name: Install
       env:
