@@ -19,6 +19,7 @@ import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/quill/dist/quill.js';
+import '../nuxeo-document-picker/nuxeo-document-picker.js';
 import './quill/quill-snow.js';
 
 {
@@ -39,7 +40,22 @@ import './quill/quill-snow.js';
           div#editor > * {
             margin-top: 0;
           }
+
+          iron-icon {
+            height: 18px;
+            color: #444;
+          }
         </style>
+
+        <nuxeo-document-picker
+          id="picker"
+          provider="document_picker"
+          page-size="40"
+          schemas="dublincore,file"
+          enrichers="thumbnail,permissions,highlight"
+          search-name="document_picker"
+          on-picked="_onPickerSelected"
+        ></nuxeo-document-picker>
 
         <div id="toolbar">
           <span class="ql-formats">
@@ -81,7 +97,14 @@ import './quill/quill-snow.js';
           </span>
           <span class="ql-formats">
             <button class="ql-link"></button>
-            <button class="ql-image"></button>
+            <!-- hide the default Quill image upload button, then trigger it from the button with the custom icon -->
+            <button id="qlImage" class="ql-image" style="display: none;"></button>
+            <button on-tap="_onImageUpload">
+              <iron-icon icon="nuxeo:picture"></iron-icon>
+            </button>
+            <button on-tap="_onSearchImage">
+              <iron-icon icon="nuxeo:search-picture"></iron-icon>
+            </button>
           </span>
           <span class="ql-formats">
             <button class="ql-clean"></button>
@@ -168,6 +191,25 @@ import './quill/quill-snow.js';
       if (this._editor) {
         this._editor.enable(!this.readOnly);
         this._editor.getModule('toolbar').container.style.display = this.readOnly ? 'none' : '';
+      }
+    }
+
+    _onImageUpload() {
+      this.$.qlImage.click();
+    }
+
+    _onSearchImage() {
+      this.$.picker.open();
+    }
+
+    _onPickerSelected(e) {
+      const selectedDocuments = e.detail && e.detail.selectedItems;
+      if (selectedDocuments) {
+        const templateToInsert = selectedDocuments
+          .filter((doc) => doc.properties['file:content'] && doc.properties['file:content'].data)
+          .map((doc) => `<img src="${doc.properties['file:content'].data}">`)
+          .join('\n');
+        this._editor.clipboard.dangerouslyPasteHTML(this._editor.getSelection(true).index, templateToInsert);
       }
     }
   }
