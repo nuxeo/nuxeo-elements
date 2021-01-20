@@ -41,6 +41,53 @@ import './quill/quill-snow.js';
           }
         </style>
 
+        <div id="toolbar">
+          <span class="ql-formats">
+            <select class="ql-header">
+              <option value="1"></option>
+              <option value="2"></option>
+              <option value="3"></option>
+              <option value="4"></option>
+              <option value="5"></option>
+              <option value="6"></option>
+              <option selected></option>
+            </select>
+          </span>
+          <span class="ql-formats">
+            <button class="ql-bold"></button>
+            <button class="ql-italic"></button>
+            <button class="ql-underline"></button>
+            <button class="ql-strike"></button>
+          </span>
+          <span class="ql-formats">
+            <button class="ql-align" value=""></button>
+            <button class="ql-align" value="center"></button>
+            <button class="ql-align" value="right"></button>
+          </span>
+          <span class="ql-formats">
+            <select class="ql-color"></select>
+            <select class="ql-background"></select>
+          </span>
+          <span class="ql-formats">
+            <button class="ql-script" value="sub"></button>
+            <button class="ql-script" value="super"></button>
+          </span>
+          <span class="ql-formats">
+            <button class="ql-blockquote"></button>
+          </span>
+          <span class="ql-formats">
+            <button class="ql-list" value="ordered"></button>
+            <button class="ql-list" value="bullet"></button>
+          </span>
+          <span class="ql-formats">
+            <button class="ql-link"></button>
+            <button class="ql-image"></button>
+          </span>
+          <span class="ql-formats">
+            <button class="ql-clean"></button>
+          </span>
+        </div>
+
         <div id="editor"></div>
       `;
     }
@@ -93,20 +140,9 @@ import './quill/quill-snow.js';
     ready() {
       super.ready();
       // init editor
-      const toolbar = [
-        [{ header: [1, 2, 3, 4, 5, 6, false] }], // headings
-        ['bold', 'italic', 'underline', 'strike'], // style buttons
-        [{ align: '' }, { align: 'center' }, { align: 'right' }], // text alignment
-        [{ color: [] }, { background: [] }], // dropdown with defaults from theme
-        [{ script: 'sub' }, { script: 'super' }], // superscript/subscript
-        ['blockquote'], // blockquote
-        [{ list: 'ordered' }, { list: 'bullet' }], // lists
-        ['link', 'image'], // links and media
-        ['clean'], // remove formatting button
-      ];
-
       const { placeholder, readOnly } = this;
-      this._editor = new Quill(this.$.editor, { theme: 'snow', modules: { toolbar }, placeholder, readOnly });
+      const modules = { toolbar: '#toolbar' };
+      this._editor = new Quill(this.$.editor, { theme: 'snow', modules, placeholder, readOnly });
 
       // update value on change
       this._editor.on('text-change', () => {
