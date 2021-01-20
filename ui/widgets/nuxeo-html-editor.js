@@ -82,6 +82,9 @@ import './quill/quill-snow.js';
           <span class="ql-formats">
             <button class="ql-link"></button>
             <button class="ql-image"></button>
+            <button on-tap="_onSearchImage">
+              <iron-icon icon="search" style="height: 18px;"></iron-icon>
+            </button>
           </span>
           <span class="ql-formats">
             <button class="ql-clean"></button>
@@ -169,6 +172,11 @@ import './quill/quill-snow.js';
         this._editor.enable(!this.readOnly);
         this._editor.getModule('toolbar').container.style.display = this.readOnly ? 'none' : '';
       }
+    }
+
+    _onSearchImage() {
+      const selection = this._editor.getSelection(true);
+      this._editor.insertText(selection.index, '[TODO]');
     }
   }
 
