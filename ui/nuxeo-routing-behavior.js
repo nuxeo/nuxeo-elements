@@ -78,6 +78,9 @@ export const RoutingBehavior = {
         const baseUrl = this.router.baseUrl || '';
         let path;
         if (typeof route === 'object') {
+          if (!Object.keys(route).length) {
+            return '';
+          }
           path = this._routeEntity(...args);
         } else {
           if (route.startsWith('/')) {
