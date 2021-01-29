@@ -62,6 +62,7 @@ IronOverlayManager._overlayWithBackdrop = function() {
             @apply --layout-horizontal;
             @apply --layout-justified;
             margin-top: 16px;
+            margin-inline-end: 16px;
           }
         </style>
 

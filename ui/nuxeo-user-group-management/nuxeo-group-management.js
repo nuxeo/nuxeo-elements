@@ -65,10 +65,6 @@ import '../nuxeo-button-styles.js';
             display: none !important;
           }
 
-          h2 {
-            color: var(--nuxeo-title-color, #213f7d);
-          }
-
           nuxeo-user-group-permissions-table {
             margin-top: 1em;
           }
@@ -264,7 +260,7 @@ import '../nuxeo-button-styles.js';
           </iron-form>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
-              <paper-button dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
+              <paper-button class="secondary" dialog-dismiss>[[i18n('command.cancel')]]</paper-button>
             </div>
             <paper-button noink class="primary" on-click="_submitEditForm">
               [[i18n('command.save.changes')]]

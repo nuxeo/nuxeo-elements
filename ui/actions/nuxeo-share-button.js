@@ -89,9 +89,7 @@ import '../nuxeo-button-styles.js';
         </dom-if>
 
         <nuxeo-dialog id="dialog" with-backdrop>
-          <div>
-            <h2>[[i18n('shareButton.dialog.heading')]]</h2>
-          </div>
+          <h2>[[i18n('shareButton.dialog.heading')]]</h2>
           <div id="permanent" class="horizontal">
             <nuxeo-input
               id="permalink"
