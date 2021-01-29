@@ -63,10 +63,6 @@ import '../nuxeo-button-styles.js';
             @apply --layout-end-justified;
           }
 
-          .actions paper-button {
-            margin-left: 1em;
-          }
-
           .actions iron-icon {
             width: 1.3rem;
           }
@@ -101,7 +97,6 @@ import '../nuxeo-button-styles.js';
 
           nuxeo-dialog {
             min-width: 400px;
-            padding-top: 24px;
           }
 
           .buttons {
@@ -156,7 +151,7 @@ import '../nuxeo-button-styles.js';
                 </template>
               </dom-if>
               <nuxeo-dialog id="changePasswordDialog" with-backdrop>
-                <h3>[[i18n('userProfile.password.change')]]</h3>
+                <h2>[[i18n('userProfile.password.change')]]</h2>
 
                 <iron-form id="changePasswordForm">
                   <form class="vertical layout">
