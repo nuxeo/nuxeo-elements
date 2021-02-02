@@ -281,16 +281,20 @@ import './viewers/nuxeo-video-viewer.js';
         this.document.properties['vid:transcodedVideos'] &&
         this.xpath === 'file:content'
       ) {
-        const conversions = [];
-        this.document.properties['vid:transcodedVideos'].forEach((conversion) => {
-          if (conversion && conversion.content && conversion.content.data && conversion.content['mime-type']) {
-            conversions.push({
+        return this.document.properties['vid:transcodedVideos']
+          .filter(
+            (conversion) =>
+              conversion &&
+              conversion.content &&
+              conversion.content.data &&
+              conversion.content['mime-type'].match(/^video.*/),
+          )
+          .map((conversion) => {
+            return {
               data: conversion.content.data,
               type: conversion.content['mime-type'],
-            });
-          }
-        });
-        return conversions;
+            };
+          });
       }
       // fallback to blob data if there are no transcoded videos (e.g. video documents managed by liveconnect)
       if (this.xpath) {
