@@ -217,10 +217,27 @@ import '../actions/nuxeo-action-button-styles.js';
 
     // https://jira.nuxeo.com/browse/ELEMENTS-370
     _download(response) {
+      const contentDisposition = response.headers.get('Content-Disposition');
+      if (contentDisposition) {
+        const filenameMatches = contentDisposition
+          .match(/filename[^;=\n]*=([^;\n]*''([^;\n]*)|[^;\n]*)/)
+          .filter((match) => !!match);
+        const filename = decodeURI(filenameMatches[filenameMatches.length - 1]);
+        response.blob().then((blob) => {
+          const url = URL.createObjectURL(blob);
+          this._triggerDownload(filename, url);
+          URL.revokeObjectURL(url);
+        });
+      } else {
+        this._triggerDownload('', response.url);
+      }
+    }
+
+    _triggerDownload(filename, url) {
       const a = document.createElement('a');
       a.style = 'display: none';
-      a.download = '';
-      a.href = response.url;
+      a.download = filename;
+      a.href = url;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
