@@ -1,0 +1,14 @@
+<!-- XXX: stub for the <nuxeo-results> element because it's still part of the nuxeo/nuxeo-web-ui repo. -->
+<!-- (to be reviewed once ELEMENTS-1321 is handled) -->
+<dom-module id="nuxeo-results">
+  <script>
+    Polymer({
+      is: 'nuxeo-results',
+      observers: ['_selectedItemsChanged(selectedItems, selectedItems.*)'],
+      _selectedItemsChanged() {
+        // simulate the event so that it can be listened in the picker
+        this.fire('selected-items-changed');
+      },
+    });
+  </script>
+</dom-module>
