@@ -97,7 +97,7 @@ suite('nuxeo-document-layout', () => {
   });
 
   test('Should fire a "document-layout-changed" event when the layout is loaded', async () => {
-    // we need to ad a listener for this event before hand, because we do not yet have the layout stamped,
+    // we need to add a listener for this event before hand, because we do not yet have the layout stamped,
     // and after `buildLayout` it can be too late to catch the event.
     const layoutChanged = new Promise((resolve) => {
       document.addEventListener('document-layout-changed', (e) => resolve(e));
@@ -151,7 +151,7 @@ suite('nuxeo-document-layout', () => {
     documentLayout = await buildLayout();
     expect(documentLayout.element).to.exist;
     expect(documentLayout.element.tagName).to.equal('NUXEO-TEST-EDIT-LAYOUT');
-    // check that the layout updates when the document changes
+    // check that the layout updates when the href template changes
     documentLayout.hrefTemplate = '../dummy-layout.html';
     const event = await waitForEvent(documentLayout, 'document-layout-changed');
     expect(event.detail).to.exist;
@@ -169,7 +169,7 @@ suite('nuxeo-document-layout', () => {
     documentLayout = await buildLayout();
     expect(documentLayout.element).to.exist;
     expect(documentLayout.element.tagName).to.equal('NUXEO-TEST-EDIT-LAYOUT');
-    // check that the layout updates when the document changes
+    // check that the layout updates when the href base changes
     documentLayout.hrefBase = `${base}/layout/`;
     const event = await waitForEvent(documentLayout, 'document-layout-changed');
     expect(event.detail).to.exist;
