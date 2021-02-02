@@ -1,0 +1,81 @@
+<!--
+`nuxeo-test-search-form`
+@group Nuxeo UI
+@element nuxeo-test-search-form
+-->
+<dom-module id="nuxeo-test-search-form">
+  <template>
+    <style include="nuxeo-styles"></style>
+
+    <nuxeo-input
+      role="widget"
+      id="searchInput"
+      type="search"
+      label="[[i18n('defaultSearch.fullText')]]"
+      name="Fulltext"
+      value="{{searchTerm}}"
+      placeholder="[[i18n('defaultSearch.fullText.placeholder')]]"
+      autofocus
+      on-keydown="_checkForEnter"
+    >
+    </nuxeo-input>
+
+    <div role="widget">
+      <nuxeo-checkbox-aggregation
+        data="[[aggregations.dc_modified_agg]]"
+        value="{{params.dc_modified_agg}}"
+        label="[[i18n('defaultSearch.modifiedDate')]]"
+        collapsible
+      >
+      </nuxeo-checkbox-aggregation>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-test-search-form',
+      behaviors: [Nuxeo.LayoutBehavior, Nuxeo.I18nBehavior],
+      properties: {
+        params: {
+          type: Object,
+          value: {},
+          notify: true,
+        },
+        aggregations: {
+          type: Object,
+          value: {},
+          notify: true,
+        },
+        searchTerm: {
+          type: String,
+          notify: true,
+        },
+      },
+
+      clear() {
+        this.searchTerm = '';
+        this._search();
+      },
+
+      _search() {
+        if (this.searchTerm) {
+          this.set('params.ecm_fulltext', this.formatFulltext(this.searchTerm));
+          this.set(
+            'params.highlight',
+            'dc:title.fulltext,ecm:binarytext,dc:description.fulltext,ecm:tag,note:note.fulltext,file:content.name',
+          );
+        } else if (this.params && this.params.ecm_fulltext) {
+          this.set('params.ecm_fulltext', '');
+          delete this.params.ecm_fulltext;
+          delete this.params.highlight;
+        }
+      },
+
+      _checkForEnter(e) {
+        if (e.keyCode === 13) {
+          this._search();
+        }
+      },
+    });
+  </script>
+</dom-module>
