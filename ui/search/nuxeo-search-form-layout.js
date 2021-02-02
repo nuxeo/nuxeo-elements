@@ -102,6 +102,10 @@ import '../nuxeo-document-thumbnail/nuxeo-document-thumbnail.js';
             return {};
           },
         },
+        /**
+         * The base url for the layout href.
+         */
+        hrefBase: String,
       };
     }
 
@@ -127,7 +131,7 @@ import '../nuxeo-document-thumbnail/nuxeo-document-thumbnail.js';
 
     _formHref(provider, searchName) {
       const name = (searchName || provider).toLowerCase();
-      return this.resolveUrl(`${name}/${['nuxeo', name, 'search-form'].join('-')}.html`);
+      return this.resolveUrl(`${name}/${['nuxeo', name, 'search-form'].join('-')}.html`, this.hrefBase);
     }
 
     _formModel() {
