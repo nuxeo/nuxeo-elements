@@ -75,6 +75,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           type: Object,
           notify: true,
         },
+        /**
+         * The base url for the layout href.
+         */
+        hrefBase: String,
       };
     }
 
@@ -98,7 +102,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _resultsHref() {
       const name = ['nuxeo', this.searchName.toLowerCase(), 'search-results'].join('-');
-      return this.resolveUrl([this.searchName.toLowerCase(), `${name}.html`].join('/'));
+      return this.resolveUrl([this.searchName.toLowerCase(), `${name}.html`].join('/'), this.hrefBase);
     }
 
     _resultsModel() {
