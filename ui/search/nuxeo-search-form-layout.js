@@ -16,6 +16,7 @@ limitations under the License.
 */
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import { pathFromUrl } from '@polymer/polymer/lib/utils/resolve-url.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-input/paper-input.js';
@@ -46,7 +47,7 @@ import '../nuxeo-document-thumbnail/nuxeo-document-thumbnail.js';
       return html`
         <nuxeo-layout
           id="layout"
-          href="[[_formHref(provider, searchName)]]"
+          href="[[_formHref(provider, searchName, hrefBase)]]"
           model="[[_formModel(provider, aggregations, params)]]"
           error="[[i18n('documentSearchForm.layoutNotFound', searchName)]]"
           on-element-changed="_formChanged"
@@ -129,9 +130,10 @@ import '../nuxeo-document-thumbnail/nuxeo-document-thumbnail.js';
       }
     }
 
-    _formHref(provider, searchName) {
+    _formHref(provider, searchName, hrefBase) {
       const name = (searchName || provider).toLowerCase();
-      return this.resolveUrl(`${name}/${['nuxeo', name, 'search-form'].join('-')}.html`, this.hrefBase);
+      const base = hrefBase || pathFromUrl(this.__dataHost.importPath || this.importPath);
+      return `${base}${name}/${['nuxeo', name, 'search-form'].join('-')}.html`;
     }
 
     _formModel() {
