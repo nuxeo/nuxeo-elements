@@ -17,6 +17,7 @@ limitations under the License.
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import { pathFromUrl } from '@polymer/polymer/lib/utils/resolve-url.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '../nuxeo-layout.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
@@ -33,7 +34,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       return html`
         <nuxeo-layout
           id="results"
-          href="[[_resultsHref(searchName)]]"
+          href="[[_resultsHref(searchName, hrefBase)]]"
           model="[[_resultsModel(searchName,nxProvider)]]"
           error="[[i18n('searchResults.layoutNotFound', searchName)]]"
           on-element-changed="_formChanged"
@@ -100,9 +101,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
     }
 
-    _resultsHref() {
-      const name = ['nuxeo', this.searchName.toLowerCase(), 'search-results'].join('-');
-      return this.resolveUrl([this.searchName.toLowerCase(), `${name}.html`].join('/'), this.hrefBase);
+    _resultsHref(searchName, hrefBase) {
+      const name = searchName.toLowerCase();
+      const base = hrefBase || pathFromUrl(this.__dataHost.importPath || this.importPath);
+      return `${base}${name}/${['nuxeo', name, 'search-results'].join('-')}.html`;
     }
 
     _resultsModel() {
