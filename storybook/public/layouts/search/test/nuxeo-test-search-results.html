@@ -1,0 +1,76 @@
+<!-- XXX: stub for the <nuxeo-results> element because it's still part of the nuxeo/nuxeo-web-ui repo. -->
+<!-- (to be reviewed once ELEMENTS-1321 is handled) -->
+<dom-module id="nuxeo-results">
+  <script>
+    Polymer({
+      is: 'nuxeo-results',
+      fetch() {
+        // simulates a real fetch by populating the items of a table with an array of simplified results
+        this._setTableItems([
+          {
+            uid: 'uid1',
+            type: 'file',
+            contextParameters: {
+              thumbnail: {
+                url: 'static/media/image05.9e458dfd.jpg',
+              },
+            },
+          },
+          {
+            uid: 'uid2',
+            type: 'file',
+            contextParameters: {
+              thumbnail: {
+                url: 'static/media/image10.40c78ce6.jpg',
+              },
+            },
+          },
+        ]);
+      },
+      reset() {
+        // simulates a real reset by clearing the items of a table with an empty array
+        this._setTableItems([]);
+      },
+      _setTableItems(value) {
+        this.querySelector('nuxeo-data-table').items = value;
+      },
+    });
+  </script>
+</dom-module>
+
+<!--
+`nuxeo-test-search-results`
+@group Nuxeo UI
+@element nuxeo-test-search-results
+-->
+<dom-module id="nuxeo-test-search-results">
+  <template>
+    <style include="nuxeo-styles"></style>
+
+    <nuxeo-results>
+      <nuxeo-data-table>
+        <nuxeo-data-table-column name="Image">
+          <template>
+            <nuxeo-document-thumbnail document="[[item]]"></nuxeo-document-thumbnail>
+          </template>
+        </nuxeo-data-table-column>
+        <nuxeo-data-table-column name="Type">
+          <template>
+            <span>[[item.type]]</span>
+          </template>
+        </nuxeo-data-table-column>
+        <nuxeo-data-table-column name="UID">
+          <template>
+            <span>[[item.uid]]</span>
+          </template>
+        </nuxeo-data-table-column>
+      </nuxeo-data-table>
+    </nuxeo-results>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-test-search-results',
+    });
+  </script>
+</dom-module>
