@@ -20,7 +20,8 @@ import '../nuxeo-data-grid/nuxeo-data-grid.js';
 import '../nuxeo-data-list/nuxeo-data-list.js';
 import '../search/nuxeo-search-results-layout.js';
 import { Polymer } from '@polymer/polymer/polymer-legacy.js';
-import { fixture, flush, isElementVisible, html, waitForEvent, waitForAttrMutation } from '@nuxeo/testing-helpers';
+import { fixture, flush, isElementVisible, html } from '@nuxeo/testing-helpers';
+import { waitForLayoutLoad } from './ui-test-helpers.js';
 import { LayoutBehavior } from '../nuxeo-layout-behavior.js';
 
 // Export Polymer and PolymerElement for 1.x and 2.x compat
@@ -41,20 +42,17 @@ suite('nuxeo-search-results-layout', () => {
   let searchResultsLayout;
   const baseUrl = `${base}/layouts/search/`;
 
-  const awaitLayoutLoad = (layout) =>
-    Promise.race([waitForEvent(layout, 'element-changed'), waitForAttrMutation(layout.$.error, 'hidden', null)]);
-
   const buildLayout = async (searchName = 'test') => {
-    const dl = await fixture(
+    const sl = await fixture(
       html`
         <nuxeo-search-results-layout search-name="${searchName}" href-base="${baseUrl}"> </nuxeo-search-results-layout>
       `,
     );
-    if (!dl.element) {
-      await awaitLayoutLoad(dl.$.results);
+    if (!sl.element) {
+      await waitForLayoutLoad(sl.$.results);
     }
     await flush();
-    return dl;
+    return sl;
   };
 
   const assertNotFound = () => {

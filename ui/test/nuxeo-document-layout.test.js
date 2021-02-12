@@ -19,7 +19,8 @@ import '../nuxeo-document-layout.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-textarea';
 import { Polymer } from '@polymer/polymer/polymer-legacy.js';
-import { fixture, flush, isElementVisible, html, waitForEvent, waitForAttrMutation } from '@nuxeo/testing-helpers';
+import { fixture, flush, isElementVisible, html, waitForEvent } from '@nuxeo/testing-helpers';
+import { getWidgetFromLayout, waitForLayoutLoad } from './ui-test-helpers.js';
 import { LayoutBehavior } from '../nuxeo-layout-behavior.js';
 
 // Export Polymer and PolymerElement for 1.x and 2.x compat
@@ -44,9 +45,6 @@ suite('nuxeo-document-layout', () => {
     return { type: 'Test', uid: '12ae', properties: props };
   };
 
-  const awaitLayoutLoad = (layout) =>
-    Promise.race([waitForEvent(layout, 'element-changed'), waitForAttrMutation(layout.$.error, 'hidden', null)]);
-
   const buildLayout = async (doc = buildDoc(), layout = 'edit') => {
     const dl = await fixture(
       html`
@@ -54,17 +52,10 @@ suite('nuxeo-document-layout', () => {
       `,
     );
     if (!dl.element) {
-      await awaitLayoutLoad(dl.$.layout);
+      await waitForLayoutLoad(dl.$.layout);
     }
     await flush();
     return dl;
-  };
-
-  const getWidget = (label) => {
-    if (!documentLayout || !documentLayout.element) {
-      return null;
-    }
-    return documentLayout.element.shadowRoot.querySelector(`[role="widget"][name="${label}"]`);
   };
 
   const assertNotFound = () => {
@@ -193,7 +184,7 @@ suite('nuxeo-document-layout', () => {
     // check that validation fails if required fields are not filled
     expect(documentLayout.validate()).to.be.false;
     const myTitle = 'My Title';
-    getWidget('Title').value = myTitle;
+    getWidgetFromLayout('Title', documentLayout).value = myTitle;
     // assert that validation passes if required fields are filled
     expect(documentLayout.document.properties['dc:title']).to.equal(myTitle);
     expect(documentLayout.validate()).to.be.true;
@@ -213,7 +204,7 @@ suite('nuxeo-document-layout', () => {
     expect(documentLayout.$.layout.validate.calledOnce).to.be.true;
     const myDescription = 'My Description';
     // assert that validation passes if the values differ
-    getWidget('Description').value = myDescription;
+    getWidgetFromLayout('Description', documentLayout).value = myDescription;
     expect(documentLayout.document.properties['dc:description']).to.equal(myDescription);
     expect(documentLayout.validate()).to.be.true;
     expect(documentLayout.$.layout.validate.calledTwice).to.be.true;
@@ -221,7 +212,7 @@ suite('nuxeo-document-layout', () => {
 
   test('Should do auto-focus when the layout is stamped', async () => {
     documentLayout = await buildLayout();
-    const titleWidget = getWidget('Title');
+    const titleWidget = getWidgetFromLayout('Title', documentLayout);
     expect(titleWidget.hasAttribute('autofocus')).to.be.true;
     expect(documentLayout.element.shadowRoot.activeElement).to.equal(titleWidget);
   });
@@ -239,7 +230,7 @@ suite('nuxeo-document-layout', () => {
     expect(documentLayout.element.shadowRoot.activeElement).to.be.null;
     expect(typeof documentLayout.applyAutoFocus).to.equal('function');
     documentLayout.applyAutoFocus();
-    expect(documentLayout.element.shadowRoot.activeElement).to.equal(getWidget('Title'));
+    expect(documentLayout.element.shadowRoot.activeElement).to.equal(getWidgetFromLayout('Title', documentLayout));
   });
 
   test('Should display an error when reporting a global violation', async () => {
@@ -263,8 +254,8 @@ suite('nuxeo-document-layout', () => {
     expect(errors).to.have.lengthOf(1);
     expect(errors[0].textContent).to.equal(messageValue);
     // no field should be marked as invalid
-    expect(getWidget('Title').invalid).to.be.false;
-    expect(getWidget('Description').invalid).to.be.false;
+    expect(getWidgetFromLayout('Title', documentLayout).invalid).to.be.false;
+    expect(getWidgetFromLayout('Description', documentLayout).invalid).to.be.false;
   });
 
   test('Should display an error when reporting a field constraint violation', async () => {
@@ -303,7 +294,7 @@ suite('nuxeo-document-layout', () => {
     expect(errors).to.have.lengthOf(1);
     expect(errors[0].textContent).to.equal(message);
     // only the description field should be flagged as invalid
-    expect(getWidget('Title').invalid).to.be.false;
-    expect(getWidget('Description').invalid).to.be.true;
+    expect(getWidgetFromLayout('Title', documentLayout).invalid).to.be.false;
+    expect(getWidgetFromLayout('Description', documentLayout).invalid).to.be.true;
   });
 });
