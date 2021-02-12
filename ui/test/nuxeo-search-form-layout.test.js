@@ -19,7 +19,8 @@ import '../nuxeo-aggregation/nuxeo-checkbox-aggregation.js';
 import '../search/nuxeo-search-form-layout.js';
 import '../widgets/nuxeo-input.js';
 import { Polymer } from '@polymer/polymer/polymer-legacy.js';
-import { fixture, flush, isElementVisible, html, waitForEvent, waitForAttrMutation } from '@nuxeo/testing-helpers';
+import { fixture, flush, isElementVisible, html, waitForEvent } from '@nuxeo/testing-helpers';
+import { getWidgetFromLayout, waitForLayoutLoad } from './ui-test-helpers.js';
 import { LayoutBehavior } from '../nuxeo-layout-behavior.js';
 
 // Export Polymer and PolymerElement for 1.x and 2.x compat
@@ -48,11 +49,8 @@ suite('nuxeo-search-form-layout', () => {
     aggregation2: 'value2',
   };
 
-  const awaitLayoutLoad = (layout) =>
-    Promise.race([waitForEvent(layout, 'element-changed'), waitForAttrMutation(layout.$.error, 'hidden', null)]);
-
   const buildLayout = async (provider = 'pp_test', searchName = 'test') => {
-    const dl = await fixture(
+    const sl = await fixture(
       html`
         <nuxeo-search-form-layout
           provider="${provider}"
@@ -63,18 +61,11 @@ suite('nuxeo-search-form-layout', () => {
         ></nuxeo-search-form-layout>
       `,
     );
-    if (!dl.element) {
-      await awaitLayoutLoad(dl.$.layout);
+    if (!sl.element) {
+      await waitForLayoutLoad(sl.$.layout);
     }
     await flush();
-    return dl;
-  };
-
-  const getWidget = (label) => {
-    if (!searchFormLayout || !searchFormLayout.element) {
-      return null;
-    }
-    return searchFormLayout.element.shadowRoot.querySelector(`[role="widget"][name="${label}"]`);
+    return sl;
   };
 
   const assertNotFound = () => {
@@ -152,7 +143,7 @@ suite('nuxeo-search-form-layout', () => {
 
   test('Should do auto-focus when the layout is stamped', async () => {
     searchFormLayout = await buildLayout();
-    const fulltextWidget = getWidget('Fulltext');
+    const fulltextWidget = getWidgetFromLayout('Fulltext', searchFormLayout);
     expect(fulltextWidget.hasAttribute('autofocus')).to.be.true;
   });
 });
