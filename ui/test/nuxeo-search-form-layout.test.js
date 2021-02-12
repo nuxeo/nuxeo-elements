@@ -68,18 +68,13 @@ suite('nuxeo-search-form-layout', () => {
     return sl;
   };
 
-  const assertNotFound = () => {
-    expect(isElementVisible(searchFormLayout.$.layout.$.error)).to.be.true;
-    expect(searchFormLayout.$.layout.$.error.code).to.equal('404');
-    expect(searchFormLayout.$.layout.$.error.message).to.equal(
-      `Failed to find search layout for ${searchFormLayout.searchName}.`,
-    );
-  };
-
   test('Should display an error when the layout is not found', async () => {
     searchFormLayout = await buildLayout('pp_other', 'other');
     // we have no such search layout, so it will result in 404
-    assertNotFound();
+    const errorElement = searchFormLayout.$.layout.$.error;
+    expect(isElementVisible(errorElement)).to.be.true;
+    expect(errorElement.code).to.equal('404');
+    expect(errorElement.message).to.equal(`Failed to find search layout for ${searchFormLayout.searchName}.`);
   });
 
   test('Should load a layout when a search name is provided', async () => {
