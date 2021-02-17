@@ -19,6 +19,7 @@ import './data-table-templatizer-behavior.js';
             align-items: center;
             overflow: hidden;
             transition: flex-basis 200ms, flex-grow 200ms;
+            @apply --iron-data-table-cell;
           }
 
           :host([header]) {

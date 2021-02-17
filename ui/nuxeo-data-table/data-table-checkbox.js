@@ -17,6 +17,7 @@ import '../widgets/nuxeo-checkmark.js';
             display: flex;
             align-items: center;
             justify-content: center;
+            @apply --iron-data-table-checkbox;
           }
 
           :host([hidden]) {
