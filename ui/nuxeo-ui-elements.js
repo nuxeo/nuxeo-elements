@@ -72,5 +72,6 @@ import './nuxeo-document-comments/nuxeo-document-comment.js';
 import './nuxeo-document-comments/nuxeo-document-comment-thread.js';
 import './nuxeo-document-comments/nuxeo-document-comments-styles.js';
 import './nuxeo-document-layout.js';
+import './search/nuxeo-results-view.js';
 import './search/nuxeo-search-form-layout.js';
 import './search/nuxeo-search-results-layout.js';
