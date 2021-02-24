@@ -150,6 +150,10 @@ import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-beha
         <div id="container">
           <slot name="nuxeo-selection-toolbar"></slot>
 
+          <!--div>
+            <paper-checkbox checked="[[_isSelectAllChecked]]" on-change="_toggleSelectAll">Select all</paper-checkbox>
+          </div-->
+
           <div class="header">
             <div id="filters" class="filters">
               <dom-repeat items="[[filters]]" as="filter">

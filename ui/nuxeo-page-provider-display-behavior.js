@@ -185,6 +185,11 @@ export const PageProviderDisplayBehavior = [
         value: false,
       },
 
+      handlesSelectAll: {
+        type: Boolean,
+        value: false,
+      },
+
       _lastSelectedIndex: Number,
     },
 

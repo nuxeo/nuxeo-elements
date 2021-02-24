@@ -224,7 +224,10 @@ import '../nuxeo-button-styles.js';
 
           <div id="header">
             <nuxeo-data-table-row header>
-              <nuxeo-data-table-checkbox header hidden$="[[!selectionEnabled]]"></nuxeo-data-table-checkbox>
+              <nuxeo-data-table-checkbox 
+                checked="[[_isSelectAllChecked]]" 
+                on-click="_toggleSelectAll" 
+                hidden$="[[!selectionEnabled]]"></nuxeo-data-table-checkbox>
               <dom-repeat items="[[columns]]" as="column">
                 <template>
                   <nuxeo-data-table-cell
@@ -512,6 +515,7 @@ import '../nuxeo-button-styles.js';
     constructor() {
       super();
       this.handlesSorting = true;
+      this.handlesSelectAll = true;
       this._observer = dom(this).observeNodes((info) => {
         const hasColumns = function(node) {
           return node.nodeType === Node.ELEMENT_NODE && node instanceof Nuxeo.DataTableColumn;
