@@ -52,7 +52,7 @@ import './nuxeo-search-results-layout.js';
 
           .header,
           #collapse {
-            padding: 16px;
+            padding: 0 16px;
           }
 
           .buttons {
