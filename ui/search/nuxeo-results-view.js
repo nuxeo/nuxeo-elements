@@ -78,6 +78,12 @@ import './nuxeo-search-results-layout.js';
           .buttons {
             @apply --layout-horizontal;
           }
+
+          paper-spinner-lite {
+            width: 22px;
+            height: 22px;
+            padding-left: 8px;
+          }
         </style>
 
         <nuxeo-page-provider
@@ -123,15 +129,17 @@ import './nuxeo-search-results-layout.js';
                 params="[[_params]]"
                 on-search-form-layout-changed="_formChanged"
               ></nuxeo-search-form-layout>
-              <paper-spinner-lite active="[[loading]]"></paper-spinner-lite>
             </iron-collapse>
             <div class="buttons" hidden$="[[!opened]]">
-              <paper-button noink class="primary search" on-tap="_search" hidden$="[[auto]]">
-                [[i18n('command.search')]]
+              <paper-button noink class="clear secondary" on-tap="_clear" disabled$="[[loading]]">
+                [[i18n('command.clear')]]
               </paper-button>
               <div class="horizontal layout flex end-justified">
-                <paper-button noink class="clear secondary" on-tap="_clear">
-                  [[i18n('command.clear')]]
+                <paper-button noink class="primary search" on-tap="_search" hidden$="[[auto]]" disabled$="[[loading]]">
+                  [[i18n('command.search')]]
+                  <template is="dom-if" if="[[loading]]">
+                    <paper-spinner-lite active></paper-spinner-lite>
+                  </template>
                 </paper-button>
               </div>
             </div>
