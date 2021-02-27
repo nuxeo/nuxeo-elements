@@ -416,11 +416,19 @@ import './nuxeo-search-results-layout.js';
       this._search();
     }
 
-    _resultsChanged() {
+    _resultsChanged(e) {
       const { results } = this;
       if (this.searchForm && results) {
         this.searchForm.results = results.results;
       }
+      // forward the event
+      this.dispatchEvent(
+        new CustomEvent('results-changed', {
+          composed: true,
+          bubbles: true,
+          detail: e.detail,
+        }),
+      );
     }
 
     _searchFormChanged(searchForm) {
