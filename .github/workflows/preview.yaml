@@ -4,7 +4,6 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, labeled]
     branches:
-      - master
       - maintenance-3.0.x
 
 env:
@@ -31,7 +30,7 @@ jobs:
         BRANCH_NAME=${GITHUB_HEAD_REF##*/}
         echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
         echo "VERSION=$(npx -c 'echo "$npm_package_version"')-$BRANCH_NAME" >> $GITHUB_ENV
-        echo "PREVIEW_NAMESPACE=nuxeo-elements-${BRANCH_NAME,,}" >> $GITHUB_ENV
+        echo "PREVIEW_NAMESPACE=webui-$(echo $BRANCH_NAME | sed 's/[^[:alnum:]-]/-/g' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
     - name: Install
       env:
@@ -100,7 +99,7 @@ jobs:
         helm dependency update
 
         # install
-        helm upgrade --install --namespace ${PREVIEW_NAMESPACE} ${PREVIEW_NAMESPACE} .
+        helm upgrade --install --namespace ${PREVIEW_NAMESPACE} preview .
         
         echo "PREVIEW_URL=https://preview-${PREVIEW_NAMESPACE}.webui.dev.nuxeo.com" >> $GITHUB_ENV
 

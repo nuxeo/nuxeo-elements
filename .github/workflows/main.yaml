@@ -3,7 +3,6 @@ name: Build
 on:
   push:
     branches:
-      - master
       - maintenance-3.0.x
   pull_request:
 
