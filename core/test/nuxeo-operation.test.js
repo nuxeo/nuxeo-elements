@@ -170,6 +170,7 @@ suite('nuxeo-operation', () => {
           namedParameters: {
             boolean: 'false',
           },
+          queryParams: [],
         },
         context: {},
       });
