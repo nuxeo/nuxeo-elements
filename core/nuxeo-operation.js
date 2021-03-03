@@ -208,6 +208,11 @@ import './nuxeo-connection.js';
       if (Nuxeo.PageProvider && input instanceof Nuxeo.PageProvider) {
         params.providerName = input.provider;
         Object.assign(params, input._params);
+        // ELEMENTS-1318 - commas would need to be escaped, as queryParams are mapped to stringlists by the server
+        // But passing queryParams as an array will map directly to the server stringlist
+        if (!Array.isArray(params.queryParams)) {
+          params.queryParams = [params.queryParams];
+        }
         input = undefined;
       }
 
