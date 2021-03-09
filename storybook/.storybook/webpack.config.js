@@ -18,7 +18,7 @@ module.exports = ({ config }) => {
     },
     // expose Quill
     {
-      test: require.resolve('@nuxeo/quill/dist/quill.js'),
+      test: require.resolve('@nuxeo/quill/dist/quill.min.js'),
       use: [
         {
           loader: 'expose-loader',
