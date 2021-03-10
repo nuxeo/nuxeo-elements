@@ -217,7 +217,7 @@ import '../actions/nuxeo-action-button-styles.js';
 
     // https://jira.nuxeo.com/browse/ELEMENTS-370
     _download(response) {
-      const contentDisposition = response.headers.get('Content-Disposition');
+      const contentDisposition = response.headers && response.headers.get('Content-Disposition');
       if (contentDisposition) {
         const filenameMatches = contentDisposition
           .match(/filename[^;=\n]*=([^;\n]*''([^;\n]*)|[^;\n]*)/)
