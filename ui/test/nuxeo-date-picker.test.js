@@ -15,11 +15,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { fixture, html } from '@nuxeo/testing-helpers';
-import moment from '@nuxeo/moment';
+import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import '../widgets/nuxeo-date-picker.js';
 
 function getInput(element) {
   return element.root.querySelector('#date');
+}
+
+function getInputDisplay(element) {
+  return element.root.querySelector('#date').root.querySelector('#input');
 }
 
 function testValue(element, value, isUTC) {
@@ -32,6 +36,16 @@ function testValue(element, value, isUTC) {
   // expect(element._pickerValue).to.be.equal(local);
 }
 
+function testValueWithLocale(element, value, locale, isUTC) {
+  element.value = value;
+  expect(element.value).to.be.equal(value);
+  const inputValue = getInputDisplay(element).value;
+  let val = isUTC ? moment.utc(value) : moment(value).local();
+  // use the i18n functions we set in nuxeo-date-picker, since the displayed date is not the value
+  val = getInput(element).i18n.formatDate(getInput(element).i18n.parseDate(val));
+  expect(inputValue).to.be.equal(val);
+}
+
 function testInput(element, input, isUTC) {
   const i = getInput(element);
   i.value = input;
@@ -41,23 +55,34 @@ function testInput(element, input, isUTC) {
   // expect(element._pickerValue).to.be.equal(input);
 }
 
+async function makeDatePicker(timezone) {
+  const picker = !timezone
+    ? await fixture(
+        html`
+          <nuxeo-date-picker></nuxeo-date-picker>
+        `,
+      )
+    : await fixture(
+        html`
+          <nuxeo-date-picker timezone=${timezone}></nuxeo-date-picker>
+        `,
+      );
+  return picker;
+}
+
 suite('nuxeo-date-picker', () => {
   let element;
+  let currentLocale;
 
   [{ timezone: undefined }, { timezone: 'Etc/UTC' }].forEach((conf) => {
     suite(!conf.timezone ? 'with no timezone' : `with ${conf.timezone} timezone`, () => {
       setup(async () => {
-        element = !conf.timezone
-          ? await fixture(
-              html`
-                <nuxeo-date-picker></nuxeo-date-picker>
-              `,
-            )
-          : await fixture(
-              html`
-                <nuxeo-date-picker timezone=${conf.timezone}></nuxeo-date-picker>
-              `,
-            );
+        currentLocale = moment.locale();
+        element = await makeDatePicker(conf.timezone);
+      });
+
+      teardown(() => {
+        moment.locale(currentLocale);
       });
 
       test('the value can be changed', () => {
@@ -95,6 +120,13 @@ suite('nuxeo-date-picker', () => {
         expect(localEltValue.hour()).to.be.equal(14);
         expect(localEltValue.minute()).to.be.equal(35);
         expect(localEltValue.second()).to.be.equal(19);
+      });
+
+      test('the input changes with locale', () => {
+        // using the arabic locale
+        moment.locale('ar');
+        expect(element.value).to.be.null;
+        testValueWithLocale(element, '2003-06-13T00:00:00.000Z', 'ar', conf.timezone);
       });
     });
   });
