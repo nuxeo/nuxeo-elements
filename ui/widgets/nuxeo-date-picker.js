@@ -179,9 +179,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this.$.date.set('i18n.parseDate', (text) => {
         const date = this._moment(text, moment.localeData().longDateFormat('L'));
         return {
-          day: date.format('D'),
-          month: date.format('M') - 1,
-          year: date.format('YYYY'),
+          day: date.get('D'),
+          month: date.get('M'),
+          year: date.get('Y'),
         };
       });
       this.$.date.set('i18n.monthNames', moment.months());
@@ -216,7 +216,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const date = this._moment(this.value);
       if (this.value && date.isValid()) {
         this._preventInputUpdate = true;
-        this._inputValue = date.format('YYYY-MM-DD');
+        const year = `${date.get('Y')}`.padStart(4, '0');
+        const month = `${date.get('M') + 1}`.padStart(2, '0');
+        const day = `${date.get('D')}`.padStart(2, '0');
+        this._inputValue = `${year}-${month}-${day}`;
       } else {
         this._inputValue = '';
       }
