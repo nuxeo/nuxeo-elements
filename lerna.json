@@ -2,6 +2,6 @@
   "packages": [
     "*"
   ],
-  "version": "3.0.3-SNAPSHOT",
+  "version": "3.0.3-rc.9",
   "hoist": true
 }
