@@ -13,7 +13,7 @@
     "@nuxeo/testing-helpers": "^3.0.3-SNAPSHOT",
     "@polymer/iron-icon": "^3.0.0",
     "@polymer/iron-meta": "^3.0.1",
-    "@polymer/polymer": "^3.0.0",
+    "@polymer/polymer": "3.3.1",
     "@storybook/addon-actions": "^5.1.11",
     "@storybook/addon-backgrounds": "^5.1.11",
     "@storybook/addon-knobs": "^5.1.11",
