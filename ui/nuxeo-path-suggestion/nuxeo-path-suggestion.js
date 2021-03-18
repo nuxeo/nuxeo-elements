@@ -203,17 +203,17 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
         if (idx > -1) {
           const newParentPath = idx === 0 ? '/' : this.value.substring(0, idx);
           this._updateParent(newParentPath)
-            .then(() => {
-              this._queryChildren(this.parent, this.value.substring(idx + 1));
-            })
+            .then(() => this._queryChildren(this.parent, this.value.substring(idx + 1)))
             .catch((err) => {
               if (err.status === 403) {
                 this.children = [];
               }
+            })
+            .finally(() => {
+              if (this.autoValidate) {
+                this.validate();
+              }
             });
-        }
-        if (this.autoValidate) {
-          this.validate();
         }
       }
     }
