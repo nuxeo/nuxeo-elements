@@ -1,0 +1,82 @@
+<!--
+`nuxeo-picker-search-results`
+@group Nuxeo UI
+@element nuxeo-picker-search-results
+-->
+<!-- XXX Remove on ELEMENTS-1321 -->
+<link rel="import" href="../nuxeo-results.html" />
+<dom-module id="nuxeo-picker-search-results">
+  <template>
+    <style include="nuxeo-styles">
+      nuxeo-data-grid {
+        /* required to override the min-height defined by default on <nuxeo-data-grid> */
+        min-height: 200px;
+      }
+    </style>
+    <nuxeo-results id="results" nx-provider="[[nxProvider]]" selected-items="{{selectedItems}}">
+      <!-- disable the default actions (eg. CSV export) -->
+      <div slot="actions"></div>
+      <!-- disable the actions that are displayed when results are selected -->
+      <div slot="selectionActions"></div>
+      <nuxeo-data-table
+        class="results"
+        empty-label="[[i18n('searchResults.noResults')]]"
+        selection-enabled
+        icon="nuxeo:view-list"
+        name="table"
+        selected-items="{{selectedItems}}"
+      >
+        <nuxeo-data-table-column name="Title" field="dc:title" sort-by="dc:title" flex="100">
+          <template>
+            <nuxeo-document-thumbnail document="[[item]]"></nuxeo-document-thumbnail>
+            <label>[[item.title]]</label>
+          </template>
+        </nuxeo-data-table-column>
+      </nuxeo-data-table>
+    </nuxeo-results>
+  </template>
+  <script>
+    function createItem(uid, title) {
+      return {
+        uid,
+        title,
+        type: 'file',
+      };
+    }
+    Polymer({
+      is: 'nuxeo-picker-search-results',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        nxProvider: Object,
+      },
+      ready() {
+        // stub the nuxeo-results methods
+        const { results } = this.$;
+        results.defaultItems = [
+          createItem('uid1', 'Swirl Blue Pink'),
+          createItem('uid2', 'Swirl Blue Magenta'),
+          createItem('uid3', 'Swirl Blue Green'),
+        ];
+        results.setItems = (value) => {
+          results.querySelector('nuxeo-data-table').items = value;
+        };
+        results.fetch = () => {
+          // simulates a real fetch by populating the items of a table with an array of simplified filtered results
+          const searchTerm = results.nxProvider.params.title;
+          if (!searchTerm) {
+            return results.setItems(results.defaultItems);
+          }
+          const searchTermParts = searchTerm.toLowerCase().split(' ');
+          const searchResults = results.defaultItems
+            // only include documents that contain some search term in the title
+            .filter((item) => searchTermParts.some((part) => item.title.toLowerCase().includes(part)));
+          results.setItems(searchResults);
+        };
+        results.reset = () => {
+          // simulates a real reset by clearing the items of a table with an empty array
+          results.setItems([]);
+        };
+      },
+    });
+  </script>
+</dom-module>
