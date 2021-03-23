@@ -73,6 +73,20 @@ suite('nuxeo-image-viewer', () => {
       expect(isViewerVisible(viewer)).to.be.true;
     });
 
+    test('Should render an alt attribute when it is provided', async () => {
+      const viewer = await fixture(
+        html`
+          <nuxeo-image-viewer
+            src="${base}/resources/sample.png"
+            alt="alternative text that describes an image"
+          ></nuxeo-image-viewer>
+        `,
+      );
+      await viewerLoad(viewer);
+      expect(isViewerVisible(viewer)).to.be.true;
+      expect(viewer.getAttribute('alt')).to.exist.and.to.be.equal('alternative text that describes an image');
+    });
+
     suite('Controls Toolbar', () => {
       test('Should not render controls toolbar when no source image is provided', async () => {
         const viewer = await fixture(
