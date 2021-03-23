@@ -101,7 +101,12 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
                 <div id="thumbnails">
                   <dom-repeat items="[[storyboard]]" as="thumbnail">
                     <template>
-                      <img class="thumbnail" on-click="_jumpTo" src="[[thumbnail.content.data]]" />
+                      <img
+                        class="thumbnail"
+                        on-click="_jumpTo"
+                        src="[[thumbnail.content.data]]"
+                        alt$="[[thumbnail.comment]]"
+                      />
                     </template>
                   </dom-repeat>
                 </div>

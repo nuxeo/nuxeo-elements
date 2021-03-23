@@ -96,7 +96,12 @@ import './viewers/nuxeo-video-viewer.js';
 
         <!-- Our available preview templates. First match will be used -->
         <template mime-pattern="image.*|application/photoshop|illustrator|postscript">
-          <nuxeo-image-viewer src="[[_computeImageSource(_blob)]]" controls responsive></nuxeo-image-viewer>
+          <nuxeo-image-viewer
+            src="[[_computeImageSource(_blob)]]"
+            controls
+            responsive
+            alt$="[[document.title]]"
+          ></nuxeo-image-viewer>
         </template>
 
         <template mime-pattern="video.*|application/(g|m)xf">
