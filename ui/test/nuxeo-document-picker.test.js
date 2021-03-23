@@ -44,7 +44,7 @@ const base = url.substring(0, url.lastIndexOf('/'));
 
 suite('nuxeo-document-picker', () => {
   const baseUrl = `${base}/layouts/search/`;
-  const buildPicker = async (searchName = 'picker') => {
+  const buildPicker = async (searchName = 'picker', waitForLoad = true) => {
     const picker = await fixture(
       html`
         <nuxeo-document-picker
@@ -57,6 +57,9 @@ suite('nuxeo-document-picker', () => {
         ></nuxeo-document-picker>
       `,
     );
+    if (!waitForLoad) {
+      return picker;
+    }
     const searchForm = picker.$.resultsView.$$('nuxeo-search-form-layout');
     const searchResults = picker.$.resultsView.$$('nuxeo-search-results-layout');
     if (!searchForm.element) {
@@ -105,6 +108,9 @@ suite('nuxeo-document-picker', () => {
   });
 
   test('Should close the dialog when the cancel button is clicked', async () => {
+    // XXX a new picker with missing layouts needs to be created for the previous one to be properly flushed
+    // XXX if not, the next results layout of the next picker won't be stamped and it won't have a nuxeo-results
+    await buildPicker('flush1', false);
     const picker = await buildPicker();
     const { cancelButton, dialog } = picker.$;
     // dialog is closed and the cancel button is not visible
@@ -128,6 +134,9 @@ suite('nuxeo-document-picker', () => {
   });
 
   test('Should select results from the available options and return them', async () => {
+    // XXX a new picker with missing layouts needs to be created for the previous one to be properly flushed
+    // XXX if not, the next results layout of the next picker won't be stamped and it won't have a nuxeo-results
+    await buildPicker('flush2', false);
     const picker = await buildPicker();
     const { dialog, selectButton } = picker.$;
     // dialog is closed and the select button is not visible
@@ -176,6 +185,9 @@ suite('nuxeo-document-picker', () => {
   });
 
   test('Should refine the results through a search and clear it', async () => {
+    // XXX a new picker with missing layouts needs to be created for the previous one to be properly flushed
+    // XXX if not, the next results layout of the next picker won't be stamped and it won't have a nuxeo-results
+    await buildPicker('flush3', false);
     const picker = await buildPicker();
     const { dialog } = picker.$;
     // open the picker dialog
