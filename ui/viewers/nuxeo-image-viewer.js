@@ -79,6 +79,13 @@ import '../nuxeo-icons.js';
         },
 
         /**
+         * A short text alternative for the image.
+         */
+        alt: {
+          type: String,
+        },
+
+        /**
          * If false, the element will show the image in order to fit the viewer.
          * If true, the element will show the image in real size.
          */
@@ -143,7 +150,7 @@ import '../nuxeo-icons.js';
         </style>
 
         <div id="canvas">
-          <img id="image" src$="[[src]]" on-load="_init" />
+          <img id="image" src$="[[src]]" on-load="_init" alt$="[[alt]]" />
           <dom-if if="[[_isToolbarVisible(controls, src, _el)]]">
             <template>
               <div id="toolbar">
