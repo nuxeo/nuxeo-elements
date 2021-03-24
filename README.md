@@ -37,14 +37,26 @@ There is also a `grep` argument that can be used to run a specific set of tests
 
 ```
 # Runs all the tests present on "core/test/nuxeo-connection.test.js" file
-
 npm run test:core -- --grep nuxeo-connection.test.js
+
+# Runs all the tests present on both "core/test/nuxeo-connection.test.js" and "core/test/nuxeo-document.test.js" files
+npm run test:core -- --grep (nuxeo-connection.test.js|nuxeo-document.test.js)
 ```
 
 To watch the tests for changes you can use:
 
 ```
 npm run test:watch -- --package=<package>
+```
+
+The `grep` argument can also be used here:
+
+```
+# Runs all the tests present on "ui/test/nuxeo-date.test.js" file
+npm run test:watch -- --package=ui --grep=nuxeo-date.test.js
+
+# Runs all the tests present on both "ui/test/nuxeo-date.test.js" and "ui/test/nuxeo-date-picker.test.js" files
+npm run test:watch -- --package=ui --grep=(nuxeo-date.test.js|nuxeo-date-picker.test.js)
 ```
 
 Demos can be setup using:
