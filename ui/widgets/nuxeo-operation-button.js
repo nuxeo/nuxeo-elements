@@ -57,8 +57,8 @@ import '../actions/nuxeo-action-button-styles.js';
         </nuxeo-operation>
 
         <div class="action" on-click="_execute">
-          <paper-icon-button id="bt" icon="[[icon]]"></paper-icon-button>
-          <span class="label" hidden$="[[!showLabel]]">[[i18n(label)]]</span>
+          <paper-icon-button id="bt" icon="[[icon]]" aria-labelledby="label"></paper-icon-button>
+          <span class="label" hidden$="[[!showLabel]]" id="label">[[i18n(label)]]</span>
           <nuxeo-tooltip>[[i18n(_tooltip)]]</nuxeo-tooltip>
         </div>
       `;

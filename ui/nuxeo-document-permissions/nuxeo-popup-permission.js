@@ -84,7 +84,11 @@ import '../nuxeo-button-styles.js';
         </dom-if>
         <dom-if if="{{updatingACE}}">
           <template>
-            <paper-icon-button on-click="togglePopup" icon="nuxeo:edit"></paper-icon-button>
+            <paper-icon-button
+              on-click="togglePopup"
+              icon="nuxeo:edit"
+              aria-label$="[[i18n('popupPermission.updatePermission')]]"
+            ></paper-icon-button>
           </template>
         </dom-if>
 

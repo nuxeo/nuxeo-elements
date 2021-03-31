@@ -86,8 +86,8 @@ import '../nuxeo-button-styles.js';
         <dom-if if="[[_isAvailable(document)]]">
           <template>
             <div class="action" on-click="_toggleDialog">
-              <paper-icon-button icon="[[icon]]" noink></paper-icon-button>
-              <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
+              <paper-icon-button icon="[[icon]]" noink aria-labelledby="label"></paper-icon-button>
+              <span class="label" hidden$="[[!showLabel]]" id="label">[[_label]]</span>
               <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
             </div>
 
@@ -99,6 +99,7 @@ import '../nuxeo-button-styles.js';
                   icon="nuxeo:clear"
                   on-click="_toggleDialog"
                   noink
+                  aria-label$="[[i18n('command.close')]]"
                 ></paper-icon-button>
               </template>
             </nuxeo-dialog>

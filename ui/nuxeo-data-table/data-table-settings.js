@@ -83,7 +83,13 @@ import '../nuxeo-button-styles.js';
           </div>
         </nuxeo-dialog>
 
-        <paper-icon-button noink icon="nuxeo:settings" id="toggleColSettings" on-click="toggleColsSettingsPopup">
+        <paper-icon-button
+          noink
+          icon="nuxeo:settings"
+          id="toggleColSettings"
+          on-click="toggleColsSettingsPopup"
+          aria-label$="[[i18n('tableSettings.columnSettings')]]"
+        >
         </paper-icon-button>
       `;
     }
