@@ -164,7 +164,12 @@ import '../nuxeo-button-styles.js';
                     <dom-if if="[[_areExtendedOptionsAvailable(comment.author, currentUser)]]">
                       <template>
                         <paper-menu-button id="options" no-animations close-on-activate>
-                          <paper-icon-button class="main-option" icon="more-vert" slot="dropdown-trigger" alt="menu">
+                          <paper-icon-button
+                            class="main-option"
+                            icon="more-vert"
+                            slot="dropdown-trigger"
+                            aria-label$="[[i18n('command.menu')]]"
+                          >
                           </paper-icon-button>
                           <paper-listbox slot="dropdown-content">
                             <paper-icon-item name="edit" class="smaller no-selection" on-tap="_editComment">

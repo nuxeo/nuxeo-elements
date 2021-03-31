@@ -97,13 +97,13 @@ import './nuxeo-tooltip.js';
             id="iconButton"
             icon="icons:more-vert"
             slot="dropdown-trigger"
-            alt="dropdown"
+            aria-labelledby="iconButtonTooltip"
           ></paper-icon-button>
           <paper-listbox slot="dropdown-content">
             <slot id="dropdown" name="dropdown"></slot>
           </paper-listbox>
         </paper-menu-button>
-        <nuxeo-tooltip for="iconButton">[[i18n('actionsMenu.more')]]</nuxeo-tooltip>
+        <nuxeo-tooltip for="iconButton" id="iconButtonTooltip">[[i18n('actionsMenu.more')]]</nuxeo-tooltip>
       `;
     }
 

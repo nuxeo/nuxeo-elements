@@ -144,9 +144,10 @@ import '../nuxeo-button-styles.js';
                     id="changePasswordButton"
                     class="horizontal layout center text horizontal-button"
                     on-click="_openChangePasswordDialog"
+                    aria-labelledby="changePasswordButtonLabel"
                   >
                     <iron-icon icon="nuxeo:lock"></iron-icon>
-                    <span>[[i18n('userProfile.password.change')]]</span>
+                    <span id="changePasswordButtonLabel">[[i18n('userProfile.password.change')]]</span>
                   </paper-button>
                 </template>
               </dom-if>

@@ -152,8 +152,8 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
 
         <dom-if if="[[collapsible]]">
           <template>
-            <button aria-expanded="[[opened]]" on-tap="_toggle">
-              <label class="heading">[[label]]</label>
+            <button aria-expanded="[[opened]]" on-tap="_toggle" aria-labelledby="heading">
+              <label class="heading" id="heading">[[label]]</label>
               <iron-icon icon="[[_toggleIcon(opened)]]"></iron-icon>
             </button>
             <iron-collapse opened="{{opened}}">
