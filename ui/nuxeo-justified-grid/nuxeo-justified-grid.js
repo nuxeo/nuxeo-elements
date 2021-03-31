@@ -157,6 +157,7 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
                         selection-mode$="[[selectionMode]]"
                         hidden$="[[!selectionEnabled]]"
                         on-click="_check"
+                        aria-label$="[[i18n('command.select')]]"
                       >
                       </paper-icon-button>
                     </div>

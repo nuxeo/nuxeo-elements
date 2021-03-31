@@ -58,8 +58,8 @@ import '../nuxeo-button-styles.js';
         <dom-if if="[[_isAvailable(document)]]">
           <template>
             <div class="action" on-click="_delete">
-              <paper-icon-button icon="[[icon]]" noink id="deleteButton"></paper-icon-button>
-              <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
+              <paper-icon-button icon="[[icon]]" noink id="deleteButton" aria-labelledby="label"></paper-icon-button>
+              <span class="label" hidden$="[[!showLabel]]" id="label">[[_label]]</span>
               <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
             </div>
           </template>

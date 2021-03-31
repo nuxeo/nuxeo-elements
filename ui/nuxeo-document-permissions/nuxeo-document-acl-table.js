@@ -147,10 +147,15 @@ import './nuxeo-popup-permission.js';
                               <paper-icon-button
                                 icon="nuxeo:send"
                                 on-click="sendEmailExternalSharing"
+                                aria-label$="[[i18n('popupPermission.notify')]]"
                               ></paper-icon-button>
                             </template>
                           </dom-if>
-                          <paper-icon-button icon="nuxeo:delete" on-click="_deleteAce"></paper-icon-button>
+                          <paper-icon-button
+                            icon="nuxeo:delete"
+                            on-click="_deleteAce"
+                            aria-label$="[[i18n('command.delete')]]"
+                          ></paper-icon-button>
                           <nuxeo-popup-confirm
                             id="confirmation"
                             delete-label="[[i18n('command.delete')]]"

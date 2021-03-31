@@ -130,7 +130,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               <div class="flex">[[i18n('userGroupLatest.name')]]</div>
               <div class="flex-2">[[i18n('userGroupLatest.identifier')]]</div>
               <div class="table-actions">
-                <paper-icon-button noink icon="nuxeo:refresh" on-click="_refreshLatest"></paper-icon-button>
+                <paper-icon-button
+                  noink
+                  icon="nuxeo:refresh"
+                  on-click="_refreshLatest"
+                  aria-label$="[[i18n('command.refresh')]]"
+                ></paper-icon-button>
               </div>
             </div>
             <div class="table-rows">

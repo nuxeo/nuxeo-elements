@@ -285,27 +285,30 @@ import '../nuxeo-button-styles.js';
                     noink
                     class="flex-end horizontal-button"
                     on-click="_toggleDeleteGroup"
+                    aria-labelledby="deleteGroupButtonLabel"
                   >
                     <iron-icon icon="nuxeo:delete"></iron-icon>
-                    <span>[[i18n('command.delete')]]</span>
+                    <span id="deleteGroupButtonLabel">[[i18n('command.delete')]]</span>
                   </paper-button>
                   <paper-button
                     id="addMembersButton"
                     noink
                     class="flex-end primary horizontal-button"
                     on-click="_toggleEditMembers"
+                    aria-labelledby="addMembersButtonLabel"
                   >
                     <iron-icon icon="nuxeo:add"></iron-icon>
-                    <span>[[i18n('groupManagement.addMembers')]]</span>
+                    <span id="addMembersButtonLabel">[[i18n('groupManagement.addMembers')]]</span>
                   </paper-button>
                   <paper-button
                     id="editGroupButton"
                     noink
                     on-click="_toggleEditGroup"
                     class="primary horizontal-button"
+                    aria-labelledby="editGroupButtonLabel"
                   >
                     <iron-icon icon="nuxeo:edit"></iron-icon>
-                    <span>[[i18n('groupManagement.editGroup')]]</span>
+                    <span id="editGroupButtonLabel">[[i18n('groupManagement.editGroup')]]</span>
                   </paper-button>
                 </div>
               </template>

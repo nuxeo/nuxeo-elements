@@ -154,17 +154,38 @@ import '../nuxeo-icons.js';
           <dom-if if="[[_isToolbarVisible(controls, src, _el)]]">
             <template>
               <div id="toolbar">
-                <paper-icon-button on-click="_click" icon="zoom-out" data-action="zoom-out"></paper-icon-button>
+                <paper-icon-button
+                  on-click="_click"
+                  icon="zoom-out"
+                  data-action="zoom-out"
+                  aria-label$="[[i18n('imagePreviewer.zoom.out')]]"
+                ></paper-icon-button>
                 <paper-icon-button
                   on-click="_click"
                   icon="[[_getFitIcon(_fitToRealSize)]]"
                   data-action$="[[_computeFitAction(_fitToRealSize)]]"
+                  aria-label$="[[i18n('imagePreviewer.fitToRealSize')]]"
                 >
                 </paper-icon-button>
-                <paper-icon-button on-click="_click" icon="zoom-in" data-action="zoom-in"></paper-icon-button>
-                <paper-icon-button on-click="_click" icon="image:rotate-left" data-action="rotate-left">
+                <paper-icon-button
+                  on-click="_click"
+                  icon="zoom-in"
+                  data-action="zoom-in"
+                  aria-label$="[[i18n('imagePreviewer.zoom.in')]]"
+                ></paper-icon-button>
+                <paper-icon-button
+                  on-click="_click"
+                  icon="image:rotate-left"
+                  data-action="rotate-left"
+                  aria-label$="[[i18n('imagePreviewer.rotate.left')]]"
+                >
                 </paper-icon-button>
-                <paper-icon-button on-click="_click" icon="image:rotate-right" data-action="rotate-right">
+                <paper-icon-button
+                  on-click="_click"
+                  icon="image:rotate-right"
+                  data-action="rotate-right"
+                  aria-label$="[[i18n('imagePreviewer.rotate.right')]]"
+                >
                 </paper-icon-button>
               </div>
             </template>

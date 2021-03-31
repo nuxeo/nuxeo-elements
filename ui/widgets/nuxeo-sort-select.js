@@ -80,9 +80,15 @@ import './nuxeo-tooltip.js';
           </dom-if>
         </nuxeo-select>
 
-        <paper-icon-button id="reverse" noink on-click="_toggleSortOrder" icon="[[_sortOrderIcon(_sortOrder)]]">
+        <paper-icon-button
+          id="reverse"
+          noink
+          on-click="_toggleSortOrder"
+          icon="[[_sortOrderIcon(_sortOrder)]]"
+          aria-labelledby="tooltip"
+        >
         </paper-icon-button>
-        <nuxeo-tooltip for="reverse">[[i18n('sortSelect.reverseOrder')]]</nuxeo-tooltip>
+        <nuxeo-tooltip for="reverse" id="tooltip">[[i18n('sortSelect.reverseOrder')]]</nuxeo-tooltip>
       `;
     }
 

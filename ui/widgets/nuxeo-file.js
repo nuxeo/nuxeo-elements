@@ -107,9 +107,9 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
         <div id="dropZone" hidden$="[[readonly]]">
           <dom-if if="[[!uploading]]">
             <template>
-              <paper-button id="button" raised on-click="_pick">
+              <paper-button id="button" raised on-click="_pick" aria-labelledby="label">
                 <iron-icon icon="nuxeo:upload"></iron-icon>
-                <span>[[i18n('file.upload')]]</span>
+                <span id="label">[[i18n('file.upload')]]</span>
               </paper-button>
             </template>
           </dom-if>
