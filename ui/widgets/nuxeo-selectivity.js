@@ -6847,7 +6847,7 @@ typedArrayTags[weakMapTag] = false;
 
           .selectivity-load-more.highlight,
           .selectivity-result-item.highlight {
-            background: var(--nuxeo-primary-color);
+            background: var(--nuxeo-primary-color, #0066ff);
             color: #fff;
           }
 
@@ -6922,7 +6922,7 @@ typedArrayTags[weakMapTag] = false;
           }
 
           .selectivity-multiple-selected-item {
-            background: none var(--nuxeo-tag-background, #fff);
+            background: none var(--nuxeo-tag-background, rgba(0, 0, 0, 0.05));
             border-radius: 3px;
             cursor: default;
             float: left;
