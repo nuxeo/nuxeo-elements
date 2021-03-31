@@ -90,8 +90,12 @@ import '../nuxeo-button-styles.js';
             >
             </nuxeo-layout>
 
-            <label>[[i18n('createUser.setPassword')]]</label>
-            <paper-toggle-button checked="{{usePassword}}" name="password-toggle"></paper-toggle-button>
+            <label id="label">[[i18n('createUser.setPassword')]]</label>
+            <paper-toggle-button
+              checked="{{usePassword}}"
+              name="password-toggle"
+              aria-labelledby="label"
+            ></paper-toggle-button>
 
             <dom-if if="[[usePassword]]" restamp>
               <template>

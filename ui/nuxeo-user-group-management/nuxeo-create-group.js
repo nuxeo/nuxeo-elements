@@ -133,7 +133,11 @@ import '../nuxeo-button-styles.js';
                   <div class="email">
                     <span>[[item.email]]</span>
                   </div>
-                  <paper-icon-button icon="nuxeo:remove" title="remove" on-click="_remove"></paper-icon-button>
+                  <paper-icon-button
+                    icon="nuxeo:remove"
+                    title$="[[i18n('command.remove')]]"
+                    on-click="_remove"
+                  ></paper-icon-button>
                 </div>
               </template>
             </dom-repeat>

@@ -132,9 +132,15 @@ import './nuxeo-button-styles.js';
                       vertical-align="top"
                       vertical-offset="-4"
                     >
-                      <paper-button noink class="primary horizontal-button" id="createButton" slot="dropdown-trigger">
+                      <paper-button
+                        noink
+                        class="primary horizontal-button"
+                        id="createButton"
+                        slot="dropdown-trigger"
+                        aria-labelledby="label"
+                      >
                         <iron-icon icon="nuxeo:add"></iron-icon>
-                        <span>[[i18n('userGroupManagement.new.usergroup')]]</span>
+                        <span id="label">[[i18n('userGroupManagement.new.usergroup')]]</span>
                       </paper-button>
                       <paper-listbox no-animations id="menu" selectable="item" slot="dropdown-content">
                         <paper-icon-item name="user" on-click="_createUser">

@@ -40,15 +40,26 @@ import './data-table-templatizer-behavior.js';
                       id="upButton"
                       icon="icons:arrow-upward"
                       on-click="moveUp"
+                      aria-labelledby="upButtonTooltip"
                     ></paper-icon-button>
-                    <nuxeo-tooltip for="upButton" position="left">[[i18n('command.moveUpward')]]</nuxeo-tooltip>
+                    <nuxeo-tooltip for="upButton" position="left" id="upButtonTooltip"
+                      >[[i18n('command.moveUpward')]]</nuxeo-tooltip
+                    >
                   </template>
                 </dom-if>
                 <dom-if if="[[isDownVisible(index, size)]]">
                   <template>
-                    <paper-icon-button noink id="downButton" icon="icons:arrow-downward" on-click="moveDown">
+                    <paper-icon-button
+                      noink
+                      id="downButton"
+                      icon="icons:arrow-downward"
+                      on-click="moveDown"
+                      aria-labelledby="downButtonTooltip"
+                    >
                     </paper-icon-button>
-                    <nuxeo-tooltip for="downButton" position="left">[[i18n('command.moveDownward')]]</nuxeo-tooltip>
+                    <nuxeo-tooltip for="downButton" position="left" id="downButtonTooltip"
+                      >[[i18n('command.moveDownward')]]</nuxeo-tooltip
+                    >
                   </template>
                 </dom-if>
               </div>
@@ -56,11 +67,28 @@ import './data-table-templatizer-behavior.js';
           </dom-if>
           <dom-if if="[[editable]]">
             <template>
-              <paper-icon-button id="edit-button" icon="nuxeo:edit" on-click="_editEntry" noink></paper-icon-button>
-              <nuxeo-tooltip for="edit-button" position="left">[[i18n('command.edit')]]</nuxeo-tooltip>
-              <paper-icon-button id="delete-button" name="delete" icon="nuxeo:delete" on-click="_deleteEntry" noink>
+              <paper-icon-button
+                id="edit-button"
+                icon="nuxeo:edit"
+                on-click="_editEntry"
+                noink
+                aria-labelledby="editButtonTooltip"
+              ></paper-icon-button>
+              <nuxeo-tooltip for="edit-button" position="left" id="editButtonTooltip"
+                >[[i18n('command.edit')]]</nuxeo-tooltip
+              >
+              <paper-icon-button
+                id="delete-button"
+                name="delete"
+                icon="nuxeo:delete"
+                on-click="_deleteEntry"
+                noink
+                aria-labelledby="deleteButtonTooltip"
+              >
               </paper-icon-button>
-              <nuxeo-tooltip for="delete-button" position="left">[[i18n('command.remove')]]</nuxeo-tooltip>
+              <nuxeo-tooltip for="delete-button" position="left" id="deleteButtonTooltip"
+                >[[i18n('command.remove')]]</nuxeo-tooltip
+              >
             </template>
           </dom-if>
         </div>

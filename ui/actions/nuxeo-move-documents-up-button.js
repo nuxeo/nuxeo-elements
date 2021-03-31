@@ -55,8 +55,8 @@ import '../nuxeo-button-styles.js';
         <dom-if id="availability" if="[[_available]]">
           <template>
             <div class="action">
-              <paper-icon-button noink icon="icons:arrow-upward"></paper-icon-button>
-              <span class="label" hidden$="[[!showLabel]]">[[_label]]</span>
+              <paper-icon-button noink icon="icons:arrow-upward" aria-labelledby="label"></paper-icon-button>
+              <span class="label" hidden$="[[!showLabel]]" id="label">[[_label]]</span>
               <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
             </div>
           </template>
