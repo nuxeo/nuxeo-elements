@@ -277,7 +277,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
          */
         includeDeleted: {
           type: Boolean,
-          value: true,
+          value: false,
         },
 
         /**
