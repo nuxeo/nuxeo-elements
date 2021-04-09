@@ -122,6 +122,11 @@ export const PageProviderDisplayBehavior = [
         value: false,
       },
 
+      selectAllEnabled: {
+        type: Boolean,
+        value: false,
+      },
+
       selectedItems: {
         type: Object,
         notify: true,
@@ -182,6 +187,11 @@ export const PageProviderDisplayBehavior = [
       },
 
       handlesFiltering: {
+        type: Boolean,
+        value: false,
+      },
+
+      handlesSelectAll: {
         type: Boolean,
         value: false,
       },
@@ -317,12 +327,14 @@ export const PageProviderDisplayBehavior = [
     },
 
     selectAll() {
-      this.items.forEach(
-        function(item) {
-          this.selectItem(item);
-        }.bind(this.$.list),
-      );
-      this._updateFlags();
+      if (this.selectionEnabled && this.selectAllEnabled) {
+        this.items.forEach(
+          function(item) {
+            this.selectItem(item);
+          }.bind(this.$.list),
+        );
+        this._updateFlags();
+      }
     },
 
     clearSelection() {
