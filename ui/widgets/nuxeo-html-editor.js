@@ -18,7 +18,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-import '@nuxeo/quill/dist/quill.min.js';
+import '@nuxeo/quill/dist/quill.js';
 import './quill/quill-snow.js';
 
 {
