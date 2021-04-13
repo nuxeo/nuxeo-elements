@@ -194,7 +194,7 @@ import './viewers/nuxeo-video-viewer.js';
     _updateBlob() {
       if (this.document) {
         // adapt the Note to mimic a Blob
-        if (this.document.type === 'Note' && this.xpath === 'file:content') {
+        if (this.document.schemas.find((schema) => schema.name === 'note') && this.xpath === 'file:content') {
           this._blob = {
             text: this.document.properties['note:note'],
             'mime-type': this.document.properties['note:mime_type'],
