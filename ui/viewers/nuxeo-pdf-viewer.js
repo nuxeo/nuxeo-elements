@@ -82,7 +82,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
       // get an absolute href
       const el = document.createElement('a');
       el.href = file;
-      return this.resolveUrl(`pdfjs/web/viewer.html?file=${encodeURI(el.href)}`);
+      return this.resolveUrl(`pdfjs/web/viewer.html?file=${encodeURIComponent(el.href)}`);
     }
   }
 
