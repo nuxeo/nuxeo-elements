@@ -17,22 +17,10 @@ limitations under the License.
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { pathFromUrl } from '@polymer/polymer/lib/utils/resolve-url.js';
-import '@polymer/paper-button/paper-button.js';
-import '@polymer/paper-icon-button/paper-icon-button.js';
-import '@polymer/paper-input/paper-input.js';
-import '@polymer/paper-spinner/paper-spinner-lite.js';
-import '@polymer/paper-toggle-button/paper-toggle-button.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-import '@nuxeo/nuxeo-elements/nuxeo-page-provider.js';
-import '@nuxeo/nuxeo-elements/nuxeo-search.js';
 import '../nuxeo-layout.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
-import '../nuxeo-data-list/nuxeo-data-list.js';
-import '../nuxeo-document-permissions/nuxeo-document-permissions.js';
-import '../widgets/nuxeo-dialog.js';
-import '../widgets/nuxeo-select.js';
-import '../nuxeo-document-thumbnail/nuxeo-document-thumbnail.js';
 
 {
   /**
