@@ -24,15 +24,22 @@ stories
   })
   .add('Selectable', () => {
     const selectionEnabled = boolean('Selection Enabled', true);
+    const selectAllEnabled = boolean('Select All Enabled', true);
     const multiSelection = boolean('Multi Selection', false);
     const numberOfItems = number('Number of items', 50);
-    return tableTemplate(Object.assign({}, LIST(numberOfItems), { selectionEnabled, multiSelection }));
+    return tableTemplate(
+      Object.assign({}, LIST(numberOfItems), {
+        selectionEnabled,
+        selectAllEnabled,
+        multiSelection,
+      }));
   })
   .add('Complex', () => {
     const orderable = boolean('Orderable', true);
     const editable = boolean('Editable', true);
     const settingsEnabled = boolean('Settings', true);
     const selectionEnabled = boolean('Selection Enabled', true);
+    const selectAllEnabled = boolean('Select All Enabled', false);
     const multiSelection = boolean('Multi Selection', false);
     const label = text('Label', 'Label');
     const required = boolean('Required', false);
@@ -53,6 +60,7 @@ stories
         editable,
         settingsEnabled,
         selectionEnabled,
+        selectAllEnabled,
         multiSelection,
         label,
         required,
