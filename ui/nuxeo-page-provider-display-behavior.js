@@ -255,6 +255,7 @@ export const PageProviderDisplayBehavior = [
 
     _itemsChanged() {
       this._isEmpty = !(this.items && this.items.length > 0);
+      this._isSelectAllChecked = false;
     },
 
     _selected(e) {
@@ -282,6 +283,11 @@ export const PageProviderDisplayBehavior = [
               }
             }
           }
+        }
+        // workaround until we can exclude parts of the selection
+        if (this.selectAllChecked) {
+          // this.clearSelection();
+          this.selectIndex(index);
         }
         this._lastSelectedIndex = e.detail.index;
       }
@@ -313,14 +319,14 @@ export const PageProviderDisplayBehavior = [
     },
 
     deselectItem(item) {
-      if (this.selectionEnabled) {
+      if (this.selectionEnabled && !this.selectAllChecked) {
         this.$.list.deselectItem(item);
         this._updateFlags();
       }
     },
 
     deselectIndex(index) {
-      if (this.selectionEnabled) {
+      if (this.selectionEnabled && !this.selectAllChecked) {
         this.$.list.deselectIndex(index);
         this._updateFlags();
       }
@@ -328,18 +334,26 @@ export const PageProviderDisplayBehavior = [
 
     selectAll() {
       if (this.selectionEnabled && this.selectAllEnabled) {
-        this.items.forEach(
-          function(item) {
-            this.selectItem(item);
-          }.bind(this.$.list),
-        );
+        // only select the loaded items
+        this.items
+          .forEach(
+            function(item) {
+              this.selectItem(item);
+            }.bind(this.$.list),
+          );
+        this._isSelectAllChecked = true;
         this._updateFlags();
       }
     },
 
     clearSelection() {
       this.$.list.clearSelection();
+      this._isSelectAllChecked = false;
       this._updateFlags();
+    },
+
+    get selectAllChecked() {
+      return this.selectAllEnabled && this._isSelectAllChecked;
     },
 
     _isSelected(item) {
@@ -366,6 +380,7 @@ export const PageProviderDisplayBehavior = [
 
     _sortDirectionChanged(e) {
       if (this._hasPageProvider()) {
+        this._isSelectAllChecked = false;
         let notFound = true;
         for (let i = 0; i < this.sortOrder.length; i++) {
           if (this.sortOrder[i].path === e.detail.path) {
@@ -404,6 +419,7 @@ export const PageProviderDisplayBehavior = [
 
     _onColumnFilterChanged(e) {
       if (this._hasPageProvider()) {
+        this._isSelectAllChecked = false;
         let notFound = true;
         for (let i = 0; i < this.filters.length; i++) {
           if (this.filters[i].path === e.detail.filterBy) {
@@ -475,8 +491,8 @@ export const PageProviderDisplayBehavior = [
     _updateFlags() {
       this.size = Array.isArray(this.items) ? this.items.length : 0;
       const selectedItemsSize = Array.isArray(this.selectedItems) ? this.selectedItems.length : 0;
-      this._isSelectAllIndeterminate = selectedItemsSize < this.size;
-      this._isSelectAllChecked = selectedItemsSize === this.size;
+      this._isSelectAllIndeterminate = !this._isSelectAllChecked || selectedItemsSize < this.size;
+      this._isSelectAllChecked = this._isSelectAllChecked || (selectedItemsSize === this.size && this.size !== 0);
       this._isEmpty = this.size === 0;
     },
 
