@@ -175,6 +175,7 @@ import '../nuxeo-button-styles.js';
 
           #header {
             box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+            padding-left: 2px;
             transition: box-shadow 200ms;
             -webkit-transition: box-shadow 200ms;
             @apply --iron-data-table-header;
@@ -224,7 +225,11 @@ import '../nuxeo-button-styles.js';
 
           <div id="header">
             <nuxeo-data-table-row header>
-              <nuxeo-data-table-checkbox header hidden$="[[!selectionEnabled]]"></nuxeo-data-table-checkbox>
+              <nuxeo-data-table-checkbox
+                header$="[[!_isSelectionEnabled(selectionEnabled, selectAllEnabled)]]"
+                checked="[[_isSelectAllChecked]]" 
+                on-click="_toggleSelectAll"
+              ></nuxeo-data-table-checkbox>
               <dom-repeat items="[[columns]]" as="column">
                 <template>
                   <nuxeo-data-table-cell
@@ -513,6 +518,7 @@ import '../nuxeo-button-styles.js';
     constructor() {
       super();
       this.handlesSorting = true;
+      this.handlesSelectAll = true;
       this._observer = dom(this).observeNodes((info) => {
         const hasColumns = function(node) {
           return node.nodeType === Node.ELEMENT_NODE && node instanceof Nuxeo.DataTableColumn;
@@ -805,6 +811,10 @@ import '../nuxeo-button-styles.js';
           );
         }
       }
+    }
+
+    _isSelectionEnabled() {
+      return this.selectionEnabled && this.selectAllEnabled;
     }
 
     get settings() {
