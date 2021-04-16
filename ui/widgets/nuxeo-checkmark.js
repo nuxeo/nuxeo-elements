@@ -102,6 +102,7 @@ import '../nuxeo-icons.js';
           type: Boolean,
           reflectToAttribute: true,
           value: false,
+          observer: '_ariaChecked',
         },
         disabled: {
           type: Boolean,
@@ -111,10 +112,20 @@ import '../nuxeo-icons.js';
       };
     }
 
+    ready() {
+      super.ready();
+      this.setAttribute('role', 'checkbox');
+      this.setAttribute('aria-checked', false);
+    }
+
     _tap() {
       if (!this.disabled) {
         this.checked = !this.checked;
       }
+    }
+
+    _ariaChecked() {
+      this.setAttribute('aria-checked', this.checked);
     }
   }
 
