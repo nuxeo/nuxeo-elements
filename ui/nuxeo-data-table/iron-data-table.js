@@ -290,6 +290,7 @@ import '../nuxeo-button-styles.js';
                     tabindex="0"
                     checked$="[[selected]]"
                     on-click="_onCheckBoxTap"
+                    on-keydown="_onCheckBoxKeydown"
                   ></nuxeo-data-table-checkbox>
                   <dom-repeat items="[[columns]]" as="column" index-as="colIndex">
                     <template>
@@ -567,6 +568,8 @@ import '../nuxeo-button-styles.js';
         const form = this.getContentChildren('#form')[0];
         form.disabled = true;
       });
+      this.setAttribute('role', 'table');
+      this.setAttribute('aria-multiselectable', this.multiSelection);
     }
 
     _computeActionsStyle() {
@@ -837,6 +840,13 @@ import '../nuxeo-button-styles.js';
           }),
         );
         this._updateFlags();
+      }
+    }
+
+    _onCheckBoxKeydown(e) {
+      // check for enter or space
+      if (e.keyCode === 13 || e.keyCode === 32) {
+        this._onCheckBoxTap(e);
       }
     }
 
