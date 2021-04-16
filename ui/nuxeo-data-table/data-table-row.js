@@ -137,6 +137,8 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
           this._ownerShadyRoot = undefined;
         }
       }
+      this.setAttribute('tabindex', 0);
+      this.setAttribute('role', 'row');
     }
 
     _beforeBind(beforeBind, index, item, selected, expanded) {
