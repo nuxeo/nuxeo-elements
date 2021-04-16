@@ -1,10 +1,12 @@
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../widgets/nuxeo-checkmark.js';
 
 /* Part of `nuxeo-data-table` */
 {
-  class DataTableCheckbox extends Nuxeo.Element {
+  class DataTableCheckbox extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style>
@@ -33,7 +35,7 @@ import '../widgets/nuxeo-checkmark.js';
           }
         </style>
 
-        <nuxeo-checkmark checked="{{checked}}"></nuxeo-checkmark>
+        <nuxeo-checkmark checked="{{checked}}" aria-label$="[[i18n('command.select')]]" tabindex="0"></nuxeo-checkmark>
       `;
     }
 
@@ -49,6 +51,11 @@ import '../widgets/nuxeo-checkmark.js';
           value: false,
         },
       };
+    }
+
+    ready() {
+      super.ready();
+      this.setAttribute('role', 'cell');
     }
   }
 
