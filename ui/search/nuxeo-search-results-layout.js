@@ -20,6 +20,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { pathFromUrl } from '@polymer/polymer/lib/utils/resolve-url.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '../nuxeo-layout.js';
+import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
 {
@@ -112,7 +113,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _formChanged(e) {
-      this.results = e.detail.value && this._grabResults([e.detail.value]);
+      afterNextRender(this, () => {
+        this.results = e.detail.value && this._grabResults([e.detail.value]);
+      });
     }
 
     _grabResults(els) {
