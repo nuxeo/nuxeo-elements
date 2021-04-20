@@ -18,6 +18,7 @@ import '@webcomponents/html-imports/html-imports.min.js';
 import '../nuxeo-data-table/iron-data-table.js';
 import '../nuxeo-document-picker/nuxeo-document-picker.js';
 import '../widgets/nuxeo-dialog.js';
+import '../widgets/nuxeo-input.js';
 import { Polymer } from '@polymer/polymer/polymer-legacy.js';
 import { fixture, flush, html, isElementVisible, waitForEvent } from '@nuxeo/testing-helpers';
 import { LayoutBehavior } from '../nuxeo-layout-behavior.js';
@@ -108,9 +109,6 @@ suite('nuxeo-document-picker', () => {
   });
 
   test('Should close the dialog when the cancel button is clicked', async () => {
-    // XXX a new picker with missing layouts needs to be created for the previous one to be properly flushed
-    // XXX if not, the next results layout of the next picker won't be stamped and it won't have a nuxeo-results
-    await buildPicker('flush1', false);
     const picker = await buildPicker();
     const { cancelButton, dialog } = picker.$;
     // dialog is closed and the cancel button is not visible
@@ -134,9 +132,6 @@ suite('nuxeo-document-picker', () => {
   });
 
   test('Should select results from the available options and return them', async () => {
-    // XXX a new picker with missing layouts needs to be created for the previous one to be properly flushed
-    // XXX if not, the next results layout of the next picker won't be stamped and it won't have a nuxeo-results
-    await buildPicker('flush2', false);
     const picker = await buildPicker();
     const { dialog, selectButton } = picker.$;
     // dialog is closed and the select button is not visible
@@ -145,6 +140,12 @@ suite('nuxeo-document-picker', () => {
     // open the picker dialog
     picker.open();
     await waitForDialogOpen(dialog);
+    // XXX the search is not being automatically triggered after the dialog is opened
+    picker.$.resultsView
+      .$$('div.form')
+      .querySelector('paper-button.search')
+      .click();
+    await flush();
     const table = picker.$.resultsView.results.results.querySelector('nuxeo-data-table');
     const checkboxes = Array.from(table.querySelectorAll('nuxeo-data-table-checkbox:not([header])'));
     // dialog is opened and the select button is now visible, but disabled
@@ -185,14 +186,17 @@ suite('nuxeo-document-picker', () => {
   });
 
   test('Should refine the results through a search and clear it', async () => {
-    // XXX a new picker with missing layouts needs to be created for the previous one to be properly flushed
-    // XXX if not, the next results layout of the next picker won't be stamped and it won't have a nuxeo-results
-    await buildPicker('flush3', false);
     const picker = await buildPicker();
     const { dialog } = picker.$;
     // open the picker dialog
     picker.open();
     await waitForDialogOpen(dialog);
+    // XXX the search is not being automatically triggered after the dialog is opened
+    picker.$.resultsView
+      .$$('div.form')
+      .querySelector('paper-button.search')
+      .click();
+    await flush();
     // get all the relevant elements in the picker dialog
     const { searchInput } = picker.$.resultsView.form.$;
     const resultsViewForm = picker.$.resultsView.$$('div.form');
