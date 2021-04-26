@@ -22,3 +22,5 @@ import './nuxeo-page-provider.js';
 import './nuxeo-audit-page-provider.js';
 import './nuxeo-task-page-provider.js';
 import './nuxeo-search.js';
+
+export { default as config } from './config.js';
