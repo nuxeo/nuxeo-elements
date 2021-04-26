@@ -20,6 +20,7 @@ import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import './nuxeo-element.js';
 import './nuxeo-operation.js';
 import './nuxeo-resource.js';
+import config from './config.js';
 
 {
   /**
@@ -301,10 +302,7 @@ import './nuxeo-resource.js';
         method: {
           type: String,
           value() {
-            return (
-              (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.pageprovider && Nuxeo.UI.config.pageprovider.method) ||
-              'get'
-            );
+            return config.get('pageprovider.method') || 'get';
           },
         },
       };
