@@ -16,14 +16,8 @@ limitations under the License.
 */
 import { html, fixture } from '@nuxeo/testing-helpers';
 import moment from '@nuxeo/moment';
+import { config } from '@nuxeo/nuxeo-elements';
 import '../widgets/nuxeo-date.js';
-
-function setNuxeoConfigDateFormat(format, value) {
-  window.Nuxeo = window.Nuxeo || {};
-  window.Nuxeo.UI = window.Nuxeo.UI || {};
-  window.Nuxeo.UI.config = window.Nuxeo.UI.config || {};
-  window.Nuxeo.UI.config[format] = window.Nuxeo.UI.config[format] || value;
-}
 
 suite('nuxeo-date', async () => {
   test('Should hide the nuxeo-tooltip when provided format and tooltipFormat are equal', async () => {
@@ -38,7 +32,7 @@ suite('nuxeo-date', async () => {
   });
 
   test('Should hide the nuxeo-tooltip if provided format matches globalconfig tooltipFormat', async () => {
-    setNuxeoConfigDateFormat('dateTimeFormat', 'LLL');
+    config.set('dateTimeFormat', 'LLL');
     const element = await fixture(
       html`
         <nuxeo-date datetime=${moment()} format="LLL"></nuxeo-date>
@@ -50,7 +44,7 @@ suite('nuxeo-date', async () => {
   });
 
   test('Should hide the nuxeo-tooltip if provided tooltipFormat matches globalconfig format', async () => {
-    setNuxeoConfigDateFormat('dateFormat', 'LLL');
+    config.set('dateFormat', 'LLL');
     const element = await fixture(
       html`
         <nuxeo-date datetime=${moment()} tooltipFormat="LLL"></nuxeo-date>
@@ -62,8 +56,8 @@ suite('nuxeo-date', async () => {
   });
 
   test('Should hide the nuxeo-tooltip if globalconfig dateFormat and dateTimeFormat are same', async () => {
-    setNuxeoConfigDateFormat('dateFormat', 'LLL');
-    setNuxeoConfigDateFormat('dateTimeFormat', 'LLL');
+    config.set('dateFormat', 'LLL');
+    config.set('dateTimeFormat', 'LLL');
     const element = await fixture(
       html`
         <nuxeo-date datetime=${moment()}></nuxeo-date>

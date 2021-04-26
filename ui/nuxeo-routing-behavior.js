@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import '@polymer/polymer/polymer-legacy.js';
+import { config } from '@nuxeo/nuxeo-elements';
 
 /**
  * `Nuxeo.RoutingBehavior` provides a `urlFor` helper function for reverse routing.
@@ -144,13 +145,7 @@ export const RoutingBehavior = {
         throw new Error(`cannot resolve route: object does not have an "entity-type"`);
       }
     }
-    let routeKey =
-      Nuxeo &&
-      Nuxeo.UI &&
-      Nuxeo.UI.config &&
-      Nuxeo.UI.config.router &&
-      Nuxeo.UI.config.router.key &&
-      Nuxeo.UI.config.router.key[entityType];
+    let routeKey = config.get(`router.key.${entityType}`);
     let fn = this.router[entityType];
     if (entityType === 'document') {
       routeKey = routeKey || 'path';
