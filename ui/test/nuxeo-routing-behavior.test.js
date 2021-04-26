@@ -17,16 +17,11 @@ limitations under the License.
 import { fixture, html } from '@nuxeo/testing-helpers';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import { config } from '@nuxeo/nuxeo-elements';
 import { RoutingBehavior, setRouter } from '../nuxeo-routing-behavior.js';
 
 function setNuxeoRouterKey(entityType, value) {
-  window.Nuxeo = window.Nuxeo || {};
-  window.Nuxeo.UI = window.Nuxeo.UI || {};
-  window.Nuxeo.UI.config = window.Nuxeo.UI.config || {};
-  window.Nuxeo.UI.config.router = window.Nuxeo.UI.config.router || {};
-  window.Nuxeo.UI.config.router.key = window.Nuxeo.UI.config.router.key || {};
-  window.Nuxeo.UI.config.router.key = window.Nuxeo.UI.config.router.key || {};
-  window.Nuxeo.UI.config.router.key[entityType] = value;
+  config.set(`router.key.${entityType}`, value);
 }
 
 suite('Nuxeo.RoutingBehavior', () => {

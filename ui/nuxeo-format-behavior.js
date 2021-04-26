@@ -16,6 +16,7 @@ limitations under the License.
 */
 import moment from '@nuxeo/moment';
 
+import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 
 /**
@@ -64,11 +65,7 @@ export const FormatBehavior = [
      *     - Etc/UTC: time specified by the user is assumed to be in UTC
      */
     formatDate(date, format, timezone) {
-      return this._formatDate(
-        date,
-        format || (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.dateFormat) || 'LL',
-        timezone || (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.timezone),
-      );
+      return this._formatDate(date, format || config.get('dateFormat') || 'LL', timezone || config.get('timezone'));
     },
 
     /**
@@ -85,8 +82,8 @@ export const FormatBehavior = [
     formatDateTime(date, format, timezone) {
       return this._formatDate(
         date,
-        format || (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.dateTimeFormat) || 'LLL',
-        timezone || (Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.timezone),
+        format || config.get('dateTimeFormat') || 'LLL',
+        timezone || config.get('timezone'),
       );
     },
 

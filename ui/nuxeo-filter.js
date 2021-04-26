@@ -17,6 +17,7 @@ limitations under the License.
 import '@polymer/polymer/polymer-legacy.js';
 
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import { config } from '@nuxeo/nuxeo-elements';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { microTask } from '@polymer/polymer/lib/utils/async.js';
 import { enqueueDebouncer } from '@polymer/polymer/lib/utils/flush.js';
@@ -183,12 +184,7 @@ import Interpreter from './js-interpreter/interpreter.js';
       let res = false;
 
       try {
-        if (
-          Nuxeo.UI &&
-          Nuxeo.UI.config &&
-          Nuxeo.UI.config.expressions &&
-          String(Nuxeo.UI.config.expressions.eval) === 'false'
-        ) {
+        if (String(config.get('expressions.eval')) === 'false') {
           const js = new Interpreter(expression, (interpreter, scope) => {
             // set scope
             interpreter.setProperty(scope, 'this', interpreter.nativeToPseudo(FiltersBehavior));

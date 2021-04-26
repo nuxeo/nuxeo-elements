@@ -22,6 +22,7 @@ import '@vaadin/vaadin-date-picker/vaadin-date-picker.js';
 import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
 {
@@ -100,7 +101,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         timezone: {
           type: String,
           value() {
-            return Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.timezone;
+            return config.get('timezone');
           },
         },
 
@@ -192,10 +193,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this.$.date.set('i18n.today', this.i18n('today'));
       this.$.date.set(
         'i18n.firstDayOfWeek',
-        this.firstDayOfWeek ||
-          (Nuxeo.UI && Nuxeo.UI.config && parseInt(Nuxeo.UI.config.firstDayOfWeek, 10)) ||
-          moment.localeData().firstDayOfWeek() ||
-          0,
+        this.firstDayOfWeek || parseInt(config.get('firstDayOfWeek'), 10) || moment.localeData().firstDayOfWeek() || 0,
       );
     }
 

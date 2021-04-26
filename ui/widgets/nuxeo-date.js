@@ -17,6 +17,7 @@ limitations under the License.
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import { config } from '@nuxeo/nuxeo-elements';
 import { FormatBehavior } from '../nuxeo-format-behavior.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import './nuxeo-tooltip.js';
@@ -80,7 +81,7 @@ import './nuxeo-tooltip.js';
         timezone: {
           type: String,
           value() {
-            return Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.timezone;
+            return config.get('timezone');
           },
         },
       };

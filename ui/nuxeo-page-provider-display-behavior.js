@@ -19,6 +19,7 @@ import '@polymer/polymer/polymer-legacy.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
+import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 
 /**
@@ -143,7 +144,7 @@ export const PageProviderDisplayBehavior = [
       maxItems: {
         type: Number,
         value() {
-          return (Nuxeo.UI && Nuxeo.UI.config && Number(Nuxeo.UI.config.listingMaxItems)) || 10000;
+          return Number(config.get('listingMaxItems')) || 10000;
         },
       },
 
