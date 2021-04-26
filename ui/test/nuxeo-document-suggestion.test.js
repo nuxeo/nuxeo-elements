@@ -16,6 +16,7 @@ limitations under the License.
 */
 import { fixture, flush, html, login } from '@nuxeo/testing-helpers';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
+import { config } from '@nuxeo/nuxeo-elements';
 import '../widgets/nuxeo-document-suggestion.js';
 
 // Return Selectivity Entries
@@ -45,13 +46,7 @@ const router = {
 };
 
 function setNuxeoRouterKey(entityType, value) {
-  window.Nuxeo = window.Nuxeo || {};
-  window.Nuxeo.UI = window.Nuxeo.UI || {};
-  window.Nuxeo.UI.config = window.Nuxeo.UI.config || {};
-  window.Nuxeo.UI.config.router = window.Nuxeo.UI.config.router || {};
-  window.Nuxeo.UI.config.router.key = window.Nuxeo.UI.config.router.key || {};
-  window.Nuxeo.UI.config.router.key = window.Nuxeo.UI.config.router.key || {};
-  window.Nuxeo.UI.config.router.key[entityType] = value;
+  config.set(`router.key.${entityType}`, value);
 }
 
 suite('nuxeo-document-suggestion', () => {
