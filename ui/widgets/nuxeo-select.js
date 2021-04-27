@@ -105,7 +105,7 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
           ::slotted(paper-item:hover),
           ::slotted(paper-item[pressed]) {
             background: var(--paper-input-container-focus-color);
-            color: var(--nuxeo-box, white) !important;
+            color: var(--nuxeo-text-color, white) !important;
           }
         </style>
 
