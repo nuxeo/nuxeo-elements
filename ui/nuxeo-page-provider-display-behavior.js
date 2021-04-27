@@ -128,6 +128,11 @@ export const PageProviderDisplayBehavior = [
         value: false,
       },
 
+      selectAllChecked: {
+        type: Boolean,
+        computed: '_computeSelectAllStatus(_selectAllEnabled, _isSelectAllChecked)',
+      },
+
       selectedItems: {
         type: Object,
         notify: true,
@@ -363,7 +368,7 @@ export const PageProviderDisplayBehavior = [
     /**
      * `true` if select all is enabled and all items are checked
      */
-    get selectAllChecked() {
+    _computeSelectAllStatus() {
       return this.selectAllEnabled && this._isSelectAllChecked;
     },
 
@@ -652,12 +657,7 @@ export const PageProviderDisplayBehavior = [
               if (isSelected) {
                 if (this.selectAllChecked) {
                   this.set(`selectedItems.${i}`, this.items[i]);
-                  if (this.$.list._isIndexRendered(i)) {
-                    const model = this.modelForElement(this.$.list._physicalItems[this.$.list._getPhysicalIndex(i)]);
-                    if (model) {
-                      model[this.$.list.selectedAs] = true;
-                    }
-                  }
+                  this._selectItemModel(i);
                 } else {
                   this.selectIndex(i);
                 }
@@ -707,22 +707,32 @@ export const PageProviderDisplayBehavior = [
       return Promise.resolve();
     },
 
+    _selectItemModel(index) {
+      if (this.$.list._isIndexRendered(index)) {
+        const model = this.modelForElement(this.$.list._physicalItems[this.$.list._getPhysicalIndex(index)]);
+        if (model && !model[this.$.list.selectedAs]) {
+          model[this.$.list.selectedAs] = true;
+        }
+      }
+    },
+
     _scrollChanged() {
       this._debouncer = Debouncer.debounce(
         this._debouncer,
         timeOut.after(this.scrollThrottle > 0 ? this.scrollThrottle : 1),
         () => {
+          /**
+           * if select all is checked we need to update the model to reflect the changes, since not all the items were
+           * visible in the first place
+           */
           if (this.selectAllChecked) {
-            const start = Math.max(0, this.$.list.firstVisibleIndex);
-            const end = Math.min(this.items.length, this.$.list.lastVisibleIndex);
-            for (let index = start; index <= end; index++) {
-              if (this.$.list._isIndexRendered(index)) {
-                const model = this.modelForElement(this.$.list._physicalItems[this.$.list._getPhysicalIndex(index)]);
-                if (model) {
-                  model[this.$.list.selectedAs] = true;
-                }
+            afterNextRender(this, () => {
+              const start = Math.max(0, this.$.list.firstVisibleIndex);
+              const end = Math.min(this.items.length, this.$.list.lastVisibleIndex);
+              for (let index = start; index <= end; index++) {
+                this._selectItemModel(index);
               }
-            }
+            });
           }
           this._fetchRange(this.$.list.firstVisibleIndex, this.$.list.lastVisibleIndex);
         },
