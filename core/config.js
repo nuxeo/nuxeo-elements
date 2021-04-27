@@ -21,9 +21,39 @@ Nuxeo.UI.config = Nuxeo.UI.config || {};
 const { config } = Nuxeo.UI;
 
 Object.assign(config, {
-  get(path) {
-    return path.split('.').reduce((a, b) => a && a[b], this);
+  /**
+   * Returns a property for a given `path`. If it is not defined, `fallback` is returned instead.
+   * If `fallback` is defined, the method will try to convert the property value to the same data type of `fallback`.
+   */
+  get(path, fallback) {
+    let val = path.split('.').reduce((a, b) => a && a[b], this);
+    if (val !== undefined && typeof val !== typeof fallback) {
+      let type;
+      switch (typeof fallback) {
+        case 'boolean':
+          type = Boolean;
+          break;
+        case 'number':
+          type = Number;
+          break;
+        case 'string':
+          type = String;
+          break;
+        case 'bigint':
+          // eslint-disable-next-line no-undef
+          type = BigInt;
+          break;
+        default:
+          break;
+      }
+      val = (type && type(val)) || val;
+    }
+    return val || fallback;
   },
+  /**
+   * Sets the `value` for property identified by a given `path`. All intermediate path segments will be created if they
+   * don't exist already.
+   */
   set(path, value) {
     const parentPath = path.substring(0, path.lastIndexOf('.'));
     let parent = this.get(parentPath);

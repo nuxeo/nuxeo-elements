@@ -144,7 +144,7 @@ export const PageProviderDisplayBehavior = [
       maxItems: {
         type: Number,
         value() {
-          return Number(config.get('listingMaxItems')) || 10000;
+          return config.get('listingMaxItems', 10000);
         },
       },
 
