@@ -35,7 +35,7 @@ import '../widgets/nuxeo-checkmark.js';
           }
         </style>
 
-        <nuxeo-checkmark checked="{{checked}}" aria-label$="[[i18n('command.select')]]" tabindex="0"></nuxeo-checkmark>
+        <nuxeo-checkmark checked="{{checked}}" disabled="{{disabled}}" aria-label$="[[i18n('command.select')]]" tabindex="0"></nuxeo-checkmark>
       `;
     }
 
@@ -46,6 +46,11 @@ import '../widgets/nuxeo-checkmark.js';
     static get properties() {
       return {
         checked: {
+          type: Boolean,
+          reflectToAttribute: true,
+          value: false,
+        },
+        disabled: {
           type: Boolean,
           reflectToAttribute: true,
           value: false,
