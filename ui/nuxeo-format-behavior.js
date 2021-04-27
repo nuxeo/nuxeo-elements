@@ -65,7 +65,7 @@ export const FormatBehavior = [
      *     - Etc/UTC: time specified by the user is assumed to be in UTC
      */
     formatDate(date, format, timezone) {
-      return this._formatDate(date, format || config.get('dateFormat') || 'LL', timezone || config.get('timezone'));
+      return this._formatDate(date, format || config.get('dateFormat', 'LL'), timezone || config.get('timezone'));
     },
 
     /**
@@ -80,11 +80,7 @@ export const FormatBehavior = [
      *     - Etc/UTC: time specified by the user is assumed to be in UTC
      */
     formatDateTime(date, format, timezone) {
-      return this._formatDate(
-        date,
-        format || config.get('dateTimeFormat') || 'LLL',
-        timezone || config.get('timezone'),
-      );
+      return this._formatDate(date, format || config.get('dateTimeFormat', 'LLL'), timezone || config.get('timezone'));
     },
 
     /**

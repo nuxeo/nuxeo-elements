@@ -193,7 +193,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this.$.date.set('i18n.today', this.i18n('today'));
       this.$.date.set(
         'i18n.firstDayOfWeek',
-        this.firstDayOfWeek || parseInt(config.get('firstDayOfWeek'), 10) || moment.localeData().firstDayOfWeek() || 0,
+        this.firstDayOfWeek || config.get('firstDayOfWeek', moment.localeData().firstDayOfWeek() || 0),
       );
     }
 

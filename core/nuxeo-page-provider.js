@@ -302,7 +302,7 @@ import config from './config.js';
         method: {
           type: String,
           value() {
-            return config.get('pageprovider.method') || 'get';
+            return config.get('pageprovider.method', 'get');
           },
         },
       };
