@@ -19,6 +19,7 @@ import '@polymer/polymer/polymer-legacy.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
+import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 
@@ -255,7 +256,6 @@ export const PageProviderDisplayBehavior = [
 
     _itemsChanged() {
       this._isEmpty = !(this.items && this.items.length > 0);
-      this._isSelectAllChecked = false;
     },
 
     _selected(e) {
@@ -284,10 +284,9 @@ export const PageProviderDisplayBehavior = [
             }
           }
         }
-        // workaround until we can exclude parts of the selection
-        if (this.selectAllChecked) {
-          // this.clearSelection();
-          this.selectIndex(index);
+        // until we support unselect some, if the view is not handling select all, we need to prevent deselect (for now)
+        if (this.selectAllChecked && !this.handlesSelectAll) {
+          this.selectItem(this.items[index]);
         }
         this._lastSelectedIndex = e.detail.index;
       }
@@ -334,15 +333,24 @@ export const PageProviderDisplayBehavior = [
 
     selectAll() {
       if (this.selectionEnabled && this.selectAllEnabled) {
-        // only select the loaded items
-        this.items
-          .forEach(
-            function(item) {
-              this.selectItem(item);
-            }.bind(this.$.list),
-          );
         this._isSelectAllChecked = true;
-        this._updateFlags();
+        // select the visible first (the others can be deferred)
+        const start = Math.max(0, this.$.list.firstVisibleIndex - 15);
+        const end = Math.min(this.items.length, this.$.list.lastVisibleIndex + 15);
+        for (let index = start; index <= end; index++) {
+          this.selectItem(this.items[index]);
+        }
+
+        // basic method to push items to selected items, but not for actual selection
+        const pushSelectedItems = (indexStart, limit) => {
+          for (let index = indexStart; index < limit; index++) {
+            this.selectedItems.push(this.items[index]);
+          }
+        };
+        // push the items before the range
+        afterNextRender(this, pushSelectedItems, [0, start]);
+        // push the items after the range
+        afterNextRender(this, pushSelectedItems, [end + 1, this.items.length]);
       }
     },
 
@@ -352,6 +360,9 @@ export const PageProviderDisplayBehavior = [
       this._updateFlags();
     },
 
+    /**
+     * `true` if select all is enabled and all items are checked
+     */
     get selectAllChecked() {
       return this.selectAllEnabled && this._isSelectAllChecked;
     },
@@ -380,7 +391,7 @@ export const PageProviderDisplayBehavior = [
 
     _sortDirectionChanged(e) {
       if (this._hasPageProvider()) {
-        this._isSelectAllChecked = false;
+        this.clearSelection();
         let notFound = true;
         for (let i = 0; i < this.sortOrder.length; i++) {
           if (this.sortOrder[i].path === e.detail.path) {
@@ -419,7 +430,7 @@ export const PageProviderDisplayBehavior = [
 
     _onColumnFilterChanged(e) {
       if (this._hasPageProvider()) {
-        this._isSelectAllChecked = false;
+        this.clearSelection();
         let notFound = true;
         for (let i = 0; i < this.filters.length; i++) {
           if (this.filters[i].path === e.detail.filterBy) {
@@ -639,7 +650,17 @@ export const PageProviderDisplayBehavior = [
               this.set(`items.${i}`, response.entries[entryIndex++]);
 
               if (isSelected) {
-                this.selectIndex(i);
+                if (this.selectAllChecked) {
+                  this.set(`selectedItems.${i}`, this.items[i]);
+                  if (this.$.list._isIndexRendered(i)) {
+                    const model = this.modelForElement(this.$.list._physicalItems[this.$.list._getPhysicalIndex(i)]);
+                    if (model) {
+                      model[this.$.list.selectedAs] = true;
+                    }
+                  }
+                } else {
+                  this.selectIndex(i);
+                }
               }
             }
           }
@@ -690,7 +711,21 @@ export const PageProviderDisplayBehavior = [
       this._debouncer = Debouncer.debounce(
         this._debouncer,
         timeOut.after(this.scrollThrottle > 0 ? this.scrollThrottle : 1),
-        () => this._fetchRange(this.$.list.firstVisibleIndex, this.$.list.lastVisibleIndex),
+        () => {
+          if (this.selectAllChecked) {
+            const start = Math.max(0, this.$.list.firstVisibleIndex);
+            const end = Math.min(this.items.length, this.$.list.lastVisibleIndex);
+            for (let index = start; index <= end; index++) {
+              if (this.$.list._isIndexRendered(index)) {
+                const model = this.modelForElement(this.$.list._physicalItems[this.$.list._getPhysicalIndex(index)]);
+                if (model) {
+                  model[this.$.list.selectedAs] = true;
+                }
+              }
+            }
+          }
+          this._fetchRange(this.$.list.firstVisibleIndex, this.$.list.lastVisibleIndex);
+        },
       );
     },
 
