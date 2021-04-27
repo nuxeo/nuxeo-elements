@@ -295,7 +295,11 @@ import '../nuxeo-button-styles.js';
                     tabindex="0"
                     checked$="[[selected]]"
                     on-click="_onCheckBoxTap"
+<<<<<<< HEAD
                     on-keydown="_onCheckBoxKeydown"
+=======
+                    disabled$="[[_isSelectAllChecked]]"
+>>>>>>> 4ef82f0e (ELEMENTS-1337: improve select all performance in page provider display behavior)
                   ></nuxeo-data-table-checkbox>
                   <dom-repeat items="[[columns]]" as="column" index-as="colIndex">
                     <template>
@@ -839,7 +843,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _onCheckBoxTap(e) {
-      if (this.selectionEnabled) {
+      if (this.selectionEnabled && !this._isSelectAllChecked) {
         this.$.list.toggleSelectionForIndex(e.model.index);
         const target = e.target || e.srcElement;
         target.dispatchEvent(
