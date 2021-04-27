@@ -56,6 +56,13 @@ import '../nuxeo-button-styles.js';
           .item iron-icon {
             margin-right: 1em;
           }
+
+          a {
+            color: var(--nuxeo-link-color, #3a3a54);
+          }
+          a:hover {
+            color: var(--nuxeo-link-hover-color, #0066ff);
+          }
         </style>
 
         <dom-if if="[[_isAvailable(document)]]">
