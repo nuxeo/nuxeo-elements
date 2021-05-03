@@ -48,4 +48,14 @@ suite('nuxeo-html-editor', () => {
     );
     expect(isElementVisible(editor._editor.getModule('toolbar').container)).to.be.false;
   });
+
+  test('should show value when readonly', async () => {
+    const editor = await fixture(
+      html`
+        <nuxeo-html-editor read-only value="Hello"></nuxeo-html-editor>
+      `,
+    );
+    const text = editor.shadowRoot.querySelector('.ql-editor').textContent.trim();
+    expect(text).to.equal(`Hello`);
+  });
 });
