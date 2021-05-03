@@ -313,6 +313,7 @@ import './nuxeo-popup-permission.js';
       popup.toggle(() => {
         this.$.rmPermission.params = {
           id: e.model.ace.id,
+          acl: e.model.ace.aclName,
         };
         this.$.rmPermission.execute().then(() => {
           this.dispatchEvent(
