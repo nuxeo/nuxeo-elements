@@ -182,7 +182,7 @@ import './quill/quill-snow.js';
     _valueChanged() {
       if (this._editor && !this._internalChange) {
         const delta = this._editor.clipboard.convert({ html: this.value });
-        this._editor.setContents(delta, Quill.sources.USER);
+        this._editor.setContents(delta, this.readOnly ? Quill.sources.SILENT : Quill.sources.USER);
         this._editor.setSelection(0, Quill.sources.SILENT);
       }
     }
