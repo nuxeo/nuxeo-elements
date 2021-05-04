@@ -72,6 +72,11 @@ import './data-table-templatizer-behavior.js';
       ];
     }
 
+    ready() {
+      super.ready();
+      this.setAttribute('role', 'cell');
+    }
+
     _alignRightChanged(alignRight) {
       this.style.flexDirection = alignRight ? 'row-reverse' : 'row';
     }
