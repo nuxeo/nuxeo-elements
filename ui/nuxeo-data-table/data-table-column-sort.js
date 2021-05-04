@@ -1,10 +1,12 @@
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
+import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
 /* Part of `nuxeo-data-table` */
 {
-  class DataTableColumnSort extends Nuxeo.Element {
+  class DataTableColumnSort extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style>
