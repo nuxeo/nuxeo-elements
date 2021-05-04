@@ -13,9 +13,10 @@ import './data-table-column-filter.js';
             label="[[column.name]]"
             value="{{column.filterValue}}"
             hidden$="[[!column.filterBy]]"
+            role="columnheader"
           >
           </nuxeo-data-table-column-filter>
-          <div hidden$="[[column.filterBy]]">[[column.name]]</div>
+          <div hidden$="[[column.filterBy]]" role="columnheader">[[column.name]]</div>
         </template>
       `;
     }
