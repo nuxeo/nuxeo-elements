@@ -58,7 +58,7 @@ export const PageProviderDisplayBehavior = [
         value: true,
       },
 
-      _isSelectAllChecked: {
+      _isSelectAllActive: {
         type: Boolean,
         value: false,
         notify: true,
@@ -123,14 +123,20 @@ export const PageProviderDisplayBehavior = [
         value: false,
       },
 
+      /**
+       * `true` if select all mode is currently enabled. For select all to work, selection must be enabled too.
+       */
       selectAllEnabled: {
         type: Boolean,
         value: false,
       },
 
-      selectAllChecked: {
+      /**
+       * `true` if select all is active, i.e. all the items are selected.
+       */
+      selectAllActive: {
         type: Boolean,
-        computed: '_computeSelectAllStatus(_selectAllEnabled, _isSelectAllChecked)',
+        computed: '_computeSelectAllStatus(_selectAllEnabled, _isSelectAllActive)',
       },
 
       selectedItems: {
@@ -290,7 +296,7 @@ export const PageProviderDisplayBehavior = [
           }
         }
         // until we support unselect some, if the view is not handling select all, we need to prevent deselect (for now)
-        if (this.selectAllChecked && !this.handlesSelectAll) {
+        if (this.selectAllActive && !this.handlesSelectAll) {
           this.selectItem(this.items[index]);
         }
         this._lastSelectedIndex = e.detail.index;
@@ -323,14 +329,14 @@ export const PageProviderDisplayBehavior = [
     },
 
     deselectItem(item) {
-      if (this.selectionEnabled && !this.selectAllChecked) {
+      if (this.selectionEnabled && !this.selectAllActive) {
         this.$.list.deselectItem(item);
         this._updateFlags();
       }
     },
 
     deselectIndex(index) {
-      if (this.selectionEnabled && !this.selectAllChecked) {
+      if (this.selectionEnabled && !this.selectAllActive) {
         this.$.list.deselectIndex(index);
         this._updateFlags();
       }
@@ -338,19 +344,19 @@ export const PageProviderDisplayBehavior = [
 
     selectAll() {
       if (this.selectionEnabled && this.selectAllEnabled) {
-        this._isSelectAllChecked = true;
-        // select the visible first (the others can be deferred)
-        const start = Math.max(0, this.$.list.firstVisibleIndex - 15);
-        const end = Math.min(this.items.length, this.$.list.lastVisibleIndex + 15);
-        for (let index = start; index <= end; index++) {
+        this._isSelectAllActive = true;
+        // select the visible items first to speed up the first paint (the others can be deferred)
+        const { start, end } = this._getSelectionBoundaries();
+        this._updateSelectedItems((index) => {
           this.selectItem(this.items[index]);
-        }
+        });
 
-        // basic method to push items to selected items, but not for actual selection
+        // basic method to push items to selected items without proper selection, to speed up rendering
         const pushSelectedItems = (indexStart, limit) => {
           for (let index = indexStart; index < limit; index++) {
             this.selectedItems.push(this.items[index]);
           }
+          this.notifySplices('selectedItems');
         };
         // push the items before the range
         afterNextRender(this, pushSelectedItems, [0, start]);
@@ -361,7 +367,7 @@ export const PageProviderDisplayBehavior = [
 
     clearSelection() {
       this.$.list.clearSelection();
-      this._isSelectAllChecked = false;
+      this._isSelectAllActive = false;
       this._updateFlags();
     },
 
@@ -369,7 +375,7 @@ export const PageProviderDisplayBehavior = [
      * `true` if select all is enabled and all items are checked
      */
     _computeSelectAllStatus() {
-      return this.selectAllEnabled && this._isSelectAllChecked;
+      return this.selectAllEnabled && this._isSelectAllActive;
     },
 
     _isSelected(item) {
@@ -377,7 +383,7 @@ export const PageProviderDisplayBehavior = [
     },
 
     _toggleSelectAll() {
-      if (this._isSelectAllChecked) {
+      if (this._isSelectAllActive) {
         this.clearSelection();
       } else {
         this.selectAll();
@@ -507,8 +513,8 @@ export const PageProviderDisplayBehavior = [
     _updateFlags() {
       this.size = Array.isArray(this.items) ? this.items.length : 0;
       const selectedItemsSize = Array.isArray(this.selectedItems) ? this.selectedItems.length : 0;
-      this._isSelectAllIndeterminate = !this._isSelectAllChecked || selectedItemsSize < this.size;
-      this._isSelectAllChecked = this._isSelectAllChecked || (selectedItemsSize === this.size && this.size !== 0);
+      this._isSelectAllIndeterminate = !this._isSelectAllActive || selectedItemsSize < this.size;
+      this._isSelectAllActive = this._isSelectAllActive || (selectedItemsSize === this.size && this.size !== 0);
       this._isEmpty = this.size === 0;
     },
 
@@ -533,6 +539,7 @@ export const PageProviderDisplayBehavior = [
         this.set('items', arr);
       }
       this.size = this.items.length;
+      this._isSelectAllActive = false;
       this.$.list.notifyResize();
     },
 
@@ -655,7 +662,11 @@ export const PageProviderDisplayBehavior = [
               this.set(`items.${i}`, response.entries[entryIndex++]);
 
               if (isSelected) {
-                if (this.selectAllChecked) {
+                if (this.selectAllActive) {
+                  /**
+                   * if select all is active we need to update the `selectedItems` entry to keep it in sync with the
+                   * one in `items` that we have just loaded
+                   */
                   this.set(`selectedItems.${i}`, this.items[i]);
                   this._selectItemModel(i);
                 } else {
@@ -707,6 +718,35 @@ export const PageProviderDisplayBehavior = [
       return Promise.resolve();
     },
 
+    /**
+     * Returns the boundaries used by the optimization mechanism in select all
+     */
+    _getSelectionBoundaries() {
+      const n = Math.max(0, this.$.list.lastVisibleIndex - this.$.list.firstVisibleIndex);
+      return {
+        start: Math.max(0, this.$.list.firstVisibleIndex - n),
+        end: Math.min(this.items.length, this.$.list.lastVisibleIndex + n),
+        n,
+      };
+    },
+
+    /**
+     * Generic method used to perform a custom selection callback used by the optimization mechanism in select all
+     */
+    _updateSelectedItems(selectionCallback) {
+      const { start, end } = this._getSelectionBoundaries();
+      for (let index = start; index <= end; index++) {
+        selectionCallback(index);
+      }
+    },
+
+    /**
+     * Method to force the selection of the items that are already rendered by the internal list.
+     *
+     * This solution is needed for the optimizations of the select all mechanism, where all items are considered
+     * selected for fast rendering, but are updated on demand when we fetch subsequent page provider pages.
+     * It is inspired by the select all proposal in https://github.com/PolymerElements/iron-list/pull/457
+     */
     _selectItemModel(index) {
       if (this.$.list._isIndexRendered(index)) {
         const model = this.modelForElement(this.$.list._physicalItems[this.$.list._getPhysicalIndex(index)]);
@@ -725,14 +765,8 @@ export const PageProviderDisplayBehavior = [
            * if select all is checked we need to update the model to reflect the changes, since not all the items were
            * visible in the first place
            */
-          if (this.selectAllChecked) {
-            afterNextRender(this, () => {
-              const start = Math.max(0, this.$.list.firstVisibleIndex);
-              const end = Math.min(this.items.length, this.$.list.lastVisibleIndex);
-              for (let index = start; index <= end; index++) {
-                this._selectItemModel(index);
-              }
-            });
+          if (this.selectAllActive) {
+            afterNextRender(this, () => this._updateSelectedItems(this._selectItemModel.bind(this)));
           }
           this._fetchRange(this.$.list.firstVisibleIndex, this.$.list.lastVisibleIndex);
         },

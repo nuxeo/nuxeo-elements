@@ -442,7 +442,7 @@ suite('nuxeo-data-table', () => {
 
     test('select all items', async () => {
       table.selectAll();
-      assert.equal(table.selectAllChecked, true);
+      assert.equal(table.selectAllActive, true);
       assert.equal(table.selectedItems.length, 4);
       assert.deepEqual(table.items, table.selectedItems);
     });
@@ -454,13 +454,13 @@ suite('nuxeo-data-table', () => {
       await flush();
 
       table.selectAll();
-      assert.equal(table.selectAllChecked, false);
+      assert.equal(table.selectAllActive, false);
       assert.equal(table.selectedItems.length, 0);
     });
 
     test('deselect disabled in select all mode', async () => {
       table.selectAll();
-      assert.equal(table.selectAllChecked, true);
+      assert.equal(table.selectAllActive, true);
       assert.equal(table.selectedItems.length, 4);
 
       table.deselectIndex(0);
@@ -472,22 +472,22 @@ suite('nuxeo-data-table', () => {
     test('select all clear after sorting', async () => {
       // assert the sort
       table.selectAll();
-      assert.equal(table.selectAllChecked, true);
+      assert.equal(table.selectAllActive, true);
       assert.equal(table.selectedItems.length, 4);
 
       table.querySelector('nuxeo-data-table-column-sort')._sort();
-      assert.equal(table.selectAllChecked, false);
+      assert.equal(table.selectAllActive, false);
       assert.equal(table.selectedItems.length, 0);
     });
 
     test('select all clear after filtering', async () => {
       // assert the filtering
       table.selectAll();
-      assert.equal(table.selectAllChecked, true);
+      assert.equal(table.selectAllActive, true);
       assert.equal(table.selectedItems.length, 4);
 
       table.querySelector('nuxeo-data-table-column').filterValue = 'test';
-      assert.equal(table.selectAllChecked, false);
+      assert.equal(table.selectAllActive, false);
       assert.equal(table.selectedItems.length, 0);
     });
   });
@@ -510,7 +510,7 @@ suite('nuxeo-data-table', () => {
 
       table.scrollToIndex(80);
       await flush();
-      assert.equal(table.selectAllChecked, true);
+      assert.equal(table.selectAllActive, true);
       assert.equal(table._isSelected(table.items[80]), true);
       assert.equal(table.selectedItems.length, 120);
       assert.deepEqual(table.items, table.selectedItems);
