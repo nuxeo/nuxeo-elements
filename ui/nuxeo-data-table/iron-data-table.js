@@ -175,7 +175,7 @@ import '../nuxeo-button-styles.js';
 
           #header {
             box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
-            padding-left: 2px;
+            padding-inline-start: 2px;
             transition: box-shadow 200ms;
             -webkit-transition: box-shadow 200ms;
             @apply --iron-data-table-header;
@@ -226,8 +226,8 @@ import '../nuxeo-button-styles.js';
           <div id="header">
             <nuxeo-data-table-row header>
               <nuxeo-data-table-checkbox
-                header$="[[!_isSelectionEnabled(selectionEnabled, selectAllEnabled)]]"
-                checked="[[_isSelectAllChecked]]" 
+                style$="[[_computeSelectAllVisibility(selectionEnabled, selectAllEnabled)]]"
+                checked="[[_isSelectAllActive]]"
                 on-click="_toggleSelectAll"
               ></nuxeo-data-table-checkbox>
               <dom-repeat items="[[columns]]" as="column">
@@ -295,11 +295,8 @@ import '../nuxeo-button-styles.js';
                     tabindex="0"
                     checked$="[[selected]]"
                     on-click="_onCheckBoxTap"
-<<<<<<< HEAD
                     on-keydown="_onCheckBoxKeydown"
-=======
-                    disabled$="[[_isSelectAllChecked]]"
->>>>>>> 4ef82f0e (ELEMENTS-1337: improve select all performance in page provider display behavior)
+                    disabled$="[[_isSelectAllActive]]"
                   ></nuxeo-data-table-checkbox>
                   <dom-repeat items="[[columns]]" as="column" index-as="colIndex">
                     <template>
@@ -592,6 +589,13 @@ import '../nuxeo-button-styles.js';
       return 'display: none;';
     }
 
+    _computeSelectAllVisibility() {
+      if (this.selectionEnabled) {
+        return !this.selectAllEnabled ? 'visibility: hidden;' : '';
+      }
+      return 'display: none;';
+    }
+
     _alignHeaderRow() {
       afterNextRender(this, () => {
         if (this.$.list.scrollHeight >= this.$.list.clientHeight) {
@@ -817,10 +821,6 @@ import '../nuxeo-button-styles.js';
       }
     }
 
-    _isSelectionEnabled() {
-      return this.selectionEnabled && this.selectAllEnabled;
-    }
-
     get settings() {
       const tableSettings = {};
       tableSettings.columns = {};
@@ -843,7 +843,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _onCheckBoxTap(e) {
-      if (this.selectionEnabled && !this._isSelectAllChecked) {
+      if (this.selectionEnabled && !this._isSelectAllActive) {
         this.$.list.toggleSelectionForIndex(e.model.index);
         const target = e.target || e.srcElement;
         target.dispatchEvent(
