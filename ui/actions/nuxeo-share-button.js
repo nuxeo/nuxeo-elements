@@ -27,6 +27,7 @@ import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
+import { NotifyBehavior } from '@nuxeo/nuxeo-elements/nuxeo-notify-behavior.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-icons.js';
 import '../widgets/nuxeo-dialog.js';
@@ -47,7 +48,7 @@ import '../nuxeo-button-styles.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-share-button/index.html
    */
-  class ShareButton extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
+  class ShareButton extends mixinBehaviors([NotifyBehavior, I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style include="nuxeo-action-button-styles nuxeo-button-styles">
@@ -181,7 +182,7 @@ import '../nuxeo-button-styles.js';
 
       shareButton.set('icon', 'check');
       shareButton.classList.add('selected');
-      this.fire('notify', { message: this.i18n('shareButton.operation.copied'), duration: 2000 });
+      this.notify({ message: this.i18n('shareButton.operation.copied'), duration: 2000 });
     }
   }
 
