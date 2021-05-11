@@ -21,6 +21,7 @@ import '@polymer/iron-icon/iron-icon.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
+import { NotifyBehavior } from '@nuxeo/nuxeo-elements/nuxeo-notify-behavior.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import './nuxeo-tooltip.js';
 import '../actions/nuxeo-action-button-styles.js';
@@ -40,7 +41,7 @@ import '../actions/nuxeo-action-button-styles.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-operation-button/index.html
    */
-  class OperationButton extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
+  class OperationButton extends mixinBehaviors([NotifyBehavior, I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style include="nuxeo-action-button-styles"></style>
@@ -176,13 +177,7 @@ import '../actions/nuxeo-action-button-styles.js';
         .execute()
         .then((response) => {
           if (this.notification) {
-            this.dispatchEvent(
-              new CustomEvent('notify', {
-                composed: true,
-                bubbles: true,
-                detail: { message: this.i18n(this.notification) },
-              }),
-            );
+            this.notify({ message: this.i18n(this.notification) });
           }
           let detail = { response };
           if (this.detail) {
@@ -202,13 +197,7 @@ import '../actions/nuxeo-action-button-styles.js';
           }
         })
         .catch((error) => {
-          this.dispatchEvent(
-            new CustomEvent('notify', {
-              composed: true,
-              bubbles: true,
-              detail: { message: this.errorLabel ? this.i18n(this.errorLabel, error) : error },
-            }),
-          );
+          this.notify({ message: this.errorLabel ? this.i18n(this.errorLabel, error) : error });
           if (error.status !== 404) {
             throw error;
           }

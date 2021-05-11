@@ -20,6 +20,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
+import { NotifyBehavior } from '@nuxeo/nuxeo-elements/nuxeo-notify-behavior.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-icons.js';
 import '../widgets/nuxeo-tooltip.js';
@@ -34,7 +35,7 @@ import '../nuxeo-button-styles.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-move-documents-down-button/index.html
    */
-  class MoveDocumentsDown extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
+  class MoveDocumentsDown extends mixinBehaviors([NotifyBehavior, I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style include="nuxeo-action-button-styles nuxeo-button-styles">
@@ -129,13 +130,7 @@ import '../nuxeo-button-styles.js';
           );
         })
         .catch(() => {
-          this.dispatchEvent(
-            new CustomEvent('notify', {
-              composed: true,
-              bubbles: true,
-              detail: { message: this.i18n('moveDocumentButton.error') },
-            }),
-          );
+          this.notify({ message: this.i18n('moveDocumentButton.error') });
         });
     }
 
