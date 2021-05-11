@@ -19,6 +19,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-collapse/iron-collapse.js';
 import '@nuxeo/nuxeo-elements/nuxeo-page-provider.js';
+import { NotifyBehavior } from '@nuxeo/nuxeo-elements/nuxeo-notify-behavior.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import './nuxeo-search-form-layout.js';
 import './nuxeo-search-results-layout.js';
@@ -30,7 +31,7 @@ import './nuxeo-search-results-layout.js';
    * @appliesMixin Nuxeo.I18nBehavior
    * @element nuxeo-results-view
    */
-  class ResultsView extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
+  class ResultsView extends mixinBehaviors([NotifyBehavior, I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style include="nuxeo-styles iron-flex iron-flex-alignment">
@@ -371,13 +372,8 @@ import './nuxeo-search-results-layout.js';
     }
 
     _onError(e) {
-      this.dispatchEvent(
-        new CustomEvent('notify', {
-          composed: true,
-          bubbles: true,
-          detail: e.detail.error,
-        }),
-      );
+      // XXX fix me later: we are firing an error object instead an object with { message: ...}
+      this.notify(e.detail.error);
       e.stopPropagation();
     }
 

@@ -26,6 +26,7 @@ import '@polymer/polymer/lib/elements/dom-if.js';
 import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-resource.js';
+import { NotifyBehavior } from '@nuxeo/nuxeo-elements/nuxeo-notify-behavior.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-tooltip.js';
 // eslint-disable-next-line import/no-cycle
@@ -50,7 +51,7 @@ import '../nuxeo-button-styles.js';
  * @demo https://nuxeo.github.io/nuxeo-elements/?path=/story/ui-nuxeo-document-comments--nuxeo-document-comment
  */
 {
-  class DocumentComment extends mixinBehaviors([FormatBehavior], Nuxeo.Element) {
+  class DocumentComment extends mixinBehaviors([NotifyBehavior, FormatBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style include="nuxeo-document-comments-styles nuxeo-button-styles">
@@ -385,21 +386,9 @@ import '../nuxeo-button-styles.js';
         })
         .catch((error) => {
           if (error.status === 404) {
-            this.dispatchEvent(
-              new CustomEvent('notify', {
-                composed: true,
-                bubbles: true,
-                detail: { message: this._computeTextLabel(this.level, 'notFound') },
-              }),
-            );
+            this.notify({ message: this._computeTextLabel(this.level, 'notFound') });
           } else {
-            this.dispatchEvent(
-              new CustomEvent('notify', {
-                composed: true,
-                bubbles: true,
-                detail: { message: this._computeTextLabel(this.level, 'deletion.error') },
-              }),
-            );
+            this.notify({ message: this._computeTextLabel(this.level, 'deletion.error') });
             throw error;
           }
         });
@@ -469,21 +458,9 @@ import '../nuxeo-button-styles.js';
         })
         .catch((error) => {
           if (error.status === 404) {
-            this.dispatchEvent(
-              new CustomEvent('notify', {
-                composed: true,
-                bubbles: true,
-                detail: { message: this._computeTextLabel(this.level, 'notFound') },
-              }),
-            );
+            this.notify({ message: this._computeTextLabel(this.level, 'notFound') });
           } else {
-            this.dispatchEvent(
-              new CustomEvent('notify', {
-                composed: true,
-                bubbles: true,
-                detail: { message: this._computeTextLabel(this.level, 'edition.error') },
-              }),
-            );
+            this.notify({ message: this._computeTextLabel(this.level, 'edition.error') });
             throw error;
           }
         });
