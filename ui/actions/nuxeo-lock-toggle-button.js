@@ -23,6 +23,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
+import { NotifyBehavior } from '@nuxeo/nuxeo-elements/nuxeo-notify-behavior.js';
 import { FiltersBehavior } from '../nuxeo-filters-behavior.js';
 import { FormatBehavior } from '../nuxeo-format-behavior.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
@@ -45,7 +46,10 @@ import '../nuxeo-button-styles.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-lock-toggle-button/index.html
    */
-  class LockToggleButton extends mixinBehaviors([I18nBehavior, FiltersBehavior, FormatBehavior], Nuxeo.Element) {
+  class LockToggleButton extends mixinBehaviors(
+    [NotifyBehavior, I18nBehavior, FiltersBehavior, FormatBehavior],
+    Nuxeo.Element,
+  ) {
     static get template() {
       return html`
         <style include="nuxeo-action-button-styles nuxeo-button-styles">
@@ -191,13 +195,7 @@ import '../nuxeo-button-styles.js';
         default:
           message = this.i18n(`${errorKey}.unexpectedError`);
       }
-      this.dispatchEvent(
-        new CustomEvent('notify', {
-          composed: true,
-          bubbles: true,
-          detail: { message },
-        }),
-      );
+      this.notify({ message });
     }
 
     _computeTooltip(locked) {

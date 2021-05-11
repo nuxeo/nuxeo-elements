@@ -17,9 +17,11 @@ limitations under the License.
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class';
 import './nuxeo-element.js';
 import './nuxeo-operation.js';
 import './nuxeo-resource.js';
+import { NotifyBehavior } from './nuxeo-notify-behavior.js';
 
 {
   /**
@@ -37,7 +39,7 @@ import './nuxeo-resource.js';
    *
    * @memberof Nuxeo
    */
-  class AuditPageProvider extends Nuxeo.Element {
+  class AuditPageProvider extends mixinBehaviors([NotifyBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style>
@@ -308,15 +310,7 @@ import './nuxeo-resource.js';
           return response;
         })
         .catch((error) => {
-          this.dispatchEvent(
-            new CustomEvent('notify', {
-              composed: true,
-              bubbles: true,
-              detail: {
-                error,
-              },
-            }),
-          );
+          this.notify({ error });
           throw error;
         });
     }
