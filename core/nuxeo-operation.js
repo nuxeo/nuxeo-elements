@@ -199,15 +199,28 @@ import './nuxeo-connection.js';
     execute() {
       this._setActiveRequests(this.activeRequests + 1);
 
-      const params = !this.params || typeof this.params === 'object' ? this.params : JSON.parse(this.params);
+      let params = !this.params || typeof this.params === 'object' ? this.params : JSON.parse(this.params);
 
       let { input } = this;
 
-      // support page provider as input to operations
-      // relies on parameters naming convention until provider marshaller is available
-      if (Nuxeo.PageProvider && input instanceof Nuxeo.PageProvider) {
-        params.providerName = input.provider;
-        Object.assign(params, input._params);
+      if (this._isPageProvider(input) || this._isPageProviderDisplayBehavior(input)) {
+        let pageProvider;
+        // support page provider as input to operations
+        // relies on parameters naming convention until provider marshaller is available
+        if (this._isPageProvider(input)) {
+          pageProvider = input;
+        } else {
+          // support page provider display behavior instances (table, grid, list) as input to operations for select all
+          pageProvider = input.nxProvider;
+          params = {
+            action: 'automation',
+            providerName: pageProvider.provider,
+            parameters: JSON.stringify(params),
+          };
+        }
+
+        params.providerName = pageProvider.provider;
+        Object.assign(params, pageProvider._params);
         // ELEMENTS-1318 - commas would need to be escaped, as queryParams are mapped to stringlists by the server
         // But passing queryParams as an array will map directly to the server stringlist
         if (!Array.isArray(params.queryParams)) {
@@ -258,6 +271,17 @@ import './nuxeo-connection.js';
         this._operation = operation;
         return this._doExecute(input, params, options);
       });
+    }
+
+    _isPageProvider(input) {
+      return Nuxeo.PageProvider && input instanceof Nuxeo.PageProvider;
+    }
+
+    _isPageProviderDisplayBehavior(input) {
+      return input &&
+        input.behaviors &&
+        Nuxeo.PageProviderDisplayBehavior &&
+        Nuxeo.PageProviderDisplayBehavior.every((p) => input.behaviors.includes(p));
     }
 
     _autoExecute() {

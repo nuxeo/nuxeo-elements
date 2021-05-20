@@ -136,6 +136,7 @@ export const PageProviderDisplayBehavior = [
        */
       selectAllActive: {
         type: Boolean,
+        notify: true,
         computed: '_computeSelectAllStatus(_selectAllEnabled, _isSelectAllActive)',
       },
 
@@ -539,7 +540,8 @@ export const PageProviderDisplayBehavior = [
         this.set('items', arr);
       }
       this.size = this.items.length;
-      this._isSelectAllActive = false;
+      // if reset is called we need to clear selection
+      this.clearSelection();
       this.$.list.notifyResize();
     },
 
