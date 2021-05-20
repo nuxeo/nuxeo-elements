@@ -292,7 +292,7 @@
   "userManagement.delete.user.confirm": "Ziur erabiltzailea ezabatu nahi duzula?",
   "userManagement.editUser.button": "Editatu",
   "userManagement.editUser.heading": "Editatu erabiltzailea",
-  "userManagement.entityPermissions": "{0}(r)en baimenak",
+  "userManagement.entityPermissions": "{0} taldearen baimenak",
   "userManagement.errorAdministratorsGroup": "Administratzaileek soilik alda dezakete Administrators taldea.",
   "userManagement.group.remove": "Kendu",
   "userManagement.groups": "Taldeak",
