@@ -196,16 +196,19 @@ export const PageProviderDisplayBehavior = [
 
       handlesSorting: {
         type: Boolean,
+        reflectToAttribute: true,
         value: false,
       },
 
       handlesFiltering: {
         type: Boolean,
+        reflectToAttribute: true,
         value: false,
       },
 
       handlesSelectAll: {
         type: Boolean,
+        reflectToAttribute: true,
         value: false,
       },
 
