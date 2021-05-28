@@ -242,11 +242,13 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
     _queryChildren(parent, term) {
       this.params = {
         queryParams:
-          `SELECT * FROM Document WHERE ecm:parentId = '${parent.uid}' ` +
-          `AND ecm:name LIKE '${this.escapeNxqlStringLiteral(term)}%' AND ecm:mixinType = 'Folderish' ` +
-          "AND ecm:mixinType != 'HiddenInNavigation' AND ecm:isVersion = 0 " +
-          'AND ecm:isTrashed = 0',
+          `SELECT * FROM Document WHERE ecm:parentId = '${parent.uid}' AND ecm:mixinType = 'Folderish' ` +
+          `AND ecm:mixinType != 'HiddenInNavigation' AND ecm:isVersion = 0 AND ecm:isTrashed = 0`,
       };
+      if (term) {
+        const escapedTerm = this.escapeNxqlStringLiteral(term);
+        this.params.queryParams = `${this.params.queryParams} AND ecm:name LIKE '${escapedTerm}'`;
+      }
       return this.$.provider.fetch();
     }
 
