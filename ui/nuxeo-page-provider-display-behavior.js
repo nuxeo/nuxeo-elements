@@ -137,7 +137,7 @@ export const PageProviderDisplayBehavior = [
       selectAllActive: {
         type: Boolean,
         notify: true,
-        computed: '_computeSelectAllStatus(_selectAllEnabled, _isSelectAllActive)',
+        computed: '_computeSelectAllStatus(selectAllEnabled, _isSelectAllActive)',
       },
 
       selectedItems: {
@@ -387,7 +387,7 @@ export const PageProviderDisplayBehavior = [
     },
 
     _toggleSelectAll() {
-      if (this._isSelectAllActive) {
+      if (this.selectAllActive) {
         this.clearSelection();
       } else {
         this.selectAll();

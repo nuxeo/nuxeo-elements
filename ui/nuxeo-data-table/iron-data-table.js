@@ -227,7 +227,7 @@ import '../nuxeo-button-styles.js';
             <nuxeo-data-table-row header>
               <nuxeo-data-table-checkbox
                 style$="[[_computeSelectAllVisibility(selectionEnabled, selectAllEnabled)]]"
-                checked="[[_isSelectAllActive]]"
+                checked="[[selectAllActive]]"
                 on-click="_toggleSelectAll"
               ></nuxeo-data-table-checkbox>
               <dom-repeat items="[[columns]]" as="column">
@@ -296,7 +296,7 @@ import '../nuxeo-button-styles.js';
                     checked$="[[selected]]"
                     on-click="_onCheckBoxTap"
                     on-keydown="_onCheckBoxKeydown"
-                    disabled$="[[_isSelectAllActive]]"
+                    disabled$="[[selectAllActive]]"
                   ></nuxeo-data-table-checkbox>
                   <dom-repeat items="[[columns]]" as="column" index-as="colIndex">
                     <template>
@@ -843,7 +843,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _onCheckBoxTap(e) {
-      if (this.selectionEnabled && !this._isSelectAllActive) {
+      if (this.selectionEnabled && !this.isSelectAllActive) {
         this.$.list.toggleSelectionForIndex(e.model.index);
         const target = e.target || e.srcElement;
         target.dispatchEvent(
