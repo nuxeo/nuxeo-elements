@@ -60,7 +60,7 @@ import '../actions/nuxeo-action-button-styles.js';
         <div class="action" on-click="_execute">
           <paper-icon-button id="bt" icon="[[icon]]" aria-labelledby="label"></paper-icon-button>
           <span class="label" hidden$="[[!showLabel]]" id="label">[[i18n(label)]]</span>
-          <nuxeo-tooltip>[[i18n(_tooltip)]]</nuxeo-tooltip>
+          <nuxeo-tooltip position="[[tooltipPosition]]">[[i18n(_tooltip)]]</nuxeo-tooltip>
         </div>
       `;
     }
@@ -79,6 +79,14 @@ import '../actions/nuxeo-action-button-styles.js';
 
         /* Tooltip label. If `undefined`, `label` will be used instead. */
         tooltip: String,
+
+        /**
+         * Position where to place the tooltip.
+         */
+        tooltipPosition: {
+          type: String,
+          value: 'bottom',
+        },
 
         /**
          * `true` if the action should display the label, `false` otherwise.
