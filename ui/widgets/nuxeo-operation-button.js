@@ -54,13 +54,17 @@ import '../actions/nuxeo-action-button-styles.js';
           sync-indexing$="[[syncIndexing]]"
           async$="[[async]]"
           poll-interval="[[pollInterval]]"
+          on-poll-start="_onPollStart"
+          on-poll-update="_onPollUpdate"
+          on-poll-error="_onPollError"
+          on-poll-aborted="_onPollAbort"
         >
         </nuxeo-operation>
 
         <div class="action" on-click="_execute">
           <paper-icon-button id="bt" icon="[[icon]]" aria-labelledby="label"></paper-icon-button>
           <span class="label" hidden$="[[!showLabel]]" id="label">[[i18n(label)]]</span>
-          <nuxeo-tooltip>[[i18n(_tooltip)]]</nuxeo-tooltip>
+          <nuxeo-tooltip position="[[tooltipPosition]]">[[i18n(_tooltip)]]</nuxeo-tooltip>
         </div>
       `;
     }
@@ -79,6 +83,14 @@ import '../actions/nuxeo-action-button-styles.js';
 
         /* Tooltip label. If `undefined`, `label` will be used instead. */
         tooltip: String,
+
+        /**
+         * Position where to place the tooltip.
+         */
+        tooltipPosition: {
+          type: String,
+          value: 'bottom',
+        },
 
         /**
          * `true` if the action should display the label, `false` otherwise.
@@ -173,7 +185,7 @@ import '../actions/nuxeo-action-button-styles.js';
     }
 
     _execute() {
-      this.$.op
+      return this.$.op
         .execute()
         .then((response) => {
           if (this.notification) {
@@ -191,6 +203,26 @@ import '../actions/nuxeo-action-button-styles.js';
               detail,
             }),
           );
+
+          if (this._hasBulkStatus(response)) {
+            const { commandId, errorCount, total } = response;
+            if (this._isAborted(response)) {
+              this.notify({
+                message: this.i18n('operationButton.bulk.poll.aborted', this.label),
+                dismissible: true,
+                commandId,
+              });
+            } else {
+              this.notify({
+                message:
+                  errorCount > 0
+                    ? this.i18n('operationButton.bulk.poll.completed.error', this.label, errorCount)
+                    : this.i18n('operationButton.bulk.poll.completed.success', this.label, total),
+                dismissible: true,
+                commandId,
+              });
+            }
+          }
 
           if (this.download) {
             this._download(response);
@@ -234,6 +266,112 @@ import '../actions/nuxeo-action-button-styles.js';
 
     _computeTooltip(tooltip, label) {
       return tooltip || label;
+    }
+
+    _isPageProviderDisplayBehavior(input) {
+      return (
+        input &&
+        input.behaviors &&
+        Nuxeo.PageProviderDisplayBehavior &&
+        Nuxeo.PageProviderDisplayBehavior.every((p) => input.behaviors.includes(p))
+      );
+    }
+
+    _isSelectAllActive(input) {
+      return this._isPageProviderDisplayBehavior(input) && input.selectAllActive;
+    }
+
+    _isRunning(status) {
+      if (status['entity-type'] === 'bulkStatus') {
+        const { state } = status.value ? status.value : status;
+        return state !== 'ABORTED' && state !== 'COMPLETED';
+      }
+      return status === 'RUNNING';
+    }
+
+    _isAborted(status) {
+      if (status['entity-type'] === 'bulkStatus') {
+        const { state } = status.value ? status.value : status;
+        return state === 'ABORTED';
+      }
+      return this._isRunning(status);
+    }
+
+    _hasBulkStatus(status) {
+      return status['entity-type'] === 'bulkStatus';
+    }
+
+    _onPollStart(e) {
+      if (!e.detail && !e.detail.commandId) {
+        return;
+      }
+      const { commandId } = e.detail;
+      const detail = {
+        message: this.i18n('operationButton.bulk.poll.scheduled', this.label),
+        abort: true,
+        dismissible: true,
+        callback: function() {
+          this.$.op._abort(commandId)
+            .then((res) => {
+              console.log(res);
+            })
+            .catch((res) => {
+              console.log(res);
+            });
+        }.bind(this),
+        commandId,
+      };
+      this.notify(detail);
+    }
+
+    _onPollUpdate(e) {
+      if (!e.detail && !e.detail.commandId) {
+        return;
+      }
+      const status = e.detail;
+      const { commandId, state, processed, total } = status;
+      const detail = {
+        message:
+          this._isRunning(status) && state !== 'SCHEDULED'
+            ? this.i18n('operationButton.bulk.poll.running', this.label, processed, total)
+            : this.i18n('operationButton.bulk.poll.scheduled', this.label),
+        abort: true,
+        dismissible: true,
+        callback: function() {
+          this.$.op._abort(commandId)
+            .then((res) => {
+              console.log(res);
+            })
+            .catch((res) => {
+              console.log(res);
+            });
+        }.bind(this),
+        commandId,
+      };
+      this.notify(detail);
+    }
+
+    _onPollError(e) {
+      const error = e.detail;
+      this.notify({
+        message: this.i18n('operationButton.bulk.poll.error', this.label),
+        dismissible: true,
+        error,
+      });
+    }
+
+    _onPollAbort(e) {
+      if (!e.detail && !e.detail.commandId) {
+        return;
+      }
+      const status = e.detail;
+      const { commandId } = status;
+      this.notify({
+        message: this.i18n('operationButton.bulk.poll.aborted', this.label),
+        dismissible: true,
+        status,
+        commandId,
+      });
     }
   }
 
