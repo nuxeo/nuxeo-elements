@@ -131,7 +131,8 @@ import '../nuxeo-button-styles.js';
         !this.hasType(doc, 'Root') &&
         !this.isTrashed(doc) &&
         !(doc.isRecord && this.xpath !== 'file:content') &&
-        !(this.isUnderRetentionOrLegalHold(doc) && this.xpath === 'file:content')
+        !(this.isUnderRetentionOrLegalHold(doc) && this.xpath === 'file:content') &&
+        !this.hasFacet(document, 'ColdStorage')
       );
     }
 
