@@ -26,7 +26,7 @@ const loginResponse = [200, responseHeaders.json, '{"entity-type":"login","usern
 
 const userResponse = [200, responseHeaders.json, '{"entity-type":"user","username":"Administrator"}'];
 
-const cmisResponse = [200, responseHeaders.json, '{}'];
+const cmisResponse = [200, responseHeaders.json, '{"default": {"productVersion": "1.2.3"}}'];
 
 suite('nuxeo-connection', () => {
   let server;
@@ -48,22 +48,29 @@ suite('nuxeo-connection', () => {
     });
 
     test('should run the next', async () => {
+      const connected = new Promise((resolve) => {
+        document.addEventListener('connected', (e) => resolve(e));
+      });
       const connection = await fixture(
         html`
           <nuxeo-connection connection-id="nxc-ok"></nuxeo-connection>
         `,
       );
-
       try {
         // Return current connection
         await connection.connect();
 
-        // Test if component succeeded to log in
-        expect(connection.connected).to.be.equal(true);
+        // Wait for the 'connected' event to be fired
+        await connected;
       } catch (_) {
         // We shouldn't be there
         throw new Error('Expected to run something after a succeeded connection!');
       }
+
+      // Test if component succeeded to log in
+      expect(connection.connected).to.be.equal(true);
+      expect(connection.user.username).to.be.equal('Administrator');
+      expect(connection.platformVersion).to.be.equal('1.2.3');
     });
   });
 
@@ -114,7 +121,7 @@ suite('nuxeo-connection', () => {
     test('first connection should succeed', async () => {
       const connection = await fixture(
         html`
-          <nuxeo-connection></nuxeo-connection>
+          <nuxeo-connection connection-id="nxu"></nuxeo-connection>
         `,
       );
 
@@ -129,7 +136,7 @@ suite('nuxeo-connection', () => {
     test('similar connections should not issue requests', async () => {
       const connection = await fixture(
         html`
-          <nuxeo-connection></nuxeo-connection>
+          <nuxeo-connection connection-id="nxu"></nuxeo-connection>
         `,
       );
 
