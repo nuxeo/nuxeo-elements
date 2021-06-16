@@ -18,11 +18,180 @@ import 'nuxeo/nuxeo.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import './nuxeo-element.js';
 
-{
-  // A global map of clients with connectionId as key.
-  // This map is shared between all instances of nuxeo-connection.
-  const nxClients = {};
+// A global map of clients with connectionId as key.
+// This map is shared between all instances of nuxeo-connection.
+const connections = {};
 
+export class Connection {
+  constructor(opts) {
+    this.id = (opts && opts.id) || 'nx';
+    this.url = (opts && opts.url) || '';
+    this.repositoryName = (opts && opts.repositoryName) || null;
+    this.username = (opts && opts.username) || null;
+    this.password = (opts && opts.password) || null;
+    this.method = (opts && opts.method) || 'basic';
+    this.token = (opts && opts.token) || null;
+  }
+
+  connect() {
+    // Create the client if needed
+    if (this.client) {
+      // if this instance does not have any properties set properties from the client
+      if (!this.url && !this.username && !this.password && !this.repositoryName) {
+        this.url = this.client._baseURL;
+        this.username = this.client._username;
+        this.password = this.client._password;
+        this.repositoryName = this.client._baseOptions.repositoryName;
+      }
+      // if properties match the existing client use it
+      if (
+        this.client._baseURL === this.url &&
+        this.client._username === this.username &&
+        this.client._password === this.password &&
+        this.client._baseOptions.repositoryName === this.repositoryName
+      ) {
+        // return the stored connection request promise and chain _handleConnected to update instance properties
+        return this.client._promise;
+      }
+      // otherwise override the client with the new properties
+      this.client = null;
+    }
+
+    const options = {
+      baseURL: this.url,
+      schemas: ['*'],
+    };
+
+    if (this.method === 'basic') {
+      if (this.username) {
+        options.auth = {
+          method: 'basic',
+          username: this.username,
+          password: this.password,
+        };
+      }
+    } else {
+      if (this.method === 'token' && this.token) {
+        options.auth = {
+          method: 'token',
+          token: this.token,
+        };
+      }
+      options.headers = { 'X-No-Basic-Header': true };
+    }
+
+    if (this.repositoryName) {
+      options.repositoryName = this.repositoryName;
+    }
+
+    // eslint-disable-next-line no-undef
+    this.client = this.client || new Nuxeo(options);
+
+    // share the connect promise between all instances (one per client)
+    this.client._promise = this.client.connect();
+
+    return this.client._promise.catch((error) => {
+      if (error.response.status === 401) {
+        if (this.method === 'form') {
+          // store url fragment in cookie
+          document.cookie = `nuxeo.start.url.fragment=${window.location.hash.substring(1) || ''}; path=/`;
+          const loginUrl = `${this.url}/login.jsp?requestedUrl=${window.location.href}`;
+          window.location.replace(loginUrl);
+          return;
+        }
+      }
+      throw error;
+    });
+  }
+
+  /**
+   *  Returns true if client is connected.
+   *  @type {Boolean}
+   */
+  get connected() {
+    return this.client && this.client.connected;
+  }
+
+  /**
+   * Returns true if there are active requests.
+   * @type {Boolean}
+   */
+  get active() {
+    return this.client && this.client._activeRequests > 0;
+  }
+
+  /**
+   * Returns a request object that allows REST requests to be executed on a Nuxeo Platform instance.
+   */
+  request() {
+    return this.connect().then(() => this.client.request());
+  }
+
+  /**
+   * Returns an operation object that allows operations to be executed on a Nuxeo Platform instance.
+   * @param {string} op The operation to be executed.
+   */
+  operation(op) {
+    return this.connect().then(() => this.client.operation(op));
+  }
+
+  /**
+   * Get the http resource.
+   * @param {string} url The url to be loaded.
+   */
+  http(url) {
+    return this.connect().then(() => this.client._http({ url }));
+  }
+
+  /**
+   * Returns an object that allows blobs to be uploaded to a Nuxeo Platform instance using the Batch Upload API.
+   */
+  batchUpload() {
+    return this.connect().then(() => this.client.batchUpload());
+  }
+}
+
+/**
+ * Injects a connection in `superClass`. The connection to be used is determined by `connectionId`. Only one instance
+ * is used per id.
+ * @polymer
+ * @mixinFunction
+ */
+export const ConnectionMixin = (superClass) =>
+  class extends superClass {
+    static get properties() {
+      return {
+        /** A unique identifier for this connection. */
+        connectionId: {
+          type: String,
+          value: 'nx',
+        },
+      };
+    }
+
+    /**
+     * Returns the `Connection` instance corresponding to `connectionId`.
+     */
+    get connection() {
+      const id = this.connectionId || Object.keys(connections)[0] || 'nx';
+      return connections[id] || this._init(id);
+    }
+
+    get client() {
+      return this.connection.client;
+    }
+
+    _init(id) {
+      if (!id) {
+        throw new Error('no id was specified');
+      }
+      const connection = new Connection({ id });
+      connections[id] = connection;
+      return connection;
+    }
+  };
+
+{
   /**
    * `nuxeo-connection` wraps a `nuxeo.Client`.
    *
@@ -40,7 +209,7 @@ import './nuxeo-element.js';
    *
    * @memberof Nuxeo
    */
-  class Connection extends Nuxeo.Element {
+  class ConnectionElement extends ConnectionMixin(Nuxeo.Element) {
     static get template() {
       return html`
         <style>
@@ -57,12 +226,6 @@ import './nuxeo-element.js';
 
     static get properties() {
       return {
-        /** A unique identifier for this connection. */
-        connectionId: {
-          type: String,
-          value: 'nx',
-        },
-
         /** The base URL of the Nuxeo server. */
         url: {
           type: String,
@@ -133,76 +296,22 @@ import './nuxeo-element.js';
      * Connects nuxeo client.
      */
     connect() {
-      // Create the client if needed
-      // If we already have a client with the same connection info just keep it
-      const id = this.connectionId ? this.connectionId : Object.keys(nxClients)[0];
-      this.client = nxClients[id];
-      if (this.client) {
-        // if this instance does not have any properties set properties from the client
-        if (!this.url && !this.username && !this.password && !this.repositoryName) {
-          this.set('url', this.client._baseURL);
-          this.username = this.client._username;
-          this.password = this.client._password;
-          this.repositoryName = this.client._baseOptions.repositoryName;
-        }
-        // if properties match the existing client use it
-        if (
-          this.client._baseURL === this.url &&
-          this.client._username === this.username &&
-          this.client._password === this.password &&
-          this.client._baseOptions.repositoryName === this.repositoryName
-        ) {
-          // return the stored connection request promise and chain _handleConnected to update instance properties
-          return this.client._promise.then(this._handleConnected.bind(this));
-        }
-        // otherwise override the client with the new properties
-        this.client = null;
-      }
-      const options = {
-        baseURL: this.url,
-        schemas: ['*'],
-      };
+      this.connection.connectionId = this.connectionId;
+      this.connection.url = this.url;
+      this.connection.repositoryName = this.repositoryName;
+      this.connection.username = this.username;
+      this.connection.password = this.password;
+      this.connection.method = this.method;
+      this.connection.token = this.token;
 
-      if (this.method === 'basic') {
-        if (this.username) {
-          options.auth = {
-            method: 'basic',
-            username: this.username,
-            password: this.password,
-          };
-        }
-      } else {
-        if (this.method === 'token' && this.token) {
-          options.auth = {
-            method: 'token',
-            token: this.token,
-          };
-        }
-        options.headers = { 'X-No-Basic-Header': true };
-      }
-
-      if (this.repositoryName) {
-        options.repositoryName = this.repositoryName;
-      }
-
-      // eslint-disable-next-line no-undef
-      nxClients[id] = this.client = this.client || new Nuxeo(options);
-
-      // share the connect promise between all instances (one per client)
-      this.client._promise = this.client.connect();
-
-      return this.client._promise.then(this._handleConnected.bind(this)).catch((error) => {
-        if (error.response.status === 401) {
-          if (this.method === 'form') {
-            // store url fragment in cookie
-            document.cookie = `nuxeo.start.url.fragment=${window.location.hash.substring(1) || ''}; path=/`;
-            const loginUrl = `${this.url}/login.jsp?requestedUrl=${window.location.href}`;
-            window.location.replace(loginUrl);
-            return;
+      return this.connection
+        .connect()
+        .then(this._handleConnected.bind(this))
+        .finally(() => {
+          if (this.url !== this.connection.url) {
+            this.url = this.connection.url;
           }
-        }
-        throw error;
-      });
+        });
     }
 
     /**
@@ -210,7 +319,7 @@ import './nuxeo-element.js';
      *  @type {Boolean}
      */
     get connected() {
-      return this.client && this.client.connected;
+      return this.connection && this.connection.connected;
     }
 
     /**
@@ -218,11 +327,11 @@ import './nuxeo-element.js';
      * @type {Boolean}
      */
     get active() {
-      return this.client && this.client._activeRequests > 0;
+      return this.connection && this.connection.active;
     }
 
     _handleConnected(nuxeo) {
-      if (this.client.connected) {
+      if (this.connection.connected) {
         this._setUser(nuxeo.user);
         this._setPlatformVersion(nuxeo.nuxeoVersion);
         this.dispatchEvent(new CustomEvent('connected', { bubbles: true, composed: true }));
@@ -234,7 +343,7 @@ import './nuxeo-element.js';
      * Returns a request object that allows REST requests to be executed on a Nuxeo Platform instance.
      */
     request() {
-      return this.connect().then(() => this.client.request());
+      return this.connection && this.connection.request();
     }
 
     /**
@@ -242,7 +351,7 @@ import './nuxeo-element.js';
      * @param {string} op The operation to be executed.
      */
     operation(op) {
-      return this.connect().then(() => this.client.operation(op));
+      return this.connection && this.connection.operation(op);
     }
 
     /**
@@ -250,17 +359,17 @@ import './nuxeo-element.js';
      * @param {string} url The url to be loaded.
      */
     http(url) {
-      return this.connect().then(() => this.client._http({ url }));
+      return this.connection && this.connection.http(url);
     }
 
     /**
      * Returns an object that allows blobs to be uploaded to a Nuxeo Platform instance using the Batch Upload API.
      */
     batchUpload() {
-      return this.connect().then(() => this.client.batchUpload());
+      return this.connection && this.connection.batchUpload();
     }
   }
 
-  customElements.define(Connection.is, Connection);
-  Nuxeo.Connection = Connection;
+  customElements.define(ConnectionElement.is, ConnectionElement);
+  Nuxeo.Connection = ConnectionElement;
 }

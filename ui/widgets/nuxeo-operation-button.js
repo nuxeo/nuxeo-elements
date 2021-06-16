@@ -19,7 +19,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
 import '@polymer/iron-icon/iron-icon.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
+import { OperationMixin } from '@nuxeo/nuxeo-elements/nuxeo-operation.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import { NotifyBehavior } from '@nuxeo/nuxeo-elements/nuxeo-notify-behavior.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
@@ -41,21 +41,10 @@ import '../actions/nuxeo-action-button-styles.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-operation-button/index.html
    */
-  class OperationButton extends mixinBehaviors([NotifyBehavior, I18nBehavior], Nuxeo.Element) {
+  class OperationButton extends mixinBehaviors([NotifyBehavior, I18nBehavior], OperationMixin(Nuxeo.Element)) {
     static get template() {
       return html`
         <style include="nuxeo-action-button-styles"></style>
-
-        <nuxeo-operation
-          id="op"
-          op="[[operation]]"
-          input="[[input]]"
-          params="[[params]]"
-          sync-indexing$="[[syncIndexing]]"
-          async$="[[async]]"
-          poll-interval="[[pollInterval]]"
-        >
-        </nuxeo-operation>
 
         <div class="action" on-click="_execute">
           <paper-icon-button id="bt" icon="[[icon]]" aria-labelledby="label"></paper-icon-button>
@@ -173,8 +162,7 @@ import '../actions/nuxeo-action-button-styles.js';
     }
 
     _execute() {
-      this.$.op
-        .execute()
+      this.execute()
         .then((response) => {
           if (this.notification) {
             this.notify({ message: this.i18n(this.notification) });
