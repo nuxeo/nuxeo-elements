@@ -203,20 +203,39 @@ import './nuxeo-connection.js';
 
       let { input } = this;
 
+      let { op } = this;
+
+      // the goal is to track if we have a bulk action in select all mode (to be used for the abort method)
+      let isBulk = false;
+
       if (this._isPageProvider(input) || this._isPageProviderDisplayBehavior(input)) {
         let pageProvider;
         // support page provider as input to operations
         // relies on parameters naming convention until provider marshaller is available
         if (this._isPageProvider(input)) {
           pageProvider = input;
-        } else {
+          input = undefined;
+        } else if (this._isSelectAllActive(input)) {
+          // in select all mode, we use `Bulk.RunAction` as the operation and `this.op` as a parameter for it
+          op = 'Bulk.RunAction';
           // support page provider display behavior instances (table, grid, list) as input to operations for select all
           pageProvider = input.nxProvider;
           params = {
             action: 'automation',
             providerName: pageProvider.provider,
-            parameters: JSON.stringify(params),
+            parameters: JSON.stringify({
+              operationId: this.op,
+              parameters: params,
+            }),
           };
+          isBulk = true;
+          input = undefined;
+        } else {
+          // only a few selected documents should be considered for the operation
+          pageProvider = input.nxProvider;
+          const uids = input.selectedItems.map((doc) => doc.uid);
+          const uidsString = uids.join(',');
+          input = `docs:${uidsString}`;
         }
 
         params.providerName = pageProvider.provider;
@@ -226,7 +245,6 @@ import './nuxeo-connection.js';
         if (!Array.isArray(params.queryParams)) {
           params.queryParams = [params.queryParams];
         }
-        input = undefined;
       }
 
       const options = {};
@@ -267,9 +285,9 @@ import './nuxeo-connection.js';
         options.signal = this._controller.signal;
       }
 
-      return this.$.nx.operation(this.op).then((operation) => {
+      return this.$.nx.operation(op).then((operation) => {
         this._operation = operation;
-        return this._doExecute(input, params, options);
+        return this._doExecute(input, params, options, isBulk);
       });
     }
 
@@ -278,10 +296,16 @@ import './nuxeo-connection.js';
     }
 
     _isPageProviderDisplayBehavior(input) {
-      return input &&
+      return (
+        input &&
         input.behaviors &&
         Nuxeo.PageProviderDisplayBehavior &&
-        Nuxeo.PageProviderDisplayBehavior.every((p) => input.behaviors.includes(p));
+        Nuxeo.PageProviderDisplayBehavior.every((p) => input.behaviors.includes(p))
+      );
+    }
+
+    _isSelectAllActive(input) {
+      return this._isPageProviderDisplayBehavior(input) && input.selectAllActive;
     }
 
     _autoExecute() {
@@ -290,7 +314,7 @@ import './nuxeo-connection.js';
       }
     }
 
-    _doExecute(input, params, options) {
+    _doExecute(input, params, options, isBulk) {
       if (params.context) {
         this._operation = this._operation.context(params.context);
       }
@@ -305,7 +329,7 @@ import './nuxeo-connection.js';
         .input(input)
         .execute(options);
 
-      if (this.async) {
+      if (this.async && !isBulk) {
         promise = promise.then((res) => {
           if (res.status === 202) {
             this.dispatchEvent(
@@ -315,6 +339,24 @@ import './nuxeo-connection.js';
               }),
             );
             return this._poll(res.headers.get('location'));
+          }
+          return res;
+        });
+      }
+
+      // if this is running with the BAF, then we need to poll using a different endpoint
+      if (isBulk) {
+        promise = promise.then((res) => {
+          if (this._isRunning(res)) {
+            const status = res.value;
+            this.dispatchEvent(
+              new CustomEvent('poll-start', {
+                bubbles: true,
+                composed: true,
+                detail: status,
+              }),
+            );
+            return this.$.nx.request().then((request) => this._poll(`${request._url}/bulk/${status.commandId}`));
           }
           return res;
         });
@@ -354,12 +396,53 @@ import './nuxeo-connection.js';
         });
     }
 
+    /**
+     * Handler to abort bulk operations executed through the BAF
+     */
+    _abort(commandId) {
+      // if the operation is aborted, then on next poll we get the correct state
+      return this.$.nx.request().then((request) => {
+        return request
+          .path(`bulk/${commandId}/abort`)
+          .execute({ method: 'put' })
+          .then((status) => {
+            if (this._isAborted(status)) {
+              this.dispatchEvent(
+                new CustomEvent('poll-aborted', {
+                  bubbles: true,
+                  composed: true,
+                  detail: status,
+                }),
+              );
+            }
+          })
+          .catch((error) => {
+            this.dispatchEvent(
+              new CustomEvent('poll-error', {
+                bubbles: true,
+                composed: true,
+                detail: error,
+              }),
+            );
+            throw error;
+          });
+      });
+    }
+
     _isRunning(status) {
       if (status['entity-type'] === 'bulkStatus') {
-        const { state } = status.value;
+        const { state } = status.value ? status.value : status;
         return state !== 'ABORTED' && state !== 'COMPLETED';
       }
       return status === 'RUNNING';
+    }
+
+    _isAborted(status) {
+      if (status['entity-type'] === 'bulkStatus') {
+        const { state } = status.value ? status.value : status;
+        return state === 'ABORTED';
+      }
+      return this._isRunning(status);
     }
 
     _poll(url) {
@@ -369,12 +452,26 @@ import './nuxeo-connection.js';
             .http(url)
             .then((res) => {
               if (this._isRunning(res)) {
+                this.dispatchEvent(
+                  new CustomEvent('poll-update', {
+                    bubbles: true,
+                    composed: true,
+                    detail: res,
+                  }),
+                );
                 window.setTimeout(() => fn(), this.pollInterval, url);
               } else {
                 resolve(res);
               }
             })
             .catch((error) => {
+              this.dispatchEvent(
+                new CustomEvent('poll-error', {
+                  bubbles: true,
+                  composed: true,
+                  detail: error,
+                }),
+              );
               reject(error);
             });
         };
