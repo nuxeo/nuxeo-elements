@@ -242,7 +242,7 @@ import './nuxeo-connection.js';
         Object.assign(params, pageProvider._params);
         // ELEMENTS-1318 - commas would need to be escaped, as queryParams are mapped to stringlists by the server
         // But passing queryParams as an array will map directly to the server stringlist
-        if (!Array.isArray(params.queryParams)) {
+        if (params.queryParams && !Array.isArray(params.queryParams)) {
           params.queryParams = [params.queryParams];
         }
       }
@@ -379,7 +379,7 @@ import './nuxeo-connection.js';
           return this.response;
         })
         .catch((error) => {
-          if (error.response.status === 401) {
+          if (error.response && error.response.status === 401) {
             this.dispatchEvent(
               new CustomEvent('unauthorized-request', {
                 bubbles: true,
@@ -401,7 +401,8 @@ import './nuxeo-connection.js';
      */
     _abort(commandId) {
       // if the operation is aborted, then on next poll we get the correct state
-      return this.$.nx.request().then((request) => request
+      return this.$.nx.request().then((request) =>
+        request
           .path(`bulk/${commandId}/abort`)
           .execute({ method: 'put' })
           .then((status) => {
@@ -424,7 +425,8 @@ import './nuxeo-connection.js';
               }),
             );
             throw error;
-          }));
+          }),
+      );
     }
 
     _isRunning(status) {
@@ -458,6 +460,9 @@ import './nuxeo-connection.js';
                   }),
                 );
                 window.setTimeout(() => fn(), this.pollInterval, url);
+              } else if (res.error) {
+                // if in bulk mode we had errors, we need to call reject instead
+                reject(res);
               } else {
                 resolve(res);
               }
