@@ -208,7 +208,7 @@ import '../actions/nuxeo-action-button-styles.js';
             const { commandId, errorCount, total } = response;
             if (this._isAborted(response)) {
               this.notify({
-                message: this.i18n('operationButton.bulk.poll.aborted', this.label),
+                message: this.i18n('operationButton.bulk.poll.aborted', this.i18n(this.label)),
                 dismissible: true,
                 commandId,
               });
@@ -216,12 +216,13 @@ import '../actions/nuxeo-action-button-styles.js';
               this.notify({
                 message:
                   errorCount > 0
-                    ? this.i18n('operationButton.bulk.poll.completed.error', this.label, errorCount)
-                    : this.i18n('operationButton.bulk.poll.completed.success', this.label, total),
+                    ? this.i18n('operationButton.bulk.poll.completed.error', this.i18n(this.label), errorCount)
+                    : this.i18n('operationButton.bulk.poll.completed.success', this.i18n(this.label), total),
                 dismissible: true,
                 commandId,
               });
             }
+            return response;
           }
 
           if (this.download) {
@@ -229,7 +230,20 @@ import '../actions/nuxeo-action-button-styles.js';
           }
         })
         .catch((error) => {
-          this.notify({ message: this.errorLabel ? this.i18n(this.errorLabel, error) : error });
+          if (this._hasBulkStatus(error)) {
+            const { commandId, errorCount, total } = error;
+            this.notify({
+              message:
+                errorCount > 0
+                  ? this.i18n('operationButton.bulk.poll.completed.error', this.i18n(this.label), errorCount)
+                  : this.i18n('operationButton.bulk.poll.completed.success', this.i18n(this.label), total),
+              dismissible: true,
+              commandId,
+            });
+          } else {
+            this.notify({ message: this.errorLabel ? this.i18n(this.errorLabel, error) : error });
+          }
+
           if (error.status !== 404) {
             throw error;
           }
@@ -302,30 +316,23 @@ import '../actions/nuxeo-action-button-styles.js';
     }
 
     _onPollStart(e) {
-      if (!e.detail && !e.detail.commandId) {
+      if (!e.detail || !e.detail.commandId) {
         return;
       }
       const { commandId } = e.detail;
       const detail = {
-        message: this.i18n('operationButton.bulk.poll.scheduled', this.label),
-        abort: true,
-        dismissible: true,
-        callback: function() {
-          this.$.op._abort(commandId)
-            .then((res) => {
-              console.log(res);
-            })
-            .catch((res) => {
-              console.log(res);
-            });
+        message: this.i18n('operationButton.bulk.poll.scheduled', this.i18n(this.label)),
+        abort: function() {
+          this.$.op._abort(commandId);
         }.bind(this),
+        dismissible: true,
         commandId,
       };
       this.notify(detail);
     }
 
     _onPollUpdate(e) {
-      if (!e.detail && !e.detail.commandId) {
+      if (!e.detail || !e.detail.commandId) {
         return;
       }
       const status = e.detail;
@@ -333,19 +340,12 @@ import '../actions/nuxeo-action-button-styles.js';
       const detail = {
         message:
           this._isRunning(status) && state !== 'SCHEDULED'
-            ? this.i18n('operationButton.bulk.poll.running', this.label, processed, total)
-            : this.i18n('operationButton.bulk.poll.scheduled', this.label),
-        abort: true,
-        dismissible: true,
-        callback: function() {
-          this.$.op._abort(commandId)
-            .then((res) => {
-              console.log(res);
-            })
-            .catch((res) => {
-              console.log(res);
-            });
+            ? this.i18n('operationButton.bulk.poll.running', this.i18n(this.label), processed, total)
+            : this.i18n('operationButton.bulk.poll.scheduled', this.i18n(this.label)),
+        abort: function() {
+          this.$.op._abort(commandId);
         }.bind(this),
+        dismissible: true,
         commandId,
       };
       this.notify(detail);
@@ -354,23 +354,9 @@ import '../actions/nuxeo-action-button-styles.js';
     _onPollError(e) {
       const error = e.detail;
       this.notify({
-        message: this.i18n('operationButton.bulk.poll.error', this.label),
+        message: this.i18n('operationButton.bulk.poll.error', this.i18n(this.label)),
         dismissible: true,
         error,
-      });
-    }
-
-    _onPollAbort(e) {
-      if (!e.detail && !e.detail.commandId) {
-        return;
-      }
-      const status = e.detail;
-      const { commandId } = status;
-      this.notify({
-        message: this.i18n('operationButton.bulk.poll.aborted', this.label),
-        dismissible: true,
-        status,
-        commandId,
       });
     }
   }
