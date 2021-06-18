@@ -229,7 +229,20 @@ import '../actions/nuxeo-action-button-styles.js';
           }
         })
         .catch((error) => {
-          this.notify({ message: this.errorLabel ? this.i18n(this.errorLabel, error) : error });
+          if (this._hasBulkStatus(error)) {
+            const { commandId, errorCount, total } = error;
+            this.notify({
+              message:
+                errorCount > 0
+                  ? this.i18n('operationButton.bulk.poll.completed.error', this.label, errorCount)
+                  : this.i18n('operationButton.bulk.poll.completed.success', this.label, total),
+              dismissible: true,
+              commandId,
+            });
+          } else {
+            this.notify({ message: this.errorLabel ? this.i18n(this.errorLabel, error) : error });
+          }
+          
           if (error.status !== 404) {
             throw error;
           }
