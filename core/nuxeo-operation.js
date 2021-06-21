@@ -405,8 +405,7 @@ import './nuxeo-connection.js';
         this._controller.abort();
       }
       // if the operation is aborted, then on next poll we get the correct state
-      return this.$.nx.request().then((request) => {
-        return request
+      return this.$.nx.request().then((request) => request
           .path(`bulk/${commandId}/abort`)
           .execute({ method: 'put' })
           .then((status) => {
@@ -429,8 +428,7 @@ import './nuxeo-connection.js';
               }),
             );
             throw error;
-          });
-      });
+          }));
     }
 
     _isRunning(status) {
@@ -464,10 +462,8 @@ import './nuxeo-connection.js';
                   }),
                 );
                 window.setTimeout(() => fn(), this.pollInterval, url);
-              }/* else {
-                resolve(res);
-              }*/
-              else if (res.error) { // if in bulk mode we had errors, we need to call reject instead
+              } else if (res.error) {
+                // if in bulk mode we had errors, we need to call reject instead
                 reject(res);
               } else {
                 resolve(res);
