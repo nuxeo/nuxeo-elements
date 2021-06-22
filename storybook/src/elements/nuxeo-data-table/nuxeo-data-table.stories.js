@@ -32,7 +32,8 @@ stories
         selectionEnabled,
         selectAllEnabled,
         multiSelection,
-      }));
+      }),
+    );
   })
   .add('Complex', () => {
     const orderable = boolean('Orderable', true);
