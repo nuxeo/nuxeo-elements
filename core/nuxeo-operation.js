@@ -405,7 +405,8 @@ import './nuxeo-connection.js';
         this._controller.abort();
       }
       // if the operation is aborted, then on next poll we get the correct state
-      return this.$.nx.request().then((request) => request
+      return this.$.nx.request().then((request) =>
+        request
           .path(`bulk/${commandId}/abort`)
           .execute({ method: 'put' })
           .then((status) => {
@@ -428,7 +429,8 @@ import './nuxeo-connection.js';
               }),
             );
             throw error;
-          }));
+          }),
+      );
     }
 
     _isRunning(status) {
