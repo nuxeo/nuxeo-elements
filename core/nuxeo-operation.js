@@ -244,6 +244,8 @@ import './nuxeo-connection.js';
         // But passing queryParams as an array will map directly to the server stringlist
         if (params.queryParams && !Array.isArray(params.queryParams)) {
           params.queryParams = [params.queryParams];
+        } else if (!params.queryParams) {
+          params.queryParams = [];
         }
       }
 
