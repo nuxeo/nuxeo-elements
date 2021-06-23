@@ -147,7 +147,9 @@ suite('nuxeo-document-picker', () => {
       .click();
     await flush();
     const table = picker.$.resultsView.results.results.querySelector('nuxeo-data-table');
-    const checkboxes = Array.from(table.querySelectorAll('nuxeo-data-table-checkbox:not([header])'));
+    const checkboxes = Array.from(
+      table.querySelectorAll('nuxeo-data-table-checkbox:not([style*="visibility: hidden;"])'),
+    );
     // dialog is opened and the select button is now visible, but disabled
     expect(isElementVisible(dialog)).to.be.true;
     expect(isElementVisible(selectButton)).to.be.true;
