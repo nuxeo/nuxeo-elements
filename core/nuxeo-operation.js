@@ -208,7 +208,7 @@ import './nuxeo-connection.js';
       // the goal is to track if we have a bulk action in select all mode (to be used for the abort method)
       let isBulk = false;
 
-      if (this._isPageProvider(input) || this._isPageProviderDisplayBehavior(input)) {
+      if (this._isPageProvider(input) || this._isView(input)) {
         let pageProvider;
         // support page provider as input to operations
         // relies on parameters naming convention until provider marshaller is available
@@ -297,17 +297,12 @@ import './nuxeo-connection.js';
       return Nuxeo.PageProvider && input instanceof Nuxeo.PageProvider;
     }
 
-    _isPageProviderDisplayBehavior(input) {
-      return (
-        input &&
-        input.behaviors &&
-        Nuxeo.PageProviderDisplayBehavior &&
-        Nuxeo.PageProviderDisplayBehavior.every((p) => input.behaviors.includes(p))
-      );
+    _isView(input) {
+      return input && input.nxProvider && 'selectedItems' in input && 'selectAllEnabled' in input;
     }
 
     _isSelectAllActive(input) {
-      return this._isPageProviderDisplayBehavior(input) && input.selectAllActive;
+      return this._isView(input) && input.selectAllActive;
     }
 
     _autoExecute() {
