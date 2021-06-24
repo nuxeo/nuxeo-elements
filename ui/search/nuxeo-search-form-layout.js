@@ -121,7 +121,8 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
 
     _formHref(provider, searchName, hrefBase) {
       const name = (searchName || provider).toLowerCase();
-      const base = hrefBase || pathFromUrl(this.__dataHost.importPath || this.importPath);
+      const appImportPath = window.Nuxeo && window.Nuxeo.UI && window.Nuxeo.UI.app && window.Nuxeo.UI.app.importPath;
+      const base = hrefBase || pathFromUrl(appImportPath ? `${appImportPath}search/` : this.importPath);
       return `${base}${name}/${['nuxeo', name, 'search-form'].join('-')}.html`;
     }
 
