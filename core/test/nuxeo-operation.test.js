@@ -176,4 +176,166 @@ suite('nuxeo-operation', () => {
       });
     });
   });
+
+  suite('when a view is given as input', () => {
+    let operation;
+    let provider;
+    let view;
+    customElements.define(
+      'custom-view-element',
+      class extends Nuxeo.Element {
+        static get is() {
+          return 'custom-view-element';
+        }
+
+        static get properties() {
+          return {
+            nxProvider: {
+              type: Object,
+            },
+            selectedItems: {
+              type: Array,
+              value: [],
+            },
+            selectAllEnabled: {
+              type: Boolean,
+              value: false,
+            },
+            selectAllActive: {
+              type: Boolean,
+              value: false,
+            },
+          };
+        }
+      },
+    );
+
+    function getBulkResponseFor(state) {
+      return `{"entity-type":"bulkStatus", "value": { "commandId": "someCommand", "state": "${state}" }}`;
+    }
+
+    setup(async () => {
+      server.respondWith('GET', '/json/cmis', [200, responseHeaders.json, '{}']);
+      server.respondWith('POST', '/api/v1/automation/login', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"login","username":"Administrator"}',
+      ]);
+      server.respondWith('GET', '/api/v1/user/Administrator', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"user","username":"Administrator"}',
+      ]);
+      server.respondWith('POST', '/api/v1/automation/something', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"documents", "entries": []}',
+      ]);
+      server.respondWith('POST', '/api/v1/automation/Bulk.RunAction', [
+        200,
+        responseHeaders.json,
+        getBulkResponseFor('RUNNING'),
+      ]);
+      server.respondWith('GET', '/api/v1/bulk/someCommand', [
+        200,
+        responseHeaders.json,
+        getBulkResponseFor('COMPLETED'),
+      ]);
+      server.respondWith('PUT', '/api/v1/bulk/someCommand/abort', [
+        200,
+        responseHeaders.json,
+        getBulkResponseFor('ABORTED'),
+      ]);
+
+      provider = await fixture(html`
+        <nuxeo-page-provider
+          id="nx-pp"
+          provider="test_provider"
+          page="2"
+          page-size="40"
+          sort='{"field": "asc"}'
+          params='{"boolean": false}'
+        ></nuxeo-page-provider>
+      `);
+
+      view = await fixture(html`
+        <custom-view-element select-all-enabled></custom-view-element>
+      `);
+      view.nxProvider = provider;
+
+      operation = await fixture(
+        html`
+          <nuxeo-operation op="something" .input=${view}></nuxeo-operation>
+        `,
+      );
+    });
+
+    teardown(() => {
+      server.restore();
+      view.selectAllActive = false;
+    });
+
+    test('without select all active it should send the view/provider as parameters', async () => {
+      await operation.execute();
+      const last = server.requests.pop();
+      const body = JSON.parse(last.requestBody);
+      expect(body).to.deep.equal({
+        params: {
+          providerName: 'test_provider',
+          currentPageIndex: 1,
+          pageSize: 40,
+          sortBy: 'field',
+          sortOrder: 'asc',
+          namedParameters: {
+            boolean: 'false',
+          },
+          queryParams: [],
+        },
+        context: {},
+        input: 'docs:',
+      });
+    });
+
+    test('with select all active response should be the bulk status update', async () => {
+      view.selectAllActive = true;
+
+      await operation.execute();
+      const last = server.requests.pop();
+      const response = await last.response.text();
+
+      expect(JSON.parse(response)).to.deep.equal({
+        'entity-type': 'bulkStatus',
+        value: {
+          commandId: 'someCommand',
+          state: 'COMPLETED',
+        },
+      });
+    });
+
+    test('we can abort bulk actions', async () => {
+      view.selectAllActive = true;
+
+      const pollAborted = new Promise((resolve) => {
+        operation.addEventListener('poll-aborted', (e) => resolve(e));
+      });
+      // keep the bulk request running until we abort it
+      server.respondWith('GET', '/api/v1/bulk/someCommand', [200, responseHeaders.json, getBulkResponseFor('RUNNING')]);
+      const response = operation.execute();
+
+      operation._abort('someCommand');
+      server.respondWith('GET', '/api/v1/bulk/someCommand', [200, responseHeaders.json, getBulkResponseFor('ABORTED')]);
+
+      const result = await response;
+      const abortResult = {
+        'entity-type': 'bulkStatus',
+        value: {
+          commandId: 'someCommand',
+          state: 'ABORTED',
+        },
+      };
+      expect(result).to.deep.equal(abortResult);
+      const evt = await pollAborted;
+      expect(evt.detail).to.deep.equal(abortResult);
+    });
+  });
 });
