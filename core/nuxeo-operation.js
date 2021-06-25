@@ -353,7 +353,7 @@ import './nuxeo-connection.js';
                 detail: status,
               }),
             );
-            return this.$.nx.request().then((request) => this._poll(`${request._url}/bulk/${status.commandId}`));
+            return this.$.nx.request().then((request) => this._poll(`${request._url}bulk/${status.commandId}`));
           }
           return res;
         });
@@ -412,6 +412,7 @@ import './nuxeo-connection.js';
                 }),
               );
             }
+            return status;
           })
           .catch((error) => {
             this.dispatchEvent(
