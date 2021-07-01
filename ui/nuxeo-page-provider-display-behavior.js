@@ -518,7 +518,10 @@ export const PageProviderDisplayBehavior = [
       this.size = Array.isArray(this.items) ? this.items.length : 0;
       const selectedItemsSize = Array.isArray(this.selectedItems) ? this.selectedItems.length : 0;
       this._isSelectAllIndeterminate = !this._isSelectAllActive || selectedItemsSize < this.size;
-      this._isSelectAllActive = this._isSelectAllActive || (selectedItemsSize === this.size && this.size !== 0);
+      /**
+       * Selecting all documents manually is different than using select all mode
+       */
+      // this._isSelectAllActive = this._isSelectAllActive || (selectedItemsSize === this.size && this.size !== 0);
       this._isEmpty = this.size === 0;
     },
 
