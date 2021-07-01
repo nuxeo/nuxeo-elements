@@ -843,7 +843,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _onCheckBoxTap(e) {
-      if (this.selectionEnabled && !this.isSelectAllActive) {
+      if (this.selectionEnabled && !this.selectAllActive) {
         this.$.list.toggleSelectionForIndex(e.model.index);
         const target = e.target || e.srcElement;
         target.dispatchEvent(
