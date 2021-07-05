@@ -246,6 +246,11 @@ suite('nuxeo-operation', () => {
         responseHeaders.json,
         getBulkResponseFor('ABORTED'),
       ]);
+      server.respondWith('POST', '/api/v1/automation/Elasticsearch.WaitForIndexing', [
+        200,
+        responseHeaders.plain,
+        'true',
+      ]);
 
       provider = await fixture(html`
         <nuxeo-page-provider
@@ -299,11 +304,8 @@ suite('nuxeo-operation', () => {
     test('with select all active response should be the bulk status update', async () => {
       view.selectAllActive = true;
 
-      await operation.execute();
-      const last = server.requests.pop();
-      const response = await last.response.text();
-
-      expect(JSON.parse(response)).to.deep.equal({
+      const response = await operation.execute();
+      expect(response).to.deep.equal({
         'entity-type': 'bulkStatus',
         value: {
           commandId: 'someCommand',
