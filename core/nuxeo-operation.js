@@ -353,7 +353,27 @@ import './nuxeo-connection.js';
                 detail: status,
               }),
             );
-            return this.$.nx.request().then((request) => this._poll(`${request._url}bulk/${status.commandId}`));
+            return (
+              this.$.nx
+                .request()
+                .then((request) => this._poll(`${request._url}bulk/${status.commandId}`))
+                /*
+                 * Bulk command has completed, but other triggered actions, like indexing could still be running.
+                 * As a temporary solution and until NXP-30502 is done, the goal is to use a timeout and wait for ES
+                 * to finish indexing.
+                 */
+                .then((pollRes) =>
+                  this.$.nx
+                    .operation('Elasticsearch.WaitForIndexing')
+                    .then((op) =>
+                      op
+                        .params({ timeoutSecond: 5, refresh: true })
+                        .execute()
+                        .then(() => pollRes),
+                    )
+                    .catch(() => pollRes),
+                )
+            );
           }
           return res;
         });
