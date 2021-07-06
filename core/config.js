@@ -29,7 +29,7 @@ Object.assign(config, {
     let val = path.split('.').reduce((a, b) => a && a[b], this);
     if (val !== undefined && typeof val !== typeof fallback) {
       if (typeof fallback === 'boolean') {
-        val = (val === 'true');
+        val = val === 'true';
       } else {
         let type;
         switch (typeof fallback) {
