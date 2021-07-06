@@ -28,25 +28,26 @@ Object.assign(config, {
   get(path, fallback) {
     let val = path.split('.').reduce((a, b) => a && a[b], this);
     if (val !== undefined && typeof val !== typeof fallback) {
-      let type;
-      switch (typeof fallback) {
-        case 'boolean':
-          type = Boolean;
-          break;
-        case 'number':
-          type = Number;
-          break;
-        case 'string':
-          type = String;
-          break;
-        case 'bigint':
-          // eslint-disable-next-line no-undef
-          type = BigInt;
-          break;
-        default:
-          break;
+      if (typeof fallback === 'boolean') {
+        val = (val === 'true');
+      } else {
+        let type;
+        switch (typeof fallback) {
+          case 'number':
+            type = Number;
+            break;
+          case 'string':
+            type = String;
+            break;
+          case 'bigint':
+            // eslint-disable-next-line no-undef
+            type = BigInt;
+            break;
+          default:
+            break;
+        }
+        val = (type && type(val)) || val;
       }
-      val = (type && type(val)) || val;
     }
     return val || fallback;
   },
