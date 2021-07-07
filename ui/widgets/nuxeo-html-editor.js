@@ -76,6 +76,12 @@ import './quill/quill-snow.js';
             <button class="ql-strike"></button>
           </span>
           <span class="ql-formats">
+            <button class="ql-blockquote"></button>
+            <button class="ql-code-block"></button>
+            <button class="ql-indent" value="-1"></button>
+            <button class="ql-indent" value="+1"></button>
+          </span>
+          <span class="ql-formats">
             <button class="ql-align" value=""></button>
             <button class="ql-align" value="center"></button>
             <button class="ql-align" value="right"></button>
@@ -87,9 +93,6 @@ import './quill/quill-snow.js';
           <span class="ql-formats">
             <button class="ql-script" value="sub"></button>
             <button class="ql-script" value="super"></button>
-          </span>
-          <span class="ql-formats">
-            <button class="ql-blockquote"></button>
           </span>
           <span class="ql-formats">
             <button class="ql-list" value="ordered"></button>
@@ -105,6 +108,7 @@ import './quill/quill-snow.js';
             <button on-tap="_onSearchImage">
               <iron-icon icon="nuxeo:search-picture"></iron-icon>
             </button>
+            <button class="ql-video"></button>
           </span>
           <span class="ql-formats">
             <button class="ql-clean"></button>
