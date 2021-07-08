@@ -57,7 +57,6 @@ import '../actions/nuxeo-action-button-styles.js';
           on-poll-start="_onPollStart"
           on-poll-update="_onPollUpdate"
           on-poll-error="_onPollError"
-          on-poll-aborted="_onPollAbort"
         >
         </nuxeo-operation>
 
@@ -210,6 +209,7 @@ import '../actions/nuxeo-action-button-styles.js';
               this.notify({
                 message: this.i18n('operationButton.bulk.poll.aborted', this.i18n(this.label)),
                 dismissible: true,
+                sticky: true,
                 commandId,
               });
             } else {
@@ -219,6 +219,7 @@ import '../actions/nuxeo-action-button-styles.js';
                     ? this.i18n('operationButton.bulk.poll.completed.error', this.i18n(this.label), errorCount)
                     : this.i18n('operationButton.bulk.poll.completed.success', this.i18n(this.label), total),
                 dismissible: true,
+                sticky: true,
                 commandId,
               });
             }
@@ -238,6 +239,7 @@ import '../actions/nuxeo-action-button-styles.js';
                   ? this.i18n('operationButton.bulk.poll.completed.error', this.i18n(this.label), errorCount)
                   : this.i18n('operationButton.bulk.poll.completed.success', this.i18n(this.label), total),
               dismissible: true,
+              sticky: true,
               commandId,
             });
           } else {
@@ -326,6 +328,7 @@ import '../actions/nuxeo-action-button-styles.js';
           this.$.op._abort(commandId);
         }.bind(this),
         dismissible: true,
+        sticky: true,
         commandId,
       };
       this.notify(detail);
@@ -346,6 +349,7 @@ import '../actions/nuxeo-action-button-styles.js';
           this.$.op._abort(commandId);
         }.bind(this),
         dismissible: true,
+        sticky: true,
         commandId,
       };
       this.notify(detail);
@@ -356,6 +360,7 @@ import '../actions/nuxeo-action-button-styles.js';
       this.notify({
         message: this.i18n('operationButton.bulk.poll.error', this.i18n(this.label)),
         dismissible: true,
+        sticky: true,
         error,
       });
     }
