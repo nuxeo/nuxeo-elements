@@ -21,13 +21,15 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/quill/dist/quill.js';
 import '../nuxeo-document-picker/nuxeo-document-picker.js';
 import './quill/quill-snow.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class';
+import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
 {
   /**
    * `nuxeo-html-editor`
    * @memberof Nuxeo
    */
-  class HTMLEditor extends Nuxeo.Element {
+  class HTMLEditor extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style include="quill-snow">
@@ -59,7 +61,7 @@ import './quill/quill-snow.js';
 
         <div id="toolbar">
           <span class="ql-formats">
-            <select class="ql-header">
+            <select class="ql-header" title$="[[i18n('htmlEditor.header')]]">
               <option value="1"></option>
               <option value="2"></option>
               <option value="3"></option>
@@ -70,48 +72,53 @@ import './quill/quill-snow.js';
             </select>
           </span>
           <span class="ql-formats">
-            <button class="ql-bold"></button>
-            <button class="ql-italic"></button>
-            <button class="ql-underline"></button>
-            <button class="ql-strike"></button>
+            <button class="ql-bold" title$="[[i18n('htmlEditor.bold')]]"></button>
+            <button class="ql-italic" title$="[[i18n('htmlEditor.italic')]]"></button>
+            <button class="ql-underline" title$="[[i18n('htmlEditor.underline')]]"></button>
+            <button class="ql-strike" title$="[[i18n('htmlEditor.strike')]]"></button>
           </span>
           <span class="ql-formats">
-            <button class="ql-blockquote"></button>
-            <button class="ql-code-block"></button>
-            <button class="ql-indent" value="-1"></button>
-            <button class="ql-indent" value="+1"></button>
+            <button class="ql-blockquote" title$="[[i18n('htmlEditor.blockquote')]]"></button>
+            <button class="ql-code-block" title$="[[i18n('htmlEditor.codeBlock')]]"></button>
+            <button class="ql-indent" value="-1" title$="[[i18n('htmlEditor.indent.decrease')]]"></button>
+            <button class="ql-indent" value="+1" title$="[[i18n('htmlEditor.indent.increase')]]"></button>
           </span>
           <span class="ql-formats">
-            <button class="ql-align" value=""></button>
-            <button class="ql-align" value="center"></button>
-            <button class="ql-align" value="right"></button>
+            <button class="ql-align" value="" title$="[[i18n('htmlEditor.align.left')]]"></button>
+            <button class="ql-align" value="center" title$="[[i18n('htmlEditor.align.center')]]"></button>
+            <button class="ql-align" value="right" title$="[[i18n('htmlEditor.align.right')]]"></button>
           </span>
           <span class="ql-formats">
-            <select class="ql-color"></select>
-            <select class="ql-background"></select>
+            <select class="ql-color" title$="[[i18n('htmlEditor.color')]]"></select>
+            <select class="ql-background" title$="[[i18n('htmlEditor.backgroundColor')]]"></select>
           </span>
           <span class="ql-formats">
-            <button class="ql-script" value="sub"></button>
-            <button class="ql-script" value="super"></button>
+            <button class="ql-script" value="sub" title$="[[i18n('htmlEditor.subscript')]]"></button>
+            <button class="ql-script" value="super" title$="[[i18n('htmlEditor.superscript')]]"></button>
           </span>
           <span class="ql-formats">
-            <button class="ql-list" value="ordered"></button>
-            <button class="ql-list" value="bullet"></button>
+            <button class="ql-list" value="ordered" title$="[[i18n('htmlEditor.list.numbered')]]"></button>
+            <button class="ql-list" value="bullet" title$="[[i18n('htmlEditor.list.bulleted')]]"></button>
           </span>
           <span class="ql-formats">
-            <button class="ql-link"></button>
+            <button class="ql-link" title$="[[i18n('htmlEditor.insert.link')]]"></button>
             <!-- hide the default Quill image upload button, then trigger it from the button with the custom icon -->
-            <button id="qlImage" class="ql-image" style="display: none;"></button>
-            <button on-tap="_onImageUpload">
+            <button
+              id="qlImage"
+              class="ql-image"
+              style="display: none;"
+              title$="[[i18n('htmlEditor.insert.image')]]"
+            ></button>
+            <button on-tap="_onImageUpload" title$="[[i18n('htmlEditor.insert.image')]]">
               <iron-icon icon="nuxeo:picture"></iron-icon>
             </button>
-            <button on-tap="_onSearchImage">
+            <button on-tap="_onSearchImage" title$="[[i18n('htmlEditor.insert.imagesFromDocuments')]]">
               <iron-icon icon="nuxeo:search-picture"></iron-icon>
             </button>
-            <button class="ql-video"></button>
+            <button class="ql-video" title$="[[i18n('htmlEditor.insert.video')]]"></button>
           </span>
           <span class="ql-formats">
-            <button class="ql-clean"></button>
+            <button class="ql-clean" title$="[[i18n('htmlEditor.clearFormatting')]]"></button>
           </span>
         </div>
 
