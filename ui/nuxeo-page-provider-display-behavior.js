@@ -50,7 +50,6 @@ export const PageProviderDisplayBehavior = [
 
       _computedEmptyLabel: {
         type: String,
-        computed: '_computeLabel(i18n, emptyLabel, filters, loading)',
       },
 
       _isEmpty: {
@@ -220,6 +219,7 @@ export const PageProviderDisplayBehavior = [
       '_nxProviderChanged(nxProvider)',
       '_selectionEnabledChanged(selectionEnabled, selectOnTap)',
       '_itemsChanged(items.*)',
+      '_computeLabel(i18n, emptyLabel, filters, loading, size, _isEmpty)',
     ],
 
     listeners: {
@@ -505,13 +505,17 @@ export const PageProviderDisplayBehavior = [
     },
 
     _computeLabel() {
-      if (this.loading) {
-        return this.i18n('label.loading');
-      }
-      if (this.filters && this.filters.length > 0) {
-        return this.emptyLabelWhenFiltered ? this.emptyLabelWhenFiltered : this.i18n('label.noResultsWhenFiltered');
-      }
-      return this.emptyLabel ? this.emptyLabel : this.i18n('label.noResults');
+      this._computeLabelDebouncer = Debouncer.debounce(this._computeLabelDebouncer, timeOut.after(500), () => {
+        if (this.loading) {
+          this._computedEmptyLabel = this.i18n('label.loading');
+        } else if (this.filters && this.filters.length > 0) {
+          this._computedEmptyLabel = this.emptyLabelWhenFiltered
+            ? this.emptyLabelWhenFiltered
+            : this.i18n('label.noResultsWhenFiltered');
+        } else {
+          this._computedEmptyLabel = this.emptyLabel ? this.emptyLabel : this.i18n('label.noResults');
+        }
+      });
     },
 
     _quickFilterChanged() {
