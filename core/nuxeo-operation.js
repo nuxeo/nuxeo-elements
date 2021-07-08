@@ -221,7 +221,7 @@ import './nuxeo-connection.js';
           // support page provider display behavior instances (table, grid, list) as input to operations for select all
           pageProvider = input.nxProvider;
           params = {
-            action: 'automation',
+            action: 'automationUi',
             providerName: pageProvider.provider,
             parameters: JSON.stringify({
               operationId: this.op,
