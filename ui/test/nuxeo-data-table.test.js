@@ -509,7 +509,6 @@ suite('nuxeo-data-table', () => {
       await flush();
 
       table.scrollToIndex(80);
-      await flush();
       assert.equal(table.selectAllActive, true);
       assert.equal(table._isSelected(table.items[80]), true);
       assert.equal(table.selectedItems.length, 120);
