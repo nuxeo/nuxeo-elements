@@ -49,7 +49,16 @@ export const PageProviderDisplayBehavior = [
 
       _computedEmptyLabel: {
         type: String,
-        computed: '_computeLabel(i18n, emptyLabel, filters, loading)',
+        computed: '_computeLabel(i18n, emptyLabel, filters, loading, size, _resultsCount)',
+      },
+
+      /**
+       * Total number of results in the page provider. Used to control the emptyLabel, because there might be a
+       * discrepancy between `size` and `resultsCount` right after the page provider finishes loading.
+       */
+      _resultsCount: {
+        type: Number,
+        value: -1,
       },
 
       _isEmpty: {
@@ -240,6 +249,8 @@ export const PageProviderDisplayBehavior = [
     _updateResults() {
       if (this._hasPageProvider()) {
         this.size = this.items.length;
+        // because the items might not have been initialized, we use the resultsCount to control the display
+        this._resultsCount = this.nxProvider.resultsCount;
       }
     },
 
@@ -447,7 +458,7 @@ export const PageProviderDisplayBehavior = [
     },
 
     _computeLabel() {
-      if (this.loading) {
+      if (this.loading || this._resultsCount !== this.size) {
         return this.i18n('label.loading');
       }
       if (this.filters && this.filters.length > 0) {
@@ -477,6 +488,7 @@ export const PageProviderDisplayBehavior = [
     },
 
     _reset(size) {
+      this._resultsCount = -1;
       if (this.maxItems && size && size > this.maxItems) {
         size = this.maxItems;
       }
