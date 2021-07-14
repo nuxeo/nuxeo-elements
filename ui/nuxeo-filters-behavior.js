@@ -273,4 +273,23 @@ export const FiltersBehavior = {
     const processes = document.contextParameters.runnableWorkflows;
     return processes && processes.length > 0;
   },
+
+  /**
+   * Checks if the given document or its main content, can be deleted by the given user
+   */
+  canDelete(document, user) {
+    const underRetentionOrLegalHold = this.isUnderRetentionOrLegalHold(document);
+    const hasRemovePermission = this.hasPermission(document, 'Remove');
+    if (!underRetentionOrLegalHold && hasRemovePermission) {
+      return true;
+    }
+    return (
+      (this.hasAdministrationPermissions(user) || this.hasPermission(document, 'RemoveRecords')) &&
+      Nuxeo &&
+      Nuxeo.UI &&
+      Nuxeo.UI.config &&
+      Nuxeo.UI.config.retention &&
+      String(Nuxeo.UI.config.retention.mode) === 'governance'
+    );
+  },
 };
