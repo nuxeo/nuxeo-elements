@@ -209,7 +209,7 @@ import '../actions/nuxeo-action-button-styles.js';
               this.notify({
                 message: this.i18n('operationButton.bulk.poll.aborted', this.i18n(this.label)),
                 dismissible: true,
-                sticky: true,
+                duration: 0,
                 commandId,
               });
             } else {
@@ -219,7 +219,7 @@ import '../actions/nuxeo-action-button-styles.js';
                     ? this.i18n('operationButton.bulk.poll.completed.error', this.i18n(this.label), errorCount)
                     : this.i18n('operationButton.bulk.poll.completed.success', this.i18n(this.label), total),
                 dismissible: true,
-                sticky: true,
+                duration: 0,
                 commandId,
               });
             }
@@ -239,7 +239,7 @@ import '../actions/nuxeo-action-button-styles.js';
                   ? this.i18n('operationButton.bulk.poll.completed.error', this.i18n(this.label), errorCount)
                   : this.i18n('operationButton.bulk.poll.completed.success', this.i18n(this.label), total),
               dismissible: true,
-              sticky: true,
+              duration: 0,
               commandId,
             });
           } else {
@@ -298,23 +298,23 @@ import '../actions/nuxeo-action-button-styles.js';
     }
 
     _isRunning(status) {
-      if (status['entity-type'] === 'bulkStatus') {
-        const { state } = status.value ? status.value : status;
+      if (status && status['entity-type'] === 'bulkStatus') {
+        const { state } = status.value || status;
         return state !== 'ABORTED' && state !== 'COMPLETED';
       }
       return status === 'RUNNING';
     }
 
     _isAborted(status) {
-      if (status['entity-type'] === 'bulkStatus') {
-        const { state } = status.value ? status.value : status;
+      if (status && status['entity-type'] === 'bulkStatus') {
+        const { state } = status.value || status;
         return state === 'ABORTED';
       }
       return this._isRunning(status);
     }
 
     _hasBulkStatus(status) {
-      return status['entity-type'] === 'bulkStatus';
+      return status && status['entity-type'] === 'bulkStatus';
     }
 
     _onPollStart(e) {
@@ -328,7 +328,7 @@ import '../actions/nuxeo-action-button-styles.js';
           this.$.op._abort(commandId);
         }.bind(this),
         dismissible: true,
-        sticky: true,
+        duration: 0,
         commandId,
       };
       this.notify(detail);
@@ -349,7 +349,7 @@ import '../actions/nuxeo-action-button-styles.js';
           this.$.op._abort(commandId);
         }.bind(this),
         dismissible: true,
-        sticky: true,
+        duration: 0,
         commandId,
       };
       this.notify(detail);
@@ -360,7 +360,7 @@ import '../actions/nuxeo-action-button-styles.js';
       this.notify({
         message: this.i18n('operationButton.bulk.poll.error', this.i18n(this.label)),
         dismissible: true,
-        sticky: true,
+        duration: 0,
         error,
       });
     }
