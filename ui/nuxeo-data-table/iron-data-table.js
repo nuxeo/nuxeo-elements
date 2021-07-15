@@ -175,6 +175,7 @@ import '../nuxeo-button-styles.js';
 
           #header {
             box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+            padding-inline-start: 2px;
             transition: box-shadow 200ms;
             -webkit-transition: box-shadow 200ms;
             @apply --iron-data-table-header;
@@ -224,7 +225,11 @@ import '../nuxeo-button-styles.js';
 
           <div id="header">
             <nuxeo-data-table-row header>
-              <nuxeo-data-table-checkbox header hidden$="[[!selectionEnabled]]"></nuxeo-data-table-checkbox>
+              <nuxeo-data-table-checkbox
+                style$="[[_computeSelectAllVisibility(selectionEnabled, selectAllEnabled)]]"
+                checked="[[selectAllActive]]"
+                on-click="_toggleSelectAll"
+              ></nuxeo-data-table-checkbox>
               <dom-repeat items="[[columns]]" as="column">
                 <template>
                   <nuxeo-data-table-cell
@@ -291,6 +296,7 @@ import '../nuxeo-button-styles.js';
                     checked$="[[selected]]"
                     on-click="_onCheckBoxTap"
                     on-keydown="_onCheckBoxKeydown"
+                    disabled$="[[selectAllActive]]"
                   ></nuxeo-data-table-checkbox>
                   <dom-repeat items="[[columns]]" as="column" index-as="colIndex">
                     <template>
@@ -513,6 +519,7 @@ import '../nuxeo-button-styles.js';
     constructor() {
       super();
       this.handlesSorting = true;
+      this.handlesSelectAll = true;
       this._observer = dom(this).observeNodes((info) => {
         const hasColumns = function(node) {
           return node.nodeType === Node.ELEMENT_NODE && node instanceof Nuxeo.DataTableColumn;
@@ -578,6 +585,13 @@ import '../nuxeo-button-styles.js';
       }
       if (this.editable || this.orderable) {
         return 'flex: 0 0 92px;';
+      }
+      return 'display: none;';
+    }
+
+    _computeSelectAllVisibility() {
+      if (this.selectionEnabled) {
+        return !this.selectAllEnabled ? 'visibility: hidden;' : '';
       }
       return 'display: none;';
     }
@@ -829,7 +843,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _onCheckBoxTap(e) {
-      if (this.selectionEnabled) {
+      if (this.selectionEnabled && !this.selectAllActive) {
         this.$.list.toggleSelectionForIndex(e.model.index);
         const target = e.target || e.srcElement;
         target.dispatchEvent(

@@ -13,6 +13,7 @@ export const tableTemplate = (params) =>
       ?orderable="${params.orderable}"
       ?settings-enabled="${params.settingsEnabled}"
       ?selection-enabled="${params.selectionEnabled}"
+      ?select-all-enabled="${params.selectAllEnabled}"
       ?multi-selection="${params.multiSelection}"
       ?details-enabled="${params.detailsEnabled}"
       label="${!params.label ? '' : params.label}"

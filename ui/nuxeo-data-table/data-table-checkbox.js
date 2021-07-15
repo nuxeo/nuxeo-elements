@@ -29,13 +29,21 @@ import '../widgets/nuxeo-checkmark.js';
           :host(:focus) {
             outline: none;
           }
-
+          /**
+            @deprecated since 3.0.5 we no longer use the header property to control the checkbox visibility 
+           */
           :host([header]) {
             visibility: hidden !important;
           }
         </style>
 
-        <nuxeo-checkmark checked="{{checked}}" aria-label$="[[i18n('command.select')]]" tabindex="0"></nuxeo-checkmark>
+        <nuxeo-checkmark
+          checked="{{checked}}"
+          disabled="{{disabled}}"
+          aria-label$="[[i18n('command.select')]]"
+          tabindex="0"
+        >
+        </nuxeo-checkmark>
       `;
     }
 
@@ -46,6 +54,11 @@ import '../widgets/nuxeo-checkmark.js';
     static get properties() {
       return {
         checked: {
+          type: Boolean,
+          reflectToAttribute: true,
+          value: false,
+        },
+        disabled: {
           type: Boolean,
           reflectToAttribute: true,
           value: false,

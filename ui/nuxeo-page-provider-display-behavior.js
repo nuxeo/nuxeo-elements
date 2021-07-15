@@ -19,6 +19,7 @@ import '@polymer/polymer/polymer-legacy.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
+import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 
@@ -57,7 +58,7 @@ export const PageProviderDisplayBehavior = [
         value: true,
       },
 
-      _isSelectAllChecked: {
+      _isSelectAllActive: {
         type: Boolean,
         value: false,
         notify: true,
@@ -122,6 +123,23 @@ export const PageProviderDisplayBehavior = [
         value: false,
       },
 
+      /**
+       * `true` if select all mode is currently enabled. For select all to work, selection must be enabled too.
+       */
+      selectAllEnabled: {
+        type: Boolean,
+        value: false,
+      },
+
+      /**
+       * `true` if select all is active, i.e. all the items are selected.
+       */
+      selectAllActive: {
+        type: Boolean,
+        notify: true,
+        computed: '_computeSelectAllStatus(selectAllEnabled, _isSelectAllActive)',
+      },
+
       selectedItems: {
         type: Object,
         notify: true,
@@ -178,11 +196,19 @@ export const PageProviderDisplayBehavior = [
 
       handlesSorting: {
         type: Boolean,
+        reflectToAttribute: true,
         value: false,
       },
 
       handlesFiltering: {
         type: Boolean,
+        reflectToAttribute: true,
+        value: false,
+      },
+
+      handlesSelectAll: {
+        type: Boolean,
+        reflectToAttribute: true,
         value: false,
       },
 
@@ -273,6 +299,10 @@ export const PageProviderDisplayBehavior = [
             }
           }
         }
+        // until we support unselect some, if the view is not handling select all, we need to prevent deselect (for now)
+        if (this.selectAllActive && !this.handlesSelectAll) {
+          this.selectItem(this.items[index]);
+        }
         this._lastSelectedIndex = e.detail.index;
       }
     },
@@ -303,31 +333,56 @@ export const PageProviderDisplayBehavior = [
     },
 
     deselectItem(item) {
-      if (this.selectionEnabled) {
+      if (this.selectionEnabled && !this.selectAllActive) {
         this.$.list.deselectItem(item);
         this._updateFlags();
       }
     },
 
     deselectIndex(index) {
-      if (this.selectionEnabled) {
+      if (this.selectionEnabled && !this.selectAllActive) {
         this.$.list.deselectIndex(index);
         this._updateFlags();
       }
     },
 
     selectAll() {
-      this.items.forEach(
-        function(item) {
-          this.selectItem(item);
-        }.bind(this.$.list),
-      );
-      this._updateFlags();
+      if (this.selectionEnabled && this.selectAllEnabled) {
+        this._isSelectAllActive = true;
+        // select the visible items first to speed up the first paint (the others can be deferred)
+        const { start, end } = this._getSelectionBoundaries();
+        this._updateSelectedItems((index) => {
+          this.selectItem(this.items[index]);
+        });
+
+        // push the items before the range
+        afterNextRender(this, this._pushSelectedItems, [0, start]);
+        // push the items after the range
+        afterNextRender(this, this._pushSelectedItems, [end + 1, this.items.length]);
+      }
     },
 
     clearSelection() {
       this.$.list.clearSelection();
+      this._isSelectAllActive = false;
       this._updateFlags();
+    },
+
+    /**
+     * Basic helper method to push items to selected items without proper selection, to speed up rendering.
+     */
+    _pushSelectedItems(indexStart, limit) {
+      for (let index = indexStart; index < limit; index++) {
+        this.selectedItems.push(this.items[index]);
+      }
+      this.notifySplices('selectedItems');
+    },
+
+    /**
+     * `true` if select all is enabled and all items are checked
+     */
+    _computeSelectAllStatus() {
+      return this.selectAllEnabled && this._isSelectAllActive;
     },
 
     _isSelected(item) {
@@ -335,7 +390,7 @@ export const PageProviderDisplayBehavior = [
     },
 
     _toggleSelectAll() {
-      if (this._isSelectAllChecked) {
+      if (this.selectAllActive) {
         this.clearSelection();
       } else {
         this.selectAll();
@@ -354,6 +409,7 @@ export const PageProviderDisplayBehavior = [
 
     _sortDirectionChanged(e) {
       if (this._hasPageProvider()) {
+        this.clearSelection();
         let notFound = true;
         for (let i = 0; i < this.sortOrder.length; i++) {
           if (this.sortOrder[i].path === e.detail.path) {
@@ -392,6 +448,7 @@ export const PageProviderDisplayBehavior = [
 
     _onColumnFilterChanged(e) {
       if (this._hasPageProvider()) {
+        this.clearSelection();
         let notFound = true;
         for (let i = 0; i < this.filters.length; i++) {
           if (this.filters[i].path === e.detail.filterBy) {
@@ -463,8 +520,7 @@ export const PageProviderDisplayBehavior = [
     _updateFlags() {
       this.size = Array.isArray(this.items) ? this.items.length : 0;
       const selectedItemsSize = Array.isArray(this.selectedItems) ? this.selectedItems.length : 0;
-      this._isSelectAllIndeterminate = selectedItemsSize < this.size;
-      this._isSelectAllChecked = selectedItemsSize === this.size;
+      this._isSelectAllIndeterminate = !this._isSelectAllActive || selectedItemsSize < this.size;
       this._isEmpty = this.size === 0;
     },
 
@@ -489,6 +545,8 @@ export const PageProviderDisplayBehavior = [
         this.set('items', arr);
       }
       this.size = this.items.length;
+      // if reset is called we need to clear selection
+      this.clearSelection();
       this.$.list.notifyResize();
     },
 
@@ -611,7 +669,16 @@ export const PageProviderDisplayBehavior = [
               this.set(`items.${i}`, response.entries[entryIndex++]);
 
               if (isSelected) {
-                this.selectIndex(i);
+                if (this.selectAllActive) {
+                  /**
+                   * if select all is active we need to update the `selectedItems` entry to keep it in sync with the
+                   * one in `items` that we have just loaded
+                   */
+                  this.set(`selectedItems.${i}`, this.items[i]);
+                  this._selectItemModel(i);
+                } else {
+                  this.selectIndex(i);
+                }
               }
             }
           }
@@ -658,11 +725,58 @@ export const PageProviderDisplayBehavior = [
       return Promise.resolve();
     },
 
+    /**
+     * Returns the boundaries used by the optimization mechanism in select all
+     */
+    _getSelectionBoundaries() {
+      const n = Math.max(0, this.$.list.lastVisibleIndex - this.$.list.firstVisibleIndex);
+      return {
+        start: Math.max(0, this.$.list.firstVisibleIndex - n),
+        end: Math.min(this.items.length, this.$.list.lastVisibleIndex + n),
+        n,
+      };
+    },
+
+    /**
+     * Generic method used to perform a custom selection callback used by the optimization mechanism in select all
+     */
+    _updateSelectedItems(selectionCallback) {
+      const { start, end } = this._getSelectionBoundaries();
+      for (let index = start; index <= end; index++) {
+        selectionCallback(index);
+      }
+    },
+
+    /**
+     * Method to force the selection of the items that are already rendered by the internal list.
+     *
+     * This solution is needed for the optimizations of the select all mechanism, where all items are considered
+     * selected for fast rendering, but are updated on demand when we fetch subsequent page provider pages.
+     * It is inspired by the select all proposal in https://github.com/PolymerElements/iron-list/pull/457
+     */
+    _selectItemModel(index) {
+      if (this.$.list._isIndexRendered(index)) {
+        const model = this.modelForElement(this.$.list._physicalItems[this.$.list._getPhysicalIndex(index)]);
+        if (model && !model[this.$.list.selectedAs]) {
+          model[this.$.list.selectedAs] = true;
+        }
+      }
+    },
+
     _scrollChanged() {
       this._debouncer = Debouncer.debounce(
         this._debouncer,
         timeOut.after(this.scrollThrottle > 0 ? this.scrollThrottle : 1),
-        () => this._fetchRange(this.$.list.firstVisibleIndex, this.$.list.lastVisibleIndex),
+        () => {
+          /**
+           * if select all is checked we need to update the model to reflect the changes, since not all the items were
+           * visible in the first place
+           */
+          if (this.selectAllActive) {
+            afterNextRender(this, () => this._updateSelectedItems(this._selectItemModel.bind(this)));
+          }
+          this._fetchRange(this.$.list.firstVisibleIndex, this.$.list.lastVisibleIndex);
+        },
       );
     },
 

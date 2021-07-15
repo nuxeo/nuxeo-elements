@@ -199,21 +199,54 @@ import './nuxeo-connection.js';
     execute() {
       this._setActiveRequests(this.activeRequests + 1);
 
-      const params = !this.params || typeof this.params === 'object' ? this.params : JSON.parse(this.params);
+      let params = !this.params || typeof this.params === 'object' ? this.params : JSON.parse(this.params);
 
       let { input } = this;
 
-      // support page provider as input to operations
-      // relies on parameters naming convention until provider marshaller is available
-      if (Nuxeo.PageProvider && input instanceof Nuxeo.PageProvider) {
-        params.providerName = input.provider;
-        Object.assign(params, input._params);
+      let { op } = this;
+
+      // the goal is to track if we have a bulk action in select all mode (to be used for the abort method)
+      let isBulk = false;
+
+      if (this._isPageProvider(input) || this._isView(input)) {
+        let pageProvider;
+        // support page provider as input to operations
+        // relies on parameters naming convention until provider marshaller is available
+        if (this._isPageProvider(input)) {
+          pageProvider = input;
+          input = undefined;
+        } else if (this._isSelectAllActive(input)) {
+          // in select all mode, we use `Bulk.RunAction` as the operation and `this.op` as a parameter for it
+          op = 'Bulk.RunAction';
+          // support page provider display behavior instances (table, grid, list) as input to operations for select all
+          pageProvider = input.nxProvider;
+          params = {
+            action: 'automationUi',
+            providerName: pageProvider.provider,
+            parameters: JSON.stringify({
+              operationId: this.op,
+              parameters: params,
+            }),
+          };
+          isBulk = true;
+          input = undefined;
+        } else {
+          // only a few selected documents should be considered for the operation
+          pageProvider = input.nxProvider;
+          const uids = input.selectedItems.map((doc) => doc.uid);
+          const uidsString = uids.join(',');
+          input = `docs:${uidsString}`;
+        }
+
+        params.providerName = pageProvider.provider;
+        Object.assign(params, pageProvider._params);
         // ELEMENTS-1318 - commas would need to be escaped, as queryParams are mapped to stringlists by the server
         // But passing queryParams as an array will map directly to the server stringlist
-        if (!Array.isArray(params.queryParams)) {
+        if (params.queryParams && !Array.isArray(params.queryParams)) {
           params.queryParams = [params.queryParams];
+        } else if (!params.queryParams) {
+          params.queryParams = [];
         }
-        input = undefined;
       }
 
       const options = {};
@@ -254,10 +287,22 @@ import './nuxeo-connection.js';
         options.signal = this._controller.signal;
       }
 
-      return this.$.nx.operation(this.op).then((operation) => {
+      return this.$.nx.operation(op).then((operation) => {
         this._operation = operation;
-        return this._doExecute(input, params, options);
+        return this._doExecute(input, params, options, isBulk);
       });
+    }
+
+    _isPageProvider(input) {
+      return Nuxeo.PageProvider && input instanceof Nuxeo.PageProvider;
+    }
+
+    _isView(input) {
+      return input && input.nxProvider && 'selectedItems' in input && 'selectAllEnabled' in input;
+    }
+
+    _isSelectAllActive(input) {
+      return this._isView(input) && input.selectAllActive;
     }
 
     _autoExecute() {
@@ -266,7 +311,7 @@ import './nuxeo-connection.js';
       }
     }
 
-    _doExecute(input, params, options) {
+    _doExecute(input, params, options, isBulk) {
       if (params.context) {
         this._operation = this._operation.context(params.context);
       }
@@ -281,7 +326,7 @@ import './nuxeo-connection.js';
         .input(input)
         .execute(options);
 
-      if (this.async) {
+      if (this.async && !isBulk) {
         promise = promise.then((res) => {
           if (res.status === 202) {
             this.dispatchEvent(
@@ -291,6 +336,44 @@ import './nuxeo-connection.js';
               }),
             );
             return this._poll(res.headers.get('location'));
+          }
+          return res;
+        });
+      }
+
+      // if this is running with the BAF, then we need to poll using a different endpoint
+      if (isBulk) {
+        promise = promise.then((res) => {
+          if (this._isRunning(res)) {
+            const status = res.value;
+            this.dispatchEvent(
+              new CustomEvent('poll-start', {
+                bubbles: true,
+                composed: true,
+                detail: status,
+              }),
+            );
+            return (
+              this.$.nx
+                .request()
+                .then((request) => this._poll(`${request._url}bulk/${status.commandId}`))
+                /*
+                 * XXX: Bulk command has completed, but other triggered actions, like indexing could still be running.
+                 * As a temporary solution and until `NXP-30502 is done, the goal is to use a timeout and wait for ES
+                 * to finish indexing.
+                 */
+                .then((pollRes) =>
+                  this.$.nx
+                    .operation('Elasticsearch.WaitForIndexing')
+                    .then((op) =>
+                      op
+                        .params({ timeoutSecond: 5, refresh: true })
+                        .execute()
+                        .then(() => pollRes),
+                    )
+                    .catch(() => pollRes),
+                )
+            );
           }
           return res;
         });
@@ -313,7 +396,7 @@ import './nuxeo-connection.js';
           return this.response;
         })
         .catch((error) => {
-          if (error.response.status === 401) {
+          if (error.response && error.response.status === 401) {
             this.dispatchEvent(
               new CustomEvent('unauthorized-request', {
                 bubbles: true,
@@ -330,12 +413,57 @@ import './nuxeo-connection.js';
         });
     }
 
+    /**
+     * Handler to abort bulk operations executed through the BAF
+     */
+    _abort(commandId) {
+      // if the operation is aborted, then on next poll we get the correct state
+      return this.$.nx.request().then((request) =>
+        request
+          .path(`bulk/${commandId}/abort`)
+          .execute({ method: 'put' })
+          .then((status) => {
+            if (this._isAborted(status)) {
+              this.dispatchEvent(
+                new CustomEvent('poll-aborted', {
+                  bubbles: true,
+                  composed: true,
+                  detail: status,
+                }),
+              );
+            } else {
+              console.warn(`Incorrect abort status on bulk action: ${status}`);
+            }
+            return status;
+          })
+          .catch((error) => {
+            this.dispatchEvent(
+              new CustomEvent('poll-error', {
+                bubbles: true,
+                composed: true,
+                detail: error,
+              }),
+            );
+            console.warn(`Bulk action abort failed: ${error}`);
+            throw error;
+          }),
+      );
+    }
+
     _isRunning(status) {
       if (status['entity-type'] === 'bulkStatus') {
-        const { state } = status.value;
+        const { state } = status.value || status;
         return state !== 'ABORTED' && state !== 'COMPLETED';
       }
       return status === 'RUNNING';
+    }
+
+    _isAborted(status) {
+      if (status['entity-type'] === 'bulkStatus') {
+        const { state } = status.value || status;
+        return state === 'ABORTED';
+      }
+      return this._isRunning(status);
     }
 
     _poll(url) {
@@ -345,12 +473,29 @@ import './nuxeo-connection.js';
             .http(url)
             .then((res) => {
               if (this._isRunning(res)) {
+                this.dispatchEvent(
+                  new CustomEvent('poll-update', {
+                    bubbles: true,
+                    composed: true,
+                    detail: res,
+                  }),
+                );
                 window.setTimeout(() => fn(), this.pollInterval, url);
+              } else if (res.error) {
+                // if in bulk mode we had errors, we need to call reject instead
+                reject(res);
               } else {
                 resolve(res);
               }
             })
             .catch((error) => {
+              this.dispatchEvent(
+                new CustomEvent('poll-error', {
+                  bubbles: true,
+                  composed: true,
+                  detail: error,
+                }),
+              );
               reject(error);
             });
         };
