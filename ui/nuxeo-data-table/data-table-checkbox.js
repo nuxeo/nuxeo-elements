@@ -30,7 +30,7 @@ import '../widgets/nuxeo-checkmark.js';
             outline: none;
           }
           /**
-            @deprecated since 3.0.3 we no longer use the header property to control the checkbox visibility 
+            @deprecated since 3.0.6 we no longer use the header property to control the checkbox visibility 
            */
           :host([header]) {
             visibility: hidden !important;

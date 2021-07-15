@@ -233,9 +233,7 @@ import './nuxeo-connection.js';
         } else {
           // only a few selected documents should be considered for the operation
           pageProvider = input.nxProvider;
-          const uids = input.selectedItems.map((doc) => doc.uid);
-          const uidsString = uids.join(',');
-          input = `docs:${uidsString}`;
+          input = input.selectedItems;
         }
 
         params.providerName = pageProvider.provider;
@@ -358,8 +356,8 @@ import './nuxeo-connection.js';
                 .request()
                 .then((request) => this._poll(`${request._url}bulk/${status.commandId}`))
                 /*
-                 * Bulk command has completed, but other triggered actions, like indexing could still be running.
-                 * As a temporary solution and until NXP-30502 is done, the goal is to use a timeout and wait for ES
+                 * XXX: Bulk command has completed, but other triggered actions, like indexing could still be running.
+                 * As a temporary solution and until `NXP-30502 is done, the goal is to use a timeout and wait for ES
                  * to finish indexing.
                  */
                 .then((pollRes) =>
@@ -431,6 +429,8 @@ import './nuxeo-connection.js';
                   detail: status,
                 }),
               );
+            } else {
+              console.warn(`Incorrect abort status on bulk action: ${status}`);
             }
             return status;
           })
@@ -442,6 +442,7 @@ import './nuxeo-connection.js';
                 detail: error,
               }),
             );
+            console.warn(`Bulk action abort failed: ${error}`);
             throw error;
           }),
       );
