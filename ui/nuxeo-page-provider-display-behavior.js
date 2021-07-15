@@ -355,17 +355,10 @@ export const PageProviderDisplayBehavior = [
           this.selectItem(this.items[index]);
         });
 
-        // basic method to push items to selected items without proper selection, to speed up rendering
-        const pushSelectedItems = (indexStart, limit) => {
-          for (let index = indexStart; index < limit; index++) {
-            this.selectedItems.push(this.items[index]);
-          }
-          this.notifySplices('selectedItems');
-        };
         // push the items before the range
-        afterNextRender(this, pushSelectedItems, [0, start]);
+        afterNextRender(this, this._pushSelectedItems, [0, start]);
         // push the items after the range
-        afterNextRender(this, pushSelectedItems, [end + 1, this.items.length]);
+        afterNextRender(this, this._pushSelectedItems, [end + 1, this.items.length]);
       }
     },
 
@@ -373,6 +366,16 @@ export const PageProviderDisplayBehavior = [
       this.$.list.clearSelection();
       this._isSelectAllActive = false;
       this._updateFlags();
+    },
+
+    /**
+     * Basic helper method to push items to selected items without proper selection, to speed up rendering.
+     */
+    _pushSelectedItems(indexStart, limit) {
+      for (let index = indexStart; index < limit; index++) {
+        this.selectedItems.push(this.items[index]);
+      }
+      this.notifySplices('selectedItems');
     },
 
     /**
@@ -518,10 +521,6 @@ export const PageProviderDisplayBehavior = [
       this.size = Array.isArray(this.items) ? this.items.length : 0;
       const selectedItemsSize = Array.isArray(this.selectedItems) ? this.selectedItems.length : 0;
       this._isSelectAllIndeterminate = !this._isSelectAllActive || selectedItemsSize < this.size;
-      /**
-       * Selecting all documents manually is different than using select all mode
-       */
-      // this._isSelectAllActive = this._isSelectAllActive || (selectedItemsSize === this.size && this.size !== 0);
       this._isEmpty = this.size === 0;
     },
 
