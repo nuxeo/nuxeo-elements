@@ -47,9 +47,7 @@ import './nuxeo-tooltip.js';
           nuxeo-select {
             padding-left: 8px;
             width: 160px;
-            --paper-input-container: {
-              padding: 0;
-            }
+            --paper-input-container-padding: 0;
             --paper-input-container-input: {
               font-size: var(--nuxeo-sort-select-input-font-size, inherit);
               font-weight: bold;
