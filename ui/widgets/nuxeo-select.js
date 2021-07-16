@@ -77,7 +77,7 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
           }
 
           paper-dropdown-menu {
-            padding-top: 5px;
+            padding-top: var(--paper-dropdown-menu-padding-top, 5px);
             --paper-input-container: {
               padding-top: 0;
             }
