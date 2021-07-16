@@ -77,7 +77,7 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
           }
 
           paper-dropdown-menu {
-            padding-top: 5px;
+            padding: var(--nuxeo-select-dropdown-menu-padding, 5px 0 0 0);
             --paper-input-container: {
               padding-top: 0;
             }
