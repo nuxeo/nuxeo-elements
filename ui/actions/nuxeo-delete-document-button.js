@@ -111,12 +111,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _isAvailable(doc) {
-      return (
-        !this.isVersion(doc) &&
-        this.hasPermission(doc, 'Remove') &&
-        (!this.isTrashed(doc) || this.hard) &&
-        !this.isUnderRetentionOrLegalHold(doc)
-      );
+      return !this.isVersion(doc) && this.hasPermission(doc, 'Remove') && (!this.isTrashed(doc) || this.hard);
     }
 
     _computeIcon(hard) {
