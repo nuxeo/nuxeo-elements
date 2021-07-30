@@ -184,7 +184,7 @@ import Interpreter from './js-interpreter/interpreter.js';
       let res = false;
 
       try {
-        if (!config.get('expressions.eval', false)) {
+        if (!config.get('expressions.eval', true)) {
           const js = new Interpreter(expression, (interpreter, scope) => {
             // set scope
             interpreter.setProperty(scope, 'this', interpreter.nativeToPseudo(FiltersBehavior));
