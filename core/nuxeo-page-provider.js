@@ -291,7 +291,7 @@ import config from './config.js';
         },
 
         /**
-         * If `true`, aggregagtes from page provider definition will not be computed.
+         * If `true`, aggregates from page provider definition will not be computed.
          */
         skipAggregates: Boolean,
 
