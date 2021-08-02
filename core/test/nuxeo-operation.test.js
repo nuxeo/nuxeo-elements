@@ -297,7 +297,7 @@ suite('nuxeo-operation', () => {
           queryParams: [],
         },
         context: {},
-        input: 'docs:',
+        input: [],
       });
     });
 
