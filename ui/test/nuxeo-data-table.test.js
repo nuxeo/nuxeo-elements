@@ -411,6 +411,13 @@ async function setupServer(numberPages, pageSize) {
         pageSize}&pageSize=40&ecm_path=%5B%22%2Fdefault-domain%2Fworkspaces%22%5D`,
       [200, { 'Content-Type': 'application/json' }, JSON.stringify(tableResp)],
     );
+    // scroll changed specific response
+    server.respondWith(
+      'GET',
+      `/api/v1/search/pp/default_search/execute?currentPageIndex=0&offset=${page *
+        pageSize}&pageSize=15&ecm_path=%5B%22%2Fdefault-domain%2Fworkspaces%22%5D`,
+      [200, { 'Content-Type': 'application/json' }, JSON.stringify(tableResp)],
+    );
   }
 
   return server;
@@ -501,14 +508,24 @@ suite('nuxeo-data-table', () => {
       table.fetch();
       await waitForEvent(table, 'nuxeo-page-loaded', 1);
       await flush();
-      assert.equal(table.items.length, 120);
     });
 
     test('scroll to item', async () => {
-      table.selectAll();
-      await flush();
+      assert.equal(table.items.length, 120);
 
+      // listener for select all active changed
+      const selectAllActiveChanged = new Promise((resolve) =>
+        table.addEventListener('select-all-active-changed', (e) => resolve(e)),
+      );
+
+      // select all items
+      table.selectAll();
+      const event = await selectAllActiveChanged;
+      expect(event.target).to.equal(table);
+
+      // scroll to item and assert it is selected
       table.scrollToIndex(80);
+      await waitForEvent(table, 'nuxeo-page-loaded', 1);
       assert.equal(table.selectAllActive, true);
       assert.equal(table._isSelected(table.items[80]), true);
       assert.equal(table.selectedItems.length, 120);
