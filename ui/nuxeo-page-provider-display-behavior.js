@@ -409,7 +409,6 @@ export const PageProviderDisplayBehavior = [
 
     _sortDirectionChanged(e) {
       if (this._hasPageProvider()) {
-        this.clearSelection();
         let notFound = true;
         for (let i = 0; i < this.sortOrder.length; i++) {
           if (this.sortOrder[i].path === e.detail.path) {
@@ -437,6 +436,7 @@ export const PageProviderDisplayBehavior = [
           });
         }
         if (JSON.stringify(this._ppSort) !== JSON.stringify(tmpSort)) {
+          this.clearSelection();
           this._ppSort = tmpSort;
           this.nxProvider.sort = this._ppSort;
           if (!this.nxProvider.auto) {
@@ -448,7 +448,6 @@ export const PageProviderDisplayBehavior = [
 
     _onColumnFilterChanged(e) {
       if (this._hasPageProvider()) {
-        this.clearSelection();
         let notFound = true;
         for (let i = 0; i < this.filters.length; i++) {
           if (this.filters[i].path === e.detail.filterBy) {
@@ -476,9 +475,11 @@ export const PageProviderDisplayBehavior = [
         }
 
         if (this.nxProvider.params[e.detail.filterBy] && e.detail.value.length === 0) {
+          this.clearSelection();
           delete this.nxProvider.params[e.detail.filterBy];
           this.fetch();
         } else if (e.detail.value.length > 0) {
+          this.clearSelection();
           if (e.detail.filterExpression) {
             this.nxProvider.params[e.detail.filterBy] = e.detail.filterExpression.replace(/(\$term)/g, e.detail.value);
           } else {
