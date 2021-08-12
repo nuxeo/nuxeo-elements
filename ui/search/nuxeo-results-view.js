@@ -200,7 +200,7 @@ import './nuxeo-search-results-layout.js';
          * Already set by default are 'fetch-document': 'properties' and 'translate-directoryEntry': 'label'.
          */
         headers: {
-          type: String,
+          type: Object,
           value: { 'fetch-document': 'properties', 'translate-directoryEntry': 'label' },
         },
         /**
