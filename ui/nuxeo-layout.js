@@ -138,7 +138,7 @@ import './nuxeo-error.js';
       const submittable = [];
       for (let i = 0; i < nodes.length; i++) {
         const node = nodes[i];
-        if (!node.disabled) {
+        if (!node.disabled && this._isVisible(node)) {
           if (node.validate || node.checkValidity) {
             submittable.push(node);
           } else if (node.root) {
@@ -147,6 +147,11 @@ import './nuxeo-error.js';
         }
       }
       return submittable;
+    }
+
+    _isVisible(node) {
+      // HACK - exclude fallback content from slots when not visible - see ELEMENTS-1393 for more details
+      return node && node.offsetParent && node.offsetHeight > 0 && node.offsetWidth > 0;
     }
 
     _stamp(href) {
