@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { pathFromUrl } from '@polymer/polymer/lib/utils/resolve-url.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
@@ -133,20 +134,22 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
     }
 
     _formChanged(e) {
-      this.dispatchEvent(
-        new CustomEvent('search-form-layout-changed', {
-          composed: true,
-          bubbles: true,
-          detail: e.detail,
-        }),
-      );
-      // forward params change events
-      this.element.addEventListener('params-changed', (evt) => {
-        this.notifyPath(evt.detail.path || 'params', evt.detail.value);
-      });
-      this.skipAggregates = this.element.skipAggregates;
-      this.element.addEventListener('skip-aggregates-changed', (evt) => {
-        this.notifyPath(evt.detail.path || 'skipAggregates', evt.detail.value);
+      afterNextRender(this, () => {
+        this.dispatchEvent(
+          new CustomEvent('search-form-layout-changed', {
+            composed: true,
+            bubbles: true,
+            detail: e.detail,
+          }),
+        );
+        // forward params change events
+        this.element.addEventListener('params-changed', (evt) => {
+          this.notifyPath(evt.detail.path || 'params', evt.detail.value);
+        });
+        this.skipAggregates = this.element.skipAggregates;
+        this.element.addEventListener('skip-aggregates-changed', (evt) => {
+          this.notifyPath(evt.detail.path || 'skipAggregates', evt.detail.value);
+        });
       });
     }
   }
