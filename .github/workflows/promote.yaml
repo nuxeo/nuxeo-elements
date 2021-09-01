@@ -53,6 +53,13 @@ jobs:
           tag_name: v${{ env.VERSION }}
           release_name: Release ${{ env.VERSION }}
 
+      - name: Publish to https://packages.nuxeo.com/repository/npm-public/ (dry run)
+        if: ${{ github.event.inputs.dryRun }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+        run: |
+          npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://packages.nuxeo.com/repository/npm-public/ --dry-run
+
       - name: Publish to https://packages.nuxeo.com/repository/npm-public/
         if: ${{ !github.event.inputs.dryRun }}
         env:
