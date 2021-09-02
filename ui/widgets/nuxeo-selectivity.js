@@ -7240,6 +7240,7 @@ typedArrayTags[weakMapTag] = false;
         threshold: 0
       });
       this._visibilityObserver.observe(this);
+      this._readonlyChanged();
     }
 
     disconnectedCallback() {
@@ -7350,7 +7351,10 @@ typedArrayTags[weakMapTag] = false;
 
     _readonlyChanged() {
       if (this._selectivity) {
-        this._selectivity.setOptions({ readOnly: this.readonly });
+        this._selectivity.setOptions({
+          readOnly: this.readonly,
+          placeholder: this.placeholder,
+        });
       }
     }
 
