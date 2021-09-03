@@ -167,7 +167,7 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
             </template>
           </iron-list>
 
-          <iron-scroll-threshold id="scrollThreshold" scroll-target="list" on-lower-threshold="fetch">
+          <iron-scroll-threshold id="scrollThreshold" scroll-target="list" on-lower-threshold="_scrollChanged">
           </iron-scroll-threshold>
           <array-selector id="selector" items="{{items}}" selected="{{selectedItems}}" multi></array-selector>
         </div>
@@ -254,27 +254,41 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
     }
 
     // overridden from Nuxeo.PageProviderDisplayBehavior
-    reset() {
+    reset(size) {
       this.set('items', []);
       this.set('rows', []);
       this.page = 1;
       this.$.scrollThreshold.clearTriggers();
+      this._reset(size);
     }
 
     // overridden from Nuxeo.PageProviderDisplayBehavior
     fetch() {
+      // consistent with other views, fetch always gets the first page (resets the page number)
+      return this._fetchNewPage(true);
+    }
+
+    _fetchNewPage(reset) {
       if (this._isFetching || !this._hasPageProvider() || this.page > this.nxProvider.numberOfPages) {
         this.$.scrollThreshold.clearTriggers();
         this._isFetching = false;
         return Promise.resolve();
       }
       this._isFetching = true;
+      this.page = reset ? 1 : this.page;
       return this._fetchPage(this.page, this.pageSize).then((response) => {
         this._addItems(response.entries);
-        this.page += 1;
+        if (!reset || this.page === 1) {
+          this.page += 1;
+        }
         this.$.scrollThreshold.clearTriggers();
         this._isFetching = false;
       });
+    }
+
+    _scrollChanged() {
+      // when scrolling there's no need to reset the page number
+      return this._fetchNewPage(false);
     }
 
     // overridden from Nuxeo.PageProviderDisplayBehavior
@@ -308,7 +322,7 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
 
     // overridden from Nuxeo.PageProviderDisplayBehavior
     deselectItem(item) {
-      if (this.selectionEnabled) {
+      if (this.selectionEnabled && !this.selectAllActive) {
         this.$.selector.deselect(item);
         this._updateFlags();
       }
@@ -316,7 +330,7 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
 
     // overridden from Nuxeo.PageProviderDisplayBehavior
     deselectIndex(index) {
-      if (this.selectionEnabled) {
+      if (this.selectionEnabled && !this.selectAllActive) {
         this.$.selector.deselectIndex(index);
         this._updateFlags();
       }
@@ -324,26 +338,34 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
 
     // overridden from Nuxeo.PageProviderDisplayBehavior
     selectAll() {
-      this.items.forEach((item) => this.$.selector.select(item));
-      this._updateFlags();
+      if (this.selectionEnabled && this.selectAllEnabled) {
+        this._isSelectAllActive = true;
+        this.items.forEach((item) => this.$.selector.select(item));
+        this._updateFlags();
+      }
     }
 
     // overridden from Nuxeo.PageProviderDisplayBehavior
     clearSelection() {
+      this._isSelectAllActive = false;
       this.$.selector.clearSelection();
       this._updateFlags();
     }
 
     _check(e) {
-      if (this.selectionEnabled) {
+      if (this.selectionEnabled && !this.selectAllActive) {
         this.selectionMode = true;
         this._click(e);
+      } else {
+        // prevent bubbling of the click event (prevent the execution of _click() in a grid tile)
+        e.preventDefault();
+        e.stopPropagation();
       }
     }
 
     _click(e) {
       const { index } = e.model.item._view;
-      if (this.selectionEnabled && this.selectionMode) {
+      if (this.selectionEnabled && this.selectionMode && !this.selectAllActive) {
         // since we are using Object.assign() when creating items for the grid, we cannot really use
         // selector.selectItem()/deselectItem() because it relies on indexOf and since the e.model.item is not a
         // reference of the original item, it doesn't work.
@@ -407,7 +429,8 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
       const rows = [];
       let currentRowWidth = 0;
       let currentRow = [];
-      items.forEach((item, idx) => {
+      // filter out items that were not loaded yet
+      items.filter((item) => Object.keys(item).length !== 0).forEach((item, idx) => {
         const clone = Object.assign({}, item);
         // fallback to square dimensions if item doesn't have a size object in it's model
         clone.size = clone.properties['picture:info'] || { width: 1, height: 1 };
