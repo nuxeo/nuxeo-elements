@@ -12,8 +12,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - run: git config user.name "nuxeo-web-ui-jx-bot" && git config user.email "ui+jx-bot@nuxeo.com"
-
     - uses: actions/setup-node@v1
       with:
         node-version: 12
@@ -22,6 +20,7 @@ jobs:
 
     - name: Prepare environment
       run: |
+        git config user.name "nuxeo-web-ui-jx-bot" && git config user.email "ui+jx-bot@nuxeo.com"
         echo "BRANCH_NAME=${GITHUB_HEAD_REF##*/}" >> $GITHUB_ENV
         echo "PACKAGE_VERSION=$(npx -c 'echo "$npm_package_version"')" >> $GITHUB_ENV
 
@@ -57,6 +56,14 @@ jobs:
         SAUCE_USERNAME: nuxeo-elements
         SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
       run: npm run test
+
+    - name: Run analysis
+      run: npx lerna run analysis --parallel
+
+    - name: Build storybook
+      working-directory: storybook
+      run: |
+        npx build-storybook -o dist -s ./public
 
     - name: Deploy
       if: github.ref == 'refs/heads/master'
