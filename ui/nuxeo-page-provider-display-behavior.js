@@ -373,7 +373,10 @@ export const PageProviderDisplayBehavior = [
      */
     _pushSelectedItems(indexStart, limit) {
       for (let index = indexStart; index < limit; index++) {
-        this.selectedItems.push(this.items[index]);
+        // skip entries that are already in the selectedItems list
+        if (!this._isIndexSelected(index)) {
+          this.selectedItems.push(this.items[index]);
+        }
       }
       this.notifySplices('selectedItems');
     },
@@ -386,7 +389,12 @@ export const PageProviderDisplayBehavior = [
     },
 
     _isSelected(item) {
-      return !!(this.selectedItems && this.selectedItems.length && this.selectedItems.indexOf(item) > -1);
+      const index = this.selectedItems && this.selectedItems.length && this.selectedItems.indexOf(item);
+      return index > -1 && this._isIndexSelected(index);
+    },
+
+    _isIndexSelected(index) {
+      return !!(this.selectedItems && this.selectedItems.length && this.selectedItems.indexOf(this.items[index]) > -1);
     },
 
     _toggleSelectAll() {
@@ -606,10 +614,16 @@ export const PageProviderDisplayBehavior = [
             this.reset(count);
           }
           for (let entryIndex = (page - 1) * response.pageSize, i = 0; i < response.entries.length; entryIndex++, i++) {
+            const isSelected = this._isIndexSelected(entryIndex);
+
             this.set(`items.${entryIndex}`, response.entries[i]);
             // if select all is active we need to select the new loaded `item`
             if (this.selectAllActive) {
-              this.selectIndex(entryIndex);
+              if (isSelected) {
+                this.set(`selectedItems.${entryIndex}`, this.items[entryIndex]);
+              } else {
+                this.selectIndex(entryIndex);
+              }
             }
           }
           return response;

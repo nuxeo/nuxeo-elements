@@ -337,15 +337,6 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
     }
 
     // overridden from Nuxeo.PageProviderDisplayBehavior
-    selectAll() {
-      if (this.selectionEnabled && this.selectAllEnabled) {
-        this._isSelectAllActive = true;
-        this.items.forEach((item) => this.$.selector.select(item));
-        this._updateFlags();
-      }
-    }
-
-    // overridden from Nuxeo.PageProviderDisplayBehavior
     clearSelection() {
       this._isSelectAllActive = false;
       this.$.selector.clearSelection();
