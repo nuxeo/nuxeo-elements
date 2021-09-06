@@ -337,15 +337,6 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
     }
 
     // overridden from Nuxeo.PageProviderDisplayBehavior
-    selectAll() {
-      if (this.selectionEnabled && this.selectAllEnabled) {
-        this._isSelectAllActive = true;
-        this.items.forEach((item) => this.$.selector.select(item));
-        this._updateFlags();
-      }
-    }
-
-    // overridden from Nuxeo.PageProviderDisplayBehavior
     clearSelection() {
       this._isSelectAllActive = false;
       this.$.selector.clearSelection();
@@ -430,38 +421,40 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
       let currentRowWidth = 0;
       let currentRow = [];
       // filter out items that were not loaded yet
-      items.filter((item) => Object.keys(item).length !== 0).forEach((item, idx) => {
-        const clone = Object.assign({}, item);
-        // fallback to square dimensions if item doesn't have a size object in it's model
-        clone.size = clone.properties['picture:info'] || { width: 1, height: 1 };
-        clone.size.width = clone.size.width || 1;
-        clone.size.height = clone.size.height || 1;
-        clone._view = {};
-        clone._view.index = this.items.indexOf(item);
+      items
+        .filter((item) => Object.keys(item).length !== 0)
+        .forEach((item, idx) => {
+          const clone = Object.assign({}, item);
+          // fallback to square dimensions if item doesn't have a size object in it's model
+          clone.size = clone.properties['picture:info'] || { width: 1, height: 1 };
+          clone.size.width = clone.size.width || 1;
+          clone.size.height = clone.size.height || 1;
+          clone._view = {};
+          clone._view.index = this.items.indexOf(item);
 
-        // compute item width to fit a row with `rowHeight`
-        // new width = original width * rowHeight / original height
-        clone._view.width = (clone.size.width * this.rowHeight) / clone.size.height;
-        clone._view.height = this.rowHeight;
+          // compute item width to fit a row with `rowHeight`
+          // new width = original width * rowHeight / original height
+          clone._view.width = (clone.size.width * this.rowHeight) / clone.size.height;
+          clone._view.height = this.rowHeight;
 
-        // if item fits, add it to current row
-        if (currentRowWidth + clone._view.width <= gridWidth) {
-          currentRow.push(clone);
-          currentRowWidth += clone._view.width;
-        } else {
-          // current item doesn't fit in current row
-          // fit items do width and push current row to rows
-          rows.push(this._fitItemsToWidth(currentRow, currentRowWidth, gridWidth));
-          // append current item (that didn't fit in current row) to a new row
-          currentRow = [clone];
-          currentRowWidth = clone._view.width;
-        }
+          // if item fits, add it to current row
+          if (currentRowWidth + clone._view.width <= gridWidth) {
+            currentRow.push(clone);
+            currentRowWidth += clone._view.width;
+          } else {
+            // current item doesn't fit in current row
+            // fit items do width and push current row to rows
+            rows.push(this._fitItemsToWidth(currentRow, currentRowWidth, gridWidth));
+            // append current item (that didn't fit in current row) to a new row
+            currentRow = [clone];
+            currentRowWidth = clone._view.width;
+          }
 
-        if (idx === items.length - 1) {
-          // fit items do width and push current row to rows
-          rows.push(this._fitItemsToWidth(currentRow, currentRowWidth, gridWidth));
-        }
-      });
+          if (idx === items.length - 1) {
+            // fit items do width and push current row to rows
+            rows.push(this._fitItemsToWidth(currentRow, currentRowWidth, gridWidth));
+          }
+        });
       return rows;
     }
 
