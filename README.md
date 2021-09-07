@@ -1,9 +1,6 @@
-[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/nuxeo/nuxeo-elements)
-![Build Status](https://github.com/nuxeo/nuxeo-elements/workflows/Build/badge.svg)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b6e719e30d53435e8a76230067aade3b)](https://www.codacy.com/app/Nuxeo/nuxeo-elements)
-[![Coverage Status](https://coveralls.io/repos/github/nuxeo/nuxeo-elements/badge.svg)](https://coveralls.io/github/nuxeo/nuxeo-elements)
+# 🚨 Deprecated 🚨
 
-[![Browser Status](https://badges.herokuapp.com/sauce/nuxeo-elements?name=nuxeo-elements-master)](https://saucelabs.com/u/nuxeo-elements)
+This branch is not maintained anymore. Please refer to the repository's default branch.
 
 # About nuxeo-elements
 
