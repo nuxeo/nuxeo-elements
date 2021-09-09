@@ -62,7 +62,7 @@
         };
         results.fetch = () => {
           // simulates a real fetch by populating the items of a table with an array of simplified filtered results
-          const searchTerm = results.nxProvider.params.title;
+          const searchTerm = results.nxProvider.params.fulltext_all;
           if (!searchTerm) {
             return results.setItems(results.defaultItems);
           }
