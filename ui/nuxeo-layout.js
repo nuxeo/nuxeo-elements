@@ -151,7 +151,7 @@ import './nuxeo-error.js';
 
     _isVisible(node) {
       // HACK - exclude fallback content from slots when not visible - see ELEMENTS-1393 for more details
-      return node && node.offsetParent && node.offsetHeight > 0 && node.offsetWidth > 0;
+      return node && node.offsetParent && (node.offsetHeight > 0 || node.offsetWidth > 0);
     }
 
     _stamp(href) {
