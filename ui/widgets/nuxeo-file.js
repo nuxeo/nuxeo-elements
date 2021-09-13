@@ -281,7 +281,7 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
     }
 
     _getValidity() {
-      return !this.required || this._hasValue();
+      return !this.uploading && (!this.required || this._hasValue());
     }
 
     _hasSingleValue() {
