@@ -1,0 +1,3 @@
+expose:
+  Image: "ghcr.io/jenkins-x/exposecontroller"
+  ImageTag: "2.3.118"
