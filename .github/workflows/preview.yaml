@@ -89,7 +89,7 @@ jobs:
       run: |
         # install Helm
         curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash -
-        helm repo add chartmuseum.jenkins-x.io https://storage.googleapis.com/chartmuseum.jenkins-x.io
+        helm repo add jx https://jenkins-x-charts.github.io/v2/
 
         # substitute env variables in values.yaml
         mv values.yaml values.yaml.tosubst
@@ -100,7 +100,7 @@ jobs:
 
         # install
         helm upgrade --install --namespace ${PREVIEW_NAMESPACE} preview .
-        
+
         echo "PREVIEW_URL=https://preview-${PREVIEW_NAMESPACE}.webui.dev.nuxeo.com" >> $GITHUB_ENV
 
     - uses: actions/github-script@0.9.0
