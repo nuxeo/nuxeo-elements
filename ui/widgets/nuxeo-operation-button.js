@@ -221,6 +221,21 @@ import '../actions/nuxeo-action-button-styles.js';
                 dismissible: true,
                 duration: 0,
                 commandId,
+                errorDetails:
+                  errorCount > 0
+                    ? this.i18n(
+                        'bulk.errorDetails.message',
+                        this.operation,
+                        response.username,
+                        response.submitted,
+                        response.completed,
+                        response.processed,
+                        total,
+                        errorCount,
+                        response.errorMessage,
+                        commandId,
+                      )
+                    : '',
               });
             }
             return response;
@@ -241,6 +256,21 @@ import '../actions/nuxeo-action-button-styles.js';
               dismissible: true,
               duration: 0,
               commandId,
+              errorDetails:
+                errorCount > 0
+                  ? this.i18n(
+                      'bulk.errorDetails.message',
+                      this.operation,
+                      error.username,
+                      error.submitted,
+                      error.completed,
+                      error.processed,
+                      total,
+                      errorCount,
+                      error.errorMessage,
+                      commandId,
+                    )
+                  : '',
             });
           } else {
             this.notify({ message: this.errorLabel ? this.i18n(this.errorLabel, error) : error });
