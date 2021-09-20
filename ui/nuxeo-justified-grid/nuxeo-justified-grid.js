@@ -270,7 +270,9 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
 
     _fetchNewPage(reset) {
       if (this._isFetching || !this._hasPageProvider() || this.page > this.nxProvider.numberOfPages) {
-        this.$.scrollThreshold.clearTriggers();
+        if (!reset) {
+          this.$.scrollThreshold.clearTriggers();
+        }
         this._isFetching = false;
         return Promise.resolve();
       }
@@ -280,13 +282,19 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
         this._addItems(response.entries);
         if (!reset || this.page === 1) {
           this.page += 1;
+          this.$.scrollThreshold.clearTriggers();
         }
-        this.$.scrollThreshold.clearTriggers();
         this._isFetching = false;
       });
     }
 
     _scrollChanged() {
+      this._debouncer = Debouncer.debounce(
+        this._debouncer,
+        timeOut.after(this.scrollThrottle > 0 ? this.scrollThrottle : 1),
+        () => this._fetchNewPage(false),
+      );
+
       // when scrolling there's no need to reset the page number
       return this._fetchNewPage(false);
     }
@@ -425,7 +433,7 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
         .filter((item) => Object.keys(item).length !== 0)
         .forEach((item, idx) => {
           const clone = Object.assign({}, item);
-          // fallback to square dimensions if item doesn't have a size object in it's model
+          // fallback to square dimensions if the item doesn't have a size object in it's model
           clone.size = clone.properties['picture:info'] || { width: 1, height: 1 };
           clone.size.width = clone.size.width || 1;
           clone.size.height = clone.size.height || 1;
