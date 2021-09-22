@@ -49,7 +49,7 @@ Object.assign(config, {
         val = (type && type(val)) || val;
       }
     }
-    return val || fallback;
+    return val != null ? val : fallback;
   },
   /**
    * Sets the `value` for property identified by a given `path`. All intermediate path segments will be created if they
