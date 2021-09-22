@@ -9,6 +9,7 @@
   "addToCollectionButton.dialog.select": "Wybierz kolekcję...",
   "addToCollectionButton.tooltip": "Dodaj do kolekcji",
   "aggregation.format.document.field.unknown": "Brak pola {0} w dokumencie. Określ swój własny format etykiety.",
+  "bulk.errorDetails.message": "Bulk action {0} run by {1} on {2}, completed at {3}\nNumber of documents processed: {4} / {5}\nNumber of errors: {6}\nError message: {7}\n\nFor additional information, please reach out to an administrator and provide the following bulk command id: {8}",
   "checkboxAggregation.noResults": "Brak dostępnych wyników",
   "checkboxAggregation.showLess": "Pokaż mniej",
   "checkboxAggregation.showAll": "Pokaż wszystko",

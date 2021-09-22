@@ -9,6 +9,7 @@
   "addToCollectionButton.dialog.select": "选择集合",
   "addToCollectionButton.tooltip": "添加到集合",
   "aggregation.format.document.field.unknown": "文档中没有 {0} 字段。定义自己的标签格式化程序。",
+  "bulk.errorDetails.message": "Bulk action {0} run by {1} on {2}, completed at {3}\nNumber of documents processed: {4} / {5}\nNumber of errors: {6}\nError message: {7}\n\nFor additional information, please reach out to an administrator and provide the following bulk command id: {8}",
   "checkboxAggregation.noResults": "没有可用的结果",
   "checkboxAggregation.showLess": "Show less",
   "checkboxAggregation.showAll": "Show all",

@@ -9,6 +9,7 @@
   "addToCollectionButton.dialog.select": "Seleccione una colección...",
   "addToCollectionButton.tooltip": "Añadir a la colección",
   "aggregation.format.document.field.unknown": "No hay un campo {0} en el documento. Defina su propio formateador de etiqueta.",
+  "bulk.errorDetails.message": "Bulk action {0} run by {1} on {2}, completed at {3}\nNumber of documents processed: {4} / {5}\nNumber of errors: {6}\nError message: {7}\n\nFor additional information, please reach out to an administrator and provide the following bulk command id: {8}",
   "checkboxAggregation.noResults": "No hay resultados disponibles",
   "checkboxAggregation.showLess": "Mostrar menos",
   "checkboxAggregation.showAll": "Mostrar todo",

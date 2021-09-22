@@ -9,6 +9,7 @@
   "addToCollectionButton.dialog.select": "Hautatu bilduma...",
   "addToCollectionButton.tooltip": "Gehitu bildumara",
   "aggregation.format.document.field.unknown": "Dokumentuak ez du {0} eremurik. Zehaztu zure etiketaren formatu-emale propioa.",
+  "bulk.errorDetails.message": "Bulk action {0} run by {1} on {2}, completed at {3}\nNumber of documents processed: {4} / {5}\nNumber of errors: {6}\nError message: {7}\n\nFor additional information, please reach out to an administrator and provide the following bulk command id: {8}",
   "checkboxAggregation.noResults": "Ez dago emaitza erabilgarririk",
   "checkboxAggregation.showLess": "Erakutsi gutxiago",
   "checkboxAggregation.showAll": "Erakutsi dena",

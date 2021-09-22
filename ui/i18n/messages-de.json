@@ -9,6 +9,7 @@
   "addToCollectionButton.dialog.select": "Sammlung auswählen ...",
   "addToCollectionButton.tooltip": "Der Sammlung hinzufügen",
   "aggregation.format.document.field.unknown": "Kein {0}-Feld im Dokument. Definieren Sie Ihren eignen Beschreibungsformatierer.",
+  "bulk.errorDetails.message": "Bulk action {0} run by {1} on {2}, completed at {3}\nNumber of documents processed: {4} / {5}\nNumber of errors: {6}\nError message: {7}\n\nFor additional information, please reach out to an administrator and provide the following bulk command id: {8}",
   "checkboxAggregation.noResults": "Kein Ergebnis verfügbar",
   "checkboxAggregation.showLess": "Weniger anzeigen",
   "checkboxAggregation.showAll": "Alle zeigen",

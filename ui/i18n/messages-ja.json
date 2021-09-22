@@ -9,6 +9,7 @@
   "addToCollectionButton.dialog.select": "コレクションを選択...",
   "addToCollectionButton.tooltip": "コレクションに追加",
   "aggregation.format.document.field.unknown": "{0}フィールドが文書内にありません。独自のラベルフォーマッタを定義してください。",
+  "bulk.errorDetails.message": "Bulk action {0} run by {1} on {2}, completed at {3}\nNumber of documents processed: {4} / {5}\nNumber of errors: {6}\nError message: {7}\n\nFor additional information, please reach out to an administrator and provide the following bulk command id: {8}",
   "checkboxAggregation.noResults": "結果がありません。",
   "checkboxAggregation.showLess": "表示を減らす",
   "checkboxAggregation.showAll": "すべて表示",

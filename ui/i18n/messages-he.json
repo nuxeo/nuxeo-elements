@@ -9,6 +9,7 @@
   "addToCollectionButton.dialog.select": "Select a Collection...",
   "addToCollectionButton.tooltip": "Add to Collection",
   "aggregation.format.document.field.unknown": "No {0} field in document. Define your own label formatter.",
+  "bulk.errorDetails.message": "Bulk action {0} run by {1} on {2}, completed at {3}\nNumber of documents processed: {4} / {5}\nNumber of errors: {6}\nError message: {7}\n\nFor additional information, please reach out to an administrator and provide the following bulk command id: {8}",
   "checkboxAggregation.noResults": "No available results",
   "checkboxAggregation.showLess": "Show less",
   "checkboxAggregation.showAll": "Show all",
