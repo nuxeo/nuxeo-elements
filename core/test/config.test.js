@@ -58,6 +58,9 @@ suite('config', () => {
     test('existent false boolean property', () => expect(config.get('falseBooleanProperty', false)).to.be.false);
     test('existent true boolean property', () => expect(config.get('trueBooleanProperty', false)).to.be.true);
 
+    test('existent false boolean property with true fallback', () =>
+      expect(config.get('falseBooleanProperty', true)).to.be.false);
+
     test('existent property with false string', () =>
       expect(config.get('falseStringBooleanProperty', false)).to.be.false);
     test('existent property with true string', () => expect(config.get('trueStringBooleanProperty', false)).to.be.true);
