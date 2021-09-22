@@ -17,6 +17,7 @@ limitations under the License.
 import { fixture, html, flush } from '@nuxeo/testing-helpers';
 import * as polymer from '@polymer/polymer';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
+import { config } from '@nuxeo/nuxeo-elements';
 import '../nuxeo-filter.js';
 import '../nuxeo-slots.js';
 
@@ -457,6 +458,45 @@ suite('nuxeo-filter', () => {
     [myElement] = stamped(container, '.custom');
     expect(stamped(dom(myElement).node.shadowRoot, '#label').length).to.be.equal(1);
     expect(myElement.label).to.be.equal('A simple test');
+  });
+
+  test('expressions.eval should be true by default', async () => {
+    const filter = await fixture(html`
+      <div>
+        <nuxeo-filter expression="this.constructor.name === 'Filter'">
+          <template>
+            <div class="ok"></div>
+          </template>
+        </nuxeo-filter>
+        <nuxeo-filter expression="this.constructor.name === undefined">
+          <template>
+            <div class="notok"></div>
+          </template>
+        </nuxeo-filter>
+      </div>
+    `);
+    expect(stamped(filter, '.ok').length).to.be.equal(1);
+    expect(stamped(filter, '.notok').length).to.be.equal(0);
+  });
+
+  test('expressions.eval should be false', async () => {
+    config.set('expressions.eval', false);
+    const filter = await fixture(html`
+      <div>
+        <nuxeo-filter expression="this.constructor.name === undefined">
+          <template>
+            <div class="ok"></div>
+          </template>
+        </nuxeo-filter>
+        <nuxeo-filter expression="this.constructor.name === 'Filter'">
+          <template>
+            <div class="notok"></div>
+          </template>
+        </nuxeo-filter>
+      </div>
+    `);
+    expect(stamped(filter, '.ok').length).to.be.equal(1);
+    expect(stamped(filter, '.notok').length).to.be.equal(0);
   });
 
   suite('Host data', () => {
