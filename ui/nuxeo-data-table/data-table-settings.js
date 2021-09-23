@@ -19,6 +19,7 @@ import '../nuxeo-button-styles.js';
         <style include="nuxeo-button-styles">
           :host {
             position: relative;
+            min-width: 30px;
           }
 
           .paper-content {
