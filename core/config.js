@@ -46,7 +46,7 @@ Object.assign(config, {
           default:
             break;
         }
-        val = (type && type(val)) || val;
+        val = (type && type(val)) != null ? type(val) : val;
       }
     }
     return val != null ? val : fallback;
