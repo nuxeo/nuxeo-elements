@@ -44,6 +44,8 @@ suite('config', () => {
     test('non-existent number property', () => expect(config.get('nonExistentNumberProperty', 101)).to.equal(101));
     test('non-existent bigint property', () =>
       expect(config.get('nonExistentBigIntProperty', 9007199254740992)).to.equal(9007199254740992));
+
+    test('non-existent number property with 0 fallback', () => expect(config.get('integerProperty', 0)).to.equal(0));
   });
   suite('boolean properties with default values', () => {
     setup(() => {
