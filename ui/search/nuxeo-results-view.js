@@ -396,9 +396,9 @@ import './nuxeo-search-results-layout.js';
       // setup data binding
       form.addEventListener('params-changed', (evt) => {
         // e.detail.path is params.prop_name eg: params.ecm_fulltext
-        if (evt.detail.path) {
-          const param = evt.detail.path.split('.')[1];
-          this.notifyPath(`_params.${param}`, evt.detail.value);
+        // checking for the presence of a 'value' key in case we are clearing the form params
+        if (evt.detail.path || 'value' in evt.detail) {
+          this.notifyPath(evt.detail.path ? `_params.${evt.detail.path.split('.')[1]}` : '_params', evt.detail.value);
           if (this.visible && this.auto) {
             this._search();
           }
