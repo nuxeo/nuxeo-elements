@@ -9,7 +9,7 @@
   "addToCollectionButton.dialog.select": "Selezionare una raccolta...",
   "addToCollectionButton.tooltip": "Aggiungi a raccolta",
   "aggregation.format.document.field.unknown": "Nessun campo {0} nel documento. Definire il proprio formattatore di etichette.",
-  "bulk.errorDetails.message": "Bulk action {0} run by {1} on {2}, completed at {3}\nNumber of documents processed: {4} / {5}\nNumber of errors: {6}\nError message: {7}\n\nFor additional information, please reach out to an administrator and provide the following bulk command id: {8}",
+  "bulk.errorDetails.message": "Azione di massa {0} eseguita da {1} su {2}, completato alle {3}\nNumero di documenti elaborati: {4} / {5}\nNumero di errori: {6}\nMessaggio di errore: {7}\n\nPer ulteriori informazioni, si prega di contattare un amministratore e fornire il seguente comando di massa id: {8}",
   "checkboxAggregation.noResults": "Nessun risultato disponibile",
   "checkboxAggregation.showLess": "Mostra di meno",
   "checkboxAggregation.showAll": "Mostra tutto",

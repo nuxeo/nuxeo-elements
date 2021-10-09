@@ -9,7 +9,7 @@
   "addToCollectionButton.dialog.select": "Välj en samling...",
   "addToCollectionButton.tooltip": "Lägg till i samlingen",
   "aggregation.format.document.field.unknown": "Inget fält i dokumentet. Definiera din egna märkning.",
-  "bulk.errorDetails.message": "Bulk action {0} run by {1} on {2}, completed at {3}\nNumber of documents processed: {4} / {5}\nNumber of errors: {6}\nError message: {7}\n\nFor additional information, please reach out to an administrator and provide the following bulk command id: {8}",
+  "bulk.errorDetails.message": "Massåtgärd {0} som körs av {1} på {2}, slutförd på {3}\nAntal dokument som behandlas: {4} / {5}\nAntal fel: {6}\nFelmeddelande: {7}\n\nFör ytterligare information, vänligen nå ut till en administratör och ange följande bulk kommandoid: {8}",
   "checkboxAggregation.noResults": "Inget tillgängligt resultat",
   "checkboxAggregation.showLess": "Visa mindre",
   "checkboxAggregation.showAll": "Visa alla",
