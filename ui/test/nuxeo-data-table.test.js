@@ -438,6 +438,35 @@ suite('nuxeo-data-table', () => {
     });
   });
 
+  suite('table selection', async () => {
+    setup(async () => setupServer(1, 4));
+
+    test('multiple selection', async () => {
+      const table = await tableFixture();
+      table.fetch();
+
+      await waitForEvent(table, 'nuxeo-page-loaded', 1);
+      await flush();
+      assert.equal(4, table.$.list.items.length);
+
+      // select 2 out of 4 items
+      const checkboxes = Array.from(
+        table.querySelectorAll('nuxeo-data-table-checkbox:not([style*="visibility: hidden;"])'),
+      );
+      checkboxes[0].click();
+      checkboxes[2].click();
+      // check the model is selected
+      expect(table.selectedItems).to.have.lengthOf(2);
+      expect(table.items[0]).to.be.equal(table.selectedItems[0]);
+      expect(table.items[2]).to.be.equal(table.selectedItems[1]);
+
+      // check the ui is correctly updated to reflect the selected items
+      const rows = Array.from(table.querySelectorAll('nuxeo-data-table-row:not([header])'));
+      expect(rows[0].selected).to.be.true;
+      expect(rows[2].selected).to.be.true;
+    });
+  });
+
   suite('select all', () => {
     let table;
     setup(async () => {
