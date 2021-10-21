@@ -389,8 +389,7 @@ export const PageProviderDisplayBehavior = [
     },
 
     _isSelected(item) {
-      const index = this.selectedItems && this.selectedItems.length && this.selectedItems.indexOf(item);
-      return index > -1 && this._isIndexSelected(index);
+      return !!(this.selectedItems && this.selectedItems.length && this.selectedItems.indexOf(item) > -1);
     },
 
     _isIndexSelected(index) {
