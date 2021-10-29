@@ -57,6 +57,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           enrichers="thumbnail,permissions,highlight"
           search-name="document_picker"
           on-picked="_onPickerSelected"
+          href-base="[[hrefBase]]"
         ></nuxeo-document-picker>
 
         <div id="toolbar">
@@ -160,6 +161,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         _editor: {
           type: Object,
         },
+        /**
+         * The base url to be used for loading layouts. Right now, it is only used by the
+         * "Insert images from existing documents" button.
+         */
+        hrefBase: String,
       };
     }
 
