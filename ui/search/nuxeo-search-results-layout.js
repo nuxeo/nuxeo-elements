@@ -103,6 +103,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _resultsHref(searchName, hrefBase) {
+      if (!searchName) {
+        return '';
+      }
       const name = searchName.toLowerCase();
       const base = hrefBase || pathFromUrl(this.__dataHost.importPath || this.importPath);
       return `${base}${name}/${['nuxeo', name, 'search-results'].join('-')}.html`;

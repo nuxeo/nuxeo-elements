@@ -120,6 +120,9 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
     }
 
     _formHref(provider, searchName, hrefBase) {
+      if (provider == null) {
+        return '';
+      }
       const name = (searchName || provider).toLowerCase();
       const base = hrefBase || pathFromUrl(this.__dataHost.importPath || this.importPath);
       return `${base}${name}/${['nuxeo', name, 'search-form'].join('-')}.html`;
