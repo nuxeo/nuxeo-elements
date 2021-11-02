@@ -19,6 +19,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { pathFromUrl } from '@polymer/polymer/lib/utils/resolve-url.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import { config } from '@nuxeo/nuxeo-elements';
 import '../nuxeo-layout.js';
 import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
@@ -80,7 +81,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         /**
          * The base url for the layout href.
          */
-        hrefBase: String,
+        hrefBase: {
+          type: String,
+          value() {
+            return config.get('layouts.search.hrefBase');
+          },
+        },
       };
     }
 
