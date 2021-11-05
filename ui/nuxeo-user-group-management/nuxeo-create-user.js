@@ -212,8 +212,22 @@ import '../nuxeo-button-styles.js';
             this._goHome();
           }
         })
-        .catch((error) => {
-          this.errors = error.message;
+        .catch(async (error) => {
+          let message = error;
+          if (error.message) {
+            ({ message } = error);
+          } else if (error.response) {
+            const text = await error.response.text();
+            if (text) {
+              try {
+                const json = JSON.parse(text);
+                this.errors = json.message;
+              } catch (e) {
+                throw e;
+              }
+            }
+          }
+          this.errors = message;
         });
     }
 
