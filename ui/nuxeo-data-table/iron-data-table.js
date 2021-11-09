@@ -159,6 +159,10 @@ import '../nuxeo-button-styles.js';
             color: var(--paper-input-container-invalid-color, #de350b);
           }
 
+          :host([settings-enabled]) ::slotted(nuxeo-data-table-row:not([header])) {
+            padding-inline-end: 1.5em;
+          }
+
           [hidden] {
             display: none !important;
           }
@@ -478,6 +482,7 @@ import '../nuxeo-button-styles.js';
          */
         settingsEnabled: {
           type: Boolean,
+          reflectToAttribute: true,
           value: false,
         },
         /**

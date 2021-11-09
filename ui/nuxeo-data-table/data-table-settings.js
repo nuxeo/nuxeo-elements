@@ -18,19 +18,15 @@ import '../nuxeo-button-styles.js';
       return html`
         <style include="nuxeo-button-styles">
           :host {
-            position: relative;
-            min-width: 30px;
+            display: flex;
+            align-items: center;
           }
-
           .paper-content {
             min-width: 20vw;
             margin-bottom: 2em;
           }
 
           paper-icon-button {
-            position: absolute;
-            top: 1.5em;
-            right: 8px;
             width: 1.5em;
             height: 1.5em;
             padding: 0;
