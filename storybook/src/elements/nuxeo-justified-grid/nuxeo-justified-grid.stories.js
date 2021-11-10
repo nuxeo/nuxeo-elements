@@ -1,6 +1,6 @@
 import { html } from 'lit-html';
 import { storiesOf } from '@storybook/polymer';
-import { boolean, number } from '@storybook/addon-knobs';
+import { boolean, button, number } from '@storybook/addon-knobs';
 import { analyse } from '../../../.storybook/analysis';
 import { LIST } from '../../data/lists.data.js';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-justified-grid/nuxeo-justified-grid.js';
@@ -25,6 +25,11 @@ stories
     'Default',
     () => {
       const numberOfItems = number('Number of items', 50);
+      button('Refresh grid', () => {
+        const grid = document.querySelector('nuxeo-justified-grid');
+        grid.reset();
+        grid.fetch();
+      });
       server.respondWith('GET', '/api/v1/search/pp/default_search/execute', {
         'entity-type': 'documents',
         entries: LIST(numberOfItems).data,
@@ -59,6 +64,8 @@ stories
     'Selection',
     () => {
       const numberOfItems = number('Number of items', 50);
+      const selectionEnabled = boolean('Selection Enabled', true);
+      const multiSelection = boolean('Multi selection', false);
       server.respondWith('GET', '/api/v1/search/pp/default_search/execute', {
         'entity-type': 'documents',
         entries: LIST(numberOfItems).data,
@@ -70,8 +77,11 @@ stories
         isPreviousPageAvailable: false,
         currentPageSize: numberOfItems,
       });
-      const selectionEnabled = boolean('Selection Enabled', true);
-      const multiSelection = boolean('Multi selection', false);
+      button('Refresh grid', () => {
+        const grid = document.querySelector('nuxeo-justified-grid');
+        grid.reset();
+        grid.fetch();
+      });
       return html`
         <style>
           nuxeo-justified-grid {
