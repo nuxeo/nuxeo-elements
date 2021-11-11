@@ -5,7 +5,7 @@
   "private": true,
   "version": "3.0.8-SNAPSHOT",
   "author": "Nuxeo",
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
   "engines": {
     "node": ">=10.23.0"
   },
