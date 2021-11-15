@@ -66,7 +66,7 @@ jobs:
         npx build-storybook -o dist -s ./public
 
     - name: Deploy
-      if: github.ref == 'refs/heads/master'
+      if: github.ref == 'refs/heads/maintenance-3.0.x'
       env:
         GH_TOKEN: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
       working-directory: storybook
