@@ -39,7 +39,7 @@
     "deploy": "storybook-to-ghpages"
   },
   "devDependencies": {
-    "@open-wc/scoped-elements": "1.2.4",
+    "@open-wc/scoped-elements": "^1.3.3",
     "@open-wc/webpack-import-meta-loader": "^0.4.1",
     "@storybook/storybook-deployer": "^2.8.1"
   }
