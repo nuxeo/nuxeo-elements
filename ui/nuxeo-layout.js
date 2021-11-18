@@ -98,16 +98,18 @@ import './nuxeo-error.js';
           if (field && field.startsWith(property)) {
             model[field] = node;
           }
-          nodeInfo.bindings.forEach((binding) => {
-            if (binding.kind === 'property') {
-              binding.parts.forEach((part) => {
-                if (part.mode === '{' && !part.signature && part.source.startsWith(property)) {
-                  model[part.source] = model[part.source] || [];
-                  model[part.source] = node;
-                }
-              });
-            }
-          });
+          if (nodeInfo.bindings) {
+            nodeInfo.bindings.forEach((binding) => {
+              if (binding.kind === 'property') {
+                binding.parts.forEach((part) => {
+                  if (part.mode === '{' && !part.signature && part.source.startsWith(property)) {
+                    model[part.source] = model[part.source] || [];
+                    model[part.source] = node;
+                  }
+                });
+              }
+            });
+          }
         }
       }
       return model;
