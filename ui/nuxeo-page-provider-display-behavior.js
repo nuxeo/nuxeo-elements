@@ -512,17 +512,19 @@ export const PageProviderDisplayBehavior = [
     },
 
     _computeLabel() {
-      this._computeLabelDebouncer = Debouncer.debounce(this._computeLabelDebouncer, timeOut.after(500), () => {
-        if (this.loading) {
-          this._computedEmptyLabel = this.i18n('label.loading');
-        } else if (this.filters && this.filters.length > 0) {
-          this._computedEmptyLabel = this.emptyLabelWhenFiltered
-            ? this.emptyLabelWhenFiltered
-            : this.i18n('label.noResultsWhenFiltered');
-        } else {
-          this._computedEmptyLabel = this.emptyLabel ? this.emptyLabel : this.i18n('label.noResults');
-        }
-      });
+      if (this.loading) {
+        this._computedEmptyLabel = this.i18n('label.loading');
+      } else {
+        this._computeLabelDebouncer = Debouncer.debounce(this._computeLabelDebouncer, timeOut.after(500), () => {
+          if (this.filters && this.filters.length > 0) {
+            this._computedEmptyLabel = this.emptyLabelWhenFiltered
+              ? this.emptyLabelWhenFiltered
+              : this.i18n('label.noResultsWhenFiltered');
+          } else if ((this.nxProvider && this.nxProvider.resultsCount === 0) || !this.nxProvider) {
+            this._computedEmptyLabel = this.emptyLabel ? this.emptyLabel : this.i18n('label.noResults');
+          }
+        });
+      }
     },
 
     _quickFilterChanged() {
