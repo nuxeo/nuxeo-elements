@@ -234,5 +234,15 @@ suite('nuxeo-layout', () => {
       validity = await layout.validate();
       expect(fileInput.invalid).to.be.false;
     });
+
+    test('Should invalidate the layout if a required field is missing in custom element', async () => {
+      const layout = await fixture(html`
+        <nuxeo-layout href="${base}/layouts/document/complex/nuxeo-complex-create-layout.html"></nuxeo-layout>
+      `);
+      await layoutLoad(layout);
+
+      const validity = await layout.validate();
+      expect(validity).to.be.false;
+    });
   });
 });
