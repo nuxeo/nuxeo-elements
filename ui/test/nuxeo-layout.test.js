@@ -15,10 +15,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import '@webcomponents/html-imports/html-imports.min.js';
-import { fixture, flush, html, isElementVisible, waitChanged, waitForAttrMutation } from '@nuxeo/testing-helpers';
+import {
+  fixture,
+  flush,
+  html,
+  isElementVisible,
+  waitChanged,
+  waitForEvent,
+  waitForAttrMutation,
+} from '@nuxeo/testing-helpers';
 import { Polymer } from '@polymer/polymer/polymer-legacy.js';
 import '../nuxeo-layout.js';
 import '../widgets/nuxeo-input.js';
+import '../widgets/nuxeo-html-editor.js';
+import '../nuxeo-data-table/iron-data-table.js';
 
 // determine base module path (relies on @open-wc/webpack-import-meta-loader)
 const { url } = import.meta;
@@ -168,6 +178,39 @@ suite('nuxeo-layout', () => {
       expect(nuxeoInput.invalid).to.be.false;
       expect(nuxeoInput.validate.calledOnce).to.be.true;
       expect(layout.element.validate.calledOnce).to.be.true;
+    });
+  });
+
+  suite('Complex layouts', () => {
+    test('Should close dialog when nuxeo-html-editor is used in nuxeo-data-table-form', async () => {
+      const layout = await fixture(html`
+        <nuxeo-layout href="${base}/layouts/document/complex/nuxeo-complex-create-layout.html"></nuxeo-layout>
+      `);
+      await layoutLoad(layout);
+
+      // add a new entry to the data table that uses a nuxeo-html-editor
+      const table = layout.element.shadowRoot.querySelector('nuxeo-data-table');
+      const { dialog, save } = table.$;
+      const addEntryButton = table.shadowRoot.querySelector('#addEntry');
+      const htmlEditor = table.querySelector('nuxeo-data-table-form').shadowRoot.querySelector('nuxeo-html-editor');
+
+      // check the dialog is closed and opened it
+      expect(isElementVisible(dialog)).to.be.false;
+      addEntryButton.click();
+      await waitForEvent(dialog, 'iron-overlay-opened');
+      expect(dialog.opened).to.be.true;
+      expect(isElementVisible(dialog)).to.be.true;
+
+      // add some content to the html editor and save the new entry
+      htmlEditor.value = 'Random html content';
+      save.click();
+      await waitForEvent(dialog, 'iron-overlay-closed');
+      expect(isElementVisible(dialog)).to.be.false;
+
+      // assert the new row was added with the correct content
+      const rows = table.querySelectorAll('nuxeo-data-table-row');
+      expect(rows.length).to.be.equal(2);
+      expect(rows[1].textContent.trim()).to.equal('Random html content');
     });
   });
 });
