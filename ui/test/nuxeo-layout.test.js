@@ -29,6 +29,7 @@ import '../nuxeo-layout.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-html-editor.js';
 import '../nuxeo-data-table/iron-data-table.js';
+import '../widgets/nuxeo-file.js';
 
 // determine base module path (relies on @open-wc/webpack-import-meta-loader)
 const { url } = import.meta;
@@ -211,6 +212,27 @@ suite('nuxeo-layout', () => {
       const rows = table.querySelectorAll('nuxeo-data-table-row');
       expect(rows.length).to.be.equal(2);
       expect(rows[1].textContent.trim()).to.equal('Random html content');
+    });
+
+    test('Should invalidate the layout if nuxeo-file is still loading', async () => {
+      const layout = await fixture(html`
+        <nuxeo-layout href="${base}/layouts/document/complex/nuxeo-complex-create-layout.html"></nuxeo-layout>
+      `);
+      await layoutLoad(layout);
+
+      // mark the nuxeo-file has performing a file upload
+      const fileInput = layout.element.shadowRoot.querySelector('nuxeo-file');
+      fileInput.uploading = true;
+
+      // the nuxeo-file should be invalid because it is still uploading
+      let validity = await layout.validate();
+      expect(validity).to.be.false;
+      expect(fileInput.invalid).to.be.true;
+
+      // when the file upload finishes, the nuxeo-file should be valid
+      fileInput.uploading = false;
+      validity = await layout.validate();
+      expect(fileInput.invalid).to.be.false;
     });
   });
 });
