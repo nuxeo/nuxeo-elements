@@ -180,6 +180,49 @@ suite('nuxeo-layout', () => {
       expect(nuxeoInput.validate.calledOnce).to.be.true;
       expect(layout.element.validate.calledOnce).to.be.true;
     });
+
+    test('Should invalidate the layout if nuxeo-file is still loading', async () => {
+      const layout = await fixture(html`
+        <nuxeo-layout href="${base}/layouts/document/complex/nuxeo-complex-create-layout.html"></nuxeo-layout>
+      `);
+      await layoutLoad(layout);
+
+      // mark the nuxeo-file has performing a file upload
+      const fileInput = layout.element.shadowRoot.querySelector('nuxeo-file');
+      fileInput.uploading = true;
+
+      // the nuxeo-file should be invalid because it is still uploading
+      let validity = await layout.validate();
+      expect(validity).to.be.false;
+      expect(fileInput.invalid).to.be.true;
+
+      // when the file upload finishes, the nuxeo-file should be valid
+      fileInput.uploading = false;
+      validity = await layout.validate();
+      expect(fileInput.invalid).to.be.false;
+    });
+
+    test('Should invalidate the layout if a required field is missing in custom element', async () => {
+      const layout = await fixture(html`
+        <nuxeo-layout href="${base}/layouts/document/complex/nuxeo-complex-create-layout.html"></nuxeo-layout>
+      `);
+      await layoutLoad(layout);
+
+      // the layout should be invalid, because there's an empty required field
+      let validity = await layout.validate();
+      expect(validity).to.be.false;
+
+      // add some text to make the layout valid
+      const customElement = layout.element.shadowRoot.querySelector('nuxeo-custom-element');
+      const textInputs = customElement.shadowRoot.querySelectorAll('nuxeo-input');
+      expect(textInputs.length).to.be.equal(2);
+      textInputs[0].value = 'Random text';
+      textInputs[1].value = 'Random text';
+
+      // the layout should be valid
+      validity = await layout.validate();
+      expect(validity).to.be.true;
+    });
   });
 
   suite('Complex layouts', () => {
@@ -212,37 +255,6 @@ suite('nuxeo-layout', () => {
       const rows = table.querySelectorAll('nuxeo-data-table-row');
       expect(rows.length).to.be.equal(2);
       expect(rows[1].textContent.trim()).to.equal('Random html content');
-    });
-
-    test('Should invalidate the layout if nuxeo-file is still loading', async () => {
-      const layout = await fixture(html`
-        <nuxeo-layout href="${base}/layouts/document/complex/nuxeo-complex-create-layout.html"></nuxeo-layout>
-      `);
-      await layoutLoad(layout);
-
-      // mark the nuxeo-file has performing a file upload
-      const fileInput = layout.element.shadowRoot.querySelector('nuxeo-file');
-      fileInput.uploading = true;
-
-      // the nuxeo-file should be invalid because it is still uploading
-      let validity = await layout.validate();
-      expect(validity).to.be.false;
-      expect(fileInput.invalid).to.be.true;
-
-      // when the file upload finishes, the nuxeo-file should be valid
-      fileInput.uploading = false;
-      validity = await layout.validate();
-      expect(fileInput.invalid).to.be.false;
-    });
-
-    test('Should invalidate the layout if a required field is missing in custom element', async () => {
-      const layout = await fixture(html`
-        <nuxeo-layout href="${base}/layouts/document/complex/nuxeo-complex-create-layout.html"></nuxeo-layout>
-      `);
-      await layoutLoad(layout);
-
-      const validity = await layout.validate();
-      expect(validity).to.be.false;
     });
   });
 });
