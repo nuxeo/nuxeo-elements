@@ -153,7 +153,12 @@ import './nuxeo-error.js';
 
     _isVisible(node) {
       // HACK - exclude fallback content from slots when not visible - see ELEMENTS-1393 for more details
-      return node && node.offsetParent && (node.offsetHeight > 0 || node.offsetWidth > 0);
+      const styles = window.getComputedStyle(node);
+      return (
+        node &&
+        node.offsetParent &&
+        (node.offsetHeight > 0 || node.offsetWidth > 0 || (styles.opacity > 0 && styles.visibility !== 'hidden'))
+      );
     }
 
     _stamp(href) {
