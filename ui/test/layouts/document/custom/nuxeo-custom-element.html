@@ -7,14 +7,9 @@
   <template>
     <style include="nuxeo-styles"></style>
 
-    <nuxeo-input id="title" role="widget" value="{{document.properties.dc:title}}" label="Title" required></nuxeo-input>
+    <nuxeo-input role="widget" value="{{document.properties.dc:title}}" label="Title" required></nuxeo-input>
 
-    <nuxeo-input
-      id="description"
-      role="widget"
-      value="{{document.properties.dc:description}}"
-      label="Description"
-    ></nuxeo-input>
+    <nuxeo-input role="widget" value="{{document.properties.dc:description}}" label="Description"></nuxeo-input>
   </template>
 
   <script>

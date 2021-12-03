@@ -1,0 +1,37 @@
+<!--
+`nuxeo-file-widget-create-layout`
+@group Nuxeo UI
+@element nuxeo-file-widget-create-layout
+-->
+<dom-module id="nuxeo-file-widget-create-layout">
+  <template>
+    <style>
+      *[role='widget'] {
+        @apply --nuxeo-widget;
+      }
+    </style>
+    <nuxeo-input role="widget" value="{{document.properties.dc:title}}" label="Title" required></nuxeo-input>
+
+    <nuxeo-input role="widget" value="{{document.properties.dc:description}}" label="Description"></nuxeo-input>
+
+    <div role="widget">
+      <label>File</label>
+      <nuxeo-file value="{{document.properties.file:content}}" name="files"></nuxeo-file>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-file-widget-create-layout',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        /**
+         * @doctype Test
+         */
+        document: {
+          type: Object,
+        },
+      },
+    });
+  </script>
+</dom-module>

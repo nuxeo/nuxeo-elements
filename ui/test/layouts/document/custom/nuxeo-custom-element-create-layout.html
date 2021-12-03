@@ -1,0 +1,32 @@
+<link rel="import" href="nuxeo-custom-element.html" />
+<!--
+`nuxeo-custom-element-create-layout`
+@group Nuxeo UI
+@element nuxeo-custom-element-create-layout
+-->
+<dom-module id="nuxeo-custom-element-create-layout">
+  <template>
+    <style>
+      *[role='widget'] {
+        @apply --nuxeo-widget;
+      }
+    </style>
+
+    <nuxeo-custom-element role="widget" document="{{document}}"></nuxeo-custom-element>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-custom-element-create-layout',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        /**
+         * @doctype Test
+         */
+        document: {
+          type: Object,
+        },
+      },
+    });
+  </script>
+</dom-module>
