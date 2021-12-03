@@ -183,7 +183,7 @@ suite('nuxeo-layout', () => {
 
     test('Should invalidate the layout if nuxeo-file is still loading', async () => {
       const layout = await fixture(html`
-        <nuxeo-layout href="${base}/layouts/document/complex/nuxeo-complex-create-layout.html"></nuxeo-layout>
+        <nuxeo-layout href="${base}/layouts/document/file/nuxeo-file-widget-create-layout.html"></nuxeo-layout>
       `);
       await layoutLoad(layout);
 
@@ -204,7 +204,7 @@ suite('nuxeo-layout', () => {
 
     test('Should invalidate the layout if a required field is missing in custom element', async () => {
       const layout = await fixture(html`
-        <nuxeo-layout href="${base}/layouts/document/complex/nuxeo-complex-create-layout.html"></nuxeo-layout>
+        <nuxeo-layout href="${base}/layouts/document/custom/nuxeo-custom-element-create-layout.html"></nuxeo-layout>
       `);
       await layoutLoad(layout);
 

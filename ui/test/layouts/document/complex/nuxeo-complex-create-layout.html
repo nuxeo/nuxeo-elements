@@ -1,4 +1,3 @@
-<link rel="import" href="nuxeo-custom-element.html" />
 <!--
 `nuxeo-complex-create-layout`
 @group Nuxeo UI
@@ -11,13 +10,9 @@
         @apply --nuxeo-widget;
       }
     </style>
+    <nuxeo-input id="title" role="widget" value="{{document.properties.dc:title}}" label="Title" required></nuxeo-input>
 
-    <nuxeo-custom-element role="widget" document="{{document}}"></nuxeo-custom-element>
-
-    <div role="widget">
-      <label>File</label>
-      <nuxeo-file value="{{document.properties.file:content}}" name="files"></nuxeo-file>
-    </div>
+    <nuxeo-input role="widget" value="{{document.properties.dc:description}}" label="Description"></nuxeo-input>
 
     <nuxeo-data-table
       role="widget"
