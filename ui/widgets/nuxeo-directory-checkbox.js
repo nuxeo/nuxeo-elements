@@ -135,6 +135,10 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
       };
     }
 
+    static get observers() {
+      return ['_resetValue(directoryName)'];
+    }
+
     _updateItems(e) {
       if (this._entries && e.detail && e.detail.value) {
         const tmp = [];
@@ -169,6 +173,10 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
           return false;
         })
       );
+    }
+
+    _resetValue() {
+      this.value = [];
     }
   }
 
