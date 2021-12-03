@@ -150,7 +150,7 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
     }
 
     _isChecked(entry) {
-      const value = (this.value && this.value.length > 0 ? this.value : null) || this.selectedItem;
+      const value = this.value ? this.value : this.selectedItem;
       if (value && this.idFunction(value) === this.idFunction(entry)) {
         this._selected = this.idFunction(entry);
         return true;

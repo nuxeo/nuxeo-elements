@@ -100,7 +100,6 @@ export const DirectoryWidgetBehavior = [
 
     _fetchEntries() {
       if (this.directoryName) {
-        this.value = [];
         this.async(() => {
           this.$.op.params = {
             directoryName: this.directoryName,
