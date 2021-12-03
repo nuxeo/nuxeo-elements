@@ -1,0 +1,65 @@
+<link rel="import" href="nuxeo-custom-element.html" />
+<!--
+`nuxeo-complex-create-layout`
+@group Nuxeo UI
+@element nuxeo-complex-create-layout
+-->
+<dom-module id="nuxeo-complex-create-layout">
+  <template>
+    <style>
+      *[role='widget'] {
+        @apply --nuxeo-widget;
+      }
+    </style>
+
+    <nuxeo-custom-element role="widget" document="{{document}}"></nuxeo-custom-element>
+
+    <div role="widget">
+      <label>File</label>
+      <nuxeo-file value="{{document.properties.file:content}}" name="files"></nuxeo-file>
+    </div>
+
+    <nuxeo-data-table
+      role="widget"
+      label="Multi Value Complex"
+      items="{{document.properties.test:multiValueComplex}}"
+      orderable="true"
+      editable="true"
+      name="multiValueComplex"
+    >
+      <nuxeo-data-table-column name="Sub Field1">
+        <template>
+          [[item.subField1]]
+        </template>
+      </nuxeo-data-table-column>
+
+      <nuxeo-data-table-column name="Sub Field2">
+        <template>
+          [[item.subField2]]
+        </template>
+      </nuxeo-data-table-column>
+
+      <nuxeo-data-table-form>
+        <template>
+          <nuxeo-html-editor value="{{item.subField1}}"></nuxeo-html-editor>
+          <nuxeo-input value="{{item.subField2}}" label="Sub Field2" type="text" name="subField2"></nuxeo-input>
+        </template>
+      </nuxeo-data-table-form>
+    </nuxeo-data-table>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-complex-create-layout',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        /**
+         * @doctype Test
+         */
+        document: {
+          type: Object,
+        },
+      },
+    });
+  </script>
+</dom-module>

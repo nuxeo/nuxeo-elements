@@ -1,0 +1,31 @@
+<!--
+`nuxeo-custom-element`
+@group Nuxeo UI
+@element nuxeo-custom-element
+-->
+<dom-module id="nuxeo-custom-element">
+  <template>
+    <style include="nuxeo-styles"></style>
+
+    <nuxeo-input id="title" role="widget" value="{{document.properties.dc:title}}" label="Title" required></nuxeo-input>
+
+    <nuxeo-input
+      id="description"
+      role="widget"
+      value="{{document.properties.dc:description}}"
+      label="Description"
+    ></nuxeo-input>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-custom-element',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        document: {
+          type: Object,
+        },
+      },
+    });
+  </script>
+</dom-module>
