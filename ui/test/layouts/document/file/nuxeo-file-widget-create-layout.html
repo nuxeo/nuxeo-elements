@@ -10,13 +10,13 @@
         @apply --nuxeo-widget;
       }
     </style>
-    <nuxeo-input role="widget" value="{{document.properties.dc:title}}" label="Title" required></nuxeo-input>
+    <nuxeo-input role="widget" value="{{text}}" label="Title" required></nuxeo-input>
 
-    <nuxeo-input role="widget" value="{{document.properties.dc:description}}" label="Description"></nuxeo-input>
+    <nuxeo-input role="widget" value="{{longText}}" label="Description"></nuxeo-input>
 
     <div role="widget">
       <label>File</label>
-      <nuxeo-file value="{{document.properties.file:content}}" name="files"></nuxeo-file>
+      <nuxeo-file value="{{data}}" name="files"></nuxeo-file>
     </div>
   </template>
 
@@ -25,12 +25,9 @@
       is: 'nuxeo-file-widget-create-layout',
       behaviors: [Nuxeo.LayoutBehavior],
       properties: {
-        /**
-         * @doctype Test
-         */
-        document: {
-          type: Object,
-        },
+        text: String,
+        longText: String,
+        data: Object,
       },
     });
   </script>
