@@ -183,7 +183,10 @@ suite('nuxeo-layout', () => {
 
     test('Should invalidate the layout if nuxeo-file is still loading', async () => {
       const layout = await fixture(html`
-        <nuxeo-layout href="${base}/layouts/document/file/nuxeo-file-widget-create-layout.html"></nuxeo-layout>
+        <nuxeo-layout
+          href="${base}/layouts/document/file/nuxeo-file-widget-create-layout.html"
+          model='{"text": "Title", "longText": "Description"}'
+        ></nuxeo-layout>
       `);
       await layoutLoad(layout);
 
@@ -199,6 +202,7 @@ suite('nuxeo-layout', () => {
       // when the file upload finishes, the nuxeo-file should be valid
       fileInput.uploading = false;
       validity = await layout.validate();
+      expect(validity).to.be.true;
       expect(fileInput.invalid).to.be.false;
     });
 
