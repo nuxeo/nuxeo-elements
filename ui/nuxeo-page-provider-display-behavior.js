@@ -596,28 +596,13 @@ export const PageProviderDisplayBehavior = [
         this.nxProvider.offset = 0;
         return this.nxProvider.fetch(options).then((response) => {
           if (page === 1) {
-            // TODO - maybe we can refactor this condition block
-            // get results count, and reset the array if it differs from current array length
-            let count;
-            if (response.resultsCount < 0) {
-              // negative resultCount means unknown value, fall back on currentPageSize
-              count = response.resultsCountLimit > 0 ? response.resultsCountLimit : response.currentPageSize;
-            } else if (response.resultsCountLimit > 0 && response.resultsCountLimit < response.resultsCount) {
-              count = response.resultsCountLimit;
-            } else {
-              count = response.resultsCount;
-            }
-            if (this.maxItems) {
-              if (count > this.maxItems) {
-                count = this.maxItems;
-              }
-            }
-            this.reset(count);
+            this.reset();
           }
-          for (let entryIndex = (page - 1) * response.pageSize, i = 0; i < response.entries.length; entryIndex++, i++) {
-            const isSelected = this._isIndexSelected(entryIndex);
+          for (let i = 0; i < response.entries.length; i++) {
+            this.push('items', response.entries[i]);
 
-            this.set(`items.${entryIndex}`, response.entries[i]);
+            const entryIndex = this.items.length - 1;
+            const isSelected = this._isIndexSelected(entryIndex);
             // if select all is active we need to select the new loaded `item`
             if (this.selectAllActive) {
               if (isSelected) {
