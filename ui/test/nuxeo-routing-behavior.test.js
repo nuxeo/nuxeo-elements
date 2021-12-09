@@ -57,6 +57,8 @@ suite('Nuxeo.RoutingBehavior', () => {
       );
     });
 
+    teardown(async () => setRouter(null));
+
     test('should generate url for named route', async () => {
       router.useHashbang = false;
       router.baseUrl = '';
