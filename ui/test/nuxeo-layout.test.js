@@ -259,6 +259,9 @@ suite('nuxeo-layout', () => {
       const rows = table.querySelectorAll('nuxeo-data-table-row');
       expect(rows.length).to.be.equal(2);
       expect(rows[1].textContent.trim()).to.equal('Random html content');
+      // XXX needed because until a certain point, the items object is shared between all instances that extend
+      // the nuxeo-page-provider-display-behavior. Can be removed after ELEMENTS-1442 is fixed.
+      table.items.pop();
     });
   });
 });
