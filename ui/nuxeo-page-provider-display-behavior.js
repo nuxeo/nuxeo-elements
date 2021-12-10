@@ -217,7 +217,7 @@ export const PageProviderDisplayBehavior = [
     observers: [
       '_updateFlags(size)',
       '_nxProviderChanged(nxProvider)',
-      '_selectionEnabledChanged(selectionEnabled, selectOnTap)',
+      '_selectionEnabledChanged(selectionEnabled, selectOnTap, multiSelection)',
       '_itemsChanged(items.*)',
       '_computeLabel(i18n, emptyLabel, filters, loading, size, _isEmpty)',
     ],
@@ -389,11 +389,21 @@ export const PageProviderDisplayBehavior = [
     },
 
     _isSelected(item) {
-      return !!(this.selectedItems && this.selectedItems.length && this.selectedItems.indexOf(item) > -1);
+      return this.multiSelection
+        ? !!(this.selectedItems && this.selectedItems.length && this.selectedItems.indexOf(item) > -1)
+        : !!(this.selectedItem && this.selectedItem === item);
     },
 
     _isIndexSelected(index) {
-      return !!(this.selectedItems && this.selectedItems.length && this.selectedItems.indexOf(this.items[index]) > -1);
+      return this.multiSelection
+        ? !!(
+            this.selectedItems &&
+            this.selectedItems.length &&
+            this.items &&
+            this.items.length > index &&
+            this.selectedItems.indexOf(this.items[index]) > -1
+          )
+        : !!(this.selectedItem && this.items && this.items.length > index && this.selectedItem === this.items[index]);
     },
 
     _toggleSelectAll() {
