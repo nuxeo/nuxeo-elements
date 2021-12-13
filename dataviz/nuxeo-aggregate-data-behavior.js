@@ -363,7 +363,10 @@ Nuxeo.AggregateDataBehavior = {
 
   // unwrap out metrics value
   _getMetricsValue(bucket) {
-    return bucket.metrics ? bucket.metrics.value || bucket.metrics.values : bucket.doc_count;
+    if (bucket.metrics) {
+      return bucket.metrics.value !== undefined ? bucket.metrics.value : bucket.metrics.values;
+    }
+    return bucket.doc_count;
   },
 
   // Helper functions
