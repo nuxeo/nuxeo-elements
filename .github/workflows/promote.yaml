@@ -43,11 +43,11 @@ jobs:
           git commit -a -m "Release $VERSION"
           git tag -a v$VERSION -m "Release $VERSION"
 
-      - if: ${{ !github.event.inputs.dryRun }}
+      - if: ${{ github.event.inputs.dryRun == 'false' }}
         run: git push origin v$VERSION
 
       - name: Create Github release v${{ env.VERSION }}
-        if: ${{ !github.event.inputs.dryRun }}
+        if: ${{ github.event.inputs.dryRun == 'false' }}
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -56,21 +56,21 @@ jobs:
           release_name: Release ${{ env.VERSION }}
 
       - name: Publish to https://packages.nuxeo.com/repository/npm-public/ (dry run)
-        if: ${{ github.event.inputs.dryRun }}
+        if: ${{ github.event.inputs.dryRun == 'true' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
         run: |
           npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://packages.nuxeo.com/repository/npm-public/ --dry-run
 
       - name: Publish to https://packages.nuxeo.com/repository/npm-public/
-        if: ${{ !github.event.inputs.dryRun }}
+        if: ${{ github.event.inputs.dryRun == 'false' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
         run: |
           npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://packages.nuxeo.com/repository/npm-public/
 
       - name: Publish to https://registry.npmjs.org (dry run)
-        if: ${{ github.event.inputs.dryRun }}
+        if: ${{ github.event.inputs.dryRun == 'true' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         run: |
@@ -78,7 +78,7 @@ jobs:
 
       - name: Publish to https://registry.npmjs.org
         continue-on-error: true
-        if: ${{ !github.event.inputs.dryRun }}
+        if: ${{ github.event.inputs.dryRun == 'false' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         run: |
@@ -103,5 +103,5 @@ jobs:
           # commit and push
           git commit -a -m "Update to $NEW_VERSION"
 
-      - if: ${{ !github.event.inputs.dryRun }}
+      - if: ${{ github.event.inputs.dryRun == 'false' }}
         run: git push origin ${{ github.event.inputs.referenceBranch }}
