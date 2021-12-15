@@ -25,7 +25,7 @@ stories
   .add('Selectable', () => {
     const selectionEnabled = boolean('Selection Enabled', true);
     const selectAllEnabled = boolean('Select All Enabled', true);
-    const multiSelection = boolean('Multi Selection', false);
+    const multiSelection = boolean('Multi Selection', true);
     const numberOfItems = number('Number of items', 50);
     return tableTemplate(
       Object.assign({}, LIST(numberOfItems), {
@@ -41,7 +41,7 @@ stories
     const settingsEnabled = boolean('Settings', true);
     const selectionEnabled = boolean('Selection Enabled', true);
     const selectAllEnabled = boolean('Select All Enabled', false);
-    const multiSelection = boolean('Multi Selection', false);
+    const multiSelection = boolean('Multi Selection', true);
     const selectOnTap = boolean('Select on tap', false);
     const label = text('Label', 'Label');
     const required = boolean('Required', false);
