@@ -15,6 +15,7 @@ export const tableTemplate = (params) =>
       ?selection-enabled="${params.selectionEnabled}"
       ?select-all-enabled="${params.selectAllEnabled}"
       ?multi-selection="${params.multiSelection}"
+      ?select-on-tap="${params.selectOnTap}"
       ?details-enabled="${params.detailsEnabled}"
       label="${!params.label ? '' : params.label}"
       ?required="${params.required}"

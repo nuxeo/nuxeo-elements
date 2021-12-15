@@ -42,6 +42,7 @@ stories
     const selectionEnabled = boolean('Selection Enabled', true);
     const selectAllEnabled = boolean('Select All Enabled', false);
     const multiSelection = boolean('Multi Selection', false);
+    const selectOnTap = boolean('Select on tap', false);
     const label = text('Label', 'Label');
     const required = boolean('Required', false);
     const hidden = boolean('Hide Date column', false);
@@ -63,6 +64,7 @@ stories
         selectionEnabled,
         selectAllEnabled,
         multiSelection,
+        selectOnTap,
         label,
         required,
         hidden,
