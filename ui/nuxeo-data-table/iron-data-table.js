@@ -230,7 +230,7 @@ import '../nuxeo-button-styles.js';
           <div id="header">
             <nuxeo-data-table-row header>
               <nuxeo-data-table-checkbox
-                style$="[[_computeSelectAllVisibility(selectionEnabled, selectAllEnabled)]]"
+                style$="[[_computeSelectAllVisibility(selectionEnabled, selectAllEnabled, multiSelection)]]"
                 checked="[[selectAllActive]]"
                 on-click="_toggleSelectAll"
               ></nuxeo-data-table-checkbox>
@@ -596,7 +596,7 @@ import '../nuxeo-button-styles.js';
 
     _computeSelectAllVisibility() {
       if (this.selectionEnabled) {
-        return !this.selectAllEnabled ? 'visibility: hidden;' : '';
+        return !this.selectAllEnabled || !this.multiSelection ? 'visibility: hidden;' : '';
       }
       return 'display: none;';
     }
