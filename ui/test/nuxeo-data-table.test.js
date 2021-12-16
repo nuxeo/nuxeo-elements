@@ -441,6 +441,39 @@ suite('nuxeo-data-table', () => {
   suite('table selection', async () => {
     setup(async () => setupServer(1, 4));
 
+    test('single selection', async () => {
+      const table = await tableFixture();
+      // set multiSelection to false (only works if set on code)
+      table.multiSelection = false;
+      table.fetch();
+
+      await waitForEvent(table, 'nuxeo-page-loaded', 1);
+      await flush();
+      assert.equal(4, table.$.list.items.length);
+
+      const checkboxes = Array.from(
+        table.querySelectorAll('nuxeo-data-table-checkbox:not([style*="visibility: hidden;"])'),
+      );
+      expect(checkboxes).to.have.length(4);
+
+      // select one item
+      checkboxes[0].click();
+      // check the item is selected and selectedItem equals to selectedItems
+      expect(table.selectedItem).to.be.not.null;
+      expect(table.selectedItem).to.be.equal(table.items[0]);
+      expect(table.selectedItem).to.be.equal(table.selectedItems);
+
+      // select second item and confirm this is the selected one
+      checkboxes[1].click();
+      expect(table.selectedItem).to.be.not.null;
+      expect(table.selectedItem).to.be.equal(table.items[1]);
+      expect(table.selectedItem).to.be.equal(table.selectedItems);
+
+      // clear selection
+      checkboxes[1].click();
+      expect(table.selectedItem).to.be.null;
+    });
+
     test('multiple selection', async () => {
       const table = await tableFixture();
       table.fetch();
@@ -464,6 +497,79 @@ suite('nuxeo-data-table', () => {
       const rows = Array.from(table.querySelectorAll('nuxeo-data-table-row:not([header])'));
       expect(rows[0].selected).to.be.true;
       expect(rows[2].selected).to.be.true;
+    });
+
+    test('single selection helpers', async () => {
+      const table = await tableFixture();
+      // set multiSelection to false (only works if set on code)
+      table.multiSelection = false;
+      table.fetch();
+
+      await waitForEvent(table, 'nuxeo-page-loaded', 1);
+      await flush();
+      assert.equal(4, table.$.list.items.length);
+
+      const checkboxes = Array.from(
+        table.querySelectorAll('nuxeo-data-table-checkbox:not([style*="visibility: hidden;"])'),
+      );
+      expect(checkboxes).to.have.length(4);
+
+      // select one item
+      checkboxes[0].click();
+      // check the item model is selected
+      expect(table._isSelected(table.items[0])).to.be.true;
+      expect(table._isIndexSelected(0)).to.be.true;
+      // select second item and confirm this is the selected one
+      checkboxes[1].click();
+      // check the item model is selected and previous one is not
+      expect(table._isSelected(table.items[1])).to.be.true;
+      expect(table._isIndexSelected(1)).to.be.true;
+      expect(table._isSelected(table.items[0])).to.be.false;
+      expect(table._isIndexSelected(0)).to.be.false;
+
+      // clear selection
+      checkboxes[1].click();
+      expect(table._isSelected(table.items[0])).to.be.false;
+      expect(table._isSelected(table.items[1])).to.be.false;
+      expect(table._isIndexSelected(0)).to.be.false;
+      expect(table._isIndexSelected(1)).to.be.false;
+    });
+
+    test('multiple selection helpers', async () => {
+      const table = await tableFixture();
+      table.fetch();
+
+      await waitForEvent(table, 'nuxeo-page-loaded', 1);
+      await flush();
+      assert.equal(4, table.$.list.items.length);
+
+      const checkboxes = Array.from(
+        table.querySelectorAll('nuxeo-data-table-checkbox:not([style*="visibility: hidden;"])'),
+      );
+      expect(checkboxes).to.have.length(4);
+
+      // select one item
+      checkboxes[0].click();
+      // check the item model is selected
+      expect(table._isSelected(table.items[0])).to.be.true;
+      expect(table._isIndexSelected(0)).to.be.true;
+      expect(table._isSelected(table.items[1])).to.be.false;
+      expect(table._isIndexSelected(1)).to.be.false;
+
+      // select another item and confirm the previous one is still selected
+      checkboxes[1].click();
+      expect(table._isSelected(table.items[1])).to.be.true;
+      expect(table._isIndexSelected(1)).to.be.true;
+      expect(table._isSelected(table.items[0])).to.be.true;
+      expect(table._isIndexSelected(0)).to.be.true;
+
+      // clear selection
+      checkboxes[0].click();
+      checkboxes[1].click();
+      expect(table._isSelected(table.items[0])).to.be.false;
+      expect(table._isSelected(table.items[1])).to.be.false;
+      expect(table._isIndexSelected(0)).to.be.false;
+      expect(table._isIndexSelected(1)).to.be.false;
     });
   });
 
