@@ -203,7 +203,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _getValidity() {
-      return this.$.date.validate() && (this.required ? !!this.value : true);
+      return (
+        this.$.date.validate(this.value ? this.$.date.i18n.formatDate(this.value) : this.value) &&
+        (this.required ? !!this.value : true)
+      );
     }
 
     _valueChanged() {
