@@ -333,11 +333,9 @@ import '../actions/nuxeo-action-button-styles.js';
     }
 
     _isAborted(status) {
-      if (this._hasBulkStatus(status)) {
-        const { state } = status.value || status;
-        return state === 'ABORTED';
-      }
-      return !this._isRunning(status);
+      return this._hasBulkStatus(status)
+        ? ((status.value && status.value.state) || status.state) === 'ABORTED'
+        : !this._isRunning(status);
     }
 
     _hasBulkStatus(status) {
