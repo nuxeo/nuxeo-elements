@@ -328,19 +328,16 @@ import '../actions/nuxeo-action-button-styles.js';
     }
 
     _isRunning(status) {
-      if (status && status['entity-type'] === 'bulkStatus') {
-        const { state } = status.value || status;
-        return state !== 'ABORTED' && state !== 'COMPLETED';
-      }
-      return status === 'RUNNING';
+      const state = this._hasBulkStatus(status) ? (status.value && status.value.state) || status.state : status;
+      return state === 'RUNNING';
     }
 
     _isAborted(status) {
-      if (status && status['entity-type'] === 'bulkStatus') {
+      if (this._hasBulkStatus(status)) {
         const { state } = status.value || status;
         return state === 'ABORTED';
       }
-      return this._isRunning(status);
+      return !this._isRunning(status);
     }
 
     _hasBulkStatus(status) {
@@ -369,12 +366,11 @@ import '../actions/nuxeo-action-button-styles.js';
         return;
       }
       const status = e.detail;
-      const { commandId, state, processed, total } = status;
+      const { commandId, processed, total } = status;
       const detail = {
-        message:
-          this._isRunning(status) && state !== 'SCHEDULED'
-            ? this.i18n('operationButton.bulk.poll.running', this.i18n(this.label), processed, total)
-            : this.i18n('operationButton.bulk.poll.scheduled', this.i18n(this.label)),
+        message: this._isRunning(status)
+          ? this.i18n('operationButton.bulk.poll.running', this.i18n(this.label), processed, total)
+          : this.i18n('operationButton.bulk.poll.scheduled', this.i18n(this.label)),
         abort: function() {
           this.$.op._abort(commandId);
         }.bind(this),
