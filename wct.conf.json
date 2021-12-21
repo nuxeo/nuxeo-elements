@@ -8,6 +8,17 @@
       ],
       "exclude": []
     },
+    "local": {
+      "browsers": [
+        "chrome"
+      ],
+      "browserOptions": {
+        "chrome": [
+          "no-sandbox",
+          "headless"
+        ]
+      }
+    },
     "sauce": {
       "disabled": true,
       "browsers": [
