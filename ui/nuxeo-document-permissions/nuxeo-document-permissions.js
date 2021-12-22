@@ -95,7 +95,7 @@ import '../nuxeo-button-styles.js';
 
         <!-- Local permissions -->
         <nuxeo-card heading="[[i18n('documentPermissions.locallyDefined')]]">
-          <dom-if if="[[_hasPermission(doc,'Everything')]]">
+          <dom-if if="[[_hasPermission(doc)]]">
             <template>
               <div class="actions">
                 <nuxeo-popup-permission
@@ -112,7 +112,7 @@ import '../nuxeo-button-styles.js';
               doc="[[doc]]"
               acl-filter="_excludeInheritedAcls"
               ace-filter="_excludeExternalUserAces"
-              show-actions="[[_hasPermission(doc,'Everything')]]"
+              show-actions="[[_hasPermission(doc)]]"
             >
               <div slot="emptyResult" class="emptyResult">
                 [[_emptyLabel('documentPermissions.noLocalPermissions', loading, i18n)]]
@@ -123,7 +123,7 @@ import '../nuxeo-button-styles.js';
 
         <!-- Inherited permissions -->
         <nuxeo-card heading="[[i18n('documentPermissions.inherited')]]">
-          <dom-if if="[[_hasPermission(doc,'Everything')]]">
+          <dom-if if="[[_hasPermission(doc)]]">
             <template>
               <div class="actions">
                 <dom-if if="[[!_empty(inheritedAces)]]">
@@ -160,7 +160,7 @@ import '../nuxeo-button-styles.js';
 
         <!-- External users permissions -->
         <nuxeo-card heading="[[i18n('documentPermissions.external')]]">
-          <dom-if if="[[_hasPermission(doc, 'Everything')]]">
+          <dom-if if="[[_hasPermission(doc)]]">
             <template>
               <div class="actions">
                 <nuxeo-popup-permission
@@ -180,7 +180,7 @@ import '../nuxeo-button-styles.js';
               doc="[[doc]]"
               ace-filter="_onlyExternalUserAces"
               acl-filter="_excludeInheritedAcls"
-              show-actions="[[_hasPermission(doc,'Everything')]]"
+              show-actions="[[_hasPermission(doc)]]"
               share-with-external="true"
             >
               <div slot="emptyResult" class="emptyResult">
@@ -283,7 +283,7 @@ import '../nuxeo-button-styles.js';
 
     _hasPermission() {
       const permissions = this.doc && this.doc.contextParameters && this.doc.contextParameters.permissions;
-      return permissions && permissions.indexOf('Everything') !== -1;
+      return permissions && permissions.indexOf('WriteSecurity') !== -1;
     }
 
     _empty(arr) {
