@@ -49,7 +49,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
             @apply --iron-data-table-row-odd;
           }
 
-          :host(:focus) {
+          :host(:not([header]):focus) {
             outline: none;
             @apply --iron-data-table-row-focused;
           }
