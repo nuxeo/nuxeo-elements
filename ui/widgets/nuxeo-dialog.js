@@ -96,7 +96,7 @@ IronOverlayManager._overlayWithBackdrop = function() {
       if (this._observer) {
         this.detached();
       }
-      this._instance = null;
+      this._clear();
     }
 
     _opened(e) {
@@ -115,6 +115,21 @@ IronOverlayManager._overlayWithBackdrop = function() {
           this._instance = this.stamp();
           this.appendChild(this._instance.root);
         }
+      }
+    }
+
+    _clear() {
+      if (this._instance) {
+        const c$ = this._instance.children;
+        if (c$ && c$.length) {
+          // use first child parent, for case when dom-if may have been detached
+          const parent = dom(dom(c$[0]).parentNode);
+          // eslint-disable-next-line no-cond-assign
+          for (let i = 0, n; i < c$.length && (n = c$[i]); i++) {
+            parent.removeChild(n);
+          }
+        }
+        this._instance = null;
       }
     }
 
