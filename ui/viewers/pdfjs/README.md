@@ -2,7 +2,7 @@
 
 The PDF.js viewer is built from the [PDF.js](https://github.com/mozilla/pdf.js/) GitHub repository and integrated into the current directory.
 
-The current version is built from the [v2.6.347](https://github.com/mozilla/pdf.js/releases/tag/v2.6.347) tag.
+The current version is built from the [v2.6.347](https://github.com/mozilla/pdf.js/releases/tag/v2.12.313) tag.
 
 ## How to Update
 
@@ -13,7 +13,7 @@ Clone the Repository:
 
 Checkout the wanted commit/tag:
 
-    $ git checkout v2.6.347
+    $ git checkout v2.12.313
 
 Apply the following patch to allow viewing a file in a static UI connected to a remote server with a CORS configuration allowing cross-domain requests:
 - Revert file origin validation.
@@ -21,13 +21,13 @@ Apply the following patch to allow viewing a file in a static UI connected to a 
 
 ```
 diff --git a/web/app.js b/web/app.js
-index 43c1c49f6..c6725b5b4 100644
+index 209ad0360..c1cb5de8b 100644
 --- a/web/app.js
 +++ b/web/app.js
-@@ -1975,7 +1975,9 @@ function webViewerInitialized() {
+@@ -2186,7 +2186,9 @@ function webViewerInitialized() {
      const queryString = document.location.search.substring(1);
      const params = parseQueryString(queryString);
-     file = "file" in params ? params.file : AppOptions.get("defaultUrl");
+     file = params.get("file") ?? AppOptions.get("defaultUrl");
 -    validateFileURL(file);
 +    // Revert https://github.com/mozilla/pdf.js/pull/6916 to allow viewing a file from a remote server
 +    // with CORS headers properly configured in a static UI.
@@ -35,15 +35,15 @@ index 43c1c49f6..c6725b5b4 100644
    } else if (PDFJSDev.test("MOZCENTRAL")) {
      file = window.location.href;
    } else if (PDFJSDev.test("CHROME")) {
-@@ -2103,7 +2105,7 @@ if (typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")) {
-     }
-
+@@ -2290,7 +2292,7 @@ function webViewerInitialized() {
+ function webViewerOpenFileViaURL(file) {
+   if (typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")) {
      if (file) {
 -      PDFViewerApplication.open(file);
-+      PDFViewerApplication.open(file, { withCredentials: true, });
++      PDFViewerApplication.open(file, { withCredentials: true });
+     } else {
+       PDFViewerApplication._hideViewBookmark();
      }
-   };
- } else if (PDFJSDev.test("MOZCENTRAL || CHROME")) {
 ```
 
 Install the gulp package globally:
@@ -64,15 +64,15 @@ Build the generic viewer:
 
 Clean the viewer directory:
 
-    $ rm -rf /path/to/repo/nuxeo-ui-elements/viewers/pdfjs/*/
+    $ rm -rf /path/to/repo/ui/viewers/pdfjs/*/
 
 Copy the generic viewer:
 
-    $ rsync -av build/minified/ /path/to/repo/nuxeo-ui-elements/viewers/pdfjs/ --exclude=\*.{map,pdf}
+    $ rsync -av build/minified/ /path/to/repo/ui/viewers/pdfjs/ --exclude=\*.{map,pdf}
 
 Commit your changes:
 
-    $ git commit -am "ELEMENTS-XXX: update PDF.js to 2.6.347"
+    $ git commit -am "ELEMENTS-XXX: update PDF.js to 2.12.313"
 
 # About Nuxeo
 
