@@ -190,7 +190,7 @@ import '../nuxeo-button-styles.js';
       if (this.document) {
         this.processes = this.document.contextParameters.runnableWorkflows;
         this.workflows = this.document.contextParameters.runningWorkflows;
-        this.selectedProcess = this.processes.length > 0 ? this.processes[0].workflowModelName : null;
+        this.selectedProcess = this.processes && this.processes.length > 0 ? this.processes[0].workflowModelName : null;
       }
     }
   }
