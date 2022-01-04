@@ -168,5 +168,56 @@ suite('Nuxeo.RoutingBehavior', () => {
         expect(router.document.calledOnce).to.be.true;
       });
     });
+
+    suite('with one repository available', async () => {
+      setup(async () => {
+        Nuxeo.UI.repositories = [{ name: 'repo', href: '/nuxeo/repo/repo/ui/' }];
+      });
+
+      teardown(async () => {
+        Nuxeo.UI.repositories = [];
+      });
+
+      test('should generate document url without repository', async () => {
+        router.useHashbang = true;
+        router.baseUrl = 'base';
+        expect(
+          el.urlFor({
+            'entity-type': 'document',
+            uid: 'abc123',
+            path: '/default-domain/workspaces/ws',
+            repository: 'repo',
+          }),
+        ).to.equal(`base/#!/path/default-domain/workspaces/ws`);
+        expect(router.document.calledOnce).to.be.true;
+      });
+    });
+
+    suite('with more than one repository available', async () => {
+      setup(async () => {
+        Nuxeo.UI.repositories = [
+          { name: 'repo1', href: '/nuxeo/repo/repo1/ui/' },
+          { name: 'repo2', href: '/nuxeo/repo/repo2/ui/' },
+        ];
+      });
+
+      teardown(async () => {
+        Nuxeo.UI.repositories = [];
+      });
+
+      test('should generate document url with repository', async () => {
+        router.useHashbang = true;
+        router.baseUrl = 'base';
+        expect(
+          el.urlFor({
+            'entity-type': 'document',
+            uid: 'abc123',
+            path: '/default-domain/workspaces/ws',
+            repository: 'repo1',
+          }),
+        ).to.equal(`${window.origin}/nuxeo/repo/repo1/ui/#!/path/default-domain/workspaces/ws`);
+        expect(router.document.calledOnce).to.be.true;
+      });
+    });
   });
 });
