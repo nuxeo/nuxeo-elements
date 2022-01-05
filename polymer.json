@@ -1,7 +1,7 @@
 {
   "lint": {
     "rules": ["polymer-3"],
-    "filesToIgnore": ["**/node_modules/**/*.js"],
+    "filesToIgnore": ["**/node_modules/**/*.js", "**/ui/viewers/pdfjs/**/**/*.js"],
     "ignoreWarnings": [
       "databinding-calls-must-be-functions",
       "could-not-resolve-reference"
