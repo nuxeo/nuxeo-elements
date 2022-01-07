@@ -667,4 +667,26 @@ suite('nuxeo-data-table', () => {
       assert.deepEqual(table.items, table.selectedItems);
     });
   });
+
+  suite('Accessibility', () => {
+    let table;
+    setup(async () => {
+      await setupServer(3, 40);
+
+      table = await tableFixture(true);
+      table.fetch();
+      await waitForEvent(table, 'nuxeo-page-loaded', 1);
+      await flush();
+    });
+
+    test('select all clear after sorting', async () => {
+      const columnSort = table.querySelector('nuxeo-data-table-column-sort');
+      const sortIconButton = columnSort.shadowRoot.getElementById('sortIcon');
+      assert.equal(sortIconButton.getAttribute('aria-label'), null);
+      sortIconButton.click();
+      assert.equal(sortIconButton.getAttribute('aria-label'), 'command.sort.ascend');
+      sortIconButton.click();
+      assert.equal(sortIconButton.getAttribute('aria-label'), 'command.sort.descend');
+    });
+  });
 });
