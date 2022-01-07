@@ -57,7 +57,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             on-click="_sort"
             icon="data-table:arrow-upward"
             direction$="[[direction]]"
-            aria-label$="[[i18n('command.sort')]]"
+            aria-label$="[[_computeAriaLabel(direction, i18n)]]"
           >
           </paper-icon-button>
           <div class="order">[[order]]</div>
@@ -136,6 +136,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           },
         }),
       );
+    }
+
+    _computeAriaLabel() {
+      if (this.direction) {
+        return this.i18n(`command.sort.${this.direction === 'desc' ? 'descend' : 'ascend'}`);
+      }
     }
   }
 
