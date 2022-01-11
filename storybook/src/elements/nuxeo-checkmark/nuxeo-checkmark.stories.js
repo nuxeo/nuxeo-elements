@@ -1,6 +1,6 @@
 import { storiesOf } from '@storybook/polymer';
 import { boolean, color } from '@storybook/addon-knobs';
-import { html } from 'lit-html';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-checkmark';
 
 storiesOf('UI/nuxeo-checkmark', module).add('nuxeo-checkmark', () => {

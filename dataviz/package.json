@@ -34,6 +34,7 @@
     "@nuxeo/moment": "^2.24.0-nx.0",
     "@nuxeo/nuxeo-elements": "^3.0.13-SNAPSHOT",
     "@polymer/polymer": "^3.0.0",
+    "lit": "^2.1.1",
     "moment": "2.23.0"
   }
 }

@@ -1,6 +1,6 @@
 import { storiesOf } from '@storybook/polymer';
 import { number } from '@storybook/addon-knobs';
-import { html } from 'lit-html';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-actions-menu';
 import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-link-button';
 import iconMap from '../../lists/icons';

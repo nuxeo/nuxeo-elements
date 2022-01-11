@@ -1,5 +1,5 @@
 import { storiesOf } from '@storybook/polymer';
-import { html } from 'lit-html';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-document-picker/nuxeo-document-picker.js';
 import { codePanelTemplate } from '../code-panel-template.js';
 

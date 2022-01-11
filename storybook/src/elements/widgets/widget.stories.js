@@ -1,4 +1,4 @@
-import { html } from 'lit-html';
+import { html } from 'lit';
 import { storiesOf } from '@storybook/polymer';
 import { text } from '@storybook/addon-knobs';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-input.js';

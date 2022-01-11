@@ -1,6 +1,6 @@
 import { storiesOf } from '@storybook/polymer';
 import { text, date } from '@storybook/addon-knobs';
-import { html } from 'lit-html';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-date-picker';
 
 storiesOf('UI/nuxeo-date-picker', module).add('nuxeo-date-picker', () => {

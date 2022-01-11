@@ -1,4 +1,4 @@
-import { html } from 'lit-html';
+import { html } from 'lit';
 import { storiesOf } from '@storybook/polymer';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-icons.js';

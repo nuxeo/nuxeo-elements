@@ -1,5 +1,5 @@
 import { storiesOf } from '@storybook/polymer';
-import { html } from 'lit-html';
+import { html } from 'lit';
 import { boolean, number, text } from '@storybook/addon-knobs';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-aggregation/nuxeo-checkbox-aggregation.js';
 

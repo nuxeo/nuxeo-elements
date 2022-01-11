@@ -1,5 +1,5 @@
 import { storiesOf } from '@storybook/polymer';
-import { html } from 'lit-html';
+import { html } from 'lit';
 import { LayoutBehavior } from '@nuxeo/nuxeo-ui-elements/nuxeo-layout-behavior.js';
 import { Polymer } from '@polymer/polymer/lib/legacy/polymer-fn.js';
 import '@nuxeo/nuxeo-ui-elements/search/nuxeo-search-form-layout.js';

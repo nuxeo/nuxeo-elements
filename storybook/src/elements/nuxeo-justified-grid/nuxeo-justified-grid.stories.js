@@ -1,4 +1,4 @@
-import { html } from 'lit-html';
+import { html } from 'lit';
 import { storiesOf } from '@storybook/polymer';
 import { boolean, button, number } from '@storybook/addon-knobs';
 import { analyse } from '../../../.storybook/analysis';

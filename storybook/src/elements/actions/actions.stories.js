@@ -12,7 +12,7 @@ import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-notifications-toggle-button';
 import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-share-button.js';
 import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-untrash-document-button.js';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-icons';
-import { html } from 'lit-html';
+import { html } from 'lit';
 import { storiesOf } from '@storybook/polymer';
 import { color, select, text, boolean } from '@storybook/addon-knobs';
 import { action } from '@storybook/addon-actions';

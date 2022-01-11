@@ -1,5 +1,5 @@
 import { storiesOf } from '@storybook/polymer';
-import { html } from 'lit-html';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-html-editor';
 
 storiesOf('UI/nuxeo-html-editor', module).add(

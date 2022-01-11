@@ -2,7 +2,7 @@ import '@nuxeo/nuxeo-ui-elements/nuxeo-document-comments/nuxeo-document-comment'
 import '@nuxeo/nuxeo-ui-elements/nuxeo-document-comments/nuxeo-document-comment-thread';
 import { boolean, color, radios } from '@storybook/addon-knobs';
 import { storiesOf } from '@storybook/polymer';
-import { html } from 'lit-html';
+import { html } from 'lit';
 import uuid from 'uuid/v4';
 import { getCommentsSample } from '../../data/comments.data.js';
 

@@ -1,4 +1,4 @@
-import { html } from 'lit-html';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-data-table/iron-data-table.js';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-document-thumbnail/nuxeo-document-thumbnail.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-date.js';
