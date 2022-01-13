@@ -70,7 +70,7 @@
     "@polymer/paper-toggle-button": "^3.0.0",
     "@polymer/paper-tooltip": "^3.0.0",
     "@polymer/polymer": "^3.0.0",
-    "@vaadin/vaadin-date-picker": "^3.0.0",
+    "@vaadin/date-picker": "^23.0.10",
     "@webcomponents/html-imports": "^1.2.0",
     "acorn": "^6.0.7",
     "cropperjs": "^1.0.0",

@@ -23,7 +23,7 @@ function getInput(element) {
 }
 
 function getInputDisplay(element) {
-  return element.root.querySelector('#date').root.querySelector('#input');
+  return element.root.querySelector('#date').querySelector('input');
 }
 
 function testValue(element, value, isUTC) {
