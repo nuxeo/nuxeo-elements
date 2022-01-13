@@ -13,7 +13,7 @@
   "author": "Nuxeo",
   "repository": "nuxeo/nuxeo-elements.git",
   "dependencies": {
-    "@open-wc/testing-helpers": "^1.6.2",
+    "@open-wc/testing-helpers": "^2.0.2",
     "@polymer/iron-test-helpers": "^3.0.0",
     "@polymer/polymer": "^3.0.0",
     "lit": "^2.1.1",

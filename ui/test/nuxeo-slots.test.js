@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { fixture, flush, html, waitForChildListMutation } from '@nuxeo/testing-helpers';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import * as polymer from '@polymer/polymer';
 import '../nuxeo-slots.js';
 
@@ -45,9 +46,12 @@ const makeSlot = (name, legacySlotName = false) =>
 
 const makeContent = async (name, slot, content, options = {}) => {
   const { order, disabled, priority } = options;
+  const str = content && content.strings && content.strings.raw && content.strings.raw.join();
   const tmpl = content
     ? html`
-        <template>${content}</template>
+        ${unsafeHTML(`
+        <template>${str}</template>
+        `)}
       `
     : '';
   const slContent = html`

@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { fixture, flush, html, login } from '@nuxeo/testing-helpers';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import * as polymer from '@polymer/polymer/lib/utils/html-tag.js';
 import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
@@ -26,16 +27,21 @@ import '../widgets/nuxeo-actions-menu.js';
 window.html = html; // make it available for building custom elements inline
 
 suite('nuxeo-actions-menu', () => {
-  function makeMenuContent(n = 5) {
-    return html`
-      ${[...Array(n)].map(
-        () => html`
+  function makeMenuContent(n = 5, asMarkup = false) {
+    const content = [...Array(n)]
+      .map(
+        () => `
           <nuxeo-preview-button
             document='{ "entity-type": "document", "facets": [], "properties": { "file:content": "document content" } }'
           ></nuxeo-preview-button>
         `,
-      )}
-    `;
+      )
+      .join();
+    return asMarkup
+      ? content
+      : html`
+          ${unsafeHTML(content)}
+        `;
   }
 
   async function makeMenu(n = 5) {
@@ -66,11 +72,13 @@ suite('nuxeo-actions-menu', () => {
   async function makeNuxeoSlottedMenuContent(n = 5, slot = 'SLOT') {
     await fixture(
       html`
+        ${unsafeHTML(`
         <nuxeo-slot-content name="content" slot="${slot}">
           <template>
-            ${makeMenuContent(n)}
+            ${makeMenuContent(n, true)}
           </template>
         </nuxeo-slot-content>
+      `)}
       `,
       true,
     );
@@ -186,14 +194,19 @@ suite('nuxeo-actions-menu', () => {
   test('menu with unresolved nuxeo-slotted content', async () => {
     const menu = await makeMenuWithNuxeoSlot();
 
-    await fixture(html`
+    await fixture(
+      html`
+        ${unsafeHTML(`
       <nuxeo-slot-content name="content" slot="SLOT">
         <template>
           <nuxeo-test-button icon="icons:home"></nuxeo-test-button>
-          ${makeMenuContent(5)}
+          ${makeMenuContent(5, true)}
         </template>
       </nuxeo-slot-content>
-    `);
+      `)}
+      `,
+      true,
+    );
 
     // define nuxeo-test-button
     customElements.define(
