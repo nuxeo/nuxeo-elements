@@ -66,6 +66,11 @@ export const RoutingBehavior = {
     }
   },
 
+  _generateUrl(baseUrl, path) {
+    const base = `${baseUrl}${this.router.useHashbang ? `${baseUrl.endsWith('/') ? '' : '/'}#!` : ''}`;
+    return `${base}${base.endsWith('/') || path.startsWith('/') ? '' : '/'}${path}`;
+  },
+
   /**
    * Returns a computed `urlFor` method, based on the current `router`.
    */
@@ -83,6 +88,10 @@ export const RoutingBehavior = {
             return '';
           }
           path = this._routeEntity(...args);
+          const isFullpath = /^http(s)?:\/\//.test(path);
+          if (!isFullpath) {
+            path = this._generateUrl(baseUrl, path);
+          }
         } else {
           if (route.startsWith('/')) {
             return baseUrl + route;
@@ -91,10 +100,9 @@ export const RoutingBehavior = {
             console.error(`Could not generate a url for route ${route}`);
             return;
           }
-          path = this.router[route].apply(this, params);
+          path = this._generateUrl(baseUrl, this.router[route].apply(this, params));
         }
-        const base = `${baseUrl}${this.router.useHashbang ? `${baseUrl.endsWith('/') ? '' : '/'}#!` : ''}`;
-        return `${base}${base.endsWith('/') || path.startsWith('/') ? '' : '/'}${path}`;
+        return path;
       }
     };
   },
@@ -107,13 +115,12 @@ export const RoutingBehavior = {
     return function(...args) {
       if (this.router) {
         const [route, ...params] = args;
-        const baseUrl = this.router.baseUrl || '';
         let path;
         if (typeof route === 'object') {
           path = this._routeEntity(...args);
         } else {
           if (route.startsWith('/')) {
-            this.router.navigate(baseUrl + route);
+            this.router.navigate((this.router.baseUrl || '') + route);
           }
           if (!this.router[route]) {
             console.error(`Could not navigate to a url for route ${route}`);
@@ -146,11 +153,15 @@ export const RoutingBehavior = {
       }
     }
     let routeKey = config.get(`router.key.${entityType}`);
+    let baseUrl = '';
     let fn = this.router[entityType];
     if (entityType === 'document') {
       routeKey = routeKey || 'path';
       if (obj.isProxy || obj.isVersion) {
         routeKey = 'uid';
+      }
+      if (obj.repository && Nuxeo.UI && Nuxeo.UI.repositories && Nuxeo.UI.repositories.length > 1) {
+        baseUrl = `${window.location.origin}${Nuxeo.UI.repositories.find((r) => r.name === obj.repository).href}`;
       }
       // XXX we keep `routeKey === 'path' && this.router.browse` to keep compat routers that override the document
       // document` method and do not know how to handle paths
@@ -161,7 +172,9 @@ export const RoutingBehavior = {
     if (!routeVal) {
       throw new Error(`invalid router key: ${routeKey}`);
     }
-    return fn(routeVal, ...params);
+    const path = fn(routeVal, ...params);
+    // if we have a baseURL (i.e., we have a repository), let's generate the full URL
+    return baseUrl ? this._generateUrl(baseUrl, path) : path;
   },
 };
 
