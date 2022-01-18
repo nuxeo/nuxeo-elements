@@ -1,0 +1,41 @@
+name: 'Trigger Workflow and Wait'
+description: 'This action triggers a workflow in another repository and waits for the result.'
+inputs:
+  owner:
+    description: "The owner of the repository where the workflow is contained."
+    required: true
+  repo:
+    description: "The repository where the workflow is contained."
+    required: true
+  github_token:
+    description: "The Github access token with access to the repository. Its recommended you put it under secrets."
+    required: true
+  ref:
+    description: 'The reference of the workflow run. The reference can be a branch, tag, or a commit SHA. Default: main'
+    required: false
+  wait_interval:
+    description: "The number of seconds delay between checking for result of run."
+    required: false
+  workflow_file_name:
+    description: "The reference point. For example, you could use main.yml."
+    required: true
+  inputs:
+    description: 'Inputs to pass to the workflow, must be a JSON string'
+    required: false
+  propagate_failure:
+    description: 'Fail current job if downstream job fails. default: true'
+    required: false
+  trigger_workflow:
+    description: 'Trigger the specified workflow. default: true'
+    required: false
+  wait_workflow:
+    description: 'Wait for workflow to finish. default: true'
+    required: false
+outputs:
+  workflow_id:
+    description: The ID of the workflow that was triggered by this action
+  workflow_url:
+    description: The URL of the workflow that was triggered by this action
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
