@@ -1,0 +1,13 @@
+name: 'Trigger workflow'
+description: 'Trigger the ondemand workflow from Web UI'
+inputs:
+  branch-name:
+    description: 'branch name'
+    required: true
+    default: 'maintenance-3.0.x'
+  webui-access-token:
+    description: 'Web UI access token'
+    required: true
+runs:
+  using: 'node16'
+  main: 'index.js'
