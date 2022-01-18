@@ -68,13 +68,19 @@ validate_args() {
     exit 1
   fi
 
+  echo 'start of validate'
+
+    echo ${INPUT_INPUTS}
+
   inputs=$(echo '{}' | jq)
   if [ "${INPUT_INPUTS}" ]
   then
     inputs=$(echo "${INPUT_INPUTS}" | jq)
   fi
 
-  ref="main"
+  echo 'end of validate'
+
+  ref="maintenance-3.0.x"
   if [ "$INPUT_REF" ]
   then
     ref="${INPUT_REF}"
@@ -83,7 +89,9 @@ validate_args() {
 
 trigger_workflow() {
   echo "https://api.github.com/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches"
+  echo "Triggering ${INPUT_WORKFLOW_FILE_NAME} for branch ${ref}"
 
+  # this doesn't output anything (it would be useful if we have the run or the attempt id)
   curl -X POST "https://api.github.com/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches" \
     -H "Accept: application/vnd.github.v3+json" \
     -H "Content-Type: application/json" \
@@ -92,7 +100,9 @@ trigger_workflow() {
 }
 
 wait_for_workflow_to_finish() {
+  echo 'wait_for_workflow_to_finish'
   sleep "10"
+  echo 'after sleep'
   # Find the id of the last build
   last_workflow=$(curl -X GET "https://api.github.com/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/runs" \
     -H 'Accept: application/vnd.github.antiope-preview+json' \

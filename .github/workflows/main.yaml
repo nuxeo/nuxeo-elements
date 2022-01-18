@@ -7,17 +7,6 @@ on:
   pull_request:
 
 jobs:
-  # cross-repo-check:
-  #   if: github.event_name == 'pull_request'
-  #   uses: nuxeo/nuxeo-web-ui/.github/workflows/ondemand-main.yaml@test-reusable-wf
-  #   with:
-  #     branch_name: ${{ GITHUB_HEAD_REF }} 
-  #     sauce_labs: true
-  #     skip_ftests: false
-  #     skip_a11y: false
-  #     skip_unit_tests: false
-  #     generate_metrics: false
-  #     run_all: false
   cross-repo-check:
     runs-on: ubuntu-latest
     steps:
@@ -30,14 +19,13 @@ jobs:
           github_token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }}
           workflow_file_name: ondemand-main.yaml
           ref: maintenance-3.0.x
-          inputs: '{"branch_name": "maintenance-3.0.x","sauce_labs": "true","skip_ftests": "false","skip_a11y": "false","skip_unit_tests": "false","generate_metrics": "false","run_all": "false","bail": "0"}'
+          inputs: '{"branch_name": "${{ github.head_ref }}", "sauce_labs": "false","skip_ftests": "false","skip_a11y": "false","skip_unit_tests": "false","generate_metrics": "false","run_all": "false","bail": "0"}'
           wait_interval: 240
           propagate_failure: true
           trigger_workflow: true
           wait_workflow: true
 
   build:
-    needs: cross-repo-check
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
