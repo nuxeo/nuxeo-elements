@@ -31,6 +31,8 @@
   "command.search": "Bilatu",
   "command.select": "Hautatu",
   "command.sort": "Ordenatu",
+  "command.sort.ascend": "Sort in ascending order",
+  "command.sort.descend": "Sort in descending order",
   "comments.creation.error.comment": "Errore bat gertatu da iruzkina sortzean.",
   "comments.creation.error.reply": "Errore bat gertatu da erantzuna sortzean.",
   "comments.deletion.dialog.heading": "Ezabatu iruzkina",

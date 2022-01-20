@@ -31,6 +31,8 @@
   "command.search": "Search",
   "command.select": "Select",
   "command.sort": "Sort",
+  "command.sort.ascend": "Sort in ascending order",
+  "command.sort.descend": "Sort in descending order",
   "comments.creation.error.comment": "حدث خطأ أثناء كتابة التعليق.",
   "comments.creation.error.reply": "حدث خطأ أثناء كتابة الرد.",
   "comments.deletion.dialog.heading": "حذف التعليق",

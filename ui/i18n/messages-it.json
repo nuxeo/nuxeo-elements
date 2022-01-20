@@ -31,6 +31,8 @@
   "command.search": "Cerca",
   "command.select": "Seleziona",
   "command.sort": "Ordina",
+  "command.sort.ascend": "Sort in ascending order",
+  "command.sort.descend": "Sort in descending order",
   "comments.creation.error.comment": "Si è verificato un errore durante la creazione del commento.",
   "comments.creation.error.reply": "Si è verificato un errore durante la creazione della risposta.",
   "comments.deletion.dialog.heading": "Elimina Commento",

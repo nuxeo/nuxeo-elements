@@ -31,6 +31,8 @@
   "command.search": "Buscar",
   "command.select": "Seleccionar",
   "command.sort": "Ordenar",
+  "command.sort.ascend": "Sort in ascending order",
+  "command.sort.descend": "Sort in descending order",
   "comments.creation.error.comment": "Ha ocurrido un error durante la creación del documento.",
   "comments.creation.error.reply": "Ha ocurrido un error durante la creación de la respuesta.",
   "comments.deletion.dialog.heading": "Borrar comentario",

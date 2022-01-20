@@ -31,6 +31,8 @@
   "command.search": "Sök",
   "command.select": "Välj",
   "command.sort": "Sortera",
+  "command.sort.ascend": "Sort in ascending order",
+  "command.sort.descend": "Sort in descending order",
   "comments.creation.error.comment": "Ett fel inträffade när kommentaren skapades.",
   "comments.creation.error.reply": "Ett fel inträffade när svaret skapades.",
   "comments.deletion.dialog.heading": "Ta bort dokument",

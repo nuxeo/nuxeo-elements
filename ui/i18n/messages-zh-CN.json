@@ -31,6 +31,8 @@
   "command.search": "Search",
   "command.select": "Select",
   "command.sort": "Sort",
+  "command.sort.ascend": "Sort in ascending order",
+  "command.sort.descend": "Sort in descending order",
   "comments.creation.error.comment": "An error occurred while creating the comment.",
   "comments.creation.error.reply": "An error occurred while creating the reply.",
   "comments.deletion.dialog.heading": "Delete Comment",
