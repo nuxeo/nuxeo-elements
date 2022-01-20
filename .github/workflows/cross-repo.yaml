@@ -1,9 +1,9 @@
 name: Web UI
 
 on:
-  push: # CHECK - do we really need to run this workflow on push?
-    branches:
-      - maintenance-3.0.x
+  # push: # CHECK - do we really need to run this workflow on push?
+  #   branches:
+  #     - maintenance-3.0.x
   pull_request:
 
 jobs:
@@ -25,3 +25,13 @@ jobs:
           workflow-id: ondemand-main.yaml
           access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }} # TODO - we need to get a token for this
           branch-name: ${{ github.head_ref }} # TODO - head_ref not available on push?
+          inputs: |
+            branch_name: ${{ github.head_ref }}
+            skip_cross_repo_check: true
+            sauce_labs: true
+            skip_ftests: false
+            skip_a11y: false
+            skip_unit_tests: false
+            generate_metrics: false
+            run_all: false
+            bail: 0            

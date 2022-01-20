@@ -22,27 +22,26 @@ async function run() {
     const owner = core.getInput('owner');
     const repo = core.getInput('repo');
     const pollInterval = Number.parseInt(core.getInput('poll-interval'));
+    const workflowInputs = core.getMultilineInput('inputs');
 
     const octokit = github.getOctokit(access_token);
     const context = github.context;
 
+    // set runId for tracking purposes
+    let inputs = {
+      id: `${context.runId}`,
+    };
+    workflowInputs.forEach((input) => {
+      const exprs = input.split(':');
+      inputs[exprs[0].trim()] = `${exprs[1].trim()}`;
+    });
     // trigger the remote workflow using the dispatch event
     await octokit.rest.actions.createWorkflowDispatch({
       owner,
       repo,
       workflow_id,
       ref: branch_name,
-      inputs: {
-        branch_name,
-        sauce_labs: 'true',
-        skip_ftests: 'false',
-        skip_a11y: 'false',
-        skip_unit_tests: 'false',
-        generate_metrics: 'false',
-        run_all: 'false',
-        bail: '0',
-        id: `${context.runId}`,
-      },
+      inputs,
     });
 
     await sleep(10000);
@@ -52,7 +51,7 @@ async function run() {
     let i = 0;
     let run;
     let activeRun;
-    let step = {};
+    // let step = {};
     do {
       await sleep(2000);
       activeRun = runs[i++]; // get the last run
