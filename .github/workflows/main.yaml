@@ -7,23 +7,23 @@ on:
   pull_request:
 
 jobs:
-  trigger-workflow-js:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
+  # trigger-workflow-js:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - name: Install the trigger-workflow-js action dependencies
-        run: |
-          pushd .github/actions/trigger-workflow-js
-          npm install
-          popd
+      # - name: Install the trigger-workflow-js action dependencies
+      #   run: |
+      #     pushd .github/actions/trigger-workflow-js
+      #     npm install
+      #     popd
 
-      - name: Trigger the workflow using the javascript action
-        id: hello
-        uses: ./.github/actions/trigger-workflow-js
-        with:
-          webui-access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }} # TODO - we need to get a token for this
-          branch-name: ${{ github.head_ref }}
+      # - name: Trigger the workflow using the javascript action
+      #   id: hello
+      #   uses: ./.github/actions/trigger-workflow-js
+      #   with:
+      #     webui-access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }} # TODO - we need to get a token for this
+      #     branch-name: ${{ github.head_ref }}
       # # Use the output from the `hello` step
       # - name: Get the output time
       #   run: echo "The time was ${{ steps.hello.outputs.time }}"
@@ -45,6 +45,53 @@ jobs:
   #         propagate_failure: true
   #         trigger_workflow: true
   #         wait_workflow: true
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
+          scope: '@nuxeo'
+
+      - name: Prepare environment
+        run: |
+          git config user.name "nuxeo-web-ui-jx-bot" && git config user.email "ui+jx-bot@nuxeo.com"
+          echo "BRANCH_NAME=${GITHUB_HEAD_REF##*/}" >> $GITHUB_ENV
+          echo "PACKAGE_VERSION=$(npx -c 'echo "$npm_package_version"')" >> $GITHUB_ENV
+
+      - name: Get pull request version
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "VERSION=$PACKAGE_VERSION-$BRANCH_NAME" >> $GITHUB_ENV
+
+      - name: Get prerelease version
+        if: github.event_name == 'push'
+        run: |
+          git fetch origin --tags
+          RC_VERSION=$(git tag --sort=taggerdate --list "v${PACKAGE_VERSION/-SNAPSHOT}*" | tail -1 | tr -d '\n')
+          echo "VERSION=$(npx semver -i prerelease --preid rc ${RC_VERSION:-$PACKAGE_VERSION}  | tr -d '\n')" >> $GITHUB_ENV
+
+      - name: Set version to ${{ env.VERSION }}
+        run: |
+          npm version $VERSION --no-git-tag-version
+          npx lerna version $VERSION --no-push --force-publish --no-git-tag-version --yes
+
+      - name: Tag
+        if: github.event_name == 'push'
+        run: |
+          git commit -a -m "Release ${VERSION}"
+          git tag -a v${VERSION} -m "Release ${VERSION}"
+          git push origin v${VERSION}
+
+      - name: Publish
+        if: github.event_name == 'push'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+        run: npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --tag SNAPSHOT
 
   # build:
   #   runs-on: ubuntu-latest

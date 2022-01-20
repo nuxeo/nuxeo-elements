@@ -1,0 +1,80 @@
+name: Ondemand build
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: 'The name of the branch to build.'
+        default: 'maintenance-3.0.x'
+        required: true
+
+env:
+  REFERENCE_BRANCH: maintenance-3.0.x
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 12
+        registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
+        scope: '@nuxeo'
+
+    - name: Determine nuxeo-elements branch to use
+      id: pick_nuxeo_elements_branch
+      run: |
+        if git ls-remote --exit-code --heads https://github.com/nuxeo/nuxeo-elements ${{ github.event.inputs.branch_name }}; then
+          echo ::set-output name=branch::${{ github.event.inputs.branch_name }}
+        else
+          echo ::set-output name=branch::${{ env.REFERENCE_BRANCH }}
+        fi
+
+    - name: Prepare environment
+      run: |
+        git config user.name "nuxeo-web-ui-jx-bot" && git config user.email "ui+jx-bot@nuxeo.com"
+        echo "BRANCH_NAME=${{ steps.pick_nuxeo_elements_branch.outputs.branch }}" >> $GITHUB_ENV
+        echo "PACKAGE_VERSION=$(npx -c 'echo "$npm_package_version"')" >> $GITHUB_ENV
+
+    - name: Get pull request version
+      if: github.event_name == 'pull_request'
+      run: |
+        echo "VERSION=$PACKAGE_VERSION-$BRANCH_NAME" >> $GITHUB_ENV
+
+    - name: Get prerelease version
+      if: github.event_name == 'push'
+      run: |
+        git fetch origin --tags
+        RC_VERSION=$(git tag --sort=taggerdate --list "v${PACKAGE_VERSION/-SNAPSHOT}*" | tail -1 | tr -d '\n')
+        echo "VERSION=$(npx semver -i prerelease --preid rc ${RC_VERSION:-$PACKAGE_VERSION}  | tr -d '\n')" >> $GITHUB_ENV
+
+    - name: Set version to ${{ env.VERSION }}
+      run: |
+        npm version $VERSION --no-git-tag-version
+        npx lerna version $VERSION --no-push --force-publish --no-git-tag-version --yes
+
+    - name: Install
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+      run: |
+        npm install --no-package-lock
+        npm run bootstrap
+
+    - name: Lint
+      run: npm run lint
+
+    - name: Test
+      env:
+        SAUCE_USERNAME: nuxeo-elements
+        SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+      run: npm run test
+
+    - name: Run analysis
+      run: npx lerna run analysis --parallel
+
+    - name: Build storybook
+      working-directory: storybook
+      run: |
+        npx build-storybook -o dist -s ./public

@@ -1,13 +1,28 @@
 name: 'Trigger workflow'
 description: 'Trigger the ondemand workflow from Web UI'
 inputs:
+  owner:
+    description: 'owner'
+    default: 'nuxeo'
+    required: true
+  repo:
+    description: 'repo'
+    default: 'nuxeo-web-ui'
+    required: true
   branch-name:
     description: 'branch name'
     required: true
     default: 'maintenance-3.0.x'
-  webui-access-token:
-    description: 'Web UI access token'
+  access-token:
+    description: 'Access token'
     required: true
+  workflow-id:
+    description: 'The id of the worflow to run'
+    required: true
+  poll-interval:
+    description: 'Time between polls for workflow completion'
+    default: '60000'
+    required: false
 runs:
   using: 'node16'
   main: 'index.js'

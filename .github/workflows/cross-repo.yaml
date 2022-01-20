@@ -1,0 +1,27 @@
+name: Web UI
+
+on:
+  push: # CHECK - do we really need to run this workflow on push?
+    branches:
+      - maintenance-3.0.x
+  pull_request:
+
+jobs:
+  web-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - run: |
+          pushd .github/actions/trigger-workflow-js
+          npm install
+          popd
+
+      - name: Web UI cross repo check
+        uses: ./.github/actions/trigger-workflow-js
+        with:
+          owner: nuxeo
+          repo: nuxeo-web-ui
+          workflow-id: ondemand-main.yaml
+          access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }} # TODO - we need to get a token for this
+          branch-name: ${{ github.head_ref }} # TODO - head_ref not available on push?

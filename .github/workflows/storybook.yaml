@@ -1,0 +1,39 @@
+name: Storybook
+
+on:
+  push:
+    branches:
+      - maintenance-3.0.x
+
+jobs:
+  storybook:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
+          scope: '@nuxeo'
+
+      - name: Install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+        run: |
+          npm install --no-package-lock
+          npm run bootstrap
+
+      - name: Run analysis
+        run: npx lerna run analysis --parallel
+
+      - name: Build storybook
+        working-directory: storybook
+        run: |
+          npx build-storybook -o dist -s ./public
+
+      - name: Deploy
+        env:
+          GH_TOKEN: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
+        working-directory: storybook
+        run: npm run deploy -- --ci

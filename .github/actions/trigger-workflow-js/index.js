@@ -1,19 +1,6 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
-// try {
-//   // `who-to-greet` input defined in action metadata file
-//   const nameToGreet = core.getInput('who-to-greet');
-//   console.log(`Hello ${nameToGreet}!`);
-//   const time = new Date().toTimeString();
-//   core.setOutput('time', time);
-//   // Get the JSON webhook payload for the event that triggered the workflow
-//   const payload = JSON.stringify(github.context.payload, undefined, 2);
-//   console.log(`The event payload: ${payload}`);
-// } catch (error) {
-//   core.setFailed(error.message);
-// }
-
 function sleep(milliseconds) {
   return new Promise((r) => setTimeout(r, milliseconds));
 }
@@ -24,54 +11,29 @@ async function getWorkflowRuns(owner, repo, workflow_id, octokit) {
     repo,
     workflow_id,
   });
-
-  // console.log(data.workflow_runs);
-
-  // return runs.workflow_runs[0];
   return runs.workflow_runs;
 }
 
 async function run() {
   try {
-    const webui_access_token = core.getInput('webui-access-token');
+    const access_token = core.getInput('access-token');
+    const workflow_id = core.getInput('workflow-id');
     const branch_name = core.getInput('branch-name');
+    const owner = core.getInput('owner');
+    const repo = core.getInput('repo');
+    const pollInterval = Number.parseInt(core.getInput('poll-interval'));
 
-    const octokit = github.getOctokit(webui_access_token);
-
-    const owner = 'nuxeo';
-    const repo = 'nuxeo-web-ui';
-    const workflow_id = 'ondemand-main.yaml';
-
+    const octokit = github.getOctokit(access_token);
     const context = github.context;
-    const actor = context.actor;
 
-    // console.log('The branch name is', context.ref);
-    // console.log('The run number is', context.runNumber);
-    // console.log('The run id is', context.runId);
-    // console.log(context);
-
-    // const { data: runs } = await octokit.rest.actions.listWorkflowRuns({
-    //   owner,
-    //   repo,
-    //   workflow_id,
-    //   actor,
-    // });
-    // console.log(actor);
-
-    // core.startGroup('Listing workflow runs');
-    // // console.log(runs.workflow_runs);
-    // console.log(runs);
-    // core.endGroup();
-
-    core.startGroup('Trigger the workflow using the dispatch event');
-    const result = await octokit.rest.actions.createWorkflowDispatch({
+    // trigger the remote workflow using the dispatch event
+    await octokit.rest.actions.createWorkflowDispatch({
       owner,
       repo,
       workflow_id,
-      // ref: 'maintenance-3.0.x',
-      ref: 'test-reusable-wf',
+      ref: branch_name,
       inputs: {
-        branch_name: branch_name,
+        branch_name,
         sauce_labs: 'true',
         skip_ftests: 'false',
         skip_a11y: 'false',
@@ -82,76 +44,83 @@ async function run() {
         id: `${context.runId}`,
       },
     });
-    // console.log(result);
-    core.endGroup();
 
-    core.startGroup('Get workflow run details');
     await sleep(10000);
+    core.startGroup('Get workflow run id');
+    // get the run that was triggered based on the context.runId
     let runs = await getWorkflowRuns(owner, repo, workflow_id, octokit);
     let i = 0;
-    let run; // = runs[i]; // get the last run
-
-    let step;
+    let run;
+    let activeRun;
+    let step = {};
     do {
-      await sleep(5000);
-      run = runs[i++]; // get the last run
+      await sleep(2000);
+      activeRun = runs[i++]; // get the last run
       let { data: wfJobs } = await octokit.rest.actions.listJobsForWorkflowRun({
         owner,
         repo,
-        run_id: run.id,
+        run_id: activeRun.id,
       });
-      // console.log(wfJobs);
 
-      const job = wfJobs.jobs[0];
+      // get the id job
+      const job = wfJobs.jobs.find((j) => j.name === `Workflow ID ${context.runId}`);
       // console.log(job);
-      if (job.status !== 'completed') {
-        step = {
-          name: 'continue',
-        };
-        continue;
+      if (job) {
+        run = activeRun;
+        // console.log(job);
+        // step = job.steps.find((s) => s.name === `${context.runId}`);
+        // if (step) {
+        //   console.log('Found the step');
+        //   break;
+        // }
       }
-      step = job.steps[1];
-      // run = runs[++i];
-      // console.log(job);
-      // console.log(step);
-    } while (step.name !== `${context.runId}`);
+      // if (job && job.status === 'completed') {
+      //   console.log(job);
+      //   step = job.steps.find((s) => s.name === `${context.runId}`);
+      //   if (step) {
+      //     console.log('Found the step');
+      //     break;
+      //   }
+      // }
+      //  else {
+      //   // continue with the same run, until the job completes
+      //   --i;
+      // }
+    } while (runs.length > i);
+    // TODO - if no run is found, we might need to fail the action
+    core.endGroup();
 
-    console.log(run);
+    if (!run) {
+      core.setFailed(`No run was found for id ${context.runId}`);
+    }
 
-    // console.log(run);
+    // Output the run url to follow
+    core.info(`\u001b[1mRun URL ${run.html_url}`);
+    core.startGroup('Monitor remote workflow run');
     let conclusion = run.conclusion;
     let status = run.status;
     let runId = run.id;
-    let runNumber = run.run_number;
-    // console.log('Run id', runId);
-    // console.log('Run number', runNumber);
-
-    core.info(`\u001b[1mRun URL ${run.html_url}`);
     do {
-      await sleep(60000);
-      // runs = await getWorkflowRuns(owner, repo, workflow_id, octokit);
-      // run = runs.find((r) => r.id === runId);
-      // conclusion = run.conclusion;
-      // status = run.status;
+      await sleep(pollInterval);
 
+      // get the workflow run using the runId
       const runReq = await octokit.rest.actions.getWorkflowRun({
         owner,
         repo,
         run_id: runId,
       });
       run = runReq.data;
-      // console.log(run);
       conclusion = run.conclusion;
       status = run.status;
       core.info(`Workflow status: ${status}`);
     } while (conclusion === null && status !== 'completed');
+    core.endGroup();
 
     if (conclusion === 'success' && status === 'completed') {
       core.info(`Workflow ${status} with ${conclusion}`);
     } else {
       core.setFailed(`Workflow ${status} with ${conclusion}.`);
     }
-    core.endGroup();
   } catch (error) {
     core.setFailed(error.message);
   }
