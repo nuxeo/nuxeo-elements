@@ -37,7 +37,7 @@ async function run() {
       inputs[exprs[0].trim()] = `${exprs[1].trim()}`;
     });
     // trigger the remote workflow using the dispatch event
-    console.log('Creating the workflow dispatch');
+    core.info('Creating workflow dispatch');
     await octokit.rest.actions.createWorkflowDispatch({
       owner,
       repo,
@@ -45,10 +45,9 @@ async function run() {
       ref: branch_name,
       inputs,
     });
-    console.log('Finished the workflow dispatch');
 
     await sleep(10000);
-    core.startGroup('Get workflow run id');
+    core.info('Get workflow run id');
     // get the run that was triggered based on the context.runId
     let runs = await getWorkflowRuns(owner, repo, workflow_id, octokit);
     let i = 0;
@@ -69,7 +68,6 @@ async function run() {
         run = activeRun;
       }
     } while (runs.length > i);
-    core.endGroup();
 
     if (!run) {
       core.setFailed(`No run was found for id ${context.runId}`);
@@ -94,6 +92,7 @@ async function run() {
       conclusion = run.conclusion;
       status = run.status;
       core.info(`Workflow status: ${status}`);
+      core.info(`Check run details ${run.html_url}`);
     } while (conclusion === null && status !== 'completed');
     core.endGroup();
 
