@@ -28,14 +28,16 @@ async function run() {
     const context = github.context;
 
     // set runId for tracking purposes
+    const srcRunID = `${context.runId}-${Date.now().toString()}`;
     let inputs = {
-      id: `${context.runId}`,
+      id: srcRunID,
     };
     workflowInputs.forEach((input) => {
       const exprs = input.split(':');
       inputs[exprs[0].trim()] = `${exprs[1].trim()}`;
     });
     // trigger the remote workflow using the dispatch event
+    console.log('Creating the workflow dispatch');
     await octokit.rest.actions.createWorkflowDispatch({
       owner,
       repo,
@@ -43,6 +45,7 @@ async function run() {
       ref: branch_name,
       inputs,
     });
+    console.log('Finished the workflow dispatch');
 
     await sleep(10000);
     core.startGroup('Get workflow run id');
@@ -51,7 +54,6 @@ async function run() {
     let i = 0;
     let run;
     let activeRun;
-    // let step = {};
     do {
       await sleep(2000);
       activeRun = runs[i++]; // get the last run
@@ -62,31 +64,11 @@ async function run() {
       });
 
       // get the id job
-      const job = wfJobs.jobs.find((j) => j.name === `Workflow ID ${context.runId}`);
-      // console.log(job);
+      const job = wfJobs.jobs.find((j) => j.name === `Workflow ID ${srcRunID}`);
       if (job) {
         run = activeRun;
-        // console.log(job);
-        // step = job.steps.find((s) => s.name === `${context.runId}`);
-        // if (step) {
-        //   console.log('Found the step');
-        //   break;
-        // }
       }
-      // if (job && job.status === 'completed') {
-      //   console.log(job);
-      //   step = job.steps.find((s) => s.name === `${context.runId}`);
-      //   if (step) {
-      //     console.log('Found the step');
-      //     break;
-      //   }
-      // }
-      //  else {
-      //   // continue with the same run, until the job completes
-      //   --i;
-      // }
     } while (runs.length > i);
-    // TODO - if no run is found, we might need to fail the action
     core.endGroup();
 
     if (!run) {

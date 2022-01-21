@@ -7,11 +7,22 @@ on:
         description: 'The name of the branch to build.'
         default: 'maintenance-3.0.x'
         required: true
+      id:
+        description: 'run identifier'
+        default: 'maintenance-3.0.x'
+        type: string
+        required: false
 
 env:
   REFERENCE_BRANCH: maintenance-3.0.x
 
 jobs:
+  id:
+    name: Workflow ID ${{ github.event.inputs.id }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: ${{ github.event.inputs.id }}
+        run: echo run identifier ${{ github.event.inputs.id }}
   build:
     runs-on: ubuntu-latest
     steps:

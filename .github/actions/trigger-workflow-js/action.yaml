@@ -23,6 +23,9 @@ inputs:
     description: 'Time between polls for workflow completion'
     default: '60000'
     required: false
+  inputs:
+    description: 'Workflow inputs'
+    required: false
 runs:
   using: 'node16'
   main: 'index.js'
