@@ -7,6 +7,11 @@ on:
         description: 'The name of the branch to build.'
         default: 'maintenance-3.0.x'
         required: true
+      skip_cross_repo_check:
+        description: 'Skip cross repo check'
+        default: 'false'
+        type: boolean
+        required: false
       id:
         description: 'run identifier'
         default: 'maintenance-3.0.x'
@@ -17,55 +22,79 @@ env:
   REFERENCE_BRANCH: maintenance-3.0.x
 
 jobs:
-  id:
+  setup:
     name: Workflow ID ${{ github.event.inputs.id }}
     runs-on: ubuntu-latest
+    outputs:
+      elements_branch: ${{ steps.pick_nuxeo_elements_branch.outputs.branch }}
     steps:
       - name: ${{ github.event.inputs.id }}
         run: echo run identifier ${{ github.event.inputs.id }}
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
 
-    - uses: actions/setup-node@v1
-      with:
-        node-version: 12
-        registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
-        scope: '@nuxeo'
+      - name: Determine nuxeo-elements branch to use
+        id: pick_nuxeo_elements_branch
+        run: |
+          if git ls-remote --exit-code --heads https://github.com/nuxeo/nuxeo-elements ${{ github.event.inputs.branch_name }}; then
+            echo ::set-output name=branch::${{ github.event.inputs.branch_name }}
+          else
+            echo ::set-output name=branch::${{ env.REFERENCE_BRANCH }}
+          fi
+    
+  lint:
+    needs: setup
+    uses: nuxeo/nuxeo-elements/.github/workflows/lint.yaml@test-reusable-wf
+    secrets:
+      NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
 
-    - name: Determine nuxeo-elements branch to use
-      id: pick_nuxeo_elements_branch
-      run: |
-        if git ls-remote --exit-code --heads https://github.com/nuxeo/nuxeo-elements ${{ github.event.inputs.branch_name }}; then
-          echo ::set-output name=branch::${{ github.event.inputs.branch_name }}
-        else
-          echo ::set-output name=branch::${{ env.REFERENCE_BRANCH }}
-        fi
+  test:
+    needs: setup
+    uses: nuxeo/nuxeo-elements/.github/workflows/test.yaml@test-reusable-wf
+    secrets:
+      NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+    with:
+      branch: ${{ needs.setup.outputs.elements_branch }}
 
-    - name: Install
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-      run: |
-        npm install --no-package-lock
-        npm run bootstrap
+  storybook:
+    needs: setup
+    uses: nuxeo/nuxeo-elements/.github/workflows/storybook.yaml@test-reusable-wf
+    secrets:
+      NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+    with:
+      branch: ${{ needs.setup.outputs.elements_branch }}
 
-    - name: Lint
-      run: npm run lint
+  cross-repo-check:
+    needs: setup
+    if: ${{ github.event.inputs.skip_cross_repo_check == 'false' }}
+    uses: nuxeo/nuxeo-elements/.github/workflows/cross-repo.yaml@test-reusable-wf
+    secrets:
+      WEBUI_ACCESS_TOKEN_PERSONAL: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }}
+    with:
+      branch: ${{ needs.setup.outputs.elements_branch }}
 
-    - name: Test
-      env:
-        SAUCE_USERNAME: nuxeo-elements
-        SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-      run: npm run test
+    # - name: Install
+    #   env:
+    #     NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+    #   run: |
+    #     npm install --no-package-lock
+    #     npm run bootstrap
 
-    - name: Run analysis
-      run: npx lerna run analysis --parallel
+    # - name: Lint
+    #   run: npm run lint
 
-    - name: Build storybook
-      working-directory: storybook
-      run: |
-        npx build-storybook -o dist -s ./public
+    # - name: Test
+    #   env:
+    #     SAUCE_USERNAME: nuxeo-elements
+    #     SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+    #   run: npm run test
+
+    # - name: Run analysis
+    #   run: npx lerna run analysis --parallel
+
+    # - name: Build storybook
+    #   working-directory: storybook
+    #   run: |
+    #     npx build-storybook -o dist -s ./public
 
 # name: Build
 

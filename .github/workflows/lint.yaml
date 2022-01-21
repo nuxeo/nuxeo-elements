@@ -5,12 +5,19 @@ on:
     branches:
       - maintenance-3.0.x
   pull_request:
+  workflow_call:
+    secrets:
+      NPM_PACKAGES_TOKEN:
+        description: 'NPM_PACKAGES_TOKEN'
+        required: true
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref || inputs.branch }} # does this workf for push event?
 
       - uses: actions/setup-node@v1
         with:

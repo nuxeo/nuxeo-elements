@@ -4,12 +4,25 @@ on:
   push:
     branches:
       - maintenance-3.0.x
+  workflow_call:
+    inputs:
+      branch:
+        description: 'The current branch'
+        type: string
+        required: true
+    secrets:
+      NPM_PACKAGES_TOKEN:
+        description: 'NPM_PACKAGES_TOKEN'
+        required: true
 
 jobs:
   storybook:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          # repository: nuxeo/nuxeo-elements
+          ref: ${{ github.head_ref || inputs.branch }} # does this workf for push event?
 
       - uses: actions/setup-node@v1
         with:
@@ -33,6 +46,7 @@ jobs:
           npx build-storybook -o dist -s ./public
 
       - name: Deploy
+        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
         working-directory: storybook

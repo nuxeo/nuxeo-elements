@@ -5,17 +5,22 @@ on:
   #   branches:
   #     - maintenance-3.0.x
   pull_request:
+  workflow_call:
+    inputs:
+      branch:
+        description: 'The current branch'
+        type: string
+        required: true
+    secrets:
+      WEBUI_ACCESS_TOKEN_PERSONAL:
+        description: 'WEBUI_ACCESS_TOKEN_PERSONAL'
+        required: true
 
 jobs:
   web-ui:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
-      - run: |
-          pushd .github/actions/trigger-workflow-js
-          npm install
-          popd
 
       - name: Web UI cross repo check
         uses: ./.github/actions/trigger-workflow-js
@@ -24,9 +29,9 @@ jobs:
           repo: nuxeo-web-ui
           workflow-id: ondemand-main.yaml
           access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }} # TODO - we need to get a token for this
-          branch-name: ${{ github.head_ref }} # TODO - head_ref not available on push?
+          branch-name: ${{ github.head_ref || inputs.branch }} # TODO - head_ref not available on push?
           inputs: |
-            branch_name: ${{ github.head_ref }}
+            branch_name: ${{ github.head_ref || inputs.branch }}
             skip_cross_repo_check: true
             sauce_labs: true
             skip_ftests: false
