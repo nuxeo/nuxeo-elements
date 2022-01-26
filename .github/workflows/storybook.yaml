@@ -1,0 +1,59 @@
+name: Storybook
+
+on:
+  push:
+    branches:
+      - maintenance-3.0.x
+  pull_request:
+    branches:
+      - maintenance-3.0.x
+  workflow_call:
+    inputs:
+      branch:
+        description: 'The current branch'
+        default: maintenance-3.0.x
+        type: string
+        required: false
+    secrets:
+      NPM_PACKAGES_TOKEN:
+        description: 'NPM_PACKAGES_TOKEN'
+        required: true
+
+env:
+  BRANCH_NAME: ${{ github.head_ref || inputs.branch || 'maintenance-3.0.x' }}
+
+jobs:
+  storybook:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
+          scope: '@nuxeo'
+
+      - name: Install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+        run: |
+          npm install --no-package-lock
+          npm run bootstrap
+
+      - name: Run analysis
+        run: npx lerna run analysis --parallel
+
+      - name: Build storybook
+        working-directory: storybook
+        run: |
+          npx build-storybook -o dist -s ./public
+
+      - name: Deploy
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
+        working-directory: storybook
+        run: npm run deploy -- --ci
