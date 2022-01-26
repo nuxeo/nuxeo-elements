@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - maintenance-3.0.x
-  pull_request:
 
 jobs:
   build:
@@ -21,16 +20,9 @@ jobs:
     - name: Prepare environment
       run: |
         git config user.name "nuxeo-web-ui-jx-bot" && git config user.email "ui+jx-bot@nuxeo.com"
-        echo "BRANCH_NAME=${GITHUB_HEAD_REF##*/}" >> $GITHUB_ENV
         echo "PACKAGE_VERSION=$(npx -c 'echo "$npm_package_version"')" >> $GITHUB_ENV
 
-    - name: Get pull request version
-      if: github.event_name == 'pull_request'
-      run: |
-        echo "VERSION=$PACKAGE_VERSION-$BRANCH_NAME" >> $GITHUB_ENV
-
     - name: Get prerelease version
-      if: github.event_name == 'push'
       run: |
         git fetch origin --tags
         RC_VERSION=$(git tag --sort=taggerdate --list "v${PACKAGE_VERSION/-SNAPSHOT}*" | tail -1 | tr -d '\n')
@@ -41,46 +33,13 @@ jobs:
         npm version $VERSION --no-git-tag-version
         npx lerna version $VERSION --no-push --force-publish --no-git-tag-version --yes
 
-    - name: Install
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-      run: |
-        npm install --no-package-lock
-        npm run bootstrap
-
-    - name: Lint
-      run: npm run lint
-
-    - name: Test
-      env:
-        SAUCE_USERNAME: nuxeo-elements
-        SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-      run: npm run test
-
-    - name: Run analysis
-      run: npx lerna run analysis --parallel
-
-    - name: Build storybook
-      working-directory: storybook
-      run: |
-        npx build-storybook -o dist -s ./public
-
-    - name: Deploy
-      if: github.ref == 'refs/heads/maintenance-3.0.x'
-      env:
-        GH_TOKEN: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
-      working-directory: storybook
-      run: npm run deploy -- --ci
-
     - name: Tag
-      if: github.event_name == 'push'
       run: |
         git commit -a -m "Release ${VERSION}"
         git tag -a v${VERSION} -m "Release ${VERSION}"
         git push origin v${VERSION}
 
     - name: Publish
-      if: github.event_name == 'push'
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
       run: npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --tag SNAPSHOT
