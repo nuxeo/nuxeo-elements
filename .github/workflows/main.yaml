@@ -6,8 +6,29 @@ on:
       - maintenance-3.0.x
 
 jobs:
+  lint:
+    uses: nuxeo/nuxeo-elements/.github/workflows/lint.yaml@ELEMENTS-1459-pr-check-split
+    secrets:
+      NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+
+  test:
+    uses: nuxeo/nuxeo-elements/.github/workflows/test.yaml@ELEMENTS-1459-pr-check-split
+    secrets:
+      NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+    with:
+      branch: maintenance-3.0.x
+
+  storybook:
+    uses: nuxeo/nuxeo-elements/.github/workflows/storybook.yaml@ELEMENTS-1459-pr-check-split
+    secrets:
+      NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+    with:
+      branch: maintenance-3.0.x
+
   build:
     runs-on: ubuntu-latest
+    needs: [ lint, test, storybook ]
     steps:
     - uses: actions/checkout@v2
 
