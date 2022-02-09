@@ -29,6 +29,10 @@ import './data-table-templatizer-behavior.js';
           :host([hidden]) {
             display: none;
           }
+
+          ::slotted(*) {
+            min-width: 0;
+          }
         </style>
         <slot></slot>
       `;
