@@ -7,12 +7,12 @@ on:
 
 jobs:
   lint:
-    uses: nuxeo/nuxeo-elements/.github/workflows/lint.yaml@ELEMENTS-1459-pr-check-split
+    uses: nuxeo/nuxeo-elements/.github/workflows/lint.yaml@maintenance-3.0.x
     secrets:
       NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
 
   test:
-    uses: nuxeo/nuxeo-elements/.github/workflows/test.yaml@ELEMENTS-1459-pr-check-split
+    uses: nuxeo/nuxeo-elements/.github/workflows/test.yaml@maintenance-3.0.x
     secrets:
       NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
@@ -20,7 +20,7 @@ jobs:
       branch: maintenance-3.0.x
 
   storybook:
-    uses: nuxeo/nuxeo-elements/.github/workflows/storybook.yaml@ELEMENTS-1459-pr-check-split
+    uses: nuxeo/nuxeo-elements/.github/workflows/storybook.yaml@maintenance-3.0.x
     secrets:
       NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
     with:
