@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Web UI cross repo check
-        uses: ./.github/actions/trigger-workflow-js
+        uses: nuxeo/ui-team-gh-actions/.github/actions/trigger-workflow@main
         with:
           owner: nuxeo
           repo: nuxeo-web-ui
