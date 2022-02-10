@@ -1,0 +1,44 @@
+name: Web UI
+
+on:
+  pull_request:
+    branches:
+      - maintenance-3.0.x
+  workflow_call:
+    inputs:
+      branch:
+        description: 'The current branch'
+        default: maintenance-3.0.x
+        type: string
+        required: false
+    secrets:
+      WEBUI_ACCESS_TOKEN_PERSONAL:
+        description: 'WEBUI_ACCESS_TOKEN_PERSONAL'
+        required: true
+
+env:
+  BRANCH_NAME: ${{ github.head_ref || inputs.branch || 'maintenance-3.0.x' }}
+
+jobs:
+  web-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Web UI cross repo check
+        uses: nuxeo/ui-team-gh-actions/trigger-workflow@dcf8be425447c7fb9cdd1e048585a6df905ed878
+        with:
+          owner: nuxeo
+          repo: nuxeo-web-ui
+          workflow-id: ondemand-main.yaml
+          access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }} # TODO - we need to get a proper token for this
+          branch-name: WEBUI-600-cross-repo-check # maintenance-3.0.x
+          inputs: |
+            branch_name: ${{ env.BRANCH_NAME }}
+            sauce_labs: true
+            skip_ftests: false
+            skip_a11y: false
+            skip_unit_tests: false
+            generate_metrics: false
+            run_all: false
+            bail: 0            
