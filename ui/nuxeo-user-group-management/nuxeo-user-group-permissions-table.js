@@ -286,7 +286,7 @@ import '../nuxeo-button-styles.js';
       this.$.permissions.params = {
         query: `${'SELECT * FROM Document WHERE ecm:mixinType != "HiddenInNavigation"' +
           'AND ecm:isProxy = 0 AND ecm:isVersion = 0 ' +
-          'AND ecm:isTrashed = 0' +
+          'AND ecm:isTrashed = 0 ' +
           'AND ecm:acl/*1/principal = "'}${this.entity}"`,
         page: this._currentPage - 1,
         pageSize: this.pageSize,
