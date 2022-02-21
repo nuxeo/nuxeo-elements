@@ -26,13 +26,6 @@ jobs:
     with:
       branch: maintenance-3.0.x
 
-  web-ui:
-    uses: nuxeo/nuxeo-elements/.github/workflows/cross-repo.yaml@maintenance-3.0.x
-    secrets:
-      WEBUI_ACCESS_TOKEN_PERSONAL: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }}
-    with:
-      branch: maintenance-3.0.x
-
   build:
     runs-on: ubuntu-latest
     needs: [ lint, test, storybook, web-ui ]
