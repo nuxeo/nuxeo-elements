@@ -28,7 +28,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: [ lint, test, storybook, web-ui ]
+    needs: [ lint, test, storybook ]
     steps:
     - uses: actions/checkout@v2
 
