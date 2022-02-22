@@ -18,6 +18,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-form/iron-form.js';
 import '@polymer/iron-icon/iron-icon.js';
+import config from '@nuxeo/nuxeo-elements/config.js';
 import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-resource.js';
@@ -200,7 +201,13 @@ import '../nuxeo-button-styles.js';
 
         <nuxeo-connection user="{{_currentUser}}"></nuxeo-connection>
 
-        <nuxeo-resource id="request" path="user/[[username]]" enrichers="userprofile" enrichers-entity="user">
+        <nuxeo-resource
+          id="request"
+          path="user/[[username]]"
+          enrichers="userprofile"
+          enrichers-entity="user"
+          headers="[[_computeHeaders()]]"
+        >
         </nuxeo-resource>
 
         <nuxeo-resource id="editRequest" path="user/[[username]]"></nuxeo-resource>
@@ -535,6 +542,17 @@ import '../nuxeo-button-styles.js';
           this.selectedGroup = null;
         });
       }
+    }
+
+    _computeHeaders() {
+      const headers = {};
+
+      const fetch = config.get('user.management.fetch', {});
+      // generate fetch headers
+      Object.keys(fetch).forEach((f) => {
+        headers[`fetch-${f}`] = fetch[f].join(',');
+      });
+      return headers;
     }
 
     _isAdministrator(user) {
