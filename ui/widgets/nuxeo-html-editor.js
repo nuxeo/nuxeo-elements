@@ -33,10 +33,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     static get template() {
       return html`
         <style include="quill-snow">
+          :host {
+            display: flex;
+            flex-direction: column;
+            min-height: 30em;
+          }
+
           #editor {
             outline: none;
+            overflow: hidden;
             height: 100%;
-            min-height: 30em;
           }
 
           div#editor > * {
