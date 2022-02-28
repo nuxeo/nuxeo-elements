@@ -1,0 +1,37 @@
+name: Cross repo
+
+on:
+  push:
+    branches:
+      - maintenance-2.4.x
+  pull_request:
+    branches:
+      - maintenance-2.4.x
+
+jobs:
+  webui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 10
+          registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
+          scope: '@nuxeo'
+
+      - name: Web UI check
+        uses: nuxeo/ui-team-gh-actions/trigger-workflow@dcf8be425447c7fb9cdd1e048585a6df905ed878
+        with:
+          owner: nuxeo
+          repo: nuxeo-web-ui
+          workflow-id: cross-repo.yaml
+          access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }}
+          branch-name: '10.10'
+          inputs: |
+            branch_name: ${{ github.head_ref || 'maintenance-2.4.x' }}
+            hf_version: 56
+            sauce_labs: true
+            skip_ftests: false
+            skip_unit_tests: false
+            generate_metrics: false
