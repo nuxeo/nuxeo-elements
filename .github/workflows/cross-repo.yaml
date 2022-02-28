@@ -1,0 +1,41 @@
+name: Cross repo
+
+on:
+  pull_request:
+    branches:
+      - maintenance-2.4.x
+
+env:
+  BRANCH_NAME: ${{ github.head_ref || 'maintenance-2.4.x' }}
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 10
+          registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
+          scope: '@nuxeo'
+
+      - name: Web UI check
+        uses: nuxeo/ui-team-gh-actions/trigger-workflow@dcf8be425447c7fb9cdd1e048585a6df905ed878
+        with:
+          owner: nuxeo
+          repo: nuxeo-web-ui
+          workflow-id: cross-repo.yaml
+          access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }}
+          branch-name: 'pr-checks-2.4.x'
+          inputs: |
+            branch_name: ${{ env.BRANCH_NAME }}
+            hf_version: 56
+            sauce_labs: true
+            skip_ftests: false
+            skip_unit_tests: false
+            generate_metrics: false
+
+      # TODO - trigger nuxeo-ui-elements and nuxeo-dataviz-elements downstream job
