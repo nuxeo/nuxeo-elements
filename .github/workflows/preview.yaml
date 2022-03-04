@@ -69,6 +69,7 @@ jobs:
     - name: Check preview namespace
       id: preview_ns
       run: |
+        echo 'preview is working'
         echo ::set-output name=exists::$(kubectl get namespace ${PREVIEW_NAMESPACE})
 
     # Previous preview deployment needs to be scaled to 0 to be replaced correctly
