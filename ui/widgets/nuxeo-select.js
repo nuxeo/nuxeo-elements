@@ -257,9 +257,17 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
       };
     }
 
-    ready() {
-      super.ready();
-      this.addEventListener('iron-resize', this._resize);
+    connectedCallback() {
+      super.connectedCallback();
+      if (!this._resizeObserver) {
+        this._resizeObserver = new ResizeObserver(() => this._resize());
+      }
+      this._resizeObserver.observe(this);
+    }
+
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      this._resizeObserver.unobserve(this);
     }
 
     close() {
