@@ -59,7 +59,13 @@ npm run test:watch -- --package=ui --grep=nuxeo-date.test.js
 npm run test:watch -- --package=ui --grep=(nuxeo-date.test.js|nuxeo-date-picker.test.js)
 ```
 
-Demos can be setup using:
+The Storybook for the project can be launched with:
+
+```
+npm run storybook
+```
+
+The legacy demos can be set up using:
 
 ```
 npm run docs
