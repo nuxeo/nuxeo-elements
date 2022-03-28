@@ -1,0 +1,33 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - maintenance-2.4.x
+  pull_request:
+    branches:
+      - maintenance-2.4.x
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 10
+          registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
+          scope: '@nuxeo'
+
+      - run: npm install -g bower
+
+      - name: Install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+        run: |
+          bower install
+          npm install
+
+      - name: Lint
+        run: npm run lint
