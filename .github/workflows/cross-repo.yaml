@@ -9,14 +9,59 @@ on:
       - maintenance-2.4.x
 
 jobs:
-  webui:
+  ui-elements:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: 10
+          node-version: '10'
+          registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
+          scope: '@nuxeo'
+
+      - name: UI Elements check
+        uses: nuxeo/ui-team-gh-actions/trigger-workflow@dcf8be425447c7fb9cdd1e048585a6df905ed878
+        with:
+          owner: nuxeo
+          repo: nuxeo-ui-elements
+          workflow-id: downstream-check.yaml
+          access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }}
+          branch-name: 'maintenance-2.4.x'
+          inputs: |
+            branch_name: ${{ github.head_ref || 'maintenance-2.4.x' }}
+
+  dataviz-elements:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '10'
+          registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
+          scope: '@nuxeo'
+
+      - name: Dataviz Elements check
+        uses: nuxeo/ui-team-gh-actions/trigger-workflow@dcf8be425447c7fb9cdd1e048585a6df905ed878
+        with:
+          owner: nuxeo
+          repo: nuxeo-dataviz-elements
+          workflow-id: downstream-check.yaml
+          access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }}
+          branch-name: 'maintenance-2.4.x'
+          inputs: |
+            branch_name: ${{ github.head_ref || 'maintenance-2.4.x' }}
+
+  webui:
+    needs: [ ui-elements, dataviz-elements ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '10'
           registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
           scope: '@nuxeo'
 
