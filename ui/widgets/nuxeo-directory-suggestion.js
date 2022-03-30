@@ -33,6 +33,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
    *     <nuxeo-directory-suggestion directory-name="l10nsubjects"
    *                                 multiple="true"
    *                                 dbl10n="true"
+   *                                 localize="true"
    *                                 value="{{suggestions}}"></nuxeo-directory-suggestion>
    *
    * @appliesMixin Nuxeo.I18nBehavior
@@ -103,6 +104,11 @@ import { escapeHTML } from './nuxeo-selectivity.js';
          * picking values in messages*.properties files.
          */
         dbl10n: { type: Boolean, value: false },
+
+        /**
+         * Checking this option means that the labels are localized with translations from JSON
+         * properties.
+        localize: { type: Boolean, value: true },
 
         /**
          * Label.
@@ -255,7 +261,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
           directoryName: this.directoryName,
           dbl10n: this.dbl10n,
           canSelectParent: this.canSelectParent,
-          localize: true,
+          localize: this.localize,
           lang: window.nuxeo.I18n.language ? window.nuxeo.I18n.language.split('-')[0] : 'en',
         },
         this.params,
