@@ -227,7 +227,11 @@ import './nuxeo-tooltip.js';
         }
         // let's move any element in the menu to the "dropdown" slot if it doesn't fit
         els = this._getMenuElements();
-        while (els.length && this.contentWidth + this.$.dropdownButton.offsetWidth > this.clientWidth) {
+        // XXX for some reason, on Chrome, offsetWidth might not be 0 when the element is hidden (see ELEMENTS-1478)
+        while (
+          els.length &&
+          this.contentWidth + (this.$.dropdownButton.hidden ? 0 : this.$.dropdownButton.offsetWidth) > this.clientWidth
+        ) {
           this._moveToDropdown(els.pop());
           if (this.$.dropdownButton.hidden) {
             this.$.dropdownButton.hidden = false;
