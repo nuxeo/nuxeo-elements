@@ -108,6 +108,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
         /**
          * Checking this option means that the labels are localized with translations from JSON
          * properties.
+         */
         localize: { type: Boolean, value: true },
 
         /**
