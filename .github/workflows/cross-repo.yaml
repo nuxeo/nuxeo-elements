@@ -75,7 +75,6 @@ jobs:
           branch-name: '10.10'
           inputs: |
             branch_name: ${{ github.head_ref || 'maintenance-2.4.x' }}
-            hf_version: 56
             sauce_labs: true
             skip_ftests: false
             skip_unit_tests: false
