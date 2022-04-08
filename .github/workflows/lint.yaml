@@ -37,8 +37,4 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
         run: |
-          npm install --no-package-lock
-          npm run bootstrap
-
-      - name: Lint
-        run: npm run lint
+          cat /etc/hosts
