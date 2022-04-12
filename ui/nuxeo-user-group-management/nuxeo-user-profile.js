@@ -34,7 +34,7 @@ import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-group-tag.js';
 import '../widgets/nuxeo-input.js';
 import './nuxeo-user-group-permissions-table.js';
-import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { FormatBehavior } from '../nuxeo-format-behavior.js';
 import '../nuxeo-button-styles.js';
 
 {
@@ -45,10 +45,10 @@ import '../nuxeo-button-styles.js';
    *
    *     <nuxeo-user-profile username="Administrator"></nuxeo-user-profile>
    *
-   * @appliesMixin Nuxeo.I18nBehavior
+   * @appliesMixin Nuxeo.FormatBehavior
    * @memberof Nuxeo
    */
-  class UserProfile extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
+  class UserProfile extends mixinBehaviors([FormatBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style include="iron-flex iron-flex-alignment iron-flex-factors nuxeo-button-styles">
@@ -178,7 +178,8 @@ import '../nuxeo-button-styles.js';
                       type="password"
                       label="[[i18n('userProfile.password.confirm')]]"
                       required
-                      pattern="[[passwordNew]]"
+                      pattern="[[escapeRegExp(passwordNew)]]"
+                      error-message="[[_computeErrorMessage(passwordNew, i18n)]]"
                     >
                     </nuxeo-input>
                   </form>
@@ -331,6 +332,13 @@ import '../nuxeo-button-styles.js';
     _toast(msg) {
       this.$.toast.text = msg;
       this.$.toast.open();
+    }
+
+    _computeErrorMessage(password) {
+      if (!password) {
+        return this.i18n('editPassword.required');
+      }
+      return this.i18n('editPassword.noMatch');
     }
   }
 
