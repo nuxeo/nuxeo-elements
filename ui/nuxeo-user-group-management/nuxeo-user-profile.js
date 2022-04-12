@@ -323,6 +323,8 @@ import '../nuxeo-button-styles.js';
         .catch((error) => {
           if (error.status === 401) {
             this._toast(this.i18n('userProfile.password.wrong'), true);
+          } else if (error.status === 400 && error.message) {
+            this._toast(error.message);
           } else {
             this._toast(this.i18n('userProfile.password.error'), true);
           }
