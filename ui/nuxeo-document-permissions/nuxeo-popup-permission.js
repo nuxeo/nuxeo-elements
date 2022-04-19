@@ -92,7 +92,7 @@ import '../nuxeo-button-styles.js';
           </template>
         </dom-if>
 
-        <nuxeo-dialog id="popupRight" with-backdrop no-auto-focus>
+        <nuxeo-dialog id="popupRight" with-backdrop>
           <h2>[[_computedTitle]]</h2>
 
           <!-- Give access to row -->
