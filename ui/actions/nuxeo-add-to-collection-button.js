@@ -77,7 +77,7 @@ import '../nuxeo-button-styles.js';
           </template>
         </dom-if>
 
-        <nuxeo-dialog id="dialog" with-backdrop no-auto-focus>
+        <nuxeo-dialog id="dialog" with-backdrop>
           <h2>[[i18n('addToCollectionButton.dialog.heading')]]</h2>
           <paper-dialog-scrollable>
             <nuxeo-selectivity
