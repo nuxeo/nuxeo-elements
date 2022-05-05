@@ -13,14 +13,14 @@ env:
 jobs:
   cleanup:
     name: Preview
-    if: (github.event.action == 'unlabeled' && github.event.label.name == 'preview') || contains(github.event.pull_request.labels.*.name, 'preview')
+    if: (github.event.action == 'unlabeled' && github.event.label.name == 'preview') || contains(github.event.pull_request.labels.*.name, 'preview') || (github.event.action == 'unlabeled' && github.event.label.name == 'webui-preview') || contains(github.event.pull_request.labels.*.name, 'webui-preview')
     runs-on: ubuntu-latest
     steps:
 
     - name: Prepare environment
       run: |
         BRANCH_NAME=${GITHUB_HEAD_REF##*/}
-        echo "PREVIEW_NAMESPACE=webui-$(echo $BRANCH_NAME | sed 's/[^[:alnum:]-]/-/g' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+        echo "PREVIEW_NAMESPACE=${{ github.event.label.name }}-$(echo $BRANCH_NAME | sed 's/[^[:alnum:]-]/-/g' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
     - name: Get GKE credentials
       uses: google-github-actions/get-gke-credentials@v0.2.1
