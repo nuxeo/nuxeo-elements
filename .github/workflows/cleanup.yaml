@@ -20,7 +20,7 @@ jobs:
     - name: Prepare environment
       run: |
         BRANCH_NAME=${GITHUB_HEAD_REF##*/}
-        echo "PREVIEW_NAMESPACE=webui-$(echo $BRANCH_NAME | sed 's/[^[:alnum:]-]/-/g' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+        echo "PREVIEW_NAMESPACE=storybook-$(echo $BRANCH_NAME | sed 's/[^[:alnum:]-]/-/g' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
     - name: Get GKE credentials
       uses: google-github-actions/get-gke-credentials@v0.2.1
@@ -34,3 +34,24 @@ jobs:
       continue-on-error: true
       run: |
         kubectl delete ns ${PREVIEW_NAMESPACE}
+
+  webui-cleanup:
+    runs-on: ubuntu-latest
+    if: (github.event.action == 'unlabeled' && github.event.label.name == 'webui-preview') || contains(github.event.pull_request.labels.*.name, 'webui-preview')
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Prepare environment
+        run: |
+          echo "BRANCH_NAME=${GITHUB_HEAD_REF##*/}" >> $GITHUB_ENV
+
+      - name: Web UI preview
+        uses: nuxeo/ui-team-gh-actions/trigger-workflow@bcc698511e6d9ce90ea120a6ee2cdde82079cde4
+        with:
+          owner: nuxeo
+          repo: nuxeo-web-ui
+          workflow-id: remote-clean.yaml
+          access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }}
+          branch-name: WEBUI-784-webui-elements-preview
+          inputs: |
+            branch_name: ${{ env.BRANCH_NAME }}

@@ -14,7 +14,7 @@ env:
 
 jobs:
   storybook:
-    name: Setup
+    name: Storybook
     if: (github.event.action == 'labeled' && github.event.label.name == 'preview') || contains(github.event.pull_request.labels.*.name, 'preview')
     runs-on: ubuntu-latest
     steps:
@@ -30,7 +30,7 @@ jobs:
         BRANCH_NAME=${GITHUB_HEAD_REF##*/}
         echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
         echo "VERSION=$(npx -c 'echo "$npm_package_version"')-$BRANCH_NAME" >> $GITHUB_ENV
-        echo "PREVIEW_NAMESPACE=webui-$(echo $BRANCH_NAME | sed 's/[^[:alnum:]-]/-/g' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+        echo "PREVIEW_NAMESPACE=storybook-$(echo $BRANCH_NAME | sed 's/[^[:alnum:]-]/-/g' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
     - name: Install
       env:
@@ -112,5 +112,39 @@ jobs:
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: `:star: PR built and available [here](${process.env.PREVIEW_URL})`
+            body: `:star: Storybook preview available [here](${process.env.PREVIEW_URL})`
           })
+
+  webui-preview:
+    name: Web UI
+    runs-on: ubuntu-latest
+    if: (github.event.action == 'labeled' && github.event.label.name == 'webui-preview') || contains(github.event.pull_request.labels.*.name, 'webui-preview')
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Prepare environment
+        run: |
+          echo "BRANCH_NAME=${GITHUB_HEAD_REF##*/}" >> $GITHUB_ENV
+
+      - name: Web UI preview
+        id: main
+        uses: nuxeo/ui-team-gh-actions/trigger-workflow@bcc698511e6d9ce90ea120a6ee2cdde82079cde4
+        with:
+          owner: nuxeo
+          repo: nuxeo-web-ui
+          workflow-id: remote-preview.yaml
+          access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }}
+          branch-name: WEBUI-784-webui-elements-preview
+          inputs: |
+            branch_name: ${{ env.BRANCH_NAME }}
+
+      - uses: actions/github-script@0.9.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `:star: Web UI preview available [here](${{ steps.main.outputs.message }})`
+            })
