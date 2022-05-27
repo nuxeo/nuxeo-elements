@@ -132,9 +132,9 @@ jobs:
         with:
           owner: nuxeo
           repo: nuxeo-web-ui
-          workflow-id: remote-preview.yaml
+          workflow-id: preview.yaml
           access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }}
-          branch-name: WEBUI-784-webui-elements-preview
+          branch-name: maintenance-3.0.x
           inputs: |
             branch_name: ${{ env.BRANCH_NAME }}
 
