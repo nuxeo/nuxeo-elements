@@ -92,6 +92,10 @@ import './viewers/nuxeo-video-viewer.js';
             height: 100%;
             overflow-wrap: break-word;
           }
+
+          #plain {
+            white-space: break-spaces;
+          }
         </style>
 
         <!-- Our available preview templates. First match will be used -->
@@ -121,8 +125,12 @@ import './viewers/nuxeo-video-viewer.js';
           </audio>
         </template>
 
-        <template mime-pattern="text/(?:.*-)?(markdown|html|plain)">
+        <template mime-pattern="text/(?:.*-)?(markdown|html)">
           <marked-element markdown="[[_blob.text]]" sanitize></marked-element>
+        </template>
+
+        <template mime-pattern="text/plain">
+          <div id="plain">[[_blob.text]]</div>
         </template>
 
         <template mime-pattern="text/xml">
