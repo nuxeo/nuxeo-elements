@@ -46,7 +46,7 @@ jobs:
           echo "BRANCH_NAME=${GITHUB_HEAD_REF##*/}" >> $GITHUB_ENV
 
       - name: Web UI preview
-        uses: nuxeo/ui-team-gh-actions/trigger-workflow@bcc698511e6d9ce90ea120a6ee2cdde82079cde4
+        uses: nuxeo/ui-team-gh-actions/trigger-workflow@a5b89f35e0d1f3a912f528d7f1c3acdb73c60549
         with:
           owner: nuxeo
           repo: nuxeo-web-ui
