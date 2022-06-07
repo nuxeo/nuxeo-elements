@@ -295,9 +295,12 @@ import './viewers/nuxeo-video-viewer.js';
               conversion.content['mime-type'].match(/^video.*/),
           )
           .map((conversion) => {
+            // XXX clean up after NXP-31056 is resolved
+            const codecs = conversion.info.streams[0].codec || '';
             return {
               data: conversion.content.data,
-              type: conversion.content['mime-type'],
+              // XXX clean up after NXP-31056 is resolved
+              type: `${conversion.content['mime-type']}${this._computeCodecs(codecs)}`,
             };
           });
       }
@@ -373,6 +376,15 @@ import './viewers/nuxeo-video-viewer.js';
 
     get _isVisible() {
       return Boolean(this.offsetWidth || this.offsetHeight);
+    }
+
+    // XXX clean up after NXP-31056 is resolved
+    _computeCodecs(codecs) {
+      if (!codecs) {
+        return '';
+      }
+      const exp = /\w+\s\(\w+\)\s\(([a-zA-Z0-9_.-]+)\s\/\s\w+\)/g;
+      return `; codecs=${codecs.replace(exp, '$1')}`;
     }
   }
 
