@@ -19,11 +19,11 @@ import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import '../widgets/nuxeo-date-picker.js';
 
 function getInput(element) {
-  return element.root.querySelector('#date');
+  return element.shadowRoot.querySelector('#date');
 }
 
 function getInputDisplay(element) {
-  return element.root.querySelector('#date').root.querySelector('#input');
+  return element.shadowRoot.querySelector('#date').querySelector('input');
 }
 
 function testValue(element, value, isUTC) {
