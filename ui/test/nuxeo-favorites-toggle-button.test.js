@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, fixtureCleanup, html, login, tap, waitChanged } from '@nuxeo/testing-helpers';
+import { fixture, html, login, tap, waitChanged } from '@nuxeo/testing-helpers';
 import '../actions/nuxeo-favorites-toggle-button.js';
 
 suite('nuxeo-favorites-toggle-button', () => {
