@@ -146,21 +146,23 @@ import '../nuxeo-button-styles.js';
      */
     _toggle() {
       if (!this.favorite) {
-        this.$.opAdd.execute().then(() => {
-         if(confirm('Are you sure you want to add this document to Favorites?')===true){
-          this.dispatchEvent(
-            new CustomEvent('added-to-favorites', {
-              composed: true,
-              bubbles: true,
-              detail: { doc: this.document },
-            }),
-          );
-          this._setFavorite(true);
-         }
-        });
+        const response = window.confirm(this.i18n('favoritesToggleButton.confirm.add'));
+        if (response) {
+          this.$.opAdd.execute().then(() => {
+            this.dispatchEvent(
+              new CustomEvent('added-to-favorites', {
+                composed: true,
+                bubbles: true,
+                detail: { doc: this.document },
+              }),
+            );
+            this._setFavorite(true);
+          });
+        }
       } else {
-        this.$.opRemove.execute().then(() => {
-          if(confirm('Are you sure you want to remove this document from Favorites?')===true){
+        const response = window.confirm(this.i18n('favoritesToggleButton.confirm.remove'));
+        if (response) {
+          this.$.opRemove.execute().then(() => {
             this.dispatchEvent(
               new CustomEvent('removed-from-favorites', {
                 composed: true,
@@ -169,8 +171,8 @@ import '../nuxeo-button-styles.js';
               }),
             );
             this._setFavorite(false);
-          }
-        });
+          });
+        }
       }
     }
 
