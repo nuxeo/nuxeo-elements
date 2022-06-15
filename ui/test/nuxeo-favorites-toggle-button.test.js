@@ -23,7 +23,7 @@ suite('nuxeo-favorites-toggle-button', () => {
     server = await login();
   });
 
-  suite('when a  document is a favorite', () => {
+  suite('when a document is a favorite', () => {
     let element;
     setup(async () => {
       const doc = {
@@ -47,8 +47,9 @@ suite('nuxeo-favorites-toggle-button', () => {
         '{"entity-type": "document","uid": "1"}',
       ]);
     });
+
     teardown(() => {
-      if(window.confirm.restore){
+      if (window.confirm.restore) {
         window.confirm.restore();
       }
     });
@@ -57,7 +58,13 @@ suite('nuxeo-favorites-toggle-button', () => {
       expect(element.favorite).to.be.true;
     });
 
-    test('toggle should remove document from favorites', async () => {
+    test('it should display a confirm popup', () => {
+      const confirmSpy = sinon.stub(window, 'confirm');
+      tap(element);
+      expect(confirmSpy.called).to.be.true;
+    });
+
+    test('toggle should remove document from favorites when clicked ok', async () => {
       // Remove document from favorites by toggling
       sinon.stub(window, 'confirm').returns(true);
       tap(element);
@@ -90,30 +97,29 @@ suite('nuxeo-favorites-toggle-button', () => {
         '{"entity-type": "document","uid": "1"}',
       ]);
     });
-    
-     teardown(() => {
-      if(window.confirm.restore){
+
+    teardown(() => {
+      if (window.confirm.restore) {
         window.confirm.restore();
       }
     });
 
-    test('it should display the document as not favorite', () => {
+    test('it should display the document as favorite', () => {
       expect(element.favorite).to.be.false;
     });
 
-    test('toggle should add the document to favorites when clicked OK on confirm alert', async () => {
-      // Add the documents to favorites by toggling
+    test('it should display a confirm popup', () => {
+      const confirmSpy = sinon.stub(window, 'confirm');
+      tap(element);
+      expect(confirmSpy.called).to.be.true;
+    });
+
+    test('toggle should remove document from favorites when clicked ok', async () => {
+      // Remove document from favorites by toggling
       sinon.stub(window, 'confirm').returns(true);
       tap(element);
       await waitChanged(element, 'favorite');
       expect(element.favorite).to.be.true;
     });
-    // test('toggle should add the document to favorites when clicked canceled on confirm alert', async () => {
-    //   // Add the documents to favorites by toggling
-    //   sinon.stub(window, 'confirm').returns(false);
-    //   tap(element);
-    //   await waitChanged(element, 'favorite');
-    //   expect(element.favorite).to.be.false;
-    // });
   });
 });
