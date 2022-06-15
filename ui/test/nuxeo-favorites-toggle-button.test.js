@@ -14,19 +14,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, html, login, tap, waitChanged } from '@nuxeo/testing-helpers';
+import { fixture,flush,fixtureCleanup, html, login, tap, waitChanged } from '@nuxeo/testing-helpers';
 import '../actions/nuxeo-favorites-toggle-button.js';
 
 suite('nuxeo-favorites-toggle-button', () => {
   let server;
+  
   setup(async () => {
     server = await login();
   });
-
+ 
+  
   suite('when a document is a favorite', () => {
     let element;
+    
     setup(async () => {
+      
       const doc = {
+        
         'entity-type': 'document',
         uid: '1',
         contextParameters: {
@@ -34,8 +39,11 @@ suite('nuxeo-favorites-toggle-button', () => {
             isFavorite: true,
           },
         },
+        
         facets: [],
+        
       };
+     
       element = await fixture(
         html`
           <nuxeo-favorites-toggle-button .document=${doc}></nuxeo-favorites-toggle-button>
@@ -46,18 +54,32 @@ suite('nuxeo-favorites-toggle-button', () => {
         { 'Content-Type': 'application/json' },
         '{"entity-type": "document","uid": "1"}',
       ]);
+      
+    });
+   
+    teardown(() => {
+      if(window.confirm.restore){
+        window.confirm.restore();
+      }
+     
     });
 
     test('it should display the document as favorite', () => {
       expect(element.favorite).to.be.true;
     });
-
-    test('toggle should remove document from favorites', async () => {
+    
+    test('toggle should remove document from favorites when clicked ok', async () => {
       // Remove document from favorites by toggling
+      
+      sinon.stub(window, 'confirm').returns(true);
       tap(element);
+    
       await waitChanged(element, 'favorite');
       expect(element.favorite).to.be.false;
-    });
+ 
+}); 
+
+    
   });
 
   suite('when a document is not in favorites', () => {
@@ -84,16 +106,37 @@ suite('nuxeo-favorites-toggle-button', () => {
         '{"entity-type": "document","uid": "1"}',
       ]);
     });
+       teardown(() => {
+         if(window.confirm.restore){
+          window.confirm.restore();
 
+         }
+      
+    });
+  
     test('it should display the document as not favorite', () => {
       expect(element.favorite).to.be.false;
     });
 
-    test('toggle should add the document to favorites', async () => {
+    test('toggle should add the document to favorites when clicked on Ok', async () => {
       // Add the documents to favorites by toggling
+     
+      sinon.stub(window,'confirm').returns(true);
       tap(element);
       await waitChanged(element, 'favorite');
       expect(element.favorite).to.be.true;
+      
+      
     });
+
+  
   });
+ 
 });
+
+
+
+
+
+
+
