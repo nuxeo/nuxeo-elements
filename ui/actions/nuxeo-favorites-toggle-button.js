@@ -147,7 +147,7 @@ import '../nuxeo-button-styles.js';
     _toggle() {
       if (!this.favorite) {
         this.$.opAdd.execute().then(() => {
-          if (window.confirm('Are you sure you want to add this document to Favorites?') === true) {
+          if (window.confirm(this.i18n('favoritesToggleButton.confirm.add')) === true) {
             this.dispatchEvent(
               new CustomEvent('added-to-favorites', {
                 composed: true,
@@ -160,7 +160,7 @@ import '../nuxeo-button-styles.js';
         });
       } else {
         this.$.opRemove.execute().then(() => {
-          if (window.confirm('Are you sure you want to remove this document from Favorites?') === true) {
+          if (window.confirm(this.i18n('favoritesToggleButton.confirm.remove')) === true) {
             this.dispatchEvent(
               new CustomEvent('removed-from-favorites', {
                 composed: true,

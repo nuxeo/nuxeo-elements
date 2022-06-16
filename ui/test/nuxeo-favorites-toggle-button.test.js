@@ -26,7 +26,6 @@ suite('nuxeo-favorites-toggle-button', () => {
 
   suite('when a document is a favorite', () => {
     let element;
-
     setup(async () => {
       const doc = {
         'entity-type': 'document',
@@ -36,10 +35,8 @@ suite('nuxeo-favorites-toggle-button', () => {
             isFavorite: true,
           },
         },
-
         facets: [],
       };
-
       element = await fixture(
         html`
           <nuxeo-favorites-toggle-button .document=${doc}></nuxeo-favorites-toggle-button>
@@ -64,10 +61,8 @@ suite('nuxeo-favorites-toggle-button', () => {
 
     test('toggle should remove document from favorites when clicked ok', async () => {
       // Remove document from favorites by toggling
-
       sinon.stub(window, 'confirm').returns(true);
       tap(element);
-
       await waitChanged(element, 'favorite');
       expect(element.favorite).to.be.false;
     });
@@ -109,7 +104,6 @@ suite('nuxeo-favorites-toggle-button', () => {
 
     test('toggle should add the document to favorites when clicked on Ok', async () => {
       // Add the documents to favorites by toggling
-
       sinon.stub(window, 'confirm').returns(true);
       tap(element);
       await waitChanged(element, 'favorite');
