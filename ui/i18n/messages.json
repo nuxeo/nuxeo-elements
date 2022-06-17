@@ -148,6 +148,8 @@
   "exportButton.FullHD": "Full HD",
   "favoritesToggleButton.tooltip.add": "Add to Favorites",
   "favoritesToggleButton.tooltip.remove": "Remove from Favorites",
+  "favoritesToggleButton.confirm.add": "Are you sure you want to add this document to Favorites?",
+  "favoritesToggleButton.confirm.remove": "Are you sure you want to remove this document from Favorites?",
   "file.upload": "Upload",
   "groupManagement.addedToGroup": "has been added to the group.",
   "groupManagement.addedUserToGroup": "{0} was added to {1}.",
