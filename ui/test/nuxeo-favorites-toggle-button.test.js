@@ -109,5 +109,10 @@ suite('nuxeo-favorites-toggle-button', () => {
       await waitChanged(element, 'favorite');
       expect(element.favorite).to.be.true;
     });
+
+    test('toggle should not add the document to favorites when clicked on Cancel', async () => {
+      sinon.stub(window, 'confirm').returns(false);
+      expect(element.favorite).to.be.false;
+    });
   });
 });
