@@ -86,7 +86,9 @@ export const PageProviderDisplayBehavior = [
       filters: {
         type: Array,
         notify: true,
-        value: [],
+        value() {
+          return [];
+        },
       },
 
       /**
