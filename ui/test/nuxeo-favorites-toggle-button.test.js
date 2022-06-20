@@ -19,7 +19,6 @@ import '../actions/nuxeo-favorites-toggle-button.js';
 
 suite('nuxeo-favorites-toggle-button', () => {
   let server;
-
   setup(async () => {
     server = await login();
   });
@@ -66,6 +65,13 @@ suite('nuxeo-favorites-toggle-button', () => {
       await waitChanged(element, 'favorite');
       expect(element.favorite).to.be.false;
     });
+
+    test('toggle should not remove document from favorites when clicked Cancel', async () => {
+      // Remove document from favorites by toggling
+
+      sinon.stub(window, 'confirm').returns(false);
+      expect(element.favorite).to.be.true;
+    });
   });
 
   suite('when a document is not in favorites', () => {
@@ -108,6 +114,13 @@ suite('nuxeo-favorites-toggle-button', () => {
       tap(element);
       await waitChanged(element, 'favorite');
       expect(element.favorite).to.be.true;
+    });
+
+    test('toggle should not add the document to favorites when clicked on Cancel', async () => {
+      // Add the documents to favorites by toggling
+
+      sinon.stub(window, 'confirm').returns(false);
+      expect(element.favorite).to.be.false;
     });
   });
 });
