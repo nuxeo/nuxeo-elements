@@ -19,6 +19,7 @@ import '../actions/nuxeo-favorites-toggle-button.js';
 
 suite('nuxeo-favorites-toggle-button', () => {
   let server;
+
   setup(async () => {
     server = await login();
   });
@@ -58,12 +59,6 @@ suite('nuxeo-favorites-toggle-button', () => {
       expect(element.favorite).to.be.true;
     });
 
-    test('it should display a confirm popup', () => {
-      const confirmSpy = sinon.stub(window, 'confirm');
-      tap(element);
-      expect(confirmSpy.called).to.be.true;
-    });
-
     test('toggle should remove document from favorites when clicked ok', async () => {
       // Remove document from favorites by toggling
       sinon.stub(window, 'confirm').returns(true);
@@ -97,25 +92,28 @@ suite('nuxeo-favorites-toggle-button', () => {
         '{"entity-type": "document","uid": "1"}',
       ]);
     });
-
     teardown(() => {
       if (window.confirm.restore) {
         window.confirm.restore();
       }
     });
 
-    test('it should display the document as favorite', () => {
+    test('toggle should not remove document from favorites when clicked Cancel', async () => {
+      sinon.stub(window, 'confirm').returns(false);
+      expect(element.favorite).to.be.true;
+    });
+
+    test('toggle should not add the document to favorites when clicked on Cancel', async () => {
+      sinon.stub(window, 'confirm').returns(false);
       expect(element.favorite).to.be.false;
     });
 
-    test('it should display a confirm popup', () => {
-      const confirmSpy = sinon.stub(window, 'confirm');
-      tap(element);
-      expect(confirmSpy.called).to.be.true;
+    test('it should display the document as not favorite', () => {
+      expect(element.favorite).to.be.false;
     });
 
-    test('toggle should remove document from favorites when clicked ok', async () => {
-      // Remove document from favorites by toggling
+    test('toggle should add the document to favorites when clicked on Ok', async () => {
+      // Add the documents to favorites by toggling
       sinon.stub(window, 'confirm').returns(true);
       tap(element);
       await waitChanged(element, 'favorite');
