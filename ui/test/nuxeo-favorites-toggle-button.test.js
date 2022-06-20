@@ -65,6 +65,13 @@ suite('nuxeo-favorites-toggle-button', () => {
       await waitChanged(element, 'favorite');
       expect(element.favorite).to.be.false;
     });
+
+    test('toggle should not remove document from favorites when clicked Cancel', async () => {
+      // Remove document from favorites by toggling
+
+      sinon.stub(window, 'confirm').returns(false);
+      expect(element.favorite).to.be.true;
+    });
   });
 
   suite('when a document is not in favorites', () => {
