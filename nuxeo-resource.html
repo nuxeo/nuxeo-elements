@@ -285,6 +285,7 @@ limitations under the License.
             }
 
             // For the next request
+            delete this._controller;
             this._controller = new AbortController();
             options.signal = this._controller.signal;
           }
