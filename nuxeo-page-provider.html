@@ -296,6 +296,10 @@ limitations under the License.
                 );
               },
             },
+            _id: {
+              type: Number,
+              value: 0,
+            },
           };
         }
 
@@ -363,10 +367,21 @@ limitations under the License.
               params.providerName = this.provider;
             }
           }
+
+          // we already have an inflight request
+          if (this.loading && this.method.toLowerCase() === 'get') {
+            // add something here
+            this._id += 1;
+          }
+
           target.params = params;
-          return target
-            .execute()
+          const id = this._id;
+          return target.execute()
             .then((response) => {
+              if (id !== this._id) {
+                // Other request took place while waiting for execution, so we'll ignore this one
+                return;
+              }
               this.currentPage = response.entries.slice(0);
               this.numberOfPages = response.numberOfPages;
               this.resultsCount = response.resultsCount;
