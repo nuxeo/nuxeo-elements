@@ -19,6 +19,8 @@ import '../actions/nuxeo-favorites-toggle-button.js';
 
 suite('nuxeo-favorites-toggle-button', () => {
   let server;
+  let button;
+
   setup(async () => {
     server = await login();
   });
@@ -36,6 +38,12 @@ suite('nuxeo-favorites-toggle-button', () => {
         },
         facets: [],
       };
+      button = await fixture(
+        html`
+          <nuxeo-favorites-toggle-button></nuxeo-favorites-toggle-button>
+        `,
+      );
+
       element = await fixture(
         html`
           <nuxeo-favorites-toggle-button .document=${doc}></nuxeo-favorites-toggle-button>
@@ -67,9 +75,9 @@ suite('nuxeo-favorites-toggle-button', () => {
     });
 
     test('toggle should not remove document from favorites when clicked Cancel', async () => {
-      // Remove document from favorites by toggling
-
+      sinon.spy(button.$.opRemove, 'execute');
       sinon.stub(window, 'confirm').returns(false);
+      expect(button.$.opRemove.execute.notCalled).to.be.true;
       expect(element.favorite).to.be.true;
     });
   });
@@ -104,11 +112,6 @@ suite('nuxeo-favorites-toggle-button', () => {
       }
     });
 
-    test('toggle should not add the document to favorites when clicked on Cancel', async () => {
-      sinon.stub(window, 'confirm').returns(false);
-      expect(element.favorite).to.be.false;
-    });
-
     test('it should display the document as not favorite', () => {
       expect(element.favorite).to.be.false;
     });
@@ -119,6 +122,13 @@ suite('nuxeo-favorites-toggle-button', () => {
       tap(element);
       await waitChanged(element, 'favorite');
       expect(element.favorite).to.be.true;
+    });
+
+    test('toggle should not add the document to favorites when clicked on Cancel', async () => {
+      sinon.spy(button.$.opAdd, 'execute');
+      sinon.stub(window, 'confirm').returns(false);
+      expect(button.$.opRemove.execute.notCalled).to.be.true;
+      expect(element.favorite).to.be.false;
     });
   });
 });
