@@ -83,6 +83,12 @@ limitations under the License.
              * */
             uncancelable: {
               type: Boolean,
+              value() {
+                return Nuxeo.UI &&
+                  Nuxeo.UI.config &&
+                  Nuxeo.UI.config.resource &&
+                  Nuxeo.UI.config.resource.uncancelable === 'true';
+              },
             },
 
             /** The id the operation to call. */

@@ -86,6 +86,12 @@ limitations under the License.
              * */
             uncancelable: {
               type: Boolean,
+              value() {
+                return Nuxeo.UI &&
+                  Nuxeo.UI.config &&
+                  Nuxeo.UI.config.resource &&
+                  Nuxeo.UI.config.resource.uncancelable === 'true';
+              },
             },
 
             /** If true, automatically execute the operation when either `path` or `params` changes. */
