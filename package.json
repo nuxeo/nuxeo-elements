@@ -3,7 +3,7 @@
   "repository": "nuxeo/nuxeo-elements.git",
   "name": "nuxeo-elements",
   "private": true,
-  "version": "3.0.13-rc.4",
+  "version": "3.0.13",
   "author": "Nuxeo",
   "license": "Apache-2.0",
   "engines": {
