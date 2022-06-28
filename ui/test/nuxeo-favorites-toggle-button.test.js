@@ -26,6 +26,7 @@ suite('nuxeo-favorites-toggle-button', () => {
 
   suite('when a document is a favorite', () => {
     let element;
+
     setup(async () => {
       const doc = {
         'entity-type': 'document',
@@ -61,16 +62,19 @@ suite('nuxeo-favorites-toggle-button', () => {
 
     test('toggle should remove document from favorites when clicked ok', async () => {
       // Remove document from favorites by toggling
+
       sinon.stub(window, 'confirm').returns(true);
       tap(element);
       await waitChanged(element, 'favorite');
       expect(element.favorite).to.be.false;
     });
 
-    test('toggle should not remove document from favorites when clicked Cancel', async (done) => {
+    test('toggle should not remove document from favorites when clicked Cancel', async () => {
+      sinon.spy(element.$.opRemove, 'execute');
       sinon.stub(window, 'confirm').returns(false);
+      tap(element);
+      expect(element.$.opRemove.execute.notCalled).to.be.true;
       expect(element.favorite).to.be.true;
-      done();
     });
   });
 
@@ -104,22 +108,25 @@ suite('nuxeo-favorites-toggle-button', () => {
       }
     });
 
-    test('toggle should not add the document to favorites when clicked on Cancel', async (done) => {
-      sinon.stub(window, 'confirm').returns(false);
-      expect(element.favorite).to.be.false;
-      done();
-    });
-
     test('it should display the document as not favorite', () => {
       expect(element.favorite).to.be.false;
     });
 
     test('toggle should add the document to favorites when clicked on Ok', async () => {
       // Add the documents to favorites by toggling
+
       sinon.stub(window, 'confirm').returns(true);
       tap(element);
       await waitChanged(element, 'favorite');
       expect(element.favorite).to.be.true;
+    });
+
+    test('toggle should not add the document to favorites when clicked on Cancel', async () => {
+      sinon.spy(element.$.opAdd, 'execute');
+      sinon.stub(window, 'confirm').returns(false);
+      tap(element);
+      expect(element.$.opAdd.execute.notCalled).to.be.true;
+      expect(element.favorite).to.be.false;
     });
   });
 });
