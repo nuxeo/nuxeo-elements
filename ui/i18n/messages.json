@@ -280,6 +280,7 @@
   "shareButton.operation.copied": "Link Copied",
   "shareButton.operation.copy": "Copy Link",
   "shareButton.tooltip": "Share",
+  "parentInspectorButton.tooltip": "Parent Inspector",
   "sortSelect.reverseOrder": "Reverse sort order",
   "tableSettings.columnSettings": "Columns Settings",
   "tableSettings.columnSettings.done": "Done",
