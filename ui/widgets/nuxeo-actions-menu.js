@@ -17,6 +17,7 @@ limitations under the License.
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { FlattenedNodesObserver } from '@polymer/polymer/lib/utils/flattened-nodes-observer.js';
 import { idlePeriod, microTask } from '@polymer/polymer/lib/utils/async.js';
+import { enqueueDebouncer } from '@polymer/polymer/lib/utils/flush.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
@@ -213,31 +214,49 @@ import './nuxeo-tooltip.js';
         return; // skip events from within reparented actions
       }
       this.__layoutDebouncer = Debouncer.debounce(this.__layoutDebouncer, microTask, () => {
-        let els = this._getDropdownElements();
-        /**
-         * XXX: We're using this.contentWidth instead of this.scrollWidth because it takes too much time to be
-         * updated on polyfilled browsers (Firex and Edge), leading to an empty menu if there's a single element
-         * that doesn't fit on the menu.
-         */
-        while (els.length && this.contentWidth <= this.clientWidth) {
-          this._moveToMenu(els.shift());
+        if (!this._renderingProm) {
+          this._renderingProm = Promise.resolve();
         }
-        if (!els.length) {
-          this.$.dropdownButton.hidden = true;
-        }
-        // let's move any element in the menu to the "dropdown" slot if it doesn't fit
-        els = this._getMenuElements();
-        // XXX for some reason, on Chrome, offsetWidth might not be 0 when the element is hidden (see ELEMENTS-1478)
-        while (
-          els.length &&
-          this.contentWidth + (this.$.dropdownButton.hidden ? 0 : this.$.dropdownButton.offsetWidth) > this.clientWidth
-        ) {
-          this._moveToDropdown(els.pop());
-          if (this.$.dropdownButton.hidden) {
-            this.$.dropdownButton.hidden = false;
-          }
-        }
+        this._renderingProm = this._renderingProm.then(() => this._distributeNodes());
       });
+      enqueueDebouncer(this.__layoutDebouncer);
+    }
+
+    async _distributeNodes() {
+      if (this._counter === undefined) this._counter = 0;
+      let els = this._getDropdownElements();
+      /**
+       * XXX: We're using this.contentWidth instead of this.scrollWidth because it takes too much time to be
+       * updated on polyfilled browsers (Firefox and Edge), leading to an empty menu if there's a single element
+       * that doesn't fit on the menu.
+       */
+      while (els.length && this.contentWidth <= this.clientWidth) {
+        this._moveToMenu(els.shift());
+      }
+      if (!els.length) {
+        await this._setDropdownButtonHidden(true);
+      }
+      // let's move any element in the menu to the "dropdown" slot if it doesn't fit
+      els = this._getMenuElements();
+      // XXX for some reason, on Chrome, offsetWidth might not be 0 when the element is hidden (see ELEMENTS-1478)
+      while (
+        els.length &&
+        this.contentWidth + (this.$.dropdownButton.hidden ? 0 : this.$.dropdownButton.offsetWidth) > this.clientWidth
+      ) {
+        this._moveToDropdown(els.pop());
+        if (this.$.dropdownButton.hidden) {
+          // eslint-disable-next-line no-await-in-loop
+          await this._setDropdownButtonHidden(false);
+        }
+      }
+    }
+
+    async _setDropdownButtonHidden(val) {
+      if (this.$.dropdownButton.hidden !== val) {
+        // XXX can probably be improved by using a ResizeObserver
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        this.$.dropdownButton.hidden = val;
+      }
     }
   }
 
