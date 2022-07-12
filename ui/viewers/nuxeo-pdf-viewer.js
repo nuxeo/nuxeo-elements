@@ -50,6 +50,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
           iframe {
             width: 100%;
             height: 100%;
+            min-height: var(--nuxeo-viewer-min-height, 60vh);
             border: 0;
             @apply --nuxeo-pdf-viewer-iframe;
           }
