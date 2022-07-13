@@ -214,6 +214,12 @@ export const PageProviderDisplayBehavior = [
       },
 
       _lastSelectedIndex: Number,
+
+      _excludedItems: {
+        type: Array,
+        value: () => [],
+        notify: true,
+      },
     },
 
     observers: [
@@ -301,11 +307,16 @@ export const PageProviderDisplayBehavior = [
             }
           }
         }
-        // until we support unselect some, if the view is not handling select all, we need to prevent deselect (for now)
-        if (this.selectAllActive && !this.handlesSelectAll) {
-          this.selectItem(this.items[index]);
-        }
         this._lastSelectedIndex = e.detail.index;
+        if (this.selectAllActive && this.items[index]) {
+          if (!this._excludedItems.includes(this.items[index].uid)) {
+            this.push('_excludedItems', this.items[index].uid);
+            return;
+          }
+          if (this._excludedItems.includes(this.items[index].uid)) {
+            this._excludedItems = this._excludedItems.filter((item) => item !== this.items[index].uid);
+          }
+        }
       }
     },
 
@@ -335,14 +346,14 @@ export const PageProviderDisplayBehavior = [
     },
 
     deselectItem(item) {
-      if (this.selectionEnabled && !this.selectAllActive) {
+      if (this.selectionEnabled) {
         this.$.list.deselectItem(item);
         this._updateFlags();
       }
     },
 
     deselectIndex(index) {
-      if (this.selectionEnabled && !this.selectAllActive) {
+      if (this.selectionEnabled) {
         this.$.list.deselectIndex(index);
         this._updateFlags();
       }
@@ -351,6 +362,7 @@ export const PageProviderDisplayBehavior = [
     selectAll() {
       if (this.selectionEnabled && this.selectAllEnabled) {
         this._isSelectAllActive = true;
+        this._excludedItems = [];
         // select the visible items first to speed up the first paint (the others can be deferred)
         const { start, end } = this._getSelectionBoundaries();
         this._updateSelectedItems((index) => {
@@ -365,8 +377,9 @@ export const PageProviderDisplayBehavior = [
     },
 
     clearSelection() {
-      this.$.list.clearSelection();
       this._isSelectAllActive = false;
+      this._excludedItems = [];
+      this.$.list.clearSelection();
       this._updateFlags();
     },
 
@@ -376,8 +389,13 @@ export const PageProviderDisplayBehavior = [
     _pushSelectedItems(indexStart, limit) {
       for (let index = indexStart; index < limit; index++) {
         // skip entries that are already in the selectedItems list
-        if (!this._isIndexSelected(index)) {
+        if (
+          !this._isIndexSelected(index) &&
+          this.items[index] &&
+          !this._excludedItems.includes(this.items[index].uid)
+        ) {
           this.selectedItems.push(this.items[index]);
+          // this.selectItem(this.items[index]);
         }
       }
       this.notifySplices('selectedItems');
@@ -391,6 +409,9 @@ export const PageProviderDisplayBehavior = [
     },
 
     _isSelected(item) {
+      if (this._isSelectAllActive) {
+        return !this._excludedItems.includes(item.uid);
+      }
       return this.multiSelection
         ? !!(this.selectedItems && this.selectedItems.length && this.selectedItems.indexOf(item) > -1)
         : !!(this.selectedItem && this.selectedItem === item);
@@ -403,8 +424,15 @@ export const PageProviderDisplayBehavior = [
             this.selectedItems.length &&
             this.items &&
             this.items.length > index &&
-            this.selectedItems.indexOf(this.items[index]) > -1
-          )
+            this.items[index] &&
+            this.selectedItems.indexOf(this.items[index]) > -1 &&
+            !this._excludedItems.includes(this.items[index].uid)
+          ) ||
+            !!(
+              this._isSelectAllActive &&
+              this._excludedItems.length &&
+              !this._excludedItems.includes(this.items[index].uid)
+            )
         : !!(this.selectedItem && this.items && this.items.length > index && this.selectedItem === this.items[index]);
     },
 
@@ -702,10 +730,9 @@ export const PageProviderDisplayBehavior = [
           for (let i = firstIndex; i <= lastIndex; i++) {
             if (entryIndex < response.entries.length) {
               const isSelected = this._isSelected(this.items[i]);
-
               this.set(`items.${i}`, response.entries[entryIndex++]);
 
-              if (isSelected) {
+              if (isSelected && !this._excludedItems.includes(this.items[i].uid)) {
                 if (this.selectAllActive) {
                   /**
                    * if select all is active we need to update the `selectedItems` entry to keep it in sync with the
@@ -780,7 +807,13 @@ export const PageProviderDisplayBehavior = [
     _updateSelectedItems(selectionCallback) {
       const { start, end } = this._getSelectionBoundaries();
       for (let index = start; index <= end; index++) {
-        selectionCallback(index);
+        if (
+          !this._excludedItems ||
+          !this._excludedItems.length ||
+          (this.items[index] && !this._excludedItems.includes(this.items[index].uid))
+        ) {
+          selectionCallback(index);
+        }
       }
     },
 
@@ -794,8 +827,20 @@ export const PageProviderDisplayBehavior = [
     _selectItemModel(index) {
       if (this.$.list._isIndexRendered(index)) {
         const model = this.modelForElement(this.$.list._physicalItems[this.$.list._getPhysicalIndex(index)]);
-        if (model && !model[this.$.list.selectedAs]) {
-          model[this.$.list.selectedAs] = true;
+        const item = this.items[index];
+        if (!item) {
+          return;
+        }
+        if (model) {
+          if (
+            !this._excludedItems ||
+            !this._excludedItems.length ||
+            (this._excludedItems.length && !this._excludedItems.includes(item.uid))
+          ) {
+            model[this.$.list.selectedAs] = true;
+          } else if (this._excludedItems && this._excludedItems.length && this._excludedItems.includes(item.uid)) {
+            model[this.$.list.selectedAs] = false;
+          }
         }
       }
     },
