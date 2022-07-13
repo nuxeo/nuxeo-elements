@@ -848,7 +848,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _onCheckBoxTap(e) {
-      if (this.selectionEnabled && !this.selectAllActive) {
+      if (this.selectionEnabled) {
         // _selectionHandler isn't called if selectOnTap is true
         if (this.selectOnTap) {
           this.$.list.toggleSelectionForIndex(e.model.index);

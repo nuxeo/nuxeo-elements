@@ -214,6 +214,11 @@ export const PageProviderDisplayBehavior = [
       },
 
       _lastSelectedIndex: Number,
+
+      _excludedItems: {
+        type: Array,
+        value: [],
+      },
     },
 
     observers: [
@@ -301,11 +306,19 @@ export const PageProviderDisplayBehavior = [
             }
           }
         }
-        // until we support unselect some, if the view is not handling select all, we need to prevent deselect (for now)
+        this._lastSelectedIndex = e.detail.index;
         if (this.selectAllActive && !this.handlesSelectAll) {
           this.selectItem(this.items[index]);
         }
-        this._lastSelectedIndex = e.detail.index;
+        if (this.selectAllActive && this.handlesSelectAll) {
+          if (!this._excludedItems.includes(this.items[index].uid)) {
+            this._excludedItems.push(this.items[index].uid);
+            return;
+          }
+          if (this._excludedItems.includes(this.items[index].uid)) {
+            this._excludedItems = this._excludedItems.filter((item) => item !== this.items[index].uid);
+          }
+        }
       }
     },
 
@@ -351,6 +364,7 @@ export const PageProviderDisplayBehavior = [
     selectAll() {
       if (this.selectionEnabled && this.selectAllEnabled) {
         this._isSelectAllActive = true;
+        this._excludedItems = [];
         // select the visible items first to speed up the first paint (the others can be deferred)
         const { start, end } = this._getSelectionBoundaries();
         this._updateSelectedItems((index) => {
@@ -366,6 +380,7 @@ export const PageProviderDisplayBehavior = [
 
     clearSelection() {
       this.$.list.clearSelection();
+      this._excludedItems = [];
       this._isSelectAllActive = false;
       this._updateFlags();
     },
@@ -545,7 +560,9 @@ export const PageProviderDisplayBehavior = [
 
     _updateFlags() {
       this.size = Array.isArray(this.items) ? this.items.length : 0;
-      const selectedItemsSize = Array.isArray(this.selectedItems) ? this.selectedItems.length : 0;
+      const selectedItemsSize = Array.isArray(this.selectedItems)
+        ? this.selectedItems.length - this._excludedItems.length
+        : 0;
       this._isSelectAllIndeterminate = !this._isSelectAllActive || selectedItemsSize < this.size;
       this._isEmpty = this.size === 0;
     },
@@ -794,7 +811,15 @@ export const PageProviderDisplayBehavior = [
     _selectItemModel(index) {
       if (this.$.list._isIndexRendered(index)) {
         const model = this.modelForElement(this.$.list._physicalItems[this.$.list._getPhysicalIndex(index)]);
-        if (model && !model[this.$.list.selectedAs]) {
+        if (model && !model[this.$.list.selectedAs] && !this._excludedItems.length) {
+          model[this.$.list.selectedAs] = true;
+        }
+        if (
+          model &&
+          !model[this.$.list.selectedAs] &&
+          this._excludedItems.length &&
+          !this._excludedItems.includes(this.items[index].uid)
+        ) {
           model[this.$.list.selectedAs] = true;
         }
       }
