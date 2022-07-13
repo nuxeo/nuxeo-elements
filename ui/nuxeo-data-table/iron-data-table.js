@@ -292,15 +292,14 @@ import '../nuxeo-button-styles.js';
                   index="[[index]]"
                   item="[[item]]"
                   tabindex="-1"
-                  selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                  selected="[[_isSelected(item, selectedItems, selectedItems.*, _excludedItems, _excludedItems.*)]]"
                 >
                   <nuxeo-data-table-checkbox
                     hidden$="[[!selectionEnabled]]"
                     tabindex="0"
-                    checked$="[[selected]]"
+                    checked$="[[_isSelected(item, selectedItems, selectedItems.*, _excludedItems, _excludedItems.*)]]"
                     on-click="_onCheckBoxTap"
                     on-keydown="_onCheckBoxKeydown"
-                    disabled$="[[selectAllActive]]"
                   ></nuxeo-data-table-checkbox>
                   <dom-repeat items="[[columns]]" as="column" index-as="colIndex">
                     <template>
@@ -848,7 +847,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _onCheckBoxTap(e) {
-      if (this.selectionEnabled && !this.selectAllActive) {
+      if (this.selectionEnabled) {
         // _selectionHandler isn't called if selectOnTap is true
         if (this.selectOnTap) {
           this.$.list.toggleSelectionForIndex(e.model.index);

@@ -223,6 +223,7 @@ import './nuxeo-connection.js';
           params = {
             action: 'automationUi',
             providerName: pageProvider.provider,
+            excludeDocs: input._excludedItems,
             parameters: JSON.stringify({
               operationId: this.op,
               parameters: params,
