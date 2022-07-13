@@ -300,7 +300,6 @@ import '../nuxeo-button-styles.js';
                     checked$="[[selected]]"
                     on-click="_onCheckBoxTap"
                     on-keydown="_onCheckBoxKeydown"
-                    disabled$="[[selectAllActive]]"
                   ></nuxeo-data-table-checkbox>
                   <dom-repeat items="[[columns]]" as="column" index-as="colIndex">
                     <template>
@@ -565,13 +564,13 @@ import '../nuxeo-button-styles.js';
       this.addEventListener('delete-entry', this._deleteEntry);
       this.addEventListener('move-upward', this._moveItemUpward);
       this.addEventListener('move-downward', this._moveItemDownward);
-      this.$.list._selectionHandler = function(e) {
-        const model = this.modelForElement(e.target);
-        if (!model) {
-          return;
-        }
-        this.toggleSelectionForItem(model[this.as]);
-      };
+      // this.$.list._selectionHandler = function(e) {
+      //   const model = this.modelForElement(e.target);
+      //   if (!model) {
+      //     return;
+      //   }
+      //   this.toggleSelectionForItem(model[this.as]);
+      // };
       // listen for changes in form slot contents to make sure we disable the form when it is stamped.
       // the form will be enabled/disabled when the dialog is opened/closed.
       // this allow us to bypass the form validation when it's not visible.
@@ -848,7 +847,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _onCheckBoxTap(e) {
-      if (this.selectionEnabled && !this.selectAllActive) {
+      if (this.selectionEnabled) {
         // _selectionHandler isn't called if selectOnTap is true
         if (this.selectOnTap) {
           this.$.list.toggleSelectionForIndex(e.model.index);
