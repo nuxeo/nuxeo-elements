@@ -256,7 +256,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _isValid() {
-      return this.collection !== '';
+      return this.collection;
     }
 
     _isNew() {
