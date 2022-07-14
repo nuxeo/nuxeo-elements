@@ -614,7 +614,6 @@ import '../nuxeo-button-styles.js';
           this._toast(this.i18n('userManagement.addedUserToGroup', this.user.id, group.name));
         });
       }
-      this.selectedGroup = null;
     }
 
     _remove() {
