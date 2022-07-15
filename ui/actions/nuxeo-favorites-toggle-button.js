@@ -147,25 +147,29 @@ import '../nuxeo-button-styles.js';
     _toggle() {
       if (!this.favorite) {
         this.$.opAdd.execute().then(() => {
-          this.dispatchEvent(
-            new CustomEvent('added-to-favorites', {
-              composed: true,
-              bubbles: true,
-              detail: { doc: this.document },
-            }),
-          );
-          this._setFavorite(true);
+          if (window.confirm(this.i18n('favoritesToggleButton.confirm.add')) == true) {
+            this.dispatchEvent(
+              new CustomEvent('added-to-favorites', {
+                composed: true,
+                bubbles: true,
+                detail: { doc: this.document },
+              }),
+            );
+            this._setFavorite(true);
+          }
         });
       } else {
         this.$.opRemove.execute().then(() => {
-          this.dispatchEvent(
-            new CustomEvent('removed-from-favorites', {
-              composed: true,
-              bubbles: true,
-              detail: { doc: this.document },
-            }),
-          );
-          this._setFavorite(false);
+          if (window.confirm(this.i18n('favoritesToggleButton.confirm.remove')) == true) {
+            this.dispatchEvent(
+              new CustomEvent('removed-from-favorites', {
+                composed: true,
+                bubbles: true,
+                detail: { doc: this.document },
+              }),
+            );
+            this._setFavorite(false);
+          }
         });
       }
     }
