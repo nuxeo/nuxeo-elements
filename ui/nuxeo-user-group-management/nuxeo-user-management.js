@@ -656,6 +656,8 @@ import '../nuxeo-button-styles.js';
 
     _toggleEditGroups() {
       this.showEditGroups = !this.showEditGroups;
+      this.selectedGroup = null;
+      this.$.picker.value = '';
     }
 
     _toggleDialog(e) {
