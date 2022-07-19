@@ -340,4 +340,53 @@ suite('nuxeo-operation', () => {
       expect(evt.detail).to.deep.equal(abortResult);
     });
   });
+
+  suite('when unselect some feature is enable', () => {
+    test('excludedDocs parameters is sent in the payload for the nuxeo-operation', async () => {
+      server.respondWith('POST', '/api/v1/automation/something', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"documents", "entries": []}',
+      ]);
+
+      const provider = await fixture(html`
+        <nuxeo-page-provider
+          id="nx-pp"
+          provider="test_provider"
+          page="2"
+          page-size="40"
+          sort='{"field": "asc"}'
+          params='{
+            "boolean": false,
+            "excludeDocs": ["fabf0fa3-0f0a-4b26-8fde-9c4ac869cd5f","f17544e4-5945-4b5c-b4a9-d48d2468b75b"]
+          }'
+        ></nuxeo-page-provider>
+      `);
+
+      const operation = await fixture(
+        html`
+          <nuxeo-operation op="something" .input=${provider}></nuxeo-operation>
+        `,
+      );
+
+      await operation.execute();
+      const last = server.requests.pop();
+      const body = JSON.parse(last.requestBody);
+      expect(body).to.deep.equal({
+        params: {
+          providerName: 'test_provider',
+          currentPageIndex: 1,
+          pageSize: 40,
+          sortBy: 'field',
+          sortOrder: 'asc',
+          namedParameters: {
+            boolean: 'false',
+            excludeDocs: '["fabf0fa3-0f0a-4b26-8fde-9c4ac869cd5f","f17544e4-5945-4b5c-b4a9-d48d2468b75b"]',
+          },
+          queryParams: [],
+        },
+        context: {},
+      });
+    });
+  });
 });
