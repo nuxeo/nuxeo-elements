@@ -746,6 +746,8 @@ import '../nuxeo-button-styles.js';
 
     _toggleEditMembers() {
       this.showEditMembers = !this.showEditMembers;
+      this.selectedMember = null;
+      this.$.picker.value = '';
     }
 
     _toggleDeleteDialog(e) {
