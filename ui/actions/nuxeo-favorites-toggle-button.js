@@ -146,6 +146,9 @@ import '../nuxeo-button-styles.js';
      */
     _toggle() {
       if (!this.favorite) {
+        if (!window.confirm(this.i18n('favoritesToggleButton.confirm.add'))) {
+          return false;
+        }
         this.$.opAdd.execute().then(() => {
           this.dispatchEvent(
             new CustomEvent('added-to-favorites', {
@@ -157,6 +160,9 @@ import '../nuxeo-button-styles.js';
           this._setFavorite(true);
         });
       } else {
+        if (!window.confirm(this.i18n('favoritesToggleButton.confirm.remove'))) {
+          return false;
+        }
         this.$.opRemove.execute().then(() => {
           this.dispatchEvent(
             new CustomEvent('removed-from-favorites', {
