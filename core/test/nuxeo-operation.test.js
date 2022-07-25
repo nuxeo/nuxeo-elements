@@ -34,28 +34,49 @@ suite('nuxeo-operation', () => {
     server.restore();
   });
 
-  function getNuxeoPageProviderWithExcludeDocs() {
-    return fixture(html`
-      <nuxeo-page-provider
-        id="nx-pp"
-        provider="test_provider"
-        page="2"
-        page-size="40"
-        sort='{"field": "asc"}'
-        params='{
-        "boolean": false,
-        "excludeDocs": ["fabf0fa3-0f0a-4b26-8fde-9c4ac869cd5f","f17544e4-5945-4b5c-b4a9-d48d2468b75b"]
-      }'
-      ></nuxeo-page-provider>
-    `);
+  function getNuxeoPageProvider(hasExcludeDocs = false) {
+    if (hasExcludeDocs) {
+      return fixture(html`
+        <nuxeo-page-provider
+          id="nx-pp"
+          provider="test_provider"
+          page="2"
+          page-size="40"
+          sort='{"field": "asc"}'
+          params='{
+          "boolean": false,
+          "excludeDocs": ["fabf0fa3-0f0a-4b26-8fde-9c4ac869cd5f","f17544e4-5945-4b5c-b4a9-d48d2468b75b"]
+        }'
+        ></nuxeo-page-provider>
+      `);
+    } 
+      return fixture(html`
+        <nuxeo-page-provider
+          id="nx-pp"
+          provider="test_provider"
+          page="2"
+          page-size="40"
+          sort='{"field": "asc"}'
+          params='{"boolean": false}'
+        ></nuxeo-page-provider>
+      `);
+    
   }
 
   function getNuxeoOperation(provider) {
-    return fixture(
-      html`
-        <nuxeo-operation op="something" .input=${provider}></nuxeo-operation>
-      `,
-    );
+    if (typeof provider !== 'undefined') {
+      return fixture(
+        html`
+          <nuxeo-operation op="something" .input=${provider}></nuxeo-operation>
+        `,
+      );
+    } 
+      return fixture(
+        html`
+          <nuxeo-operation op="something"></nuxeo-operation>
+        `,
+      );
+    
   }
 
   suite('when executing an operation', () => {
@@ -80,11 +101,7 @@ suite('nuxeo-operation', () => {
         '{"success":true,"entity-type":"login"}',
       ]);
 
-      const operation = await fixture(
-        html`
-          <nuxeo-operation op="something"></nuxeo-operation>
-        `,
-      );
+      const operation = await getNuxeoOperation();
 
       await operation.execute();
     });
@@ -96,11 +113,7 @@ suite('nuxeo-operation', () => {
         '{"success":true,"entity-type":"login"}',
       ]);
 
-      const operation = await fixture(
-        html`
-          <nuxeo-operation op="something"></nuxeo-operation>
-        `,
-      );
+      const operation = await getNuxeoOperation();
 
       expect(operation.loading).to.be.false;
 
@@ -123,11 +136,7 @@ suite('nuxeo-operation', () => {
         '{"message":"Internal Server Error"}',
       ]);
 
-      const operation = await fixture(
-        html`
-          <nuxeo-operation op="something"></nuxeo-operation>
-        `,
-      );
+      const operation = await getNuxeoOperation();
 
       try {
         await operation.execute();
@@ -162,22 +171,9 @@ suite('nuxeo-operation', () => {
         '{"entity-type":"documents", "entries": []}',
       ]);
 
-      const provider = await fixture(html`
-        <nuxeo-page-provider
-          id="nx-pp"
-          provider="test_provider"
-          page="2"
-          page-size="40"
-          sort='{"field": "asc"}'
-          params='{"boolean": false}'
-        ></nuxeo-page-provider>
-      `);
+      const provider = await getNuxeoPageProvider();
 
-      const operation = await fixture(
-        html`
-          <nuxeo-operation op="something" .input=${provider}></nuxeo-operation>
-        `,
-      );
+      const operation = await getNuxeoOperation(provider);
 
       await operation.execute();
 
@@ -276,27 +272,14 @@ suite('nuxeo-operation', () => {
         'true',
       ]);
 
-      provider = await fixture(html`
-        <nuxeo-page-provider
-          id="nx-pp"
-          provider="test_provider"
-          page="2"
-          page-size="40"
-          sort='{"field": "asc"}'
-          params='{"boolean": false}'
-        ></nuxeo-page-provider>
-      `);
+      provider = await getNuxeoPageProvider();
 
       view = await fixture(html`
         <custom-view-element select-all-enabled></custom-view-element>
       `);
       view.nxProvider = provider;
 
-      operation = await fixture(
-        html`
-          <nuxeo-operation op="something" .input=${view}></nuxeo-operation>
-        `,
-      );
+      operation = await getNuxeoOperation(view);
     });
 
     teardown(() => {
@@ -372,7 +355,7 @@ suite('nuxeo-operation', () => {
         responseHeaders.json,
         '{"entity-type":"documents", "entries": []}',
       ]);
-      const provider = await getNuxeoPageProviderWithExcludeDocs();
+      const provider = await getNuxeoPageProvider(true);
       const operation = await getNuxeoOperation(provider);
       await operation.execute();
       const last = server.requests.pop();
