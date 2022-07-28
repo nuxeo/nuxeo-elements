@@ -49,18 +49,17 @@ suite('nuxeo-operation', () => {
         }'
         ></nuxeo-page-provider>
       `);
-    } 
-      return fixture(html`
-        <nuxeo-page-provider
-          id="nx-pp"
-          provider="test_provider"
-          page="2"
-          page-size="40"
-          sort='{"field": "asc"}'
-          params='{"boolean": false}'
-        ></nuxeo-page-provider>
-      `);
-    
+    }
+    return fixture(html`
+      <nuxeo-page-provider
+        id="nx-pp"
+        provider="test_provider"
+        page="2"
+        page-size="40"
+        sort='{"field": "asc"}'
+        params='{"boolean": false}'
+      ></nuxeo-page-provider>
+    `);
   }
 
   function getNuxeoOperation(provider) {
@@ -70,13 +69,12 @@ suite('nuxeo-operation', () => {
           <nuxeo-operation op="something" .input=${provider}></nuxeo-operation>
         `,
       );
-    } 
-      return fixture(
-        html`
-          <nuxeo-operation op="something"></nuxeo-operation>
-        `,
-      );
-    
+    }
+    return fixture(
+      html`
+        <nuxeo-operation op="something"></nuxeo-operation>
+      `,
+    );
   }
 
   suite('when executing an operation', () => {
