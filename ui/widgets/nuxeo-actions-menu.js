@@ -18,7 +18,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { FlattenedNodesObserver } from '@polymer/polymer/lib/utils/flattened-nodes-observer.js';
 import { idlePeriod, microTask } from '@polymer/polymer/lib/utils/async.js';
 import { enqueueDebouncer } from '@polymer/polymer/lib/utils/flush.js';
-import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
+import { Debouncer, flushDebouncers } from '@polymer/polymer/lib/utils/debounce.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
@@ -210,6 +210,8 @@ import './nuxeo-tooltip.js';
     }
 
     _layout(e) {
+      // XXX - introduced to fix ELEMENTS-1510
+      flushDebouncers();
       if (e && e.type && e.composedPath().find((el) => el.id === 'reparent' || el.id === 'dropdownButton')) {
         return; // skip events from within reparented actions
       }
