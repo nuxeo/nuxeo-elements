@@ -18,7 +18,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { FlattenedNodesObserver } from '@polymer/polymer/lib/utils/flattened-nodes-observer.js';
 import { idlePeriod, microTask } from '@polymer/polymer/lib/utils/async.js';
 import { enqueueDebouncer } from '@polymer/polymer/lib/utils/flush.js';
-import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
+import { Debouncer, flushDebouncers } from '@polymer/polymer/lib/utils/debounce.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
@@ -220,6 +220,7 @@ import './nuxeo-tooltip.js';
         this._renderingProm = this._renderingProm.then(() => this._distributeNodes());
       });
       enqueueDebouncer(this.__layoutDebouncer);
+      flushDebouncers();
     }
 
     async _distributeNodes() {
