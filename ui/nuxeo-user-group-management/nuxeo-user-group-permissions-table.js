@@ -104,6 +104,11 @@ import '../nuxeo-button-styles.js';
             width: 50px;
           }
 
+          .document-name {
+            width: 100%;
+            word-break: break-all;
+          }
+
           .ace-permission-tag {
             background-color: var(--nuxeo-secondary-color, #7e90a5);
             border-radius: 3px;
@@ -163,7 +168,7 @@ import '../nuxeo-button-styles.js';
               <dom-repeat items="[[documents]]" as="document">
                 <template>
                   <div class="table-row">
-                    <div class="flex-3">
+                    <div class="flex-3 document-name">
                       <div>[[document.title]]</div>
                       <div class="ace-permission-path">[[document.path]]</div>
                     </div>
