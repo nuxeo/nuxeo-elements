@@ -476,6 +476,23 @@ export const UploaderBehavior = {
   _drop(e) {
     this.toggleClass('hover', false, this._dropZone);
     e.preventDefault();
-    this.uploadFiles(e.dataTransfer.files);
+    const allFiles = e.dataTransfer.items;
+    const files = [];
+    let hasFolder = false;
+    if (allFiles.length > 0) {
+      for (let i = 0; i < allFiles.length; i++) {
+        if (allFiles[i].webkitGetAsEntry().isDirectory) {
+          hasFolder = true;
+        } else {
+          files.push(e.dataTransfer.files[i]);
+        }
+      }
+      if (files.length > 0) {
+        this.uploadFiles(files);
+      }
+      if (hasFolder) {
+        this.notify({ message: this.i18n('folderUpload.error') });
+      }
+    }
   },
 };
