@@ -18,7 +18,7 @@ import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iro
 import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-input/paper-input.js';
-import '@vaadin/date-picker';
+import '@vaadin/vaadin-date-picker/vaadin-date-picker.js';
 import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
