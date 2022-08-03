@@ -206,7 +206,15 @@ import './nuxeo-tooltip.js';
 
     _moveToDropdown(el) {
       el.slot = 'dropdown';
-      el.setAttribute('show-label', '');
+      /**
+       * XXX: in Chrome 100+, for some unknown reason, when moving action buttons to the dropdown menu
+       * and setting its visibility, messes up with any dialog that might be opened from clicking
+       * the actions (see ELEMENTS-1481).
+       * Delaying the set attribute here, is enough for Chrome to update the DOM correctly.
+       */
+      setTimeout(() => {
+        el.setAttribute('show-label', '');
+      }, 0);
     }
 
     _layout(e) {
