@@ -26,14 +26,6 @@ import '../widgets/nuxeo-actions-menu.js';
 window.html = html; // make it available for building custom elements inline
 
 suite('nuxeo-actions-menu', () => {
-  function actionsMenu(el) {
-    return (el.shadowRoot || el).querySelector('nuxeo-actions-menu');
-  }
-
-  async function waitMenuRendered(menu) {
-    await actionsMenu(await menu)._renderingProm;
-  }
-
   function makeMenuContent(n = 5) {
     return html`
       ${[...Array(n)].map(
@@ -54,7 +46,6 @@ suite('nuxeo-actions-menu', () => {
         </nuxeo-actions-menu>
       </div>
     `);
-    await waitMenuRendered(menu);
     return menu;
   }
 
@@ -69,7 +60,6 @@ suite('nuxeo-actions-menu', () => {
       `,
       true,
     );
-    await waitMenuRendered(menu);
     return menu;
   }
 
@@ -84,6 +74,10 @@ suite('nuxeo-actions-menu', () => {
       `,
       true,
     );
+  }
+
+  function actionsMenu(el) {
+    return (el.shadowRoot || el).querySelector('nuxeo-actions-menu');
   }
 
   function menuActions(el) {
@@ -110,7 +104,6 @@ suite('nuxeo-actions-menu', () => {
     const lastChild = menu.lastElementChild;
     menu.removeChild(lastChild);
     await flush();
-    await waitMenuRendered(el);
   }
 
   async function addAction(el) {
@@ -127,7 +120,6 @@ suite('nuxeo-actions-menu', () => {
     };
     menu.appendChild(action);
     await flush();
-    await waitMenuRendered(el);
   }
 
   setup(async () => {
@@ -186,7 +178,6 @@ suite('nuxeo-actions-menu', () => {
     const menu = await makeMenuWithNuxeoSlot();
     await makeNuxeoSlottedMenuContent();
 
-    await waitMenuRendered(menu);
     expect(menuActions(menu).length).to.be.equal(3);
     expect(dropdownActions(menu).length).to.be.equal(2);
     expect(dropdownButton(menu).hidden).to.be.false;
@@ -238,7 +229,6 @@ suite('nuxeo-actions-menu', () => {
     await customElements.whenDefined('nuxeo-test-button');
 
     await flush();
-    await waitMenuRendered(menu);
 
     expect(menuActions(menu).length).to.be.equal(3);
     expect(dropdownActions(menu).length).to.be.equal(3);
@@ -277,7 +267,6 @@ suite('nuxeo-actions-menu', () => {
         `,
         true,
       );
-      await waitMenuRendered(customEl);
       expect(menuActions(customEl).length).to.be.equal(3);
       expect(dropdownActions(customEl).length).to.be.equal(2);
       expect(dropdownButton(customEl).hidden).to.be.false;
