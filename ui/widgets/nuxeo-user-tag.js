@@ -56,6 +56,13 @@ import './nuxeo-tooltip.js';
           a:hover {
             @apply --nuxeo-link-hover;
           }
+
+          .user-name-clipped {
+            white-space: nowrap;
+            width: 90px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
         </style>
         <nuxeo-tag>
           <div class="tag">
@@ -71,7 +78,7 @@ import './nuxeo-tooltip.js';
             </nuxeo-user-avatar>
             <dom-if if="[[_hasLink(disabled, user)]]">
               <template>
-                <a href$="[[_href(user)]]" on-click="_preventPropagation">[[_name(user)]]</a>
+                <a href$="[[_href(user)]]" class="user-name-clipped" on-click="_preventPropagation">[[_name(user)]]</a>
               </template>
             </dom-if>
             <dom-if if="[[!_hasLink(disabled, user)]]">
