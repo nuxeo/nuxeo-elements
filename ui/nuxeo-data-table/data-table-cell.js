@@ -30,7 +30,7 @@ import './data-table-templatizer-behavior.js';
             display: none;
           }
 
-          ::slotted(*) {
+          :host([header]) ::slotted(*) {
             min-width: 0;
           }
         </style>
