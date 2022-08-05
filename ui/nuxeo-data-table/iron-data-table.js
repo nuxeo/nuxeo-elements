@@ -292,7 +292,7 @@ import '../nuxeo-button-styles.js';
                   index="[[index]]"
                   item="[[item]]"
                   tabindex="-1"
-                  selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                  selected="[[_isSelected(item, selectedItems, selectedItems.*, _excludedItems, _excludedItems.*)]]"
                 >
                   <nuxeo-data-table-checkbox
                     hidden$="[[!selectionEnabled]]"
@@ -564,13 +564,13 @@ import '../nuxeo-button-styles.js';
       this.addEventListener('delete-entry', this._deleteEntry);
       this.addEventListener('move-upward', this._moveItemUpward);
       this.addEventListener('move-downward', this._moveItemDownward);
-      // this.$.list._selectionHandler = function(e) {
-      //   const model = this.modelForElement(e.target);
-      //   if (!model) {
-      //     return;
-      //   }
-      //   this.toggleSelectionForItem(model[this.as]);
-      // };
+      this.$.list._selectionHandler = function(e) {
+        const model = this.modelForElement(e.target);
+        if (!model) {
+          return;
+        }
+        this.toggleSelectionForItem(model[this.as]);
+      };
       // listen for changes in form slot contents to make sure we disable the form when it is stamped.
       // the form will be enabled/disabled when the dialog is opened/closed.
       // this allow us to bypass the form validation when it's not visible.

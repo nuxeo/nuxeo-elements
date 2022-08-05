@@ -311,12 +311,15 @@ export const PageProviderDisplayBehavior = [
         if (this.selectAllActive) {
           if (!this._excludedItems.includes(this.items[index].uid)) {
             this.push('_excludedItems', this.items[index].uid);
-            this.selectedItems = this.selectedItems.filter((item) => item !== this.items[index]);
+            // this.selectedItems = this.selectedItems.filter((item) => item !== this.items[index]);
+            this.deselectItem(this.items[index]);
+            this._selectItemModel(index);
             return;
           }
           if (this._excludedItems.includes(this.items[index].uid)) {
             this._excludedItems = this._excludedItems.filter((item) => item !== this.items[index].uid);
             Object.assign(this.selectedItems, this.items[index]);
+            this._selectItemModel(index);
           }
         }
       }
@@ -413,7 +416,7 @@ export const PageProviderDisplayBehavior = [
             this.selectedItems.length &&
             this.selectedItems.indexOf(item) > -1 &&
             !this._excludedItems.includes(item.uid)
-          )
+          ) || !!(this._isSelectAllActive && this._excludedItems.length && !this._excludedItems.includes(item.uid))
         : !!(this.selectedItem && this.selectedItem === item);
     },
 
@@ -426,7 +429,12 @@ export const PageProviderDisplayBehavior = [
             this.items.length > index &&
             this.selectedItems.indexOf(this.items[index]) > -1 &&
             !this._excludedItems.includes(this.items[index].uid)
-          )
+          ) ||
+            !!(
+              this._isSelectAllActive &&
+              this._excludedItems.length &&
+              !this._excludedItems.includes(this.items[index].uid)
+            )
         : !!(this.selectedItem && this.items && this.items.length > index && this.selectedItem === this.items[index]);
     },
 
