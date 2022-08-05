@@ -326,7 +326,12 @@ import '../nuxeo-button-styles.js';
       }
 
       if (this.params.end && dateBased) {
-        this.params.end = this.params.end.length > 0 ? moment(new Date(this.params.end)).format() : null;
+        this.params.end =
+          this.params.end.length > 0
+            ? moment(new Date(this.params.end))
+                .endOf('day')
+                .format()
+            : null;
       }
 
       if (this.params.end === null && this.shareWithExternal) {
