@@ -3464,8 +3464,12 @@ typedArrayTags[weakMapTag] = false;
         _updateInputWidth() {
           const inputContent =
             this.input.value || (!this._data.length && this.options.placeholder) || '';
-          this.input.setAttribute('size', inputContent.length + 2);
-
+            const placeholderLength = this.options.placeholder != null && this.options.placeholder.length;
+            if (this.enabled && !this._data.length && inputContent.length <= placeholderLength) {
+              this.input.setAttribute('size', placeholderLength);
+            } else {
+              this.input.setAttribute('size', inputContent.length + 2);
+            }
           this.positionDropdown();
         },
 
