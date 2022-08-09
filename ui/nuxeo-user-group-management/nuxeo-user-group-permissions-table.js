@@ -135,6 +135,10 @@ import '../nuxeo-button-styles.js';
             padding: 1.5em 0.7em;
             text-align: center;
           }
+
+          .title {
+            word-break: break-all;
+          }
         </style>
 
         <nuxeo-operation id="permissions" op="Repository.Query" enrichers="acls"></nuxeo-operation>
@@ -163,7 +167,7 @@ import '../nuxeo-button-styles.js';
               <dom-repeat items="[[documents]]" as="document">
                 <template>
                   <div class="table-row">
-                    <div class="flex-3">
+                    <div class="flex-3 title">
                       <div>[[document.title]]</div>
                       <div class="ace-permission-path">[[document.path]]</div>
                     </div>
