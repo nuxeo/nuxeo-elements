@@ -308,18 +308,19 @@ export const PageProviderDisplayBehavior = [
           }
         }
         this._lastSelectedIndex = e.detail.index;
-        if (this.selectAllActive) {
+        if (this.selectAllActive && this.items[index]) {
           if (!this._excludedItems.includes(this.items[index].uid)) {
             this.push('_excludedItems', this.items[index].uid);
-            // this.selectedItems = this.selectedItems.filter((item) => item !== this.items[index]);
-            this.deselectItem(this.items[index]);
             this._selectItemModel(index);
+            // console.log("this._excludedItems", this._excludedItems);
+            // console.log("this.selectedItems", this.selectedItems);
             return;
           }
           if (this._excludedItems.includes(this.items[index].uid)) {
             this._excludedItems = this._excludedItems.filter((item) => item !== this.items[index].uid);
-            Object.assign(this.selectedItems, this.items[index]);
             this._selectItemModel(index);
+            // console.log("this._excludedItems", this._excludedItems);
+            // console.log("this.selectedItems", this.selectedItems);
           }
         }
       }
@@ -394,7 +395,11 @@ export const PageProviderDisplayBehavior = [
     _pushSelectedItems(indexStart, limit) {
       for (let index = indexStart; index < limit; index++) {
         // skip entries that are already in the selectedItems list
-        if (!this._isIndexSelected(index) && !this._excludedItems.includes(this.items[index].uid)) {
+        if (
+          !this._isIndexSelected(index) &&
+          this.items[index] &&
+          !this._excludedItems.includes(this.items[index].uid)
+        ) {
           this.selectedItems.push(this.items[index]);
           // this.selectItem(this.items[index]);
         }
@@ -427,6 +432,7 @@ export const PageProviderDisplayBehavior = [
             this.selectedItems.length &&
             this.items &&
             this.items.length > index &&
+            this.items[index] &&
             this.selectedItems.indexOf(this.items[index]) > -1 &&
             !this._excludedItems.includes(this.items[index].uid)
           ) ||
@@ -812,7 +818,7 @@ export const PageProviderDisplayBehavior = [
         if (
           !this._excludedItems ||
           !this._excludedItems.length ||
-          !this._excludedItems.includes(this.items[index].uid)
+          (this.items[index] && !this._excludedItems.includes(this.items[index].uid))
         ) {
           selectionCallback(index);
         }
@@ -829,23 +835,23 @@ export const PageProviderDisplayBehavior = [
     _selectItemModel(index) {
       if (this.$.list._isIndexRendered(index)) {
         const model = this.modelForElement(this.$.list._physicalItems[this.$.list._getPhysicalIndex(index)]);
-        if (model && !model[this.$.list.selectedAs] && !this._excludedItems.length) {
-          model[this.$.list.selectedAs] = true;
-        }
-        if (
-          model &&
-          !model[this.$.list.selectedAs] &&
-          this._excludedItems.length &&
-          !this._excludedItems.includes(this.items[index].uid)
-        ) {
-          model[this.$.list.selectedAs] = true;
-        } else if (
-          model &&
-          !model[this.$.list.selectedAs] &&
-          this._excludedItems.length &&
-          this._excludedItems.includes(this.items[index].uid)
-        ) {
-          model[this.$.list.selectedAs] = false;
+        if (model) {
+          if (
+            !this._excludedItems ||
+            !this._excludedItems.length ||
+            (this._excludedItems.length && this.items[index] && !this._excludedItems.includes(this.items[index].uid))
+          ) {
+            model[this.$.list.selectedAs] = true;
+            return;
+          }
+          if (
+            this._excludedItems &&
+            this._excludedItems.length &&
+            this.items[index] &&
+            this._excludedItems.includes(this.items[index].uid)
+          ) {
+            model[this.$.list.selectedAs] = false;
+          }
         }
       }
     },

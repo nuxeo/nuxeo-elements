@@ -297,7 +297,7 @@ import '../nuxeo-button-styles.js';
                   <nuxeo-data-table-checkbox
                     hidden$="[[!selectionEnabled]]"
                     tabindex="0"
-                    checked$="[[selected]]"
+                    checked$="[[_isSelected(item, selectedItems, selectedItems.*, _excludedItems, _excludedItems.*)]]"
                     on-click="_onCheckBoxTap"
                     on-keydown="_onCheckBoxKeydown"
                   ></nuxeo-data-table-checkbox>
