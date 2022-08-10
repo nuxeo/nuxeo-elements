@@ -477,9 +477,9 @@ export const UploaderBehavior = {
     this.toggleClass('hover', false, this._dropZone);
     e.preventDefault();
     const allFiles = e.dataTransfer.items;
-    const files = [];
-    let hasFolder = false;
     if (allFiles.length > 0) {
+      const files = [];
+      let hasFolder = false;
       for (let i = 0; i < allFiles.length; i++) {
         if (allFiles[i].webkitGetAsEntry().isDirectory) {
           hasFolder = true;
