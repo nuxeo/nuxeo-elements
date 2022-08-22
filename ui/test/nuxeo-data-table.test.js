@@ -600,17 +600,6 @@ suite('nuxeo-data-table', () => {
       assert.equal(table.selectedItems.length, 0);
     });
 
-    test('deselect disabled in select all mode', async () => {
-      table.selectAll();
-      assert.equal(table.selectAllActive, true);
-      assert.equal(table.selectedItems.length, 4);
-
-      table.deselectIndex(0);
-      assert.equal(table.selectedItems.length, 4);
-      table.deselectItem(table.items[0]);
-      assert.equal(table.selectedItems.length, 4);
-    });
-
     test('select all clear after sorting', async () => {
       // assert the sort
       table.selectAll();
@@ -631,6 +620,23 @@ suite('nuxeo-data-table', () => {
       table.querySelector('nuxeo-data-table-column').filterValue = 'test';
       assert.equal(table.selectAllActive, false);
       assert.equal(table.selectedItems.length, 0);
+    });
+
+    test('unselect an item after selecting all', async () => {
+      table.selectAll();
+      assert.equal(table.selectAllActive, true);
+      assert.equal(table.selectedItems.length, 4);
+      assert.deepEqual(table.items, table.selectedItems);
+      const checkboxes = Array.from(
+        table.querySelectorAll('nuxeo-data-table-checkbox:not([style*="visibility: hidden;"])'),
+      );
+      expect(checkboxes).to.have.length(5);
+      checkboxes[1].click();
+      assert.equal(table.selectedItems.length, 3);
+      checkboxes[2].click();
+      assert.equal(table.selectedItems.length, 2);
+      checkboxes[3].click();
+      assert.equal(table.selectedItems.length, 1);
     });
   });
 
