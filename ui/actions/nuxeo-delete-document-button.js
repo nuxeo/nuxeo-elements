@@ -51,6 +51,14 @@ import '../nuxeo-button-styles.js';
       return html`
         <style include="nuxeo-action-button-styles nuxeo-button-styles"></style>
 
+        <nuxeo-document
+          id="doc"
+          doc-id="[[parentDoc.uid]]"
+          enrichers="permissions"
+          auto
+          response="{{_enrichedParent}}"
+        ></nuxeo-document>
+
         <nuxeo-operation id="deleteOp" op="Document.Delete" input="[[document.uid]]" sync-indexing></nuxeo-operation>
 
         <nuxeo-operation id="trashOp" op="Document.Trash" input="[[document.uid]]" sync-indexing></nuxeo-operation>
@@ -77,6 +85,10 @@ import '../nuxeo-button-styles.js';
          * Input document.
          */
         document: Object,
+
+        parentDoc: {
+          type: Object,
+        },
 
         /**
          * Icon to use (iconset_name:icon_name).
@@ -111,7 +123,13 @@ import '../nuxeo-button-styles.js';
     }
 
     _isAvailable(doc) {
-      return !this.isVersion(doc) && this.hasPermission(doc, 'Remove') && (!this.isTrashed(doc) || this.hard);
+      return (
+        doc &&
+        !this.isVersion(doc) &&
+        this.hasPermission(doc, 'Remove') &&
+        this.hasPermission(this._enrichedParent, 'RemoveChildren') &&
+        (!this.isTrashed(doc) || this.hard)
+      );
     }
 
     _computeIcon(hard) {
