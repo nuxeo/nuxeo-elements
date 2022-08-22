@@ -149,6 +149,7 @@
   "favoritesToggleButton.tooltip.add": "お気に入りに追加",
   "favoritesToggleButton.tooltip.remove": "お気に入りから削除",
   "file.upload": "アップロード",
+  "folderUpload.error": "Folder upload is not supported",
   "groupManagement.addedToGroup": "グループに追加されています",
   "groupManagement.addedUserToGroup": "{0}が{1}に追加されました",
   "groupManagement.addEntity": "ユーザまたはグループを追加",
