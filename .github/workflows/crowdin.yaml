@@ -13,6 +13,9 @@ on:
     paths:
       - 'ui/i18n/messages.json'
 
+  # Manually trigger the workflow
+  workflow_dispatch:
+
 jobs:
   crowdin:
     runs-on: ubuntu-latest
