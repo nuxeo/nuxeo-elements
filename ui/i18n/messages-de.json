@@ -149,6 +149,7 @@
   "favoritesToggleButton.tooltip.add": "Zu Favoriten hinzufügen",
   "favoritesToggleButton.tooltip.remove": "Aus Favoriten entfernen",
   "file.upload": "Hochladen",
+  "folderUpload.error": "Das Hochladen von Ordnern wird nicht unterstützt",
   "groupManagement.addedToGroup": "wurde der Gruppe hinzugefügt",
   "groupManagement.addedUserToGroup": "{0} wurde {1} hinzugefügt",
   "groupManagement.addEntity": "Einen Benutzer oder eine Gruppe hinzufügen",

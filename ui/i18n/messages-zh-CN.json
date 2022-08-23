@@ -149,6 +149,7 @@
   "favoritesToggleButton.tooltip.add": "添加到收藏夹",
   "favoritesToggleButton.tooltip.remove": "从收藏中移除",
   "file.upload": "上传",
+  "folderUpload.error": "Folder upload is not supported",
   "groupManagement.addedToGroup": "已添加到群组。",
   "groupManagement.addedUserToGroup": "{0} 已添加到 {1} 中。",
   "groupManagement.addEntity": "添加用户或群组",
