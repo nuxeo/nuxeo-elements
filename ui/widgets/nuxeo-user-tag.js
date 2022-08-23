@@ -44,6 +44,7 @@ import './nuxeo-tooltip.js';
           }
           nuxeo-tag {
             padding: 0 6px 0 0;
+            width: 100%;
           }
           .tag {
             @apply --layout-horizontal;
@@ -55,6 +56,12 @@ import './nuxeo-tooltip.js';
 
           a:hover {
             @apply --nuxeo-link-hover;
+          }
+
+          .user-tag {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
         </style>
         <nuxeo-tag>
@@ -71,7 +78,7 @@ import './nuxeo-tooltip.js';
             </nuxeo-user-avatar>
             <dom-if if="[[_hasLink(disabled, user)]]">
               <template>
-                <a href$="[[_href(user)]]" on-click="_preventPropagation">[[_name(user)]]</a>
+                <a href$="[[_href(user)]]" class="user-tag" on-click="_preventPropagation">[[_name(user)]]</a>
               </template>
             </dom-if>
             <dom-if if="[[!_hasLink(disabled, user)]]">
