@@ -41,6 +41,7 @@ jobs:
 
           # Name of the branch where to merge the translations
           localization_branch_name: crowdin-translations-update
+          pull_request_base_branch_name: maintenance-3.0.x
           create_pull_request: true
           pull_request_title: 'New Crowdin translations'
           pull_request_body: 'New Crowdin pull request with translations'
@@ -56,4 +57,4 @@ jobs:
           github_user_email: ui+jx-bot@nuxeo.com
 
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.WEBUI_JX_BOT_GITHUB_TOKEN }}
