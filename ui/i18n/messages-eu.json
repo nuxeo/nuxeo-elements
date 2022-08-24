@@ -149,6 +149,7 @@
   "favoritesToggleButton.tooltip.add": "Gehitu gogokoetara",
   "favoritesToggleButton.tooltip.remove": "Kendu gogokoetatik",
   "file.upload": "Igo",
+  "folderUpload.error": "Folder upload is not supported",
   "groupManagement.addedToGroup": "taldera gehitu da",
   "groupManagement.addedUserToGroup": "{0} {1} taldera gehitu da.",
   "groupManagement.addEntity": "Gehitu erabiltzaile edo taldea",
