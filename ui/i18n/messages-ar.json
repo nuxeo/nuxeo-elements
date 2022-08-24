@@ -149,6 +149,7 @@
   "favoritesToggleButton.tooltip.add": "إضافة إلى المفضلة",
   "favoritesToggleButton.tooltip.remove": "إزالة من المفضلة",
   "file.upload": "رفع",
+  "folderUpload.error": "Folder upload is not supported",
   "groupManagement.addedToGroup": "تمت إضافته إلى المجموعة.",
   "groupManagement.addedUserToGroup": "تمت إضافة {0} إلى {1}.",
   "groupManagement.addEntity": "إضافة مستخدم أو مجموعة",
