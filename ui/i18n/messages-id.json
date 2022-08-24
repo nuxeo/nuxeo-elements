@@ -149,6 +149,7 @@
   "favoritesToggleButton.tooltip.add": "Tambah ke Favorit",
   "favoritesToggleButton.tooltip.remove": "Hapus dari Favorit",
   "file.upload": "Unggah",
+  "folderUpload.error": "Folder upload is not supported",
   "groupManagement.addedToGroup": "sudah ditambahkan ke kelompok.",
   "groupManagement.addedUserToGroup": "{0} sudah ditambahkan ke {1}.",
   "groupManagement.addEntity": "Tambah satu pengguna atau satu kelompok",
