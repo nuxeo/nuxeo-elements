@@ -61,6 +61,13 @@ const template = html`
           user-select: none;
         }
 
+        .comment-iron-icon {
+          margin: 0;
+          padding: 0;
+          background-color: transparent;
+          border: none;
+        }
+
         .opaque {
           opacity: 0.5;
         }
