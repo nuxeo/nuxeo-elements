@@ -76,15 +76,13 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
               </paper-textarea>
               <dom-if if="[[!_isBlank(text)]]">
                 <template>
-                  <iron-icon
-                    id="submit"
-                    name="submit"
-                    class="main-option opaque"
-                    icon="check"
-                    on-tap="_submitComment"
-                  ></iron-icon>
+                  <button class="comment-iron-icon" on-tap="_submitComment">
+                    <iron-icon id="submit" name="submit" class="main-option opaque" icon="check"></iron-icon>
+                  </button>
                   <nuxeo-tooltip for="submit">[[i18n('comments.submit.tooltip')]]</nuxeo-tooltip>
-                  <iron-icon name="clear" class="main-option opaque" icon="clear" on-tap="_clearInput"></iron-icon>
+                  <button class="comment-iron-icon" on-tap="_clearInput">
+                    <iron-icon name="clear" class="main-option opaque" icon="clear"></iron-icon>
+                  </button>
                 </template>
               </dom-if>
             </div>
