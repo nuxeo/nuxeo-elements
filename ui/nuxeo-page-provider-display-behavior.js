@@ -409,6 +409,9 @@ export const PageProviderDisplayBehavior = [
     },
 
     _isSelected(item) {
+      if (!item) {
+        return false;
+      }
       if (this._isSelectAllActive) {
         return !this._excludedItems.includes(item.uid);
       }
@@ -729,16 +732,19 @@ export const PageProviderDisplayBehavior = [
           let entryIndex = 0;
           for (let i = firstIndex; i <= lastIndex; i++) {
             if (entryIndex < response.entries.length) {
-              const isSelected = this._isSelected(this.items[i]);
+              const item = this.items[i];
+              const isSelected = this._isSelected(item);
               this.set(`items.${i}`, response.entries[entryIndex++]);
 
-              if (isSelected && !this._excludedItems.includes(this.items[i].uid)) {
+              if (isSelected && !this._excludedItems.includes(item.uid)) {
                 if (this.selectAllActive) {
+                  // remove the previous item from array-selector selection, since it was an empty object
+                  this.$.list.$.selector.__selectedMap.delete(item);
                   /**
                    * if select all is active we need to update the `selectedItems` entry to keep it in sync with the
                    * one in `items` that we have just loaded
                    */
-                  this.set(`selectedItems.${i}`, this.items[i]);
+                  this.set(`selectedItems.${i}`, item);
                   this._selectItemModel(i);
                 } else {
                   this.selectIndex(i);
@@ -807,13 +813,7 @@ export const PageProviderDisplayBehavior = [
     _updateSelectedItems(selectionCallback) {
       const { start, end } = this._getSelectionBoundaries();
       for (let index = start; index <= end; index++) {
-        if (
-          !this._excludedItems ||
-          !this._excludedItems.length ||
-          (this.items[index] && !this._excludedItems.includes(this.items[index].uid))
-        ) {
-          selectionCallback(index);
-        }
+        selectionCallback(index);
       }
     },
 
@@ -855,11 +855,27 @@ export const PageProviderDisplayBehavior = [
            * visible in the first place
            */
           if (this.selectAllActive) {
-            afterNextRender(this, () => this._updateSelectedItems(this._selectItemModel.bind(this)));
+            afterNextRender(this, () =>
+              this._updateSelectedItems((index) => {
+                this._syncArraySelectorSelection(index);
+                this._selectItemModel(index);
+              }),
+            );
           }
           this._fetchRange(this.$.list.firstVisibleIndex, this.$.list.lastVisibleIndex);
         },
       );
+    },
+
+    _syncArraySelectorSelection(index) {
+      const item = this.items[index];
+      if (this._isSelected(item) && !this.$.list.$.selector.isSelected(item)) {
+        // XXX sync selection
+        this.$.list.$.selector.__selectedMap.set(item, index);
+      } else if (!this._isSelected(item) && this.$.list.$.selector.isSelected(item)) {
+        // XXX sync deselection
+        this.$.list.$.selector.__selectedMap.delete(item);
+      }
     },
 
     modelForElement(el) {
