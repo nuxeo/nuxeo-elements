@@ -65,7 +65,7 @@ import './nuxeo-tooltip.js';
           }
         </style>
         <nuxeo-tag>
-          <div class="tag">
+          <div class="tag" role="button">
             <nuxeo-user-avatar
               user="[[user]]"
               border-radius="50"
