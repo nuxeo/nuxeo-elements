@@ -732,19 +732,19 @@ export const PageProviderDisplayBehavior = [
           let entryIndex = 0;
           for (let i = firstIndex; i <= lastIndex; i++) {
             if (entryIndex < response.entries.length) {
-              const item = this.items[i];
-              const isSelected = this._isSelected(item);
+              const prevItem = this.items[i];
+              const isSelected = this._isSelected(prevItem);
               this.set(`items.${i}`, response.entries[entryIndex++]);
 
-              if (isSelected && !this._excludedItems.includes(item.uid)) {
+              if (isSelected && !this._excludedItems.includes(this.items[i].uid)) {
                 if (this.selectAllActive) {
                   // remove the previous item from array-selector selection, since it was an empty object
-                  this.$.list.$.selector.__selectedMap.delete(item);
+                  this.$.list.$.selector.__selectedMap.delete(prevItem);
                   /**
                    * if select all is active we need to update the `selectedItems` entry to keep it in sync with the
                    * one in `items` that we have just loaded
                    */
-                  this.set(`selectedItems.${i}`, item);
+                  this.set(`selectedItems.${i}`, this.items[i]);
                   this._selectItemModel(i);
                 } else {
                   this.selectIndex(i);
