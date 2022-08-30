@@ -48,8 +48,7 @@ import './nuxeo-tooltip.js';
     static get template() {
       return html`
         <style>
-          :host,
-          #main {
+          :host {
             @apply --layout-horizontal;
             @apply --layout-center;
           }
@@ -65,13 +64,11 @@ import './nuxeo-tooltip.js';
             overflow: hidden;
           }
 
-          #slot::slotted(*), /* chrome, safari */
-          #main::slotted(*) /* firefox, edge */ {
+          #slot::slotted(*) {
             @apply --nuxeo-actions-menu-main;
           }
 
-          #dropdown::slotted(*), /* chrome, safari */
-          paper-listbox::slotted(*) /* firefox, edge */ {
+          #dropdown::slotted(*) {
             outline: none;
             user-select: none;
             @apply --nuxeo-actions-menu-dropdown;
@@ -88,9 +85,7 @@ import './nuxeo-tooltip.js';
           }
         </style>
 
-        <div id="main">
-          <slot id="slot"></slot>
-        </div>
+        <slot id="slot"></slot>
         <div id="reparent"></div>
         <paper-menu-button id="dropdownButton" close-on-activate no-overlap horizontal-align="right">
           <paper-icon-button
