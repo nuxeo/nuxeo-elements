@@ -308,13 +308,14 @@ export const PageProviderDisplayBehavior = [
           }
         }
         this._lastSelectedIndex = e.detail.index;
-        if (this.selectAllActive && this.items[index]) {
-          if (!this._excludedItems.includes(this.items[index].uid)) {
-            this.push('_excludedItems', this.items[index].uid);
+        const item = this.items[index];
+        if (this.selectAllActive && item) {
+          if (!this._excludedItems.includes(item.uid)) {
+            this.push('_excludedItems', item.uid);
             return;
           }
-          if (this._excludedItems.includes(this.items[index].uid)) {
-            this._excludedItems = this._excludedItems.filter((item) => item !== this.items[index].uid);
+          if (this._excludedItems.includes(item.uid)) {
+            this._excludedItems = this._excludedItems.filter((i) => i !== item.uid);
           }
         }
       }
@@ -389,13 +390,9 @@ export const PageProviderDisplayBehavior = [
     _pushSelectedItems(indexStart, limit) {
       for (let index = indexStart; index < limit; index++) {
         // skip entries that are already in the selectedItems list
-        if (
-          !this._isIndexSelected(index) &&
-          this.items[index] &&
-          !this._excludedItems.includes(this.items[index].uid)
-        ) {
-          this.selectedItems.push(this.items[index]);
-          // this.selectItem(this.items[index]);
+        const item = this.items[index];
+        if (!this._isIndexSelected(index) && item && !this._excludedItems.includes(item.uid)) {
+          this.selectedItems.push(item);
         }
       }
       this.notifySplices('selectedItems');
@@ -735,8 +732,9 @@ export const PageProviderDisplayBehavior = [
               const prevItem = this.items[i];
               const isSelected = this._isSelected(prevItem);
               this.set(`items.${i}`, response.entries[entryIndex++]);
+              const item = this.items[i];
 
-              if (isSelected && !this._excludedItems.includes(this.items[i].uid)) {
+              if (isSelected && !this._excludedItems.includes(item.uid)) {
                 if (this.selectAllActive) {
                   // remove the previous item from array-selector selection, since it was an empty object
                   this.$.list.$.selector.__selectedMap.delete(prevItem);
@@ -744,7 +742,7 @@ export const PageProviderDisplayBehavior = [
                    * if select all is active we need to update the `selectedItems` entry to keep it in sync with the
                    * one in `items` that we have just loaded
                    */
-                  this.set(`selectedItems.${i}`, this.items[i]);
+                  this.set(`selectedItems.${i}`, item);
                   this._selectItemModel(i);
                 } else {
                   this.selectIndex(i);
