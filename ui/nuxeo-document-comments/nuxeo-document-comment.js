@@ -193,7 +193,10 @@ import '../nuxeo-button-styles.js';
                   <dom-if if="[[!editing]]">
                     <template>
                       <div id="view-area" class="text">
-                        <span inner-h-t-m-l="[[_computeTextToDisplay(comment.text, maxChars, truncated)]]"></span>
+                        <span
+                          id="view-comment"
+                          inner-h-t-m-l="[[_computeTextToDisplay(comment.text, maxChars, truncated)]]"
+                        ></span>
                         <dom-if if="[[truncated]]">
                           <template>
                             <span class="smaller opaque pointer" on-tap="_showFullComment"
@@ -396,6 +399,8 @@ import '../nuxeo-button-styles.js';
 
     _editComment() {
       this._setEditing(true);
+      this.set('comment.text', this.$$('#view-comment').innerHTML);
+      this.text = this.get('comment.text');
       afterNextRender(this, function() {
         this.$$('#inputContainer').focus();
       });
