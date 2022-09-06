@@ -65,7 +65,7 @@ import '../nuxeo-icons.js';
 
         <nuxeo-resource id="getUserProfile" enrichers="userprofile" enrichers-entity="user"></nuxeo-resource>
 
-        <div id="container" aria-hidden="true">
+        <div id="container">
           <span id="character" hidden$="[[!_isInTheAlphabet]]">{{_output}}</span>
           <iron-icon hidden$="[[_isInTheAlphabet]]" icon="nuxeo:user"></iron-icon>
         </div>
