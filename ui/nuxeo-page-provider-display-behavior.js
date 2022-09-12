@@ -437,8 +437,10 @@ export const PageProviderDisplayBehavior = [
     },
 
     _toggleSelectAll() {
-      if (this.selectAllActive) {
+      if (this._excludedItems.length === 0 && this.selectAllActive) {
         this.clearSelection();
+      } else if (!this._excludedItems.length > 0 && this.selectAllActive) {
+        this.selectAll();
       } else {
         this.selectAll();
       }
