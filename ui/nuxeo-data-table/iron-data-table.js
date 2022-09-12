@@ -231,7 +231,7 @@ import '../nuxeo-button-styles.js';
             <nuxeo-data-table-row header>
               <nuxeo-data-table-checkbox
                 style$="[[_computeSelectAllVisibility(selectionEnabled, selectAllEnabled, multiSelection)]]"
-                checked="[[selectAllActive]]"
+                checked="[[_isChecked(selectAllActive, _excludedItems, _excludedItems.*)]]"
                 on-click="_toggleSelectAll"
               ></nuxeo-data-table-checkbox>
               <dom-repeat items="[[columns]]" as="column">
@@ -514,6 +514,13 @@ import '../nuxeo-button-styles.js';
           value: false,
         },
       };
+    }
+
+    _isChecked(selectAllActive, _excludedItems) {
+      if (selectAllActive && _excludedItems.length === 0) {
+        return true;
+      }
+      return false;
     }
 
     static get observers() {
