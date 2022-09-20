@@ -517,10 +517,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _isChecked(selectAllActive, _excludedItems) {
-      if (selectAllActive && _excludedItems.length === 0) {
-        return true;
-      }
-      return false;
+      return selectAllActive && _excludedItems.length === 0;
     }
 
     static get observers() {
