@@ -7137,25 +7137,18 @@ typedArrayTags[weakMapTag] = false;
           ),
 
           singleSelectedItem: (opts) => (
-            `${'<span class="selectivity-single-selected-item" ' +
-            'data-item-id="'}${escapeHTML(opts.id)}">${
-              opts.removable ? '<a class="preserve-white-space selectivity-single-selected-item-remove">' +
-                  '<span class="selectivity-remove"></span>' +
-                  '</a>'
-                : ''
-            }${this.selectionFormatter(opts.item || opts)}</span>`
+            `<span class="selectivity-single-selected-item"
+            data-item-id="${escapeHTML(opts.id)}">${opts.removable ? 
+              `<a class="preserve-white-space selectivity-single-selected-item-remove"><span class="selectivity-remove" role="button" aria-label="${this.i18n('command.remove')}"></span></a>` 
+              : ``}${this.selectionFormatter(opts.item || opts)}</span>`
           ),
 
           multipleSelectedItem: (opts) => {
             const extraClass = opts.highlighted ? ' highlighted' : '';
-            return (
-              `<span class="selectivity-multiple-selected-item${extraClass}"
-                     data-item-id="${escapeHTML(opts.id)}">${
-                opts.removable ? '<a class="preserve-white-space selectivity-multiple-selected-item-remove">' +
-                    '<span class="selectivity-remove"></span>' +
-                    '</a>'
-                  : ''
-              }${this.selectionFormatter(opts.item || opts)}</span>`);
+            return `<span class="selectivity-multiple-selected-item${extraClass}"
+              data-item-id="${escapeHTML(opts.id)}">${opts.removable ? 
+                `<a class="preserve-white-space selectivity-multiple-selected-item-remove"><span class="selectivity-remove" role="button" aria-label="${this.i18n('command.remove')}"></span></a>` 
+                : ``}${this.selectionFormatter(opts.item || opts)}</span>`
           },
         },
       };
