@@ -6179,7 +6179,7 @@ typedArrayTags[weakMapTag] = false;
      * replaced with actual results.
      */
         loading() {
-          return `<div class="selectivity-loading">${Selectivity.Locale.loading}</div>`;
+          return `<div class="selectivity-loading" aria-live="polite">${Selectivity.Locale.loading}</div>`;
         },
 
         /**
@@ -6262,7 +6262,7 @@ typedArrayTags[weakMapTag] = false;
      */
         noResults(options) {
           return (
-            `<div class="selectivity-error">${
+            `<div class="selectivity-error" aria-live="polite">${
               options.term ? Selectivity.Locale.noResultsForTerm(options.term) : Selectivity.Locale.noResults
             }</div>`
           );
