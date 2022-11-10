@@ -44,7 +44,7 @@ import './nuxeo-tooltip.js';
           }
           nuxeo-tag {
             padding: 0 6px 0 0;
-            width: 100%;
+            max-width: 100%;
           }
           .tag {
             @apply --layout-horizontal;
