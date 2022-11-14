@@ -270,7 +270,7 @@ import '../nuxeo-button-styles.js';
 
           <dom-if if="[[_isEmpty]]">
             <template>
-              <div class="emptyResult">[[_computedEmptyLabel]]</div>
+              <div class="emptyResult" aria-live="polite">[[_computedEmptyLabel]]</div>
             </template>
           </dom-if>
 
