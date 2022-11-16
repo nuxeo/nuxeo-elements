@@ -47,6 +47,7 @@ import '../nuxeo-button-styles.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-add-to-collection-button/index.html
    */
+
   class AddToCollectionButton extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
