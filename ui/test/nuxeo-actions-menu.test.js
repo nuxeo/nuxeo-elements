@@ -169,9 +169,9 @@ suite('nuxeo-actions-menu', () => {
     expect(dropdownButton(menu).hidden).to.be.false;
     await removeAction(menu);
 
-    expect(menuActions(menu).length).to.be.equal(4);
-    expect(dropdownActions(menu).length).to.be.equal(0);
-    expect(dropdownButton(menu).hidden).to.be.true;
+    expect(menuActions(menu).length).to.be.equal(3);
+    expect(dropdownActions(menu).length).to.be.equal(1);
+    expect(dropdownButton(menu).hidden).to.be.false;
   });
 
   test('menu with nuxeo-slotted content', async () => {
