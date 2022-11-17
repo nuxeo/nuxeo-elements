@@ -222,7 +222,7 @@ import './nuxeo-tooltip.js';
          * updated on polyfilled browsers (Firex and Edge), leading to an empty menu if there's a single element
          * that doesn't fit on the menu.
          */
-        while (els.length && this.contentWidth <= this.clientWidth) {
+        while (els.length && this.contentWidth < this.clientWidth) {
           this._moveToMenu(els.shift());
         }
         if (!els.length) {
