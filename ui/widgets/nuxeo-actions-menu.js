@@ -217,14 +217,7 @@ import './nuxeo-tooltip.js';
       }
       this.__layoutDebouncer = Debouncer.debounce(this.__layoutDebouncer, microTask, () => {
         let els = this._getDropdownElements();
-        /**
-         * XXX: We're using this.contentWidth instead of this.scrollWidth because it takes too much time to be
-         * updated on polyfilled browsers (Firex and Edge), leading to an empty menu if there's a single element
-         * that doesn't fit on the menu.
-         */
-        while (els.length && this.contentWidth <= this.clientWidth) {
-          this._moveToMenu(els.shift());
-        }
+
         if (!els.length) {
           this.$.dropdownButton.hidden = true;
         }
@@ -239,6 +232,14 @@ import './nuxeo-tooltip.js';
           if (this.$.dropdownButton.hidden) {
             this.$.dropdownButton.hidden = false;
           }
+        }
+        /**
+         * XXX: We're using this.contentWidth instead of this.scrollWidth because it takes too much time to be
+         * updated on polyfilled browsers (Firex and Edge), leading to an empty menu if there's a single element
+         * that doesn't fit on the menu.
+         */
+        while (els.length && this.contentWidth <= this.clientWidth) {
+          this._moveToMenu(els.shift());
         }
       });
     }
