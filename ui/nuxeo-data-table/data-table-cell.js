@@ -79,7 +79,11 @@ import './data-table-templatizer-behavior.js';
 
     ready() {
       super.ready();
-      this.setAttribute('role', 'cell');
+      if (this.header) {
+        this.setAttribute('scope', 'col');
+      } else {
+        this.setAttribute('role', 'cell');
+      }
     }
 
     _alignRightChanged(alignRight) {

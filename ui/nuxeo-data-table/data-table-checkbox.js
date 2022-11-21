@@ -68,7 +68,11 @@ import '../widgets/nuxeo-checkmark.js';
 
     ready() {
       super.ready();
-      this.setAttribute('role', 'cell');
+      if (!this.header) {
+        this.setAttribute('scope', 'col');
+      } else {
+        this.setAttribute('role', 'cell');
+      }
     }
   }
 
