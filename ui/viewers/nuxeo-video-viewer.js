@@ -87,6 +87,7 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
             height="[[height]]"
             preload="[[preload]]"
             poster="[[poster]]"
+            controlsList="nodownload"
           >
             <dom-repeat items="[[sources]]" as="source">
               <template>

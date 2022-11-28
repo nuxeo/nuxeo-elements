@@ -57,6 +57,7 @@ suite('nuxeo-document', () => {
           <nuxeo-document doc-path="something"></nuxeo-document>
         `,
       );
+
       try {
         await document.get();
       } catch (_) {
@@ -127,6 +128,62 @@ suite('nuxeo-document', () => {
     test('should build a path from a path', async () => {
       const document = await fixture('<nuxeo-document doc-path="something"></nuxeo-document>');
       expect(document.path).to.be.eq('/path/something');
+    });
+  });
+
+  suite('when setting document view or download action', () => {
+    test('should set view and download data', async () => {
+      const document = await fixture(
+        html`
+          <nuxeo-document doc-id="something"></nuxeo-document>
+        `,
+      );
+      document.documentData = {
+        properties: {
+          'file:content': {
+            appLinks: [],
+            data: 'file1.jpeg?changeToken=13-0',
+            digest: '2e7d1a1ba7018c048bebdf1d07481ee3',
+            digestAlgorithm: 'MD5',
+            encoding: null,
+            length: '5763',
+            'mime-type': 'image/jpeg',
+            name: 'kitten1 (4).jpeg',
+          },
+          'vid:transcodedVideos': [
+            {
+              content: {
+                data: 'vid1.mp4?changeToken=9-0',
+                'mime-type': 'video/mp4',
+              },
+              info: {
+                width: 66,
+                height: 66,
+                format: 'jpeg',
+              },
+              name: 'vid1.mp4',
+            },
+          ],
+        },
+        schemas: [
+          {
+            name: 'video',
+          },
+        ],
+      };
+      document.setDocumentViewDownloadProp();
+      expect(document.documentData.properties['file:content'].viewData).to.eq(
+        'file1.jpeg?changeToken=13-0&clientReason=view',
+      );
+      expect(document.documentData.properties['file:content'].downloadData).to.eq(
+        'file1.jpeg?changeToken=13-0&clientReason=download',
+      );
+      expect(document.documentData.properties['vid:transcodedVideos'][0].content.viewData).to.eq(
+        'vid1.mp4?changeToken=9-0&clientReason=view',
+      );
+      expect(document.documentData.properties['vid:transcodedVideos'][0].content.downloadData).to.eq(
+        'vid1.mp4?changeToken=9-0&clientReason=download',
+      );
     });
   });
 });

@@ -2602,6 +2602,8 @@ html[dir="rtl"] #documentPropertiesOverlay .row > * {
   display: none;
 }
 
+
+
 @media print {
   /* General rules for printing. */
   body {
@@ -2700,6 +2702,16 @@ html[dir="rtl"] #documentPropertiesOverlay .row > * {
 .visibleMediumView,
 .visibleSmallView {
   display: none;
+}
+
+.download
+{
+    display:none !important;    
+}
+
+.print
+{
+    display:none !important;
 }
 
 @media all and (max-width: 900px) {

@@ -11,6 +11,7 @@ export default {
         length: '401187',
         data: 'videoURL',
         appLinks: [],
+        downloadData: 'videoURL&clientReason=download',
       },
       info: {
         duration: 10.03,
