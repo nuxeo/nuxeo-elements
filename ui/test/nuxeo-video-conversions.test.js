@@ -71,7 +71,9 @@ suite('nuxeo-video-conversions', () => {
     test('Should display an anchor tag when the video contains content', () => {
       const anchor = element.shadowRoot.querySelector('a');
       expect(isElementVisible(anchor)).to.be.true;
-      expect(anchor.href).to.equal(`http://localhost:9876/${videoProperties['vid:transcodedVideos'][0].content.data}`);
+      expect(anchor.href).to.equal(
+        `http://localhost:9876/${videoProperties['vid:transcodedVideos'][0].content.downloadData}`,
+      );
     });
   });
 });

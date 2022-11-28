@@ -87,10 +87,11 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
             height="[[height]]"
             preload="[[preload]]"
             poster="[[poster]]"
+            controlsList="nodownload"
           >
             <dom-repeat items="[[sources]]" as="source">
               <template>
-                <source src="[[source.data]]" type="[[source.type]]" />
+                <source src="[[source.viewData]]" type="[[source.type]]" />
               </template>
             </dom-repeat>
           </video>
@@ -104,7 +105,7 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
                       <img
                         class="thumbnail"
                         on-click="_jumpTo"
-                        src="[[thumbnail.content.data]]"
+                        src="[[thumbnail.content.viewData]]"
                         alt$="[[thumbnail.comment]]"
                       />
                     </template>

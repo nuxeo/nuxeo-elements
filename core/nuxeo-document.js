@@ -178,6 +178,13 @@ import './nuxeo-resource.js';
       this.$.nxResource.addEventListener('loading-changed', () => {
         this._setLoading(this.$.nxResource.loading);
       });
+
+      this.$.nxResource.addEventListener('response', (e) => {
+        this.documentData = e.detail && e.detail.response ? e.detail.response : null;
+        if (this.documentData) {
+          this.setDocumentViewDownloadProp();
+        }
+      });
     }
 
     /* Fetch the document. */
@@ -217,6 +224,35 @@ import './nuxeo-resource.js';
         path = `/path/${docPath}`;
       }
       return path;
+    }
+
+    appendClientReason(prop) {
+      prop.viewData = `${prop.data}&clientReason=view`;
+      prop.downloadData = `${prop.data}&clientReason=download`;
+    }
+
+    setDocumentViewDownloadProp() {
+      const documentProps = [];
+      if (this.documentData && this.documentData.properties) {
+        documentProps.push(
+          this.documentData.properties['file:content'],
+          this.documentData.properties['files:files'],
+          this.documentData.properties['picture:views'],
+          this.documentData.properties['vid:transcodedVideos'],
+          this.documentData.properties['vid:storyboard'],
+        );
+        documentProps.forEach((docProp) => {
+          if (docProp) {
+            if (Array.isArray(docProp)) {
+              docProp.forEach((prop) => {
+                this.appendClientReason(prop.file ? prop.file : prop.content);
+              });
+            } else {
+              this.appendClientReason(docProp);
+            }
+          }
+        });
+      }
     }
   }
 
