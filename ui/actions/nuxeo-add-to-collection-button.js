@@ -68,6 +68,7 @@ import '../nuxeo-button-styles.js';
         <nuxeo-operation id="createCollectionOp" op="Collection.Create"></nuxeo-operation>
 
         <dom-if if="[[_isAvailable(document)]]">
+          <p>Test PR</p>
           <template>
             <div class="action" on-click="_toggleDialog">
               <paper-icon-button icon="[[icon]]" noink aria-labelledby="label"></paper-icon-button>
