@@ -113,7 +113,7 @@ import '../nuxeo-button-styles.js';
     _download() {
       const blob = this.document && this._deepFind(this.document.properties, this.xpath);
       if (blob) {
-        window.location.href = blob.data;
+        window.location.href = blob.downloadData;
       }
     }
 

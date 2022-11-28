@@ -277,12 +277,12 @@ import './viewers/nuxeo-video-viewer.js';
       ) {
         const filteredViews = this.document.properties['picture:views'].filter((view) => view.title === 'FullHD');
         if (filteredViews.length > 0) {
-          return filteredViews[0].content.data;
+          return `${filteredViews[0].content.viewData}`;
         }
       }
       if (this.xpath) {
         if (this._blob && this._blob['mime-type'] && this._blob['mime-type'].match('image.*')) {
-          return this._blob.data;
+          return this._blob.viewData;
         }
       }
     }
@@ -304,7 +304,7 @@ import './viewers/nuxeo-video-viewer.js';
           )
           .map((conversion) => {
             return {
-              data: conversion.content.data,
+              viewData: `${conversion.content.viewData}`,
               type: conversion.content['mime-type'],
             };
           });
@@ -314,7 +314,7 @@ import './viewers/nuxeo-video-viewer.js';
         if (this._blob && this._blob['mime-type'] && this._blob['mime-type'].match('video.*|application/(g|m)xf')) {
           return [
             {
-              data: this._blob.data,
+              viewData: this._blob.viewData,
               type: this._blob['mime-type'],
             },
           ];
