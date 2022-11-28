@@ -174,6 +174,10 @@ import './viewers/nuxeo-video-viewer.js';
         },
 
         _blob: Object,
+        isBlobUpdated: {
+          type: Boolean,
+          value: false,
+        },
       };
     }
 
@@ -211,8 +215,15 @@ import './viewers/nuxeo-video-viewer.js';
           // by default just use the field at xpath as a Blob
           this._blob = this.document && this._deepFind(this.document.properties, this.xpath);
         }
-        // update our previewer
-        this._updatePreview();
+        if (this.document.type.toLowerCase() === 'picture') {
+          this.isBlobUpdated = !this.isBlobUpdated;
+          // update our previewer
+          if (this.isBlobUpdated) {
+            this._updatePreview();
+          }
+        } else {
+          this._updatePreview();
+        }
       }
     }
 
