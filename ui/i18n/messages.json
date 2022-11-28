@@ -2,6 +2,7 @@
   "accessibility.thumbnail": "Thumbnail of {0}",
   "actionsMenu.more": "More",
   "addToCollectionButton.dialog.add": "Add",
+  "addToCollectionButton.dialog.test": "Test",
   "addToCollectionButton.dialog.cancel": "Cancel",
   "addToCollectionButton.dialog.collections": "Collections",
   "addToCollectionButton.dialog.description": "Description",
