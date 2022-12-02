@@ -358,7 +358,7 @@ import './viewers/nuxeo-video-viewer.js';
         return url;
       }
       if (this._blob) {
-        return this._blob.data;
+        return `${this._blob.data  }&clientReason=view`;
       }
     }
 
