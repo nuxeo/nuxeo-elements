@@ -44,6 +44,10 @@ import './nuxeo-tooltip.js';
             @apply --layout-center;
           }
 
+          .iron-selected {
+            background-color: #757575;
+          }
+
           nuxeo-select {
             padding-left: 8px;
             width: 160px;
