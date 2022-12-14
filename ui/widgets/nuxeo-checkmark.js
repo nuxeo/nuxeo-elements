@@ -54,11 +54,12 @@ import '../nuxeo-icons.js';
             height: var(--nuxeo-checkmark-height, 18px);
             cursor: pointer;
             border-radius: 50%;
-            border: 2px solid var(--nuxeo-checkmark-border-color, var(--nuxeo-border, gray));
+            border: 2px solid var(--nuxeo-checkmark-border-color, var(--nuxeo-text-default, gray));
             background-color: var(--nuxeo-checkmark-background-color, transparent);
             color: var(--nuxeo-icon-color, transparent);
             padding: 0;
             margin: 0;
+            opacity: 0.7;
           }
 
           :host([hidden]) {
@@ -70,7 +71,7 @@ import '../nuxeo-icons.js';
           }
 
           :host(:hover) {
-            border: 2px solid var(--nuxeo-checkmark-border-color, var(--nuxeo-border, gray));
+            border: 2px solid var(--nuxeo-checkmark-border-color, var(--nuxeo-text-default, gray));
             background-color: var(--nuxeo-checkmark-background-color-hover, transparent);
             color: var(--nuxeo-icon-color-hover, black);
           }
