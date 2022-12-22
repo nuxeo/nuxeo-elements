@@ -56,6 +56,8 @@ import '../nuxeo-button-styles.js';
           paper-dialog-scrollable {
             --paper-dialog-scrollable: {
               -webkit-overflow-scrolling: auto;
+              max-height: 150px;
+              max-width: 500px;
             }
           }
         </style>
