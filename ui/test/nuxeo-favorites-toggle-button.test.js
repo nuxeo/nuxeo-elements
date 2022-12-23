@@ -72,9 +72,7 @@ suite('nuxeo-favorites-toggle-button', () => {
       expect(element.$.opRemove.execute.notCalled).to.be.true;
       expect(element.favorite).to.be.true;
     });
- 
   });
-
 
   suite('when a document is not in favorites', () => {
     let element;
@@ -126,6 +124,5 @@ suite('nuxeo-favorites-toggle-button', () => {
       expect(element.$.opAdd.execute.notCalled).to.be.true;
       expect(element.favorite).to.be.false;
     });
-    
   });
 });
