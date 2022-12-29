@@ -102,6 +102,10 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
             color: var(--paper-input-container-input-color);
           }
 
+          :host-context(#actionsDropdown) #paperDropdownMenu paper-listbox#paperMenu {
+            max-height: 80vh;
+          }
+
           ::slotted(paper-item:hover),
           ::slotted(paper-item[pressed]) {
             background: var(--paper-input-container-focus-color);
