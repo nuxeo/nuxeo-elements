@@ -281,6 +281,7 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
       const { width } = this.getBoundingClientRect();
       if (width > 0) {
         this.$.paperDropdownMenu.style.width = this.$.paperMenu.style.width = `${width}px`;
+        this.$.paperMenu.style.height = `222px`;
       }
     }
 
