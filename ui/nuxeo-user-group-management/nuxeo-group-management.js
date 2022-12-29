@@ -433,7 +433,7 @@ import '../nuxeo-button-styles.js';
                         <div class="flex-4">
                           <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
                         </div>
-                        <div class="flex-4 preserve-white-space">[[item.grouplabel]]</div>
+                        <div class="flex-4 preserve-white-space">[[item.groupname]]</div>
                         <div class="table-actions">
                           <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
                             <template>
