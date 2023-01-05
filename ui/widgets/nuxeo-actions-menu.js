@@ -222,12 +222,6 @@ import './nuxeo-tooltip.js';
          * updated on polyfilled browsers (Firex and Edge), leading to an empty menu if there's a single element
          * that doesn't fit on the menu.
          */
-        while (els.length && this.contentWidth <= this.clientWidth) {
-          this._moveToMenu(els.shift());
-        }
-        if (!els.length) {
-          this.$.dropdownButton.hidden = true;
-        }
         // let's move any element in the menu to the "dropdown" slot if it doesn't fit
         els = this._getMenuElements();
         // XXX for some reason, on Chrome, offsetWidth might not be 0 when the element is hidden (see ELEMENTS-1478)
@@ -239,6 +233,13 @@ import './nuxeo-tooltip.js';
           if (this.$.dropdownButton.hidden) {
             this.$.dropdownButton.hidden = false;
           }
+        }
+        
+        while (els.length && this.contentWidth <= this.clientWidth) {
+          this._moveToMenu(els.shift());
+        }
+        if (!els.length) {
+          this.$.dropdownButton.hidden = true;
         }
       });
     }
