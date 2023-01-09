@@ -38,6 +38,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
         run: |
           export NODE_OPTIONS=--openssl-legacy-provider
+          echo $NODE_OPTIONS
           npm install --no-package-lock
           npm run bootstrap
 
