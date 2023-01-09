@@ -34,8 +34,8 @@
     "uuid": "^3.3.2"
   },
   "scripts": {
-    "start": "start-storybook -s ./public -p 6006",
-    "build": "build-storybook -s ./public",
+    "start": "start-storybook  --openssl-legacy-provider -s ./public -p 6006",
+    "build": "build-storybook  --openssl-legacy-provider -s ./public",
     "deploy": "storybook-to-ghpages"
   },
   "devDependencies": {
