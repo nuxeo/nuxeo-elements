@@ -27,8 +27,5 @@ module.exports = ({ config }) => {
       ],
     },
   );
-  output: {
-    hashFunction: 'xxhash64';
-  }
   return config;
 };
