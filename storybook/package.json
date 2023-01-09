@@ -30,17 +30,17 @@
     "highlight.js": "^10.4.1",
     "lit-html": "^1.0.0",
     "nuxeo": "^3.2.1",
-    "polymer-webpack-loader": "^2.0.3",
+    "polymer-webpack-loader": "^3.1.0",
     "uuid": "^3.3.2"
   },
   "scripts": {
-    "start": "start-storybook  --openssl-legacy-provider -s ./public -p 6006",
-    "build": "build-storybook  --openssl-legacy-provider -s ./public",
+    "start": "start-storybook  -s ./public -p 6006",
+    "build": "build-storybook  -s ./public",
     "deploy": "storybook-to-ghpages"
   },
   "devDependencies": {
     "@open-wc/scoped-elements": "^1.3.3",
-    "@open-wc/webpack-import-meta-loader": "^0.4.1",
+    "@open-wc/webpack-import-meta-loader": "^0.4.7",
     "@storybook/storybook-deployer": "^2.8.1"
   }
 }
