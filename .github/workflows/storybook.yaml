@@ -45,9 +45,9 @@ jobs:
 
       - name: Build storybook
         working-directory: storybook
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
         run: |
-          export NODE_OPTIONS=--openssl-legacy-provider
-          echo $NODE_OPTIONS
           npx build-storybook -o dist -s ./public
 
       - name: Deploy
