@@ -37,7 +37,7 @@
     "bump-version:date-hash": "TIMESTAMP=$(date -u +%Y%m%d.%H%M%S) && lerna exec \"npm --no-git-tag-version version \\$(node -pe \\\"require('./package.json').version + '.$TIMESTAMP-' + require('child_process').execSync('git rev-parse --short HEAD').toString()\\\")\" --ignore @nuxeo/nuxeo-elements-storybook"
   },
   "devDependencies": {
-    "@open-wc/eslint-config": "^0.3.0",
+    "@open-wc/eslint-config": "^9.1.0",
     "@open-wc/karma-esm": "^2.12.6",
     "@open-wc/prettier-config": "^0.1.0",
     "@polymer/iron-component-page": "^4.0.0",
