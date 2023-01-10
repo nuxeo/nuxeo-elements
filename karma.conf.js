@@ -70,10 +70,10 @@ module.exports = (config) => {
       path: path.join(process.cwd(), ''),
     },
     files: [
-      // {
-      //   pattern: 'node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js',
-      //   watched: false,
-      // },
+      {
+        pattern: 'node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js',
+        watched: false,
+      },
       {
         pattern: `${config.package || 'core'}/test/*${config.grep || '*.test.js'}`,
         type: 'module',
