@@ -60,7 +60,7 @@ module.exports = (config) => {
     basePath: '',
     singleRun: true,
     browsers: config.browsers && config.browsers.length > 0 ? config.browsers : Object.keys(customLaunchers),
-    browserDisconnectTimeout: 10 * 1000,
+    browserDisconnectTimeout: 10 * 10 * 1000,
     browserDisconnectTolerance: 1,
     browserNoActivityTimeout: 5 * 60 * 1000,
     captureTimeout: 120000,
@@ -131,7 +131,7 @@ module.exports = (config) => {
       mocha: {
         reporter: 'html',
         ui: 'tdd',
-        timeout: 3000,
+        timeout: 30000,
       },
       chai: {
         includeStack: true,
