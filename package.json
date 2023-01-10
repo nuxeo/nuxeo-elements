@@ -50,7 +50,7 @@
     "eslint-plugin-html": "^5.0.3",
     "husky": "^4.2.3",
     "istanbul-instrumenter-loader": "^3.0.1",
-    "karma": "^6.4.1",
+    "karma": "^4.0.1",
     "karma-chrome-launcher": "^3.1.1",
     "karma-coverage-istanbul-reporter": "^3.0.3",
     "karma-firefox-launcher": "^2.1.2",
