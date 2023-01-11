@@ -2,7 +2,7 @@ const path = require('path');
 
 const coverage = process.argv.find((arg) => arg.includes('coverage'));
 
-const reporters = coverage ? ['mocha', 'coverage-istanbul'] : ['mocha'];
+const reporters = coverage ? ['dots', 'coverage-istanbul'] : ['dots', 'dots'];
 
 let customLaunchers = {
   ChromeHeadlessNoSandbox: {
@@ -42,6 +42,14 @@ if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY) {
       platform: 'macOS 11',
       version: 'latest',
     },
+    sl_latest_android: {
+      base: 'SauceLabs',
+      browserName: 'chrome',
+      platformName: 'android',
+      platformVersion: '8.1',
+      deviceName: 'Android GoogleAPI Emulator',
+      deviceType: 'tablet',
+    },
   };
 
   reporters.push('saucelabs');
@@ -78,7 +86,13 @@ module.exports = (config) => {
         pattern: `${config.package || 'core'}/test/*${config.grep || '*.test.js'}`,
         type: 'module',
       },
+      'core/test/*.test.js',
+      'ui/test/*.test.js',
+      'dataviz/test/*.test.js',
     ],
+    preprocessors: {
+      '*/test/*.test.js': ['webpack', 'sourcemap'],
+    },
     plugins: [
       // load plugin
       require.resolve('@open-wc/karma-esm'),
@@ -86,7 +100,7 @@ module.exports = (config) => {
       // fallback: resolve any karma- plugins
       'karma-*',
     ],
-    frameworks: ['esm', 'mocha', 'sinon-chai', 'source-map-support'],
+    frameworks: ['esm', 'mocha', 'sinon-chai', 'source-map-support', 'webpack'],
     esm: {
       // prevent auto loading of polyfills
       compatibility: 'none',
