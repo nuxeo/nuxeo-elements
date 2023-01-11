@@ -22,6 +22,7 @@ if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY) {
       browserName: 'chrome',
       platform: 'Windows 10',
       version: 'latest',
+      seleniumVersion: '3.141.59',
     },
     sl_latest_firefox: {
       base: 'SauceLabs',
