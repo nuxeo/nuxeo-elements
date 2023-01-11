@@ -47,4 +47,6 @@ jobs:
         env:
           SAUCE_USERNAME: nuxeo-elements
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-        run: npm run test
+        run: |
+          npm ls
+          npm run test
