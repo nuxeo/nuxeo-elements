@@ -14,7 +14,7 @@
     "bootstrap": "lerna bootstrap",
     "clean": "lerna clean --yes && lerna bootstrap",
     "nuke": "rm -rf package-lock.json node_modules && npm install && lerna exec \"rm -f package-lock.json\" && lerna clean --yes && lerna bootstrap && lerna exec --stream -- \"test -f package-lock.json || npm install --package-lock-only\"",
-    "test": "npm run test:core",
+    "test": "npm-run-all test:core test:ui test:dataviz",
     "test-ci": "npm run test:core && sleep 10 && npm run test:dataviz && sleep 10 && npm run test:ui",
     "test:core": "karma start --package core --coverage",
     "test:ui": "karma start --package ui --coverage",
