@@ -18,7 +18,7 @@ import './data-table-templatizer-behavior.js';
             min-width: 169px;
             display: flex;
             align-items: center;
-            overflow-x: scroll;
+            overflow-x: auto;
             overflow-y: hidden;
             transition: flex-basis 200ms, flex-grow 200ms;
             @apply --iron-data-table-cell;
