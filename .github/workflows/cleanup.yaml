@@ -4,7 +4,7 @@ on:
   pull_request:
     types: [closed, unlabeled]
     branches:
-      - maintenance-3.0.x
+      - maintenance-3.1.x
 
 env:
   GKE_CLUSTER: jx-prod
@@ -52,6 +52,6 @@ jobs:
           repo: nuxeo-web-ui
           workflow-id: clean.yaml
           access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }}
-          branch-name: maintenance-3.0.x
+          branch-name: maintenance-3.1.x
           inputs: |
             branch_name: ${{ env.BRANCH_NAME }}
