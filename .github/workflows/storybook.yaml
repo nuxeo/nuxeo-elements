@@ -3,12 +3,12 @@ name: Storybook
 on:
   pull_request:
     branches:
-      - maintenance-3.0.x
+      - maintenance-3.1.x
   workflow_call:
     inputs:
       branch:
         description: 'The current branch'
-        default: maintenance-3.0.x
+        default: maintenance-3.1.x
         type: string
         required: false
     secrets:
@@ -17,7 +17,7 @@ on:
         required: true
 
 env:
-  BRANCH_NAME: ${{ github.head_ref || inputs.branch || 'maintenance-3.0.x' }}
+  BRANCH_NAME: ${{ github.head_ref || inputs.branch || 'maintenance-3.1.x' }}
 
 jobs:
   storybook:
@@ -49,7 +49,7 @@ jobs:
           npx build-storybook -o dist -s ./public
 
       - name: Deploy
-        if: ${{ env.BRANCH_NAME == 'maintenance-3.0.x' }}
+        if: ${{ env.BRANCH_NAME == 'maintenance-3.1.x' }}
         env:
           GH_TOKEN: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
         working-directory: storybook
