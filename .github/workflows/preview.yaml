@@ -4,7 +4,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, labeled]
     branches:
-      - maintenance-3.0.x
+      - maintenance-3.1.x
 
 env:
   DOCKER_REGISTRY: us-east1-docker.pkg.dev
@@ -134,7 +134,7 @@ jobs:
           repo: nuxeo-web-ui
           workflow-id: preview.yaml
           access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }}
-          branch-name: maintenance-3.0.x
+          branch-name: maintenance-3.1.x
           inputs: |
             branch_name: ${{ env.BRANCH_NAME }}
 
