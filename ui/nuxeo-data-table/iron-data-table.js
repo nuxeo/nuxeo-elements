@@ -889,8 +889,10 @@ import '../nuxeo-button-styles.js';
         } else {
           this.push('items', item);
         }
-        this.notifyResize();
-        this.$.dialog.close();
+        this.__renderDebouncer = Debouncer.debounce(this.__renderDebouncer, timeOut.after(10), () => {
+          this.notifyResize();
+          this.$.dialog.close();
+        });
       }
     }
 
