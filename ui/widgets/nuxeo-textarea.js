@@ -34,6 +34,7 @@ import '@polymer/paper-input/paper-textarea.js';
             display: block;
             position: relative;
             padding-bottom: 8px;
+            word-break: break-all;
           }
 
           :host([hidden]) {
