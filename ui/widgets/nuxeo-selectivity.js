@@ -3643,7 +3643,7 @@ typedArrayTags[weakMapTag] = false;
      * @return The validated value. This may differ from the input value.
      */
         validateValue(value) {
-          if (value === null || Selectivity.isValidId(value)) {
+          if (value === null || value === undefined || Selectivity.isValidId(value)) {
             return value;
           } else {
             throw new Error('Value for SingleSelectivity instance should be a valid ID or null');
