@@ -2,8 +2,6 @@ name: Build
 
 on:
   push:
-    types:
-      - closed
     branches:
       - maintenance-3.1.x
 
@@ -69,3 +67,4 @@ jobs:
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
       run: npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --tag SNAPSHOT
+      
