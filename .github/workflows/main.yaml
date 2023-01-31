@@ -2,8 +2,6 @@ name: Build
 
 on:
   push:
-    types:
-      - closed
     branches:
       - maintenance-3.1.x
 
