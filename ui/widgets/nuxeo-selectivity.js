@@ -7001,7 +7001,7 @@ typedArrayTags[weakMapTag] = false;
 
           .selectivity-caret {
             position: absolute;
-            top: 6px;
+            top: 12px;
             right: 0;
           }
 
