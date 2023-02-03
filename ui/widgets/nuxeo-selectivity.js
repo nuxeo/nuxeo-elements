@@ -5603,7 +5603,11 @@ typedArrayTags[weakMapTag] = false;
           this._value = this.getValueForData(newData);
 
           if (options.triggerChange !== false) {
-            this.triggerChange();
+            if(Array.isArray(this._value)){
+              this.rerenderSelection(); 
+            }else{
+              this.triggerChange();
+            }
           }
         },
 
@@ -7331,6 +7335,12 @@ typedArrayTags[weakMapTag] = false;
     _dataChanged() {
       if (this._selectivity) {
         this._selectivity.setOptions({ items: this._wrap(this.data) });
+        const selectivityData = this._selectivity.getData();
+        const wrapData = this._wrap(this.data);
+        const newData = wrapData.filter(obj => selectivityData.some(item => item.id === obj.id));
+        if (newData.length !== 0 && JSON.stringify(newData) !== JSON.stringify(selectivityData)) {
+          this._selectivity.setData(newData);
+        }
       }
     }
 
