@@ -66,7 +66,7 @@ import '../widgets/nuxeo-tooltip.js';
                   <label>[[conversion.name]]</label>
                   <span>[[conversion.info.width]] x [[conversion.info.height]]</span>
                   <span>[[formatSize(conversion.content.length)]]</span>
-                  <a href="[[conversion.content.downloadData]]">
+                  <a href="[[conversion.content.downloadUrl]]">
                     <iron-icon icon="nuxeo:download"></iron-icon>
                     <nuxeo-tooltip>[[i18n('videoViewLayout.download.tooltip')]]</nuxeo-tooltip>
                   </a>

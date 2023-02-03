@@ -138,7 +138,7 @@ import './viewers/nuxeo-video-viewer.js';
         </template>
 
         <template mime-pattern="application/pdf">
-          <nuxeo-pdf-viewer src="[[_blob.data]]"></nuxeo-pdf-viewer>
+          <nuxeo-pdf-viewer src="[[_blob.viewUrl]]"></nuxeo-pdf-viewer>
         </template>
 
         <template rendition="pdf">
@@ -277,12 +277,12 @@ import './viewers/nuxeo-video-viewer.js';
       ) {
         const filteredViews = this.document.properties['picture:views'].filter((view) => view.title === 'FullHD');
         if (filteredViews.length > 0) {
-          return `${filteredViews[0].content.viewData}`;
+          return `${filteredViews[0].content.viewUrl}`;
         }
       }
       if (this.xpath) {
         if (this._blob && this._blob['mime-type'] && this._blob['mime-type'].match('image.*')) {
-          return this._blob.viewData;
+          return this._blob.viewUrl;
         }
       }
     }
@@ -304,7 +304,7 @@ import './viewers/nuxeo-video-viewer.js';
           )
           .map((conversion) => {
             return {
-              viewData: `${conversion.content.viewData}`,
+              viewUrl: `${conversion.content.viewUrl}`,
               type: conversion.content['mime-type'],
             };
           });
@@ -314,7 +314,7 @@ import './viewers/nuxeo-video-viewer.js';
         if (this._blob && this._blob['mime-type'] && this._blob['mime-type'].match('video.*|application/(g|m)xf')) {
           return [
             {
-              viewData: this._blob.viewData,
+              viewUrl: this._blob.viewUrl,
               type: this._blob['mime-type'],
             },
           ];
@@ -335,7 +335,7 @@ import './viewers/nuxeo-video-viewer.js';
 
     _computeAudioSource() {
       if (this._blob) {
-        return this._blob.data;
+        return this._blob.viewUrl;
       }
     }
 
@@ -346,19 +346,19 @@ import './viewers/nuxeo-video-viewer.js';
         document.contextParameters &&
         document.contextParameters.renditions &&
         document.contextParameters.renditions.find((r) => r.name === name);
-      return rendition && rendition.url;
+      return rendition && rendition.viewUrl;
     }
 
     _computeEmbedSource() {
       if (this.document && this.document.contextParameters && this.document.contextParameters.preview) {
-        let { url } = this.document.contextParameters.preview;
+        let { viewUrl } = this.document.contextParameters.preview;
         if (this.xpath !== 'file:content') {
-          url = url.replace('/@preview/', `/@blob/${this.xpath}/@preview/`);
+          viewUrl = viewUrl.replace('/@preview/', `/@blob/${this.xpath}/@preview/`);
         }
-        return url;
+        return viewUrl;
       }
       if (this._blob) {
-        return this._blob.data;
+        return this._blob.viewUrl;
       }
     }
 

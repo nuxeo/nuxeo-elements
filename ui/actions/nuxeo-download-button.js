@@ -115,7 +115,7 @@ import '../nuxeo-button-styles.js';
       if (blob) {
         /* Fix for ELEMENTS-1563. Else part will be removed when view vs download will be implemented for the
         scenario mentioned in ELEMENTS-1563 */
-        window.location.href = blob.downloadData ? blob.downloadData : blob.data;
+        window.location.href = blob.downloadUrl ? blob.downloadUrl : blob.data;
       }
     }
 
