@@ -41,7 +41,7 @@ suite('nuxeo-document-preview', () => {
             length: '5763',
             'mime-type': 'image/jpeg',
             name: 'kitten1 (4).jpeg',
-            viewData: 'file1.jpeg?changeToken=13-0&clientReason=view',
+            viewUrl: 'file1.jpeg?changeToken=13-0&clientReason=view',
           },
         },
         schemas: [
@@ -51,7 +51,7 @@ suite('nuxeo-document-preview', () => {
         ],
       };
       element.xpath = 'file:content';
-      expect(element._blob.viewData).to.equal('file1.jpeg?changeToken=13-0&clientReason=view');
+      expect(element._blob.viewUrl).to.equal('file1.jpeg?changeToken=13-0&clientReason=view');
     });
 
     test('Should compute image source when title = FullHD', () => {
@@ -71,7 +71,7 @@ suite('nuxeo-document-preview', () => {
             {
               content: {
                 data: 'file1.jpeg?changeToken=13-0',
-                viewData: 'file1.jpeg?changeToken=13-0&clientReason=view',
+                viewUrl: 'file1.jpeg?changeToken=13-0&clientReason=view',
               },
               description: 'file 1',
               thumbnail: 'thumbnail_file_1',
@@ -115,7 +115,7 @@ suite('nuxeo-document-preview', () => {
               content: {
                 data: 'vid1.mp4?changeToken=9-0',
                 'mime-type': 'video/mp4',
-                viewData: 'vid1.mp4?changeToken=9-0&clientReason=view',
+                viewUrl: 'vid1.mp4?changeToken=9-0&clientReason=view',
               },
               info: {
                 width: 66,
@@ -136,10 +136,109 @@ suite('nuxeo-document-preview', () => {
       element._blob.data = 'vid1.mp4?changeToken=9-0';
       expect(element._computeVideoSources()).to.eql([
         {
-          viewData: 'vid1.mp4?changeToken=9-0&clientReason=view',
+          viewUrl: 'vid1.mp4?changeToken=9-0&clientReason=view',
           type: 'video/mp4',
         },
       ]);
+    });
+
+    test('Should compute audio source if there are  audio files', () => {
+      element.document = {
+        properties: {
+          'file:content': {
+            appLinks: [],
+            data: 'file_example_MP3_700KB.mp3?changeToken=1-0',
+            digest: '2e7d1a1ba7018c048bebdf1d07481ee3',
+            digestAlgorithm: 'MD5',
+            encoding: null,
+            length: '5763',
+            'mime-type': 'audio/mpeg',
+            name: 'file_example_MP3_700KB.mp3',
+            viewUrl: 'file_example_MP3_700KB.mp3?changeToken=1-0&clientReason=view',
+          },
+        },
+        schemas: [
+          {
+            name: 'audio',
+          },
+        ],
+      };
+      element.xpath = 'file:content';
+      element._blob.data = 'file_example_MP3_700KB.mp3?changeToken=1-0';
+      expect(element._computeAudioSource()).to.eql('file_example_MP3_700KB.mp3?changeToken=1-0&clientReason=view');
+    });
+
+    test('Should compute rendition if there are renditions available', () => {
+      element.document = {
+        properties: {
+          'file:content': {
+            appLinks: [],
+            data: 'abc.docx?changeToken=1-0',
+            digest: '2e7d1a1ba7018c048bebdf1d07481ee3',
+            digestAlgorithm: 'MD5',
+            encoding: null,
+            length: '5763',
+            'mime-type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            name: 'file_example_MP3_700KB.mp3',
+            viewUrl: 'abc.docx?changeToken=1-0&clientReason=view',
+            downloadUrl: 'abc.docx?changeToken=1-0&clientReason=download',
+          },
+        },
+        schemas: [
+          {
+            name: 'file',
+          },
+        ],
+        contextParameters: {
+          renditions: [
+            {
+              downloadUrl: 'd287f/@rendition/pdf?clientReason=download',
+              viewUrl: 'd287f/@rendition/pdf?clientReason=view',
+              url: 'd287f/@rendition/pdf',
+              icon: 'pdf.png',
+              name: 'pdf',
+              kind: null,
+            },
+          ],
+        },
+      };
+      element.xpath = 'file:content';
+      expect(element._computeRendition(element.document, element.xpath, 'pdf')).to.eql(
+        'd287f/@rendition/pdf?clientReason=view',
+      );
+    });
+
+    test('Should compute embed source if preview is available', () => {
+      element.document = {
+        properties: {
+          'file:content': {
+            appLinks: [],
+            data: 'nos-gitty-mp-4.0-SNAPSHOT.zip?changeToken=1-0',
+            digest: '2e7d1a1ba7018c048bebdf1d07481ee3',
+            digestAlgorithm: 'MD5',
+            encoding: null,
+            length: '5763',
+            'mime-type': 'application/zip',
+            name: 'nos-gitty-mp-4.0-SNAPSHOT.zip',
+            viewUrl: 'nos-gitty-mp-4.0-SNAPSHOT.zip?changeToken=1-0&clientReason=view',
+            downloadUrl: 'nos-gitty-mp-4.0-SNAPSHOT.zip?changeToken=1-0&clientReason=download',
+          },
+        },
+        schemas: [
+          {
+            name: 'file',
+          },
+        ],
+        contextParameters: {
+          preview: {
+            downloadUrl: 'd287f/@preview/?changeToken=18-0&clientReason=download',
+            viewUrl: 'd287f/@preview/?changeToken=18-0&clientReason=view',
+            url: 'd287f/@preview/?changeToken=18-0',
+          },
+        },
+      };
+      element.xpath = 'file:content';
+      expect(element._computeEmbedSource()).to.eql('d287f/@preview/?changeToken=18-0&clientReason=view');
     });
   });
 });

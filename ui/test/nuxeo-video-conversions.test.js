@@ -72,7 +72,7 @@ suite('nuxeo-video-conversions', () => {
       const anchor = element.shadowRoot.querySelector('a');
       expect(isElementVisible(anchor)).to.be.true;
       expect(anchor.href).to.equal(
-        `http://localhost:9876/${videoProperties['vid:transcodedVideos'][0].content.downloadData}`,
+        `http://localhost:9876/${videoProperties['vid:transcodedVideos'][0].content.downloadUrl}`,
       );
     });
   });

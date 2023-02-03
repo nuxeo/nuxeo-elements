@@ -170,19 +170,44 @@ suite('nuxeo-document', () => {
             name: 'video',
           },
         ],
+        contextParameters: {
+          renditions: [
+            {
+              url: 'd287f/@rendition/pdf',
+              icon: 'pdf.png',
+              name: 'pdf',
+              kind: null,
+            },
+          ],
+          preview: {
+            url: 'd287f/@preview/?changeToken=18-0',
+          },
+        },
       };
       document.setDocumentViewDownloadProp();
-      expect(document.documentData.properties['file:content'].viewData).to.eq(
+      expect(document.documentData.properties['file:content'].viewUrl).to.eq(
         'file1.jpeg?changeToken=13-0&clientReason=view',
       );
-      expect(document.documentData.properties['file:content'].downloadData).to.eq(
+      expect(document.documentData.properties['file:content'].downloadUrl).to.eq(
         'file1.jpeg?changeToken=13-0&clientReason=download',
       );
-      expect(document.documentData.properties['vid:transcodedVideos'][0].content.viewData).to.eq(
+      expect(document.documentData.properties['vid:transcodedVideos'][0].content.viewUrl).to.eq(
         'vid1.mp4?changeToken=9-0&clientReason=view',
       );
-      expect(document.documentData.properties['vid:transcodedVideos'][0].content.downloadData).to.eq(
+      expect(document.documentData.properties['vid:transcodedVideos'][0].content.downloadUrl).to.eq(
         'vid1.mp4?changeToken=9-0&clientReason=download',
+      );
+      expect(document.documentData.contextParameters.renditions[0].viewUrl).to.eq(
+        'd287f/@rendition/pdf?clientReason=view',
+      );
+      expect(document.documentData.contextParameters.renditions[0].downloadUrl).to.eq(
+        'd287f/@rendition/pdf?clientReason=download',
+      );
+      expect(document.documentData.contextParameters.preview.viewUrl).to.eq(
+        'd287f/@preview/?changeToken=18-0&clientReason=view',
+      );
+      expect(document.documentData.contextParameters.preview.downloadUrl).to.eq(
+        'd287f/@preview/?changeToken=18-0&clientReason=download',
       );
     });
   });

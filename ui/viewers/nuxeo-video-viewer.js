@@ -91,7 +91,7 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
           >
             <dom-repeat items="[[sources]]" as="source">
               <template>
-                <source src="[[source.viewData]]" type="[[source.type]]" />
+                <source src="[[source.viewUrl]]" type="[[source.type]]" />
               </template>
             </dom-repeat>
           </video>
@@ -105,7 +105,7 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
                       <img
                         class="thumbnail"
                         on-click="_jumpTo"
-                        src="[[thumbnail.content.viewData]]"
+                        src="[[thumbnail.content.viewUrl]]"
                         alt$="[[thumbnail.comment]]"
                       />
                     </template>

@@ -226,30 +226,51 @@ import './nuxeo-resource.js';
       return path;
     }
 
-    appendClientReason(prop) {
-      prop.viewData = `${prop.data}&clientReason=view`;
-      prop.downloadData = `${prop.data}&clientReason=download`;
+    appendClientReason(documentProp) {
+      let sourceUrl = '';
+      if (documentProp) {
+        if ('url' in documentProp) {
+          sourceUrl = 'url';
+        } else if ('data' in documentProp) {
+          sourceUrl = 'data';
+        }
+      }
+      if (sourceUrl) {
+        const splitter = documentProp[sourceUrl].indexOf('?') > -1 ? '&' : '?';
+        documentProp.viewUrl = `${documentProp[sourceUrl]}${splitter}clientReason=view`;
+        documentProp.downloadUrl = `${documentProp[sourceUrl]}${splitter}clientReason=download`;
+      }
     }
 
     setDocumentViewDownloadProp() {
       const documentProps = [];
-      if (this.documentData && this.documentData.properties) {
-        documentProps.push(
-          this.documentData.properties['file:content'],
-          this.documentData.properties['files:files'],
-          this.documentData.properties['picture:views'],
-          this.documentData.properties['vid:transcodedVideos'],
-          this.documentData.properties['vid:storyboard'],
-        );
+      if (this.documentData) {
+        if (this.documentData.contextParameters) {
+          const documentContextParams = this.documentData.contextParameters;
+          documentProps.push(documentContextParams.preview);
+          documentProps.push(documentContextParams.renditions);
+        }
+
+        if (this.documentData.properties) {
+          const documentDataProperties = this.documentData.properties;
+          documentProps.push(
+            documentDataProperties['file:content'],
+            documentDataProperties['files:files'],
+            documentDataProperties['picture:views'],
+            documentDataProperties['vid:transcodedVideos'],
+            documentDataProperties['vid:storyboard'],
+          );
+        }
+
         documentProps.forEach((docProp) => {
-          if (docProp) {
-            if (Array.isArray(docProp)) {
-              docProp.forEach((prop) => {
-                this.appendClientReason(prop.file ? prop.file : prop.content);
-              });
-            } else {
-              this.appendClientReason(docProp);
-            }
+          if (Array.isArray(docProp)) {
+            let propContentObj;
+            docProp.forEach((prop) => {
+              propContentObj = prop.content ? prop.content : prop;
+              this.appendClientReason(prop.file ? prop.file : propContentObj);
+            });
+          } else {
+            this.appendClientReason(docProp);
           }
         });
       }
