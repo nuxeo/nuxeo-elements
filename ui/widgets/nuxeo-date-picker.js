@@ -110,6 +110,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           observer: '_inputValueChanged',
         },
 
+        /**
+         * Enable this property to remove the button allowing a user to clear the date currently set.
+         * Button is present by default.
+         */
+        hideClearDateButton: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+        },
+
         _preventInputUpdate: {
           type: Boolean,
           value: false,
@@ -166,6 +176,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           min="[[min]]"
           max="[[max]]"
           error-message="[[errorMessage]]"
+          clear-button-visible$="[[!hideClearDateButton]]"
         >
         </vaadin-date-picker>
       `;
