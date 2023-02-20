@@ -49,7 +49,11 @@ import '../nuxeo-button-styles.js';
         <dom-if if="[[_isAvailable(document)]]">
           <template>
             <div class="action" on-click="_download">
-              <paper-icon-button icon="[[icon]]" noink aria-labelledby="label"></paper-icon-button>
+              <paper-icon-button
+                icon="[[icon]]"
+                noink
+                aria-label$="[[_computeHoverLabel(document, i18n)]]"
+              ></paper-icon-button>
               <span class="label" hidden$="[[!showLabel]]" id="label">[[_label]]</span>
               <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
             </div>
@@ -108,6 +112,10 @@ import '../nuxeo-button-styles.js';
 
     _computeLabel() {
       return this.i18n('downloadButton.tooltip');
+    }
+
+    _computeHoverLabel(doc) {
+      return `${doc && doc.title}${this._computeLabel()}`;
     }
 
     _download() {
