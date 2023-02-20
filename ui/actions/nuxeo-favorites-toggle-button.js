@@ -61,7 +61,11 @@ import '../nuxeo-button-styles.js';
         <dom-if if="[[_isAvailable(document)]]">
           <template>
             <div class="action">
-              <paper-icon-button icon="[[icon]]" noink aria-labelledby="label"></paper-icon-button>
+              <paper-icon-button
+                icon="[[icon]]"
+                noink
+                aria-label$="[[_computeHoverLabel(favorite, document, i18n)]]"
+              ></paper-icon-button>
               <span class="label" hidden$="[[!showLabel]]" id="label">[[_label]]</span>
               <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
             </div>
@@ -172,6 +176,10 @@ import '../nuxeo-button-styles.js';
 
     _computeLabel(favorite) {
       return this.i18n && this.i18n(`favoritesToggleButton.tooltip.${favorite ? 'remove' : 'add'}`);
+    }
+
+    _computeHoverLabel(favorite, doc) {
+      return `${doc && doc.title}${this._computeLabel(favorite)}`;
     }
 
     _documentChanged() {
