@@ -2428,9 +2428,12 @@ typedArrayTags[weakMapTag] = false;
           }
 
           const filteredResults = this.selectivity.filterResults(results);
+          const value = this.selectivity.getValue();
           let resultsHtml = this.renderItems(filteredResults);
           if (options.hasMore) {
             resultsHtml += this.selectivity.template('loadMore');
+          } else if (value && Array.isArray(value) && value.includes(options.term)) {
+            resultsHtml = this.selectivity.template('tagExists');
           } else if (!resultsHtml && !options.add) {
             resultsHtml = this.selectivity.template('noResults', { term: options.term });
           }
@@ -2439,8 +2442,6 @@ typedArrayTags[weakMapTag] = false;
           this.results = options.add ? this.results.concat(results) : results;
 
           this.hasMore = options.hasMore;
-
-          const value = this.selectivity.getValue();
           if (value && !Array.isArray(value)) {
             const item = Selectivity.findNestedById(results, value);
             if (item) {
@@ -3716,6 +3717,7 @@ typedArrayTags[weakMapTag] = false;
         loading: 'Loading...',
         loadMore: 'Load more...',
         noResults: 'No results found',
+        tagExists: 'Tag already exists',
 
         ajaxError(term) {
           if (term) {
@@ -6272,6 +6274,19 @@ typedArrayTags[weakMapTag] = false;
           );
         },
 
+
+      /**
+     * Renders a message that tag entered already added
+     *
+     */
+
+       tagExists() {
+        return (
+          `<div class="selectivity-error" aria-live="polite">${Selectivity.Locale.tagExists}</div>`
+        );
+      },
+
+
         /**
      * Renders a container for item children.
      *
@@ -7201,6 +7216,7 @@ typedArrayTags[weakMapTag] = false;
         get loading() { return self.i18n('selectivity.loading'); },
         get loadMore() { return self.i18n('selectivity.loadMore'); },
         get noResults() { return self.i18n('selectivity.noResults'); },
+        get tagExists() { return self.i18n('selectivity.tagExists'); },
 
         ajaxError: (term) => {
           if (term) {
