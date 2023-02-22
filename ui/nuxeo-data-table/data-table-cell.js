@@ -18,7 +18,7 @@ import './data-table-templatizer-behavior.js';
             min-width: 169px;
             display: flex;
             align-items: center;
-            overflow-x: auto;
+            overflow-x: hidden;
             overflow-y: hidden;
             transition: flex-basis 200ms, flex-grow 200ms;
             @apply --iron-data-table-cell;
@@ -54,6 +54,7 @@ import './data-table-templatizer-behavior.js';
         order: Number,
         template: Object,
         width: String,
+        overflow: String,
 
         beforeBind: {
           type: Object,
@@ -75,6 +76,7 @@ import './data-table-templatizer-behavior.js';
         '_hiddenChanged(hidden)',
         '_orderChanged(order)',
         '_widthChanged(width)',
+        '_overflowChanged(overflow)',
       ];
     }
 
@@ -124,6 +126,14 @@ import './data-table-templatizer-behavior.js';
 
     _flexChanged(flex) {
       this.style.flexGrow = flex;
+    }
+
+    _overflowChanged(overflow) {
+      if (overflow === 'auto') {
+        this.style.overflowX = 'auto';
+      } else {
+        this.style.overflowX = 'hidden';
+      }
     }
 
     _widthChanged(width) {
