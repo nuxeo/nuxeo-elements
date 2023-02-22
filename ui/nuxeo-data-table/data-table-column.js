@@ -80,6 +80,16 @@ import './data-table-column-filter.js';
         },
 
         /**
+         * For a column with a scroll, overflow is set to auto. 
+         * For a column without scroll, overflow is set to hidden.
+         * By Default overflow is set to hidden. 
+         */
+        overflow: {
+          type: String,
+          value: 'hidden',
+        },
+
+        /**
          * If `true`, the cells of this column will be hidden.
          */
         hidden: {
@@ -147,6 +157,7 @@ import './data-table-column-filter.js';
         '_filterValueChanged(table, filterValue, filterBy, filterExpression)',
         '_filterByChanged(table, filterBy)',
         '_flexChanged(table, flex)',
+        '_overflowChanged(table, overflow)',
         '_headerTemplateChanged(table, headerTemplate)',
         '_hiddenChanged(table, hidden)',
         '_alwaysVisibleChanged(table, alwaysVisible)',
@@ -190,6 +201,10 @@ import './data-table-column-filter.js';
 
     _flexChanged(table, flex) {
       this._notifyTable(table, 'flex', flex);
+    }
+
+    _overflowChanged(table, overflow) {
+      this._notifyTable(table, 'overflow', overflow);
     }
 
     _headerTemplateChanged(table, headerTemplate) {
