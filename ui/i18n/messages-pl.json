@@ -272,6 +272,7 @@
   "selectivity.loadMore": "Wczytaj więcej...",
   "selectivity.minChars": "Wprowadź {0} lub więcej znaków",
   "selectivity.noResults": "Nie znaleziono wyników",
+  "selectivity.tagExists": "Tag already exists",
   "selectivity.noResultsForTerm": "Brak wyników dla {0}",
   "shareButton.dialog.close": "Zamknij",
   "shareButton.dialog.heading": "Udostępnij dokument",

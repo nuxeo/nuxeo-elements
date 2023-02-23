@@ -272,6 +272,7 @@
   "selectivity.loadMore": "تحميل المزيد...",
   "selectivity.minChars": "الرجاء إدخال {0} أحرف أو أكثر",
   "selectivity.noResults": "لم يتم العثور على أي نتائج",
+  "selectivity.tagExists": "Tag already exists",
   "selectivity.noResultsForTerm": "لا توجد نتائج لـ {0}",
   "shareButton.dialog.close": "إغلاق",
   "shareButton.dialog.heading": "مشاركة المستند",

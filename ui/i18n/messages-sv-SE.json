@@ -272,6 +272,7 @@
   "selectivity.loadMore": "Ladda fler...",
   "selectivity.minChars": "Ange {0} eller fler tecken",
   "selectivity.noResults": "Inga resultat hittades",
+  "selectivity.tagExists": "Tagg finns redan",
   "selectivity.noResultsForTerm": "Inga resultat för {0}",
   "shareButton.dialog.close": "Stäng",
   "shareButton.dialog.heading": "Dela dokumentet",
