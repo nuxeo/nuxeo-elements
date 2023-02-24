@@ -214,18 +214,17 @@ import '../nuxeo-button-styles.js';
         })
         .catch(async (error) => {
           let message = error;
-          if (error.message) {
-            ({ message } = error);
-          } else if (error.response) {
+          if (error.response) {
             const text = await error.response.text();
             if (text) {
               try {
-                const json = JSON.parse(text);
-                this.errors = json.message;
+                ({ message } = JSON.parse(text));
               } catch (e) {
                 throw e;
               }
             }
+          } else if (error.message) {
+            ({ message } = error);
           }
           this.errors = message;
         });
