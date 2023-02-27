@@ -247,6 +247,7 @@ import '../nuxeo-button-styles.js';
                     table="[[_this]]"
                     template="[[column.headerTemplate]]"
                     width="[[column.width]]"
+                    overflow="[[column.overflow]]"
                   >
                     <nuxeo-data-table-column-sort
                       sort-order="[[sortOrder]]"
@@ -317,6 +318,7 @@ import '../nuxeo-button-styles.js';
                         selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
                         width="[[column.width]]"
                         before-bind="[[beforeCellBind]]"
+                        overflow="[[column.overflow]]"
                       ></nuxeo-data-table-cell>
                     </template>
                   </dom-repeat>
