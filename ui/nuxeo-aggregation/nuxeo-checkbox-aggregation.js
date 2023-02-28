@@ -247,6 +247,11 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
       };
     }
 
+    ready() {
+      super.ready();
+      this.setAttribute('tabindex', 0);
+    }
+
     _computeVisibleBuckets(buckets, visibleItems, _showAll) {
       if (!buckets || buckets.length === 0) {
         return [];
