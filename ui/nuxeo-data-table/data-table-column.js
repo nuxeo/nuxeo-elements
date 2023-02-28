@@ -140,8 +140,10 @@ import './data-table-column-filter.js';
         },
 
         /**
-         * Overflow is set to auto for a scrollable column.Overflow is set to hidden
-         * for a column without scroll.By Default overflow is set to hidden.
+         * Controls how cells content is displayed when larger than their column. Applies to this column only.
+         * Authorized values are auto (display an horizontal scrollbar inside the cells when necessary, recommended
+         * for multivalued properties) or hidden (hide overflowing content, recommended for finer control over display).
+         * Defaults to hidden.
          */
         overflow: {
           type: String,
