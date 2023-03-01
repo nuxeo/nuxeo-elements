@@ -272,6 +272,7 @@
   "selectivity.loadMore": "さらに読み込む...",
   "selectivity.minChars": "{0}以上の文字を入力してください",
   "selectivity.noResults": "一致する結果が見つかりませんでした",
+  "selectivity.tagExists": "タグはすでに存在します",
   "selectivity.noResultsForTerm": "{0}の検索結果がありませんでした。",
   "shareButton.dialog.close": "閉じる",
   "shareButton.dialog.heading": "文書を共有",

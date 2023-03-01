@@ -272,6 +272,7 @@
   "selectivity.loadMore": "Laad meer...",
   "selectivity.minChars": "Voer {0} of meer tekens in",
   "selectivity.noResults": "Geen resultaten gevonden",
+  "selectivity.tagExists": "Tag bestaat al ",
   "selectivity.noResultsForTerm": "Geen zoekresultaten voor {0}",
   "shareButton.dialog.close": "Sluiten",
   "shareButton.dialog.heading": "Het document delen",
