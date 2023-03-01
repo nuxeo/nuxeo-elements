@@ -272,6 +272,7 @@
   "selectivity.loadMore": "加载更多...",
   "selectivity.minChars": "Please enter {0} or more characters",
   "selectivity.noResults": "找不到结果",
+  "selectivity.tagExists": "Tag already exists",
   "selectivity.noResultsForTerm": "找不到 {0} 的结果",
   "shareButton.dialog.close": "关闭",
   "shareButton.dialog.heading": "共享文档",

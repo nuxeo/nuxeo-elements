@@ -272,6 +272,7 @@
   "selectivity.loadMore": "Muat lebih banyak...",
   "selectivity.minChars": "Silakan masukkan {0} karakter atau lebih",
   "selectivity.noResults": "Hasil tidak ditemukan",
+  "selectivity.tagExists": "Tag already exists",
   "selectivity.noResultsForTerm": "Tidak ada hasil untuk {0}",
   "shareButton.dialog.close": "Tutup",
   "shareButton.dialog.heading": "Bagikan Dokumen",
