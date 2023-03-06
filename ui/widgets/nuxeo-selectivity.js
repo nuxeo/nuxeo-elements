@@ -2420,25 +2420,28 @@ typedArrayTags[weakMapTag] = false;
      *                          function.
      *                term - The search term for which the results are displayed.
      */
-        showResults(results, options) {
+         showResults(results, options) {
+          const searchText = options && options.term && options.term.trim();
           if (options.add) {
             removeElement(this.$('.selectivity-loading'));
-          } else {
+          } else if(searchText && searchText !== '') {
             this.resultsContainer.innerHTML = '';
           }
 
           const filteredResults = this.selectivity.filterResults(results);
           const value = this.selectivity.getValue();
-          let resultsHtml = this.renderItems(filteredResults);
+          const isFilteredResultNotEmpty = filteredResults.some((item) => item.text.trim() !== '');
+          let resultsHtml = isFilteredResultNotEmpty ? this.renderItems(filteredResults) : '';
           if (options.hasMore) {
             resultsHtml += this.selectivity.template('loadMore');
           } else if (value && Array.isArray(value) && value.includes(options.term)) {
             resultsHtml = this.selectivity.template('tagExists');
-          } else if (!resultsHtml && !options.add) {
+          } else if (!resultsHtml && !options.add && searchText) {
             resultsHtml = this.selectivity.template('noResults', { term: options.term });
+          } 
+          if (resultsHtml) {
+            this.resultsContainer.innerHTML += resultsHtml;
           }
-          this.resultsContainer.innerHTML += resultsHtml;
-
           this.results = options.add ? this.results.concat(results) : results;
 
           this.hasMore = options.hasMore;
@@ -2456,7 +2459,6 @@ typedArrayTags[weakMapTag] = false;
 
           this.position();
         },
-
         /**
      * Triggers the 'selectivity-close' event.
      */
