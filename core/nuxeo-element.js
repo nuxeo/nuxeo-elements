@@ -16,14 +16,12 @@ limitations under the License.
 */
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 
-
+/**
+ * Nuxeo namespace
+ */
+window.Nuxeo = window.Nuxeo || {};
 
 /**
  * @memberof Nuxeo
  */
-window.Nuxeo.Element = class Element extends PolymerElement {}; 
-
-/**
- * Nuxeo namespace
- */
- window.Nuxeo = window.Nuxeo || {};
+Nuxeo.Element = class Element extends PolymerElement {};
