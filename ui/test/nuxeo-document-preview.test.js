@@ -238,7 +238,7 @@ suite('nuxeo-document-preview', () => {
         },
       };
       element.xpath = 'file:content';
-      expect(element._computeEmbedSource()).to.eql('d287f/@preview/?changeToken=18-0&clientReason=view');
+      expect(element._computeObjectSource()).to.eql('d287f/@preview/?changeToken=18-0&clientReason=view');
     });
   });
 });

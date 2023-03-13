@@ -73,7 +73,7 @@ import './viewers/nuxeo-video-viewer.js';
             min-height: var(--nuxeo-viewer-min-height, 60vh);
           }
 
-          embed {
+          object {
             height: 100%;
             min-height: var(--nuxeo-viewer-min-height, 60vh);
             width: 100%;
@@ -146,7 +146,7 @@ import './viewers/nuxeo-video-viewer.js';
         </template>
 
         <template mime-pattern=".*">
-          <embed id="frame" src="[[_computeEmbedSource(_blob)]]"></embed>
+          <object id="frame" data="[[_computeObjectSource(_blob)]]"></object>
         </template>
 
         <div id="preview"></div>
@@ -349,7 +349,7 @@ import './viewers/nuxeo-video-viewer.js';
       return rendition && rendition.viewUrl;
     }
 
-    _computeEmbedSource() {
+    _computeObjectSource() {
       if (this.document && this.document.contextParameters && this.document.contextParameters.preview) {
         let { viewUrl } = this.document.contextParameters.preview;
         if (this.xpath !== 'file:content') {
