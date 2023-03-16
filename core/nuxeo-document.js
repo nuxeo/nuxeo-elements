@@ -17,6 +17,7 @@ limitations under the License.
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import './nuxeo-element.js';
 import './nuxeo-resource.js';
+import { join } from './utils';
 
 {
   /**
@@ -221,7 +222,7 @@ import './nuxeo-resource.js';
       if (docId) {
         path = `/id/${docId}`;
       } else if (docPath) {
-        path = `/path/${docPath}`;
+        path = join('/path/', docPath);
       }
       return path;
     }
