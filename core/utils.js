@@ -14,7 +14,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-import join from 'nuxeo/lib/deps/utils/join.js';
+import { join } from 'nuxeo/lib/deps/utils/join.js';
 
 /**
  * Recursive method to create nested objects when they don't exist in a parent object.
@@ -56,4 +56,4 @@ export function createNestedObject(obj, path) {
   return createNestedObject(obj[path[0]], path.slice(1));
 }
 
-export { join };
+export default join;
