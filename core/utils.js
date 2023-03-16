@@ -14,7 +14,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-const join = require('nuxeo/lib/deps/utils/join.js');
+import join from 'nuxeo/lib/deps/utils/join.js';
 
 /**
  * Recursive method to create nested objects when they don't exist in a parent object.
