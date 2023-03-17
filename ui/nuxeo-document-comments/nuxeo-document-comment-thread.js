@@ -70,8 +70,9 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
                 placeholder="[[_computeTextLabel(level, 'writePlaceholder', null, i18n)]]"
                 value="{{text}}"
                 max-rows="[[_computeMaxRows()]]"
-                no-label-float
+                always-float-label
                 on-keydown="_checkForEnter"
+                label="[[i18n('documentPage.comments')]]"
               >
               </paper-textarea>
               <dom-if if="[[!_isBlank(text)]]">
