@@ -52,6 +52,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
           }
         </style>
 
+        <span role="suggestion" aria-live="polite">[[i18n('documentPage.tags')]]</span>
         <nuxeo-selectivity
           id="s2"
           operation="[[operation]]"
