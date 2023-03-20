@@ -17,7 +17,7 @@
   "dependencies": {
     "@polymer/polymer": "^3.0.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
-    "nuxeo": "^3.2.1"
+    "nuxeo": "^4.0.2"
   },
   "devDependencies": {
     "@nuxeo/moment": "^2.24.0-nx.0",
