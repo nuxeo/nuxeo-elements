@@ -127,6 +127,6 @@
     "@polymer/polymer": "^3.0.0",
     "@polymer/test-fixture": "^4.0.2",
     "@vaadin/date-picker": "^23.0.0",
-    "nuxeo": "^3.2.1"
+    "nuxeo": "^4.0.3"
   }
 }
