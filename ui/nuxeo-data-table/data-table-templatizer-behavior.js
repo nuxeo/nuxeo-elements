@@ -146,6 +146,18 @@ saulis.DataTableTemplatizerBehaviorImpl = {
         this.table.deselectItem(inst.item);
       }
     }
+
+    if (prop === 'item' && prop && value) {
+      this.table._debouncer = Debouncer.debounce(this.table._debouncer, microTask, () => {
+        this.table.dispatchEvent(
+          new CustomEvent('item-changed', {
+            composed: true,
+            bubbles: true,
+            detail: { item: inst.item, path: prop.substring(5), value },
+          }),
+        );
+      });
+    }
   },
 
   _forwardInstancePath(inst, path, value) {
