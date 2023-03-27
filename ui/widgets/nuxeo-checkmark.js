@@ -59,7 +59,7 @@ import '../nuxeo-icons.js';
             color: var(--nuxeo-icon-color, transparent);
             padding: 0;
             margin: 0;
-            opacity: 0.7;
+            opacity: 1;
           }
 
           :host([hidden]) {
