@@ -272,7 +272,7 @@
   "selectivity.loadMore": "Kargatu gehiago...",
   "selectivity.minChars": "Idatzi {0} karaktere edo gehiago",
   "selectivity.noResults": "Emaitzarik ez",
-  "selectivity.tagExists": "Tag already exists",
+  "selectivity.tagExists": "Etiketa existitzen da dagoeneko",
   "selectivity.noResultsForTerm": "Emaitzarik ez {0}(e)rako",
   "shareButton.dialog.close": "Itxi",
   "shareButton.dialog.heading": "Partekatu dokumentua",
