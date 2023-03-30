@@ -40,8 +40,14 @@ import './nuxeo-tooltip.js';
   class Date extends mixinBehaviors([I18nBehavior, FormatBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <span id="datetime" hidden$="[[!datetime]]">[[formatDate(datetime, format, timezone)]]</span>
-        <nuxeo-tooltip for="datetime" hidden$="[[_producesSameDateFormat(datetime, format, tooltipFormat, timezone)]]">
+        <span id="datetime" hidden$="[[!datetime]]" tabindex="0" aria-describedby="timehistory">
+          [[formatDate(datetime, format, timezone)]]
+        </span>
+        <nuxeo-tooltip
+          id="timehistory"
+          for="datetime"
+          hidden$="[[_producesSameDateFormat(datetime, format, tooltipFormat, timezone)]]"
+        >
           [[formatDateTime(datetime, tooltipFormat, timezone)]]
         </nuxeo-tooltip>
       `;

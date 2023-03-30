@@ -65,7 +65,7 @@ import './nuxeo-tooltip.js';
           }
         </style>
         <nuxeo-tag>
-          <div class="tag" role="button">
+          <div class="tag" role="button" tabindex="0" aria-describedby="tags">
             <nuxeo-user-avatar
               user="[[user]]"
               border-radius="50"
@@ -88,7 +88,7 @@ import './nuxeo-tooltip.js';
             </dom-if>
             <dom-if if="[[_isEntity(user)]]">
               <template>
-                <nuxeo-tooltip position="top" offset="0" animation-delay="0">
+                <nuxeo-tooltip position="top" offset="0" animation-delay="0" id="tags">
                   [[_id(user)]]<br />[[_email(user)]]
                 </nuxeo-tooltip>
               </template>
