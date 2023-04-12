@@ -132,6 +132,7 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
           required$="[[required]]"
           validator$="[[validator]]"
           invalid$="[[invalid]]"
+          aria-label$="[[label]]"
         >
           <paper-listbox
             id="paperMenu"
