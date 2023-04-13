@@ -150,6 +150,8 @@ import '../nuxeo-button-styles.js';
      */
     _toggle() {
       if (!this.favorite) {
+        const response = window.confirm(this.i18n('favoritesToggleButton.confirm.add'));
+        if (response) {
         this.$.opAdd.execute().then(() => {
           this.dispatchEvent(
             new CustomEvent('added-to-favorites', {
@@ -159,8 +161,10 @@ import '../nuxeo-button-styles.js';
             }),
           );
           this._setFavorite(true);
-        });
+        });}
       } else {
+        const response = window.confirm(this.i18n('favoritesToggleButton.confirm.add'));
+        if (response) {
         this.$.opRemove.execute().then(() => {
           this.dispatchEvent(
             new CustomEvent('removed-from-favorites', {
@@ -171,7 +175,7 @@ import '../nuxeo-button-styles.js';
           );
           this._setFavorite(false);
         });
-      }
+      }}
     }
 
     _computeLabel(favorite) {

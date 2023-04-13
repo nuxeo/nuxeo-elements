@@ -367,5 +367,7 @@
   "workflowButton.dialog.start": "Start",
   "workflowButton.dialog.heading": "Start Process",
   "workflowButton.dialog.placeholder": "Choose process",
-  "workflowButton.tooltip": "Start Process"
+  "workflowButton.tooltip": "Start Process",
+  "favoritesToggleButton.confirm.add": "Are you sure you want to add this document to Favorites?",
+  "favoritesToggleButton.confirm.remove": "Are you sure you want to remove this document from Favorites?"
 }
