@@ -140,14 +140,16 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
               <template>
                 <dom-repeat items="{{buckets}}">
                   <template>
-                    <paper-checkbox
-                      noink
-                      checked="{{item.checked}}"
-                      on-change="_computeValues"
-                      aria-label$="[[item.label]] ([[item.docCount]])"
-                    >
-                      [[item.label]] ([[item.docCount]])
-                    </paper-checkbox>
+                    <div role="group" aria-labelledby="heading">
+                      <paper-checkbox
+                        noink
+                        checked="{{item.checked}}"
+                        on-change="_computeValues"
+                        aria-label$="[[item.label]] ([[item.docCount]])"
+                      >
+                        [[item.label]] ([[item.docCount]])
+                      </paper-checkbox>
+                    </div>
                   </template>
                 </dom-repeat>
               </template>
@@ -171,14 +173,16 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
                 <template>
                   <dom-repeat items="{{_visibleBuckets}}">
                     <template>
-                      <paper-checkbox
-                        noink
-                        checked="{{item.checked}}"
-                        on-change="_computeValues"
-                        aria-label$="[[item.label]] ([[item.docCount]])"
-                      >
-                        [[item.label]] ([[item.docCount]])
-                      </paper-checkbox>
+                      <div role="group" aria-labelledby="heading">
+                        <paper-checkbox
+                          noink
+                          checked="{{item.checked}}"
+                          on-change="_computeValues"
+                          aria-label$="[[item.label]] ([[item.docCount]])"
+                        >
+                          [[item.label]] ([[item.docCount]])
+                        </paper-checkbox>
+                      </div>
                     </template>
                   </dom-repeat>
                   <span hidden$="[[_hideShowMoreButton(buckets, visibleItems)]]" class="show-more-button">
