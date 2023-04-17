@@ -118,12 +118,14 @@ import '../nuxeo-button-styles.js';
       return `${doc && doc.title}${this._computeLabel()}`;
     }
 
-    _download() {
+    async _download() {
       const blob = this.document && this._deepFind(this.document.properties, this.xpath);
       if (blob) {
         /* Fix for ELEMENTS-1563. Else part will be removed when view vs download will be implemented for the
         scenario mentioned in ELEMENTS-1563 */
-        window.location.href = blob.downloadUrl ? blob.downloadUrl : blob.data;
+        await new Promise(() => {
+          window.location.href = blob.downloadUrl ? blob.downloadUrl : blob.data;
+        });
       }
     }
 
