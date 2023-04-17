@@ -94,7 +94,7 @@ import './nuxeo-tooltip.js';
             slot="dropdown-trigger"
             aria-labelledby="iconButtonTooltip"
           ></paper-icon-button>
-          <paper-listbox slot="dropdown-content" role="list">
+          <paper-listbox slot="dropdown-content" role="list" tabindex="0">
             <slot id="dropdown" name="dropdown"></slot>
           </paper-listbox>
         </paper-menu-button>
