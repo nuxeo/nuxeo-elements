@@ -6831,7 +6831,7 @@ typedArrayTags[weakMapTag] = false;
           }
 
           /**
-          * Dropdown
+          * Dropdown styles
           */
           .selectivity-dropdown {
             background: var(--nuxeo-dropdown-list-background, #fff);
