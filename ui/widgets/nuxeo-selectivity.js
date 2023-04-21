@@ -6841,6 +6841,7 @@ typedArrayTags[weakMapTag] = false;
             position: fixed;
             z-index: 9999;
             word-break: break-all;
+            position: sticky;
           }
 
           .selectivity-search-input-container {
