@@ -154,11 +154,12 @@ import './nuxeo-tooltip.js';
     }
 
     _email(user) {
+      const emptyStr = '';
       if (this._isEntity(user)) {
         const email = user.properties.email || user.properties['user:email'];
         return email !== this._id(user) ? email : '';
       }
-      return '';
+      return emptyStr;
     }
 
     _href(user) {
