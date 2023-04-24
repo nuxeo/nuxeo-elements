@@ -6835,12 +6835,12 @@ typedArrayTags[weakMapTag] = false;
           */
           .selectivity-dropdown {
             background: var(--nuxeo-dropdown-list-background, #fff);
-            border-radius: 4px;
             -webkit-box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.15), 0 10px 16px 0 rgba(0, 0, 0, 0.2);
             box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.15), 0 10px 16px 0 rgba(0, 0, 0, 0.2);
             z-index: 9999;
             word-break: break-all;
-            position: sticky;
+            position: fixed;
+            border-radius: 10px;
           }
 
           .selectivity-search-input-container {
