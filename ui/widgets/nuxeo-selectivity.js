@@ -6840,6 +6840,7 @@ typedArrayTags[weakMapTag] = false;
             z-index: 9999;
             word-break: break-all;
             position: sticky;
+            display: block;
             position: -webkit-sticky;
             border-radius: 4px;
           }
