@@ -48,7 +48,7 @@ import '../nuxeo-button-styles.js';
 
         <dom-if if="[[_isAvailable(document)]]">
           <template>
-            <div class="action" on-click="_download">
+            <div class="action" on-click="_download" tabindex="0">
               <paper-icon-button
                 icon="[[icon]]"
                 noink
