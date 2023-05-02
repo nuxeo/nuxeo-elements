@@ -46,7 +46,7 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
           :host {
             display: block;
             width: 100%;
-            height: 100%;
+            height: 70%;
           }
 
           [hidden] {

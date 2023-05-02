@@ -6918,7 +6918,7 @@ typedArrayTags[weakMapTag] = false;
             cursor: text;
             min-height: 26px;
             position: relative;
-            padding-top: 11px;
+            padding-top: 5px;
           }
 
           .selectivity-multiple-input,
