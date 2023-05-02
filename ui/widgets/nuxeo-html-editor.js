@@ -47,6 +47,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           div#editor > * {
             margin-top: 0;
+            margin-bottom: 28px;
           }
 
           iron-icon {
