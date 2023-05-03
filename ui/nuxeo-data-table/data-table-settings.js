@@ -53,7 +53,7 @@ import '../nuxeo-button-styles.js';
                 <div class="row layout horizontal">
                   <dom-repeat items="[[columns]]" as="column" filter="canChangeVisibility">
                     <template>
-                      <tr>
+                      <tr aria-label$="[[column.name]]">
                         <td>
                           <paper-checkbox noink checked="{{!column.hidden}}"></paper-checkbox>
                         </td>
