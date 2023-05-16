@@ -2437,10 +2437,13 @@ typedArrayTags[weakMapTag] = false;
             resultsHtml += this.selectivity.template('loadMore');
           } else if (value && Array.isArray(value) && value.includes(options.term)) {
             resultsHtml = this.selectivity.template('tagExists');
-          } else if (!resultsHtml && !options.add && searchText) {
+          } else if (!resultsHtml && !options.add) {
             resultsHtml = this.selectivity.template('noResults', { term: options.term });
-          } 
+          }
+          
           if (resultsHtml) {
+            this.resultsContainer.innerHTML = '';
+            removeElement(this.$('.selectivity-loading'));
             this.resultsContainer.innerHTML += resultsHtml;
           }
           this.results = options.add ? this.results.concat(results) : results;
