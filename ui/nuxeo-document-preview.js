@@ -266,6 +266,10 @@ import './viewers/nuxeo-video-viewer.js';
         }
         obj = obj[path[i]];
       }
+      if (!obj.viewUrl) {
+        // this line would be removed once view vs download is implemented for custom configured properties
+        obj.viewUrl = obj.data;
+      }
       return obj;
     }
 
