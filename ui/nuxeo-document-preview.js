@@ -266,6 +266,10 @@ import './viewers/nuxeo-video-viewer.js';
         }
         obj = obj[path[i]];
       }
+      if (!obj.viewUrl) {
+        // this feature has not been implemented in 'view vs download', this would be implemented in WEBUI-1146.
+        obj.viewUrl = obj.data;
+      }
       return obj;
     }
 
