@@ -181,8 +181,18 @@ import './nuxeo-resource.js';
       });
 
       this.$.nxResource.addEventListener('response', (e) => {
+        const { app } = Nuxeo.UI;
+        const baseUrl = app && app.$ && app.$.nxcon && app.$.nxcon.url ? app.$.nxcon.url : '';
         this.documentData = e.detail && e.detail.response ? e.detail.response : null;
-        if (this.documentData) {
+        const documentDataProperties = this.documentData && this.documentData.properties;
+        const fileContent = documentDataProperties && documentDataProperties['file:content'];
+        const files = documentDataProperties && documentDataProperties['files:files'];
+        if (
+          (fileContent && fileContent.data && fileContent.data.includes(baseUrl)) ||
+          (files &&
+            files.length > 0 &&
+            files.every((item) => item.file && item.file.data && item.file.data.includes(baseUrl)))
+        ) {
           this.setDocumentViewDownloadProp();
         }
       });
