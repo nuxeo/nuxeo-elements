@@ -139,7 +139,7 @@ import './viewers/nuxeo-video-viewer.js';
         </template>
 
         <template mime-pattern="application/pdf">
-          <nuxeo-pdf-viewer src="[[_blob.viewUrl]]"></nuxeo-pdf-viewer>
+          <nuxeo-pdf-viewer src="[[_computePdfSource(_blob)]]"></nuxeo-pdf-viewer>
         </template>
 
         <template rendition="pdf">
@@ -282,12 +282,13 @@ import './viewers/nuxeo-video-viewer.js';
       ) {
         const filteredViews = this.document.properties['picture:views'].filter((view) => view.title === 'FullHD');
         if (filteredViews.length > 0) {
-          return `${filteredViews[0].content.viewUrl}`;
+          const filteredViewsContent = filteredViews[0].content;
+          return `${filteredViewsContent.viewUrl ? filteredViewsContent.viewUrl : filteredViewsContent.data}`;
         }
       }
       if (this.xpath) {
         if (this._blob && this._blob['mime-type'] && this._blob['mime-type'].match('image.*')) {
-          return this._blob.viewUrl;
+          return this._blob.viewUrl ? this._blob.viewUrl : this._blob.data;
         }
       }
     }
@@ -310,6 +311,7 @@ import './viewers/nuxeo-video-viewer.js';
           .map((conversion) => {
             return {
               viewUrl: `${conversion.content.viewUrl}`,
+              data: `${conversion.content.data}`,
               type: conversion.content['mime-type'],
             };
           });
@@ -320,6 +322,7 @@ import './viewers/nuxeo-video-viewer.js';
           return [
             {
               viewUrl: this._blob.viewUrl,
+              data: this._blob.data,
               type: this._blob['mime-type'],
             },
           ];
@@ -340,7 +343,7 @@ import './viewers/nuxeo-video-viewer.js';
 
     _computeAudioSource() {
       if (this._blob) {
-        return this._blob.viewUrl;
+        return this._blob.viewUrl ? this._blob.viewUrl : this._blob.data;
       }
     }
 
@@ -351,7 +354,7 @@ import './viewers/nuxeo-video-viewer.js';
         document.contextParameters &&
         document.contextParameters.renditions &&
         document.contextParameters.renditions.find((r) => r.name === name);
-      return rendition && rendition.viewUrl;
+      return rendition && (rendition.viewUrl ? rendition.viewUrl : rendition.url);
     }
 
     _computeObjectSource() {
@@ -367,7 +370,7 @@ import './viewers/nuxeo-video-viewer.js';
         return viewUrl;
       }
       if (this._blob) {
-        return this._blob.viewUrl;
+        return this._blob.viewUrl ? this._blob.viewUrl : this._blob.url;
       }
     }
 
@@ -390,6 +393,10 @@ import './viewers/nuxeo-video-viewer.js';
 
     get _isVisible() {
       return Boolean(this.offsetWidth || this.offsetHeight);
+    }
+
+    _computePdfSource(blob) {
+      return blob.viewUrl ? blob.viewUrl : blob.url;
     }
   }
 

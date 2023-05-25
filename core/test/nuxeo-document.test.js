@@ -39,6 +39,16 @@ suite('nuxeo-document', () => {
       responseHeaders.json,
       '{"entity-type":"login","username":"Administrator"}',
     ]);
+    const Nuxeo = window.Nuxeo || {};
+    Nuxeo.UI = {
+      app: {
+        $: {
+          nxcon: {
+            url: '/nuxeo',
+          },
+        },
+      },
+    };
   });
 
   teardown(() => {
@@ -46,11 +56,60 @@ suite('nuxeo-document', () => {
   });
 
   suite('when retrieving documents', () => {
+    document.documentData = {
+      properties: {
+        'file:content': {
+          appLinks: [],
+          data: '/nuxeo/file1.jpeg?changeToken=13-0',
+          digest: '2e7d1a1ba7018c048bebdf1d07481ee3',
+          digestAlgorithm: 'MD5',
+          encoding: null,
+          length: '5763',
+          'mime-type': 'image/jpeg',
+          name: 'kitten1 (4).jpeg',
+        },
+        'files:files': [
+          {
+            file: {
+              data: '/nuxeo/file2.jpeg?changeToken=13-0',
+            },
+          },
+        ],
+        'vid:transcodedVideos': [
+          {
+            content: {
+              data: 'vid1.mp4?changeToken=9-0',
+              'mime-type': 'video/mp4',
+            },
+            info: {
+              width: 66,
+              height: 66,
+              format: 'jpeg',
+            },
+            name: 'vid1.mp4',
+          },
+        ],
+      },
+      contextParameters: {
+        renditions: [
+          {
+            url: 'd287f/@rendition/pdf',
+            icon: 'pdf.png',
+            name: 'pdf',
+            kind: null,
+          },
+        ],
+        preview: {
+          url: 'd287f/@preview/?changeToken=18-0',
+        },
+      },
+    };
+
     test('should retrieve something valid', async () => {
       server.respondWith('GET', '/api/v1/path/something', [
         200,
         responseHeaders.json,
-        '{"success":true,"entity-type":"document"}',
+        '{"entity-type":"login","username":"Administrator"}',
       ]);
 
       const document = await fixture(
@@ -80,6 +139,52 @@ suite('nuxeo-document', () => {
           <nuxeo-document doc-path="something"></nuxeo-document>
         `,
       );
+      document.documentData = {
+        properties: {
+          'file:content': {
+            appLinks: [],
+            data: '/nuxeo/file1.jpeg?changeToken=13-0',
+            digest: '2e7d1a1ba7018c048bebdf1d07481ee3',
+            digestAlgorithm: 'MD5',
+            encoding: null,
+            length: '5763',
+            'mime-type': 'image/jpeg',
+            name: 'kitten1 (4).jpeg',
+          },
+          'vid:transcodedVideos': [
+            {
+              content: {
+                data: 'vid1.mp4?changeToken=9-0',
+                'mime-type': 'video/mp4',
+              },
+              info: {
+                width: 66,
+                height: 66,
+                format: 'jpeg',
+              },
+              name: 'vid1.mp4',
+            },
+          ],
+        },
+        schemas: [
+          {
+            name: 'video',
+          },
+        ],
+        contextParameters: {
+          renditions: [
+            {
+              url: 'd287f/@rendition/pdf',
+              icon: 'pdf.png',
+              name: 'pdf',
+              kind: null,
+            },
+          ],
+          preview: {
+            url: 'd287f/@preview/?changeToken=18-0',
+          },
+        },
+      };
       try {
         await document.get();
       } catch (error) {
