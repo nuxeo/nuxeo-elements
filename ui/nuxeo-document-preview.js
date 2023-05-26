@@ -211,6 +211,10 @@ import './viewers/nuxeo-video-viewer.js';
         } else {
           // by default just use the field at xpath as a Blob
           this._blob = this.document && this._deepFind(this.document.properties, this.xpath);
+          // this feature has not been implemented in 'view vs download', this would be implemented in WEBUI-1146.
+          if (this._blob && !this._blob.viewUrl) {
+            this._blob.viewUrl = this._blob.data;
+          }
         }
         // update our previewer
         this._updatePreview();
@@ -265,10 +269,6 @@ import './viewers/nuxeo-video-viewer.js';
           break;
         }
         obj = obj[path[i]];
-      }
-      if (!obj.viewUrl) {
-        // this feature has not been implemented in 'view vs download', this would be implemented in WEBUI-1146.
-        obj.viewUrl = obj.data;
       }
       return obj;
     }
