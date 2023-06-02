@@ -357,6 +357,10 @@ import './viewers/nuxeo-video-viewer.js';
     _computeObjectSource() {
       if (this.document && this.document.contextParameters && this.document.contextParameters.preview) {
         let { viewUrl } = this.document.contextParameters.preview;
+        // this feature has not been implemented in 'view vs download', this would be implemented in WEBUI-1146.
+        if (!viewUrl) {
+          viewUrl = this.document.contextParameters.preview.url;
+        }
         if (this.xpath !== 'file:content') {
           viewUrl = viewUrl.replace('/@preview/', `/@blob/${this.xpath}/@preview/`);
         }
