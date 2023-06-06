@@ -78,6 +78,8 @@ import '../nuxeo-button-styles.js';
             >
           </div>
         </nuxeo-dialog>
+        <nuxeo-connection id="nx" connection-id="[[connectionId]]"></nuxeo-connection>
+        <nuxeo-resource id="blobRequest"></nuxeo-resource>
       `;
     }
 
@@ -87,6 +89,10 @@ import '../nuxeo-button-styles.js';
 
     static get properties() {
       return {
+        connectionId: {
+          type: String,
+          value: 'nx',
+        },
         /**
          * Input document.
          */
@@ -151,14 +157,38 @@ import '../nuxeo-button-styles.js';
     }
 
     _remove() {
-      this.$.operation.execute().then(() => {
-        this.dispatchEvent(
-          new CustomEvent('file-deleted', {
-            composed: true,
-            bubbles: true,
-          }),
-        );
-      });
+      const rowNo = this.xpath.split('/')[1];
+      const { 'upload-batch': uploadBatch, 'upload-fileId': uploadFileId } = this.document.properties[
+        'monschema:mesdonnees'
+      ][rowNo].fichier;
+      if (uploadBatch && uploadFileId) {
+        this.$.blobRequest.data = {};
+        this.$.blobRequest.path = `upload/${uploadBatch}/${uploadFileId}`;
+        this.$.blobRequest
+          .remove()
+          .then((response) => {
+            this._dispatchEvent('file-deleted', response);
+          })
+          .catch((error) => {
+            this._dispatchEvent('error', error);
+          });
+      } else {
+        this.$.operation.execute().then((response) => {
+          this._dispatchEvent('file-deleted', response);
+        });
+      }
+    }
+
+    _dispatchEvent(eventName, response) {
+      this.dispatchEvent(
+        new CustomEvent(eventName, {
+          composed: true,
+          bubbles: true,
+          detail: {
+            response,
+          },
+        }),
+      );
     }
   }
 
