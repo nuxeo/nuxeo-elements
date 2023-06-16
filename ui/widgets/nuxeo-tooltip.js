@@ -102,6 +102,7 @@ import { microTask } from '@polymer/polymer/lib/utils/async.js';
     disconnectedCallback() {
       super.disconnectedCallback();
       if (this._target) {
+        this.hide();
         this._target.removeEventListener('mouseenter', this._showListener);
         this._target.removeEventListener('focus', this._showListener);
         this._target.removeEventListener('mouseleave', this._hideListener);
