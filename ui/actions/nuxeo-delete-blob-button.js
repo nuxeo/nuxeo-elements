@@ -158,25 +158,33 @@ import '../nuxeo-button-styles.js';
 
     _remove() {
       const rowNo = this.xpath.split('/')[1];
-      const { 'upload-batch': uploadBatch, 'upload-fileId': uploadFileId } = this.document.properties[
-        'monschema:mesdonnees'
-      ][rowNo].fichier;
-      if (uploadBatch && uploadFileId) {
-        this.$.blobRequest.data = {};
-        this.$.blobRequest.path = `upload/${uploadBatch}/${uploadFileId}`;
-        this.$.blobRequest
-          .remove()
-          .then((response) => {
-            this._dispatchEvent('file-deleted', response);
-          })
-          .catch((error) => {
-            this._dispatchEvent('error', error);
-          });
+      if (rowNo && this.document.properties['monschema:mesdonnees']) {
+        const { 'upload-batch': uploadBatch, 'upload-fileId': uploadFileId } = this.document.properties[
+          'monschema:mesdonnees'
+        ][rowNo].fichier;
+        if (uploadBatch && uploadFileId) {
+          this.$.blobRequest.data = {};
+          this.$.blobRequest.path = `upload/${uploadBatch}/${uploadFileId}`;
+          this.$.blobRequest
+            .remove()
+            .then((response) => {
+              this._dispatchEvent('file-deleted', response);
+            })
+            .catch((error) => {
+              this._dispatchEvent('error', error);
+            });
+        } else {
+          this._removeBlob();
+        }
       } else {
-        this.$.operation.execute().then((response) => {
-          this._dispatchEvent('file-deleted', response);
-        });
+        this._removeBlob();
       }
+    }
+
+    _removeBlob() {
+      this.$.operation.execute().then((response) => {
+        this._dispatchEvent('file-deleted', response);
+      });
     }
 
     _dispatchEvent(eventName, response) {
