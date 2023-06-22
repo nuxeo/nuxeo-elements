@@ -409,7 +409,11 @@ import './nuxeo-connection.js';
           this.error = error;
           console.warn(`Operation request failed: ${error}`);
           this._setActiveRequests(this.activeRequests - 1);
-          throw error;
+          if (error.response && error.response.status === 500) {
+            throw "Error: Internal Server Error"
+          } else {
+            throw error
+          }
         });
     }
 
