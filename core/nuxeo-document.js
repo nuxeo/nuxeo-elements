@@ -182,10 +182,25 @@ import './nuxeo-resource.js';
 
       this.$.nxResource.addEventListener('response', (e) => {
         this.documentData = e.detail && e.detail.response ? e.detail.response : null;
-        if (this.documentData) {
-          this.setDocumentViewDownloadProp();
+        const documentDataProperties = this.documentData && this.documentData.properties;
+        const fileContent = documentDataProperties && documentDataProperties['file:content'];
+        const files = documentDataProperties && documentDataProperties['files:files'];
+        if (
+          (fileContent && fileContent.data && !this.isCDNEnabled(fileContent.data)) ||
+          (files &&
+            files.length > 0 &&
+            files.every((item) => item.file && item.file.data && !this.isCDNEnabled(item.file.data)))
+        ) {
+          this.setDocumentViewDownloadProp(); // appends clientReason parameter for view vs download implementation
         }
       });
+    }
+
+    /* This code will be optimized to replace the hardcoded url to use a more generic approach as part of
+        https://jira.nuxeo.com/browse/ELEMENTS-1641 in the upcoming release */
+
+    isCDNEnabled(hostUrl) {
+      return hostUrl.includes('cloudfront.net');
     }
 
     /* Fetch the document. */
