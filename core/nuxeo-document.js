@@ -186,21 +186,19 @@ import './nuxeo-resource.js';
         const fileContent = documentDataProperties && documentDataProperties['file:content'];
         const files = documentDataProperties && documentDataProperties['files:files'];
         if (
-          (fileContent && fileContent.data && !this.isCDNEnabled(fileContent.data)) ||
-          (files &&
-            files.length > 0 &&
-            files.every((item) => item.file && item.file.data && !this.isCDNEnabled(item.file.data)))
+          ((fileContent && fileContent.data) ||
+            (files && files.length > 0 && files.every((item) => item.file && item.file.data))) &&
+          !this.isS3ProviderEnabled()
         ) {
           this.setDocumentViewDownloadProp(); // appends clientReason parameter for view vs download implementation
         }
       });
     }
 
-    /* This code will be optimized to replace the hardcoded url to use a more generic approach as part of
-        https://jira.nuxeo.com/browse/ELEMENTS-1641 in the upcoming release */
-
-    isCDNEnabled(hostUrl) {
-      return hostUrl.includes('cloudfront.net');
+    isS3ProviderEnabled() {
+      const useDirectUpload =
+        Nuxeo && Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.s3 && Nuxeo.UI.config.s3.useDirectUpload;
+      return useDirectUpload ? String(useDirectUpload).toLowerCase() === 'true' : false;
     }
 
     /* Fetch the document. */
