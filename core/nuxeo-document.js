@@ -196,9 +196,9 @@ import './nuxeo-resource.js';
     }
 
     isS3ProviderEnabled() {
-      const useDirectUpload =
+      const useDirect =
         Nuxeo && Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.s3 && Nuxeo.UI.config.s3.useDirectUpload;
-      return useDirectUpload ? String(useDirectUpload).toLowerCase() === 'true' : false;
+      return useDirect ? String(useDirect).toLowerCase() === 'true' : false;
     }
 
     /* Fetch the document. */
