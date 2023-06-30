@@ -157,6 +157,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _remove() {
+      // test comment
       const rowNo = this.xpath.split('/')[1];
       if (rowNo && this.document.properties['monschema:mesdonnees']) {
         const { 'upload-batch': uploadBatch, 'upload-fileId': uploadFileId } = this.document.properties[
