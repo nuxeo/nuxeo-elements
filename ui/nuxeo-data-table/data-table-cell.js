@@ -14,7 +14,7 @@ import './data-table-templatizer-behavior.js';
           :host {
             flex: 1 0 100px;
             padding: 0 24px;
-            min-height: 48px;
+            min-height: 47px;
             display: flex;
             align-items: center;
             overflow-x: hidden;
