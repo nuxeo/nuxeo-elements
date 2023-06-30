@@ -320,6 +320,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _observeMode() {
+      // test commit
       if (this.mode === 'size') {
         this.onlyFolder = false;
       }
