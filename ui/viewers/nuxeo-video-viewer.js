@@ -92,7 +92,7 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
           >
             <dom-repeat items="[[sources]]" as="source">
               <template>
-                <source src="[[source.viewUrl]]" type="[[source.type]]" />
+                <source src="[[_getSourceUrl(source)]]" type="[[source.type]]" />
               </template>
             </dom-repeat>
           </video>
@@ -106,7 +106,7 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
                       <img
                         class="thumbnail"
                         on-click="_jumpTo"
-                        src="[[thumbnail.content.viewUrl]]"
+                        src="[[_getThumbnailUrl(thumbnail)]]"
                         alt$="[[thumbnail.comment]]"
                       />
                     </template>
@@ -190,6 +190,14 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
 
     _jumpTo(e) {
       this.$.video.currentTime = e.model.thumbnail.timecode;
+    }
+
+    _getThumbnailUrl(thumbnail) {
+      return thumbnail.content.viewUrl ? thumbnail.content.viewUrl : thumbnail.content.data;
+    }
+
+    _getSourceUrl(source) {
+      return source.viewUrl ? source.viewUrl : source.data;
     }
   }
 

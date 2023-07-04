@@ -67,7 +67,7 @@ import '../widgets/nuxeo-tooltip.js';
                   <label>[[conversion.name]]</label>
                   <span>[[conversion.info.width]] x [[conversion.info.height]]</span>
                   <span>[[formatSize(conversion.content.length)]]</span>
-                  <a href="[[conversion.content.downloadUrl]]">
+                  <a href="[[_getDownloadUrl(conversion)]]">
                     <iron-icon icon="nuxeo:download"></iron-icon>
                     <nuxeo-tooltip>[[i18n('videoViewLayout.download.tooltip')]]</nuxeo-tooltip>
                   </a>
@@ -94,6 +94,10 @@ import '../widgets/nuxeo-tooltip.js';
          */
         label: String,
       };
+    }
+
+    _getDownloadUrl(conversion) {
+      return conversion.content.downloadUrl ? conversion.content.downloadUrl : conversion.content.data;
     }
   }
   customElements.define(VideoConversions.is, VideoConversions);

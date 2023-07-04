@@ -76,5 +76,23 @@ suite('nuxeo-video-conversions', () => {
         `http://localhost:9876/${videoProperties['vid:transcodedVideos'][0].content.downloadUrl}`,
       );
     });
+
+    test('Should fetch download url when blob has downloadUrl property', () => {
+      const conversion = {
+        content: {
+          downloadUrl: 'abc.docx?changeToken=1-0&clientReason=download',
+        },
+      };
+      expect(element._getDownloadUrl(conversion)).to.equal('abc.docx?changeToken=1-0&clientReason=download');
+    });
+
+    test('Should fetch download url when blob does not have downloadUrl property', () => {
+      const conversion = {
+        content: {
+          data: 'abc.docx?changeToken=1-0',
+        },
+      };
+      expect(element._getDownloadUrl(conversion)).to.equal('abc.docx?changeToken=1-0');
+    });
   });
 });
