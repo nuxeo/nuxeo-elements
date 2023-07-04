@@ -139,6 +139,7 @@ suite('nuxeo-document-preview', () => {
         {
           viewUrl: 'vid1.mp4?changeToken=9-0&clientReason=view',
           type: 'video/mp4',
+          data: 'vid1.mp4?changeToken=9-0',
         },
       ]);
     });
@@ -209,7 +210,7 @@ suite('nuxeo-document-preview', () => {
       );
     });
 
-    test('Should compute embed source if preview is available', () => {
+    test('Should compute object source if preview is available', () => {
       element.document = {
         properties: {
           'file:content': {
@@ -240,6 +241,66 @@ suite('nuxeo-document-preview', () => {
       };
       element.xpath = 'file:content';
       expect(element._computeObjectSource()).to.eql('d287f/@preview/?changeToken=18-0&clientReason=view');
+    });
+
+    test('Should compute pdf source if blob has view url', () => {
+      element.document = {
+        properties: {
+          'file:content': {
+            appLinks: [],
+            data: 'file:content/abc.pdf?changeToken=11-0',
+            digest: '2e7d1a1ba7018c048bebdf1d07481ee3',
+            digestAlgorithm: 'MD5',
+            encoding: null,
+            length: '5763',
+            'mime-type': 'application/pdf',
+            name: 'abc.pdf',
+            viewUrl: 'file:content/abc.pdf?changeToken=11-0&clientReason=view',
+            downloadUrl: 'file:content/abc.pdf?changeToken=11-0&clientReason=download',
+          },
+        },
+        schemas: [
+          {
+            name: 'file',
+          },
+        ],
+        contextParameters: {
+          preview: {
+            url: 'file:content/abc.pdf?changeToken=11-0',
+          },
+        },
+      };
+      element.xpath = 'file:content';
+      expect(element._computePdfSource()).to.eql('file:content/abc.pdf?changeToken=11-0&clientReason=view');
+    });
+
+    test('Should compute pdf source if blob does not have view url', () => {
+      element.document = {
+        properties: {
+          'file:content': {
+            appLinks: [],
+            data: 'file:content/abc.pdf?changeToken=11-0',
+            digest: '2e7d1a1ba7018c048bebdf1d07481ee3',
+            digestAlgorithm: 'MD5',
+            encoding: null,
+            length: '5763',
+            'mime-type': 'application/pdf',
+            name: 'abc.pdf',
+          },
+        },
+        schemas: [
+          {
+            name: 'file',
+          },
+        ],
+        contextParameters: {
+          preview: {
+            url: 'file:content/abc.pdf?changeToken=11-0',
+          },
+        },
+      };
+      element.xpath = 'file:content';
+      expect(element._computePdfSource()).to.eql('file:content/abc.pdf?changeToken=11-0');
     });
   });
 });
