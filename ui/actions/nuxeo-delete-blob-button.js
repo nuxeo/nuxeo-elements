@@ -158,9 +158,16 @@ import '../nuxeo-button-styles.js';
 
     _remove() {
       const [xpath, rowNo] = this.xpath.split('/');
-      if (rowNo && this.document && this.document.properties[xpath]) {
-        const { fichier } = this.document.properties[xpath][rowNo];
-        const { 'upload-batch': uploadBatch, 'upload-fileId': uploadFileId } = fichier;
+      if (
+        rowNo &&
+        xpath &&
+        this.document.properties[xpath] &&
+        this.document.properties[xpath][rowNo] &&
+        this.document.properties[xpath][rowNo].fichier
+      ) {
+        const { 'upload-batch': uploadBatch, 'upload-fileId': uploadFileId } = this.document.properties[xpath][
+          rowNo
+        ].fichier;
         if (uploadBatch && uploadFileId) {
           this.$.blobRequest.data = {};
           this.$.blobRequest.path = `upload/${uploadBatch}/${uploadFileId}`;
