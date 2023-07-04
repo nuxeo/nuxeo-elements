@@ -182,10 +182,23 @@ import './nuxeo-resource.js';
 
       this.$.nxResource.addEventListener('response', (e) => {
         this.documentData = e.detail && e.detail.response ? e.detail.response : null;
-        if (this.documentData) {
-          this.setDocumentViewDownloadProp();
+        const documentDataProperties = this.documentData && this.documentData.properties;
+        const fileContent = documentDataProperties && documentDataProperties['file:content'];
+        const files = documentDataProperties && documentDataProperties['files:files'];
+        if (
+          ((fileContent && fileContent.data) ||
+            (files && files.length > 0 && files.every((item) => item.file && item.file.data))) &&
+          !this.isS3ProviderEnabled()
+        ) {
+          this.setDocumentViewDownloadProp(); // appends clientReason parameter for view vs download implementation
         }
       });
+    }
+
+    isS3ProviderEnabled() {
+      const useDirectUpload =
+        Nuxeo && Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.s3 && Nuxeo.UI.config.s3.useDirectUpload;
+      return useDirectUpload ? String(useDirectUpload).toLowerCase() === 'true' : false;
     }
 
     /* Fetch the document. */
