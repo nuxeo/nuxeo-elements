@@ -157,11 +157,17 @@ import '../nuxeo-button-styles.js';
     }
 
     _remove() {
-      const rowNo = this.xpath.split('/')[1];
-      if (rowNo && this.document.properties['monschema:mesdonnees']) {
-        const { 'upload-batch': uploadBatch, 'upload-fileId': uploadFileId } = this.document.properties[
-          'monschema:mesdonnees'
-        ][rowNo].fichier;
+      const [xpath, rowNo] = this.xpath.split('/');
+      if (
+        rowNo &&
+        xpath &&
+        this.document.properties[xpath] &&
+        this.document.properties[xpath][rowNo] &&
+        this.document.properties[xpath][rowNo].fichier
+      ) {
+        const { 'upload-batch': uploadBatch, 'upload-fileId': uploadFileId } = this.document.properties[xpath][
+          rowNo
+        ].fichier;
         if (uploadBatch && uploadFileId) {
           this.$.blobRequest.data = {};
           this.$.blobRequest.path = `upload/${uploadBatch}/${uploadFileId}`;
