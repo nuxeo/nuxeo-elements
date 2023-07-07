@@ -188,17 +188,17 @@ import './nuxeo-resource.js';
         if (
           ((fileContent && fileContent.data) ||
             (files && files.length > 0 && files.every((item) => item.file && item.file.data))) &&
-          !this.isS3ProviderEnabled()
+          !this.isFollowRedirectEnabled()
         ) {
           this.setDocumentViewDownloadProp(); // appends clientReason parameter for view vs download implementation
         }
       });
     }
 
-    isS3ProviderEnabled() {
-      const useDirectUpload =
-        Nuxeo && Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.s3 && Nuxeo.UI.config.s3.useDirectUpload;
-      return useDirectUpload ? String(useDirectUpload).toLowerCase() === 'true' : false;
+    isFollowRedirectEnabled() {
+      const followRedirect =
+        Nuxeo && Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.url && Nuxeo.UI.config.url.followRedirect;
+      return followRedirect ? String(followRedirect).toLowerCase() === 'true' : false;
     }
 
     /* Fetch the document. */
