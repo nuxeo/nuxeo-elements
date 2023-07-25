@@ -30,6 +30,9 @@ suite('nuxeo-delete-blob-button', () => {
         <nuxeo-delete-blob-button></nuxeo-delete-blob-button>
       `,
     );
+    sinon.stub(button, 'isImmutable').returns(false);
+    sinon.stub(button, 'hasType').returns(false);
+    sinon.stub(button, 'isTrashed').returns(false);
   });
 
   suite('Button Visibility', () => {
@@ -61,6 +64,54 @@ suite('nuxeo-delete-blob-button', () => {
       };
       await flush();
       expect(isActionDivVisible(button)).to.be.true;
+    });
+  });
+
+  suite('should return whether property is under retention', () => {
+    const document = {
+      isUnderRetentionOrLegalHold: true,
+      retainedProperties: [
+        'checkext:single',
+        'checkext:field1/2/item',
+        'files:files/*/file',
+        'checkext:multiple',
+        'file:content',
+      ],
+    };
+    test('when xpath =  checkext:single, for document blob', () => {
+      button.xpath = 'checkext:single';
+      sinon.stub(button, 'hasPermission').returns(true);
+      expect(button._isAvailable(document)).to.eql(false);
+    });
+    test('when xpath =  checkext:multiple/0, for document attachement', () => {
+      button.xpath = 'checkext:multiple/0';
+      sinon.stub(button, 'hasPermission').returns(true);
+      expect(button._isAvailable(document)).to.eql(false);
+    });
+    test('when xpath =  checkext:multiple/1, for document attachement', () => {
+      button.xpath = 'checkext:multiple/1';
+      sinon.stub(button, 'hasPermission').returns(true);
+      expect(button._isAvailable(document)).to.eql(false);
+    });
+    test('when xpath =  checkext:field1/0, for custom property - document attachment', () => {
+      button.xpath = 'checkext:field1/0';
+      sinon.stub(button, 'hasPermission').returns(true);
+      expect(button._isAvailable(document)).to.eql(true);
+    });
+    test('when xpath =  checkext:field1/2, for custom property - document attachment', () => {
+      button.xpath = 'checkext:field1/2';
+      sinon.stub(button, 'hasPermission').returns(true);
+      expect(button._isAvailable(document)).to.eql(false);
+    });
+    test('when xpath =  files:files/0/file, for document attachement', () => {
+      button.xpath = 'files:files/0/file';
+      sinon.stub(button, 'hasPermission').returns(true);
+      expect(button._isAvailable(document)).to.eql(false);
+    });
+    test('when xpath =  file:content, for document viewer', () => {
+      button.xpath = 'file:content';
+      sinon.stub(button, 'hasPermission').returns(true);
+      expect(button._isAvailable(document)).to.eql(false);
     });
   });
 });
