@@ -104,7 +104,7 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
           required$="[[required]]"
         />
 
-        <div id="dropZone" hidden$="[[readonly]]">
+        <div id="dropZone" hidden$="[[_isDropzoneVisible(document, xpath)]]">
           <dom-if if="[[!uploading]]">
             <template>
               <paper-button id="button" raised on-click="_pick" aria-labelledby="label">
@@ -117,7 +117,7 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
 
         <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
 
-        <dom-if if="[[_hasSingleValue(multiple, value)]]">
+        <dom-if if="[[_hasSingleValue(document, multiple, value)]]">
           <template>
             <div class="file">
               <div class="layout horizontal">
@@ -126,7 +126,7 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
                   icon="nuxeo:remove"
                   title="[[i18n('command.remove')]]"
                   on-click="remove"
-                  hidden$="[[readonly]]"
+                  hidden$="[[_isDropzoneVisible(document)]]"
                 >
                 </iron-icon>
               </div>
@@ -145,7 +145,7 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
                       icon="nuxeo:remove"
                       title="[[i18n('command.remove')]]"
                       on-click="remove"
-                      hidden$="[[readonly]]"
+                      hidden$="[[_isDropzoneVisible(document)]]"
                     >
                     </iron-icon>
                   </div>
@@ -194,6 +194,10 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
           reflectToAttribute: true,
         },
 
+        xpath: {
+          type: String,
+          value: 'file:content',
+        },
         /**
          * Required.
          */
@@ -286,6 +290,19 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
 
     _hasSingleValue() {
       return !this.multiple && this._hasValue();
+    }
+
+    _isDropzoneVisible(document) {
+      if (
+        document &&
+        document.isUnderRetentionOrLegalHold &&
+        document.retainedProperties.length > 0
+      ) {
+        if (document.retainedProperties.indexOf(this.xpath) !== -1) {
+          return true;
+        }
+      }
+      return this.readonly;
     }
 
     _hasValue() {
