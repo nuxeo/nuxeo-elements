@@ -171,6 +171,22 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
     static get properties() {
       return {
         /**
+         * Input Document.
+         */
+        document: {
+          type: Object,
+          notify: true,
+        },
+        /**
+         * Path to which the file(s) should be uploaded.
+         * By default it will consider `file:content`.
+         */
+        xpath: {
+          type: String,
+          value: 'file:content',
+        },
+
+        /**
          * Blob reference (`upload-batch` and `upload-fileId).
          */
         value: {
