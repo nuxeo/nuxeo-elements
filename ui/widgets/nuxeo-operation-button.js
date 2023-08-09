@@ -291,6 +291,10 @@ import '../actions/nuxeo-action-button-styles.js';
           .match(/filename[^;=\n]*=([^;\n]*''([^;\n]*)|[^;\n]*)/)
           .filter((match) => !!match);
         const filename = decodeURI(filenameMatches[filenameMatches.length - 1]);
+        if (this.async) {
+          this._triggerDownload(filename, response.url);
+          return;
+        }
         response.blob().then((blob) => {
           const url = URL.createObjectURL(blob);
           this._triggerDownload(filename, url);
