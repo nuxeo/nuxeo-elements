@@ -211,11 +211,6 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
           reflectToAttribute: true,
         },
 
-        xpath: {
-          type: String,
-          value: 'file:content',
-        },
-
         /**
          * Required.
          */
