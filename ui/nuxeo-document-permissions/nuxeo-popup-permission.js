@@ -106,6 +106,8 @@ import '../nuxeo-button-styles.js';
                   value="{{params.users}}"
                   placeholder="[[i18n('popupPermission.userGroup.placeholder')]]"
                   multiple
+                  required
+                  invalid="{{params.invalid}}"
                 >
                 </nuxeo-user-suggestion>
               </div>
@@ -192,7 +194,9 @@ import '../nuxeo-button-styles.js';
           </paper-dialog-scrollable>
 
           <div class="buttons">
-            <paper-button dialog-dismiss class="secondary">[[i18n('popupPermission.cancel')]]</paper-button>
+            <paper-button dialog-dismiss class="secondary" on-click="doCancel"
+              >[[i18n('popupPermission.cancel')]]</paper-button
+            >
             <dom-if if="{{!updatingACE}}">
               <template>
                 <paper-button noink class="primary small" on-click="doCreateAndAdd" id="createAndAddPermissionButton">
@@ -284,6 +288,11 @@ import '../nuxeo-button-styles.js';
       this._doSend(true);
     }
 
+    doCancel() {
+      this.params = this._getResetParams();
+      this.set('params.invalid', false);
+    }
+
     _computeTitle() {
       if (this.updatingACE) {
         return this.i18n('popupPermission.updatePermission');
@@ -312,6 +321,7 @@ import '../nuxeo-button-styles.js';
         return;
       }
       if (!this.shareWithExternal && !this.params.username && (!this.params.users || this.params.users.length === 0)) {
+        this.set('params.invalid', true);
         return;
       }
 
@@ -428,6 +438,7 @@ import '../nuxeo-button-styles.js';
         end: null,
         notify: true,
         comment: '',
+        invalid: false,
       };
     }
   }
