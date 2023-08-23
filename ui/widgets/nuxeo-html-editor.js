@@ -23,6 +23,7 @@ import '@nuxeo/quill/dist/quill.js';
 import '../nuxeo-document-picker/nuxeo-document-picker.js';
 import './quill/quill-snow.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class';
+import { ImageResize } from 'quill-image-resize-module';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
 {
@@ -182,8 +183,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     ready() {
       super.ready();
       // init editor
+      Quill.register('modules/imageResize', ImageResize);
       const { placeholder, readOnly } = this;
-      const modules = { toolbar: '#toolbar' };
+      const modules = {
+        toolbar: '#toolbar',
+        ImageResize: {
+          modules: ['Resize', 'DisplaySize', 'Toolbar']
+        }
+      };
       this._editor = new Quill(this.$.editor, { theme: 'snow', modules, placeholder, readOnly });
 
       // update value on change
