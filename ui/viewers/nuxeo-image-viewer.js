@@ -153,9 +153,9 @@ import '../nuxeo-icons.js';
             width: 100% !important;
           }
 
-          .cropper-canvas,
-          .cropper-canvas > img {
-            width: 100% !important;
+          .cropper-canvas {
+            transform: none !important;
+            margin: auto;
           }
         </style>
 
