@@ -302,10 +302,12 @@ import './nuxeo-button-styles.js';
       switch (event.type) {
         case 'nuxeo-user-created':
         case 'nuxeo-user-invited':
-          msg = `User ${event.detail.id} created`;
+          msg = `${this.i18n('userGroupManagement.new.user')} ${event.detail.id} ${this.i18n(
+            'label.ui.state.created',
+          )}`;
           break;
         case 'nuxeo-group-created':
-          msg = `Group ${event.detail.groupname} created`;
+          msg = `${this.i18n('label.group')} ${event.detail.groupname} ${this.i18n('label.ui.state.created')}`;
           break;
         default:
         // do nothing
