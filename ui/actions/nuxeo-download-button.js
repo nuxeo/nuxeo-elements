@@ -49,7 +49,7 @@ import '../nuxeo-button-styles.js';
 
         <dom-if if="[[_isAvailable(document)]]">
           <template>
-            <div class="action" on-click="_download" tabindex="0">
+            <div class="action" on-click="_download" tabindex="-1">
               <paper-icon-button
                 icon="[[icon]]"
                 noink
@@ -105,6 +105,15 @@ import '../nuxeo-button-styles.js';
           computed: '_computeLabel(i18n)',
         },
       };
+    }
+
+    ready() {
+      super.ready();
+      this.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.stopPropagation();
+        }
+      });
     }
 
     _isAvailable(doc) {
