@@ -160,7 +160,7 @@ import '../nuxeo-button-styles.js';
           this.dispatchEvent(
             new CustomEvent('added-to-favorites', {
               composed: true,
-              bubbles: false,
+              bubbles: true,
               detail: { doc: this.document },
             }),
           );
