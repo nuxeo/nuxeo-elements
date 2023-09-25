@@ -61,7 +61,7 @@ import '../nuxeo-button-styles.js';
 
         <dom-if if="[[_isAvailable(document)]]">
           <template>
-            <div class="action" tabindex="0">
+            <div class="action" tabindex="-1">
               <paper-icon-button
                 icon="[[icon]]"
                 noink
@@ -129,6 +129,11 @@ import '../nuxeo-button-styles.js';
       };
       window.addEventListener('removed-from-favorites', this.removeFromFavoritesHandler);
       this.addEventListener('click', this._toggle);
+      this.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.stopPropagation();
+        }
+      });
     }
 
     disconnectedCallback() {
@@ -155,7 +160,7 @@ import '../nuxeo-button-styles.js';
           this.dispatchEvent(
             new CustomEvent('added-to-favorites', {
               composed: true,
-              bubbles: true,
+              bubbles: false,
               detail: { doc: this.document },
             }),
           );
