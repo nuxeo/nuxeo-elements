@@ -64,6 +64,10 @@ import '../nuxeo-button-styles.js';
           a:hover {
             color: var(--nuxeo-link-hover-color, #0066ff);
           }
+
+          .container {
+            overflow: auto;
+          }
         </style>
 
         <dom-if if="[[_isAvailable(document)]]">
@@ -76,7 +80,7 @@ import '../nuxeo-button-styles.js';
           </template>
         </dom-if>
 
-        <nuxeo-dialog id="dialog" with-backdrop>
+        <nuxeo-dialog id="dialog" with-backdrop class="container">
           <h2>[[i18n('exportButton.dialog.heading')]]</h2>
 
           <dom-repeat items="[[_filterRenditions(document, i18n)]]">
