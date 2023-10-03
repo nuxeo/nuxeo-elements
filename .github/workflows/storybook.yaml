@@ -19,6 +19,10 @@ on:
 env:
   BRANCH_NAME: ${{ github.head_ref || inputs.branch || 'maintenance-3.0.x' }}
 
+  ## limiting lerna version as latest is not compatible with node 14.
+  ## We will revert this once node is upragded.
+  LERNA: 'lerna@6.6.2'
+
 jobs:
   storybook:
     runs-on: ubuntu-latest
@@ -41,7 +45,7 @@ jobs:
           npm run bootstrap
 
       - name: Run analysis
-        run: npx lerna run analysis --parallel
+        run: npx $LERNA run analysis --parallel
 
       - name: Build storybook
         working-directory: storybook

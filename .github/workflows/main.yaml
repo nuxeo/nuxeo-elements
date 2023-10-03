@@ -1,5 +1,10 @@
 name: Build
 
+## limiting lerna version as latest is not compatible with node 14.
+## We will revert this once node is upragded.
+env:
+  LERNA: 'lerna@6.6.2'
+
 on:
   push:
     branches:
@@ -55,7 +60,7 @@ jobs:
     - name: Set version to ${{ env.VERSION }}
       run: |
         npm version $VERSION --no-git-tag-version
-        npx lerna version $VERSION --no-push --force-publish --no-git-tag-version --yes
+        npx $LERNA version $VERSION --no-push --force-publish --no-git-tag-version --yes
 
     - name: Tag
       run: |
@@ -66,4 +71,4 @@ jobs:
     - name: Publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-      run: npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --tag SNAPSHOT
+      run: npx $LERNA exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --tag SNAPSHOT

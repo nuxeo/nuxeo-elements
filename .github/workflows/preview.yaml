@@ -12,6 +12,11 @@ env:
   GKE_CLUSTER: jx-prod
   GKE_ZONE: us-east1-b
 
+  ## limiting lerna version as latest is not compatible with node 14.
+  ## We will revert this once node is upragded.
+  env:
+    LERNA: 'lerna@6.6.2'
+
 jobs:
   storybook:
     name: Storybook
@@ -40,7 +45,7 @@ jobs:
         npm run bootstrap
 
     - name: Run analysis
-      run: npx lerna run analysis --parallel
+      run: npx $LERNA run analysis --parallel
 
     - name: Build storybook
       working-directory: ./storybook
