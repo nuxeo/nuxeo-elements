@@ -36,7 +36,7 @@ jobs:
       - name: Update Nuxeo Elements version to ${{ env.VERSION }}
         run: |
           npm version $VERSION --no-git-tag-version
-          npx lerna version $VERSION --no-push --force-publish --no-git-tag-version --yes
+          npx lerna@6.6.2 version $VERSION --no-push --force-publish --no-git-tag-version --yes
 
       - name: Tag Nuxeo Elements v${{ env.VERSION }}
         run: |
