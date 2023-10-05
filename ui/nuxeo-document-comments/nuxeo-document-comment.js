@@ -60,11 +60,6 @@ import '../nuxeo-button-styles.js';
             margin-top: 5px;
           }
 
-          #body:hover paper-icon-button {
-            opacity: 0.5;
-            transition: opacity 100ms;
-          }
-
           .author {
             font-weight: bold;
             margin-right: 5px;
@@ -101,7 +96,7 @@ import '../nuxeo-button-styles.js';
           }
 
           paper-icon-button {
-            opacity: 0;
+            opacity: 0.5;
             --paper-icon-button: {
               padding: 0;
             }
