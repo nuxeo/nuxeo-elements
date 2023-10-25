@@ -154,7 +154,7 @@ import '../nuxeo-icons.js';
           }
 
           .cropper-canvas {
-            transform: none !important;
+            transform: none;
             margin: auto;
           }
         </style>
