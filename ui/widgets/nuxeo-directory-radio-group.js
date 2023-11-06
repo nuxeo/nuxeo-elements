@@ -140,6 +140,7 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
       if (this.value && this.value.length > 0 && this.value !== this._selected) {
         this._selected = this.value;
       }
+      this._entries.forEach((entry) => this._isChecked(entry));
     }
 
     /* Override method from Polymer.IronValidatableBehavior. */
