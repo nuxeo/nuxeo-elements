@@ -8,6 +8,10 @@ on:
   # Manually trigger the workflow
   workflow_dispatch:
 
+# This chages has been changed due to some version issue we will be removed it once we will resolve WEBUI-1266 and WEBUI-1267
+env:
+  LERNA: lerna@6.6.2
+
 jobs:
   lint:
     uses: nuxeo/nuxeo-elements/.github/workflows/lint.yaml@maintenance-3.1.x
@@ -55,7 +59,7 @@ jobs:
     - name: Set version to ${{ env.VERSION }}
       run: |
         npm version $VERSION --no-git-tag-version
-        npx lerna version $VERSION --no-push --force-publish --no-git-tag-version --yes
+        npx ${{ env.LERNA }} version $VERSION --no-push --force-publish --no-git-tag-version --yes
 
     - name: Tag
       run: |
@@ -66,4 +70,4 @@ jobs:
     - name: Publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-      run: npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --tag SNAPSHOT
+      run: npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --tag SNAPSHOT
