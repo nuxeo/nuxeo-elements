@@ -15,6 +15,9 @@ on:
         type: boolean
         required: false
 
+env:
+  LERNA: lerna@6.6.2        
+
 jobs:
   promote:
     runs-on: ubuntu-latest
@@ -36,7 +39,7 @@ jobs:
       - name: Update Nuxeo Elements version to ${{ env.VERSION }}
         run: |
           npm version $VERSION --no-git-tag-version
-          npx lerna version $VERSION --no-push --force-publish --no-git-tag-version --yes
+          npx ${{ env.LERNA }} version $VERSION --no-push --force-publish --no-git-tag-version --yes
 
       - name: Tag Nuxeo Elements v${{ env.VERSION }}
         run: |
@@ -60,21 +63,21 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
         run: |
-          npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://packages.nuxeo.com/repository/npm-public/ --dry-run
+          npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://packages.nuxeo.com/repository/npm-public/ --dry-run
 
       - name: Publish to https://packages.nuxeo.com/repository/npm-public/
         if: ${{ github.event.inputs.dryRun == 'false' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
         run: |
-          npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://packages.nuxeo.com/repository/npm-public/
+          npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://packages.nuxeo.com/repository/npm-public/
 
       - name: Publish to https://registry.npmjs.org (dry run)
         if: ${{ github.event.inputs.dryRun == 'true' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         run: |
-          npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://registry.npmjs.org/ --access public --dry-run
+          npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://registry.npmjs.org/ --access public --dry-run
 
       - name: Publish to https://registry.npmjs.org
         continue-on-error: true
@@ -82,7 +85,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
         run: |
-          npx lerna exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://registry.npmjs.org/ --access public
+          npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://registry.npmjs.org/ --access public
       
       - uses: actions/checkout@v2
         with:
@@ -98,7 +101,7 @@ jobs:
       - name: Align ${{ github.event.inputs.referenceBranch }} branch on next version ${{ env.NEW_VERSION }}
         run: |
           npm version $NEW_VERSION --no-git-tag-version
-          npx lerna version $NEW_VERSION --no-push --force-publish --no-git-tag-version --yes
+          npx ${{ env.LERNA }} version $NEW_VERSION --no-push --force-publish --no-git-tag-version --yes
 
           # commit and push
           git commit -a -m "Update to $NEW_VERSION"
