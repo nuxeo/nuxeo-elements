@@ -118,7 +118,7 @@ import '../nuxeo-button-styles.js';
 
             --paper-item-icon: {
               width: 1.75em;
-              margin-right: 10px;
+              margin-right: 15px;
             }
 
             --paper-item-selected-weight: normal;
