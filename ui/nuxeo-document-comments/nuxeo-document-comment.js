@@ -121,6 +121,11 @@ import '../nuxeo-button-styles.js';
             --paper-item-focused-before: {
               background-color: transparent;
             }
+            
+            &[name="edit"]:focus,
+            &[name="delete"]:focus {
+              outline: auto;
+            }
           }
         </style>
 
