@@ -219,6 +219,10 @@ import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-beha
           value: false,
         },
 
+        /**
+         * Technical property used to scroll back to the top after reaching the last element in a listing,
+         * related to accessibility.
+         */
         _lastIndex: {
           type: Number,
           value: 0,
