@@ -239,6 +239,8 @@ import '../nuxeo-button-styles.js';
                               class="main-option opaque"
                               icon="check"
                               on-tap="_submitComment"
+                              on-keydown="_submitOnEnter"
+                              tabindex="0"
                             ></iron-icon>
                             <nuxeo-tooltip for="submit">[[i18n('comments.submit.tooltip')]]</nuxeo-tooltip>
                             <iron-icon
@@ -246,6 +248,8 @@ import '../nuxeo-button-styles.js';
                               class="main-option opaque"
                               icon="clear"
                               on-tap="_clearInput"
+                              on-keydown="_cancelOnEnter"
+                              tabindex="0"
                             ></iron-icon>
                           </template>
                         </dom-if>
@@ -396,6 +400,18 @@ import '../nuxeo-button-styles.js';
             throw error;
           }
         });
+    }
+
+    _submitOnEnter(event) {
+      if (event.key === 'Enter') {
+        this._submitComment();
+      }
+    }
+
+    _cancelOnEnter(event) {
+      if (event.key === 'Enter') {
+        this._clearInput();
+      }
     }
 
     _editComment() {
