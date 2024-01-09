@@ -51,7 +51,6 @@ jobs:
           npx build-storybook -o dist -s ./public
 
       - name: Deploy
-        echo "name is $(env.BRANCH_NAME)"
         if: ${{ env.BRANCH_NAME == 'maintenance-3.0.x' }}
         env:
           GH_TOKEN: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
