@@ -17,8 +17,8 @@ on:
         required: true
 
 env:
-  BRANCH_NAME: ${{ github.head_ref || inputs.branch || 'maintenance-3.0.x' }}
-
+  ##BRANCH_NAME: ${{ github.head_ref || inputs.branch || 'maintenance-3.0.x' }}
+  BRANCH_NAME: 'maintenance-3.0.x'
 jobs:
   storybook:
     runs-on: ubuntu-latest
@@ -54,5 +54,7 @@ jobs:
         if: ${{ env.BRANCH_NAME == 'maintenance-3.0.x' }}
         env:
           GH_TOKEN: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
+          NODE_OPTIONS: --openssl-legacy-provider
         working-directory: storybook
         run: npm run deploy -- --ci
+
