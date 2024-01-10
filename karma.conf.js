@@ -50,7 +50,6 @@ module.exports = (config) => {
 
   config.set({
     sauceLabs,
-    hostname: '127.0.0.1',
     basePath: '',
     singleRun: true,
     browsers: config.browsers && config.browsers.length > 0 ? config.browsers : Object.keys(customLaunchers),

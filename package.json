@@ -7,7 +7,7 @@
   "author": "Nuxeo",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=14.0.0"
   },
   "scripts": {
     "postinstall": "check-engine --ignore",
@@ -84,7 +84,6 @@
   "dependencies": {
     "@nuxeo/moment": "^2.24.0-nx.0",
     "@nuxeo/paper-typeahead": "^0.6.0-nx.0",
-    "@nuxeo/testing-helpers": "^3.0.17",
     "@polymer/iron-autogrow-textarea": "^3.0.1",
     "@polymer/iron-collapse": "^3.0.0",
     "@polymer/iron-flex-layout": "^3.0.0",
