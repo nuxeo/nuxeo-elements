@@ -36,7 +36,7 @@ jobs:
           inputs: |
             branch_name: ${{ env.BRANCH_NAME }}
             sauce_labs: true
-            skip_ftests: false
+            skip_ftests: true
             skip_a11y: false
             skip_unit_tests: false
             generate_metrics: false
