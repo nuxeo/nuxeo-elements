@@ -846,7 +846,8 @@ import '../nuxeo-button-styles.js';
       if (settings) {
         if (this.columns && settings.columns) {
           this.columns.forEach(function(column, idx) {
-            this.set(`columns.${idx}.hidden`, settings.columns[column.field ? column.field : `col-${idx}`].hidden);
+            const columnField = settings.columns[column.field ? column.field : `col-${idx}`];
+            this.set(`columns.${idx}.hidden`, columnField?columnField.hidden:false);
           }, this);
         }
       }
