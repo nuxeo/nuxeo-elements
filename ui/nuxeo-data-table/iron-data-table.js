@@ -297,7 +297,6 @@ import '../nuxeo-button-styles.js';
                 >
                   <nuxeo-data-table-checkbox
                     hidden$="[[!selectionEnabled]]"
-                    tabindex="0"
                     checked$="[[_isSelected(item, selectedItems, selectedItems.*, _excludedItems, _excludedItems.*)]]"
                     on-click="_onCheckBoxTap"
                     on-keydown="_onCheckBoxKeydown"
@@ -874,6 +873,8 @@ import '../nuxeo-button-styles.js';
     _onCheckBoxKeydown(e) {
       // check for enter or space
       if (e.keyCode === 13 || e.keyCode === 32) {
+        const checkbox = e.target || e.srcElement;
+        checkbox.click();
         this._onCheckBoxTap(e);
       }
     }
