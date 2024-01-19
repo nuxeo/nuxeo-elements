@@ -73,7 +73,7 @@ import '../nuxeo-button-styles.js';
 
           .emptyResult {
             display: block;
-            opacity: 0.5;
+            opacity: 0.8;
             font-weight: 300;
             padding: 8px;
             text-align: center;
