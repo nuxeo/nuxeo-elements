@@ -209,7 +209,8 @@ import './nuxeo-tooltip.js';
        */
       setTimeout(() => {
         el.setAttribute('show-label', '');
-      }, 0);
+        el.removeAttribute('tabindex');
+      }, 5);
     }
 
     _layout(e) {
