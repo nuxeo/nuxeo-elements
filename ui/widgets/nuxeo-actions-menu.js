@@ -88,7 +88,13 @@ import './nuxeo-tooltip.js';
 
         <slot id="slot"></slot>
         <div id="reparent"></div>
-        <paper-menu-button id="dropdownButton" close-on-activate no-overlap horizontal-align="right">
+        <paper-menu-button
+          id="dropdownButton"
+          close-on-activate
+          no-overlap
+          horizontal-align="right"
+          on-paper-dropdown-close="listnerRemove"
+        >
           <paper-icon-button
             id="iconButton"
             icon="icons:more-vert"
@@ -199,8 +205,22 @@ import './nuxeo-tooltip.js';
       el.removeAttribute('show-label');
     }
 
+    _removeTabIndex(event) {
+      if (event.shiftKey && event.key === 'Tab') {
+        const dropDownList = this._getDropdownElements();
+        setTimeout(() => {
+          dropDownList.map((list) => list.removeAttribute('tabindex'));
+        }, 0);
+      }
+    }
+
+    listnerRemove() {
+      this.removeEventListener('keydown', this._removeTabIndex.bind(this));
+    }
+
     _moveToDropdown(el) {
       el.slot = 'dropdown';
+      el.addEventListener('keydown', this._removeTabIndex.bind(this));
       /**
        * XXX: in Chrome 100+, for some unknown reason, when moving action buttons to the dropdown menu
        * and setting its visibility, messes up with any dialog that might be opened from clicking
@@ -209,6 +229,7 @@ import './nuxeo-tooltip.js';
        */
       setTimeout(() => {
         el.setAttribute('show-label', '');
+        el.removeAttribute('tabindex');
       }, 0);
     }
 
