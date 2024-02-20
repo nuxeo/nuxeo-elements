@@ -29,7 +29,6 @@ jobs:
         with:
           registry-url: ${{ env.NPM_REPOSITORY }}
           scope: '@nuxeo'
-          
           node-version: 18
 
       - name: Web UI cross repo check
@@ -39,7 +38,7 @@ jobs:
           repo: nuxeo-web-ui
           workflow-id: cross-repo.yaml
           access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }}
-          branch-name: maintenance-3.1.x
+          branch-name: test-ELEMENTS-1681-sauce-labs-compatibility-with-firefox-geckoDriver-3.1.x
           inputs: |
             branch_name: ${{ env.BRANCH_NAME }}
             sauce_labs: true
