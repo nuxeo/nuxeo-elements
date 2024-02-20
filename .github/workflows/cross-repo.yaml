@@ -29,6 +29,7 @@ jobs:
         with:
           registry-url: ${{ env.NPM_REPOSITORY }}
           scope: '@nuxeo'
+          
           node-version: 18
 
       - name: Web UI cross repo check
