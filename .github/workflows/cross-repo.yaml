@@ -24,12 +24,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      
-      - uses: actions/setup-node@v3
-        with:
-          registry-url: ${{ env.NPM_REPOSITORY }}
-          scope: '@nuxeo'
-          node-version: 18
 
       - name: Web UI cross repo check
         uses: nuxeo/ui-team-gh-actions/trigger-workflow@dcf8be425447c7fb9cdd1e048585a6df905ed878
