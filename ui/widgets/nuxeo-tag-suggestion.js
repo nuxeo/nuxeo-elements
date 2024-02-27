@@ -243,10 +243,26 @@ import { escapeHTML } from './nuxeo-selectivity.js';
     _addedTagHandler(entry) {
       if (this.document) {
         this.$.addTagOp.params = { tags: entry.id };
-        this.$.addTagOp.execute().then(() => {
+        this.$.addTagOp.execute().then((response) => {
+          if (!response || response.properties['nxtag:tags'].length < 0) {
+            return;
+          }
+          const lenArr = response.properties['nxtag:tags'].length;
+          const { label } = response.properties['nxtag:tags'][lenArr - 1];
+          entry.item.displayLabel = label;
+          this.shadowRoot.querySelector('#s2').value[lenArr - 1] = label;
           this.$.toast.hide();
-          this.$.toast.text = this.i18n('tags.addedToDocument', entry.id);
+          this.$.toast.text = this.i18n('tags.addedToDocument', label);
           this.$.toast.open();
+          const lastSelectedItem = this.$.s2._selectivity.el.firstElementChild.querySelectorAll(
+            '.selectivity-multiple-selected-item',
+          )[lenArr - 1];
+          if (lastSelectedItem) {
+            const textNode = lastSelectedItem.childNodes[1];
+            if (textNode.nodeType === Node.TEXT_NODE) {
+              textNode.textContent = label;
+            }
+          }
         });
       }
     }
@@ -256,7 +272,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
         this.$.removeTagOp.params = { tags: entry.id };
         this.$.removeTagOp.execute().then(() => {
           this.$.toast.hide();
-          this.$.toast.text = this.i18n('tags.removedFromDocument', entry.id);
+          this.$.toast.text = this.i18n('tags.removedFromDocument', entry.item.displayLabel);
           this.$.toast.open();
         });
       }
