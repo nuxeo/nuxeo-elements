@@ -148,15 +148,6 @@ import '../nuxeo-icons.js';
             max-width: 100%;
             max-height: 100%;
           }
-
-          .cropper-container {
-            width: 100% !important;
-          }
-
-          .cropper-canvas {
-            transform: none;
-            margin: auto;
-          }
         </style>
 
         <div id="canvas">
@@ -221,7 +212,7 @@ import '../nuxeo-icons.js';
           checkCrossOrigin: false,
           checkOrientation: false,
           dragMode: 'move',
-          responsive: true,
+          responsive: false,
           restore: false,
           toggleDragModeOnDblclick: false,
           viewMode: 1,
