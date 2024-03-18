@@ -349,7 +349,7 @@ import './viewers/nuxeo-video-viewer.js';
 
     _computeRendition(document, xpath, name) {
       const rendition =
-        xpath === 'file:content' &&
+        (xpath === 'file:content' || xpath.includes('files:files')) &&
         document &&
         document.contextParameters &&
         document.contextParameters.renditions &&
