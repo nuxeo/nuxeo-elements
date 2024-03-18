@@ -110,6 +110,7 @@ import '../nuxeo-button-styles.js';
     ready() {
       super.ready();
       this.addEventListener('keydown', (event) => {
+        /* Prevent keypress to propagate to parent if key pressed is Enter */
         if (event.key === 'Enter') {
           event.stopPropagation();
         }
