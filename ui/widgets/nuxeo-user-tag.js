@@ -59,10 +59,20 @@ import './nuxeo-tooltip.js';
             @apply --nuxeo-link-hover;
           }
 
-          .user-tag {
+          .user-tag-nowrap {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            max-width: 100px;
+          }
+
+          .user-tag-wrap {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
           }
         </style>
         <nuxeo-tag>
@@ -79,7 +89,12 @@ import './nuxeo-tooltip.js';
             </nuxeo-user-avatar>
             <dom-if if="[[_hasLink(disabled, user)]]">
               <template>
-                <a href$="[[_href(user)]]" class="user-tag" on-click="_preventPropagation">[[_name(user)]]</a>
+                <a href$="[[_href(user)]]" class$="{{_getUserTagClass(user)}}" on-click="_preventPropagation"
+                  >[[_name(user)]]</a
+                >
+                <nuxeo-tooltip position="top" offset="0" animation-delay="0">
+                  [[_name(user)]]
+                </nuxeo-tooltip>
               </template>
             </dom-if>
             <dom-if if="[[!_hasLink(disabled, user)]]">
@@ -176,6 +191,12 @@ import './nuxeo-tooltip.js';
      */
     _preventPropagation(e) {
       e.stopPropagation();
+    }
+
+    _getUserTagClass(user) {
+      const userFullName = this._name(user);
+      const nameContainsWhiteSpace = /\s/.test(userFullName);
+      return nameContainsWhiteSpace ? 'user-tag-wrap' : 'user-tag-nowrap';
     }
   }
 
