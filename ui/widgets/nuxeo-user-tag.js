@@ -63,6 +63,7 @@ import './nuxeo-tooltip.js';
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            max-width: 100px;
           }
         </style>
         <nuxeo-tag>
@@ -80,6 +81,9 @@ import './nuxeo-tooltip.js';
             <dom-if if="[[_hasLink(disabled, user)]]">
               <template>
                 <a href$="[[_href(user)]]" class="user-tag" on-click="_preventPropagation">[[_name(user)]]</a>
+                <nuxeo-tooltip position="top" offset="0" animation-delay="0">
+                  [[_name(user)]]
+                </nuxeo-tooltip>
               </template>
             </dom-if>
             <dom-if if="[[!_hasLink(disabled, user)]]">
