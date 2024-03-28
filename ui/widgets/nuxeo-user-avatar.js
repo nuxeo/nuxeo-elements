@@ -62,12 +62,18 @@ import '../nuxeo-icons.js';
             width: 12px;
             fill: white;
           }
+
+          .user-initial {
+            white-space: nowrap;
+            overflow: hidden;
+            max-width: 15px;
+          }
         </style>
 
         <nuxeo-resource id="getUserProfile" enrichers="userprofile" enrichers-entity="user"></nuxeo-resource>
 
         <div id="container" aria-hidden="true">
-          <span id="character" hidden$="[[!_isInTheAlphabet]]">{{_output}}</span>
+          <span id="character" hidden$="[[!_isInTheAlphabet]]" class="user-initial">{{_output}}</span>
           <iron-icon hidden$="[[_isInTheAlphabet]]" icon="nuxeo:user"></iron-icon>
         </div>
       `;
