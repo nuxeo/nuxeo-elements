@@ -72,21 +72,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
         run: |
           npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://packages.nuxeo.com/repository/npm-public/
-
-      - name: Publish to https://registry.npmjs.org (dry run)
-        if: ${{ github.event.inputs.dryRun == 'true' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
-        run: |
-          npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://registry.npmjs.org/ --access public --dry-run
-
-      - name: Publish to https://registry.npmjs.org
-        continue-on-error: true
-        if: ${{ github.event.inputs.dryRun == 'false' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_REGISTRY_TOKEN }}
-        run: |
-          npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://registry.npmjs.org/ --access public
       
       - uses: actions/checkout@v2
         with:
