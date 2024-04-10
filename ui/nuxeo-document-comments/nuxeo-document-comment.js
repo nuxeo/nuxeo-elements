@@ -165,7 +165,13 @@ import '../nuxeo-button-styles.js';
                     >
                     <dom-if if="[[_areExtendedOptionsAvailable(comment.author, currentUser)]]">
                       <template>
-                        <paper-menu-button id="options" no-animations close-on-activate>
+                        <paper-menu-button
+                          id="options"
+                          vertical-align="top"
+                          horizontal-align="right"
+                          no-animations
+                          close-on-activate
+                        >
                           <paper-icon-button
                             class="main-option"
                             icon="more-vert"
