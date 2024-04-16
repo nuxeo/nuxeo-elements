@@ -194,9 +194,7 @@ import '../nuxeo-button-styles.js';
           </paper-dialog-scrollable>
 
           <div class="buttons">
-            <paper-button dialog-dismiss class="secondary" on-click="doCancel"
-              >[[i18n('popupPermission.cancel')]]</paper-button
-            >
+            <paper-button dialog-dismiss class="secondary">[[i18n('popupPermission.cancel')]]</paper-button>
             <dom-if if="{{!updatingACE}}">
               <template>
                 <paper-button noink class="primary small" on-click="doCreateAndAdd" id="createAndAddPermissionButton">
@@ -273,6 +271,7 @@ import '../nuxeo-button-styles.js';
     }
 
     togglePopup() {
+      this.set('params.invalid', false);
       this.$.popupRight.toggle();
     }
 
@@ -286,11 +285,6 @@ import '../nuxeo-button-styles.js';
 
     doUpdate() {
       this._doSend(true);
-    }
-
-    doCancel() {
-      this.params = this._getResetParams();
-      this.set('params.invalid', false);
     }
 
     _computeTitle() {
@@ -353,6 +347,7 @@ import '../nuxeo-button-styles.js';
       if (this.updatingACE) {
         this.$.replaceOp.execute();
       } else {
+        this.set('params.invalid', false);
         this.$.createOp.execute();
       }
 
