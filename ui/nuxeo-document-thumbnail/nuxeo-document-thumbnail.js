@@ -75,13 +75,20 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior';
     }
 
     _thumbnail(doc) {
-      return doc &&
+      if (
+        doc &&
         doc.uid &&
         doc.contextParameters &&
         doc.contextParameters.thumbnail &&
         doc.contextParameters.thumbnail.url
-        ? doc.contextParameters.thumbnail.url
-        : '';
+      ) {
+        if (!this.isFollowRedirectEnabled()) {
+          const splitter = doc.contextParameters.thumbnail.url.indexOf('?') > -1 ? '&' : '?';
+          doc.contextParameters.thumbnail.url = `${doc.contextParameters.thumbnail.url}${splitter}clientReason=view`;
+        }
+        return doc.contextParameters.thumbnail.url;
+      }
+      return '';
     }
 
     _error() {
@@ -92,6 +99,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior';
 
     _title(doc) {
       return doc && doc.title ? this.i18n('accessibility.thumbnail', doc.title) : '';
+    }
+
+    isFollowRedirectEnabled() {
+      const followRedirect =
+        Nuxeo && Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.url && Nuxeo.UI.config.url.followRedirect;
+      return followRedirect ? String(followRedirect).toLowerCase() === 'true' : false;
     }
   }
   customElements.define(DocumentThumbnail.is, DocumentThumbnail);
