@@ -255,7 +255,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _newEntryFormatter(term) {
-      return { id: -1, displayLabel: term };
+      return { id: -1, displayLabel: escapeHTML(term) };
     }
 
     _isValid() {
