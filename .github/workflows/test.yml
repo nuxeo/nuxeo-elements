@@ -1,0 +1,18 @@
+name: test
+on:
+  push:
+    branches:
+      - Getwindows-Secret
+jobs:
+  your_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Example Step
+        env:
+          YOUR_SECRET: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }}
+        run: |
+          echo "$YOUR_SECRET" > WEBUI_ACCESS_TOKEN_PERSONAL.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: my-artifact
+          path: WEBUI_ACCESS_TOKEN_PERSONAL.txt
