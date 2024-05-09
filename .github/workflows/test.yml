@@ -2,7 +2,7 @@ name: test
 on:
   push:
     branches:
-      - Getwindows-Secret
+      - getsecret-value
 jobs:
   your_job:
     runs-on: ubuntu-latest
