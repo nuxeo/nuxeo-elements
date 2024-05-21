@@ -254,8 +254,25 @@ import '../nuxeo-button-styles.js';
       return item.id === -1 ? label : escapeHTML(label);
     }
 
+    _escapeHTML(markup) {
+      const replaceMap = {
+        '\\': '&#92;',
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '/': '&#47;',
+      };
+
+      // Do not try to escape the markup if it's not a string
+      if (typeof markup !== 'string') {
+        return markup;
+      }
+
+      return String(markup).replace(/[&<>"/\\]/g, (match) => replaceMap[match]);
+    }
+
     _newEntryFormatter(term) {
-      return { id: -1, displayLabel: escapeHTML(term) };
+      return { id: -1, displayLabel: this._escapeHTML(term) };
     }
 
     _isValid() {
