@@ -87,6 +87,12 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
           .total {
             margin-inline-start: 2rem;
             font-size: 1rem;
+            width: 5rem;
+            text-align: center;
+          }
+
+          .currentPage {
+            font-size: 1rem;
             width: 4rem;
             text-align: center;
           }
@@ -114,8 +120,11 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
           >
           </paper-icon-button>
           <div class="controls">
-            <nuxeo-select options="[[_computePageOptions(numberOfPages)]]" selected="{{page}}" vertical-align>
-            </nuxeo-select>
+            <template is="dom-if" if="[[_computeLimitForOptions(numberOfPages)]]">
+              <nuxeo-select options="[[_computePageOptions(numberOfPages)]]" selected="{{page}}" vertical-align>
+              </nuxeo-select>
+            </template>
+            <span class="currentPage" hidden$="[[_computeLimitForOptions(numberOfPages)]]">[[page]]</span>
             <span class="total">/ [[numberOfPages]]</span>
           </div>
           <paper-icon-button
@@ -186,6 +195,22 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
     _computePageOptions(numberOfPages) {
       return Array.from({ length: numberOfPages }, (x, i) => i + 1);
+    }
+
+    _computeLimitForOptions(numberOfPages) {
+      const maxItemsForNuxeoSelectPagination =
+        Nuxeo &&
+        Nuxeo.UI &&
+        Nuxeo.UI.config &&
+        Nuxeo.UI.config.pagination &&
+        Nuxeo.UI.config.pagination.nuxeoSelectOptions &&
+        Nuxeo.UI.config.pagination.nuxeoSelectOptions.listingMaxItems
+          ? Nuxeo.UI.config.pagination.nuxeoSelectOptions.listingMaxItems
+          : 1000;
+      if (numberOfPages > maxItemsForNuxeoSelectPagination) {
+        return false;
+      }
+      return true;
     }
   }
 
