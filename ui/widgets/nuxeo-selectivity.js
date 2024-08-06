@@ -25,8 +25,6 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import {I18nBehavior} from "../nuxeo-i18n-behavior";
 import '@polymer/iron-icon/iron-icon.js';
-import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
-import './nuxeo-tooltip.js';
 
 /**
  * @license
@@ -2442,6 +2440,7 @@ typedArrayTags[weakMapTag] = false;
           } else if (!resultsHtml && !options.add) {
             resultsHtml = this.selectivity.template('noResults', { term: options.term });
           }
+          
           if (resultsHtml) {
             this.resultsContainer.innerHTML = '';
             removeElement(this.$('.selectivity-loading'));
@@ -3430,42 +3429,9 @@ typedArrayTags[weakMapTag] = false;
               item,
             ),
           ));
-             
+
           this.input.parentNode.insertBefore(el, this.input);
-          const textElement = el.querySelector('.multipleSelectedItemText');
-          if(textElement){
-            const containerElement = this._getHTMLRootNode(textElement)
-            let containerElementWidth = this._calculateElementWidth(containerElement)
-            const childNodes = Array.from(textElement.children);
-            const otherElementWidth = childNodes.reduce((totalWidth, currentValue) => {
-              if (currentValue !== this && !currentValue.shadowRoot) {
-                totalWidth += currentValue.offsetWidth;
-              }
-              return totalWidth;
-            }, 1);
-            containerElementWidth -= otherElementWidth ;
-            el.setAttribute('style', `max-width:${containerElementWidth}px`);
-          }
-
         },
-
-        _getHTMLRootNode(element){
-          let currentElement = element;
-          const parentElement =  currentElement.closest(".selectivity-multiple-input-container")
-          return parentElement;
-        },
-
-        
-
-        _calculateElementWidth(element){
-          const currrentElement = getComputedStyle(element);
-          const paddingX = parseFloat(currrentElement.paddingLeft) + parseFloat(currrentElement.paddingRight);
-          const borderX = parseFloat(currrentElement.borderLeftWidth) + parseFloat(currrentElement.borderRightWidth);
-          const scrollBarWidth = element.offsetWidth - element.clientWidth;
-          const elementWidth = (element .offsetWidth  - paddingX - borderX - scrollBarWidth -2) ;
-          return elementWidth
-        },
-
 
         /**
      * @private
@@ -6617,7 +6583,7 @@ typedArrayTags[weakMapTag] = false;
    * @demo demo/nuxeo-selectivity/index.html
    */
   class SelectivityElement
-    extends mixinBehaviors([I18nBehavior, IronFormElementBehavior, IronValidatableBehavior, IronResizableBehavior], Nuxeo.Element) {
+    extends mixinBehaviors([I18nBehavior, IronFormElementBehavior, IronValidatableBehavior], Nuxeo.Element) {
 
     static get is() {
       return 'nuxeo-selectivity';
@@ -7142,11 +7108,6 @@ typedArrayTags[weakMapTag] = false;
             height: 2px;
             background-color: var(--nuxeo-primary-color, #0066ff);
           }
-          .selectivity-text-container {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
         </style>
 
         <nuxeo-operation id="op" op="[[operation]]" enrichers="[[enrichers]]" headers="[[headers]]"></nuxeo-operation>
@@ -7210,18 +7171,10 @@ typedArrayTags[weakMapTag] = false;
 
           multipleSelectedItem: (opts) => {
             const extraClass = opts.highlighted ? ' highlighted' : '';
-            const toolTipElement = `<nuxeo-tooltip position="top" offset="0" animation-delay="0">
-            ${this.selectionFormatter(opts.item || opts)}
-          </nuxeo-tooltip>`;
-            return (`<span class="selectivity-multiple-selected-item${extraClass} selectivity-text-container"
-              data-item-id="${escapeHTML(opts.id)}">
-              <span class="multipleSelectedItemText">
-              ${opts.removable ? 
+            return `<span class="selectivity-multiple-selected-item${extraClass}"
+              data-item-id="${escapeHTML(opts.id)}">${opts.removable ? 
                 `<a class="preserve-white-space selectivity-multiple-selected-item-remove"><span class="selectivity-remove" role="button" aria-label="${this.i18n('command.remove')}"></span></a>` 
-                : ``}${this.selectionFormatter(opts.item || opts)}
-                </span>
-                ${toolTipElement}
-                </span>`)
+                : ``}${this.selectionFormatter(opts.item || opts)}</span>`
           },
         },
       };
@@ -7235,7 +7188,6 @@ typedArrayTags[weakMapTag] = false;
         options.placeholder = this.placeholder;
         options.allowClear = !this.required && !this.multiple; // allowClear only works on single-value mode
       }
-
 
       if (this.data) {
         options.items = this._wrap(this.data);
@@ -7313,11 +7265,7 @@ typedArrayTags[weakMapTag] = false;
       });
       this._visibilityObserver.observe(this);
       this._readonlyChanged();
-      this.multiple && this._scrollParent.addEventListener('dialog-opened',this._reCalculateWidth.bind(this))
-      this.multiple && this.addEventListener('iron-resize', this._reCalculateWidth);
     }
-
-
 
     disconnectedCallback() {
       this.$.input.removeEventListener('selectivity-change', this._updateSelectionHandler);
@@ -7326,19 +7274,7 @@ typedArrayTags[weakMapTag] = false;
       this._selectivity = null;
       this._visibilityObserver.unobserve(this);
       this._scrollParent.removeEventListener('scroll', this._updateDropdownPosition.bind(this));
-      this.multiple && this._scrollParent.removeEventListener('dialog-opened',this._reCalculateWidth.bind(this))
-      this.multiple && this.removeEventListener('iron-resize', this._reCalculateWidth);
       super.disconnectedCallback();
-    }
-
-
-    _reCalculateWidth(){
-      setTimeout(() => {
-        this.multiple &&
-        this._selectivity  && 
-        this._selectivity.rerenderSelection();
-      }, 0);
-
     }
 
     _updateDropdownPosition() {
