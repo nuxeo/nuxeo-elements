@@ -1,5 +1,8 @@
 name: Test
 
+env:
+  LERNA: lerna@6.6.2
+
 on:
   pull_request:
     branches:
@@ -33,18 +36,12 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-          registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
+          registry-url: 'https://packages.devtools.nuxeo.com/repository/npm-public/'
           scope: '@nuxeo'
 
-      - name: Install
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-        run: |
-          npm install --no-package-lock
-          npm run bootstrap
-
-      - name: Test
-        env:
-          SAUCE_USERNAME: nuxeo-elements
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-        run: npm run test
+      - name: Publish
+          env:
+            NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+          run: |
+            npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://packages.devtools.nuxeo.com/repository/npm-public/
+    
