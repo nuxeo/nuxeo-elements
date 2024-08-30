@@ -40,8 +40,8 @@ jobs:
           scope: '@nuxeo'
 
       - name: Publish
-          env:
-            NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-          run: |
-            npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://packages.devtools.nuxeo.com/repository/npm-public/
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+        run: |
+          npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://packages.devtools.nuxeo.com/repository/npm-public/
     
