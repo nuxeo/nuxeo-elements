@@ -125,6 +125,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           type: Boolean,
           value: false,
         },
+        someField: {
+          type: String,
+          value: '',
+        },
       };
     }
 
