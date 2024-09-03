@@ -125,7 +125,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           type: Boolean,
           value: false,
         },
-
         /**
          * Use this property to provide custom date format
          */
