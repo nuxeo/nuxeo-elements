@@ -127,11 +127,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         },
 
         /**
-         * Use this property to provide custom date format 
+         * Use this property to provide custom date format
          */
         dateFormat: {
           type: String,
-          value: "",
+          value: '',
         },
       };
     }
