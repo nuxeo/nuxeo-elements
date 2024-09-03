@@ -132,8 +132,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
          */
         dateFormat: {
           type: String,
-          value: ""
-        }
+          value: "",
+        },
       };
     }
 
