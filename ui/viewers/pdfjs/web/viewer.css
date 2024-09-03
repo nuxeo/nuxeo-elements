@@ -12,6 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#print, #download, #editorModeSeparator, #editorFreeText, #editorInk, #editorStamp{
+  display:none !important;
+}
 
 .textLayer{
   position:absolute;
@@ -3100,7 +3103,7 @@ body{
   :is(input, button, select),
 .secondaryToolbar :is(input, button, a, select){
   outline:none;
-  font:message-box;
+  /* font:message-box; */
 }
 
 #toolbarContainer{
