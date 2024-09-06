@@ -2,7 +2,7 @@
 
 The PDF.js viewer is built from the [PDF.js](https://github.com/mozilla/pdf.js/) GitHub repository and integrated into the current directory.
 
-The current version is built from the [v2.6.347](https://github.com/mozilla/pdf.js/releases/tag/v2.12.313) tag.
+The current version is built from the [v4.2.67](https://github.com/mozilla/pdf.js/releases/tag/v4.2.67) tag.
 
 ## How to Update
 
@@ -13,7 +13,7 @@ Clone the Repository:
 
 Checkout the wanted commit/tag:
 
-    $ git checkout v2.12.313
+    $ git checkout v4.2.67
 
 Apply the following patch to allow viewing a file in a static UI connected to a remote server with a CORS configuration allowing cross-domain requests:
 - Revert file origin validation.
@@ -72,7 +72,7 @@ Copy the generic viewer:
 
 Commit your changes:
 
-    $ git commit -am "ELEMENTS-XXX: update PDF.js to 2.12.313"
+    $ git commit -am "ELEMENTS-XXX: update PDF.js to 4.2.67"
 
 # About Nuxeo
 
