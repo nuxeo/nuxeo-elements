@@ -7363,6 +7363,7 @@ typedArrayTags[weakMapTag] = false;
           if (newData.length !== 0 && JSON.stringify(newData) !== JSON.stringify(selectivityData)) {
             this._selectivity.setData(newData);
           }
+        }
       }
     }
 
