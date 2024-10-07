@@ -7357,11 +7357,12 @@ typedArrayTags[weakMapTag] = false;
       if (this._selectivity) {
         this._selectivity.setOptions({ items: this._wrap(this.data) });
         const selectivityData = this._selectivity.getData();
-        const wrapData = this._wrap(this.data);
-        const newData = wrapData.filter(obj => selectivityData.some(item => item.id === obj.id));
-        if (newData.length !== 0 && JSON.stringify(newData) !== JSON.stringify(selectivityData)) {
-          this._selectivity.setData(newData);
-        }
+        if(selectivityData){
+          const wrapData = this._wrap(this.data);
+          const newData = wrapData.filter(obj => selectivityData.some(item => item.id === obj.id));
+          if (newData.length !== 0 && JSON.stringify(newData) !== JSON.stringify(selectivityData)) {
+            this._selectivity.setData(newData);
+          }
       }
     }
 
