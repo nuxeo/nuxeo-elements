@@ -2422,9 +2422,6 @@ typedArrayTags[weakMapTag] = false;
      *                term - The search term for which the results are displayed.
      */
          showResults(results, options) {
-          if(options && options.term){
-            options.term = options.term.toLowerCase();
-          }
           const searchText = options && options.term && options.term.trim();
           if (options.add) {
             removeElement(this.$('.selectivity-loading'));
@@ -2438,7 +2435,7 @@ typedArrayTags[weakMapTag] = false;
           let resultsHtml = isFilteredResultNotEmpty ? this.renderItems(filteredResults) : '';
           if (options.hasMore) {
             resultsHtml += this.selectivity.template('loadMore');
-          } else if (value && Array.isArray(value) && value.includes(options.term)) {
+          } else if (value && Array.isArray(value) && value.includes(options.term.toLowerCase())) {
             resultsHtml = this.selectivity.template('tagExists');
           } else if (!resultsHtml && !options.add) {
             resultsHtml = this.selectivity.template('noResults', { term: options.term });
