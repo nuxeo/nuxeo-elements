@@ -2439,7 +2439,7 @@ typedArrayTags[weakMapTag] = false;
             resultsHtml = this.selectivity.template('tagExists');
           } else if (!resultsHtml && !options.add) {
             resultsHtml = this.selectivity.template('noResults', { term: options.term });
-          }
+          } 
           if (resultsHtml) {
             this.resultsContainer.innerHTML = '';
             removeElement(this.$('.selectivity-loading'));
