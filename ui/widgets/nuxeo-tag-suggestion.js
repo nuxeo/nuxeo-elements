@@ -237,7 +237,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
     }
 
     _newEntryFormatter(term) {
-      return { id: term, displayLabel: term.toLowerCase(), newTag: true };
+      return { id: term.toLowerCase(), displayLabel: term.toLowerCase(), newTag: true };
     }
 
     _addedTagHandler(entry) {
