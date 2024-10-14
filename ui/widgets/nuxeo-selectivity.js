@@ -2422,6 +2422,10 @@ typedArrayTags[weakMapTag] = false;
      *                term - The search term for which the results are displayed.
      */
          showResults(results, options) {
+          if(options && options.term){
+            options.term = options.term.toLowerCase();
+          }
+          console.log(results);
           const searchText = options && options.term && options.term.trim();
           if (options.add) {
             removeElement(this.$('.selectivity-loading'));
@@ -7194,6 +7198,7 @@ typedArrayTags[weakMapTag] = false;
       }
 
       options.query = (query) => {
+        query.term= query.term.toLowerCase();
         if (query.term.length < this.minChars) {
           query.error(this.i18n('selectivity.minChars', this.minChars));
           return;
