@@ -2425,7 +2425,6 @@ typedArrayTags[weakMapTag] = false;
           if(options && options.term){
             options.term = options.term.toLowerCase();
           }
-          console.log(results);
           const searchText = options && options.term && options.term.trim();
           if (options.add) {
             removeElement(this.$('.selectivity-loading'));
