@@ -7197,7 +7197,6 @@ typedArrayTags[weakMapTag] = false;
       }
 
       options.query = (query) => {
-        query.term= query.term.toLowerCase();
         if (query.term.length < this.minChars) {
           query.error(this.i18n('selectivity.minChars', this.minChars));
           return;
