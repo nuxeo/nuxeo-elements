@@ -2438,7 +2438,7 @@ typedArrayTags[weakMapTag] = false;
           } else if (
             value &&
             Array.isArray(value) &&
-            value.includes(options && options.term ? options.term.toLowerCase() : options.term)
+            value.includes(options && options.term ? options.term.toLowerCase() : null)
           ) {
             resultsHtml = this.selectivity.template('tagExists');
           } else if (!resultsHtml && !options.add) {
