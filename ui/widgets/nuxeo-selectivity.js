@@ -2435,7 +2435,11 @@ typedArrayTags[weakMapTag] = false;
           let resultsHtml = isFilteredResultNotEmpty ? this.renderItems(filteredResults) : '';
           if (options.hasMore) {
             resultsHtml += this.selectivity.template('loadMore');
-          } else if (value && Array.isArray(value) && value.includes(options.term)) {
+          } else if (
+            value &&
+            Array.isArray(value) &&
+            value.includes(options && options.term ? options.term.toLowerCase() : null)
+          ) {
             resultsHtml = this.selectivity.template('tagExists');
           } else if (!resultsHtml && !options.add) {
             resultsHtml = this.selectivity.template('noResults', { term: options.term });
