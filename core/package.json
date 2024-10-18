@@ -7,7 +7,7 @@
   ],
   "repository": "nuxeo/nuxeo-elements.git",
   "name": "@nuxeo/nuxeo-elements",
-  "version": "3.1.14-SNAPSHOT",
+  "version": "3.1.14-rc.0",
   "author": "Nuxeo",
   "license": "Apache-2.0",
   "scripts": {
@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "@nuxeo/moment": "^2.24.0-nx.0",
-    "@nuxeo/testing-helpers": "^3.1.14-SNAPSHOT",
+    "@nuxeo/testing-helpers": "^3.1.14-rc.0",
     "@polymer/iron-component-page": "^4.0.0",
     "polymer-cli": "^1.8.0"
   },

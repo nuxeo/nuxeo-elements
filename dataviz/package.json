@@ -9,7 +9,7 @@
   ],
   "repository": "nuxeo/nuxeo-elements.git",
   "name": "@nuxeo/nuxeo-dataviz-elements",
-  "version": "3.1.14-SNAPSHOT",
+  "version": "3.1.14-rc.0",
   "author": "Nuxeo",
   "license": "Apache-2.0",
   "scripts": {
@@ -17,7 +17,7 @@
     "serve": "polymer serve --npm -c ../node_modules"
   },
   "devDependencies": {
-    "@nuxeo/testing-helpers": "^3.1.14-SNAPSHOT",
+    "@nuxeo/testing-helpers": "^3.1.14-rc.0",
     "@polymer/iron-component-page": "^4.0.0",
     "@polymer/test-fixture": "^4.0.2",
     "@webcomponents/webcomponentsjs": "^2.0.0",
@@ -32,7 +32,7 @@
   "main": "nuxeo-dataviz-elements.js",
   "dependencies": {
     "@nuxeo/moment": "^2.24.0-nx.0",
-    "@nuxeo/nuxeo-elements": "^3.1.14-SNAPSHOT",
+    "@nuxeo/nuxeo-elements": "^3.1.14-rc.0",
     "@polymer/polymer": "^3.0.0",
     "moment": "2.30.1"
   }

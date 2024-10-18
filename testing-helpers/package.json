@@ -1,6 +1,6 @@
 {
   "name": "@nuxeo/testing-helpers",
-  "version": "3.1.14-SNAPSHOT",
+  "version": "3.1.14-rc.0",
   "description": "Nuxeo Web Components Testing Helpers",
   "keywords": [
     "nuxeo",

@@ -1,6 +1,6 @@
 {
   "name": "@nuxeo/nuxeo-ui-elements",
-  "version": "3.1.14-SNAPSHOT",
+  "version": "3.1.14-rc.0",
   "description": "Nuxeo UI Web Components.",
   "keywords": [
     "nuxeo",
@@ -18,7 +18,7 @@
     "serve": "polymer serve --npm -c ../node_modules"
   },
   "devDependencies": {
-    "@nuxeo/testing-helpers": "^3.1.14-SNAPSHOT",
+    "@nuxeo/testing-helpers": "^3.1.14-rc.0",
     "@polymer/iron-component-page": "^4.0.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "polymer-cli": "^1.8.0"
@@ -26,7 +26,7 @@
   "main": "nuxeo-ui-elements.js",
   "dependencies": {
     "@nuxeo/moment": "^2.24.0-nx.0",
-    "@nuxeo/nuxeo-elements": "^3.1.14-SNAPSHOT",
+    "@nuxeo/nuxeo-elements": "^3.1.14-rc.0",
     "@nuxeo/paper-typeahead": "^0.6.0-nx.0",
     "@nuxeo/quill": "^2.0.0-dev.3-nx.3",
     "@polymer/iron-autogrow-textarea": "^3.0.1",
