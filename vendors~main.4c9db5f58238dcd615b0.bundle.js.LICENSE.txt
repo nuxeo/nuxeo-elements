@@ -1,0 +1,1678 @@
+/*
+object-assign
+(c) Sindre Sorhus
+@license MIT
+*/
+
+/*!
+
+ diff v4.0.1
+
+Software License Agreement (BSD License)
+
+Copyright (c) 2009-2015, Kevin Decker <kpdecker@gmail.com>
+
+All rights reserved.
+
+Redistribution and use of this software in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above
+  copyright notice, this list of conditions and the
+  following disclaimer.
+
+* Redistributions in binary form must reproduce the above
+  copyright notice, this list of conditions and the
+  following disclaimer in the documentation and/or other
+  materials provided with the distribution.
+
+* Neither the name of Kevin Decker nor the names of its
+  contributors may be used to endorse or promote products
+  derived from this software without specific prior
+  written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@license
+*/
+
+/*!
+ * @overview es6-promise - a tiny implementation of Promises/A+.
+ * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
+ * @license   Licensed under MIT license
+ *            See https://raw.githubusercontent.com/stefanpenner/es6-promise/master/LICENSE
+ * @version   v4.2.8+1e68dce6
+ */
+
+/*!
+ * Determine if an object is a Buffer
+ *
+ * @author   Feross Aboukhadijeh <https://feross.org>
+ * @license  MIT
+ */
+
+/*!
+ * Quill Editor v2.0.0-dev.3-nx.3
+ * https://quilljs.com/
+ * Copyright (c) 2014, Jason Chen
+ * Copyright (c) 2013, salesforce.com
+ */
+
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <http://feross.org>
+ * @license  MIT
+ */
+
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <https://feross.org>
+ * @license  MIT
+ */
+
+/*!
+ * escape-html
+ * Copyright(c) 2012-2013 TJ Holowaychuk
+ * Copyright(c) 2015 Andreas Lubbe
+ * Copyright(c) 2015 Tiancheng "Timothy" Gu
+ * MIT Licensed
+ */
+
+/*!
+ * https://github.com/es-shims/es5-shim
+ * @license es5-shim Copyright 2009-2020 by contributors, MIT License
+ * see https://github.com/es-shims/es5-shim/blob/master/LICENSE
+ */
+
+/*!
+ * https://github.com/paulmillr/es6-shim
+ * @license es6-shim Copyright 2013-2016 by Paul Miller (http://paulmillr.com)
+ *   and contributors,  MIT License
+ * es6-shim: v0.35.4
+ * see https://github.com/paulmillr/es6-shim/blob/0.35.3/LICENSE
+ * Details and documentation:
+ * https://github.com/paulmillr/es6-shim/
+ */
+
+/*!
+ * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
+ *
+ * Copyright (c) 2014-2017, Jon Schlinkert.
+ * Released under the MIT License.
+ */
+
+/*!
+ * isobject <https://github.com/jonschlinkert/isobject>
+ *
+ * Copyright (c) 2014-2017, Jon Schlinkert.
+ * Released under the MIT License.
+ */
+
+/*! ../../collection/linked-list */
+
+/*! ../../error */
+
+/*! ../../registry */
+
+/*! ../../scope */
+
+/*! ../assets/icons/align-center.svg */
+
+/*! ../assets/icons/align-justify.svg */
+
+/*! ../assets/icons/align-left.svg */
+
+/*! ../assets/icons/align-right.svg */
+
+/*! ../assets/icons/background.svg */
+
+/*! ../assets/icons/blockquote.svg */
+
+/*! ../assets/icons/bold.svg */
+
+/*! ../assets/icons/clean.svg */
+
+/*! ../assets/icons/code.svg */
+
+/*! ../assets/icons/color.svg */
+
+/*! ../assets/icons/direction-ltr.svg */
+
+/*! ../assets/icons/direction-rtl.svg */
+
+/*! ../assets/icons/dropdown.svg */
+
+/*! ../assets/icons/formula.svg */
+
+/*! ../assets/icons/header-2.svg */
+
+/*! ../assets/icons/header.svg */
+
+/*! ../assets/icons/image.svg */
+
+/*! ../assets/icons/indent.svg */
+
+/*! ../assets/icons/italic.svg */
+
+/*! ../assets/icons/link.svg */
+
+/*! ../assets/icons/list-bullet.svg */
+
+/*! ../assets/icons/list-check.svg */
+
+/*! ../assets/icons/list-ordered.svg */
+
+/*! ../assets/icons/outdent.svg */
+
+/*! ../assets/icons/strike.svg */
+
+/*! ../assets/icons/subscript.svg */
+
+/*! ../assets/icons/superscript.svg */
+
+/*! ../assets/icons/table.svg */
+
+/*! ../assets/icons/underline.svg */
+
+/*! ../assets/icons/video.svg */
+
+/*! ../attributor/attributor */
+
+/*! ../attributor/store */
+
+/*! ../blots/block */
+
+/*! ../blots/break */
+
+/*! ../blots/container */
+
+/*! ../blots/cursor */
+
+/*! ../blots/embed */
+
+/*! ../blots/inline */
+
+/*! ../blots/text */
+
+/*! ../core/emitter */
+
+/*! ../core/logger */
+
+/*! ../core/module */
+
+/*! ../core/quill */
+
+/*! ../core/selection */
+
+/*! ../core/theme */
+
+/*! ../formats/align */
+
+/*! ../formats/background */
+
+/*! ../formats/code */
+
+/*! ../formats/color */
+
+/*! ../formats/direction */
+
+/*! ../formats/font */
+
+/*! ../formats/link */
+
+/*! ../formats/size */
+
+/*! ../formats/table */
+
+/*! ../registry */
+
+/*! ../scope */
+
+/*! ../ui/color-picker */
+
+/*! ../ui/icon-picker */
+
+/*! ../ui/icons */
+
+/*! ../ui/picker */
+
+/*! ../ui/tooltip */
+
+/*! ./AttributeMap */
+
+/*! ./Iterator */
+
+/*! ./Op */
+
+/*! ./abstract/container */
+
+/*! ./abstract/leaf */
+
+/*! ./abstract/parent */
+
+/*! ./attributor */
+
+/*! ./attributor/attributor */
+
+/*! ./attributor/class */
+
+/*! ./attributor/store */
+
+/*! ./attributor/style */
+
+/*! ./base */
+
+/*! ./block */
+
+/*! ./blot/abstract/container */
+
+/*! ./blot/abstract/leaf */
+
+/*! ./blot/abstract/parent */
+
+/*! ./blot/block */
+
+/*! ./blot/embed */
+
+/*! ./blot/inline */
+
+/*! ./blot/scroll */
+
+/*! ./blot/text */
+
+/*! ./blots/block */
+
+/*! ./blots/break */
+
+/*! ./blots/container */
+
+/*! ./blots/cursor */
+
+/*! ./blots/embed */
+
+/*! ./blots/inline */
+
+/*! ./blots/scroll */
+
+/*! ./blots/text */
+
+/*! ./bold */
+
+/*! ./break */
+
+/*! ./class */
+
+/*! ./clipboard */
+
+/*! ./color */
+
+/*! ./container */
+
+/*! ./core */
+
+/*! ./core/quill */
+
+/*! ./editor */
+
+/*! ./emitter */
+
+/*! ./error */
+
+/*! ./formats/align */
+
+/*! ./formats/background */
+
+/*! ./formats/blockquote */
+
+/*! ./formats/bold */
+
+/*! ./formats/code */
+
+/*! ./formats/color */
+
+/*! ./formats/direction */
+
+/*! ./formats/font */
+
+/*! ./formats/formula */
+
+/*! ./formats/header */
+
+/*! ./formats/image */
+
+/*! ./formats/indent */
+
+/*! ./formats/italic */
+
+/*! ./formats/link */
+
+/*! ./formats/list */
+
+/*! ./formats/script */
+
+/*! ./formats/size */
+
+/*! ./formats/strike */
+
+/*! ./formats/underline */
+
+/*! ./formats/video */
+
+/*! ./inline */
+
+/*! ./instances */
+
+/*! ./lib/is_arguments.js */
+
+/*! ./lib/keys.js */
+
+/*! ./link */
+
+/*! ./logger */
+
+/*! ./module */
+
+/*! ./modules/clipboard */
+
+/*! ./modules/history */
+
+/*! ./modules/keyboard */
+
+/*! ./modules/syntax */
+
+/*! ./modules/table */
+
+/*! ./modules/toolbar */
+
+/*! ./modules/uploader */
+
+/*! ./parent */
+
+/*! ./picker */
+
+/*! ./quill.js */
+
+/*! ./registry */
+
+/*! ./scope */
+
+/*! ./selection */
+
+/*! ./shadow */
+
+/*! ./shadow-selection-polyfill */
+
+/*! ./style */
+
+/*! ./text */
+
+/*! ./theme */
+
+/*! ./themes/bubble */
+
+/*! ./themes/snow */
+
+/*! ./ui/color-picker */
+
+/*! ./ui/icon-picker */
+
+/*! ./ui/icons */
+
+/*! ./ui/picker */
+
+/*! ./ui/tooltip */
+
+/*! clone */
+
+/*! deep-equal */
+
+/*! eventemitter3 */
+
+/*! exports provided: AlignAttribute, AlignClass, AlignStyle */
+
+/*! exports provided: BackgroundClass, BackgroundStyle */
+
+/*! exports provided: BaseTooltip, default */
+
+/*! exports provided: BubbleTooltip, default */
+
+/*! exports provided: Code, CodeBlockContainer, default */
+
+/*! exports provided: CodeBlock, CodeToken, default */
+
+/*! exports provided: ColorAttributor, ColorClass, ColorStyle */
+
+/*! exports provided: DirectionAttribute, DirectionClass, DirectionStyle */
+
+/*! exports provided: FontStyle, FontClass */
+
+/*! exports provided: ListContainer, default */
+
+/*! exports provided: ParentBlot, ContainerBlot, LeafBlot, EmbedBlot, ScrollBlot, BlockBlot, InlineBlot, TextBlot, Attributor, ClassAttributor, StyleAttributor, AttributorStore, Registry, Scope */
+
+/*! exports provided: Range, default */
+
+/*! exports provided: ShadowSelection */
+
+/*! exports provided: SizeClass, SizeStyle */
+
+/*! exports provided: TableCell, TableRow, TableBody, TableContainer, tableId */
+
+/*! exports provided: blockDelta, bubbleFormats, BlockEmbed, default */
+
+/*! exports provided: default */
+
+/*! exports provided: default, SHORTKEY, normalize */
+
+/*! exports provided: default, addControls */
+
+/*! exports provided: default, escapeText */
+
+/*! exports provided: default, getLastChangeIndex */
+
+/*! exports provided: default, matchAttributor, matchBlot, matchNewline, matchText, traverse */
+
+/*! exports provided: default, sanitize */
+
+/*! exports provided: globalRegistry, expandConfig, overload, default */
+
+/*! extend */
+
+/*! fast-diff */
+
+/*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
+
+/*! no static exports found */
+
+/*! parchment */
+
+/*! quill-delta */
+
+/*! vaadin-dev-mode:start
+  (function () {
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+  return typeof obj;
+} : function (obj) {
+  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+};
+
+var classCallCheck = function (instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+};
+
+var createClass = function () {
+  function defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  return function (Constructor, protoProps, staticProps) {
+    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) defineProperties(Constructor, staticProps);
+    return Constructor;
+  };
+}();
+
+var getPolymerVersion = function getPolymerVersion() {
+  return window.Polymer && window.Polymer.version;
+};
+
+var StatisticsGatherer = function () {
+  function StatisticsGatherer(logger) {
+    classCallCheck(this, StatisticsGatherer);
+
+    this.now = new Date().getTime();
+    this.logger = logger;
+  }
+
+  createClass(StatisticsGatherer, [{
+    key: 'frameworkVersionDetectors',
+    value: function frameworkVersionDetectors() {
+      return {
+        'Flow': function Flow() {
+          if (window.Vaadin && window.Vaadin.Flow && window.Vaadin.Flow.clients) {
+            var flowVersions = Object.keys(window.Vaadin.Flow.clients).map(function (key) {
+              return window.Vaadin.Flow.clients[key];
+            }).filter(function (client) {
+              return client.getVersionInfo;
+            }).map(function (client) {
+              return client.getVersionInfo().flow;
+            });
+            if (flowVersions.length > 0) {
+              return flowVersions[0];
+            }
+          }
+        },
+        'Vaadin Framework': function VaadinFramework() {
+          if (window.vaadin && window.vaadin.clients) {
+            var frameworkVersions = Object.values(window.vaadin.clients).filter(function (client) {
+              return client.getVersionInfo;
+            }).map(function (client) {
+              return client.getVersionInfo().vaadinVersion;
+            });
+            if (frameworkVersions.length > 0) {
+              return frameworkVersions[0];
+            }
+          }
+        },
+        'AngularJs': function AngularJs() {
+          if (window.angular && window.angular.version && window.angular.version) {
+            return window.angular.version.full;
+          }
+        },
+        'Angular': function Angular() {
+          if (window.ng) {
+            var tags = document.querySelectorAll("[ng-version]");
+            if (tags.length > 0) {
+              return tags[0].getAttribute("ng-version");
+            }
+            return "Unknown";
+          }
+        },
+        'Backbone.js': function BackboneJs() {
+          if (window.Backbone) {
+            return window.Backbone.VERSION;
+          }
+        },
+        'React': function React() {
+          var reactSelector = '[data-reactroot], [data-reactid]';
+          if (!!document.querySelector(reactSelector)) {
+            // React does not publish the version by default
+            return "unknown";
+          }
+        },
+        'Ember': function Ember() {
+          if (window.Em && window.Em.VERSION) {
+            return window.Em.VERSION;
+          } else if (window.Ember && window.Ember.VERSION) {
+            return window.Ember.VERSION;
+          }
+        },
+        'jQuery': function (_jQuery) {
+          function jQuery() {
+            return _jQuery.apply(this, arguments);
+          }
+
+          jQuery.toString = function () {
+            return _jQuery.toString();
+          };
+
+          return jQuery;
+        }(function () {
+          if (typeof jQuery === 'function' && jQuery.prototype.jquery !== undefined) {
+            return jQuery.prototype.jquery;
+          }
+        }),
+        'Polymer': function Polymer() {
+          var version = getPolymerVersion();
+          if (version) {
+            return version;
+          }
+        },
+        'LitElement': function LitElement() {
+          var version = window.litElementVersions && window.litElementVersions[0];
+          if (version) {
+            return version;
+          }
+        },
+        'LitHtml': function LitHtml() {
+          var version = window.litHtmlVersions && window.litHtmlVersions[0];
+          if (version) {
+            return version;
+          }
+        },
+        'Vue.js': function VueJs() {
+          if (window.Vue) {
+            return window.Vue.version;
+          }
+        }
+      };
+    }
+  }, {
+    key: 'getUsedVaadinElements',
+    value: function getUsedVaadinElements(elements) {
+      var version = getPolymerVersion();
+      var elementClasses = void 0;
+      // NOTE: In case you edit the code here, YOU MUST UPDATE any statistics reporting code in Flow.
+      // Check all locations calling the method getEntries() in
+      // https://github.com/vaadin/flow/blob/master/flow-server/src/main/java/com/vaadin/flow/internal/UsageStatistics.java#L106
+      // Currently it is only used by BootstrapHandler.
+      if (version && version.indexOf('2') === 0) {
+        // Polymer 2: components classes are stored in window.Vaadin
+        elementClasses = Object.keys(window.Vaadin).map(function (c) {
+          return window.Vaadin[c];
+        }).filter(function (c) {
+          return c.is;
+        });
+      } else {
+        // Polymer 3: components classes are stored in window.Vaadin.registrations
+        elementClasses = window.Vaadin.registrations || [];
+      }
+      elementClasses.forEach(function (klass) {
+        var version = klass.version ? klass.version : "0.0.0";
+        elements[klass.is] = { version: version };
+      });
+    }
+  }, {
+    key: 'getUsedVaadinThemes',
+    value: function getUsedVaadinThemes(themes) {
+      ['Lumo', 'Material'].forEach(function (themeName) {
+        var theme;
+        var version = getPolymerVersion();
+        if (version && version.indexOf('2') === 0) {
+          // Polymer 2: themes are stored in window.Vaadin
+          theme = window.Vaadin[themeName];
+        } else {
+          // Polymer 3: themes are stored in custom element registry
+          theme = customElements.get('vaadin-' + themeName.toLowerCase() + '-styles');
+        }
+        if (theme && theme.version) {
+          themes[themeName] = { version: theme.version };
+        }
+      });
+    }
+  }, {
+    key: 'getFrameworks',
+    value: function getFrameworks(frameworks) {
+      var detectors = this.frameworkVersionDetectors();
+      Object.keys(detectors).forEach(function (framework) {
+        var detector = detectors[framework];
+        try {
+          var version = detector();
+          if (version) {
+            frameworks[framework] = { version: version };
+          }
+        } catch (e) {}
+      });
+    }
+  }, {
+    key: 'gather',
+    value: function gather(storage) {
+      var storedStats = storage.read();
+      var gatheredStats = {};
+      var types = ["elements", "frameworks", "themes"];
+
+      types.forEach(function (type) {
+        gatheredStats[type] = {};
+        if (!storedStats[type]) {
+          storedStats[type] = {};
+        }
+      });
+
+      var previousStats = JSON.stringify(storedStats);
+
+      this.getUsedVaadinElements(gatheredStats.elements);
+      this.getFrameworks(gatheredStats.frameworks);
+      this.getUsedVaadinThemes(gatheredStats.themes);
+
+      var now = this.now;
+      types.forEach(function (type) {
+        var keys = Object.keys(gatheredStats[type]);
+        keys.forEach(function (key) {
+          if (!storedStats[type][key] || _typeof(storedStats[type][key]) != _typeof({})) {
+            storedStats[type][key] = { firstUsed: now };
+          }
+          // Discards any previously logged version number
+          storedStats[type][key].version = gatheredStats[type][key].version;
+          storedStats[type][key].lastUsed = now;
+        });
+      });
+
+      var newStats = JSON.stringify(storedStats);
+      storage.write(newStats);
+      if (newStats != previousStats && Object.keys(storedStats).length > 0) {
+        this.logger.debug("New stats: " + newStats);
+      }
+    }
+  }]);
+  return StatisticsGatherer;
+}();
+
+var StatisticsStorage = function () {
+  function StatisticsStorage(key) {
+    classCallCheck(this, StatisticsStorage);
+
+    this.key = key;
+  }
+
+  createClass(StatisticsStorage, [{
+    key: 'read',
+    value: function read() {
+      var localStorageStatsString = localStorage.getItem(this.key);
+      try {
+        return JSON.parse(localStorageStatsString ? localStorageStatsString : '{}');
+      } catch (e) {
+        return {};
+      }
+    }
+  }, {
+    key: 'write',
+    value: function write(data) {
+      localStorage.setItem(this.key, data);
+    }
+  }, {
+    key: 'clear',
+    value: function clear() {
+      localStorage.removeItem(this.key);
+    }
+  }, {
+    key: 'isEmpty',
+    value: function isEmpty() {
+      var storedStats = this.read();
+      var empty = true;
+      Object.keys(storedStats).forEach(function (key) {
+        if (Object.keys(storedStats[key]).length > 0) {
+          empty = false;
+        }
+      });
+
+      return empty;
+    }
+  }]);
+  return StatisticsStorage;
+}();
+
+var StatisticsSender = function () {
+  function StatisticsSender(url, logger) {
+    classCallCheck(this, StatisticsSender);
+
+    this.url = url;
+    this.logger = logger;
+  }
+
+  createClass(StatisticsSender, [{
+    key: 'send',
+    value: function send(data, errorHandler) {
+      var logger = this.logger;
+
+      if (navigator.onLine === false) {
+        logger.debug("Offline, can't send");
+        errorHandler();
+        return;
+      }
+      logger.debug("Sending data to " + this.url);
+
+      var req = new XMLHttpRequest();
+      req.withCredentials = true;
+      req.addEventListener("load", function () {
+        // Stats sent, nothing more to do
+        logger.debug("Response: " + req.responseText);
+      });
+      req.addEventListener("error", function () {
+        logger.debug("Send failed");
+        errorHandler();
+      });
+      req.addEventListener("abort", function () {
+        logger.debug("Send aborted");
+        errorHandler();
+      });
+      req.open("POST", this.url);
+      req.setRequestHeader("Content-Type", "application/json");
+      req.send(data);
+    }
+  }]);
+  return StatisticsSender;
+}();
+
+var StatisticsLogger = function () {
+  function StatisticsLogger(id) {
+    classCallCheck(this, StatisticsLogger);
+
+    this.id = id;
+  }
+
+  createClass(StatisticsLogger, [{
+    key: '_isDebug',
+    value: function _isDebug() {
+      return localStorage.getItem("vaadin." + this.id + ".debug");
+    }
+  }, {
+    key: 'debug',
+    value: function debug(msg) {
+      if (this._isDebug()) {
+        console.info(this.id + ": " + msg);
+      }
+    }
+  }]);
+  return StatisticsLogger;
+}();
+
+var UsageStatistics = function () {
+  function UsageStatistics() {
+    classCallCheck(this, UsageStatistics);
+
+    this.now = new Date();
+    this.timeNow = this.now.getTime();
+    this.gatherDelay = 10; // Delay between loading this file and gathering stats
+    this.initialDelay = 24 * 60 * 60;
+
+    this.logger = new StatisticsLogger("statistics");
+    this.storage = new StatisticsStorage("vaadin.statistics.basket");
+    this.gatherer = new StatisticsGatherer(this.logger);
+    this.sender = new StatisticsSender("https://tools.vaadin.com/usage-stats/submit", this.logger);
+  }
+
+  createClass(UsageStatistics, [{
+    key: 'maybeGatherAndSend',
+    value: function maybeGatherAndSend() {
+      var _this = this;
+
+      if (localStorage.getItem(UsageStatistics.optOutKey)) {
+        return;
+      }
+      this.gatherer.gather(this.storage);
+      setTimeout(function () {
+        _this.maybeSend();
+      }, this.gatherDelay * 1000);
+    }
+  }, {
+    key: 'lottery',
+    value: function lottery() {
+      return true;
+    }
+  }, {
+    key: 'currentMonth',
+    value: function currentMonth() {
+      return this.now.getYear() * 12 + this.now.getMonth();
+    }
+  }, {
+    key: 'maybeSend',
+    value: function maybeSend() {
+      var firstUse = Number(localStorage.getItem(UsageStatistics.firstUseKey));
+      var monthProcessed = Number(localStorage.getItem(UsageStatistics.monthProcessedKey));
+
+      if (!firstUse) {
+        // Use a grace period to avoid interfering with tests, incognito mode etc
+        firstUse = this.timeNow;
+        localStorage.setItem(UsageStatistics.firstUseKey, firstUse);
+      }
+
+      if (this.timeNow < firstUse + this.initialDelay * 1000) {
+        this.logger.debug("No statistics will be sent until the initial delay of " + this.initialDelay + "s has passed");
+        return;
+      }
+      if (this.currentMonth() <= monthProcessed) {
+        this.logger.debug("This month has already been processed");
+        return;
+      }
+      localStorage.setItem(UsageStatistics.monthProcessedKey, this.currentMonth());
+      // Use random sampling
+      if (this.lottery()) {
+        this.logger.debug("Congratulations, we have a winner!");
+      } else {
+        this.logger.debug("Sorry, no stats from you this time");
+        return;
+      }
+
+      this.send();
+    }
+  }, {
+    key: 'send',
+    value: function send() {
+      // Ensure we have the latest data
+      this.gatherer.gather(this.storage);
+
+      // Read, send and clean up
+      var data = this.storage.read();
+      data["firstUse"] = Number(localStorage.getItem(UsageStatistics.firstUseKey));
+      data["usageStatisticsVersion"] = UsageStatistics.version;
+      var info = 'This request contains usage statistics gathered from the application running in development mode. \n\nStatistics gathering is automatically disabled and excluded from production builds.\n\nFor details and to opt-out, see https://github.com/vaadin/vaadin-usage-statistics.\n\n\n\n';
+      var self = this;
+      this.sender.send(info + JSON.stringify(data), function () {
+        // Revert the 'month processed' flag
+        localStorage.setItem(UsageStatistics.monthProcessedKey, self.currentMonth() - 1);
+      });
+    }
+  }], [{
+    key: 'version',
+    get: function get$1() {
+      return '2.1.2';
+    }
+  }, {
+    key: 'firstUseKey',
+    get: function get$1() {
+      return 'vaadin.statistics.firstuse';
+    }
+  }, {
+    key: 'monthProcessedKey',
+    get: function get$1() {
+      return 'vaadin.statistics.monthProcessed';
+    }
+  }, {
+    key: 'optOutKey',
+    get: function get$1() {
+      return 'vaadin.statistics.optout';
+    }
+  }]);
+  return UsageStatistics;
+}();
+
+try {
+  window.Vaadin = window.Vaadin || {};
+  window.Vaadin.usageStatsChecker = window.Vaadin.usageStatsChecker || new UsageStatistics();
+  window.Vaadin.usageStatsChecker.maybeGatherAndSend();
+} catch (e) {
+  // Intentionally ignored as this is not a problem in the app being developed
+}
+
+}());
+
+  vaadin-dev-mode:end **/
+
+/*!*****************!*\
+  !*** ./core.js ***!
+  \*****************/
+
+/*!******************!*\
+  !*** ./quill.js ***!
+  \******************/
+
+/*!*********************!*\
+  !*** ./ui/icons.js ***!
+  \*********************/
+
+/*!**********************!*\
+  !*** ./ui/picker.js ***!
+  \**********************/
+
+/*!***********************!*\
+  !*** ./blots/text.js ***!
+  \***********************/
+
+/*!***********************!*\
+  !*** ./core/quill.js ***!
+  \***********************/
+
+/*!***********************!*\
+  !*** ./core/theme.js ***!
+  \***********************/
+
+/*!***********************!*\
+  !*** ./ui/tooltip.js ***!
+  \***********************/
+
+/*!************************!*\
+  !*** ./blots/block.js ***!
+  \************************/
+
+/*!************************!*\
+  !*** ./blots/break.js ***!
+  \************************/
+
+/*!************************!*\
+  !*** ./blots/embed.js ***!
+  \************************/
+
+/*!************************!*\
+  !*** ./core/editor.js ***!
+  \************************/
+
+/*!************************!*\
+  !*** ./core/logger.js ***!
+  \************************/
+
+/*!************************!*\
+  !*** ./core/module.js ***!
+  \************************/
+
+/*!************************!*\
+  !*** ./themes/base.js ***!
+  \************************/
+
+/*!************************!*\
+  !*** ./themes/snow.js ***!
+  \************************/
+
+/*!************************!*\
+  !*** multi ./quill.js ***!
+  \************************/
+
+/*!*************************!*\
+  !*** ./blots/cursor.js ***!
+  \*************************/
+
+/*!*************************!*\
+  !*** ./blots/inline.js ***!
+  \*************************/
+
+/*!*************************!*\
+  !*** ./blots/scroll.js ***!
+  \*************************/
+
+/*!*************************!*\
+  !*** ./core/emitter.js ***!
+  \*************************/
+
+/*!*************************!*\
+  !*** ./formats/bold.js ***!
+  \*************************/
+
+/*!*************************!*\
+  !*** ./formats/code.js ***!
+  \*************************/
+
+/*!*************************!*\
+  !*** ./formats/font.js ***!
+  \*************************/
+
+/*!*************************!*\
+  !*** ./formats/link.js ***!
+  \*************************/
+
+/*!*************************!*\
+  !*** ./formats/list.js ***!
+  \*************************/
+
+/*!*************************!*\
+  !*** ./formats/size.js ***!
+  \*************************/
+
+/*!**************************!*\
+  !*** ./formats/align.js ***!
+  \**************************/
+
+/*!**************************!*\
+  !*** ./formats/color.js ***!
+  \**************************/
+
+/*!**************************!*\
+  !*** ./formats/image.js ***!
+  \**************************/
+
+/*!**************************!*\
+  !*** ./formats/table.js ***!
+  \**************************/
+
+/*!**************************!*\
+  !*** ./formats/video.js ***!
+  \**************************/
+
+/*!**************************!*\
+  !*** ./modules/table.js ***!
+  \**************************/
+
+/*!**************************!*\
+  !*** ./themes/bubble.js ***!
+  \**************************/
+
+/*!***************************!*\
+  !*** ./core/instances.js ***!
+  \***************************/
+
+/*!***************************!*\
+  !*** ./core/selection.js ***!
+  \***************************/
+
+/*!***************************!*\
+  !*** ./formats/header.js ***!
+  \***************************/
+
+/*!***************************!*\
+  !*** ./formats/indent.js ***!
+  \***************************/
+
+/*!***************************!*\
+  !*** ./formats/italic.js ***!
+  \***************************/
+
+/*!***************************!*\
+  !*** ./formats/script.js ***!
+  \***************************/
+
+/*!***************************!*\
+  !*** ./formats/strike.js ***!
+  \***************************/
+
+/*!***************************!*\
+  !*** ./modules/syntax.js ***!
+  \***************************/
+
+/*!***************************!*\
+  !*** ./ui/icon-picker.js ***!
+  \***************************/
+
+/*!****************************!*\
+  !*** ./blots/container.js ***!
+  \****************************/
+
+/*!****************************!*\
+  !*** ./formats/formula.js ***!
+  \****************************/
+
+/*!****************************!*\
+  !*** ./modules/history.js ***!
+  \****************************/
+
+/*!****************************!*\
+  !*** ./modules/toolbar.js ***!
+  \****************************/
+
+/*!****************************!*\
+  !*** ./ui/color-picker.js ***!
+  \****************************/
+
+/*!*****************************!*\
+  !*** ./modules/keyboard.js ***!
+  \*****************************/
+
+/*!*****************************!*\
+  !*** ./modules/uploader.js ***!
+  \*****************************/
+
+/*!******************************!*\
+  !*** ./formats/direction.js ***!
+  \******************************/
+
+/*!******************************!*\
+  !*** ./formats/underline.js ***!
+  \******************************/
+
+/*!******************************!*\
+  !*** ./modules/clipboard.js ***!
+  \******************************/
+
+/*!*******************************!*\
+  !*** ./assets/icons/bold.svg ***!
+  \*******************************/
+
+/*!*******************************!*\
+  !*** ./assets/icons/code.svg ***!
+  \*******************************/
+
+/*!*******************************!*\
+  !*** ./assets/icons/link.svg ***!
+  \*******************************/
+
+/*!*******************************!*\
+  !*** ./formats/background.js ***!
+  \*******************************/
+
+/*!*******************************!*\
+  !*** ./formats/blockquote.js ***!
+  \*******************************/
+
+/*!********************************!*\
+  !*** ./assets/icons/clean.svg ***!
+  \********************************/
+
+/*!********************************!*\
+  !*** ./assets/icons/color.svg ***!
+  \********************************/
+
+/*!********************************!*\
+  !*** ./assets/icons/image.svg ***!
+  \********************************/
+
+/*!********************************!*\
+  !*** ./assets/icons/table.svg ***!
+  \********************************/
+
+/*!********************************!*\
+  !*** ./assets/icons/video.svg ***!
+  \********************************/
+
+/*!*********************************!*\
+  !*** ./assets/icons/header.svg ***!
+  \*********************************/
+
+/*!*********************************!*\
+  !*** ./assets/icons/indent.svg ***!
+  \*********************************/
+
+/*!*********************************!*\
+  !*** ./assets/icons/italic.svg ***!
+  \*********************************/
+
+/*!*********************************!*\
+  !*** ./assets/icons/strike.svg ***!
+  \*********************************/
+
+/*!**********************************!*\
+  !*** ./assets/icons/formula.svg ***!
+  \**********************************/
+
+/*!**********************************!*\
+  !*** ./assets/icons/outdent.svg ***!
+  \**********************************/
+
+/*!***********************************!*\
+  !*** ./assets/icons/dropdown.svg ***!
+  \***********************************/
+
+/*!***********************************!*\
+  !*** ./assets/icons/header-2.svg ***!
+  \***********************************/
+
+/*!************************************!*\
+  !*** ./assets/icons/subscript.svg ***!
+  \************************************/
+
+/*!************************************!*\
+  !*** ./assets/icons/underline.svg ***!
+  \************************************/
+
+/*!*************************************!*\
+  !*** ./assets/icons/align-left.svg ***!
+  \*************************************/
+
+/*!*************************************!*\
+  !*** ./assets/icons/background.svg ***!
+  \*************************************/
+
+/*!*************************************!*\
+  !*** ./assets/icons/blockquote.svg ***!
+  \*************************************/
+
+/*!*************************************!*\
+  !*** ./assets/icons/list-check.svg ***!
+  \*************************************/
+
+/*!*************************************!*\
+  !*** ./node_modules/clone/clone.js ***!
+  \*************************************/
+
+/*!**************************************!*\
+  !*** ./assets/icons/align-right.svg ***!
+  \**************************************/
+
+/*!**************************************!*\
+  !*** ./assets/icons/list-bullet.svg ***!
+  \**************************************/
+
+/*!**************************************!*\
+  !*** ./assets/icons/superscript.svg ***!
+  \**************************************/
+
+/*!**************************************!*\
+  !*** ./node_modules/extend/index.js ***!
+  \**************************************/
+
+/*!***************************************!*\
+  !*** ./assets/icons/align-center.svg ***!
+  \***************************************/
+
+/*!***************************************!*\
+  !*** ./assets/icons/list-ordered.svg ***!
+  \***************************************/
+
+/*!****************************************!*\
+  !*** ./assets/icons/align-justify.svg ***!
+  \****************************************/
+
+/*!****************************************!*\
+  !*** ./assets/icons/direction-ltr.svg ***!
+  \****************************************/
+
+/*!****************************************!*\
+  !*** ./assets/icons/direction-rtl.svg ***!
+  \****************************************/
+
+/*!****************************************!*\
+  !*** ./node_modules/fast-diff/diff.js ***!
+  \****************************************/
+
+/*!******************************************!*\
+  !*** ./node_modules/deep-equal/index.js ***!
+  \******************************************/
+
+/*!*******************************************!*\
+  !*** ./core/shadow-selection-polyfill.js ***!
+  \*******************************************/
+
+/*!*********************************************!*\
+  !*** ./node_modules/deep-equal/lib/keys.js ***!
+  \*********************************************/
+
+/*!*********************************************!*\
+  !*** ./node_modules/eventemitter3/index.js ***!
+  \*********************************************/
+
+/*!*********************************************!*\
+  !*** ./node_modules/parchment/src/error.ts ***!
+  \*********************************************/
+
+/*!*********************************************!*\
+  !*** ./node_modules/parchment/src/scope.ts ***!
+  \*********************************************/
+
+/*!*********************************************!*\
+  !*** ./node_modules/quill-delta/dist/Op.js ***!
+  \*********************************************/
+
+/*!************************************************!*\
+  !*** ./node_modules/parchment/src/registry.ts ***!
+  \************************************************/
+
+/*!************************************************!*\
+  !*** ./node_modules/quill-delta/dist/Delta.js ***!
+  \************************************************/
+
+/*!*************************************************!*\
+  !*** ./node_modules/parchment/src/blot/text.ts ***!
+  \*************************************************/
+
+/*!*************************************************!*\
+  !*** ./node_modules/parchment/src/parchment.ts ***!
+  \*************************************************/
+
+/*!**************************************************!*\
+  !*** ./node_modules/parchment/src/blot/block.ts ***!
+  \**************************************************/
+
+/*!**************************************************!*\
+  !*** ./node_modules/parchment/src/blot/embed.ts ***!
+  \**************************************************/
+
+/*!***************************************************!*\
+  !*** ./node_modules/parchment/src/blot/inline.ts ***!
+  \***************************************************/
+
+/*!***************************************************!*\
+  !*** ./node_modules/parchment/src/blot/scroll.ts ***!
+  \***************************************************/
+
+/*!***************************************************!*\
+  !*** ./node_modules/quill-delta/dist/Iterator.js ***!
+  \***************************************************/
+
+/*!*****************************************************!*\
+  !*** ./node_modules/deep-equal/lib/is_arguments.js ***!
+  \*****************************************************/
+
+/*!*******************************************************!*\
+  !*** ./node_modules/quill-delta/dist/AttributeMap.js ***!
+  \*******************************************************/
+
+/*!********************************************************!*\
+  !*** ./node_modules/parchment/src/attributor/class.ts ***!
+  \********************************************************/
+
+/*!********************************************************!*\
+  !*** ./node_modules/parchment/src/attributor/store.ts ***!
+  \********************************************************/
+
+/*!********************************************************!*\
+  !*** ./node_modules/parchment/src/attributor/style.ts ***!
+  \********************************************************/
+
+/*!**********************************************************!*\
+  !*** ./node_modules/parchment/src/blot/abstract/leaf.ts ***!
+  \**********************************************************/
+
+/*!************************************************************!*\
+  !*** ./node_modules/parchment/src/blot/abstract/parent.ts ***!
+  \************************************************************/
+
+/*!************************************************************!*\
+  !*** ./node_modules/parchment/src/blot/abstract/shadow.ts ***!
+  \************************************************************/
+
+/*!*************************************************************!*\
+  !*** ./node_modules/parchment/src/attributor/attributor.ts ***!
+  \*************************************************************/
+
+/*!**************************************************************!*\
+  !*** ./node_modules/parchment/src/collection/linked-list.ts ***!
+  \**************************************************************/
+
+/*!***************************************************************!*\
+  !*** ./node_modules/parchment/src/blot/abstract/container.ts ***!
+  \***************************************************************/
+
+/**
+ * @fileoverview
+ * @suppress {checkPrototypalTypes}
+ * @license Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
+ * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
+ * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
+ * Google as part of the polymer project is also subject to an additional IP
+ * rights grant found at http://polymer.github.io/PATENTS.txt
+ */
+
+/**
+ * @license
+ * Copyright (c) 2000 - 2024 Vaadin Ltd.
+ *
+ * This program is available under Vaadin Commercial License and Service Terms.
+ *
+ *
+ * See https://vaadin.com/commercial-license-and-service-terms for the full
+ * license.
+ */
+
+/**
+ * @license
+ * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
+ * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
+ * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
+ * Google as part of the polymer project is also subject to an additional IP
+ * rights grant found at http://polymer.github.io/PATENTS.txt
+ */
+
+/**
+ * @license
+ * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+
+/**
+ * @license
+ * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ */
+
+/**
+ * @license
+ * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+/**
+ * @license
+ * Copyright 2019 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+/**
+@license
+Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at
+http://polymer.github.io/LICENSE.txt The complete set of authors may be found at
+http://polymer.github.io/AUTHORS.txt The complete set of contributors may be
+found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
+part of the polymer project is also subject to an additional IP rights grant
+found at http://polymer.github.io/PATENTS.txt
+*/
+
+/**
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at
+http://polymer.github.io/LICENSE.txt The complete set of authors may be found at
+http://polymer.github.io/AUTHORS.txt The complete set of contributors may be
+found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
+part of the polymer project is also subject to an additional IP rights grant
+found at http://polymer.github.io/PATENTS.txt
+*/
+
+/**
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+*/
+
+/**
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at
+http://polymer.github.io/LICENSE.txt The complete set of authors may be found at
+http://polymer.github.io/AUTHORS.txt The complete set of contributors may be
+found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
+part of the polymer project is also subject to an additional IP rights grant
+found at http://polymer.github.io/PATENTS.txt
+*/
+
+/**
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+*/
+
+/**
+@license
+Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at
+http://polymer.github.io/LICENSE.txt The complete set of authors may be found at
+http://polymer.github.io/AUTHORS.txt The complete set of contributors may be
+found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
+part of the polymer project is also subject to an additional IP rights grant
+found at http://polymer.github.io/PATENTS.txt
+*/
+
+/**
+@license
+Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+*/
+
+/**
+@license
+Copyright (c) 2019 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at
+http://polymer.github.io/LICENSE.txt The complete set of authors may be found at
+http://polymer.github.io/AUTHORS.txt The complete set of contributors may be
+found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
+part of the polymer project is also subject to an additional IP rights grant
+found at http://polymer.github.io/PATENTS.txt
+*/
+
+/**
+@license
+Copyright (c) 2019 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+*/
+
+/**
+@license @nocompile
+Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+*/
+
+/** @license React v0.19.1
+ * scheduler.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/** @license React v16.13.1
+ * react-is.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/** @license React v16.14.0
+ * react-dom.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/** @license React v16.14.0
+ * react.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+//! moment.js
+
+//! moment.js language configuration
+
+//! moment.js locale configuration
+
+//! stable.js 0.1.8, https://github.com/Two-Screen/stable
+
+//! © 2018 Angry Bytes and contributors. MIT licensed.
