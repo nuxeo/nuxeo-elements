@@ -197,8 +197,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // tell vaadin-date-picker how to display dates since default behavior is US locales (MM-DD-YYYY)
       // this way we can take advantage of moment locale and use the date format that is most suitable for the user
       this.$.date.set('i18n.formatDate', (date) =>
-      this._moment(date).format(this.format ? this.format : moment.localeData().longDateFormat('L')),
-    );
+        this._moment(date).format(this.format ? this.format : moment.localeData().longDateFormat('L')),
+      );
       this.$.date.set('i18n.parseDate', (text) => {
         const date = this._moment(text, this.format ? this.format : moment.localeData().longDateFormat('L'));
         return {
