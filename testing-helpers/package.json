@@ -1,6 +1,6 @@
 {
   "name": "@nuxeo/testing-helpers",
-  "version": "lts-2025",
+  "version": "3.2.0-SNAPSHOT",
   "description": "Nuxeo Web Components Testing Helpers",
   "keywords": [
     "nuxeo",
