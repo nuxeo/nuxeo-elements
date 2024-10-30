@@ -18,6 +18,7 @@ limitations under the License.
 import '@polymer/polymer/polymer-legacy.js';
 
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import { config } from '@nuxeo/nuxeo-elements';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { microTask } from '@polymer/polymer/lib/utils/async.js';
 import { enqueueDebouncer } from '@polymer/polymer/lib/utils/flush.js';
@@ -184,25 +185,29 @@ import Interpreter from './js-interpreter/interpreter.js';
       let res = false;
 
       try {
-        const js = new Interpreter(expression, (interpreter, scope) => {
-          // set scope
-          interpreter.setProperty(scope, 'this', interpreter.nativeToPseudo(FiltersBehavior));
-          Object.entries({ document, user }).forEach(([k, obj]) => {
-            const v = {};
-            // filter out private properties
-            Object.getOwnPropertyNames(obj)
-              .filter((p) => !p.startsWith('_'))
-              .forEach((p) => {
-                v[p] = obj[p];
-              });
-            interpreter.setProperty(scope, k, interpreter.nativeToPseudo(v));
+        if (!config.get('expressions.eval', true)) {
+          const js = new Interpreter(expression, (interpreter, scope) => {
+            // set scope
+            interpreter.setProperty(scope, 'this', interpreter.nativeToPseudo(FiltersBehavior));
+            Object.entries({ document, user }).forEach(([k, obj]) => {
+              const v = {};
+              // filter out private properties
+              Object.getOwnPropertyNames(obj)
+                .filter((p) => !p.startsWith('_'))
+                .forEach((p) => {
+                  v[p] = obj[p];
+                });
+              interpreter.setProperty(scope, k, interpreter.nativeToPseudo(v));
+            });
+            // XXX: 'this' in the scope of native functions is the interpreter instance
+            Object.assign(interpreter, FiltersBehavior);
           });
-          // XXX: 'this' in the scope of native functions is the interpreter instance
-          Object.assign(interpreter, FiltersBehavior);
-        });
-        js.run();
-        res = js.value;
-
+          js.run();
+          res = js.value;
+        } else {
+          const fn = new Function(['document', 'user'], `return ${expression};`);
+          res = fn.apply(this, [document, user]);
+        }
         return res;
       } catch (err) {
         console.error(`${err} in <nuxeo-filter> expression "${expression}"`);
