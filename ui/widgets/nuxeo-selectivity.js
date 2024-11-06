@@ -2428,7 +2428,7 @@ typedArrayTags[weakMapTag] = false;
           } else if(searchText && searchText !== '') {
             this.resultsContainer.innerHTML = '';
           }
-
+          //test
           const filteredResults = this.selectivity.filterResults(results);
           const value = this.selectivity.getValue();
           const isFilteredResultNotEmpty = filteredResults.some((item) => item.text.trim() !== '');
