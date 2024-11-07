@@ -2433,7 +2433,7 @@ typedArrayTags[weakMapTag] = false;
           const value = this.selectivity.getValue();
           const isFilteredResultNotEmpty = filteredResults.some((item) => item.text.trim() !== '');
           let resultsHtml = isFilteredResultNotEmpty ? this.renderItems(filteredResults) : '';
-          if (options.hasMore) {
+          if (options.hasMore) {//test
             resultsHtml += this.selectivity.template('loadMore');
           } else if (value && Array.isArray(value) && value.includes(options.term)) {
             resultsHtml = this.selectivity.template('tagExists');
