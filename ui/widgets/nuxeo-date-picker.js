@@ -85,7 +85,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           value: false,
         },
 
-       
         /*
          * The first day of week is to be displayed (e.g. `"Sunday -> 0"`, ... `"Saturday -> 6"`).
          * By default, it will be set according the locale.
