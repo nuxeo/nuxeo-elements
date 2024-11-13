@@ -6936,7 +6936,7 @@ typedArrayTags[weakMapTag] = false;
             border: none;
             float: left;
             font: inherit;
-            max-width: 100%;
+            width: 100%;
             outline: 0;
             padding: 0;
             padding-top: 1px;

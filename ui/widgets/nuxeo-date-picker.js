@@ -86,7 +86,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         },
 
         /*
-         * The first day of week is to be displayed (e.g. `"Sunday -> 0"`, ... `"Saturday -> 6"`).
+         * The first day of week to be displayed (e.g. `"Sunday -> 0"`, ... `"Saturday -> 6"`).
          * By default, it will be set according the locale.
          */
         firstDayOfWeek: {
@@ -232,8 +232,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const year = `${date.get('Y')}`.padStart(4, '0');
         const month = `${date.get('M') + 1}`.padStart(2, '0');
         const day = `${date.get('D')}`.padStart(2, '0');
-        const years = year;
-        this._inputValue = `${years}-${month}-${day}`;
+        this._inputValue = `${year}-${month}-${day}`;
       } else {
         this._inputValue = '';
       }
