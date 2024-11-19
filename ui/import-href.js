@@ -110,6 +110,7 @@ export const importHTML = (html) => {
       const script = document.createElement('script');
       [...el.attributes].forEach((attr) => script.setAttribute(attr.name, attr.value));
       script.setAttribute('src', `data:text/javascript;charset=utf-8,${encodeURIComponent(el.textContent)}`);
+      script.setAttribute("nonce", NuxeoNonce);
       el = script;
     }
     document.head.appendChild(el);
