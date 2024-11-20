@@ -99,7 +99,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
         <dom-if if="[[label]]">
           <template>
-            <label>[[label]]</label>
+            <label title="[[labelTooltip]]">[[label]]</label>
           </template>
         </dom-if>
 
@@ -112,6 +112,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
           on-focus="_onFocus"
           disabled$="[[disabled]]"
           no-label-float
+          title="[[value]]"
         >
         </paper-typeahead>
       `;
