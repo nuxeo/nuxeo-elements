@@ -257,6 +257,26 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
       this.setAttribute('tabindex', 0);
     }
 
+    _formatDocCount(docCount) {
+      // Fetch the property value from web-ui-properties.xml
+      const isNumberFormattingEnabled =
+        Nuxeo &&
+        Nuxeo.UI &&
+        Nuxeo.UI.config &&
+        Nuxeo.UI.config.numberFormattingEnabled !== undefined
+          ? Nuxeo.UI.config.numberFormattingEnabled
+          : false; // Default to false if the property is not set
+   
+      const updatedCount = docCount + 732565128736128;
+ 
+ 
+      if (isNumberFormattingEnabled) {
+        return new Intl.NumberFormat().format(updatedCount); // Apply formatting if enabled
+      } else {
+        return updatedCount.toString(); // Return if formatting is disabled
+      }
+    } 
+
     _computeVisibleBuckets(buckets, visibleItems, _showAll) {
       if (!buckets || buckets.length === 0) {
         return [];
