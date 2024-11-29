@@ -146,9 +146,9 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
                         noink
                         checked="{{item.checked}}"
                         on-change="_computeValues"
-                        aria-label$="[[item.label]] ([[item.docCount]])"
+                        aria-label$="[[item.label]] ([[_formatDocCount(item.docCount)]])"
                       >
-                        [[item.label]] ([[item.docCount]])
+                        [[item.label]]  ([[_formatDocCount(item.docCount)]])
                       </paper-checkbox>
                     </div>
                   </template>
@@ -179,9 +179,9 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
                           noink
                           checked="{{item.checked}}"
                           on-change="_computeValues"
-                          aria-label$="[[item.label]] ([[item.docCount]])"
+                          aria-label$="[[item.label]] ([[_formatDocCount(item.docCount)]])"
                         >
-                          [[item.label]] ([[item.docCount]])
+                          [[item.label]] ([[_formatDocCount(item.docCount)]])
                         </paper-checkbox>
                       </div>
                     </template>
