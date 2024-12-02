@@ -104,14 +104,12 @@ export const importHref = function(href, onload, onerror, optAsync) {
  */
 export const importHTML = (html) => {
   const tmpl = document.createElement('template');
-  const nuxeoNonceValue = Nuxeo.UI.config.nonce || ''
   tmpl.innerHTML = html;
   [...tmpl.content.children].forEach((el) => {
     if (el.tagName === 'SCRIPT' && !el.src) {
       const script = document.createElement('script');
       [...el.attributes].forEach((attr) => script.setAttribute(attr.name, attr.value));
       script.setAttribute('src', `data:text/javascript;charset=utf-8,${encodeURIComponent(el.textContent)}`);
-      script.setAttribute("nonce", nuxeoNonceValue);
       el = script;
     }
     document.head.appendChild(el);
