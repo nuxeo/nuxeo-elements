@@ -146,9 +146,9 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
                         noink
                         checked="{{item.checked}}"
                         on-change="_computeValues"
-                        aria-label$="[[item.label]] ([[item.docCount]])"
+                        aria-label$="[[item.label]] ([[_formatDocCount(item.docCount)]])"
                       >
-                        [[item.label]] ([[item.docCount]])
+                        [[item.label]] ([[_formatDocCount(item.docCount)]])
                       </paper-checkbox>
                     </div>
                   </template>
@@ -179,17 +179,15 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
                           noink
                           checked="{{item.checked}}"
                           on-change="_computeValues"
-                          aria-label$="[[item.label]] ([[item.docCount]])"
+                          aria-label$="[[item.label]] ([[_formatDocCount(item.docCount)]])"
                         >
-                          [[item.label]] ([[item.docCount]])
+                          [[item.label]] ([[_formatDocCount(item.docCount)]])
                         </paper-checkbox>
                       </div>
                     </template>
                   </dom-repeat>
                   <span hidden$="[[_hideShowMoreButton(buckets, visibleItems)]]" class="show-more-button">
-                    <a href="javascript:void(0);" on-tap="_toggleShow">
-                      [[_computeShowMoreLabel(_showAll, i18n)]]
-                    </a>
+                    <a href="javascript:void(0);" on-tap="_toggleShow"> [[_computeShowMoreLabel(_showAll, i18n)]] </a>
                   </span>
                 </template>
               </dom-if>
@@ -255,6 +253,19 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
     ready() {
       super.ready();
       this.setAttribute('tabindex', 0);
+    }
+
+    _formatDocCount(docCount) {
+      // Fetch the property value from web-ui-properties.xml
+      const isNumberFormattingEnabled =
+        Nuxeo && Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.numberFormattingEnabled !== undefined
+          ? Nuxeo.UI.config.numberFormattingEnabled
+          : false; // Default to false if the property is not set
+
+      if (isNumberFormattingEnabled) {
+        return new Intl.NumberFormat().format(docCount); // Apply formatting if enabled
+      }
+      return docCount.toString(); // Return if formatting is disabled
     }
 
     _computeVisibleBuckets(buckets, visibleItems, _showAll) {
