@@ -258,14 +258,11 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
     _formatDocCount(docCount) {
       // Fetch the property value from web-ui-properties.xml
       const isNumberFormattingEnabled =
-        Nuxeo && Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.numberFormattingEnabled !== undefined
-          ? Nuxeo.UI.config.numberFormattingEnabled
-          : false; // Default to false if the property is not set
-
+        (Nuxeo && Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.numberFormattingEnabled) || false;
       if (isNumberFormattingEnabled) {
         return new Intl.NumberFormat().format(docCount); // Apply formatting if enabled
       }
-      return docCount.toString(); // Return if formatting is disabled
+      return docCount; // Return if formatting is disabled
     }
 
     _computeVisibleBuckets(buckets, visibleItems, _showAll) {
