@@ -6811,6 +6811,11 @@ typedArrayTags[weakMapTag] = false;
           type: Object,
           value: null,
         },
+
+        _backupData: {
+          type: Array,
+          value: [],
+        }
       };
     }
 
@@ -7306,6 +7311,12 @@ typedArrayTags[weakMapTag] = false;
     }
 
     _resolveEntry(entry) {
+      if (this.data && this.data.length > 1) {
+        this._backupData = this.data;
+      }
+      if (this.data && this._backupData && this.data.length < this._backupData.length) {
+        this.data = this._backupData;
+      }
       if (this.data) {
         for (let i = 0; i < this.data.length; i++) {
           if (this.idFunction(this.data[i]) === entry) {
