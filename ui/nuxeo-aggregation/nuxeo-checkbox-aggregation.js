@@ -187,7 +187,9 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
                     </template>
                   </dom-repeat>
                   <span hidden$="[[_hideShowMoreButton(buckets, visibleItems)]]" class="show-more-button">
-                    <a href="javascript:void(0);" on-tap="_toggleShow"> [[_computeShowMoreLabel(_showAll, i18n)]] </a>
+                    <a href="#" on-tap="_toggleShow">
+                      [[_computeShowMoreLabel(_showAll, i18n)]]
+                    </a>
                   </span>
                 </template>
               </dom-if>
@@ -280,7 +282,8 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
       return `hardware:keyboard-arrow-${opened ? 'up' : 'down'}`;
     }
 
-    _toggleShow() {
+    _toggleShow(e) {
+      e.preventDefault();
       this._set_showAll(!this._showAll);
     }
 

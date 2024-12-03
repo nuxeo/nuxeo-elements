@@ -104,7 +104,7 @@ export const importHref = function(href, onload, onerror, optAsync) {
  */
 export const importHTML = (html) => {
   const tmpl = document.createElement('template');
-  const nuxeoNonceValue = Nuxeo.UI.config.nonce || ''
+  const nuxeoNonceValue = Nuxeo && Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.nonce || ''
   tmpl.innerHTML = html;
   [...tmpl.content.children].forEach((el) => {
     if (el.tagName === 'SCRIPT' && !el.src) {
