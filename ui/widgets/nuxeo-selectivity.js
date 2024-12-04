@@ -6811,11 +6811,6 @@ typedArrayTags[weakMapTag] = false;
           type: Object,
           value: null,
         },
-
-        _backupData: {
-          type: Array,
-          value: [],
-        }
       };
     }
 
@@ -7311,12 +7306,6 @@ typedArrayTags[weakMapTag] = false;
     }
 
     _resolveEntry(entry) {
-      if (this.data && this.data.length > 1) {
-        this._backupData = this.data;
-      }
-      if (this.data && this._backupData && this.data.length < this._backupData.length) {
-        this.data = this._backupData;
-      }
       if (this.data) {
         for (let i = 0; i < this.data.length; i++) {
           if (this.idFunction(this.data[i]) === entry) {
@@ -7358,6 +7347,15 @@ typedArrayTags[weakMapTag] = false;
     _valueChanged(newValue) {
       if (this._selectivity && !this._inUpdateSelection) {
         if (newValue) {
+          const selectivityItems = this._selectivity.items; 
+          if (Array.isArray(selectivityItems)) {
+              const filteredItems = selectivityItems.filter(item => 
+                  item && newValue.includes(item.id) 
+              );
+              if (Array.isArray(filteredItems)) {
+                  this.data = filteredItems;
+              }
+          }
           this._selectivity.setValue(newValue, { triggerChange: false });
         } else {
           const cv = this._selectivity.getValue();
