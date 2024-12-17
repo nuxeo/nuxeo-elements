@@ -42,6 +42,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior';
             flex: none;
           }
 
+          :host([dir="rtl"]) img {
+            margin: auto auto auto 8px;
+          }
+            
           img {
             height: auto;
             width: auto;
@@ -57,10 +61,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior';
             border-radius: 3px;
             filter: brightness(1.2);
             -webkit-filter: brightness(1.2);
-          }
-          
-          :host([dir="rtl"]) img {
-            margin: auto auto auto 8px;
           }
         </style>
 
