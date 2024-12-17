@@ -51,7 +51,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           }
 
           #sortContainer {
-            position: relative; 
+            position: relative;
             width: 40px;
           }
         </style>
