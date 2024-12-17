@@ -16,7 +16,15 @@ import './data-table-column-filter.js';
             role="columnheader"
           >
           </nuxeo-data-table-column-filter>
-          <div hidden$="[[column.filterBy]]" role="columnheader">[[column.name]]</div>
+          <div
+            title="[[column.name]]"
+            hidden$="[[column.filterBy]]"
+            role="columnheader"
+            style="flex: 1 1 70px; min-width: 70px;
+          max-width: 120px; overflow: hidden; text-overflow: ellipsis; text-align: start;"
+          >
+            [[column.name]]
+          </div>
         </template>
       `;
     }
