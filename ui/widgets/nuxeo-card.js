@@ -98,6 +98,11 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
             --iron-icon-width: 16px;
             --iron-icon-height: 16px;
           }
+          
+          :host([dir="rtl"]) .header .icon {
+            margin-left: 8px;
+            margin-right: 0;
+          }
 
           .header .toggle {
             --iron-icon-width: 20px;
@@ -171,6 +176,13 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
           reflectToAttribute: true,
         },
       };
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      if (!this.hasAttribute('dir')) {
+        this.setAttribute('dir', getComputedStyle(this).direction);
+      }
     }
 
     _hasHeading(icon, heading, collapsible) {
