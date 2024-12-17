@@ -51,7 +51,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           }
         </style>
 
-        <div style="position: relative">
+        <div style="position: relative; width: 40px;">
           <paper-icon-button
             id="sortIcon"
             on-click="_sort"

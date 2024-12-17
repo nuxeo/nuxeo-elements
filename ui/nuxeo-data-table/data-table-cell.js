@@ -12,7 +12,8 @@ import './data-table-templatizer-behavior.js';
       return html`
         <style>
           :host {
-            flex: 1 0 100px;
+            flex: 1 0 120px;
+            flex-basis: 120px;
             padding: 0 24px;
             min-height: 48px;
             display: flex;
