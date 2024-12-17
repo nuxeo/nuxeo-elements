@@ -181,7 +181,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
     connectedCallback() {
       super.connectedCallback();
       if (!this.hasAttribute('dir')) {
-        this.setAttribute('dir', getComputedStyle(this).direction);
+          this.setAttribute('dir', getComputedStyle(this).direction);
       }
     }
 
