@@ -49,9 +49,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             right: 4px;
             bottom: 8px;
           }
+
+          #sortContainer {
+            position: relative; 
+            width: 40px;
+          }
         </style>
 
-        <div style="position: relative; width: 40px;">
+        <div id="sortContainer">
           <paper-icon-button
             id="sortIcon"
             on-click="_sort"

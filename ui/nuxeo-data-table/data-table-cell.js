@@ -35,6 +35,15 @@ import './data-table-templatizer-behavior.js';
           :host([header]) ::slotted(*) {
             min-width: 0;
           }
+
+          :host([header]) ::slotted(#columnHeader) {
+            flex: 1 1 70px;
+            min-width: 70px;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: start;
+          }
         </style>
         <slot></slot>
       `;
