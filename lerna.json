@@ -2,6 +2,6 @@
   "packages": [
     "*"
   ],
-  "version": "3.1.15-rc.4",
+  "version": "3.1.15",
   "hoist": true
 }
