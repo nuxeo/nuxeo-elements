@@ -58,6 +58,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior';
             filter: brightness(1.2);
             -webkit-filter: brightness(1.2);
           }
+
+          :host([dir="rtl"]) img {
+            margin: auto auto auto 8px;
+          }
         </style>
 
         <img id="img" src="[[_thumbnail(document)]]" alt="[[_title(document)]]" on-error="_error" />
@@ -72,6 +76,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior';
       return {
         document: Object,
       };
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      if (!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
     }
 
     _thumbnail(doc) {
