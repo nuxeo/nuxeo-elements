@@ -44,9 +44,15 @@ import './nuxeo-tooltip.js';
           nuxeo-user-avatar {
             margin: 0 0.5rem 0 0;
           }
+          :host([dir='rtl']) nuxeo-user-avatar {
+            margin: 0 0 0 0.5rem;
+          }
           nuxeo-tag {
             padding: 0 6px 0 0;
             max-width: 100%;
+          }
+          :host([dir='rtl']) nuxeo-tag {
+            padding: 0 0 0 6px;
           }
           .tag {
             @apply --layout-horizontal;
@@ -231,6 +237,10 @@ import './nuxeo-tooltip.js';
 
     connectedCallback() {
       super.connectedCallback();
+      if(!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
       this.addEventListener('dom-change', this._layout);
       this.addEventListener('iron-resize', this._layout);
     }
