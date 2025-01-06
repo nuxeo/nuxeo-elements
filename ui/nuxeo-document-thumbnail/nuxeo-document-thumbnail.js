@@ -58,10 +58,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior';
             filter: brightness(1.2);
             -webkit-filter: brightness(1.2);
           }
-          :host([dir="rtl"]) img {
+          :host([dir='rtl']) img {
             margin: auto auto auto 8px;
           }
-
         </style>
 
         <img id="img" src="[[_thumbnail(document)]]" alt="[[_title(document)]]" on-error="_error" />

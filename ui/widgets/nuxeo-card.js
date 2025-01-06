@@ -73,7 +73,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
             @apply --nuxeo-link-hover;
           }
 
-          :host([dir="rtl"]) .header .icon {
+          :host([dir='rtl']) .header .icon {
             margin-left: 8px;
             margin-right: 0;
           }

@@ -131,7 +131,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     connectedCallback() {
       super.connectedCallback();
-      if(!this.hasAttribute('dir')) {
+      if (!this.hasAttribute('dir')) {
         const direction = document.documentElement.getAttribute('dir');
         this.setAttribute('dir', direction);
       }

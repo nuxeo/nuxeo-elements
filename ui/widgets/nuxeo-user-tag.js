@@ -237,7 +237,7 @@ import './nuxeo-tooltip.js';
 
     connectedCallback() {
       super.connectedCallback();
-      if(!this.hasAttribute('dir')) {
+      if (!this.hasAttribute('dir')) {
         const direction = document.documentElement.getAttribute('dir');
         this.setAttribute('dir', direction);
       }

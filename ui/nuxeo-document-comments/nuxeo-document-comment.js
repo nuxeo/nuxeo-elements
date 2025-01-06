@@ -65,7 +65,7 @@ import '../nuxeo-button-styles.js';
             margin-right: 5px;
           }
 
-          :host([dir="rtl"]) .author {
+          :host([dir='rtl']) .author {
             margin-left: 5px;
           }
 
@@ -369,7 +369,7 @@ import '../nuxeo-button-styles.js';
 
     connectedCallback() {
       super.connectedCallback();
-      if(!this.hasAttribute('dir')) {
+      if (!this.hasAttribute('dir')) {
         const direction = document.documentElement.getAttribute('dir');
         this.setAttribute('dir', direction);
       }
