@@ -214,6 +214,11 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
             .finally(() => {
               if (this.autoValidate) {
                 this.validate();
+                const typeHeadInput = this.$.typeahead.shadowRoot.querySelector('input');
+                typeHeadInput.blur();
+                const inputLength = typeHeadInput.value.length;
+                typeHeadInput.setSelectionRange(inputLength, inputLength);
+                typeHeadInput.focus();
               }
             });
         }
