@@ -233,8 +233,11 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
               if (this.autoValidate) {
                 this.validate();
                 const typeHeadInput = this.$.typeahead.shadowRoot.querySelector('input');
+                // In order for setSelectionRange to function properly,
+                // it must become focused after the user has finished choosing a value from the list;
+                // in this instance, the input field becomes focused after the user has chosen the value.
                 typeHeadInput.blur();
-                const inputLength = typeHeadInput.value.length;
+                const inputLength = typeHeadInput && typeHeadInput.value && typeHeadInput.value.length;
                 typeHeadInput.setSelectionRange(inputLength, inputLength);
                 typeHeadInput.focus();
               }
