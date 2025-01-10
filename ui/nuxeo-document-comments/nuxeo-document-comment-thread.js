@@ -167,7 +167,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
      */
 
     connectedCallback() {
-      super.connectedCallback();
+      super.connectedCallback(); //test
       this.addEventListener('delete-comment', this._handleDeleteEvent);
       this.addEventListener('edit-comment', this._handleEditEvent);
       this.addEventListener('comments-changed', this._handleCommentsChange);
