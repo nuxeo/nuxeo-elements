@@ -53,6 +53,9 @@ import '../widgets/nuxeo-tooltip.js';
             @apply --layout-justified;
             line-height: 2.2rem;
           }
+          .properties .item > * {
+            unicode-bidi: plaintext;
+          }
         </style>
         <dom-if if="[[label]]">
           <template>
