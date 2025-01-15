@@ -28,7 +28,7 @@ storiesOf('UI/nuxeo-actions-menu', module).add('Default', () => {
     <nuxeo-actions-menu>
       ${list.map(
         (i) => html`
-          <nuxeo-link-button href="javascript:void(0)" icon=${i} label=${i}> </nuxeo-link-button>
+          <nuxeo-link-button href="#" icon=${i} label=${i}> </nuxeo-link-button>
         `,
       )}
     </nuxeo-actions-menu>

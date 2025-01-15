@@ -2435,7 +2435,11 @@ typedArrayTags[weakMapTag] = false;
           let resultsHtml = isFilteredResultNotEmpty ? this.renderItems(filteredResults) : '';
           if (options.hasMore) {
             resultsHtml += this.selectivity.template('loadMore');
-          } else if (value && Array.isArray(value) && value.includes(options.term)) {
+          } else if (
+            value &&
+            Array.isArray(value) &&
+            value.includes(options && options.term ? options.term.toLowerCase() : null)
+          ) {
             resultsHtml = this.selectivity.template('tagExists');
           } else if (!resultsHtml && !options.add) {
             resultsHtml = this.selectivity.template('noResults', { term: options.term });
@@ -6932,7 +6936,7 @@ typedArrayTags[weakMapTag] = false;
             border: none;
             float: left;
             font: inherit;
-            max-width: 100%;
+            width: 100%;
             outline: 0;
             padding: 0;
             padding-top: 1px;
