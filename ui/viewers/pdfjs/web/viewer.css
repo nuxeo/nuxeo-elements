@@ -3611,11 +3611,6 @@ body{
   color:var(--main-color);
 }
 
-[dir='rtl'] .dropdownToolbarButton > select > option{
-  unicode-bidi: plaintext;
-  text-align: right;
-}
-
 .toolbarButtonSpacer{
   width:30px;
   display:inline-block;
