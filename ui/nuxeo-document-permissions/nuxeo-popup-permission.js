@@ -196,7 +196,9 @@ import '../nuxeo-button-styles.js';
           </paper-dialog-scrollable>
 
           <div class="buttons">
-            <paper-button dialog-dismiss class="secondary"><span>[[i18n('popupPermission.cancel')]]</span></paper-button>
+            <paper-button dialog-dismiss class="secondary">
+            <span>[[i18n('popupPermission.cancel')]]</span>
+            </paper-button>
             <dom-if if="{{!updatingACE}}">
               <template>
                 <paper-button noink class="primary small" on-click="doCreateAndAdd" id="createAndAddPermissionButton">
