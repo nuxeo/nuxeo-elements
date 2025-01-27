@@ -79,9 +79,9 @@ import '../nuxeo-button-styles.js';
         <dom-if if="{{!updatingACE}}">
           <template>
             <paper-button on-click="togglePopup" id="newPermissionButton" class="text small">
-            <span>
-              [[i18n('popupPermission.newPermission')]]
-            </span>
+              <span>
+                [[i18n('popupPermission.newPermission')]]
+              </span>
             </paper-button>
           </template>
         </dom-if>
@@ -197,19 +197,19 @@ import '../nuxeo-button-styles.js';
 
           <div class="buttons">
             <paper-button dialog-dismiss class="secondary">
-            <span>[[i18n('popupPermission.cancel')]]</span>
+              <span>[[i18n('popupPermission.cancel')]]</span>
             </paper-button>
             <dom-if if="{{!updatingACE}}">
               <template>
                 <paper-button noink class="primary small" on-click="doCreateAndAdd" id="createAndAddPermissionButton">
-                <span>
-                  [[i18n('popupPermission.createAndAdd')]]
-                </span>
+                  <span>
+                    [[i18n('popupPermission.createAndAdd')]]
+                  </span>
                 </paper-button>
                 <paper-button noink class="primary small" on-click="doCreate" id="createPermissionButton">
-                <span>
-                  [[i18n('popupPermission.create')]]
-                </span>
+                  <span>
+                    [[i18n('popupPermission.create')]]
+                  </span>
                 </paper-button>
               </template>
             </dom-if>
