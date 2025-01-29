@@ -59,6 +59,11 @@ import '../nuxeo-button-styles.js';
             right: 16px;
           }
 
+          :host([dir='rtl']) nuxeo-card .actions {
+            right: auto;
+            left: 16px;
+          }
+
           nuxeo-card .content {
             margin-top: 32px;
           }
@@ -238,6 +243,14 @@ import '../nuxeo-button-styles.js';
           observer: 'refresh',
         },
       };
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      if (!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
     }
 
     ready() {

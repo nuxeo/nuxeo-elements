@@ -90,6 +90,11 @@ import './nuxeo-button-styles.js';
             top: 15px;
           }
 
+          :host([dir='rtl']) #createDropdown {
+            left: 0;
+            right: auto;
+          }
+
           paper-menu-button {
             width: 130px;
             height: 48px;
@@ -233,6 +238,10 @@ import './nuxeo-button-styles.js';
 
     ready() {
       super.ready();
+      if (!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
       // dynamic loading of user layouts
       if (!this._isRegistered('nuxeo-view-user')) {
         importHref(this.resolveUrl('nuxeo-user-group-management/nuxeo-view-user.html'));

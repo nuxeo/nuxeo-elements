@@ -68,9 +68,19 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
               display: block;
               overflow: hidden;
               white-space: nowrap;
-              direction: rtl;
-              text-align: left;
               @apply --nuxeo-path-suggestion-result;
+            }
+
+            :host([dir='rtl']) {
+              --paper-typeahead-result: {
+                text-align: right;
+              }
+            }
+
+            :host(:not([dir='rtl'])) {
+              --paper-typeahead-result: {
+                text-align: left;
+              }
             }
 
             --paper-input-container-underline: {
@@ -173,6 +183,14 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
           reflectToAttribute: true,
         },
       };
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      if (!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
     }
 
     displayResults() {
