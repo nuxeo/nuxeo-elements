@@ -49,7 +49,7 @@ import './nuxeo-popup-permission.js';
             color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.54));
             font-weight: 700;
             min-height: 48px;
-            padding: 0 0 0 12px;
+            padding: 0 12px 0 12px;
             border-bottom: 2px solid var(--nuxeo-border, #eee);
             box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2) inset;
           }
@@ -61,7 +61,7 @@ import './nuxeo-popup-permission.js';
             background-color: var(--nuxeo-table-items-background, #fafafa);
             cursor: pointer;
             min-height: 48px;
-            padding: 0 0 0 12px;
+            padding: 0 12px 0 12px;
           }
 
           .acl-table-row:hover {

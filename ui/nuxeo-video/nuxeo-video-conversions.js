@@ -50,6 +50,9 @@ import '../widgets/nuxeo-tooltip.js';
             @apply --layout-justified;
             line-height: 2.2rem;
           }
+          .properties .item > * {
+            unicode-bidi: plaintext;
+          }
           .properties .item span {
             flex: 1;
             text-align: left;
