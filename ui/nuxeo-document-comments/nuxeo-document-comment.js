@@ -65,6 +65,10 @@ import '../nuxeo-button-styles.js';
             margin-right: 5px;
           }
 
+          :host([dir='rtl']) .author {
+            margin-left: 5px;
+          }
+
           .info {
             margin-left: 10px;
             @apply --layout-vertical;
@@ -365,6 +369,10 @@ import '../nuxeo-button-styles.js';
 
     connectedCallback() {
       super.connectedCallback();
+      if (!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
       this.addEventListener('number-of-replies', this._handleRepliesChange);
       this.text = this.comment && this.comment.text;
     }

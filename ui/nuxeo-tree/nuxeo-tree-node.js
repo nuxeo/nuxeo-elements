@@ -54,6 +54,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             margin: 0.1rem 0 0.2rem;
           }
 
+          :host([dir='rtl']) ::slotted(#content) {
+            margin: 0.1rem 0.8rem 0.2rem 0;
+          }
+
           ::slotted(#content iron-icon) {
             margin-top: -0.25rem;
           }
@@ -123,6 +127,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           value: true,
         },
       };
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      if (!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
     }
 
     static get observers() {
