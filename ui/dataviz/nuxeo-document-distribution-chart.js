@@ -103,8 +103,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           #ex {
             position: absolute;
-            top: 260px;
-            left: 305px;
             width: 140px;
             text-align: center;
             z-index: 10;
@@ -491,7 +489,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       return this.$.nx.request().then((request) =>
         request
           .execute(options)
-          .then(this._handleResponse.bind(this))
+          .then((res) => {
+            window.onresize = () => this._handleResponse(res);
+            this._handleResponse(res);
+          })
           .catch(this._handleError.bind(this)),
       );
     }
@@ -539,7 +540,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _buildSunBurst(aggs) {
-      const aggregations = aggs.subLevel;
+      const aggregations = JSON.parse(JSON.stringify(aggs.subLevel));
       aggregations.name = 'root';
       aggregations.color = this._getColor(aggregations.name, this.chartHue, this.chartLuminosity);
       aggregations.children = aggregations.buckets;
@@ -553,23 +554,35 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._chartData = aggregations;
 
       // Dimensions of sunburst.
+      const maxRadius = this.$.chart.offsetWidth / 2 - 20;
       radius = Math.min(this.width, this.height) / 2;
+      let { width, height } = this;
+
+      if (radius > maxRadius) {
+        radius = maxRadius;
+        width = height = 2 * radius;
+      }
 
       // Total size of all segments; we set this later, after loading the data.
       this.totalSize = 0;
 
       const svg = this.$.chart.querySelector('svg');
+      const textContainer = this.$.chart.querySelector('#ex');
       if (svg) {
         svg.parentNode.removeChild(svg);
       }
 
       vis = select(this.$.chart)
         .append('svg:svg')
-        .attr('width', this.width)
-        .attr('height', this.height)
+        .attr('width', width)
+        .attr('height', height)
         .append('svg:g')
         .attr('id', 'container')
-        .attr('transform', `translate(${this.width / 2},${this.height / 2})`);
+        .attr('transform', `translate(${width / 2},${height / 2})`);
+
+      textContainer.style.width = `${140}px`;
+      textContainer.style.height = `${70}px`;
+      textContainer.style.transform = `translate(${width / 2 - 70}px, ${height / 2 - 35}px)`;
 
       _partition = partition().size([2 * Math.PI, radius * radius]);
 

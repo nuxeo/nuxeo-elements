@@ -93,9 +93,26 @@ import '@polymer/iron-image/iron-image.js';
     }
 
     _url(doc) {
-      return doc && doc.contextParameters && doc.contextParameters.thumbnail && doc.contextParameters.thumbnail.url
-        ? doc.contextParameters.thumbnail.url
-        : '';
+      if (
+        doc &&
+        doc.uid &&
+        doc.contextParameters &&
+        doc.contextParameters.thumbnail &&
+        doc.contextParameters.thumbnail.url
+      ) {
+        if (!this.isFollowRedirectEnabled()) {
+          const splitter = doc.contextParameters.thumbnail.url.indexOf('?') > -1 ? '&' : '?';
+          doc.contextParameters.thumbnail.url = `${doc.contextParameters.thumbnail.url}${splitter}clientReason=view`;
+        }
+        return doc.contextParameters.thumbnail.url;
+      }
+      return '';
+    }
+
+    isFollowRedirectEnabled() {
+      const followRedirect =
+        Nuxeo && Nuxeo.UI && Nuxeo.UI.config && Nuxeo.UI.config.url && Nuxeo.UI.config.url.followRedirect;
+      return followRedirect ? String(followRedirect).toLowerCase() === 'true' : false;
     }
   }
 

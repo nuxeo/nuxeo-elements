@@ -29,7 +29,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
           scope: '@nuxeo'
 
@@ -45,6 +45,8 @@ jobs:
 
       - name: Build storybook
         working-directory: storybook
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider        
         run: |
           npx build-storybook -o dist -s ./public
 
@@ -52,5 +54,6 @@ jobs:
         if: ${{ env.BRANCH_NAME == 'maintenance-3.1.x' }}
         env:
           GH_TOKEN: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
+          NODE_OPTIONS: --openssl-legacy-provider
         working-directory: storybook
         run: npm run deploy -- --ci

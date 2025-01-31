@@ -146,8 +146,12 @@ import './viewers/nuxeo-video-viewer.js';
           <nuxeo-pdf-viewer src="[[_computeRendition(document, xpath, 'pdf')]]"></nuxeo-pdf-viewer>
         </template>
 
-        <template mime-pattern=".*">
+        <template mime-pattern="application/zip">
           <object id="frame" data="[[_computeObjectSource(_blob)]]"></object>
+        </template>
+
+        <template mime-pattern=".*">
+          <nuxeo-pdf-viewer src="[[_computeObjectSource(_blob)]]"></nuxeo-pdf-viewer>
         </template>
 
         <div id="preview"></div>
@@ -364,7 +368,9 @@ import './viewers/nuxeo-video-viewer.js';
         if (!viewUrl) {
           viewUrl = this.document.contextParameters.preview.url;
         }
-        if (this.xpath !== 'file:content') {
+        if (this.xpath !== 'file:content' && this._blob['mime-type'] !== 'application/zip') {
+          viewUrl = viewUrl.replace('/@preview/', `/@blob/${this.xpath}/@convert?converter=any2pdf&`);
+        } else {
           viewUrl = viewUrl.replace('/@preview/', `/@blob/${this.xpath}/@preview/`);
         }
         return viewUrl;

@@ -768,6 +768,10 @@ const template = html`
           top: 50%;
           width: 18px;
         }
+        :host([dir='rtl']) .ql-snow .ql-picker:not(.ql-color-picker):not(.ql-icon-picker) svg {
+          left: 0;
+          right: auto;
+        }
         .ql-snow .ql-picker.ql-header .ql-picker-label[data-label]:not([data-label=''])::before,
         .ql-snow .ql-picker.ql-font .ql-picker-label[data-label]:not([data-label=''])::before,
         .ql-snow .ql-picker.ql-size .ql-picker-label[data-label]:not([data-label=''])::before,

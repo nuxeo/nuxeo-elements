@@ -105,7 +105,7 @@ import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-beha
           }
 
           .emptyResult {
-            opacity: 0.5;
+            opacity: 0.8;
             display: block;
             font-weight: 300;
             padding: 1.5em 0.7em;
@@ -218,16 +218,46 @@ import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-beha
           type: Boolean,
           value: false,
         },
+
+        /**
+         * Technical property used to scroll back to the top after reaching the last element in a listing,
+         * related to accessibility.
+         */
+        _lastIndex: {
+          type: Number,
+          value: 0,
+        },
+
+        _lastIndexValue: {
+          type: Number,
+          value: 0,
+        },
       };
     }
 
     static get observers() {
-      return ['_fetchMissingItems(loading)'];
+      return ['_fetchMissingItems(loading)', '_lastIndexChanged(lastIndex)'];
     }
 
     ready() {
       super.ready();
       this.addEventListener('iron-resize', this._fetchMissingItems);
+      this.addEventListener('keydown', this._handleKeyDown);
+    }
+
+    _handleKeyDown(event) {
+      if (event.key === 'Tab') {
+        if (
+          this.$.list.lastVisibleIndex === this._lastIndexValue ||
+          this.$.list.lastVisibleIndex === this._lastIndexValue - 1
+        ) {
+          this.$.list.scrollTop = 0;
+        }
+      }
+    }
+
+    _lastIndexChanged(lastIndex) {
+      this._lastIndexValue = lastIndex;
     }
 
     // WEBUI-159: Check if there are more items in viewport than the ones set by the provider and load them.
