@@ -2435,7 +2435,11 @@ typedArrayTags[weakMapTag] = false;
           let resultsHtml = isFilteredResultNotEmpty ? this.renderItems(filteredResults) : '';
           if (options.hasMore) {
             resultsHtml += this.selectivity.template('loadMore');
-          } else if (value && Array.isArray(value) && value.includes(options.term)) {
+          } else if (
+            value &&
+            Array.isArray(value) &&
+            value.includes(options && options.term ? options.term.toLowerCase() : null)
+          ) {
             resultsHtml = this.selectivity.template('tagExists');
           } else if (!resultsHtml && !options.add) {
             resultsHtml = this.selectivity.template('noResults', { term: options.term });
@@ -6932,7 +6936,7 @@ typedArrayTags[weakMapTag] = false;
             border: none;
             float: left;
             font: inherit;
-            max-width: 100%;
+            width: 100%;
             outline: 0;
             padding: 0;
             padding-top: 1px;
@@ -6966,6 +6970,10 @@ typedArrayTags[weakMapTag] = false;
             user-select: none;
             white-space: nowrap;
             @apply --nuxeo-tag;
+          }
+
+          :host([dir='rtl']) .selectivity-multiple-selected-item {
+            float: right;
           }
 
           .selectivity-multiple-selected-item.highlighted {
@@ -7024,6 +7032,11 @@ typedArrayTags[weakMapTag] = false;
             position: absolute;
             top: 12px;
             right: 0;
+          }
+
+          :host([dir="rtl"]) .selectivity-caret {
+            left:0;
+            right: auto;
           }
 
           @media only screen and (max-device-width: 480px) {
@@ -7122,6 +7135,10 @@ typedArrayTags[weakMapTag] = false;
 
     connectedCallback() {
       super.connectedCallback();
+      if (!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
       const options = {
         searchFloor: this.minChars, // minimum length a search value should be before choices are searched
         tokenSeparators: [this.separator],
@@ -7358,10 +7375,12 @@ typedArrayTags[weakMapTag] = false;
       if (this._selectivity) {
         this._selectivity.setOptions({ items: this._wrap(this.data) });
         const selectivityData = this._selectivity.getData();
-        const wrapData = this._wrap(this.data);
-        const newData = wrapData.filter(obj => selectivityData.some(item => item.id === obj.id));
-        if (newData.length !== 0 && JSON.stringify(newData) !== JSON.stringify(selectivityData)) {
-          this._selectivity.setData(newData);
+          if(selectivityData){
+            const wrapData = this._wrap(this.data);
+            const newData = wrapData.filter(obj => selectivityData.some(item => item.id === obj.id));
+            if (newData.length !== 0 && JSON.stringify(newData) !== JSON.stringify(selectivityData)) {
+              this._selectivity.setData(newData);
+            }
         }
       }
     }

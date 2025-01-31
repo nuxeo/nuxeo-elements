@@ -79,7 +79,9 @@ import '../nuxeo-button-styles.js';
         <dom-if if="{{!updatingACE}}">
           <template>
             <paper-button on-click="togglePopup" id="newPermissionButton" class="text small">
-              [[i18n('popupPermission.newPermission')]]
+              <span>
+                [[i18n('popupPermission.newPermission')]]
+              </span>
             </paper-button>
           </template>
         </dom-if>
@@ -194,23 +196,27 @@ import '../nuxeo-button-styles.js';
           </paper-dialog-scrollable>
 
           <div class="buttons">
-            <paper-button dialog-dismiss class="secondary" on-click="doCancel"
-              >[[i18n('popupPermission.cancel')]]</paper-button
-            >
+            <paper-button dialog-dismiss class="secondary">
+              <span>[[i18n('popupPermission.cancel')]]</span>
+            </paper-button>
             <dom-if if="{{!updatingACE}}">
               <template>
                 <paper-button noink class="primary small" on-click="doCreateAndAdd" id="createAndAddPermissionButton">
-                  [[i18n('popupPermission.createAndAdd')]]
+                  <span>
+                    [[i18n('popupPermission.createAndAdd')]]
+                  </span>
                 </paper-button>
                 <paper-button noink class="primary small" on-click="doCreate" id="createPermissionButton">
-                  [[i18n('popupPermission.create')]]
+                  <span>
+                    [[i18n('popupPermission.create')]]
+                  </span>
                 </paper-button>
               </template>
             </dom-if>
             <dom-if if="{{updatingACE}}">
               <template>
                 <paper-button noink class="primary small" on-click="doUpdate"
-                  >[[i18n('popupPermission.update')]]</paper-button
+                  ><span>[[i18n('popupPermission.update')]]</span></paper-button
                 >
               </template>
             </dom-if>
@@ -273,6 +279,7 @@ import '../nuxeo-button-styles.js';
     }
 
     togglePopup() {
+      this.set('params.invalid', false);
       this.$.popupRight.toggle();
     }
 
@@ -286,11 +293,6 @@ import '../nuxeo-button-styles.js';
 
     doUpdate() {
       this._doSend(true);
-    }
-
-    doCancel() {
-      this.params = this._getResetParams();
-      this.set('params.invalid', false);
     }
 
     _computeTitle() {
@@ -353,6 +355,7 @@ import '../nuxeo-button-styles.js';
       if (this.updatingACE) {
         this.$.replaceOp.execute();
       } else {
+        this.set('params.invalid', false);
         this.$.createOp.execute();
       }
 

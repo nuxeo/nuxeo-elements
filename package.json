@@ -3,11 +3,11 @@
   "repository": "nuxeo/nuxeo-elements.git",
   "name": "nuxeo-elements",
   "private": true,
-  "version": "3.1.5-SNAPSHOT",
+  "version": "3.1.16-SNAPSHOT",
   "author": "Nuxeo",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
     "postinstall": "check-engine --ignore",

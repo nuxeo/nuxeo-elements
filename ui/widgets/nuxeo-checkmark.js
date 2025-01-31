@@ -68,7 +68,9 @@ import '../nuxeo-icons.js';
           }
 
           :host(:focus) {
-            outline: none;
+            border: 2px solid var(--nuxeo-checkmark-border-color, var(--nuxeo-text-default, gray));
+            background-color: var(--nuxeo-checkmark-background-color-hover, transparent);
+            color: var(--nuxeo-icon-color-hover, black);
           }
 
           :host(:hover) {

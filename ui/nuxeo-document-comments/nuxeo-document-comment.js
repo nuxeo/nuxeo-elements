@@ -60,14 +60,13 @@ import '../nuxeo-button-styles.js';
             margin-top: 5px;
           }
 
-          #body:hover paper-icon-button {
-            opacity: 0.5;
-            transition: opacity 100ms;
-          }
-
           .author {
             font-weight: bold;
             margin-right: 5px;
+          }
+
+          :host([dir='rtl']) .author {
+            margin-left: 5px;
           }
 
           .info {
@@ -101,7 +100,7 @@ import '../nuxeo-button-styles.js';
           }
 
           paper-icon-button {
-            opacity: 0;
+            opacity: 0.5;
             --paper-icon-button: {
               padding: 0;
             }
@@ -125,6 +124,11 @@ import '../nuxeo-button-styles.js';
 
             --paper-item-focused-before: {
               background-color: transparent;
+            }
+
+            &[name='edit']:focus,
+            &[name='delete']:focus {
+              outline: auto;
             }
           }
         </style>
@@ -165,7 +169,13 @@ import '../nuxeo-button-styles.js';
                     >
                     <dom-if if="[[_areExtendedOptionsAvailable(comment.author, currentUser)]]">
                       <template>
-                        <paper-menu-button id="options" no-animations close-on-activate>
+                        <paper-menu-button
+                          id="options"
+                          vertical-align="top"
+                          horizontal-align="right"
+                          no-animations
+                          close-on-activate
+                        >
                           <paper-icon-button
                             class="main-option"
                             icon="more-vert"
@@ -239,6 +249,8 @@ import '../nuxeo-button-styles.js';
                               class="main-option opaque"
                               icon="check"
                               on-tap="_submitComment"
+                              on-keydown="_submitOnEnter"
+                              tabindex="0"
                             ></iron-icon>
                             <nuxeo-tooltip for="submit">[[i18n('comments.submit.tooltip')]]</nuxeo-tooltip>
                             <iron-icon
@@ -246,6 +258,8 @@ import '../nuxeo-button-styles.js';
                               class="main-option opaque"
                               icon="clear"
                               on-tap="_clearInput"
+                              on-keydown="_cancelOnEnter"
+                              tabindex="0"
                             ></iron-icon>
                           </template>
                         </dom-if>
@@ -355,6 +369,10 @@ import '../nuxeo-button-styles.js';
 
     connectedCallback() {
       super.connectedCallback();
+      if (!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
       this.addEventListener('number-of-replies', this._handleRepliesChange);
       this.text = this.comment && this.comment.text;
     }
@@ -396,6 +414,18 @@ import '../nuxeo-button-styles.js';
             throw error;
           }
         });
+    }
+
+    _submitOnEnter(event) {
+      if (event.key === 'Enter') {
+        this._submitComment();
+      }
+    }
+
+    _cancelOnEnter(event) {
+      if (event.key === 'Enter') {
+        this._clearInput();
+      }
     }
 
     _editComment() {
