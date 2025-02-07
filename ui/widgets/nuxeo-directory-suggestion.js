@@ -244,6 +244,14 @@ import { escapeHTML } from './nuxeo-selectivity.js';
       };
     }
 
+    connectedCallback() {
+      super.connectedCallback();
+      if (!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
+    }
+
     /* Override method from Polymer.IronValidatableBehavior. */
     _getValidity() {
       return this.$.s2._getValidity();

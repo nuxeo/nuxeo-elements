@@ -6936,7 +6936,7 @@ typedArrayTags[weakMapTag] = false;
             border: none;
             float: left;
             font: inherit;
-            max-width: 100%;
+            width: 100%;
             outline: 0;
             padding: 0;
             padding-top: 1px;
@@ -6970,6 +6970,10 @@ typedArrayTags[weakMapTag] = false;
             user-select: none;
             white-space: nowrap;
             @apply --nuxeo-tag;
+          }
+
+          :host([dir='rtl']) .selectivity-multiple-selected-item {
+            float: right;
           }
 
           .selectivity-multiple-selected-item.highlighted {
@@ -7028,6 +7032,11 @@ typedArrayTags[weakMapTag] = false;
             position: absolute;
             top: 12px;
             right: 0;
+          }
+
+          :host([dir="rtl"]) .selectivity-caret {
+            left:0;
+            right: auto;
           }
 
           @media only screen and (max-device-width: 480px) {
@@ -7126,6 +7135,10 @@ typedArrayTags[weakMapTag] = false;
 
     connectedCallback() {
       super.connectedCallback();
+      if (!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
       const options = {
         searchFloor: this.minChars, // minimum length a search value should be before choices are searched
         tokenSeparators: [this.separator],

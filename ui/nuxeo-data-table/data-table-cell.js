@@ -12,7 +12,8 @@ import './data-table-templatizer-behavior.js';
       return html`
         <style>
           :host {
-            flex: 1 0 100px;
+            flex: 1 0 120px;
+            flex-basis: 120px;
             padding: 0 24px;
             min-height: 48px;
             display: flex;
@@ -33,6 +34,15 @@ import './data-table-templatizer-behavior.js';
 
           :host([header]) ::slotted(*) {
             min-width: 0;
+          }
+
+          :host([header]) ::slotted(#columnHeader) {
+            flex: 1 1 70px;
+            min-width: 70px;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: start;
           }
         </style>
         <slot></slot>

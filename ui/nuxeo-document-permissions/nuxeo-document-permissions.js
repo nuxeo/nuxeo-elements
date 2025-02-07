@@ -59,6 +59,11 @@ import '../nuxeo-button-styles.js';
             right: 16px;
           }
 
+          :host([dir='rtl']) nuxeo-card .actions {
+            right: auto;
+            left: 16px;
+          }
+
           nuxeo-card .content {
             margin-top: 32px;
           }
@@ -130,14 +135,18 @@ import '../nuxeo-button-styles.js';
                 <dom-if if="[[!_empty(inheritedAces)]]">
                   <template>
                     <paper-button id="block" on-click="blockInheritance" class="text small">
-                      [[i18n('documentPermissions.block')]]
+                      <span>
+                        [[i18n('documentPermissions.block')]]
+                      </span>
                     </paper-button>
                   </template>
                 </dom-if>
                 <dom-if if="[[_empty(inheritedAces)]]">
                   <template>
                     <paper-button id="unblock" on-click="unblockInheritance" class="text small">
-                      [[i18n('documentPermissions.unblock')]]
+                      <span>
+                        [[i18n('documentPermissions.unblock')]]
+                      </span>
                     </paper-button>
                   </template>
                 </dom-if>
@@ -234,6 +243,14 @@ import '../nuxeo-button-styles.js';
           observer: 'refresh',
         },
       };
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      if (!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
     }
 
     ready() {

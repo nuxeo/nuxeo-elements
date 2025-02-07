@@ -181,6 +181,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     ready() {
       super.ready();
+      if (!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
       // init editor
       const { placeholder, readOnly } = this;
       const modules = { toolbar: '#toolbar' };
