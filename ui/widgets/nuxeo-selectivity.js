@@ -7367,7 +7367,7 @@ typedArrayTags[weakMapTag] = false;
         if (newValue) {
             // Check if newValue data is present in this.data
           const isValueInData = Array.isArray(newValue) && newValue.every(val => 
-            this.data.some(dataItem => dataItem.id === val)
+            this.data && this.data.some(dataItem => dataItem.id === val)
           );
           if (!isValueInData) {
             this.data = this._storage;
