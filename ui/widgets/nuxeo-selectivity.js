@@ -7424,7 +7424,7 @@ typedArrayTags[weakMapTag] = false;
     }
 
     _idFunction(item) {
-      const id = ['computeId', 'uid', 'id'].find((key) => item?.hasOwnProperty(key));
+      const id = ['computeId', 'uid', 'id'].find((key) => item.hasOwnProperty(key));
       return id ? item[id] : item;
     }
 
