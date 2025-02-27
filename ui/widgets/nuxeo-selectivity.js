@@ -6811,6 +6811,11 @@ typedArrayTags[weakMapTag] = false;
           type: Object,
           value: null,
         },
+
+        _storage:{
+          type: Array,
+          value:[],
+        }
       };
     }
 
@@ -6936,7 +6941,7 @@ typedArrayTags[weakMapTag] = false;
             border: none;
             float: left;
             font: inherit;
-            max-width: 100%;
+            width: 100%;
             outline: 0;
             padding: 0;
             padding-top: 1px;
@@ -6970,6 +6975,10 @@ typedArrayTags[weakMapTag] = false;
             user-select: none;
             white-space: nowrap;
             @apply --nuxeo-tag;
+          }
+
+          :host([dir='rtl']) .selectivity-multiple-selected-item {
+            float: right;
           }
 
           .selectivity-multiple-selected-item.highlighted {
@@ -7028,6 +7037,11 @@ typedArrayTags[weakMapTag] = false;
             position: absolute;
             top: 12px;
             right: 0;
+          }
+
+          :host([dir="rtl"]) .selectivity-caret {
+            left:0;
+            right: auto;
           }
 
           @media only screen and (max-device-width: 480px) {
@@ -7126,6 +7140,10 @@ typedArrayTags[weakMapTag] = false;
 
     connectedCallback() {
       super.connectedCallback();
+      if (!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
       const options = {
         searchFloor: this.minChars, // minimum length a search value should be before choices are searched
         tokenSeparators: [this.separator],
@@ -7347,6 +7365,15 @@ typedArrayTags[weakMapTag] = false;
     _valueChanged(newValue) {
       if (this._selectivity && !this._inUpdateSelection) {
         if (newValue) {
+            // Check if newValue data is present in this.data
+          const isValueInData = Array.isArray(newValue) && newValue?.every(val => 
+            this.data?.some(dataItem => dataItem.id === val)
+          );
+
+          if (!isValueInData) {
+           this.data = this._storage;
+          }
+
           this._selectivity.setValue(newValue, { triggerChange: false });
         } else {
           const cv = this._selectivity.getValue();
@@ -7359,6 +7386,9 @@ typedArrayTags[weakMapTag] = false;
     }
 
     _dataChanged() {
+      if(this.data.length > 0 && this.data.length > this._storage.length){
+        this._storage = this.data
+      }
       if (this._selectivity) {
         this._selectivity.setOptions({ items: this._wrap(this.data) });
         const selectivityData = this._selectivity.getData();
@@ -7395,7 +7425,7 @@ typedArrayTags[weakMapTag] = false;
     }
 
     _idFunction(item) {
-      const id = ['computeId', 'uid', 'id'].find((key) => item.hasOwnProperty(key));
+     const id = ['computeId', 'uid', 'id'].find((key) => item?.hasOwnProperty(key));
       return id ? item[id] : item;
     }
 
