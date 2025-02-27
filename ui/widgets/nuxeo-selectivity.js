@@ -6811,6 +6811,11 @@ typedArrayTags[weakMapTag] = false;
           type: Object,
           value: null,
         },
+
+        _storage:{
+          type: Array,
+          value:[],
+        }
       };
     }
 
@@ -7360,6 +7365,13 @@ typedArrayTags[weakMapTag] = false;
     _valueChanged(newValue) {
       if (this._selectivity && !this._inUpdateSelection) {
         if (newValue) {
+            // Check if newValue data is present in this.data
+          const isValueInData = Array.isArray(newValue) && newValue.every(val => 
+            this.data.some(dataItem => dataItem.id === val)
+          );
+          if (!isValueInData) {
+            this.data = this._storage;
+          }
           this._selectivity.setValue(newValue, { triggerChange: false });
         } else {
           const cv = this._selectivity.getValue();
@@ -7372,6 +7384,9 @@ typedArrayTags[weakMapTag] = false;
     }
 
     _dataChanged() {
+      if(this.data.length > 0 && this.data.length > this._storage.length){
+        this._storage = this.data
+      }
       if (this._selectivity) {
         this._selectivity.setOptions({ items: this._wrap(this.data) });
         const selectivityData = this._selectivity.getData();
