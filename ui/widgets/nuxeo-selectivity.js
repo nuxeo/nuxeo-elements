@@ -7373,6 +7373,7 @@ typedArrayTags[weakMapTag] = false;
             this.data = this._storage.filter(dataItem => 
               newValue.includes(dataItem.id)
             );
+          }
           this._selectivity.setValue(newValue, { triggerChange: false });
         } else {
           const cv = this._selectivity.getValue();
