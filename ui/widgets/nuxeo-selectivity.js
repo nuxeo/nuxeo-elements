@@ -7370,8 +7370,9 @@ typedArrayTags[weakMapTag] = false;
             this.data && this.data.some(dataItem => dataItem.id === val)
           );
           if (!isValueInData) {
-            this.data = this._storage;
-          }
+            this.data = this._storage.filter(dataItem => 
+              newValue.includes(dataItem.id)
+            );
           this._selectivity.setValue(newValue, { triggerChange: false });
         } else {
           const cv = this._selectivity.getValue();
