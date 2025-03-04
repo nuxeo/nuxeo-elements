@@ -6957,7 +6957,7 @@ typedArrayTags[weakMapTag] = false;
           }
 
           .selectivity-multiple-input::placeholder {
-            color: #999;
+            color: #606978;
           }
 
           .selectivity-multiple-selected-item {
