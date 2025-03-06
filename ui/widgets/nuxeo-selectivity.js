@@ -6811,6 +6811,11 @@ typedArrayTags[weakMapTag] = false;
           type: Object,
           value: null,
         },
+
+        _storage:{
+          type: Array,
+          value:[],
+        }
       };
     }
 
@@ -7359,19 +7364,40 @@ typedArrayTags[weakMapTag] = false;
 
     _valueChanged(newValue) {
       if (this._selectivity && !this._inUpdateSelection) {
-        if (newValue) {
-          this._selectivity.setValue(newValue, { triggerChange: false });
-        } else {
-          const cv = this._selectivity.getValue();
-          if ((this.multiple && cv.length > 0) || (!this.multiple && cv)) {
-            // in cases where newValue is either undefined or null, clear the value
-            this._selectivity.clear();
-          }
+      if (newValue) {
+        const isValueInData = Array.isArray(newValue) && newValue.every((val) => {
+        if (!this.data) {
+          return false;
         }
+        return this.data.some((dataItem) => dataItem.id === val);
+        });
+
+        if (!isValueInData) {
+        const matchingData = Array.isArray(newValue)
+          ? newValue.map((val) => {
+            if (!this._storage) {
+            return null;
+            }
+            return this._storage.find((item) => item.id === val);
+          }).filter(Boolean)
+          : this._storage && [this._storage.find((item) => item.id === newValue)].filter(Boolean);
+        this.data = matchingData || [];
+        }
+        this._selectivity.setValue(newValue, { triggerChange: false });
+      } else {
+        const cv = this._selectivity.getValue();
+        if ((this.multiple && cv.length > 0) || (!this.multiple && cv)) {
+        // in cases where newValue is either undefined or null, clear the value
+        this._selectivity.clear();
+        }
+      }
       }
     }
 
     _dataChanged() {
+      if(this.data.length > 0 && this.data.length > this._storage.length){
+        this._storage = this.data
+      }
       if (this._selectivity) {
         this._selectivity.setOptions({ items: this._wrap(this.data) });
         const selectivityData = this._selectivity.getData();
@@ -7408,7 +7434,7 @@ typedArrayTags[weakMapTag] = false;
     }
 
     _idFunction(item) {
-      const id = ['computeId', 'uid', 'id'].find((key) => item.hasOwnProperty(key));
+      const id = ['computeId', 'uid', 'id'].find((key) => item && item.hasOwnProperty(key));
       return id ? item[id] : item;
     }
 
