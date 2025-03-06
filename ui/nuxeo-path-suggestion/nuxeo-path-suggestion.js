@@ -230,7 +230,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
               }
             })
             .finally(() => {
-              if (this.autoValidate && oldValue!= newValue) {
+              if (this.autoValidate && oldValue!== newValue) {
                 this.validate();
                 const typeHeadInput = this.$.typeahead.shadowRoot.querySelector('input');
                 // In order for setSelectionRange to function properly,
