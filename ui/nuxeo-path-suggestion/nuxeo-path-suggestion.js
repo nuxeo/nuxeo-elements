@@ -217,7 +217,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
       }
     }
 
-    _valueChanged(oldValue, newValue) {
+    _valueChanged() {
       if (this.value && !this.disabled) {
         const idx = this.value.lastIndexOf('/');
         if (idx > -1) {
@@ -230,7 +230,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
               }
             })
             .finally(() => {
-              if (this.autoValidate && oldValue!== newValue) {
+              if (this.autoValidate) {
                 this.validate();
                 const typeHeadInput = this.$.typeahead.shadowRoot.querySelector('input');
                 // In order for setSelectionRange to function properly,
