@@ -187,6 +187,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     ready() {
       super.ready();
       moment.locale(window.nuxeo.I18n.language ? window.nuxeo.I18n.language.split('-')[0] : 'en');
+      // added this piece of code to rectify the issue where dates are not applied on first click
       const datePickerDiv = this.shadowRoot.querySelector('#vaadinDatePicker');
       const datePicker = this.shadowRoot.querySelector('vaadin-date-picker');
       const handleclick = () => {
@@ -199,7 +200,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           datePicker.removeEventListener('focusout', handleclick);
         }
       });
-
+      // tell vaadin-date-picker how to display dates since default behavior is US locales (MM-DD-YYYY)
+      // this way we can take advantage of moment locale and use the date format that is most suitable for the user
       this.$.date.set('i18n.formatDate', (date) => this._moment(date).format(moment.localeData().longDateFormat('L')));
       this.$.date.set('i18n.parseDate', (text) => {
         const date = this._moment(text, moment.localeData().longDateFormat('L'));
