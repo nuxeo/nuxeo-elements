@@ -1,0 +1,41 @@
+<!--
+`nuxeo-documentoperational-search-form`
+@group Nuxeo UI
+@element nuxeo-documentoperational-search-form
+-->
+<dom-module id="nuxeo-documentoperational-search-form">
+  <template>
+    <style include="nuxeo-styles"></style>
+    <nuxeo-directory-suggestion
+      role="widget"
+      value="{{params.documentope_typology}}"
+      label="Typology"
+      min-chars="0"
+      directory-name="dtc"
+      name="documentope_typology"
+    ></nuxeo-directory-suggestion>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-documentoperational-search-form',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        /**
+         * @search documentoperational
+         */
+        params: {
+          type: Object,
+          value: {},
+          notify: true,
+        },
+
+        aggregations: {
+          type: Object,
+          value: {},
+          notify: true,
+        },
+      },
+    });
+  </script>
+</dom-module>
