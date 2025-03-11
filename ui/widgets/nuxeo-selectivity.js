@@ -7360,11 +7360,46 @@ typedArrayTags[weakMapTag] = false;
     _valueChanged(newValue) {
       if (this._selectivity && !this._inUpdateSelection) {
         if (newValue) {
+          // Check if the value exists in current data
+          const isValueInData = Array.isArray(newValue) 
+            ? newValue.every((val) => this.data && this.data.some((dataItem) => dataItem.id === val))
+            : this.data && this.data.some((dataItem) => dataItem.id === newValue);
+
+          if (!isValueInData) {
+            // Try to find the data in storage or create placeholder
+            const matchingData = Array.isArray(newValue)
+              ? newValue.map((val) => {
+                  // First try to find in current data
+                  if (this.data) {
+                    const dataMatch = this.data.find(item => item.id === val);
+                    if (dataMatch) return dataMatch;
+                  }
+                  // Then try storage
+                  if (this._storage) {
+                    const storageMatch = this._storage.find(item => item.id === val);
+                    if (storageMatch) return storageMatch;
+                  }
+                  // If not found, return basic structure
+                  return { id: val, text: val };
+                })
+              : [this._storage && this._storage.find((item) => item.id === newValue) || { id: newValue, text: newValue }];
+
+            // Update storage with new data to maintain consistency
+            if (!this._storage) {
+              this._storage = [];
+            }
+            matchingData.forEach(item => {
+              if (!this._storage.some(stored => stored.id === item.id)) {
+                this._storage.push(item);
+              }
+            });
+
+            this.data = matchingData;
+          }
           this._selectivity.setValue(newValue, { triggerChange: false });
         } else {
           const cv = this._selectivity.getValue();
           if ((this.multiple && cv.length > 0) || (!this.multiple && cv)) {
-            // in cases where newValue is either undefined or null, clear the value
             this._selectivity.clear();
           }
         }
@@ -7373,14 +7408,17 @@ typedArrayTags[weakMapTag] = false;
 
     _dataChanged() {
       if (this._selectivity) {
+        const currentSelection = this._selectivity.getData();
         this._selectivity.setOptions({ items: this._wrap(this.data) });
-        const selectivityData = this._selectivity.getData();
-          if(selectivityData){
-            const wrapData = this._wrap(this.data);
-            const newData = wrapData.filter(obj => selectivityData.some(item => item.id === obj.id));
-            if (newData.length !== 0 && JSON.stringify(newData) !== JSON.stringify(selectivityData)) {
-              this._selectivity.setData(newData);
-            }
+        if (currentSelection) {
+          const wrapData = this._wrap(this.data);
+          const newData = currentSelection.map(selected => {
+            const matchingItem = wrapData.find(item => item.id === selected.id);
+            return matchingItem || selected;
+          });
+          if (newData.length > 0 && JSON.stringify(newData) !== JSON.stringify(currentSelection)) {
+            this._selectivity.setData(newData);
+          }
         }
       }
     }
