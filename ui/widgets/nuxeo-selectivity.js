@@ -6392,10 +6392,9 @@ typedArrayTags[weakMapTag] = false;
      */
         singleSelectedItem(options) {
           return (
-            `<span class="selectivity-single-selected-item" data-item-id="${escapeHTML(options.id)}">
-              ${options.removable ? '<a class="selectivity-single-selected-item-remove"><span class="selectivity-remove"></span></a>' : ''}
-              ${this.selectionFormatter(options.item || options)}
-            </span>`.trim().replace(/\s+/g, ' ')
+            `<span class="selectivity-single-selected-item" data-item-id="${escapeHTML(options.id)}">${
+              options.removable ? '<a class="selectivity-single-selected-item-remove"><i class="fa fa-remove"></i></a>' : ''
+            }${this.selectionFormatter(options.item || options)}</span>`
           );
         },
 
@@ -7173,10 +7172,11 @@ typedArrayTags[weakMapTag] = false;
           ),
 
           singleSelectedItem: (opts) => (
-            `<span class="selectivity-single-selected-item" data-item-id="${escapeHTML(opts.id)}">
-              ${opts.removable ? '<a class="selectivity-single-selected-item-remove"><span class="selectivity-remove" role="button" aria-label="Remove"></span></a>' : ''}
-              ${this.selectionFormatter(opts.item || opts)}
-            </span>`.trim().replace(/\s+/g, ' ')
+            `<span class="selectivity-single-selected-item" data-item-id="${escapeHTML(opts.id)}">${
+              opts.removable ? 
+                `<a class="preserve-white-space selectivity-single-selected-item-remove"><span class="selectivity-remove" role="button" aria-label="${this.i18n('command.remove')}"></span></a>` 
+                : ''
+            }${this.selectionFormatter(opts.item || opts)}</span>`
           ),
 
           multipleSelectedItem: (opts) => {
