@@ -6385,10 +6385,6 @@ typedArrayTags[weakMapTag] = false;
         /**
      * Renders the selected item in single-select input boxes.
      *
-     * The template is expected to have a top-level element with the class
-     * 'selectivity-single-selected-item'. This element is also required to have a 'data-item-id'
-     * attribute with the ID set to that passed through the options object.
-     *
      * @param options Options object containing the following properties:
      *                id - Identifier for the item.
      *                removable - Boolean whether a remove icon should be displayed.
@@ -6396,9 +6392,10 @@ typedArrayTags[weakMapTag] = false;
      */
         singleSelectedItem(options) {
           return (
-            `<span class="selectivity-single-selected-item" data-item-id="${escapeHTML(opts.id)}">${
-              opts.removable ? '<a class="selectivity-single-selected-item-remove"><span class="selectivity-remove" role="button" aria-label="Remove"></span></a>' : ''
-            }${this.selectionFormatter(opts.item || opts)}</span>`
+            `<span class="selectivity-single-selected-item" data-item-id="${escapeHTML(options.id)}">
+              ${options.removable ? '<a class="selectivity-single-selected-item-remove"><span class="selectivity-remove"></span></a>' : ''}
+              ${this.selectionFormatter(options.item || options)}
+            </span>`.trim().replace(/\s+/g, ' ')
           );
         },
 
