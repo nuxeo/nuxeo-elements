@@ -68,9 +68,19 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
               display: block;
               overflow: hidden;
               white-space: nowrap;
-              direction: rtl;
-              text-align: left;
               @apply --nuxeo-path-suggestion-result;
+            }
+
+            :host([dir='rtl']) {
+              --paper-typeahead-result: {
+                text-align: right;
+              }
+            }
+
+            :host(:not([dir='rtl'])) {
+              --paper-typeahead-result: {
+                text-align: left;
+              }
             }
 
             --paper-input-container-underline: {
@@ -175,6 +185,14 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
       };
     }
 
+    connectedCallback() {
+      super.connectedCallback();
+      if (!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
+    }
+
     displayResults() {
       this.$.typeahead.tryDisplayResults();
     }
@@ -199,7 +217,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
       }
     }
 
-    _valueChanged() {
+    _valueChanged(oldValue, newValue) {
       if (this.value && !this.disabled) {
         const idx = this.value.lastIndexOf('/');
         if (idx > -1) {
@@ -212,8 +230,16 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
               }
             })
             .finally(() => {
-              if (this.autoValidate) {
+              if (this.autoValidate && oldValue !== newValue) {
                 this.validate();
+                const typeHeadInput = this.$.typeahead.shadowRoot.querySelector('input');
+                // In order for setSelectionRange to function properly,
+                // it must become focused after the user has finished choosing a value from the list;
+                // in this instance, the input field becomes focused after the user has chosen the value.
+                typeHeadInput.blur();
+                const inputLength = typeHeadInput && typeHeadInput.value && typeHeadInput.value.length;
+                typeHeadInput.setSelectionRange(inputLength, inputLength);
+                typeHeadInput.focus();
               }
             });
         }
