@@ -70,7 +70,7 @@ import '../nuxeo-button-styles.js';
 
           .tip {
             display: block;
-            opacity: 0.5;
+            opacity: 0.7;
             border-left: 4px solid var(--nuxeo-warn-text, #333);
             margin-bottom: 8px;
             padding: 8px;
