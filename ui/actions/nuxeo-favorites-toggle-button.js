@@ -61,7 +61,7 @@ import '../nuxeo-button-styles.js';
 
         <dom-if if="[[_isAvailable(document)]]">
           <template>
-            <div class="action" tabindex="-1">
+            <div class="action">
               <paper-icon-button
                 icon="[[icon]]"
                 noink
