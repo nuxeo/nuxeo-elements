@@ -222,14 +222,14 @@ import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-beha
       switch (e.key) {
         case 'ArrowUp':
         case 'Up':
-          this._select(-1, 1);
+          this._select(-1, 0);
           break;
         case 'k':
           this._select(-1, 0);
           break;
         case 'ArrowDown':
         case 'Down':
-          this._select(1, -1);
+          this._select(1, 0);
           break;
         case 'j':
           this._select(1, 0);

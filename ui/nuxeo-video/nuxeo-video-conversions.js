@@ -39,9 +39,6 @@ import '../widgets/nuxeo-tooltip.js';
           a:focus {
             @apply --nuxeo-link;
           }
-          a:hover {
-            @apply --nuxeo-link-hover;
-          }
           .properties label {
             @apply --nuxeo-label;
             min-width: 10rem;
@@ -52,6 +49,13 @@ import '../widgets/nuxeo-tooltip.js';
             @apply --layout-flex;
             @apply --layout-justified;
             line-height: 2.2rem;
+          }
+          .properties .item > * {
+            unicode-bidi: plaintext;
+          }
+          .properties .item span {
+            flex: 1;
+            text-align: left;
           }
         </style>
         <dom-if if="[[label]]">

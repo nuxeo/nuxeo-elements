@@ -73,6 +73,11 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
             @apply --nuxeo-link-hover;
           }
 
+          :host([dir='rtl']) .header .icon {
+            margin-left: 8px;
+            margin-right: 0;
+          }
+
           [hidden] {
             display: none !important;
           }
@@ -171,6 +176,14 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
           reflectToAttribute: true,
         },
       };
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      if (!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
     }
 
     _hasHeading(icon, heading, collapsible) {

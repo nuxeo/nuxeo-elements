@@ -6396,17 +6396,9 @@ typedArrayTags[weakMapTag] = false;
      */
         singleSelectedItem(options) {
           return (
-            `${'<span class="selectivity-single-selected-item" ' +
-            'data-item-id="'}${
-              escape(options.id)
-            }">${
-              options.removable
-                ? '<a class="selectivity-single-selected-item-remove">' +
-                  '<i class="fa fa-remove"></i>' +
-                  '</a>'
-                : ''
-            }${escape(options.text)
-            }</span>`
+            `<span class="selectivity-single-selected-item" data-item-id="${escapeHTML(options.id)}">${
+              options.removable ? '<a class="selectivity-single-selected-item-remove"><i class="fa fa-remove"></i></a>' : ''
+            }${this.selectionFormatter(options.item || options)}</span>`
           );
         },
 
@@ -6952,7 +6944,7 @@ typedArrayTags[weakMapTag] = false;
           }
 
           .selectivity-multiple-input::placeholder {
-            color: #999;
+            color: #606978;
           }
 
           .selectivity-multiple-selected-item {
@@ -6970,6 +6962,10 @@ typedArrayTags[weakMapTag] = false;
             user-select: none;
             white-space: nowrap;
             @apply --nuxeo-tag;
+          }
+
+          :host([dir='rtl']) .selectivity-multiple-selected-item {
+            float: right;
           }
 
           .selectivity-multiple-selected-item.highlighted {
@@ -7028,6 +7024,11 @@ typedArrayTags[weakMapTag] = false;
             position: absolute;
             top: 12px;
             right: 0;
+          }
+
+          :host([dir="rtl"]) .selectivity-caret {
+            left:0;
+            right: auto;
           }
 
           @media only screen and (max-device-width: 480px) {
@@ -7126,6 +7127,10 @@ typedArrayTags[weakMapTag] = false;
 
     connectedCallback() {
       super.connectedCallback();
+      if (!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
       const options = {
         searchFloor: this.minChars, // minimum length a search value should be before choices are searched
         tokenSeparators: [this.separator],
@@ -7138,16 +7143,20 @@ typedArrayTags[weakMapTag] = false;
           if (!value) return;
 
           const prep = (item) => {
+            if (!item) return null;
             const id = this.idFunction(item);
+            const text = this.selectionFormatter(item);
             return {
-              id,
-              text: id,
+              id: id || item,
+              text: text || String(id || item),
               item,
             };
           };
 
           this.initSelection(value, (selection) => {
-            callback(this.multiple ? selection.map(prep) : prep(selection));
+            if (!selection) return callback(null);
+            const result = this.multiple ? selection.map(prep).filter(Boolean) : prep(selection);
+            callback(result);
           });
         },
 
@@ -7167,10 +7176,11 @@ typedArrayTags[weakMapTag] = false;
           ),
 
           singleSelectedItem: (opts) => (
-            `<span class="selectivity-single-selected-item"
-            data-item-id="${escapeHTML(opts.id)}">${opts.removable ? 
-              `<a class="preserve-white-space selectivity-single-selected-item-remove"><span class="selectivity-remove" role="button" aria-label="${this.i18n('command.remove')}"></span></a>` 
-              : ``}${this.selectionFormatter(opts.item || opts)}</span>`
+            `<span class="selectivity-single-selected-item" data-item-id="${escapeHTML(opts.id)}">${
+              opts.removable ? 
+                `<a class="preserve-white-space selectivity-single-selected-item-remove"><span class="selectivity-remove" role="button" aria-label="${this.i18n('command.remove')}"></span></a>` 
+                : ''
+            }${this.selectionFormatter(opts.item || opts)}</span>`
           ),
 
           multipleSelectedItem: (opts) => {
@@ -7300,21 +7310,35 @@ typedArrayTags[weakMapTag] = false;
 
     _initSelection(value, callback) {
       if (!this.multiple) {
-        return callback(this.resolveEntry(value));
+        const resolved = this.resolveEntry(value);
+        callback(resolved);
+        return;
       }
-      return callback(value.map(this.resolveEntry.bind(this)));
+      const results = [];
+      for (const val of value) {
+        const resolved = this.resolveEntry(val);
+        if (resolved) {
+          results.push(resolved);
+        }
+      }
+      callback(results);
     }
 
     _resolveEntry(entry) {
+      if (!entry) return null;
       if (this.data) {
         for (let i = 0; i < this.data.length; i++) {
           if (this.idFunction(this.data[i]) === entry) {
             return this.data[i];
           }
         }
-      } else {
-        return { id: this.idFunction(entry), displayLabel: this.resultFormatter(entry) };
       }
+      const id = this.idFunction(entry);
+      return {
+        id: id || entry,
+        displayLabel: this.resultFormatter(entry),
+        text: String(id || entry)
+      };
     }
 
     _updateSelection(e) {
@@ -7395,7 +7419,10 @@ typedArrayTags[weakMapTag] = false;
     }
 
     _idFunction(item) {
-      const id = ['computeId', 'uid', 'id'].find((key) => item.hasOwnProperty(key));
+      if (!item || typeof item !== 'object') {
+        return item;
+      }
+      const id = ['computeId', 'uid', 'id'].find((key) => key in item && item[key] != null);
       return id ? item[id] : item;
     }
 

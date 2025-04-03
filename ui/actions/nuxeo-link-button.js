@@ -47,7 +47,7 @@ import '../nuxeo-button-styles.js';
         </style>
 
         <template is="dom-if" if="[[_isAvailable(href, icon, iconSrc)]]">
-          <a class="action" href="[[href]]" tabindex="-1" target="[[target]]">
+          <a class="action" href="[[href]]" target="[[target]]">
             <paper-icon-button src="[[iconSrc]]" icon="[[icon]]" noink aria-labelledby="label"></paper-icon-button>
             <span class="label" hidden$="[[!showLabel]]" id="label">[[i18n(label)]]</span>
             <nuxeo-tooltip>[[i18n(label)]]</nuxeo-tooltip>

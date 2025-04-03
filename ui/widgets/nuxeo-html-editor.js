@@ -181,11 +181,18 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     ready() {
       super.ready();
+      if (!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
       // init editor
       const { placeholder, readOnly } = this;
       const modules = { toolbar: '#toolbar' };
       this._editor = new Quill(this.$.editor, { theme: 'snow', modules, placeholder, readOnly });
-
+      if (this.getAttribute('dir') === 'rtl') {
+        this._editor.format('align', 'right');
+        this._editor.format('direction', 'rtl');
+      }
       // update value on change
       this._editor.on('text-change', () => {
         this._debouncer = Debouncer.debounce(this._debouncer, timeOut.after(200), () => this._updateValue());

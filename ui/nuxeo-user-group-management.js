@@ -90,6 +90,11 @@ import './nuxeo-button-styles.js';
             top: 15px;
           }
 
+          :host([dir='rtl']) #createDropdown {
+            left: 0;
+            right: auto;
+          }
+
           paper-menu-button {
             width: 130px;
             height: 48px;
@@ -233,6 +238,10 @@ import './nuxeo-button-styles.js';
 
     ready() {
       super.ready();
+      if (!this.hasAttribute('dir')) {
+        const direction = document.documentElement.getAttribute('dir');
+        this.setAttribute('dir', direction);
+      }
       // dynamic loading of user layouts
       if (!this._isRegistered('nuxeo-view-user')) {
         importHref(this.resolveUrl('nuxeo-user-group-management/nuxeo-view-user.html'));
@@ -302,10 +311,12 @@ import './nuxeo-button-styles.js';
       switch (event.type) {
         case 'nuxeo-user-created':
         case 'nuxeo-user-invited':
-          msg = `User ${event.detail.id} created`;
+          msg = `${this.i18n('userGroupManagement.new.user')} ${event.detail.id} ${this.i18n(
+            'label.ui.state.created',
+          )}`;
           break;
         case 'nuxeo-group-created':
-          msg = `Group ${event.detail.groupname} created`;
+          msg = `${this.i18n('label.group')} ${event.detail.groupname} ${this.i18n('label.ui.state.created')}`;
           break;
         default:
         // do nothing
