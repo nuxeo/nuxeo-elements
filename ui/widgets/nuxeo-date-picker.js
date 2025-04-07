@@ -186,7 +186,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     ready() {
       super.ready();
-      moment.locale(window.nuxeo.I18n.language ? window.nuxeo.I18n.language.split('-')[0] : 'en');
+      moment.locale(navigator.languages !== undefined ? navigator.languages[0] : navigator.language);
       // added this piece of code to rectify the issue where dates are not applied on first click
       const datePickerDiv = this.shadowRoot.querySelector('#vaadinDatePicker');
       const datePicker = this.shadowRoot.querySelector('vaadin-date-picker');
