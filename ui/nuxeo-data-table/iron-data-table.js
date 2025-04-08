@@ -514,6 +514,13 @@ import '../nuxeo-button-styles.js';
           type: Boolean,
           value: false,
         },
+        /**
+         * proper table name for assistive technologies to identify the table correctly
+         */
+        captionText: {
+          type: String,
+          value: '',
+        },
       };
     }
 
@@ -586,6 +593,7 @@ import '../nuxeo-button-styles.js';
       });
       this.setAttribute('role', 'table');
       this.setAttribute('aria-multiselectable', this.multiSelection);
+      this.setAttribute('aria-label', this.captionText);
     }
 
     _computeActionsStyle() {
