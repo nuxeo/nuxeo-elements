@@ -79,6 +79,7 @@
   "deleteBlobButton.dialog.no": "否",
   "deleteBlobButton.dialog.yes": "是",
   "deleteBlobButton.deleted": "文件已删除",
+  "documentAclTable.description": "Document ACLs",
   "deleteBlobButton.tooltip": "删除",
   "documentAclTable.actions": "操作",
   "documentAclTable.cancel": "取消",

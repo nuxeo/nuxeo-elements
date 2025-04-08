@@ -79,6 +79,7 @@
   "deleteBlobButton.dialog.no": "Non",
   "deleteBlobButton.dialog.yes": "Oui",
   "deleteBlobButton.deleted": "Fichier supprimé",
+  "documentAclTable.description": "Document ACLs",
   "deleteBlobButton.tooltip": "Supprimer",
   "documentAclTable.actions": "Actions",
   "documentAclTable.cancel": "Annuler",
