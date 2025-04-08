@@ -83,6 +83,7 @@
   "documentAclTable.actions": "Aktionen",
   "documentAclTable.cancel": "Abbrechen",
   "documentAclTable.deleteConfirmation": "Die folgende Berechtigung wird gelöscht",
+  "documentAclTable.description": "Document ACLs",
   "documentAclTable.from": "Von",
   "documentAclTable.grantedBy": "Erteilt durch",
   "documentAclTable.permanent": "Permanent",

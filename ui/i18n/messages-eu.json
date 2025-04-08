@@ -83,6 +83,7 @@
   "documentAclTable.actions": "Ekintzak",
   "documentAclTable.cancel": "Utzi",
   "documentAclTable.deleteConfirmation": "Ondorengo baimena ezabatuko da",
+  "documentAclTable.description": "Document ACLs",
   "documentAclTable.from": "Noiztik",
   "documentAclTable.grantedBy": "Nork baimendua",
   "documentAclTable.permanent": "Iraunkorra",

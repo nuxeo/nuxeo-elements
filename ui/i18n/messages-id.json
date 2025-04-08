@@ -83,6 +83,7 @@
   "documentAclTable.actions": "Tindakan",
   "documentAclTable.cancel": "Batal",
   "documentAclTable.deleteConfirmation": "Izin berikut ini akan dihapus.",
+  "documentAclTable.description": "Document ACLs",
   "documentAclTable.from": "Dari",
   "documentAclTable.grantedBy": "Dikabulkan oleh",
   "documentAclTable.permanent": "Permanen",

@@ -83,6 +83,7 @@
   "documentAclTable.actions": "Acties",
   "documentAclTable.cancel": "Annuleren",
   "documentAclTable.deleteConfirmation": "De volgende toestemming wordt verwijderd.",
+  "documentAclTable.description": "Document ACLs",
   "documentAclTable.from": "Vanaf",
   "documentAclTable.grantedBy": "Verstrekt door",
   "documentAclTable.permanent": "Permanent",
