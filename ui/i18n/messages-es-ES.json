@@ -83,7 +83,6 @@
   "documentAclTable.actions": "Acciones",
   "documentAclTable.cancel": "Cancelar",
   "documentAclTable.deleteConfirmation": "Se eliminará el permiso",
-  "documentAclTable.description": "Document ACLs",
   "documentAclTable.from": "Desde",
   "documentAclTable.grantedBy": "Concedido por",
   "documentAclTable.permanent": "Permanente",

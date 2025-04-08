@@ -83,7 +83,6 @@
   "documentAclTable.actions": "Åtgärder",
   "documentAclTable.cancel": "Avbryt",
   "documentAclTable.deleteConfirmation": "Följande behörighet kommer att tas bort",
-  "documentAclTable.description": "Document ACLs",
   "documentAclTable.from": "Från",
   "documentAclTable.grantedBy": "Beviljad av",
   "documentAclTable.permanent": "Permanent",
