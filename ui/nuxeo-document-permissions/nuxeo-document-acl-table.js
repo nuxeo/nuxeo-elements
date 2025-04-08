@@ -178,7 +178,7 @@ import './nuxeo-popup-permission.js';
                               <div
                                 class="acl-table"
                                 role="table"
-                                aria-label="[[i18n('documentAclTable.description')]]"
+                                aria-label="[[i18n('documentPermissions.inherited')]]"
                                 aria-rowcount="[[aces.length]]"
                               >
                                 <div class="acl-table-headers" role="row">
