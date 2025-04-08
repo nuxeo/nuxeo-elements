@@ -176,7 +176,12 @@ import './nuxeo-popup-permission.js';
                           >
                             <div>
                               <h2>[[i18n('documentAclTable.deleteConfirmation')]]</h2>
-                              <div class="acl-table">
+                              <div
+                                tabindex="0"
+                                role="table"
+                                aria-label="[[i18n('documentAclTable.description')]]"
+                                aria-rowcount="[[aces.length]]"
+                              >
                                 <div class="acl-table-headers" role="row">
                                   <div class="flex-2 tmp-tab" role="columnheader" tabindex="0">
                                     [[i18n('documentAclTable.userGroup')]]
@@ -191,8 +196,8 @@ import './nuxeo-popup-permission.js';
                                     [[i18n('documentAclTable.grantedBy')]]
                                   </div>
                                 </div>
-                                <div class$="acl-table-row [[ace.status]]">
-                                  <div class="flex-2">
+                                <div class$="acl-table-row [[ace.status]]" role="row">
+                                  <div class="flex-2" role="columnheader" tabindex="0">
                                     <span
                                       class$="[[entityClass(ace.username)]]"
                                       title="[[entityTooltip(ace.username)]]"
@@ -201,13 +206,15 @@ import './nuxeo-popup-permission.js';
                                       [[entityDisplay(ace.username)]]
                                     </span>
                                   </div>
-                                  <div class="flex-2">
+                                  <div class="flex-2" role="columnheader" tabindex="0">
                                     <span class="label" role="columnheader"
                                       >[[formatPermission(ace.permission, i18n)]]</span
                                     >
                                   </div>
-                                  <div class="flex-2"><span role="columnheader">{{formatTimeFrame(ace)}}</span></div>
-                                  <div class="flex-2">
+                                  <div class="flex-2" role="columnheader" tabindex="0">
+                                    <span role="columnheader">{{formatTimeFrame(ace)}}</span>
+                                  </div>
+                                  <div class="flex-2" role="columnheader" tabindex="0">
                                     <span
                                       class$="[[entityClass(ace.creator)]]"
                                       title="[[entityTooltip(ace.creator)]]"
