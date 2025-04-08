@@ -79,7 +79,6 @@
   "deleteBlobButton.dialog.no": "いいえ",
   "deleteBlobButton.dialog.yes": "はい",
   "deleteBlobButton.deleted": "ファイルが削除されました",
-  "documentAclTable.description": "Document ACLs",
   "deleteBlobButton.tooltip": "削除",
   "documentAclTable.actions": "操作",
   "documentAclTable.cancel": "キャンセル",
