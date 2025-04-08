@@ -177,11 +177,19 @@ import './nuxeo-popup-permission.js';
                             <div>
                               <h2>[[i18n('documentAclTable.deleteConfirmation')]]</h2>
                               <div class="acl-table">
-                                <div class="acl-table-headers">
-                                  <div class="flex-2 tmp-tab">[[i18n('documentAclTable.userGroup')]]</div>
-                                  <div class="flex-2 tmp-tab">[[i18n('documentAclTable.right')]]</div>
-                                  <div class="flex-2 tmp-tab">[[i18n('documentAclTable.timeFrame')]]</div>
-                                  <div class="flex-2 tmp-tab">[[i18n('documentAclTable.grantedBy')]]</div>
+                                <div class="acl-table-headers" role="row">
+                                  <div class="flex-2 tmp-tab" role="columnheader" tabindex="0">
+                                    [[i18n('documentAclTable.userGroup')]]
+                                  </div>
+                                  <div class="flex-2 tmp-tab" role="columnheader" tabindex="0">
+                                    [[i18n('documentAclTable.right')]]
+                                  </div>
+                                  <div class="flex-2 tmp-tab" role="columnheader" tabindex="0">
+                                    [[i18n('documentAclTable.timeFrame')]]
+                                  </div>
+                                  <div class="flex-2 tmp-tab" role="columnheader" tabindex="0">
+                                    [[i18n('documentAclTable.grantedBy')]]
+                                  </div>
                                 </div>
                                 <div class$="acl-table-row [[ace.status]]">
                                   <div class="flex-2">
