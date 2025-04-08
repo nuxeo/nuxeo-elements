@@ -83,7 +83,6 @@
   "documentAclTable.actions": "操作",
   "documentAclTable.cancel": "キャンセル",
   "documentAclTable.deleteConfirmation": "次のアクセス許可が削除されます",
-  "documentAclTable.description": "Document ACLs",
   "documentAclTable.from": "差出人",
   "documentAclTable.grantedBy": "許可者：",
   "documentAclTable.permanent": "恒久的",

@@ -83,7 +83,6 @@
   "documentAclTable.actions": "操作",
   "documentAclTable.cancel": "取消",
   "documentAclTable.deleteConfirmation": "将删除以下权限。",
-  "documentAclTable.description": "Document ACLs",
   "documentAclTable.from": "来自",
   "documentAclTable.grantedBy": "授予者",
   "documentAclTable.permanent": "永久的",
