@@ -83,6 +83,7 @@
   "documentAclTable.actions": "الإجراءات",
   "documentAclTable.cancel": "إلغاء",
   "documentAclTable.deleteConfirmation": "سيتم إزالة الصلاحيات التالية.",
+  "documentAclTable.description": "Document ACLs",
   "documentAclTable.from": "من",
   "documentAclTable.grantedBy": "ممنوحة من قبل",
   "documentAclTable.permanent": "بشكل دائم",

@@ -104,38 +104,50 @@ import './nuxeo-popup-permission.js';
 
         <dom-if if="[[!_empty(aces)]]">
           <template>
-            <div class="acl-table">
-              <div class="acl-table-headers">
-                <div class="flex-2 tmp-tab">[[i18n('documentAclTable.userGroup')]]</div>
-                <div class="flex-2 tmp-tab">[[i18n('documentAclTable.right')]]</div>
-                <div class="flex-2 tmp-tab">[[i18n('documentAclTable.timeFrame')]]</div>
-                <div class="flex-2 tmp-tab">[[i18n('documentAclTable.grantedBy')]]</div>
+            <div
+              class="acl-table"
+              tabindex="0"
+              role="table"
+              aria-label="[[i18n('documentAclTable.description')]]"
+              aria-rowcount="[[aces.length]]"
+            >
+              <div class="acl-table-headers" role="row">
+                <div class="flex-2 tmp-tab" role="columnheader" tabindex="0">
+                  [[i18n('documentAclTable.userGroup')]]
+                </div>
+                <div class="flex-2 tmp-tab" role="columnheader" tabindex="0">[[i18n('documentAclTable.right')]]</div>
+                <div class="flex-2 tmp-tab" role="columnheader" tabindex="0">
+                  [[i18n('documentAclTable.timeFrame')]]
+                </div>
+                <div class="flex-2 tmp-tab" role="columnheader" tabindex="0">
+                  [[i18n('documentAclTable.grantedBy')]]
+                </div>
                 <dom-if if="[[showActions]]">
                   <template>
-                    <div class="flex-2 tmp-tab">[[i18n('documentAclTable.actions')]]</div>
+                    <div class="flex-2 tmp-tab" role="columnheader">[[i18n('documentAclTable.actions')]]</div>
                   </template>
                 </dom-if>
               </div>
               <dom-repeat items="[[aces]]" as="ace" sort="_sortAces" strip-whitespace>
                 <template>
-                  <div class$="acl-table-row [[ace.status]]">
-                    <div class="flex-2">
+                  <div class$="acl-table-row [[ace.status]]" role="row">
+                    <div class="flex-2" role="columnheader" tabindex="0">
                       <span class$="[[entityClass(ace.username)]]" title="[[entityTooltip(ace.username)]]">
                         [[entityDisplay(ace.username)]]
                       </span>
                     </div>
-                    <div class="flex-2">
+                    <div class="flex-2" role="columnheader" tabindex="0">
                       <span class="label">[[formatPermission(ace.permission, i18n)]]</span>
                     </div>
-                    <div class="flex-2"><span>{{formatTimeFrame(ace)}}</span></div>
-                    <div class="flex-2">
+                    <div class="flex-2" role="columnheader" tabindex="0"><span>{{formatTimeFrame(ace)}}</span></div>
+                    <div class="flex-2" role="columnheader" tabindex="0">
                       <span class$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">
                         [[entityDisplay(ace.creator)]]
                       </span>
                     </div>
                     <dom-if if="[[showActions]]">
                       <template>
-                        <div class="flex-2">
+                        <div class="flex-2" role="columnheader">
                           <nuxeo-popup-permission
                             doc-id="{{doc.uid}}"
                             ace="{{ace}}"
@@ -176,16 +188,23 @@ import './nuxeo-popup-permission.js';
                                     <span
                                       class$="[[entityClass(ace.username)]]"
                                       title="[[entityTooltip(ace.username)]]"
+                                      role="columnheader"
                                     >
                                       [[entityDisplay(ace.username)]]
                                     </span>
                                   </div>
                                   <div class="flex-2">
-                                    <span class="label">[[formatPermission(ace.permission, i18n)]]</span>
+                                    <span class="label" role="columnheader"
+                                      >[[formatPermission(ace.permission, i18n)]]</span
+                                    >
                                   </div>
-                                  <div class="flex-2"><span>{{formatTimeFrame(ace)}}</span></div>
+                                  <div class="flex-2"><span role="columnheader">{{formatTimeFrame(ace)}}</span></div>
                                   <div class="flex-2">
-                                    <span class$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">
+                                    <span
+                                      class$="[[entityClass(ace.creator)]]"
+                                      title="[[entityTooltip(ace.creator)]]"
+                                      role="columnheader"
+                                    >
                                       [[entityDisplay(ace.creator)]]
                                     </span>
                                   </div>
