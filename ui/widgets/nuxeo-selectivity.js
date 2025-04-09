@@ -6827,7 +6827,7 @@ typedArrayTags[weakMapTag] = false;
           }
 
           .selectivity-placeholder {
-            color: #999;
+            color: #666;
           }
 
           /**
