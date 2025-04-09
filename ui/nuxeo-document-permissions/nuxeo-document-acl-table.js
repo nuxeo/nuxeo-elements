@@ -104,12 +104,7 @@ import './nuxeo-popup-permission.js';
 
         <dom-if if="[[!_empty(aces)]]">
           <template>
-            <div
-              class="acl-table"
-              role="table"
-              aria-label="[[i18n('documentPermissions.inherited')]]"
-              aria-rowcount="[[aces.length]]"
-            >
+            <div class="acl-table" role="table" aria-label="[[captionText]]" aria-rowcount="[[aces.length]]">
               <div class="acl-table-headers" role="row">
                 <div class="flex-2 tmp-tab" role="columnheader">
                   [[i18n('documentAclTable.userGroup')]]
@@ -176,8 +171,9 @@ import './nuxeo-popup-permission.js';
                             <div>
                               <h2>[[i18n('documentAclTable.deleteConfirmation')]]</h2>
                               <div
+                                class="acl-table"
                                 role="table"
-                                aria-label="[[i18n('documentPermissions.inherited')]]"
+                                aria-label="[[captionText]]"
                                 aria-rowcount="[[aces.length]]"
                               >
                                 <div class="acl-table-headers" role="row">
@@ -199,25 +195,18 @@ import './nuxeo-popup-permission.js';
                                     <span
                                       class$="[[entityClass(ace.username)]]"
                                       title="[[entityTooltip(ace.username)]]"
-                                      role="columnheader"
                                     >
                                       [[entityDisplay(ace.username)]]
                                     </span>
                                   </div>
                                   <div class="flex-2" role="columnheader">
-                                    <span class="label" role="columnheader"
-                                      >[[formatPermission(ace.permission, i18n)]]</span
-                                    >
+                                    <span class="label">[[formatPermission(ace.permission, i18n)]]</span>
                                   </div>
                                   <div class="flex-2" role="columnheader">
-                                    <span role="columnheader">{{formatTimeFrame(ace)}}</span>
+                                    <span>{{formatTimeFrame(ace)}}</span>
                                   </div>
                                   <div class="flex-2" role="columnheader">
-                                    <span
-                                      class$="[[entityClass(ace.creator)]]"
-                                      title="[[entityTooltip(ace.creator)]]"
-                                      role="columnheader"
-                                    >
+                                    <span class$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">
                                       [[entityDisplay(ace.creator)]]
                                     </span>
                                   </div>
@@ -276,6 +265,9 @@ import './nuxeo-popup-permission.js';
         showActions: {
           type: Object, // Boolean
           value: false,
+        },
+        captionText: {
+          type: String,
         },
       };
     }
