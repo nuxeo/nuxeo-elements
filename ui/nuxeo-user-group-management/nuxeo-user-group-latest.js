@@ -130,7 +130,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             class="table"
             role="table"
             aria-label="[[i18n('userGroupLatest.recentlyCreated')]]"
-            aria-rowcount="[[atestCreatedUsersGroups.entrie.length]]"
+            aria-rowcount="[[latestCreatedUsersGroups.entries.length]]"
           >
             <div class="table-header" role="row">
               <div class="flex" role="columnheader">[[i18n('userGroupLatest.name')]]</div>

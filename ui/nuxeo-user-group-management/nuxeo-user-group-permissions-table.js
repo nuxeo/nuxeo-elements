@@ -153,43 +153,43 @@ import '../nuxeo-button-styles.js';
           </template>
         </dom-if>
 
-        <div class="table">
-          <div class="table-header">
-            <div class="flex-3">[[i18n('userGroupPermissions.on')]]</div>
-            <div class="flex-6 layout horizontal">
-              <div class="flex-2">[[i18n('userGroupPermissions.right')]]</div>
-              <div class="flex-2">[[i18n('userGroupPermissions.timeFrame')]]</div>
-              <div class="flex-2">[[i18n('userGroupPermissions.grantedBy')]]</div>
-              <div class="table-actions"></div>
+        <div class="table" role="table" aria-label="[[captionText]]" aria-rowcount="[[documents.length]]">
+          <div class="table-header" role="row">
+            <div class="flex-3" role="columnheader">[[i18n('userGroupPermissions.on')]]</div>
+            <div class="flex-6 layout horizontal" role="columnheader">
+              <div class="flex-2" role="columnheader">[[i18n('userGroupPermissions.right')]]</div>
+              <div class="flex-2" role="columnheader">[[i18n('userGroupPermissions.timeFrame')]]</div>
+              <div class="flex-2" role="columnheader">[[i18n('userGroupPermissions.grantedBy')]]</div>
+              <div class="table-actions" role="columnheader"></div>
             </div>
           </div>
           <dom-if if="[[!empty]]">
             <template>
               <dom-repeat items="[[documents]]" as="document">
                 <template>
-                  <div class="table-row">
-                    <div class="flex-3 title">
+                  <div class="table-row" role="row">
+                    <div class="flex-3 title" role="columnheader">
                       <div>[[document.title]]</div>
                       <div class="ace-permission-path">[[document.path]]</div>
                     </div>
-                    <div class="layout vertical flex-6 ace-row">
+                    <div class="layout vertical flex-6 ace-row" role="columnheader">
                       <dom-repeat items="[[document.aces]]" as="ace">
                         <template>
-                          <div class="layout horizontal center">
-                            <div class="flex-2">
+                          <div class="layout horizontal center" role="columnheader">
+                            <div class="flex-2" role="columnheader">
                               <span class="ace-permission-tag">[[ace.permission]]</span>
                             </div>
-                            <div class="flex-2">
+                            <div class="flex-2" role="columnheader">
                               <span>[[ace.timeFrame]]</span>
                             </div>
-                            <div class="flex-2">
+                            <div class="flex-2" role="columnheader">
                               <dom-if if="[[ace.creator]]">
                                 <template>
                                   <nuxeo-tag icon="nuxeo:group">[[ace.creator]]</nuxeo-tag>
                                 </template>
                               </dom-if>
                             </div>
-                            <div class="table-actions">
+                            <div class="table-actions" role="columnheader">
                               <dom-if if="[[!readonly]]">
                                 <template>
                                   <paper-icon-button
@@ -214,8 +214,10 @@ import '../nuxeo-button-styles.js';
           </dom-if>
           <dom-if if="[[empty]]">
             <template>
-              <div class="table-row">
-                <div class="emptyResult">[[i18n('userGroupPermissions.noPermissions', entity)]]</div>
+              <div class="table-row" role="row">
+                <div class="emptyResult" role="columnheader">
+                  [[i18n('userGroupPermissions.noPermissions', entity)]]
+                </div>
               </div>
             </template>
           </dom-if>
@@ -279,6 +281,9 @@ import '../nuxeo-button-styles.js';
           type: Boolean,
           value: false,
           reflectToAttribute: true,
+        },
+        captionText: {
+          type: String,
         },
       };
     }
