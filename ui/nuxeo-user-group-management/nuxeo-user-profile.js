@@ -204,16 +204,21 @@ import '../nuxeo-button-styles.js';
 
         <!-- groups -->
         <nuxeo-card heading="[[i18n('userManagement.groups')]]">
-          <div class="table">
-            <div class="header">
-              <div class="flex">[[i18n('userManagement.name')]]</div>
-              <div class="flex-4">[[i18n('userManagement.identifier')]]</div>
+          <div
+            class="table"
+            role="table"
+            aria-label="[[i18n('userManagement.groups')]]"
+            aria-rowcount="[[groups.length]]"
+          >
+            <div class="header" role="row">
+              <div class="flex" role="columnheader">[[i18n('userManagement.name')]]</div>
+              <div class="flex-4" role="columnheader">[[i18n('userManagement.identifier')]]</div>
             </div>
             <dom-repeat items="[[groups]]">
               <template>
-                <div class="row">
-                  <div class="flex"><nuxeo-group-tag group="[[item]]"></nuxeo-group-tag></div>
-                  <div class="flex-4">[[item.name]]</div>
+                <div class="row" role="row">
+                  <div class="flex" role="columnheader"><nuxeo-group-tag group="[[item]]"></nuxeo-group-tag></div>
+                  <div class="flex-4" role="columnheader">[[item.name]]</div>
                 </div>
               </template>
             </dom-repeat>
@@ -222,14 +227,23 @@ import '../nuxeo-button-styles.js';
 
         <!-- local permissions -->
         <nuxeo-card heading="[[i18n('userManagement.localPermissions.heading')]]">
-          <nuxeo-user-group-permissions-table entity="[[username]]" readonly></nuxeo-user-group-permissions-table>
+          <nuxeo-user-group-permissions-table
+            entity="[[username]]"
+            caption-text="[[i18n('userManagement.localPermissions.heading')]]"
+            readonly
+          ></nuxeo-user-group-permissions-table>
         </nuxeo-card>
 
         <!-- group permissions -->
         <dom-repeat items="[[groups]]">
           <template>
             <nuxeo-card heading="[[i18n('userManagement.entityPermissions', item.name)]]">
-              <nuxeo-user-group-permissions-table entity="[[item.name]]" readonly> </nuxeo-user-group-permissions-table>
+              <nuxeo-user-group-permissions-table
+                entity="[[item.name]]"
+                caption-text="[[i18n('userManagement.entityPermissions', item.name)]]"
+                readonly
+              >
+              </nuxeo-user-group-permissions-table>
             </nuxeo-card>
           </template>
         </dom-repeat>

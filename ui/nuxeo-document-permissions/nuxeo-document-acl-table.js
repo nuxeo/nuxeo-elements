@@ -104,12 +104,7 @@ import './nuxeo-popup-permission.js';
 
         <dom-if if="[[!_empty(aces)]]">
           <template>
-            <div
-              class="acl-table"
-              role="table"
-              aria-label="[[i18n('documentPermissions.inherited')]]"
-              aria-rowcount="[[aces.length]]"
-            >
+            <div class="acl-table" role="table" aria-label="[[captionText]]" aria-rowcount="[[aces.length]]">
               <div class="acl-table-headers" role="row">
                 <div class="flex-2 tmp-tab" role="columnheader">
                   [[i18n('documentAclTable.userGroup')]]
@@ -178,7 +173,7 @@ import './nuxeo-popup-permission.js';
                               <div
                                 class="acl-table"
                                 role="table"
-                                aria-label="[[i18n('documentPermissions.inherited')]]"
+                                aria-label="[[captionText]]"
                                 aria-rowcount="[[aces.length]]"
                               >
                                 <div class="acl-table-headers" role="row">
@@ -270,6 +265,9 @@ import './nuxeo-popup-permission.js';
         showActions: {
           type: Object, // Boolean
           value: false,
+        },
+        captionText: {
+          type: String,
         },
       };
     }
