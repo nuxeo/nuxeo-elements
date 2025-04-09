@@ -119,6 +119,7 @@ import '../nuxeo-button-styles.js';
               acl-filter="_excludeInheritedAcls"
               ace-filter="_excludeExternalUserAces"
               show-actions="[[_hasPermission(doc)]]"
+              caption-text="[[i18n('documentPermissions.locallyDefined')]]"
             >
               <div slot="emptyResult" class="emptyResult">
                 [[_emptyLabel('documentPermissions.noLocalPermissions', loading, i18n)]]
@@ -160,6 +161,7 @@ import '../nuxeo-button-styles.js';
               aces="{{inheritedAces}}"
               acl-filter="_onlyInheritedAcls"
               show-actions="false"
+              caption-text="[[i18n('documentPermissions.inherited')]]"
             >
               <div slot="emptyResult" class="emptyResult">
                 [[_emptyLabel('documentPermissions.noInheritedText', loading, i18n)]]
@@ -192,6 +194,7 @@ import '../nuxeo-button-styles.js';
               acl-filter="_excludeInheritedAcls"
               show-actions="[[_hasPermission(doc)]]"
               share-with-external="true"
+              caption-text="[[i18n('documentPermissions.external')]]"
             >
               <div slot="emptyResult" class="emptyResult">
                 [[_emptyLabel('documentPermissions.noExternalPermission', loading, i18n)]]
