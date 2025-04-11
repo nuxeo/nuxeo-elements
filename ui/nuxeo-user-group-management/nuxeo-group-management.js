@@ -356,27 +356,32 @@ import '../nuxeo-button-styles.js';
               <iron-icon icon="nuxeo:search" prefix></iron-icon>
             </nuxeo-input>
           </div>
-          <div class="table">
-            <div class="table-header">
-              <div class="flex-4">[[i18n('groupManagement.name')]]</div>
-              <div class="flex-4">[[i18n('groupManagement.identifier')]]</div>
-              <div class="table-actions"></div>
+          <div
+            class="table"
+            role="table"
+            aria-label="[[i18n('groupManagement.users.heading')]]"
+            aria-rowcount="[[memberUsers.entries.length]]"
+          >
+            <div class="table-header" role="row">
+              <div class="flex-4" role="columnheader">[[i18n('groupManagement.name')]]</div>
+              <div class="flex-4" role="columnheader">[[i18n('groupManagement.identifier')]]</div>
+              <div class="table-actions" role="columnheader"></div>
             </div>
-            <div class="table-rows">
+            <div class="table-rows" role="rowgroup">
               <dom-if if="[[!_empty(memberUsers.entries)]]">
                 <template>
                   <dom-repeat items="[[memberUsers.entries]]">
                     <template>
-                      <div class="table-row">
-                        <div class="flex-4">
+                      <div class="table-row" role="row">
+                        <div class="flex-4" role="columnheader">
                           <dom-if if="[[_userHasName(item)]]">
                             <template>
                               <nuxeo-user-tag user="[[item]]"></nuxeo-user-tag>
                             </template>
                           </dom-if>
                         </div>
-                        <div class="flex-4 preserve-white-space">[[item.id]]</div>
-                        <div class="table-actions">
+                        <div class="flex-4 preserve-white-space" role="columnheader">[[item.id]]</div>
+                        <div class="table-actions" role="columnheader">
                           <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
                             <template>
                               <paper-icon-button
@@ -396,8 +401,8 @@ import '../nuxeo-button-styles.js';
               </dom-if>
               <dom-if if="[[_empty(memberUsers.entries)]]">
                 <template>
-                  <div class="table-row">
-                    <div class="emptyResult">[[i18n('groupManagement.noSearchResults')]]</div>
+                  <div class="table-row" role="row">
+                    <div class="emptyResult" role="columnheader">[[i18n('groupManagement.noSearchResults')]]</div>
                   </div>
                 </template>
               </dom-if>
@@ -419,23 +424,28 @@ import '../nuxeo-button-styles.js';
               <iron-icon icon="nuxeo:search" prefix></iron-icon>
             </nuxeo-input>
           </div>
-          <div class="table">
-            <div class="table-header">
-              <div class="flex-4">[[i18n('groupManagement.name')]]</div>
-              <div class="flex-4">[[i18n('groupManagement.identifier')]]</div>
-              <div class="table-actions"></div>
+          <div
+            class="table"
+            role="table"
+            aria-label="[[i18n('groupManagement.nestedGroups.heading')]]"
+            aria-rowcount="[[memberGroups.entries.length]]"
+          >
+            <div class="table-header" role="row">
+              <div class="flex-4" role="columnheader">[[i18n('groupManagement.name')]]</div>
+              <div class="flex-4" role="columnheader">[[i18n('groupManagement.identifier')]]</div>
+              <div class="table-actions" role="columnheader"></div>
             </div>
-            <div class="table-rows">
+            <div class="table-rows" role="rowgroup">
               <dom-if if="[[!_empty(memberGroups.entries)]]">
                 <template>
                   <dom-repeat items="[[memberGroups.entries]]">
                     <template>
-                      <div class="table-row">
-                        <div class="flex-4">
+                      <div class="table-row" role="row">
+                        <div class="flex-4" role="columnheader">
                           <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
                         </div>
-                        <div class="flex-4 preserve-white-space">[[item.groupname]]</div>
-                        <div class="table-actions">
+                        <div class="flex-4 preserve-white-space" role="columnheader">[[item.groupname]]</div>
+                        <div class="table-actions" role="columnheader">
                           <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
                             <template>
                               <paper-icon-button
@@ -455,7 +465,7 @@ import '../nuxeo-button-styles.js';
               </dom-if>
               <dom-if if="[[_empty(memberGroups.entries)]]">
                 <template>
-                  <div class="table-row">
+                  <div class="table-row" role="row">
                     <div>[[i18n('groupManagement.noSearchResults')]]</div>
                   </div>
                 </template>
@@ -468,7 +478,10 @@ import '../nuxeo-button-styles.js';
 
         <!-- permissions -->
         <nuxeo-card heading="[[i18n('groupManagement.permissions.heading')]]">
-          <nuxeo-user-group-permissions-table entity="[[groupname]]"></nuxeo-user-group-permissions-table>
+          <nuxeo-user-group-permissions-table
+            entity="[[groupname]]"
+            caption-text="[[i18n('groupManagement.permissions.heading')]]"
+          ></nuxeo-user-group-permissions-table>
         </nuxeo-card>
       `;
     }
