@@ -8,25 +8,44 @@ on:
 
   # Sync when a commit is done on maintenance-3.1.x
   push:
-    branches:
-      - maintenance-3.1.x
+    branches: ["maintenance-3.1.x"]
     paths:
-      - 'ui/i18n/messages.json'
+      - 'i18n/messages.json'
 
   # Manually trigger the workflow
   workflow_dispatch:
-
+  
 jobs:
+  # in uses, cannot use environment variable for {owner}/{repo} nor matrix strategy variable for {ref}
+  # thus hardcoding them
+  call-workflow-in-lts-2021:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    uses: nuxeo/nuxeo-elements/.github/workflows/crowdin.yaml@maintenance-3.0.x
+    secrets: inherit
+    needs: crowdin
+
+  call-workflow-in-lts-2025:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    uses: nuxeo/nuxeo-elements/.github/workflows/crowdin.yaml@lts-2025
+    secrets: inherit
+    needs: call-workflow-in-lts-2021
+
   crowdin:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          ref: maintenance-3.1.x
 
       - name: Crowdin Action
-        uses: crowdin/github-action@v1
+        id: crowdin-sync
+        uses: crowdin/github-action@1.5.2
         with:
+          # Disable 'git checkout "${GITHUB_REF#refs/heads/}"'
+          skip_ref_checkout: true
+
           # Tokens
           project_id: ${{ secrets.CROWDIN_PROJECT_ID }}
           token: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
@@ -40,13 +59,14 @@ jobs:
           auto_approve_imported: true
 
           # Name of the branch where to merge the translations
-          localization_branch_name: crowdin-translations-update
+          localization_branch_name: crowdin-translations-update-lts-2023
+          pull_request_base_branch_name: maintenance-3.1.x
           create_pull_request: true
-          pull_request_title: 'New Crowdin translations'
-          pull_request_body: 'New Crowdin pull request with translations'
+          pull_request_title: 'New Crowdin translations by GitHub Action (lts-2023)'
+          pull_request_body: 'New Crowdin pull request with translations lts 2023'
 
           # The commit message
-          commit_message: 'Automatic update of translations from Crowdin'
+          commit_message: 'Automatic update of translations from Crowdin lts 2023'
 
           # Automatically download all the new translations
           download_translations: true
