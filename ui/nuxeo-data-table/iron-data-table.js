@@ -219,6 +219,12 @@ import '../nuxeo-button-styles.js';
             display: block;
             @apply --nuxeo-label;
           }
+
+          .table-wrapper {
+            height: 350px;
+            overflow-y: scroll;
+            position: relative;
+          }
         </style>
 
         <div id="container">
@@ -594,6 +600,15 @@ import '../nuxeo-button-styles.js';
       this.setAttribute('role', 'table');
       this.setAttribute('aria-multiselectable', this.multiSelection);
       this.setAttribute('aria-label', this.captionText);
+      if (this.classList.contains('wrap-table')) {
+        const list = this.shadowRoot.querySelector('iron-list');
+        if (list && !list.parentElement.classList.contains('table-wrapper')) {
+          const wrapper = document.createElement('div');
+          wrapper.classList.add('table-wrapper');
+          list.parentElement.insertBefore(wrapper, list);
+          wrapper.appendChild(list);
+        }
+      }
     }
 
     _computeActionsStyle() {
