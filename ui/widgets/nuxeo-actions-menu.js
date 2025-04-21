@@ -101,7 +101,7 @@ import './nuxeo-tooltip.js';
             slot="dropdown-trigger"
             aria-labelledby="iconButtonTooltip"
           ></paper-icon-button>
-          <paper-listbox slot="dropdown-content" role="list" tabindex="0">
+          <paper-listbox slot="dropdown-content" role="list">
             <slot id="dropdown" name="dropdown"></slot>
           </paper-listbox>
         </paper-menu-button>
@@ -235,7 +235,7 @@ import './nuxeo-tooltip.js';
 
     _layout(e) {
       // removeAttribute tabindex to fix dropdown elenments a11y tab issues
-      var dropdownElements = this._getDropdownElements();
+      const dropdownElements = this._getDropdownElements();
       if (dropdownElements) {
         setTimeout(() => {
           dropdownElements.map((list) => list.removeAttribute('tabindex'));
@@ -249,7 +249,7 @@ import './nuxeo-tooltip.js';
           this.$.dropdownButton.hidden = true;
         }
         // let's move any element in the menu to the "dropdown" slot if it doesn't fit
-        let els = this._getMenuElements();
+        const els = this._getMenuElements();
         // XXX for some reason, on Chrome, offsetWidth might not be 0 when the element is hidden (see ELEMENTS-1478)
         while (
           els.length &&
