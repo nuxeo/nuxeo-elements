@@ -221,7 +221,6 @@ import '../nuxeo-button-styles.js';
           }
 
           .table-wrapper {
-            height: 350px;
             overflow-y: scroll;
             position: relative;
           }
@@ -524,6 +523,14 @@ import '../nuxeo-button-styles.js';
          * proper table name for assistive technologies to identify the table correctly
          */
         captionText: {
+          type: String,
+          value: '',
+        },
+        /**
+         * Provides a fixed height of the wrapper div containing the iron-list, where there is a limit to
+         * the number of items displayed at a time on the UI.
+         */
+        wrapperHeight: {
           type: String,
           value: '',
         },
