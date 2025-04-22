@@ -491,14 +491,6 @@ import '../nuxeo-button-styles.js';
           value: false,
         },
         /**
-         * Provides a fixed height of the wrapper div containing the iron-list, where there is a limit to
-         * the number of items displayed at a time on the UI.
-         */
-        wrapperHeight: {
-          type: String,
-          value: '',
-        },
-        /**
          *
          * If enabled, it allows to select multiple documents and apply an action on them,
          * like moving them to trash, to favorites or to a collection.
@@ -532,6 +524,14 @@ import '../nuxeo-button-styles.js';
          * proper table name for assistive technologies to identify the table correctly
          */
         captionText: {
+          type: String,
+          value: '',
+        },
+        /**
+         * Provides a fixed height of the wrapper div containing the iron-list, where there is a limit to
+         * the number of items displayed at a time on the UI.
+         */
+        wrapperHeight: {
           type: String,
           value: '',
         },
@@ -613,7 +613,7 @@ import '../nuxeo-button-styles.js';
         if (list && !list.parentElement.classList.contains('table-wrapper')) {
           const wrapper = document.createElement('div');
           wrapper.classList.add('table-wrapper');
-          wrapper.setAttribute('style', `height: ${  this.wrapperHeight}`);
+          wrapper.setAttribute('style', `height: ${this.wrapperHeight}`);
           list.parentElement.insertBefore(wrapper, list);
           wrapper.appendChild(list);
         }
