@@ -284,7 +284,7 @@
   "tableSettings.columnSettings": "Spalteneinstellungen",
   "tableSettings.columnSettings.done": "Ausgeführt",
   "tableSettings.columnSettings.reset": "Zurücksetzen",
- "table.caption.defaultSearchResults": "Search Results",
+  "table.caption.defaultSearchResults": "Search Results",
   "table.caption.recentlyEditedDocs": "Recently Edited Documents",
   "table.caption.recentlyViewedDocs": "Recently Viewed Documents",
   "table.caption.favoriteDocs": "Favorites",
