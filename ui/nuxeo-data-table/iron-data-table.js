@@ -530,7 +530,7 @@ import '../nuxeo-button-styles.js';
          * Provides a fixed height of the wrapper div containing the iron-list, where there is a limit to
          * the number of items displayed at a time on the UI.
          */
-        wrapperHeight: {
+        _wrapperHeight: {
           type: String,
           value: '',
         },
@@ -607,15 +607,21 @@ import '../nuxeo-button-styles.js';
       this.setAttribute('role', 'table');
       this.setAttribute('aria-multiselectable', this.multiSelection);
       this.setAttribute('aria-label', this.captionText);
-      if (this.wrapperHeight) {
-        const list = this.shadowRoot.querySelector('iron-list');
-        if (list && !list.parentElement.classList.contains('table-wrapper')) {
-          const wrapper = document.createElement('div');
-          wrapper.classList.add('table-wrapper');
-          wrapper.setAttribute('style', `height: ${this.wrapperHeight}`);
-          list.parentElement.insertBefore(wrapper, list);
-          wrapper.appendChild(list);
-        }
+      const val = this.getAttribute('wrapper-height');
+      if (val) {
+        this._wrapperHeight = val;
+        this._onWrapperHeightChanged(val);
+      }
+    }
+
+    _onWrapperHeightChanged(height) {
+      const list = this.shadowRoot.querySelector('iron-list');
+      if (list && height && !list.parentElement.classList.contains('table-wrapper')) {
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('table-wrapper');
+        wrapper.setAttribute('style', `height: ${height}`);
+        list.parentElement.insertBefore(wrapper, list);
+        wrapper.appendChild(list);
       }
     }
 
