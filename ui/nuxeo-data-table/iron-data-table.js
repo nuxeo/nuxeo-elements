@@ -219,6 +219,11 @@ import '../nuxeo-button-styles.js';
             display: block;
             @apply --nuxeo-label;
           }
+
+          .table-wrapper {
+            overflow-y: scroll;
+            position: relative;
+          }
         </style>
 
         <div id="container">
@@ -486,6 +491,7 @@ import '../nuxeo-button-styles.js';
           value: false,
         },
         /**
+         *
          * If enabled, it allows to select multiple documents and apply an action on them,
          * like moving them to trash, to favorites or to a collection.
          */
@@ -518,6 +524,14 @@ import '../nuxeo-button-styles.js';
          * proper table name for assistive technologies to identify the table correctly
          */
         captionText: {
+          type: String,
+          value: '',
+        },
+        /**
+         * Provides a fixed height of the wrapper div containing the iron-list, where there is a limit to
+         * the number of items displayed at a time on the UI.
+         */
+        _wrapperHeight: {
           type: String,
           value: '',
         },
@@ -594,6 +608,22 @@ import '../nuxeo-button-styles.js';
       this.setAttribute('role', 'table');
       this.setAttribute('aria-multiselectable', this.multiSelection);
       this.setAttribute('aria-label', this.captionText);
+      const wrapperHeight = this.getAttribute('wrapper-height');
+      if (wrapperHeight) {
+        this._wrapperHeight = wrapperHeight;
+        this._onWrapperHeightChanged();
+      }
+    }
+
+    _onWrapperHeightChanged() {
+      const list = this.shadowRoot.querySelector('iron-list');
+      if (list && this._wrapperHeight && !list.parentElement.classList.contains('table-wrapper')) {
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('table-wrapper');
+        wrapper.setAttribute('style', `height: ${this._wrapperHeight}`);
+        list.parentElement.insertBefore(wrapper, list);
+        wrapper.appendChild(list);
+      }
     }
 
     _computeActionsStyle() {
