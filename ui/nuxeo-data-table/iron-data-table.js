@@ -607,19 +607,19 @@ import '../nuxeo-button-styles.js';
       this.setAttribute('role', 'table');
       this.setAttribute('aria-multiselectable', this.multiSelection);
       this.setAttribute('aria-label', this.captionText);
-      const val = this.getAttribute('wrapper-height');
-      if (val) {
-        this._wrapperHeight = val;
-        this._onWrapperHeightChanged(val);
+      const wrapperHeight = this.getAttribute('wrapper-height');
+      if (wrapperHeight) {
+        this._wrapperHeight = wrapperHeight;
+        this._onWrapperHeightChanged();
       }
     }
 
-    _onWrapperHeightChanged(height) {
+    _onWrapperHeightChanged() {
       const list = this.shadowRoot.querySelector('iron-list');
-      if (list && height && !list.parentElement.classList.contains('table-wrapper')) {
+      if (list && this._wrapperHeight && !list.parentElement.classList.contains('table-wrapper')) {
         const wrapper = document.createElement('div');
         wrapper.classList.add('table-wrapper');
-        wrapper.setAttribute('style', `height: ${height}`);
+        wrapper.setAttribute('style', `height: ${this._wrapperHeight}`);
         list.parentElement.insertBefore(wrapper, list);
         wrapper.appendChild(list);
       }
