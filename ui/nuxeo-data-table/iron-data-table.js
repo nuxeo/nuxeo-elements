@@ -607,16 +607,6 @@ import '../nuxeo-button-styles.js';
       this.setAttribute('role', 'table');
       this.setAttribute('aria-multiselectable', this.multiSelection);
       this.setAttribute('aria-label', this.captionText);
-      if (this.classList.contains('wrap-table')) {
-        const list = this.shadowRoot.querySelector('iron-list');
-        if (list && !list.parentElement.classList.contains('table-wrapper')) {
-          const wrapper = document.createElement('div');
-          wrapper.classList.add('table-wrapper');
-          list.parentElement.insertBefore(wrapper, list);
-          wrapper.appendChild(list);
-        }
-      }
-
       const val = this.getAttribute('wrapper-height');
       if (val) {
         this._wrapperHeight = val;
