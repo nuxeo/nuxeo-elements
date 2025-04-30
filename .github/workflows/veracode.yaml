@@ -10,7 +10,7 @@ name: Veracode Maintenance 3.1.x
 on:
   pull_request:
     branches:
-    - maintenance-3.1.x
+      - maintenance-3.1.x
 
 env:
   REFERENCE_BRANCH: maintenance-3.1.x
