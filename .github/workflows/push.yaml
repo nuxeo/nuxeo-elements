@@ -1,0 +1,54 @@
+name: Push release
+
+on:
+  pull_request:
+    branches:
+      - test-maintenance-3.1.x
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to promote (e.g.: 3.1.2-rc.2)'
+        required: true
+      referenceBranch:
+        description: 'Branch to be updated after the promotion'
+        required: true
+        default: 'test-maintenance-3.1.x'
+      dryRun:
+        description: 'Run the workflow without pushing code or publishing artifacts'
+        type: boolean
+        required: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
+          scope: '@nuxeo'
+
+      - uses: actions/checkout@v2
+        with:
+          ref: 'test-maintenance-3.1.x'
+          token: ${{ secrets.GIT_ADMIN_TOKEN }}
+
+      - run: git config user.name "nuxeo-webui-jx-bot" && git config user.email "webui@hyland.com"
+
+      - name: update npm version, commit & push
+        run: |
+          # Update package.json with minor version bump
+          git branch --show-current
+          echo "========================= branches"
+          npm version '23.1.57' --no-git-tag-version
+          echo "========================= npm version"
+          git status
+          echo "========================= git status"
+          VERSION=$(node -p "require('./package.json').version")
+          git add package.json
+          echo "========================= git add"
+          git commit -m "chore: bump version to $VERSION"
+          echo "========================= git commit"
+          git status
+          echo "========================= git status"
+          git push origin ${{ github.event.inputs.referenceBranch }}
