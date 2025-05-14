@@ -196,9 +196,10 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
     _toggleKeydown(e) {
       if (e && e.type === 'keydown') {
-        const {key} = e;
-        if (key !== 'Enter' && key !== ' ' && key !== 'Spacebar') return;
-
+        const { key } = e;
+        if (key !== 'Enter' && key !== ' ' && key !== 'Spacebar') {
+          return;
+        }
         e.preventDefault(); // prevents vertical scroll on spacebar keypress
         e.stopPropagation();
         this._toggle();
