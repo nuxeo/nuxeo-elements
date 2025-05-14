@@ -112,7 +112,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
         <dom-if if="[[_hasHeading(icon, heading, collapsible)]]">
           <template>
-            <h5 on-click="_toggle" on-keydown="_toggle" class="header" tabindex="0">
+            <h5 on-click="_toggle" on-keydown="_toggleKeydown" class="header" tabindex="0">
               <iron-icon class="icon" icon="[[icon]]" hidden$="[[!icon]]"></iron-icon>
               [[heading]]
               <iron-icon class="toggle" icon="[[_toggleIcon(opened)]]" toggle hidden$="[[!collapsible]]"></iron-icon>
@@ -194,16 +194,18 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       return !collapsible || opened;
     }
 
-    _toggle(e) {
-      if (e) {
-        if (e.type === 'keydown') {
-          const key = e.key || e.code;
-          // ignore spacebar as it causes browser to consider it as vertical scroll, and moves the component up
-          if (key !== 'Enter' && key !== ' ' && key !== 'Space') return;
-          e.preventDefault();
-        }
-        e.stopPropagation(); // should work only on Enter keypress
+    _toggleKeydown(e) {
+      if (e && e.type === 'keydown') {
+        const {key} = e;
+        if (key !== 'Enter' && key !== ' ' && key !== 'Spacebar') return;
+
+        e.preventDefault(); // prevents vertical scroll on spacebar keypress
+        e.stopPropagation();
+        this._toggle();
       }
+    }
+
+    _toggle() {
       if (this.collapsible) {
         this.opened = !this.opened;
         if (this.$$('iron-collapse')) {
