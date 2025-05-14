@@ -197,24 +197,16 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
     _toggleKeydown(e) {
       if (e && e.type === 'keydown') {
         const { key } = e;
-        if (key !== 'Enter' && key !== ' ' && key !== 'Spacebar') return;
-
-        e.preventDefault(); // prevents vertical scroll on spacebar keypress
+        if (key !== 'Enter' && key !== ' ' && key !== 'Spacebar') {
+          return;
+        }
+        e.preventDefault(); // Prevents vertical scroll on spacebar keypress
         e.stopPropagation();
         this._toggle();
       }
     }
 
-    _toggle(e) {
-      if (e) {
-        if (e.type === 'keydown') {
-          const key = e.key || e.code;
-          // ignore spacebar as it causes browser to consider it as vertical scroll, and moves the component up
-          if (key !== 'Enter' && key !== ' ' && key !== 'Space') return;
-          e.preventDefault();
-        }
-        e.stopPropagation(); // should work only on Enter keypress
-      }
+    _toggle() {
       if (this.collapsible) {
         this.opened = !this.opened;
         if (this.$$('iron-collapse')) {
