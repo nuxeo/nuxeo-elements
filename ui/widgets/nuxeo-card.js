@@ -89,6 +89,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
             letter-spacing: 0.24px;
             line-height: 1.25rem;
             margin: 0 0;
+            width: max-content;
           }
 
           .header {
