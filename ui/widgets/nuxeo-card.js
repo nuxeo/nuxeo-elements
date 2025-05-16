@@ -89,6 +89,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
             letter-spacing: 0.24px;
             line-height: 1.25rem;
             margin: 0 0;
+            width: max-content;
           }
 
           .header {
@@ -112,7 +113,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
         <dom-if if="[[_hasHeading(icon, heading, collapsible)]]">
           <template>
-            <h5 on-click="_toggle" class="header">
+            <h5 on-click="_toggle" on-keydown="_toggleKeydown" class="header" tabindex="0">
               <iron-icon class="icon" icon="[[icon]]" hidden$="[[!icon]]"></iron-icon>
               [[heading]]
               <iron-icon class="toggle" icon="[[_toggleIcon(opened)]]" toggle hidden$="[[!collapsible]]"></iron-icon>
@@ -208,6 +209,18 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
     _toggleIcon(opened) {
       return `hardware:keyboard-arrow-${opened ? 'up' : 'down'}`;
+    }
+
+    _toggleKeydown(e) {
+      if (e && e.type === 'keydown') {
+        const { key } = e;
+        if (key !== 'Enter' && key !== ' ' && key !== 'Spacebar') {
+          return;
+        }
+        e.preventDefault(); // prevents vertical scroll on spacebar keypress
+        e.stopPropagation();
+        this._toggle();
+      }
     }
   }
 
