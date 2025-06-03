@@ -78,7 +78,7 @@ import '../nuxeo-button-styles.js';
 
         <dom-if if="{{!updatingACE}}">
           <template>
-            <paper-button on-click="togglePopup" id="newPermissionButton" class="text small">
+            <paper-button on-click="togglePopup" id="newPermissionButton" class="small primary">
               <span>
                 [[i18n('popupPermission.newPermission')]]
               </span>
