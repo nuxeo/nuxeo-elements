@@ -166,21 +166,21 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         </style>
 
         <label>[[label]]</label>
-        <div id="vaadinDatePicker" tabindex="0">
-          <vaadin-date-picker
-            id="date"
-            name="[[name]]"
-            required$="[[required]]"
-            invalid="[[invalid]]"
-            value="{{_inputValue}}"
-            disabled$="[[disabled]]"
-            min="[[min]]"
-            max="[[max]]"
-            error-message="[[errorMessage]]"
-            clear-button-visible$="[[!hideClearDateButton]]"
-          >
-          </vaadin-date-picker>
-        </div>
+        <span id="date_label" hidden>[[label]], Date Picker</span>
+        <vaadin-date-picker
+          id="date"
+          name="[[name]]"
+          required$="[[required]]"
+          invalid="[[invalid]]"
+          value="{{_inputValue}}"
+          disabled$="[[disabled]]"
+          aria-labelledby="date_label"
+          min="[[min]]"
+          max="[[max]]"
+          error-message="[[errorMessage]]"
+          clear-button-visible$="[[!hideClearDateButton]]"
+        >
+        </vaadin-date-picker>
       `;
     }
 
@@ -188,10 +188,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       super.ready();
       moment.locale(navigator.languages !== undefined ? navigator.languages[0] : navigator.language);
       // added this piece of code to rectify the issue where dates are not applied on first click
-      const datePickerDiv = this.shadowRoot.querySelector('#vaadinDatePicker');
       const datePicker = this.shadowRoot.querySelector('vaadin-date-picker');
       const handleclick = () => {
-        datePickerDiv.focus();
+        datePicker.focus();
       };
       datePicker.addEventListener('opened-changed', (e) => {
         if (e.detail.value) {
