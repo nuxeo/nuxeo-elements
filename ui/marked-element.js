@@ -1,5 +1,5 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
-import marked from 'marked';
+import { marked } from 'marked';
 
 class MarkedElement extends PolymerElement {
   static get is() {
