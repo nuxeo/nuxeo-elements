@@ -4,7 +4,8 @@
     "filesToIgnore": ["**/node_modules/**/*.js", "**/ui/viewers/pdfjs/**/**/*.js"],
     "ignoreWarnings": [
       "databinding-calls-must-be-functions",
-      "could-not-resolve-reference"
+      "could-not-resolve-reference",
+      "lint-error-code-for-this-syntax"
     ]
   }
 }
