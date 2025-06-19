@@ -1,4 +1,6 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
+// eslint-disable-next-line no-undef, @babel/parser
+/* @babel-plugin-proposal-class-properties */
 import { marked } from 'marked';
 
 class MarkedElement extends PolymerElement {
@@ -20,7 +22,9 @@ class MarkedElement extends PolymerElement {
   }
 
   static get template() {
-    return html`<div id="content"></div>`;
+    return html`
+      <div id="content"></div>
+    `;
   }
 
   _markdownChanged(value) {
