@@ -1,7 +1,5 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
-// eslint-disable-next-line no-undef, @babel/parser
-/* @babel-plugin-proposal-class-properties */
-const marked = require('marked');
+import { marked } from 'marked';
 
 class MarkedElement extends PolymerElement {
   static get is() {
@@ -33,7 +31,6 @@ class MarkedElement extends PolymerElement {
       return;
     }
 
-    // Render markdown
     const htmlOutput = marked(value, {
       breaks: true,
       gfm: true,
@@ -42,9 +39,9 @@ class MarkedElement extends PolymerElement {
     this.$.content.innerHTML = this.sanitize ? this._basicSanitize(htmlOutput) : htmlOutput;
   }
 
-  _basicSanitize(html_el) {
+  _basicSanitize(htmlEl) {
     const div = document.createElement('div');
-    div.innerHTML = html_el;
+    div.innerHTML = htmlEl;
     div.querySelectorAll('script').forEach((script) => script.remove());
     return div.innerHTML;
   }
