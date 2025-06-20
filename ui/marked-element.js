@@ -1,7 +1,7 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 // eslint-disable-next-line no-undef, @babel/parser
 /* @babel-plugin-proposal-class-properties */
-import  marked  from 'marked';
+import  { marked }  from 'marked';
 
 class MarkedElement extends PolymerElement {
   static get is() {
