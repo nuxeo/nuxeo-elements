@@ -42,9 +42,9 @@ class MarkedElement extends PolymerElement {
     this.$.content.innerHTML = this.sanitize ? this._basicSanitize(htmlOutput) : htmlOutput;
   }
 
-  _basicSanitize(html) {
+  _basicSanitize(html_el) {
     const div = document.createElement('div');
-    div.innerHTML = html;
+    div.innerHTML = html_el;
     div.querySelectorAll('script').forEach((script) => script.remove());
     return div.innerHTML;
   }
