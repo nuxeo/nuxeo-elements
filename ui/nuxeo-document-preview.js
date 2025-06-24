@@ -16,8 +16,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
-
-import '@polymer/marked-element/marked-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
@@ -26,6 +24,7 @@ import { Templatizer } from '@polymer/polymer/lib/legacy/templatizer-behavior.js
 import './viewers/nuxeo-image-viewer.js';
 import './viewers/nuxeo-pdf-viewer.js';
 import './viewers/nuxeo-video-viewer.js';
+import './marked-element.js';
 
 {
   /**
