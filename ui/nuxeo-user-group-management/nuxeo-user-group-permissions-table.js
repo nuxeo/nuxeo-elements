@@ -340,11 +340,8 @@ import '../nuxeo-button-styles.js';
         this._numberOfPages = response.numberOfPages;
         this._computePermissions(response.entries);
       }).catch((error) => {
-        if (error.name === 'AbortError') {
-          // console.debug('Fetch aborted (possibly during reload):', error);
-        } else {
-          return;
-        }
+        // do nothing
+        return
       });
     });
   }
