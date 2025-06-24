@@ -175,7 +175,7 @@ import '../nuxeo-button-styles.js';
                     <div class="layout vertical flex-6 ace-row" role="columnheader">
                       <dom-repeat items="[[document.aces]]" as="ace">
                         <template>
-                          <div class="layout horizontal center" role="columnheader">
+                          <div class="layout horizontal center" role="rowgroup">
                             <div class="flex-2" role="columnheader">
                               <span class="ace-permission-tag">[[ace.permission]]</span>
                             </div>
@@ -292,7 +292,38 @@ import '../nuxeo-button-styles.js';
       return ['_fetchPermissions(entity, _currentPage)'];
     }
 
-    _fetchPermissions() {
+    connectedCallback() {
+      super.connectedCallback?.();
+      if (this.entity) {
+        this._fetchPermissions();
+      }
+      this._intersectionObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && this.entity) {
+            this._fetchPermissions();
+          }
+        });
+      }, {
+        threshold: 0.1, 
+      });
+
+      this._intersectionObserver.observe(this);
+    }
+
+   _fetchPermissions() {
+      if (!this.entity) {
+        return;
+      }
+    requestAnimationFrame(() => {
+      if (!this.$.permissions) {
+        console.warn('Permissions operation not ready');
+        return;
+      }
+      if (this._abortController) {
+        this._abortController.abort();
+      }
+      this._abortController = new AbortController();
+      const signal = this._abortController.signal;
       this.$.permissions.params = {
         query: `${'SELECT * FROM Document WHERE ecm:mixinType != "HiddenInNavigation"' +
           'AND ecm:isProxy = 0 AND ecm:isVersion = 0 ' +
@@ -308,8 +339,15 @@ import '../nuxeo-button-styles.js';
       this.$.permissions.execute().then((response) => {
         this._numberOfPages = response.numberOfPages;
         this._computePermissions(response.entries);
+      }).catch((error) => {
+        if (error.name === 'AbortError') {
+          // console.debug('Fetch aborted (possibly during reload):', error);
+        } else {
+          return;
+        }
       });
-    }
+    });
+  }
 
     _computePermissions(entries) {
       entries.forEach((entry) => {
@@ -383,6 +421,16 @@ import '../nuxeo-button-styles.js';
     _toggleDialog(e) {
       this._deletedAce = e.model.ace;
       this.$.dialog.toggle();
+    }
+
+    disconnectedCallback() {
+      if (this._abortController) {
+        this._abortController.abort();
+      }
+      if (this._intersectionObserver) {
+        this._intersectionObserver.disconnect();
+      }
+      super.disconnectedCallback?.();
     }
 
     _canDelete(ace) {
