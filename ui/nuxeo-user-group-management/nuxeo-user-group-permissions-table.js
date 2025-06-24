@@ -175,7 +175,7 @@ import '../nuxeo-button-styles.js';
                     <div class="layout vertical flex-6 ace-row" role="columnheader">
                       <dom-repeat items="[[document.aces]]" as="ace">
                         <template>
-                          <div class="layout horizontal center" role="rowgroup">
+                          <div class="layout horizontal center" role="columnheader">
                             <div class="flex-2" role="columnheader">
                               <span class="ace-permission-tag">[[ace.permission]]</span>
                             </div>
