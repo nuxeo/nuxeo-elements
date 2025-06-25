@@ -120,7 +120,6 @@ import '../nuxeo-icons.js';
       super.ready();
       this.setAttribute('role', 'checkbox');
       this.setAttribute('aria-checked', false);
-      this.setAttribute('tabindex', '0');
     }
 
     _tap() {
