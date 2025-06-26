@@ -293,7 +293,9 @@ import '../nuxeo-button-styles.js';
     }
 
     connectedCallback() {
-      super.connectedCallback?.();
+      if (super.connectedCallback) {
+        super.connectedCallback();
+      }
       if (this.entity) {
         this._fetchPermissions();
       }
@@ -427,7 +429,9 @@ import '../nuxeo-button-styles.js';
       if (this._intersectionObserver) {
         this._intersectionObserver.disconnect();
       }
-      super.disconnectedCallback?.();
+      if (super.disconnectedCallback) {
+        super.disconnectedCallback();
+      }
     }
 
     _canDelete(ace) {
