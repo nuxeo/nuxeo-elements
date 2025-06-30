@@ -325,7 +325,6 @@ import '../nuxeo-button-styles.js';
         this._abortController.abort();
       }
       this._abortController = new AbortController();
-      const signal = this._abortController.signal;
       this.$.permissions.params = {
         query: `${'SELECT * FROM Document WHERE ecm:mixinType != "HiddenInNavigation"' +
           'AND ecm:isProxy = 0 AND ecm:isVersion = 0 ' +
@@ -341,10 +340,8 @@ import '../nuxeo-button-styles.js';
       this.$.permissions.execute().then((response) => {
         this._numberOfPages = response.numberOfPages;
         this._computePermissions(response.entries);
-      }).catch((error) => {
-        // do nothing
-        return
-      });
+      })
+      .catch(() => {});
     });
   }
 
