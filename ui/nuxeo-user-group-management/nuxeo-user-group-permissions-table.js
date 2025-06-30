@@ -337,11 +337,18 @@ import '../nuxeo-button-styles.js';
       this.$.permissions.headers = {
         'X-NXContext-Category': 'acls',
       };
-      this.$.permissions.execute().then((response) => {
-        this._numberOfPages = response.numberOfPages;
-        this._computePermissions(response.entries);
-      })
-      .catch(() => {});
+      this.$.permissions.execute()
+  .then((response) => {
+    this._numberOfPages = response.numberOfPages;
+    this._computePermissions(response.entries);
+  })
+  .catch((error) => {
+    if (error.name !== 'AbortError') {
+      console.error('Unhandled error in permissions fetch:', error);
+    }
+    // Else silently ignore aborts
+  });
+
     });
   }
 
