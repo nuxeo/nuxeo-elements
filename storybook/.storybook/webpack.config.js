@@ -26,6 +26,19 @@ module.exports = ({ config }) => {
         },
       ],
     },
+    // Babel loader for react-draggable and other modern JS in node_modules
+    {
+      test: /\.js$/,
+      include: [
+        resolve(__dirname, '../../node_modules/react-draggable'),
+      ],
+      use: {
+        loader: require.resolve('babel-loader'),
+        options: {
+          presets: [require.resolve('@babel/preset-env')],
+        },
+      },
+    },
   );
   return config;
 };
