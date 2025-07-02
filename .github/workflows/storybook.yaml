@@ -43,6 +43,16 @@ jobs:
       - name: Run analysis
         run: npx lerna run analysis --parallel
 
+      - name: Zip current folder
+        run: |
+          zip -r current-folder.zip .
+          
+      - name: Upload current folder artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: current-folder
+          path: current-folder.zip
+
       - name: Build storybook
         working-directory: storybook
         env:
