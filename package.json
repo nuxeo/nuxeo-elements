@@ -9,7 +9,7 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "resolutions": { 
+  "overrides": { 
     "react-draggable": "4.4.5"
   },
   "scripts": {
