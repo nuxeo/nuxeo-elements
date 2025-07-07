@@ -24,7 +24,6 @@ import { Templatizer } from '@polymer/polymer/lib/legacy/templatizer-behavior.js
 import './viewers/nuxeo-image-viewer.js';
 import './viewers/nuxeo-pdf-viewer.js';
 import './viewers/nuxeo-video-viewer.js';
-import './marked-element.js';
 
 {
   /**
@@ -123,10 +122,6 @@ import './marked-element.js';
             <source src="[[_computeAudioSource(_blob)]]" />
             AUDIO
           </audio>
-        </template>
-
-        <template mime-pattern="text/(?:.*-)?(markdown|html)">
-          <marked-element markdown="[[_blob.text]]" sanitize></marked-element>
         </template>
 
         <template mime-pattern="text/plain">
