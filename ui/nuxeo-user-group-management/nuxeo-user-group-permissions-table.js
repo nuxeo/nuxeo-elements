@@ -153,14 +153,14 @@ import '../nuxeo-button-styles.js';
           </template>
         </dom-if>
 
-        <div class="table" role="table" aria-label="[[captionText]]" aria-rowcount="[[documents.aces.length]]">
+        <div class="table" role="table" aria-label="[[captionText]]" aria-rowcount="[[documents.length]]">
           <div class="table-header" role="row">
             <div class="flex-3" role="columnheader">[[i18n('userGroupPermissions.on')]]</div>
-            <div class="flex-6 layout horizontal">
+            <div class="flex-6 layout horizontal" role="columnheader">
               <div class="flex-2" role="columnheader">[[i18n('userGroupPermissions.right')]]</div>
               <div class="flex-2" role="columnheader">[[i18n('userGroupPermissions.timeFrame')]]</div>
               <div class="flex-2" role="columnheader">[[i18n('userGroupPermissions.grantedBy')]]</div>
-              <div class="table-actions"></div>
+              <div class="table-actions" role="columnheader"></div>
             </div>
           </div>
           <dom-if if="[[!empty]]">
@@ -175,7 +175,7 @@ import '../nuxeo-button-styles.js';
                     <div class="layout vertical flex-6 ace-row" role="columnheader">
                       <dom-repeat items="[[document.aces]]" as="ace">
                         <template>
-                          <div class="layout horizontal center" role="rowgroup">
+                          <div class="layout horizontal center" role="columnheader">
                             <div class="flex-2" role="columnheader">
                               <span class="ace-permission-tag">[[ace.permission]]</span>
                             </div>
