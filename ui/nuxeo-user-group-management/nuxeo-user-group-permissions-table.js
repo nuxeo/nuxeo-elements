@@ -293,58 +293,60 @@ import '../nuxeo-button-styles.js';
     }
 
     connectedCallback() {
-      super.connectedCallback?.();
+      if (typeof super.connectedCallback === 'function') {
+        super.connectedCallback();
+      }
+
       if (this.entity) {
         this._fetchPermissions();
       }
-      this._intersectionObserver = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && this.entity) {
-            this._fetchPermissions();
-          }
-        });
-      }, {
-        threshold: 0.1, 
-      });
+      this._intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && this.entity) {
+              this._fetchPermissions();
+            }
+          });
+        },
+        {
+          threshold: 0.1,
+        },
+      );
 
       this._intersectionObserver.observe(this);
     }
 
-   _fetchPermissions() {
+    _fetchPermissions() {
       if (!this.entity) {
         return;
       }
-    requestAnimationFrame(() => {
-      if (!this.$.permissions) {
-        console.warn('Permissions operation not ready');
-        return;
-      }
-      if (this._abortController) {
-        this._abortController.abort();
-      }
-      this._abortController = new AbortController();
-      const signal = this._abortController.signal;
-      this.$.permissions.params = {
-        query: `${'SELECT * FROM Document WHERE ecm:mixinType != "HiddenInNavigation"' +
-          'AND ecm:isProxy = 0 AND ecm:isVersion = 0 ' +
-          'AND ecm:isTrashed = 0 ' +
-          'AND ecm:acl/*1/principal = "'}${this.entity}"`,
-        page: this._currentPage - 1,
-        pageSize: this.pageSize,
-      };
-      // header for compat with 6.0
-      this.$.permissions.headers = {
-        'X-NXContext-Category': 'acls',
-      };
-      this.$.permissions.execute().then((response) => {
-        this._numberOfPages = response.numberOfPages;
-        this._computePermissions(response.entries);
-       }).catch((error) => {
-        // do nothing
-        return
+      requestAnimationFrame(() => {
+        if (!this.$.permissions) {
+          console.warn('Permissions operation not ready');
+          return;
+        }
+        if (this._abortController) {
+          this._abortController.abort();
+        }
+        this._abortController = new AbortController();
+        this.$permissions.params = {
+          query: `${'SELECT * FROM Document WHERE ecm:mixinType != "HiddenInNavigation"' +
+            'AND ecm:isProxy = 0 AND ecm:isVersion = 0 ' +
+            'AND ecm:isTrashed = 0 ' +
+            'AND ecm:acl/*1/principal = "'}${this.entity}"`,
+          page: this._currentPage - 1,
+          pageSize: this.pageSize,
+        };
+        // header for compat with 6.0
+        this.$.permissions.headers = {
+          'X-NXContext-Category': 'acls',
+        };
+        this.$.permissions.execute().then((response) => {
+          this._numberOfPages = response.numberOfPages;
+          this._computePermissions(response.entries);
+        });
       });
-    });
-  }
+    }
 
     _computePermissions(entries) {
       entries.forEach((entry) => {
@@ -427,7 +429,9 @@ import '../nuxeo-button-styles.js';
       if (this._intersectionObserver) {
         this._intersectionObserver.disconnect();
       }
-      super.disconnectedCallback?.();
+      if (typeof super.disconnectedCallback === 'function') {
+        super.disconnectedCallback();
+      }
     }
 
     _canDelete(ace) {
