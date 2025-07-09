@@ -125,11 +125,17 @@ import '../nuxeo-icons.js';
     _tap() {
       if (!this.disabled) {
         this.checked = !this.checked;
+        if (!this.checked) {
+          this.blur();
+        }
       }
     }
 
     _ariaChecked() {
       this.setAttribute('aria-checked', this.checked);
+      if (!this.checked) {
+        this.blur();
+      }
     }
   }
 
