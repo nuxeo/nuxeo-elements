@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-expressions */
 /**
 @license
 ©2023 Hyland Software, Inc. and its affiliates. All rights reserved. 
@@ -351,7 +350,6 @@ import '../nuxeo-button-styles.js';
             this._computePermissions(response.entries);
           })
           .catch((error) => {
-            // do nothing
             console.warn(error);
           });
       });
