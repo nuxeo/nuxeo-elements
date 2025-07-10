@@ -49,7 +49,7 @@ import '../nuxeo-button-styles.js';
    * @memberof Nuxeo
    */
   class UserGroupPermissionsTable extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
-    static get template() {
+    static get template () {
       return html`
         <style include="iron-flex iron-flex-factors nuxeo-button-styles">
           :host {
@@ -293,13 +293,16 @@ import '../nuxeo-button-styles.js';
     }
 
     connectedCallback() {
-      if (typeof super.connectedCallback === 'function') {
+      try {
         super.connectedCallback();
+      } catch (e) {
+        // No-op if super.connectedCallback is not defined
       }
-
+      // Initial fetch
       if (this.entity) {
         this._fetchPermissions();
       }
+      // Setup IntersectionObserver to detect when visible again
       this._intersectionObserver = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
@@ -309,7 +312,7 @@ import '../nuxeo-button-styles.js';
           });
         },
         {
-          threshold: 0.1,
+          threshold: 0.1, // Trigger when at least 10% visible
         },
       );
 
@@ -320,6 +323,7 @@ import '../nuxeo-button-styles.js';
       if (!this.entity) {
         return;
       }
+      // Defer to ensure <nuxeo-operation> is fully attached
       requestAnimationFrame(() => {
         if (!this.$.permissions) {
           console.warn('Permissions operation not ready');
@@ -429,8 +433,10 @@ import '../nuxeo-button-styles.js';
       if (this._intersectionObserver) {
         this._intersectionObserver.disconnect();
       }
-      if (typeof super.disconnectedCallback === 'function') {
+      try {
         super.disconnectedCallback();
+      } catch (e) {
+        // No-op if super.connectedCallback is not defined
       }
     }
 
