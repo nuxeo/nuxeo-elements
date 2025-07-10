@@ -329,6 +329,10 @@ import '../nuxeo-button-styles.js';
           console.warn('Permissions operation not ready');
           return;
         }
+        if (this._abortController) {
+          this._abortController.abort();
+        }
+        this._abortController = new AbortController();
         this.$permissions.params = {
           query: `${'SELECT * FROM Document WHERE ecm:mixinType != "HiddenInNavigation"' +
             'AND ecm:isProxy = 0 AND ecm:isVersion = 0 ' +
