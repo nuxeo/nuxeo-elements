@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 /**
 @license
 ©2023 Hyland Software, Inc. and its affiliates. All rights reserved. 
@@ -293,16 +294,10 @@ import '../nuxeo-button-styles.js';
     }
 
     connectedCallback() {
-      try {
-        super.connectedCallback();
-      } catch (e) {
-        // No-op if super.connectedCallback is not defined
-      }
-      // Initial fetch
+      super.connectedCallback?.();
       if (this.entity) {
         this._fetchPermissions();
       }
-      // Setup IntersectionObserver to detect when visible again
       this._intersectionObserver = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
@@ -312,7 +307,7 @@ import '../nuxeo-button-styles.js';
           });
         },
         {
-          threshold: 0.1, // Trigger when at least 10% visible
+          threshold: 0.1,
         },
       );
 
@@ -323,7 +318,6 @@ import '../nuxeo-button-styles.js';
       if (!this.entity) {
         return;
       }
-      // Defer to ensure <nuxeo-operation> is fully attached
       requestAnimationFrame(() => {
         if (!this.$.permissions) {
           console.warn('Permissions operation not ready');
@@ -333,7 +327,7 @@ import '../nuxeo-button-styles.js';
           this._abortController.abort();
         }
         this._abortController = new AbortController();
-        this.$permissions.params = {
+        this.$.permissions.params = {
           query: `${'SELECT * FROM Document WHERE ecm:mixinType != "HiddenInNavigation"' +
             'AND ecm:isProxy = 0 AND ecm:isVersion = 0 ' +
             'AND ecm:isTrashed = 0 ' +
@@ -433,11 +427,7 @@ import '../nuxeo-button-styles.js';
       if (this._intersectionObserver) {
         this._intersectionObserver.disconnect();
       }
-      try {
-        super.disconnectedCallback();
-      } catch (e) {
-        // No-op if super.disconnectedCallback is not defined
-      }
+      super.disconnectedCallback?.();
     }
 
     _canDelete(ace) {
