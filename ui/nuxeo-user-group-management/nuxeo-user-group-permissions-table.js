@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-expressions */
 /**
 @license
 ©2023 Hyland Software, Inc. and its affiliates. All rights reserved. 
@@ -344,10 +343,15 @@ import '../nuxeo-button-styles.js';
         this.$.permissions.headers = {
           'X-NXContext-Category': 'acls',
         };
-        this.$.permissions.execute().then((response) => {
-          this._numberOfPages = response.numberOfPages;
-          this._computePermissions(response.entries);
-        });
+        this.$.permissions
+          .execute()
+          .then((response) => {
+            this._numberOfPages = response.numberOfPages;
+            this._computePermissions(response.entries);
+          })
+          .catch((error) => {
+            console.warn(error);
+          });
       });
     }
 
@@ -435,7 +439,7 @@ import '../nuxeo-button-styles.js';
       try {
         super.disconnectedCallback();
       } catch (e) {
-        // Safe fallback if super.connectedCallback doesn't exist
+        // Safe fallback if super.disconnectedCallback doesn't exist
       }
     }
 
