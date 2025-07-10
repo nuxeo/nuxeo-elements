@@ -49,7 +49,7 @@ import '../nuxeo-button-styles.js';
    * @memberof Nuxeo
    */
   class UserGroupPermissionsTable extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
-    static get template () {
+    static get template() {
       return html`
         <style include="iron-flex iron-flex-factors nuxeo-button-styles">
           :host {
@@ -436,7 +436,7 @@ import '../nuxeo-button-styles.js';
       try {
         super.disconnectedCallback();
       } catch (e) {
-        // No-op if super.connectedCallback is not defined
+        // No-op if super.disconnectedCallback is not defined
       }
     }
 
