@@ -339,7 +339,10 @@ static get observers() {
       };
       this.$.permissions.execute().then((response) => {
         this._numberOfPages = response.numberOfPages;
-        this._computePermissions(response.entries); 
+        this._computePermissions(response.entries);
+       }).catch((error) => {
+        // do nothing
+        return
       });
     });
   }
