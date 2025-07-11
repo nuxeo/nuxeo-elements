@@ -3,7 +3,7 @@
   "repository": "nuxeo/nuxeo-elements.git",
   "name": "nuxeo-elements",
   "private": true,
-  "version": "3.1.20-SNAPSHOT",
+  "version": "3.1.20-rc.5",
   "author": "Nuxeo",
   "license": "Apache-2.0",
   "engines": {
@@ -36,7 +36,7 @@
     "storybook": "lerna run analysis --parallel && cd storybook && npm start",
     "bump-version:date-hash": "TIMESTAMP=$(date -u +%Y%m%d.%H%M%S) && lerna exec \"npm --no-git-tag-version version \\$(node -pe \\\"require('./package.json').version + '.$TIMESTAMP-' + require('child_process').execSync('git rev-parse --short HEAD').toString()\\\")\" --ignore @nuxeo/nuxeo-elements-storybook"
   },
-  "overrides": { 
+  "overrides": {
     "react-draggable": "4.4.5"
   },
   "devDependencies": {
