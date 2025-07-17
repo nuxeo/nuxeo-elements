@@ -153,14 +153,14 @@ import '../nuxeo-button-styles.js';
           </template>
         </dom-if>
 
-        <div class="table" role="table" aria-label="[[captionText]]" aria-rowcount="[[documents.aces.length]]">
+        <div class="table" role="table" aria-label="[[captionText]]" aria-rowcount="[[documents.length]]">
           <div class="table-header" role="row">
             <div class="flex-3" role="columnheader">[[i18n('userGroupPermissions.on')]]</div>
-            <div class="flex-6 layout horizontal">
+            <div class="flex-6 layout horizontal" role="columnheader">
               <div class="flex-2" role="columnheader">[[i18n('userGroupPermissions.right')]]</div>
               <div class="flex-2" role="columnheader">[[i18n('userGroupPermissions.timeFrame')]]</div>
               <div class="flex-2" role="columnheader">[[i18n('userGroupPermissions.grantedBy')]]</div>
-              <div class="table-actions"></div>
+              <div class="table-actions" role="columnheader"></div>
             </div>
           </div>
           <dom-if if="[[!empty]]">
@@ -175,7 +175,7 @@ import '../nuxeo-button-styles.js';
                     <div class="layout vertical flex-6 ace-row" role="columnheader">
                       <dom-repeat items="[[document.aces]]" as="ace">
                         <template>
-                          <div class="layout horizontal center" role="rowgroup">
+                          <div class="layout horizontal center" role="columnheader">
                             <div class="flex-2" role="columnheader">
                               <span class="ace-permission-tag">[[ace.permission]]</span>
                             </div>
@@ -292,22 +292,66 @@ import '../nuxeo-button-styles.js';
       return ['_fetchPermissions(entity, _currentPage)'];
     }
 
+    connectedCallback() {
+      try {
+        super.connectedCallback();
+      } catch (e) {
+        // Safe fallback if super.connectedCallback doesn't exist
+      }
+
+      if (this.entity) {
+        this._fetchPermissions();
+      }
+      this._intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && this.entity) {
+              this._fetchPermissions();
+            }
+          });
+        },
+        {
+          threshold: 0.1,
+        },
+      );
+
+      this._intersectionObserver.observe(this);
+    }
+
     _fetchPermissions() {
-      this.$.permissions.params = {
-        query: `${'SELECT * FROM Document WHERE ecm:mixinType != "HiddenInNavigation"' +
-          'AND ecm:isProxy = 0 AND ecm:isVersion = 0 ' +
-          'AND ecm:isTrashed = 0 ' +
-          'AND ecm:acl/*1/principal = "'}${this.entity}"`,
-        page: this._currentPage - 1,
-        pageSize: this.pageSize,
-      };
-      // header for compat with 6.0
-      this.$.permissions.headers = {
-        'X-NXContext-Category': 'acls',
-      };
-      this.$.permissions.execute().then((response) => {
-        this._numberOfPages = response.numberOfPages;
-        this._computePermissions(response.entries);
+      if (!this.entity) {
+        return;
+      }
+      requestAnimationFrame(() => {
+        if (!this.$.permissions) {
+          console.warn('Permissions operation not ready');
+          return;
+        }
+        if (this._abortController) {
+          this._abortController.abort();
+        }
+        this._abortController = new AbortController();
+        this.$.permissions.params = {
+          query: `${'SELECT * FROM Document WHERE ecm:mixinType != "HiddenInNavigation"' +
+            'AND ecm:isProxy = 0 AND ecm:isVersion = 0 ' +
+            'AND ecm:isTrashed = 0 ' +
+            'AND ecm:acl/*1/principal = "'}${this.entity}"`,
+          page: this._currentPage - 1,
+          pageSize: this.pageSize,
+        };
+        // header for compat with 6.0
+        this.$.permissions.headers = {
+          'X-NXContext-Category': 'acls',
+        };
+        this.$.permissions
+          .execute()
+          .then((response) => {
+            this._numberOfPages = response.numberOfPages;
+            this._computePermissions(response.entries);
+          })
+          .catch((error) => {
+            console.warn(error);
+          });
       });
     }
 
@@ -383,6 +427,20 @@ import '../nuxeo-button-styles.js';
     _toggleDialog(e) {
       this._deletedAce = e.model.ace;
       this.$.dialog.toggle();
+    }
+
+    disconnectedCallback() {
+      if (this._abortController) {
+        this._abortController.abort();
+      }
+      if (this._intersectionObserver) {
+        this._intersectionObserver.disconnect();
+      }
+      try {
+        super.disconnectedCallback();
+      } catch (e) {
+        // Safe fallback if super.disconnectedCallback doesn't exist
+      }
     }
 
     _canDelete(ace) {

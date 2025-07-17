@@ -3271,7 +3271,7 @@ typedArrayTags[weakMapTag] = false;
      * @return The validated value. This may differ from the input value.
      */
         validateValue(value) {
-          if (value === null) {
+          if (value === null || value === undefined) {
             return [];
           } else if (Array.isArray(value)) {
             if (value.every(Selectivity.isValidId)) {
@@ -5364,6 +5364,7 @@ typedArrayTags[weakMapTag] = false;
           mouseenter: this._mouseenter,
           mouseleave: this._mouseleave,
           'selectivity-close': this._closed,
+          keydown: this._keydown,
         });
       }
 
@@ -5839,6 +5840,9 @@ typedArrayTags[weakMapTag] = false;
      * @return The validated item. May differ from the input item.
      */
         validateItem(item) {
+          if(Array.isArray(item)){
+            item = item[0];
+          }
           if (item && Selectivity.isValidId(item.id) && isString(item.text)) {
             return item;
           } else {
@@ -5870,6 +5874,15 @@ typedArrayTags[weakMapTag] = false;
             this._closeTimeout = 0;
           }
         },
+      
+       /**
+     * @private
+     */
+       _keydown(event) {
+        if ((event.key === 'Backspace' || event.keyCode === 8) && this.constructor.name === 'SingleInput') {
+          this.clear();
+      }
+    },
 
         /**
      * @private
@@ -7369,8 +7382,9 @@ typedArrayTags[weakMapTag] = false;
     }
 
     _valueChanged(newValue) {
+      const valueType = Array.isArray(newValue) ? newValue : [newValue];
       if (this._selectivity && !this._inUpdateSelection) {
-        if (newValue) {
+        if (valueType) {
           this._selectivity.setValue(newValue, { triggerChange: false });
         } else {
           const cv = this._selectivity.getValue();
@@ -7383,18 +7397,30 @@ typedArrayTags[weakMapTag] = false;
     }
 
     _dataChanged() {
+      if (!Array.isArray(this.data) && this.data != null) {
+        this.set('data', [this.data]);
+        return;
+      }
       if (this._selectivity) {
         this._selectivity.setOptions({ items: this._wrap(this.data) });
-        const selectivityData = this._selectivity.getData();
-          if(selectivityData){
-            const wrapData = this._wrap(this.data);
-            const newData = wrapData.filter(obj => selectivityData.some(item => item.id === obj.id));
-            if (newData.length !== 0 && JSON.stringify(newData) !== JSON.stringify(selectivityData)) {
-              this._selectivity.setData(newData);
-            }
+        let selectivityData = this._selectivity.getData();
+        if(!Array.isArray(selectivityData)){
+        selectivityData = [selectivityData];
+      }
+      if (selectivityData.length > 0) {
+        const wrapData = this._wrap(this.data);
+        const validSelectedItems = selectivityData.filter(
+          item => item && item.id != null
+        );
+        const newData = wrapData.filter(obj =>
+          validSelectedItems.some(item => item.id === obj.id)
+        );
+        if (newData.length !== 0 && JSON.stringify(newData) !== JSON.stringify(validSelectedItems)) {
+          this._selectivity.setData(newData);
         }
       }
     }
+  }
 
     _placeholderChanged() {
       this.$.input.setAttribute('placeholder', this.placeholder);
