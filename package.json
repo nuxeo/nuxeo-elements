@@ -36,6 +36,9 @@
     "storybook": "lerna run analysis --parallel && cd storybook && npm start",
     "bump-version:date-hash": "TIMESTAMP=$(date -u +%Y%m%d.%H%M%S) && lerna exec \"npm --no-git-tag-version version \\$(node -pe \\\"require('./package.json').version + '.$TIMESTAMP-' + require('child_process').execSync('git rev-parse --short HEAD').toString()\\\")\" --ignore @nuxeo/nuxeo-elements-storybook"
   },
+  "overrides": { 
+    "react-draggable": "4.4.5"
+  },
   "devDependencies": {
     "@open-wc/eslint-config": "^0.3.0",
     "@open-wc/karma-esm": "^2.12.6",
@@ -102,7 +105,6 @@
     "@polymer/iron-scroll-threshold": "^3.0.0",
     "@polymer/iron-selector": "^3.0.1",
     "@polymer/iron-validatable-behavior": "^3.0.1",
-    "@polymer/marked-element": "^3.0.1",
     "@polymer/neon-animation": "^3.0.1",
     "@polymer/paper-button": "^3.0.0",
     "@polymer/paper-card": "^3.0.0",
@@ -127,6 +129,7 @@
     "@polymer/polymer": "^3.0.0",
     "@polymer/test-fixture": "^4.0.2",
     "@vaadin/date-picker": "^23.0.0",
-    "nuxeo": "^4.0.3"
+    "nuxeo": "^4.0.3",
+    "marked": "^4.0.17"
   }
 }
