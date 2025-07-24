@@ -49,6 +49,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             text-transform: none;
           }
 
+          .quick-filters:focus-visible {
+            background-color: var(--nuxeo-buttons-focus, rgba(0, 0, 0, 0.3));
+            color: var(--nuxeo-button-primary-text, #ffffff);
+          }
+
           .quick-filters[active] {
             box-shadow: none;
             background-color: var(--nuxeo-pill-filter-background-active, #00adff);
