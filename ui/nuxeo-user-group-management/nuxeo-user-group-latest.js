@@ -166,7 +166,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                       </dom-if>
                     </div>
                     <div class="flex-2 preserve-white-space" role="columnheader">[[item.uid]]</div>
-                    <div class="flex-4 preserve-white-space" role="columnheader">[[_getEmail(item)]]</div>
+                    <div class="flex-4 preserve-white-space" role="columnheader">
+                      [[_getEmail(item)]]
+                    </div>
                     <div class="table-actions" role="columnheader"></div>
                   </div>
                 </template>
