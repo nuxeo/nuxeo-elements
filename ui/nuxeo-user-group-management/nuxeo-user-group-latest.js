@@ -135,6 +135,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             <div class="table-header" role="row">
               <div class="flex" role="columnheader">[[i18n('userGroupLatest.name')]]</div>
               <div class="flex-2" role="columnheader">[[i18n('userGroupLatest.identifier')]]</div>
+              <div class="flex-4" role="columnheader">[[i18n('label.directories.nature.email')]]</div>
               <div class="table-actions" role="columnheader">
                 <paper-icon-button
                   noink
@@ -165,6 +166,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                       </dom-if>
                     </div>
                     <div class="flex-2 preserve-white-space" role="columnheader">[[item.uid]]</div>
+                    <div class="flex-4 preserve-white-space" role="columnheader">[[_getEmail(item)]]</div>
                     <div class="table-actions" role="columnheader"></div>
                   </div>
                 </template>
@@ -217,6 +219,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _userHasName(user) {
       return user.properties['user:firstName'] || user.properties['user:lastName'];
+    }
+    
+    _getEmail(user) {
+      return user.properties['user:email'];
     }
 
     _isUser(docModel) {

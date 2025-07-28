@@ -365,6 +365,7 @@ import '../nuxeo-button-styles.js';
             <div class="table-header" role="row">
               <div class="flex-4" role="columnheader">[[i18n('groupManagement.name')]]</div>
               <div class="flex-4" role="columnheader">[[i18n('groupManagement.identifier')]]</div>
+              <div class="flex-4" role="columnheader">[[i18n('label.directories.nature.email')]]</div>
               <div class="table-actions" role="columnheader"></div>
             </div>
             <div class="table-rows" role="rowgroup">
@@ -381,6 +382,7 @@ import '../nuxeo-button-styles.js';
                           </dom-if>
                         </div>
                         <div class="flex-4 preserve-white-space" role="columnheader">[[item.id]]</div>
+                        <div class="flex-4 preserve-white-space" role="columnheader">[[_getEmail(item.properties)]]</div>
                         <div class="table-actions" role="columnheader">
                           <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
                             <template>
@@ -593,6 +595,10 @@ import '../nuxeo-button-styles.js';
 
     _userHasName(user) {
       return user.properties.firstName || user.properties.lastName;
+    }
+
+    _getEmail(properties) {
+      return properties && properties.email;
     }
 
     _fetch() {
