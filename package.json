@@ -129,6 +129,7 @@
     "@polymer/polymer": "^3.0.0",
     "@polymer/test-fixture": "^4.0.2",
     "nuxeo": "^4.0.3",
-    "marked": "^4.0.17"
+    "marked": "^4.0.17",
+    "form-data": "4.0.4"
   }
 }
