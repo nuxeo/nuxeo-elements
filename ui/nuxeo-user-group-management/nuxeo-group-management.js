@@ -382,7 +382,7 @@ import '../nuxeo-button-styles.js';
                           </dom-if>
                         </div>
                         <div class="flex-4 preserve-white-space" role="columnheader">[[item.id]]</div>
-                        <div class="flex-4 preserve-white-space" role="columnheader">
+                        <div class="flex-4" role="columnheader">
                           [[_getEmail(item.properties)]]
                         </div>
                         <div class="table-actions" role="columnheader">
