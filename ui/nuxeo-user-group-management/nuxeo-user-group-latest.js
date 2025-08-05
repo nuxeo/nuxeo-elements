@@ -133,8 +133,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             aria-rowcount="[[latestCreatedUsersGroups.entries.length]]"
           >
             <div class="table-header" role="row">
-              <div class="flex" role="columnheader">[[i18n('userGroupLatest.name')]]</div>
-              <div class="flex-2" role="columnheader">[[i18n('userGroupLatest.identifier')]]</div>
+              <div class="flex-4" role="columnheader">[[i18n('userGroupLatest.name')]]</div>
+              <div class="flex-4" role="columnheader">[[i18n('userGroupLatest.identifier')]]</div>
               <div class="flex-4" role="columnheader">[[i18n('label.directories.nature.email')]]</div>
               <div class="table-actions" role="columnheader">
                 <paper-icon-button
@@ -149,7 +149,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               <dom-repeat items="[[latestCreatedUsersGroups.entries]]" as="item">
                 <template>
                   <div class="table-row" on-click="_manageUserOrGroup" role="row">
-                    <div class="flex" role="columnheader">
+                    <div class="flex-4" role="columnheader">
                       <dom-if if="[[_isUser(item)]]">
                         <template>
                           <dom-if if="[[_userHasName(item)]]">
@@ -165,8 +165,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                         </template>
                       </dom-if>
                     </div>
-                    <div class="flex-2 preserve-white-space" role="columnheader">[[item.uid]]</div>
-                    <div class="flex-4 preserve-white-space" role="columnheader">[[_getEmail(item)]]</div>
+                    <div class="flex-4 preserve-white-space" role="columnheader">[[item.uid]]</div>
+                    <div class="flex-4" role="columnheader">[[_getEmail(item)]]</div>
                     <div class="table-actions" role="columnheader"></div>
                   </div>
                 </template>
