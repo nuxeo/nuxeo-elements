@@ -82,6 +82,21 @@ import '../nuxeo-button-styles.js';
             width: 1.3rem;
           }
 
+          .email-wrapper {
+            max-width: 100%;
+            overflow: hidden;
+            text-align: left;
+          }
+
+          .email-text {
+            display: inline-block;
+            max-width: 240px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: middle;
+          }
+
           .card {
             background: none var(--nuxeo-box, #fff);
             box-shadow: 0 3px 5px rgba(0, 0, 0, 0.04);
@@ -383,8 +398,13 @@ import '../nuxeo-button-styles.js';
                         </div>
                         <div class="flex-4 preserve-white-space" role="columnheader">[[item.id]]</div>
                         <div class="flex-4" role="columnheader">
-                          [[_getEmail(item.properties)]]
+                          <div class="email-wrapper">
+                            <span class="email-text" title="[[_getEmail(item.properties)]]">
+                              [[_getEmail(item.properties)]]
+                            </span>
+                          </div>
                         </div>
+
                         <div class="table-actions" role="columnheader">
                           <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
                             <template>
