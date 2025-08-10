@@ -86,6 +86,22 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             cursor: pointer;
           }
 
+          .email-wrapper {
+            max-width: 100%;
+            overflow: hidden;
+            text-align: left;
+          }
+
+          .email-text {
+            display: inline-block;
+            max-width: 240px; /* adjust as needed */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: middle;
+          }
+
+
           .table-row:hover {
             background: var(--nuxeo-container-hover, #fafafa);
           }
@@ -166,7 +182,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                       </dom-if>
                     </div>
                     <div class="flex-4 preserve-white-space" role="columnheader">[[item.uid]]</div>
-                    <div class="flex-4" role="columnheader">[[_getEmail(item)]]</div>
+                    <div class="flex-4" role="columnheader">
+                      <div class="email-wrapper">
+                        <span class="email-text" title="[[_getEmail(item)]]">
+                          [[_getEmail(item)]]
+                        </span>
+                      </div>
+                    </div>
+
                     <div class="table-actions" role="columnheader"></div>
                   </div>
                 </template>
