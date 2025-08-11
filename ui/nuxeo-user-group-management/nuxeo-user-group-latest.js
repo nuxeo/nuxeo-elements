@@ -101,7 +101,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             vertical-align: middle;
           }
 
-
           .table-row:hover {
             background: var(--nuxeo-container-hover, #fafafa);
           }
