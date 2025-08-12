@@ -185,7 +185,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                       <div class="email-wrapper">
                         <span class="email-text">
                           [[_getEmail(item)]]
-                        <nuxeo-tooltip>[[_getEmail(item)]]</nuxeo-tooltip> 
+                          <nuxeo-tooltip>[[_getEmail(item)]]</nuxeo-tooltip>
                         </span>
                       </div>
                     </div>
