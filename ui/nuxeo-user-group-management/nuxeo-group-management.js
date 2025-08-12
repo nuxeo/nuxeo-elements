@@ -399,8 +399,9 @@ import '../nuxeo-button-styles.js';
                         <div class="flex-4 preserve-white-space" role="columnheader">[[item.id]]</div>
                         <div class="flex-4" role="columnheader">
                           <div class="email-wrapper">
-                            <span class="email-text" title="[[_getEmail(item.properties)]]">
+                            <span class="email-text">
                               [[_getEmail(item.properties)]]
+                            <nuxeo-tooltip>[[_getEmail(item.properties)]]</nuxeo-tooltip>
                             </span>
                           </div>
                         </div>
