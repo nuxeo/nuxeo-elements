@@ -94,7 +94,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           .email-text {
             display: inline-block;
-            max-width: 240px; /* adjust as needed */
+            max-width: 240px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -185,6 +185,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                       <div class="email-wrapper">
                         <span class="email-text" title="[[_getEmail(item)]]">
                           [[_getEmail(item)]]
+                          <nuxeo-tooltip>[[_getEmail(item.properties)]]</nuxeo-tooltip>
                         </span>
                       </div>
                     </div>
