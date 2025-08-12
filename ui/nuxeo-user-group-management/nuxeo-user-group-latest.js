@@ -183,9 +183,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                     <div class="flex-4 preserve-white-space" role="columnheader">[[item.uid]]</div>
                     <div class="flex-4" role="columnheader">
                       <div class="email-wrapper">
-                        <span class="email-text" title="[[_getEmail(item)]]">
+                        <span class="email-text">
                           [[_getEmail(item)]]
-                          <nuxeo-tooltip>[[_getEmail(item.properties)]]</nuxeo-tooltip>
+                          <nuxeo-tooltip>[[_getEmail(item)]]</nuxeo-tooltip>
                         </span>
                       </div>
                     </div>
