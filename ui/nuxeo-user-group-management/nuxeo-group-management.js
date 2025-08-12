@@ -401,7 +401,7 @@ import '../nuxeo-button-styles.js';
                           <div class="email-wrapper">
                             <span class="email-text">
                               [[_getEmail(item.properties)]]
-                            <nuxeo-tooltip>[[_getEmail(item.properties)]]</nuxeo-tooltip>
+                              <nuxeo-tooltip>[[_getEmail(item.properties)]]</nuxeo-tooltip>
                             </span>
                           </div>
                         </div>
