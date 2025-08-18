@@ -396,6 +396,7 @@ const template = html`
         /* Custom Backgrounds */
         --nuxeo-container-hover: var(--nuxeo-page-background);
         --nuxeo-dialog-buttons-bar: rgba(0, 0, 0, 0.05);
+        --nuxeo-buttons-focus: rgba(0, 0, 0, 0.3);
 
         /* Warn, Info, Error */
         --nuxeo-action-color-activated: #00aded;
