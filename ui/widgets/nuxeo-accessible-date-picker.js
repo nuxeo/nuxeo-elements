@@ -141,6 +141,12 @@ import { config } from '@nuxeo/nuxeo-elements';
           observer: '_invalidChanged'
         },
 
+        // Reason for current invalid state: 'required' | 'format' | 'invalidDate' | 'outOfRange' | 'notSelectable' | ''
+        errorReason: {
+          type: String,
+          value: '',
+        },
+
         _inputValue: {
           type: String,
           observer: '_inputValueChanged',
@@ -221,6 +227,10 @@ import { config } from '@nuxeo/nuxeo-elements';
           value: '',
           observer: '_maskedInputValueChanged',
         },
+        _inputMask: {
+          type: String,
+          value: '',
+        },
         
         _maskTemplate: {
           type: String,
@@ -291,14 +301,7 @@ import { config } from '@nuxeo/nuxeo-elements';
             outline: none;
           }
 
-          :host([invalid]) .input-wrapper {
-            border-color: #dc2626;
-          }
-
-          :host([invalid]) .input-wrapper:focus-within {
-            border-color: #dc2626;
-            box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.1);
-          }
+          /* Do not alter label color; only border indicates invalid */
 
           .input-field {
             flex: 1;
@@ -914,7 +917,7 @@ import { config } from '@nuxeo/nuxeo-elements';
               class="input-field"
               type="text"
               value="{{_maskedInputValue::input}}"
-              placeholder="dd/mm/yyyy"
+              placeholder$="[[_getDatePlaceholder()]]"
               name$="[[name]]"
               disabled$="[[disabled]]"
               required$="[[required]]"
@@ -926,7 +929,7 @@ import { config } from '@nuxeo/nuxeo-elements';
               autocomplete="off"
               maxlength="10"
               inputmode="numeric"
-              pattern="\\d{2}/\\d{2}/\\d{4}"
+              pattern$="[[_getInputPattern(_inputMask)]]"
               on-focus="_onMaskedInputFocus"
               on-blur="_onMaskedInputBlur"
               on-keydown="_onMaskedInputKeydown"
@@ -965,7 +968,7 @@ import { config } from '@nuxeo/nuxeo-elements';
           </div>
         </div>
 
-          <div class="error-message" id="errorText" hidden$="[[!_showError(invalid, errorMessage)]]">
+          <div class="error-message" id="errorText" hidden$="[[!_showError(invalid, errorMessage, _showErrors)]]">
             [[errorMessage]]
           </div>
           <!-- Screen reader live status region -->
@@ -1130,6 +1133,32 @@ import { config } from '@nuxeo/nuxeo-elements';
       this._setupEventListeners();
       this._setupFocusTrap();
       this._updateMaskedInputFromDate();
+
+      // Diagnostics to verify locale vs mask vs placeholder and constraints
+      try {
+        const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
+        const momentLocale = moment.locale();
+        const L = moment.localeData().longDateFormat('L');
+        const tz = (new Intl.DateTimeFormat()).resolvedOptions().timeZone;
+        console.log('[nuxeo-accessible-date-picker] Locale diagnostics:', {
+          userLocale,
+          momentLocale,
+          L,
+          inputMask: this._inputMask,
+          placeholder: this._getDatePlaceholder(),
+          pattern: this._getInputPattern(this._inputMask),
+          timezone: tz,
+          min: this.min,
+          max: this.max,
+        });
+        if (this._selectedDate) {
+          console.log('[nuxeo-accessible-date-picker] Sample selected formatted (L):', this._moment(this._selectedDate).format(L));
+        } else {
+          console.log('[nuxeo-accessible-date-picker] Sample today formatted (L):', this._moment(new Date()).format(L));
+        }
+      } catch (e) {
+        // no-op
+      }
     }
 
     // Helper method to safely get i18n text with fallbacks
@@ -1177,6 +1206,30 @@ import { config } from '@nuxeo/nuxeo-elements';
       return fn(...args);
     }
 
+    // Robust parser for date-only strings (YYYY-MM-DD) to local Date at start of day
+    _parseDateOnly(value) {
+      if (!value) return null;
+      try {
+        if (typeof value === 'string') {
+          const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+          if (m) {
+            const year = parseInt(m[1], 10);
+            const month = parseInt(m[2], 10) - 1;
+            const day = parseInt(m[3], 10);
+            const d = new Date(year, month, day);
+            d.setHours(0, 0, 0, 0);
+            return isNaN(d.getTime()) ? null : d;
+          }
+        }
+        const d = new Date(value);
+        if (isNaN(d.getTime())) return null;
+        d.setHours(0, 0, 0, 0);
+        return d;
+      } catch (_) {
+        return null;
+      }
+    }
+
     _initializeLocaleData() {
       this._monthNames = [];
       for (let i = 0; i < 12; i++) {
@@ -1195,6 +1248,30 @@ import { config } from '@nuxeo/nuxeo-elements';
       }
       
       console.log('[nuxeo-accessible-date-picker] Initialized locale data with firstDayOfWeek:', firstDay, 'weekdays:', this._weekdayNames);
+
+      // Initialize input mask and placeholder based on locale format
+      try {
+        const L = moment.localeData().longDateFormat('L');
+        // Normalize to our three supported masks
+        if (/D{1,2}\/M{1,2}\/Y{2,4}/i.test(L)) {
+          this._inputMask = 'dd/mm/yyyy';
+        } else if (/M{1,2}\/D{1,2}\/Y{2,4}/i.test(L)) {
+          this._inputMask = 'mm/dd/yyyy';
+        } else if (/Y{2,4}-M{1,2}-D{1,2}/i.test(L)) {
+          this._inputMask = 'yyyy-mm-dd';
+        } else {
+          // Fallback to locale formatter-derived placeholder
+          this._inputMask = this._getDatePlaceholder();
+        }
+        // Sync mask template and masked input to the resolved mask when no selection
+        this._maskTemplate = this._inputMask;
+        if (!this._selectedDate) {
+          this._maskedInputValue = this._maskTemplate;
+        }
+      } catch (_) {
+        this._inputMask = this._getDatePlaceholder();
+        this._maskTemplate = this._inputMask;
+      }
     }
 
     _generateYearOptions() {
@@ -1444,29 +1521,9 @@ import { config } from '@nuxeo/nuxeo-elements';
           }
         });
         
+        // Blur is handled by _onMaskedInputBlur (template binding). Avoid duplicate validation here.
         dateInput.addEventListener('blur', (e) => {
-          // Use setTimeout to prevent conflicts with parent components
-          setTimeout(() => {
-            try {
-              // Only validate if calendar is not open and input still exists
-              if (!this._isCalendarOpen && this.shadowRoot && this.shadowRoot.querySelector('#dateInput')) {
-                // Don't flag error on blur if user left the field empty and it's not required
-                const val = dateInput.value ? dateInput.value.trim() : '';
-                if (!val || val === this._maskTemplate) {
-                  this._selectedDate = null;
-                  this._inputValue = '';
-                  this._safeSetValue('');
-                  this.invalid = !!this.required; // only invalid when required
-                  this.errorMessage = this.required ? 'This field is required' : '';
-                  this._generateCalendar();
-                } else {
-                  this._validateAndParseInput();
-                }
-              }
-            } catch (error) {
-              console.warn('Error in blur handler:', error);
-            }
-          }, 50); // Shorter timeout to reduce conflicts
+          // No-op to prevent double validation and error flicker
         });
       }
       
@@ -1776,6 +1833,8 @@ import { config } from '@nuxeo/nuxeo-elements';
       
       // Update the input field
       this._inputValue = this._formatDateForInput(this._selectedDate);
+      // Ensure masked value reflects the locale mask (dd/mm, mm/dd, or yyyy-mm-dd)
+      this._updateMaskedInputFromDate();
       this._generateCalendar(); // Regenerate to update selected state
       this._closeCalendar();
       this._announce(`Date selected ${this._formatAriaDate(this._selectedDate)}.`);
@@ -2017,8 +2076,10 @@ import { config } from '@nuxeo/nuxeo-elements';
           constraintMessage = 'Selected date is outside the allowed range';
         }
         
+        // Mark as not selectable; do not show visually until submit
         this.invalid = true;
-        this.errorMessage = constraintMessage;
+        this.errorReason = 'notSelectable';
+        this.errorMessage = 'Date not selectable. ' + constraintMessage;
         console.log('[nuxeo-accessible-date-picker] Error message set:', constraintMessage);
         return;
       }
@@ -2027,6 +2088,12 @@ import { config } from '@nuxeo/nuxeo-elements';
       if (dateISO) {
         const selectedDate = new Date(dateISO);
         console.log('[nuxeo-accessible-date-picker] Date clicked:', selectedDate.toDateString(), 'Valid:', this._isValidDate(selectedDate));
+        // Clear any format errors on valid selection
+        if (this._isValidDate(selectedDate)) {
+          this.invalid = false;
+          this.errorReason = '';
+          this.errorMessage = '';
+        }
         this._selectDate(selectedDate);
       }
     }
@@ -2319,18 +2386,27 @@ import { config } from '@nuxeo/nuxeo-elements';
         this._inputValue = '';
         this._safeSetValue('');
         this.invalid = false;
+        this.errorReason = '';
         this.errorMessage = '';
         this._generateCalendar();
         return;
       }
       
-      // Try to parse the date using multiple formats
-      const formats = this._getLocaleDateFormats();
+      // Try to parse the date using the current input mask first (strict), then fallback to locale formats
       let parsedDate = null;
-      
-      for (const format of formats) {
-        parsedDate = this._parseWithFormat(value, format);
-        if (parsedDate) break;
+      try {
+        parsedDate = this._parseWithFormat(value, this._inputMask === 'dd/mm/yyyy' ? 'DD/MM/YYYY'
+          : this._inputMask === 'mm/dd/yyyy' ? 'MM/DD/YYYY'
+          : this._inputMask === 'yyyy-mm-dd' ? 'YYYY-MM-DD' : '');
+      } catch (_) {
+        parsedDate = null;
+      }
+      if (!parsedDate) {
+        const formats = this._getLocaleDateFormats();
+        for (const format of formats) {
+          parsedDate = this._parseWithFormat(value, format);
+          if (parsedDate) break;
+        }
       }
       
       if (parsedDate && this._isValidDate(parsedDate)) {
@@ -2354,12 +2430,39 @@ import { config } from '@nuxeo/nuxeo-elements';
         this._generateCalendar();
         
         this.invalid = false;
+        this.errorReason = '';
+        this.errorMessage = '';
         console.log('Valid date parsed:', this._selectedDate);
       } else {
-        // Invalid date format
-        this.invalid = true;
-        this.errorMessage = `Please enter a valid date in format: ${this._getDatePlaceholder()}`;
-        console.warn('Invalid date format:', value);
+        // If parsed but out of range, show out-of-range not format
+        if (parsedDate) {
+          this.invalid = true;
+          this.errorReason = 'outOfRange';
+          this.errorMessage = this._buildOutOfRangeMessage(parsedDate);
+        } else {
+          // Distinguish invalid date vs incorrect format
+          const formats = this._getLocaleDateFormats();
+          let isInvalidDate = false;
+          for (const fmt of formats) {
+            const m = moment(value, fmt, false);
+            if (!m.isValid()) {
+              const pf = m.parsingFlags ? m.parsingFlags() : {};
+              if (pf && typeof pf.overflow === 'number' && pf.overflow >= 4) {
+                isInvalidDate = true;
+                break;
+              }
+            }
+          }
+          this.invalid = true;
+          if (isInvalidDate) {
+            this.errorReason = 'invalidDate';
+            this.errorMessage = 'Invalid date. Please check the day, month, and year.';
+          } else {
+            this.errorReason = 'format';
+            this.errorMessage = `Incorrect date format. Expected: ${this._getDatePlaceholder()}`;
+          }
+          console.warn('Invalid date input:', value);
+        }
       }
     }
 
@@ -2396,17 +2499,22 @@ import { config } from '@nuxeo/nuxeo-elements';
     }
 
     _getLocaleDateFormats() {
-      const locale = this._locale.toLowerCase();
-      
-      if (locale.startsWith('en-us')) {
-        return ['MM/DD/YYYY', 'M/D/YYYY', 'MM-DD-YYYY', 'YYYY-MM-DD'];
-      } else if (locale.startsWith('en-gb') || locale.startsWith('en-au')) {
+      // Prefer the active input mask to define primary parsing order
+      if (this._inputMask === 'dd/mm/yyyy') {
         return ['DD/MM/YYYY', 'D/M/YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD'];
-      } else if (locale.startsWith('de') || locale.startsWith('fr') || locale.startsWith('es')) {
-        return ['DD.MM.YYYY', 'DD/MM/YYYY', 'D.M.YYYY', 'YYYY-MM-DD'];
-      } else {
-        return ['YYYY-MM-DD', 'MM/DD/YYYY', 'DD/MM/YYYY'];
       }
+      if (this._inputMask === 'mm/dd/yyyy') {
+        return ['MM/DD/YYYY', 'M/D/YYYY', 'MM-DD-YYYY', 'YYYY-MM-DD'];
+      }
+      if (this._inputMask === 'yyyy-mm-dd') {
+        return ['YYYY-MM-DD', 'YYYY/MM/DD'];
+      }
+      // Fallback to locale
+      const locale = (this._locale || '').toLowerCase();
+      if (locale.startsWith('en-us')) return ['MM/DD/YYYY', 'M/D/YYYY', 'MM-DD-YYYY', 'YYYY-MM-DD'];
+      if (locale.startsWith('en-gb') || locale.startsWith('en-au')) return ['DD/MM/YYYY', 'D/M/YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD'];
+      if (locale.startsWith('de') || locale.startsWith('fr') || locale.startsWith('es')) return ['DD.MM.YYYY', 'DD/MM/YYYY', 'D.M.YYYY', 'YYYY-MM-DD'];
+      return ['YYYY-MM-DD', 'MM/DD/YYYY', 'DD/MM/YYYY'];
     }
 
     _updateInputValue() {
@@ -2456,10 +2564,14 @@ import { config } from '@nuxeo/nuxeo-elements';
       normalizedDate.setHours(0, 0, 0, 0);
       
       if (this.min) {
-        const minDate = new Date(this.min);
-        minDate.setHours(0, 0, 0, 0); // Normalize min date
+        const minDate = this._parseDateOnly(this.min);
+        if (!minDate) {
+          console.warn('[nuxeo-accessible-date-picker] Invalid min format, expected YYYY-MM-DD:', this.min);
+        }
+        // Normalize min date
+        minDate && minDate.setHours(0, 0, 0, 0);
         
-        const isAfterOrEqualMin = normalizedDate >= minDate;
+        const isAfterOrEqualMin = !minDate || normalizedDate >= minDate;
         console.log(`[nuxeo-accessible-date-picker] Min constraint check: ${normalizedDate.toDateString()} >= ${minDate.toDateString()} = ${isAfterOrEqualMin}`);
         
         if (!isAfterOrEqualMin) {
@@ -2469,10 +2581,15 @@ import { config } from '@nuxeo/nuxeo-elements';
       }
       
       if (this.max) {
-        const maxDate = new Date(this.max);
-        maxDate.setHours(23, 59, 59, 999); // Set to end of day for max comparison
+        const maxDateBase = this._parseDateOnly(this.max);
+        if (!maxDateBase) {
+          console.warn('[nuxeo-accessible-date-picker] Invalid max format, expected YYYY-MM-DD:', this.max);
+        }
+        const maxDate = maxDateBase ? new Date(maxDateBase) : null;
+        // Set to end of day for max comparison
+        maxDate && maxDate.setHours(23, 59, 59, 999);
         
-        const isBeforeOrEqualMax = normalizedDate <= maxDate;
+        const isBeforeOrEqualMax = !maxDate || normalizedDate <= maxDate;
         console.log(`[nuxeo-accessible-date-picker] Max constraint check: ${normalizedDate.toDateString()} <= ${new Date(this.max).toDateString()} = ${isBeforeOrEqualMax}`);
         
         if (!isBeforeOrEqualMax) {
@@ -2490,14 +2607,12 @@ import { config } from '@nuxeo/nuxeo-elements';
     }
 
     _getDatePlaceholder() {
-      if (!this._dateFormatter) {
-        return 'mm/dd/yyyy';
-      }
-      
+      // Prefer mask decided by locale setup
+      if (this._inputMask) return this._inputMask;
+      if (!this._dateFormatter) return 'mm/dd/yyyy';
       try {
         const sample = new Date(2024, 11, 25);
         const formatted = this._dateFormatter.format(sample);
-        
         return formatted.replace(/\d+/g, (match) => {
           if (match === '2024') return 'yyyy';
           if (match === '12') return 'mm';
@@ -2507,6 +2622,134 @@ import { config } from '@nuxeo/nuxeo-elements';
       } catch (e) {
         return 'mm/dd/yyyy';
       }
+    }
+
+    _getInputPattern(mask) {
+      if (!mask) return '\\d{1,2}[/\\.-]\\d{1,2}[/\\.-]\\d{4}';
+      if (mask === 'dd/mm/yyyy') return '\\d{2}/\\d{2}/\\d{4}';
+      if (mask === 'mm/dd/yyyy') return '\\d{2}/\\d{2}/\\d{4}';
+      if (mask === 'yyyy-mm-dd') return '\\d{4}-\\d{2}-\\d{2}';
+      // fallback: accept digits with common separators
+      return '\\d{1,2}[/\\.-]\\d{1,2}[/\\.-]\\d{4}';
+    }
+
+    _buildOutOfRangeMessage(date) {
+      try {
+        const hasMin = !!this.min;
+        const hasMax = !!this.max;
+        if (hasMin && hasMax) {
+          return `Date out of range. Must be between ${this._moment(this.min).format('L')} and ${this._moment(this.max).format('L')}`;
+        }
+        if (hasMin) {
+          return `Date out of range. Must be on or after ${this._moment(this.min).format('L')}`;
+        }
+        if (hasMax) {
+          return `Date out of range. Must be on or before ${this._moment(this.max).format('L')}`;
+        }
+      } catch (_) {
+        // no-op
+      }
+      return 'Date out of range.';
+    }
+
+    // Helper method to test different date formats (for debugging/testing purposes)
+    _testDateFormat(inputStr) {
+      console.log('\n=== DATE FORMAT TEST ===');
+      console.log('Input string:', inputStr);
+      console.log('Current locale:', navigator.language);
+      console.log('Moment locale:', moment.locale());
+      console.log('Current input mask:', this._inputMask);
+      console.log('Current placeholder:', this._getDatePlaceholder());
+      console.log('Min constraint:', this.min);
+      console.log('Max constraint:', this.max);
+      
+      // Test parsing with current mask
+      console.log('\n--- Parsing with current mask ---');
+      const maskFormat = this._inputMask === 'dd/mm/yyyy' ? 'DD/MM/YYYY'
+        : this._inputMask === 'mm/dd/yyyy' ? 'MM/DD/YYYY'
+        : this._inputMask === 'yyyy-mm-dd' ? 'YYYY-MM-DD' : '';
+      
+      if (maskFormat) {
+        const parsed = this._parseWithFormat(inputStr, maskFormat);
+        if (parsed) {
+          console.log('✓ Parsed successfully as:', parsed.toDateString());
+          console.log('  ISO format:', parsed.toISOString().split('T')[0]);
+          console.log('  In range?', this._isValidDate(parsed));
+          if (!this._isValidDate(parsed)) {
+            console.log('  Range violation:', this._buildOutOfRangeMessage(parsed));
+          }
+        } else {
+          console.log('✗ Failed to parse with current mask');
+        }
+      }
+      
+      // Test with all locale formats
+      console.log('\n--- Testing all locale formats ---');
+      const formats = this._getLocaleDateFormats();
+      formats.forEach(fmt => {
+        const parsed = this._parseWithFormat(inputStr, fmt);
+        if (parsed) {
+          console.log(`✓ Format ${fmt}: ${parsed.toDateString()} (ISO: ${parsed.toISOString().split('T')[0]})`);
+        } else {
+          console.log(`✗ Format ${fmt}: failed`);
+        }
+      });
+      
+      // Test with moment.js
+      console.log('\n--- Moment.js parsing ---');
+      const momentParsed = this._moment(inputStr, moment.localeData().longDateFormat('L'));
+      if (momentParsed.isValid()) {
+        console.log('✓ Moment parsed:', momentParsed.format('YYYY-MM-DD'), momentParsed.format('L'));
+      } else {
+        console.log('✗ Moment parsing failed');
+      }
+      
+      console.log('=== END TEST ===\n');
+    }
+
+    // Helper method to simulate different locales for testing
+    _simulateLocale(locale) {
+      console.log(`\n=== SIMULATING LOCALE: ${locale} ===`);
+      const originalLocale = moment.locale();
+      const originalInputMask = this._inputMask;
+      
+      try {
+        // Temporarily change locale
+        moment.locale(locale);
+        this._locale = locale;
+        
+        // Reinitialize locale data
+        this._initializeLocaleData();
+        
+        console.log('New input mask:', this._inputMask);
+        console.log('New placeholder:', this._getDatePlaceholder());
+        console.log('Moment locale format (L):', moment.localeData().longDateFormat('L'));
+        console.log('Sample today formatted:', this._moment(new Date()).format('L'));
+        
+        // Test some sample dates
+        const testDates = ['10/09/2010', '09/10/2010', '2010-10-09'];
+        testDates.forEach(testDate => {
+          console.log(`\nTesting "${testDate}" with ${locale}:`);
+          const parsed = this._parseWithFormat(testDate, this._inputMask === 'dd/mm/yyyy' ? 'DD/MM/YYYY'
+            : this._inputMask === 'mm/dd/yyyy' ? 'MM/DD/YYYY'
+            : this._inputMask === 'yyyy-mm-dd' ? 'YYYY-MM-DD' : '');
+          if (parsed) {
+            console.log(`  ✓ Parsed as: ${parsed.toDateString()}`);
+            console.log(`  ✓ Would format as: ${this._moment(parsed).format('L')}`);
+          } else {
+            console.log(`  ✗ Failed to parse`);
+          }
+        });
+        
+      } finally {
+        // Restore original locale
+        moment.locale(originalLocale);
+        this._locale = navigator.language || 'en-US';
+        this._inputMask = originalInputMask;
+        this._initializeLocaleData();
+      }
+      
+      console.log(`=== END LOCALE SIMULATION ===\n`);
     }
 
     _formatMonthYear(date) {
@@ -2614,11 +2857,14 @@ import { config } from '@nuxeo/nuxeo-elements';
     }
 
     _getAriaDescribedBy(invalid, errorMessage) {
-      return invalid && errorMessage ? 'errorText' : null;
+      const isRequiredCase = this.errorReason === 'required';
+      const shouldShow = invalid && !!errorMessage && (this._showErrors || !isRequiredCase);
+      return shouldShow ? 'errorText' : null;
     }
 
-    _showError(invalid, errorMessage) {
-      return invalid && errorMessage;
+    _showError(invalid, errorMessage, showErrors) {
+      const isRequiredCase = this.errorReason === 'required';
+      return invalid && !!errorMessage && (showErrors || !isRequiredCase);
     }
 
     _valueChanged() {
@@ -2696,28 +2942,28 @@ import { config } from '@nuxeo/nuxeo-elements';
       if (input) {
         input.setAttribute('aria-invalid', String(!!newVal));
       }
-      if (newVal) {
+      if (newVal && this._showErrors) {
         const msg = this.errorMessage || 'Invalid date.';
         this._announce(msg);
       }
       // Ensure error text visibility aligns with state
       const errorEl = this.shadowRoot && this.shadowRoot.querySelector('#errorText');
       if (errorEl) {
-        const shouldShow = !!newVal && !!this.errorMessage;
+        const shouldShow = !!this._showErrors && !!newVal && !!this.errorMessage;
         errorEl.hidden = !shouldShow;
       }
     }
 
     _errorMessageChanged(newMsg) {
       // Announce error changes politely
-      if (this.invalid && newMsg) {
+      if (this.invalid && newMsg && this._showErrors) {
         this._announce(newMsg);
       }
       // Sync UI content and visibility immediately
       const errorEl = this.shadowRoot && this.shadowRoot.querySelector('#errorText');
       if (errorEl) {
         errorEl.textContent = newMsg || '';
-        errorEl.hidden = !(this.invalid && !!newMsg);
+        errorEl.hidden = !(this._showErrors && this.invalid && !!newMsg);
       }
     }
 
@@ -2798,14 +3044,13 @@ import { config } from '@nuxeo/nuxeo-elements';
 
     validate() {
       const isAccessibleValid = this._getValidity();
-      this.invalid = !isAccessibleValid;
-      
-      // Set appropriate error message for required field validation
-      if (!isAccessibleValid && this.required && !this.value) {
-        this.errorMessage = 'This field is required';
-        console.log('[nuxeo-accessible-date-picker] Required field validation failed - no value provided');
+      // For required empty case, mark invalid but do not set message (border only)
+      if (!isAccessibleValid && this.required && (!this.value || this.value.trim() === '')) {
+        this.invalid = true;
+        this.errorMessage = '';
+        return false;
       }
-      
+      this.invalid = !isAccessibleValid;
       return isAccessibleValid;
     }
 
@@ -2822,9 +3067,11 @@ import { config } from '@nuxeo/nuxeo-elements';
         return true;
       }
       
-      // Validate format using i18n.formatDate like nuxeo-date-picker does
-      const isFormatValid = this.i18n && this.i18n.formatDate ? 
-        this._validateDateFormat(this.value ? this.i18n.formatDate(this.value) : this.value) : true;
+      // Validate format strictly against locale-aware patterns
+      const isFormatValid = this._validateDateFormat(this.value ? this._formatDateForInput(new Date(this.value)) : this.value);
+      if (!isFormatValid && this.value) {
+        this.errorReason = 'format';
+      }
       
       let isMinMaxValid = true;
       
@@ -2832,23 +3079,50 @@ import { config } from '@nuxeo/nuxeo-elements';
         const currentDate = this._moment(this.value);
         
         if (this.min) {
-          const minDate = this._moment(this.min);
+          const minDate = this._moment(this._parseDateOnly(this.min));
           if (currentDate.isBefore(minDate, 'day')) {
             console.log('[nuxeo-accessible-date-picker] Value fails min validation:', this.value, '<', this.min);
             isMinMaxValid = false;
+            this.errorReason = 'outOfRange';
+            this.errorMessage = 'Date out of range. Must be on or after ' + this._moment(this.min).format('L');
           }
         }
-        
         if (this.max) {
-          const maxDate = this._moment(this.max);
+          const maxDate = this._moment(this._parseDateOnly(this.max));
           if (currentDate.isAfter(maxDate, 'day')) {
             console.log('[nuxeo-accessible-date-picker] Value fails max validation:', this.value, '>', this.max);
             isMinMaxValid = false;
+            this.errorReason = 'outOfRange';
+            this.errorMessage = 'Date out of range. Must be on or before ' + this._moment(this.max).format('L');
           }
         }
       }
       
       const isValid = isFormatValid && isMinMaxValid;
+      if (!isFormatValid && this.value) {
+        // Check if it's structurally a date but invalid day/month to distinguish "invalid date"
+        const placeholder = this._getDatePlaceholder();
+        this.errorMessage = 'Incorrect date format. Expected: ' + placeholder;
+        if (typeof this._maskedInputValue === 'string' && /\d/.test(this._maskedInputValue)) {
+          // Attempt parse against known formats non-strict to detect invalid date parts
+          const formats = this._getLocaleDateFormats();
+          for (const fmt of formats) {
+            const m = moment(this._maskedInputValue, fmt, false);
+            if (m.isValid()) {
+              // Shouldn't happen if strict failed above; but if non-strict is valid, keep format error
+              break;
+            } else if (m.parsingFlags && m.parsingFlags()) {
+              const pf = m.parsingFlags();
+              if (pf.overflow === 4 || pf.overflow === 5 || pf.overflow === 6) {
+                // 4=month, 5=day, 6=year overflow
+                this.errorReason = 'invalidDate';
+                this.errorMessage = 'Invalid date. Please check the day/month/year values.';
+                break;
+              }
+            }
+          }
+        }
+      }
       console.log('[nuxeo-accessible-date-picker] Validity check:', {
         format: isFormatValid,
         required: this.required ? !!this.value : true,
@@ -2871,6 +3145,8 @@ import { config } from '@nuxeo/nuxeo-elements';
       const isValid = this.validate();
       
       if (!isValid) {
+        // Only now show visual errors
+        this._showErrors = true;
         // Focus the input field to show validation error
         const input = this.shadowRoot.querySelector('#dateInput');
         if (input) {
@@ -2893,8 +3169,15 @@ import { config } from '@nuxeo/nuxeo-elements';
     _validateDateFormat(dateString) {
       if (!dateString) return true;
       try {
-        const date = this._moment(dateString);
-        return date.isValid();
+        // Validate structure using locale-aware formats
+        const formats = this._getLocaleDateFormats();
+        for (const fmt of formats) {
+          const m = moment(dateString, fmt, true);
+          if (m.isValid()) {
+            return true;
+          }
+        }
+        return false;
       } catch (error) {
         return false;
       }
@@ -3616,7 +3899,16 @@ import { config } from '@nuxeo/nuxeo-elements';
         const day = String(this._selectedDate.getDate()).padStart(2, '0');
         const month = String(this._selectedDate.getMonth() + 1).padStart(2, '0');
         const year = String(this._selectedDate.getFullYear());
-        this._maskedInputValue = `${day}/${month}/${year}`;
+        if (this._inputMask === 'dd/mm/yyyy') {
+          this._maskedInputValue = `${day}/${month}/${year}`;
+        } else if (this._inputMask === 'mm/dd/yyyy') {
+          this._maskedInputValue = `${month}/${day}/${year}`;
+        } else if (this._inputMask === 'yyyy-mm-dd') {
+          this._maskedInputValue = `${year}-${month}-${day}`;
+        } else {
+          // fallback to locale formatter
+          this._maskedInputValue = this._formatDateForInput(this._selectedDate);
+        }
       } else {
         this._maskedInputValue = this._maskTemplate;
       }
@@ -3724,42 +4016,47 @@ import { config } from '@nuxeo/nuxeo-elements';
       
       console.log('[nuxeo-accessible-date-picker] Validating masked input:', value);
       
-      // Validate format dd/mm/yyyy
-      const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-      if (match) {
-        const [, day, month, year] = match;
-        const parsedDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-        
-        console.log('[nuxeo-accessible-date-picker] Parsed date from input:', parsedDate.toDateString());
-        
-        if (parsedDate.getFullYear() === parseInt(year) && 
-            parsedDate.getMonth() === parseInt(month) - 1 && 
-            parsedDate.getDate() === parseInt(day) && 
-            this._isValidDate(parsedDate)) {
-          
-          this._selectedDate = parsedDate;
-          this._safeSetValue(`${year}-${month}-${day}`);
+      // Parse strictly by current mask
+      let parsed = null;
+      try {
+        parsed = this._parseWithFormat(value, this._inputMask === 'dd/mm/yyyy' ? 'DD/MM/YYYY'
+          : this._inputMask === 'mm/dd/yyyy' ? 'MM/DD/YYYY'
+          : this._inputMask === 'yyyy-mm-dd' ? 'YYYY-MM-DD' : '');
+      } catch (_) {
+        parsed = null;
+      }
+      if (parsed) {
+        if (this._isValidDate(parsed)) {
+          const yyyy = String(parsed.getFullYear());
+          const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+          const dd = String(parsed.getDate()).padStart(2, '0');
+          this._selectedDate = parsed;
+          this._safeSetValue(`${yyyy}-${mm}-${dd}`);
           this.invalid = false;
+          this.errorReason = '';
           this._generateCalendar();
           console.log('[nuxeo-accessible-date-picker] Masked input validated successfully');
           return;
+        } else {
+          this.invalid = true;
+          this.errorReason = 'outOfRange';
+          this.errorMessage = this._buildOutOfRangeMessage(parsed);
+          return;
         }
       }
-      
+
+      // Fallback: generic format error that respects current placeholder and constraints
       this.invalid = true;
-      
-      // Enhanced error message with constraint information
-      let baseMessage = 'Please enter a valid date in format: dd/mm/yyyy';
+      let baseMessage = `Incorrect date format. Expected: ${this._getDatePlaceholder()}`;
       let constraintInfo = '';
-      
       if (this.min && this.max) {
-        constraintInfo = ` (must be between ${new Date(this.min).toLocaleDateString()} and ${new Date(this.max).toLocaleDateString()})`;
+        constraintInfo = ` (must be between ${this._moment(this.min).format('L')} and ${this._moment(this.max).format('L')})`;
       } else if (this.min) {
-        constraintInfo = ` (must be on or after ${new Date(this.min).toLocaleDateString()})`;
+        constraintInfo = ` (must be on or after ${this._moment(this.min).format('L')})`;
       } else if (this.max) {
-        constraintInfo = ` (must be on or before ${new Date(this.max).toLocaleDateString()})`;
+        constraintInfo = ` (must be on or before ${this._moment(this.max).format('L')})`;
       }
-      
+      this.errorReason = 'format';
       this.errorMessage = baseMessage + constraintInfo;
       console.log('[nuxeo-accessible-date-picker] Masked input validation failed:', this.errorMessage);
     }
