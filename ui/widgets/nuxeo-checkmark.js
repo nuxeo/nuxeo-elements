@@ -135,11 +135,8 @@ import '../nuxeo-icons.js';
     _tap(fromKeyboard = false) {
       if (!this.disabled) {
         this.checked = !this.checked;
-        // Only blur for mouse actions
-        if (!fromKeyboard) {
-          if (!this.checked) {
-            this.blur();
-          }
+        if (!fromKeyboard && !this.checked) {
+          this.blur();
         }
       }
     }
