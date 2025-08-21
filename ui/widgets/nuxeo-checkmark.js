@@ -120,12 +120,22 @@ import '../nuxeo-icons.js';
       super.ready();
       this.setAttribute('role', 'checkbox');
       this.setAttribute('aria-checked', false);
+      this.setAttribute('tabindex', '0');
+      this.addEventListener('keydown', this._onKeyDown.bind(this));
     }
 
-    _tap() {
+    _onKeyDown(e) {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault();
+        this._tap(true);
+        this.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
+      }
+    }
+
+    _tap(fromKeyboard = false) {
       if (!this.disabled) {
         this.checked = !this.checked;
-        if (!this.checked) {
+        if (!fromKeyboard && !this.checked) {
           this.blur();
         }
       }
@@ -133,9 +143,6 @@ import '../nuxeo-icons.js';
 
     _ariaChecked() {
       this.setAttribute('aria-checked', this.checked);
-      if (!this.checked) {
-        this.blur();
-      }
     }
   }
 
