@@ -130,6 +130,11 @@ import '../nuxeo-button-styles.js';
             &[name='delete']:focus {
               outline: auto;
             }
+              .replybtn{
+              height:1em;
+              width:0.2em;
+              border:none;
+              }
           }
         </style>
 
@@ -217,10 +222,12 @@ import '../nuxeo-button-styles.js';
                         </dom-if>
                         <dom-if if="[[!truncated]]">
                           <template>
-                            <iron-icon
+                          <paper-icon-button tabindex="0" aria-label="comment reply"
+                
                               name="reply"
                               class="main-option opaque"
                               icon="reply"
+                              aria-hidden="true"
                               on-tap="_reply"
                               on-keydown="_handleKey"
                               hidden$="[[!_isRootElement(level)]]"
