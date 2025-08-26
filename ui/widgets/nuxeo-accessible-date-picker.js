@@ -943,7 +943,7 @@ import { config } from '@nuxeo/nuxeo-elements';
                 aria-label="Open calendar"
               disabled$="[[disabled]]"
                 tabindex="0"
-                on-click="_openCalendar"
+                on-click="_openCalendarViaMouse"
                 on-keydown="_handleCalendarIconKeydown"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1490,7 +1490,7 @@ import { config } from '@nuxeo/nuxeo-elements';
           // Allow opening calendar with specific keys when input is focused
           if (e.key === 'F4' || e.key === 'ArrowDown') {
             e.preventDefault();
-            this._openCalendar();
+            this._openCalendar(e, true); // Opened via keyboard
           } else if (e.key === 'Enter') {
             // Enter validates input
               this._validateAndParseInput();
@@ -1660,25 +1660,38 @@ import { config } from '@nuxeo/nuxeo-elements';
     
     // Focus management for calendar grid
     _focusCalendarGrid() {
+      // Ensure calendar is generated first
+      if (!this._calendarDays || this._calendarDays.length === 0) {
+        console.log('[nuxeo-accessible-date-picker] Calendar not generated yet, generating now');
+        this._generateCalendar();
+      }
+      
       // Find the appropriate date to focus
       let targetDate = null;
       
       if (this._focusedDate) {
         targetDate = this._focusedDate;
+        console.log('[nuxeo-accessible-date-picker] Using focused date:', targetDate.toDateString());
       } else if (this._selectedDate && 
                  this._selectedDate.getMonth() === this._viewDate.getMonth() &&
                  this._selectedDate.getFullYear() === this._viewDate.getFullYear()) {
         targetDate = this._selectedDate;
+        console.log('[nuxeo-accessible-date-picker] Using selected date:', targetDate.toDateString());
       } else if (this._today.getMonth() === this._viewDate.getMonth() &&
                  this._today.getFullYear() === this._viewDate.getFullYear()) {
         targetDate = this._today;
+        console.log('[nuxeo-accessible-date-picker] Using today:', targetDate.toDateString());
       } else {
         // First day of current month
         targetDate = new Date(this._viewDate.getFullYear(), this._viewDate.getMonth(), 1);
+        console.log('[nuxeo-accessible-date-picker] Using first day of month:', targetDate.toDateString());
       }
       
       if (targetDate) {
+        console.log('[nuxeo-accessible-date-picker] Attempting to focus date:', targetDate.toDateString());
         this._focusDate(targetDate);
+      } else {
+        console.warn('[nuxeo-accessible-date-picker] No target date found for calendar grid focus');
       }
     }
 
@@ -1950,7 +1963,13 @@ import { config } from '@nuxeo/nuxeo-elements';
       this._selectDate(today);
     }
 
-    _openCalendar(e) {
+    // Separate method for mouse clicks to ensure proper detection
+    _openCalendarViaMouse(e) {
+      console.log('[nuxeo-accessible-date-picker] _openCalendarViaMouse called - definitely mouse interaction');
+      this._openCalendar(e, false); // Explicitly false for mouse
+    }
+
+    _openCalendar(e, openedViaKeyboard = false) {
       if (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -1958,7 +1977,10 @@ import { config } from '@nuxeo/nuxeo-elements';
       
       if (this.disabled || this._isCalendarOpen) return;
       
-      console.log('[nuxeo-accessible-date-picker] Opening calendar with constraints - min:', this.min, 'max:', this.max);
+      // No auto-detection needed - explicitly handled by separate methods
+      
+      console.log('[nuxeo-accessible-date-picker] Opening calendar - openedViaKeyboard:', openedViaKeyboard, 'event type:', e?.type, 'event detail:', e?.detail);
+      console.log('[nuxeo-accessible-date-picker] Calendar constraints - min:', this.min, 'max:', this.max);
       
       if (this._selectedDate) {
         this._viewDate = new Date(this._selectedDate);
@@ -2024,9 +2046,69 @@ import { config } from '@nuxeo/nuxeo-elements';
         composed: true
       }));
       
-      // Focus the first element in the proper focus order
+      // Professional a11y: Focus behavior depends on interaction method
       this.async(() => {
-        this._focusCalendarElement(this._focusOrder[0]);
+        if (openedViaKeyboard) {
+          // Keyboard opening: Start with year selection for full navigation control
+          console.log('[nuxeo-accessible-date-picker] Opened via keyboard - focusing year selection');
+          this._focusCalendarElement(this._focusOrder[0]); // year-dropdown
+        } else {
+          // Mouse opening: Aggressive focus management to prevent year dropdown focus
+          console.log('[nuxeo-accessible-date-picker] Opened via mouse - preventing year focus, targeting date grid');
+          
+          // Immediately disable all potential auto-focus targets except date buttons
+          const yearDropdown = this.shadowRoot.querySelector('.year-dropdown');
+          const prevButton = this.shadowRoot.querySelector('#prevMonth');
+          const nextButton = this.shadowRoot.querySelector('#nextMonth');
+          const todayButton = this.shadowRoot.querySelector('.today-button');
+          const cancelButton = this.shadowRoot.querySelector('.cancel-button');
+          
+          // Store original tabindex values
+          const originalTabIndexes = new Map();
+          [yearDropdown, prevButton, nextButton, todayButton, cancelButton].forEach(el => {
+            if (el) {
+              originalTabIndexes.set(el, el.getAttribute('tabindex') || '0');
+              el.setAttribute('tabindex', '-1');
+            }
+          });
+          
+          console.log('[nuxeo-accessible-date-picker] Disabled all non-date focus targets for mouse opening');
+          
+          // Clear any existing focus
+          if (this.shadowRoot.activeElement && this.shadowRoot.activeElement.blur) {
+            this.shadowRoot.activeElement.blur();
+          }
+          
+          // Use requestAnimationFrame to ensure our focus happens after any browser auto-focus
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              console.log('[nuxeo-accessible-date-picker] Forcing focus to calendar grid via requestAnimationFrame');
+              this._focusCalendarGrid();
+              
+              // Force focus again if needed
+              requestAnimationFrame(() => {
+                const currentFocus = this.shadowRoot.activeElement;
+                if (!currentFocus || !currentFocus.classList.contains('calendar-day')) {
+                  console.log('[nuxeo-accessible-date-picker] Focus not on date, forcing again');
+                  this._focusCalendarGrid();
+                }
+                
+                // Restore tabindex values
+                originalTabIndexes.forEach((tabindex, element) => {
+                  if (element) {
+                    element.setAttribute('tabindex', tabindex);
+                  }
+                });
+                console.log('[nuxeo-accessible-date-picker] Restored all tabindex values for tab navigation');
+                
+                // Final debug check
+                const finalFocus = this.shadowRoot.activeElement;
+                console.log('[nuxeo-accessible-date-picker] FINAL focused element after mouse open:', 
+                  finalFocus ? `${finalFocus.tagName}${finalFocus.id ? '#' + finalFocus.id : ''}${finalFocus.className ? '.' + finalFocus.className.split(' ')[0] : ''}` : 'none');
+              });
+            });
+          });
+        }
       }, 150);
     }
 
@@ -2039,6 +2121,7 @@ import { config } from '@nuxeo/nuxeo-elements';
       if (!this._isCalendarOpen) return;
       
       this._isCalendarOpen = false;
+      
       const popover = this.shadowRoot.querySelector('#calendarPopover');
       if (popover) {
         popover.classList.remove('open');
@@ -2184,7 +2267,7 @@ import { config } from '@nuxeo/nuxeo-elements';
       }
       
       // Get the date from the button's data attribute
-      const dateISO = button.dataset.date;
+        const dateISO = button.dataset.date;
       if (!dateISO) {
         console.error('[nuxeo-accessible-date-picker] No date data found on button');
         return;
@@ -2208,10 +2291,10 @@ import { config } from '@nuxeo/nuxeo-elements';
       });
       
       // Validate and select
-      if (this._isValidDate(selectedDate)) {
-        this.invalid = false;
-        this.errorReason = '';
-        this.errorMessage = '';
+        if (this._isValidDate(selectedDate)) {
+          this.invalid = false;
+          this.errorReason = '';
+          this.errorMessage = '';
         this._selectDate(selectedDate);
       } else {
         console.warn('[nuxeo-accessible-date-picker] Selected date is not valid:', selectedDate);
@@ -2338,11 +2421,19 @@ import { config } from '@nuxeo/nuxeo-elements';
         const dateISO = `${year}-${month}-${day}`;
         
         const button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
+        console.log('[nuxeo-accessible-date-picker] Looking for date button:', dateISO, 'found:', !!button);
         if (button) {
+          const isEmpty = button.classList.contains('empty');
+          const isDisabled = button.disabled;
+          console.log('[nuxeo-accessible-date-picker] Button state - empty:', isEmpty, 'disabled:', isDisabled, 'allowCrossMonth:', allowCrossMonth);
+          
           // For keyboard navigation, allow focusing any date including empty ones
-          if (allowCrossMonth || (!button.classList.contains('empty') && !button.disabled)) {
+          if (allowCrossMonth || (!isEmpty && !isDisabled)) {
             button.focus();
+            console.log('[nuxeo-accessible-date-picker] Successfully focused date button:', dateISO);
             return;
+          } else {
+            console.log('[nuxeo-accessible-date-picker] Skipping focus - button is empty or disabled');
           }
         }
         
@@ -2530,8 +2621,8 @@ import { config } from '@nuxeo/nuxeo-elements';
       // Generate ISO string for internal value
       const isoString = this._dateToISO(this._selectedDate);
       this._preventInputUpdate = true;
-      this._safeSetValue(isoString);
-      
+        this._safeSetValue(isoString);
+        
       // Keep user input as-is if it was in exact format, otherwise reformat
       if (!isExactFormat) {
         this._inputValue = this._formatDateForDisplay(this._selectedDate);
@@ -2542,15 +2633,15 @@ import { config } from '@nuxeo/nuxeo-elements';
       
       // Reset the flag after updating input value
       this._preventInputUpdate = false;
-      
-      // Navigate calendar to the selected date
-      this._viewDate = new Date(this._selectedDate);
-      this._generateCalendar();
-      
+        
+        // Navigate calendar to the selected date
+        this._viewDate = new Date(this._selectedDate);
+        this._generateCalendar();
+        
       // Clear errors
-      this.invalid = false;
-      this.errorReason = '';
-      this.errorMessage = '';
+        this.invalid = false;
+        this.errorReason = '';
+        this.errorMessage = '';
       
       console.log('[nuxeo-accessible-date-picker] Successfully validated and parsed:', {
         input: value,
@@ -3016,7 +3107,7 @@ import { config } from '@nuxeo/nuxeo-elements';
         console.warn('[nuxeo-accessible-date-picker] Error in _valueChanged:', error);
         this._selectedDate = null;
         if (!this._userIsTyping) {
-          this._inputValue = '';
+        this._inputValue = '';
         }
         this._preventInputUpdate = false;
       }
@@ -3490,10 +3581,10 @@ import { config } from '@nuxeo/nuxeo-elements';
     _handleCalendarIconKeydown(e) {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        this._openCalendar();
+        this._openCalendar(e, true); // Opened via keyboard
       } else if (e.key === 'ArrowDown' || e.key === 'F4') {
         e.preventDefault();
-        this._openCalendar();
+        this._openCalendar(e, true); // Opened via keyboard
       }
     }
 
@@ -3556,7 +3647,7 @@ import { config } from '@nuxeo/nuxeo-elements';
       } else if (e.key === 'Escape') {
         e.preventDefault();
         this._closeYearDropdown();
-      }
+        }
       // Tab navigation is handled by central focus management
     }
 
@@ -3572,7 +3663,7 @@ import { config } from '@nuxeo/nuxeo-elements';
         errorMessage: this.errorMessage
       });
     }
-    
+
     // Debug method to test focus flow
     _debugFocusFlow() {
       if (!this._isCalendarOpen) {
@@ -3591,12 +3682,74 @@ import { config } from '@nuxeo/nuxeo-elements';
         if (element) {
           console.log(`   ✓ Element found: ${element.tagName}${element.id ? '#' + element.id : ''}${element.className ? '.' + element.className.split(' ')[0] : ''}`);
           console.log(`   ✓ Focusable: ${!element.disabled && element.tabIndex !== -1}`);
-        } else {
+      } else {
           console.log(`   ✗ Element not found or not focusable`);
         }
       });
       
       console.log('=== END FOCUS FLOW TEST ===');
+    }
+    
+    // Debug method to test both interaction methods
+    _debugInteractionMethods() {
+      console.log('=== TESTING INTERACTION METHODS ===');
+      
+      if (this._isCalendarOpen) {
+        this._closeCalendar();
+        console.log('Closed existing calendar');
+      }
+      
+      console.log('\n1. Testing MOUSE interaction (should focus date grid, no year focus outline):');
+      this._openCalendar(null, false); // Simulate mouse click
+      
+      setTimeout(() => {
+        const focusedElement = this.shadowRoot.activeElement;
+        const yearDropdown = this.shadowRoot.querySelector('.year-dropdown');
+        const yearTabIndex = yearDropdown ? yearDropdown.getAttribute('tabindex') : 'not found';
+        
+        console.log('   Currently focused element:', focusedElement ? 
+          `${focusedElement.tagName}${focusedElement.id ? '#' + focusedElement.id : ''}${focusedElement.className ? '.' + focusedElement.className.split(' ')[0] : ''}` : 'none');
+        console.log('   Year dropdown tabindex:', yearTabIndex);
+        console.log('   Expected: calendar-day (date in grid), year tabindex: 0');
+        
+        const mouseTestPassed = focusedElement && focusedElement.classList.contains('calendar-day') && yearTabIndex === '0';
+        console.log('   ✓ Mouse test:', mouseTestPassed ? 'PASSED' : 'FAILED');
+        
+        this._closeCalendar();
+        
+        setTimeout(() => {
+          console.log('\n2. Testing KEYBOARD interaction (should focus year selection):');
+          this._openCalendar(null, true); // Simulate keyboard
+          
+          setTimeout(() => {
+            const focusedElement = this.shadowRoot.activeElement;
+            const yearDropdown = this.shadowRoot.querySelector('.year-dropdown');
+            const yearTabIndex = yearDropdown ? yearDropdown.getAttribute('tabindex') : 'not found';
+            
+            console.log('   Currently focused element:', focusedElement ? 
+              `${focusedElement.tagName}${focusedElement.id ? '#' + focusedElement.id : ''}${focusedElement.className ? '.' + focusedElement.className.split(' ')[0] : ''}` : 'none');
+            console.log('   Year dropdown tabindex:', yearTabIndex);
+            console.log('   Expected: year-dropdown, tabindex: 0');
+            
+            const keyboardTestPassed = focusedElement && focusedElement.classList.contains('year-dropdown') && yearTabIndex === '0';
+            console.log('   ✓ Keyboard test:', keyboardTestPassed ? 'PASSED' : 'FAILED');
+            
+            console.log('\n3. Testing TAB navigation after keyboard open:');
+            // Simulate tab press
+            const tabEvent = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true });
+            this.shadowRoot.dispatchEvent(tabEvent);
+            
+            setTimeout(() => {
+              const focusedAfterTab = this.shadowRoot.activeElement;
+              console.log('   Focus after Tab:', focusedAfterTab ? 
+                `${focusedAfterTab.tagName}${focusedAfterTab.id ? '#' + focusedAfterTab.id : ''}${focusedAfterTab.className ? '.' + focusedAfterTab.className.split(' ')[0] : ''}` : 'none');
+              console.log('   Expected: prevMonth or nextMonth button');
+              
+              console.log('\n=== END INTERACTION TEST ===');
+            }, 100);
+          }, 300);
+        }, 300);
+      }, 300);
     }
     
     // Helper to get focusable element by name
@@ -3741,8 +3894,8 @@ import { config } from '@nuxeo/nuxeo-elements';
       
       // Allow opening calendar with specific keys when input is focused
       if (e.key === 'F4' || e.key === 'ArrowDown') {
-        e.preventDefault();
-        this._openCalendar();
+            e.preventDefault();
+        this._openCalendar(e, true); // Opened via keyboard
       } else if (e.key === 'Enter') {
         // Enter validates input
         e.preventDefault();
@@ -3764,7 +3917,7 @@ import { config } from '@nuxeo/nuxeo-elements';
 
     _handleNavButtonKeydown(e) {
       if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
+          e.preventDefault();
         e.stopPropagation();
         
         // Call the appropriate navigation method directly
