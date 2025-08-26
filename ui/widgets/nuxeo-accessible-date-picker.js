@@ -1534,37 +1534,152 @@ import { config } from '@nuxeo/nuxeo-elements';
     }
 
     _setupFocusTrap() {
-      this._focusableElements = [
-        () => this.shadowRoot.querySelector('#yearSelect'),
-        () => this.shadowRoot.querySelector('#prevMonth'),
-        () => this.shadowRoot.querySelector('#nextMonth'),
-        () => this.shadowRoot.querySelector('.calendar-day:not(.disabled):not(.empty)'),
+      // Define the proper focus order for calendar accessibility
+      this._focusOrder = [
+        'year-dropdown',     // Year selection
+        'prevMonth',         // Previous month button  
+        'nextMonth',         // Next month button
+        'calendar-grid',     // Date grid (managed separately)
+        'today-button',      // Today button
+        'cancel-button'      // Cancel button
       ];
     }
 
     _handlePopoverKeydown(e) {
-      if (e.key !== 'Tab' && e.key !== 'Escape') return;
       if (e.key === 'Escape') {
         e.preventDefault();
         this._closeCalendar();
         return;
       }
-      // Trap focus within the popover when open
-      if (!this._isCalendarOpen) return;
-      const popover = this.shadowRoot.querySelector('#calendarPopover');
-      if (!popover) return;
-      const focusable = Array.from(popover.querySelectorAll('[tabindex], button, [href], input, select, textarea'))
-        .filter(el => !el.hasAttribute('disabled') && el.tabIndex !== -1 && el.offsetParent !== null);
-      if (focusable.length === 0) return;
-      const currentIndex = focusable.indexOf(this.shadowRoot.activeElement || this.shadowRoot.querySelector(':focus'));
-      let nextIndex = currentIndex;
-      if (e.shiftKey) {
-        nextIndex = currentIndex <= 0 ? focusable.length - 1 : currentIndex - 1;
-      } else {
-        nextIndex = currentIndex === focusable.length - 1 ? 0 : currentIndex + 1;
+      
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        this._handleCalendarTabNavigation(e.shiftKey);
+        return;
       }
-      e.preventDefault();
-      focusable[nextIndex].focus();
+    }
+    
+    // Professional focus management for calendar
+    _handleCalendarTabNavigation(isShiftTab) {
+      if (!this._isCalendarOpen) return;
+      
+      const currentFocused = this.shadowRoot.activeElement;
+      const currentElement = this._identifyCurrentFocusElement(currentFocused);
+      
+      console.log('[nuxeo-accessible-date-picker] Tab navigation from:', currentElement, 'shift:', isShiftTab);
+      
+      let nextIndex;
+      const currentIndex = this._focusOrder.indexOf(currentElement);
+      
+      if (isShiftTab) {
+        // Shift+Tab: Move backward
+        nextIndex = currentIndex <= 0 ? this._focusOrder.length - 1 : currentIndex - 1;
+      } else {
+        // Tab: Move forward  
+        nextIndex = currentIndex >= this._focusOrder.length - 1 ? 0 : currentIndex + 1;
+      }
+      
+      const nextElement = this._focusOrder[nextIndex];
+      this._focusCalendarElement(nextElement);
+      
+      console.log('[nuxeo-accessible-date-picker] Moved focus to:', nextElement);
+    }
+    
+    // Identify which focus element is currently active
+    _identifyCurrentFocusElement(element) {
+      if (!element) return this._focusOrder[0];
+      
+      if (element.classList.contains('year-dropdown') || element.closest('.year-dropdown')) {
+        return 'year-dropdown';
+      }
+      if (element.id === 'prevMonth') {
+        return 'prevMonth';
+      }
+      if (element.id === 'nextMonth') {
+        return 'nextMonth';
+      }
+      if (element.classList.contains('calendar-day') || element.closest('.calendar-grid')) {
+        return 'calendar-grid';
+      }
+      if (element.classList.contains('today-button')) {
+        return 'today-button';
+      }
+      if (element.classList.contains('cancel-button')) {
+        return 'cancel-button';
+      }
+      
+      // Default to first element
+      return this._focusOrder[0];
+    }
+    
+    // Focus a specific calendar element by name
+    _focusCalendarElement(elementName) {
+      let targetElement = null;
+      
+      switch (elementName) {
+        case 'year-dropdown':
+          targetElement = this.shadowRoot.querySelector('.year-dropdown');
+          break;
+        case 'prevMonth':
+          targetElement = this.shadowRoot.querySelector('#prevMonth');
+          if (targetElement && targetElement.disabled) {
+            // Skip disabled prev button
+            this._focusCalendarElement(this._focusOrder[this._focusOrder.indexOf('prevMonth') + 1]);
+            return;
+          }
+          break;
+        case 'nextMonth':
+          targetElement = this.shadowRoot.querySelector('#nextMonth');
+          if (targetElement && targetElement.disabled) {
+            // Skip disabled next button
+            this._focusCalendarElement(this._focusOrder[this._focusOrder.indexOf('nextMonth') + 1]);
+            return;
+          }
+          break;
+        case 'calendar-grid':
+          // Focus the appropriate date in the grid
+          this._focusCalendarGrid();
+          return;
+        case 'today-button':
+          targetElement = this.shadowRoot.querySelector('.today-button');
+          break;
+        case 'cancel-button':
+          targetElement = this.shadowRoot.querySelector('.cancel-button');
+          break;
+      }
+      
+      if (targetElement && !targetElement.disabled) {
+        targetElement.focus();
+      } else {
+        // If target is disabled, skip to next element
+        const currentIndex = this._focusOrder.indexOf(elementName);
+        const nextIndex = (currentIndex + 1) % this._focusOrder.length;
+        this._focusCalendarElement(this._focusOrder[nextIndex]);
+      }
+    }
+    
+    // Focus management for calendar grid
+    _focusCalendarGrid() {
+      // Find the appropriate date to focus
+      let targetDate = null;
+      
+      if (this._focusedDate) {
+        targetDate = this._focusedDate;
+      } else if (this._selectedDate && 
+                 this._selectedDate.getMonth() === this._viewDate.getMonth() &&
+                 this._selectedDate.getFullYear() === this._viewDate.getFullYear()) {
+        targetDate = this._selectedDate;
+      } else if (this._today.getMonth() === this._viewDate.getMonth() &&
+                 this._today.getFullYear() === this._viewDate.getFullYear()) {
+        targetDate = this._today;
+      } else {
+        // First day of current month
+        targetDate = new Date(this._viewDate.getFullYear(), this._viewDate.getMonth(), 1);
+      }
+      
+      if (targetDate) {
+        this._focusDate(targetDate);
+      }
     }
 
     _toggleMonthYearDropdown(e) {
@@ -1909,8 +2024,9 @@ import { config } from '@nuxeo/nuxeo-elements';
         composed: true
       }));
       
+      // Focus the first element in the proper focus order
       this.async(() => {
-        this._focusFirstAvailableDate();
+        this._focusCalendarElement(this._focusOrder[0]);
       }, 150);
     }
 
@@ -3440,13 +3556,8 @@ import { config } from '@nuxeo/nuxeo-elements';
       } else if (e.key === 'Escape') {
         e.preventDefault();
         this._closeYearDropdown();
-      } else if (e.key === 'Tab') {
-        const navButtons = Array.from(this.shadowRoot.querySelectorAll('.nav-button:not([disabled])'));
-        if (!e.shiftKey && navButtons.length > 0) {
-          e.preventDefault();
-          navButtons[0].focus();
-        }
       }
+      // Tab navigation is handled by central focus management
     }
 
     _debugState() {
@@ -3460,6 +3571,54 @@ import { config } from '@nuxeo/nuxeo-elements';
         invalid: this.invalid,
         errorMessage: this.errorMessage
       });
+    }
+    
+    // Debug method to test focus flow
+    _debugFocusFlow() {
+      if (!this._isCalendarOpen) {
+        console.log('Calendar is not open - cannot test focus flow');
+        return;
+      }
+      
+      console.log('=== TESTING FOCUS FLOW ===');
+      console.log('Focus order:', this._focusOrder);
+      
+      // Test each element in focus order
+      this._focusOrder.forEach((elementName, index) => {
+        console.log(`${index + 1}. Testing focus on: ${elementName}`);
+        
+        const element = this._getFocusableElement(elementName);
+        if (element) {
+          console.log(`   ✓ Element found: ${element.tagName}${element.id ? '#' + element.id : ''}${element.className ? '.' + element.className.split(' ')[0] : ''}`);
+          console.log(`   ✓ Focusable: ${!element.disabled && element.tabIndex !== -1}`);
+        } else {
+          console.log(`   ✗ Element not found or not focusable`);
+        }
+      });
+      
+      console.log('=== END FOCUS FLOW TEST ===');
+    }
+    
+    // Helper to get focusable element by name
+    _getFocusableElement(elementName) {
+      switch (elementName) {
+        case 'year-dropdown':
+          return this.shadowRoot.querySelector('.year-dropdown');
+        case 'prevMonth':
+          const prev = this.shadowRoot.querySelector('#prevMonth');
+          return prev && !prev.disabled ? prev : null;
+        case 'nextMonth':
+          const next = this.shadowRoot.querySelector('#nextMonth');
+          return next && !next.disabled ? next : null;
+        case 'calendar-grid':
+          return this.shadowRoot.querySelector('.calendar-day[tabindex="0"]');
+        case 'today-button':
+          return this.shadowRoot.querySelector('.today-button');
+        case 'cancel-button':
+          return this.shadowRoot.querySelector('.cancel-button');
+        default:
+          return null;
+      }
     }
 
     _updateInputFromDate() {
@@ -3615,43 +3774,10 @@ import { config } from '@nuxeo/nuxeo-elements';
           this._nextMonth(e);
         }
       }
-      // Allow Tab/Shift+Tab to move focus between controls
-      if (e.key === 'Tab') {
-        const navButtons = Array.from(this.shadowRoot.querySelectorAll('.nav-button:not([disabled])'));
-        const yearDropdown = this.shadowRoot.querySelector('.year-dropdown');
-        
-        if (e.shiftKey) {
-          // Moving backwards
-          if (e.target.id === 'prevMonth') {
-            e.preventDefault();
-            yearDropdown.focus();
-          }
-        } else {
-          // Moving forwards
-          if (e.target.id === 'nextMonth') {
-            e.preventDefault();
-            // Move to first focusable date in grid
-            this._focusFirstAvailableDate();
-          }
-        }
-      }
+      // Tab navigation is now handled by _handlePopoverKeydown
     }
 
-    _handleGridTabKeydown(e) {
-      if (e.key === 'Tab') {
-        const footerToday = this.shadowRoot.querySelector('.today-button');
-        const navButtons = Array.from(this.shadowRoot.querySelectorAll('.nav-button'));
-        if (e.shiftKey) {
-          // Move to nextMonth nav button
-          e.preventDefault();
-          navButtons[1].focus();
-        } else {
-          // Move to footer today button
-          e.preventDefault();
-          if (footerToday) footerToday.focus();
-        }
-      }
-    }
+    // Grid tab navigation is now handled by central focus management
 
     _handleDateKeydown(e) {
       // Individual date button keydown handler
