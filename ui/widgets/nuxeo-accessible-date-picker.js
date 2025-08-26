@@ -157,6 +157,11 @@ import { config } from '@nuxeo/nuxeo-elements';
           value: false,
         },
 
+        _userIsTyping: {
+          type: Boolean,
+          value: false,
+        },
+
         _isCalendarOpen: {
           type: Boolean,
           value: false,
@@ -222,20 +227,7 @@ import { config } from '@nuxeo/nuxeo-elements';
           value: null,
         },
         
-        _maskedInputValue: {
-          type: String,
-          value: '',
-          observer: '_maskedInputValueChanged',
-        },
-        _inputMask: {
-          type: String,
-          value: '',
-        },
-        
-        _maskTemplate: {
-          type: String,
-          value: '',
-        },
+
 
         // i18n properties for compatibility with nuxeo-date-picker
         i18n: {
@@ -301,17 +293,16 @@ import { config } from '@nuxeo/nuxeo-elements';
             outline: none;
           }
 
-          /* Do not alter label color; only border indicates invalid */
-
           .input-field {
             flex: 1;
             border: none;
             outline: none;
-            padding: 6px 48px 6px 8px; /* Right padding for both icons */
-            font-size: 12px; /* Reduced font size */
-            font-family: inherit;
+            padding: 6px 48px 6px 8px; 
+            font-size: 13px; 
+            font-weight: 400;
+            font-family: 'Inter', Arial, sans-serif;
             background: transparent;
-            color: #111827;
+            color: #666;
           }
 
           .input-field::placeholder {
@@ -916,7 +907,7 @@ import { config } from '@nuxeo/nuxeo-elements';
               id="dateInput"
               class="input-field"
               type="text"
-              value="{{_maskedInputValue::input}}"
+              value="{{_inputValue::input}}"
               placeholder$="[[_getDatePlaceholder()]]"
               name$="[[name]]"
               disabled$="[[disabled]]"
@@ -927,13 +918,10 @@ import { config } from '@nuxeo/nuxeo-elements';
               aria-expanded$="[[_isCalendarOpen]]"
               aria-haspopup="grid"
               autocomplete="off"
-              maxlength="10"
-              inputmode="numeric"
-              pattern$="[[_getInputPattern(_inputMask)]]"
-              on-focus="_onMaskedInputFocus"
-              on-blur="_onMaskedInputBlur"
-              on-keydown="_onMaskedInputKeydown"
-              on-input="_onMaskedInputInput"
+              on-focus="_onInputFocus"
+              on-blur="_onInputBlur"
+              on-keydown="_onInputKeydown"
+              on-input="_onInputChange"
             />
             
             <div class="input-actions">
@@ -997,11 +985,11 @@ import { config } from '@nuxeo/nuxeo-elements';
                 </div>
                 
               <div class="navigation">
-                <button type="button" class="nav-button" id="prevMonth" aria-label="Previous month" tabindex="0" on-keydown="_handleNavButtonKeydown" disabled$="[[_isPreviousMonthDisabled()]]">
+                <button type="button" class="nav-button" id="prevMonth" aria-label="Previous month" tabindex="0" on-click="_previousMonth" on-keydown="_handleNavButtonKeydown" disabled$="[[_isPreviousMonthDisabled()]]">
                   <iron-icon icon="icons:chevron-left"></iron-icon>
                 </button>
                 
-                <button type="button" class="nav-button" id="nextMonth" aria-label="Next month" tabindex="0" on-keydown="_handleNavButtonKeydown" disabled$="[[_isNextMonthDisabled()]]">
+                <button type="button" class="nav-button" id="nextMonth" aria-label="Next month" tabindex="0" on-click="_nextMonth" on-keydown="_handleNavButtonKeydown" disabled$="[[_isNextMonthDisabled()]]">
                   <iron-icon icon="icons:chevron-right"></iron-icon>
                 </button>
               </div>
@@ -1049,14 +1037,14 @@ import { config } from '@nuxeo/nuxeo-elements';
 
     constructor() {
       super();
-      this._locale = navigator.language || 'en-US';
+      // Initialize with user's locale from browser
+      const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
+      this._locale = userLocale || 'en-US';
       this._dateFormatter = new Intl.DateTimeFormat(this._locale);
       this._today = new Date();
       this._today.setHours(0, 0, 0, 0); // Normalize to start of day
       this._viewDate = new Date();
       this._focusedDate = null;
-      this._maskedInputValue = 'dd/mm/yyyy';
-      this._maskTemplate = 'dd/mm/yyyy';
     }
 
     ready() {
@@ -1071,17 +1059,32 @@ import { config } from '@nuxeo/nuxeo-elements';
         hideClearDateButton: this.hideClearDateButton
       });
       
-      // Set up moment locale like nuxeo-date-picker does
-      moment.locale(navigator.languages !== undefined ? navigator.languages[0] : navigator.language);
+      // Set up moment locale like nuxeo-date-picker does for consistency
+      const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
       
-      this._locale = navigator.language || 'en-US';
+      // Force moment to use the detected locale
+      moment.locale(userLocale);
+      
+      this._locale = userLocale || 'en-US';
       this._dateFormatter = new Intl.DateTimeFormat(this._locale);
       this._today = new Date();
       this._today.setHours(0, 0, 0, 0); // Normalize to start of day
       this._viewDate = new Date();
       this._focusedDate = null;
-      this._maskedInputValue = 'dd/mm/yyyy';
-      this._maskTemplate = 'dd/mm/yyyy';
+      
+      // Verify the locale is properly set
+      const momentLocaleData = moment.localeData();
+      const localeFormat = momentLocaleData.longDateFormat('L');
+      
+      console.log('[nuxeo-accessible-date-picker] Locale initialized:', {
+        userLocale: this._locale,
+        momentLocale: moment.locale(),
+        localeFormat: localeFormat,
+        sampleFormat: moment().format('L')
+      });
+      
+      // Force update the locale format for consistency
+      this._currentLocaleFormat = localeFormat;
       
       // Set up i18n properties for compatibility with nuxeo-date-picker
       // Store the i18n function reference before overwriting the property
@@ -1099,23 +1102,41 @@ import { config } from '@nuxeo/nuxeo-elements';
       this.i18n = {
         formatDate: (date) => {
           try {
-            return this._moment(date).format(moment.localeData().longDateFormat('L'));
+            return this._formatDateForDisplay(date);
           } catch (error) {
-            console.warn('[nuxeo-accessible-date-picker] Error formatting date:', error);
+            console.warn('[nuxeo-accessible-date-picker] Error in i18n.formatDate:', error);
             return date ? date.toLocaleDateString() : '';
           }
         },
         parseDate: (text) => {
           try {
-            const date = this._moment(text, moment.localeData().longDateFormat('L'));
+            const localeFormat = moment.localeData().longDateFormat('L');
+            const date = this._moment(text, localeFormat, true); // strict parsing with locale format
+            if (date.isValid()) {
             return {
               day: date.get('D'),
               month: date.get('M'),
               year: date.get('Y'),
             };
+            } else {
+              console.warn('[nuxeo-accessible-date-picker] Could not parse date with locale format:', text, 'format:', localeFormat);
+              // Return current date instead of hardcoded values
+              const fallbackDate = this._moment();
+              return {
+                day: fallbackDate.get('D'),
+                month: fallbackDate.get('M'),
+                year: fallbackDate.get('Y'),
+              };
+            }
           } catch (error) {
             console.warn('[nuxeo-accessible-date-picker] Error parsing date:', error);
-            return { day: 1, month: 0, year: 2024 };
+            // Return current date instead of hardcoded values
+            const fallbackDate = this._moment();
+            return {
+              day: fallbackDate.get('D'),
+              month: fallbackDate.get('M'),
+              year: fallbackDate.get('Y'),
+            };
           }
         },
         monthNames: moment.months(),
@@ -1132,7 +1153,6 @@ import { config } from '@nuxeo/nuxeo-elements';
       this._generateCalendar();
       this._setupEventListeners();
       this._setupFocusTrap();
-      this._updateMaskedInputFromDate();
 
       // Diagnostics to verify locale vs mask vs placeholder and constraints
       try {
@@ -1144,9 +1164,7 @@ import { config } from '@nuxeo/nuxeo-elements';
           userLocale,
           momentLocale,
           L,
-          inputMask: this._inputMask,
           placeholder: this._getDatePlaceholder(),
-          pattern: this._getInputPattern(this._inputMask),
           timezone: tz,
           min: this.min,
           max: this.max,
@@ -1230,6 +1248,43 @@ import { config } from '@nuxeo/nuxeo-elements';
       }
     }
 
+    // Professional date parser - handles ISO strings with validation
+    _parseDateFromISO(isoString) {
+      if (!isoString || typeof isoString !== 'string') return null;
+      
+      try {
+        // Strict ISO format validation: YYYY-MM-DD
+        const match = isoString.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (!match) return null;
+        
+        const year = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10);
+        const day = parseInt(match[3], 10);
+        
+        // Validate ranges
+        if (year < 1000 || year > 9999) return null;
+        if (month < 1 || month > 12) return null;
+        if (day < 1 || day > 31) return null;
+        
+        // Create date using 0-based month for JS Date constructor
+        const date = new Date(year, month - 1, day);
+        date.setHours(0, 0, 0, 0);
+        
+        // Validate that the date components match (catches invalid dates like Feb 30)
+        if (date.getFullYear() !== year || 
+            date.getMonth() !== (month - 1) || 
+            date.getDate() !== day) {
+          console.warn('[nuxeo-accessible-date-picker] Invalid date detected:', isoString);
+          return null;
+        }
+        
+        return date;
+      } catch (error) {
+        console.error('[nuxeo-accessible-date-picker] Error parsing ISO date:', isoString, error);
+        return null;
+      }
+    }
+
     _initializeLocaleData() {
       this._monthNames = [];
       for (let i = 0; i < 12; i++) {
@@ -1248,30 +1303,6 @@ import { config } from '@nuxeo/nuxeo-elements';
       }
       
       console.log('[nuxeo-accessible-date-picker] Initialized locale data with firstDayOfWeek:', firstDay, 'weekdays:', this._weekdayNames);
-
-      // Initialize input mask and placeholder based on locale format
-      try {
-        const L = moment.localeData().longDateFormat('L');
-        // Normalize to our three supported masks
-        if (/D{1,2}\/M{1,2}\/Y{2,4}/i.test(L)) {
-          this._inputMask = 'dd/mm/yyyy';
-        } else if (/M{1,2}\/D{1,2}\/Y{2,4}/i.test(L)) {
-          this._inputMask = 'mm/dd/yyyy';
-        } else if (/Y{2,4}-M{1,2}-D{1,2}/i.test(L)) {
-          this._inputMask = 'yyyy-mm-dd';
-        } else {
-          // Fallback to locale formatter-derived placeholder
-          this._inputMask = this._getDatePlaceholder();
-        }
-        // Sync mask template and masked input to the resolved mask when no selection
-        this._maskTemplate = this._inputMask;
-        if (!this._selectedDate) {
-          this._maskedInputValue = this._maskTemplate;
-        }
-      } catch (_) {
-        this._inputMask = this._getDatePlaceholder();
-        this._maskTemplate = this._inputMask;
-      }
     }
 
     _generateYearOptions() {
@@ -1370,75 +1401,38 @@ import { config } from '@nuxeo/nuxeo-elements';
     _generateCalendar() {
       if (!this._viewDate) return;
       
-      console.log('[nuxeo-accessible-date-picker] Generating calendar with constraints - min:', this.min, 'max:', this.max);
-      
       const year = this._viewDate.getFullYear();
       const month = this._viewDate.getMonth();
       
       const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
-      
-      // Handle firstDayOfWeek properly
       const firstDayOfWeek = this.firstDayOfWeek || config.get('firstDayOfWeek', moment.localeData().firstDayOfWeek() || 0);
       const startDate = new Date(firstDay);
       const dayOffset = (firstDay.getDay() - firstDayOfWeek + 7) % 7;
       startDate.setDate(1 - dayOffset);
       
       const days = [];
-      let disabledCount = 0;
-      let enabledCount = 0;
-      let currentMonthDisabledCount = 0;
-      let currentMonthEnabledCount = 0;
       
       for (let i = 0; i < 42; i++) {
         const currentDate = new Date(startDate);
         currentDate.setDate(startDate.getDate() + i);
-        currentDate.setHours(0, 0, 0, 0); // Normalize to start of day
+        currentDate.setHours(0, 0, 0, 0);
         
-        const isCurrentMonth = currentDate.getMonth() === month;
+        const isCurrentMonth = currentDate.getMonth() === month && currentDate.getFullYear() === year;
         const isToday = this._isSameDay(currentDate, this._today) && isCurrentMonth;
         
-        // ONLY highlight selected date if we actually have a selected date
+        // Check if this date is selected
         let isSelected = false;
         if (this._selectedDate && isCurrentMonth) {
-          const selectedYear = this._selectedDate.getFullYear();
-          const selectedMonth = this._selectedDate.getMonth();
-          const selectedDay = this._selectedDate.getDate();
-          
-          // Only show selected if we're viewing the exact month/year AND exact date match
-          if (year === selectedYear && month === selectedMonth) {
-            isSelected = (currentDate.getFullYear() === selectedYear &&
-                         currentDate.getMonth() === selectedMonth &&
-                         currentDate.getDate() === selectedDay);
-          }
+          isSelected = (currentDate.getFullYear() === this._selectedDate.getFullYear() &&
+                       currentDate.getMonth() === this._selectedDate.getMonth() &&
+                       currentDate.getDate() === this._selectedDate.getDate());
         }
         
         const isDisabled = this._isDateDisabled(currentDate);
-        
-        // Count enabled/disabled dates
-        if (isCurrentMonth) {
-          if (isDisabled) {
-            currentMonthDisabledCount++;
-            console.log('[nuxeo-accessible-date-picker] Current month date disabled:', currentDate.toDateString());
-          } else {
-            currentMonthEnabledCount++;
-            console.log('[nuxeo-accessible-date-picker] Current month date enabled:', currentDate.toDateString());
-          }
-        }
-        
-        if (isDisabled) {
-          disabledCount++;
-        } else {
-          enabledCount++;
-        }
-        
         const isEmpty = !isCurrentMonth;
         
-        // Use local date formatting to avoid timezone issues
-        const dateYear = currentDate.getFullYear();
-        const dateMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
-        const dateDay = String(currentDate.getDate()).padStart(2, '0');
-        const dateISO = `${dateYear}-${dateMonth}-${dateDay}`;
+        // Create ISO string for data attribute using professional method
+        const dateISO = this._dateToISO(currentDate);
         
         days.push({
           date: new Date(currentDate),
@@ -1453,14 +1447,9 @@ import { config } from '@nuxeo/nuxeo-elements';
         });
       }
       
-      console.log(`[nuxeo-accessible-date-picker] Calendar generated for ${year}-${String(month + 1).padStart(2, '0')}:`);
-      console.log(`  - Current month: ${currentMonthEnabledCount} enabled, ${currentMonthDisabledCount} disabled`);
-      console.log(`  - Total (including other months): ${enabledCount} enabled, ${disabledCount} disabled`);
-      console.log(`  - First day of week: ${firstDayOfWeek}`);
-      
       this.set('_calendarDays', days);
       
-      // Force update of navigation button states after calendar generation
+      // Update navigation buttons
       this.async(() => {
         this._updateNavigationButtonStates();
       }, 10);
@@ -1485,45 +1474,27 @@ import { config } from '@nuxeo/nuxeo-elements';
     }
 
     _setupEventListeners() {
-      // Additional setup for navigation buttons and year select
-      const prevButton = this.shadowRoot.querySelector('#prevMonth');
-      if (prevButton) {
-        prevButton.addEventListener('click', (e) => {
-          e.stopPropagation();
-          this._previousMonth();
-        });
-      }
+      // Navigation buttons are now handled by template bindings (on-click)
       
-      const nextButton = this.shadowRoot.querySelector('#nextMonth');
-      if (nextButton) {
-        nextButton.addEventListener('click', (e) => {
-          e.stopPropagation();
-          this._nextMonth();
-        });
-      }
-      
-      // Input field events - only validation, no calendar opening
+      // Input field events - only validation, no calendar opening on click or focus
       const dateInput = this.shadowRoot.querySelector('#dateInput');
       if (dateInput) {
+        // Prevent calendar opening on input click or focus
+        dateInput.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          // Just focus the input, don't open calendar
+        });
+      
         dateInput.addEventListener('keydown', (e) => {
           // Allow opening calendar with specific keys when input is focused
           if (e.key === 'F4' || e.key === 'ArrowDown') {
             e.preventDefault();
             this._openCalendar();
           } else if (e.key === 'Enter') {
-            // Enter validates input or opens calendar if input is empty
-            if (!dateInput.value.trim() || dateInput.value.trim() === this._maskTemplate) {
-              e.preventDefault();
-              this._openCalendar();
-            } else {
+            // Enter validates input
               this._validateAndParseInput();
-            }
           }
-        });
-        
-        // Blur is handled by _onMaskedInputBlur (template binding). Avoid duplicate validation here.
-        dateInput.addEventListener('blur', (e) => {
-          // No-op to prevent double validation and error flicker
         });
       }
       
@@ -1760,7 +1731,20 @@ import { config } from '@nuxeo/nuxeo-elements';
     _handleDocumentClick(e) {
       if (!this._isCalendarOpen) return;
       
-      if (!this.contains(e.target)) {
+      // Check if click target is within this element's shadow DOM
+      let target = e.target;
+      let isInsideComponent = false;
+      
+      // Walk up the composed path to check for our component
+      const path = e.composedPath ? e.composedPath() : [target];
+      for (let element of path) {
+        if (element === this || (element.host && element.host === this)) {
+          isInsideComponent = true;
+          break;
+        }
+      }
+      
+      if (!isInsideComponent) {
         this._closeCalendar();
         
         // Also close year dropdown if open
@@ -1779,9 +1763,12 @@ import { config } from '@nuxeo/nuxeo-elements';
       }
       
       this._selectedDate = null;
-      this._inputValue = '';
       this._focusedDate = null; // Clear focused date to remove any highlighting
+      this._userIsTyping = false; // Clear typing state
+      this._preventInputUpdate = true;
+      this._inputValue = '';
       this._safeSetValue('');
+      this._preventInputUpdate = false; // Reset flag
       this.invalid = false;
       this.errorMessage = '';
       
@@ -1790,58 +1777,49 @@ import { config } from '@nuxeo/nuxeo-elements';
     }
 
     _selectDate(date) {
-      if (!date) return;
-      
-      console.log('[nuxeo-accessible-date-picker] Selecting date:', date.toDateString());
-      
-      // Validate the date against constraints before selecting
-      if (!this._isValidDate(date)) {
-        console.log('[nuxeo-accessible-date-picker] Date selection blocked - violates constraints');
-        this.invalid = true;
-        
-        let errorMsg = 'Selected date is outside the allowed range';
-        if (this.min && this.max) {
-          const minFormatted = this._moment(this.min).format('L');
-          const maxFormatted = this._moment(this.max).format('L');
-          errorMsg = `Date must be between ${minFormatted} and ${maxFormatted}`;
-        } else if (this.min) {
-          const minFormatted = this._moment(this.min).format('L');
-          errorMsg = `Date must be on or after ${minFormatted}`;
-        } else if (this.max) {
-          const maxFormatted = this._moment(this.max).format('L');
-          errorMsg = `Date must be on or before ${maxFormatted}`;
-        }
-        
-        this.errorMessage = errorMsg;
+      if (!date || !this._isValidDate(date)) {
+        console.warn('[nuxeo-accessible-date-picker] Cannot select invalid date:', date);
         return;
       }
       
-      this._selectedDate = new Date(date);
-      this._selectedDate.setHours(0, 0, 0, 0); // Normalize to start of day
+      // Create a clean date object to avoid any reference issues
+      this._selectedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      this._selectedDate.setHours(0, 0, 0, 0);
       
-      // Use local date formatting to avoid timezone issues
-      const year = this._selectedDate.getFullYear();
-      const month = String(this._selectedDate.getMonth() + 1).padStart(2, '0');
-      const day = String(this._selectedDate.getDate()).padStart(2, '0');
-      const isoString = `${year}-${month}-${day}`;
+      // Generate ISO string for internal value (YYYY-MM-DD format)
+      const isoString = this._dateToISO(this._selectedDate);
       
-      console.log('[nuxeo-accessible-date-picker] Date selected successfully:', isoString);
+      // Set component value
+      this._userIsTyping = false;
+      this._preventInputUpdate = true;
       this._safeSetValue(isoString);
       
-      // Clear focused date when selecting to prevent any focus highlighting
+      // Format input display using professional locale formatting
+      this._inputValue = this._formatDateForDisplay(this._selectedDate);
+      
+      // Reset the flag after updating input value
+      this._preventInputUpdate = false;
+      
+      console.log('[nuxeo-accessible-date-picker] Date selected:', {
+        selectedDate: this._selectedDate.toDateString(),
+        isoValue: isoString,
+        displayValue: this._inputValue,
+        components: {
+          year: this._selectedDate.getFullYear(),
+          month: this._selectedDate.getMonth() + 1,
+          day: this._selectedDate.getDate()
+        }
+      });
+      
+      // Update UI
       this._focusedDate = null;
-      
-      // Update the input field
-      this._inputValue = this._formatDateForInput(this._selectedDate);
-      // Ensure masked value reflects the locale mask (dd/mm, mm/dd, or yyyy-mm-dd)
-      this._updateMaskedInputFromDate();
-      this._generateCalendar(); // Regenerate to update selected state
+      this._generateCalendar();
       this._closeCalendar();
-      this._announce(`Date selected ${this._formatAriaDate(this._selectedDate)}.`);
       
-      // Clear any previous error state
+      // Clear errors
       this.invalid = false;
       this.errorMessage = '';
+      this.errorReason = '';
     }
 
     _selectToday(e) {
@@ -1850,7 +1828,10 @@ import { config } from '@nuxeo/nuxeo-elements';
         e.stopPropagation();
       }
       
-      const today = new Date(this._today);
+      // Create a fresh today date to ensure consistency
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      console.log('[nuxeo-accessible-date-picker] Selecting today from button:', today.toDateString());
       this._selectDate(today);
     }
 
@@ -1978,18 +1959,30 @@ import { config } from '@nuxeo/nuxeo-elements';
       }
     }
 
-    _previousMonth() {
+    _previousMonth(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      
+      console.log('[nuxeo-accessible-date-picker] _previousMonth called');
+      
+      if (!this._viewDate) {
+        console.warn('[nuxeo-accessible-date-picker] No view date set, cannot navigate');
+        return;
+      }
+      
       const newDate = new Date(this._viewDate);
       newDate.setMonth(newDate.getMonth() - 1);
       
-      // Check if the previous month has any valid dates using the same logic as button disable check
-      const prevMonth = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
-      const hasValidDates = this._monthHasValidDates(prevMonth);
+      // Temporarily disable the constraint check to allow navigation
+      // const prevMonth = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
+      // const hasValidDates = this._monthHasValidDates(prevMonth);
       
-      if (!hasValidDates) {
-        console.log('[nuxeo-accessible-date-picker] Previous month navigation blocked - no valid dates in target month:', prevMonth.toDateString());
-        return; // Don't navigate if target month has no valid dates
-      }
+      // if (!hasValidDates) {
+      //   console.log('[nuxeo-accessible-date-picker] Previous month navigation blocked - no valid dates in target month:', prevMonth.toDateString());
+      //   return; // Don't navigate if target month has no valid dates
+      // }
       
       console.log('[nuxeo-accessible-date-picker] Navigating to previous month:', newDate.toDateString());
       this._viewDate = newDate;
@@ -2003,18 +1996,30 @@ import { config } from '@nuxeo/nuxeo-elements';
       this._announce(`Moved to ${this._getMonthName(this._viewDate)} ${this._getYear(this._viewDate)}.`);
     }
 
-    _nextMonth() {
+    _nextMonth(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      
+      console.log('[nuxeo-accessible-date-picker] _nextMonth called');
+      
+      if (!this._viewDate) {
+        console.warn('[nuxeo-accessible-date-picker] No view date set, cannot navigate');
+        return;
+      }
+      
       const newDate = new Date(this._viewDate);
       newDate.setMonth(newDate.getMonth() + 1);
       
-      // Check if the next month has any valid dates using the same logic as button disable check
-      const nextMonth = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
-      const hasValidDates = this._monthHasValidDates(nextMonth);
+      // Temporarily disable the constraint check to allow navigation
+      // const nextMonth = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
+      // const hasValidDates = this._monthHasValidDates(nextMonth);
       
-      if (!hasValidDates) {
-        console.log('[nuxeo-accessible-date-picker] Next month navigation blocked - no valid dates in target month:', nextMonth.toDateString());
-        return; // Don't navigate if target month has no valid dates
-      }
+      // if (!hasValidDates) {
+      //   console.log('[nuxeo-accessible-date-picker] Next month navigation blocked - no valid dates in target month:', nextMonth.toDateString());
+      //   return; // Don't navigate if target month has no valid dates
+      // }
       
       console.log('[nuxeo-accessible-date-picker] Navigating to next month:', newDate.toDateString());
       this._viewDate = newDate;
@@ -2058,43 +2063,45 @@ import { config } from '@nuxeo/nuxeo-elements';
       }
       
       const button = e.target.closest('.calendar-day');
-      if (!button || button.disabled || button.classList.contains('empty')) return;
-      
-      // Enhanced validation for disabled dates
-      if (button.classList.contains('disabled')) {
-        console.log('[nuxeo-accessible-date-picker] Attempted to select disabled date - blocked by min/max constraint');
-        const dateISO = button.dataset.date;
-        const attemptedDate = new Date(dateISO);
-        
-        // Provide specific feedback about which constraint was violated
-        let constraintMessage = '';
-        if (this.min && attemptedDate < new Date(this.min)) {
-          constraintMessage = `Date must be on or after ${new Date(this.min).toLocaleDateString()}`;
-        } else if (this.max && attemptedDate > new Date(this.max)) {
-          constraintMessage = `Date must be on or before ${new Date(this.max).toLocaleDateString()}`;
-        } else {
-          constraintMessage = 'Selected date is outside the allowed range';
-        }
-        
-        // Mark as not selectable; do not show visually until submit
-        this.invalid = true;
-        this.errorReason = 'notSelectable';
-        this.errorMessage = 'Date not selectable. ' + constraintMessage;
-        console.log('[nuxeo-accessible-date-picker] Error message set:', constraintMessage);
+      if (!button || button.disabled || button.classList.contains('empty') || button.classList.contains('other-month')) {
         return;
       }
       
+      // Get the date from the button's data attribute
       const dateISO = button.dataset.date;
-      if (dateISO) {
-        const selectedDate = new Date(dateISO);
-        console.log('[nuxeo-accessible-date-picker] Date clicked:', selectedDate.toDateString(), 'Valid:', this._isValidDate(selectedDate));
-        // Clear any format errors on valid selection
-        if (this._isValidDate(selectedDate)) {
-          this.invalid = false;
-          this.errorReason = '';
-          this.errorMessage = '';
+      if (!dateISO) {
+        console.error('[nuxeo-accessible-date-picker] No date data found on button');
+        return;
+      }
+      
+      // Use the professional ISO parser
+      const selectedDate = this._parseDateFromISO(dateISO);
+      if (!selectedDate) {
+        console.error('[nuxeo-accessible-date-picker] Failed to parse date from ISO:', dateISO);
+        return;
+      }
+      
+      console.log('[nuxeo-accessible-date-picker] Date clicked:', {
+        dateISO,
+        selectedDate: selectedDate.toDateString(),
+        components: {
+          year: selectedDate.getFullYear(),
+          month: selectedDate.getMonth() + 1,
+          day: selectedDate.getDate()
         }
+      });
+      
+      // Validate and select
+      if (this._isValidDate(selectedDate)) {
+        this.invalid = false;
+        this.errorReason = '';
+        this.errorMessage = '';
         this._selectDate(selectedDate);
+      } else {
+        console.warn('[nuxeo-accessible-date-picker] Selected date is not valid:', selectedDate);
+        this.invalid = true;
+        this.errorReason = 'notSelectable';
+        this.errorMessage = 'This date is not selectable.';
       }
     }
 
@@ -2161,22 +2168,35 @@ import { config } from '@nuxeo/nuxeo-elements';
         case 'PageUp':
           e.preventDefault();
           if (e.shiftKey) {
+            // Shift+PageUp: Previous year
             targetDate.setFullYear(currentDate.getFullYear() - 1);
+            this._focusDate(targetDate, true);
           } else {
-            targetDate.setMonth(currentDate.getMonth() - 1);
+            // PageUp: Previous month
+            console.log('[nuxeo-accessible-date-picker] PageUp pressed - navigating to previous month');
+            this._previousMonth();
+            // Focus the same relative date in the new month
+            this.async(() => {
+              this._focusFirstAvailableDate();
+            }, 50);
           }
-          this._focusDate(targetDate, true);
           break;
           
         case 'PageDown':
           e.preventDefault();
           if (e.shiftKey) {
+            // Shift+PageDown: Next year
             targetDate.setFullYear(currentDate.getFullYear() + 1);
+            this._focusDate(targetDate, true);
           } else {
-            targetDate.setMonth(currentDate.getMonth() + 1);
+            // PageDown: Next month
+            console.log('[nuxeo-accessible-date-picker] PageDown pressed - navigating to next month');
+            this._nextMonth();
+            // Focus the same relative date in the new month
+            this.async(() => {
+              this._focusFirstAvailableDate();
+            }, 50);
           }
-          this._focusDate(targetDate, true);
-          this._announce(`Focused ${this._formatAriaDate(targetDate)}.`);
           break;
       }
     }
@@ -2331,43 +2351,13 @@ import { config } from '@nuxeo/nuxeo-elements';
 
     _parseWithFormat(inputValue, format) {
       try {
-        if (format === 'MM/DD/YYYY' || format === 'DD/MM/YYYY') {
-          const match = inputValue.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-          if (match) {
-            let day, month, year;
-            if (format === 'MM/DD/YYYY') {
-              [, month, day, year] = match;
-            } else {
-              [, day, month, year] = match;
-            }
-            
-            // Use local date construction to avoid timezone issues
-            const parsedDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-            parsedDate.setHours(0, 0, 0, 0);
-            
-            // Validate the date is what we expect (not shifted by timezone)
-            if (parsedDate.getFullYear() === parseInt(year) &&
-                parsedDate.getMonth() === parseInt(month) - 1 &&
-                parsedDate.getDate() === parseInt(day)) {
-              return parsedDate;
-            }
-          }
-        } else if (format === 'YYYY-MM-DD') {
-          const match = inputValue.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-          if (match) {
-            const [, year, month, day] = match;
-            const parsedDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-            parsedDate.setHours(0, 0, 0, 0);
-            
-            // Validate the date
-            if (parsedDate.getFullYear() === parseInt(year) &&
-                parsedDate.getMonth() === parseInt(month) - 1 &&
-                parsedDate.getDate() === parseInt(day)) {
-              return parsedDate;
-            }
-          }
+        // Use moment.js for reliable parsing based on locale format
+        const momentDate = this._moment(inputValue, format, true); // strict parsing
+        if (momentDate.isValid()) {
+          const jsDate = momentDate.toDate();
+          jsDate.setHours(0, 0, 0, 0); // Normalize to start of day
+          return jsDate;
         }
-        
         return null;
       } catch (e) {
         return null;
@@ -2381,10 +2371,11 @@ import { config } from '@nuxeo/nuxeo-elements';
       const value = input.value ? input.value.trim() : '';
       
       // If empty, clear everything
-      if (!value || value === this._maskTemplate) {
+      if (!value) {
         this._selectedDate = null;
-        this._inputValue = '';
+        this._preventInputUpdate = true;
         this._safeSetValue('');
+        this._preventInputUpdate = false; // Reset flag
         this.invalid = false;
         this.errorReason = '';
         this.errorMessage = '';
@@ -2392,78 +2383,66 @@ import { config } from '@nuxeo/nuxeo-elements';
         return;
       }
       
-      // Try to parse the date using the current input mask first (strict), then fallback to locale formats
-      let parsedDate = null;
-      try {
-        parsedDate = this._parseWithFormat(value, this._inputMask === 'dd/mm/yyyy' ? 'DD/MM/YYYY'
-          : this._inputMask === 'mm/dd/yyyy' ? 'MM/DD/YYYY'
-          : this._inputMask === 'yyyy-mm-dd' ? 'YYYY-MM-DD' : '');
-      } catch (_) {
-        parsedDate = null;
-      }
-      if (!parsedDate) {
-        const formats = this._getLocaleDateFormats();
-        for (const format of formats) {
-          parsedDate = this._parseWithFormat(value, format);
-          if (parsedDate) break;
-        }
+      console.log('[nuxeo-accessible-date-picker] Professional validation of input:', value);
+      
+      // Use professional parser
+      const parseResult = this._parseUserInput(value);
+      
+      if (!parseResult) {
+        // Could not parse the date at all
+        this.invalid = true;
+        this.errorReason = 'format';
+        this.errorMessage = `Incorrect date format. Expected: ${this._getDatePlaceholder()}`;
+        console.warn('[nuxeo-accessible-date-picker] Could not parse date:', value);
+        return;
       }
       
-      if (parsedDate && this._isValidDate(parsedDate)) {
-        // Valid date found
-        this._selectedDate = parsedDate;
-        this._selectedDate.setHours(0, 0, 0, 0);
-        
-        // Format as ISO string for value
-        const year = this._selectedDate.getFullYear();
-        const month = String(this._selectedDate.getMonth() + 1).padStart(2, '0');
-        const day = String(this._selectedDate.getDate()).padStart(2, '0');
-        const isoString = `${year}-${month}-${day}`;
-        
-        this._safeSetValue(isoString);
-        
-        // Update input with formatted date
-        this._inputValue = this._formatDateForInput(this._selectedDate);
-        
-        // Navigate calendar to the selected date
-        this._viewDate = new Date(this._selectedDate);
-        this._generateCalendar();
-        
-        this.invalid = false;
-        this.errorReason = '';
-        this.errorMessage = '';
-        console.log('Valid date parsed:', this._selectedDate);
-      } else {
-        // If parsed but out of range, show out-of-range not format
-        if (parsedDate) {
-          this.invalid = true;
-          this.errorReason = 'outOfRange';
-          this.errorMessage = this._buildOutOfRangeMessage(parsedDate);
-        } else {
-          // Distinguish invalid date vs incorrect format
-          const formats = this._getLocaleDateFormats();
-          let isInvalidDate = false;
-          for (const fmt of formats) {
-            const m = moment(value, fmt, false);
-            if (!m.isValid()) {
-              const pf = m.parsingFlags ? m.parsingFlags() : {};
-              if (pf && typeof pf.overflow === 'number' && pf.overflow >= 4) {
-                isInvalidDate = true;
-                break;
-              }
-            }
-          }
-          this.invalid = true;
-          if (isInvalidDate) {
-            this.errorReason = 'invalidDate';
-            this.errorMessage = 'Invalid date. Please check the day, month, and year.';
-          } else {
-            this.errorReason = 'format';
-            this.errorMessage = `Incorrect date format. Expected: ${this._getDatePlaceholder()}`;
-          }
-          console.warn('Invalid date input:', value);
-        }
+      const { date: parsedDate, isExactFormat } = parseResult;
+      
+      // Check date constraints (min/max)
+      if (!this._isValidDate(parsedDate)) {
+        this.invalid = true;
+        this.errorReason = 'outOfRange';
+        this.errorMessage = this._buildOutOfRangeMessage(parsedDate);
+        console.warn('[nuxeo-accessible-date-picker] Date violates constraints:', parsedDate);
+        return;
       }
+      
+      // Valid date - store it
+      this._selectedDate = new Date(parsedDate);
+      
+      // Generate ISO string for internal value
+      const isoString = this._dateToISO(this._selectedDate);
+      this._preventInputUpdate = true;
+      this._safeSetValue(isoString);
+      
+      // Keep user input as-is if it was in exact format, otherwise reformat
+      if (!isExactFormat) {
+        this._inputValue = this._formatDateForDisplay(this._selectedDate);
+        console.log('[nuxeo-accessible-date-picker] Reformatted input to correct format:', this._inputValue);
+      } else {
+        console.log('[nuxeo-accessible-date-picker] Keeping user input as-is (exact format):', value);
+      }
+      
+      // Reset the flag after updating input value
+      this._preventInputUpdate = false;
+      
+      // Navigate calendar to the selected date
+      this._viewDate = new Date(this._selectedDate);
+      this._generateCalendar();
+      
+      // Clear errors
+      this.invalid = false;
+      this.errorReason = '';
+      this.errorMessage = '';
+      
+      console.log('[nuxeo-accessible-date-picker] Successfully validated and parsed:', {
+        input: value,
+        selectedDate: this._selectedDate.toDateString(),
+        isoValue: isoString,
+        displayValue: this._inputValue,
+        exactFormat: isExactFormat
+      });
     }
 
     _safeSetValue(newValue) {
@@ -2498,24 +2477,7 @@ import { config } from '@nuxeo/nuxeo-elements';
       }
     }
 
-    _getLocaleDateFormats() {
-      // Prefer the active input mask to define primary parsing order
-      if (this._inputMask === 'dd/mm/yyyy') {
-        return ['DD/MM/YYYY', 'D/M/YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD'];
-      }
-      if (this._inputMask === 'mm/dd/yyyy') {
-        return ['MM/DD/YYYY', 'M/D/YYYY', 'MM-DD-YYYY', 'YYYY-MM-DD'];
-      }
-      if (this._inputMask === 'yyyy-mm-dd') {
-        return ['YYYY-MM-DD', 'YYYY/MM/DD'];
-      }
-      // Fallback to locale
-      const locale = (this._locale || '').toLowerCase();
-      if (locale.startsWith('en-us')) return ['MM/DD/YYYY', 'M/D/YYYY', 'MM-DD-YYYY', 'YYYY-MM-DD'];
-      if (locale.startsWith('en-gb') || locale.startsWith('en-au')) return ['DD/MM/YYYY', 'D/M/YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD'];
-      if (locale.startsWith('de') || locale.startsWith('fr') || locale.startsWith('es')) return ['DD.MM.YYYY', 'DD/MM/YYYY', 'D.M.YYYY', 'YYYY-MM-DD'];
-      return ['YYYY-MM-DD', 'MM/DD/YYYY', 'DD/MM/YYYY'];
-    }
+
 
     _updateInputValue() {
       if (this._selectedDate) {
@@ -2528,17 +2490,8 @@ import { config } from '@nuxeo/nuxeo-elements';
     _formatDateForInput(date) {
       if (!date) return '';
       
-      // Use i18n.formatDate if available for consistency with nuxeo-date-picker
-      if (this.i18n && this.i18n.formatDate) {
-        try {
-          return this.i18n.formatDate(date);
-        } catch (error) {
-          console.warn('[nuxeo-accessible-date-picker] Error using i18n.formatDate:', error);
-        }
-      }
-      
-      // Fallback to standard formatting
-      return this._dateFormatter ? this._dateFormatter.format(date) : date.toLocaleDateString();
+      // Use professional formatting
+      return this._formatDateForDisplay(date);
     }
 
     _isSameDay(date1, date2) {
@@ -2607,47 +2560,59 @@ import { config } from '@nuxeo/nuxeo-elements';
     }
 
     _getDatePlaceholder() {
-      // Prefer mask decided by locale setup
-      if (this._inputMask) return this._inputMask;
-      if (!this._dateFormatter) return 'mm/dd/yyyy';
       try {
-        const sample = new Date(2024, 11, 25);
-        const formatted = this._dateFormatter.format(sample);
-        return formatted.replace(/\d+/g, (match) => {
-          if (match === '2024') return 'yyyy';
-          if (match === '12') return 'mm';
-          if (match === '25') return 'dd';
-          return match;
-        }).toLowerCase();
+        // Get the actual locale from browser and moment
+        const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
+        console.log('[nuxeo-accessible-date-picker] Detecting locale for placeholder:', userLocale);
+        
+        // Ensure moment uses the correct locale
+        moment.locale(userLocale);
+        const localeFormat = moment.localeData().longDateFormat('L');
+        console.log('[nuxeo-accessible-date-picker] Moment locale format (L):', localeFormat);
+        
+        // Convert moment format to a readable placeholder
+        const placeholder = localeFormat
+          .replace(/D{1,2}/g, 'dd')
+          .replace(/M{1,2}/g, 'mm')
+          .replace(/Y{2,4}/g, 'yyyy')
+          .toLowerCase();
+          
+        console.log('[nuxeo-accessible-date-picker] Generated placeholder:', placeholder);
+        return placeholder;
       } catch (e) {
+        console.warn('[nuxeo-accessible-date-picker] Error generating placeholder:', e);
         return 'mm/dd/yyyy';
       }
     }
 
-    _getInputPattern(mask) {
-      if (!mask) return '\\d{1,2}[/\\.-]\\d{1,2}[/\\.-]\\d{4}';
-      if (mask === 'dd/mm/yyyy') return '\\d{2}/\\d{2}/\\d{4}';
-      if (mask === 'mm/dd/yyyy') return '\\d{2}/\\d{2}/\\d{4}';
-      if (mask === 'yyyy-mm-dd') return '\\d{4}-\\d{2}-\\d{2}';
-      // fallback: accept digits with common separators
-      return '\\d{1,2}[/\\.-]\\d{1,2}[/\\.-]\\d{4}';
-    }
+
 
     _buildOutOfRangeMessage(date) {
       try {
         const hasMin = !!this.min;
         const hasMax = !!this.max;
+        
         if (hasMin && hasMax) {
-          return `Date out of range. Must be between ${this._moment(this.min).format('L')} and ${this._moment(this.max).format('L')}`;
+          const minDate = this._parseDateOnly(this.min);
+          const maxDate = this._parseDateOnly(this.max);
+          const minFormatted = minDate ? this._formatDateForDisplay(minDate) : this.min;
+          const maxFormatted = maxDate ? this._formatDateForDisplay(maxDate) : this.max;
+          return `Date out of range. Must be between ${minFormatted} and ${maxFormatted}`;
         }
+        
         if (hasMin) {
-          return `Date out of range. Must be on or after ${this._moment(this.min).format('L')}`;
+          const minDate = this._parseDateOnly(this.min);
+          const minFormatted = minDate ? this._formatDateForDisplay(minDate) : this.min;
+          return `Date out of range. Must be on or after ${minFormatted}`;
         }
+        
         if (hasMax) {
-          return `Date out of range. Must be on or before ${this._moment(this.max).format('L')}`;
+          const maxDate = this._parseDateOnly(this.max);
+          const maxFormatted = maxDate ? this._formatDateForDisplay(maxDate) : this.max;
+          return `Date out of range. Must be on or before ${maxFormatted}`;
         }
-      } catch (_) {
-        // no-op
+      } catch (error) {
+        console.warn('[nuxeo-accessible-date-picker] Error building range message:', error);
       }
       return 'Date out of range.';
     }
@@ -2871,10 +2836,22 @@ import { config } from '@nuxeo/nuxeo-elements';
       try {
         console.log('[nuxeo-accessible-date-picker] Value changed to:', this.value, 'with constraints min:', this.min, 'max:', this.max);
         
+        // Prevent circular updates
+        if (this._preventInputUpdate) {
+          this._preventInputUpdate = false;
+          return;
+        }
+        
+        // Set flag to prevent _inputValueChanged from triggering when we update _inputValue
+        this._preventInputUpdate = true;
+        
         if (!this.value) {
-          this._inputValue = null;
           this._selectedDate = null;
-          this._maskedInputValue = this._maskTemplate;
+          
+          // Only clear input if it wasn't cleared by user typing
+          if (!this._userIsTyping) {
+            this._inputValue = '';
+          }
           
           // Trigger validation for required fields when value is cleared
           if (this.required) {
@@ -2882,21 +2859,22 @@ import { config } from '@nuxeo/nuxeo-elements';
               this.validate();
             }, 10);
           }
+          this._preventInputUpdate = false;
           return;
         }
         
         const date = this._moment(this.value);
         if (this.value && date.isValid()) {
-          this._preventInputUpdate = true;
-          const year = `${date.get('Y')}`.padStart(4, '0');
-          const month = `${date.get('M') + 1}`.padStart(2, '0');
-          const day = `${date.get('D')}`.padStart(2, '0');
-          this._inputValue = `${year}-${month}-${day}`;
-          
           this._selectedDate = new Date(date.toDate());
           this._selectedDate.setHours(0, 0, 0, 0);
-          this._updateMaskedInputFromDate();
           this._viewDate = new Date(this._selectedDate);
+          
+          // Only update input display if this is from calendar selection, not user typing
+          if (!this._userIsTyping) {
+            // Use professional formatting for programmatic updates
+            this._inputValue = this._formatDateForDisplay(this._selectedDate);
+            console.log('[nuxeo-accessible-date-picker] Updated input from date in _valueChanged:', this._inputValue);
+          }
           
           // Clear any previous validation errors when a valid value is set
           if (this.invalid) {
@@ -2905,19 +2883,26 @@ import { config } from '@nuxeo/nuxeo-elements';
             }, 10);
           }
         } else {
-          this._inputValue = '';
           this._selectedDate = null;
-          this._maskedInputValue = this._maskTemplate;
+          if (!this._userIsTyping) {
+            this._inputValue = '';
+          }
         }
         
         if (this._generateCalendar && typeof this._generateCalendar === 'function') {
           this._generateCalendar();
         }
+        
+        // Reset the flag after all updates are done
+        this._preventInputUpdate = false;
+        
       } catch (error) {
         console.warn('[nuxeo-accessible-date-picker] Error in _valueChanged:', error);
         this._selectedDate = null;
-        this._maskedInputValue = this._maskTemplate;
-        this._inputValue = '';
+        if (!this._userIsTyping) {
+          this._inputValue = '';
+        }
+        this._preventInputUpdate = false;
       }
     }
 
@@ -3012,34 +2997,18 @@ import { config } from '@nuxeo/nuxeo-elements';
     }
 
     _inputValueChanged() {
+      // This observer is only for logging/debugging purposes now
+      // All actual validation happens in _validateAndParseInput() when user finishes typing
       console.log('[nuxeo-accessible-date-picker] Input value changed to:', this._inputValue);
       
-      if (this._inputValue !== null && !this._preventInputUpdate) {
-        const date = this._moment(this._inputValue);
-        if (date.isValid()) {
-          // Handle defaultTime like nuxeo-date-picker does
-          if (this.defaultTime) {
-            const time = moment(this.defaultTime, 'HH:mm:ss');
-            if (time.isValid()) {
-              date.add(time.hour(), 'hour');
-              date.add(time.minute(), 'minute');
-              date.add(time.second(), 'second');
-              console.log('[nuxeo-accessible-date-picker] Applied default time:', this.defaultTime, 'to date:', date.toJSON());
-            } else {
-              console.error(`[nuxeo-accessible-date-picker] Invalid default time ${this.defaultTime}`);
-              throw new Error(`Invalid default time ${this.defaultTime}`);
-            }
-          }
-          
-          const newValue = date.toJSON();
-          console.log('[nuxeo-accessible-date-picker] Setting new value from input:', newValue);
-          this.set('value', newValue);
-        } else {
-          console.log('[nuxeo-accessible-date-picker] Input value is invalid, clearing value');
-          this.set('value', null);
-        }
+      // Don't process automatic changes or when user is typing
+      if (this._preventInputUpdate || this._userIsTyping) {
+        console.log('[nuxeo-accessible-date-picker] Skipping input value processing - prevent update or user typing');
+        return;
       }
-      this._preventInputUpdate = false;
+      
+      // Only handle legacy compatibility cases where external code sets _inputValue directly
+      // Modern usage should go through _validateAndParseInput() or _selectDate()
     }
 
     validate() {
@@ -3058,6 +3027,8 @@ import { config } from '@nuxeo/nuxeo-elements';
       // Check required field first
       if (this.required && (!this.value || this.value.trim() === '')) {
         console.log('[nuxeo-accessible-date-picker] Required validation failed: field is required but empty');
+        this.errorReason = 'required';
+        this.errorMessage = 'This field is required.';
         return false;
       }
       
@@ -3067,72 +3038,48 @@ import { config } from '@nuxeo/nuxeo-elements';
         return true;
       }
       
-      // Validate format strictly against locale-aware patterns
-      const isFormatValid = this._validateDateFormat(this.value ? this._formatDateForInput(new Date(this.value)) : this.value);
-      if (!isFormatValid && this.value) {
-        this.errorReason = 'format';
-      }
-      
-      let isMinMaxValid = true;
-      
+      // If we have a value, check if it's a valid date
       if (this.value) {
         const currentDate = this._moment(this.value);
         
+        // Check if the date itself is valid
+        if (!currentDate.isValid()) {
+          this.errorReason = 'invalidDate';
+          this.errorMessage = 'Invalid date. Please enter a valid date.';
+          return false;
+        }
+        
+        // Get current locale format for error messages
+        const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
+        moment.locale(userLocale);
+        const localeFormat = moment.localeData().longDateFormat('L');
+        
+        // Check min constraint
         if (this.min) {
           const minDate = this._moment(this._parseDateOnly(this.min));
           if (currentDate.isBefore(minDate, 'day')) {
             console.log('[nuxeo-accessible-date-picker] Value fails min validation:', this.value, '<', this.min);
-            isMinMaxValid = false;
             this.errorReason = 'outOfRange';
-            this.errorMessage = 'Date out of range. Must be on or after ' + this._moment(this.min).format('L');
+            this.errorMessage = this._buildOutOfRangeMessage(currentDate.toDate());
+            return false;
           }
         }
+        
+        // Check max constraint
         if (this.max) {
           const maxDate = this._moment(this._parseDateOnly(this.max));
           if (currentDate.isAfter(maxDate, 'day')) {
             console.log('[nuxeo-accessible-date-picker] Value fails max validation:', this.value, '>', this.max);
-            isMinMaxValid = false;
             this.errorReason = 'outOfRange';
-            this.errorMessage = 'Date out of range. Must be on or before ' + this._moment(this.max).format('L');
+            this.errorMessage = this._buildOutOfRangeMessage(currentDate.toDate());
+            return false;
           }
         }
       }
       
-      const isValid = isFormatValid && isMinMaxValid;
-      if (!isFormatValid && this.value) {
-        // Check if it's structurally a date but invalid day/month to distinguish "invalid date"
-        const placeholder = this._getDatePlaceholder();
-        this.errorMessage = 'Incorrect date format. Expected: ' + placeholder;
-        if (typeof this._maskedInputValue === 'string' && /\d/.test(this._maskedInputValue)) {
-          // Attempt parse against known formats non-strict to detect invalid date parts
-          const formats = this._getLocaleDateFormats();
-          for (const fmt of formats) {
-            const m = moment(this._maskedInputValue, fmt, false);
-            if (m.isValid()) {
-              // Shouldn't happen if strict failed above; but if non-strict is valid, keep format error
-              break;
-            } else if (m.parsingFlags && m.parsingFlags()) {
-              const pf = m.parsingFlags();
-              if (pf.overflow === 4 || pf.overflow === 5 || pf.overflow === 6) {
-                // 4=month, 5=day, 6=year overflow
-                this.errorReason = 'invalidDate';
-                this.errorMessage = 'Invalid date. Please check the day/month/year values.';
-                break;
-              }
-            }
-          }
-        }
-      }
-      console.log('[nuxeo-accessible-date-picker] Validity check:', {
-        format: isFormatValid,
-        required: this.required ? !!this.value : true,
-        minMax: isMinMaxValid,
-        overall: isValid,
-        value: this.value,
-        hasValue: !!this.value
-      });
-      
-      return isValid;
+      // If we reach here, the date is valid
+      console.log('[nuxeo-accessible-date-picker] Validity check passed for value:', this.value);
+      return true;
     }
 
     // Override checkValidity for better form integration
@@ -3194,408 +3141,7 @@ import { config } from '@nuxeo/nuxeo-elements';
       console.log('Date picker disconnected');
     }
 
-    _handleMaskedInput(e) {
-      const input = e.target;
-      const inputValue = input.value;
-      const cursorPosition = input.selectionStart;
-      
-      console.log('Input changed:', inputValue, 'cursor at:', cursorPosition);
-      
-      // Clean input - only allow digits and separators
-      let cleanInput = inputValue.replace(/[^\d\/\-\.]/g, '');
-      
-      // Apply mask formatting
-      const formattedInput = this._applyInputMask(cleanInput, cursorPosition);
-      
-      if (formattedInput !== inputValue) {
-        this._currentInputValue = formattedInput;
-        // Restore cursor position safely
-        this.async(() => {
-          if (input && typeof input.setSelectionRange === 'function') {
-            const newPosition = this._calculateCursorPosition(inputValue, formattedInput, cursorPosition);
-            try {
-              input.setSelectionRange(newPosition, newPosition);
-            } catch (error) {
-              console.warn('Could not set cursor position:', error);
-            }
-          }
-        }, 1);
-      }
-      
-      // Parse partial date and update calendar
-      this._parsePartialDate(formattedInput);
-      this._updateCalendarFromPartialDate();
-    }
 
-    _applyInputMask(input, cursorPosition) {
-      const separator = this._inputMask.includes('/') ? '/' : 
-                      this._inputMask.includes('-') ? '-' : '.';
-      
-      // Remove all separators first to get clean digits
-      const digitsOnly = input.replace(/[\/\-\.]/g, '');
-      
-      if (digitsOnly.length === 0) return '';
-      
-      let formatted = '';
-      const mask = this._inputMask;
-      
-      // Apply formatting based on the specific mask
-      if (mask === 'dd/mm/yyyy') {
-        // Day (2 digits)
-        if (digitsOnly.length >= 1) {
-          formatted += digitsOnly.substring(0, 2);
-        }
-        if (digitsOnly.length >= 3) {
-          formatted += '/' + digitsOnly.substring(2, 4);
-        }
-        if (digitsOnly.length >= 5) {
-          formatted += '/' + digitsOnly.substring(4, 8);
-        }
-      } else if (mask === 'mm/dd/yyyy') {
-        // Month (2 digits)
-        if (digitsOnly.length >= 1) {
-          formatted += digitsOnly.substring(0, 2);
-        }
-        if (digitsOnly.length >= 3) {
-          formatted += '/' + digitsOnly.substring(2, 4);
-        }
-        if (digitsOnly.length >= 5) {
-          formatted += '/' + digitsOnly.substring(4, 8);
-        }
-      } else { // yyyy-mm-dd
-        // Year (4 digits)
-        if (digitsOnly.length >= 1) {
-          formatted += digitsOnly.substring(0, 4);
-        }
-        if (digitsOnly.length >= 5) {
-          formatted += '-' + digitsOnly.substring(4, 6);
-        }
-        if (digitsOnly.length >= 7) {
-          formatted += '-' + digitsOnly.substring(6, 8);
-        }
-      }
-      
-      return formatted;
-    }
-
-    _calculateCursorPosition(oldValue, newValue, oldPosition) {
-      // Simple cursor position calculation
-      // In a real implementation, this would be more sophisticated
-      return Math.min(oldPosition, newValue.length);
-    }
-
-    _handleInputKeydown(e) {
-      const input = e.target;
-      const value = input.value;
-      const cursorPosition = input.selectionStart;
-      
-      console.log('Key pressed:', e.key, 'at position:', cursorPosition);
-      
-      if (e.key === 'Enter' || e.key === 'ArrowDown' || e.key === 'F4') {
-        e.preventDefault();
-        this._openCalendar();
-        return;
-      }
-      
-      if (e.key === 'Tab') {
-        // Move to next date part
-        const nextPosition = this._getNextDatePartPosition(cursorPosition, true);
-        if (nextPosition !== cursorPosition && input && typeof input.setSelectionRange === 'function') {
-          e.preventDefault();
-          try {
-            input.setSelectionRange(nextPosition, nextPosition);
-          } catch (error) {
-            console.warn('Could not set cursor position on Tab:', error);
-          }
-        }
-        return;
-      }
-      
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-        // Allow natural cursor movement
-        return;
-      }
-      
-      if (e.key === 'Backspace' || e.key === 'Delete') {
-        // Handle deletion within date parts
-        return;
-      }
-      
-      // Only allow digits
-      if (!/^\d$/.test(e.key)) {
-        e.preventDefault();
-      }
-    }
-
-    _handleInputKeyup(e) {
-      // Auto-advance cursor to next part when current part is complete
-      const input = e.target;
-      const value = input.value;
-      const cursorPosition = input.selectionStart;
-      
-      if (/^\d$/.test(e.key)) {
-        const currentPart = this._getCurrentDatePart(cursorPosition);
-        if (this._isDatePartComplete(currentPart, value)) {
-          const nextPosition = this._getNextDatePartPosition(cursorPosition, true);
-          if (nextPosition !== cursorPosition && input && typeof input.setSelectionRange === 'function') {
-            try {
-              input.setSelectionRange(nextPosition, nextPosition);
-            } catch (error) {
-              console.warn('Could not set cursor position on keyup:', error);
-            }
-          }
-        }
-      }
-    }
-
-    _handleInputFocus(e) {
-      // Position cursor at first incomplete part
-      const input = e.target;
-      const value = input.value;
-      
-      if (!input || typeof input.setSelectionRange !== 'function') {
-        return;
-      }
-      
-      if (!value) {
-        try {
-          input.setSelectionRange(0, 0);
-        } catch (error) {
-          console.warn('Could not set cursor position on focus:', error);
-        }
-        return;
-      }
-      
-      const firstIncompletePosition = this._getFirstIncompletePartPosition(value);
-      try {
-        input.setSelectionRange(firstIncompletePosition, firstIncompletePosition);
-      } catch (error) {
-        console.warn('Could not set cursor position on focus:', error);
-      }
-    }
-
-    _getCurrentDatePart(cursorPosition) {
-      const mask = this._inputMask;
-      
-      // Determine which part (day, month, year) the cursor is in
-      if (mask === 'dd/mm/yyyy') {
-        if (cursorPosition <= 2) return 'day';
-        if (cursorPosition <= 5) return 'month';
-        return 'year';
-      } else if (mask === 'mm/dd/yyyy') {
-        if (cursorPosition <= 2) return 'month';
-        if (cursorPosition <= 5) return 'day';
-        return 'year';
-      } else { // yyyy-mm-dd
-        if (cursorPosition <= 4) return 'year';
-        if (cursorPosition <= 7) return 'month';
-        return 'day';
-      }
-    }
-
-    _isDatePartComplete(part, value) {
-      const partValue = this._getDatePartValue(part, value);
-      
-      if (part === 'day' || part === 'month') {
-        return partValue.length === 2;
-      } else if (part === 'year') {
-        return partValue.length === 4;
-      }
-      
-      return false;
-    }
-
-    _getDatePartValue(part, value) {
-      const mask = this._inputMask;
-      
-      if (mask === 'dd/mm/yyyy') {
-        if (part === 'day') return value.substring(0, 2);
-        if (part === 'month') return value.substring(3, 5);
-        if (part === 'year') return value.substring(6, 10);
-      } else if (mask === 'mm/dd/yyyy') {
-        if (part === 'month') return value.substring(0, 2);
-        if (part === 'day') return value.substring(3, 5);
-        if (part === 'year') return value.substring(6, 10);
-      } else { // yyyy-mm-dd
-        if (part === 'year') return value.substring(0, 4);
-        if (part === 'month') return value.substring(5, 7);
-        if (part === 'day') return value.substring(8, 10);
-      }
-      
-      return '';
-    }
-
-    _getNextDatePartPosition(currentPosition, forward = true) {
-      const mask = this._inputMask;
-      
-      if (mask === 'dd/mm/yyyy' || mask === 'mm/dd/yyyy') {
-        if (forward) {
-          if (currentPosition < 3) return 3;
-          if (currentPosition < 6) return 6;
-          return 10;
-        } else {
-          if (currentPosition > 6) return 6;
-          if (currentPosition > 3) return 3;
-          return 0;
-        }
-      } else { // yyyy-mm-dd
-        if (forward) {
-          if (currentPosition < 5) return 5;
-          if (currentPosition < 8) return 8;
-          return 11;
-        } else {
-          if (currentPosition > 8) return 8;
-          if (currentPosition > 5) return 5;
-          return 0;
-        }
-      }
-    }
-
-    _getFirstIncompletePartPosition(value) {
-      const mask = this._inputMask;
-      
-      if (mask === 'dd/mm/yyyy') {
-        if (value.length < 2) return 0;
-        if (value.length < 5) return 3;
-        if (value.length < 10) return 6;
-        return 0;
-      } else if (mask === 'mm/dd/yyyy') {
-        if (value.length < 2) return 0;
-        if (value.length < 5) return 3;
-        if (value.length < 10) return 6;
-        return 0;
-      } else { // yyyy-mm-dd
-        if (value.length < 4) return 0;
-        if (value.length < 7) return 5;
-        if (value.length < 10) return 8;
-        return 0;
-      }
-    }
-
-    _parsePartialDate(input) {
-      const mask = this._inputMask;
-      
-      console.log('Parsing partial date:', input, 'with mask:', mask);
-      
-      this._partialDate = { day: '', month: '', year: '' };
-      
-      if (mask === 'dd/mm/yyyy') {
-        this._partialDate.day = this._getDatePartValue('day', input);
-        this._partialDate.month = this._getDatePartValue('month', input);
-        this._partialDate.year = this._getDatePartValue('year', input);
-      } else if (mask === 'mm/dd/yyyy') {
-        this._partialDate.month = this._getDatePartValue('month', input);
-        this._partialDate.day = this._getDatePartValue('day', input);
-        this._partialDate.year = this._getDatePartValue('year', input);
-      } else { // yyyy-mm-dd
-        this._partialDate.year = this._getDatePartValue('year', input);
-        this._partialDate.month = this._getDatePartValue('month', input);
-        this._partialDate.day = this._getDatePartValue('day', input);
-      }
-      
-      console.log('Parsed partial date:', this._partialDate);
-    }
-
-    _updateCalendarFromPartialDate() {
-      let needsCalendarUpdate = false;
-      let newViewDate = new Date(this._viewDate);
-      
-      // Update year if provided
-      if (this._partialDate.year && this._partialDate.year.length === 4) {
-        const year = parseInt(this._partialDate.year);
-        if (year >= 1900 && year <= 2100) {
-          newViewDate.setFullYear(year);
-          needsCalendarUpdate = true;
-        }
-      }
-      
-      // Update month if provided
-      if (this._partialDate.month && this._partialDate.month.length >= 1) {
-        const month = parseInt(this._partialDate.month);
-        if (month >= 1 && month <= 12) {
-          newViewDate.setMonth(month - 1);
-          needsCalendarUpdate = true;
-        }
-      }
-      
-      // If we have a complete date, select it
-      if (this._partialDate.day && this._partialDate.day.length >= 1 &&
-          this._partialDate.month && this._partialDate.month.length >= 1 &&
-          this._partialDate.year && this._partialDate.year.length === 4) {
-        
-        const day = parseInt(this._partialDate.day);
-        const month = parseInt(this._partialDate.month);
-        const year = parseInt(this._partialDate.year);
-        
-        if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 1900 && year <= 2100) {
-          const testDate = new Date(year, month - 1, day);
-          if (testDate.getDate() === day) { // Valid date
-            this._selectedDate = testDate;
-            this._selectedDate.setHours(0, 0, 0, 0);
-            
-            const isoString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            this.set('value', isoString);
-            
-            console.log('Complete date selected:', this._selectedDate);
-            needsCalendarUpdate = true;
-          }
-        }
-      }
-      
-      if (needsCalendarUpdate) {
-        this._viewDate = newViewDate;
-        this._generateMonthYearOptions();
-        this._generateCalendar();
-      }
-    }
-
-    _finalizePartialDateInput() {
-      // This method is called when the input field loses focus and the partial date is not empty.
-      // It validates and finalizes the partial date input.
-      const input = this.shadowRoot.querySelector('#dateInput');
-      if (!input) return;
-      
-      const value = input.value;
-      const mask = this._inputMask;
-
-      // If the input is empty, clear selected date and partial date
-      if (!value || !value.trim()) {
-        this._selectedDate = null;
-        this._currentInputValue = '';
-        this._partialDate = { day: '', month: '', year: '' };
-        this.set('value', '');
-        this.invalid = false; // Clear invalid state if input is empty
-        return;
-      }
-
-      // Apply mask to the input value to ensure consistent formatting
-      const formattedInput = this._applyInputMask(value, input.selectionStart || 0);
-
-      // Parse the formatted input using the current mask
-      let parsedDate = null;
-      for (const format of this._getLocaleDateFormats()) {
-        parsedDate = this._parseWithFormat(formattedInput, format);
-        if (parsedDate) break;
-      }
-
-      if (parsedDate && this._isValidDate(parsedDate)) {
-        this._selectedDate = parsedDate;
-        this._selectedDate.setHours(0, 0, 0, 0); // Normalize to start of day
-        
-        // Use local date formatting to avoid timezone issues
-        const year = this._selectedDate.getFullYear();
-        const month = String(this._selectedDate.getMonth() + 1).padStart(2, '0');
-        const day = String(this._selectedDate.getDate()).padStart(2, '0');
-        const isoString = `${year}-${month}-${day}`;
-        
-        this.set('value', isoString);
-        this._updateMaskedInputFromDate();
-        this.invalid = false; // Clear invalid state if input is valid
-      } else {
-        this._updateMaskedInputFromDate();
-        this.invalid = true; // Set invalid state if input is not valid
-      }
-    }
 
     _toggleYearDropdown(e) {
       if (e) {
@@ -3768,9 +3314,31 @@ import { config } from '@nuxeo/nuxeo-elements';
       const button = e.target.closest('.year-option');
       const year = button ? parseInt(button.dataset.year) : null;
       console.log('[nuxeo-accessible-date-picker] _selectYear called, year:', year);
-      if (year) {
-        const newDate = new Date(this._viewDate);
-        newDate.setFullYear(year);
+      if (year && this._viewDate) {
+        // Create new date with proper month/day preservation
+        const currentMonth = this._viewDate.getMonth();
+        const currentDay = this._viewDate.getDate();
+        
+        // Handle edge case of Feb 29 in non-leap years
+        let newDay = currentDay;
+        if (currentMonth === 1 && currentDay === 29) { // February 29
+          const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+          if (!isLeapYear) {
+            newDay = 28; // Set to Feb 28 in non-leap years
+          }
+        }
+        
+        const newDate = new Date(year, currentMonth, newDay);
+        newDate.setHours(0, 0, 0, 0);
+        
+        console.log('[nuxeo-accessible-date-picker] Year change:', {
+          oldDate: this._viewDate.toDateString(),
+          newDate: newDate.toDateString(),
+          year: year,
+          month: currentMonth,
+          day: newDay
+        });
+        
         this._viewDate = newDate;
         // Clear focused date when changing year
         this._focusedDate = null;
@@ -3873,8 +3441,8 @@ import { config } from '@nuxeo/nuxeo-elements';
         e.preventDefault();
         this._closeYearDropdown();
       } else if (e.key === 'Tab') {
-        const navButtons = Array.from(this.shadowRoot.querySelectorAll('.nav-button'));
-        if (!e.shiftKey) {
+        const navButtons = Array.from(this.shadowRoot.querySelectorAll('.nav-button:not([disabled])'));
+        if (!e.shiftKey && navButtons.length > 0) {
           e.preventDefault();
           navButtons[0].focus();
         }
@@ -3894,185 +3462,173 @@ import { config } from '@nuxeo/nuxeo-elements';
       });
     }
 
-    _updateMaskedInputFromDate() {
+    _updateInputFromDate() {
       if (this._selectedDate) {
-        const day = String(this._selectedDate.getDate()).padStart(2, '0');
-        const month = String(this._selectedDate.getMonth() + 1).padStart(2, '0');
-        const year = String(this._selectedDate.getFullYear());
-        if (this._inputMask === 'dd/mm/yyyy') {
-          this._maskedInputValue = `${day}/${month}/${year}`;
-        } else if (this._inputMask === 'mm/dd/yyyy') {
-          this._maskedInputValue = `${month}/${day}/${year}`;
-        } else if (this._inputMask === 'yyyy-mm-dd') {
-          this._maskedInputValue = `${year}-${month}-${day}`;
-        } else {
-          // fallback to locale formatter
-          this._maskedInputValue = this._formatDateForInput(this._selectedDate);
-        }
+        // Use professional formatting for display
+        this._inputValue = this._formatDateForDisplay(this._selectedDate);
+        console.log('[nuxeo-accessible-date-picker] _updateInputFromDate: formatted', this._selectedDate, 'as', this._inputValue);
       } else {
-        this._maskedInputValue = this._maskTemplate;
+        this._inputValue = '';
       }
     }
 
-    _onMaskedInputFocus(e) {
-      const input = e.target;
-      if (!input.value || input.value === this._maskTemplate) {
-        this._maskedInputValue = this._maskTemplate;
-        this.async(() => input.setSelectionRange(0, 0), 1);
-      } else {
-        // Place cursor at first non-filled position
-        const firstEmpty = input.value.indexOf('d') !== -1 ? input.value.indexOf('d') : input.value.indexOf('m') !== -1 ? input.value.indexOf('m') : input.value.indexOf('y');
-        this.async(() => input.setSelectionRange(firstEmpty !== -1 ? firstEmpty : input.value.length, firstEmpty !== -1 ? firstEmpty : input.value.length), 1);
-      }
-    }
-
-    _onMaskedInputBlur(e) {
-      // On blur, validate and parse input
-      this._validateAndParseMaskedInput();
-    }
-
-    _onMaskedInputKeydown(e) {
-      const input = e.target;
-      const pos = input.selectionStart;
-      const key = e.key;
-      // Allow navigation keys
-      if (["Tab", "ArrowLeft", "ArrowRight", "Home", "End", "Shift", "Control", "Alt"].includes(key)) return;
-      // Allow backspace/delete with custom logic
-      if (key === "Backspace") {
-        e.preventDefault();
-        this._handleMaskedBackspace(input, pos);
-        return;
-      }
-      if (key === "Delete") {
-        e.preventDefault();
-        this._handleMaskedDelete(input, pos);
-        return;
-      }
-      // Only allow digits
-      if (/\d/.test(key)) {
-        e.preventDefault();
-        // Only allow typing in editable positions (not /)
-        if (pos >= 10) return;
-        if (pos === 2 || pos === 5) {
-          // If at /, move to next editable position
-          input.setSelectionRange(pos + 1, pos + 1);
-          return;
-        }
-        // Replace the mask character at the cursor with the digit
-        let value = this._maskedInputValue.split('');
-        value[pos] = key;
-        this._maskedInputValue = value.join('');
-        // Move cursor to next editable position
-        let next = pos + 1;
-        if (next === 2 || next === 5) next++;
-        this.async(() => input.setSelectionRange(next, next), 1);
-        return;
-      }
-      // Prevent typing any other character
-      e.preventDefault();
-    }
-
-    _onMaskedInputInput(e) {
-      // No-op: input is handled in keydown for full control
-      // This prevents double updates and keeps the mask logic consistent
-      e.preventDefault();
-      return false;
-    }
-
-    _handleMaskedBackspace(input, pos) {
-      if (pos === 0) return;
-      let value = this._maskedInputValue;
-      let arr = value.split('');
-      let p = pos - 1;
-      // Skip over /
-      if (arr[p] === '/') p--;
-      if (p < 0) return;
-      arr[p] = this._maskTemplate[p];
-      this._maskedInputValue = arr.join('');
-      this.async(() => input.setSelectionRange(p, p), 1);
-    }
-
-    _handleMaskedDelete(input, pos) {
-      if (pos >= this._maskTemplate.length) return;
-      let value = this._maskedInputValue;
-      let arr = value.split('');
-      // Skip over /
-      if (arr[pos] === '/') pos++;
-      if (pos >= this._maskTemplate.length) return;
-      arr[pos] = this._maskTemplate[pos];
-      this._maskedInputValue = arr.join('');
-      this.async(() => input.setSelectionRange(pos, pos), 1);
-    }
-
-    _validateAndParseMaskedInput() {
-      const value = this._maskedInputValue;
-      if (!value || value === this._maskTemplate) {
-        this._selectedDate = null;
-        this._safeSetValue('');
-        this.invalid = false;
-        this._generateCalendar();
-        return;
-      }
+    // Professional date-to-ISO converter
+    _dateToISO(date) {
+      if (!date || isNaN(date.getTime())) return '';
       
-      console.log('[nuxeo-accessible-date-picker] Validating masked input:', value);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
       
-      // Parse strictly by current mask
-      let parsed = null;
+      return `${year}-${month}-${day}`;
+    }
+    
+    // Professional date formatter for display
+    _formatDateForDisplay(date) {
+      if (!date || isNaN(date.getTime())) return '';
+      
       try {
-        parsed = this._parseWithFormat(value, this._inputMask === 'dd/mm/yyyy' ? 'DD/MM/YYYY'
-          : this._inputMask === 'mm/dd/yyyy' ? 'MM/DD/YYYY'
-          : this._inputMask === 'yyyy-mm-dd' ? 'YYYY-MM-DD' : '');
-      } catch (_) {
-        parsed = null;
+        // Get user's locale and ensure moment uses it
+        const userLocale = navigator.languages && navigator.languages[0] || navigator.language || 'en-US';
+        moment.locale(userLocale);
+        
+        // Use moment's locale-specific format
+        const localeFormat = moment.localeData().longDateFormat('L');
+        const formatted = this._moment(date).format(localeFormat);
+        
+        console.log('[nuxeo-accessible-date-picker] Professional date formatting:', {
+          inputDate: date.toDateString(),
+          locale: userLocale,
+          format: localeFormat,
+          output: formatted
+        });
+        
+        return formatted;
+      } catch (error) {
+        console.error('[nuxeo-accessible-date-picker] Error in professional formatting:', error);
+        // Safe fallback using Intl.DateTimeFormat
+        return new Intl.DateTimeFormat(navigator.language).format(date);
       }
-      if (parsed) {
-        if (this._isValidDate(parsed)) {
-          const yyyy = String(parsed.getFullYear());
-          const mm = String(parsed.getMonth() + 1).padStart(2, '0');
-          const dd = String(parsed.getDate()).padStart(2, '0');
-          this._selectedDate = parsed;
-          this._safeSetValue(`${yyyy}-${mm}-${dd}`);
-          this.invalid = false;
-          this.errorReason = '';
-          this._generateCalendar();
-          console.log('[nuxeo-accessible-date-picker] Masked input validated successfully');
-          return;
-        } else {
-          this.invalid = true;
-          this.errorReason = 'outOfRange';
-          this.errorMessage = this._buildOutOfRangeMessage(parsed);
-          return;
-        }
-      }
-
-      // Fallback: generic format error that respects current placeholder and constraints
-      this.invalid = true;
-      let baseMessage = `Incorrect date format. Expected: ${this._getDatePlaceholder()}`;
-      let constraintInfo = '';
-      if (this.min && this.max) {
-        constraintInfo = ` (must be between ${this._moment(this.min).format('L')} and ${this._moment(this.max).format('L')})`;
-      } else if (this.min) {
-        constraintInfo = ` (must be on or after ${this._moment(this.min).format('L')})`;
-      } else if (this.max) {
-        constraintInfo = ` (must be on or before ${this._moment(this.max).format('L')})`;
-      }
-      this.errorReason = 'format';
-      this.errorMessage = baseMessage + constraintInfo;
-      console.log('[nuxeo-accessible-date-picker] Masked input validation failed:', this.errorMessage);
     }
+    
+    // Professional date parser for user input
+    _parseUserInput(inputString) {
+      if (!inputString || typeof inputString !== 'string') return null;
+      
+      const trimmedInput = inputString.trim();
+      if (!trimmedInput) return null;
+      
+      try {
+        // Get user's locale
+        const userLocale = navigator.languages && navigator.languages[0] || navigator.language || 'en-US';
+        moment.locale(userLocale);
+        const localeFormat = moment.localeData().longDateFormat('L');
+        
+        // Try strict parsing first (exact format match)
+        let momentDate = this._moment(trimmedInput, localeFormat, true);
+        
+        if (momentDate.isValid()) {
+          const date = momentDate.toDate();
+          date.setHours(0, 0, 0, 0);
+          return { date, isExactFormat: true };
+        }
+        
+        // Try lenient parsing (more flexible)
+        momentDate = this._moment(trimmedInput, localeFormat, false);
+        
+        if (momentDate.isValid()) {
+          const date = momentDate.toDate();
+          date.setHours(0, 0, 0, 0);
+          
+          // Verify it's a logical date
+          if (date.getFullYear() < 1900 || date.getFullYear() > 2200) {
+            return null;
+          }
+          
+          return { date, isExactFormat: false };
+        }
+        
+        return null;
+      } catch (error) {
+        console.error('[nuxeo-accessible-date-picker] Error parsing user input:', error);
+        return null;
+      }
+    }
+    
+    // Helper method to ensure consistent date formatting across all operations (legacy compatibility)
+    _ensureConsistentDateFormat(date) {
+      return this._formatDateForDisplay(date);
+    }
+
+    _onInputFocus(e) {
+      // Simple focus handler - don't modify input value
+      const input = e.target;
+      console.log('[nuxeo-accessible-date-picker] Input focused, current value:', input.value);
+    }
+
+    _onInputBlur(e) {
+      // User finished typing, validate and parse input
+      this._userIsTyping = false;
+      console.log('[nuxeo-accessible-date-picker] Input blur, validating value:', e.target.value);
+      this._validateAndParseInput();
+    }
+
+    _onInputKeydown(e) {
+      // Set typing flag when user starts typing
+      if (!this._userIsTyping && e.key.length === 1) {
+        this._userIsTyping = true;
+        console.log('[nuxeo-accessible-date-picker] User started typing');
+      }
+      
+      // Allow opening calendar with specific keys when input is focused
+      if (e.key === 'F4' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        this._openCalendar();
+      } else if (e.key === 'Enter') {
+        // Enter validates input
+        e.preventDefault();
+        this._userIsTyping = false;
+        this._validateAndParseInput();
+      }
+      // Allow all other keys (digits, letters, backspace, etc.) for free-form input
+    }
+
+    _onInputChange(e) {
+      // Mark that user is actively typing when input content changes
+      if (!this._userIsTyping) {
+        this._userIsTyping = true;
+        console.log('[nuxeo-accessible-date-picker] User is typing, input changed');
+      }
+    }
+
+
 
     _handleNavButtonKeydown(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Call the appropriate navigation method directly
+        if (e.target.id === 'prevMonth') {
+          this._previousMonth(e);
+        } else if (e.target.id === 'nextMonth') {
+          this._nextMonth(e);
+        }
+      }
       // Allow Tab/Shift+Tab to move focus between controls
       if (e.key === 'Tab') {
-        const navButtons = Array.from(this.shadowRoot.querySelectorAll('.nav-button'));
+        const navButtons = Array.from(this.shadowRoot.querySelectorAll('.nav-button:not([disabled])'));
         const yearDropdown = this.shadowRoot.querySelector('.year-dropdown');
+        
         if (e.shiftKey) {
-          if (e.target === navButtons[0]) {
+          // Moving backwards
+          if (e.target.id === 'prevMonth') {
             e.preventDefault();
             yearDropdown.focus();
           }
         } else {
-          if (e.target === navButtons[1]) {
+          // Moving forwards
+          if (e.target.id === 'nextMonth') {
             e.preventDefault();
             // Move to first focusable date in grid
             this._focusFirstAvailableDate();
@@ -4138,6 +3694,12 @@ import { config } from '@nuxeo/nuxeo-elements';
 
     // Helper method to check if a given month contains any valid dates within min/max constraints
     _monthHasValidDates(monthDate) {
+      // If no constraints, all months are valid
+      if (!this.min && !this.max) {
+        console.log('[nuxeo-accessible-date-picker] No constraints - month is valid');
+        return true;
+      }
+      
       const year = monthDate.getFullYear();
       const month = monthDate.getMonth();
       
