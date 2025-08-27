@@ -167,6 +167,16 @@ import { config } from '@nuxeo/nuxeo-elements';
           value: false,
         },
         
+        _justOpenedCalendar: {
+          type: Boolean,
+          value: false,
+        },
+        
+        _interactingWithCalendar: {
+          type: Boolean,
+          value: false,
+        },
+        
         _isYearDropdownOpen: {
           type: Boolean,
           value: false,
@@ -1001,7 +1011,7 @@ import { config } from '@nuxeo/nuxeo-elements';
                 </template>
               </div>
 
-            <div class="calendar-grid" role="grid" aria-label="Calendar dates" aria-activedescendant$="[[_getActiveDescendant(_focusedDate)]]" on-keydown="_handleGridKeydown">
+            <div class="calendar-grid" role="grid" aria-label="Calendar dates" aria-activedescendant$="[[_getActiveDescendant(_focusedDate)]]" on-keydown="_handleGridKeydown" on-click="_handleCalendarGridClick">
                 <template is="dom-repeat" items="[[_calendarDays]]">
                 <button
                   type="button"
@@ -1481,6 +1491,36 @@ import { config } from '@nuxeo/nuxeo-elements';
       const popover = this.shadowRoot.querySelector('#calendarPopover');
       if (popover) {
         popover.addEventListener('keydown', (e) => this._handlePopoverKeydown(e));
+        
+        // Add click handler to popover to handle internal clicks appropriately
+        popover.addEventListener('click', (e) => {
+          // Mark that we're interacting with the calendar
+          this._interactingWithCalendar = true;
+          
+          // Clear the flag after a short delay
+          this.async(() => {
+            this._interactingWithCalendar = false;
+          }, 50);
+          
+          // Only stop propagation for clicks on non-interactive elements
+          const target = e.target;
+          const isInteractiveElement = target.closest('button') || 
+                                     target.closest('select') || 
+                                     target.closest('[role="button"]') ||
+                                     target.closest('[role="option"]') ||
+                                     target.closest('.year-option') ||
+                                     target.closest('.year-dropdown') ||
+                                     target.closest('.nav-button') ||
+                                     target.closest('.calendar-day') ||
+                                     target.closest('.footer-button') ||
+                                     target.closest('.today-button') ||
+                                     target.closest('.cancel-button');
+          
+          // Only stop propagation for empty area clicks, not interactive elements
+          if (!isInteractiveElement) {
+            e.stopPropagation();
+          }
+        }, true);
       }
       
       // Document events
@@ -1490,6 +1530,11 @@ import { config } from '@nuxeo/nuxeo-elements';
           this._closeCalendar();
         }
       });
+      
+      // Bug fix: Close calendar when focus moves outside the component
+      // Temporarily disabled focus-based closing to prevent issues with internal clicks
+      // document.addEventListener('focusin', (e) => this._handleDocumentFocusIn(e));
+      // document.addEventListener('focusout', (e) => this._handleDocumentFocusOut(e));
     }
 
     _setupFocusTrap() {
@@ -1818,20 +1863,53 @@ import { config } from '@nuxeo/nuxeo-elements';
     _handleDocumentClick(e) {
       if (!this._isCalendarOpen) return;
       
-      // Check if click target is within this element's shadow DOM
+      // Check if click target is within this element's shadow DOM or calendar popover
       let target = e.target;
       let isInsideComponent = false;
       
-      // Walk up the composed path to check for our component
-      const path = e.composedPath ? e.composedPath() : [target];
-      for (let element of path) {
-        if (element === this || (element.host && element.host === this)) {
-          isInsideComponent = true;
-          break;
+      // Get all relevant elements
+      const calendarPopover = this.shadowRoot.querySelector('#calendarPopover');
+      const inputWrapper = this.shadowRoot.querySelector('.input-wrapper');
+      const fieldWrapper = this.shadowRoot.querySelector('.field-wrapper');
+      
+      // First check: Is it within the calendar popover specifically?
+      if (calendarPopover && (target === calendarPopover || calendarPopover.contains(target))) {
+        isInsideComponent = true;
+      }
+      
+      // Second check: Is it within the input wrapper area?
+      if (!isInsideComponent && inputWrapper && (target === inputWrapper || inputWrapper.contains(target))) {
+        isInsideComponent = true;
+      }
+      
+      // Third check: Is it within the field wrapper?
+      if (!isInsideComponent && fieldWrapper && (target === fieldWrapper || fieldWrapper.contains(target))) {
+        isInsideComponent = true;
+      }
+      
+      // Fourth check: Walk up the composed path to check for our component
+      if (!isInsideComponent) {
+        const path = e.composedPath ? e.composedPath() : [target];
+        for (let element of path) {
+          if (element === this || (element.host && element.host === this)) {
+            isInsideComponent = true;
+            break;
+          }
+          // Also check specific elements
+          if (element === calendarPopover || element === inputWrapper || element === fieldWrapper) {
+            isInsideComponent = true;
+            break;
+          }
         }
       }
       
-      if (!isInsideComponent) {
+      // Fifth check: Is it within our shadow root?
+      if (!isInsideComponent && this.shadowRoot && this.shadowRoot.contains(target)) {
+        isInsideComponent = true;
+      }
+      
+      // Only close if we're absolutely sure it's outside and not during active interaction
+      if (!isInsideComponent && !this._interactingWithCalendar) {
         this._closeCalendar();
         
         // Also close year dropdown if open
@@ -1841,6 +1919,104 @@ import { config } from '@nuxeo/nuxeo-elements';
           this._isYearDropdownOpen = false;
         }
       }
+    }
+
+    // Bug fix: Handle focus moving outside the component
+    _handleDocumentFocusIn(e) {
+      // Handle year dropdown focus outside
+      if (this._isYearDropdownOpen) {
+        const focusedElement = e.target;
+        const yearDropdown = this.shadowRoot.querySelector('.year-dropdown');
+        const yearOptions = this.shadowRoot.querySelector('#yearOptions');
+        
+        // Check if focus moved outside the year dropdown area
+        const isInsideYearDropdown = yearDropdown && (
+          yearDropdown.contains(focusedElement) || 
+          (yearOptions && yearOptions.contains(focusedElement))
+        );
+        
+        if (!isInsideYearDropdown) {
+          // Close year dropdown when focus moves outside
+          this.async(() => {
+            const currentFocus = document.activeElement;
+            const stillOutside = !yearDropdown?.contains(currentFocus) && 
+                               !yearOptions?.contains(currentFocus);
+            if (stillOutside) {
+              this._closeYearDropdown();
+            }
+          }, 10);
+        }
+      }
+      
+      // Handle calendar focus outside - but be more conservative
+      if (!this._isCalendarOpen) return;
+      
+      // Skip focus handling immediately after calendar opens to prevent auto-close
+      if (this._justOpenedCalendar) {
+        return;
+      }
+      
+      // Check if the newly focused element is outside our component
+      const focusedElement = e.target;
+      
+      // Only close calendar on focus change if the target is clearly outside and not body/html
+      // This prevents closing when clicking on empty areas inside the calendar
+      if (focusedElement && 
+          focusedElement !== document.body && 
+          focusedElement !== document.documentElement &&
+          !this._isElementInsideComponent(focusedElement)) {
+        
+        // Longer delay to allow for calendar opening and focus settling
+        this.async(() => {
+          // Don't close if calendar was just opened
+          if (this._justOpenedCalendar) {
+            return;
+          }
+          
+          // Double-check that focus is still outside and calendar is still open
+          const currentFocus = document.activeElement;
+          if (this._isCalendarOpen && 
+              currentFocus && 
+              currentFocus !== document.body && 
+              currentFocus !== document.documentElement &&
+              !this._isElementInsideComponent(currentFocus)) {
+            this._closeCalendar();
+            
+            // Also close year dropdown if open
+            const yearOptions = this.shadowRoot.querySelector('#yearOptions');
+            if (yearOptions && yearOptions.classList.contains('open')) {
+              yearOptions.classList.remove('open');
+              this._isYearDropdownOpen = false;
+            }
+          }
+        }, 150); // Increased delay for stability
+      }
+    }
+
+    _handleDocumentFocusOut(e) {
+      // This can be used for additional focus tracking if needed
+    }
+
+    // Helper method to check if an element is inside this component
+    _isElementInsideComponent(element) {
+      if (!element) return false;
+      
+      // Check if it's the component itself
+      if (element === this) return true;
+      
+      // Check if it's inside the shadow DOM
+      let current = element;
+      while (current) {
+        if (current.host === this) return true;
+        current = current.parentElement || current.host;
+      }
+      
+      // Check shadow root
+      if (this.shadowRoot && this.shadowRoot.contains(element)) {
+        return true;
+      }
+      
+      return false;
     }
 
     _clearDate(e) {
@@ -1861,6 +2037,14 @@ import { config } from '@nuxeo/nuxeo-elements';
       
       // Regenerate calendar to remove any date highlighting
       this._generateCalendar();
+      
+      // Bug fix: Focus the input after clearing for better UX
+      this.async(() => {
+        const dateInput = this.shadowRoot.querySelector('#dateInput');
+        if (dateInput) {
+          dateInput.focus();
+        }
+      }, 10);
     }
 
     _selectDate(date) {
@@ -1974,11 +2158,19 @@ import { config } from '@nuxeo/nuxeo-elements';
       this._generateYearOptions();
       this._generateCalendar();
       
+      // Set flag to prevent immediate auto-close
+      this._justOpenedCalendar = true;
       this._isCalendarOpen = true;
+      
       const popover = this.shadowRoot.querySelector('#calendarPopover');
       if (popover) {
         popover.classList.add('open');
       }
+      
+      // Clear the flag after calendar has had time to settle
+      this.async(() => {
+        this._justOpenedCalendar = false;
+      }, 200);
       // Position popover based on available viewport space
       this._positionPopover();
       // Reposition on resize/scroll while open
@@ -2069,6 +2261,8 @@ import { config } from '@nuxeo/nuxeo-elements';
       if (!this._isCalendarOpen) return;
       
       this._isCalendarOpen = false;
+      this._justOpenedCalendar = false; // Clear flag when closing
+      this._interactingWithCalendar = false; // Clear interaction flag
       
       const popover = this.shadowRoot.querySelector('#calendarPopover');
       if (popover) {
@@ -2181,6 +2375,19 @@ import { config } from '@nuxeo/nuxeo-elements';
         }
         this._focusDate(this._focusedDate);
       }
+    }
+
+    // Bug fix: Handle clicks on calendar grid to prevent unwanted behavior on empty areas
+    _handleCalendarGridClick(e) {
+      // Only allow clicks that are specifically on calendar day buttons
+      const button = e.target.closest('.calendar-day');
+      if (!button) {
+        // Click was on empty area - prevent any default behavior
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      // Let the button's own click handler deal with it
     }
 
     _handleDateClick(e) {
@@ -2322,11 +2529,11 @@ import { config } from '@nuxeo/nuxeo-elements';
       this._focusedDate = new Date(date);
       this._focusedDate.setHours(0, 0, 0, 0);
       
-      // Update view if necessary
-      if (date.getMonth() !== this._viewDate.getMonth() || 
-          date.getFullYear() !== this._viewDate.getFullYear()) {
+      // Update view if necessary - but only if explicitly allowed for cross-month navigation
+      if (allowCrossMonth && (date.getMonth() !== this._viewDate.getMonth() || 
+          date.getFullYear() !== this._viewDate.getFullYear())) {
         this._viewDate = new Date(date);
-      this._generateCalendar();
+        this._generateCalendar();
       }
       
       // Focus the date element
@@ -3114,7 +3321,15 @@ import { config } from '@nuxeo/nuxeo-elements';
       // Clean up event listeners
       document.removeEventListener('click', this._handleDocumentClick);
       document.removeEventListener('keydown', this._handleEscapeKey);
+      // Focus event listeners are disabled
+      // document.removeEventListener('focusin', this._handleDocumentFocusIn);
+      // document.removeEventListener('focusout', this._handleDocumentFocusOut);
       
+      // Clean up reposition listeners if they exist
+      if (this._boundReposition) {
+        window.removeEventListener('resize', this._boundReposition);
+        window.removeEventListener('scroll', this._boundReposition);
+      }
     }
 
 
