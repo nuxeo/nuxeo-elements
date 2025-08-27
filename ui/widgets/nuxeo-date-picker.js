@@ -19,7 +19,7 @@ import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iro
 import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-input/paper-input.js';
-import './nuxeo-accessible-date-picker.js';
+import '@nuxeo/nuxeo-ui-elements/widgets/custom-date-picker.js';
 import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
@@ -156,24 +156,22 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             @apply --nuxeo-label;
           }
 
-          :host([invalid]) label {
-            color: var(--paper-input-container-invalid-color, #de350b);
-          }
+          /* Keep label color normal even when invalid; only the * is red */
 
-          nuxeo-accessible-date-picker {
+          custom-date-picker {
             padding-bottom: 8px;
             --lumo-space-xs: 2px;
             --lumo-font-family: var(--nuxeo-app-font);
           }
 
-          nuxeo-accessible-date-picker::part(text-field) {
+          custom-date-picker::part(text-field) {
             --lumo-text-field-size: 29px;
           }
         </style>
 
         <label>[[label]]</label>
         <span id="date_label" hidden>[[label]], Date Picker</span>
-        <nuxeo-accessible-date-picker
+        <custom-date-picker
           id="date"
           name="[[name]]"
           required$="[[required]]"
@@ -186,7 +184,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           error-message="[[errorMessage]]"
           clear-button-visible$="[[!hideClearDateButton]]"
         >
-        </nuxeo-accessible-date-picker>
+        </custom-date-picker>
       `;
     }
 
@@ -194,7 +192,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       super.ready();
       moment.locale(navigator.languages !== undefined ? navigator.languages[0] : navigator.language);
       // added this piece of code to rectify the issue where dates are not applied on first click
-      const datePicker = this.shadowRoot.querySelector('nuxeo-accessible-date-picker');
+      const datePicker = this.shadowRoot.querySelector('custom-date-picker');
       const handleclick = () => {
         datePicker.focus();
       };
@@ -205,7 +203,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           datePicker.removeEventListener('focusout', handleclick);
         }
       });
-      // tell nuxeo-accessible-date-picker how to display dates since default behavior is US locales (MM-DD-YYYY)
+      // tell custom-date-picker how to display dates since default behavior is US locales (MM-DD-YYYY)
       // this way we can take advantage of moment locale and use the date format that is most suitable for the user
       this.$.date.set('i18n.formatDate', (date) => this._moment(date).format(moment.localeData().longDateFormat('L')));
       this.$.date.set('i18n.parseDate', (text) => {

@@ -21,34 +21,34 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/iron-icons/iron-icons.js';
-import '../nuxeo-icons.js';
+import '@nuxeo/nuxeo-ui-elements/nuxeo-icons.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { I18nBehavior } from '@nuxeo/nuxeo-ui-elements/nuxeo-i18n-behavior.js';
 import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import { config } from '@nuxeo/nuxeo-elements';
 
 {
-  class AccessibleDatePicker extends mixinBehaviors(
+  class CustomDatePicker extends mixinBehaviors(
     [I18nBehavior, IronFormElementBehavior, IronValidatableBehavior],
     Nuxeo.Element,
   ) {
     static get is() {
-      return 'nuxeo-accessible-date-picker';
+      return 'custom-date-picker';
     }
 
     static get properties() {
       return {
         label: String,
-        // Forwarded aria-labelledby to internal input for SRs
-        ariaLabelledby: {
-          type: String,
-        },
-        // Optional name forwarding to internal input (helps with form autofill/AT)
-        name: {
-          type: String,
-        },
-
+          // Forwarded aria-labelledby to internal input for SRs
+          ariaLabelledby: {
+            type: String,
+          },
+          // Optional name forwarding to internal input (helps with form autofill/AT)
+          name: {
+            type: String,
+          },
+        
         /*
          * The default time of the picked-up date. Format is HH:mm:ss e.g. 12:45:23. Default is 00:00:00 (midnight).
          */
@@ -126,13 +126,13 @@ import { config } from '@nuxeo/nuxeo-elements';
           value: false,
           reflectToAttribute: true,
         },
-        // Compatibility with vaadin's clear-button-visible attribute
-        clearButtonVisible: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true,
-          observer: '_clearButtonVisibleChanged',
-        },
+          // Compatibility with vaadin's clear-button-visible attribute
+          clearButtonVisible: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true,
+            observer: '_clearButtonVisibleChanged',
+          },
 
         invalid: {
           type: Boolean,
@@ -166,67 +166,67 @@ import { config } from '@nuxeo/nuxeo-elements';
           type: Boolean,
           value: false,
         },
-
+        
         _isYearDropdownOpen: {
           type: Boolean,
           value: false,
         },
-
+        
         _selectedDate: {
           type: Object,
           value: null,
         },
-
+        
         _viewDate: {
           type: Object,
           value: null,
         },
-
+        
         _today: {
           type: Object,
           value: null,
         },
-
+        
         _calendarDays: {
           type: Array,
           value: () => [],
         },
-
+        
         _monthNames: {
           type: Array,
           value: () => [],
         },
-
+        
         _weekdayNames: {
           type: Array,
           value: () => [],
         },
-
+        
         _yearOptions: {
           type: Array,
           value: () => [],
         },
-
+        
         _monthYearOptions: {
           type: Array,
           value: () => [],
         },
-
+        
         _locale: {
           type: String,
           value: '',
         },
-
+        
         _dateFormatter: {
           type: Object,
           value: null,
         },
-
+        
         _focusedDate: {
           type: Object,
           value: null,
         },
-
+        
 
 
         // i18n properties for compatibility with nuxeo-date-picker
@@ -1049,27 +1049,27 @@ import { config } from '@nuxeo/nuxeo-elements';
 
     ready() {
       super.ready();
-
+      
       // Set up moment locale like nuxeo-date-picker does for consistency
       const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
-
+      
       // Force moment to use the detected locale
       moment.locale(userLocale);
-
+      
       this._locale = userLocale || 'en-US';
       this._dateFormatter = new Intl.DateTimeFormat(this._locale);
       this._today = new Date();
       this._today.setHours(0, 0, 0, 0); // Normalize to start of day
       this._viewDate = new Date();
       this._focusedDate = null;
-
+      
       // Verify the locale is properly set
       const momentLocaleData = moment.localeData();
       const localeFormat = momentLocaleData.longDateFormat('L');
-
+      
       // Force update the locale format for consistency
       this._currentLocaleFormat = localeFormat;
-
+      
       // Set up i18n properties for compatibility with nuxeo-date-picker
       // Store the i18n function reference before overwriting the property
       let i18nFn = null;
@@ -1079,9 +1079,9 @@ import { config } from '@nuxeo/nuxeo-elements';
           i18nFn = this.i18n.bind(this);
         }
       } catch (error) {
-        console.warn('[nuxeo-accessible-date-picker] I18nBehavior not available:', error);
+        // I18nBehavior not available - continue without it
       }
-
+      
       // Set up the i18n configuration object
       this.i18n = {
         formatDate: (date) => {
@@ -1096,11 +1096,11 @@ import { config } from '@nuxeo/nuxeo-elements';
             const localeFormat = moment.localeData().longDateFormat('L');
             const date = this._moment(text, localeFormat, true); // strict parsing with locale format
             if (date.isValid()) {
-              return {
-                day: date.get('D'),
-                month: date.get('M'),
-                year: date.get('Y'),
-              };
+            return {
+              day: date.get('D'),
+              month: date.get('M'),
+              year: date.get('Y'),
+            };
             } else {
 
               // Return current date instead of hardcoded values
@@ -1129,7 +1129,7 @@ import { config } from '@nuxeo/nuxeo-elements';
         today: this._getI18nText(i18nFn, 'today', 'Today'),
         firstDayOfWeek: this.firstDayOfWeek || config.get('firstDayOfWeek', moment.localeData().firstDayOfWeek() || 0),
       };
-
+      
       this._initializeLocaleData();
       this._generateYearOptions();
       this._generateCalendar();
@@ -1147,7 +1147,7 @@ import { config } from '@nuxeo/nuxeo-elements';
           return result || fallback;
         }
       } catch (error) {
-console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${key}':`, error);
+
       }
       return fallback;
     }
@@ -1211,33 +1211,33 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
     // Professional date parser - handles ISO strings with validation
     _parseDateFromISO(isoString) {
       if (!isoString || typeof isoString !== 'string') return null;
-
+      
       try {
         // Strict ISO format validation: YYYY-MM-DD
         const match = isoString.match(/^(\d{4})-(\d{2})-(\d{2})$/);
         if (!match) return null;
-
+        
         const year = parseInt(match[1], 10);
         const month = parseInt(match[2], 10);
         const day = parseInt(match[3], 10);
-
+        
         // Validate ranges
         if (year < 1000 || year > 9999) return null;
         if (month < 1 || month > 12) return null;
         if (day < 1 || day > 31) return null;
-
+        
         // Create date using 0-based month for JS Date constructor
         const date = new Date(year, month - 1, day);
         date.setHours(0, 0, 0, 0);
-
+        
         // Validate that the date components match (catches invalid dates like Feb 30)
-        if (date.getFullYear() !== year ||
-          date.getMonth() !== (month - 1) ||
-          date.getDate() !== day) {
+        if (date.getFullYear() !== year || 
+            date.getMonth() !== (month - 1) || 
+            date.getDate() !== day) {
 
           return null;
         }
-
+        
         return date;
       } catch (error) {
         return null;
@@ -1250,7 +1250,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         const date = new Date(2024, i, 1);
         this._monthNames.push(new Intl.DateTimeFormat(this._locale, { month: 'long' }).format(date));
       }
-
+      
       this._weekdayNames = [];
       // Handle firstDayOfWeek for proper week display
       const firstDay = this.firstDayOfWeek || config.get('firstDayOfWeek', moment.localeData().firstDayOfWeek() || 0);
@@ -1260,7 +1260,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         date.setDate(baseDate.getDate() + ((firstDay + i) % 7));
         this._weekdayNames.push(new Intl.DateTimeFormat(this._locale, { weekday: 'short' }).format(date));
       }
-
+      
 
     }
 
@@ -1268,25 +1268,25 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       // Fixed year range from 1900 to 2099
       const startYear = 1900;
       const endYear = 2099;
-
+      
       // Apply min/max constraints if specified
       let minYear = startYear;
       let maxYear = endYear;
-
+      
       if (this.min) {
         const minDate = new Date(this.min);
         if (!isNaN(minDate.getTime())) {
           minYear = Math.max(startYear, minDate.getFullYear());
         }
       }
-
+      
       if (this.max) {
         const maxDate = new Date(this.max);
         if (!isNaN(maxDate.getTime())) {
           maxYear = Math.min(endYear, maxDate.getFullYear());
         }
       }
-
+      
       this._yearOptions = [];
       for (let year = minYear; year <= maxYear; year++) {
         this._yearOptions.push(year);
@@ -1297,11 +1297,11 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       const currentYear = this._today.getFullYear();
       const selectedYear = this._selectedDate ? this._selectedDate.getFullYear() : currentYear;
       const viewYear = this._viewDate ? this._viewDate.getFullYear() : currentYear;
-
+      
       // Use 1900-2099 range but respect min/max constraints
       let startYear = 1900;
       let endYear = 2099;
-
+      
       // Apply min/max constraints if specified
       if (this.min) {
         const minDate = new Date(this.min);
@@ -1309,22 +1309,22 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
           startYear = Math.max(startYear, minDate.getFullYear());
         }
       }
-
+      
       if (this.max) {
         const maxDate = new Date(this.max);
         if (!isNaN(maxDate.getTime())) {
           endYear = Math.min(endYear, maxDate.getFullYear());
         }
       }
-
+      
       this._monthYearOptions = [];
       for (let year = startYear; year <= endYear; year++) {
         for (let month = 0; month < 12; month++) {
           const date = new Date(year, month, 1);
-
+          
           // Check if this month-year combination is within min/max range
           let isValidMonthYear = true;
-
+          
           if (this.min) {
             const minDate = new Date(this.min);
             const endOfMonth = new Date(year, month + 1, 0); // Last day of the month
@@ -1332,20 +1332,20 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
               isValidMonthYear = false;
             }
           }
-
+          
           if (this.max && isValidMonthYear) {
             const maxDate = new Date(this.max);
             if (date > maxDate) {
               isValidMonthYear = false;
             }
           }
-
+          
           if (isValidMonthYear) {
-            const label = new Intl.DateTimeFormat(this._locale, {
-              month: 'long',
-              year: 'numeric'
+            const label = new Intl.DateTimeFormat(this._locale, { 
+              month: 'long', 
+              year: 'numeric' 
             }).format(date);
-
+            
             this._monthYearOptions.push({
               label: label,
               value: `${year}-${month}`,
@@ -1359,40 +1359,40 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
 
     _generateCalendar() {
       if (!this._viewDate) return;
-
+      
       const year = this._viewDate.getFullYear();
       const month = this._viewDate.getMonth();
-
+      
       const firstDay = new Date(year, month, 1);
       const firstDayOfWeek = this.firstDayOfWeek || config.get('firstDayOfWeek', moment.localeData().firstDayOfWeek() || 0);
       const startDate = new Date(firstDay);
       const dayOffset = (firstDay.getDay() - firstDayOfWeek + 7) % 7;
       startDate.setDate(1 - dayOffset);
-
+      
       const days = [];
-
+      
       for (let i = 0; i < 42; i++) {
         const currentDate = new Date(startDate);
         currentDate.setDate(startDate.getDate() + i);
         currentDate.setHours(0, 0, 0, 0);
-
+        
         const isCurrentMonth = currentDate.getMonth() === month && currentDate.getFullYear() === year;
         const isToday = this._isSameDay(currentDate, this._today) && isCurrentMonth;
-
+        
         // Check if this date is selected
         let isSelected = false;
         if (this._selectedDate && isCurrentMonth) {
           isSelected = (currentDate.getFullYear() === this._selectedDate.getFullYear() &&
-            currentDate.getMonth() === this._selectedDate.getMonth() &&
-            currentDate.getDate() === this._selectedDate.getDate());
+                       currentDate.getMonth() === this._selectedDate.getMonth() &&
+                       currentDate.getDate() === this._selectedDate.getDate());
         }
-
+        
         const isDisabled = this._isDateDisabled(currentDate);
         const isEmpty = !isCurrentMonth;
-
+        
         // Create ISO string for data attribute using professional method
         const dateISO = this._dateToISO(currentDate);
-
+        
         days.push({
           date: new Date(currentDate),
           day: isEmpty ? '' : currentDate.getDate(),
@@ -1405,9 +1405,9 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
           isEmpty,
         });
       }
-
+      
       this.set('_calendarDays', days);
-
+      
       // Update navigation buttons
       this.async(() => {
         this._updateNavigationButtonStates();
@@ -1418,13 +1418,13 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
     _updateNavigationButtonStates() {
       const prevButton = this.shadowRoot.querySelector('#prevMonth');
       const nextButton = this.shadowRoot.querySelector('#nextMonth');
-
+      
       if (prevButton) {
         const isPrevDisabled = this._isPreviousMonthDisabled();
         prevButton.disabled = isPrevDisabled;
 
       }
-
+      
       if (nextButton) {
         const isNextDisabled = this._isNextMonthDisabled();
         nextButton.disabled = isNextDisabled;
@@ -1434,7 +1434,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
 
     _setupEventListeners() {
       // Navigation buttons are now handled by template bindings (on-click)
-
+      
       // Input field events - only validation, no calendar opening on click or focus
       const dateInput = this.shadowRoot.querySelector('#dateInput');
       if (dateInput) {
@@ -1444,7 +1444,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
           e.stopPropagation();
           // Just focus the input, don't open calendar
         });
-
+      
         dateInput.addEventListener('keydown', (e) => {
           // Allow opening calendar with specific keys when input is focused
           if (e.key === 'F4' || e.key === 'ArrowDown') {
@@ -1452,11 +1452,11 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
             this._openCalendar(e, true); // Opened via keyboard
           } else if (e.key === 'Enter') {
             // Enter validates input
-            this._validateAndParseInput();
+              this._validateAndParseInput();
           }
         });
       }
-
+      
       // Calendar grid keyboard navigation
       const calendarGrid = this.shadowRoot.querySelector('.calendar-grid');
       if (calendarGrid) {
@@ -1482,7 +1482,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       if (popover) {
         popover.addEventListener('keydown', (e) => this._handlePopoverKeydown(e));
       }
-
+      
       // Document events
       document.addEventListener('click', (e) => this._handleDocumentClick(e));
       document.addEventListener('keydown', (e) => {
@@ -1510,26 +1510,26 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         this._closeCalendar();
         return;
       }
-
+      
       if (e.key === 'Tab') {
         e.preventDefault();
         this._handleCalendarTabNavigation(e.shiftKey);
         return;
       }
     }
-
+    
     // Professional focus management for calendar
     _handleCalendarTabNavigation(isShiftTab) {
       if (!this._isCalendarOpen) return;
-
+      
       const currentFocused = this.shadowRoot.activeElement;
       const currentElement = this._identifyCurrentFocusElement(currentFocused);
+      
 
-
-
+      
       let nextIndex;
       const currentIndex = this._focusOrder.indexOf(currentElement);
-
+      
       if (isShiftTab) {
         // Shift+Tab: Move backward
         nextIndex = currentIndex <= 0 ? this._focusOrder.length - 1 : currentIndex - 1;
@@ -1537,17 +1537,17 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         // Tab: Move forward  
         nextIndex = currentIndex >= this._focusOrder.length - 1 ? 0 : currentIndex + 1;
       }
-
+      
       const nextElement = this._focusOrder[nextIndex];
       this._focusCalendarElement(nextElement);
-
+      
 
     }
-
+    
     // Identify which focus element is currently active
     _identifyCurrentFocusElement(element) {
       if (!element) return this._focusOrder[0];
-
+      
       if (element.classList.contains('year-dropdown') || element.closest('.year-dropdown')) {
         return 'year-dropdown';
       }
@@ -1566,15 +1566,15 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       if (element.classList.contains('cancel-button')) {
         return 'cancel-button';
       }
-
+      
       // Default to first element
       return this._focusOrder[0];
     }
-
+    
     // Focus a specific calendar element by name
     _focusCalendarElement(elementName) {
       let targetElement = null;
-
+      
       switch (elementName) {
         case 'year-dropdown':
           targetElement = this.shadowRoot.querySelector('.year-dropdown');
@@ -1606,7 +1606,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
           targetElement = this.shadowRoot.querySelector('.cancel-button');
           break;
       }
-
+      
       if (targetElement && !targetElement.disabled) {
         targetElement.focus();
       } else {
@@ -1616,7 +1616,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         this._focusCalendarElement(this._focusOrder[nextIndex]);
       }
     }
-
+    
     // Focus management for calendar grid
     _focusCalendarGrid() {
       // Ensure calendar is generated first
@@ -1624,20 +1624,20 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
 
         this._generateCalendar();
       }
-
+      
       // Find the appropriate date to focus
       let targetDate = null;
-
+      
       if (this._focusedDate) {
         targetDate = this._focusedDate;
 
-      } else if (this._selectedDate &&
-        this._selectedDate.getMonth() === this._viewDate.getMonth() &&
-        this._selectedDate.getFullYear() === this._viewDate.getFullYear()) {
+      } else if (this._selectedDate && 
+                 this._selectedDate.getMonth() === this._viewDate.getMonth() &&
+                 this._selectedDate.getFullYear() === this._viewDate.getFullYear()) {
         targetDate = this._selectedDate;
 
       } else if (this._today.getMonth() === this._viewDate.getMonth() &&
-        this._today.getFullYear() === this._viewDate.getFullYear()) {
+                 this._today.getFullYear() === this._viewDate.getFullYear()) {
         targetDate = this._today;
 
       } else {
@@ -1645,7 +1645,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         targetDate = new Date(this._viewDate.getFullYear(), this._viewDate.getMonth(), 1);
 
       }
-
+      
       if (targetDate) {
 
         this._focusDate(targetDate);
@@ -1657,15 +1657,15 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
     _toggleMonthYearDropdown(e) {
       if (e) {
         e.preventDefault();
-        e.stopPropagation();
+          e.stopPropagation();
       }
-
+      
       const monthYearOptions = this.shadowRoot.querySelector('#monthYearOptions');
       if (monthYearOptions) {
         const isOpen = monthYearOptions.classList.contains('open');
         this._isYearDropdownOpen = !isOpen;
         monthYearOptions.classList.toggle('open');
-
+        
         if (!isOpen) {
           // When opening, focus and scroll to current month-year
           this.async(() => {
@@ -1682,13 +1682,13 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       const monthYearValue = `${currentYear}-${currentMonth}`;
       const monthYearButton = this.shadowRoot.querySelector(`[data-month-year="${monthYearValue}"]`);
       const monthYearOptions = this.shadowRoot.querySelector('#monthYearOptions');
-
+      
       if (monthYearButton && monthYearOptions) {
         const containerHeight = monthYearOptions.clientHeight;
         const buttonHeight = monthYearButton.offsetHeight;
         const buttonTop = monthYearButton.offsetTop;
         const scrollTop = buttonTop - (containerHeight / 2) + (buttonHeight / 2);
-
+        
         monthYearOptions.scrollTop = Math.max(0, scrollTop);
       }
     }
@@ -1705,11 +1705,11 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       const currentMonth = this._viewDate.getMonth();
       const monthYearValue = `${currentYear}-${currentMonth}`;
       const monthYearButton = this.shadowRoot.querySelector(`[data-month-year="${monthYearValue}"]`);
-
+      
       if (monthYearButton) {
         monthYearButton.tabIndex = 0;
         monthYearButton.focus();
-
+        
         // Set up keyboard navigation for month-year options
         this._setupMonthYearKeyNavigation();
       }
@@ -1718,11 +1718,11 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
     _handleMonthYearKeyDown(e) {
       const currentFocused = this.shadowRoot.activeElement;
       if (!currentFocused || !currentFocused.classList.contains('month-year-option')) return;
-
+      
       const allMonthYearButtons = Array.from(this.shadowRoot.querySelectorAll('.month-year-option'));
       const currentIndex = allMonthYearButtons.indexOf(currentFocused);
       let nextIndex = currentIndex;
-
+      
       switch (e.key) {
         case 'ArrowUp':
           e.preventDefault();
@@ -1750,7 +1750,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
           this._closeMonthYearDropdown();
           return;
       }
-
+      
       if (nextIndex !== currentIndex) {
         currentFocused.tabIndex = -1;
         allMonthYearButtons[nextIndex].tabIndex = 0;
@@ -1763,7 +1763,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       if (monthYearOptions) {
         monthYearOptions.classList.remove('open');
         this._isYearDropdownOpen = false;
-
+        
         // Return focus to month-year dropdown button
         const monthYearDropdown = this.shadowRoot.querySelector('.month-year-dropdown');
         if (monthYearDropdown) {
@@ -1775,22 +1775,22 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
     _selectMonthYear(e) {
       if (e) {
         e.preventDefault();
-        e.stopPropagation();
+          e.stopPropagation();
       }
-
+      
       const button = e.target.closest('.month-year-option');
       const monthYearValue = button ? button.dataset.monthYear : null;
-
+      
       if (monthYearValue) {
         const [year, month] = monthYearValue.split('-').map(Number);
         const newDate = new Date(year, month, 1);
         this._viewDate = newDate;
-
+        
         // Clear focused date when changing month/year
         this._focusedDate = null;
-
+        
         this._generateCalendar();
-
+        
         // Close the dropdown
         this._closeMonthYearDropdown();
       }
@@ -1817,11 +1817,11 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
 
     _handleDocumentClick(e) {
       if (!this._isCalendarOpen) return;
-
+      
       // Check if click target is within this element's shadow DOM
       let target = e.target;
       let isInsideComponent = false;
-
+      
       // Walk up the composed path to check for our component
       const path = e.composedPath ? e.composedPath() : [target];
       for (let element of path) {
@@ -1830,10 +1830,10 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
           break;
         }
       }
-
+      
       if (!isInsideComponent) {
         this._closeCalendar();
-
+        
         // Also close year dropdown if open
         const yearOptions = this.shadowRoot.querySelector('#yearOptions');
         if (yearOptions) {
@@ -1848,7 +1848,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         e.preventDefault();
         e.stopPropagation();
       }
-
+      
       this._selectedDate = null;
       this._focusedDate = null; // Clear focused date to remove any highlighting
       this._userIsTyping = false; // Clear typing state
@@ -1858,7 +1858,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       this._preventInputUpdate = false; // Reset flag
       this.invalid = false;
       this.errorMessage = '';
-
+      
       // Regenerate calendar to remove any date highlighting
       this._generateCalendar();
     }
@@ -1868,32 +1868,32 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
 
         return;
       }
-
+      
       // Create a clean date object to avoid any reference issues
       this._selectedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       this._selectedDate.setHours(0, 0, 0, 0);
-
+      
       // Generate ISO string for internal value (YYYY-MM-DD format)
       const isoString = this._dateToISO(this._selectedDate);
-
+      
       // Set component value
       this._userIsTyping = false;
       this._preventInputUpdate = true;
       this._safeSetValue(isoString);
-
+      
       // Format input display using professional locale formatting
       this._inputValue = this._formatDateForDisplay(this._selectedDate);
-
+      
       // Reset the flag after updating input value
       this._preventInputUpdate = false;
+      
 
-
-
+      
       // Update UI
       this._focusedDate = null;
       this._generateCalendar();
       this._closeCalendar();
-
+      
       // Clear errors
       this.invalid = false;
       this.errorMessage = '';
@@ -1905,7 +1905,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         e.preventDefault();
         e.stopPropagation();
       }
-
+      
       // Create a fresh today date to ensure consistency
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -1924,19 +1924,19 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         e.preventDefault();
         e.stopPropagation();
       }
-
+      
       if (this.disabled || this._isCalendarOpen) return;
-
+      
       // No auto-detection needed - explicitly handled by separate methods
+      
 
-
-
+      
       if (this._selectedDate) {
         this._viewDate = new Date(this._selectedDate);
         this._focusedDate = new Date(this._selectedDate);
       } else {
         let initialDate = new Date(this._today);
-
+        
         // Prioritize min date for initial view when constraints exist
         // This ensures users see the valid range starting from the minimum date
         if (this.min) {
@@ -1952,28 +1952,28 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
 
           }
         }
-
+        
         // Final validation: ensure initial date is within valid range
         if (this.min && this.max) {
           const minDate = new Date(this.min);
           const maxDate = new Date(this.max);
-
+          
           if (initialDate < minDate) {
             initialDate = new Date(minDate);
           } else if (initialDate > maxDate) {
             initialDate = new Date(maxDate);
           }
-
+          
 
         }
-
+        
         this._viewDate = initialDate;
         this._focusedDate = null; // No focused date when no date is selected
       }
-
+      
       this._generateYearOptions();
       this._generateCalendar();
-
+      
       this._isCalendarOpen = true;
       const popover = this.shadowRoot.querySelector('#calendarPopover');
       if (popover) {
@@ -1987,14 +1987,14 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       window.addEventListener('scroll', this._boundReposition, { passive: true });
       // Announce calendar opened
       this._announce('Calendar opened. Use arrow keys to navigate dates. Press Escape to close.');
-
+      
       // Fire opened-changed event for compatibility with nuxeo-date-picker
       this.dispatchEvent(new CustomEvent('opened-changed', {
         detail: { value: true },
         bubbles: true,
         composed: true
       }));
-
+      
       // Professional a11y: Focus behavior depends on interaction method
       this.async(() => {
         if (openedViaKeyboard) {
@@ -2004,14 +2004,14 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         } else {
           // Mouse opening: Aggressive focus management to prevent year dropdown focus
 
-
+          
           // Immediately disable all potential auto-focus targets except date buttons
           const yearDropdown = this.shadowRoot.querySelector('.year-dropdown');
           const prevButton = this.shadowRoot.querySelector('#prevMonth');
           const nextButton = this.shadowRoot.querySelector('#nextMonth');
           const todayButton = this.shadowRoot.querySelector('.today-button');
           const cancelButton = this.shadowRoot.querySelector('.cancel-button');
-
+          
           // Store original tabindex values
           const originalTabIndexes = new Map();
           [yearDropdown, prevButton, nextButton, todayButton, cancelButton].forEach(el => {
@@ -2020,20 +2020,20 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
               el.setAttribute('tabindex', '-1');
             }
           });
+          
 
-
-
+          
           // Clear any existing focus
           if (this.shadowRoot.activeElement && this.shadowRoot.activeElement.blur) {
             this.shadowRoot.activeElement.blur();
           }
-
+          
           // Use requestAnimationFrame to ensure our focus happens after any browser auto-focus
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
 
               this._focusCalendarGrid();
-
+              
               // Force focus again if needed
               requestAnimationFrame(() => {
                 const currentFocus = this.shadowRoot.activeElement;
@@ -2041,7 +2041,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
 
                   this._focusCalendarGrid();
                 }
-
+                
                 // Restore tabindex values
                 originalTabIndexes.forEach((tabindex, element) => {
                   if (element) {
@@ -2049,7 +2049,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
                   }
                 });
 
-
+                
                 // Final debug check
                 const finalFocus = this.shadowRoot.activeElement;
 
@@ -2065,11 +2065,11 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         e.preventDefault();
         e.stopPropagation();
       }
-
+      
       if (!this._isCalendarOpen) return;
-
+      
       this._isCalendarOpen = false;
-
+      
       const popover = this.shadowRoot.querySelector('#calendarPopover');
       if (popover) {
         popover.classList.remove('open');
@@ -2084,14 +2084,14 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         window.removeEventListener('resize', this._boundReposition);
         window.removeEventListener('scroll', this._boundReposition);
       }
-
+      
       // Fire opened-changed event for compatibility with nuxeo-date-picker
       this.dispatchEvent(new CustomEvent('opened-changed', {
         detail: { value: false },
         bubbles: true,
         composed: true
       }));
-
+      
       const dateInput = this.shadowRoot.querySelector('#dateInput');
       if (dateInput) {
         dateInput.focus();
@@ -2111,22 +2111,22 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         e.preventDefault();
         e.stopPropagation();
       }
-
+      
       if (!this._viewDate) {
         return;
       }
-
+      
       const newDate = new Date(this._viewDate);
       newDate.setMonth(newDate.getMonth() - 1);
+      
 
-
-
+      
 
       this._viewDate = newDate;
-
+      
       // Clear focused date when changing months to prevent incorrect highlighting
       this._focusedDate = null;
-
+      
       // Regenerate month-year options if we moved far from the current range
       this._generateMonthYearOptions();
       this._generateCalendar();
@@ -2138,22 +2138,22 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         e.preventDefault();
         e.stopPropagation();
       }
-
+      
       if (!this._viewDate) {
         return;
       }
-
+      
       const newDate = new Date(this._viewDate);
       newDate.setMonth(newDate.getMonth() + 1);
+      
 
-
-
+      
 
       this._viewDate = newDate;
-
+      
       // Clear focused date when changing months to prevent incorrect highlighting
       this._focusedDate = null;
-
+      
       // Regenerate month-year options if we moved far from the current range
       this._generateMonthYearOptions();
       this._generateCalendar();
@@ -2166,7 +2166,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       newDate.setFullYear(newYear);
       this._viewDate = newDate;
       this._generateCalendar();
-
+      
       // Don't change focused date to today when changing year
       // Keep focused date in the same relative position
       if (this._focusedDate) {
@@ -2188,31 +2188,31 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         e.preventDefault();
         e.stopPropagation();
       }
-
+      
       const button = e.target.closest('.calendar-day');
       if (!button || button.disabled || button.classList.contains('empty') || button.classList.contains('other-month')) {
         return;
       }
-
+      
       // Get the date from the button's data attribute
-      const dateISO = button.dataset.date;
+        const dateISO = button.dataset.date;
       if (!dateISO) {
         return;
       }
-
+      
       // Use the professional ISO parser
       const selectedDate = this._parseDateFromISO(dateISO);
       if (!selectedDate) {
         return;
       }
+      
 
-
-
+      
       // Validate and select
-      if (this._isValidDate(selectedDate)) {
-        this.invalid = false;
-        this.errorReason = '';
-        this.errorMessage = '';
+        if (this._isValidDate(selectedDate)) {
+          this.invalid = false;
+          this.errorReason = '';
+          this.errorMessage = '';
         this._selectDate(selectedDate);
       } else {
         this.invalid = true;
@@ -2224,10 +2224,10 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
     _handleGridKeydown(e) {
       const currentButton = e.target;
       if (!currentButton.classList.contains('calendar-day')) return;
-
+      
       const currentDate = new Date(currentButton.dataset.date);
       let targetDate = new Date(currentDate);
-
+      
       switch (e.key) {
         case 'Enter':
         case ' ':
@@ -2236,51 +2236,51 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
           if (!currentButton.disabled && currentButton.classList.contains('calendar-day')) {
             // Check if it's a valid current month date
             const isCurrentMonth = currentDate.getMonth() === this._viewDate.getMonth() &&
-              currentDate.getFullYear() === this._viewDate.getFullYear();
+                                  currentDate.getFullYear() === this._viewDate.getFullYear();
             if (isCurrentMonth) {
               this._selectDate(currentDate);
             }
           }
           break;
-
+          
         case 'ArrowLeft':
           e.preventDefault();
           targetDate.setDate(currentDate.getDate() - 1);
           this._focusDate(targetDate, true);
           break;
-
+          
         case 'ArrowRight':
           e.preventDefault();
           targetDate.setDate(currentDate.getDate() + 1);
           this._focusDate(targetDate, true);
           break;
-
+          
         case 'ArrowUp':
           e.preventDefault();
           targetDate.setDate(currentDate.getDate() - 7);
           this._focusDate(targetDate, true);
           break;
-
+          
         case 'ArrowDown':
           e.preventDefault();
           targetDate.setDate(currentDate.getDate() + 7);
           this._focusDate(targetDate, true);
           break;
-
+          
         case 'Home':
           e.preventDefault();
           const dayOfWeek = currentDate.getDay();
           targetDate.setDate(currentDate.getDate() - dayOfWeek);
           this._focusDate(targetDate, true);
           break;
-
+          
         case 'End':
           e.preventDefault();
           const daysToEnd = 6 - currentDate.getDay();
           targetDate.setDate(currentDate.getDate() + daysToEnd);
           this._focusDate(targetDate, true);
           break;
-
+          
         case 'PageUp':
           e.preventDefault();
           if (e.shiftKey) {
@@ -2297,7 +2297,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
             }, 50);
           }
           break;
-
+          
         case 'PageDown':
           e.preventDefault();
           if (e.shiftKey) {
@@ -2321,14 +2321,14 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       // Update focused date
       this._focusedDate = new Date(date);
       this._focusedDate.setHours(0, 0, 0, 0);
-
+      
       // Update view if necessary
-      if (date.getMonth() !== this._viewDate.getMonth() ||
-        date.getFullYear() !== this._viewDate.getFullYear()) {
+      if (date.getMonth() !== this._viewDate.getMonth() || 
+          date.getFullYear() !== this._viewDate.getFullYear()) {
         this._viewDate = new Date(date);
-        this._generateCalendar();
+      this._generateCalendar();
       }
-
+      
       // Focus the date element
       this.async(() => {
         // Use local date formatting to avoid timezone issues
@@ -2336,7 +2336,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         const month = String(this._focusedDate.getMonth() + 1).padStart(2, '0');
         const day = String(this._focusedDate.getDate()).padStart(2, '0');
         const dateISO = `${year}-${month}-${day}`;
-
+        
         const button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
         if (button) {
           // For keyboard navigation, allow focusing any date including empty ones
@@ -2345,7 +2345,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
             return;
           }
         }
-
+        
         // If we can't focus the target date, find a valid one in current month
         if (!allowCrossMonth) {
           this._findAndFocusNearestValidDate(date);
@@ -2357,17 +2357,17 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       // Find the first valid date in the current month
       const year = this._viewDate.getFullYear();
       const month = this._viewDate.getMonth();
-
+      
       // Try the selected date first if it's in the current month
-      if (this._selectedDate &&
-        this._selectedDate.getMonth() === month &&
-        this._selectedDate.getFullYear() === year) {
+      if (this._selectedDate && 
+          this._selectedDate.getMonth() === month && 
+          this._selectedDate.getFullYear() === year) {
         // Use local date formatting to avoid timezone issues
         const selYear = this._selectedDate.getFullYear();
         const selMonth = String(this._selectedDate.getMonth() + 1).padStart(2, '0');
         const selDay = String(this._selectedDate.getDate()).padStart(2, '0');
         const dateISO = `${selYear}-${selMonth}-${selDay}`;
-
+        
         const button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
         if (button && !button.disabled && !button.classList.contains('empty')) {
           this._focusedDate = new Date(this._selectedDate);
@@ -2375,7 +2375,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
           return;
         }
       }
-
+      
       // Try today if it's in the current month
       if (this._today.getMonth() === month && this._today.getFullYear() === year) {
         // Use local date formatting to avoid timezone issues
@@ -2383,7 +2383,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         const todayMonth = String(this._today.getMonth() + 1).padStart(2, '0');
         const todayDay = String(this._today.getDate()).padStart(2, '0');
         const dateISO = `${todayYear}-${todayMonth}-${todayDay}`;
-
+        
         const button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
         if (button && !button.disabled && !button.classList.contains('empty')) {
           this._focusedDate = new Date(this._today);
@@ -2391,7 +2391,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
           return;
         }
       }
-
+      
       // Try the first day of the month
       let firstValidDate = new Date(year, month, 1);
       // Use local date formatting to avoid timezone issues
@@ -2399,26 +2399,26 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       const firstMonth = String(firstValidDate.getMonth() + 1).padStart(2, '0');
       const firstDay = String(firstValidDate.getDate()).padStart(2, '0');
       let dateISO = `${firstYear}-${firstMonth}-${firstDay}`;
-
+      
       let button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
-
+      
       if (button && !button.disabled && !button.classList.contains('empty')) {
         this._focusedDate = firstValidDate;
         button.focus();
         return;
       }
-
+      
       // Otherwise, find any valid date in the current month
       for (let day = 1; day <= 31; day++) {
         const testDate = new Date(year, month, day);
         if (testDate.getMonth() !== month) break; // Gone past the end of the month
-
+        
         // Use local date formatting to avoid timezone issues
         const testYear = testDate.getFullYear();
         const testMonth = String(testDate.getMonth() + 1).padStart(2, '0');
         const testDay = String(testDate.getDate()).padStart(2, '0');
         dateISO = `${testYear}-${testMonth}-${testDay}`;
-
+        
         button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
         if (button && !button.disabled && !button.classList.contains('empty')) {
           this._focusedDate = testDate;
@@ -2431,19 +2431,19 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
     _focusFirstAvailableDate() {
       // Only set focus if we have a selected date or if explicitly needed
       let targetDate = null;
-
-      if (this._selectedDate &&
-        this._selectedDate.getMonth() === this._viewDate.getMonth() &&
-        this._selectedDate.getFullYear() === this._viewDate.getFullYear()) {
+      
+      if (this._selectedDate && 
+          this._selectedDate.getMonth() === this._viewDate.getMonth() &&
+          this._selectedDate.getFullYear() === this._viewDate.getFullYear()) {
         targetDate = new Date(this._selectedDate);
       } else if (this._today.getMonth() === this._viewDate.getMonth() &&
-        this._today.getFullYear() === this._viewDate.getFullYear()) {
+                 this._today.getFullYear() === this._viewDate.getFullYear()) {
         targetDate = new Date(this._today);
       } else {
         // If no selected date and today is not in current month, focus first day of month
         targetDate = new Date(this._viewDate.getFullYear(), this._viewDate.getMonth(), 1);
       }
-
+      
       if (targetDate) {
         this._focusedDate = targetDate;
         this._generateCalendar(); // Regenerate to update tabindex
@@ -2483,9 +2483,9 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
     _validateAndParseInput() {
       const input = this.shadowRoot.querySelector('#dateInput');
       if (!input) return;
-
+      
       const value = input.value ? input.value.trim() : '';
-
+      
       // If empty, clear everything
       if (!value) {
         this._selectedDate = null;
@@ -2498,11 +2498,11 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         this._generateCalendar();
         return;
       }
-
-
+      
+      
       // Use professional parser
       const parseResult = this._parseUserInput(value);
-
+      
       if (!parseResult) {
         // Could not parse the date at all
         this.invalid = true;
@@ -2510,9 +2510,9 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         this.errorMessage = `Incorrect date format. Expected: ${this._getDatePlaceholder()}`;
         return;
       }
-
+      
       const { date: parsedDate, isExactFormat } = parseResult;
-
+      
       // Check date constraints (min/max)
       if (!this._isValidDate(parsedDate)) {
         this.invalid = true;
@@ -2520,32 +2520,32 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         this.errorMessage = this._buildOutOfRangeMessage(parsedDate);
         return;
       }
-
+      
       // Valid date - store it
       this._selectedDate = new Date(parsedDate);
-
+      
       // Generate ISO string for internal value
       const isoString = this._dateToISO(this._selectedDate);
       this._preventInputUpdate = true;
-      this._safeSetValue(isoString);
-
+        this._safeSetValue(isoString);
+        
       // Keep user input as-is if it was in exact format, otherwise reformat
       if (!isExactFormat) {
         this._inputValue = this._formatDateForDisplay(this._selectedDate);
-      }
-
+      } 
+      
       // Reset the flag after updating input value
       this._preventInputUpdate = false;
-
-      // Navigate calendar to the selected date
-      this._viewDate = new Date(this._selectedDate);
-      this._generateCalendar();
-
+        
+        // Navigate calendar to the selected date
+        this._viewDate = new Date(this._selectedDate);
+        this._generateCalendar();
+        
       // Clear errors
-      this.invalid = false;
-      this.errorReason = '';
-      this.errorMessage = '';
-
+        this.invalid = false;
+        this.errorReason = '';
+        this.errorMessage = '';
+      
 
     }
 
@@ -2565,7 +2565,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
             configurable: true
           });
         }
-
+        
         // Also notify any property observers
         if (this.notifyPath && typeof this.notifyPath === 'function') {
           this.notifyPath('value');
@@ -2593,20 +2593,20 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
 
     _formatDateForInput(date) {
       if (!date) return '';
-
+      
       // Use professional formatting
       return this._formatDateForDisplay(date);
     }
 
     _isSameDay(date1, date2) {
       if (!date1 || !date2) return false;
-
+      
       // Normalize both dates to start of day for comparison
       const d1 = new Date(date1);
       const d2 = new Date(date2);
       d1.setHours(0, 0, 0, 0);
       d2.setHours(0, 0, 0, 0);
-
+      
       return d1.getTime() === d2.getTime();
     }
 
@@ -2614,36 +2614,36 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       if (!date || isNaN(date.getTime())) {
         return false;
       }
-
+      
       // Normalize the input date to start of day for comparison
       const normalizedDate = new Date(date);
       normalizedDate.setHours(0, 0, 0, 0);
-
+      
       if (this.min) {
         const minDate = this._parseDateOnly(this.min);
         // Normalize min date
         minDate && minDate.setHours(0, 0, 0, 0);
-
+        
         const isAfterOrEqualMin = !minDate || normalizedDate >= minDate;
-
+        
         if (!isAfterOrEqualMin) {
           return false;
         }
       }
-
+      
       if (this.max) {
         const maxDateBase = this._parseDateOnly(this.max);
         const maxDate = maxDateBase ? new Date(maxDateBase) : null;
         // Set to end of day for max comparison
         maxDate && maxDate.setHours(23, 59, 59, 999);
-
+        
         const isBeforeOrEqualMax = !maxDate || normalizedDate <= maxDate;
-
+        
         if (!isBeforeOrEqualMax) {
           return false;
         }
       }
-
+      
       return true;
     }
 
@@ -2655,18 +2655,18 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       try {
         // Get the actual locale from browser and moment
         const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
-
+        
         // Ensure moment uses the correct locale
         moment.locale(userLocale);
         const localeFormat = moment.localeData().longDateFormat('L');
-
+        
         // Convert moment format to a readable placeholder
         const placeholder = localeFormat
           .replace(/D{1,2}/g, 'dd')
           .replace(/M{1,2}/g, 'mm')
           .replace(/Y{2,4}/g, 'yyyy')
           .toLowerCase();
-
+          
         return placeholder;
       } catch (e) {
         return 'mm/dd/yyyy';
@@ -2679,7 +2679,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       try {
         const hasMin = !!this.min;
         const hasMax = !!this.max;
-
+        
         if (hasMin && hasMax) {
           const minDate = this._parseDateOnly(this.min);
           const maxDate = this._parseDateOnly(this.max);
@@ -2687,35 +2687,35 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
           const maxFormatted = maxDate ? this._formatDateForDisplay(maxDate) : this.max;
           return `Date out of range. Must be between ${minFormatted} and ${maxFormatted}`;
         }
-
+        
         if (hasMin) {
           const minDate = this._parseDateOnly(this.min);
           const minFormatted = minDate ? this._formatDateForDisplay(minDate) : this.min;
           return `Date out of range. Must be on or after ${minFormatted}`;
         }
-
+        
         if (hasMax) {
           const maxDate = this._parseDateOnly(this.max);
           const maxFormatted = maxDate ? this._formatDateForDisplay(maxDate) : this.max;
           return `Date out of range. Must be on or before ${maxFormatted}`;
         }
       } catch (error) {
-        console.warn('[nuxeo-accessible-date-picker] Error building range message:', error);
+        console.warn('[custom-date-picker] Error building range message:', error);
       }
       return 'Date out of range.';
     }
 
     _formatMonthYear(date) {
       if (!date) return '';
-      return new Intl.DateTimeFormat(this._locale, {
-        month: 'long',
-        year: 'numeric'
+      return new Intl.DateTimeFormat(this._locale, { 
+        month: 'long', 
+        year: 'numeric' 
       }).format(date);
     }
 
     _getDayClasses(dayObj, focusedDate) {
       const classes = [];
-
+      
       if (dayObj.isEmpty) {
         classes.push('empty');
       } else {
@@ -2723,30 +2723,30 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         if (dayObj.isToday) classes.push('today');
         if (dayObj.isSelected) classes.push('selected');
         if (dayObj.isDisabled) classes.push('disabled');
-
+        
         // ONLY add focused class if we have a focused date AND it matches AND it's not selected AND not today
         // AND we're in the current month AND the focused date is in the currently viewed month
-        if (focusedDate &&
-          this._isSameDay(dayObj.date, focusedDate) &&
-          !dayObj.isSelected &&
-          !dayObj.isToday &&
-          dayObj.isCurrentMonth &&
-          focusedDate.getMonth() === this._viewDate.getMonth() &&
-          focusedDate.getFullYear() === this._viewDate.getFullYear()) {
+        if (focusedDate && 
+            this._isSameDay(dayObj.date, focusedDate) && 
+            !dayObj.isSelected && 
+            !dayObj.isToday &&
+            dayObj.isCurrentMonth &&
+            focusedDate.getMonth() === this._viewDate.getMonth() &&
+            focusedDate.getFullYear() === this._viewDate.getFullYear()) {
           classes.push('focused');
         }
       }
-
+      
       return classes.join(' ');
     }
 
     _getDayTabIndex(dayObj, focusedDate, index) {
       // ARIA Grid pattern: Only one cell should be tabbable, others use arrow keys
       if (dayObj.isEmpty || !dayObj.isCurrentMonth) return '-1';
-
+      
       // Determine which date should be tabbable (tab stop)
       let shouldBeTabbable = false;
-
+      
       if (focusedDate && this._isSameDay(dayObj.date, focusedDate)) {
         // Currently focused date
         shouldBeTabbable = true;
@@ -2760,14 +2760,14 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         // First day of month as fallback
         shouldBeTabbable = true;
       }
-
+      
       return shouldBeTabbable ? '0' : '-1';
     }
 
     _isTodayInCurrentMonth() {
       if (!this._today || !this._viewDate) return false;
       return this._today.getMonth() === this._viewDate.getMonth() &&
-        this._today.getFullYear() === this._viewDate.getFullYear();
+             this._today.getFullYear() === this._viewDate.getFullYear();
     }
 
     _getDayAriaLabel(dayObj) {
@@ -2778,17 +2778,17 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         month: 'long',
         day: 'numeric'
       });
-
+      
       let label = formatter.format(date);
-
+      
       if (dayObj.isToday) {
         label += ', today';
       }
-
+      
       if (dayObj.isSelected) {
         label += ', selected';
       }
-
+      
       return label;
     }
 
@@ -2822,24 +2822,24 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
 
     _valueChanged() {
       try {
-
+        
         // Prevent circular updates
         if (this._preventInputUpdate) {
           this._preventInputUpdate = false;
           return;
         }
-
+        
         // Set flag to prevent _inputValueChanged from triggering when we update _inputValue
         this._preventInputUpdate = true;
-
+        
         if (!this.value) {
           this._selectedDate = null;
-
+          
           // Only clear input if it wasn't cleared by user typing
           if (!this._userIsTyping) {
             this._inputValue = '';
           }
-
+          
           // Trigger validation for required fields when value is cleared
           if (this.required) {
             this.async(() => {
@@ -2849,19 +2849,19 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
           this._preventInputUpdate = false;
           return;
         }
-
+        
         const date = this._moment(this.value);
         if (this.value && date.isValid()) {
           this._selectedDate = new Date(date.toDate());
           this._selectedDate.setHours(0, 0, 0, 0);
           this._viewDate = new Date(this._selectedDate);
-
+          
           // Only update input display if this is from calendar selection, not user typing
           if (!this._userIsTyping) {
             // Use professional formatting for programmatic updates
             this._inputValue = this._formatDateForDisplay(this._selectedDate);
           }
-
+          
           // Clear any previous validation errors when a valid value is set
           if (this.invalid) {
             this.async(() => {
@@ -2874,18 +2874,18 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
             this._inputValue = '';
           }
         }
-
+        
         if (this._generateCalendar && typeof this._generateCalendar === 'function') {
           this._generateCalendar();
         }
-
+        
         // Reset the flag after all updates are done
         this._preventInputUpdate = false;
-
+        
       } catch (error) {
         this._selectedDate = null;
         if (!this._userIsTyping) {
-          this._inputValue = '';
+        this._inputValue = '';
         }
         this._preventInputUpdate = false;
       }
@@ -2894,7 +2894,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
     // Override connectedCallback to ensure proper form integration
     connectedCallback() {
       super.connectedCallback();
-
+      
       // Add form validation support
       if (this.form) {
         this.form.addEventListener('submit', (e) => {
@@ -2984,12 +2984,12 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
     _inputValueChanged() {
       // This observer is only for logging/debugging purposes now
       // All actual validation happens in _validateAndParseInput() when user finishes typing
-
+      
       // Don't process automatic changes or when user is typing
       if (this._preventInputUpdate || this._userIsTyping) {
         return;
       }
-
+      
       // Only handle legacy compatibility cases where external code sets _inputValue directly
       // Modern usage should go through _validateAndParseInput() or _selectDate()
     }
@@ -3013,28 +3013,28 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         this.errorMessage = 'This field is required.';
         return false;
       }
-
+      
       // If field is not required and empty, it's valid
       if (!this.required && (!this.value || this.value.trim() === '')) {
         return true;
       }
-
+      
       // If we have a value, check if it's a valid date
       if (this.value) {
         const currentDate = this._moment(this.value);
-
+        
         // Check if the date itself is valid
         if (!currentDate.isValid()) {
           this.errorReason = 'invalidDate';
           this.errorMessage = 'Invalid date. Please enter a valid date.';
           return false;
         }
-
+        
         // Get current locale format for error messages
         const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
         moment.locale(userLocale);
         const localeFormat = moment.localeData().longDateFormat('L');
-
+        
         // Check min constraint
         if (this.min) {
           const minDate = this._moment(this._parseDateOnly(this.min));
@@ -3044,7 +3044,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
             return false;
           }
         }
-
+        
         // Check max constraint
         if (this.max) {
           const maxDate = this._moment(this._parseDateOnly(this.max));
@@ -3055,7 +3055,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
           }
         }
       }
-
+      
       // If we reach here, the date is valid
       return true;
     }
@@ -3068,7 +3068,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
     // Override reportValidity for better form integration  
     reportValidity() {
       const isValid = this.validate();
-
+      
       if (!isValid) {
         // Only now show visual errors
         this._showErrors = true;
@@ -3077,7 +3077,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         if (input) {
           input.focus();
         }
-
+        
         // Fire invalid event for form integration
         this.dispatchEvent(new CustomEvent('invalid', {
           bubbles: true,
@@ -3087,7 +3087,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
           }
         }));
       }
-
+      
       return isValid;
     }
 
@@ -3110,11 +3110,11 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
 
     disconnectedCallback() {
       super.disconnectedCallback();
-
+      
       // Clean up event listeners
       document.removeEventListener('click', this._handleDocumentClick);
       document.removeEventListener('keydown', this._handleEscapeKey);
-
+      
     }
 
 
@@ -3151,20 +3151,20 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         yearButton.focus();
         // Set up keyboard navigation for year options
         this._setupYearKeyNavigation();
-      }
+      } 
     }
 
     _scrollToCurrentYear() {
       const currentYear = this._viewDate.getFullYear();
       const yearButton = this.shadowRoot.querySelector(`[data-year="${currentYear}"]`);
       const yearOptions = this.shadowRoot.querySelector('#yearOptions');
-
+      
       if (yearButton && yearOptions) {
         const containerHeight = yearOptions.clientHeight;
         const buttonHeight = yearButton.offsetHeight;
         const buttonTop = yearButton.offsetTop;
         const scrollTop = buttonTop - (containerHeight / 2) + (buttonHeight / 2);
-
+        
         yearOptions.scrollTop = Math.max(0, scrollTop);
       }
     }
@@ -3201,7 +3201,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       let nextIndex = currentIndex;
       // Prevent this event from bubbling to parent handlers (avoids double processing)
       // Do this only for the keys we handle
-      const handledKeys = ['ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown', 'Enter', ' ', 'Escape'];
+      const handledKeys = ['ArrowUp','ArrowDown','Home','End','PageUp','PageDown','Enter',' ' ,'Escape'];
       if (handledKeys.includes(e.key)) {
         e.stopPropagation();
       }
@@ -3258,7 +3258,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       if (yearOptions) {
         yearOptions.classList.remove('open');
         this._isYearDropdownOpen = false;
-
+        
         // Return focus to year dropdown button
         const yearDropdown = this.shadowRoot.querySelector('.year-dropdown');
         if (yearDropdown) {
@@ -3283,7 +3283,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
         // Create new date with proper month/day preservation
         const currentMonth = this._viewDate.getMonth();
         const currentDay = this._viewDate.getDate();
-
+        
         // Handle edge case of Feb 29 in non-leap years
         let newDay = currentDay;
         if (currentMonth === 1 && currentDay === 29) { // February 29
@@ -3292,11 +3292,11 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
             newDay = 28; // Set to Feb 28 in non-leap years
           }
         }
-
+        
         const newDate = new Date(year, currentMonth, newDay);
         newDate.setHours(0, 0, 0, 0);
-
-
+        
+        
         this._viewDate = newDate;
         // Clear focused date when changing year
         this._focusedDate = null;
@@ -3397,12 +3397,12 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       } else if (e.key === 'Escape') {
         e.preventDefault();
         this._closeYearDropdown();
-      }
+        }
       // Tab navigation is handled by central focus management
     }
 
-
-
+    
+    
     // Helper to get focusable element by name
     _getFocusableElement(elementName) {
       switch (elementName) {
@@ -3437,79 +3437,79 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
     // Professional date-to-ISO converter
     _dateToISO(date) {
       if (!date || isNaN(date.getTime())) return '';
-
+      
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
-
+      
       return `${year}-${month}-${day}`;
     }
-
+    
     // Professional date formatter for display
     _formatDateForDisplay(date) {
       if (!date || isNaN(date.getTime())) return '';
-
+      
       try {
         // Get user's locale and ensure moment uses it
         const userLocale = navigator.languages && navigator.languages[0] || navigator.language || 'en-US';
         moment.locale(userLocale);
-
+        
         // Use moment's locale-specific format
         const localeFormat = moment.localeData().longDateFormat('L');
         const formatted = this._moment(date).format(localeFormat);
+        
 
-
-
+        
         return formatted;
       } catch (error) {
         // Safe fallback using Intl.DateTimeFormat
         return new Intl.DateTimeFormat(navigator.language).format(date);
       }
     }
-
+    
     // Professional date parser for user input
     _parseUserInput(inputString) {
       if (!inputString || typeof inputString !== 'string') return null;
-
+      
       const trimmedInput = inputString.trim();
       if (!trimmedInput) return null;
-
+      
       try {
         // Get user's locale
         const userLocale = navigator.languages && navigator.languages[0] || navigator.language || 'en-US';
         moment.locale(userLocale);
         const localeFormat = moment.localeData().longDateFormat('L');
-
+        
         // Try strict parsing first (exact format match)
         let momentDate = this._moment(trimmedInput, localeFormat, true);
-
+        
         if (momentDate.isValid()) {
           const date = momentDate.toDate();
           date.setHours(0, 0, 0, 0);
           return { date, isExactFormat: true };
         }
-
+        
         // Try lenient parsing (more flexible)
         momentDate = this._moment(trimmedInput, localeFormat, false);
-
+        
         if (momentDate.isValid()) {
           const date = momentDate.toDate();
           date.setHours(0, 0, 0, 0);
-
+          
           // Verify it's a logical date
           if (date.getFullYear() < 1900 || date.getFullYear() > 2200) {
             return null;
           }
-
+          
           return { date, isExactFormat: false };
         }
-
+        
         return null;
       } catch (error) {
         return null;
       }
     }
-
+    
     // Helper method to ensure consistent date formatting across all operations (legacy compatibility)
     _ensureConsistentDateFormat(date) {
       return this._formatDateForDisplay(date);
@@ -3531,10 +3531,10 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       if (!this._userIsTyping && e.key.length === 1) {
         this._userIsTyping = true;
       }
-
+      
       // Allow opening calendar with specific keys when input is focused
       if (e.key === 'F4' || e.key === 'ArrowDown') {
-        e.preventDefault();
+            e.preventDefault();
         this._openCalendar(e, true); // Opened via keyboard
       } else if (e.key === 'Enter') {
         // Enter validates input
@@ -3556,9 +3556,9 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
 
     _handleNavButtonKeydown(e) {
       if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
+          e.preventDefault();
         e.stopPropagation();
-
+        
         // Call the appropriate navigation method directly
         if (e.target.id === 'prevMonth') {
           this._previousMonth(e);
@@ -3578,33 +3578,33 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
 
     _isPreviousMonthDisabled() {
       if (!this.min) return false;
-
+      
       // Calculate the previous month
       const currentDate = new Date(this._viewDate);
       const prevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-
+      
       // Check if the previous month contains ANY valid dates
       const hasValidDatesInPrevMonth = this._monthHasValidDates(prevMonth);
-
+      
       const isDisabled = !hasValidDatesInPrevMonth;
-
-
+      
+      
       return isDisabled;
     }
 
     _isNextMonthDisabled() {
       if (!this.max) return false;
-
+      
       // Calculate the next month
       const currentDate = new Date(this._viewDate);
       const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-
+      
       // Check if the next month contains ANY valid dates
       const hasValidDatesInNextMonth = this._monthHasValidDates(nextMonth);
-
+      
       const isDisabled = !hasValidDatesInNextMonth;
-
-
+      
+      
       return isDisabled;
     }
 
@@ -3614,46 +3614,46 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
       if (!this.min && !this.max) {
         return true;
       }
-
+      
       const year = monthDate.getFullYear();
       const month = monthDate.getMonth();
-
+      
       // Get the first and last day of the month
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
-
+      
       // Normalize min and max dates
       let minDate = null;
       let maxDate = null;
-
+      
       if (this.min) {
         minDate = new Date(this.min);
         minDate.setHours(0, 0, 0, 0);
       }
-
+      
       if (this.max) {
         maxDate = new Date(this.max);
         maxDate.setHours(23, 59, 59, 999);
       }
-
+      
       // Check if there's any overlap between the month and the valid date range
       let monthStart = new Date(firstDay);
       let monthEnd = new Date(lastDay);
       monthStart.setHours(0, 0, 0, 0);
       monthEnd.setHours(23, 59, 59, 999);
-
+      
       // If we have a min constraint, the valid start date is the later of month start or min date
       let validStart = monthStart;
       if (minDate && minDate > monthStart) {
         validStart = minDate;
       }
-
+      
       // If we have a max constraint, the valid end date is the earlier of month end or max date
       let validEnd = monthEnd;
       if (maxDate && maxDate < monthEnd) {
         validEnd = maxDate;
       }
-
+      
       // Check if there's a valid range (start <= end)
       const hasValidDates = validStart <= validEnd;
       return hasValidDates;
@@ -3681,7 +3681,7 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
           this.i18n = {};
         }
         this.i18n[i18nProperty] = value;
-
+        
         // Handle specific i18n properties that affect calendar display
         if (i18nProperty === 'firstDayOfWeek') {
           this.firstDayOfWeek = value;
@@ -3765,6 +3765,6 @@ console.warn(`[nuxeo-accessible-date-picker] Error getting i18n text for key '${
     }
   }
 
-  customElements.define(AccessibleDatePicker.is, AccessibleDatePicker);
-  Nuxeo.AccessibleDatePicker = AccessibleDatePicker;
+  customElements.define(CustomDatePicker.is, CustomDatePicker);
+  Nuxeo.CustomDatePicker = CustomDatePicker;
 }
