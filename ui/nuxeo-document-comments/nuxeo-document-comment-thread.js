@@ -74,6 +74,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
                 no-label-float
                 on-keydown="_checkForEnter"
               >
+              
               </paper-textarea>
               <dom-if if="[[!_isBlank(text)]]">
                 <template>

@@ -224,7 +224,7 @@ import '../nuxeo-button-styles.js';
                         </dom-if>
                         <dom-if if="[[!truncated]]">
                           <template>
-
+ 
                           <paper-icon-button 
                             tabindex="0" 
                             name="reply"
