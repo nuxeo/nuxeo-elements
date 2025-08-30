@@ -177,6 +177,11 @@ import { config } from '@nuxeo/nuxeo-elements';
           value: false,
         },
         
+        _showErrors: {
+          type: Boolean,
+          value: false,
+        },
+        
         _isYearDropdownOpen: {
           type: Boolean,
           value: false,
@@ -298,9 +303,14 @@ import { config } from '@nuxeo/nuxeo-elements';
           }
 
           .input-wrapper:focus-within {
-            border-color: #2563eb;
+            border-color: #2563eb !important;
             box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
             outline: none;
+          }
+          
+          /* Ensure focus always shows blue border, even for required fields */
+          :host([required]) .input-wrapper:focus-within {
+            border-color: #2563eb !important;
           }
 
           .input-field {
@@ -483,6 +493,7 @@ import { config } from '@nuxeo/nuxeo-elements';
             font-weight: 600;
             color: #111827;
             font-size: 16px;
+            margin-right: 5px;
           }
 
           .year-text {
@@ -640,8 +651,8 @@ import { config } from '@nuxeo/nuxeo-elements';
             padding: 8px 12px;
             cursor: pointer;
             font-size: 14px;
-            transition: background-color 0.2s ease;
-            border: none;
+            border: 2px solid transparent;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
             background: transparent;
             width: 100%;
             text-align: left;
@@ -663,16 +674,18 @@ import { config } from '@nuxeo/nuxeo-elements';
 
           .year-option:focus,
           .month-year-option:focus {
-            outline: 2px solid #2563eb;
-            outline-offset: 2px;
+            outline: none;
+            border: 2px solid #2563eb;
             background-color: #f3f4f6;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
           }
 
           .year-option.selected:focus,
           .month-year-option.selected:focus {
-            outline: 2px solid #ffffff;
-            outline-offset: 2px;
+            outline: none;
+            border: 2px solid #ffffff;
             background-color: #1d4ed8; /* Darker blue when focused and selected */
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
           }
 
           .year-option.selected:hover {
@@ -929,6 +942,7 @@ import { config } from '@nuxeo/nuxeo-elements';
               aria-haspopup="grid"
               autocomplete="off"
               on-focus="_onInputFocus"
+              on-click="_onInputClick"
               on-blur="_onInputBlur"
               on-keydown="_onInputKeydown"
               on-input="_onInputChange"
@@ -2032,8 +2046,9 @@ import { config } from '@nuxeo/nuxeo-elements';
       this._inputValue = '';
       this._safeSetValue('');
       this._preventInputUpdate = false; // Reset flag
-      this.invalid = false;
-      this.errorMessage = '';
+      
+      // Trigger validation to update error state based on current _showErrors flag
+      this.validate();
       
       // Regenerate calendar to remove any date highlighting
       this._generateCalendar();
@@ -2045,6 +2060,44 @@ import { config } from '@nuxeo/nuxeo-elements';
           dateInput.focus();
         }
       }, 10);
+    }
+
+    _onInputFocus(e) {
+      // Close calendar when user focuses on input to type
+      if (this._isCalendarOpen) {
+        // Use async to ensure this happens after any other click handlers
+        this.async(() => {
+          this._closeCalendar();
+        }, 1);
+      }
+    }
+
+    _onInputClick(e) {
+      // Also handle click events to close calendar when user wants to type
+      
+      if (this._isCalendarOpen) {
+        // Stop this click from bubbling to document handlers
+        e.stopPropagation();
+        
+        // Close calendar immediately
+        this._closeCalendar();
+      }
+    }
+
+    _onInputBlur(e) {
+      // Handle input blur if needed in the future
+    }
+
+    _onInputKeydown(e) {
+      // Handle special keydown events if needed
+      if (e.key === 'ArrowDown' || e.key === 'F4') {
+        e.preventDefault();
+        this._openCalendar(e, true); // Opened via keyboard
+      }
+    }
+
+    _onInputChange(e) {
+      // Handle input change events if needed in the future
     }
 
     _selectDate(date) {
@@ -3126,7 +3179,8 @@ import { config } from '@nuxeo/nuxeo-elements';
       // Ensure error text visibility aligns with state
       const errorEl = this.shadowRoot && this.shadowRoot.querySelector('#errorText');
       if (errorEl) {
-        const shouldShow = !!this._showErrors && !!newVal && !!this.errorMessage;
+        // Use the same logic as template binding
+        const shouldShow = this._showError(newVal, this.errorMessage, this._showErrors);
         errorEl.hidden = !shouldShow;
       }
     }
@@ -3140,7 +3194,9 @@ import { config } from '@nuxeo/nuxeo-elements';
       const errorEl = this.shadowRoot && this.shadowRoot.querySelector('#errorText');
       if (errorEl) {
         errorEl.textContent = newMsg || '';
-        errorEl.hidden = !(this._showErrors && this.invalid && !!newMsg);
+        // Use the same logic as template binding
+        const shouldShow = this._showError(this.invalid, newMsg, this._showErrors);
+        errorEl.hidden = !shouldShow;
       }
     }
 
@@ -3203,26 +3259,80 @@ import { config } from '@nuxeo/nuxeo-elements';
 
     validate() {
       const isAccessibleValid = this._getValidity();
-      // For required empty case, mark invalid but do not set message (border only)
-      if (!isAccessibleValid && this.required && (!this.value || this.value.trim() === '')) {
-        this.invalid = true;
-        this.errorMessage = '';
-        return false;
-      }
       this.invalid = !isAccessibleValid;
       return isAccessibleValid;
+    }
+
+    /**
+     * Report validity (typically called by form on submit)
+     * This enables error display for required fields
+     */
+    reportValidity() {
+      this._showErrors = true;
+      const isValid = this.validate();
+      
+      // Force update of error display by notifying Polymer of property changes
+      this.notifyPath('_showErrors');
+      this.notifyPath('invalid');
+      this.notifyPath('errorMessage');
+      this.notifyPath('errorReason');
+      
+      // Force immediate DOM update
+      this.async(() => {
+        if (!isValid) {
+          // Manually ensure error message shows for required fields
+          const errorEl = this.shadowRoot.querySelector('#errorText');
+          if (errorEl && this.required && (!this.value || this.value.trim() === '')) {
+            errorEl.textContent = 'This field is required.';
+            errorEl.hidden = false;
+          }
+          
+          // Ensure invalid attribute is set on host
+          if (this.invalid && !this.hasAttribute('invalid')) {
+            this.setAttribute('invalid', '');
+          }
+          
+          // Focus the input field to show validation error
+          const input = this.shadowRoot.querySelector('#dateInput');
+          if (input) {
+            input.focus();
+          }
+        }
+      }, 1);
+      
+      return isValid;
+    }
+
+    /**
+     * Reset error display state (typically called when form is reset)
+     */
+    resetErrorState() {
+      this._showErrors = false;
+      this.invalid = false;
+      this.errorMessage = '';
+      this.errorReason = '';
+      this.notifyPath('_showErrors');
+      this.notifyPath('invalid');
+      this.notifyPath('errorMessage');
     }
 
     _getValidity() {
       // Check required field first
       if (this.required && (!this.value || this.value.trim() === '')) {
         this.errorReason = 'required';
-        this.errorMessage = 'This field is required.';
+        // Only set error message if we should show errors
+        if (this._showErrors) {
+          this.errorMessage = 'This field is required.';
+        } else {
+          this.errorMessage = '';
+        }
         return false;
       }
       
       // If field is not required and empty, it's valid
       if (!this.required && (!this.value || this.value.trim() === '')) {
+        this.errorReason = '';
+        this.errorMessage = '';
         return true;
       }
       
@@ -3263,7 +3373,9 @@ import { config } from '@nuxeo/nuxeo-elements';
         }
       }
       
-      // If we reach here, the date is valid
+      // If we reach here, the date is valid - clear any error state
+      this.errorReason = '';
+      this.errorMessage = '';
       return true;
     }
 
@@ -3612,7 +3724,11 @@ import { config } from '@nuxeo/nuxeo-elements';
       } else if (e.key === 'Escape') {
         e.preventDefault();
         this._closeYearDropdown();
-        }
+      } else if (e.key === 'Tab') {
+        // Close dropdown when user tabs away
+        this._closeYearDropdown();
+        // Don't prevent default - allow normal tab navigation
+      }
       // Tab navigation is handled by central focus management
     }
 
