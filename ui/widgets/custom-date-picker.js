@@ -2317,8 +2317,9 @@ import { config } from '@nuxeo/nuxeo-elements';
           // Close year dropdown when focus moves outside
           this.async(() => {
             const currentFocus = document.activeElement;
-            const stillOutside = !yearDropdown?.contains(currentFocus) && 
-                               !yearOptions?.contains(currentFocus);
+            const stillOutside =
+              !(yearDropdown && yearDropdown.contains(currentFocus)) &&
+              !(yearOptions && yearOptions.contains(currentFocus));
             if (stillOutside) {
               this._closeYearDropdown();
             }
