@@ -54,12 +54,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
          */
         defaultTime: {
           type: String,
-          observer: '_defaultTimeChanged'
+          observer: '_defaultTimeChanged',
         },
 
         errorMessage: {
           type: String,
-          observer: '_errorMessageChanged'
+          observer: '_errorMessageChanged',
         },
 
         /*
@@ -67,7 +67,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
          */
         max: {
           type: String,
-          observer: '_maxChanged'
+          observer: '_maxChanged',
         },
 
         /*
@@ -75,7 +75,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
          */
         min: {
           type: String,
-          observer: '_minChanged'
+          observer: '_minChanged',
         },
 
         required: {
@@ -101,7 +101,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
          */
         firstDayOfWeek: {
           type: Number,
-          observer: '_firstDayOfWeekChanged'
+          observer: '_firstDayOfWeekChanged',
         },
 
         /**
@@ -138,7 +138,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           type: Boolean,
           value: false,
           reflectToAttribute: true,
-          observer: '_invalidChanged'
+          observer: '_invalidChanged',
         },
 
         // Reason for current invalid state: 'required' | 'format' | 'invalidDate' | 'outOfRange' | 'notSelectable' | ''
@@ -258,13 +258,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // i18n properties for compatibility with nuxeo-date-picker
         i18n: {
           type: Object,
-          value: () => ({}),
+          value() {
+            return {};
+          },
         },
 
         // Internationalization text labels
         i18nLabels: {
           type: Object,
-          value: () => ({}),
+          value() {
+            return {};
+          },
         },
       };
     }
@@ -1044,7 +1048,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                 on-click="_openCalendarViaMouse"
                 on-keydown="_handleCalendarIconKeydown"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" 
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                   <line x1="16" y1="2" x2="16" y2="6"></line>
                   <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -1054,17 +1059,22 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           </div>
         </div>
 
-          <div class="error-message" id="errorText" hidden$="[[!_showError(invalid, errorMessage, _showErrors)]]">
+          <div class="error-message" id="errorText" 
+               hidden$="[[!_showError(invalid, errorMessage, _showErrors)]]">
             [[errorMessage]]
           </div>
           <!-- Screen reader live status region -->
-          <div id="srStatus" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+          <div id="srStatus" class="sr-only" role="status" 
+               aria-live="polite" aria-atomic="true"></div>
 
-          <div class="calendar-popover" id="calendarPopover" role="dialog" aria-label="Calendar" aria-modal$="[[_isCalendarOpen]]">
+          <div class="calendar-popover" id="calendarPopover" role="dialog" 
+               aria-label="Calendar" aria-modal$="[[_isCalendarOpen]]">
             <div class="calendar-header">
                 <div class="month-year-display">
                   <span class="month-text">[[_getMonthName(_viewDate)]]</span>
-                  <div class="year-dropdown" on-click="_toggleYearDropdown" tabindex="0" role="button" aria-label$="[[_getLocalizedText('selectYear')]]" aria-haspopup="listbox" aria-expanded$="[[_isYearDropdownOpen]]" on-keydown="_handleYearDropdownKeydown">
+                  <div class="year-dropdown" on-click="_toggleYearDropdown" tabindex="0" role="button" 
+                       aria-label$="[[_getLocalizedText('selectYear')]]" aria-haspopup="listbox" 
+                       aria-expanded$="[[_isYearDropdownOpen]]" on-keydown="_handleYearDropdownKeydown">
                     <span class="year-text">[[_getYear(_viewDate)]]</span>
                     <button type="button" class="year-dropdown-button" aria-label="Select year" tabindex="-1">
                       <iron-icon icon$="[[_getDropdownIcon(_isYearDropdownOpen)]]"></iron-icon>
@@ -1076,18 +1086,26 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                           on-click="_selectYear"
                           tabindex$="[[_getYearTabIndex(item, _viewDate)]]"
                           role="option"
-                          aria-selected$="[[_isSelectedYear(item, _viewDate)]]">[[item]]</button>
+                          aria-selected$="[[_isSelectedYear(item, _viewDate)]]">
+                          [[item]]
+                        </button>
                       </template>
                     </div>
                   </div>
                 </div>
                 
               <div class="navigation">
-                <button type="button" class="nav-button" id="prevMonth" aria-label$="[[_getLocalizedText('previousMonth')]]" tabindex="0" on-click="_previousMonth" on-keydown="_handleNavButtonKeydown" disabled$="[[_isPreviousMonthDisabled()]]">
+                <button type="button" class="nav-button" id="prevMonth" 
+                        aria-label$="[[_getLocalizedText('previousMonth')]]" tabindex="0" 
+                        on-click="_previousMonth" on-keydown="_handleNavButtonKeydown" 
+                        disabled$="[[_isPreviousMonthDisabled()]]">
                   <iron-icon icon="icons:chevron-left"></iron-icon>
                 </button>
                 
-                <button type="button" class="nav-button" id="nextMonth" aria-label$="[[_getLocalizedText('nextMonth')]]" tabindex="0" on-click="_nextMonth" on-keydown="_handleNavButtonKeydown" disabled$="[[_isNextMonthDisabled()]]">
+                <button type="button" class="nav-button" id="nextMonth" 
+                        aria-label$="[[_getLocalizedText('nextMonth')]]" tabindex="0" 
+                        on-click="_nextMonth" on-keydown="_handleNavButtonKeydown" 
+                        disabled$="[[_isNextMonthDisabled()]]">
                   <iron-icon icon="icons:chevron-right"></iron-icon>
                 </button>
               </div>
@@ -1099,7 +1117,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                 </template>
               </div>
 
-            <div class="calendar-grid" role="grid" aria-label="Calendar dates" aria-activedescendant$="[[_getActiveDescendant(_focusedDate)]]" on-keydown="_handleGridKeydown" on-click="_handleCalendarGridClick">
+            <div class="calendar-grid" role="grid" aria-label="Calendar dates" 
+                 aria-activedescendant$="[[_getActiveDescendant(_focusedDate)]]" 
+                 on-keydown="_handleGridKeydown" on-click="_handleCalendarGridClick">
                 <template is="dom-repeat" items="[[_calendarDays]]">
                 <button
                   type="button"
@@ -1175,16 +1195,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._setupI18n(userLocale);
       
       // Set up i18n properties for compatibility with nuxeo-date-picker
-      // Store the i18n function reference before overwriting the property
-      let i18nFn = null;
-      try {
-        // Check if this.i18n exists and is a function (from I18nBehavior)
-        if (typeof this.i18n === 'function') {
-          i18nFn = this.i18n.bind(this);
-        }
-      } catch (error) {
-        // I18nBehavior not available - continue without it
-      }
       
       // Set up the i18n configuration object
       this.i18n = {
@@ -1197,24 +1207,23 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         },
         parseDate: (text) => {
           try {
-            const localeFormat = moment.localeData().longDateFormat('L');
-            const date = this._moment(text, localeFormat, true); // strict parsing with locale format
+            const parseLocaleFormat = moment.localeData().longDateFormat('L');
+            const date = this._moment(text, parseLocaleFormat, true); // strict parsing with locale format
             if (date.isValid()) {
-            return {
-              day: date.get('D'),
-              month: date.get('M'),
-              year: date.get('Y'),
-            };
-            } else {
-
-              // Return current date instead of hardcoded values
-              const fallbackDate = this._moment();
               return {
-                day: fallbackDate.get('D'),
-                month: fallbackDate.get('M'),
-                year: fallbackDate.get('Y'),
+                day: date.get('D'),
+                month: date.get('M'),
+                year: date.get('Y'),
               };
             }
+
+            // Return current date instead of hardcoded values
+            const fallbackDate = this._moment();
+            return {
+              day: fallbackDate.get('D'),
+              month: fallbackDate.get('M'),
+              year: fallbackDate.get('Y'),
+            };
           } catch (error) {
             // Return current date instead of hardcoded values
             const fallbackDate = this._moment();
@@ -1251,7 +1260,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           return result || fallback;
         }
       } catch (error) {
-
+        // Ignore error and fall through to fallback
       }
       return fallback;
     }
@@ -1406,7 +1415,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           previousMonth: 'Vorheriger Monat',
           nextMonth: 'Nächster Monat',
           selectYear: 'Jahr auswählen',
-          calendarOpened: 'Kalender geöffnet. Verwenden Sie die Pfeiltasten zur Navigation. Drücken Sie Escape zum Schließen.',
+          calendarOpened: 'Kalender geöffnet. Verwenden Sie die Pfeiltasten zur Navigation. ' +
+                        'Drücken Sie Escape zum Schließen.',
           calendarClosed: 'Kalender geschlossen.',
           required: 'Dieses Feld ist erforderlich.',
           invalidDate: 'Ungültiges Datum. Bitte geben Sie ein gültiges Datum ein.',
@@ -1532,7 +1542,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       let text = this.i18nLabels[key] || key;
       
       // Replace placeholders
-      Object.keys(placeholders).forEach(placeholder => {
+      Object.keys(placeholders).forEach((placeholder) => {
         const value = placeholders[placeholder];
         text = text.replace(new RegExp(`\\{${placeholder}\\}`, 'g'), value);
       });
@@ -1559,7 +1569,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _formatAriaDate(date) {
       try {
         return new Intl.DateTimeFormat(this._locale || (navigator && navigator.language) || 'en-US', {
-          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
         }).format(date);
       } catch (_) {
         return date && date.toDateString ? date.toDateString() : '';
@@ -1584,11 +1594,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             const day = parseInt(m[3], 10);
             const d = new Date(year, month, day);
             d.setHours(0, 0, 0, 0);
-            return isNaN(d.getTime()) ? null : d;
+            return Number.Number.isNaN(d.getTime()) ? null : d;
           }
         }
         const d = new Date(value);
-        if (isNaN(d.getTime())) return null;
+        if (Number.Number.isNaN(d.getTime())) return null;
         d.setHours(0, 0, 0, 0);
         return d;
       } catch (_) {
@@ -1663,14 +1673,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       
       if (this.min) {
         const minDate = new Date(this.min);
-        if (!isNaN(minDate.getTime())) {
+        if (!Number.isNaN(minDate.getTime())) {
           minYear = Math.max(startYear, minDate.getFullYear());
         }
       }
       
       if (this.max) {
         const maxDate = new Date(this.max);
-        if (!isNaN(maxDate.getTime())) {
+        if (!Number.isNaN(maxDate.getTime())) {
           maxYear = Math.min(endYear, maxDate.getFullYear());
         }
       }
@@ -1683,8 +1693,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _generateMonthYearOptions() {
       const currentYear = this._today.getFullYear();
-      const selectedYear = this._selectedDate ? this._selectedDate.getFullYear() : currentYear;
-      const viewYear = this._viewDate ? this._viewDate.getFullYear() : currentYear;
       
       // Use 1900-2099 range but respect min/max constraints
       let startYear = 1900;
@@ -1693,14 +1701,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Apply min/max constraints if specified
       if (this.min) {
         const minDate = new Date(this.min);
-        if (!isNaN(minDate.getTime())) {
+        if (!Number.isNaN(minDate.getTime())) {
           startYear = Math.max(startYear, minDate.getFullYear());
         }
       }
       
       if (this.max) {
         const maxDate = new Date(this.max);
-        if (!isNaN(maxDate.getTime())) {
+        if (!Number.isNaN(maxDate.getTime())) {
           endYear = Math.min(endYear, maxDate.getFullYear());
         }
       }
@@ -1731,14 +1739,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           if (isValidMonthYear) {
             const label = new Intl.DateTimeFormat(this._locale, { 
               month: 'long', 
-              year: 'numeric' 
+              year: 'numeric',
             }).format(date);
             
             this._monthYearOptions.push({
-              label: label,
+              label,
               value: `${year}-${month}`,
-              year: year,
-              month: month
+              year,
+              month,
             });
           }
         }
@@ -1752,7 +1760,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const month = this._viewDate.getMonth();
       
       const firstDay = new Date(year, month, 1);
-      const firstDayOfWeek = this.firstDayOfWeek || config.get('firstDayOfWeek', moment.localeData().firstDayOfWeek() || 0);
+      const firstDayOfWeek = this.firstDayOfWeek || 
+                            config.get('firstDayOfWeek', moment.localeData().firstDayOfWeek() || 0);
       const startDate = new Date(firstDay);
       const dayOffset = (firstDay.getDay() - firstDayOfWeek + 7) % 7;
       startDate.setDate(1 - dayOffset);
@@ -1784,7 +1793,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         days.push({
           date: new Date(currentDate),
           day: isEmpty ? '' : currentDate.getDate(),
-          dateISO: dateISO,
+          dateISO,
           isCurrentMonth,
           isToday,
           isSelected,
@@ -1881,7 +1890,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           }, 50);
           
           // Only stop propagation for clicks on non-interactive elements
-          const target = e.target;
+          const { target } = e;
           const isInteractiveElement = target.closest('button') || 
                                      target.closest('select') || 
                                      target.closest('[role="button"]') ||
@@ -1923,7 +1932,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         'nextMonth',         // Next month button
         'calendar-grid',     // Date grid (managed separately)
         'today-button',      // Today button
-        'cancel-button'      // Cancel button
+        'cancel-button',     // Cancel button
       ];
     }
 
@@ -3276,7 +3285,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _isValidDate(date) {
-      if (!date || isNaN(date.getTime())) {
+      if (!date || Number.isNaN(date.getTime())) {
         return false;
       }
       
@@ -4243,7 +4252,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     // Professional date-to-ISO converter
     _dateToISO(date) {
-      if (!date || isNaN(date.getTime())) return '';
+      if (!date || Number.isNaN(date.getTime())) return '';
       
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -4254,7 +4263,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     
     // Professional date formatter for display
     _formatDateForDisplay(date) {
-      if (!date || isNaN(date.getTime())) return '';
+      if (!date || Number.isNaN(date.getTime())) return '';
       
       try {
         // Get user's locale and ensure moment uses it
