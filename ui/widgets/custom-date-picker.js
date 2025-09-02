@@ -24,9 +24,9 @@ import '@polymer/iron-icons/iron-icons.js';
 import '../nuxeo-icons.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import { config } from '@nuxeo/nuxeo-elements';
+import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
 {
   class CustomDatePicker extends mixinBehaviors(
