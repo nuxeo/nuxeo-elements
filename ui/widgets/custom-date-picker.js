@@ -182,6 +182,11 @@ import { config } from '@nuxeo/nuxeo-elements';
           value: false,
         },
         
+        _justCleared: {
+          type: Boolean,
+          value: false,
+        },
+        
         _isYearDropdownOpen: {
           type: Boolean,
           value: false,
@@ -232,6 +237,12 @@ import { config } from '@nuxeo/nuxeo-elements';
           value: '',
         },
         
+        _isRTL: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+        },
+        
         _dateFormatter: {
           type: Object,
           value: null,
@@ -246,6 +257,12 @@ import { config } from '@nuxeo/nuxeo-elements';
 
         // i18n properties for compatibility with nuxeo-date-picker
         i18n: {
+          type: Object,
+          value: () => ({}),
+        },
+
+        // Internationalization text labels
+        i18nLabels: {
           type: Object,
           value: () => ({}),
         },
@@ -922,6 +939,63 @@ import { config } from '@nuxeo/nuxeo-elements';
           .footer-button:focus {
             box-shadow: 0 0 0 2px #2563eb;
           }
+
+          /* RTL (Right-to-Left) Support */
+          :host([_is-r-t-l]) {
+            direction: rtl;
+          }
+
+          :host([_is-r-t-l]) .input-field {
+            text-align: right;
+            padding: 6px 8px 6px 48px; /* Reverse padding for RTL */
+          }
+
+          :host([_is-r-t-l]) .input-actions {
+            right: auto;
+            left: 4px; /* Move actions to left side for RTL */
+          }
+
+          :host([_is-r-t-l]) .calendar-popover {
+            left: auto;
+            right: 0; /* Align calendar to right edge for RTL */
+          }
+
+          :host([_is-r-t-l]) .calendar-header {
+            flex-direction: row-reverse; /* Reverse header layout */
+          }
+
+          :host([_is-r-t-l]) .navigation {
+            flex-direction: row-reverse; /* Reverse navigation buttons */
+          }
+
+          :host([_is-r-t-l]) .month-year-display {
+            flex-direction: row-reverse; /* Reverse month-year display */
+          }
+
+          :host([_is-r-t-l]) .calendar-footer {
+            flex-direction: row-reverse; /* Reverse footer buttons */
+          }
+
+          :host([_is-r-t-l]) .weekday-headers {
+            direction: rtl;
+          }
+
+          :host([_is-r-t-l]) .calendar-grid {
+            direction: rtl;
+          }
+
+          /* RTL-specific positioning for dropdown */
+          :host([_is-r-t-l]) .year-options,
+          :host([_is-r-t-l]) .month-year-options {
+            left: auto;
+            right: 0;
+          }
+
+          /* RTL calendar positioning logic */
+          :host([_is-r-t-l]) .calendar-popover.open-up {
+            right: 0;
+            left: auto;
+          }
         </style>
 
         <div class="field-wrapper">
@@ -953,7 +1027,7 @@ import { config } from '@nuxeo/nuxeo-elements';
                 <button
                   type="button"
               class="clear-button"
-                  aria-label="Clear date"
+                  aria-label$="[[_getLocalizedText('clearDate')]]"
                   tabindex="0"
                   on-click="_clearDate"
                 >
@@ -964,7 +1038,7 @@ import { config } from '@nuxeo/nuxeo-elements';
               <button
                 type="button"
                 class="calendar-icon"
-                aria-label="Open calendar"
+                aria-label$="[[_getLocalizedText('openCalendar')]]"
               disabled$="[[disabled]]"
                 tabindex="0"
                 on-click="_openCalendarViaMouse"
@@ -990,7 +1064,7 @@ import { config } from '@nuxeo/nuxeo-elements';
             <div class="calendar-header">
                 <div class="month-year-display">
                   <span class="month-text">[[_getMonthName(_viewDate)]]</span>
-                  <div class="year-dropdown" on-click="_toggleYearDropdown" tabindex="0" role="button" aria-label="Select year" aria-haspopup="listbox" aria-expanded$="[[_isYearDropdownOpen]]" on-keydown="_handleYearDropdownKeydown">
+                  <div class="year-dropdown" on-click="_toggleYearDropdown" tabindex="0" role="button" aria-label$="[[_getLocalizedText('selectYear')]]" aria-haspopup="listbox" aria-expanded$="[[_isYearDropdownOpen]]" on-keydown="_handleYearDropdownKeydown">
                     <span class="year-text">[[_getYear(_viewDate)]]</span>
                     <button type="button" class="year-dropdown-button" aria-label="Select year" tabindex="-1">
                       <iron-icon icon$="[[_getDropdownIcon(_isYearDropdownOpen)]]"></iron-icon>
@@ -1009,11 +1083,11 @@ import { config } from '@nuxeo/nuxeo-elements';
                 </div>
                 
               <div class="navigation">
-                <button type="button" class="nav-button" id="prevMonth" aria-label="Previous month" tabindex="0" on-click="_previousMonth" on-keydown="_handleNavButtonKeydown" disabled$="[[_isPreviousMonthDisabled()]]">
+                <button type="button" class="nav-button" id="prevMonth" aria-label$="[[_getLocalizedText('previousMonth')]]" tabindex="0" on-click="_previousMonth" on-keydown="_handleNavButtonKeydown" disabled$="[[_isPreviousMonthDisabled()]]">
                   <iron-icon icon="icons:chevron-left"></iron-icon>
                 </button>
                 
-                <button type="button" class="nav-button" id="nextMonth" aria-label="Next month" tabindex="0" on-click="_nextMonth" on-keydown="_handleNavButtonKeydown" disabled$="[[_isNextMonthDisabled()]]">
+                <button type="button" class="nav-button" id="nextMonth" aria-label$="[[_getLocalizedText('nextMonth')]]" tabindex="0" on-click="_nextMonth" on-keydown="_handleNavButtonKeydown" disabled$="[[_isNextMonthDisabled()]]">
                   <iron-icon icon="icons:chevron-right"></iron-icon>
                 </button>
               </div>
@@ -1048,10 +1122,10 @@ import { config } from '@nuxeo/nuxeo-elements';
 
             <div class="calendar-footer">
               <button type="button" class="footer-button today-button" on-click="_selectToday" tabindex="0">
-              Today
+              [[_getLocalizedText('today')]]
               </button>
               <button type="button" class="footer-button cancel-button" on-click="_closeCalendar" tabindex="0">
-              Cancel
+              [[_getLocalizedText('cancel')]]
               </button>
             </div>
           </div>
@@ -1093,6 +1167,12 @@ import { config } from '@nuxeo/nuxeo-elements';
       
       // Force update the locale format for consistency
       this._currentLocaleFormat = localeFormat;
+      
+      // Detect RTL languages
+      this._detectRTL(userLocale);
+      
+      // Set up internationalization
+      this._setupI18n(userLocale);
       
       // Set up i18n properties for compatibility with nuxeo-date-picker
       // Store the i18n function reference before overwriting the property
@@ -1148,9 +1228,9 @@ import { config } from '@nuxeo/nuxeo-elements';
         monthNames: moment.months(),
         weekdays: moment.weekdays(),
         weekdaysShort: moment.weekdaysShort(),
-        cancel: this._getI18nText(i18nFn, 'command.cancel', 'Cancel'),
-        clear: this._getI18nText(i18nFn, 'command.clear', 'Clear'),
-        today: this._getI18nText(i18nFn, 'today', 'Today'),
+        cancel: this._getLocalizedText('cancel'),
+        clear: this._getLocalizedText('clear'),
+        today: this._getLocalizedText('today'),
         firstDayOfWeek: this.firstDayOfWeek || config.get('firstDayOfWeek', moment.localeData().firstDayOfWeek() || 0),
       };
       
@@ -1174,6 +1254,290 @@ import { config } from '@nuxeo/nuxeo-elements';
 
       }
       return fallback;
+    }
+
+    // Detect RTL languages
+    _detectRTL(locale) {
+      if (!locale) return;
+      
+      // Common RTL language codes
+      const rtlLanguages = [
+        'ar', // Arabic
+        'he', // Hebrew
+        'fa', // Persian/Farsi
+        'ur', // Urdu
+        'ps', // Pashto
+        'sd', // Sindhi
+        'ku', // Kurdish
+        'dv', // Divehi/Maldivian
+        'ckb', // Central Kurdish (Sorani)
+        'az', // Azerbaijani (sometimes RTL)
+        'ms-arab', // Malay Arabic script
+        'uz-arab', // Uzbek Arabic script
+        'pa-arab', // Punjabi Arabic script
+        'ks-arab', // Kashmiri Arabic script
+        'bal', // Balochi
+        'glk', // Gilaki
+        'lrc', // Northern Luri
+        'mzn', // Mazandarani
+      ];
+      
+      // Extract language code from locale (e.g., 'ar-SA' -> 'ar')
+      const languageCode = locale.toLowerCase().split('-')[0];
+      
+      // Also check for Arabic script indicators
+      const isRTLScript = locale.toLowerCase().includes('-arab') || 
+                         locale.toLowerCase().includes('arabic');
+      
+      // Set RTL if language or script indicates RTL
+      this._isRTL = rtlLanguages.includes(languageCode) || isRTLScript;
+      
+      // Also check document direction as fallback
+      if (!this._isRTL) {
+        const documentDir = document.documentElement.dir || document.body.dir;
+        this._isRTL = documentDir === 'rtl';
+      }
+      
+      // Set dir attribute on host element for proper styling
+      if (this._isRTL) {
+        this.setAttribute('dir', 'rtl');
+      } else {
+        this.setAttribute('dir', 'ltr');
+      }
+    }
+
+    // Set up internationalization support
+    _setupI18n(locale) {
+      const languageCode = locale ? locale.toLowerCase().split('-')[0] : 'en';
+      
+      // Comprehensive i18n dictionary for multiple languages
+      const i18nDict = {
+        // English
+        en: {
+          today: 'Today',
+          cancel: 'Cancel',
+          clear: 'Clear',
+          openCalendar: 'Open calendar',
+          clearDate: 'Clear date',
+          previousMonth: 'Previous month',
+          nextMonth: 'Next month',
+          selectYear: 'Select year',
+          calendarOpened: 'Calendar opened. Use arrow keys to navigate dates. Press Escape to close.',
+          calendarClosed: 'Calendar closed.',
+          required: 'This field is required.',
+          invalidDate: 'Invalid date. Please enter a valid date.',
+          incorrectFormat: 'Incorrect date format.',
+          dateOutOfRange: 'Date out of range.',
+          dateNotSelectable: 'This date is not selectable.',
+          movedToMonth: 'Moved to {month} {year}.',
+          yearChanged: 'Year changed to {year}.',
+        },
+        
+        // Arabic
+        ar: {
+          today: 'اليوم',
+          cancel: 'إلغاء',
+          clear: 'مسح',
+          openCalendar: 'فتح التقويم',
+          clearDate: 'مسح التاريخ',
+          previousMonth: 'الشهر السابق',
+          nextMonth: 'الشهر التالي',
+          selectYear: 'اختر السنة',
+          calendarOpened: 'تم فتح التقويم. استخدم مفاتيح الأسهم للتنقل بين التواريخ. اضغط Escape للإغلاق.',
+          calendarClosed: 'تم إغلاق التقويم.',
+          required: 'هذا الحقل مطلوب.',
+          invalidDate: 'تاريخ غير صحيح. يرجى إدخال تاريخ صحيح.',
+          incorrectFormat: 'تنسيق التاريخ غير صحيح.',
+          dateOutOfRange: 'التاريخ خارج النطاق المسموح.',
+          dateNotSelectable: 'هذا التاريخ غير قابل للاختيار.',
+          movedToMonth: 'انتقل إلى {month} {year}.',
+          yearChanged: 'تم تغيير السنة إلى {year}.',
+        },
+        
+        // Hebrew
+        he: {
+          today: 'היום',
+          cancel: 'ביטול',
+          clear: 'נקה',
+          openCalendar: 'פתח לוח שנה',
+          clearDate: 'נקה תאריך',
+          previousMonth: 'חודש קודם',
+          nextMonth: 'חודש הבא',
+          selectYear: 'בחר שנה',
+          calendarOpened: 'לוח השנה נפתח. השתמש במקשי החצים כדי לנווט בין התאריכים. לחץ Escape כדי לסגור.',
+          calendarClosed: 'לוח השנה נסגר.',
+          required: 'שדה זה חובה.',
+          invalidDate: 'תאריך לא תקין. אנא הזן תאריך תקין.',
+          incorrectFormat: 'פורמט תאריך שגוי.',
+          dateOutOfRange: 'תאריך מחוץ לטווח.',
+          dateNotSelectable: 'תאריך זה אינו ניתן לבחירה.',
+          movedToMonth: 'עבר ל{month} {year}.',
+          yearChanged: 'השנה שונתה ל{year}.',
+        },
+        
+        // French
+        fr: {
+          today: 'Aujourd\'hui',
+          cancel: 'Annuler',
+          clear: 'Effacer',
+          openCalendar: 'Ouvrir le calendrier',
+          clearDate: 'Effacer la date',
+          previousMonth: 'Mois précédent',
+          nextMonth: 'Mois suivant',
+          selectYear: 'Sélectionner l\'année',
+          calendarOpened: 'Calendrier ouvert. Utilisez les flèches pour naviguer. Appuyez sur Échap pour fermer.',
+          calendarClosed: 'Calendrier fermé.',
+          required: 'Ce champ est requis.',
+          invalidDate: 'Date invalide. Veuillez saisir une date valide.',
+          incorrectFormat: 'Format de date incorrect.',
+          dateOutOfRange: 'Date hors limites.',
+          dateNotSelectable: 'Cette date n\'est pas sélectionnable.',
+          movedToMonth: 'Déplacé vers {month} {year}.',
+          yearChanged: 'Année changée à {year}.',
+        },
+        
+        // German
+        de: {
+          today: 'Heute',
+          cancel: 'Abbrechen',
+          clear: 'Löschen',
+          openCalendar: 'Kalender öffnen',
+          clearDate: 'Datum löschen',
+          previousMonth: 'Vorheriger Monat',
+          nextMonth: 'Nächster Monat',
+          selectYear: 'Jahr auswählen',
+          calendarOpened: 'Kalender geöffnet. Verwenden Sie die Pfeiltasten zur Navigation. Drücken Sie Escape zum Schließen.',
+          calendarClosed: 'Kalender geschlossen.',
+          required: 'Dieses Feld ist erforderlich.',
+          invalidDate: 'Ungültiges Datum. Bitte geben Sie ein gültiges Datum ein.',
+          incorrectFormat: 'Falsches Datumsformat.',
+          dateOutOfRange: 'Datum außerhalb des Bereichs.',
+          dateNotSelectable: 'Dieses Datum ist nicht auswählbar.',
+          movedToMonth: 'Zu {month} {year} gewechselt.',
+          yearChanged: 'Jahr geändert zu {year}.',
+        },
+        
+        // Spanish
+        es: {
+          today: 'Hoy',
+          cancel: 'Cancelar',
+          clear: 'Limpiar',
+          openCalendar: 'Abrir calendario',
+          clearDate: 'Limpiar fecha',
+          previousMonth: 'Mes anterior',
+          nextMonth: 'Mes siguiente',
+          selectYear: 'Seleccionar año',
+          calendarOpened: 'Calendario abierto. Use las flechas para navegar. Presione Escape para cerrar.',
+          calendarClosed: 'Calendario cerrado.',
+          required: 'Este campo es obligatorio.',
+          invalidDate: 'Fecha inválida. Por favor ingrese una fecha válida.',
+          incorrectFormat: 'Formato de fecha incorrecto.',
+          dateOutOfRange: 'Fecha fuera de rango.',
+          dateNotSelectable: 'Esta fecha no se puede seleccionar.',
+          movedToMonth: 'Movido a {month} {year}.',
+          yearChanged: 'Año cambiado a {year}.',
+        },
+        
+        // Italian
+        it: {
+          today: 'Oggi',
+          cancel: 'Annulla',
+          clear: 'Cancella',
+          openCalendar: 'Apri calendario',
+          clearDate: 'Cancella data',
+          previousMonth: 'Mese precedente',
+          nextMonth: 'Mese successivo',
+          selectYear: 'Seleziona anno',
+          calendarOpened: 'Calendario aperto. Usa le frecce per navigare. Premi Escape per chiudere.',
+          calendarClosed: 'Calendario chiuso.',
+          required: 'Questo campo è obbligatorio.',
+          invalidDate: 'Data non valida. Inserisci una data valida.',
+          incorrectFormat: 'Formato data errato.',
+          dateOutOfRange: 'Data fuori intervallo.',
+          dateNotSelectable: 'Questa data non è selezionabile.',
+          movedToMonth: 'Spostato a {month} {year}.',
+          yearChanged: 'Anno cambiato a {year}.',
+        },
+        
+        // Portuguese
+        pt: {
+          today: 'Hoje',
+          cancel: 'Cancelar',
+          clear: 'Limpar',
+          openCalendar: 'Abrir calendário',
+          clearDate: 'Limpar data',
+          previousMonth: 'Mês anterior',
+          nextMonth: 'Próximo mês',
+          selectYear: 'Selecionar ano',
+          calendarOpened: 'Calendário aberto. Use as setas para navegar. Pressione Escape para fechar.',
+          calendarClosed: 'Calendário fechado.',
+          required: 'Este campo é obrigatório.',
+          invalidDate: 'Data inválida. Por favor, insira uma data válida.',
+          incorrectFormat: 'Formato de data incorreto.',
+          dateOutOfRange: 'Data fora do intervalo.',
+          dateNotSelectable: 'Esta data não pode ser selecionada.',
+          movedToMonth: 'Movido para {month} {year}.',
+          yearChanged: 'Ano alterado para {year}.',
+        },
+        
+        // Russian
+        ru: {
+          today: 'Сегодня',
+          cancel: 'Отмена',
+          clear: 'Очистить',
+          openCalendar: 'Открыть календарь',
+          clearDate: 'Очистить дату',
+          previousMonth: 'Предыдущий месяц',
+          nextMonth: 'Следующий месяц',
+          selectYear: 'Выбрать год',
+          calendarOpened: 'Календарь открыт. Используйте стрелки для навигации. Нажмите Escape для закрытия.',
+          calendarClosed: 'Календарь закрыт.',
+          required: 'Это поле обязательно.',
+          invalidDate: 'Неверная дата. Введите корректную дату.',
+          incorrectFormat: 'Неверный формат даты.',
+          dateOutOfRange: 'Дата вне диапазона.',
+          dateNotSelectable: 'Эта дата недоступна для выбора.',
+          movedToMonth: 'Перешли к {month} {year}.',
+          yearChanged: 'Год изменен на {year}.',
+        },
+        
+        // Dutch
+        nl: {
+          today: 'Vandaag',
+          cancel: 'Annuleren',
+          clear: 'Wissen',
+          openCalendar: 'Kalender openen',
+          clearDate: 'Datum wissen',
+          previousMonth: 'Vorige maand',
+          nextMonth: 'Volgende maand',
+          selectYear: 'Jaar selecteren',
+          calendarOpened: 'Kalender geopend. Gebruik pijltjestoetsen om te navigeren. Druk op Escape om te sluiten.',
+          calendarClosed: 'Kalender gesloten.',
+          required: 'Dit veld is verplicht.',
+          invalidDate: 'Ongeldige datum. Voer een geldige datum in.',
+          incorrectFormat: 'Onjuist datumformaat.',
+          dateOutOfRange: 'Datum buiten bereik.',
+          dateNotSelectable: 'Deze datum kan niet geselecteerd worden.',
+          movedToMonth: 'Verplaatst naar {month} {year}.',
+          yearChanged: 'Jaar gewijzigd naar {year}.',
+        },
+      };
+      
+      // Get the appropriate dictionary, fallback to English
+      this.i18nLabels = i18nDict[languageCode] || i18nDict.en;
+    }
+
+    // Get localized text with placeholder replacement
+    _getLocalizedText(key, placeholders = {}) {
+      let text = this.i18nLabels[key] || key;
+      
+      // Replace placeholders
+      Object.keys(placeholders).forEach(placeholder => {
+        const value = placeholders[placeholder];
+        text = text.replace(new RegExp(`\\{${placeholder}\\}`, 'g'), value);
+      });
+      
+      return text;
     }
 
     // Screen reader announcement utility
@@ -2042,13 +2406,27 @@ import { config } from '@nuxeo/nuxeo-elements';
       this._selectedDate = null;
       this._focusedDate = null; // Clear focused date to remove any highlighting
       this._userIsTyping = false; // Clear typing state
+      
+      // Set flag to prevent error display BEFORE calling _safeSetValue
+      // This ensures _valueChanged sees the flag when it runs
+      this._justCleared = true;
+      
+      // Clear error state when user clears the date
+      // Don't show error until next save button click
+      this.invalid = false;
+      this.errorReason = '';
+      this.errorMessage = '';
+      
       this._preventInputUpdate = true;
       this._inputValue = '';
       this._safeSetValue('');
       this._preventInputUpdate = false; // Reset flag
       
-      // Trigger validation to update error state based on current _showErrors flag
-      this.validate();
+      // Notify Polymer of property changes to trigger template re-evaluation
+      this.notifyPath('_justCleared');
+      this.notifyPath('invalid');
+      this.notifyPath('errorMessage');
+      this.notifyPath('errorReason');
       
       // Regenerate calendar to remove any date highlighting
       this._generateCalendar();
@@ -2131,10 +2509,14 @@ import { config } from '@nuxeo/nuxeo-elements';
       this._generateCalendar();
       this._closeCalendar();
       
-      // Clear errors
+      // Clear all errors when valid date is selected (including required errors)
       this.invalid = false;
       this.errorMessage = '';
       this.errorReason = '';
+      
+      // Clear flags when user provides valid input
+      this._showErrors = false;
+      this._justCleared = false;
     }
 
     _selectToday(e) {
@@ -2231,7 +2613,7 @@ import { config } from '@nuxeo/nuxeo-elements';
       window.addEventListener('resize', this._boundReposition, { passive: true });
       window.addEventListener('scroll', this._boundReposition, { passive: true });
       // Announce calendar opened
-      this._announce('Calendar opened. Use arrow keys to navigate dates. Press Escape to close.');
+      this._announce(this._getLocalizedText('calendarOpened'));
       
       // Fire opened-changed event for compatibility with nuxeo-date-picker
       this.dispatchEvent(new CustomEvent('opened-changed', {
@@ -2325,7 +2707,7 @@ import { config } from '@nuxeo/nuxeo-elements';
         popover.style.right = '';
       }
       // Announce calendar closed
-      this._announce('Calendar closed.');
+      this._announce(this._getLocalizedText('calendarClosed'));
       // Remove reposition listeners
       if (this._boundReposition) {
         window.removeEventListener('resize', this._boundReposition);
@@ -2377,7 +2759,10 @@ import { config } from '@nuxeo/nuxeo-elements';
       // Regenerate month-year options if we moved far from the current range
       this._generateMonthYearOptions();
       this._generateCalendar();
-      this._announce(`Moved to ${this._getMonthName(this._viewDate)} ${this._getYear(this._viewDate)}.`);
+      this._announce(this._getLocalizedText('movedToMonth', {
+        month: this._getMonthName(this._viewDate),
+        year: this._getYear(this._viewDate)
+      }));
     }
 
     _nextMonth(e) {
@@ -2404,7 +2789,10 @@ import { config } from '@nuxeo/nuxeo-elements';
       // Regenerate month-year options if we moved far from the current range
       this._generateMonthYearOptions();
       this._generateCalendar();
-      this._announce(`Moved to ${this._getMonthName(this._viewDate)} ${this._getYear(this._viewDate)}.`);
+      this._announce(this._getLocalizedText('movedToMonth', {
+        month: this._getMonthName(this._viewDate),
+        year: this._getYear(this._viewDate)
+      }));
     }
 
     _changeYear(e) {
@@ -2470,6 +2858,7 @@ import { config } from '@nuxeo/nuxeo-elements';
       
       // Validate and select
         if (this._isValidDate(selectedDate)) {
+          // Clear validation errors when valid date is selected
           this.invalid = false;
           this.errorReason = '';
           this.errorMessage = '';
@@ -2477,7 +2866,7 @@ import { config } from '@nuxeo/nuxeo-elements';
       } else {
         this.invalid = true;
         this.errorReason = 'notSelectable';
-        this.errorMessage = 'This date is not selectable.';
+        this.errorMessage = this._getLocalizedText('dateNotSelectable');
       }
     }
 
@@ -2752,9 +3141,20 @@ import { config } from '@nuxeo/nuxeo-elements';
         this._preventInputUpdate = true;
         this._safeSetValue('');
         this._preventInputUpdate = false; // Reset flag
+        // Clear error state when input is empty
+        // Don't show error until next save button click
         this.invalid = false;
         this.errorReason = '';
         this.errorMessage = '';
+        
+        // Set flag to prevent error display
+        this._justCleared = true;
+        
+        // Notify Polymer of property changes to trigger template re-evaluation
+        this.notifyPath('_justCleared');
+        this.notifyPath('invalid');
+        this.notifyPath('errorMessage');
+        this.notifyPath('errorReason');
         this._generateCalendar();
         return;
       }
@@ -2767,7 +3167,7 @@ import { config } from '@nuxeo/nuxeo-elements';
         // Could not parse the date at all
         this.invalid = true;
         this.errorReason = 'format';
-        this.errorMessage = `Incorrect date format. Expected: ${this._getDatePlaceholder()}`;
+        this.errorMessage = `${this._getLocalizedText('incorrectFormat')} ${this._getDatePlaceholder()}`;
         return;
       }
       
@@ -2801,10 +3201,14 @@ import { config } from '@nuxeo/nuxeo-elements';
         this._viewDate = new Date(this._selectedDate);
         this._generateCalendar();
         
-      // Clear errors
+      // Clear all errors when valid date is parsed (including required errors)
         this.invalid = false;
         this.errorReason = '';
         this.errorMessage = '';
+        
+        // Clear flags when user provides valid input
+        this._showErrors = false;
+        this._justCleared = false;
       
 
     }
@@ -3076,8 +3480,17 @@ import { config } from '@nuxeo/nuxeo-elements';
     }
 
     _showError(invalid, errorMessage, showErrors) {
-      const isRequiredCase = this.errorReason === 'required';
-      return invalid && !!errorMessage && (showErrors || !isRequiredCase);
+      // Always show non-required errors immediately
+      if (invalid && !!errorMessage && this.errorReason !== 'required') {
+        return true;
+      }
+      
+      // For required field errors, only show if showErrors is true (after form submit)
+      if (invalid && !!errorMessage && this.errorReason === 'required') {
+        return showErrors === true;
+      }
+      
+      return false;
     }
 
     _valueChanged() {
@@ -3101,9 +3514,13 @@ import { config } from '@nuxeo/nuxeo-elements';
           }
           
           // Trigger validation for required fields when value is cleared
-          if (this.required) {
+          // But NOT when user explicitly cleared the date (avoid showing error immediately)
+          if (this.required && !this._justCleared) {
             this.async(() => {
-              this.validate();
+              // Double-check the _justCleared flag again before validating
+              if (!this._justCleared) {
+                this.validate();
+              }
             }, 10);
           }
           this._preventInputUpdate = false;
@@ -3228,11 +3645,27 @@ import { config } from '@nuxeo/nuxeo-elements';
           popover.classList.remove('open-up');
         }
 
-        // Adjust horizontally if overflowing to the right
-        const rightOverflow = rect.left + popWidth > viewportW - 8; // 8px padding
-        if (rightOverflow) {
-          popover.style.left = 'auto';
-          popover.style.right = '0px';
+        // Adjust horizontally based on RTL and overflow
+        if (this._isRTL) {
+          // For RTL, check left overflow
+          const leftOverflow = rect.right - popWidth < 8; // 8px padding
+          if (leftOverflow) {
+            popover.style.right = 'auto';
+            popover.style.left = '0px';
+          } else {
+            popover.style.left = 'auto';
+            popover.style.right = '0px';
+          }
+        } else {
+          // For LTR, check right overflow
+          const rightOverflow = rect.left + popWidth > viewportW - 8; // 8px padding
+          if (rightOverflow) {
+            popover.style.left = 'auto';
+            popover.style.right = '0px';
+          } else {
+            popover.style.left = '0px';
+            popover.style.right = 'auto';
+          }
         }
       } catch (_) {
         // no-op
@@ -3259,7 +3692,10 @@ import { config } from '@nuxeo/nuxeo-elements';
 
     validate() {
       const isAccessibleValid = this._getValidity();
+      
+      // Always set invalid based on actual validity, but control display via _showErrors
       this.invalid = !isAccessibleValid;
+      
       return isAccessibleValid;
     }
 
@@ -3268,34 +3704,44 @@ import { config } from '@nuxeo/nuxeo-elements';
      * This enables error display for required fields
      */
     reportValidity() {
+      // Always enable error display when reportValidity is called (form submit)
       this._showErrors = true;
+      
+      // Clear the just cleared flag since we're now validating
+      this._justCleared = false;
+      
+      // Force validation which will set error state if needed
       const isValid = this.validate();
       
-      // Force update of error display by notifying Polymer of property changes
+      // Force immediate DOM update for required field errors
+      if (!isValid && this.required && (!this.value || this.value.trim() === '')) {
+        this.invalid = true;
+        this.errorReason = 'required';
+        this.errorMessage = this._generateRequiredMessage();
+      }
+      
+      // Force update of all relevant properties for template binding
       this.notifyPath('_showErrors');
       this.notifyPath('invalid');
       this.notifyPath('errorMessage');
       this.notifyPath('errorReason');
       
-      // Force immediate DOM update
+      // Force template re-evaluation by updating the error element directly
       this.async(() => {
-        if (!isValid) {
-          // Manually ensure error message shows for required fields
-          const errorEl = this.shadowRoot.querySelector('#errorText');
-          if (errorEl && this.required && (!this.value || this.value.trim() === '')) {
-            errorEl.textContent = 'This field is required.';
-            errorEl.hidden = false;
+        const errorEl = this.shadowRoot.querySelector('#errorText');
+        if (errorEl) {
+          const shouldShow = this._showError(this.invalid, this.errorMessage, this._showErrors);
+          
+          errorEl.hidden = !shouldShow;
+          if (shouldShow && this.errorMessage) {
+            errorEl.textContent = this.errorMessage;
           }
           
-          // Ensure invalid attribute is set on host
-          if (this.invalid && !this.hasAttribute('invalid')) {
+          // Also update the host invalid attribute for CSS styling
+          if (shouldShow) {
             this.setAttribute('invalid', '');
-          }
-          
-          // Focus the input field to show validation error
-          const input = this.shadowRoot.querySelector('#dateInput');
-          if (input) {
-            input.focus();
+          } else {
+            this.removeAttribute('invalid');
           }
         }
       }, 1);
@@ -3304,28 +3750,100 @@ import { config } from '@nuxeo/nuxeo-elements';
     }
 
     /**
+     * Update error display in DOM
+     */
+    _updateErrorDisplay(isValid) {
+      const errorEl = this.shadowRoot.querySelector('#errorText');
+      
+      if (!isValid && this._showErrors && errorEl) {
+        // Show error message only if _showErrors is true (after form submit)
+        if (this.required && (!this.value || this.value.trim() === '')) {
+          // Use dynamic error message for required fields
+          errorEl.textContent = this._generateRequiredMessage();
+          errorEl.hidden = false;
+          
+          // Ensure invalid attribute is set on host
+          if (!this.hasAttribute('invalid')) {
+            this.setAttribute('invalid', '');
+          }
+        } else if (this.errorMessage) {
+          // Use the current error message for other validation errors
+          errorEl.textContent = this.errorMessage;
+          errorEl.hidden = false;
+          
+          // Ensure invalid attribute is set on host
+          if (!this.hasAttribute('invalid')) {
+            this.setAttribute('invalid', '');
+          }
+        }
+      } else if ((isValid || !this._showErrors) && errorEl) {
+        // Clear errors when valid OR when _showErrors is false
+        errorEl.hidden = true;
+        if (this.hasAttribute('invalid')) {
+          this.removeAttribute('invalid');
+        }
+      }
+    }
+
+    /**
+     * Template helper to determine if error should be shown
+     */
+    _showError(invalid, errorMessage, showErrors) {
+      // If we're in a "just cleared" state, never show errors
+      if (this._justCleared) {
+        return false;
+      }
+      
+      // Show ALL validation errors only when showErrors is explicitly true (after save button)
+      // This includes: required, outOfRange, format, invalidDate, notSelectable
+      if (invalid && !!errorMessage) {
+        return showErrors === true;
+      }
+      
+      return false;
+    }
+
+    /**
      * Reset error display state (typically called when form is reset)
      */
     resetErrorState() {
       this._showErrors = false;
+      this._justCleared = false;
       this.invalid = false;
       this.errorMessage = '';
       this.errorReason = '';
       this.notifyPath('_showErrors');
+      this.notifyPath('_justCleared');
       this.notifyPath('invalid');
       this.notifyPath('errorMessage');
+      
+      // Also clear DOM immediately
+      const errorEl = this.shadowRoot.querySelector('#errorText');
+      if (errorEl) {
+        errorEl.hidden = true;
+        errorEl.textContent = '';
+      }
+      
+      // Remove invalid attribute
+      if (this.hasAttribute('invalid')) {
+        this.removeAttribute('invalid');
+      }
+    }
+
+    /**
+     * Generate dynamic required error message using field label
+     */
+    _generateRequiredMessage() {
+      // Always return the simple required message
+      return this._getLocalizedText('required');
     }
 
     _getValidity() {
       // Check required field first
       if (this.required && (!this.value || this.value.trim() === '')) {
         this.errorReason = 'required';
-        // Only set error message if we should show errors
-        if (this._showErrors) {
-          this.errorMessage = 'This field is required.';
-        } else {
-          this.errorMessage = '';
-        }
+        // Generate dynamic error message using field label
+        this.errorMessage = this._generateRequiredMessage();
         return false;
       }
       
@@ -3343,7 +3861,7 @@ import { config } from '@nuxeo/nuxeo-elements';
         // Check if the date itself is valid
         if (!currentDate.isValid()) {
           this.errorReason = 'invalidDate';
-          this.errorMessage = 'Invalid date. Please enter a valid date.';
+          this.errorMessage = this._getLocalizedText('invalidDate');
           return false;
         }
         
@@ -3382,49 +3900,6 @@ import { config } from '@nuxeo/nuxeo-elements';
     // Override checkValidity for better form integration
     checkValidity() {
       return this.validate();
-    }
-
-    // Override reportValidity for better form integration  
-    reportValidity() {
-      const isValid = this.validate();
-      
-      if (!isValid) {
-        // Only now show visual errors
-        this._showErrors = true;
-        // Focus the input field to show validation error
-        const input = this.shadowRoot.querySelector('#dateInput');
-        if (input) {
-          input.focus();
-        }
-        
-        // Fire invalid event for form integration
-        this.dispatchEvent(new CustomEvent('invalid', {
-          bubbles: true,
-          composed: true,
-          detail: {
-            message: this.errorMessage
-          }
-        }));
-      }
-      
-      return isValid;
-    }
-
-    _validateDateFormat(dateString) {
-      if (!dateString) return true;
-      try {
-        // Validate structure using locale-aware formats
-        const formats = this._getLocaleDateFormats();
-        for (const fmt of formats) {
-          const m = moment(dateString, fmt, true);
-          if (m.isValid()) {
-            return true;
-          }
-        }
-        return false;
-      } catch (error) {
-        return false;
-      }
     }
 
     disconnectedCallback() {
@@ -3628,7 +4103,7 @@ import { config } from '@nuxeo/nuxeo-elements';
         // Clear focused date when changing year
         this._focusedDate = null;
         this._generateCalendar();
-        this._announce(`Year changed to ${year}.`);
+        this._announce(this._getLocalizedText('yearChanged', { year: year }));
         // Close the dropdown
         this._closeYearDropdown();
         // After closing, focus the year dropdown button for accessibility
