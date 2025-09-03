@@ -1692,8 +1692,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _generateMonthYearOptions() {
-      const currentYear = this._today.getFullYear();
-      
       // Use 1900-2099 range but respect min/max constraints
       let startYear = 1900;
       let endYear = 2099;
@@ -2082,7 +2080,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         this._focusDate(targetDate);
       } else {
-
+        // Continue execution without special focus handling
       }
     }
 
@@ -2251,7 +2249,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (!this._isCalendarOpen) return;
       
       // Check if click target is within this element's shadow DOM or calendar popover
-      let target = e.target;
+      const { target } = e;
       let isInsideComponent = false;
       
       // Get all relevant elements
@@ -2277,17 +2275,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Fourth check: Walk up the composed path to check for our component
       if (!isInsideComponent) {
         const path = e.composedPath ? e.composedPath() : [target];
-        for (let element of path) {
-          if (element === this || (element.host && element.host === this)) {
-            isInsideComponent = true;
-            break;
-          }
-          // Also check specific elements
-          if (element === calendarPopover || element === inputWrapper || element === fieldWrapper) {
-            isInsideComponent = true;
-            break;
-          }
+              path.forEach((element) => {
+        if (element === this || (element.host && element.host === this)) {
+          isInsideComponent = true;
         }
+        // Also check specific elements
+        if (element === calendarPopover || element === inputWrapper || element === fieldWrapper) {
+          isInsideComponent = true;
+        }
+      });
       }
       
       // Fifth check: Is it within our shadow root?
@@ -2629,7 +2625,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this.dispatchEvent(new CustomEvent('opened-changed', {
         detail: { value: true },
         bubbles: true,
-        composed: true
+        composed: true,
       }));
       
       // Professional a11y: Focus behavior depends on interaction method
@@ -2651,7 +2647,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           
           // Store original tabindex values
           const originalTabIndexes = new Map();
-          [yearDropdown, prevButton, nextButton, todayButton, cancelButton].forEach(el => {
+          [yearDropdown, prevButton, nextButton, todayButton, cancelButton].forEach((el) => {
             if (el) {
               originalTabIndexes.set(el, el.getAttribute('tabindex') || '0');
               el.setAttribute('tabindex', '-1');
@@ -2688,7 +2684,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
                 
                 // Final debug check
-                const finalFocus = this.shadowRoot.activeElement;
+                // const finalFocus = this.shadowRoot.activeElement;
 
               });
             });
@@ -2728,7 +2724,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this.dispatchEvent(new CustomEvent('opened-changed', {
         detail: { value: false },
         bubbles: true,
-        composed: true
+        composed: true,
       }));
       
       const dateInput = this.shadowRoot.querySelector('#dateInput');
@@ -2771,7 +2767,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._generateCalendar();
       this._announce(this._getLocalizedText('movedToMonth', {
         month: this._getMonthName(this._viewDate),
-        year: this._getYear(this._viewDate)
+        year: this._getYear(this._viewDate),
       }));
     }
 
@@ -2801,7 +2797,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._generateCalendar();
       this._announce(this._getLocalizedText('movedToMonth', {
         month: this._getMonthName(this._viewDate),
-        year: this._getYear(this._viewDate)
+        year: this._getYear(this._viewDate),
       }));
     }
 
@@ -2848,7 +2844,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
       
       const button = e.target.closest('.calendar-day');
-      if (!button || button.disabled || button.classList.contains('empty') || button.classList.contains('other-month')) {
+      if (!button || button.disabled || button.classList.contains('empty') || 
+          button.classList.contains('other-month')) {
         return;
       }
       
@@ -2926,19 +2923,21 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           this._focusDate(targetDate, true);
           break;
           
-        case 'Home':
+        case 'Home': {
           e.preventDefault();
           const dayOfWeek = currentDate.getDay();
           targetDate.setDate(currentDate.getDate() - dayOfWeek);
           this._focusDate(targetDate, true);
           break;
+        }
           
-        case 'End':
+        case 'End': {
           e.preventDefault();
           const daysToEnd = 6 - currentDate.getDay();
           targetDate.setDate(currentDate.getDate() + daysToEnd);
           this._focusDate(targetDate, true);
           break;
+        }
           
         case 'PageUp':
           e.preventDefault();
@@ -3012,7 +3011,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }, 50);
     }
 
-    _findAndFocusNearestValidDate(targetDate) {
+    _findAndFocusNearestValidDate(_targetDate) {
       // Find the first valid date in the current month
       const year = this._viewDate.getFullYear();
       const month = this._viewDate.getMonth();
@@ -3119,7 +3118,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
     }
 
-    _parseAndSetDate(inputValue) {
+    _parseAndSetDate(_inputValue) {
       // This method is now replaced by _validateAndParseInput
       this._validateAndParseInput();
     }
@@ -3228,7 +3227,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Try multiple approaches to safely set the value
         if (this.set && typeof this.set === 'function') {
           this.set('value', newValue);
-        } else if (this.hasOwnProperty('value')) {
+        } else if (Object.prototype.hasOwnProperty.call(this, 'value')) {
           this.value = newValue;
         } else {
           // Create the property if it doesn't exist
@@ -3236,7 +3235,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             value: newValue,
             writable: true,
             enumerable: true,
-            configurable: true
+            configurable: true,
           });
         }
         
@@ -3296,7 +3295,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (this.min) {
         const minDate = this._parseDateOnly(this.min);
         // Normalize min date
-        minDate && minDate.setHours(0, 0, 0, 0);
+        if (minDate) {
+          minDate.setHours(0, 0, 0, 0);
+        }
         
         const isAfterOrEqualMin = !minDate || normalizedDate >= minDate;
         
@@ -3309,7 +3310,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const maxDateBase = this._parseDateOnly(this.max);
         const maxDate = maxDateBase ? new Date(maxDateBase) : null;
         // Set to end of day for max comparison
-        maxDate && maxDate.setHours(23, 59, 59, 999);
+        if (maxDate) {
+          maxDate.setHours(23, 59, 59, 999);
+        }
         
         const isBeforeOrEqualMax = !maxDate || normalizedDate <= maxDate;
         
@@ -3349,7 +3352,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
 
 
-    _buildOutOfRangeMessage(date) {
+    _buildOutOfRangeMessage(_date) {
       try {
         const hasMin = !!this.min;
         const hasMax = !!this.max;
@@ -3383,7 +3386,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (!date) return '';
       return new Intl.DateTimeFormat(this._locale, { 
         month: 'long', 
-        year: 'numeric' 
+        year: 'numeric', 
       }).format(date);
     }
 
@@ -3414,7 +3417,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       return classes.join(' ');
     }
 
-    _getDayTabIndex(dayObj, focusedDate, index) {
+    _getDayTabIndex(dayObj, focusedDate, _index) {
       // ARIA Grid pattern: Only one cell should be tabbable, others use arrow keys
       if (dayObj.isEmpty || !dayObj.isCurrentMonth) return '-1';
       
@@ -3445,12 +3448,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _getDayAriaLabel(dayObj) {
-      const date = dayObj.date;
+      const { date } = dayObj;
       const formatter = new Intl.DateTimeFormat(this._locale, {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
-        day: 'numeric'
+        day: 'numeric',
       });
       
       let label = formatter.format(date);
@@ -3476,7 +3479,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const year = focusedDate.getFullYear();
       const month = String(focusedDate.getMonth() + 1).padStart(2, '0');
       const day = String(focusedDate.getDate()).padStart(2, '0');
-      return 'date-' + `${year}-${month}-${day}`;
+      return `date-${year}-${month}-${day}`;
     }
 
     _isSelectedYear(year, viewDate) {
