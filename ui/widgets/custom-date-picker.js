@@ -1944,7 +1944,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (e.key === 'Tab') {
         e.preventDefault();
         this._handleCalendarTabNavigation(e.shiftKey);
-        return;
       }
     }
     
@@ -2034,6 +2033,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           break;
         case 'cancel-button':
           targetElement = this.shadowRoot.querySelector('.cancel-button');
+          break;
+        default:
           break;
       }
       
@@ -2179,6 +2180,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           e.preventDefault();
           this._closeMonthYearDropdown();
           return;
+        default:
+          break;
       }
       
       if (nextIndex !== currentIndex) {
@@ -2377,9 +2380,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
     }
 
-    _handleDocumentFocusOut(e) {
-      // This can be used for additional focus tracking if needed
-    }
+    // _handleDocumentFocusOut(e) {
+    //   // This can be used for additional focus tracking if needed
+    // }
 
     // Helper method to check if an element is inside this component
     _isElementInsideComponent(element) {
@@ -2446,7 +2449,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }, 10);
     }
 
-    _onInputFocus(e) {
+    _onInputFocus() {
       // Close calendar when user focuses on input to type
       if (this._isCalendarOpen) {
         // Use async to ensure this happens after any other click handlers
@@ -2468,21 +2471,21 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
     }
 
-    _onInputBlur(e) {
-      // Handle input blur if needed in the future
-    }
+    // _onInputBlur(e) {
+    //   // Handle input blur if needed in the future
+    // }
 
-    _onInputKeydown(e) {
-      // Handle special keydown events if needed
-      if (e.key === 'ArrowDown' || e.key === 'F4') {
-        e.preventDefault();
-        this._openCalendar(e, true); // Opened via keyboard
-      }
-    }
+    // _onInputKeydown(e) {
+    //   // Handle special keydown events if needed
+    //   if (e.key === 'ArrowDown' || e.key === 'F4') {
+    //     e.preventDefault();
+    //     this._openCalendar(e, true); // Opened via keyboard
+    //   }
+    // }
 
-    _onInputChange(e) {
-      // Handle input change events if needed in the future
-    }
+    // _onInputChange(e) {
+    //   // Handle input change events if needed in the future
+    // }
 
     _selectDate(date) {
       if (!date || !this._isValidDate(date)) {
@@ -2832,7 +2835,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Click was on empty area - prevent any default behavior
         e.preventDefault();
         e.stopPropagation();
-        return;
       }
       // Let the button's own click handler deal with it
     }
@@ -2882,7 +2884,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (!currentButton.classList.contains('calendar-day')) return;
       
       const currentDate = new Date(currentButton.dataset.date);
-      let targetDate = new Date(currentDate);
+      const targetDate = new Date(currentDate);
       
       switch (e.key) {
         case 'Enter':
@@ -2972,6 +2974,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             }, 50);
           }
           break;
+        default:
+          break;
       }
     }
 
@@ -3011,7 +3015,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }, 50);
     }
 
-    _findAndFocusNearestValidDate(_targetDate) {
+    _findAndFocusNearestValidDate() {
       // Find the first valid date in the current month
       const year = this._viewDate.getFullYear();
       const month = this._viewDate.getMonth();
@@ -3051,7 +3055,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
       
       // Try the first day of the month
-      let firstValidDate = new Date(year, month, 1);
+      const firstValidDate = new Date(year, month, 1);
       // Use local date formatting to avoid timezone issues
       const firstYear = firstValidDate.getFullYear();
       const firstMonth = String(firstValidDate.getMonth() + 1).padStart(2, '0');
@@ -3118,7 +3122,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
     }
 
-    _parseAndSetDate(_inputValue) {
+    _parseAndSetDate() {
       // This method is now replaced by _validateAndParseInput
       this._validateAndParseInput();
     }
@@ -3352,7 +3356,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
 
 
-    _buildOutOfRangeMessage(_date) {
+    _buildOutOfRangeMessage() {
       try {
         const hasMin = !!this.min;
         const hasMax = !!this.max;
@@ -3417,7 +3421,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       return classes.join(' ');
     }
 
-    _getDayTabIndex(dayObj, focusedDate, _index) {
+    _getDayTabIndex(dayObj, focusedDate) {
       // ARIA Grid pattern: Only one cell should be tabbable, others use arrow keys
       if (dayObj.isEmpty || !dayObj.isCurrentMonth) return '-1';
       
@@ -4334,12 +4338,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       return this._formatDateForDisplay(date);
     }
 
-    _onInputFocus(e) {
-      // Simple focus handler - don't modify input value
-      const input = e.target;
-    }
+    // _onInputFocus(e) {
+    //   // Simple focus handler - don't modify input value
+    //   const input = e.target;
+    // }
 
-    _onInputBlur(e) {
+    _onInputBlur() {
       // User finished typing, validate and parse input
       this._userIsTyping = false;
       this._validateAndParseInput();
@@ -4364,7 +4368,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Allow all other keys (digits, letters, backspace, etc.) for free-form input
     }
 
-    _onInputChange(e) {
+    _onInputChange() {
       // Mark that user is actively typing when input content changes
       if (!this._userIsTyping) {
         this._userIsTyping = true;
@@ -4456,8 +4460,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
       
       // Check if there's any overlap between the month and the valid date range
-      let monthStart = new Date(firstDay);
-      let monthEnd = new Date(lastDay);
+      const monthStart = new Date(firstDay);
+      const monthEnd = new Date(lastDay);
       monthStart.setHours(0, 0, 0, 0);
       monthEnd.setHours(23, 59, 59, 999);
       
@@ -4569,14 +4573,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
     }
 
-    _firstDayOfWeekChanged(newFirstDay) {
+    _firstDayOfWeekChanged() {
       this._initializeLocaleData();
       if (this._generateCalendar) {
         this._generateCalendar();
       }
     }
 
-    _defaultTimeChanged(newDefaultTime) {
+    _defaultTimeChanged() {
       // Re-process current value if it exists
       if (this._inputValue && !this._preventInputUpdate) {
         this._inputValueChanged();
