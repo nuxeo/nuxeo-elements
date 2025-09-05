@@ -457,11 +457,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           }
 
           .calendar-popover {
-            position: absolute;
-            top: 100%;
+            position: fixed;
+            top: 0;
             left: 0;
-            z-index: 1000;
-            margin-top: 4px;
+            z-index: 999999; /* Very high z-index to appear above all dialogs */
+            margin-top: 0;
             background: #ffffff;
             border: 1px solid #d1d5db;
             border-radius: 0; /* Remove rounded corners for Nuxeo theme */
@@ -482,6 +482,21 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             margin-bottom: 4px;
           }
 
+          .calendar-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: transparent;
+            z-index: 999998; /* Just below the popover */
+            display: none;
+          }
+
+          .calendar-backdrop.open {
+            display: block;
+          }
+
 
           @keyframes fadeIn {
             from {
@@ -500,6 +515,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             justify-content: space-between;
             padding: 16px;
             border-bottom: 1px solid #e5e7eb;
+            background-color: #ffffff;
           }
 
           .month-year-display {
@@ -573,7 +589,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             border-radius: 0; /* Remove rounded corners for Nuxeo theme */
             transition: background-color 0.2s ease;
             outline: none;
-            z-index: 9999 !important;
+            z-index: 1000000 !important;
           }
 
           .year-dropdown:hover {
@@ -653,7 +669,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             position: absolute;
             top: 100%;
             left: 0;
-            z-index: 1001;
+            z-index: 1000000; /* Higher than popover to appear above it */
             background: #ffffff;
             border: 1px solid #d1d5db;
             border-radius: 0; /* Remove rounded corners for Nuxeo theme */
@@ -1068,6 +1084,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           <!-- Screen reader live status region -->
           <div id="srStatus" class="sr-only" role="status" 
                aria-live="polite" aria-atomic="true"></div>
+
+          <!-- Modal backdrop for calendar popover -->
+          <div class="calendar-backdrop" id="calendarBackdrop" on-click="_closeCalendar"></div>
 
           <div class="calendar-popover" id="calendarPopover" role="dialog" 
                aria-label="Calendar" aria-modal$="[[_isCalendarOpen]]">
@@ -2606,8 +2625,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._isCalendarOpen = true;
       
       const popover = this.shadowRoot.querySelector('#calendarPopover');
+      const backdrop = this.shadowRoot.querySelector('#calendarBackdrop');
       if (popover) {
         popover.classList.add('open');
+      }
+      if (backdrop) {
+        backdrop.classList.add('open');
       }
       
       // Clear the flag after calendar has had time to settle
@@ -2620,6 +2643,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._boundReposition = this._boundReposition || (() => this._positionPopover());
       window.addEventListener('resize', this._boundReposition, { passive: true });
       window.addEventListener('scroll', this._boundReposition, { passive: true });
+      // Also listen for orientation changes on mobile
+      window.addEventListener('orientationchange', this._boundReposition, { passive: true });
       // Announce calendar opened
       this._announce(this._getLocalizedText('calendarOpened'));
       
@@ -2708,11 +2733,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._interactingWithCalendar = false; // Clear interaction flag
       
       const popover = this.shadowRoot.querySelector('#calendarPopover');
+      const backdrop = this.shadowRoot.querySelector('#calendarBackdrop');
       if (popover) {
         popover.classList.remove('open');
         popover.classList.remove('open-up');
         popover.style.left = '';
         popover.style.right = '';
+        popover.style.top = '';
+        popover.style.bottom = '';
+      }
+      if (backdrop) {
+        backdrop.classList.remove('open');
       }
       // Announce calendar closed
       this._announce(this._getLocalizedText('calendarClosed'));
@@ -2720,6 +2751,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (this._boundReposition) {
         window.removeEventListener('resize', this._boundReposition);
         window.removeEventListener('scroll', this._boundReposition);
+        window.removeEventListener('orientationchange', this._boundReposition);
       }
       
       // Fire opened-changed event for compatibility with nuxeo-date-picker
@@ -3695,36 +3727,67 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const popHeight = popRect.height || 320;
         const popWidth = popRect.width || 280;
 
-        // Position using fixed positioning for better modal support
+        // Position using fixed positioning for modal-like behavior
         let left = rect.left;
         let top = rect.bottom + 4; // 4px margin
+        const minVerticalPadding = 8; // Minimum padding from viewport edges
 
-        // Flip vertically if not enough space below
-        if (spaceBelow < popHeight && spaceAbove > spaceBelow) {
-          top = rect.top - popHeight - 4; // 4px margin above
+        // Smart vertical positioning with better edge handling
+        if (spaceBelow >= popHeight + minVerticalPadding) {
+          // Enough space below, position normally
+          top = rect.bottom + 4;
+          popover.classList.remove('open-up');
+        } else if (spaceAbove >= popHeight + minVerticalPadding) {
+          // Not enough space below but enough above, flip up
+          top = rect.top - popHeight - 4;
           popover.classList.add('open-up');
         } else {
-          popover.classList.remove('open-up');
+          // Not enough space in either direction, use best available space
+          if (spaceBelow > spaceAbove) {
+            // More space below, position at bottom with padding
+            top = viewportH - popHeight - minVerticalPadding;
+            popover.classList.remove('open-up');
+          } else {
+            // More space above, position at top with padding
+            top = minVerticalPadding;
+            popover.classList.add('open-up');
+          }
         }
 
-        // Adjust horizontally based on RTL and overflow
+        // Adjust horizontally based on RTL and overflow with better edge handling
+        const minPadding = 8; // Minimum padding from viewport edges
+        const maxLeft = viewportW - popWidth - minPadding;
+        const minLeft = minPadding;
+        
         if (this._isRTL) {
-          // For RTL, check left overflow
-          const leftOverflow = rect.right - popWidth < 8; // 8px padding
-          if (leftOverflow) {
-            left = 8; // 8px from left edge
-          } else {
-            left = rect.right - popWidth;
-          }
+          // For RTL, position relative to right edge of trigger
+          const preferredLeft = rect.right - popWidth;
+          left = Math.max(minLeft, Math.min(maxLeft, preferredLeft));
         } else {
-          // For LTR, check right overflow
-          const rightOverflow = rect.left + popWidth > viewportW - 8; // 8px padding
-          if (rightOverflow) {
-            left = viewportW - popWidth - 8; // 8px from right edge
-          } else {
-            left = rect.left;
+          // For LTR, position relative to left edge of trigger
+          const preferredLeft = rect.left;
+          left = Math.max(minLeft, Math.min(maxLeft, preferredLeft));
+        }
+        
+        // Additional adjustment for extreme edge cases
+        if (left === minLeft && rect.left < minLeft) {
+          // If we're at minimum left and trigger is also at edge, try to center
+          const centerLeft = (viewportW - popWidth) / 2;
+          if (centerLeft >= minLeft && centerLeft <= maxLeft) {
+            left = centerLeft;
+          }
+        } else if (left === maxLeft && rect.right > viewportW - minPadding) {
+          // If we're at maximum right and trigger is also at edge, try to center
+          const centerLeft = (viewportW - popWidth) / 2;
+          if (centerLeft >= minLeft && centerLeft <= maxLeft) {
+            left = centerLeft;
           }
         }
+
+        // Apply fixed positioning
+        popover.style.position = 'fixed';
+        popover.style.left = `${left}px`;
+        popover.style.top = `${top}px`;
 
       } catch (_) {
         // no-op
