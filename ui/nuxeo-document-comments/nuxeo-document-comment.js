@@ -258,6 +258,8 @@ import '../nuxeo-button-styles.js';
                           <template>
                             <iron-icon
                               id="submit"
+                              role="button"
+                              aria-label="[[i18n('command.selectComment')]]"
                               name="submit"
                               class="main-option opaque"
                               icon="check"
@@ -268,8 +270,11 @@ import '../nuxeo-button-styles.js';
                             <nuxeo-tooltip for="submit">[[i18n('comments.submit.tooltip')]]</nuxeo-tooltip>
                             <iron-icon
                               name="clear"
+                              role="button"
+                              aria-label="[[i18n('command.removeComment')]]"
                               class="main-option opaque"
                               icon="clear"
+                              role="button"
                               on-tap="_clearInput"
                               on-keydown="_cancelOnEnter"
                               tabindex="0"
