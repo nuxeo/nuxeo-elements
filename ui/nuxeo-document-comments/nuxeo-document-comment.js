@@ -7,7 +7,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -45,7 +45,7 @@ import '../nuxeo-button-styles.js';
  *
  * Example:
  *
- *     <nuxeo-document-comment comment="[[comment]]"></nuxeo-document-comment>
+ * <nuxeo-document-comment comment="[[comment]]"></nuxeo-document-comment>
  *
  * @appliesMixin FormatBehavior
  * @memberof Nuxeo
@@ -258,6 +258,8 @@ import '../nuxeo-button-styles.js';
                           <template>
                             <iron-icon
                               id="submit"
+                              role="button"
+                              aria-label="[[i18n('command.selectComment')]]"
                               name="submit"
                               class="main-option opaque"
                               icon="check"
@@ -268,8 +270,11 @@ import '../nuxeo-button-styles.js';
                             <nuxeo-tooltip for="submit">[[i18n('comments.submit.tooltip')]]</nuxeo-tooltip>
                             <iron-icon
                               name="clear"
+                              role="button"
+                              aria-label="[[i18n('command.removeComment')]]"
                               class="main-option opaque"
                               icon="clear"
+                              role="button"
                               on-tap="_clearInput"
                               on-keydown="_cancelOnEnter"
                               tabindex="0"
@@ -334,7 +339,7 @@ import '../nuxeo-button-styles.js';
          */
         truncated: {
           type: Boolean,
-          computed: '_computeTruncatedFlag(comment.showFull, comment.text,  maxChars)',
+          computed: '_computeTruncatedFlag(comment.showFull, comment.text, maxChars)',
         },
 
         /**
