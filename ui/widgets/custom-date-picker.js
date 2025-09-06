@@ -477,7 +477,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           .calendar-popover.open-up {
             top: auto;
-            bottom: 100%;
             margin-top: 0;
             margin-bottom: 4px;
           }
@@ -1065,6 +1064,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                 tabindex="0"
                 on-click="_openCalendarViaMouse"
                 on-keydown="_handleCalendarIconKeydown"
+                on-focus="_onCalendarIconFocus"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" 
                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1615,11 +1615,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             const day = parseInt(m[3], 10);
             const d = new Date(year, month, day);
             d.setHours(0, 0, 0, 0);
-            return Number.Number.isNaN(d.getTime()) ? null : d;
+            return Number.isNaN(d.getTime()) ? null : d;
           }
         }
         const d = new Date(value);
-        if (Number.Number.isNaN(d.getTime())) return null;
+        if (Number.isNaN(d.getTime())) return null;
         d.setHours(0, 0, 0, 0);
         return d;
       } catch (_) {
@@ -2469,7 +2469,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _onInputFocus(e) {
       // Close calendar when user focuses on input to type
-      if (this._isCalendarOpen) {
+      // But not if calendar was just opened via calendar icon
+      if (this._isCalendarOpen && !this._openedViaCalendarIcon) {
         // Use async to ensure this happens after any other click handlers
         this.async(() => {
           this._closeCalendar();
@@ -2479,8 +2480,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _onInputClick(e) {
       // Also handle click events to close calendar when user wants to type
-      
-      if (this._isCalendarOpen) {
+      // But not if calendar was just opened via calendar icon
+      if (this._isCalendarOpen && !this._openedViaCalendarIcon) {
         // Stop this click from bubbling to document handlers
         e.stopPropagation();
         
@@ -2490,24 +2491,72 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _onInputBlur(e) {
-      // Handle input blur if needed in the future
+      // User finished typing, validate and parse input
+      this._userIsTyping = false;
+      this._validateAndParseInput();
+    }
+
+    _onCalendarIconFocus(e) {
+      // Prevent the calendar icon from getting focused when clicked
+      // This helps prevent focus conflicts that close the calendar
+      if (this._openedViaCalendarIcon) {
+        e.preventDefault();
+        e.stopPropagation();
+        // Blur the calendar icon to prevent focus issues
+        this.async(() => {
+          if (e.target) {
+            e.target.blur();
+          }
+        }, 1);
+      }
     }
 
     _onInputKeydown(e) {
-      // Handle special keydown events if needed
+      // Set typing flag when user starts typing
+      if (!this._userIsTyping && e.key.length === 1) {
+        this._userIsTyping = true;
+      }
+      
       if (e.key === 'ArrowDown' || e.key === 'F4') {
         e.preventDefault();
         this._openCalendar(e, true); // Opened via keyboard
+      } else if (e.key === 'Enter') {
+        // Enter validates input
+        e.preventDefault();
+        this._userIsTyping = false;
+        this._validateAndParseInput();
       }
     }
 
     _onInputChange(e) {
-      // Handle input change events if needed in the future
+      // Mark that user is actively typing when input content changes
+      if (!this._userIsTyping) {
+        this._userIsTyping = true;
+      }
     }
 
     _selectDate(date) {
-      if (!date || !this._isValidDate(date)) {
-
+      if (!date) {
+        return;
+      }
+      
+      // Use professional validation
+      const validation = this._validateDate(date);
+      if (!validation.isValid) {
+        // Set error state (range error - medium priority)
+        this.invalid = true;
+        this.errorReason = validation.errorReason;
+        this.errorMessage = validation.errorMessage;
+        this._showErrors = true;
+        
+        // Clear the selected date and value to prevent invalid date from being stored
+        this._selectedDate = null;
+        this._preventInputUpdate = true;
+        this._safeSetValue('');
+        this._preventInputUpdate = false;
+        
+        // Update calendar to reflect no selected date
+        this._generateCalendar();
         return;
       }
       
@@ -2561,8 +2610,37 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     // Separate method for mouse clicks to ensure proper detection
     _openCalendarViaMouse(e) {
-
+      // Prevent the input from getting focused
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Set flag to prevent input focus from closing calendar
+      this._openedViaCalendarIcon = true;
+      
+      // Open calendar
       this._openCalendar(e, false); // Explicitly false for mouse
+      
+      // Prevent input from getting focused by temporarily removing its tabindex
+      const input = this.shadowRoot.querySelector('#dateInput');
+      if (input) {
+        const originalTabIndex = input.getAttribute('tabindex');
+        input.setAttribute('tabindex', '-1');
+        
+        // Restore tabindex after calendar is fully opened
+        this.async(() => {
+          if (originalTabIndex !== null) {
+            input.setAttribute('tabindex', originalTabIndex);
+          } else {
+            input.removeAttribute('tabindex');
+          }
+          this._openedViaCalendarIcon = false;
+        }, 500);
+      } else {
+        // Fallback: just clear the flag after delay
+        this.async(() => {
+          this._openedViaCalendarIcon = false;
+        }, 500);
+      }
     }
 
     _openCalendar(e, openedViaKeyboard = false) {
@@ -2897,17 +2975,20 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       
 
       
-      // Validate and select
-        if (this._isValidDate(selectedDate)) {
-          // Clear validation errors when valid date is selected
-          this.invalid = false;
-          this.errorReason = '';
-          this.errorMessage = '';
+      // Use professional validation
+      const validation = this._validateDate(selectedDate);
+      if (validation.isValid) {
+        // Clear validation errors when valid date is selected
+        this.invalid = false;
+        this.errorReason = '';
+        this.errorMessage = '';
         this._selectDate(selectedDate);
       } else {
+        // Date is invalid - show appropriate error
         this.invalid = true;
-        this.errorReason = 'notSelectable';
-        this.errorMessage = this._getLocalizedText('dateNotSelectable');
+        this.errorReason = validation.errorReason;
+        this.errorMessage = validation.errorMessage;
+        this._showErrors = true;
       }
     }
 
@@ -3247,20 +3328,41 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const parseResult = this._parseUserInput(value);
       
       if (!parseResult) {
-        // Could not parse the date at all
+        // Could not parse the date at all - format error (highest priority)
         this.invalid = true;
         this.errorReason = 'format';
         this.errorMessage = `${this._getLocalizedText('incorrectFormat')} ${this._getDatePlaceholder()}`;
+        this._showErrors = true;
+        
+        // Clear the selected date and value to prevent invalid date from being stored
+        this._selectedDate = null;
+        this._preventInputUpdate = true;
+        this._safeSetValue('');
+        this._preventInputUpdate = false;
+        
+        // Update calendar to reflect no selected date
+        this._generateCalendar();
         return;
       }
       
       const { date: parsedDate, isExactFormat } = parseResult;
       
-      // Check date constraints (min/max)
-      if (!this._isValidDate(parsedDate)) {
+      // Use professional validation
+      const validation = this._validateDate(parsedDate);
+      if (!validation.isValid) {
         this.invalid = true;
-        this.errorReason = 'outOfRange';
-        this.errorMessage = this._buildOutOfRangeMessage(parsedDate);
+        this.errorReason = validation.errorReason;
+        this.errorMessage = validation.errorMessage;
+        this._showErrors = true;
+        
+        // Clear the selected date and value to prevent invalid date from being stored
+        this._selectedDate = null;
+        this._preventInputUpdate = true;
+        this._safeSetValue('');
+        this._preventInputUpdate = false;
+        
+        // Update calendar to reflect no selected date
+        this._generateCalendar();
         return;
       }
       
@@ -3358,6 +3460,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _isValidDate(date) {
+      // Basic date validation
       if (!date || Number.isNaN(date.getTime())) {
         return false;
       }
@@ -3366,40 +3469,95 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const normalizedDate = new Date(date);
       normalizedDate.setHours(0, 0, 0, 0);
       
+      // Check min date constraint
       if (this.min) {
         const minDate = this._parseDateOnly(this.min);
-        // Normalize min date
         if (minDate) {
           minDate.setHours(0, 0, 0, 0);
-        }
-        
-        const isAfterOrEqualMin = !minDate || normalizedDate >= minDate;
-        
-        if (!isAfterOrEqualMin) {
-          return false;
+          if (normalizedDate < minDate) {
+            return false;
+          }
         }
       }
       
+      // Check max date constraint
       if (this.max) {
-        const maxDateBase = this._parseDateOnly(this.max);
-        const maxDate = maxDateBase ? new Date(maxDateBase) : null;
-        // Set to end of day for max comparison
+        const maxDate = this._parseDateOnly(this.max);
         if (maxDate) {
-          maxDate.setHours(23, 59, 59, 999);
-        }
-        
-        const isBeforeOrEqualMax = !maxDate || normalizedDate <= maxDate;
-        
-        if (!isBeforeOrEqualMax) {
-          return false;
+          maxDate.setHours(0, 0, 0, 0);
+          if (normalizedDate > maxDate) {
+            return false;
+          }
         }
       }
       
       return true;
     }
 
+    // Professional validation method like Vaadin
+    _validateDate(date) {
+      const result = {
+        isValid: true,
+        errorReason: '',
+        errorMessage: ''
+      };
+      
+      // Basic date validation
+      if (!date || Number.isNaN(date.getTime())) {
+        result.isValid = false;
+        result.errorReason = 'invalidDate';
+        result.errorMessage = this._getLocalizedText('invalidDate');
+        return result;
+      }
+      
+      // Normalize the input date to start of day for comparison
+      const normalizedDate = new Date(date);
+      normalizedDate.setHours(0, 0, 0, 0);
+      
+      // Check min date constraint
+      if (this.min) {
+        const minDate = this._parseDateOnly(this.min);
+        if (minDate) {
+          minDate.setHours(0, 0, 0, 0);
+          if (normalizedDate < minDate) {
+            result.isValid = false;
+            result.errorReason = 'outOfRange';
+            result.errorMessage = this._buildOutOfRangeMessage(normalizedDate);
+            return result;
+          }
+        }
+      }
+      
+      // Check max date constraint
+      if (this.max) {
+        const maxDate = this._parseDateOnly(this.max);
+        if (maxDate) {
+          maxDate.setHours(0, 0, 0, 0);
+          if (normalizedDate > maxDate) {
+            result.isValid = false;
+            result.errorReason = 'outOfRange';
+            result.errorMessage = this._buildOutOfRangeMessage(normalizedDate);
+            return result;
+          }
+        }
+      }
+      
+      return result;
+    }
+
     _isDateDisabled(date) {
       return !this._isValidDate(date);
+    }
+
+    // Error priority system: Format > Range > Required
+    _getErrorPriority(errorReason) {
+      const priorities = {
+        'format': 3,        // Highest priority
+        'invalidDate': 3,   // Highest priority
+        'outOfRange': 2,    // Medium priority
+        'required': 1       // Lowest priority
+      };
+      return priorities[errorReason] || 0;
     }
 
     _getDatePlaceholder() {
@@ -3813,12 +3971,51 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     validate() {
-      const isAccessibleValid = this._getValidity();
+      // Professional validation with proper error priority: Format > Range > Required
       
-      // Always set invalid based on actual validity, but control display via _showErrors
-      this.invalid = !isAccessibleValid;
+      // If there's a value, check format and range first
+      if (this.value && this.value.trim() !== '') {
+        // Parse the current value
+        const parseResult = this._parseUserInput(this.value);
+        if (!parseResult) {
+          this.invalid = true;
+          this.errorReason = 'format';
+          this.errorMessage = `${this._getLocalizedText('incorrectFormat')} ${this._getDatePlaceholder()}`;
+          this._showErrors = true;
+          return false;
+        }
+        
+        // Validate the parsed date (range validation)
+        const validation = this._validateDate(parseResult.date);
+        if (!validation.isValid) {
+          this.invalid = true;
+          this.errorReason = validation.errorReason;
+          this.errorMessage = validation.errorMessage;
+          this._showErrors = true;
+          return false;
+        }
+      }
       
-      return isAccessibleValid;
+      // Only check required if there's no value AND no existing errors
+      if (this.required && (!this.value || this.value.trim() === '')) {
+        // Only show required error if there are no existing format/range errors
+        if (!this.invalid || this.errorReason === '') {
+          this.invalid = true;
+          this.errorReason = 'required';
+          this.errorMessage = this._getLocalizedText('required');
+          this._showErrors = true;
+          return false;
+        }
+        // If there are existing errors, don't override them
+        return false;
+      }
+      
+      // Clear error state if validation passes
+      this.invalid = false;
+      this.errorReason = '';
+      this.errorMessage = '';
+      this._showErrors = false;
+      return true;
     }
 
     /**
@@ -3832,14 +4029,23 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Clear the just cleared flag since we're now validating
       this._justCleared = false;
       
+      // Store current error state before validation
+      const currentErrorReason = this.errorReason;
+      const currentErrorMessage = this.errorMessage;
+      
       // Force validation which will set error state if needed
       const isValid = this.validate();
       
-      // Force immediate DOM update for required field errors
-      if (!isValid && this.required && (!this.value || this.value.trim() === '')) {
-        this.invalid = true;
-        this.errorReason = 'required';
-        this.errorMessage = this._generateRequiredMessage();
+      // If validation didn't change the error (because of priority), restore the original error
+      if (!isValid && currentErrorReason && currentErrorReason !== this.errorReason) {
+        // Only override if the new error is higher priority
+        if (this._getErrorPriority(this.errorReason) > this._getErrorPriority(currentErrorReason)) {
+          // Keep the higher priority error
+        } else {
+          // Restore the original error
+          this.errorReason = currentErrorReason;
+          this.errorMessage = currentErrorMessage;
+        }
       }
       
       // Force update of all relevant properties for template binding
@@ -4443,42 +4649,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       return this._formatDateForDisplay(date);
     }
 
-    _onInputFocus(e) {
-      // Simple focus handler - don't modify input value
-      const input = e.target;
-    }
-
-    _onInputBlur(e) {
-      // User finished typing, validate and parse input
-      this._userIsTyping = false;
-      this._validateAndParseInput();
-    }
-
-    _onInputKeydown(e) {
-      // Set typing flag when user starts typing
-      if (!this._userIsTyping && e.key.length === 1) {
-        this._userIsTyping = true;
-      }
-      
-      // Allow opening calendar with specific keys when input is focused
-      if (e.key === 'F4' || e.key === 'ArrowDown') {
-            e.preventDefault();
-        this._openCalendar(e, true); // Opened via keyboard
-      } else if (e.key === 'Enter') {
-        // Enter validates input
-        e.preventDefault();
-        this._userIsTyping = false;
-        this._validateAndParseInput();
-      }
-      // Allow all other keys (digits, letters, backspace, etc.) for free-form input
-    }
-
-    _onInputChange(e) {
-      // Mark that user is actively typing when input content changes
-      if (!this._userIsTyping) {
-        this._userIsTyping = true;
-      }
-    }
 
 
 
