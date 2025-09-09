@@ -1479,7 +1479,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           nextMonth: 'Nächster Monat',
           selectYear: 'Jahr auswählen',
           calendarOpened:
-            'Kalender geöffnet. Verwenden Sie die Pfeiltasten zur Navigation. ' + 'Drücken Sie Escape zum Schließen.',
+            'Kalender geöffnet. Verwenden Sie die Pfeiltasten zur Navigation. Drücken Sie Escape zum Schließen.',
           calendarClosed: 'Kalender geschlossen.',
           required: 'Dieses Feld ist erforderlich.',
           invalidDate: 'Ungültiges Datum. Bitte geben Sie ein gültiges Datum ein.',
@@ -3950,18 +3950,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           // Not enough space below but enough above, flip up
           top = rect.top - popHeight - 4;
           popover.classList.add('open-up');
+        } else if (spaceBelow > spaceAbove) {
+          // More space below, position at bottom with padding
+          top = viewportH - popHeight - minVerticalPadding;
+          popover.classList.remove('open-up');
         } else {
-          // Not enough space in either direction, use best available space
-          // no-lonely-if: merge nested if into else if
-          if (spaceBelow > spaceAbove) {
-            // More space below, position at bottom with padding
-            top = viewportH - popHeight - minVerticalPadding;
-            popover.classList.remove('open-up');
-          } else {
-            // More space above, position at top with padding
-            top = minVerticalPadding;
-            popover.classList.add('open-up');
-          }
+          // More space above, position at top with padding
+          top = minVerticalPadding;
+          popover.classList.add('open-up');
         }
 
         // Adjust horizontally based on RTL and overflow with better edge handling
@@ -4308,7 +4304,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (yearButton) {
         // Clear tabindex from all year options first
         const allYearButtons = Array.from(this.shadowRoot.querySelectorAll('.year-option'));
-        allYearButtons.forEach((btn) => (btn.tabIndex = -1));
+  allYearButtons.forEach((btn) => { btn.tabIndex = -1; });
         // Set current year as tabbable and focus it
         yearButton.tabIndex = 0;
         yearButton.focus();
@@ -4834,12 +4830,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         } else if (i18nProperty === 'weekdays' || i18nProperty === 'weekdaysShort') {
           this._weekdayNames = value;
         }
-      } else {
+      } else if (super.set) {
         // Use standard Polymer set method for other properties
-        // no-lonely-if: avoid single if in else block
-        if (super.set) {
-          super.set(path, value);
-        }
+        super.set(path, value);
       }
     }
 
