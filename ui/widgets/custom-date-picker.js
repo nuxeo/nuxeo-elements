@@ -297,9 +297,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             background: #ffffff;
             min-height: 32px; /* Reduced height for compact design */
             width: 156px; /* Exact width requirement */
-            transition:
-              border-color 0.2s ease,
-              box-shadow 0.2s ease;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
             overflow: hidden; /* Ensure icons stay inside */
           }
 
@@ -373,9 +371,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             color: #374151;
             cursor: pointer;
             border-radius: 0; /* Remove rounded corners for Nuxeo theme */
-            transition:
-              color 0.2s ease,
-              background-color 0.2s ease;
+            transition: color 0.2s ease, background-color 0.2s ease;
             border: none;
             background: transparent;
             width: 20px; /* Reduced size */
@@ -391,9 +387,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             color: #374151;
             cursor: pointer;
             border-radius: 0; /* Remove rounded corners for Nuxeo theme */
-            transition:
-              color 0.2s ease,
-              background-color 0.2s ease;
+            transition: color 0.2s ease, background-color 0.2s ease;
             border: none;
             background: transparent;
             width: 20px; /* Reduced size */
@@ -469,9 +463,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             background: #ffffff;
             border: 1px solid #d1d5db;
             border-radius: 0; /* Remove rounded corners for Nuxeo theme */
-            box-shadow:
-              0 10px 15px -3px rgba(0, 0, 0, 0.1),
-              0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             width: 280px; /* Reduced from 320px to be proportional */
             display: none;
             animation: fadeIn 0.15s ease-out;
@@ -695,9 +687,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             cursor: pointer;
             font-size: 14px;
             border: 2px solid transparent;
-            transition:
-              background-color 0.2s ease,
-              border-color 0.2s ease;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
             background: transparent;
             width: 100%;
             text-align: left;
