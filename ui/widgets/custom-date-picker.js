@@ -15,18 +15,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
-import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
-import '@nuxeo/nuxeo-elements/nuxeo-element.js';
-import '@polymer/paper-input/paper-input.js';
-import '@polymer/paper-icon-button/paper-icon-button.js';
-import '@polymer/iron-icons/iron-icons.js';
-import '../nuxeo-icons.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-import moment from '@nuxeo/moment/min/moment-with-locales.js';
-import { config } from '@nuxeo/nuxeo-elements';
-import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { IronFormElementBehavior } from "@polymer/iron-form-element-behavior/iron-form-element-behavior.js";
+import { IronValidatableBehavior } from "@polymer/iron-validatable-behavior/iron-validatable-behavior.js";
+import "@nuxeo/nuxeo-elements/nuxeo-element.js";
+import "@polymer/paper-input/paper-input.js";
+import "@polymer/paper-icon-button/paper-icon-button.js";
+import "@polymer/iron-icons/iron-icons.js";
+import "../nuxeo-icons.js";
+import { html } from "@polymer/polymer/lib/utils/html-tag.js";
+import { mixinBehaviors } from "@polymer/polymer/lib/legacy/class.js";
+import moment from "@nuxeo/moment/min/moment-with-locales.js";
+import { config } from "@nuxeo/nuxeo-elements";
+import { I18nBehavior } from "../nuxeo-i18n-behavior.js";
 
 {
   class CustomDatePicker extends mixinBehaviors(
@@ -34,7 +34,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     Nuxeo.Element,
   ) {
     static get is() {
-      return 'custom-date-picker';
+      return "custom-date-picker";
     }
 
     static get properties() {
@@ -54,12 +54,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
          */
         defaultTime: {
           type: String,
-          observer: '_defaultTimeChanged',
+          observer: "_defaultTimeChanged",
         },
 
         errorMessage: {
           type: String,
-          observer: '_errorMessageChanged',
+          observer: "_errorMessageChanged",
         },
 
         /*
@@ -67,7 +67,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
          */
         max: {
           type: String,
-          observer: '_maxChanged',
+          observer: "_maxChanged",
         },
 
         /*
@@ -75,7 +75,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
          */
         min: {
           type: String,
-          observer: '_minChanged',
+          observer: "_minChanged",
         },
 
         required: {
@@ -87,7 +87,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         value: {
           type: String,
           notify: true,
-          observer: '_valueChanged',
+          observer: "_valueChanged",
         },
 
         disabled: {
@@ -101,7 +101,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
          */
         firstDayOfWeek: {
           type: Number,
-          observer: '_firstDayOfWeekChanged',
+          observer: "_firstDayOfWeekChanged",
         },
 
         /**
@@ -113,7 +113,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         timezone: {
           type: String,
           value() {
-            return config.get('timezone');
+            return config.get("timezone");
           },
         },
 
@@ -131,25 +131,25 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           type: Boolean,
           value: false,
           reflectToAttribute: true,
-          observer: '_clearButtonVisibleChanged',
+          observer: "_clearButtonVisibleChanged",
         },
 
         invalid: {
           type: Boolean,
           value: false,
           reflectToAttribute: true,
-          observer: '_invalidChanged',
+          observer: "_invalidChanged",
         },
 
         // Reason for current invalid state: 'required' | 'format' | 'invalidDate' | 'outOfRange' | 'notSelectable' | ''
         errorReason: {
           type: String,
-          value: '',
+          value: "",
         },
 
         _inputValue: {
           type: String,
-          observer: '_inputValueChanged',
+          observer: "_inputValueChanged",
         },
 
         _preventInputUpdate: {
@@ -234,7 +234,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         _locale: {
           type: String,
-          value: '',
+          value: "",
         },
 
         _isRTL: {
@@ -277,7 +277,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           :host {
             position: relative;
             display: inline-block;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family:
+              -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             font-size: 12px; /* Reduced font size for compact design */
             line-height: 1.3;
             width: auto;
@@ -341,7 +342,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             padding: 6px 48px 6px 8px;
             font-size: 13px;
             font-weight: 400;
-            font-family: 'Inter', Arial, sans-serif;
+            font-family: "Inter", Arial, sans-serif;
             background: transparent;
             color: #666;
           }
@@ -450,7 +451,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           }
 
           :host([required]) .field-label::after {
-            content: ' *';
+            content: " *";
             color: #dc2626;
           }
 
@@ -1051,7 +1052,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             />
 
             <div class="input-actions">
-              <template is="dom-if" if="[[_shouldShowClearButton(_inputValue, hideClearDateButton)]]">
+              <template
+                is="dom-if"
+                if="[[_shouldShowClearButton(_inputValue, hideClearDateButton)]]"
+              >
                 <button
                   type="button"
                   class="clear-button"
@@ -1092,14 +1096,28 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             </div>
           </div>
 
-          <div class="error-message" id="errorText" hidden$="[[!_showError(invalid, errorMessage, _showErrors)]]">
+          <div
+            class="error-message"
+            id="errorText"
+            hidden$="[[!_showError(invalid, errorMessage, _showErrors)]]"
+          >
             [[errorMessage]]
           </div>
           <!-- Screen reader live status region -->
-          <div id="srStatus" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+          <div
+            id="srStatus"
+            class="sr-only"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          ></div>
 
           <!-- Modal backdrop for calendar popover -->
-          <div class="calendar-backdrop" id="calendarBackdrop" on-click="_closeCalendar"></div>
+          <div
+            class="calendar-backdrop"
+            id="calendarBackdrop"
+            on-click="_closeCalendar"
+          ></div>
 
           <div
             class="calendar-popover"
@@ -1122,10 +1140,22 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                   on-keydown="_handleYearDropdownKeydown"
                 >
                   <span class="year-text">[[_getYear(_viewDate)]]</span>
-                  <button type="button" class="year-dropdown-button" aria-label="Select year" tabindex="-1">
-                    <iron-icon icon$="[[_getDropdownIcon(_isYearDropdownOpen)]]"></iron-icon>
+                  <button
+                    type="button"
+                    class="year-dropdown-button"
+                    aria-label="Select year"
+                    tabindex="-1"
+                  >
+                    <iron-icon
+                      icon$="[[_getDropdownIcon(_isYearDropdownOpen)]]"
+                    ></iron-icon>
                   </button>
-                  <div class="year-options" id="yearOptions" role="listbox" aria-label="Year options">
+                  <div
+                    class="year-options"
+                    id="yearOptions"
+                    role="listbox"
+                    aria-label="Year options"
+                  >
                     <template is="dom-repeat" items="[[_yearOptions]]">
                       <button
                         type="button"
@@ -1207,10 +1237,20 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             </div>
 
             <div class="calendar-footer">
-              <button type="button" class="footer-button today-button" on-click="_selectToday" tabindex="0">
+              <button
+                type="button"
+                class="footer-button today-button"
+                on-click="_selectToday"
+                tabindex="0"
+              >
                 [[_getLocalizedText('Today')]]
               </button>
-              <button type="button" class="footer-button cancel-button" on-click="_closeCalendar" tabindex="0">
+              <button
+                type="button"
+                class="footer-button cancel-button"
+                on-click="_closeCalendar"
+                tabindex="0"
+              >
                 [[_getLocalizedText('Cancel')]]
               </button>
             </div>
@@ -1222,8 +1262,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     constructor() {
       super();
       // Initialize with user's locale from browser
-      const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
-      this._locale = userLocale || 'en-US';
+      const userLocale =
+        navigator.languages !== undefined
+          ? navigator.languages[0]
+          : navigator.language;
+      this._locale = userLocale || "en-US";
       this._dateFormatter = new Intl.DateTimeFormat(this._locale);
       this._today = new Date();
       this._today.setHours(0, 0, 0, 0); // Normalize to start of day
@@ -1235,12 +1278,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       super.ready();
 
       // Set up moment locale like nuxeo-date-picker does for consistency
-      const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
+      const userLocale =
+        navigator.languages !== undefined
+          ? navigator.languages[0]
+          : navigator.language;
 
       // Force moment to use the detected locale
       moment.locale(userLocale);
 
-      this._locale = userLocale || 'en-US';
+      this._locale = userLocale || "en-US";
       this._dateFormatter = new Intl.DateTimeFormat(this._locale);
       this._today = new Date();
       this._today.setHours(0, 0, 0, 0); // Normalize to start of day
@@ -1249,7 +1295,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       // Verify the locale is properly set
       const momentLocaleData = moment.localeData();
-      const localeFormat = momentLocaleData.longDateFormat('L');
+      const localeFormat = momentLocaleData.longDateFormat("L");
 
       // Force update the locale format for consistency
       this._currentLocaleFormat = localeFormat;
@@ -1268,45 +1314,50 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           try {
             return this._formatDateForDisplay(date);
           } catch (error) {
-            return date ? date.toLocaleDateString() : '';
+            return date ? date.toLocaleDateString() : "";
           }
         },
         parseDate: (text) => {
           try {
-            const parseLocaleFormat = moment.localeData().longDateFormat('L');
+            const parseLocaleFormat = moment.localeData().longDateFormat("L");
             const date = this._moment(text, parseLocaleFormat, true); // strict parsing with locale format
             if (date.isValid()) {
               return {
-                day: date.get('D'),
-                month: date.get('M'),
-                year: date.get('Y'),
+                day: date.get("D"),
+                month: date.get("M"),
+                year: date.get("Y"),
               };
             }
 
             // Return current date instead of hardcoded values
             const fallbackDate = this._moment();
             return {
-              day: fallbackDate.get('D'),
-              month: fallbackDate.get('M'),
-              year: fallbackDate.get('Y'),
+              day: fallbackDate.get("D"),
+              month: fallbackDate.get("M"),
+              year: fallbackDate.get("Y"),
             };
           } catch (error) {
             // Return current date instead of hardcoded values
             const fallbackDate = this._moment();
             return {
-              day: fallbackDate.get('D'),
-              month: fallbackDate.get('M'),
-              year: fallbackDate.get('Y'),
+              day: fallbackDate.get("D"),
+              month: fallbackDate.get("M"),
+              year: fallbackDate.get("Y"),
             };
           }
         },
         monthNames: moment.months(),
         weekdays: moment.weekdays(),
         weekdaysShort: moment.weekdaysShort(),
-        cancel: this._getLocalizedText('cancel'),
-        clear: this._getLocalizedText('clear'),
-        today: this._getLocalizedText('today'),
-        firstDayOfWeek: this.firstDayOfWeek || config.get('firstDayOfWeek', moment.localeData().firstDayOfWeek() || 0),
+        cancel: this._getLocalizedText("cancel"),
+        clear: this._getLocalizedText("clear"),
+        today: this._getLocalizedText("today"),
+        firstDayOfWeek:
+          this.firstDayOfWeek ||
+          config.get(
+            "firstDayOfWeek",
+            moment.localeData().firstDayOfWeek() || 0,
+          ),
       };
 
       this._initializeLocaleData();
@@ -1335,31 +1386,33 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       // Common RTL language codes
       const rtlLanguages = [
-        'ar', // Arabic
-        'he', // Hebrew
-        'fa', // Persian/Farsi
-        'ur', // Urdu
-        'ps', // Pashto
-        'sd', // Sindhi
-        'ku', // Kurdish
-        'dv', // Divehi/Maldivian
-        'ckb', // Central Kurdish (Sorani)
-        'az', // Azerbaijani (sometimes RTL)
-        'ms-arab', // Malay Arabic script
-        'uz-arab', // Uzbek Arabic script
-        'pa-arab', // Punjabi Arabic script
-        'ks-arab', // Kashmiri Arabic script
-        'bal', // Balochi
-        'glk', // Gilaki
-        'lrc', // Northern Luri
-        'mzn', // Mazandarani
+        "ar", // Arabic
+        "he", // Hebrew
+        "fa", // Persian/Farsi
+        "ur", // Urdu
+        "ps", // Pashto
+        "sd", // Sindhi
+        "ku", // Kurdish
+        "dv", // Divehi/Maldivian
+        "ckb", // Central Kurdish (Sorani)
+        "az", // Azerbaijani (sometimes RTL)
+        "ms-arab", // Malay Arabic script
+        "uz-arab", // Uzbek Arabic script
+        "pa-arab", // Punjabi Arabic script
+        "ks-arab", // Kashmiri Arabic script
+        "bal", // Balochi
+        "glk", // Gilaki
+        "lrc", // Northern Luri
+        "mzn", // Mazandarani
       ];
 
       // Extract language code from locale (e.g., 'ar-SA' -> 'ar')
-      const languageCode = locale.toLowerCase().split('-')[0];
+      const languageCode = locale.toLowerCase().split("-")[0];
 
       // Also check for Arabic script indicators
-      const isRTLScript = locale.toLowerCase().includes('-arab') || locale.toLowerCase().includes('arabic');
+      const isRTLScript =
+        locale.toLowerCase().includes("-arab") ||
+        locale.toLowerCase().includes("arabic");
 
       // Set RTL if language or script indicates RTL
       this._isRTL = rtlLanguages.includes(languageCode) || isRTLScript;
@@ -1367,232 +1420,242 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Also check document direction as fallback
       if (!this._isRTL) {
         const documentDir = document.documentElement.dir || document.body.dir;
-        this._isRTL = documentDir === 'rtl';
+        this._isRTL = documentDir === "rtl";
       }
 
       // Set dir attribute on host element for proper styling
       if (this._isRTL) {
-        this.setAttribute('dir', 'rtl');
+        this.setAttribute("dir", "rtl");
       } else {
-        this.setAttribute('dir', 'ltr');
+        this.setAttribute("dir", "ltr");
       }
     }
 
     // Set up internationalization support
     _setupI18n(locale) {
-      const languageCode = locale ? locale.toLowerCase().split('-')[0] : 'en';
+      const languageCode = locale ? locale.toLowerCase().split("-")[0] : "en";
 
       // Comprehensive i18n dictionary for multiple languages
       const i18nDict = {
         // English
         en: {
-          today: 'Today',
-          cancel: 'Cancel',
-          clear: 'Clear',
-          openCalendar: 'Open calendar',
-          clearDate: 'Clear date',
-          previousMonth: 'Previous month',
-          nextMonth: 'Next month',
-          selectYear: 'Select year',
-          calendarOpened: 'Calendar opened. Use arrow keys to navigate dates. Press Escape to close.',
-          calendarClosed: 'Calendar closed.',
-          required: 'This field is required.',
-          invalidDate: 'Invalid date. Please enter a valid date.',
-          incorrectFormat: 'Incorrect date format.',
-          dateOutOfRange: 'Date out of range.',
-          dateNotSelectable: 'This date is not selectable.',
-          movedToMonth: 'Moved to {month} {year}.',
-          yearChanged: 'Year changed to {year}.',
+          today: "Today",
+          cancel: "Cancel",
+          clear: "Clear",
+          openCalendar: "Open calendar",
+          clearDate: "Clear date",
+          previousMonth: "Previous month",
+          nextMonth: "Next month",
+          selectYear: "Select year",
+          calendarOpened:
+            "Calendar opened. Use arrow keys to navigate dates. Press Escape to close.",
+          calendarClosed: "Calendar closed.",
+          required: "This field is required.",
+          invalidDate: "Invalid date. Please enter a valid date.",
+          incorrectFormat: "Incorrect date format.",
+          dateOutOfRange: "Date out of range.",
+          dateNotSelectable: "This date is not selectable.",
+          movedToMonth: "Moved to {month} {year}.",
+          yearChanged: "Year changed to {year}.",
         },
 
         // Arabic
         ar: {
-          today: 'اليوم',
-          cancel: 'إلغاء',
-          clear: 'مسح',
-          openCalendar: 'فتح التقويم',
-          clearDate: 'مسح التاريخ',
-          previousMonth: 'الشهر السابق',
-          nextMonth: 'الشهر التالي',
-          selectYear: 'اختر السنة',
-          calendarOpened: 'تم فتح التقويم. استخدم مفاتيح الأسهم للتنقل بين التواريخ. اضغط Escape للإغلاق.',
-          calendarClosed: 'تم إغلاق التقويم.',
-          required: 'هذا الحقل مطلوب.',
-          invalidDate: 'تاريخ غير صحيح. يرجى إدخال تاريخ صحيح.',
-          incorrectFormat: 'تنسيق التاريخ غير صحيح.',
-          dateOutOfRange: 'التاريخ خارج النطاق المسموح.',
-          dateNotSelectable: 'هذا التاريخ غير قابل للاختيار.',
-          movedToMonth: 'انتقل إلى {month} {year}.',
-          yearChanged: 'تم تغيير السنة إلى {year}.',
+          today: "اليوم",
+          cancel: "إلغاء",
+          clear: "مسح",
+          openCalendar: "فتح التقويم",
+          clearDate: "مسح التاريخ",
+          previousMonth: "الشهر السابق",
+          nextMonth: "الشهر التالي",
+          selectYear: "اختر السنة",
+          calendarOpened:
+            "تم فتح التقويم. استخدم مفاتيح الأسهم للتنقل بين التواريخ. اضغط Escape للإغلاق.",
+          calendarClosed: "تم إغلاق التقويم.",
+          required: "هذا الحقل مطلوب.",
+          invalidDate: "تاريخ غير صحيح. يرجى إدخال تاريخ صحيح.",
+          incorrectFormat: "تنسيق التاريخ غير صحيح.",
+          dateOutOfRange: "التاريخ خارج النطاق المسموح.",
+          dateNotSelectable: "هذا التاريخ غير قابل للاختيار.",
+          movedToMonth: "انتقل إلى {month} {year}.",
+          yearChanged: "تم تغيير السنة إلى {year}.",
         },
 
         // Hebrew
         he: {
-          today: 'היום',
-          cancel: 'ביטול',
-          clear: 'נקה',
-          openCalendar: 'פתח לוח שנה',
-          clearDate: 'נקה תאריך',
-          previousMonth: 'חודש קודם',
-          nextMonth: 'חודש הבא',
-          selectYear: 'בחר שנה',
-          calendarOpened: 'לוח השנה נפתח. השתמש במקשי החצים כדי לנווט בין התאריכים. לחץ Escape כדי לסגור.',
-          calendarClosed: 'לוח השנה נסגר.',
-          required: 'שדה זה חובה.',
-          invalidDate: 'תאריך לא תקין. אנא הזן תאריך תקין.',
-          incorrectFormat: 'פורמט תאריך שגוי.',
-          dateOutOfRange: 'תאריך מחוץ לטווח.',
-          dateNotSelectable: 'תאריך זה אינו ניתן לבחירה.',
-          movedToMonth: 'עבר ל{month} {year}.',
-          yearChanged: 'השנה שונתה ל{year}.',
+          today: "היום",
+          cancel: "ביטול",
+          clear: "נקה",
+          openCalendar: "פתח לוח שנה",
+          clearDate: "נקה תאריך",
+          previousMonth: "חודש קודם",
+          nextMonth: "חודש הבא",
+          selectYear: "בחר שנה",
+          calendarOpened:
+            "לוח השנה נפתח. השתמש במקשי החצים כדי לנווט בין התאריכים. לחץ Escape כדי לסגור.",
+          calendarClosed: "לוח השנה נסגר.",
+          required: "שדה זה חובה.",
+          invalidDate: "תאריך לא תקין. אנא הזן תאריך תקין.",
+          incorrectFormat: "פורמט תאריך שגוי.",
+          dateOutOfRange: "תאריך מחוץ לטווח.",
+          dateNotSelectable: "תאריך זה אינו ניתן לבחירה.",
+          movedToMonth: "עבר ל{month} {year}.",
+          yearChanged: "השנה שונתה ל{year}.",
         },
 
         // French
         fr: {
           today: "Aujourd'hui",
-          cancel: 'Annuler',
-          clear: 'Effacer',
-          openCalendar: 'Ouvrir le calendrier',
-          clearDate: 'Effacer la date',
-          previousMonth: 'Mois précédent',
-          nextMonth: 'Mois suivant',
+          cancel: "Annuler",
+          clear: "Effacer",
+          openCalendar: "Ouvrir le calendrier",
+          clearDate: "Effacer la date",
+          previousMonth: "Mois précédent",
+          nextMonth: "Mois suivant",
           selectYear: "Sélectionner l'année",
-          calendarOpened: 'Calendrier ouvert. Utilisez les flèches pour naviguer. Appuyez sur Échap pour fermer.',
-          calendarClosed: 'Calendrier fermé.',
-          required: 'Ce champ est requis.',
-          invalidDate: 'Date invalide. Veuillez saisir une date valide.',
-          incorrectFormat: 'Format de date incorrect.',
-          dateOutOfRange: 'Date hors limites.',
+          calendarOpened:
+            "Calendrier ouvert. Utilisez les flèches pour naviguer. Appuyez sur Échap pour fermer.",
+          calendarClosed: "Calendrier fermé.",
+          required: "Ce champ est requis.",
+          invalidDate: "Date invalide. Veuillez saisir une date valide.",
+          incorrectFormat: "Format de date incorrect.",
+          dateOutOfRange: "Date hors limites.",
           dateNotSelectable: "Cette date n'est pas sélectionnable.",
-          movedToMonth: 'Déplacé vers {month} {year}.',
-          yearChanged: 'Année changée à {year}.',
+          movedToMonth: "Déplacé vers {month} {year}.",
+          yearChanged: "Année changée à {year}.",
         },
 
         // German
         de: {
-          today: 'Heute',
-          cancel: 'Abbrechen',
-          clear: 'Löschen',
-          openCalendar: 'Kalender öffnen',
-          clearDate: 'Datum löschen',
-          previousMonth: 'Vorheriger Monat',
-          nextMonth: 'Nächster Monat',
-          selectYear: 'Jahr auswählen',
+          today: "Heute",
+          cancel: "Abbrechen",
+          clear: "Löschen",
+          openCalendar: "Kalender öffnen",
+          clearDate: "Datum löschen",
+          previousMonth: "Vorheriger Monat",
+          nextMonth: "Nächster Monat",
+          selectYear: "Jahr auswählen",
           calendarOpened:
-            'Kalender geöffnet. Verwenden Sie die Pfeiltasten zur Navigation. Drücken Sie Escape zum Schließen.',
-          calendarClosed: 'Kalender geschlossen.',
-          required: 'Dieses Feld ist erforderlich.',
-          invalidDate: 'Ungültiges Datum. Bitte geben Sie ein gültiges Datum ein.',
-          incorrectFormat: 'Falsches Datumsformat.',
-          dateOutOfRange: 'Datum außerhalb des Bereichs.',
-          dateNotSelectable: 'Dieses Datum ist nicht auswählbar.',
-          movedToMonth: 'Zu {month} {year} gewechselt.',
-          yearChanged: 'Jahr geändert zu {year}.',
+            "Kalender geöffnet. Verwenden Sie die Pfeiltasten zur Navigation. Drücken Sie Escape zum Schließen.",
+          calendarClosed: "Kalender geschlossen.",
+          required: "Dieses Feld ist erforderlich.",
+          invalidDate:
+            "Ungültiges Datum. Bitte geben Sie ein gültiges Datum ein.",
+          incorrectFormat: "Falsches Datumsformat.",
+          dateOutOfRange: "Datum außerhalb des Bereichs.",
+          dateNotSelectable: "Dieses Datum ist nicht auswählbar.",
+          movedToMonth: "Zu {month} {year} gewechselt.",
+          yearChanged: "Jahr geändert zu {year}.",
         },
 
         // Spanish
         es: {
-          today: 'Hoy',
-          cancel: 'Cancelar',
-          clear: 'Limpiar',
-          openCalendar: 'Abrir calendario',
-          clearDate: 'Limpiar fecha',
-          previousMonth: 'Mes anterior',
-          nextMonth: 'Mes siguiente',
-          selectYear: 'Seleccionar año',
-          calendarOpened: 'Calendario abierto. Use las flechas para navegar. Presione Escape para cerrar.',
-          calendarClosed: 'Calendario cerrado.',
-          required: 'Este campo es obligatorio.',
-          invalidDate: 'Fecha inválida. Por favor ingrese una fecha válida.',
-          incorrectFormat: 'Formato de fecha incorrecto.',
-          dateOutOfRange: 'Fecha fuera de rango.',
-          dateNotSelectable: 'Esta fecha no se puede seleccionar.',
-          movedToMonth: 'Movido a {month} {year}.',
-          yearChanged: 'Año cambiado a {year}.',
+          today: "Hoy",
+          cancel: "Cancelar",
+          clear: "Limpiar",
+          openCalendar: "Abrir calendario",
+          clearDate: "Limpiar fecha",
+          previousMonth: "Mes anterior",
+          nextMonth: "Mes siguiente",
+          selectYear: "Seleccionar año",
+          calendarOpened:
+            "Calendario abierto. Use las flechas para navegar. Presione Escape para cerrar.",
+          calendarClosed: "Calendario cerrado.",
+          required: "Este campo es obligatorio.",
+          invalidDate: "Fecha inválida. Por favor ingrese una fecha válida.",
+          incorrectFormat: "Formato de fecha incorrecto.",
+          dateOutOfRange: "Fecha fuera de rango.",
+          dateNotSelectable: "Esta fecha no se puede seleccionar.",
+          movedToMonth: "Movido a {month} {year}.",
+          yearChanged: "Año cambiado a {year}.",
         },
 
         // Italian
         it: {
-          today: 'Oggi',
-          cancel: 'Annulla',
-          clear: 'Cancella',
-          openCalendar: 'Apri calendario',
-          clearDate: 'Cancella data',
-          previousMonth: 'Mese precedente',
-          nextMonth: 'Mese successivo',
-          selectYear: 'Seleziona anno',
-          calendarOpened: 'Calendario aperto. Usa le frecce per navigare. Premi Escape per chiudere.',
-          calendarClosed: 'Calendario chiuso.',
-          required: 'Questo campo è obbligatorio.',
-          invalidDate: 'Data non valida. Inserisci una data valida.',
-          incorrectFormat: 'Formato data errato.',
-          dateOutOfRange: 'Data fuori intervallo.',
-          dateNotSelectable: 'Questa data non è selezionabile.',
-          movedToMonth: 'Spostato a {month} {year}.',
-          yearChanged: 'Anno cambiato a {year}.',
+          today: "Oggi",
+          cancel: "Annulla",
+          clear: "Cancella",
+          openCalendar: "Apri calendario",
+          clearDate: "Cancella data",
+          previousMonth: "Mese precedente",
+          nextMonth: "Mese successivo",
+          selectYear: "Seleziona anno",
+          calendarOpened:
+            "Calendario aperto. Usa le frecce per navigare. Premi Escape per chiudere.",
+          calendarClosed: "Calendario chiuso.",
+          required: "Questo campo è obbligatorio.",
+          invalidDate: "Data non valida. Inserisci una data valida.",
+          incorrectFormat: "Formato data errato.",
+          dateOutOfRange: "Data fuori intervallo.",
+          dateNotSelectable: "Questa data non è selezionabile.",
+          movedToMonth: "Spostato a {month} {year}.",
+          yearChanged: "Anno cambiato a {year}.",
         },
 
         // Portuguese
         pt: {
-          today: 'Hoje',
-          cancel: 'Cancelar',
-          clear: 'Limpar',
-          openCalendar: 'Abrir calendário',
-          clearDate: 'Limpar data',
-          previousMonth: 'Mês anterior',
-          nextMonth: 'Próximo mês',
-          selectYear: 'Selecionar ano',
-          calendarOpened: 'Calendário aberto. Use as setas para navegar. Pressione Escape para fechar.',
-          calendarClosed: 'Calendário fechado.',
-          required: 'Este campo é obrigatório.',
-          invalidDate: 'Data inválida. Por favor, insira uma data válida.',
-          incorrectFormat: 'Formato de data incorreto.',
-          dateOutOfRange: 'Data fora do intervalo.',
-          dateNotSelectable: 'Esta data não pode ser selecionada.',
-          movedToMonth: 'Movido para {month} {year}.',
-          yearChanged: 'Ano alterado para {year}.',
+          today: "Hoje",
+          cancel: "Cancelar",
+          clear: "Limpar",
+          openCalendar: "Abrir calendário",
+          clearDate: "Limpar data",
+          previousMonth: "Mês anterior",
+          nextMonth: "Próximo mês",
+          selectYear: "Selecionar ano",
+          calendarOpened:
+            "Calendário aberto. Use as setas para navegar. Pressione Escape para fechar.",
+          calendarClosed: "Calendário fechado.",
+          required: "Este campo é obrigatório.",
+          invalidDate: "Data inválida. Por favor, insira uma data válida.",
+          incorrectFormat: "Formato de data incorreto.",
+          dateOutOfRange: "Data fora do intervalo.",
+          dateNotSelectable: "Esta data não pode ser selecionada.",
+          movedToMonth: "Movido para {month} {year}.",
+          yearChanged: "Ano alterado para {year}.",
         },
 
         // Russian
         ru: {
-          today: 'Сегодня',
-          cancel: 'Отмена',
-          clear: 'Очистить',
-          openCalendar: 'Открыть календарь',
-          clearDate: 'Очистить дату',
-          previousMonth: 'Предыдущий месяц',
-          nextMonth: 'Следующий месяц',
-          selectYear: 'Выбрать год',
-          calendarOpened: 'Календарь открыт. Используйте стрелки для навигации. Нажмите Escape для закрытия.',
-          calendarClosed: 'Календарь закрыт.',
-          required: 'Это поле обязательно.',
-          invalidDate: 'Неверная дата. Введите корректную дату.',
-          incorrectFormat: 'Неверный формат даты.',
-          dateOutOfRange: 'Дата вне диапазона.',
-          dateNotSelectable: 'Эта дата недоступна для выбора.',
-          movedToMonth: 'Перешли к {month} {year}.',
-          yearChanged: 'Год изменен на {year}.',
+          today: "Сегодня",
+          cancel: "Отмена",
+          clear: "Очистить",
+          openCalendar: "Открыть календарь",
+          clearDate: "Очистить дату",
+          previousMonth: "Предыдущий месяц",
+          nextMonth: "Следующий месяц",
+          selectYear: "Выбрать год",
+          calendarOpened:
+            "Календарь открыт. Используйте стрелки для навигации. Нажмите Escape для закрытия.",
+          calendarClosed: "Календарь закрыт.",
+          required: "Это поле обязательно.",
+          invalidDate: "Неверная дата. Введите корректную дату.",
+          incorrectFormat: "Неверный формат даты.",
+          dateOutOfRange: "Дата вне диапазона.",
+          dateNotSelectable: "Эта дата недоступна для выбора.",
+          movedToMonth: "Перешли к {month} {year}.",
+          yearChanged: "Год изменен на {year}.",
         },
 
         // Dutch
         nl: {
-          today: 'Vandaag',
-          cancel: 'Annuleren',
-          clear: 'Wissen',
-          openCalendar: 'Kalender openen',
-          clearDate: 'Datum wissen',
-          previousMonth: 'Vorige maand',
-          nextMonth: 'Volgende maand',
-          selectYear: 'Jaar selecteren',
-          calendarOpened: 'Kalender geopend. Gebruik pijltjestoetsen om te navigeren. Druk op Escape om te sluiten.',
-          calendarClosed: 'Kalender gesloten.',
-          required: 'Dit veld is verplicht.',
-          invalidDate: 'Ongeldige datum. Voer een geldige datum in.',
-          incorrectFormat: 'Onjuist datumformaat.',
-          dateOutOfRange: 'Datum buiten bereik.',
-          dateNotSelectable: 'Deze datum kan niet geselecteerd worden.',
-          movedToMonth: 'Verplaatst naar {month} {year}.',
-          yearChanged: 'Jaar gewijzigd naar {year}.',
+          today: "Vandaag",
+          cancel: "Annuleren",
+          clear: "Wissen",
+          openCalendar: "Kalender openen",
+          clearDate: "Datum wissen",
+          previousMonth: "Vorige maand",
+          nextMonth: "Volgende maand",
+          selectYear: "Jaar selecteren",
+          calendarOpened:
+            "Kalender geopend. Gebruik pijltjestoetsen om te navigeren. Druk op Escape om te sluiten.",
+          calendarClosed: "Kalender gesloten.",
+          required: "Dit veld is verplicht.",
+          invalidDate: "Ongeldige datum. Voer een geldige datum in.",
+          incorrectFormat: "Onjuist datumformaat.",
+          dateOutOfRange: "Datum buiten bereik.",
+          dateNotSelectable: "Deze datum kan niet geselecteerd worden.",
+          movedToMonth: "Verplaatst naar {month} {year}.",
+          yearChanged: "Jaar gewijzigd naar {year}.",
         },
       };
 
@@ -1607,7 +1670,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Replace placeholders
       Object.keys(placeholders).forEach((placeholder) => {
         const value = placeholders[placeholder];
-        text = text.replace(new RegExp(`\\{${placeholder}\\}`, 'g'), value);
+        text = text.replace(new RegExp(`\\{${placeholder}\\}`, "g"), value);
       });
 
       return text;
@@ -1616,10 +1679,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     // Screen reader announcement utility
     _announce(message) {
       try {
-        const region = this.shadowRoot && this.shadowRoot.querySelector('#srStatus');
+        const region =
+          this.shadowRoot && this.shadowRoot.querySelector("#srStatus");
         if (!region) return;
         // Clear first to force announcement even if same text
-        region.textContent = '';
+        region.textContent = "";
         // Short delay ensures AT picks it up
         this.async(() => {
           region.textContent = message;
@@ -1631,20 +1695,23 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _formatAriaDate(date) {
       try {
-        return new Intl.DateTimeFormat(this._locale || (navigator && navigator.language) || 'en-US', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        }).format(date);
+        return new Intl.DateTimeFormat(
+          this._locale || (navigator && navigator.language) || "en-US",
+          {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          },
+        ).format(date);
       } catch (_) {
-        return date && date.toDateString ? date.toDateString() : '';
+        return date && date.toDateString ? date.toDateString() : "";
       }
     }
 
     // Add _moment method for timezone handling like nuxeo-date-picker
     _moment(...args) {
-      const fn = this.timezone === 'Etc/UTC' ? moment.utc : moment;
+      const fn = this.timezone === "Etc/UTC" ? moment.utc : moment;
       return fn(...args);
     }
 
@@ -1652,7 +1719,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _parseDateOnly(value) {
       if (!value) return null;
       try {
-        if (typeof value === 'string') {
+        if (typeof value === "string") {
           const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
           if (m) {
             const year = parseInt(m[1], 10);
@@ -1674,7 +1741,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     // Professional date parser - handles ISO strings with validation
     _parseDateFromISO(isoString) {
-      if (!isoString || typeof isoString !== 'string') return null;
+      if (!isoString || typeof isoString !== "string") return null;
 
       try {
         // Strict ISO format validation: YYYY-MM-DD
@@ -1695,7 +1762,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         date.setHours(0, 0, 0, 0);
 
         // Validate that the date components match (catches invalid dates like Feb 30)
-        if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+        if (
+          date.getFullYear() !== year ||
+          date.getMonth() !== month - 1 ||
+          date.getDate() !== day
+        ) {
           return null;
         }
 
@@ -1709,17 +1780,25 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._monthNames = [];
       for (let i = 0; i < 12; i++) {
         const date = new Date(2024, i, 1);
-        this._monthNames.push(new Intl.DateTimeFormat(this._locale, { month: 'long' }).format(date));
+        this._monthNames.push(
+          new Intl.DateTimeFormat(this._locale, { month: "long" }).format(date),
+        );
       }
 
       this._weekdayNames = [];
       // Handle firstDayOfWeek for proper week display
-      const firstDay = this.firstDayOfWeek || config.get('firstDayOfWeek', moment.localeData().firstDayOfWeek() || 0);
+      const firstDay =
+        this.firstDayOfWeek ||
+        config.get("firstDayOfWeek", moment.localeData().firstDayOfWeek() || 0);
       const baseDate = new Date(2024, 0, 7); // Start with a Sunday
       for (let i = 0; i < 7; i++) {
         const date = new Date(baseDate);
         date.setDate(baseDate.getDate() + ((firstDay + i) % 7));
-        this._weekdayNames.push(new Intl.DateTimeFormat(this._locale, { weekday: 'short' }).format(date));
+        this._weekdayNames.push(
+          new Intl.DateTimeFormat(this._locale, { weekday: "short" }).format(
+            date,
+          ),
+        );
       }
     }
 
@@ -1797,8 +1876,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           if (isValidMonthYear) {
             const label = new Intl.DateTimeFormat(this._locale, {
-              month: 'long',
-              year: 'numeric',
+              month: "long",
+              year: "numeric",
             }).format(date);
 
             this._monthYearOptions.push({
@@ -1820,7 +1899,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       const firstDay = new Date(year, month, 1);
       const firstDayOfWeek =
-        this.firstDayOfWeek || config.get('firstDayOfWeek', moment.localeData().firstDayOfWeek() || 0);
+        this.firstDayOfWeek ||
+        config.get("firstDayOfWeek", moment.localeData().firstDayOfWeek() || 0);
       const startDate = new Date(firstDay);
       const dayOffset = (firstDay.getDay() - firstDayOfWeek + 7) % 7;
       startDate.setDate(1 - dayOffset);
@@ -1832,8 +1912,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         currentDate.setDate(startDate.getDate() + i);
         currentDate.setHours(0, 0, 0, 0);
 
-        const isCurrentMonth = currentDate.getMonth() === month && currentDate.getFullYear() === year;
-        const isToday = this._isSameDay(currentDate, this._today) && isCurrentMonth;
+        const isCurrentMonth =
+          currentDate.getMonth() === month &&
+          currentDate.getFullYear() === year;
+        const isToday =
+          this._isSameDay(currentDate, this._today) && isCurrentMonth;
 
         // Check if this date is selected
         let isSelected = false;
@@ -1852,7 +1935,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         days.push({
           date: new Date(currentDate),
-          day: isEmpty ? '' : currentDate.getDate(),
+          day: isEmpty ? "" : currentDate.getDate(),
           dateISO,
           isCurrentMonth,
           isToday,
@@ -1863,7 +1946,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         });
       }
 
-      this.set('_calendarDays', days);
+      this.set("_calendarDays", days);
 
       // Update navigation buttons
       this.async(() => {
@@ -1873,8 +1956,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     // Method to force update of navigation button states
     _updateNavigationButtonStates() {
-      const prevButton = this.shadowRoot.querySelector('#prevMonth');
-      const nextButton = this.shadowRoot.querySelector('#nextMonth');
+      const prevButton = this.shadowRoot.querySelector("#prevMonth");
+      const nextButton = this.shadowRoot.querySelector("#nextMonth");
 
       if (prevButton) {
         const isPrevDisabled = this._isPreviousMonthDisabled();
@@ -1891,21 +1974,21 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Navigation buttons are now handled by template bindings (on-click)
 
       // Input field events - only validation, no calendar opening on click or focus
-      const dateInput = this.shadowRoot.querySelector('#dateInput');
+      const dateInput = this.shadowRoot.querySelector("#dateInput");
       if (dateInput) {
         // Prevent calendar opening on input click or focus
-        dateInput.addEventListener('click', (e) => {
+        dateInput.addEventListener("click", (e) => {
           e.preventDefault();
           e.stopPropagation();
           // Just focus the input, don't open calendar
         });
 
-        dateInput.addEventListener('keydown', (e) => {
+        dateInput.addEventListener("keydown", (e) => {
           // Allow opening calendar with specific keys when input is focused
-          if (e.key === 'F4' || e.key === 'ArrowDown') {
+          if (e.key === "F4" || e.key === "ArrowDown") {
             e.preventDefault();
             this._openCalendar(e, true); // Opened via keyboard
-          } else if (e.key === 'Enter') {
+          } else if (e.key === "Enter") {
             // Enter validates input
             this._validateAndParseInput();
           }
@@ -1913,19 +1996,22 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
 
       // Calendar grid keyboard navigation
-      const calendarGrid = this.shadowRoot.querySelector('.calendar-grid');
+      const calendarGrid = this.shadowRoot.querySelector(".calendar-grid");
       if (calendarGrid) {
-        calendarGrid.addEventListener('keydown', (e) => this._handleGridKeydown(e));
+        calendarGrid.addEventListener("keydown", (e) =>
+          this._handleGridKeydown(e),
+        );
       }
 
       // Close year-dropdown when clicking outside it but inside the component
       this.shadowRoot.addEventListener(
-        'click',
+        "click",
         (e) => {
           try {
-            const yearOptions = this.shadowRoot.querySelector('#yearOptions');
-            const yearDropdown = this.shadowRoot.querySelector('.year-dropdown');
-            if (!yearOptions || !yearOptions.classList.contains('open')) return;
+            const yearOptions = this.shadowRoot.querySelector("#yearOptions");
+            const yearDropdown =
+              this.shadowRoot.querySelector(".year-dropdown");
+            if (!yearOptions || !yearOptions.classList.contains("open")) return;
             if (!yearDropdown || !e.composedPath().includes(yearDropdown)) {
               this._closeYearDropdown();
             }
@@ -1937,13 +2023,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       );
 
       // Focus trap and global key handling inside the popover (Tab/Escape)
-      const popover = this.shadowRoot.querySelector('#calendarPopover');
+      const popover = this.shadowRoot.querySelector("#calendarPopover");
       if (popover) {
-        popover.addEventListener('keydown', (e) => this._handlePopoverKeydown(e));
+        popover.addEventListener("keydown", (e) =>
+          this._handlePopoverKeydown(e),
+        );
 
         // Add click handler to popover to handle internal clicks appropriately
         popover.addEventListener(
-          'click',
+          "click",
           (e) => {
             // Mark that we're interacting with the calendar
             this._interactingWithCalendar = true;
@@ -1956,17 +2044,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             // Only stop propagation for clicks on non-interactive elements
             const { target } = e;
             const isInteractiveElement =
-              target.closest('button') ||
-              target.closest('select') ||
+              target.closest("button") ||
+              target.closest("select") ||
               target.closest('[role="button"]') ||
               target.closest('[role="option"]') ||
-              target.closest('.year-option') ||
-              target.closest('.year-dropdown') ||
-              target.closest('.nav-button') ||
-              target.closest('.calendar-day') ||
-              target.closest('.footer-button') ||
-              target.closest('.today-button') ||
-              target.closest('.cancel-button');
+              target.closest(".year-option") ||
+              target.closest(".year-dropdown") ||
+              target.closest(".nav-button") ||
+              target.closest(".calendar-day") ||
+              target.closest(".footer-button") ||
+              target.closest(".today-button") ||
+              target.closest(".cancel-button");
 
             // Only stop propagation for empty area clicks, not interactive elements
             if (!isInteractiveElement) {
@@ -1978,39 +2066,43 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
 
       // Document events
-      document.addEventListener('click', (e) => this._handleDocumentClick(e));
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && this._isCalendarOpen) {
+      document.addEventListener("click", (e) => this._handleDocumentClick(e));
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && this._isCalendarOpen) {
           this._closeCalendar();
         }
       });
 
       // Bug fix: Close calendar when focus moves outside the component
       // Enable focus-based closing for better UX when focus moves outside
-      document.addEventListener('focusin', (e) => this._handleDocumentFocusIn(e));
-      document.addEventListener('focusout', (e) => this._handleDocumentFocusOut(e));
+      document.addEventListener("focusin", (e) =>
+        this._handleDocumentFocusIn(e),
+      );
+      document.addEventListener("focusout", (e) =>
+        this._handleDocumentFocusOut(e),
+      );
     }
 
     _setupFocusTrap() {
       // Define the proper focus order for calendar accessibility
       this._focusOrder = [
-        'year-dropdown', // Year selection
-        'prevMonth', // Previous month button
-        'nextMonth', // Next month button
-        'calendar-grid', // Date grid (managed separately)
-        'today-button', // Today button
-        'cancel-button', // Cancel button
+        "year-dropdown", // Year selection
+        "prevMonth", // Previous month button
+        "nextMonth", // Next month button
+        "calendar-grid", // Date grid (managed separately)
+        "today-button", // Today button
+        "cancel-button", // Cancel button
       ];
     }
 
     _handlePopoverKeydown(e) {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         e.preventDefault();
         this._closeCalendar();
         return;
       }
 
-      if (e.key === 'Tab') {
+      if (e.key === "Tab") {
         e.preventDefault();
         this._handleCalendarTabNavigation(e.shiftKey);
       }
@@ -2028,10 +2120,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       if (isShiftTab) {
         // Shift+Tab: Move backward
-        nextIndex = currentIndex <= 0 ? this._focusOrder.length - 1 : currentIndex - 1;
+        nextIndex =
+          currentIndex <= 0 ? this._focusOrder.length - 1 : currentIndex - 1;
       } else {
         // Tab: Move forward
-        nextIndex = currentIndex >= this._focusOrder.length - 1 ? 0 : currentIndex + 1;
+        nextIndex =
+          currentIndex >= this._focusOrder.length - 1 ? 0 : currentIndex + 1;
       }
 
       const nextElement = this._focusOrder[nextIndex];
@@ -2042,23 +2136,29 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _identifyCurrentFocusElement(element) {
       if (!element) return this._focusOrder[0];
 
-      if (element.classList.contains('year-dropdown') || element.closest('.year-dropdown')) {
-        return 'year-dropdown';
+      if (
+        element.classList.contains("year-dropdown") ||
+        element.closest(".year-dropdown")
+      ) {
+        return "year-dropdown";
       }
-      if (element.id === 'prevMonth') {
-        return 'prevMonth';
+      if (element.id === "prevMonth") {
+        return "prevMonth";
       }
-      if (element.id === 'nextMonth') {
-        return 'nextMonth';
+      if (element.id === "nextMonth") {
+        return "nextMonth";
       }
-      if (element.classList.contains('calendar-day') || element.closest('.calendar-grid')) {
-        return 'calendar-grid';
+      if (
+        element.classList.contains("calendar-day") ||
+        element.closest(".calendar-grid")
+      ) {
+        return "calendar-grid";
       }
-      if (element.classList.contains('today-button')) {
-        return 'today-button';
+      if (element.classList.contains("today-button")) {
+        return "today-button";
       }
-      if (element.classList.contains('cancel-button')) {
-        return 'cancel-button';
+      if (element.classList.contains("cancel-button")) {
+        return "cancel-button";
       }
 
       // Default to first element
@@ -2070,34 +2170,38 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       let targetElement = null;
 
       switch (elementName) {
-        case 'year-dropdown':
-          targetElement = this.shadowRoot.querySelector('.year-dropdown');
+        case "year-dropdown":
+          targetElement = this.shadowRoot.querySelector(".year-dropdown");
           break;
-        case 'prevMonth':
-          targetElement = this.shadowRoot.querySelector('#prevMonth');
+        case "prevMonth":
+          targetElement = this.shadowRoot.querySelector("#prevMonth");
           if (targetElement && targetElement.disabled) {
             // Skip disabled prev button
-            this._focusCalendarElement(this._focusOrder[this._focusOrder.indexOf('prevMonth') + 1]);
+            this._focusCalendarElement(
+              this._focusOrder[this._focusOrder.indexOf("prevMonth") + 1],
+            );
             return;
           }
           break;
-        case 'nextMonth':
-          targetElement = this.shadowRoot.querySelector('#nextMonth');
+        case "nextMonth":
+          targetElement = this.shadowRoot.querySelector("#nextMonth");
           if (targetElement && targetElement.disabled) {
             // Skip disabled next button
-            this._focusCalendarElement(this._focusOrder[this._focusOrder.indexOf('nextMonth') + 1]);
+            this._focusCalendarElement(
+              this._focusOrder[this._focusOrder.indexOf("nextMonth") + 1],
+            );
             return;
           }
           break;
-        case 'calendar-grid':
+        case "calendar-grid":
           // Focus the appropriate date in the grid
           this._focusCalendarGrid();
           return;
-        case 'today-button':
-          targetElement = this.shadowRoot.querySelector('.today-button');
+        case "today-button":
+          targetElement = this.shadowRoot.querySelector(".today-button");
           break;
-        case 'cancel-button':
-          targetElement = this.shadowRoot.querySelector('.cancel-button');
+        case "cancel-button":
+          targetElement = this.shadowRoot.querySelector(".cancel-button");
           break;
         default:
           // Fallback: focus the first available date in the grid
@@ -2140,7 +2244,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         targetDate = this._today;
       } else {
         // First day of current month
-        targetDate = new Date(this._viewDate.getFullYear(), this._viewDate.getMonth(), 1);
+        targetDate = new Date(
+          this._viewDate.getFullYear(),
+          this._viewDate.getMonth(),
+          1,
+        );
       }
 
       if (targetDate) {
@@ -2156,11 +2264,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         e.stopPropagation();
       }
 
-      const monthYearOptions = this.shadowRoot.querySelector('#monthYearOptions');
+      const monthYearOptions =
+        this.shadowRoot.querySelector("#monthYearOptions");
       if (monthYearOptions) {
-        const isOpen = monthYearOptions.classList.contains('open');
+        const isOpen = monthYearOptions.classList.contains("open");
         this._isYearDropdownOpen = !isOpen;
-        monthYearOptions.classList.toggle('open');
+        monthYearOptions.classList.toggle("open");
 
         if (!isOpen) {
           // When opening, focus and scroll to current month-year
@@ -2176,8 +2285,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const currentYear = this._viewDate.getFullYear();
       const currentMonth = this._viewDate.getMonth();
       const monthYearValue = `${currentYear}-${currentMonth}`;
-      const monthYearButton = this.shadowRoot.querySelector(`[data-month-year="${monthYearValue}"]`);
-      const monthYearOptions = this.shadowRoot.querySelector('#monthYearOptions');
+      const monthYearButton = this.shadowRoot.querySelector(
+        `[data-month-year="${monthYearValue}"]`,
+      );
+      const monthYearOptions =
+        this.shadowRoot.querySelector("#monthYearOptions");
 
       if (monthYearButton && monthYearOptions) {
         const containerHeight = monthYearOptions.clientHeight;
@@ -2190,9 +2302,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _setupMonthYearKeyNavigation() {
-      const monthYearOptions = this.shadowRoot.querySelector('#monthYearOptions');
+      const monthYearOptions =
+        this.shadowRoot.querySelector("#monthYearOptions");
       if (monthYearOptions) {
-        monthYearOptions.addEventListener('keydown', (e) => this._handleMonthYearKeyDown(e));
+        monthYearOptions.addEventListener("keydown", (e) =>
+          this._handleMonthYearKeyDown(e),
+        );
       }
     }
 
@@ -2200,7 +2315,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const currentYear = this._viewDate.getFullYear();
       const currentMonth = this._viewDate.getMonth();
       const monthYearValue = `${currentYear}-${currentMonth}`;
-      const monthYearButton = this.shadowRoot.querySelector(`[data-month-year="${monthYearValue}"]`);
+      const monthYearButton = this.shadowRoot.querySelector(
+        `[data-month-year="${monthYearValue}"]`,
+      );
 
       if (monthYearButton) {
         monthYearButton.tabIndex = 0;
@@ -2213,35 +2330,44 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _handleMonthYearKeyDown(e) {
       const currentFocused = this.shadowRoot.activeElement;
-      if (!currentFocused || !currentFocused.classList.contains('month-year-option')) return;
+      if (
+        !currentFocused ||
+        !currentFocused.classList.contains("month-year-option")
+      )
+        return;
 
-      const allMonthYearButtons = Array.from(this.shadowRoot.querySelectorAll('.month-year-option'));
+      const allMonthYearButtons = Array.from(
+        this.shadowRoot.querySelectorAll(".month-year-option"),
+      );
       const currentIndex = allMonthYearButtons.indexOf(currentFocused);
       let nextIndex = currentIndex;
 
       switch (e.key) {
-        case 'ArrowUp':
+        case "ArrowUp":
           e.preventDefault();
           nextIndex = Math.max(0, currentIndex - 1);
           break;
-        case 'ArrowDown':
+        case "ArrowDown":
           e.preventDefault();
-          nextIndex = Math.min(allMonthYearButtons.length - 1, currentIndex + 1);
+          nextIndex = Math.min(
+            allMonthYearButtons.length - 1,
+            currentIndex + 1,
+          );
           break;
-        case 'Home':
+        case "Home":
           e.preventDefault();
           nextIndex = 0;
           break;
-        case 'End':
+        case "End":
           e.preventDefault();
           nextIndex = allMonthYearButtons.length - 1;
           break;
-        case 'Enter':
-        case ' ':
+        case "Enter":
+        case " ":
           e.preventDefault();
           currentFocused.click();
           return;
-        case 'Escape':
+        case "Escape":
           e.preventDefault();
           this._closeMonthYearDropdown();
           return;
@@ -2257,13 +2383,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _closeMonthYearDropdown() {
-      const monthYearOptions = this.shadowRoot.querySelector('#monthYearOptions');
+      const monthYearOptions =
+        this.shadowRoot.querySelector("#monthYearOptions");
       if (monthYearOptions) {
-        monthYearOptions.classList.remove('open');
+        monthYearOptions.classList.remove("open");
         this._isYearDropdownOpen = false;
 
         // Return focus to month-year dropdown button
-        const monthYearDropdown = this.shadowRoot.querySelector('.month-year-dropdown');
+        const monthYearDropdown = this.shadowRoot.querySelector(
+          ".month-year-dropdown",
+        );
         if (monthYearDropdown) {
           monthYearDropdown.focus();
         }
@@ -2276,11 +2405,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         e.stopPropagation();
       }
 
-      const button = e.target.closest('.month-year-option');
+      const button = e.target.closest(".month-year-option");
       const monthYearValue = button ? button.dataset.monthYear : null;
 
       if (monthYearValue) {
-        const [year, month] = monthYearValue.split('-').map(Number);
+        const [year, month] = monthYearValue.split("-").map(Number);
         const newDate = new Date(year, month, 1);
         this._viewDate = newDate;
 
@@ -2295,21 +2424,26 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _getMonthYearOptionClass(item, viewDate) {
-      if (!viewDate || !item) return '';
-      return item.year === viewDate.getFullYear() && item.month === viewDate.getMonth() ? 'selected' : '';
+      if (!viewDate || !item) return "";
+      return item.year === viewDate.getFullYear() &&
+        item.month === viewDate.getMonth()
+        ? "selected"
+        : "";
     }
 
     _getDropdownIcon(isOpen) {
-      return isOpen ? 'icons:arrow-drop-up' : 'icons:arrow-drop-down';
+      return isOpen ? "icons:arrow-drop-up" : "icons:arrow-drop-down";
     }
 
     _getMonthName(date) {
-      if (!date) return '';
-      return new Intl.DateTimeFormat(this._locale, { month: 'long' }).format(date);
+      if (!date) return "";
+      return new Intl.DateTimeFormat(this._locale, { month: "long" }).format(
+        date,
+      );
     }
 
     _getYear(date) {
-      if (!date) return '';
+      if (!date) return "";
       return date.getFullYear();
     }
 
@@ -2321,22 +2455,33 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       let isInsideComponent = false;
 
       // Get all relevant elements
-      const calendarPopover = this.shadowRoot.querySelector('#calendarPopover');
-      const inputWrapper = this.shadowRoot.querySelector('.input-wrapper');
-      const fieldWrapper = this.shadowRoot.querySelector('.field-wrapper');
+      const calendarPopover = this.shadowRoot.querySelector("#calendarPopover");
+      const inputWrapper = this.shadowRoot.querySelector(".input-wrapper");
+      const fieldWrapper = this.shadowRoot.querySelector(".field-wrapper");
 
       // First check: Is it within the calendar popover specifically?
-      if (calendarPopover && (target === calendarPopover || calendarPopover.contains(target))) {
+      if (
+        calendarPopover &&
+        (target === calendarPopover || calendarPopover.contains(target))
+      ) {
         isInsideComponent = true;
       }
 
       // Second check: Is it within the input wrapper area?
-      if (!isInsideComponent && inputWrapper && (target === inputWrapper || inputWrapper.contains(target))) {
+      if (
+        !isInsideComponent &&
+        inputWrapper &&
+        (target === inputWrapper || inputWrapper.contains(target))
+      ) {
         isInsideComponent = true;
       }
 
       // Third check: Is it within the field wrapper?
-      if (!isInsideComponent && fieldWrapper && (target === fieldWrapper || fieldWrapper.contains(target))) {
+      if (
+        !isInsideComponent &&
+        fieldWrapper &&
+        (target === fieldWrapper || fieldWrapper.contains(target))
+      ) {
         isInsideComponent = true;
       }
 
@@ -2348,14 +2493,22 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             isInsideComponent = true;
           }
           // Also check specific elements
-          if (element === calendarPopover || element === inputWrapper || element === fieldWrapper) {
+          if (
+            element === calendarPopover ||
+            element === inputWrapper ||
+            element === fieldWrapper
+          ) {
             isInsideComponent = true;
           }
         });
       }
 
       // Fifth check: Is it within our shadow root?
-      if (!isInsideComponent && this.shadowRoot && this.shadowRoot.contains(target)) {
+      if (
+        !isInsideComponent &&
+        this.shadowRoot &&
+        this.shadowRoot.contains(target)
+      ) {
         isInsideComponent = true;
       }
 
@@ -2364,9 +2517,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         this._closeCalendar();
 
         // Also close year dropdown if open
-        const yearOptions = this.shadowRoot.querySelector('#yearOptions');
+        const yearOptions = this.shadowRoot.querySelector("#yearOptions");
         if (yearOptions) {
-          yearOptions.classList.remove('open');
+          yearOptions.classList.remove("open");
           this._isYearDropdownOpen = false;
         }
       }
@@ -2377,13 +2530,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Handle year dropdown focus outside
       if (this._isYearDropdownOpen) {
         const focusedElement = e.target;
-        const yearDropdown = this.shadowRoot.querySelector('.year-dropdown');
-        const yearOptions = this.shadowRoot.querySelector('#yearOptions');
+        const yearDropdown = this.shadowRoot.querySelector(".year-dropdown");
+        const yearOptions = this.shadowRoot.querySelector("#yearOptions");
 
         // Check if focus moved outside the year dropdown area
         const isInsideYearDropdown =
           yearDropdown &&
-          (yearDropdown.contains(focusedElement) || (yearOptions && yearOptions.contains(focusedElement)));
+          (yearDropdown.contains(focusedElement) ||
+            (yearOptions && yearOptions.contains(focusedElement)));
 
         if (!isInsideYearDropdown) {
           // Close year dropdown when focus moves outside
@@ -2437,9 +2591,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             this._closeCalendar();
 
             // Also close year dropdown if open
-            const yearOptions = this.shadowRoot.querySelector('#yearOptions');
-            if (yearOptions && yearOptions.classList.contains('open')) {
-              yearOptions.classList.remove('open');
+            const yearOptions = this.shadowRoot.querySelector("#yearOptions");
+            if (yearOptions && yearOptions.classList.contains("open")) {
+              yearOptions.classList.remove("open");
               this._isYearDropdownOpen = false;
             }
           }
@@ -2490,26 +2644,26 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Clear error state when user clears the date
       // Don't show error until next save button click
       this.invalid = false;
-      this.errorReason = '';
-      this.errorMessage = '';
+      this.errorReason = "";
+      this.errorMessage = "";
 
       this._preventInputUpdate = true;
-      this._inputValue = '';
-      this._safeSetValue('');
+      this._inputValue = "";
+      this._safeSetValue("");
       this._preventInputUpdate = false; // Reset flag
 
       // Notify Polymer of property changes to trigger template re-evaluation
-      this.notifyPath('_justCleared');
-      this.notifyPath('invalid');
-      this.notifyPath('errorMessage');
-      this.notifyPath('errorReason');
+      this.notifyPath("_justCleared");
+      this.notifyPath("invalid");
+      this.notifyPath("errorMessage");
+      this.notifyPath("errorReason");
 
       // Regenerate calendar to remove any date highlighting
       this._generateCalendar();
 
       // Bug fix: Focus the input after clearing for better UX
       this.async(() => {
-        const dateInput = this.shadowRoot.querySelector('#dateInput');
+        const dateInput = this.shadowRoot.querySelector("#dateInput");
         if (dateInput) {
           dateInput.focus();
         }
@@ -2566,10 +2720,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         this._userIsTyping = true;
       }
 
-      if (e.key === 'ArrowDown' || e.key === 'F4') {
+      if (e.key === "ArrowDown" || e.key === "F4") {
         e.preventDefault();
         this._openCalendar(e, true); // Opened via keyboard
-      } else if (e.key === 'Enter') {
+      } else if (e.key === "Enter") {
         // Enter validates input
         e.preventDefault();
         this._userIsTyping = false;
@@ -2601,7 +2755,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Clear the selected date and value to prevent invalid date from being stored
         this._selectedDate = null;
         this._preventInputUpdate = true;
-        this._safeSetValue('');
+        this._safeSetValue("");
         this._preventInputUpdate = false;
 
         // Update calendar to reflect no selected date
@@ -2610,7 +2764,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
 
       // Create a clean date object to avoid any reference issues
-      this._selectedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      this._selectedDate = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+      );
       this._selectedDate.setHours(0, 0, 0, 0);
 
       // Generate ISO string for internal value (YYYY-MM-DD format)
@@ -2634,8 +2792,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       // Clear all errors when valid date is selected (including required errors)
       this.invalid = false;
-      this.errorMessage = '';
-      this.errorReason = '';
+      this.errorMessage = "";
+      this.errorReason = "";
 
       // Clear flags when user provides valid input
       this._showErrors = false;
@@ -2668,17 +2826,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._openCalendar(e, false); // Explicitly false for mouse
 
       // Prevent input from getting focused by temporarily removing its tabindex
-      const input = this.shadowRoot.querySelector('#dateInput');
+      const input = this.shadowRoot.querySelector("#dateInput");
       if (input) {
-        const originalTabIndex = input.getAttribute('tabindex');
-        input.setAttribute('tabindex', '-1');
+        const originalTabIndex = input.getAttribute("tabindex");
+        input.setAttribute("tabindex", "-1");
 
         // Restore tabindex after calendar is fully opened
         this.async(() => {
           if (originalTabIndex !== null) {
-            input.setAttribute('tabindex', originalTabIndex);
+            input.setAttribute("tabindex", originalTabIndex);
           } else {
-            input.removeAttribute('tabindex');
+            input.removeAttribute("tabindex");
           }
           this._openedViaCalendarIcon = false;
         }, 500);
@@ -2743,13 +2901,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._justOpenedCalendar = true;
       this._isCalendarOpen = true;
 
-      const popover = this.shadowRoot.querySelector('#calendarPopover');
-      const backdrop = this.shadowRoot.querySelector('#calendarBackdrop');
+      const popover = this.shadowRoot.querySelector("#calendarPopover");
+      const backdrop = this.shadowRoot.querySelector("#calendarBackdrop");
       if (popover) {
-        popover.classList.add('open');
+        popover.classList.add("open");
       }
       if (backdrop) {
-        backdrop.classList.add('open');
+        backdrop.classList.add("open");
       }
 
       // Clear the flag after calendar has had time to settle
@@ -2759,17 +2917,24 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Position popover based on available viewport space
       this._positionPopover();
       // Reposition on resize/scroll while open
-      this._boundReposition = this._boundReposition || (() => this._positionPopover());
-      window.addEventListener('resize', this._boundReposition, { passive: true });
-      window.addEventListener('scroll', this._boundReposition, { passive: true });
+      this._boundReposition =
+        this._boundReposition || (() => this._positionPopover());
+      window.addEventListener("resize", this._boundReposition, {
+        passive: true,
+      });
+      window.addEventListener("scroll", this._boundReposition, {
+        passive: true,
+      });
       // Also listen for orientation changes on mobile
-      window.addEventListener('orientationchange', this._boundReposition, { passive: true });
+      window.addEventListener("orientationchange", this._boundReposition, {
+        passive: true,
+      });
       // Announce calendar opened
-      this._announce(this._getLocalizedText('calendarOpened'));
+      this._announce(this._getLocalizedText("calendarOpened"));
 
       // Fire opened-changed event for compatibility with nuxeo-date-picker
       this.dispatchEvent(
-        new CustomEvent('opened-changed', {
+        new CustomEvent("opened-changed", {
           detail: { value: true },
           bubbles: true,
           composed: true,
@@ -2786,23 +2951,32 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           // Mouse opening: Aggressive focus management to prevent year dropdown focus
 
           // Immediately disable all potential auto-focus targets except date buttons
-          const yearDropdown = this.shadowRoot.querySelector('.year-dropdown');
-          const prevButton = this.shadowRoot.querySelector('#prevMonth');
-          const nextButton = this.shadowRoot.querySelector('#nextMonth');
-          const todayButton = this.shadowRoot.querySelector('.today-button');
-          const cancelButton = this.shadowRoot.querySelector('.cancel-button');
+          const yearDropdown = this.shadowRoot.querySelector(".year-dropdown");
+          const prevButton = this.shadowRoot.querySelector("#prevMonth");
+          const nextButton = this.shadowRoot.querySelector("#nextMonth");
+          const todayButton = this.shadowRoot.querySelector(".today-button");
+          const cancelButton = this.shadowRoot.querySelector(".cancel-button");
 
           // Store original tabindex values
           const originalTabIndexes = new Map();
-          [yearDropdown, prevButton, nextButton, todayButton, cancelButton].forEach((el) => {
+          [
+            yearDropdown,
+            prevButton,
+            nextButton,
+            todayButton,
+            cancelButton,
+          ].forEach((el) => {
             if (el) {
-              originalTabIndexes.set(el, el.getAttribute('tabindex') || '0');
-              el.setAttribute('tabindex', '-1');
+              originalTabIndexes.set(el, el.getAttribute("tabindex") || "0");
+              el.setAttribute("tabindex", "-1");
             }
           });
 
           // Clear any existing focus
-          if (this.shadowRoot.activeElement && this.shadowRoot.activeElement.blur) {
+          if (
+            this.shadowRoot.activeElement &&
+            this.shadowRoot.activeElement.blur
+          ) {
             this.shadowRoot.activeElement.blur();
           }
 
@@ -2814,14 +2988,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               // Force focus again if needed
               requestAnimationFrame(() => {
                 const currentFocus = this.shadowRoot.activeElement;
-                if (!currentFocus || !currentFocus.classList.contains('calendar-day')) {
+                if (
+                  !currentFocus ||
+                  !currentFocus.classList.contains("calendar-day")
+                ) {
                   this._focusCalendarGrid();
                 }
 
                 // Restore tabindex values
                 originalTabIndexes.forEach((tabindex, element) => {
                   if (element) {
-                    element.setAttribute('tabindex', tabindex);
+                    element.setAttribute("tabindex", tabindex);
                   }
                 });
 
@@ -2846,38 +3023,38 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._justOpenedCalendar = false; // Clear flag when closing
       this._interactingWithCalendar = false; // Clear interaction flag
 
-      const popover = this.shadowRoot.querySelector('#calendarPopover');
-      const backdrop = this.shadowRoot.querySelector('#calendarBackdrop');
+      const popover = this.shadowRoot.querySelector("#calendarPopover");
+      const backdrop = this.shadowRoot.querySelector("#calendarBackdrop");
       if (popover) {
-        popover.classList.remove('open');
-        popover.classList.remove('open-up');
-        popover.style.left = '';
-        popover.style.right = '';
-        popover.style.top = '';
-        popover.style.bottom = '';
+        popover.classList.remove("open");
+        popover.classList.remove("open-up");
+        popover.style.left = "";
+        popover.style.right = "";
+        popover.style.top = "";
+        popover.style.bottom = "";
       }
       if (backdrop) {
-        backdrop.classList.remove('open');
+        backdrop.classList.remove("open");
       }
       // Announce calendar closed
-      this._announce(this._getLocalizedText('calendarClosed'));
+      this._announce(this._getLocalizedText("calendarClosed"));
       // Remove reposition listeners
       if (this._boundReposition) {
-        window.removeEventListener('resize', this._boundReposition);
-        window.removeEventListener('scroll', this._boundReposition);
-        window.removeEventListener('orientationchange', this._boundReposition);
+        window.removeEventListener("resize", this._boundReposition);
+        window.removeEventListener("scroll", this._boundReposition);
+        window.removeEventListener("orientationchange", this._boundReposition);
       }
 
       // Fire opened-changed event for compatibility with nuxeo-date-picker
       this.dispatchEvent(
-        new CustomEvent('opened-changed', {
+        new CustomEvent("opened-changed", {
           detail: { value: false },
           bubbles: true,
           composed: true,
         }),
       );
 
-      const dateInput = this.shadowRoot.querySelector('#dateInput');
+      const dateInput = this.shadowRoot.querySelector("#dateInput");
       if (dateInput) {
         dateInput.focus();
       }
@@ -2913,7 +3090,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._generateMonthYearOptions();
       this._generateCalendar();
       this._announce(
-        this._getLocalizedText('movedToMonth', {
+        this._getLocalizedText("movedToMonth", {
           month: this._getMonthName(this._viewDate),
           year: this._getYear(this._viewDate),
         }),
@@ -2942,7 +3119,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._generateMonthYearOptions();
       this._generateCalendar();
       this._announce(
-        this._getLocalizedText('movedToMonth', {
+        this._getLocalizedText("movedToMonth", {
           month: this._getMonthName(this._viewDate),
           year: this._getYear(this._viewDate),
         }),
@@ -2966,7 +3143,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           this._focusedDate = newFocusDate;
         } else {
           // If month changed due to date not existing, use first day of month
-          this._focusedDate = new Date(this._viewDate.getFullYear(), this._viewDate.getMonth(), 1);
+          this._focusedDate = new Date(
+            this._viewDate.getFullYear(),
+            this._viewDate.getMonth(),
+            1,
+          );
         }
         this._focusDate(this._focusedDate);
       }
@@ -2975,7 +3156,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     // Bug fix: Handle clicks on calendar grid to prevent unwanted behavior on empty areas
     _handleCalendarGridClick(e) {
       // Only allow clicks that are specifically on calendar day buttons
-      const button = e.target.closest('.calendar-day');
+      const button = e.target.closest(".calendar-day");
       if (!button) {
         // Click was on empty area - prevent any default behavior
         e.preventDefault();
@@ -2990,12 +3171,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         e.stopPropagation();
       }
 
-      const button = e.target.closest('.calendar-day');
+      const button = e.target.closest(".calendar-day");
       if (
         !button ||
         button.disabled ||
-        button.classList.contains('empty') ||
-        button.classList.contains('other-month')
+        button.classList.contains("empty") ||
+        button.classList.contains("other-month")
       ) {
         return;
       }
@@ -3017,8 +3198,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (validation.isValid) {
         // Clear validation errors when valid date is selected
         this.invalid = false;
-        this.errorReason = '';
-        this.errorMessage = '';
+        this.errorReason = "";
+        this.errorMessage = "";
         this._selectDate(selectedDate);
       } else {
         // Date is invalid - show appropriate error
@@ -3031,17 +3212,20 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _handleGridKeydown(e) {
       const currentButton = e.target;
-      if (!currentButton.classList.contains('calendar-day')) return;
+      if (!currentButton.classList.contains("calendar-day")) return;
 
       const currentDate = new Date(currentButton.dataset.date);
       const targetDate = new Date(currentDate);
 
       switch (e.key) {
-        case 'Enter':
-        case ' ':
+        case "Enter":
+        case " ":
           e.preventDefault();
           // Allow selection of any current month date, not just non-empty
-          if (!currentButton.disabled && currentButton.classList.contains('calendar-day')) {
+          if (
+            !currentButton.disabled &&
+            currentButton.classList.contains("calendar-day")
+          ) {
             // Check if it's a valid current month date
             const isCurrentMonth =
               currentDate.getMonth() === this._viewDate.getMonth() &&
@@ -3052,7 +3236,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           }
           break;
 
-        case 'ArrowLeft':
+        case "ArrowLeft":
           e.preventDefault();
           targetDate.setDate(currentDate.getDate() - 1);
           // Only navigate within current month - don't allow month transitions
@@ -3064,7 +3248,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           }
           break;
 
-        case 'ArrowRight':
+        case "ArrowRight":
           e.preventDefault();
           targetDate.setDate(currentDate.getDate() + 1);
           // Only navigate within current month - don't allow month transitions
@@ -3076,7 +3260,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           }
           break;
 
-        case 'ArrowUp':
+        case "ArrowUp":
           e.preventDefault();
           targetDate.setDate(currentDate.getDate() - 7);
           // Only navigate within current month - don't allow month transitions
@@ -3088,7 +3272,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           }
           break;
 
-        case 'ArrowDown':
+        case "ArrowDown":
           e.preventDefault();
           targetDate.setDate(currentDate.getDate() + 7);
           // Only navigate within current month - don't allow month transitions
@@ -3100,7 +3284,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           }
           break;
 
-        case 'Home': {
+        case "Home": {
           e.preventDefault();
           const dayOfWeek = currentDate.getDay();
           targetDate.setDate(currentDate.getDate() - dayOfWeek);
@@ -3114,7 +3298,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           break;
         }
 
-        case 'End': {
+        case "End": {
           e.preventDefault();
           const daysToEnd = 6 - currentDate.getDay();
           targetDate.setDate(currentDate.getDate() + daysToEnd);
@@ -3128,14 +3312,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           break;
         }
 
-        case 'PageUp':
+        case "PageUp":
           e.preventDefault();
           // PageUp: Previous year only - no month navigation via keyboard
           targetDate.setFullYear(currentDate.getFullYear() - 1);
           this._focusDateWithMonthTransition(targetDate);
           break;
 
-        case 'PageDown':
+        case "PageDown":
           e.preventDefault();
           // PageDown: Next year only - no month navigation via keyboard
           targetDate.setFullYear(currentDate.getFullYear() + 1);
@@ -3160,7 +3344,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         // Announce the month change
         this._announce(
-          this._getLocalizedText('movedToMonth', {
+          this._getLocalizedText("movedToMonth", {
             month: this._getMonthName(this._viewDate),
             year: this._getYear(this._viewDate),
           }),
@@ -3185,14 +3369,19 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this.async(() => {
         // Use local date formatting to avoid timezone issues
         const year = this._focusedDate.getFullYear();
-        const month = String(this._focusedDate.getMonth() + 1).padStart(2, '0');
-        const day = String(this._focusedDate.getDate()).padStart(2, '0');
+        const month = String(this._focusedDate.getMonth() + 1).padStart(2, "0");
+        const day = String(this._focusedDate.getDate()).padStart(2, "0");
         const dateISO = `${year}-${month}-${day}`;
 
-        const button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
+        const button = this.shadowRoot.querySelector(
+          `[data-date="${dateISO}"]`,
+        );
         if (button) {
           // For keyboard navigation, allow focusing any date including empty ones
-          if (allowCrossMonth || (!button.classList.contains('empty') && !button.disabled)) {
+          if (
+            allowCrossMonth ||
+            (!button.classList.contains("empty") && !button.disabled)
+          ) {
             button.focus();
             return;
           }
@@ -3211,14 +3400,20 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const month = this._viewDate.getMonth();
 
       // If targetDate is provided and it's in the current month, try to use it
-      if (targetDate && targetDate.getMonth() === month && targetDate.getFullYear() === year) {
+      if (
+        targetDate &&
+        targetDate.getMonth() === month &&
+        targetDate.getFullYear() === year
+      ) {
         const targetYear = targetDate.getFullYear();
-        const targetMonth = String(targetDate.getMonth() + 1).padStart(2, '0');
-        const targetDay = String(targetDate.getDate()).padStart(2, '0');
+        const targetMonth = String(targetDate.getMonth() + 1).padStart(2, "0");
+        const targetDay = String(targetDate.getDate()).padStart(2, "0");
         const dateISO = `${targetYear}-${targetMonth}-${targetDay}`;
 
-        const button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
-        if (button && !button.disabled && !button.classList.contains('empty')) {
+        const button = this.shadowRoot.querySelector(
+          `[data-date="${dateISO}"]`,
+        );
+        if (button && !button.disabled && !button.classList.contains("empty")) {
           this._focusedDate = new Date(targetDate);
           button.focus();
           return;
@@ -3226,15 +3421,24 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
 
       // Try the selected date first if it's in the current month
-      if (this._selectedDate && this._selectedDate.getMonth() === month && this._selectedDate.getFullYear() === year) {
+      if (
+        this._selectedDate &&
+        this._selectedDate.getMonth() === month &&
+        this._selectedDate.getFullYear() === year
+      ) {
         // Use local date formatting to avoid timezone issues
         const selYear = this._selectedDate.getFullYear();
-        const selMonth = String(this._selectedDate.getMonth() + 1).padStart(2, '0');
-        const selDay = String(this._selectedDate.getDate()).padStart(2, '0');
+        const selMonth = String(this._selectedDate.getMonth() + 1).padStart(
+          2,
+          "0",
+        );
+        const selDay = String(this._selectedDate.getDate()).padStart(2, "0");
         const dateISO = `${selYear}-${selMonth}-${selDay}`;
 
-        const button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
-        if (button && !button.disabled && !button.classList.contains('empty')) {
+        const button = this.shadowRoot.querySelector(
+          `[data-date="${dateISO}"]`,
+        );
+        if (button && !button.disabled && !button.classList.contains("empty")) {
           this._focusedDate = new Date(this._selectedDate);
           button.focus();
           return;
@@ -3242,15 +3446,20 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
 
       // Try today if it's in the current month
-      if (this._today.getMonth() === month && this._today.getFullYear() === year) {
+      if (
+        this._today.getMonth() === month &&
+        this._today.getFullYear() === year
+      ) {
         // Use local date formatting to avoid timezone issues
         const todayYear = this._today.getFullYear();
-        const todayMonth = String(this._today.getMonth() + 1).padStart(2, '0');
-        const todayDay = String(this._today.getDate()).padStart(2, '0');
+        const todayMonth = String(this._today.getMonth() + 1).padStart(2, "0");
+        const todayDay = String(this._today.getDate()).padStart(2, "0");
         const dateISO = `${todayYear}-${todayMonth}-${todayDay}`;
 
-        const button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
-        if (button && !button.disabled && !button.classList.contains('empty')) {
+        const button = this.shadowRoot.querySelector(
+          `[data-date="${dateISO}"]`,
+        );
+        if (button && !button.disabled && !button.classList.contains("empty")) {
           this._focusedDate = new Date(this._today);
           button.focus();
           return;
@@ -3261,13 +3470,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const firstValidDate = new Date(year, month, 1);
       // Use local date formatting to avoid timezone issues
       const firstYear = firstValidDate.getFullYear();
-      const firstMonth = String(firstValidDate.getMonth() + 1).padStart(2, '0');
-      const firstDay = String(firstValidDate.getDate()).padStart(2, '0');
+      const firstMonth = String(firstValidDate.getMonth() + 1).padStart(2, "0");
+      const firstDay = String(firstValidDate.getDate()).padStart(2, "0");
       let dateISO = `${firstYear}-${firstMonth}-${firstDay}`;
 
       let button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
 
-      if (button && !button.disabled && !button.classList.contains('empty')) {
+      if (button && !button.disabled && !button.classList.contains("empty")) {
         this._focusedDate = firstValidDate;
         button.focus();
         return;
@@ -3280,12 +3489,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         // Use local date formatting to avoid timezone issues
         const testYear = testDate.getFullYear();
-        const testMonth = String(testDate.getMonth() + 1).padStart(2, '0');
-        const testDay = String(testDate.getDate()).padStart(2, '0');
+        const testMonth = String(testDate.getMonth() + 1).padStart(2, "0");
+        const testDay = String(testDate.getDate()).padStart(2, "0");
         dateISO = `${testYear}-${testMonth}-${testDay}`;
 
         button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
-        if (button && !button.disabled && !button.classList.contains('empty')) {
+        if (button && !button.disabled && !button.classList.contains("empty")) {
           this._focusedDate = testDate;
           button.focus();
           return;
@@ -3310,7 +3519,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         targetDate = new Date(this._today);
       } else {
         // If no selected date and today is not in current month, focus first day of month
-        targetDate = new Date(this._viewDate.getFullYear(), this._viewDate.getMonth(), 1);
+        targetDate = new Date(
+          this._viewDate.getFullYear(),
+          this._viewDate.getMonth(),
+          1,
+        );
       }
 
       if (targetDate) {
@@ -3318,11 +3531,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         this._generateCalendar(); // Regenerate to update tabindex
         this.async(() => {
           const year = targetDate.getFullYear();
-          const month = String(targetDate.getMonth() + 1).padStart(2, '0');
-          const day = String(targetDate.getDate()).padStart(2, '0');
+          const month = String(targetDate.getMonth() + 1).padStart(2, "0");
+          const day = String(targetDate.getDate()).padStart(2, "0");
           const dateISO = `${year}-${month}-${day}`;
-          const button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
-          if (button && !button.disabled && !button.classList.contains('empty')) {
+          const button = this.shadowRoot.querySelector(
+            `[data-date="${dateISO}"]`,
+          );
+          if (
+            button &&
+            !button.disabled &&
+            !button.classList.contains("empty")
+          ) {
             button.focus();
           }
         }, 50);
@@ -3350,31 +3569,31 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _validateAndParseInput() {
-      const input = this.shadowRoot.querySelector('#dateInput');
+      const input = this.shadowRoot.querySelector("#dateInput");
       if (!input) return;
 
-      const value = input.value ? input.value.trim() : '';
+      const value = input.value ? input.value.trim() : "";
 
       // If empty, clear everything
       if (!value) {
         this._selectedDate = null;
         this._preventInputUpdate = true;
-        this._safeSetValue('');
+        this._safeSetValue("");
         this._preventInputUpdate = false; // Reset flag
         // Clear error state when input is empty
         // Don't show error until next save button click
         this.invalid = false;
-        this.errorReason = '';
-        this.errorMessage = '';
+        this.errorReason = "";
+        this.errorMessage = "";
 
         // Set flag to prevent error display
         this._justCleared = true;
 
         // Notify Polymer of property changes to trigger template re-evaluation
-        this.notifyPath('_justCleared');
-        this.notifyPath('invalid');
-        this.notifyPath('errorMessage');
-        this.notifyPath('errorReason');
+        this.notifyPath("_justCleared");
+        this.notifyPath("invalid");
+        this.notifyPath("errorMessage");
+        this.notifyPath("errorReason");
         this._generateCalendar();
         return;
       }
@@ -3385,14 +3604,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (!parseResult) {
         // Could not parse the date at all - format error (highest priority)
         this.invalid = true;
-        this.errorReason = 'format';
-        this.errorMessage = `${this._getLocalizedText('incorrectFormat')} ${this._getDatePlaceholder()}`;
+        this.errorReason = "format";
+        this.errorMessage = `${this._getLocalizedText("incorrectFormat")} ${this._getDatePlaceholder()}`;
         this._showErrors = true;
 
         // Clear the selected date and value to prevent invalid date from being stored
         this._selectedDate = null;
         this._preventInputUpdate = true;
-        this._safeSetValue('');
+        this._safeSetValue("");
         this._preventInputUpdate = false;
 
         // Update calendar to reflect no selected date
@@ -3413,7 +3632,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Clear the selected date and value to prevent invalid date from being stored
         this._selectedDate = null;
         this._preventInputUpdate = true;
-        this._safeSetValue('');
+        this._safeSetValue("");
         this._preventInputUpdate = false;
 
         // Update calendar to reflect no selected date
@@ -3443,8 +3662,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       // Clear all errors when valid date is parsed (including required errors)
       this.invalid = false;
-      this.errorReason = '';
-      this.errorMessage = '';
+      this.errorReason = "";
+      this.errorMessage = "";
 
       // Clear flags when user provides valid input
       this._showErrors = false;
@@ -3454,13 +3673,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _safeSetValue(newValue) {
       try {
         // Try multiple approaches to safely set the value
-        if (this.set && typeof this.set === 'function') {
-          this.set('value', newValue);
-        } else if (Object.prototype.hasOwnProperty.call(this, 'value')) {
+        if (this.set && typeof this.set === "function") {
+          this.set("value", newValue);
+        } else if (Object.prototype.hasOwnProperty.call(this, "value")) {
           this.value = newValue;
         } else {
           // Create the property if it doesn't exist
-          Object.defineProperty(this, 'value', {
+          Object.defineProperty(this, "value", {
             value: newValue,
             writable: true,
             enumerable: true,
@@ -3469,16 +3688,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         }
 
         // Also notify any property observers
-        if (this.notifyPath && typeof this.notifyPath === 'function') {
-          this.notifyPath('value');
+        if (this.notifyPath && typeof this.notifyPath === "function") {
+          this.notifyPath("value");
         }
       } catch (error) {
-        console.warn('Error setting value safely:', error);
+        console.warn("Error setting value safely:", error);
         // Last resort - try direct assignment
         try {
           this.value = newValue;
         } catch (fallbackError) {
-          console.error('Failed to set value with fallback:', fallbackError);
+          console.error("Failed to set value with fallback:", fallbackError);
         }
       }
     }
@@ -3487,12 +3706,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (this._selectedDate) {
         this._inputValue = this._formatDateForInput(this._selectedDate);
       } else {
-        this._inputValue = '';
+        this._inputValue = "";
       }
     }
 
     _formatDateForInput(date) {
-      if (!date) return '';
+      if (!date) return "";
 
       // Use professional formatting
       return this._formatDateForDisplay(date);
@@ -3549,15 +3768,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _validateDate(date) {
       const result = {
         isValid: true,
-        errorReason: '',
-        errorMessage: '',
+        errorReason: "",
+        errorMessage: "",
       };
 
       // Basic date validation
       if (!date || Number.isNaN(date.getTime())) {
         result.isValid = false;
-        result.errorReason = 'invalidDate';
-        result.errorMessage = this._getLocalizedText('invalidDate');
+        result.errorReason = "invalidDate";
+        result.errorMessage = this._getLocalizedText("invalidDate");
         return result;
       }
 
@@ -3572,7 +3791,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           minDate.setHours(0, 0, 0, 0);
           if (normalizedDate < minDate) {
             result.isValid = false;
-            result.errorReason = 'outOfRange';
+            result.errorReason = "outOfRange";
             result.errorMessage = this._buildOutOfRangeMessage(normalizedDate);
             return result;
           }
@@ -3586,7 +3805,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           maxDate.setHours(0, 0, 0, 0);
           if (normalizedDate > maxDate) {
             result.isValid = false;
-            result.errorReason = 'outOfRange';
+            result.errorReason = "outOfRange";
             result.errorMessage = this._buildOutOfRangeMessage(normalizedDate);
             return result;
           }
@@ -3614,22 +3833,25 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _getDatePlaceholder() {
       try {
         // Get the actual locale from browser and moment
-        const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
+        const userLocale =
+          navigator.languages !== undefined
+            ? navigator.languages[0]
+            : navigator.language;
 
         // Ensure moment uses the correct locale
         moment.locale(userLocale);
-        const localeFormat = moment.localeData().longDateFormat('L');
+        const localeFormat = moment.localeData().longDateFormat("L");
 
         // Convert moment format to a readable placeholder
         const placeholder = localeFormat
-          .replace(/D{1,2}/g, 'dd')
-          .replace(/M{1,2}/g, 'mm')
-          .replace(/Y{2,4}/g, 'yyyy')
+          .replace(/D{1,2}/g, "dd")
+          .replace(/M{1,2}/g, "mm")
+          .replace(/Y{2,4}/g, "yyyy")
           .toLowerCase();
 
         return placeholder;
       } catch (e) {
-        return 'mm/dd/yyyy';
+        return "mm/dd/yyyy";
       }
     }
 
@@ -3641,33 +3863,44 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         if (hasMin && hasMax) {
           const minDate = this._parseDateOnly(this.min);
           const maxDate = this._parseDateOnly(this.max);
-          const minFormatted = minDate ? this._formatDateForDisplay(minDate) : this.min;
-          const maxFormatted = maxDate ? this._formatDateForDisplay(maxDate) : this.max;
+          const minFormatted = minDate
+            ? this._formatDateForDisplay(minDate)
+            : this.min;
+          const maxFormatted = maxDate
+            ? this._formatDateForDisplay(maxDate)
+            : this.max;
           return `Date out of range. Must be between ${minFormatted} and ${maxFormatted}`;
         }
 
         if (hasMin) {
           const minDate = this._parseDateOnly(this.min);
-          const minFormatted = minDate ? this._formatDateForDisplay(minDate) : this.min;
+          const minFormatted = minDate
+            ? this._formatDateForDisplay(minDate)
+            : this.min;
           return `Date out of range. Must be on or after ${minFormatted}`;
         }
 
         if (hasMax) {
           const maxDate = this._parseDateOnly(this.max);
-          const maxFormatted = maxDate ? this._formatDateForDisplay(maxDate) : this.max;
+          const maxFormatted = maxDate
+            ? this._formatDateForDisplay(maxDate)
+            : this.max;
           return `Date out of range. Must be on or before ${maxFormatted}`;
         }
       } catch (error) {
-        console.warn('[custom-date-picker] Error building range message:', error);
+        console.warn(
+          "[custom-date-picker] Error building range message:",
+          error,
+        );
       }
-      return 'Date out of range.';
+      return "Date out of range.";
     }
 
     _formatMonthYear(date) {
-      if (!date) return '';
+      if (!date) return "";
       return new Intl.DateTimeFormat(this._locale, {
-        month: 'long',
-        year: 'numeric',
+        month: "long",
+        year: "numeric",
       }).format(date);
     }
 
@@ -3675,12 +3908,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const classes = [];
 
       if (dayObj.isEmpty) {
-        classes.push('empty');
+        classes.push("empty");
       } else {
-        if (dayObj.isOtherMonth) classes.push('other-month');
-        if (dayObj.isToday) classes.push('today');
-        if (dayObj.isSelected) classes.push('selected');
-        if (dayObj.isDisabled) classes.push('disabled');
+        if (dayObj.isOtherMonth) classes.push("other-month");
+        if (dayObj.isToday) classes.push("today");
+        if (dayObj.isSelected) classes.push("selected");
+        if (dayObj.isDisabled) classes.push("disabled");
 
         // ONLY add focused class if we have a focused date AND it matches AND it's not selected AND not today
         // AND we're in the current month AND the focused date is in the currently viewed month
@@ -3693,16 +3926,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           focusedDate.getMonth() === this._viewDate.getMonth() &&
           focusedDate.getFullYear() === this._viewDate.getFullYear()
         ) {
-          classes.push('focused');
+          classes.push("focused");
         }
       }
 
-      return classes.join(' ');
+      return classes.join(" ");
     }
 
     _getDayTabIndex(dayObj, focusedDate) {
       // ARIA Grid pattern: Only one cell should be tabbable, others use arrow keys
-      if (dayObj.isEmpty || !dayObj.isCurrentMonth) return '-1';
+      if (dayObj.isEmpty || !dayObj.isCurrentMonth) return "-1";
 
       // Determine which date should be tabbable (tab stop)
       let shouldBeTabbable = false;
@@ -3716,12 +3949,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       } else if (!focusedDate && !this._selectedDate && dayObj.isToday) {
         // Today when no selection and no focus
         shouldBeTabbable = true;
-      } else if (!focusedDate && !this._selectedDate && !this._isTodayInCurrentMonth() && dayObj.date.getDate() === 1) {
+      } else if (
+        !focusedDate &&
+        !this._selectedDate &&
+        !this._isTodayInCurrentMonth() &&
+        dayObj.date.getDate() === 1
+      ) {
         // First day of month as fallback
         shouldBeTabbable = true;
       }
 
-      return shouldBeTabbable ? '0' : '-1';
+      return shouldBeTabbable ? "0" : "-1";
     }
 
     _isTodayInCurrentMonth() {
@@ -3735,35 +3973,35 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _getDayAriaLabel(dayObj) {
       const { date } = dayObj;
       const formatter = new Intl.DateTimeFormat(this._locale, {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       });
 
       let label = formatter.format(date);
 
       if (dayObj.isToday) {
-        label += ', today';
+        label += ", today";
       }
 
       if (dayObj.isSelected) {
-        label += ', selected';
+        label += ", selected";
       }
 
       return label;
     }
 
     _getAriaCurrent(dayObj) {
-      return dayObj.isToday ? 'date' : null;
+      return dayObj.isToday ? "date" : null;
     }
 
     _getActiveDescendant(focusedDate) {
       if (!focusedDate) return null;
       // Use local date formatting to avoid timezone issues
       const year = focusedDate.getFullYear();
-      const month = String(focusedDate.getMonth() + 1).padStart(2, '0');
-      const day = String(focusedDate.getDate()).padStart(2, '0');
+      const month = String(focusedDate.getMonth() + 1).padStart(2, "0");
+      const day = String(focusedDate.getDate()).padStart(2, "0");
       return `date-${year}-${month}-${day}`;
     }
 
@@ -3772,19 +4010,20 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _getAriaDescribedBy(invalid, errorMessage) {
-      const isRequiredCase = this.errorReason === 'required';
-      const shouldShow = invalid && !!errorMessage && (this._showErrors || !isRequiredCase);
-      return shouldShow ? 'errorText' : null;
+      const isRequiredCase = this.errorReason === "required";
+      const shouldShow =
+        invalid && !!errorMessage && (this._showErrors || !isRequiredCase);
+      return shouldShow ? "errorText" : null;
     }
 
     _showError(invalid, errorMessage, showErrors) {
       // Always show non-required errors immediately
-      if (invalid && !!errorMessage && this.errorReason !== 'required') {
+      if (invalid && !!errorMessage && this.errorReason !== "required") {
         return true;
       }
 
       // For required field errors, only show if showErrors is true (after form submit)
-      if (invalid && !!errorMessage && this.errorReason === 'required') {
+      if (invalid && !!errorMessage && this.errorReason === "required") {
         return showErrors === true;
       }
 
@@ -3807,7 +4046,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           // Only clear input if it wasn't cleared by user typing
           if (!this._userIsTyping) {
-            this._inputValue = '';
+            this._inputValue = "";
           }
 
           // Trigger validation for required fields when value is cleared
@@ -3845,11 +4084,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         } else {
           this._selectedDate = null;
           if (!this._userIsTyping) {
-            this._inputValue = '';
+            this._inputValue = "";
           }
         }
 
-        if (this._generateCalendar && typeof this._generateCalendar === 'function') {
+        if (
+          this._generateCalendar &&
+          typeof this._generateCalendar === "function"
+        ) {
           this._generateCalendar();
         }
 
@@ -3858,7 +4100,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       } catch (error) {
         this._selectedDate = null;
         if (!this._userIsTyping) {
-          this._inputValue = '';
+          this._inputValue = "";
         }
         this._preventInputUpdate = false;
       }
@@ -3870,7 +4112,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       // Add form validation support
       if (this.form) {
-        this.form.addEventListener('submit', (e) => {
+        this.form.addEventListener("submit", (e) => {
           if (!this.reportValidity()) {
             e.preventDefault();
             e.stopPropagation();
@@ -3881,19 +4123,25 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _invalidChanged(newVal) {
       // Reflect invalid state to input ARIA and announce for SR
-      const input = this.shadowRoot && this.shadowRoot.querySelector('#dateInput');
+      const input =
+        this.shadowRoot && this.shadowRoot.querySelector("#dateInput");
       if (input) {
-        input.setAttribute('aria-invalid', String(!!newVal));
+        input.setAttribute("aria-invalid", String(!!newVal));
       }
       if (newVal && this._showErrors) {
-        const msg = this.errorMessage || 'Invalid date.';
+        const msg = this.errorMessage || "Invalid date.";
         this._announce(msg);
       }
       // Ensure error text visibility aligns with state
-      const errorEl = this.shadowRoot && this.shadowRoot.querySelector('#errorText');
+      const errorEl =
+        this.shadowRoot && this.shadowRoot.querySelector("#errorText");
       if (errorEl) {
         // Use the same logic as template binding
-        const shouldShow = this._showError(newVal, this.errorMessage, this._showErrors);
+        const shouldShow = this._showError(
+          newVal,
+          this.errorMessage,
+          this._showErrors,
+        );
         errorEl.hidden = !shouldShow;
       }
     }
@@ -3904,32 +4152,41 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         this._announce(newMsg);
       }
       // Sync UI content and visibility immediately
-      const errorEl = this.shadowRoot && this.shadowRoot.querySelector('#errorText');
+      const errorEl =
+        this.shadowRoot && this.shadowRoot.querySelector("#errorText");
       if (errorEl) {
-        errorEl.textContent = newMsg || '';
+        errorEl.textContent = newMsg || "";
         // Use the same logic as template binding
-        const shouldShow = this._showError(this.invalid, newMsg, this._showErrors);
+        const shouldShow = this._showError(
+          this.invalid,
+          newMsg,
+          this._showErrors,
+        );
         errorEl.hidden = !shouldShow;
       }
     }
 
     _positionPopover() {
       try {
-        const popover = this.shadowRoot && this.shadowRoot.querySelector('#calendarPopover');
-        const trigger = this.shadowRoot && this.shadowRoot.querySelector('.input-wrapper');
+        const popover =
+          this.shadowRoot && this.shadowRoot.querySelector("#calendarPopover");
+        const trigger =
+          this.shadowRoot && this.shadowRoot.querySelector(".input-wrapper");
         if (!popover || !trigger || !this._isCalendarOpen) return;
 
         // Reset classes/styles
-        popover.classList.remove('open-up');
-        popover.style.left = '';
-        popover.style.right = '';
-        popover.style.top = '';
-        popover.style.bottom = '';
+        popover.classList.remove("open-up");
+        popover.style.left = "";
+        popover.style.right = "";
+        popover.style.top = "";
+        popover.style.bottom = "";
 
         const rect = trigger.getBoundingClientRect();
         const popRect = popover.getBoundingClientRect();
-        const viewportH = window.innerHeight || document.documentElement.clientHeight;
-        const viewportW = window.innerWidth || document.documentElement.clientWidth;
+        const viewportH =
+          window.innerHeight || document.documentElement.clientHeight;
+        const viewportW =
+          window.innerWidth || document.documentElement.clientWidth;
 
         const spaceBelow = viewportH - rect.bottom;
         const spaceAbove = rect.top;
@@ -3945,19 +4202,19 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         if (spaceBelow >= popHeight + minVerticalPadding) {
           // Enough space below, position normally
           top = rect.bottom + 4;
-          popover.classList.remove('open-up');
+          popover.classList.remove("open-up");
         } else if (spaceAbove >= popHeight + minVerticalPadding) {
           // Not enough space below but enough above, flip up
           top = rect.top - popHeight - 4;
-          popover.classList.add('open-up');
+          popover.classList.add("open-up");
         } else if (spaceBelow > spaceAbove) {
           // More space below, position at bottom with padding
           top = viewportH - popHeight - minVerticalPadding;
-          popover.classList.remove('open-up');
+          popover.classList.remove("open-up");
         } else {
           // More space above, position at top with padding
           top = minVerticalPadding;
-          popover.classList.add('open-up');
+          popover.classList.add("open-up");
         }
 
         // Adjust horizontally based on RTL and overflow with better edge handling
@@ -3991,7 +4248,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         }
 
         // Apply fixed positioning
-        popover.style.position = 'fixed';
+        popover.style.position = "fixed";
         popover.style.left = `${left}px`;
         popover.style.top = `${top}px`;
       } catch (_) {
@@ -4001,7 +4258,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     // Getter for form property to support form integration
     get form() {
-      return this.closest('form');
+      return this.closest("form");
     }
 
     _inputValueChanged() {
@@ -4021,13 +4278,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Professional validation with proper error priority: Format > Range > Required
 
       // If there's a value, check format and range first
-      if (this.value && this.value.trim() !== '') {
+      if (this.value && this.value.trim() !== "") {
         // Parse the current value
         const parseResult = this._parseUserInput(this.value);
         if (!parseResult) {
           this.invalid = true;
-          this.errorReason = 'format';
-          this.errorMessage = `${this._getLocalizedText('incorrectFormat')} ${this._getDatePlaceholder()}`;
+          this.errorReason = "format";
+          this.errorMessage = `${this._getLocalizedText("incorrectFormat")} ${this._getDatePlaceholder()}`;
           this._showErrors = true;
           return false;
         }
@@ -4044,12 +4301,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
 
       // Only check required if there's no value AND no existing errors
-      if (this.required && (!this.value || this.value.trim() === '')) {
+      if (this.required && (!this.value || this.value.trim() === "")) {
         // Only show required error if there are no existing format/range errors
-        if (!this.invalid || this.errorReason === '') {
+        if (!this.invalid || this.errorReason === "") {
           this.invalid = true;
-          this.errorReason = 'required';
-          this.errorMessage = this._getLocalizedText('required');
+          this.errorReason = "required";
+          this.errorMessage = this._getLocalizedText("required");
           this._showErrors = true;
           return false;
         }
@@ -4059,8 +4316,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       // Clear error state if validation passes
       this.invalid = false;
-      this.errorReason = '';
-      this.errorMessage = '';
+      this.errorReason = "";
+      this.errorMessage = "";
       this._showErrors = false;
       return true;
     }
@@ -4084,9 +4341,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const isValid = this.validate();
 
       // If validation didn't change the error (because of priority), restore the original error
-      if (!isValid && currentErrorReason && currentErrorReason !== this.errorReason) {
+      if (
+        !isValid &&
+        currentErrorReason &&
+        currentErrorReason !== this.errorReason
+      ) {
         // Only override if the new error is higher priority
-        if (this._getErrorPriority(this.errorReason) > this._getErrorPriority(currentErrorReason)) {
+        if (
+          this._getErrorPriority(this.errorReason) >
+          this._getErrorPriority(currentErrorReason)
+        ) {
           // Keep the higher priority error
         } else {
           // Restore the original error
@@ -4096,16 +4360,20 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
 
       // Force update of all relevant properties for template binding
-      this.notifyPath('_showErrors');
-      this.notifyPath('invalid');
-      this.notifyPath('errorMessage');
-      this.notifyPath('errorReason');
+      this.notifyPath("_showErrors");
+      this.notifyPath("invalid");
+      this.notifyPath("errorMessage");
+      this.notifyPath("errorReason");
 
       // Force template re-evaluation by updating the error element directly
       this.async(() => {
-        const errorEl = this.shadowRoot.querySelector('#errorText');
+        const errorEl = this.shadowRoot.querySelector("#errorText");
         if (errorEl) {
-          const shouldShow = this._showError(this.invalid, this.errorMessage, this._showErrors);
+          const shouldShow = this._showError(
+            this.invalid,
+            this.errorMessage,
+            this._showErrors,
+          );
 
           errorEl.hidden = !shouldShow;
           if (shouldShow && this.errorMessage) {
@@ -4114,9 +4382,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           // Also update the host invalid attribute for CSS styling
           if (shouldShow) {
-            this.setAttribute('invalid', '');
+            this.setAttribute("invalid", "");
           } else {
-            this.removeAttribute('invalid');
+            this.removeAttribute("invalid");
           }
         }
       }, 1);
@@ -4128,18 +4396,18 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
      * Update error display in DOM
      */
     _updateErrorDisplay(isValid) {
-      const errorEl = this.shadowRoot.querySelector('#errorText');
+      const errorEl = this.shadowRoot.querySelector("#errorText");
 
       if (!isValid && this._showErrors && errorEl) {
         // Show error message only if _showErrors is true (after form submit)
-        if (this.required && (!this.value || this.value.trim() === '')) {
+        if (this.required && (!this.value || this.value.trim() === "")) {
           // Use dynamic error message for required fields
           errorEl.textContent = this._generateRequiredMessage();
           errorEl.hidden = false;
 
           // Ensure invalid attribute is set on host
-          if (!this.hasAttribute('invalid')) {
-            this.setAttribute('invalid', '');
+          if (!this.hasAttribute("invalid")) {
+            this.setAttribute("invalid", "");
           }
         } else if (this.errorMessage) {
           // Use the current error message for other validation errors
@@ -4147,15 +4415,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           errorEl.hidden = false;
 
           // Ensure invalid attribute is set on host
-          if (!this.hasAttribute('invalid')) {
-            this.setAttribute('invalid', '');
+          if (!this.hasAttribute("invalid")) {
+            this.setAttribute("invalid", "");
           }
         }
       } else if ((isValid || !this._showErrors) && errorEl) {
         // Clear errors when valid OR when _showErrors is false
         errorEl.hidden = true;
-        if (this.hasAttribute('invalid')) {
-          this.removeAttribute('invalid');
+        if (this.hasAttribute("invalid")) {
+          this.removeAttribute("invalid");
         }
       }
     }
@@ -4171,23 +4439,23 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._showErrors = false;
       this._justCleared = false;
       this.invalid = false;
-      this.errorMessage = '';
-      this.errorReason = '';
-      this.notifyPath('_showErrors');
-      this.notifyPath('_justCleared');
-      this.notifyPath('invalid');
-      this.notifyPath('errorMessage');
+      this.errorMessage = "";
+      this.errorReason = "";
+      this.notifyPath("_showErrors");
+      this.notifyPath("_justCleared");
+      this.notifyPath("invalid");
+      this.notifyPath("errorMessage");
 
       // Also clear DOM immediately
-      const errorEl = this.shadowRoot.querySelector('#errorText');
+      const errorEl = this.shadowRoot.querySelector("#errorText");
       if (errorEl) {
         errorEl.hidden = true;
-        errorEl.textContent = '';
+        errorEl.textContent = "";
       }
 
       // Remove invalid attribute
-      if (this.hasAttribute('invalid')) {
-        this.removeAttribute('invalid');
+      if (this.hasAttribute("invalid")) {
+        this.removeAttribute("invalid");
       }
     }
 
@@ -4196,22 +4464,22 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
      */
     _generateRequiredMessage() {
       // Always return the simple required message
-      return this._getLocalizedText('required');
+      return this._getLocalizedText("required");
     }
 
     _getValidity() {
       // Check required field first
-      if (this.required && (!this.value || this.value.trim() === '')) {
-        this.errorReason = 'required';
+      if (this.required && (!this.value || this.value.trim() === "")) {
+        this.errorReason = "required";
         // Generate dynamic error message using field label
         this.errorMessage = this._generateRequiredMessage();
         return false;
       }
 
       // If field is not required and empty, it's valid
-      if (!this.required && (!this.value || this.value.trim() === '')) {
-        this.errorReason = '';
-        this.errorMessage = '';
+      if (!this.required && (!this.value || this.value.trim() === "")) {
+        this.errorReason = "";
+        this.errorMessage = "";
         return true;
       }
 
@@ -4221,20 +4489,25 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         // Check if the date itself is valid
         if (!currentDate.isValid()) {
-          this.errorReason = 'invalidDate';
-          this.errorMessage = this._getLocalizedText('invalidDate');
+          this.errorReason = "invalidDate";
+          this.errorMessage = this._getLocalizedText("invalidDate");
           return false;
         }
 
         // Get current locale format for error messages
-        const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
+        const userLocale =
+          navigator.languages !== undefined
+            ? navigator.languages[0]
+            : navigator.language;
         moment.locale(userLocale);
         // Check min constraint
         if (this.min) {
           const minDate = this._moment(this._parseDateOnly(this.min));
-          if (currentDate.isBefore(minDate, 'day')) {
-            this.errorReason = 'outOfRange';
-            this.errorMessage = this._buildOutOfRangeMessage(currentDate.toDate());
+          if (currentDate.isBefore(minDate, "day")) {
+            this.errorReason = "outOfRange";
+            this.errorMessage = this._buildOutOfRangeMessage(
+              currentDate.toDate(),
+            );
             return false;
           }
         }
@@ -4242,17 +4515,19 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Check max constraint
         if (this.max) {
           const maxDate = this._moment(this._parseDateOnly(this.max));
-          if (currentDate.isAfter(maxDate, 'day')) {
-            this.errorReason = 'outOfRange';
-            this.errorMessage = this._buildOutOfRangeMessage(currentDate.toDate());
+          if (currentDate.isAfter(maxDate, "day")) {
+            this.errorReason = "outOfRange";
+            this.errorMessage = this._buildOutOfRangeMessage(
+              currentDate.toDate(),
+            );
             return false;
           }
         }
       }
 
       // If we reach here, the date is valid - clear any error state
-      this.errorReason = '';
-      this.errorMessage = '';
+      this.errorReason = "";
+      this.errorMessage = "";
       return true;
     }
 
@@ -4265,16 +4540,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       super.disconnectedCallback();
 
       // Clean up event listeners
-      document.removeEventListener('click', this._handleDocumentClick);
-      document.removeEventListener('keydown', this._handleEscapeKey);
+      document.removeEventListener("click", this._handleDocumentClick);
+      document.removeEventListener("keydown", this._handleEscapeKey);
       // Clean up focus event listeners
-      document.removeEventListener('focusin', this._handleDocumentFocusIn);
-      document.removeEventListener('focusout', this._handleDocumentFocusOut);
+      document.removeEventListener("focusin", this._handleDocumentFocusIn);
+      document.removeEventListener("focusout", this._handleDocumentFocusOut);
 
       // Clean up reposition listeners if they exist
       if (this._boundReposition) {
-        window.removeEventListener('resize', this._boundReposition);
-        window.removeEventListener('scroll', this._boundReposition);
+        window.removeEventListener("resize", this._boundReposition);
+        window.removeEventListener("scroll", this._boundReposition);
       }
     }
 
@@ -4283,11 +4558,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         e.preventDefault();
         e.stopPropagation();
       }
-      const yearOptions = this.shadowRoot.querySelector('#yearOptions');
+      const yearOptions = this.shadowRoot.querySelector("#yearOptions");
       if (yearOptions) {
-        const isOpen = yearOptions.classList.contains('open');
+        const isOpen = yearOptions.classList.contains("open");
         this._isYearDropdownOpen = !isOpen;
-        yearOptions.classList.toggle('open');
+        yearOptions.classList.toggle("open");
         if (!isOpen) {
           // When opening, focus and scroll to current year (use RAF for faster response)
           requestAnimationFrame(() => {
@@ -4300,10 +4575,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _focusCurrentYear() {
       const currentYear = this._viewDate.getFullYear();
-      const yearButton = this.shadowRoot.querySelector(`[data-year="${currentYear}"]`);
+      const yearButton = this.shadowRoot.querySelector(
+        `[data-year="${currentYear}"]`,
+      );
       if (yearButton) {
         // Clear tabindex from all year options first
-        const allYearButtons = Array.from(this.shadowRoot.querySelectorAll('.year-option'));
+        const allYearButtons = Array.from(
+          this.shadowRoot.querySelectorAll(".year-option"),
+        );
         allYearButtons.forEach((btn) => {
           btn.tabIndex = -1;
         });
@@ -4317,8 +4596,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _scrollToCurrentYear() {
       const currentYear = this._viewDate.getFullYear();
-      const yearButton = this.shadowRoot.querySelector(`[data-year="${currentYear}"]`);
-      const yearOptions = this.shadowRoot.querySelector('#yearOptions');
+      const yearButton = this.shadowRoot.querySelector(
+        `[data-year="${currentYear}"]`,
+      );
+      const yearOptions = this.shadowRoot.querySelector("#yearOptions");
 
       if (yearButton && yearOptions) {
         const containerHeight = yearOptions.clientHeight;
@@ -4331,80 +4612,103 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _setupYearKeyNavigation() {
-      const yearOptions = this.shadowRoot.querySelector('#yearOptions');
+      const yearOptions = this.shadowRoot.querySelector("#yearOptions");
       if (yearOptions) {
         // Attach ONE delegated keydown handler on the container only
         if (this._yearKeydownHandler) {
-          yearOptions.removeEventListener('keydown', this._yearKeydownHandler);
+          yearOptions.removeEventListener("keydown", this._yearKeydownHandler);
         }
         this._yearKeydownHandler = (e) => {
           this._handleYearKeyDown(e);
         };
-        yearOptions.addEventListener('keydown', this._yearKeydownHandler);
+        yearOptions.addEventListener("keydown", this._yearKeydownHandler);
       }
     }
 
     _handleYearKeyDown(e) {
       // Derive the option receiving the event for cross-browser reliability
       let currentFocused =
-        (e.target && e.target.closest && e.target.closest('.year-option')) || this.shadowRoot.activeElement || null;
+        (e.target && e.target.closest && e.target.closest(".year-option")) ||
+        this.shadowRoot.activeElement ||
+        null;
       // Only consider visible year options inside the open panel
-      let allYearButtons = Array.from(this.shadowRoot.querySelectorAll('#yearOptions.open .year-option'));
-      if (!currentFocused || !currentFocused.classList || !currentFocused.classList.contains('year-option')) {
+      let allYearButtons = Array.from(
+        this.shadowRoot.querySelectorAll("#yearOptions.open .year-option"),
+      );
+      if (
+        !currentFocused ||
+        !currentFocused.classList ||
+        !currentFocused.classList.contains("year-option")
+      ) {
         // Fallback to the current tabbable option
-        currentFocused = allYearButtons.find((btn) => btn.tabIndex === 0) || allYearButtons[0] || null;
+        currentFocused =
+          allYearButtons.find((btn) => btn.tabIndex === 0) ||
+          allYearButtons[0] ||
+          null;
       }
       if (!currentFocused) return;
       if (!allYearButtons.length) {
         // As an extra fallback, include options even if open class wasn't applied yet
-        allYearButtons = Array.from(this.shadowRoot.querySelectorAll('#yearOptions .year-option'));
+        allYearButtons = Array.from(
+          this.shadowRoot.querySelectorAll("#yearOptions .year-option"),
+        );
       }
       const currentIndex = allYearButtons.indexOf(currentFocused);
       let nextIndex = currentIndex;
       // Prevent this event from bubbling to parent handlers (avoids double processing)
       // Do this only for the keys we handle
-      const handledKeys = ['ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown', 'Enter', ' ', 'Escape'];
+      const handledKeys = [
+        "ArrowUp",
+        "ArrowDown",
+        "Home",
+        "End",
+        "PageUp",
+        "PageDown",
+        "Enter",
+        " ",
+        "Escape",
+      ];
       if (handledKeys.includes(e.key)) {
         e.stopPropagation();
       }
 
       switch (e.key) {
-        case 'ArrowUp': {
+        case "ArrowUp": {
           e.preventDefault();
           nextIndex = Math.max(0, currentIndex - 1);
           break;
         }
-        case 'ArrowDown': {
+        case "ArrowDown": {
           e.preventDefault();
           nextIndex = Math.min(allYearButtons.length - 1, currentIndex + 1);
           break;
         }
-        case 'Home': {
+        case "Home": {
           e.preventDefault();
           nextIndex = 0;
           break;
         }
-        case 'End': {
+        case "End": {
           e.preventDefault();
           nextIndex = allYearButtons.length - 1;
           break;
         }
-        case 'PageUp': {
+        case "PageUp": {
           e.preventDefault();
           nextIndex = Math.max(0, currentIndex - 10);
           break;
         }
-        case 'PageDown': {
+        case "PageDown": {
           e.preventDefault();
           nextIndex = Math.min(allYearButtons.length - 1, currentIndex + 10);
           break;
         }
-        case 'Enter':
-        case ' ':
+        case "Enter":
+        case " ":
           e.preventDefault();
           currentFocused.click();
           return;
-        case 'Escape':
+        case "Escape":
           e.preventDefault();
           this._closeYearDropdown();
           return;
@@ -4420,27 +4724,33 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const nextBtn = allYearButtons[nextIndex];
         nextBtn.focus();
         // Keep the focused option in view when navigating
-        if (typeof nextBtn.scrollIntoView === 'function') {
-          nextBtn.scrollIntoView({ block: 'nearest' });
+        if (typeof nextBtn.scrollIntoView === "function") {
+          nextBtn.scrollIntoView({ block: "nearest" });
         }
       }
     }
 
     _closeYearDropdown() {
-      const yearOptions = this.shadowRoot.querySelector('#yearOptions');
+      const yearOptions = this.shadowRoot.querySelector("#yearOptions");
       if (yearOptions) {
-        yearOptions.classList.remove('open');
+        yearOptions.classList.remove("open");
         this._isYearDropdownOpen = false;
 
         // Return focus to year dropdown button
-        const yearDropdown = this.shadowRoot.querySelector('.year-dropdown');
+        const yearDropdown = this.shadowRoot.querySelector(".year-dropdown");
         if (yearDropdown) {
           yearDropdown.focus();
         }
         // Clean roving tabindex state to a safe default (current view year)
-        const currentYear = this._viewDate ? this._viewDate.getFullYear() : new Date().getFullYear();
-        const currentBtn = this.shadowRoot.querySelector(`#yearOptions .year-option[data-year="${currentYear}"]`);
-        const buttons = Array.from(this.shadowRoot.querySelectorAll('#yearOptions .year-option'));
+        const currentYear = this._viewDate
+          ? this._viewDate.getFullYear()
+          : new Date().getFullYear();
+        const currentBtn = this.shadowRoot.querySelector(
+          `#yearOptions .year-option[data-year="${currentYear}"]`,
+        );
+        const buttons = Array.from(
+          this.shadowRoot.querySelectorAll("#yearOptions .year-option"),
+        );
         buttons.forEach((btn) => {
           btn.tabIndex = btn === currentBtn ? 0 : -1;
         });
@@ -4452,7 +4762,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         e.preventDefault();
         e.stopPropagation();
       }
-      const button = e.target.closest('.year-option');
+      const button = e.target.closest(".year-option");
       const year = button ? parseInt(button.dataset.year, 10) : null;
       if (year && this._viewDate) {
         // Create new date with proper month/day preservation
@@ -4463,7 +4773,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         let newDay = currentDay;
         if (currentMonth === 1 && currentDay === 29) {
           // February 29
-          const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+          const isLeapYear =
+            (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
           if (!isLeapYear) {
             newDay = 28; // Set to Feb 28 in non-leap years
           }
@@ -4476,12 +4787,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Clear focused date when changing year
         this._focusedDate = null;
         this._generateCalendar();
-        this._announce(this._getLocalizedText('yearChanged', { year }));
+        this._announce(this._getLocalizedText("yearChanged", { year }));
         // Close the dropdown
         this._closeYearDropdown();
         // After closing, focus the year dropdown button for accessibility
         this.async(() => {
-          const yearDropdown = this.shadowRoot.querySelector('.year-dropdown');
+          const yearDropdown = this.shadowRoot.querySelector(".year-dropdown");
           if (yearDropdown) {
             yearDropdown.focus();
           }
@@ -4490,20 +4801,20 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _getYearOptionClass(year, viewDate) {
-      if (!viewDate || !year) return '';
-      return year === viewDate.getFullYear() ? 'selected' : '';
+      if (!viewDate || !year) return "";
+      return year === viewDate.getFullYear() ? "selected" : "";
     }
 
     _getYearTabIndex(year, viewDate) {
       // Only the currently selected year should be tabbable
-      return viewDate && year === viewDate.getFullYear() ? '0' : '-1';
+      return viewDate && year === viewDate.getFullYear() ? "0" : "-1";
     }
 
     _handleCalendarIconKeydown(e) {
-      if (e.key === 'Enter' || e.key === ' ') {
+      if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         this._openCalendar(e, true); // Opened via keyboard
-      } else if (e.key === 'ArrowDown' || e.key === 'F4') {
+      } else if (e.key === "ArrowDown" || e.key === "F4") {
         e.preventDefault();
         this._openCalendar(e, true); // Opened via keyboard
       }
@@ -4511,9 +4822,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _handleYearDropdownKeydown(e) {
       const moveWithinOptions = (delta) => {
-        const yearOptions = this.shadowRoot.querySelector('#yearOptions');
-        if (!yearOptions || !yearOptions.classList.contains('open')) return;
-        const buttons = Array.from(yearOptions.querySelectorAll('.year-option'));
+        const yearOptions = this.shadowRoot.querySelector("#yearOptions");
+        if (!yearOptions || !yearOptions.classList.contains("open")) return;
+        const buttons = Array.from(
+          yearOptions.querySelectorAll(".year-option"),
+        );
         if (!buttons.length) return;
         let current = buttons.findIndex((b) => b.tabIndex === 0);
         if (current < 0) current = 0;
@@ -4525,12 +4838,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         });
         const btn = buttons[next];
         btn.focus();
-        if (typeof btn.scrollIntoView === 'function') {
-          btn.scrollIntoView({ block: 'nearest' });
+        if (typeof btn.scrollIntoView === "function") {
+          btn.scrollIntoView({ block: "nearest" });
         }
       };
 
-      if (e.key === 'Enter' || e.key === ' ') {
+      if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         if (!this._isYearDropdownOpen) {
           this._toggleYearDropdown();
@@ -4538,43 +4851,46 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           // Select currently focused option
           // max-len: break into multiple lines
           const focused =
-            this.shadowRoot.activeElement && this.shadowRoot.activeElement.classList.contains('year-option')
+            this.shadowRoot.activeElement &&
+            this.shadowRoot.activeElement.classList.contains("year-option")
               ? this.shadowRoot.activeElement
-              : this.shadowRoot.querySelector('#yearOptions .year-option[tabindex="0"]');
+              : this.shadowRoot.querySelector(
+                  '#yearOptions .year-option[tabindex="0"]',
+                );
           if (focused) {
             focused.click();
           }
         }
-      } else if (e.key === 'ArrowDown') {
+      } else if (e.key === "ArrowDown") {
         e.preventDefault();
         if (this._isYearDropdownOpen) {
           moveWithinOptions(+1);
         } else {
           this._toggleYearDropdown();
         }
-      } else if (e.key === 'ArrowUp') {
+      } else if (e.key === "ArrowUp") {
         e.preventDefault();
         if (this._isYearDropdownOpen) {
           moveWithinOptions(-1);
         } else {
           this._toggleYearDropdown();
         }
-      } else if (e.key === 'Home') {
+      } else if (e.key === "Home") {
         e.preventDefault();
         moveWithinOptions(-9999);
-      } else if (e.key === 'End') {
+      } else if (e.key === "End") {
         e.preventDefault();
         moveWithinOptions(9999);
-      } else if (e.key === 'PageUp') {
+      } else if (e.key === "PageUp") {
         e.preventDefault();
         moveWithinOptions(-10);
-      } else if (e.key === 'PageDown') {
+      } else if (e.key === "PageDown") {
         e.preventDefault();
         moveWithinOptions(10);
-      } else if (e.key === 'Escape') {
+      } else if (e.key === "Escape") {
         e.preventDefault();
         this._closeYearDropdown();
-      } else if (e.key === 'Tab') {
+      } else if (e.key === "Tab") {
         // Close dropdown when user tabs away
         this._closeYearDropdown();
         // Don't prevent default - allow normal tab navigation
@@ -4585,22 +4901,22 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     // Helper to get focusable element by name
     _getFocusableElement(elementName) {
       switch (elementName) {
-        case 'year-dropdown':
-          return this.shadowRoot.querySelector('.year-dropdown');
-        case 'prevMonth': {
-          const prev = this.shadowRoot.querySelector('#prevMonth');
+        case "year-dropdown":
+          return this.shadowRoot.querySelector(".year-dropdown");
+        case "prevMonth": {
+          const prev = this.shadowRoot.querySelector("#prevMonth");
           return prev && !prev.disabled ? prev : null;
         }
-        case 'nextMonth': {
-          const next = this.shadowRoot.querySelector('#nextMonth');
+        case "nextMonth": {
+          const next = this.shadowRoot.querySelector("#nextMonth");
           return next && !next.disabled ? next : null;
         }
-        case 'calendar-grid':
+        case "calendar-grid":
           return this.shadowRoot.querySelector('.calendar-day[tabindex="0"]');
-        case 'today-button':
-          return this.shadowRoot.querySelector('.today-button');
-        case 'cancel-button':
-          return this.shadowRoot.querySelector('.cancel-button');
+        case "today-button":
+          return this.shadowRoot.querySelector(".today-button");
+        case "cancel-button":
+          return this.shadowRoot.querySelector(".cancel-button");
         default:
           return null;
       }
@@ -4611,32 +4927,35 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Use professional formatting for display
         this._inputValue = this._formatDateForDisplay(this._selectedDate);
       } else {
-        this._inputValue = '';
+        this._inputValue = "";
       }
     }
 
     // Professional date-to-ISO converter
     _dateToISO(date) {
-      if (!date || Number.isNaN(date.getTime())) return '';
+      if (!date || Number.isNaN(date.getTime())) return "";
 
       const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
 
       return `${year}-${month}-${day}`;
     }
 
     // Professional date formatter for display
     _formatDateForDisplay(date) {
-      if (!date || Number.isNaN(date.getTime())) return '';
+      if (!date || Number.isNaN(date.getTime())) return "";
 
       try {
         // Get user's locale and ensure moment uses it
-        const userLocale = (navigator.languages && navigator.languages[0]) || navigator.language || 'en-US';
+        const userLocale =
+          (navigator.languages && navigator.languages[0]) ||
+          navigator.language ||
+          "en-US";
         moment.locale(userLocale);
 
         // Use moment's locale-specific format
-        const localeFormat = moment.localeData().longDateFormat('L');
+        const localeFormat = moment.localeData().longDateFormat("L");
         const formatted = this._moment(date).format(localeFormat);
 
         return formatted;
@@ -4648,16 +4967,19 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     // Professional date parser for user input
     _parseUserInput(inputString) {
-      if (!inputString || typeof inputString !== 'string') return null;
+      if (!inputString || typeof inputString !== "string") return null;
 
       const trimmedInput = inputString.trim();
       if (!trimmedInput) return null;
 
       try {
         // Get user's locale
-        const userLocale = (navigator.languages && navigator.languages[0]) || navigator.language || 'en-US';
+        const userLocale =
+          (navigator.languages && navigator.languages[0]) ||
+          navigator.language ||
+          "en-US";
         moment.locale(userLocale);
-        const localeFormat = moment.localeData().longDateFormat('L');
+        const localeFormat = moment.localeData().longDateFormat("L");
 
         // Try strict parsing first (exact format match)
         let momentDate = this._moment(trimmedInput, localeFormat, true);
@@ -4695,14 +5017,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _handleNavButtonKeydown(e) {
-      if (e.key === 'Enter' || e.key === ' ') {
+      if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         e.stopPropagation();
 
         // Call the appropriate navigation method directly
-        if (e.target.id === 'prevMonth') {
+        if (e.target.id === "prevMonth") {
           this._previousMonth(e);
-        } else if (e.target.id === 'nextMonth') {
+        } else if (e.target.id === "nextMonth") {
           this._nextMonth(e);
         }
       }
@@ -4721,7 +5043,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       // Calculate the previous month
       const currentDate = new Date(this._viewDate);
-      const prevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+      const prevMonth = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() - 1,
+        1,
+      );
 
       // Check if the previous month contains ANY valid dates
       const hasValidDatesInPrevMonth = this._monthHasValidDates(prevMonth);
@@ -4736,7 +5062,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       // Calculate the next month
       const currentDate = new Date(this._viewDate);
-      const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+      const nextMonth = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() + 1,
+        1,
+      );
 
       // Check if the next month contains ANY valid dates
       const hasValidDatesInNextMonth = this._monthHasValidDates(nextMonth);
@@ -4799,21 +5129,26 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _shouldShowClearButton(inputValue, hideClearDateButton) {
       // If clear-button-visible attribute/property is explicitly set, it overrides hideClearDateButton
-      const explicitClearVisible = this.hasAttribute('clear-button-visible') ? this.clearButtonVisible : null;
-      const shouldShow = explicitClearVisible !== null ? explicitClearVisible : !hideClearDateButton;
+      const explicitClearVisible = this.hasAttribute("clear-button-visible")
+        ? this.clearButtonVisible
+        : null;
+      const shouldShow =
+        explicitClearVisible !== null
+          ? explicitClearVisible
+          : !hideClearDateButton;
       return inputValue && shouldShow;
     }
 
     _clearButtonVisibleChanged(newVal) {
       // Keep legacy hideClearDateButton in sync unless user explicitly set it too
-      if (!this.hasAttribute('hide-clear-date-button')) {
+      if (!this.hasAttribute("hide-clear-date-button")) {
         this.hideClearDateButton = !newVal;
       }
     }
 
     // Add set method for i18n compatibility with nuxeo-date-picker
     set(path, value) {
-      if (path.startsWith('i18n.')) {
+      if (path.startsWith("i18n.")) {
         const i18nProperty = path.substring(5); // Remove 'i18n.' prefix
         if (!this.i18n) {
           this.i18n = {};
@@ -4821,15 +5156,18 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         this.i18n[i18nProperty] = value;
 
         // Handle specific i18n properties that affect calendar display
-        if (i18nProperty === 'firstDayOfWeek') {
+        if (i18nProperty === "firstDayOfWeek") {
           this.firstDayOfWeek = value;
           this._initializeLocaleData();
           if (this._generateCalendar) {
             this._generateCalendar();
           }
-        } else if (i18nProperty === 'monthNames') {
+        } else if (i18nProperty === "monthNames") {
           this._monthNames = value;
-        } else if (i18nProperty === 'weekdays' || i18nProperty === 'weekdaysShort') {
+        } else if (
+          i18nProperty === "weekdays" ||
+          i18nProperty === "weekdaysShort"
+        ) {
           this._weekdayNames = value;
         }
       } else if (super.set) {
@@ -4840,7 +5178,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     // Add focus method for compatibility
     focus() {
-      const dateInput = this.shadowRoot.querySelector('#dateInput');
+      const dateInput = this.shadowRoot.querySelector("#dateInput");
       if (dateInput) {
         dateInput.focus();
       }
@@ -4867,9 +5205,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (this.value) {
         // Re-validate current value against new min constraint
         const currentDate = this._moment(this.value);
-        if (newMin && currentDate.isBefore(this._moment(newMin), 'day')) {
+        if (newMin && currentDate.isBefore(this._moment(newMin), "day")) {
           this.invalid = true;
-          this.errorMessage = `Date must be on or after ${this._moment(newMin).format('L')}`;
+          this.errorMessage = `Date must be on or after ${this._moment(newMin).format("L")}`;
         }
       }
     }
@@ -4881,9 +5219,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (this.value) {
         // Re-validate current value against new max constraint
         const currentDate = this._moment(this.value);
-        if (newMax && currentDate.isAfter(this._moment(newMax), 'day')) {
+        if (newMax && currentDate.isAfter(this._moment(newMax), "day")) {
           this.invalid = true;
-          this.errorMessage = `Date must be on or before ${this._moment(newMax).format('L')}`;
+          this.errorMessage = `Date must be on or before ${this._moment(newMax).format("L")}`;
         }
       }
     }
