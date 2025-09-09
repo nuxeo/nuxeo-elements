@@ -253,8 +253,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           value: null,
         },
 
-
-
         // i18n properties for compatibility with nuxeo-date-picker
         i18n: {
           type: Object,
@@ -299,7 +297,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             background: #ffffff;
             min-height: 32px; /* Reduced height for compact design */
             width: 156px; /* Exact width requirement */
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            transition:
+              border-color 0.2s ease,
+              box-shadow 0.2s ease;
             overflow: hidden; /* Ensure icons stay inside */
           }
 
@@ -328,7 +328,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
             outline: none;
           }
-          
+
           /* Ensure focus always shows blue border, even for required fields */
           :host([required]) .input-wrapper:focus-within {
             border-color: #2563eb !important;
@@ -338,8 +338,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             flex: 1;
             border: none;
             outline: none;
-            padding: 6px 48px 6px 8px; 
-            font-size: 13px; 
+            padding: 6px 48px 6px 8px;
+            font-size: 13px;
             font-weight: 400;
             font-family: 'Inter', Arial, sans-serif;
             background: transparent;
@@ -373,7 +373,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             color: #374151;
             cursor: pointer;
             border-radius: 0; /* Remove rounded corners for Nuxeo theme */
-            transition: color 0.2s ease, background-color 0.2s ease;
+            transition:
+              color 0.2s ease,
+              background-color 0.2s ease;
             border: none;
             background: transparent;
             width: 20px; /* Reduced size */
@@ -389,7 +391,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             color: #374151;
             cursor: pointer;
             border-radius: 0; /* Remove rounded corners for Nuxeo theme */
-            transition: color 0.2s ease, background-color 0.2s ease;
+            transition:
+              color 0.2s ease,
+              background-color 0.2s ease;
             border: none;
             background: transparent;
             width: 20px; /* Reduced size */
@@ -465,7 +469,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             background: #ffffff;
             border: 1px solid #d1d5db;
             border-radius: 0; /* Remove rounded corners for Nuxeo theme */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow:
+              0 10px 15px -3px rgba(0, 0, 0, 0.1),
+              0 4px 6px -2px rgba(0, 0, 0, 0.05);
             width: 280px; /* Reduced from 320px to be proportional */
             display: none;
             animation: fadeIn 0.15s ease-out;
@@ -496,15 +502,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             display: block;
           }
 
-
           @keyframes fadeIn {
             from {
               opacity: 0;
               transform: translateY(-4px);
             }
             to {
-            opacity: 1;
-            transform: translateY(0);
+              opacity: 1;
+              transform: translateY(0);
             }
           }
 
@@ -690,7 +695,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             cursor: pointer;
             font-size: 14px;
             border: 2px solid transparent;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
+            transition:
+              background-color 0.2s ease,
+              border-color 0.2s ease;
             background: transparent;
             width: 100%;
             text-align: left;
@@ -915,11 +922,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             .input-wrapper {
               border-width: 2px;
             }
-            
+
             .calendar-day.today {
               border-width: 3px;
             }
-            
+
             .calendar-day.selected {
               border: 3px solid;
             }
@@ -929,7 +936,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             .calendar-popover {
               animation: none;
             }
-            
+
             .input-wrapper,
             .calendar-day,
             .nav-button {
@@ -1042,12 +1049,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               on-keydown="_onInputKeydown"
               on-input="_onInputChange"
             />
-            
+
             <div class="input-actions">
               <template is="dom-if" if="[[_shouldShowClearButton(_inputValue, hideClearDateButton)]]">
                 <button
                   type="button"
-              class="clear-button"
+                  class="clear-button"
                   aria-label$="[[_getLocalizedText('clearDate')]]"
                   tabindex="0"
                   on-click="_clearDate"
@@ -1055,93 +1062,131 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                   <iron-icon icon="icons:clear"></iron-icon>
                 </button>
               </template>
-              
+
               <button
                 type="button"
                 class="calendar-icon"
                 aria-label$="[[_getLocalizedText('openCalendar')]]"
-              disabled$="[[disabled]]"
+                disabled$="[[disabled]]"
                 tabindex="0"
                 on-click="_openCalendarViaMouse"
                 on-keydown="_handleCalendarIconKeydown"
                 on-focus="_onCalendarIconFocus"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                   <line x1="16" y1="2" x2="16" y2="6"></line>
                   <line x1="8" y1="2" x2="8" y2="6"></line>
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
               </button>
+            </div>
           </div>
-        </div>
 
-          <div class="error-message" id="errorText" 
-               hidden$="[[!_showError(invalid, errorMessage, _showErrors)]]">
+          <div class="error-message" id="errorText" hidden$="[[!_showError(invalid, errorMessage, _showErrors)]]">
             [[errorMessage]]
           </div>
           <!-- Screen reader live status region -->
-          <div id="srStatus" class="sr-only" role="status" 
-               aria-live="polite" aria-atomic="true"></div>
+          <div id="srStatus" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 
           <!-- Modal backdrop for calendar popover -->
           <div class="calendar-backdrop" id="calendarBackdrop" on-click="_closeCalendar"></div>
 
-          <div class="calendar-popover" id="calendarPopover" role="dialog" 
-               aria-label="Calendar" aria-modal$="[[_isCalendarOpen]]">
+          <div
+            class="calendar-popover"
+            id="calendarPopover"
+            role="dialog"
+            aria-label="Calendar"
+            aria-modal$="[[_isCalendarOpen]]"
+          >
             <div class="calendar-header">
-                <div class="month-year-display">
-                  <span class="month-text">[[_getMonthName(_viewDate)]]</span>
-                  <div class="year-dropdown" on-click="_toggleYearDropdown" tabindex="0" role="button" 
-                       aria-label$="[[_getLocalizedText('selectYear')]]" aria-haspopup="listbox" 
-                       aria-expanded$="[[_isYearDropdownOpen]]" on-keydown="_handleYearDropdownKeydown">
-                    <span class="year-text">[[_getYear(_viewDate)]]</span>
-                    <button type="button" class="year-dropdown-button" aria-label="Select year" tabindex="-1">
-                      <iron-icon icon$="[[_getDropdownIcon(_isYearDropdownOpen)]]"></iron-icon>
-                    </button>
-                    <div class="year-options" id="yearOptions" role="listbox" aria-label="Year options">
-                      <template is="dom-repeat" items="[[_yearOptions]]">
-                        <button type="button" class$="year-option [[_getYearOptionClass(item, _viewDate)]]"
-                          data-year$="[[item]]"
-                          on-click="_selectYear"
-                          tabindex$="[[_getYearTabIndex(item, _viewDate)]]"
-                          role="option"
-                          aria-selected$="[[_isSelectedYear(item, _viewDate)]]">
-                          [[item]]
-                        </button>
-                      </template>
-                    </div>
+              <div class="month-year-display">
+                <span class="month-text">[[_getMonthName(_viewDate)]]</span>
+                <div
+                  class="year-dropdown"
+                  on-click="_toggleYearDropdown"
+                  tabindex="0"
+                  role="button"
+                  aria-label$="[[_getLocalizedText('selectYear')]]"
+                  aria-haspopup="listbox"
+                  aria-expanded$="[[_isYearDropdownOpen]]"
+                  on-keydown="_handleYearDropdownKeydown"
+                >
+                  <span class="year-text">[[_getYear(_viewDate)]]</span>
+                  <button type="button" class="year-dropdown-button" aria-label="Select year" tabindex="-1">
+                    <iron-icon icon$="[[_getDropdownIcon(_isYearDropdownOpen)]]"></iron-icon>
+                  </button>
+                  <div class="year-options" id="yearOptions" role="listbox" aria-label="Year options">
+                    <template is="dom-repeat" items="[[_yearOptions]]">
+                      <button
+                        type="button"
+                        class$="year-option [[_getYearOptionClass(item, _viewDate)]]"
+                        data-year$="[[item]]"
+                        on-click="_selectYear"
+                        tabindex$="[[_getYearTabIndex(item, _viewDate)]]"
+                        role="option"
+                        aria-selected$="[[_isSelectedYear(item, _viewDate)]]"
+                      >
+                        [[item]]
+                      </button>
+                    </template>
                   </div>
                 </div>
-                
+              </div>
+
               <div class="navigation">
-                <button type="button" class="nav-button" id="prevMonth" 
-                        aria-label$="[[_getLocalizedText('previousMonth')]]" tabindex="0" 
-                        on-click="_previousMonth" on-keydown="_handleNavButtonKeydown" 
-                        disabled$="[[_isPreviousMonthDisabled()]]">
+                <button
+                  type="button"
+                  class="nav-button"
+                  id="prevMonth"
+                  aria-label$="[[_getLocalizedText('previousMonth')]]"
+                  tabindex="0"
+                  on-click="_previousMonth"
+                  on-keydown="_handleNavButtonKeydown"
+                  disabled$="[[_isPreviousMonthDisabled()]]"
+                >
                   <iron-icon icon="icons:chevron-left"></iron-icon>
                 </button>
-                
-                <button type="button" class="nav-button" id="nextMonth" 
-                        aria-label$="[[_getLocalizedText('nextMonth')]]" tabindex="0" 
-                        on-click="_nextMonth" on-keydown="_handleNavButtonKeydown" 
-                        disabled$="[[_isNextMonthDisabled()]]">
+
+                <button
+                  type="button"
+                  class="nav-button"
+                  id="nextMonth"
+                  aria-label$="[[_getLocalizedText('nextMonth')]]"
+                  tabindex="0"
+                  on-click="_nextMonth"
+                  on-keydown="_handleNavButtonKeydown"
+                  disabled$="[[_isNextMonthDisabled()]]"
+                >
                   <iron-icon icon="icons:chevron-right"></iron-icon>
                 </button>
               </div>
-              </div>
-              
-            <div class="weekday-headers" role="row">
-                <template is="dom-repeat" items="[[_weekdayNames]]">
-                <div class="weekday-header" role="columnheader">[[item]]</div>
-                </template>
-              </div>
+            </div>
 
-            <div class="calendar-grid" role="grid" aria-label="Calendar dates" 
-                 aria-activedescendant$="[[_getActiveDescendant(_focusedDate)]]" 
-                 on-keydown="_handleGridKeydown" on-click="_handleCalendarGridClick">
-                <template is="dom-repeat" items="[[_calendarDays]]">
+            <div class="weekday-headers" role="row">
+              <template is="dom-repeat" items="[[_weekdayNames]]">
+                <div class="weekday-header" role="columnheader">[[item]]</div>
+              </template>
+            </div>
+
+            <div
+              class="calendar-grid"
+              role="grid"
+              aria-label="Calendar dates"
+              aria-activedescendant$="[[_getActiveDescendant(_focusedDate)]]"
+              on-keydown="_handleGridKeydown"
+              on-click="_handleCalendarGridClick"
+            >
+              <template is="dom-repeat" items="[[_calendarDays]]">
                 <button
                   type="button"
                   class$="calendar-day [[_getDayClasses(item, _focusedDate)]]"
@@ -1155,18 +1200,18 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                   id$="date-[[item.dateISO]]"
                   on-click="_handleDateClick"
                   on-keydown="_handleDateKeydown"
-                  >
-                    [[item.day]]
+                >
+                  [[item.day]]
                 </button>
-                </template>
+              </template>
             </div>
 
             <div class="calendar-footer">
               <button type="button" class="footer-button today-button" on-click="_selectToday" tabindex="0">
-              [[_getLocalizedText('Today')]]
+                [[_getLocalizedText('Today')]]
               </button>
               <button type="button" class="footer-button cancel-button" on-click="_closeCalendar" tabindex="0">
-              [[_getLocalizedText('Cancel')]]
+                [[_getLocalizedText('Cancel')]]
               </button>
             </div>
           </div>
@@ -1269,8 +1314,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._generateCalendar();
       this._setupEventListeners();
       this._setupFocusTrap();
-
-
     }
 
     // Helper method to safely get i18n text with fallbacks
@@ -1316,8 +1359,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const languageCode = locale.toLowerCase().split('-')[0];
 
       // Also check for Arabic script indicators
-      const isRTLScript = locale.toLowerCase().includes('-arab') ||
-        locale.toLowerCase().includes('arabic');
+      const isRTLScript = locale.toLowerCase().includes('-arab') || locale.toLowerCase().includes('arabic');
 
       // Set RTL if language or script indicates RTL
       this._isRTL = rtlLanguages.includes(languageCode) || isRTLScript;
@@ -1407,21 +1449,21 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         // French
         fr: {
-          today: 'Aujourd\'hui',
+          today: "Aujourd'hui",
           cancel: 'Annuler',
           clear: 'Effacer',
           openCalendar: 'Ouvrir le calendrier',
           clearDate: 'Effacer la date',
           previousMonth: 'Mois précédent',
           nextMonth: 'Mois suivant',
-          selectYear: 'Sélectionner l\'année',
+          selectYear: "Sélectionner l'année",
           calendarOpened: 'Calendrier ouvert. Utilisez les flèches pour naviguer. Appuyez sur Échap pour fermer.',
           calendarClosed: 'Calendrier fermé.',
           required: 'Ce champ est requis.',
           invalidDate: 'Date invalide. Veuillez saisir une date valide.',
           incorrectFormat: 'Format de date incorrect.',
           dateOutOfRange: 'Date hors limites.',
-          dateNotSelectable: 'Cette date n\'est pas sélectionnable.',
+          dateNotSelectable: "Cette date n'est pas sélectionnable.",
           movedToMonth: 'Déplacé vers {month} {year}.',
           yearChanged: 'Année changée à {year}.',
         },
@@ -1436,8 +1478,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           previousMonth: 'Vorheriger Monat',
           nextMonth: 'Nächster Monat',
           selectYear: 'Jahr auswählen',
-          calendarOpened: 'Kalender geöffnet. Verwenden Sie die Pfeiltasten zur Navigation. ' +
-            'Drücken Sie Escape zum Schließen.',
+          calendarOpened:
+            'Kalender geöffnet. Verwenden Sie die Pfeiltasten zur Navigation. ' + 'Drücken Sie Escape zum Schließen.',
           calendarClosed: 'Kalender geschlossen.',
           required: 'Dieses Feld ist erforderlich.',
           invalidDate: 'Ungültiges Datum. Bitte geben Sie ein gültiges Datum ein.',
@@ -1590,7 +1632,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _formatAriaDate(date) {
       try {
         return new Intl.DateTimeFormat(this._locale || (navigator && navigator.language) || 'en-US', {
-          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
         }).format(date);
       } catch (_) {
         return date && date.toDateString ? date.toDateString() : '';
@@ -1650,10 +1695,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         date.setHours(0, 0, 0, 0);
 
         // Validate that the date components match (catches invalid dates like Feb 30)
-        if (date.getFullYear() !== year ||
-          date.getMonth() !== (month - 1) ||
-          date.getDate() !== day) {
-
+        if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
           return null;
         }
 
@@ -1679,8 +1721,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         date.setDate(baseDate.getDate() + ((firstDay + i) % 7));
         this._weekdayNames.push(new Intl.DateTimeFormat(this._locale, { weekday: 'short' }).format(date));
       }
-
-
     }
 
     _generateYearOptions() {
@@ -1779,8 +1819,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const month = this._viewDate.getMonth();
 
       const firstDay = new Date(year, month, 1);
-      const firstDayOfWeek = this.firstDayOfWeek ||
-        config.get('firstDayOfWeek', moment.localeData().firstDayOfWeek() || 0);
+      const firstDayOfWeek =
+        this.firstDayOfWeek || config.get('firstDayOfWeek', moment.localeData().firstDayOfWeek() || 0);
       const startDate = new Date(firstDay);
       const dayOffset = (firstDay.getDay() - firstDayOfWeek + 7) % 7;
       startDate.setDate(1 - dayOffset);
@@ -1798,9 +1838,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Check if this date is selected
         let isSelected = false;
         if (this._selectedDate && isCurrentMonth) {
-          isSelected = (currentDate.getFullYear() === this._selectedDate.getFullYear() &&
+          isSelected =
+            currentDate.getFullYear() === this._selectedDate.getFullYear() &&
             currentDate.getMonth() === this._selectedDate.getMonth() &&
-            currentDate.getDate() === this._selectedDate.getDate());
+            currentDate.getDate() === this._selectedDate.getDate();
         }
 
         const isDisabled = this._isDateDisabled(currentDate);
@@ -1838,13 +1879,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (prevButton) {
         const isPrevDisabled = this._isPreviousMonthDisabled();
         prevButton.disabled = isPrevDisabled;
-
       }
 
       if (nextButton) {
         const isNextDisabled = this._isNextMonthDisabled();
         nextButton.disabled = isNextDisabled;
-
       }
     }
 
@@ -1880,18 +1919,22 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
 
       // Close year-dropdown when clicking outside it but inside the component
-      this.shadowRoot.addEventListener('click', (e) => {
-        try {
-          const yearOptions = this.shadowRoot.querySelector('#yearOptions');
-          const yearDropdown = this.shadowRoot.querySelector('.year-dropdown');
-          if (!yearOptions || !yearOptions.classList.contains('open')) return;
-          if (!yearDropdown || !e.composedPath().includes(yearDropdown)) {
-            this._closeYearDropdown();
+      this.shadowRoot.addEventListener(
+        'click',
+        (e) => {
+          try {
+            const yearOptions = this.shadowRoot.querySelector('#yearOptions');
+            const yearDropdown = this.shadowRoot.querySelector('.year-dropdown');
+            if (!yearOptions || !yearOptions.classList.contains('open')) return;
+            if (!yearDropdown || !e.composedPath().includes(yearDropdown)) {
+              this._closeYearDropdown();
+            }
+          } catch (_) {
+            // no-op
           }
-        } catch (_) {
-          // no-op
-        }
-      }, true);
+        },
+        true,
+      );
 
       // Focus trap and global key handling inside the popover (Tab/Escape)
       const popover = this.shadowRoot.querySelector('#calendarPopover');
@@ -1899,34 +1942,39 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         popover.addEventListener('keydown', (e) => this._handlePopoverKeydown(e));
 
         // Add click handler to popover to handle internal clicks appropriately
-        popover.addEventListener('click', (e) => {
-          // Mark that we're interacting with the calendar
-          this._interactingWithCalendar = true;
+        popover.addEventListener(
+          'click',
+          (e) => {
+            // Mark that we're interacting with the calendar
+            this._interactingWithCalendar = true;
 
-          // Clear the flag after a short delay
-          this.async(() => {
-            this._interactingWithCalendar = false;
-          }, 50);
+            // Clear the flag after a short delay
+            this.async(() => {
+              this._interactingWithCalendar = false;
+            }, 50);
 
-          // Only stop propagation for clicks on non-interactive elements
-          const { target } = e;
-          const isInteractiveElement = target.closest('button') ||
-            target.closest('select') ||
-            target.closest('[role="button"]') ||
-            target.closest('[role="option"]') ||
-            target.closest('.year-option') ||
-            target.closest('.year-dropdown') ||
-            target.closest('.nav-button') ||
-            target.closest('.calendar-day') ||
-            target.closest('.footer-button') ||
-            target.closest('.today-button') ||
-            target.closest('.cancel-button');
+            // Only stop propagation for clicks on non-interactive elements
+            const { target } = e;
+            const isInteractiveElement =
+              target.closest('button') ||
+              target.closest('select') ||
+              target.closest('[role="button"]') ||
+              target.closest('[role="option"]') ||
+              target.closest('.year-option') ||
+              target.closest('.year-dropdown') ||
+              target.closest('.nav-button') ||
+              target.closest('.calendar-day') ||
+              target.closest('.footer-button') ||
+              target.closest('.today-button') ||
+              target.closest('.cancel-button');
 
-          // Only stop propagation for empty area clicks, not interactive elements
-          if (!isInteractiveElement) {
-            e.stopPropagation();
-          }
-        }, true);
+            // Only stop propagation for empty area clicks, not interactive elements
+            if (!isInteractiveElement) {
+              e.stopPropagation();
+            }
+          },
+          true,
+        );
       }
 
       // Document events
@@ -1946,12 +1994,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _setupFocusTrap() {
       // Define the proper focus order for calendar accessibility
       this._focusOrder = [
-        'year-dropdown',     // Year selection
-        'prevMonth',         // Previous month button  
-        'nextMonth',         // Next month button
-        'calendar-grid',     // Date grid (managed separately)
-        'today-button',      // Today button
-        'cancel-button',     // Cancel button
+        'year-dropdown', // Year selection
+        'prevMonth', // Previous month button
+        'nextMonth', // Next month button
+        'calendar-grid', // Date grid (managed separately)
+        'today-button', // Today button
+        'cancel-button', // Cancel button
       ];
     }
 
@@ -1965,7 +2013,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (e.key === 'Tab') {
         e.preventDefault();
         this._handleCalendarTabNavigation(e.shiftKey);
-        
       }
     }
 
@@ -1976,8 +2023,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const currentFocused = this.shadowRoot.activeElement;
       const currentElement = this._identifyCurrentFocusElement(currentFocused);
 
-
-
       let nextIndex;
       const currentIndex = this._focusOrder.indexOf(currentElement);
 
@@ -1985,14 +2030,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Shift+Tab: Move backward
         nextIndex = currentIndex <= 0 ? this._focusOrder.length - 1 : currentIndex - 1;
       } else {
-        // Tab: Move forward  
+        // Tab: Move forward
         nextIndex = currentIndex >= this._focusOrder.length - 1 ? 0 : currentIndex + 1;
       }
 
       const nextElement = this._focusOrder[nextIndex];
       this._focusCalendarElement(nextElement);
-
-
     }
 
     // Identify which focus element is currently active
@@ -2060,7 +2103,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           // Fallback: focus the first available date in the grid
           this._focusCalendarGrid();
           break;
-        }
+      }
 
       if (targetElement && !targetElement.disabled) {
         targetElement.focus();
@@ -2076,7 +2119,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _focusCalendarGrid() {
       // Ensure calendar is generated first
       if (!this._calendarDays || this._calendarDays.length === 0) {
-
         this._generateCalendar();
       }
 
@@ -2085,24 +2127,23 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       if (this._focusedDate) {
         targetDate = this._focusedDate;
-
-      } else if (this._selectedDate &&
+      } else if (
+        this._selectedDate &&
         this._selectedDate.getMonth() === this._viewDate.getMonth() &&
-        this._selectedDate.getFullYear() === this._viewDate.getFullYear()) {
+        this._selectedDate.getFullYear() === this._viewDate.getFullYear()
+      ) {
         targetDate = this._selectedDate;
-
-      } else if (this._today.getMonth() === this._viewDate.getMonth() &&
-        this._today.getFullYear() === this._viewDate.getFullYear()) {
+      } else if (
+        this._today.getMonth() === this._viewDate.getMonth() &&
+        this._today.getFullYear() === this._viewDate.getFullYear()
+      ) {
         targetDate = this._today;
-
       } else {
         // First day of current month
         targetDate = new Date(this._viewDate.getFullYear(), this._viewDate.getMonth(), 1);
-
       }
 
       if (targetDate) {
-
         this._focusDate(targetDate);
       } else {
         // Continue execution without special focus handling
@@ -2142,7 +2183,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const containerHeight = monthYearOptions.clientHeight;
         const buttonHeight = monthYearButton.offsetHeight;
         const buttonTop = monthYearButton.offsetTop;
-        const scrollTop = buttonTop - (containerHeight / 2) + (buttonHeight / 2);
+        const scrollTop = buttonTop - containerHeight / 2 + buttonHeight / 2;
 
         monthYearOptions.scrollTop = Math.max(0, scrollTop);
       }
@@ -2255,7 +2296,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _getMonthYearOptionClass(item, viewDate) {
       if (!viewDate || !item) return '';
-      return (item.year === viewDate.getFullYear() && item.month === viewDate.getMonth()) ? 'selected' : '';
+      return item.year === viewDate.getFullYear() && item.month === viewDate.getMonth() ? 'selected' : '';
     }
 
     _getDropdownIcon(isOpen) {
@@ -2340,10 +2381,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const yearOptions = this.shadowRoot.querySelector('#yearOptions');
 
         // Check if focus moved outside the year dropdown area
-        const isInsideYearDropdown = yearDropdown && (
-          yearDropdown.contains(focusedElement) ||
-          (yearOptions && yearOptions.contains(focusedElement))
-        );
+        const isInsideYearDropdown =
+          yearDropdown &&
+          (yearDropdown.contains(focusedElement) || (yearOptions && yearOptions.contains(focusedElement)));
 
         if (!isInsideYearDropdown) {
           // Close year dropdown when focus moves outside
@@ -2372,11 +2412,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       // Only close calendar on focus change if the target is clearly outside and not body/html
       // This prevents closing when clicking on empty areas inside the calendar
-      if (focusedElement &&
+      if (
+        focusedElement &&
         focusedElement !== document.body &&
         focusedElement !== document.documentElement &&
-        !this._isElementInsideComponent(focusedElement)) {
-
+        !this._isElementInsideComponent(focusedElement)
+      ) {
         // Shorter delay for more responsive closing when focus moves outside
         this.async(() => {
           // Don't close if calendar was just opened
@@ -2386,11 +2427,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           // Double-check that focus is still outside and calendar is still open
           const currentFocus = document.activeElement;
-          if (this._isCalendarOpen &&
+          if (
+            this._isCalendarOpen &&
             currentFocus &&
             currentFocus !== document.body &&
             currentFocus !== document.documentElement &&
-            !this._isElementInsideComponent(currentFocus)) {
+            !this._isElementInsideComponent(currentFocus)
+          ) {
             this._closeCalendar();
 
             // Also close year dropdown if open
@@ -2584,8 +2627,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Reset the flag after updating input value
       this._preventInputUpdate = false;
 
-
-
       // Update UI
       this._focusedDate = null;
       this._generateCalendar();
@@ -2659,8 +2700,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       // No auto-detection needed - explicitly handled by separate methods
 
-
-
       if (this._selectedDate) {
         this._viewDate = new Date(this._selectedDate);
         this._focusedDate = new Date(this._selectedDate);
@@ -2673,13 +2712,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           const minDate = new Date(this.min);
           // Always start with min date when it exists, regardless of today's date
           initialDate = new Date(minDate);
-
         } else if (this.max) {
           // Only use max date if no min date is specified and today is after max
           const maxDate = new Date(this.max);
           if (initialDate > maxDate) {
             initialDate = new Date(maxDate);
-
           }
         }
 
@@ -2693,8 +2730,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           } else if (initialDate > maxDate) {
             initialDate = new Date(maxDate);
           }
-
-
         }
 
         this._viewDate = initialDate;
@@ -2733,11 +2768,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._announce(this._getLocalizedText('calendarOpened'));
 
       // Fire opened-changed event for compatibility with nuxeo-date-picker
-      this.dispatchEvent(new CustomEvent('opened-changed', {
-        detail: { value: true },
-        bubbles: true,
-        composed: true,
-      }));
+      this.dispatchEvent(
+        new CustomEvent('opened-changed', {
+          detail: { value: true },
+          bubbles: true,
+          composed: true,
+        }),
+      );
 
       // Professional a11y: Focus behavior depends on interaction method
       this.async(() => {
@@ -2747,7 +2784,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           this._focusCalendarElement(this._focusOrder[0]); // year-dropdown
         } else {
           // Mouse opening: Aggressive focus management to prevent year dropdown focus
-
 
           // Immediately disable all potential auto-focus targets except date buttons
           const yearDropdown = this.shadowRoot.querySelector('.year-dropdown');
@@ -2765,8 +2801,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             }
           });
 
-
-
           // Clear any existing focus
           if (this.shadowRoot.activeElement && this.shadowRoot.activeElement.blur) {
             this.shadowRoot.activeElement.blur();
@@ -2775,14 +2809,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           // Use requestAnimationFrame to ensure our focus happens after any browser auto-focus
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-
               this._focusCalendarGrid();
 
               // Force focus again if needed
               requestAnimationFrame(() => {
                 const currentFocus = this.shadowRoot.activeElement;
                 if (!currentFocus || !currentFocus.classList.contains('calendar-day')) {
-
                   this._focusCalendarGrid();
                 }
 
@@ -2793,10 +2825,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                   }
                 });
 
-
                 // Final debug check
                 // const finalFocus = this.shadowRoot.activeElement;
-
               });
             });
           });
@@ -2839,11 +2869,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
 
       // Fire opened-changed event for compatibility with nuxeo-date-picker
-      this.dispatchEvent(new CustomEvent('opened-changed', {
-        detail: { value: false },
-        bubbles: true,
-        composed: true,
-      }));
+      this.dispatchEvent(
+        new CustomEvent('opened-changed', {
+          detail: { value: false },
+          bubbles: true,
+          composed: true,
+        }),
+      );
 
       const dateInput = this.shadowRoot.querySelector('#dateInput');
       if (dateInput) {
@@ -2872,9 +2904,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const newDate = new Date(this._viewDate);
       newDate.setMonth(newDate.getMonth() - 1);
 
-
-
-
       this._viewDate = newDate;
 
       // Clear focused date when changing months to prevent incorrect highlighting
@@ -2883,10 +2912,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Regenerate month-year options if we moved far from the current range
       this._generateMonthYearOptions();
       this._generateCalendar();
-      this._announce(this._getLocalizedText('movedToMonth', {
-        month: this._getMonthName(this._viewDate),
-        year: this._getYear(this._viewDate),
-      }));
+      this._announce(
+        this._getLocalizedText('movedToMonth', {
+          month: this._getMonthName(this._viewDate),
+          year: this._getYear(this._viewDate),
+        }),
+      );
     }
 
     _nextMonth(e) {
@@ -2902,9 +2933,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const newDate = new Date(this._viewDate);
       newDate.setMonth(newDate.getMonth() + 1);
 
-
-
-
       this._viewDate = newDate;
 
       // Clear focused date when changing months to prevent incorrect highlighting
@@ -2913,10 +2941,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Regenerate month-year options if we moved far from the current range
       this._generateMonthYearOptions();
       this._generateCalendar();
-      this._announce(this._getLocalizedText('movedToMonth', {
-        month: this._getMonthName(this._viewDate),
-        year: this._getYear(this._viewDate),
-      }));
+      this._announce(
+        this._getLocalizedText('movedToMonth', {
+          month: this._getMonthName(this._viewDate),
+          year: this._getYear(this._viewDate),
+        }),
+      );
     }
 
     _changeYear(e) {
@@ -2950,7 +2980,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Click was on empty area - prevent any default behavior
         e.preventDefault();
         e.stopPropagation();
-        
       }
       // Let the button's own click handler deal with it
     }
@@ -2962,8 +2991,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
 
       const button = e.target.closest('.calendar-day');
-      if (!button || button.disabled || button.classList.contains('empty') ||
-        button.classList.contains('other-month')) {
+      if (
+        !button ||
+        button.disabled ||
+        button.classList.contains('empty') ||
+        button.classList.contains('other-month')
+      ) {
         return;
       }
 
@@ -2978,8 +3011,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (!selectedDate) {
         return;
       }
-
-
 
       // Use professional validation
       const validation = this._validateDate(selectedDate);
@@ -3012,7 +3043,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           // Allow selection of any current month date, not just non-empty
           if (!currentButton.disabled && currentButton.classList.contains('calendar-day')) {
             // Check if it's a valid current month date
-            const isCurrentMonth = currentDate.getMonth() === this._viewDate.getMonth() &&
+            const isCurrentMonth =
+              currentDate.getMonth() === this._viewDate.getMonth() &&
               currentDate.getFullYear() === this._viewDate.getFullYear();
             if (isCurrentMonth) {
               this._selectDate(currentDate);
@@ -3024,8 +3056,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           e.preventDefault();
           targetDate.setDate(currentDate.getDate() - 1);
           // Only navigate within current month - don't allow month transitions
-          if (targetDate.getMonth() === this._viewDate.getMonth() &&
-            targetDate.getFullYear() === this._viewDate.getFullYear()) {
+          if (
+            targetDate.getMonth() === this._viewDate.getMonth() &&
+            targetDate.getFullYear() === this._viewDate.getFullYear()
+          ) {
             this._focusDate(targetDate, false);
           }
           break;
@@ -3034,8 +3068,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           e.preventDefault();
           targetDate.setDate(currentDate.getDate() + 1);
           // Only navigate within current month - don't allow month transitions
-          if (targetDate.getMonth() === this._viewDate.getMonth() &&
-            targetDate.getFullYear() === this._viewDate.getFullYear()) {
+          if (
+            targetDate.getMonth() === this._viewDate.getMonth() &&
+            targetDate.getFullYear() === this._viewDate.getFullYear()
+          ) {
             this._focusDate(targetDate, false);
           }
           break;
@@ -3044,8 +3080,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           e.preventDefault();
           targetDate.setDate(currentDate.getDate() - 7);
           // Only navigate within current month - don't allow month transitions
-          if (targetDate.getMonth() === this._viewDate.getMonth() &&
-            targetDate.getFullYear() === this._viewDate.getFullYear()) {
+          if (
+            targetDate.getMonth() === this._viewDate.getMonth() &&
+            targetDate.getFullYear() === this._viewDate.getFullYear()
+          ) {
             this._focusDate(targetDate, false);
           }
           break;
@@ -3054,8 +3092,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           e.preventDefault();
           targetDate.setDate(currentDate.getDate() + 7);
           // Only navigate within current month - don't allow month transitions
-          if (targetDate.getMonth() === this._viewDate.getMonth() &&
-            targetDate.getFullYear() === this._viewDate.getFullYear()) {
+          if (
+            targetDate.getMonth() === this._viewDate.getMonth() &&
+            targetDate.getFullYear() === this._viewDate.getFullYear()
+          ) {
             this._focusDate(targetDate, false);
           }
           break;
@@ -3065,8 +3105,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           const dayOfWeek = currentDate.getDay();
           targetDate.setDate(currentDate.getDate() - dayOfWeek);
           // Only navigate within current month - don't allow month transitions
-          if (targetDate.getMonth() === this._viewDate.getMonth() &&
-            targetDate.getFullYear() === this._viewDate.getFullYear()) {
+          if (
+            targetDate.getMonth() === this._viewDate.getMonth() &&
+            targetDate.getFullYear() === this._viewDate.getFullYear()
+          ) {
             this._focusDate(targetDate, false);
           }
           break;
@@ -3077,8 +3119,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           const daysToEnd = 6 - currentDate.getDay();
           targetDate.setDate(currentDate.getDate() + daysToEnd);
           // Only navigate within current month - don't allow month transitions
-          if (targetDate.getMonth() === this._viewDate.getMonth() &&
-            targetDate.getFullYear() === this._viewDate.getFullYear()) {
+          if (
+            targetDate.getMonth() === this._viewDate.getMonth() &&
+            targetDate.getFullYear() === this._viewDate.getFullYear()
+          ) {
             this._focusDate(targetDate, false);
           }
           break;
@@ -3115,10 +3159,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         this._generateCalendar();
 
         // Announce the month change
-        this._announce(this._getLocalizedText('movedToMonth', {
-          month: this._getMonthName(this._viewDate),
-          year: this._getYear(this._viewDate),
-        }));
+        this._announce(
+          this._getLocalizedText('movedToMonth', {
+            month: this._getMonthName(this._viewDate),
+            year: this._getYear(this._viewDate),
+          }),
+        );
 
         // Focus the target date after the calendar is regenerated
         this.async(() => {
@@ -3180,9 +3226,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
 
       // Try the selected date first if it's in the current month
-      if (this._selectedDate &&
-        this._selectedDate.getMonth() === month &&
-        this._selectedDate.getFullYear() === year) {
+      if (this._selectedDate && this._selectedDate.getMonth() === month && this._selectedDate.getFullYear() === year) {
         // Use local date formatting to avoid timezone issues
         const selYear = this._selectedDate.getFullYear();
         const selMonth = String(this._selectedDate.getMonth() + 1).padStart(2, '0');
@@ -3253,12 +3297,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Only set focus if we have a selected date or if explicitly needed
       let targetDate = null;
 
-      if (this._selectedDate &&
+      if (
+        this._selectedDate &&
         this._selectedDate.getMonth() === this._viewDate.getMonth() &&
-        this._selectedDate.getFullYear() === this._viewDate.getFullYear()) {
+        this._selectedDate.getFullYear() === this._viewDate.getFullYear()
+      ) {
         targetDate = new Date(this._selectedDate);
-      } else if (this._today.getMonth() === this._viewDate.getMonth() &&
-        this._today.getFullYear() === this._viewDate.getFullYear()) {
+      } else if (
+        this._today.getMonth() === this._viewDate.getMonth() &&
+        this._today.getFullYear() === this._viewDate.getFullYear()
+      ) {
         targetDate = new Date(this._today);
       } else {
         // If no selected date and today is not in current month, focus first day of month
@@ -3331,7 +3379,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         return;
       }
 
-
       // Use professional parser
       const parseResult = this._parseUserInput(value);
 
@@ -3402,8 +3449,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Clear flags when user provides valid input
       this._showErrors = false;
       this._justCleared = false;
-
-
     }
 
     _safeSetValue(newValue) {
@@ -3437,8 +3482,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         }
       }
     }
-
-
 
     _updateInputValue() {
       if (this._selectedDate) {
@@ -3560,10 +3603,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     // Error priority system: Format > Range > Required
     _getErrorPriority(errorReason) {
       const priorities = {
-        'format': 3,        // Highest priority
-        'invalidDate': 3,   // Highest priority
-        'outOfRange': 2,    // Medium priority
-        'required': 1,       // Lowest priority
+        format: 3, // Highest priority
+        invalidDate: 3, // Highest priority
+        outOfRange: 2, // Medium priority
+        required: 1, // Lowest priority
       };
       return priorities[errorReason] || 0;
     }
@@ -3589,8 +3632,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         return 'mm/dd/yyyy';
       }
     }
-
-
 
     _buildOutOfRangeMessage() {
       try {
@@ -3643,13 +3684,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         // ONLY add focused class if we have a focused date AND it matches AND it's not selected AND not today
         // AND we're in the current month AND the focused date is in the currently viewed month
-        if (focusedDate &&
+        if (
+          focusedDate &&
           this._isSameDay(dayObj.date, focusedDate) &&
           !dayObj.isSelected &&
           !dayObj.isToday &&
           dayObj.isCurrentMonth &&
           focusedDate.getMonth() === this._viewDate.getMonth() &&
-          focusedDate.getFullYear() === this._viewDate.getFullYear()) {
+          focusedDate.getFullYear() === this._viewDate.getFullYear()
+        ) {
           classes.push('focused');
         }
       }
@@ -3683,8 +3726,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _isTodayInCurrentMonth() {
       if (!this._today || !this._viewDate) return false;
-      return this._today.getMonth() === this._viewDate.getMonth() &&
-        this._today.getFullYear() === this._viewDate.getFullYear();
+      return (
+        this._today.getMonth() === this._viewDate.getMonth() &&
+        this._today.getFullYear() === this._viewDate.getFullYear()
+      );
     }
 
     _getDayAriaLabel(dayObj) {
@@ -3748,7 +3793,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _valueChanged() {
       try {
-
         // Prevent circular updates
         if (this._preventInputUpdate) {
           this._preventInputUpdate = false;
@@ -3811,7 +3855,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         // Reset the flag after all updates are done
         this._preventInputUpdate = false;
-
       } catch (error) {
         this._selectedDate = null;
         if (!this._userIsTyping) {
@@ -3894,7 +3937,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const popWidth = popRect.width || 280;
 
         // Position using fixed positioning for modal-like behavior
-        let {left} = rect;
+        let { left } = rect;
         let top = rect.bottom + 4; // 4px margin
         const minVerticalPadding = 8; // Minimum padding from viewport edges
 
@@ -3908,17 +3951,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           top = rect.top - popHeight - 4;
           popover.classList.add('open-up');
         } else {
-            // Not enough space in either direction, use best available space
-            // no-lonely-if: merge nested if into else if
-            if (spaceBelow > spaceAbove) {
-              // More space below, position at bottom with padding
-              top = viewportH - popHeight - minVerticalPadding;
-              popover.classList.remove('open-up');
-            } else {
-              // More space above, position at top with padding
-              top = minVerticalPadding;
-              popover.classList.add('open-up');
-            }
+          // Not enough space in either direction, use best available space
+          // no-lonely-if: merge nested if into else if
+          if (spaceBelow > spaceAbove) {
+            // More space below, position at bottom with padding
+            top = viewportH - popHeight - minVerticalPadding;
+            popover.classList.remove('open-up');
+          } else {
+            // More space above, position at top with padding
+            top = minVerticalPadding;
+            popover.classList.add('open-up');
+          }
         }
 
         // Adjust horizontally based on RTL and overflow with better edge handling
@@ -3955,7 +3998,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         popover.style.position = 'fixed';
         popover.style.left = `${left}px`;
         popover.style.top = `${top}px`;
-
       } catch (_) {
         // no-op
       }
@@ -3973,7 +4015,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Don't process automatic changes or when user is typing
       if (this._preventInputUpdate || this._userIsTyping) {
         // no-empty: do nothing
-        
       }
 
       // Only handle legacy compatibility cases where external code sets _inputValue directly
@@ -4241,8 +4282,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
     }
 
-
-
     _toggleYearDropdown(e) {
       if (e) {
         e.preventDefault();
@@ -4269,7 +4308,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (yearButton) {
         // Clear tabindex from all year options first
         const allYearButtons = Array.from(this.shadowRoot.querySelectorAll('.year-option'));
-        allYearButtons.forEach((btn) => btn.tabIndex = -1);
+        allYearButtons.forEach((btn) => (btn.tabIndex = -1));
         // Set current year as tabbable and focus it
         yearButton.tabIndex = 0;
         yearButton.focus();
@@ -4287,7 +4326,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const containerHeight = yearOptions.clientHeight;
         const buttonHeight = yearButton.offsetHeight;
         const buttonTop = yearButton.offsetTop;
-        const scrollTop = buttonTop - (containerHeight / 2) + (buttonHeight / 2);
+        const scrollTop = buttonTop - containerHeight / 2 + buttonHeight / 2;
 
         yearOptions.scrollTop = Math.max(0, scrollTop);
       }
@@ -4300,16 +4339,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         if (this._yearKeydownHandler) {
           yearOptions.removeEventListener('keydown', this._yearKeydownHandler);
         }
-  this._yearKeydownHandler = (e) => { this._handleYearKeyDown(e); };
+        this._yearKeydownHandler = (e) => {
+          this._handleYearKeyDown(e);
+        };
         yearOptions.addEventListener('keydown', this._yearKeydownHandler);
       }
     }
 
     _handleYearKeyDown(e) {
       // Derive the option receiving the event for cross-browser reliability
-      let currentFocused = (e.target && e.target.closest && e.target.closest('.year-option'))
-        || this.shadowRoot.activeElement
-        || null;
+      let currentFocused =
+        (e.target && e.target.closest && e.target.closest('.year-option')) || this.shadowRoot.activeElement || null;
       // Only consider visible year options inside the open panel
       let allYearButtons = Array.from(this.shadowRoot.querySelectorAll('#yearOptions.open .year-option'));
       if (!currentFocused || !currentFocused.classList || !currentFocused.classList.contains('year-option')) {
@@ -4377,7 +4417,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (nextIndex !== currentIndex && nextIndex >= 0) {
         // Update tabindex for roving tabindex pattern
         allYearButtons.forEach((btn, idx) => {
-          btn.tabIndex = (idx === nextIndex ? 0 : -1);
+          btn.tabIndex = idx === nextIndex ? 0 : -1;
         });
         const nextBtn = allYearButtons[nextIndex];
         nextBtn.focus();
@@ -4400,10 +4440,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           yearDropdown.focus();
         }
         // Clean roving tabindex state to a safe default (current view year)
-        const currentYear = this._viewDate ? this._viewDate.getFullYear() : (new Date()).getFullYear();
+        const currentYear = this._viewDate ? this._viewDate.getFullYear() : new Date().getFullYear();
         const currentBtn = this.shadowRoot.querySelector(`#yearOptions .year-option[data-year="${currentYear}"]`);
         const buttons = Array.from(this.shadowRoot.querySelectorAll('#yearOptions .year-option'));
-    buttons.forEach((btn) => { btn.tabIndex = (btn === currentBtn ? 0 : -1); });
+        buttons.forEach((btn) => {
+          btn.tabIndex = btn === currentBtn ? 0 : -1;
+        });
       }
     }
 
@@ -4412,8 +4454,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         e.preventDefault();
         e.stopPropagation();
       }
-  const button = e.target.closest('.year-option');
-  const year = button ? parseInt(button.dataset.year, 10) : null;
+      const button = e.target.closest('.year-option');
+      const year = button ? parseInt(button.dataset.year, 10) : null;
       if (year && this._viewDate) {
         // Create new date with proper month/day preservation
         const currentMonth = this._viewDate.getMonth();
@@ -4421,8 +4463,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         // Handle edge case of Feb 29 in non-leap years
         let newDay = currentDay;
-        if (currentMonth === 1 && currentDay === 29) { // February 29
-          const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+        if (currentMonth === 1 && currentDay === 29) {
+          // February 29
+          const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
           if (!isLeapYear) {
             newDay = 28; // Set to Feb 28 in non-leap years
           }
@@ -4430,7 +4473,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         const newDate = new Date(year, currentMonth, newDay);
         newDate.setHours(0, 0, 0, 0);
-
 
         this._viewDate = newDate;
         // Clear focused date when changing year
@@ -4451,14 +4493,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _getYearOptionClass(year, viewDate) {
       if (!viewDate || !year) return '';
-      return (year === viewDate.getFullYear()) ? 'selected' : '';
+      return year === viewDate.getFullYear() ? 'selected' : '';
     }
 
     _getYearTabIndex(year, viewDate) {
       // Only the currently selected year should be tabbable
-      return (viewDate && year === viewDate.getFullYear()) ? '0' : '-1';
+      return viewDate && year === viewDate.getFullYear() ? '0' : '-1';
     }
-
 
     _handleCalendarIconKeydown(e) {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -4478,13 +4519,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         if (!buttons.length) return;
         let current = buttons.findIndex((b) => b.tabIndex === 0);
         if (current < 0) current = 0;
-    let next = current + delta;
-    if (next < 0) next = 0;
-    if (next > buttons.length - 1) next = buttons.length - 1;
-    buttons.forEach((btn, idx) => { btn.tabIndex = (idx === next ? 0 : -1); });
-    const btn = buttons[next];
-    btn.focus();
-    if (typeof btn.scrollIntoView === 'function') { btn.scrollIntoView({ block: 'nearest' }); }
+        let next = current + delta;
+        if (next < 0) next = 0;
+        if (next > buttons.length - 1) next = buttons.length - 1;
+        buttons.forEach((btn, idx) => {
+          btn.tabIndex = idx === next ? 0 : -1;
+        });
+        const btn = buttons[next];
+        btn.focus();
+        if (typeof btn.scrollIntoView === 'function') {
+          btn.scrollIntoView({ block: 'nearest' });
+        }
       };
 
       if (e.key === 'Enter' || e.key === ' ') {
@@ -4494,10 +4539,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         } else {
           // Select currently focused option
           // max-len: break into multiple lines
-          const focused = this.shadowRoot.activeElement &&
-            this.shadowRoot.activeElement.classList.contains('year-option')
-            ? this.shadowRoot.activeElement
-            : (this.shadowRoot.querySelector('#yearOptions .year-option[tabindex="0"]'));
+          const focused =
+            this.shadowRoot.activeElement && this.shadowRoot.activeElement.classList.contains('year-option')
+              ? this.shadowRoot.activeElement
+              : this.shadowRoot.querySelector('#yearOptions .year-option[tabindex="0"]');
           if (focused) {
             focused.click();
           }
@@ -4538,8 +4583,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
       // Tab navigation is handled by central focus management
     }
-
-
 
     // Helper to get focusable element by name
     _getFocusableElement(elementName) {
@@ -4591,14 +4634,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       try {
         // Get user's locale and ensure moment uses it
-        const userLocale = navigator.languages && navigator.languages[0] || navigator.language || 'en-US';
+        const userLocale = (navigator.languages && navigator.languages[0]) || navigator.language || 'en-US';
         moment.locale(userLocale);
 
         // Use moment's locale-specific format
         const localeFormat = moment.localeData().longDateFormat('L');
         const formatted = this._moment(date).format(localeFormat);
-
-
 
         return formatted;
       } catch (error) {
@@ -4616,7 +4657,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       try {
         // Get user's locale
-        const userLocale = navigator.languages && navigator.languages[0] || navigator.language || 'en-US';
+        const userLocale = (navigator.languages && navigator.languages[0]) || navigator.language || 'en-US';
         moment.locale(userLocale);
         const localeFormat = moment.localeData().longDateFormat('L');
 
@@ -4655,9 +4696,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       return this._formatDateForDisplay(date);
     }
 
-
-
-
     _handleNavButtonKeydown(e) {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
@@ -4692,7 +4730,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       const isDisabled = !hasValidDatesInPrevMonth;
 
-
       return isDisabled;
     }
 
@@ -4707,7 +4744,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const hasValidDatesInNextMonth = this._monthHasValidDates(nextMonth);
 
       const isDisabled = !hasValidDatesInNextMonth;
-
 
       return isDisabled;
     }
@@ -4800,10 +4836,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         }
       } else {
         // Use standard Polymer set method for other properties
-    // no-lonely-if: avoid single if in else block
-    if (super.set) {
-      super.set(path, value);
-    }
+        // no-lonely-if: avoid single if in else block
+        if (super.set) {
+          super.set(path, value);
+        }
       }
     }
 
