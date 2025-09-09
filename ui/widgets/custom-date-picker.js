@@ -4304,7 +4304,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (yearButton) {
         // Clear tabindex from all year options first
         const allYearButtons = Array.from(this.shadowRoot.querySelectorAll('.year-option'));
-  allYearButtons.forEach((btn) => { btn.tabIndex = -1; });
+        allYearButtons.forEach((btn) => {
+          btn.tabIndex = -1;
+        });
         // Set current year as tabbable and focus it
         yearButton.tabIndex = 0;
         yearButton.focus();
