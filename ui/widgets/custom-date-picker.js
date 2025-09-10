@@ -3522,12 +3522,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           this.notifyPath('value');
         }
       } catch (error) {
-        console.warn('Error setting value safely:', error);
+        // Error setting value safely - using fallback
         // Last resort - try direct assignment
         try {
           this.value = newValue;
         } catch (fallbackError) {
-          console.error('Failed to set value with fallback:', fallbackError);
+          // Failed to set value with fallback - silent error
         }
       }
     }
@@ -3682,11 +3682,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
         if (userLocale && userLocale.toLowerCase().startsWith('en')) {
           return 'mm/dd/yyyy';
-        } else if (userLocale && (userLocale.toLowerCase().startsWith('fr') || userLocale.toLowerCase().startsWith('de'))) {
+        } if (userLocale && (userLocale.toLowerCase().startsWith('fr') || userLocale.toLowerCase().startsWith('de'))) {
           return 'dd/mm/yyyy';
-        } else {
+        } 
           return 'dd/mm/yyyy'; // Default to European format
-        }
+        
       }
     }
 
@@ -3715,7 +3715,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           return `Date out of range. Must be on or before ${maxFormatted}`;
         }
       } catch (error) {
-        console.warn('[custom-date-picker] Error building range message:', error);
+        // Error building range message - using fallback
       }
       return 'Date out of range.';
     }
@@ -3867,16 +3867,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             this._inputValue = '';
           }
 
-          // Trigger validation for required fields when value is cleared
-          // But NOT when user explicitly cleared the date (avoid showing error immediately)
-          if (this.required && !this._justCleared) {
-            this.async(() => {
-              // Double-check the _justCleared flag again before validating
-              if (!this._justCleared) {
-                this.validate();
-              }
-            }, 10);
-          }
+          // Don't trigger validation for required fields when value is cleared
+          // Required field errors should only show on form submission
+          // This prevents showing "This field is required" by default when form opens
           this._preventInputUpdate = false;
           return;
         }
@@ -4125,7 +4118,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           this.invalid = true;
           this.errorReason = 'required';
           this.errorMessage = this._getLocalizedText('required');
-          this._showErrors = true;
+          // Don't show required errors until form submission - don't set _showErrors to true
+          // _showErrors will be set to true by reportValidity() when form is submitted
           return false;
         }
         // If there are existing errors, don't override them
@@ -4763,17 +4757,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const userLocale = this._getUserLocale();
         moment.locale(userLocale);
         const localeFormat = moment.localeData().longDateFormat('L');
-
-        // Debug logging for troubleshooting
-        if (window.nuxeo && window.nuxeo.debug) {
-          console.log('Date parsing debug:', {
-            input: trimmedInput,
-            userLocale,
-            localeFormat,
-            momentLocale: moment.locale()
-          });
-        }
-
         // Try strict parsing first (exact format match)
         let momentDate = this._moment(trimmedInput, localeFormat, true);
 
@@ -4804,10 +4787,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           'MM/DD/YYYY', 'MM-DD-YYYY', 'MM.DD.YYYY', 'MM/DD/YY', 'MM-DD-YY', 'MM.DD.YY',
           'YYYY-MM-DD', 'YYYY/MM/DD', 'YYYY.MM.DD',
           'DD MMM YYYY', 'DD MMMM YYYY', 'MMM DD, YYYY', 'MMMM DD, YYYY',
-          'DD/MM', 'MM/DD', 'DD-MM', 'MM-DD'
+          'DD/MM', 'MM/DD', 'DD-MM', 'MM-DD',
         ];
 
-        for (const format of commonFormats) {
+        for (let i = 0; i < commonFormats.length; i++) {
+          const format = commonFormats[i];
           momentDate = this._moment(trimmedInput, format, true);
           if (momentDate.isValid()) {
             const date = momentDate.toDate();
@@ -4834,7 +4818,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         return null;
       } catch (error) {
-        console.warn('Date parsing error:', error);
+        // Date parsing error - using fallback
         return null;
       }
     }
@@ -4846,10 +4830,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         navigator.languages && navigator.languages[0],
         navigator.language,
         this._locale,
-        'en-US'
+        'en-US',
       ];
       
-      for (const locale of sources) {
+      for (let i = 0; i < sources.length; i++) {
+        const locale = sources[i];
         if (locale && typeof locale === 'string') {
           return locale;
         }
@@ -4866,7 +4851,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         localeFormat: null,
         parsed: false,
         error: null,
-        suggestions: []
+        suggestions: [],
       };
 
       try {
@@ -4885,10 +4870,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const commonFormats = [
           'DD/MM/YYYY', 'DD-MM-YYYY', 'DD.MM.YYYY',
           'MM/DD/YYYY', 'MM-DD-YYYY', 'MM.DD.YYYY',
-          'YYYY-MM-DD', 'YYYY/MM/DD', 'YYYY.MM.DD'
+          'YYYY-MM-DD', 'YYYY/MM/DD', 'YYYY.MM.DD',
         ];
 
-        for (const format of commonFormats) {
+        for (let i = 0; i < commonFormats.length; i++) {
+          const format = commonFormats[i];
           const testDate = this._moment(inputString, format, true);
           if (testDate.isValid()) {
             results.parsed = true;
@@ -4902,7 +4888,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           results.suggestions = [
             'Use format: DD/MM/YYYY (e.g., 20/10/2020)',
             'Use format: MM/DD/YYYY (e.g., 10/20/2020)',
-            'Use format: YYYY-MM-DD (e.g., 2020-10-20)'
+            'Use format: YYYY-MM-DD (e.g., 2020-10-20)',
           ];
         }
       } catch (error) {
