@@ -1386,8 +1386,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           clear: 'Clear',
           openCalendar: 'Open calendar',
           clearDate: 'Clear date',
-          previousMonth: 'Previous month',
-          nextMonth: 'Next month',
+          previousMonth: 'Previous Month',
+          nextMonth: 'Next Month',
           selectYear: 'Select year',
           calendarOpened: 'Calendar opened. Use arrow keys to navigate dates. Press Escape to close.',
           calendarClosed: 'Calendar closed.',
@@ -4763,6 +4763,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const userLocale = this._getUserLocale();
         moment.locale(userLocale);
         const localeFormat = moment.localeData().longDateFormat('L');
+
+        // Debug logging for troubleshooting
+        if (window.nuxeo && window.nuxeo.debug) {
+          console.log('Date parsing debug:', {
+            input: trimmedInput,
+            userLocale,
+            localeFormat,
+            momentLocale: moment.locale()
+          });
+        }
+
         // Try strict parsing first (exact format match)
         let momentDate = this._moment(trimmedInput, localeFormat, true);
 
