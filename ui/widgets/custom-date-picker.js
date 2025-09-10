@@ -468,9 +468,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             background: #ffffff;
             border: 1px solid #d1d5db;
             border-radius: 0; /* Remove rounded corners for Nuxeo theme */
-            box-shadow:
-              0 10px 15px -3px rgba(0, 0, 0, 0.1),
-              0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             width: 280px; /* Reduced from 320px to be proportional */
             display: none;
             animation: fadeIn 0.15s ease-out;
