@@ -302,7 +302,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             background: #ffffff;
             min-height: 32px; /* Reduced height for compact design */
             width: 156px; /* Exact width requirement */
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            transition:
+              border-color 0.2s ease,
+              box-shadow 0.2s ease;
             overflow: hidden; /* Ensure icons stay inside */
           }
 
@@ -376,7 +378,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             color: #374151;
             cursor: pointer;
             border-radius: 0; /* Remove rounded corners for Nuxeo theme */
-            transition: color 0.2s ease, background-color 0.2s ease;
+            transition:
+              color 0.2s ease,
+              background-color 0.2s ease;
             border: none;
             background: transparent;
             width: 20px; /* Reduced size */
@@ -392,7 +396,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             color: #374151;
             cursor: pointer;
             border-radius: 0; /* Remove rounded corners for Nuxeo theme */
-            transition: color 0.2s ease, background-color 0.2s ease;
+            transition:
+              color 0.2s ease,
+              background-color 0.2s ease;
             border: none;
             background: transparent;
             width: 20px; /* Reduced size */
@@ -468,7 +474,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             background: #ffffff;
             border: 1px solid #d1d5db;
             border-radius: 0; /* Remove rounded corners for Nuxeo theme */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow:
+              0 10px 15px -3px rgba(0, 0, 0, 0.1),
+              0 4px 6px -2px rgba(0, 0, 0, 0.05);
             width: 280px; /* Reduced from 320px to be proportional */
             display: none;
             animation: fadeIn 0.15s ease-out;
@@ -692,7 +700,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             cursor: pointer;
             font-size: 14px;
             border: 2px solid transparent;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
+            transition:
+              background-color 0.2s ease,
+              border-color 0.2s ease;
             background: transparent;
             width: 100%;
             text-align: left;
@@ -2588,7 +2598,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (!this._userIsTyping) {
         this._userIsTyping = true;
       }
-      
+
       // Clear error persistence when user starts typing again
       if (this._errorPersists) {
         this._errorPersists = false;
@@ -2597,7 +2607,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         this.errorReason = '';
         this.errorMessage = '';
         this._showErrors = false;
-        
+
         // Notify Polymer of property changes
         this.notifyPath('invalid');
         this.notifyPath('errorMessage');
@@ -2624,7 +2634,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Keep the user's input but clear the internal selected date
         // Don't clear the input value - let user correct it manually
         this._selectedDate = null;
-        
+
         // Clear the internal value to prevent it from being saved
         this._preventInputUpdate = true;
         this._safeSetValue('');
@@ -3427,7 +3437,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Keep the user's input but clear the internal selected date
         // Don't clear the input value - let user correct it manually
         this._selectedDate = null;
-        
+
         // Clear the internal value to prevent it from being saved
         this._preventInputUpdate = true;
         this._safeSetValue('');
@@ -3452,7 +3462,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Keep the user's input but clear the internal selected date
         // Don't clear the input value - let user correct it manually
         this._selectedDate = null;
-        
+
         // Clear the internal value to prevent it from being saved
         this._preventInputUpdate = true;
         this._safeSetValue('');
@@ -3682,11 +3692,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
         if (userLocale && userLocale.toLowerCase().startsWith('en')) {
           return 'mm/dd/yyyy';
-        } if (userLocale && (userLocale.toLowerCase().startsWith('fr') || userLocale.toLowerCase().startsWith('de'))) {
+        }
+        if (userLocale && (userLocale.toLowerCase().startsWith('fr') || userLocale.toLowerCase().startsWith('de'))) {
           return 'dd/mm/yyyy';
-        } 
-          return 'dd/mm/yyyy'; // Default to European format
-        
+        }
+        return 'dd/mm/yyyy'; // Default to European format
       }
     }
 
@@ -3930,7 +3940,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           if (!isValid) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             // Focus the input to show the error
             const input = this.shadowRoot.querySelector('#dateInput');
             if (input) {
@@ -4343,7 +4353,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
 
       const value = input.value ? input.value.trim() : '';
-      
+
       // If empty and not required, it's valid
       if (!value) {
         return !this.required;
@@ -4783,11 +4793,29 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         // Fallback: Try common date formats if locale parsing fails
         const commonFormats = [
-          'DD/MM/YYYY', 'DD-MM-YYYY', 'DD.MM.YYYY', 'DD/MM/YY', 'DD-MM-YY', 'DD.MM.YY',
-          'MM/DD/YYYY', 'MM-DD-YYYY', 'MM.DD.YYYY', 'MM/DD/YY', 'MM-DD-YY', 'MM.DD.YY',
-          'YYYY-MM-DD', 'YYYY/MM/DD', 'YYYY.MM.DD',
-          'DD MMM YYYY', 'DD MMMM YYYY', 'MMM DD, YYYY', 'MMMM DD, YYYY',
-          'DD/MM', 'MM/DD', 'DD-MM', 'MM-DD',
+          'DD/MM/YYYY',
+          'DD-MM-YYYY',
+          'DD.MM.YYYY',
+          'DD/MM/YY',
+          'DD-MM-YY',
+          'DD.MM.YY',
+          'MM/DD/YYYY',
+          'MM-DD-YYYY',
+          'MM.DD.YYYY',
+          'MM/DD/YY',
+          'MM-DD-YY',
+          'MM.DD.YY',
+          'YYYY-MM-DD',
+          'YYYY/MM/DD',
+          'YYYY.MM.DD',
+          'DD MMM YYYY',
+          'DD MMMM YYYY',
+          'MMM DD, YYYY',
+          'MMMM DD, YYYY',
+          'DD/MM',
+          'MM/DD',
+          'DD-MM',
+          'MM-DD',
         ];
 
         for (let i = 0; i < commonFormats.length; i++) {
@@ -4826,20 +4854,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     // Helper method to get user locale with better fallback
     _getUserLocale() {
       // Try multiple sources for locale detection
-      const sources = [
-        navigator.languages && navigator.languages[0],
-        navigator.language,
-        this._locale,
-        'en-US',
-      ];
-      
+      const sources = [navigator.languages && navigator.languages[0], navigator.language, this._locale, 'en-US'];
+
       for (let i = 0; i < sources.length; i++) {
         const locale = sources[i];
         if (locale && typeof locale === 'string') {
           return locale;
         }
       }
-      
+
       return 'en-US';
     }
 
@@ -4858,7 +4881,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const userLocale = this._getUserLocale();
         moment.locale(userLocale);
         results.localeFormat = moment.localeData().longDateFormat('L');
-        
+
         // Test with locale format
         const momentDate = this._moment(inputString, results.localeFormat, true);
         if (momentDate.isValid()) {
@@ -4868,9 +4891,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         // Test with common formats
         const commonFormats = [
-          'DD/MM/YYYY', 'DD-MM-YYYY', 'DD.MM.YYYY',
-          'MM/DD/YYYY', 'MM-DD-YYYY', 'MM.DD.YYYY',
-          'YYYY-MM-DD', 'YYYY/MM/DD', 'YYYY.MM.DD',
+          'DD/MM/YYYY',
+          'DD-MM-YYYY',
+          'DD.MM.YYYY',
+          'MM/DD/YYYY',
+          'MM-DD-YYYY',
+          'MM.DD.YYYY',
+          'YYYY-MM-DD',
+          'YYYY/MM/DD',
+          'YYYY.MM.DD',
         ];
 
         for (let i = 0; i < commonFormats.length; i++) {
