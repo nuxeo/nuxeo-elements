@@ -187,6 +187,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           value: false,
         },
 
+        _errorPersists: {
+          type: Boolean,
+          value: false,
+        },
+
         _isYearDropdownOpen: {
           type: Boolean,
           value: false,
@@ -1897,7 +1902,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             this._openCalendar(e, true); // Opened via keyboard
           } else if (e.key === 'Enter') {
             // Enter validates input
-            this._validateAndParseInput();
+            // Don't validate if there are persistent errors - let user correct the input
+            if (!this._errorPersists) {
+              this._validateAndParseInput();
+            }
           }
         });
       }
@@ -2531,8 +2539,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _onInputBlur() {
       // User finished typing, validate and parse input
-      this._userIsTyping = false;
-      this._validateAndParseInput();
+      // Keep userIsTyping true if there are persistent errors to preserve input
+      if (!this._errorPersists) {
+        this._userIsTyping = false;
+        this._validateAndParseInput();
+      }
+      // If there are persistent errors, keep _userIsTyping true to prevent input clearing
     }
 
     _onCalendarIconFocus(e) {
@@ -2562,8 +2574,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       } else if (e.key === 'Enter') {
         // Enter validates input
         e.preventDefault();
-        this._userIsTyping = false;
-        this._validateAndParseInput();
+        // Don't set userIsTyping to false if there are persistent errors - preserve input
+        if (!this._errorPersists) {
+          this._userIsTyping = false;
+          this._validateAndParseInput();
+        }
+        // If there are persistent errors, keep _userIsTyping true to prevent input clearing
       }
     }
 
@@ -2571,6 +2587,22 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Mark that user is actively typing when input content changes
       if (!this._userIsTyping) {
         this._userIsTyping = true;
+      }
+      
+      // Clear error persistence when user starts typing again
+      if (this._errorPersists) {
+        this._errorPersists = false;
+        // Clear the error state when user starts correcting
+        this.invalid = false;
+        this.errorReason = '';
+        this.errorMessage = '';
+        this._showErrors = false;
+        
+        // Notify Polymer of property changes
+        this.notifyPath('invalid');
+        this.notifyPath('errorMessage');
+        this.notifyPath('errorReason');
+        this.notifyPath('_showErrors');
       }
     }
 
@@ -2587,9 +2619,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         this.errorReason = validation.errorReason;
         this.errorMessage = validation.errorMessage;
         this._showErrors = true;
+        this._errorPersists = true; // Error should persist until resolved
 
-        // Clear the selected date and value to prevent invalid date from being stored
+        // Keep the user's input but clear the internal selected date
+        // Don't clear the input value - let user correct it manually
         this._selectedDate = null;
+        
+        // Clear the internal value to prevent it from being saved
         this._preventInputUpdate = true;
         this._safeSetValue('');
         this._preventInputUpdate = false;
@@ -2630,6 +2666,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Clear flags when user provides valid input
       this._showErrors = false;
       this._justCleared = false;
+      this._errorPersists = false; // Clear error persistence flag
     }
 
     _selectToday(e) {
@@ -3382,11 +3419,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Could not parse the date at all - format error (highest priority)
         this.invalid = true;
         this.errorReason = 'format';
-        this.errorMessage = `${this._getLocalizedText('incorrectFormat')} ${this._getDatePlaceholder()}`;
+        const expectedFormat = this._getDatePlaceholder();
+        this.errorMessage = `${this._getLocalizedText('incorrectFormat')} Expected format: ${expectedFormat}`;
         this._showErrors = true;
+        this._errorPersists = true; // Error should persist until resolved
 
-        // Clear the selected date and value to prevent invalid date from being stored
+        // Keep the user's input but clear the internal selected date
+        // Don't clear the input value - let user correct it manually
         this._selectedDate = null;
+        
+        // Clear the internal value to prevent it from being saved
         this._preventInputUpdate = true;
         this._safeSetValue('');
         this._preventInputUpdate = false;
@@ -3405,9 +3447,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         this.errorReason = validation.errorReason;
         this.errorMessage = validation.errorMessage;
         this._showErrors = true;
+        this._errorPersists = true; // Error should persist until resolved
 
-        // Clear the selected date and value to prevent invalid date from being stored
+        // Keep the user's input but clear the internal selected date
+        // Don't clear the input value - let user correct it manually
         this._selectedDate = null;
+        
+        // Clear the internal value to prevent it from being saved
         this._preventInputUpdate = true;
         this._safeSetValue('');
         this._preventInputUpdate = false;
@@ -3445,10 +3491,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Clear flags when user provides valid input
       this._showErrors = false;
       this._justCleared = false;
+      this._errorPersists = false; // Clear error persistence flag
     }
 
     _safeSetValue(newValue) {
       try {
+        // Don't set value if there are validation errors and user is typing
+        // But allow clearing the value when there are validation errors
+        if (this.invalid && this._userIsTyping && newValue !== '') {
+          return; // Preserve user input when there are errors, but allow clearing
+        }
+
         // Try multiple approaches to safely set the value
         if (this.set && typeof this.set === 'function') {
           this.set('value', newValue);
@@ -3610,7 +3663,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _getDatePlaceholder() {
       try {
         // Get the actual locale from browser and moment
-        const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
+        const userLocale = this._getUserLocale();
 
         // Ensure moment uses the correct locale
         moment.locale(userLocale);
@@ -3625,7 +3678,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         return placeholder;
       } catch (e) {
-        return 'mm/dd/yyyy';
+        // Fallback to common formats based on locale
+        const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
+        if (userLocale && userLocale.toLowerCase().startsWith('en')) {
+          return 'mm/dd/yyyy';
+        } else if (userLocale && (userLocale.toLowerCase().startsWith('fr') || userLocale.toLowerCase().startsWith('de'))) {
+          return 'dd/mm/yyyy';
+        } else {
+          return 'dd/mm/yyyy'; // Default to European format
+        }
       }
     }
 
@@ -3801,8 +3862,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         if (!this.value) {
           this._selectedDate = null;
 
-          // Only clear input if it wasn't cleared by user typing
-          if (!this._userIsTyping) {
+          // Only clear input if it wasn't cleared by user typing and there are no persistent errors
+          if (!this._userIsTyping && !this._errorPersists) {
             this._inputValue = '';
           }
 
@@ -3832,15 +3893,18 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             this._inputValue = this._formatDateForDisplay(this._selectedDate);
           }
 
-          // Clear any previous validation errors when a valid value is set
-          if (this.invalid) {
+          // Only clear validation errors if this is a programmatic update (not user typing)
+          // and there are no current validation errors from user input
+          // and errors are not set to persist
+          if (this.invalid && !this._userIsTyping && !this._showErrors && !this._errorPersists) {
             this.async(() => {
               this.validate();
             }, 10);
           }
         } else {
           this._selectedDate = null;
-          if (!this._userIsTyping) {
+          // Don't clear input if there are persistent errors - preserve user input
+          if (!this._userIsTyping && !this._errorPersists) {
             this._inputValue = '';
           }
         }
@@ -3853,7 +3917,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         this._preventInputUpdate = false;
       } catch (error) {
         this._selectedDate = null;
-        if (!this._userIsTyping) {
+        // Don't clear input if there are persistent errors - preserve user input
+        if (!this._userIsTyping && !this._errorPersists) {
           this._inputValue = '';
         }
         this._preventInputUpdate = false;
@@ -3867,9 +3932,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Add form validation support
       if (this.form) {
         this.form.addEventListener('submit', (e) => {
-          if (!this.reportValidity()) {
+          // Force validation before form submission
+          const isValid = this.reportValidity();
+          if (!isValid) {
             e.preventDefault();
             e.stopPropagation();
+            
+            // Focus the input to show the error
+            const input = this.shadowRoot.querySelector('#dateInput');
+            if (input) {
+              input.focus();
+            }
           }
         });
       }
@@ -4016,6 +4089,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     validate() {
       // Professional validation with proper error priority: Format > Range > Required
 
+      // If there are persistent errors, always fail validation
+      if (this._errorPersists && this.invalid) {
+        return false;
+      }
+
       // If there's a value, check format and range first
       if (this.value && this.value.trim() !== '') {
         // Parse the current value
@@ -4023,7 +4101,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         if (!parseResult) {
           this.invalid = true;
           this.errorReason = 'format';
-          this.errorMessage = `${this._getLocalizedText('incorrectFormat')} ${this._getDatePlaceholder()}`;
+          const expectedFormat = this._getDatePlaceholder();
+          this.errorMessage = `${this._getLocalizedText('incorrectFormat')} Expected format: ${expectedFormat}`;
           this._showErrors = true;
           return false;
         }
@@ -4166,11 +4245,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     resetErrorState() {
       this._showErrors = false;
       this._justCleared = false;
+      this._errorPersists = false;
       this.invalid = false;
       this.errorMessage = '';
       this.errorReason = '';
       this.notifyPath('_showErrors');
       this.notifyPath('_justCleared');
+      this.notifyPath('_errorPersists');
       this.notifyPath('invalid');
       this.notifyPath('errorMessage');
 
@@ -4255,6 +4336,34 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     // Override checkValidity for better form integration
     checkValidity() {
       return this.validate();
+    }
+
+    // Method to check if current input is valid without modifying state
+    isInputValid() {
+      const input = this.shadowRoot.querySelector('#dateInput');
+      if (!input) return true;
+
+      // If there are persistent errors, input is not valid
+      if (this._errorPersists && this.invalid) {
+        return false;
+      }
+
+      const value = input.value ? input.value.trim() : '';
+      
+      // If empty and not required, it's valid
+      if (!value) {
+        return !this.required;
+      }
+
+      // Try to parse the input
+      const parseResult = this._parseUserInput(value);
+      if (!parseResult) {
+        return false;
+      }
+
+      // Validate the parsed date
+      const validation = this._validateDate(parseResult.date);
+      return validation.isValid;
     }
 
     disconnectedCallback() {
@@ -4628,7 +4737,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       try {
         // Get user's locale and ensure moment uses it
-        const userLocale = (navigator.languages && navigator.languages[0]) || navigator.language || 'en-US';
+        const userLocale = this._getUserLocale();
         moment.locale(userLocale);
 
         // Use moment's locale-specific format
@@ -4642,7 +4751,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
     }
 
-    // Professional date parser for user input
+    // Professional date parser for user input with comprehensive format support
     _parseUserInput(inputString) {
       if (!inputString || typeof inputString !== 'string') return null;
 
@@ -4650,11 +4759,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (!trimmedInput) return null;
 
       try {
-        // Get user's locale
-        const userLocale = (navigator.languages && navigator.languages[0]) || navigator.language || 'en-US';
+        // Get user's locale with better fallback
+        const userLocale = this._getUserLocale();
         moment.locale(userLocale);
         const localeFormat = moment.localeData().longDateFormat('L');
-
         // Try strict parsing first (exact format match)
         let momentDate = this._moment(trimmedInput, localeFormat, true);
 
@@ -4679,10 +4787,118 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           return { date, isExactFormat: false };
         }
 
+        // Fallback: Try common date formats if locale parsing fails
+        const commonFormats = [
+          'DD/MM/YYYY', 'DD-MM-YYYY', 'DD.MM.YYYY', 'DD/MM/YY', 'DD-MM-YY', 'DD.MM.YY',
+          'MM/DD/YYYY', 'MM-DD-YYYY', 'MM.DD.YYYY', 'MM/DD/YY', 'MM-DD-YY', 'MM.DD.YY',
+          'YYYY-MM-DD', 'YYYY/MM/DD', 'YYYY.MM.DD',
+          'DD MMM YYYY', 'DD MMMM YYYY', 'MMM DD, YYYY', 'MMMM DD, YYYY',
+          'DD/MM', 'MM/DD', 'DD-MM', 'MM-DD'
+        ];
+
+        for (const format of commonFormats) {
+          momentDate = this._moment(trimmedInput, format, true);
+          if (momentDate.isValid()) {
+            const date = momentDate.toDate();
+            date.setHours(0, 0, 0, 0);
+
+            // Verify it's a logical date
+            if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
+              return { date, isExactFormat: false };
+            }
+          }
+        }
+
+        // Last resort: Try moment's natural language parsing
+        momentDate = this._moment(trimmedInput);
+        if (momentDate.isValid()) {
+          const date = momentDate.toDate();
+          date.setHours(0, 0, 0, 0);
+
+          // Verify it's a logical date
+          if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
+            return { date, isExactFormat: false };
+          }
+        }
+
         return null;
       } catch (error) {
+        console.warn('Date parsing error:', error);
         return null;
       }
+    }
+
+    // Helper method to get user locale with better fallback
+    _getUserLocale() {
+      // Try multiple sources for locale detection
+      const sources = [
+        navigator.languages && navigator.languages[0],
+        navigator.language,
+        this._locale,
+        'en-US'
+      ];
+      
+      for (const locale of sources) {
+        if (locale && typeof locale === 'string') {
+          return locale;
+        }
+      }
+      
+      return 'en-US';
+    }
+
+    // Helper method to test date parsing with detailed error information
+    _testDateParsing(inputString) {
+      const results = {
+        input: inputString,
+        userLocale: this._getUserLocale(),
+        localeFormat: null,
+        parsed: false,
+        error: null,
+        suggestions: []
+      };
+
+      try {
+        const userLocale = this._getUserLocale();
+        moment.locale(userLocale);
+        results.localeFormat = moment.localeData().longDateFormat('L');
+        
+        // Test with locale format
+        const momentDate = this._moment(inputString, results.localeFormat, true);
+        if (momentDate.isValid()) {
+          results.parsed = true;
+          return results;
+        }
+
+        // Test with common formats
+        const commonFormats = [
+          'DD/MM/YYYY', 'DD-MM-YYYY', 'DD.MM.YYYY',
+          'MM/DD/YYYY', 'MM-DD-YYYY', 'MM.DD.YYYY',
+          'YYYY-MM-DD', 'YYYY/MM/DD', 'YYYY.MM.DD'
+        ];
+
+        for (const format of commonFormats) {
+          const testDate = this._moment(inputString, format, true);
+          if (testDate.isValid()) {
+            results.parsed = true;
+            results.suggestions.push(`Try format: ${format}`);
+            break;
+          }
+        }
+
+        if (!results.parsed) {
+          results.error = 'Could not parse date with any known format';
+          results.suggestions = [
+            'Use format: DD/MM/YYYY (e.g., 20/10/2020)',
+            'Use format: MM/DD/YYYY (e.g., 10/20/2020)',
+            'Use format: YYYY-MM-DD (e.g., 2020-10-20)'
+          ];
+        }
+      } catch (error) {
+        results.error = error.message;
+      }
+
+      return results;
     }
 
     // Helper method to ensure consistent date formatting across all operations (legacy compatibility)
