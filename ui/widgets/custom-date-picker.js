@@ -50,7 +50,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         },
 
         /*
-         * The default time of the picked-up date. Format is HH:mm:ss e.g. 12:45:23. Default is 00:00:00 (midnight).
+         * The default time of the selected date. Format is HH:mm:ss e.g. 12:45:23. Default is 00:00:00 (midnight).
          */
         defaultTime: {
           type: String,
@@ -97,7 +97,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         /*
          * The first day of week to be displayed (e.g. `"Sunday -> 0"`, ... `"Saturday -> 6"`).
-         * By default, it will be set according the locale.
+         * By default, it will be set according to the locale.
          */
         firstDayOfWeek: {
           type: Number,
@@ -272,6 +272,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           value() {
             return {};
           },
+        },
+        
+        // Computed properties for aria-labels
+        _previousMonthAriaLabel: {
+          type: String,
+          computed: '_getLocalizedText("previousMonth")',
+        },
+        
+        _nextMonthAriaLabel: {
+          type: String,
+          computed: '_getLocalizedText("nextMonth")',
         },
       };
     }
@@ -980,7 +991,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           :host([_is-r-t-l]) .calendar-popover {
             left: auto;
-            right: 0; /* Align calendar to right edge for RTL */
+            right: auto; /* Let JavaScript handle positioning */
+            transform: none; /* Reset any transforms */
           }
 
           :host([_is-r-t-l]) .calendar-header {
@@ -1016,8 +1028,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           /* RTL calendar positioning logic */
           :host([_is-r-t-l]) .calendar-popover.open-up {
-            right: 0;
-            left: auto;
+            right: auto;
+            left: auto; /* Let JavaScript handle positioning */
           }
         </style>
 
@@ -1143,7 +1155,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                   type="button"
                   class="nav-button"
                   id="prevMonth"
-                  aria-label$="[[_getLocalizedText('previousMonth')]]"
+                  aria-label$="[[_previousMonthAriaLabel]]"
+                  title$="[[_previousMonthAriaLabel]]"
                   tabindex="0"
                   on-click="_previousMonth"
                   on-keydown="_handleNavButtonKeydown"
@@ -1156,7 +1169,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                   type="button"
                   class="nav-button"
                   id="nextMonth"
-                  aria-label$="[[_getLocalizedText('nextMonth')]]"
+                  aria-label$="[[_nextMonthAriaLabel]]"
+                  title$="[[_nextMonthAriaLabel]]"
                   tabindex="0"
                   on-click="_nextMonth"
                   on-keydown="_handleNavButtonKeydown"
@@ -1254,6 +1268,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       // Set up internationalization
       this._setupI18n(userLocale);
+      
+      // Force update of template bindings after i18n setup
+      this.notifyPath('i18nLabels');
 
       // Set up i18n properties for compatibility with nuxeo-date-picker
 
@@ -1371,6 +1388,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       } else {
         this.setAttribute('dir', 'ltr');
       }
+      
+      // Reposition calendar if it's open when RTL state changes
+      if (this._isCalendarOpen) {
+        this._positionCalendar();
+      }
     }
 
     // Set up internationalization support
@@ -1386,8 +1408,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           clear: 'Clear',
           openCalendar: 'Open calendar',
           clearDate: 'Clear date',
-          previousMonth: 'Previous Month',
-          nextMonth: 'Next Month',
+          previousMonth: 'Go to previous month',
+          nextMonth: 'Go to next month',
           selectYear: 'Select year',
           calendarOpened: 'Calendar opened. Use arrow keys to navigate dates. Press Escape to close.',
           calendarClosed: 'Calendar closed.',
@@ -1407,8 +1429,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           clear: 'مسح',
           openCalendar: 'فتح التقويم',
           clearDate: 'مسح التاريخ',
-          previousMonth: 'الشهر السابق',
-          nextMonth: 'الشهر التالي',
+          previousMonth: 'الانتقال إلى الشهر السابق',
+          nextMonth: 'الانتقال إلى الشهر التالي',
           selectYear: 'اختر السنة',
           calendarOpened: 'تم فتح التقويم. استخدم مفاتيح الأسهم للتنقل بين التواريخ. اضغط Escape للإغلاق.',
           calendarClosed: 'تم إغلاق التقويم.',
@@ -1449,8 +1471,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           clear: 'Effacer',
           openCalendar: 'Ouvrir le calendrier',
           clearDate: 'Effacer la date',
-          previousMonth: 'Mois précédent',
-          nextMonth: 'Mois suivant',
+          previousMonth: 'Aller au mois précédent',
+          nextMonth: 'Aller au mois suivant',
           selectYear: "Sélectionner l'année",
           calendarOpened: 'Calendrier ouvert. Utilisez les flèches pour naviguer. Appuyez sur Échap pour fermer.',
           calendarClosed: 'Calendrier fermé.',
@@ -1470,8 +1492,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           clear: 'Löschen',
           openCalendar: 'Kalender öffnen',
           clearDate: 'Datum löschen',
-          previousMonth: 'Vorheriger Monat',
-          nextMonth: 'Nächster Monat',
+          previousMonth: 'Zum vorherigen Monat gehen',
+          nextMonth: 'Zum nächsten Monat gehen',
           selectYear: 'Jahr auswählen',
           calendarOpened:
             'Kalender geöffnet. Verwenden Sie die Pfeiltasten zur Navigation. Drücken Sie Escape zum Schließen.',
@@ -1597,6 +1619,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     // Get localized text with placeholder replacement
     _getLocalizedText(key, placeholders = {}) {
+      // Ensure i18nLabels is initialized
+      if (!this.i18nLabels || Object.keys(this.i18nLabels).length === 0) {
+        this._setupI18n(navigator.languages ? navigator.languages[0] : navigator.language);
+      }
+      
       let text = this.i18nLabels[key] || key;
 
       // Replace placeholders
@@ -1807,6 +1834,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
     }
 
+    /**
+     * Generates the calendar days for the current view month, including days from previous and next months
+     * to fill a 6x7 grid (42 days). This ensures the calendar always displays 6 weeks, which covers all possible
+     * month layouts (some months span 6 weeks depending on the starting weekday).
+     */
     _generateCalendar() {
       if (!this._viewDate) return;
 
@@ -1821,7 +1853,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       startDate.setDate(1 - dayOffset);
 
       const days = [];
-
+    
       for (let i = 0; i < 42; i++) {
         const currentDate = new Date(startDate);
         currentDate.setDate(startDate.getDate() + i);
@@ -2795,6 +2827,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       });
       // Also listen for orientation changes on mobile
       window.addEventListener('orientationchange', this._boundReposition, {
+        passive: true,
+      });
+      
+      // Listen for window resize to reposition calendar in RTL
+      window.addEventListener('resize', this._boundReposition, {
         passive: true,
       });
       // Announce calendar opened
@@ -4028,9 +4065,25 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const minLeft = minPadding;
 
         if (this._isRTL) {
-          // For RTL, position relative to right edge of trigger
-          const preferredLeft = rect.right - popWidth;
-          left = Math.max(minLeft, Math.min(maxLeft, preferredLeft));
+          // For RTL, position calendar to align with input field
+          // Calculate position to align right edge of calendar with right edge of input
+          const inputRight = rect.right;
+          const preferredLeft = inputRight - popWidth;
+          
+          // Ensure calendar doesn't go off-screen
+          if (preferredLeft < minLeft) {
+            left = minLeft;
+          } else if (preferredLeft > maxLeft) {
+            left = maxLeft;
+          } else {
+            left = preferredLeft;
+          }
+          
+          // Additional check: if calendar would be too far from input, center it
+          const distanceFromInput = Math.abs(left - rect.left);
+          if (distanceFromInput > popWidth) {
+            left = Math.max(minLeft, Math.min(maxLeft, rect.left));
+          }
         } else {
           // For LTR, position relative to left edge of trigger
           const preferredLeft = rect.left;
