@@ -273,13 +273,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             return {};
           },
         },
-        
+
         // Computed properties for aria-labels
         _previousMonthAriaLabel: {
           type: String,
           computed: '_getLocalizedText("previousMonth")',
         },
-        
+
         _nextMonthAriaLabel: {
           type: String,
           computed: '_getLocalizedText("nextMonth")',
@@ -1268,7 +1268,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       // Set up internationalization
       this._setupI18n(userLocale);
-      
+
       // Force update of template bindings after i18n setup
       this.notifyPath('i18nLabels');
 
@@ -1388,7 +1388,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       } else {
         this.setAttribute('dir', 'ltr');
       }
-      
+
       // Reposition calendar if it's open when RTL state changes
       if (this._isCalendarOpen) {
         this._positionCalendar();
@@ -1623,7 +1623,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (!this.i18nLabels || Object.keys(this.i18nLabels).length === 0) {
         this._setupI18n(navigator.languages ? navigator.languages[0] : navigator.language);
       }
-      
+
       let text = this.i18nLabels[key] || key;
 
       // Replace placeholders
@@ -1853,7 +1853,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       startDate.setDate(1 - dayOffset);
 
       const days = [];
-    
+
       for (let i = 0; i < 42; i++) {
         const currentDate = new Date(startDate);
         currentDate.setDate(startDate.getDate() + i);
@@ -2829,7 +2829,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       window.addEventListener('orientationchange', this._boundReposition, {
         passive: true,
       });
-      
+
       // Listen for window resize to reposition calendar in RTL
       window.addEventListener('resize', this._boundReposition, {
         passive: true,
@@ -4069,7 +4069,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           // Calculate position to align right edge of calendar with right edge of input
           const inputRight = rect.right;
           const preferredLeft = inputRight - popWidth;
-          
+
           // Ensure calendar doesn't go off-screen
           if (preferredLeft < minLeft) {
             left = minLeft;
@@ -4078,7 +4078,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           } else {
             left = preferredLeft;
           }
-          
+
           // Additional check: if calendar would be too far from input, center it
           const distanceFromInput = Math.abs(left - rect.left);
           if (distanceFromInput > popWidth) {
