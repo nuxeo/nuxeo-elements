@@ -913,8 +913,6 @@ import '../nuxeo-button-styles.js';
       // Normalize keys across browsers
       const key = e.key || '';
       const code = e.code || '';
-      // eslint-disable-next-line no-console
-      console.log('keydown event detected:', e.key, e.code, e);
       if (key === 'Enter' || key === ' ' || code === 'Enter' || code === 'Space') {
         // prevent default browser behaviour (form submit / page scroll) and stop other handlers
         e.preventDefault();
