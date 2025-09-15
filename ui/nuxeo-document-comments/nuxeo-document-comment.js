@@ -222,7 +222,11 @@ import '../nuxeo-button-styles.js';
                               class="main-option opaque"
                               icon="reply"
                               on-tap="_reply"
+                              on-keydown="_handleKey"
                               hidden$="[[!_isRootElement(level)]]"
+                              tabindex="0"
+                              role="button"
+                              aria-label="Reply"
                             ></iron-icon>
                           </template>
                         </dom-if>
@@ -457,6 +461,13 @@ import '../nuxeo-button-styles.js';
       afterNextRender(this, function() {
         this.$$('#thread').focusInput();
       });
+    }
+
+    _handleKey(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this._reply();
+      }
     }
 
     _showFullComment() {
