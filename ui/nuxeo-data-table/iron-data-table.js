@@ -305,6 +305,7 @@ import '../nuxeo-button-styles.js';
                     checked$="[[_isSelected(item, selectedItems, selectedItems.*, _excludedItems, _excludedItems.*)]]"
                     on-click="_onCheckBoxTap"
                     on-keydown="_onCheckBoxKeydown"
+                    tabindex="0"
                   ></nuxeo-data-table-checkbox>
                   <dom-repeat items="[[columns]]" as="column" index-as="colIndex">
                     <template>
@@ -909,11 +910,43 @@ import '../nuxeo-button-styles.js';
     }
 
     _onCheckBoxKeydown(e) {
-      // check for enter or space
-      if (e.keyCode === 13 || e.keyCode === 32) {
-        const checkbox = e.target || e.srcElement;
+      // Normalize keys across browsers
+      const key = e.key || '';
+      const code = e.code || '';
+      // eslint-disable-next-line no-console
+      console.log('keydown event detected:', e.key, e.code, e);
+      if (key === 'Enter' || key === ' ' || code === 'Enter' || code === 'Space') {
+        // prevent default browser behaviour (form submit / page scroll) and stop other handlers
+        e.preventDefault();
+        e.stopPropagation();
+
+        // prefer currentTarget (the element the listener is attached to) but fallback to target/closest
+        const checkbox = e.currentTarget || e.target || e.target.closest('nuxeo-data-table-checkbox');
+
+        // If we couldn't resolve checkbox, bail out safely
+        if (!checkbox) return;
+
+        // Let the click handler toggle the selection (keeps behavior consistent)
         checkbox.click();
-        this._onCheckBoxTap(e);
+
+        // Reapply focus after browser/Polymer microtasks to avoid focus loss
+        requestAnimationFrame(() => {
+          let focusTarget = checkbox;
+          if (checkbox.shadowRoot) {
+            // try to find a focusable control inside the checkbox host
+            const inner = checkbox.shadowRoot.querySelector('input, paper-checkbox, button, [tabindex]');
+            if (inner) focusTarget = inner;
+          }
+          // Make sure it's focusable
+          if (typeof focusTarget.tabIndex === 'number' && focusTarget.tabIndex < 0) {
+            focusTarget.setAttribute('tabindex', '0');
+          }
+          try {
+            focusTarget.focus();
+          } catch (err) {
+            // ignore focus errors
+          }
+        });
       }
     }
 
