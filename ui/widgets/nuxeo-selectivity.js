@@ -5878,7 +5878,6 @@ typedArrayTags[weakMapTag] = false;
        _keydown(event) {
         if ((event.key === 'Backspace' || event.keyCode === 8) && this.constructor.name === 'SingleInput') {
           this.clear();
-          event.preventDefault();  
       }
     },
 
