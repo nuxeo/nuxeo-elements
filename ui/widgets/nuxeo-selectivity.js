@@ -5364,6 +5364,7 @@ typedArrayTags[weakMapTag] = false;
           mouseenter: this._mouseenter,
           mouseleave: this._mouseleave,
           'selectivity-close': this._closed,
+          keydown: this._keydown,
         });
       }
 
@@ -5870,6 +5871,16 @@ typedArrayTags[weakMapTag] = false;
             this._closeTimeout = 0;
           }
         },
+      
+       /**
+     * @private
+     */
+       _keydown(event) {
+        if ((event.key === 'Backspace' || event.keyCode === 8) && this.constructor.name === 'SingleInput') {
+          this.clear();
+          event.preventDefault();  
+      }
+    },
 
         /**
      * @private
