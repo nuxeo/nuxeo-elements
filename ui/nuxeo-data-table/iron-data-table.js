@@ -301,14 +301,9 @@ import '../nuxeo-button-styles.js';
                   selected="[[_isSelected(item, selectedItems, selectedItems.*, _excludedItems, _excludedItems.*)]]"
                 >
                   <nuxeo-data-table-checkbox
-                    hidden$="[[!selectionEnabled]]"
                     checked$="[[_isSelected(item, selectedItems, selectedItems.*, _excludedItems, _excludedItems.*)]]"
                     on-click="_onCheckBoxTap"
                     on-keydown="_onCheckBoxKeydown"
-                    tabindex="0"
-                    aria-checked$="[[ 
-                      _isSelected(item, selectedItems, selectedItems.*, _excludedItems, _excludedItems.*) 
-                    ]]"
                   ></nuxeo-data-table-checkbox>
                   <dom-repeat items="[[columns]]" as="column" index-as="colIndex">
                     <template>
@@ -621,6 +616,9 @@ import '../nuxeo-button-styles.js';
       if (input) {
         input.addEventListener('keydown', (e) => this._onCheckBoxKeydown(e));
       }
+      document.addEventListener('keydown', (e) => {
+        this._lastFocusedCheckbox = e.target;
+      });
     }
 
     _onWrapperHeightChanged() {
@@ -899,45 +897,52 @@ import '../nuxeo-button-styles.js';
     }
 
     _onCheckBoxTap(e) {
-      if (this.selectionEnabled) {
-        // _selectionHandler isn't called if selectOnTap is true
-        if (this.selectOnTap) {
-          this.$.list.toggleSelectionForIndex(e.model.index);
-        }
-        const target = e.target || e.srcElement;
-        target.dispatchEvent(
-          new CustomEvent('selected', {
-            composed: true,
-            bubbles: true,
-            detail: { index: e.model.index, shiftKey: e.shiftKey },
-          }),
-        );
-        this._updateFlags();
-      }
+      const checkbox = e.currentTarget;
+      if (!checkbox || checkbox.disabled) return;
+
+      checkbox.checked = !checkbox.checked;
+
+      // Notify parent table / selection model if needed
+      this.dispatchEvent(
+        new CustomEvent('selection-changed', {
+          detail: { checkbox },
+          bubbles: true,
+          composed: true,
+        }),
+      );
     }
 
     _onCheckBoxKeydown(e) {
-      const key = e.key || '';
-      const code = e.code || '';
-      // eslint-disable-next-line no-console
-      console.log('keydown event detected:', key, code);
+      const key = e.key || e.code || '';
 
-      if (key === 'Enter' || key === ' ' || code === 'Enter' || code === 'Space') {
-        e.preventDefault(); // stop page scroll or form submit
+      if (key === 'Enter' || key === ' ' || key === 'Spacebar' || key === 'Space') {
+        e.preventDefault();
         e.stopPropagation();
 
-        // Manually toggle the checkbox value
-        const checkbox = e.target;
-        if (checkbox && checkbox.type === 'checkbox') {
+        // Use the current target (the checkbox that received the keydown)
+        const checkbox = e.currentTarget;
+        if (checkbox && !checkbox.disabled) {
           checkbox.checked = !checkbox.checked;
-          checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+
+          // Dispatch a change event
+          checkbox.dispatchEvent(
+            new CustomEvent('change', {
+              bubbles: true,
+              composed: true,
+            }),
+          );
+
+          // Keep focus on this checkbox
+          checkbox.focus();
+          this._lastFocused = checkbox;
         }
+      }
+    }
 
-        // Call your existing click/tap handler (if needed)
-        this._onCheckBoxTap(e);
-
-        // Ensure focus stays on checkbox
-        checkbox.focus();
+    _updateCheckboxes() {
+      // After table rerender
+      if (this._lastFocusedCheckbox) {
+        this._lastFocusedCheckbox.focus();
       }
     }
 

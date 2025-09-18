@@ -63,15 +63,39 @@ import '../widgets/nuxeo-checkmark.js';
           reflectToAttribute: true,
           value: false,
         },
+        _lastFocused: {
+          type: Object,
+          value: null,
+        },
       };
     }
 
     ready() {
       super.ready();
-      if (!this.header) {
-        this.setAttribute('scope', 'col');
-      } else {
-        this.setAttribute('role', 'cell');
+      const checkmark = this.shadowRoot.querySelector('nuxeo-checkmark');
+      if (checkmark) {
+        checkmark.addEventListener('focus', (e) => {
+          this._lastFocused = e.currentTarget;
+        });
+
+        checkmark.addEventListener('keydown', this._onCheckBoxKeydown.bind(this));
+      }
+    }
+
+    // Add this method here inside the class
+    _onCheckBoxKeydown(e) {
+      const key = e.key || e.code || '';
+      if (key === 'Enter' || key === ' ' || key === 'Spacebar' || key === 'Space') {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const checkmark = this.shadowRoot.querySelector('nuxeo-checkmark');
+        if (checkmark && !checkmark.disabled) {
+          checkmark.checked = !checkmark.checked;
+          checkmark.dispatchEvent(new CustomEvent('change', { bubbles: true, composed: true }));
+          checkmark.focus();
+          this._lastFocused = checkmark;
+        }
       }
     }
   }
