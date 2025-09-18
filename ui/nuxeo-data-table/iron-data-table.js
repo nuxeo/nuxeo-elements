@@ -614,6 +614,10 @@ import '../nuxeo-button-styles.js';
         this._wrapperHeight = wrapperHeight;
         this._onWrapperHeightChanged();
       }
+      const input = this.shadowRoot.querySelector('input, paper-checkbox');
+      if (input) {
+        input.addEventListener('keydown', (e) => this._onCheckBoxKeydown(e));
+      }
     }
 
     _onWrapperHeightChanged() {
@@ -910,76 +914,44 @@ import '../nuxeo-button-styles.js';
     }
 
     _onCheckBoxKeydown(e) {
+      // Normalize keys across browsers
       const key = e.key || '';
       const code = e.code || '';
-      const keyCode = e.keyCode || e.which || 0;
-      const isEnterKey = key === 'Enter' || code === 'Enter' || keyCode === 13;
-      // Space can appear as ' ' (space character), 'Spacebar' (old), or code 'Space', keyCode 32
-      const isSpaceKey = key === ' ' || key === 'Spacebar' || code === 'Space' || keyCode === 32;
+      // eslint-disable-next-line no-console
+      console.log('keydown event detected:', e.key, e.code, e);
+      if (key === 'Enter' || key === ' ' || code === 'Enter' || code === 'Space') {
+        // prevent default browser behaviour (form submit / page scroll) and stop other handlers
+        e.preventDefault();
+        e.stopPropagation();
 
-      if (!isEnterKey && !isSpaceKey) {
-        return; // not an activation key we care about
-      }
+        // prefer currentTarget (the element the listener is attached to) but fallback to target/closest
+        const checkbox = e.currentTarget || e.target || e.target.closest('nuxeo-data-table-checkbox');
 
-      // prevent scroll / default behavior and stop propagation
-      e.preventDefault();
-      e.stopPropagation();
+        // If we couldn't resolve checkbox, bail out safely
+        if (!checkbox) return;
 
-      // Resolve the checkbox host across Shadow DOM boundaries:
-      let checkbox = null;
+        // Let the click handler toggle the selection (keeps behavior consistent)
+        checkbox.click();
 
-      if (typeof e.composedPath === 'function') {
-        const path = e.composedPath();
-        for (let i = 0; i < path.length; i++) {
-          const n = path[i];
-          if (n && n.tagName && n.tagName.toUpperCase() === 'NUXEO-DATA-TABLE-CHECKBOX') {
-            checkbox = n;
-            break;
-          }
-        }
-      }
-
-      // Fallbacks
-      checkbox =
-        checkbox ||
-        e.currentTarget ||
-        e.target ||
-        (e.target && e.target.closest && e.target.closest('nuxeo-data-table-checkbox'));
-
-      if (!checkbox) {
-        // nothing to toggle
-        return;
-      }
-
-      // Toggle: prefer native click() if available. If not, dispatch a composed MouseEvent.
-      try {
-        if (typeof checkbox.click === 'function') {
-          checkbox.click();
-        } else {
-          checkbox.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
-        }
-      } catch (err) {
-        // swallow toggle errors
-      }
-
-      // Reapply focus after browser/Polymer microtasks to avoid focus loss
-      requestAnimationFrame(() => {
-        let focusTarget = checkbox;
-        try {
-          if (checkbox && checkbox.shadowRoot) {
+        // Reapply focus after browser/Polymer microtasks to avoid focus loss
+        requestAnimationFrame(() => {
+          let focusTarget = checkbox;
+          if (checkbox.shadowRoot) {
+            // try to find a focusable control inside the checkbox host
             const inner = checkbox.shadowRoot.querySelector('input, paper-checkbox, button, [tabindex]');
             if (inner) focusTarget = inner;
           }
-          if (focusTarget && typeof focusTarget.tabIndex === 'number' && focusTarget.tabIndex < 0) {
+          // Make sure it's focusable
+          if (typeof focusTarget.tabIndex === 'number' && focusTarget.tabIndex < 0) {
             focusTarget.setAttribute('tabindex', '0');
           }
-          if (focusTarget && typeof focusTarget.focus === 'function') {
+          try {
             focusTarget.focus();
+          } catch (err) {
+            // ignore focus errors
           }
-        } catch (err) {
-          // ignore focus errors
-        }
-      });
+        });
+      }
     }
 
     _editEntry(e) {
