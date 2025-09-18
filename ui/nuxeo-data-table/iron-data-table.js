@@ -306,6 +306,9 @@ import '../nuxeo-button-styles.js';
                     on-click="_onCheckBoxTap"
                     on-keydown="_onCheckBoxKeydown"
                     tabindex="0"
+                    aria-checked$="[[ 
+                      _isSelected(item, selectedItems, selectedItems.*, _excludedItems, _excludedItems.*) 
+                    ]]"
                   ></nuxeo-data-table-checkbox>
                   <dom-repeat items="[[columns]]" as="column" index-as="colIndex">
                     <template>
@@ -914,43 +917,27 @@ import '../nuxeo-button-styles.js';
     }
 
     _onCheckBoxKeydown(e) {
-      // Normalize keys across browsers
       const key = e.key || '';
       const code = e.code || '';
       // eslint-disable-next-line no-console
-      console.log('keydown event detected:', e.key, e.code, e);
+      console.log('keydown event detected:', key, code);
+
       if (key === 'Enter' || key === ' ' || code === 'Enter' || code === 'Space') {
-        // prevent default browser behaviour (form submit / page scroll) and stop other handlers
-        e.preventDefault();
+        e.preventDefault(); // stop page scroll or form submit
         e.stopPropagation();
 
-        // prefer currentTarget (the element the listener is attached to) but fallback to target/closest
-        const checkbox = e.currentTarget || e.target || e.target.closest('nuxeo-data-table-checkbox');
+        // Manually toggle the checkbox value
+        const checkbox = e.target;
+        if (checkbox && checkbox.type === 'checkbox') {
+          checkbox.checked = !checkbox.checked;
+          checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+        }
 
-        // If we couldn't resolve checkbox, bail out safely
-        if (!checkbox) return;
+        // Call your existing click/tap handler (if needed)
+        this._onCheckBoxTap(e);
 
-        // Let the click handler toggle the selection (keeps behavior consistent)
-        checkbox.click();
-
-        // Reapply focus after browser/Polymer microtasks to avoid focus loss
-        requestAnimationFrame(() => {
-          let focusTarget = checkbox;
-          if (checkbox.shadowRoot) {
-            // try to find a focusable control inside the checkbox host
-            const inner = checkbox.shadowRoot.querySelector('input, paper-checkbox, button, [tabindex]');
-            if (inner) focusTarget = inner;
-          }
-          // Make sure it's focusable
-          if (typeof focusTarget.tabIndex === 'number' && focusTarget.tabIndex < 0) {
-            focusTarget.setAttribute('tabindex', '0');
-          }
-          try {
-            focusTarget.focus();
-          } catch (err) {
-            // ignore focus errors
-          }
-        });
+        // Ensure focus stays on checkbox
+        checkbox.focus();
       }
     }
 
