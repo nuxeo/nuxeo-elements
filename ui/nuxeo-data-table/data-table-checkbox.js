@@ -72,8 +72,15 @@ import '../widgets/nuxeo-checkmark.js';
 
     ready() {
       super.ready();
+      if (!this.header) {
+        this.setAttribute('scope', 'col');
+      } else {
+        this.setAttribute('role', 'cell');
+      }
       const checkmark = this.shadowRoot.querySelector('nuxeo-checkmark');
       if (checkmark) {
+        checkmark.setAttribute('tabindex', '0');
+
         checkmark.addEventListener('focus', (e) => {
           this._lastFocused = e.currentTarget;
         });
@@ -82,7 +89,6 @@ import '../widgets/nuxeo-checkmark.js';
       }
     }
 
-    // Add this method here inside the class
     _onCheckBoxKeydown(e) {
       const key = e.key || e.code || '';
       if (key === 'Enter' || key === ' ' || key === 'Spacebar' || key === 'Space') {
@@ -93,7 +99,7 @@ import '../widgets/nuxeo-checkmark.js';
         if (checkmark && !checkmark.disabled) {
           checkmark.checked = !checkmark.checked;
           checkmark.dispatchEvent(new CustomEvent('change', { bubbles: true, composed: true }));
-          checkmark.focus();
+          requestAnimationFrame(() => checkmark.focus());
           this._lastFocused = checkmark;
         }
       }
