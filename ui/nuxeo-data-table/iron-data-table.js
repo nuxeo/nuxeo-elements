@@ -613,13 +613,6 @@ import '../nuxeo-button-styles.js';
         this._wrapperHeight = wrapperHeight;
         this._onWrapperHeightChanged();
       }
-      const input = this.shadowRoot.querySelector('input, paper-checkbox');
-      if (input) {
-        input.addEventListener('keydown', (e) => this._onCheckBoxKeydown(e));
-      }
-      document.addEventListener('keydown', (e) => {
-        this._lastFocusedCheckbox = e.target;
-      });
     }
 
     _onWrapperHeightChanged() {
@@ -898,52 +891,59 @@ import '../nuxeo-button-styles.js';
     }
 
     _onCheckBoxTap(e) {
-      const checkbox = e.currentTarget;
-      if (!checkbox || checkbox.disabled) return;
-
-      checkbox.checked = !checkbox.checked;
-
-      // Notify parent table / selection model if needed
-      this.dispatchEvent(
-        new CustomEvent('selection-changed', {
-          detail: { checkbox },
-          bubbles: true,
-          composed: true,
-        }),
-      );
-    }
-
-    _onCheckBoxKeydown(e) {
-      const key = e.key || e.code || '';
-
-      if (key === 'Enter' || key === ' ' || key === 'Spacebar' || key === 'Space') {
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Use the current target (the checkbox that received the keydown)
-        const checkbox = e.currentTarget;
-        if (checkbox && !checkbox.disabled) {
-          checkbox.checked = !checkbox.checked;
-
-          // Dispatch a change event
-          checkbox.dispatchEvent(
-            new CustomEvent('change', {
-              bubbles: true,
-              composed: true,
-            }),
-          );
-
-          // Keep focus on this checkbox
-          checkbox.focus();
-          this._lastFocused = checkbox;
+      if (this.selectionEnabled) {
+        // _selectionHandler isn't called if selectOnTap is true
+        if (this.selectOnTap) {
+          this.$.list.toggleSelectionForIndex(e.model.index);
         }
+        const target = e.target || e.srcElement;
+        target.dispatchEvent(
+          new CustomEvent('selected', {
+            composed: true,
+            bubbles: true,
+            detail: { index: e.model.index, shiftKey: e.shiftKey },
+          }),
+        );
+        this._updateFlags();
       }
     }
 
-    _updateCheckboxes() {
-      // After table rerender
-      if (this._lastFocusedCheckbox) {
-        this._lastFocusedCheckbox.focus();
+    _onCheckBoxKeydown(e) {
+      // Normalize keys across browsers
+      const key = e.key || '';
+      const code = e.code || '';
+      if (key === 'Enter' || key === ' ' || code === 'Enter' || code === 'Space') {
+        // prevent default browser behaviour (form submit / page scroll) and stop other handlers
+        e.preventDefault();
+        e.stopPropagation();
+
+        // prefer currentTarget (the element the listener is attached to) but fallback to target/closest
+        const checkbox = e.currentTarget || e.target || e.target.closest('nuxeo-data-table-checkbox');
+
+        // If we couldn't resolve checkbox, bail out safely
+        if (!checkbox) return;
+
+        // Let the click handler toggle the selection (keeps behavior consistent)
+        checkbox.click();
+
+        // Reapply focus after browser/Polymer microtasks to avoid focus loss
+        requestAnimationFrame(() => {
+          let focusTarget = checkbox;
+          if (checkbox.shadowRoot) {
+            // try to find a focusable control inside the checkbox host
+            const inner = checkbox.shadowRoot.querySelector('input, paper-checkbox, button, [tabindex]');
+            if (inner) focusTarget = inner;
+          }
+          // Make sure it's focusable
+          if (typeof focusTarget.tabIndex === 'number' && focusTarget.tabIndex < 0) {
+            focusTarget.setAttribute('tabindex', '0');
+          }
+          try {
+            focusTarget.focus();
+          } catch (err) {
+            // ignore focus errors
+          }
+        });
       }
     }
 
