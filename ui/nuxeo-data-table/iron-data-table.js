@@ -916,34 +916,7 @@ import '../nuxeo-button-styles.js';
         // prevent default browser behaviour (form submit / page scroll) and stop other handlers
         e.preventDefault();
         e.stopPropagation();
-
-        // prefer currentTarget (the element the listener is attached to) but fallback to target/closest
-        const checkbox = e.currentTarget || e.target || e.target.closest('nuxeo-data-table-checkbox');
-
-        // If we couldn't resolve checkbox, bail out safely
-        if (!checkbox) return;
-
-        // Let the click handler toggle the selection (keeps behavior consistent)
-        checkbox.click();
-
-        // Reapply focus after browser/Polymer microtasks to avoid focus loss
-        requestAnimationFrame(() => {
-          let focusTarget = checkbox;
-          if (checkbox.shadowRoot) {
-            // try to find a focusable control inside the checkbox host
-            const inner = checkbox.shadowRoot.querySelector('input, paper-checkbox, button, [tabindex]');
-            if (inner) focusTarget = inner;
-          }
-          // Make sure it's focusable
-          if (typeof focusTarget.tabIndex === 'number' && focusTarget.tabIndex < 0) {
-            focusTarget.setAttribute('tabindex', '0');
-          }
-          try {
-            focusTarget.focus();
-          } catch (err) {
-            // ignore focus errors
-          }
-        });
+        // Do NOT toggle here — tap will be dispatched automatically
       }
     }
 
