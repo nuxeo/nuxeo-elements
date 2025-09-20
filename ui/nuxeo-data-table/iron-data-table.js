@@ -491,7 +491,6 @@ import '../nuxeo-button-styles.js';
           value: false,
         },
         /**
-         *
          * If enabled, it allows to select multiple documents and apply an action on them,
          * like moving them to trash, to favorites or to a collection.
          */
