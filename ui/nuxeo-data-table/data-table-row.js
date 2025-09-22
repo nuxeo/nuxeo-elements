@@ -99,7 +99,10 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
           type: Boolean,
           reflectToAttribute: true,
         },
-        index: Number,
+        index: {
+          type: Number,
+          reflectToAttribute: true,
+        },
         item: Object,
         selected: {
           type: Boolean,
