@@ -909,11 +909,14 @@ import '../nuxeo-button-styles.js';
     }
 
     _onCheckBoxKeydown(e) {
-      // check for enter or space
-      if (e.keyCode === 13 || e.keyCode === 32) {
-        const checkbox = e.target || e.srcElement;
-        checkbox.click();
-        this._onCheckBoxTap(e);
+      // Normalize keys across browsers
+      const key = e.key || '';
+      const code = e.code || '';
+      if (key === 'Enter' || key === ' ' || code === 'Enter' || code === 'Space') {
+        // prevent default browser behaviour (form submit / page scroll) and stop other handlers
+        e.preventDefault();
+        e.stopPropagation();
+        // Do NOT toggle here — tap will be dispatched automatically
       }
     }
 
