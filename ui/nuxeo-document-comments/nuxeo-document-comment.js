@@ -258,7 +258,6 @@ import '../nuxeo-button-styles.js';
                           <template>
                             <iron-icon
                               id="submit"
-                              s
                               role="button"
                               aria-label="[[i18n('command.selectComment')]]"
                               name="submit"
