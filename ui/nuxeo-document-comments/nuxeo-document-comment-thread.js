@@ -77,7 +77,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
               </paper-textarea>
               <dom-if if="[[!_isBlank(text)]]">
                 <template>
-                  <button class="comment-iron-icon" on-tap="_submitComment" aria-label$="[[i18n('command.select')]]">
+                  <button class="comment-iron-icon" on-tap="_submitComment" aria-label$="[[i18n('command.selectComment')]]">
                     <iron-icon
                       id="submit"
                       name="submit"
@@ -87,7 +87,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
                     ></iron-icon>
                   </button>
                   <nuxeo-tooltip for="submit">[[i18n('comments.submit.tooltip')]]</nuxeo-tooltip>
-                  <button class="comment-iron-icon" on-tap="_clearInput" aria-label$="[[i18n('command.remove')]]">
+                  <button class="comment-iron-icon" on-tap="_clearInput" aria-label$="[[i18n('command.removeComment')]]">
                     <iron-icon name="clear" class="main-option opaque" icon="clear" aria-hidden="true"></iron-icon>
                   </button>
                 </template>
