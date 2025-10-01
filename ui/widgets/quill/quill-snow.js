@@ -67,6 +67,10 @@ const template = html`
           white-space: pre-wrap;
           word-wrap: break-word;
         }
+        :host([dir='rtl']) .ql-editor {
+          direction: rtl;
+          text-align: right;
+        }
         .ql-editor > * {
           cursor: text;
         }
@@ -114,6 +118,11 @@ const template = html`
           text-align: right;
           white-space: nowrap;
           width: 1.2em;
+        }
+        :host([dir='rtl']) .ql-editor li > .ql-ui:before {
+          margin-left: 0;
+          margin-right: -1.5em;
+          text-align: left;
         }
         .ql-editor li[data-list='checked'] > .ql-ui,
         .ql-editor li[data-list='unchecked'] > .ql-ui {

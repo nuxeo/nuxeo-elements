@@ -61,9 +61,9 @@ import '../nuxeo-button-styles.js';
 
         <dom-if if="[[_isAvailable(document)]]">
           <template>
-            <div class="action" tabindex="-1">
+            <div class="action">
               <paper-icon-button
-                icon="[[icon]]"
+                icon="[[_computeIcon(favorite, icon)]]"
                 noink
                 aria-label$="[[_computeHoverLabel(favorite, document, i18n)]]"
               ></paper-icon-button>
@@ -186,6 +186,10 @@ import '../nuxeo-button-styles.js';
 
     _computeHoverLabel(favorite, doc) {
       return `${doc && doc.title}${this._computeLabel(favorite)}`;
+    }
+
+    _computeIcon(favorite) {
+      return favorite ? 'icons:star' : 'icons:star-border';
     }
 
     _documentChanged() {

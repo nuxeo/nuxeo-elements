@@ -24,13 +24,14 @@ jobs:
     steps:
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 22
           registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
           scope: '@nuxeo'
 
       - uses: actions/checkout@v2
         with:
           ref: v${{ github.event.inputs.version }}
+          token: ${{ secrets.GIT_ADMIN_TOKEN }}
 
       - run: git config user.name "nuxeo-webui-jx-bot" && git config user.email "webui@hyland.com"
 

@@ -219,6 +219,11 @@ import '../nuxeo-button-styles.js';
             display: block;
             @apply --nuxeo-label;
           }
+
+          .table-wrapper {
+            overflow-y: scroll;
+            position: relative;
+          }
         </style>
 
         <div id="container">
@@ -514,6 +519,21 @@ import '../nuxeo-button-styles.js';
           type: Boolean,
           value: false,
         },
+        /**
+         * proper table name for assistive technologies to identify the table correctly
+         */
+        captionText: {
+          type: String,
+          value: '',
+        },
+        /**
+         * Provides a fixed height of the wrapper div containing the iron-list, where there is a limit to
+         * the number of items displayed at a time on the UI.
+         */
+        _wrapperHeight: {
+          type: String,
+          value: '',
+        },
       };
     }
 
@@ -586,6 +606,23 @@ import '../nuxeo-button-styles.js';
       });
       this.setAttribute('role', 'table');
       this.setAttribute('aria-multiselectable', this.multiSelection);
+      this.setAttribute('aria-label', this.captionText);
+      const wrapperHeight = this.getAttribute('wrapper-height');
+      if (wrapperHeight) {
+        this._wrapperHeight = wrapperHeight;
+        this._onWrapperHeightChanged();
+      }
+    }
+
+    _onWrapperHeightChanged() {
+      const list = this.shadowRoot.querySelector('iron-list');
+      if (list && this._wrapperHeight && !list.parentElement.classList.contains('table-wrapper')) {
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('table-wrapper');
+        wrapper.setAttribute('style', `height: ${this._wrapperHeight}`);
+        list.parentElement.insertBefore(wrapper, list);
+        wrapper.appendChild(list);
+      }
     }
 
     _computeActionsStyle() {
@@ -871,11 +908,14 @@ import '../nuxeo-button-styles.js';
     }
 
     _onCheckBoxKeydown(e) {
-      // check for enter or space
-      if (e.keyCode === 13 || e.keyCode === 32) {
-        const checkbox = e.target || e.srcElement;
-        checkbox.click();
-        this._onCheckBoxTap(e);
+      // Normalize keys across browsers
+      const key = e.key || '';
+      const code = e.code || '';
+      if (key === 'Enter' || key === ' ' || code === 'Enter' || code === 'Space') {
+        // prevent default browser behaviour (form submit / page scroll) and stop other handlers
+        e.preventDefault();
+        e.stopPropagation();
+        // Do NOT toggle here — tap will be dispatched automatically
       }
     }
 

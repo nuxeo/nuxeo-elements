@@ -86,6 +86,21 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             cursor: pointer;
           }
 
+          .email-wrapper {
+            max-width: 100%;
+            overflow: hidden;
+            text-align: left;
+          }
+
+          .email-text {
+            display: inline-block;
+            max-width: 240px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: middle;
+          }
+
           .table-row:hover {
             background: var(--nuxeo-container-hover, #fafafa);
           }
@@ -126,11 +141,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         </nuxeo-resource>
 
         <nuxeo-card icon="nuxeo:recent" heading="[[i18n('userGroupLatest.recentlyCreated')]]">
-          <div class="table">
-            <div class="table-header">
-              <div class="flex">[[i18n('userGroupLatest.name')]]</div>
-              <div class="flex-2">[[i18n('userGroupLatest.identifier')]]</div>
-              <div class="table-actions">
+          <div
+            class="table"
+            role="table"
+            aria-label="[[i18n('userGroupLatest.recentlyCreated')]]"
+            aria-rowcount="[[latestCreatedUsersGroups.entries.length]]"
+          >
+            <div class="table-header" role="row">
+              <div class="flex-4" role="columnheader">[[i18n('userGroupLatest.name')]]</div>
+              <div class="flex-4" role="columnheader">[[i18n('userGroupLatest.identifier')]]</div>
+              <div class="flex-4" role="columnheader">[[i18n('label.directories.nature.email')]]</div>
+              <div class="table-actions" role="columnheader">
                 <paper-icon-button
                   noink
                   icon="nuxeo:refresh"
@@ -142,8 +163,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             <div class="table-rows">
               <dom-repeat items="[[latestCreatedUsersGroups.entries]]" as="item">
                 <template>
-                  <div class="table-row" on-click="_manageUserOrGroup">
-                    <div class="flex">
+                  <div class="table-row" on-click="_manageUserOrGroup" role="row">
+                    <div class="flex-4" role="columnheader">
                       <dom-if if="[[_isUser(item)]]">
                         <template>
                           <dom-if if="[[_userHasName(item)]]">
@@ -159,15 +180,26 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                         </template>
                       </dom-if>
                     </div>
-                    <div class="flex-2 preserve-white-space">[[item.uid]]</div>
-                    <div class="table-actions"></div>
+                    <div class="flex-4 preserve-white-space" role="columnheader">[[item.uid]]</div>
+                    <div class="flex-4" role="columnheader">
+                      <div class="email-wrapper">
+                        <span class="email-text">
+                          [[_getEmail(item)]]
+                          <nuxeo-tooltip>[[_getEmail(item)]]</nuxeo-tooltip>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div class="table-actions" role="columnheader"></div>
                   </div>
                 </template>
               </dom-repeat>
               <dom-if if="[[_empty(latestCreatedUsersGroups.entries)]]">
                 <template>
-                  <div class="table-row">
-                    <div class="emptyResult">[[i18n('userGroupLatest.emptyRecentUserOrGroup')]]</div>
+                  <div class="table-row" role="row">
+                    <div class="emptyResult" role="columnheader">
+                      [[i18n('userGroupLatest.emptyRecentUserOrGroup')]]
+                    </div>
                   </div>
                 </template>
               </dom-if>
@@ -210,6 +242,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _userHasName(user) {
       return user.properties['user:firstName'] || user.properties['user:lastName'];
+    }
+
+    _getEmail(user) {
+      return user.properties['user:email'];
     }
 
     _isUser(docModel) {

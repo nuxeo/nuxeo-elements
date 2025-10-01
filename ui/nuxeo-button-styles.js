@@ -54,9 +54,12 @@ const template = html`
           @apply --nx-button-text;
         }
 
-        paper-button.text:hover,
-        paper-button.text:focus {
+        paper-button.text:hover {
           @apply --nx-button-text-hover;
+        }
+
+        paper-button.text:focus {
+          @apply --paper-button-flat-keyboard-focus;
         }
 
         paper-button.text[disabled] {

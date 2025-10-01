@@ -39,7 +39,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
             --paper-input-container-label: {
               font-size: inherit;
-              color: #999;
+              color: #606978;
               font-weight: 600;
               padding: 0;
             }

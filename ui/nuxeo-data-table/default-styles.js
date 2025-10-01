@@ -20,7 +20,7 @@ const template = html`
 
         --iron-data-table-header: {
           background-color: var(--nuxeo-table-header-background, #fafafa);
-          color: var(--secondary-text-color, #939caa);
+          color: #606978;
           font-weight: 600;
           font-size: 1rem;
           height: 50px;

@@ -21,7 +21,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           paper-icon-button {
             position: relative;
-            opacity: 0.84;
             transition: all 0.2s;
           }
 
@@ -31,7 +30,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           }
 
           paper-icon-button:not([direction]) {
-            opacity: 0.16;
+            opacity: 0.6;
           }
 
           paper-icon-button[direction='desc'] {

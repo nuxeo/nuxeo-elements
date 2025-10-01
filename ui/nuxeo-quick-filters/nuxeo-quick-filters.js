@@ -40,13 +40,18 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           .quick-filters {
             background-color: var(--nuxeo-pill-filter-background, #fff);
-            color: var(--nuxeo-pill-text, #6d7684);
+            color: var(--nuxeo-pill-text, #666);
             border-radius: 3em;
             box-shadow: none;
             font-size: 1rem;
             padding: 0.2em 0.7em 0.3em;
             margin: 0.1em 0.1em 0.1em 0;
             text-transform: none;
+          }
+
+          .quick-filters:focus-visible {
+            background-color: var(--nuxeo-buttons-focus, rgba(0, 0, 0, 0.3));
+            color: var(--nuxeo-button-primary-text, #ffffff);
           }
 
           .quick-filters[active] {
