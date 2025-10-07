@@ -85,7 +85,7 @@
     ]
   },
   "dependencies": {
-    "@nuxeo/moment": "^2.24.0-nx.0",
+    "@nuxeo/moment": "2.30.1-nx.0",
     "@nuxeo/paper-typeahead": "^0.6.0-nx.0",
     "@polymer/iron-autogrow-textarea": "^3.0.1",
     "@polymer/iron-collapse": "^3.0.0",
