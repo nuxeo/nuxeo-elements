@@ -130,6 +130,12 @@ import '../nuxeo-button-styles.js';
             &[name='delete']:focus {
               outline: auto;
             }
+
+            .replybtn {
+              height: 1em;
+              width: 0.2em;
+              border: none;
+            }
           }
         </style>
 
@@ -217,13 +223,20 @@ import '../nuxeo-button-styles.js';
                         </dom-if>
                         <dom-if if="[[!truncated]]">
                           <template>
-                            <iron-icon
+                            <paper-icon-button
+                              tabindex="0"
                               name="reply"
                               class="main-option opaque"
                               icon="reply"
+                              aria-hidden="true"
                               on-tap="_reply"
+                              on-keydown="_handleKey"
                               hidden$="[[!_isRootElement(level)]]"
-                            ></iron-icon>
+                              tabindex="0"
+                              role="button"
+                              aria-label="[[i18n('command.replyComment')]]"
+                            >
+                            </paper-icon-button>
                           </template>
                         </dom-if>
                       </div>
@@ -245,6 +258,8 @@ import '../nuxeo-button-styles.js';
                           <template>
                             <iron-icon
                               id="submit"
+                              role="button"
+                              aria-label="[[i18n('command.selectComment')]]"
                               name="submit"
                               class="main-option opaque"
                               icon="check"
@@ -255,8 +270,11 @@ import '../nuxeo-button-styles.js';
                             <nuxeo-tooltip for="submit">[[i18n('comments.submit.tooltip')]]</nuxeo-tooltip>
                             <iron-icon
                               name="clear"
+                              role="button"
+                              aria-label="[[i18n('command.removeComment')]]"
                               class="main-option opaque"
                               icon="clear"
+                              role="button"
                               on-tap="_clearInput"
                               on-keydown="_cancelOnEnter"
                               tabindex="0"
@@ -457,6 +475,13 @@ import '../nuxeo-button-styles.js';
       afterNextRender(this, function() {
         this.$$('#thread').focusInput();
       });
+    }
+
+    _handleKey(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this._reply();
+      }
     }
 
     _showFullComment() {
