@@ -118,9 +118,10 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
           type: String,
           observer: '_refresh',
         },
+
         _isSubmitting: {
           type: Boolean,
-          value: false
+          value: false,
         },
 
         /**
