@@ -303,7 +303,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
         e.preventDefault();
       }
       if (this._isSubmitting) return;
-      this._isSubmitting = true; 
+      this._isSubmitting = true;
       this._clearRequest();
       this.$.commentRequest.data = {
         'entity-type': 'comment',
