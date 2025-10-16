@@ -329,7 +329,7 @@ import '../nuxeo-button-styles.js';
 
         _editingInProgress: {
           type: Boolean,
-          value: false
+          value: false,
     },
 
         /** Level of depth for the comment. */
