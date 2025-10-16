@@ -87,6 +87,11 @@ import '../nuxeo-button-styles.js';
             white-space: pre-wrap;
           }
 
+          iron-icon.disabled {
+            pointer-events: none;
+            opacity: 0.4;
+          }
+
           paper-menu-button {
             --paper-menu-button: {
               padding: 0;
@@ -261,7 +266,7 @@ import '../nuxeo-button-styles.js';
                               role="button"
                               aria-label="[[i18n('command.selectComment')]]"
                               name="submit"
-                              class="main-option opaque"
+                              class$="main-option opaque [[_computeDisabledClass(_isSubmitting)]]"
                               icon="check"
                               on-tap="_submitComment"
                               on-keydown="_submitOnEnter"
@@ -325,11 +330,6 @@ import '../nuxeo-button-styles.js';
          */
         comment: {
           type: Object,
-        },
-
-        _editingInProgress: {
-          type: Boolean,
-          value: false,
         },
 
         /** Level of depth for the comment. */
@@ -452,16 +452,11 @@ import '../nuxeo-button-styles.js';
     }
 
     _editComment() {
-      if (this._editingInProgress) {
-        return;
-      }
-      this._editingInProgress = true;
       this._setEditing(true);
       this.set('comment.text', this.$$('#view-comment').innerHTML);
       this.text = this.get('comment.text');
       afterNextRender(this, function() {
         this.$$('#inputContainer').focus();
-        this._editingInProgress = false;
       });
     }
 
@@ -498,9 +493,23 @@ import '../nuxeo-button-styles.js';
       this.set('comment.showFull', true);
     }
 
+    _computeDisabledClass(isSubmitting) {
+      return isSubmitting ? 'disabled' : '';
+    }
+
     _submitComment(e) {
       if (e) {
         e.preventDefault();
+      }
+      if (this._isSubmitting) {
+        return;
+      }
+      this._isSubmitting = true;
+
+      const input = this.$$('#inputContainer');
+      if (!input || this._isBlank(input.value)) {
+        this._isSubmitting = false;
+        return;
       }
       this.$.commentRequest.data = {
         'entity-type': 'comment',
@@ -534,6 +543,9 @@ import '../nuxeo-button-styles.js';
             this.notify({ message: this._computeTextLabel(this.level, 'edition.error') });
             throw error;
           }
+        })
+        .finally(() => {
+          this._isSubmitting = false;
         });
     }
 
