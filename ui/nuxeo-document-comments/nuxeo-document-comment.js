@@ -330,7 +330,7 @@ import '../nuxeo-button-styles.js';
         _editingInProgress: {
           type: Boolean,
           value: false,
-    },
+        },
 
         /** Level of depth for the comment. */
         level: {
@@ -453,7 +453,7 @@ import '../nuxeo-button-styles.js';
 
     _editComment() {
       if (this._editingInProgress) {
-        return; 
+        return;
       }
       this._editingInProgress = true;
       this._setEditing(true);
