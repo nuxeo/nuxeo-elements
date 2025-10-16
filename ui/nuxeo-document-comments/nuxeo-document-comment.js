@@ -327,6 +327,11 @@ import '../nuxeo-button-styles.js';
           type: Object,
         },
 
+        _editingInProgress: {
+          type: Boolean,
+          value: false,
+    },
+
         /** Level of depth for the comment. */
         level: {
           type: Number,
@@ -447,11 +452,16 @@ import '../nuxeo-button-styles.js';
     }
 
     _editComment() {
+      if (this._editingInProgress) {
+        return; 
+      }
+      this._editingInProgress = true;
       this._setEditing(true);
       this.set('comment.text', this.$$('#view-comment').innerHTML);
       this.text = this.get('comment.text');
       afterNextRender(this, function() {
         this.$$('#inputContainer').focus();
+        this._editingInProgress = false;
       });
     }
 
