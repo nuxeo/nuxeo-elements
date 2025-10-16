@@ -38893,7 +38893,12 @@ class FileSpec {
   get filename() {
     if (!this._filename && this.root) {
       const filename = pickPlatformItem(this.root) || "unnamed";
-      this._filename = stringToPDFString(filename).replaceAll("\\\\", "\\").replaceAll("\\/", "/").replaceAll("\\", "/");
+      const pdfString = stringToPDFString(filename);
+      this._filename = pdfString.replace(/\\(.)/g, (match, char) => {
+        if (char === '\\') return '\\'; 
+        if (char === '/') return '/';   
+        return match; 
+      });
     }
     return this._filename;
   }
