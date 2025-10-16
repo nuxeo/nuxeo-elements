@@ -18,6 +18,7 @@ limitations under the License.
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-icons/editor-icons.js';
+import { config } from '@nuxeo/nuxeo-elements';
 import '@polymer/iron-icons/iron-icons.js';
 import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import '@nuxeo/nuxeo-elements/nuxeo-document.js';
@@ -171,39 +172,38 @@ import '../nuxeo-button-styles.js';
         </nuxeo-card>
 
         <!-- External users permissions -->
-        <template is="dom-if" if="[[_showExternal()]]">
-          <nuxeo-card heading="[[i18n('documentPermissions.external')]]">
-            <dom-if if="[[_hasPermission(doc)]]">
-              <template>
-                <div class="actions">
-                  <nuxeo-popup-permission
-                    id="externalPermissions"
-                    doc-id="{{doc.uid}}"
-                    user-visible-permissions="{{doc.contextParameters.userVisiblePermissions}}"
-                    share-with-external="true"
-                  >
-                  </nuxeo-popup-permission>
-                </div>
-              </template>
-            </dom-if>
+        <template is="dom-if" if="[[showExternal]]">
+        <nuxeo-card heading="[[i18n('documentPermissions.external')]]">
+          <dom-if if="[[_hasPermission(doc)]]">
+            <template>
+              <div class="actions">
+                <nuxeo-popup-permission
+                  id="externalPermissions"
+                  doc-id="{{doc.uid}}"
+                  user-visible-permissions="{{doc.contextParameters.userVisiblePermissions}}"
+                  share-with-external="true"
+                >
+                </nuxeo-popup-permission>
+              </div>
+            </template>
+          </dom-if>
 
-            <div class="content">
-              <div class="tip">[[i18n('documentPermissions.externalDescription')]]</div>
-              <nuxeo-document-acl-table
-                doc="[[doc]]"
-                ace-filter="_onlyExternalUserAces"
-                acl-filter="_excludeInheritedAcls"
-                show-actions="[[_hasPermission(doc)]]"
-                share-with-external="true"
-                caption-text="[[i18n('documentPermissions.external')]]"
-              >
-                <div slot="emptyResult" class="emptyResult">
-                  [[_emptyLabel('documentPermissions.noExternalPermission', loading, i18n)]]
-                </div>
-              </nuxeo-document-acl-table>
-            </div>
-          </nuxeo-card></template
-        >
+          <div class="content">
+            <div class="tip">[[i18n('documentPermissions.externalDescription')]]</div>
+            <nuxeo-document-acl-table
+              doc="[[doc]]"
+              ace-filter="_onlyExternalUserAces"
+              acl-filter="_excludeInheritedAcls"
+              show-actions="[[_hasPermission(doc)]]"
+              share-with-external="true"
+              caption-text="[[i18n('documentPermissions.external')]]"
+            >
+              <div slot="emptyResult" class="emptyResult">
+                [[_emptyLabel('documentPermissions.noExternalPermission', loading, i18n)]]
+              </div>
+            </nuxeo-document-acl-table>
+          </div>
+        </nuxeo-card></template>
 
         <nuxeo-operation id="blockOp" op="Document.BlockPermissionInheritance" input="{{doc.uid}}"></nuxeo-operation>
         <nuxeo-operation
@@ -246,6 +246,10 @@ import '../nuxeo-button-styles.js';
           type: Boolean,
           value: false,
           observer: 'refresh',
+        },
+        showExternal:{
+          type:Boolean,
+          value:config.get('nuxeo.permissions.externalUsers.allowed'),
         },
       };
     }
@@ -339,14 +343,6 @@ import '../nuxeo-button-styles.js';
 
     _emptyLabel(label, loading) {
       return loading ? this.i18n('label.loading') : this.i18n(label);
-    }
-
-    _showExternal() {
-      const config = Nuxeo && Nuxeo.UI && Nuxeo.UI.config;
-      const permissions = config && config.permissions;
-      const externalUsers = permissions && permissions.externalUsers;
-      const allowed = externalUsers && externalUsers.allowed;
-      return allowed;
     }
   }
 
