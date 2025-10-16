@@ -332,7 +332,6 @@ import '../nuxeo-button-styles.js';
           type: Object,
         },
 
-
         /** Level of depth for the comment. */
         level: {
           type: Number,
