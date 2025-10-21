@@ -171,8 +171,8 @@ import '../nuxeo-button-styles.js';
         </nuxeo-card>
 
         <!-- External users permissions -->
-        <template is="dom-if" if="[[showExternalPermissions]]">
-          <nuxeo-card heading="[[i18n('documentPermissions.external')]]">
+      
+          <nuxeo-card heading="[[i18n('documentPermissions.external')]]" hidden$=[[!showExternalPermissions]]>
             <dom-if if="[[_hasPermission(doc)]]">
               <template>
                 <div class="actions">
@@ -202,8 +202,7 @@ import '../nuxeo-button-styles.js';
                 </div>
               </nuxeo-document-acl-table>
             </div>
-          </nuxeo-card></template
-        >
+          </nuxeo-card>
 
         <nuxeo-operation id="blockOp" op="Document.BlockPermissionInheritance" input="{{doc.uid}}"></nuxeo-operation>
         <nuxeo-operation
