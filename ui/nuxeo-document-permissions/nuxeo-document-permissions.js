@@ -171,37 +171,39 @@ import '../nuxeo-button-styles.js';
         </nuxeo-card>
 
         <!-- External users permissions -->
-        <nuxeo-card heading="[[i18n('documentPermissions.external')]]">
-          <dom-if if="[[_hasPermission(doc)]]">
-            <template>
-              <div class="actions">
-                <nuxeo-popup-permission
-                  id="externalPermissions"
-                  doc-id="{{doc.uid}}"
-                  user-visible-permissions="{{doc.contextParameters.userVisiblePermissions}}"
-                  share-with-external="true"
-                >
-                </nuxeo-popup-permission>
-              </div>
-            </template>
-          </dom-if>
+        <template is="dom-if" if="[[showExternalPermissions]]">
+          <nuxeo-card heading="[[i18n('documentPermissions.external')]]">
+            <dom-if if="[[_hasPermission(doc)]]">
+              <template>
+                <div class="actions">
+                  <nuxeo-popup-permission
+                    id="externalPermissions"
+                    doc-id="{{doc.uid}}"
+                    user-visible-permissions="{{doc.contextParameters.userVisiblePermissions}}"
+                    share-with-external="true"
+                  >
+                  </nuxeo-popup-permission>
+                </div>
+              </template>
+            </dom-if>
 
-          <div class="content">
-            <div class="tip">[[i18n('documentPermissions.externalDescription')]]</div>
-            <nuxeo-document-acl-table
-              doc="[[doc]]"
-              ace-filter="_onlyExternalUserAces"
-              acl-filter="_excludeInheritedAcls"
-              show-actions="[[_hasPermission(doc)]]"
-              share-with-external="true"
-              caption-text="[[i18n('documentPermissions.external')]]"
-            >
-              <div slot="emptyResult" class="emptyResult">
-                [[_emptyLabel('documentPermissions.noExternalPermission', loading, i18n)]]
-              </div>
-            </nuxeo-document-acl-table>
-          </div>
-        </nuxeo-card>
+            <div class="content">
+              <div class="tip">[[i18n('documentPermissions.externalDescription')]]</div>
+              <nuxeo-document-acl-table
+                doc="[[doc]]"
+                ace-filter="_onlyExternalUserAces"
+                acl-filter="_excludeInheritedAcls"
+                show-actions="[[_hasPermission(doc)]]"
+                share-with-external="true"
+                caption-text="[[i18n('documentPermissions.external')]]"
+              >
+                <div slot="emptyResult" class="emptyResult">
+                  [[_emptyLabel('documentPermissions.noExternalPermission', loading, i18n)]]
+                </div>
+              </nuxeo-document-acl-table>
+            </div>
+          </nuxeo-card></template
+        >
 
         <nuxeo-operation id="blockOp" op="Document.BlockPermissionInheritance" input="{{doc.uid}}"></nuxeo-operation>
         <nuxeo-operation
@@ -245,6 +247,10 @@ import '../nuxeo-button-styles.js';
           value: false,
           observer: 'refresh',
         },
+        showExternalPermissions: {
+          type: Boolean,
+          value: false,
+        },
       };
     }
 
@@ -262,6 +268,13 @@ import '../nuxeo-button-styles.js';
       this.addEventListener('aceupdated', this.onACEUpdated);
       this.addEventListener('acedeleted', this.onACEDeleted);
       this.addEventListener('notification', this.onNotification);
+      const externalPermissions =
+        Nuxeo &&
+        Nuxeo.UI &&
+        Nuxeo.UI.config &&
+        Nuxeo.UI.config.permissions &&
+        Nuxeo.UI.config.permissions.externalUsers;
+      this.showExternalPermissions = externalPermissions ? String(externalPermissions).toLowerCase() === 'true' : false;
     }
 
     refresh() {
