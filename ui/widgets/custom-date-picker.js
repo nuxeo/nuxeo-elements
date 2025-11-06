@@ -409,6 +409,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             background: transparent;
           }
 
+          .calendar-icon:disabled {
+            color: #d1d5db;
+            cursor: not-allowed;
+            background: transparent;
+          }
+
+          .calendar-icon:disabled:hover {
+            color: #d1d5db;
+            background: transparent;
+          }
+
           .calendar-icon {
             padding: 2px; /* Reduced padding */
             color: #374151;
