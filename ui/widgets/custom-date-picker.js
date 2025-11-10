@@ -1217,10 +1217,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
             <div class="calendar-footer">
               <button type="button" class="footer-button today-button" on-click="_selectToday" tabindex="0">
-                [[_getLocalizedText('Today')]]
+                [[_getLocalizedText('today')]]
               </button>
               <button type="button" class="footer-button cancel-button" on-click="_closeCalendar" tabindex="0">
-                [[_getLocalizedText('Cancel')]]
+                [[_getLocalizedText('cancel')]]
               </button>
             </div>
           </div>
