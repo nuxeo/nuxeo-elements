@@ -171,7 +171,8 @@ import '../nuxeo-button-styles.js';
         </nuxeo-card>
 
         <!-- External users permissions -->
-        <nuxeo-card heading="[[i18n('documentPermissions.external')]]">
+
+        <nuxeo-card heading="[[i18n('documentPermissions.external')]]" hidden$="[[!showExternalPermissions]]">
           <dom-if if="[[_hasPermission(doc)]]">
             <template>
               <div class="actions">
@@ -245,6 +246,10 @@ import '../nuxeo-button-styles.js';
           value: false,
           observer: 'refresh',
         },
+        showExternalPermissions: {
+          type: Boolean,
+          value: false,
+        },
       };
     }
 
@@ -262,6 +267,13 @@ import '../nuxeo-button-styles.js';
       this.addEventListener('aceupdated', this.onACEUpdated);
       this.addEventListener('acedeleted', this.onACEDeleted);
       this.addEventListener('notification', this.onNotification);
+      const externalPermissions =
+        Nuxeo &&
+        Nuxeo.UI &&
+        Nuxeo.UI.config &&
+        Nuxeo.UI.config.permissions &&
+        Nuxeo.UI.config.permissions.externalUsers;
+      this.showExternalPermissions = externalPermissions ? String(externalPermissions).toLowerCase() === 'true' : false;
     }
 
     refresh() {
