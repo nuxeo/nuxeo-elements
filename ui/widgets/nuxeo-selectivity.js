@@ -7383,9 +7383,6 @@ typedArrayTags[weakMapTag] = false;
 
     _valueChanged(newValue) {
       const valueType = Array.isArray(newValue) ? newValue : [newValue];
-      console.log(newValue,'new value' , valueType);
-      console.log(this._selectivity,'selectivity' );
-      console.log(this._inUpdateSelection,'in update selection' );
       if (this._selectivity && !this._inUpdateSelection) {
         if (valueType) {
           this._selectivity.setValue(newValue, { triggerChange: false });
