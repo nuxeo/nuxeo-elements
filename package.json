@@ -3,7 +3,7 @@
   "repository": "nuxeo/nuxeo-elements.git",
   "name": "nuxeo-elements",
   "private": true,
-  "version": "2025.5.0-SNAPSHOT",
+  "version": "2025.9.0-SNAPSHOT",
   "author": "Nuxeo",
   "license": "Apache-2.0",
   "engines": {
@@ -36,7 +36,7 @@
     "storybook": "lerna run analysis --parallel && cd storybook && npm start",
     "bump-version:date-hash": "TIMESTAMP=$(date -u +%Y%m%d.%H%M%S) && lerna exec \"npm --no-git-tag-version version \\$(node -pe \\\"require('./package.json').version + '.$TIMESTAMP-' + require('child_process').execSync('git rev-parse --short HEAD').toString()\\\")\" --ignore @nuxeo/nuxeo-elements-storybook"
   },
-  "overrides": { 
+  "overrides": {
     "react-draggable": "4.4.5"
   },
   "devDependencies": {
@@ -85,7 +85,7 @@
     ]
   },
   "dependencies": {
-    "@nuxeo/moment": "^2.24.0-nx.0",
+    "@nuxeo/moment": "2.30.1-nx.1",
     "@nuxeo/paper-typeahead": "^0.6.0-nx.0",
     "@polymer/iron-autogrow-textarea": "^3.0.1",
     "@polymer/iron-collapse": "^3.0.0",
@@ -128,7 +128,6 @@
     "@polymer/paper-tooltip": "^3.0.0",
     "@polymer/polymer": "^3.0.0",
     "@polymer/test-fixture": "^4.0.2",
-    "@vaadin/date-picker": "^23.0.0",
     "nuxeo": "^4.0.3",
     "marked": "^4.0.17"
   }

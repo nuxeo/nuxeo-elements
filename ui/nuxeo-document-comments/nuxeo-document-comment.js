@@ -87,6 +87,11 @@ import '../nuxeo-button-styles.js';
             white-space: pre-wrap;
           }
 
+          iron-icon.disabled {
+            pointer-events: none;
+            opacity: 0.4;
+          }
+
           paper-menu-button {
             --paper-menu-button: {
               padding: 0;
@@ -129,6 +134,12 @@ import '../nuxeo-button-styles.js';
             &[name='edit']:focus,
             &[name='delete']:focus {
               outline: auto;
+            }
+
+            .replybtn {
+              height: 1em;
+              width: 0.2em;
+              border: none;
             }
           }
         </style>
@@ -217,13 +228,20 @@ import '../nuxeo-button-styles.js';
                         </dom-if>
                         <dom-if if="[[!truncated]]">
                           <template>
-                            <iron-icon
+                            <paper-icon-button
+                              tabindex="0"
                               name="reply"
                               class="main-option opaque"
                               icon="reply"
+                              aria-hidden="true"
                               on-tap="_reply"
+                              on-keydown="_handleKey"
                               hidden$="[[!_isRootElement(level)]]"
-                            ></iron-icon>
+                              tabindex="0"
+                              role="button"
+                              aria-label="[[i18n('command.replyComment')]]"
+                            >
+                            </paper-icon-button>
                           </template>
                         </dom-if>
                       </div>
@@ -245,8 +263,10 @@ import '../nuxeo-button-styles.js';
                           <template>
                             <iron-icon
                               id="submit"
+                              role="button"
+                              aria-label="[[i18n('command.selectComment')]]"
                               name="submit"
-                              class="main-option opaque"
+                              class$="main-option opaque [[_computeDisabledClass(_isSubmitting)]]"
                               icon="check"
                               on-tap="_submitComment"
                               on-keydown="_submitOnEnter"
@@ -255,8 +275,11 @@ import '../nuxeo-button-styles.js';
                             <nuxeo-tooltip for="submit">[[i18n('comments.submit.tooltip')]]</nuxeo-tooltip>
                             <iron-icon
                               name="clear"
+                              role="button"
+                              aria-label="[[i18n('command.removeComment')]]"
                               class="main-option opaque"
                               icon="clear"
+                              role="button"
                               on-tap="_clearInput"
                               on-keydown="_cancelOnEnter"
                               tabindex="0"
@@ -459,13 +482,34 @@ import '../nuxeo-button-styles.js';
       });
     }
 
+    _handleKey(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this._reply();
+      }
+    }
+
     _showFullComment() {
       this.set('comment.showFull', true);
+    }
+
+    _computeDisabledClass(isSubmitting) {
+      return isSubmitting ? 'disabled' : '';
     }
 
     _submitComment(e) {
       if (e) {
         e.preventDefault();
+      }
+      if (this._isSubmitting) {
+        return;
+      }
+      this._isSubmitting = true;
+
+      const input = this.$$('#inputContainer');
+      if (!input || this._isBlank(input.value)) {
+        this._isSubmitting = false;
+        return;
       }
       this.$.commentRequest.data = {
         'entity-type': 'comment',
@@ -499,6 +543,9 @@ import '../nuxeo-button-styles.js';
             this.notify({ message: this._computeTextLabel(this.level, 'edition.error') });
             throw error;
           }
+        })
+        .finally(() => {
+          this._isSubmitting = false;
         });
     }
 
