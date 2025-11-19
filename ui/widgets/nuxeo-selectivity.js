@@ -3271,7 +3271,7 @@ typedArrayTags[weakMapTag] = false;
      * @return The validated value. This may differ from the input value.
      */
         validateValue(value) {
-          if (value === null) {
+          if (value === null || value === undefined) {
             return [];
           } else if (Array.isArray(value)) {
             if (value.every(Selectivity.isValidId)) {
