@@ -35,7 +35,7 @@ jobs:
           branch-name: maintenance-3.1.x
           inputs: |
             branch_name: ${{ env.BRANCH_NAME }}
-            sauce_labs: true
+            sauce_labs: false
             skip_ftests: false
             skip_a11y: false
             skip_unit_tests: false

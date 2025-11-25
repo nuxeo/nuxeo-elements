@@ -18,17 +18,11 @@ on:
 jobs:
   # in uses, cannot use environment variable for {owner}/{repo} nor matrix strategy variable for {ref}
   # thus hardcoding them
-  call-workflow-in-lts-2021:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    uses: nuxeo/nuxeo-elements/.github/workflows/crowdin.yaml@maintenance-3.0.x
-    secrets: inherit
-    needs: crowdin
-
   call-workflow-in-lts-2025:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     uses: nuxeo/nuxeo-elements/.github/workflows/crowdin.yaml@lts-2025
     secrets: inherit
-    needs: call-workflow-in-lts-2021
+    needs: crowdin
 
   crowdin:
     runs-on: ubuntu-latest
@@ -41,7 +35,7 @@ jobs:
 
       - name: Crowdin Action
         id: crowdin-sync
-        uses: crowdin/github-action@1.5.2
+        uses: crowdin/github-action@v2.12.0
         with:
           # Disable 'git checkout "${GITHUB_REF#refs/heads/}"'
           skip_ref_checkout: true
@@ -76,4 +70,5 @@ jobs:
           github_user_email: webui@hyland.com
 
         env:
+          ACTIONS_STEP_DEBUG: true
           GITHUB_TOKEN: ${{ secrets.WEBUI_JX_BOT_GITHUB_ACTIONS_TOKEN }}

@@ -82,6 +82,21 @@ import '../nuxeo-button-styles.js';
             width: 1.3rem;
           }
 
+          .email-wrapper {
+            max-width: 100%;
+            overflow: hidden;
+            text-align: left;
+          }
+
+          .email-text {
+            display: inline-block;
+            max-width: 240px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: middle;
+          }
+
           .card {
             background: none var(--nuxeo-box, #fff);
             box-shadow: 0 3px 5px rgba(0, 0, 0, 0.04);
@@ -365,6 +380,7 @@ import '../nuxeo-button-styles.js';
             <div class="table-header" role="row">
               <div class="flex-4" role="columnheader">[[i18n('groupManagement.name')]]</div>
               <div class="flex-4" role="columnheader">[[i18n('groupManagement.identifier')]]</div>
+              <div class="flex-4" role="columnheader">[[i18n('label.directories.nature.email')]]</div>
               <div class="table-actions" role="columnheader"></div>
             </div>
             <div class="table-rows" role="rowgroup">
@@ -381,6 +397,15 @@ import '../nuxeo-button-styles.js';
                           </dom-if>
                         </div>
                         <div class="flex-4 preserve-white-space" role="columnheader">[[item.id]]</div>
+                        <div class="flex-4" role="columnheader">
+                          <div class="email-wrapper">
+                            <span class="email-text">
+                              [[_getEmail(item.properties)]]
+                              <nuxeo-tooltip>[[_getEmail(item.properties)]]</nuxeo-tooltip>
+                            </span>
+                          </div>
+                        </div>
+
                         <div class="table-actions" role="columnheader">
                           <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
                             <template>
@@ -593,6 +618,10 @@ import '../nuxeo-button-styles.js';
 
     _userHasName(user) {
       return user.properties.firstName || user.properties.lastName;
+    }
+
+    _getEmail(properties) {
+      return properties && properties.email;
     }
 
     _fetch() {
