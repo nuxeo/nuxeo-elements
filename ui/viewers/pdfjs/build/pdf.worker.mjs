@@ -36498,13 +36498,19 @@ class FileSpec {
     }
   }
   get filename() {
-    let filename = "";
-    const item = pickPlatformItem(this.root);
-    if (item && typeof item === "string") {
-      filename = stringToPDFString(item, true).replaceAll("\\\\", "\\").replaceAll("\\/", "/").replaceAll("\\", "/");
-    }
-    return shadow(this, "filename", filename || "unnamed");
+  let filename = "";
+  const item = pickPlatformItem(this.root);
+  if (item && typeof item === "string") {
+    const raw = stringToPDFString(item, true);
+
+    let s = raw.split("\\\\").join("\\");
+    s = s.split("\\/").join("/");
+    s = s.split("\\").join("/");
+
+    filename = s;
   }
+  return shadow(this, "filename", filename || "unnamed");
+}
   get content() {
     if (!this.#contentAvailable) {
       return null;
