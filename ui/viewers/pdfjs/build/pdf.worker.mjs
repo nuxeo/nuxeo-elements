@@ -36497,6 +36497,7 @@ class FileSpec {
       }
     }
   }
+  //------------- Customized code STARTS for maintaining secure update ------------------
   get filename() {
   let filename = "";
   const item = pickPlatformItem(this.root);
@@ -36511,6 +36512,7 @@ class FileSpec {
   }
   return shadow(this, "filename", filename || "unnamed");
 }
+//------------- Customized code ENDS for maintaining secure update ------------------
   get content() {
     if (!this.#contentAvailable) {
       return null;
