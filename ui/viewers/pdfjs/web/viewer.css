@@ -12,7 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/*Customization */
+#print, #download, #editorModeSeparator, #editorFreeText, #editorInk, #editorStamp, #secondaryPrint, #secondaryDownload{
+  display:none !important;
+}
+/*           */
 .messageBar{
   --closing-button-icon:url(images/messageBar_closingButton.svg);
   --message-bar-close-button-color:var(--text-primary-color);
