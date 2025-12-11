@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 /*Customization starts here */
-#printButton, #downloadButton, #editorModeSeparator, #editorFreeText, #editorInk, #editorStamp, #secondaryPrint, #secondaryDownload{
+#printButton, #downloadButton,#editorHighlightButton, #editorModeSeparator, #editorFreeText, #editorInk, #editorStamp, #secondaryPrint, #secondaryDownload{
   display:none !important;
 }
 /* Customization ends here */
