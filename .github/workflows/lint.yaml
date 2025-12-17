@@ -12,8 +12,9 @@ on:
         type: string
         required: false
     secrets:
-      NPM_PACKAGES_TOKEN:
-        description: 'NPM_PACKAGES_TOKEN'
+      NEXUS_NPM_USERNAME:
+        required: true
+      NEXUS_NPM_PASSWORD:
         required: true
 
 env:
@@ -30,8 +31,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 22
-          registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
-          scope: '@nuxeo'
       
       - name: Configure npm for Nexus
         run: |
@@ -42,6 +41,9 @@ jobs:
           //packages.nuxeo.com/repository/npm-public/:password=${{ secrets.NEXUS_NPM_PASSWORD }}
           //packages.nuxeo.com/repository/npm-public/:always-auth=true
           EOF
+
+      - name: Verify Nexus auth
+        run: npm whoami --registry=https://packages.nuxeo.com/repository/npm-public/
 
       - name: Install
         run: |
