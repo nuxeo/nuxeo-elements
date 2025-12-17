@@ -24,7 +24,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior';
 {
   /**
    * An element to display a thumbnail of a document
-   *
+   * comment
    * Example:
    *    <nuxeo-document-thumbnail document="[[document]]"></nuxeo-document-thumbnail>
    *
