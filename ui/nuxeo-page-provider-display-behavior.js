@@ -40,6 +40,10 @@ export const PageProviderDisplayBehavior = [
         value: 0,
         notify: true,
       },
+      _currentPage: {
+        type: Number,
+        value: 1,
+      },
 
       emptyLabel: {
         type: String,
@@ -569,7 +573,12 @@ export const PageProviderDisplayBehavior = [
     },
 
     _quickFilterChanged() {
-      this.fetch();
+      if (this.paginable) {
+        this._currentPage = 1;
+        this._fetchPage(this._currentPage, this._pageSize);
+      } else {
+        this._fetchRange(0, this._pageSize - 1, true);
+      }
     },
 
     _updateFlags() {
@@ -600,9 +609,51 @@ export const PageProviderDisplayBehavior = [
         this.set('items', arr);
       }
       this.size = this.items.length;
+      this._currentPage = 1;
       // if reset is called we need to clear selection
       this.clearSelection();
       this._resize();
+    },
+
+    /**
+     * Common function to update quick filters and buckets.
+     */
+    _updateQuickFiltersAndBuckets(response) {
+      // quick filters
+      this.quickFilters = this.nxProvider.quickFilters;
+
+      // check if there is any active quick filter
+      const hasActiveQuickFilters = this.quickFilters
+        ? Object.keys(this.quickFilters).some((k) => this.quickFilters[k].active)
+        : false;
+
+      // update buckets array based on provider's sort property
+      let buckets = [];
+      if (response.aggregations && !hasActiveQuickFilters) {
+        const providerSort = this.nxProvider.sort;
+        if (providerSort && Object.keys(providerSort).length === 1) {
+          const providerField = Object.keys(providerSort)[0];
+          const providerOrder = providerSort[providerField];
+          Object.keys(response.aggregations).forEach((key) => {
+            const aggregation = response.aggregations[key];
+            if (
+              aggregation.field === providerField &&
+              aggregation.buckets.length >= buckets.length &&
+              aggregation.properties &&
+              aggregation.properties.order
+            ) {
+              const order = aggregation.properties.order.split(' ');
+              if (order.length > 0 && order[0] === 'key') {
+                ({ buckets } = aggregation);
+              }
+              if (order.length > 1 && order[1] !== providerOrder) {
+                buckets.reverse();
+              }
+            }
+          });
+        }
+      }
+      this.set('buckets', buckets);
     },
 
     /**
@@ -610,11 +661,15 @@ export const PageProviderDisplayBehavior = [
      * That allows to use either range OR page based fetch APIs.
      * Default behavior is range base fetching.
      */
+
     fetch() {
-      if (this._hasPageProvider()) {
-        return this._fetchRange(0, this._pageSize - 1, true);
+      if (!this._hasPageProvider()) {
+        return Promise.resolve();
       }
-      return Promise.resolve();
+      if (this.paginable) {
+        return this._fetchPage(this.nxProvider.page || 1, this._pageSize);
+      }
+      return this._fetchRange(0, this._pageSize - 1, true);
     },
 
     /**
@@ -623,40 +678,72 @@ export const PageProviderDisplayBehavior = [
      * @param page Page index to fetch
      * @param pageSize Number of results per page
      */
-    _fetchPage(page, pageSize) {
-      if (this._hasPageProvider()) {
-        const options = {
-          skipAggregates: page && page > 1,
-        };
-        if (page) {
-          this.nxProvider.page = page;
-        }
-        if (pageSize) {
-          this.nxProvider.pageSize = pageSize;
-        }
-        this.nxProvider.offset = 0;
-        return this.nxProvider.fetch(options).then((response) => {
-          if (page === 1) {
-            this.reset();
-          }
-          for (let i = 0; i < response.entries.length; i++) {
-            this.push('items', response.entries[i]);
 
-            const entryIndex = this.items.length - 1;
-            const isSelected = this._isIndexSelected(entryIndex);
-            // if select all is active we need to select the new loaded `item`
-            if (this.selectAllActive) {
-              if (isSelected) {
-                this.set(`selectedItems.${entryIndex}`, this.items[entryIndex]);
-              } else {
-                this.selectIndex(entryIndex);
-              }
-            }
-          }
-          return response;
-        });
+    _fetchPage(page, pageSize) {
+      if (!this._hasPageProvider()) {
+        return Promise.resolve();
       }
-      return Promise.resolve();
+      delete this.nxProvider.offset;
+      const idx = page || 1;
+      const size = pageSize || this.nxProvider.pageSize;
+      const pageIndex = (idx - 1) * size;
+
+      this.nxProvider.currentPageIndex = pageIndex;
+      this.nxProvider.page = page;
+      this.nxProvider.pageSize = size;
+
+      const options = {
+        skipAggregates: idx !== 1,
+      };
+
+      return this.nxProvider.fetch(options).then((response) => {
+        if (idx === 1) {
+          // FIRST PAGE → replace
+          this.set('items', [...response.entries]);
+        } else {
+          // NEXT PAGES → append
+          response.entries.forEach((entry) => {
+            this.push('items', entry);
+          });
+        }
+
+        /**
+         * Reset virtual list indices
+         */
+        this._first = 0;
+        this._last = response.entries.length - 1;
+
+        /**
+         * Maintain selections: rebuild selectedItems array for new dataset
+         */
+        if (this.selectAllActive) {
+          this.selectedItems = {};
+          this.items.forEach((entry, index) => {
+            this.set(`selectedItems.${index}`, entry);
+          });
+        }
+
+        /**
+         * Sync quick filters (they update on server output)
+         */
+        this.quickFilters = this.nxProvider.quickFilters;
+
+        /**
+         * Update aggregations only on first page
+         */
+        if (idx === 1 && response.aggregations) {
+          this._updateQuickFiltersAndBuckets(response);
+        }
+
+        /**
+         * Notify UI the list changed so re-render occurs
+         */
+        this.notifyResize();
+        this.fire('items-changed');
+        this.fire('nuxeo-page-loaded');
+
+        return response;
+      });
     },
 
     /**
@@ -753,45 +840,11 @@ export const PageProviderDisplayBehavior = [
           }
 
           // quick filters
-          this.quickFilters = this.nxProvider.quickFilters;
-
-          // check if there is any active quick filter
-          const hasActiveQuickFilters = this.quickFilters
-            ? Object.keys(this.quickFilters).some((k) => this.quickFilters[k].active)
-            : false;
-
-          // update buckets array based on provider's sort property
-          let buckets = [];
-          if (response.aggregations && !hasActiveQuickFilters) {
-            const providerSort = this.nxProvider.sort;
-            if (providerSort && Object.keys(providerSort).length === 1) {
-              const providerField = Object.keys(providerSort)[0];
-              const providerOrder = providerSort[providerField];
-              Object.keys(response.aggregations).forEach((key) => {
-                const aggregation = response.aggregations[key];
-                if (
-                  aggregation.field === providerField &&
-                  aggregation.buckets.length >= buckets.length &&
-                  aggregation.properties &&
-                  aggregation.properties.order
-                ) {
-                  const order = aggregation.properties.order.split(' ');
-                  if (order.length > 0 && order[0] === 'key') {
-                    ({ buckets } = aggregation);
-                  }
-                  if (order.length > 1 && order[1] !== providerOrder) {
-                    buckets.reverse();
-                  }
-                }
-              });
-            }
-            this.set('buckets', buckets);
-          }
+          this._updateQuickFiltersAndBuckets(response);
 
           this.fire('nuxeo-page-loaded');
         });
       }
-      return Promise.resolve();
     },
 
     /**
@@ -843,7 +896,6 @@ export const PageProviderDisplayBehavior = [
         }
       }
     },
-
     _scrollChanged() {
       this._debouncer = Debouncer.debounce(
         this._debouncer,
@@ -861,7 +913,12 @@ export const PageProviderDisplayBehavior = [
               }),
             );
           }
-          this._fetchRange(this.$.list.firstVisibleIndex, this.$.list.lastVisibleIndex);
+          if (this.paginable) {
+            this._currentPage++;
+            this._fetchPage(this._currentPage, this._pageSize);
+          } else {
+            this._fetchRange(this.$.list.firstVisibleIndex, this.$.list.lastVisibleIndex);
+          }
         },
       );
     },
