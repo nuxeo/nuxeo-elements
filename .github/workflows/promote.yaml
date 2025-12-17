@@ -59,17 +59,23 @@ jobs:
           tag_name: v${{ env.VERSION }}
           release_name: Release ${{ env.VERSION }}
 
+      - name: Configure npm for Nexus
+        run: |
+          cat <<EOF > ~/.npmrc
+          registry=https://packages.nuxeo.com/repository/npm-public/
+          @nuxeo:registry=https://packages.nuxeo.com/repository/npm-public/
+          //packages.nuxeo.com/repository/npm-public/:username=${{ secrets.NEXUS_NPM_USERNAME }}
+          //packages.nuxeo.com/repository/npm-public/:password=${{ secrets.NEXUS_NPM_PASSWORD }}
+          //packages.nuxeo.com/repository/npm-public/:always-auth=true
+          EOF
+
       - name: Publish to https://packages.nuxeo.com/repository/npm-public/ (dry run)
         if: ${{ github.event.inputs.dryRun == 'true' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
         run: |
           npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://packages.nuxeo.com/repository/npm-public/ --dry-run
 
       - name: Publish to https://packages.nuxeo.com/repository/npm-public/
         if: ${{ github.event.inputs.dryRun == 'false' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
         run: |
           npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --@nuxeo:registry=https://packages.nuxeo.com/repository/npm-public/
       
