@@ -12,9 +12,9 @@ on:
         type: string
         required: false
     secrets:
-      NEXUS_NPM_USERNAME:
+      REPOSITORY_MANAGER_USERNAME:
         required: true
-      NEXUS_NPM_PASSWORD:
+      REPOSITORY_MANAGER_PASSWORD:
         required: true
 
 env:
@@ -37,8 +37,8 @@ jobs:
           cat <<EOF > ~/.npmrc
           registry=https://packages.nuxeo.com/repository/npm-public/
           @nuxeo:registry=https://packages.nuxeo.com/repository/npm-public/
-          //packages.nuxeo.com/repository/npm-public/:username=${{ secrets.NEXUS_NPM_USERNAME }}
-          //packages.nuxeo.com/repository/npm-public/:password=${{ secrets.NEXUS_NPM_PASSWORD }}
+          //packages.nuxeo.com/repository/npm-public/:username=${{ secrets.REPOSITORY_MANAGER_USERNAME }}
+          //packages.nuxeo.com/repository/npm-public/:password=${{ secrets.REPOSITORY_MANAGER_PASSWORD }}
           //packages.nuxeo.com/repository/npm-public/:always-auth=true
           EOF
 
