@@ -32,10 +32,18 @@ jobs:
           node-version: 22
           registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
           scope: '@nuxeo'
+      
+      - name: Configure npm for Nexus
+        run: |
+          cat <<EOF > ~/.npmrc
+          registry=https://packages.nuxeo.com/repository/npm-public/
+          @nuxeo:registry=https://packages.nuxeo.com/repository/npm-public/
+          //packages.nuxeo.com/repository/npm-public/:username=${{ secrets.NEXUS_NPM_USERNAME }}
+          //packages.nuxeo.com/repository/npm-public/:password=${{ secrets.NEXUS_NPM_PASSWORD }}
+          //packages.nuxeo.com/repository/npm-public/:always-auth=true
+          EOF
 
       - name: Install
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
         run: |
           npm install --no-package-lock
           npm run bootstrap
