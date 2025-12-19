@@ -18,6 +18,9 @@ on:
 env:
   LERNA: lerna@6.6.2        
 
+permissions:
+  contents: write
+
 jobs:
   promote:
     runs-on: ubuntu-latest
