@@ -81,6 +81,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
                     class="comment-iron-icon"
                     on-tap="_submitComment"
                     aria-label$="[[i18n('command.selectComment')]]"
+                    disabled$="[[_isSubmitting]]"
                   >
                     <iron-icon
                       id="submit"
@@ -116,6 +117,11 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
         uid: {
           type: String,
           observer: '_refresh',
+        },
+
+        _isSubmitting: {
+          type: Boolean,
+          value: false,
         },
 
         /**
@@ -296,6 +302,8 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
       if (e) {
         e.preventDefault();
       }
+      if (this._isSubmitting) return;
+      this._isSubmitting = true;
       this._clearRequest();
       this.$.commentRequest.data = {
         'entity-type': 'comment',
@@ -317,6 +325,9 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
             this.notify({ message: this._computeTextLabel(this.level, 'creation.error') });
             throw error;
           }
+        })
+        .finally(() => {
+          this._isSubmitting = false;
         });
     }
 

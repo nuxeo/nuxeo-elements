@@ -398,6 +398,28 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             flex-shrink: 0;
           }
 
+          .clear-button:disabled {
+            color: #d1d5db;
+            cursor: not-allowed;
+            background: transparent;
+          }
+
+          .clear-button:disabled:hover {
+            color: #d1d5db;
+            background: transparent;
+          }
+
+          .calendar-icon:disabled {
+            color: #d1d5db;
+            cursor: not-allowed;
+            background: transparent;
+          }
+
+          .calendar-icon:disabled:hover {
+            color: #d1d5db;
+            background: transparent;
+          }
+
           .calendar-icon {
             padding: 2px; /* Reduced padding */
             color: #374151;
@@ -1063,6 +1085,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                   type="button"
                   class="clear-button"
                   aria-label$="[[_getLocalizedText('clearDate')]]"
+                  disabled$="[[disabled]]"
+                  aria-disabled$="[[disabled]]"
                   tabindex="0"
                   on-click="_clearDate"
                 >
@@ -1217,10 +1241,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
             <div class="calendar-footer">
               <button type="button" class="footer-button today-button" on-click="_selectToday" tabindex="0">
-                [[_getLocalizedText('Today')]]
+                [[_getLocalizedText('today')]]
               </button>
               <button type="button" class="footer-button cancel-button" on-click="_closeCalendar" tabindex="0">
-                [[_getLocalizedText('Cancel')]]
+                [[_getLocalizedText('cancel')]]
               </button>
             </div>
           </div>
