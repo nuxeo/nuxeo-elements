@@ -133,7 +133,7 @@ jobs:
           owner: nuxeo
           repo: nuxeo-web-ui
           workflow-id: preview.yaml
-          access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }}
+          access-token: ${{ secrets.GIT_ADMIN_TOKEN }}
           branch-name: maintenance-3.1.x
           inputs: |
             branch_name: ${{ env.BRANCH_NAME }}
