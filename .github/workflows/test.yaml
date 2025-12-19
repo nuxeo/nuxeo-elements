@@ -18,6 +18,9 @@ on:
       SAUCE_ACCESS_KEY:
         description: 'SAUCE_ACCESS_KEY'
         required: true
+        
+permissions:
+  contents: read
 
 env:
   BRANCH_NAME: ${{ github.head_ref || inputs.branch || 'maintenance-3.1.x' }}

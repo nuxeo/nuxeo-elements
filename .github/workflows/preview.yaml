@@ -12,6 +12,10 @@ env:
   GKE_CLUSTER: jx-prod
   GKE_ZONE: us-east1-b
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   storybook:
     name: Storybook
