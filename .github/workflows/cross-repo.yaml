@@ -12,8 +12,8 @@ on:
         type: string
         required: false
     secrets:
-      WEBUI_ACCESS_TOKEN_PERSONAL:
-        description: 'WEBUI_ACCESS_TOKEN_PERSONAL'
+      GIT_ADMIN_TOKEN:
+        description: 'GIT_ADMIN_TOKEN'
         required: true
 
 env:
@@ -31,7 +31,7 @@ jobs:
           owner: nuxeo
           repo: nuxeo-web-ui
           workflow-id: cross-repo.yaml
-          access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }}
+          access-token: ${{ secrets.GIT_ADMIN_TOKEN }}
           branch-name: maintenance-3.1.x
           inputs: |
             branch_name: ${{ env.BRANCH_NAME }}
