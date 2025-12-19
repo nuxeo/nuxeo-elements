@@ -117,7 +117,7 @@ import '../nuxeo-button-styles.js';
         this.dispatchEvent(
           new CustomEvent('settings-changed', {
             composed: true,
-            bubbles: true,
+            bubbles: false,
           }),
         );
       }
