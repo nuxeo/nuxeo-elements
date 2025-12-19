@@ -51,7 +51,7 @@ jobs:
           owner: nuxeo
           repo: nuxeo-web-ui
           workflow-id: clean.yaml
-          access-token: ${{ secrets.WEBUI_ACCESS_TOKEN_PERSONAL }}
+          access-token: ${{ secrets.GIT_ADMIN_TOKEN }}
           branch-name: lts-2025
           inputs: |
             branch_name: ${{ env.BRANCH_NAME }}
