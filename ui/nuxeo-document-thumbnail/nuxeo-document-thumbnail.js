@@ -63,7 +63,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior';
           }
         </style>
 
-        <img id="img" src="[[_thumbnail(document)]]" alt="[[_title(document)]]" on-error="_error" />
+        <img id="img" src="[[_thumbnail(document)]]" on-error="_error" />
       `;
     }
 
