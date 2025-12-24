@@ -575,7 +575,7 @@ export const PageProviderDisplayBehavior = [
     _quickFilterChanged() {
       if (this.paginable) {
         this._currentPage = 1;
-        this._fetchPage(this._currentPage, this._pageSize);
+        this._fetchPage(this._currentPage, this._pageSize, true);
       } else {
         this._fetchRange(0, this._pageSize - 1, true);
       }
@@ -667,9 +667,10 @@ export const PageProviderDisplayBehavior = [
         return Promise.resolve();
       }
       if (this.paginable) {
-        return this._fetchPage(this.nxProvider.page || 1, this._pageSize);
+        return this._fetchPage(this.nxProvider.page || 1, this._pageSize, true);
       }
-      return this._fetchRange(0, this._pageSize - 1, true);
+
+      return this._fetchRange(0, this._pageSize - 1, true) || Promise.resolve();
     },
 
     /**
@@ -679,71 +680,63 @@ export const PageProviderDisplayBehavior = [
      * @param pageSize Number of results per page
      */
 
-    _fetchPage(page, pageSize) {
-      if (!this._hasPageProvider()) {
-        return Promise.resolve();
+    _fetchPage(page, pageSize, reset = false) {
+      if (this._hasPageProvider()) {
+        const size = pageSize || this.nxProvider.pageSize;
+
+        if (reset || page === 1) {
+          this._currentPage = 1;
+          this.nxProvider.page = 1;
+          this.nxProvider.currentPageIndex = 0;
+          delete this.nxProvider.offset;
+
+          this.clearSelection();
+          this.set('items', []);
+        }
+
+        const idx = page || 1;
+        const pageIndex = (idx - 1) * size;
+
+        this.nxProvider.page = idx;
+        this.nxProvider.pageSize = size;
+        this.nxProvider.currentPageIndex = pageIndex;
+
+        const options = {
+          skipAggregates: idx !== 1,
+        };
+
+        // ✅ ALWAYS return the Promise
+        return this.nxProvider
+          .fetch(options)
+          .then((response) => {
+            if (!response) {
+              return response; // still a resolved Promise
+            }
+
+            if (idx === 1) {
+              this.set('items', [...response.entries]);
+            } else {
+              response.entries.forEach((entry) => this.push('items', entry));
+            }
+
+            this._first = 0;
+            this._last = this.items.length - 1;
+
+            this._updateQuickFiltersAndBuckets(response);
+
+            this.notifyResize();
+            this.fire('nuxeo-page-loaded');
+
+            return response;
+          })
+          .catch((err) => {
+            // Prevent Debouncer crashes on aborted requests
+            if (err && err.name === 'AbortError') {
+              return;
+            }
+            throw err;
+          });
       }
-      delete this.nxProvider.offset;
-      const idx = page || 1;
-      const size = pageSize || this.nxProvider.pageSize;
-      const pageIndex = (idx - 1) * size;
-
-      this.nxProvider.currentPageIndex = pageIndex;
-      this.nxProvider.page = page;
-      this.nxProvider.pageSize = size;
-
-      const options = {
-        skipAggregates: idx !== 1,
-      };
-
-      return this.nxProvider.fetch(options).then((response) => {
-        if (idx === 1) {
-          // FIRST PAGE → replace
-          this.set('items', [...response.entries]);
-        } else {
-          // NEXT PAGES → append
-          response.entries.forEach((entry) => {
-            this.push('items', entry);
-          });
-        }
-
-        /**
-         * Reset virtual list indices
-         */
-        this._first = 0;
-        this._last = response.entries.length - 1;
-
-        /**
-         * Maintain selections: rebuild selectedItems array for new dataset
-         */
-        if (this.selectAllActive) {
-          this.selectedItems = {};
-          this.items.forEach((entry, index) => {
-            this.set(`selectedItems.${index}`, entry);
-          });
-        }
-
-        /**
-         * Sync quick filters (they update on server output)
-         */
-        this.quickFilters = this.nxProvider.quickFilters;
-
-        /**
-         * Update aggregations only on first page
-         */
-        if (idx === 1 && response.aggregations) {
-          this._updateQuickFiltersAndBuckets(response);
-        }
-
-        /**
-         * Notify UI the list changed so re-render occurs
-         */
-        this.notifyResize();
-        this.fire('items-changed');
-        this.fire('nuxeo-page-loaded');
-
-        return response;
-      });
     },
 
     /**
