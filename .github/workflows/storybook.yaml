@@ -16,6 +16,10 @@ on:
         description: 'NPM_PACKAGES_TOKEN'
         required: true
 
+permissions:
+  contents: write
+  pull-requests: write
+
 env:
   BRANCH_NAME: ${{ github.head_ref || inputs.branch || 'lts-2025' }}
 

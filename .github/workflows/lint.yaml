@@ -15,6 +15,9 @@ on:
       NPM_PACKAGES_TOKEN:
         description: 'NPM_PACKAGES_TOKEN'
         required: true
+        
+permissions:
+  contents: read
 
 env:
   BRANCH_NAME: ${{ github.head_ref || inputs.branch || 'lts-2025' }}
