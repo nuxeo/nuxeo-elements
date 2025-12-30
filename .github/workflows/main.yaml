@@ -8,6 +8,9 @@ on:
   # Manually trigger the workflow
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 # This chages has been changed due to some version issue we will be removed it once we will resolve WEBUI-1266 and WEBUI-1267
 env:
   LERNA: lerna@6.6.2
