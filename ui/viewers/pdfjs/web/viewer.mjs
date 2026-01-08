@@ -5470,7 +5470,27 @@ class CommentPopup {
 
 ;// ./web/download_manager.js
 
+// Only allow blob: URLs or absolute http(s) URLs for download.
+function isSafeUrlForDownload(url) {
+  try {
+    const u = new URL(url, window.location.origin);
+    // Allow only blob: or http(s): schemes.
+    return (
+      u.protocol === "blob:" ||
+      u.protocol === "http:" ||
+      u.protocol === "https:"
+    );
+  } catch (e) {
+    // Malformed URL or relative path
+    return false;
+  }
+}
+
 function download(blobUrl, filename) {
+  if (!isSafeUrlForDownload(blobUrl)) {
+    console.error('DownloadManager: Refusing to download untrusted URL:', blobUrl);
+    return;
+  }
   const a = document.createElement("a");
   if (!a.click) {
     throw new Error('DownloadManager: "a.click()" is not supported.');
