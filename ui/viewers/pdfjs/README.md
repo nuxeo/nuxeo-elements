@@ -2,7 +2,7 @@
 
 The PDF.js viewer is built from the [PDF.js](https://github.com/mozilla/pdf.js/) GitHub repository and integrated into the current directory.
 
-The current version is built from the [v4.2.67](https://github.com/mozilla/pdf.js/releases/tag/v4.2.67) tag.
+The current version is built from the [v5.4.394](https://github.com/mozilla/pdf.js/releases/tag/v5.4.394) tag.
 
 ## How to Update
 
@@ -13,67 +13,128 @@ Clone the Repository:
 
 Checkout the wanted commit/tag:
 
-    $ git checkout v4.2.67
+    $ git checkout v5.4.394
+
+Next, install Node.js via the official package or via nvm. If everything worked out, install all dependencies for PDF.js:
+
+    $ npm install
+
+In order to bundle all src/ files into two production scripts and build the generic viewer, run:
+
+    $ npx gulp generic
+
+Copy the generated build and web folders and add them in the pdfjs folder of the ELEMENTS repository.
+
+Commit your changes:
+
+    $ git commit -am "ELEMENTS-XXX: update PDF.js to 5.4.394"
+
 
 Apply the following patch to allow viewing a file in a static UI connected to a remote server with a CORS configuration allowing cross-domain requests:
 - Revert file origin validation.
 - Make cross-site Access-Control requests use credentials.
+---
+ ui/viewers/pdfjs/web/viewer.css | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-```
-diff --git a/web/app.js b/web/app.js
-index 209ad0360..c1cb5de8b 100644
---- a/web/app.js
-+++ b/web/app.js
-@@ -2186,7 +2186,9 @@ function webViewerInitialized() {
-     const queryString = document.location.search.substring(1);
-     const params = parseQueryString(queryString);
-     file = params.get("file") ?? AppOptions.get("defaultUrl");
--    validateFileURL(file);
-+    // Revert https://github.com/mozilla/pdf.js/pull/6916 to allow viewing a file from a remote server
-+    // with CORS headers properly configured in a static UI.
-+    // validateFileURL(file);
-   } else if (PDFJSDev.test("MOZCENTRAL")) {
-     file = window.location.href;
-   } else if (PDFJSDev.test("CHROME")) {
-@@ -2290,7 +2292,7 @@ function webViewerInitialized() {
- function webViewerOpenFileViaURL(file) {
-   if (typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")) {
-     if (file) {
--      PDFViewerApplication.open(file);
-+      PDFViewerApplication.open(file, { withCredentials: true });
-     } else {
-       PDFViewerApplication._hideViewBookmark();
-     }
-```
+diff --git a/ui/viewers/pdfjs/web/viewer.css b/ui/viewers/pdfjs/web/viewer.css
+index 83e4fda50..87c0a5218 100644
+--- a/ui/viewers/pdfjs/web/viewer.css
++++ b/ui/viewers/pdfjs/web/viewer.css
+@@ -12,7 +12,11 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-
++/*Customization */
++#print, #download, #editorModeSeparator, #editorFreeText, #editorInk, #editorStamp, #secondaryPrint, #secondaryDownload{
++  display:none !important;
++}
++/*           */
+ .messageBar{
+   --closing-button-icon:url(images/messageBar_closingButton.svg);
+   --message-bar-close-button-color:var(--text-primary-color);
 
-Install the gulp package globally:
+From fbce360b2fd88c777a31f96e33b337c4cafe6d86 Mon Sep 17 00:00:00 2001
+From: vaibhavagarwal4-lab <Vaibhav.Agarwal@hyland.com>
+Date: Tue, 9 Dec 2025 23:25:10 +0530
+Subject: [PATCH 2/4] comment changed
 
-    $ npm install -g gulp-cli
+---
+ ui/viewers/pdfjs/web/viewer.css | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Install all dependencies for PDF.js:
+diff --git a/ui/viewers/pdfjs/web/viewer.css b/ui/viewers/pdfjs/web/viewer.css
+index 87c0a5218..4d3dbbfad 100644
+--- a/ui/viewers/pdfjs/web/viewer.css
++++ b/ui/viewers/pdfjs/web/viewer.css
+@@ -12,11 +12,11 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-/*Customization */
++/*Customization starts here */
+ #print, #download, #editorModeSeparator, #editorFreeText, #editorInk, #editorStamp, #secondaryPrint, #secondaryDownload{
+   display:none !important;
+ }
+-/*           */
++/* Customization ends here */
+ .messageBar{
+   --closing-button-icon:url(images/messageBar_closingButton.svg);
+   --message-bar-close-button-color:var(--text-primary-color);
 
-    $ npm install
+From 6ee6cf6a17a86c945ec046745aa9ed94fdd9e515 Mon Sep 17 00:00:00 2001
+From: vaibhavagarwal4-lab <Vaibhav.Agarwal@hyland.com>
+Date: Thu, 11 Dec 2025 12:46:24 +0530
+Subject: [PATCH 3/4] hidden buttons
 
-Build the generic viewer:
+---
+ ui/viewers/pdfjs/web/viewer.css | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-    $ gulp generic
+diff --git a/ui/viewers/pdfjs/web/viewer.css b/ui/viewers/pdfjs/web/viewer.css
+index 4d3dbbfad..8efc086f3 100644
+--- a/ui/viewers/pdfjs/web/viewer.css
++++ b/ui/viewers/pdfjs/web/viewer.css
+@@ -13,7 +13,7 @@
+  * limitations under the License.
+  */
+ /*Customization starts here */
+-#print, #download, #editorModeSeparator, #editorFreeText, #editorInk, #editorStamp, #secondaryPrint, #secondaryDownload{
++#printButton, #downloadButton, #editorModeSeparator, #editorFreeText, #editorInk, #editorStamp, #secondaryPrint, #secondaryDownload{
+   display:none !important;
+ }
+ /* Customization ends here */
 
-[Minify](https://github.com/mozilla/pdf.js/wiki/Frequently-Asked-Questions#minified) the JS files:
+From b8d33c852061acad4754d488ba8928e3f1edd9b8 Mon Sep 17 00:00:00 2001
+From: vaibhavagarwal4-lab <Vaibhav.Agarwal@hyland.com>
+Date: Thu, 11 Dec 2025 14:07:37 +0530
+Subject: [PATCH 4/4] hidden highlight button
 
-    $ gulp minified
+---
+ ui/viewers/pdfjs/web/viewer.css | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Clean the viewer directory:
+diff --git a/ui/viewers/pdfjs/web/viewer.css b/ui/viewers/pdfjs/web/viewer.css
+index 8efc086f3..71e6942ce 100644
+--- a/ui/viewers/pdfjs/web/viewer.css
++++ b/ui/viewers/pdfjs/web/viewer.css
+@@ -13,7 +13,7 @@
+  * limitations under the License.
+  */
+ /*Customization starts here */
+-#printButton, #downloadButton, #editorModeSeparator, #editorFreeText, #editorInk, #editorStamp, #secondaryPrint, #secondaryDownload{
++#printButton, #downloadButton,#editorHighlightButton, #editorModeSeparator, #editorFreeText, #editorInk, #editorStamp, #secondaryPrint, #secondaryDownload{
+   display:none !important;
+ }
+ /* Customization ends here */
 
-    $ rm -rf /path/to/repo/ui/viewers/pdfjs/*/
 
-Copy the generic viewer:
 
-    $ rsync -av build/minified/ /path/to/repo/ui/viewers/pdfjs/ --exclude=\*.{map,pdf}
 
-Commit your changes:
 
-    $ git commit -am "ELEMENTS-XXX: update PDF.js to 4.2.67"
 
-# About Nuxeo
 
-Nuxeo dramatically improves how content-based applications are built, managed and deployed, making customers more agile, innovative and successful. Nuxeo provides a next generation, enterprise ready platform for building traditional and cutting-edge content oriented applications. Combining a powerful application development environment with SaaS-based tools and a modular architecture, the Nuxeo Platform and Products provide clear business value to some of the most recognizable brands including Verizon, Electronic Arts, Sharp, FICO, the U.S. Navy, and Boeing. Nuxeo is headquartered in New York and Paris. More information is available at [www.nuxeo.com](http://www.nuxeo.com).
+
+
+
