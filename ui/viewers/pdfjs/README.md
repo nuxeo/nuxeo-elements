@@ -23,7 +23,7 @@ In order to bundle all src/ files into two production scripts and build the gene
 
     $ npx gulp generic
 
-Copy the generated build and web directories from <mark>pdf.js/build/generic/build </mark>and <mark>pdf.js/build/generic/web</mark>, and add them to the ELEMENTS repository under<mark> ui/viewers/pdfjs/</mark>.
+Copy the generated build and web directories from pdf.js/build/generic/build and pdf.js/build/generic/web,and add them to the ELEMENTS repository under ui/viewers/pdfjs/.
 
 Commit your changes:
 
