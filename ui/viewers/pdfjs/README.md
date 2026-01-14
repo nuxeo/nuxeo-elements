@@ -23,12 +23,12 @@ In order to bundle all src/ files into two production scripts and build the gene
 
     $ npx gulp generic
 
-Copy the generated build and web folders from pdf.js/build/generic/build and pdf.js/build/generic/web and add them in the pdfjs folder of the ELEMENTS repository in viewers/pdfjs .
+Copy the generated build and web directories from <mark>pdf.js/build/generic/build </mark>and <mark>pdf.js/build/generic/web</mark>, and add them to the ELEMENTS repository under<mark> ui/viewers/pdfjs/</mark>.
 
 Commit your changes:
 
     $ git commit -am "ELEMENTS-XXX: update PDF.js to 5.4.394"
 
 
-Apply the following patch
+Apply the following patch for making customizations for hiding print and download icons.
 https://patch-diff.githubusercontent.com/raw/nuxeo/nuxeo-elements/pull/1211.patch
