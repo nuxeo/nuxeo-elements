@@ -5470,16 +5470,19 @@ class CommentPopup {
 
 ;// ./web/download_manager.js
 
-// Only allow blob: URLs or absolute http(s) URLs for download.
+// Only allow blob: URLs or same-origin absolute http(s) URLs for download.
 function isTrustedDownloadUrl(url) {
   try {
     const u = new URL(url, window.location.href);
+    // Always allow blob: URLs created by this origin.
     if (u.protocol === "blob:") {
       return true;
     }
+    // For non-blob URLs, only allow same-origin http(s) links.
     if (u.protocol === "http:" || u.protocol === "https:") {
       return u.origin === window.location.origin;
     }
+    // Disallow all other protocols (ftp, mailto, tel, etc.).
     return false;
   } catch {
     return false;
