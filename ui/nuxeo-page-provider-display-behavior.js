@@ -233,6 +233,7 @@ export const PageProviderDisplayBehavior = [
       '_selectionEnabledChanged(selectionEnabled, selectOnTap, multiSelection)',
       '_itemsChanged(items.*)',
       '_computeLabel(i18n, emptyLabel, filters, loading, size, _isEmpty)',
+      '_quickFiltersChangedDeep(quickFilters.*)',
     ],
 
     listeners: {
@@ -569,6 +570,26 @@ export const PageProviderDisplayBehavior = [
             this._computedEmptyLabel = this.emptyLabel ? this.emptyLabel : this.i18n('label.noResults');
           }
         });
+      }
+    },
+
+    _quickFiltersChangedDeep() {
+      // Build a stable signature based only on active states
+      const snapshot = this.quickFilters
+        ? Object.keys(this.quickFilters)
+            .sort()
+            .map((key) => `${key}:${Boolean(this.quickFilters[key]?.active)}`)
+            .join('|')
+        : '';
+
+      // Compare with previous snapshot
+      const hasChanged = snapshot !== this._lastQuickFiltersSnapshot;
+
+      // Persist snapshot for next comparison
+      this._lastQuickFiltersSnapshot = snapshot;
+
+      if (hasChanged && this.paginable) {
+        this._quickFilterChanged();
       }
     },
 
