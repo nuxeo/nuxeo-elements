@@ -578,7 +578,7 @@ export const PageProviderDisplayBehavior = [
       const snapshot = this.quickFilters
         ? Object.keys(this.quickFilters)
             .sort()
-            .map((key) => `${key}:${Boolean(this.quickFilters[key]?.active)}`)
+            .map((key) => `${key}:${Boolean(this.quickFilters[key].active)}`)
             .join('|')
         : '';
 
