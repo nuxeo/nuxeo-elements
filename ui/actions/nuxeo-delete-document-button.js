@@ -97,7 +97,7 @@ import '../nuxeo-button-styles.js';
         },
 
         /**
-         * true if the action should display the label, false otherwise.
+         * `true` if the action should display the label, `false` otherwise.
          */
         showLabel: {
           type: Boolean,
@@ -107,15 +107,6 @@ import '../nuxeo-button-styles.js';
         _label: {
           type: String,
           computed: '_computeLabel(hard, i18n)',
-        },
-
-        /**
-         * Custom confirmation message to display in the confirmation dialog.
-         * If not provided, the default translated message will be used.
-         */
-        confirmationMessage: {
-          type: String,
-          value: '',
         },
       };
     }
@@ -133,8 +124,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _delete() {
-      const message = this.confirmationMessage || this.i18n('deleteButton.confirm');
-      if (!window.confirm(message)) {
+      if (!window.confirm(this.i18n('deleteButton.confirm'))) {
         return;
       }
       const op = this.hard ? this.$.deleteOp : this.$.trashOp;
