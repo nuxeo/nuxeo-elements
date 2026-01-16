@@ -40,6 +40,10 @@ export const PageProviderDisplayBehavior = [
         value: 0,
         notify: true,
       },
+      _currentPage: {
+        type: Number,
+        value: 1,
+      },
 
       emptyLabel: {
         type: String,
@@ -229,6 +233,7 @@ export const PageProviderDisplayBehavior = [
       '_selectionEnabledChanged(selectionEnabled, selectOnTap, multiSelection)',
       '_itemsChanged(items.*)',
       '_computeLabel(i18n, emptyLabel, filters, loading, size, _isEmpty)',
+      '_quickFiltersChangedDeep(quickFilters.*)',
     ],
 
     listeners: {
@@ -568,8 +573,33 @@ export const PageProviderDisplayBehavior = [
       }
     },
 
+    _quickFiltersChangedDeep() {
+      // Build a stable signature based only on active states
+      const snapshot = this.quickFilters
+        ? Object.keys(this.quickFilters)
+            .sort()
+            .map((key) => `${key}:${Boolean(this.quickFilters[key].active)}`)
+            .join('|')
+        : '';
+
+      // Compare with previous snapshot
+      const hasChanged = snapshot !== this._lastQuickFiltersSnapshot;
+
+      // Persist snapshot for next comparison
+      this._lastQuickFiltersSnapshot = snapshot;
+
+      if (hasChanged && this.paginable) {
+        this._quickFilterChanged();
+      }
+    },
+
     _quickFilterChanged() {
-      this.fetch();
+      if (this.paginable) {
+        this._currentPage = 1;
+        this._fetchPage(this._currentPage, this._pageSize, true);
+      } else {
+        this._fetchRange(0, this._pageSize - 1, true);
+      }
     },
 
     _updateFlags() {
@@ -600,9 +630,51 @@ export const PageProviderDisplayBehavior = [
         this.set('items', arr);
       }
       this.size = this.items.length;
+      this._currentPage = 1;
       // if reset is called we need to clear selection
       this.clearSelection();
       this._resize();
+    },
+
+    /**
+     * Common function to update quick filters and buckets.
+     */
+    _updateQuickFiltersAndBuckets(response) {
+      // quick filters
+      this.quickFilters = this.nxProvider.quickFilters;
+
+      // check if there is any active quick filter
+      const hasActiveQuickFilters = this.quickFilters
+        ? Object.keys(this.quickFilters).some((k) => this.quickFilters[k].active)
+        : false;
+
+      // update buckets array based on provider's sort property
+      let buckets = [];
+      if (response.aggregations && !hasActiveQuickFilters) {
+        const providerSort = this.nxProvider.sort;
+        if (providerSort && Object.keys(providerSort).length === 1) {
+          const providerField = Object.keys(providerSort)[0];
+          const providerOrder = providerSort[providerField];
+          Object.keys(response.aggregations).forEach((key) => {
+            const aggregation = response.aggregations[key];
+            if (
+              aggregation.field === providerField &&
+              aggregation.buckets.length >= buckets.length &&
+              aggregation.properties &&
+              aggregation.properties.order
+            ) {
+              const order = aggregation.properties.order.split(' ');
+              if (order.length > 0 && order[0] === 'key') {
+                ({ buckets } = aggregation);
+              }
+              if (order.length > 1 && order[1] !== providerOrder) {
+                buckets.reverse();
+              }
+            }
+          });
+        }
+      }
+      this.set('buckets', buckets);
     },
 
     /**
@@ -610,11 +682,16 @@ export const PageProviderDisplayBehavior = [
      * That allows to use either range OR page based fetch APIs.
      * Default behavior is range base fetching.
      */
+
     fetch() {
-      if (this._hasPageProvider()) {
-        return this._fetchRange(0, this._pageSize - 1, true);
+      if (!this._hasPageProvider()) {
+        return Promise.resolve();
       }
-      return Promise.resolve();
+      if (this.paginable) {
+        return this._fetchPage(this.nxProvider.page || 1, this._pageSize, true);
+      }
+
+      return this._fetchRange(0, this._pageSize - 1, true) || Promise.resolve();
     },
 
     /**
@@ -623,40 +700,51 @@ export const PageProviderDisplayBehavior = [
      * @param page Page index to fetch
      * @param pageSize Number of results per page
      */
+
     _fetchPage(page, pageSize) {
       if (this._hasPageProvider()) {
-        const options = {
-          skipAggregates: page && page > 1,
-        };
-        if (page) {
-          this.nxProvider.page = page;
-        }
-        if (pageSize) {
-          this.nxProvider.pageSize = pageSize;
-        }
-        this.nxProvider.offset = 0;
-        return this.nxProvider.fetch(options).then((response) => {
-          if (page === 1) {
-            this.reset();
-          }
-          for (let i = 0; i < response.entries.length; i++) {
-            this.push('items', response.entries[i]);
+        const size = pageSize || this.nxProvider.pageSize;
+        const idx = page || 1;
+        const pageIndex = (idx - 1) * size;
 
-            const entryIndex = this.items.length - 1;
-            const isSelected = this._isIndexSelected(entryIndex);
-            // if select all is active we need to select the new loaded `item`
-            if (this.selectAllActive) {
-              if (isSelected) {
-                this.set(`selectedItems.${entryIndex}`, this.items[entryIndex]);
-              } else {
-                this.selectIndex(entryIndex);
-              }
+        this.nxProvider.page = idx;
+        this.nxProvider.pageSize = size;
+        this.nxProvider.currentPageIndex = pageIndex;
+
+        const options = {
+          skipAggregates: idx !== 1,
+        };
+
+        // ✅ ALWAYS return the Promise
+        return this.nxProvider
+          .fetch(options)
+          .then((response) => {
+            if (!response) {
+              return response; // still a resolved Promise
             }
-          }
-          return response;
-        });
+            if (idx === 1) {
+              this.set('items', [...response.entries]);
+            } else {
+              response.entries.forEach((entry) => this.push('items', entry));
+            }
+
+            this._first = 0;
+            this._last = this.items.length - 1;
+            this._updateQuickFiltersAndBuckets(response);
+
+            this.notifyResize();
+            this.fire('nuxeo-page-loaded');
+
+            return response;
+          })
+          .catch((err) => {
+            // Prevent Debouncer crashes on aborted requests
+            if (err && err.name === 'AbortError') {
+              return;
+            }
+            throw err;
+          });
       }
-      return Promise.resolve();
     },
 
     /**
@@ -753,45 +841,11 @@ export const PageProviderDisplayBehavior = [
           }
 
           // quick filters
-          this.quickFilters = this.nxProvider.quickFilters;
-
-          // check if there is any active quick filter
-          const hasActiveQuickFilters = this.quickFilters
-            ? Object.keys(this.quickFilters).some((k) => this.quickFilters[k].active)
-            : false;
-
-          // update buckets array based on provider's sort property
-          let buckets = [];
-          if (response.aggregations && !hasActiveQuickFilters) {
-            const providerSort = this.nxProvider.sort;
-            if (providerSort && Object.keys(providerSort).length === 1) {
-              const providerField = Object.keys(providerSort)[0];
-              const providerOrder = providerSort[providerField];
-              Object.keys(response.aggregations).forEach((key) => {
-                const aggregation = response.aggregations[key];
-                if (
-                  aggregation.field === providerField &&
-                  aggregation.buckets.length >= buckets.length &&
-                  aggregation.properties &&
-                  aggregation.properties.order
-                ) {
-                  const order = aggregation.properties.order.split(' ');
-                  if (order.length > 0 && order[0] === 'key') {
-                    ({ buckets } = aggregation);
-                  }
-                  if (order.length > 1 && order[1] !== providerOrder) {
-                    buckets.reverse();
-                  }
-                }
-              });
-            }
-            this.set('buckets', buckets);
-          }
+          this._updateQuickFiltersAndBuckets(response);
 
           this.fire('nuxeo-page-loaded');
         });
       }
-      return Promise.resolve();
     },
 
     /**
@@ -843,7 +897,6 @@ export const PageProviderDisplayBehavior = [
         }
       }
     },
-
     _scrollChanged() {
       this._debouncer = Debouncer.debounce(
         this._debouncer,
@@ -861,7 +914,12 @@ export const PageProviderDisplayBehavior = [
               }),
             );
           }
-          this._fetchRange(this.$.list.firstVisibleIndex, this.$.list.lastVisibleIndex);
+          if (this.paginable) {
+            this._currentPage++;
+            this._fetchPage(this._currentPage, this._pageSize);
+          } else {
+            this._fetchRange(this.$.list.firstVisibleIndex, this.$.list.lastVisibleIndex);
+          }
         },
       );
     },
