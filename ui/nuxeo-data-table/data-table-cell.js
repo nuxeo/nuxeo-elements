@@ -143,7 +143,9 @@ import './data-table-templatizer-behavior.js';
         this.addEventListener('drop', this._onDrop.bind(this));
         this.addEventListener('dragend', this._onDragEnd.bind(this));
         // touch fallback: prevent text selection while touching resizer or dragging
-        this.addEventListener('touchmove');
+        this.addEventListener('touchmove', () => {
+          // noop: allow host app to handle gestures; we simply provide events on resizer
+        });
       }
     }
 
