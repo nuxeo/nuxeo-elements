@@ -701,20 +701,9 @@ export const PageProviderDisplayBehavior = [
      * @param pageSize Number of results per page
      */
 
-    _fetchPage(page, pageSize, reset = false) {
+    _fetchPage(page, pageSize) {
       if (this._hasPageProvider()) {
         const size = pageSize || this.nxProvider.pageSize;
-
-        if (reset || page === 1) {
-          this._currentPage = 1;
-          this.nxProvider.page = 1;
-          this.nxProvider.currentPageIndex = 0;
-          delete this.nxProvider.offset;
-
-          this.clearSelection();
-          this.set('items', []);
-        }
-
         const idx = page || 1;
         const pageIndex = (idx - 1) * size;
 
@@ -733,7 +722,6 @@ export const PageProviderDisplayBehavior = [
             if (!response) {
               return response; // still a resolved Promise
             }
-
             if (idx === 1) {
               this.set('items', [...response.entries]);
             } else {
@@ -742,7 +730,6 @@ export const PageProviderDisplayBehavior = [
 
             this._first = 0;
             this._last = this.items.length - 1;
-
             this._updateQuickFiltersAndBuckets(response);
 
             this.notifyResize();
