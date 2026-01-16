@@ -13,7 +13,6 @@ import './data-table-templatizer-behavior.js';
         <style>
           :host {
             flex: 1 0 120px;
-            flex-basis: 120px;
             padding: 0 24px;
             min-height: 48px;
             display: flex;
@@ -24,7 +23,9 @@ import './data-table-templatizer-behavior.js';
             @apply --iron-data-table-cell;
           }
 
+          /* header cells need relative positioning for the resizer */
           :host([header]) {
+            position: relative;
             height: 48px;
           }
 
@@ -44,7 +45,43 @@ import './data-table-templatizer-behavior.js';
             text-overflow: ellipsis;
             text-align: start;
           }
+
+          /* resizer handle (visible on header cells) */
+          .resizer {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            cursor: col-resize;
+            z-index: 5;
+          }
+
+          :host([header]) .resizer {
+            display: block;
+          }
+
+          /* small interaction area to make grabbing easier */
+          .resizer:after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 2px;
+            height: 28px;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 2px;
+          }
+
+          :host(.dragging) {
+            opacity: 0.6;
+            outline: 1px dashed rgba(0, 0, 0, 0.2);
+          }
         </style>
+
+        <div class="resizer" on-mousedown="_onResizerDown" on-touchstart="_onResizerDown"></div>
         <slot></slot>
       `;
     }
@@ -96,6 +133,18 @@ import './data-table-templatizer-behavior.js';
       } else {
         this.setAttribute('role', 'cell');
       }
+
+      // make header cells draggable for reordering
+      if (this.header) {
+        // set draggable so native drag events fire
+        this.draggable = true;
+        this.addEventListener('dragstart', this._onDragStart.bind(this));
+        this.addEventListener('dragover', this._onDragOver.bind(this));
+        this.addEventListener('drop', this._onDrop.bind(this));
+        this.addEventListener('dragend', this._onDragEnd.bind(this));
+        // touch fallback: prevent text selection while touching resizer or dragging
+        this.addEventListener('touchmove');
+      }
     }
 
     _alignRightChanged(alignRight) {
@@ -146,7 +195,22 @@ import './data-table-templatizer-behavior.js';
     }
 
     _widthChanged(width) {
-      this.style.flexBasis = width;
+      // Only lock the cell to an explicit width when the user is actively resizing.
+      // This avoids frozen columns on initial load when columns come with configured width values.
+      const isUserResize = this.table && this.table._resizing;
+      if (width && isUserResize) {
+        const val = typeof width === 'number' ? `${width}px` : width;
+        this.style.flex = `0 0 ${val}`;
+        this.style.flexBasis = val;
+      } else if (!width) {
+        // restore default CSS behavior (flex: 1 1 0 from iron-data-table)
+        this.style.flex = '';
+        this.style.flexBasis = '';
+      } else {
+        // width present but not user-initiated: don't lock, let stylesheet/CSS handle stretching
+        // this.style.flex = '';
+        this.style.flexBasis = width;
+      }
     }
 
     _columnChanged(instance, column) {
@@ -165,6 +229,70 @@ import './data-table-templatizer-behavior.js';
         this._parentProps = this._parentProps || {};
         instance.notifyPath(column.path, column.value);
       });
+    }
+
+    // --- resizing and dragging handlers (emit events, actual work done by the table) ---
+
+    _onResizerDown(e) {
+      // support both mouse and touch
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      e.stopPropagation();
+      e.preventDefault();
+      this.dispatchEvent(
+        new CustomEvent('column-resize-start', {
+          composed: true,
+          bubbles: true,
+          detail: {
+            column: this.column,
+            startX: clientX,
+            startWidth: parseFloat(this.column.width) || this.getBoundingClientRect().width,
+          },
+        }),
+      );
+    }
+
+    _onDragStart(e) {
+      // some browsers require setData for drag to work
+      try {
+        e.dataTransfer.setData('text/plain', '');
+      } catch (err) {
+        // ignore
+      }
+      this.classList.add('dragging');
+      this.dispatchEvent(
+        new CustomEvent('column-drag-start', {
+          composed: true,
+          bubbles: true,
+          detail: { column: this.column },
+        }),
+      );
+    }
+
+    _onDragOver(e) {
+      e.preventDefault(); // allow drop
+      this.dispatchEvent(
+        new CustomEvent('column-drag-over', {
+          composed: true,
+          bubbles: true,
+          detail: { column: this.column },
+        }),
+      );
+    }
+
+    _onDrop(e) {
+      e.preventDefault();
+      this.dispatchEvent(
+        new CustomEvent('column-drop', {
+          composed: true,
+          bubbles: true,
+          detail: { column: this.column },
+        }),
+      );
+      this.classList.remove('dragging');
+    }
+
+    _onDragEnd() {
+      this.classList.remove('dragging');
     }
   }
 

@@ -175,6 +175,10 @@ import '../nuxeo-button-styles.js';
             bottom: 0;
             display: flex;
             flex-direction: column;
+            /* allow container to grow to full content width so :host overflow-x shows scrollbar */
+            min-width: max-content;
+            /* vendor fallback */
+            min-width: -webkit-max-content;
           }
 
           #header {
@@ -589,6 +593,12 @@ import '../nuxeo-button-styles.js';
       this.addEventListener('delete-entry', this._deleteEntry);
       this.addEventListener('move-upward', this._moveItemUpward);
       this.addEventListener('move-downward', this._moveItemDownward);
+      // new: column resize and reorder listeners
+      this.addEventListener('column-resize-start', this._onColumnResizeStart.bind(this));
+      this.addEventListener('column-drag-start', this._onColumnDragStart.bind(this));
+      this.addEventListener('column-drag-over', this._onColumnDragOver.bind(this));
+      this.addEventListener('column-drop', this._onColumnDrop.bind(this));
+
       this.$.list._selectionHandler = function(e) {
         const model = this.modelForElement(e.target);
         if (!model) {
@@ -612,6 +622,20 @@ import '../nuxeo-button-styles.js';
         this._wrapperHeight = wrapperHeight;
         this._onWrapperHeightChanged();
       }
+
+      // internal state for resizing and reordering
+      this._resizing = null;
+      this._draggingColumn = null;
+      this._dragOverColumn = null;
+
+      // bound handlers for document-level mouse operations
+      this._boundDocumentMouseMove = this._documentMouseMove.bind(this);
+      this._boundDocumentMouseUp = this._documentMouseUp.bind(this);
+
+      // ensure initial sizing pass after first render so CSS flex rules take effect
+      afterNextRender(this, () => {
+        this._resizeCellContainers();
+      });
     }
 
     _onWrapperHeightChanged() {
@@ -791,6 +815,103 @@ import '../nuxeo-button-styles.js';
         target instanceof Nuxeo.DataTableCheckbox ||
         target.tagName === 'A'
       );
+    }
+
+    // --- Column resizing support ---
+
+    _onColumnResizeStart(e) {
+      const { column, startX, startWidth } = e.detail || {};
+      if (!column) {
+        return;
+      }
+      // Track resizing state and attach document listeners for pointer movement
+      this._resizing = {
+        column,
+        startX,
+        startWidth,
+      };
+      document.addEventListener('mousemove', this._boundDocumentMouseMove);
+      document.addEventListener('mouseup', this._boundDocumentMouseUp);
+      document.addEventListener('touchmove', this._boundDocumentMouseMove, { passive: false });
+      document.addEventListener('touchend', this._boundDocumentMouseUp);
+    }
+
+    _documentMouseMove(e) {
+      if (!this._resizing) {
+        return;
+      }
+      // support both mouse and touch
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      if (e.touches) {
+        // prevent page scrolling while resizing
+        e.preventDefault();
+      }
+      const dx = clientX - this._resizing.startX;
+      // Prefer an explicit column.minWidth, otherwise fall back to a smaller default
+      const minWidth = parseInt(this._resizing.column && this._resizing.column.minWidth, 10) || 24;
+      const newWidth = Math.max(minWidth, Math.round(this._resizing.startWidth + dx));
+      // apply as px
+      const colIndex = this.columns.indexOf(this._resizing.column);
+      if (colIndex > -1) {
+        // persist width on the column element
+        this.set(`columns.${colIndex}.width`, `${newWidth}px`);
+        // ensure header/rows update size
+        this._resizeCellContainers();
+      }
+    }
+
+    _documentMouseUp() {
+      if (this._resizing) {
+        // cleanup
+        document.removeEventListener('mousemove', this._boundDocumentMouseMove);
+        document.removeEventListener('mouseup', this._boundDocumentMouseUp);
+        document.removeEventListener('touchmove', this._boundDocumentMouseMove);
+        document.removeEventListener('touchend', this._boundDocumentMouseUp);
+        this._resizing = null;
+        // some UI update might be required
+        this.notifyResize();
+      }
+    }
+
+    // --- Column reorder support ---
+
+    _onColumnDragStart(e) {
+      this._draggingColumn = e.detail && e.detail.column;
+    }
+
+    _onColumnDragOver(e) {
+      // highlight or keep track of the column being hovered as potential drop target
+      this._dragOverColumn = e.detail && e.detail.column;
+    }
+
+    _onColumnDrop(e) {
+      const targetColumn = e.detail && e.detail.column;
+      const dragging = this._draggingColumn;
+      if (!dragging || !targetColumn || dragging === targetColumn) {
+        this._draggingColumn = null;
+        this._dragOverColumn = null;
+        return;
+      }
+      // compute indices and move column element in the columns array
+      const cols = this.columns ? this.columns.slice() : [];
+      const from = cols.indexOf(dragging);
+      const to = cols.indexOf(targetColumn);
+      if (from > -1 && to > -1 && from !== to) {
+        cols.splice(from, 1);
+        cols.splice(to, 0, dragging);
+        // update local columns array so bindings update
+        this.set('columns', cols);
+        // update order property on columns
+        cols.forEach((c, idx) => {
+          // store order index
+          this.set(`columns.${idx}.order`, idx);
+        });
+        // persist and update sizes/state
+        this._backupColumnsState();
+        this.notifyResize();
+      }
+      this._draggingColumn = null;
+      this._dragOverColumn = null;
     }
 
     /**
