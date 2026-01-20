@@ -5554,6 +5554,10 @@ class DownloadManager {
         console.error(`download - not a valid URL: ${url}`);
         return;
       }
+      if (!isTrustedDownloadUrl(url)) {
+        console.error("DownloadManager: Refusing to use untrusted download URL:", url);
+        return;
+      }
       blobUrl = url + "#pdfjs.action=download";
     }
     download(blobUrl, filename);
@@ -16695,7 +16699,13 @@ const PDFViewerApplication = {
     this.url = url;
     this.baseUrl = updateUrlHash(url, "", true);
     if (downloadUrl) {
-      this._downloadUrl = downloadUrl === url ? this.baseUrl : updateUrlHash(downloadUrl, "", true);
+      try {
+        validateFileURL(downloadUrl);
+        this._downloadUrl = downloadUrl === url ? this.baseUrl : updateUrlHash(downloadUrl, "", true);
+      } catch (ex) {
+        console.error("setTitleUsingUrl: Invalid downloadUrl:", ex);
+        this._downloadUrl = "";
+      }
     }
     if (isDataScheme(url)) {
       this._hideViewBookmark();
