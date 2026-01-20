@@ -16699,7 +16699,7 @@ const PDFViewerApplication = {
     this.url = url;
     this.baseUrl = updateUrlHash(url, "", true);
     if (downloadUrl) {
-      this._downloadUrl = downloadUrl === url ? this.baseUrl : updateUrlHash(downloadUrl, "", true);	      try {
+      try {
         validateFileURL(downloadUrl);
         this._downloadUrl = downloadUrl === url ? this.baseUrl : updateUrlHash(downloadUrl, "", true);
       } catch (ex) {
