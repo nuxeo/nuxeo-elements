@@ -892,24 +892,39 @@ import '../nuxeo-button-styles.js';
         this._dragOverColumn = null;
         return;
       }
-      // compute indices and move column element in the columns array
+
+      // Work on a shallow copy of the columns array.
       const cols = this.columns ? this.columns.slice() : [];
       const from = cols.indexOf(dragging);
       const to = cols.indexOf(targetColumn);
-      if (from > -1 && to > -1 && from !== to) {
-        cols.splice(from, 1);
-        cols.splice(to, 0, dragging);
-        // update local columns array so bindings update
-        this.set('columns', cols);
-        // update order property on columns
-        cols.forEach((c, idx) => {
-          // store order index
+      if (from === -1 || to === -1 || from === to) {
+        this._draggingColumn = null;
+        this._dragOverColumn = null;
+        return;
+      }
+
+      // Remove the dragged column, then recompute the target index in the updated array
+      // and insert the dragged column there.
+      cols.splice(from, 1);
+      const newTo = cols.indexOf(targetColumn);
+      const insertIndex = newTo === -1 ? cols.length : newTo;
+      cols.splice(insertIndex, 0, dragging);
+
+      // Update bound columns and persist state.
+      // Force a full re-render of the dom-repeat to avoid stale stamped header/template nodes
+      // being left behind when reordering. Clear columns and re-set after render.
+      const newCols = cols.slice();
+      this.set('columns', []); // clear stamped instances
+      afterNextRender(this, () => {
+        this.set('columns', newCols);
+        newCols.forEach((c, idx) => {
           this.set(`columns.${idx}.order`, idx);
         });
-        // persist and update sizes/state
         this._backupColumnsState();
         this.notifyResize();
-      }
+      });
+
+      // cleanup state
       this._draggingColumn = null;
       this._dragOverColumn = null;
     }
