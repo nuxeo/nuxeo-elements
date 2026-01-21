@@ -6854,7 +6854,8 @@ typedArrayTags[weakMapTag] = false;
             position: fixed;
             z-index: 9999;
             word-break: break-all;
-            min-width: fit-content;
+            min-width: var(--selectivity-dropdown-min-width, fit-content);
+            max-width: var(--selectivity-dropdown-max-width, none);
           }
 
           .selectivity-search-input-container {
@@ -6879,6 +6880,8 @@ typedArrayTags[weakMapTag] = false;
           .selectivity-result-item {
             cursor: pointer;
             padding: 7px;
+            white-space: var(--selectivity-result-item-white-space, normal);
+            word-wrap: var(--selectivity-result-item-word-wrap, normal);
           }
 
           .selectivity-result-children .selectivity-result-item {
