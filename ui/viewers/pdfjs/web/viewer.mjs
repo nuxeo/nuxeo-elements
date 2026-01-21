@@ -5550,7 +5550,8 @@ class DownloadManager {
         type: "application/pdf"
       }));
     } else {
-      if (!createValidAbsoluteUrl(url, "http://example.com")) {
+      // Ensure the URL is a valid absolute HTTP(S) URL before proceeding.
+      if (!createValidAbsoluteUrl(url, window.location.origin, { requireSameOrigin: true })) {
         console.error(`download - not a valid URL: ${url}`);
         return;
       }
