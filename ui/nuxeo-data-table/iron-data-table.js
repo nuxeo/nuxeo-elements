@@ -228,6 +228,17 @@ import '../nuxeo-button-styles.js';
             overflow-y: scroll;
             position: relative;
           }
+
+          #header {
+            display: flex;
+          }
+          #header-fixed {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+            order: 9999;
+          }
         </style>
 
         <div id="container">
@@ -271,11 +282,13 @@ import '../nuxeo-button-styles.js';
               <div style$="[[_computeActionsStyle(editable, orderable)]]">
                 <nuxeo-data-table-cell></nuxeo-data-table-cell>
               </div>
+            </nuxeo-data-table-row>
+            <div id="header-fixed">
               <nuxeo-data-table-settings
                 columns="{{columns}}"
                 hidden$="[[!settingsEnabled]]"
               ></nuxeo-data-table-settings>
-            </nuxeo-data-table-row>
+            </div>
           </div>
 
           <dom-if if="[[_isEmpty]]">
