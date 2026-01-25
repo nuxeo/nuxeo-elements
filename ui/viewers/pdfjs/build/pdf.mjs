@@ -366,12 +366,10 @@ function assert(cond, msg) {
   }
 }
 function _isValidProtocol(url) {
+   // Only treat HTTP(S) URLs as valid for navigation / linking purposes.
   switch (url?.protocol) {
     case "http:":
     case "https:":
-    case "ftp:":
-    case "mailto:":
-    case "tel:":
       return true;
     default:
       return false;
@@ -395,15 +393,27 @@ function createValidAbsoluteUrl(url, baseUrl = null, options = null) {
     }
   }
   const absoluteUrl = baseUrl ? URL.parse(url, baseUrl) : URL.parse(url);
-  return _isValidProtocol(absoluteUrl) ? absoluteUrl : null;
+  if (!absoluteUrl || !_isValidProtocol(absoluteUrl)) {
+    return null;
+  }
+  // If a base URL was provided, enforce same-origin with it when requested.
+  if (options?.requireSameOrigin && baseUrl) {
+    const base = URL.parse(baseUrl);
+    if (!base || absoluteUrl.origin !== base.origin) {
+      return null;
+    }
+  }
+  return absoluteUrl;
 }
 function updateUrlHash(url, hash, allowRel = false) {
   const res = URL.parse(url);
-  if (res) {
+  if (res && _isValidProtocol(res)) {
     res.hash = hash;
     return res.href;
   }
-  if (allowRel && createValidAbsoluteUrl(url, "http://example.com")) {
+  // For relative URLs, only allow them if they can be resolved to a same-origin
+  // absolute HTTP(S) URL using a dummy base.
+  if (allowRel && createValidAbsoluteUrl(url, "http://example.com", { requireSameOrigin: true })) {
     return url.split("#", 1)[0] + `${hash ? `#${hash}` : ""}`;
   }
   return "";
