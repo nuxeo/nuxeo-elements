@@ -230,14 +230,31 @@ import '../nuxeo-button-styles.js';
           }
 
           #header {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            height: 48px; /* 🔑 lock row height */
+            align-items: stretch;
           }
+
+          #header > nuxeo-data-table-row {
+            display: contents;
+          }
+
+          #header nuxeo-data-table-cell,
           #header-fixed {
-            flex: 0 0 auto;
             display: flex;
             align-items: center;
-            margin-left: auto;
-            order: 9999;
+            height: 100%;
+          }
+          #header-fixed {
+            grid-column: 2;
+            position: relative;
+            top: 12px;
+          }
+
+          :host([settings-enabled]) ::slotted(nuxeo-data-table-row[header]) {
+            position: relative;
+            top: -20px;
           }
         </style>
 

@@ -41,6 +41,10 @@ import '../nuxeo-button-styles.js';
             @apply --buttons-bar;
             margin-top: 0px;
           }
+
+          #columnsSettingsPopup {
+            // z-index: 1;
+          }
         </style>
 
         <nuxeo-connection id="nxcon"></nuxeo-connection>
