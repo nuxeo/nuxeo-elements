@@ -76,8 +76,28 @@ import './data-table-templatizer-behavior.js';
           }
 
           :host(.dragging) {
-            opacity: 0.6;
+            // opacity: 0.6;
             outline: 1px dashed rgba(0, 0, 0, 0.2);
+            background: rgba(0, 102, 255, 0.08);
+            box-shadow: inset 0 -2px 0 var(--nuxeo-primary-color, #0066ff);
+            cursor: grabbing;
+            cursor: -webkit-grabbing;
+          }
+
+          :host([header].column-active) {
+            background: dodgerblue;
+            color: #fff;
+            cursor: grab;
+            cursor: -webkit-grab;
+          }
+
+          :host([header].column-active)::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-left: 1px solid rgba(0, 102, 255, 0.4);
+            border-right: 1px solid rgba(0, 102, 255, 0.4);
+            pointer-events: none;
           }
         </style>
 
@@ -128,25 +148,32 @@ import './data-table-templatizer-behavior.js';
 
     ready() {
       super.ready();
+
       if (this.header) {
         this.setAttribute('scope', 'col');
       } else {
         this.setAttribute('role', 'cell');
       }
-
-      // make header cells draggable for reordering
       if (this.header) {
-        // set draggable so native drag events fire
         this.draggable = true;
         this.addEventListener('dragstart', this._onDragStart.bind(this));
-        this.addEventListener('dragover', this._onDragOver.bind(this));
-        this.addEventListener('drop', this._onDrop.bind(this));
+
         this.addEventListener('dragend', this._onDragEnd.bind(this));
-        // touch fallback: prevent text selection while touching resizer or dragging
-        this.addEventListener('touchmove', () => {
-          // noop: allow host app to handle gestures; we simply provide events on resizer
-        });
       }
+    }
+
+    _onDragEnd() {
+      this._cleanupGhostMove?.();
+      document.querySelector('.column-drag-ghost')?.remove();
+      this.classList.remove('dragging');
+
+      this.dispatchEvent(
+        new CustomEvent('column-drag-end', {
+          bubbles: true,
+          composed: true,
+          detail: { column: this.column },
+        }),
+      );
     }
 
     _alignRightChanged(alignRight) {
@@ -254,13 +281,94 @@ import './data-table-templatizer-behavior.js';
     }
 
     _onDragStart(e) {
-      // some browsers require setData for drag to work
       try {
         e.dataTransfer.setData('text/plain', '');
-      } catch (err) {
-        // ignore
-      }
+      } catch (_) {}
+
+      e.dataTransfer.effectAllowed = 'move';
+      const rect = this.getBoundingClientRect();
+      this._dragOffsetX = e.clientX - rect.left;
+
+      // ---- measure visible table height ----
+      const table = this.closest('nuxeo-data-table');
+      const header = table?.shadowRoot?.querySelector('#header');
+      const list = table?.shadowRoot?.querySelector('#list');
+
+      const headerHeight = header ? header.getBoundingClientRect().height : rect.height;
+      const bodyHeight = list ? list.getBoundingClientRect().height : 200;
+      const totalHeight = headerHeight + bodyHeight;
+
+      // ---- ghost container (full column) ----
+      const ghost = document.createElement('div');
+      ghost.style.width = `${rect.width}px`;
+      ghost.style.height = `${totalHeight}px`;
+      ghost.style.display = 'flex';
+      ghost.style.flexDirection = 'column';
+      ghost.style.pointerEvents = 'none';
+      ghost.style.position = 'fixed';
+
+      ghost.style.opacity = '0.5'; // 🔑 more ghostly
+      ghost.style.background = 'grey';
+      ghost.style.border = '1px solid rgba(0, 0, 0, 0.26)';
+      ghost.style.boxShadow = '0 16px 40px rgba(0,0,0,0.25)';
+      ghost.style.borderRadius = '4px';
+      ghost.style.overflow = 'hidden';
+      ghost.style.transform = 'translateZ(0)';
+
+      ghost.classList.add('column-drag-ghost');
+
+      const headerTop = header.getBoundingClientRect().top;
+
+      ghost.style.top = `${headerTop}px`;
+      ghost.style.left = `${rect.left}px`;
+
+      // ---- header clone ----
+      const headerClone = this.cloneNode(false); // 🔑 SHALLOW clone (no children)
+
+      // preserve size
+      headerClone.style.height = `${rect.height}px`;
+      headerClone.style.minHeight = `${rect.height}px`;
+      headerClone.style.flex = '0 0 auto';
+
+      // ghost look
+      headerClone.style.background = 'transparent';
+      headerClone.style.borderBottom = '1px solid rgba(0,0,0,0.08)';
+
+      // 🔑 REMOVE SLOT CONTENT COMPLETELY
+      const slot = document.createElement('slot');
+      slot.style.display = 'none';
+      headerClone.appendChild(slot);
+
+      // ---- column body filler (no data, just shape) ----
+      const bodyFill = document.createElement('div');
+      bodyFill.style.flex = '1';
+      bodyFill.style.background =
+        'repeating-linear-gradient(' +
+        'to bottom,' +
+        'rgba(0,0,0,0.03),' +
+        'rgba(0,0,0,0.03) 1px,' +
+        'transparent 1px,' +
+        'transparent 48px' +
+        ')';
+
+      ghost.appendChild(headerClone);
+      ghost.appendChild(bodyFill);
+
+      document.body.appendChild(ghost);
+
+      // kill native drag image (1x1 transparent)
+      const img = new Image();
+      img.src =
+        'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>');
+
+      e.dataTransfer.setDragImage(img, 0, 0);
+
       this.classList.add('dragging');
+
+      if (table) {
+        table._dragOffsetX = this._dragOffsetX;
+      }
+
       this.dispatchEvent(
         new CustomEvent('column-drag-start', {
           composed: true,
@@ -268,33 +376,20 @@ import './data-table-templatizer-behavior.js';
           detail: { column: this.column },
         }),
       );
-    }
 
-    _onDragOver(e) {
-      e.preventDefault(); // allow drop
-      this.dispatchEvent(
-        new CustomEvent('column-drag-over', {
-          composed: true,
-          bubbles: true,
-          detail: { column: this.column },
-        }),
-      );
-    }
+      const moveGhost = (ev) => {
+        const ghost = document.querySelector('.column-drag-ghost');
+        if (!ghost) return;
 
-    _onDrop(e) {
-      e.preventDefault();
-      this.dispatchEvent(
-        new CustomEvent('column-drop', {
-          composed: true,
-          bubbles: true,
-          detail: { column: this.column },
-        }),
-      );
-      this.classList.remove('dragging');
-    }
+        // 🔒 X axis only
+        ghost.style.left = `${ev.clientX - this._dragOffsetX}px`;
+      };
 
-    _onDragEnd() {
-      this.classList.remove('dragging');
+      document.addEventListener('dragover', moveGhost);
+
+      this._cleanupGhostMove = () => {
+        document.removeEventListener('dragover', moveGhost);
+      };
     }
   }
 
