@@ -5478,7 +5478,7 @@ function isTrustedDownloadUrl(url) {
     if (u.protocol === "blob:") {
       return true;
     }
-     // For non-blob URLs, only allow http(s) links from the same origin and
+    // For non-blob URLs, only allow http(s) links from the same origin and
     // further restrict them to the current viewer URL or obvious PDF resources.
     if (u.protocol === "http:" || u.protocol === "https:") {
       if (u.origin !== window.location.origin) {
@@ -5504,6 +5504,7 @@ function isTrustedDownloadUrl(url) {
 }
 
 function download(blobUrl, filename) {
+  // As a defense-in-depth measure, only proceed for trusted URLs.
    if (!isTrustedDownloadUrl(blobUrl)) {
     console.error('DownloadManager: Refusing to download untrusted URL:', blobUrl);
     return;
@@ -5564,7 +5565,7 @@ class DownloadManager {
         type: "application/pdf"
       }));
     } else {
-      // Ensure the URL is a valid absolute HTTP(S) URL before proceeding.
+      // Ensure the URL is a valid absolute same-origin HTTP(S) URL before proceeding.
       if (!createValidAbsoluteUrl(url, window.location.origin, { requireSameOrigin: true })) {
         console.error(`download - not a valid URL: ${url}`);
         return;
