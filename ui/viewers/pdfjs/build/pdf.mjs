@@ -366,7 +366,7 @@ function assert(cond, msg) {
   }
 }
 function _isValidProtocol(url) {
-   // Only treat HTTP(S) URLs as valid for navigation / linking purposes.
+  // Only treat HTTP(S) URLs as valid for navigation / linking purposes.
   switch (url?.protocol) {
     case "http:":
     case "https:":
@@ -393,6 +393,7 @@ function createValidAbsoluteUrl(url, baseUrl = null, options = null) {
     }
   }
   const absoluteUrl = baseUrl ? URL.parse(url, baseUrl) : URL.parse(url);
+  // Reject anything that is not an absolute HTTP(S) URL.
   if (!absoluteUrl || !_isValidProtocol(absoluteUrl)) {
     return null;
   }
