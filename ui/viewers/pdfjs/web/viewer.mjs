@@ -5470,7 +5470,7 @@ class CommentPopup {
 
 ;// ./web/download_manager.js
 
-// Only allow blob: URLs or same-origin absolute http(s) URLs for download.
+// Only allow blob: URLs or carefully validated same-origin http(s) URLs for download.
 function isTrustedDownloadUrl(url) {
   try {
     const u = new URL(url, window.location.href);
@@ -5478,9 +5478,23 @@ function isTrustedDownloadUrl(url) {
     if (u.protocol === "blob:") {
       return true;
     }
-    // For non-blob URLs, only allow same-origin http(s) links.
+     // For non-blob URLs, only allow http(s) links from the same origin and
+    // further restrict them to the current viewer URL or obvious PDF resources.
     if (u.protocol === "http:" || u.protocol === "https:") {
-      return u.origin === window.location.origin;
+      if (u.origin !== window.location.origin) {
+        return false;
+      }
+      const current = new URL(window.location.href);
+      // Allow if the URL points back to this viewer (same path+search).
+      if (u.pathname === current.pathname && u.search === current.search) {
+        return true;
+      }
+      // Otherwise, only allow URLs that appear to reference a PDF file.
+      const path = u.pathname || "";
+      if (path.toLowerCase().endsWith(".pdf")) {
+        return true;
+      }
+      return false;
     }
     // Disallow all other protocols (ftp, mailto, tel, etc.).
     return false;
