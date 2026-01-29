@@ -229,35 +229,38 @@ import '../nuxeo-button-styles.js';
             position: relative;
           }
 
+          
           #header {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            height: 48px; /* 🔑 lock row height */
-            align-items: stretch;
-          }
+  display: grid;
+  grid-template-columns: 1fr auto;
+  height: 48px;              /* 🔑 lock row height */
+  align-items: stretch;
+}
 
-          #header > nuxeo-data-table-row {
-            display: flex;
-            height: 48px;
-            align-items: stretch;
-          }
+#header > nuxeo-data-table-row {
+  display: flex;
+  height: 48px;
+  align-items: stretch;
+}
 
-          #header nuxeo-data-table-cell,
-          #header-fixed {
-            display: flex;
-            align-items: center;
-            height: 100%;
-          }
-          #header-fixed {
-            grid-column: 2;
-            position: relative;
-            top: 12px;
-          }
 
-          :host([settings-enabled]) ::slotted(nuxeo-data-table-row[header]) {
-            position: relative;
-            top: -20px;
-          }
+#header nuxeo-data-table-cell,
+#header-fixed {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+  #header-fixed {
+  grid-column: 2;
+  position: relative;
+  top: 12px;
+}
+
+:host([settings-enabled]) ::slotted(nuxeo-data-table-row[header]) {
+      position: relative;
+    top: -20px;
+}
+
         </style>
 
         <div id="container">
@@ -301,13 +304,15 @@ import '../nuxeo-button-styles.js';
               <div style$="[[_computeActionsStyle(editable, orderable)]]">
                 <nuxeo-data-table-cell></nuxeo-data-table-cell>
               </div>
+             
+             
             </nuxeo-data-table-row>
-            <div id="header-fixed">
-              <nuxeo-data-table-settings
-                columns="{{columns}}"
-                hidden$="[[!settingsEnabled]]"
-              ></nuxeo-data-table-settings>
-            </div>
+             <div id="header-fixed">
+                  <nuxeo-data-table-settings
+                  columns="{{columns}}"
+                  hidden$="[[!settingsEnabled]]"
+                ></nuxeo-data-table-settings>
+              </div>
           </div>
 
           <dom-if if="[[_isEmpty]]">
@@ -599,15 +604,18 @@ import '../nuxeo-button-styles.js';
           );
         };
 
-        if (this._reorderingColumns) {
-          return;
-        }
+       if (this._reorderingColumns) {
+  return;
+}
 
-        if (info.addedNodes.filter(hasColumns).length > 0 || info.removedNodes.filter(hasColumns).length > 0) {
-          this.set('columns', this.$.columns.assignedNodes().filter(hasColumns));
-          this._backupColumnsState();
-          this.notifyResize();
-        }
+if (info.addedNodes.filter(hasColumns).length > 0 ||
+    info.removedNodes.filter(hasColumns).length > 0) {
+
+  this.set('columns', this.$.columns.assignedNodes().filter(hasColumns));
+  this._backupColumnsState();
+  this.notifyResize();
+}
+
 
         if (info.addedNodes.filter(hasDetails).length > 0) {
           this.set('rowDetail', this.getContentChildren('[select="template[is=row-detail]"]')[0]);
@@ -626,12 +634,14 @@ import '../nuxeo-button-styles.js';
       this._dragInsertAfter = false;
       this._reorderingColumns = false;
 
-      // current visually active column
-      this._activeColumn = null;
+// current visually active column
+this._activeColumn = null;
+
 
       this.addEventListener('drop', (e) => {
         e.preventDefault();
       });
+
 
       this.addEventListener('iron-resize', this._resizeCellContainers);
       this.addEventListener('item-changed', this._itemChanged);
@@ -644,8 +654,9 @@ import '../nuxeo-button-styles.js';
       this.addEventListener('column-resize-start', this._onColumnResizeStart.bind(this));
       this.addEventListener('column-drag-start', this._onColumnDragStart.bind(this));
 
-      this.addEventListener('column-drag-end', this._onColumnDragEnd.bind(this));
+      this.addEventListener('column-drag-end',this._onColumnDragEnd.bind(this));
 
+      
       document.addEventListener('click', (e) => {
         const headerCell = e.target.closest('nuxeo-data-table-cell[header]');
         if (!headerCell) {
@@ -653,9 +664,12 @@ import '../nuxeo-button-styles.js';
         }
 
         if (!this.contains(e.target)) {
-          this._clearActiveColumn();
-        }
+    this._clearActiveColumn();
+  }
       });
+
+
+
 
       this.$.list._selectionHandler = function(e) {
         const model = this.modelForElement(e.target);
@@ -672,6 +686,14 @@ import '../nuxeo-button-styles.js';
         const form = this.getContentChildren('#form')[0];
         form.disabled = true;
       });
+
+
+    //   const headerRow = this.shadowRoot.querySelector(
+    //   'nuxeo-data-table-row[header]'
+    // );
+    // console.log(headerRow);
+
+
 
       this.setAttribute('role', 'table');
       this.setAttribute('aria-multiselectable', this.multiSelection);
@@ -693,9 +715,15 @@ import '../nuxeo-button-styles.js';
 
       // ensure initial sizing pass after first render so CSS flex rules take effect
       afterNextRender(this, () => {
+       // console.log('in afterNextRender');
         this._resizeCellContainers();
+
+        
       });
     }
+
+
+
 
     _onWrapperHeightChanged() {
       const list = this.shadowRoot.querySelector('iron-list');
@@ -774,17 +802,24 @@ import '../nuxeo-button-styles.js';
       return index % 2 === 0;
     }
 
+
     _getHeaderRow() {
-      if (!this.$.header) return null;
+  if (!this.$.header) return null;
 
-      const slot = this.$.header.querySelector('slot[name="item0"]');
-      if (!slot) return null;
+  const slot = this.$.header.querySelector('slot[name="item0"]');
+  if (!slot) return null;
 
-      const assigned = slot.assignedElements({ flatten: true });
-      if (!assigned.length) return null;
+  const assigned = slot.assignedElements({ flatten: true });
+  if (!assigned.length) return null;
 
-      return assigned.find((el) => el.tagName === 'NUXEO-DATA-TABLE-ROW' && el.hasAttribute('header')) || null;
-    }
+  return assigned.find(
+    el =>
+      el.tagName === 'NUXEO-DATA-TABLE-ROW' &&
+      el.hasAttribute('header')
+  ) || null;
+}
+
+
 
     _columnsChanged(columns, oldColumns) {
       if (oldColumns) {
@@ -800,30 +835,40 @@ import '../nuxeo-button-styles.js';
         });
       }
 
-      afterNextRender(this, () => {
-        const headerRow = this._getHeaderRow();
 
-        if (!headerRow) {
-          console.warn('[DT] header row not ready yet');
-          return;
-        }
 
-        const headerCells = headerRow.querySelectorAll('nuxeo-data-table-cell[header]');
+          afterNextRender(this, () => {
+            const headerRow = this._getHeaderRow();
 
-        if (!headerCells.length) {
-          console.warn('[DT] header cells not stamped yet');
-          return;
-        }
+            if (!headerRow) {
+              console.warn('[DT] header row not ready yet');
+              return;
+            }
 
-        // ✅ SAFE: selection / drag / geometry logic here
-        headerRow.addEventListener('dragover', (e) => {
-          if (!this._draggingColumn) return;
-          e.preventDefault();
-          e.dataTransfer.dropEffect = 'move';
+            const headerCells = headerRow.querySelectorAll(
+              'nuxeo-data-table-cell[header]'
+            );
 
-          this._onColumnDragMove(e.clientX);
+          if (!headerCells.length) {
+            console.warn('[DT] header cells not stamped yet');
+            return;
+          }
+
+          console.log('[DT] header row + cells ready');
+
+         
+
+
+          // ✅ SAFE: selection / drag / geometry logic here
+          headerRow.addEventListener('dragover', (e) => {
+            if (!this._draggingColumn) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+
+            this._onColumnDragMove(e.clientX);
+          });
         });
-      });
+
     }
 
     _resizeCellContainers() {
@@ -914,23 +959,43 @@ import '../nuxeo-button-styles.js';
     }
 
     // --- Column resizing support ---
+_onColumnResizeStart(e) {
+  const { column } = e.detail || {};
+  if (!column) return;
 
-    _onColumnResizeStart(e) {
-      const { column, startX, startWidth } = e.detail || {};
-      if (!column) {
-        return;
-      }
-      // Track resizing state and attach document listeners for pointer movement
-      this._resizing = {
-        column,
-        startX,
-        startWidth,
-      };
-      document.addEventListener('mousemove', this._boundDocumentMouseMove);
-      document.addEventListener('mouseup', this._boundDocumentMouseUp);
-      document.addEventListener('touchmove', this._boundDocumentMouseMove, { passive: false });
-      document.addEventListener('touchend', this._boundDocumentMouseUp);
-    }
+  const headerRow = this._getHeaderRow();
+  if (!headerRow) return;
+
+  const cell = [...headerRow.querySelectorAll('nuxeo-data-table-cell[header]')]
+    .find(c => c.column === column);
+
+  if (!cell) return;
+
+  // 1️⃣ Measure BEFORE any mutation
+  const rect = cell.getBoundingClientRect();
+  const frozenWidth = Math.round(rect.width);
+  const rightEdgeX = Math.round(rect.right);
+
+  // 2️⃣ Freeze width (no layout jump)
+  column.width = `${frozenWidth}px`;
+  column.flex = 0;
+
+  this._resizeCellContainers();
+
+  // 3️⃣ 🔑 CRITICAL FIX:
+  //    Reset startX to the *visual right edge*
+  this._resizing = {
+    column,
+    startX: rightEdgeX,
+    startWidth: frozenWidth,
+  };
+
+  document.addEventListener('mousemove', this._boundDocumentMouseMove);
+  document.addEventListener('mouseup', this._boundDocumentMouseUp);
+  document.addEventListener('touchmove', this._boundDocumentMouseMove, { passive: false });
+  document.addEventListener('touchend', this._boundDocumentMouseUp);
+}
+
 
     _documentMouseMove(e) {
       if (!this._resizing) {
@@ -969,145 +1034,193 @@ import '../nuxeo-button-styles.js';
       }
     }
 
+
     _markActiveColumn(column) {
-      if (this._activeColumn === column) {
-        return;
-      }
+  if (this._activeColumn === column) {
+    return;
+  }
 
-      const headerRow = this._getHeaderRow();
-      if (!headerRow) return;
+  const headerRow = this._getHeaderRow();
+  if (!headerRow) return;
 
-      const cells = headerRow.querySelectorAll('nuxeo-data-table-cell[header]');
+  const cells = headerRow.querySelectorAll('nuxeo-data-table-cell[header]');
 
-      // remove highlight from old
-      cells.forEach((cell) => {
-        if (cell.column === this._activeColumn) {
-          cell.classList.remove('column-active');
-        }
-      });
-
-      this._activeColumn = column;
-
-      // add highlight to new
-      if (column) {
-        cells.forEach((cell) => {
-          if (cell.column === column) {
-            cell.classList.add('column-active');
-          }
-        });
-      }
+  // remove highlight from old
+  cells.forEach(cell => {
+    if (cell.column === this._activeColumn) {
+      cell.classList.remove('column-active');
     }
+  });
 
-    _clearActiveColumn() {
-      if (!this._activeColumn) return;
+  this._activeColumn = column;
 
-      const headerRow = this._getHeaderRow();
-      if (!headerRow) return;
-
-      const cells = headerRow.querySelectorAll('nuxeo-data-table-cell[header]');
-      cells.forEach((cell) => cell.classList.remove('column-active'));
-
-      this._activeColumn = null;
-    }
-
-    _onColumnDragMove() {
-      if (!this._draggingColumn) return;
-
-      const ghost = document.querySelector('.column-drag-ghost');
-      if (!ghost) return;
-
-      const ghostRect = ghost.getBoundingClientRect();
-
-      const headerRow = this._getHeaderRow();
-      if (!headerRow) return;
-
-      const cells = Array.from(headerRow.querySelectorAll('nuxeo-data-table-cell[header]')).filter(
-        (c) => !c.hidden && c.column !== this._draggingColumn,
-      );
-
-      for (const cell of cells) {
-        const rect = cell.getBoundingClientRect();
-
-        // 🔑 IMMEDIATE EDGE OVERLAP CHECK
-        const overlaps = ghostRect.right > rect.left && ghostRect.left < rect.right;
-
-        if (!overlaps) {
-          continue;
-        }
-
-        const overlapLeft = ghostRect.right - rect.left; // overlap into left edge
-        const overlapRight = rect.right - ghostRect.left; // overlap into right edge
-
-        this._dragOverColumn = cell.column;
-
-        // 🔑 whichever edge overlap is smaller → that side is intentional
-        this._dragInsertAfter = overlapRight > overlapLeft;
-
-        return;
+  // add highlight to new
+  if (column) {
+    cells.forEach(cell => {
+      if (cell.column === column) {
+        cell.classList.add('column-active');
       }
+    });
+  }
+}
 
-      // ghost past all columns → after last
-      const last = cells[cells.length - 1];
-      if (ghostRect.left > last.getBoundingClientRect().right) {
-        this._dragOverColumn = last.column;
-        this._dragInsertAfter = true;
-      }
+_clearActiveColumn() {
+  if (!this._activeColumn) return;
+
+  const headerRow = this._getHeaderRow();
+  if (!headerRow) return;
+
+  const cells = headerRow.querySelectorAll('nuxeo-data-table-cell[header]');
+  cells.forEach(cell => cell.classList.remove('column-active'));
+
+  this._activeColumn = null;
+}
+
+
+
+_clearDropIndicators() {
+  const headerRow = this._getHeaderRow();
+  if (!headerRow) return;
+
+  headerRow
+    .querySelectorAll('nuxeo-data-table-cell[header]')
+    .forEach(cell => {
+      cell.classList.remove('drop-before', 'drop-after');
+    });
+}
+
+_setDropIndicator(column, insertAfter) {
+  this._clearDropIndicators();
+
+  const headerRow = this._getHeaderRow();
+  if (!headerRow) return;
+
+  const cells = headerRow.querySelectorAll('nuxeo-data-table-cell[header]');
+  cells.forEach(cell => {
+    if (cell.column === column) {
+      cell.classList.add(insertAfter ? 'drop-after' : 'drop-before');
     }
+  });
+}
+
+
+
+   _onColumnDragMove() {
+  if (!this._draggingColumn) return;
+
+  const ghost = document.querySelector('.column-drag-ghost');
+  if (!ghost) return;
+
+  const ghostRect = ghost.getBoundingClientRect();
+
+  const headerRow = this._getHeaderRow();
+  if (!headerRow) return;
+
+  const cells = Array.from(
+    headerRow.querySelectorAll('nuxeo-data-table-cell[header]')
+  ).filter(c => !c.hidden && c.column !== this._draggingColumn);
+
+  for (const cell of cells) {
+    const rect = cell.getBoundingClientRect();
+
+    // 🔑 IMMEDIATE EDGE OVERLAP CHECK
+    const overlaps =
+      ghostRect.right > rect.left &&
+      ghostRect.left < rect.right;
+
+      console.log("overlaps: ", overlaps);
+
+    if (!overlaps) continue;
+
+    const overlapLeft  = ghostRect.right - rect.left;   // overlap into left edge
+    const overlapRight = rect.right - ghostRect.left;   // overlap into right edge
+
+    this._dragOverColumn = cell.column;
+this._dragInsertAfter = overlapRight > overlapLeft;
+
+// 🔵 show drop indicator
+this._setDropIndicator(cell.column, this._dragInsertAfter);
+
+return;
+
+  }
+
+  // ghost past all columns → after last
+  const last = cells[cells.length - 1];
+  if (ghostRect.left > last.getBoundingClientRect().right) {
+    this._dragOverColumn = last.column;
+    this._dragInsertAfter = true;
+  }
+}
 
     // --- Column reorder support ---
 
     _onColumnDragStart(e) {
-      this._reorderingColumns = true; // 🔑 ADD
-      this._draggingColumn = e.detail.column;
-      this._dragOverColumn = null;
-      this._dragInsertAfter = false;
+  console.log('[DT] drag start received', e.detail.column.name);
+  this._reorderingColumns = true;   // 🔑 ADD
+  this._draggingColumn = e.detail.column;
+  this._dragOverColumn = null;
+  this._dragInsertAfter = false;
 
-      this._markActiveColumn(e.detail.column);
-    }
+  this._markActiveColumn(e.detail.column);
+}
 
-    _onColumnDragEnd() {
-      const dragging = this._draggingColumn;
-      const target = this._dragOverColumn;
-      if (!dragging || !target || dragging === target) {
-        this._resetDragState();
-        return;
-      }
+_onColumnDragEnd() {
+  const dragging = this._draggingColumn;
+  const target = this._dragOverColumn;
 
-      // sorted snapshot
-      const ordered = [...this.columns].sort((a, b) => a.order - b.order);
+  console.log(
+    '[DT] drag end',
+    'dragging =', dragging?.name,
+    'target =', target?.name,
+    'insert =', this._dragInsertAfter ? 'after' : 'before'
+  );
 
-      const from = ordered.indexOf(dragging);
-      let to = ordered.indexOf(target);
+  if (!dragging || !target || dragging === target) {
+    this._resetDragState();
+    return;
+  }
 
-      // remove first
-      ordered.splice(from, 1);
+  // sorted snapshot
+  const ordered = [...this.columns].sort((a, b) => a.order - b.order);
 
-      // 🔑 adjust target index AFTER removal
-      if (from < to) {
-        to--;
-      }
+  const from = ordered.indexOf(dragging);
+  let to = ordered.indexOf(target);
 
-      const insertIndex = this._dragInsertAfter ? to + 1 : to;
+  // remove first
+  ordered.splice(from, 1);
 
-      ordered.splice(insertIndex, 0, dragging);
+  // 🔑 adjust target index AFTER removal
+  if (from < to) {
+    to--;
+  }
 
-      // reassign order only
-      ordered.forEach((col, index) => {
-        col.order = index;
-      });
+  const insertIndex = this._dragInsertAfter ? to + 1 : to;
 
-      this.notifyResize();
-      this._resetDragState();
-    }
+  ordered.splice(insertIndex, 0, dragging);
 
-    _resetDragState() {
-      this._draggingColumn = null;
-      this._dragOverColumn = null;
-      this._dragInsertAfter = false;
+  // reassign order only
+  ordered.forEach((col, index) => {
+    col.order = index;
+  });
 
-      // ✅ remove highlight when drag ends
-      this._clearActiveColumn();
-    }
+  this.notifyResize();
+  this._resetDragState();
+}
+
+
+_resetDragState() {
+  this._draggingColumn = null;
+  this._dragOverColumn = null;
+  this._dragInsertAfter = false;
+
+  this._clearDropIndicators(); // 🔵 remove blue line
+  this._clearActiveColumn();
+}
+
+
+
+
 
     /**
      * Fired when user clicks on a item to select it. Note that this event is
