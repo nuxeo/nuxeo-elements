@@ -12,6 +12,9 @@ import './data-table-templatizer-behavior.js';
       return html`
         <style>
           :host {
+          --resizer-hit-width: 2px;
+          --resizer-line-width: 2px;
+          --drop-indicator-width: 4.5px;
             flex: 1 0 120px;
             padding: 0 24px;
             min-height: 48px;
@@ -19,13 +22,13 @@ import './data-table-templatizer-behavior.js';
             align-items: center;
             overflow-x: hidden;
             overflow-y: hidden;
-            transition: flex-basis 200ms, flex-grow 200ms;
-            @apply --iron-data-table-cell;
+           
           }
 
           /* header cells need relative positioning for the resizer */
           :host([header]) {
             position: relative;
+            overflow: visible;
             height: 48px;
           }
 
@@ -53,7 +56,7 @@ import './data-table-templatizer-behavior.js';
             right: 0;
             top: 0;
             bottom: 0;
-            width: 8px;
+            width: var(--resizer-hit-width);
             cursor: col-resize;
             z-index: 5;
           }
@@ -69,7 +72,7 @@ import './data-table-templatizer-behavior.js';
             left: 50%;
             top: 50%;
             transform: translate(-50%, -50%);
-            width: 2px;
+            width: var(--resizer-line-width);
             height: 28px;
             background: rgba(0, 0, 0, 0.15);
             border-radius: 2px;
@@ -83,11 +86,7 @@ import './data-table-templatizer-behavior.js';
            cursor: grabbing;
   cursor: -webkit-grabbing;
           }
-
-          
-
-
-
+  
            :host([header].column-active) {
   background: dodgerblue;
   color: #fff;
@@ -105,33 +104,26 @@ import './data-table-templatizer-behavior.js';
 }
 
 
-
-
-
-/* DROP INDICATOR (drag only) */
+/* DROP INDICATOR — centered exactly on column edge */
 :host([header].drop-before)::before,
 :host([header].drop-after)::after {
   content: '';
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 2px;
-  background: var(--nuxeo-primary-color, #0066ff);
-  z-index: 6; /* above header bg, below ghost */
+  width: 4px;
+  background: var(--nuxeo-primary-color);
   pointer-events: none;
+  z-index: 6;
 }
 
-/* left edge */
 :host([header].drop-before)::before {
   left: 0;
 }
 
-/* right edge (overlaps resizer line) */
 :host([header].drop-after)::after {
   right: 0;
 }
-
-
 
         </style>
 
@@ -283,18 +275,31 @@ _onDragEnd() {
       // Only lock the cell to an explicit width when the user is actively resizing.
       // This avoids frozen columns on initial load when columns come with configured width values.
       const isUserResize = this.table && this.table._resizing;
+      console.log("width: " + width);
       if (width && isUserResize) {
+        console.log("in if");
         const val = typeof width === 'number' ? `${width}px` : width;
         this.style.flex = `0 0 ${val}`;
         this.style.flexBasis = val;
+        console.log("this: " + this);
+        console.log("this.style.flex: " + this.style.flex);
+        console.log("this.style.flexBasis: " + this.style.flexBasis);
       } else if (!width) {
+        console.log("in else if");
         // restore default CSS behavior (flex: 1 1 0 from iron-data-table)
         this.style.flex = '';
         this.style.flexBasis = '';
+        console.log("this: " + this);
+        console.log("this.style.flex: " + this.style.flex);
+        console.log("this.style.flexBasis: " + this.style.flexBasis);
       } else {
+        console.log("in else");
         // width present but not user-initiated: don't lock, let stylesheet/CSS handle stretching
         // this.style.flex = '';
         this.style.flexBasis = width;
+        console.log("this: " + this);
+        console.log("this.style.flex: " + this.style.flex);
+        console.log("this.style.flexBasis: " + this.style.flexBasis);
       }
     }
 
@@ -318,23 +323,34 @@ _onDragEnd() {
 
     // --- resizing and dragging handlers (emit events, actual work done by the table) ---
 
-    _onResizerDown(e) {
-      // support both mouse and touch
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      e.stopPropagation();
-      e.preventDefault();
-      this.dispatchEvent(
-        new CustomEvent('column-resize-start', {
-          composed: true,
-          bubbles: true,
-          detail: {
-            column: this.column,
-            startX: clientX,
-            startWidth: parseFloat(this.column.width) || this.getBoundingClientRect().width,
-          },
-        }),
-      );
-    }
+ _onResizerDown(e) {
+  console.log('_onResizerDown');
+
+  e.stopPropagation();
+  e.preventDefault();
+
+  const cellRect = this.getBoundingClientRect();
+
+  const edgeX = Math.round(cellRect.right);
+  const visualWidth = Math.round(cellRect.width);
+
+  console.log('[CELL] visualWidth:', visualWidth);
+  console.log('[CELL] edgeX (cell.right):', edgeX);
+
+  this.dispatchEvent(
+    new CustomEvent('column-resize-start', {
+      composed: true,
+      bubbles: true,
+      detail: {
+        column: this.column,
+        startX: edgeX,          // ✅ visual edge
+        startWidth: visualWidth // ✅ visual width ONLY
+      },
+    }),
+  );
+}
+
+
 
  _onDragStart(e) {
   
@@ -443,19 +459,70 @@ e.dataTransfer.setDragImage(img, 0, 0);
     }),
   );
 
+ 
   const moveGhost = (ev) => {
+  ev.preventDefault();
+
   const ghost = document.querySelector('.column-drag-ghost');
   if (!ghost) return;
 
-  // 🔒 X axis only
-  ghost.style.left = `${ev.clientX - this._dragOffsetX}px`;
+  const ghostLeft = ev.clientX - this._dragOffsetX;
+  ghost.style.left = `${ghostLeft}px`;
+
+  const ghostWidth = ghost.offsetWidth;
+
+  const table = this.closest('nuxeo-data-table');
+  if (!table) return;
+
+  // 🔑 determine drag direction
+  // ---- STABLE drag direction detection ----
+
+// initialize on first move
+if (table._dragStartGhostX == null) {
+  table._dragStartGhostX = ghostLeft;
+  table._lastDragDirection = 'right'; // default
+}
+
+const delta = ghostLeft - table._dragStartGhostX;
+const DIRECTION_THRESHOLD = 6; // px (tweakable)
+
+// only flip direction when user *actually* reverses
+if (delta > DIRECTION_THRESHOLD) {
+  table._lastDragDirection = 'right';
+} else if (delta < -DIRECTION_THRESHOLD) {
+  table._lastDragDirection = 'left';
+}
+
+const draggingRight = table._lastDragDirection === 'right';
+
+// intent edge is now STABLE
+const intentX = draggingRight
+  ? ghostLeft + ghostWidth
+  : ghostLeft;
+
+console.log(
+  '[DRAG]',
+  'delta:', delta,
+  'dir:', table._lastDragDirection,
+  'intentX:', intentX
+);
+
+
+
+table._onColumnDragMove(intentX);
+
+
+
 };
 
+
+// 🔥 THIS LINE WAS MISSING
 document.addEventListener('dragover', moveGhost);
 
 this._cleanupGhostMove = () => {
   document.removeEventListener('dragover', moveGhost);
 };
+
 
 }
 

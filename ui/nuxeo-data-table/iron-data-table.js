@@ -854,19 +854,10 @@ this._activeColumn = null;
             return;
           }
 
+          
           console.log('[DT] header row + cells ready');
+        //  this._setDropIndicator(headerCells[2], true);
 
-         
-
-
-          // ✅ SAFE: selection / drag / geometry logic here
-          headerRow.addEventListener('dragover', (e) => {
-            if (!this._draggingColumn) return;
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-
-            this._onColumnDragMove(e.clientX);
-          });
         });
 
     }
@@ -959,9 +950,16 @@ this._activeColumn = null;
     }
 
     // --- Column resizing support ---
+
+
 _onColumnResizeStart(e) {
-  const { column } = e.detail || {};
-  if (!column) return;
+  console.log('================ RESIZE START ================');
+
+  const { column, startX, startWidth } = e.detail || {};
+  if (!column || typeof startX !== 'number') {
+    console.warn('[DT] missing column or startX');
+    return;
+  }
 
   const headerRow = this._getHeaderRow();
   if (!headerRow) return;
@@ -971,68 +969,70 @@ _onColumnResizeStart(e) {
 
   if (!cell) return;
 
-  // 1️⃣ Measure BEFORE any mutation
-  const rect = cell.getBoundingClientRect();
-  const frozenWidth = Math.round(rect.width);
-  const rightEdgeX = Math.round(rect.right);
-
-  // 2️⃣ Freeze width (no layout jump)
-  column.width = `${frozenWidth}px`;
-  column.flex = 0;
-
   this._resizeCellContainers();
 
-  // 3️⃣ 🔑 CRITICAL FIX:
-  //    Reset startX to the *visual right edge*
+  // ✅ set resize state
   this._resizing = {
     column,
-    startX: rightEdgeX,
-    startWidth: frozenWidth,
+    startX,
+    startWidth
   };
 
   document.addEventListener('mousemove', this._boundDocumentMouseMove);
   document.addEventListener('mouseup', this._boundDocumentMouseUp);
   document.addEventListener('touchmove', this._boundDocumentMouseMove, { passive: false });
   document.addEventListener('touchend', this._boundDocumentMouseUp);
+
+  console.log('[DT] resize state:', this._resizing);
 }
 
 
-    _documentMouseMove(e) {
-      if (!this._resizing) {
-        return;
-      }
-      // support both mouse and touch
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      if (e.touches) {
-        // prevent page scrolling while resizing
-        e.preventDefault();
-      }
-      const dx = clientX - this._resizing.startX;
-      // Prefer an explicit column.minWidth, otherwise fall back to a smaller default
-      const minWidth = parseInt(this._resizing.column && this._resizing.column.minWidth, 10) || 24;
-      const newWidth = Math.max(minWidth, Math.round(this._resizing.startWidth + dx));
-      // apply as px
-      const colIndex = this.columns.indexOf(this._resizing.column);
-      if (colIndex > -1) {
-        // persist width on the column element
-        this.set(`columns.${colIndex}.width`, `${newWidth}px`);
-        // ensure header/rows update size
-        this._resizeCellContainers();
-      }
-    }
 
-    _documentMouseUp() {
-      if (this._resizing) {
-        // cleanup
-        document.removeEventListener('mousemove', this._boundDocumentMouseMove);
-        document.removeEventListener('mouseup', this._boundDocumentMouseUp);
-        document.removeEventListener('touchmove', this._boundDocumentMouseMove);
-        document.removeEventListener('touchend', this._boundDocumentMouseUp);
-        this._resizing = null;
-        // some UI update might be required
-        this.notifyResize();
-      }
-    }
+_documentMouseMove(e) {
+  if (!this._resizing) return;
+
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+
+  if (e.touches) e.preventDefault();
+
+  const dx = clientX - this._resizing.startX;
+
+  const minWidth =
+    parseInt(this._resizing.column?.minWidth, 10) || 24;
+
+  const newWidth = Math.max(
+    minWidth,
+    Math.round(this._resizing.startWidth + dx)
+  );
+
+  console.log('--- MOVE ---');
+  console.log('[DT] clientX:', clientX);
+  console.log('[DT] dx:', dx);
+  console.log('[DT] newWidth:', newWidth);
+
+  const colIndex = this.columns.indexOf(this._resizing.column);
+  if (colIndex > -1) {
+    this.set(`columns.${colIndex}.width`, `${newWidth}px`);
+    this._resizeCellContainers();
+  }
+}
+
+
+
+_documentMouseUp() {
+  if (!this._resizing) return;
+
+  document.removeEventListener('mousemove', this._boundDocumentMouseMove);
+  document.removeEventListener('mouseup', this._boundDocumentMouseUp);
+  document.removeEventListener('touchmove', this._boundDocumentMouseMove);
+  document.removeEventListener('touchend', this._boundDocumentMouseUp);
+
+  this._resizing = null;
+  this.notifyResize();
+
+}
+
+
 
 
     _markActiveColumn(column) {
@@ -1104,54 +1104,52 @@ _setDropIndicator(column, insertAfter) {
 }
 
 
+_onColumnDragMove(mouseX) {
+  if (!this._draggingColumn || typeof mouseX !== 'number') return;
+  this._resolveDropTargetFromX(mouseX);
+}
 
-   _onColumnDragMove() {
-  if (!this._draggingColumn) return;
 
-  const ghost = document.querySelector('.column-drag-ghost');
-  if (!ghost) return;
 
-  const ghostRect = ghost.getBoundingClientRect();
 
+_resolveDropTargetFromX(x) {
   const headerRow = this._getHeaderRow();
   if (!headerRow) return;
+
+  // 🔑 normalize X into header coordinate space
+  const headerRect = headerRow.getBoundingClientRect();
+  const localX = x - headerRect.left;
 
   const cells = Array.from(
     headerRow.querySelectorAll('nuxeo-data-table-cell[header]')
   ).filter(c => !c.hidden && c.column !== this._draggingColumn);
 
+  let targetCell = null;
+
+  // 1️⃣ find column whose LOCAL bounds contain intent edge
   for (const cell of cells) {
     const rect = cell.getBoundingClientRect();
+    const left = rect.left - headerRect.left;
+    const right = rect.right - headerRect.left;
 
-    // 🔑 IMMEDIATE EDGE OVERLAP CHECK
-    const overlaps =
-      ghostRect.right > rect.left &&
-      ghostRect.left < rect.right;
-
-      console.log("overlaps: ", overlaps);
-
-    if (!overlaps) continue;
-
-    const overlapLeft  = ghostRect.right - rect.left;   // overlap into left edge
-    const overlapRight = rect.right - ghostRect.left;   // overlap into right edge
-
-    this._dragOverColumn = cell.column;
-this._dragInsertAfter = overlapRight > overlapLeft;
-
-// 🔵 show drop indicator
-this._setDropIndicator(cell.column, this._dragInsertAfter);
-
-return;
-
+    if (localX >= left && localX <= right) {
+      targetCell = cell;
+      break;
+    }
   }
 
-  // ghost past all columns → after last
-  const last = cells[cells.length - 1];
-  if (ghostRect.left > last.getBoundingClientRect().right) {
-    this._dragOverColumn = last.column;
-    this._dragInsertAfter = true;
-  }
+  if (!targetCell) return;
+
+  // 2️⃣ direction decides BEFORE / AFTER (no midpoint)
+  const insertAfter = this._lastDragDirection === 'right';
+
+  this._dragOverColumn = targetCell.column;
+  this._dragInsertAfter = insertAfter;
+
+  this._setDropIndicator(targetCell.column, insertAfter);
 }
+
+
 
     // --- Column reorder support ---
 
@@ -1213,11 +1211,12 @@ _resetDragState() {
   this._draggingColumn = null;
   this._dragOverColumn = null;
   this._dragInsertAfter = false;
-
-  this._clearDropIndicators(); // 🔵 remove blue line
+  this._lastGhostX = undefined;
+  this._dragStartGhostX = undefined;
+  this._lastDragDirection = undefined;
+  this._clearDropIndicators();
   this._clearActiveColumn();
 }
-
 
 
 
