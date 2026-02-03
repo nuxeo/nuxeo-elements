@@ -51,7 +51,6 @@ import './data-table-templatizer-behavior.js';
           /* resizer handle (visible on header cells) */
           .resizer {
             display: none;
-            // background-color: red;
             position: absolute;
             right: 0;
             top: 0;
@@ -101,7 +100,7 @@ import './data-table-templatizer-behavior.js';
             pointer-events: none;
           }
 
-          /* DROP INDICATOR — centered on column edge */
+          /* DROP INDICATOR */
           :host([header].drop-before)::before,
           :host([header].drop-after)::after {
             content: '';
