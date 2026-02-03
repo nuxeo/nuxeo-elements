@@ -644,18 +644,6 @@ import '../nuxeo-button-styles.js';
       this.addEventListener('column-resize-start', this._onColumnResizeStart.bind(this));
       this.addEventListener('column-drag-start', this._onColumnDragStart.bind(this));
       this.addEventListener('column-drag-end', this._onColumnDragEnd.bind(this));
-
-      document.addEventListener('click', (e) => {
-        const headerCell = e.target.closest('nuxeo-data-table-cell[header]');
-        if (!headerCell) {
-          this._markActiveColumn(null);
-        }
-
-        if (!this.contains(e.target)) {
-          this._clearActiveColumn();
-        }
-      });
-
       this.$.list._selectionHandler = function(e) {
         const model = this.modelForElement(e.target);
         if (!model) {
