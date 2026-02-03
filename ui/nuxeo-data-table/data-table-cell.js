@@ -12,9 +12,9 @@ import './data-table-templatizer-behavior.js';
       return html`
         <style>
           :host {
-          --resizer-hit-width: 2px;
+          --resizer-hit-width: 8px;
           --resizer-line-width: 2px;
-          --drop-indicator-width: 4.5px;
+          --drop-indicator-width: 6px;
             flex: 1 0 120px;
             padding: 0 24px;
             min-height: 48px;
@@ -52,6 +52,7 @@ import './data-table-templatizer-behavior.js';
           /* resizer handle (visible on header cells) */
           .resizer {
             display: none;
+            // background-color: red;
             position: absolute;
             right: 0;
             top: 0;
@@ -61,11 +62,6 @@ import './data-table-templatizer-behavior.js';
             z-index: 5;
           }
 
-          :host([header]) .resizer {
-            display: block;
-          }
-
-          /* small interaction area to make grabbing easier */
           .resizer:after {
             content: '';
             position: absolute;
@@ -77,6 +73,12 @@ import './data-table-templatizer-behavior.js';
             background: rgba(0, 0, 0, 0.15);
             border-radius: 2px;
           }
+
+          :host([header]) .resizer {
+            display: block;
+          }
+
+          
 
           :host(.dragging) {
            // opacity: 0.6;
@@ -104,26 +106,29 @@ import './data-table-templatizer-behavior.js';
 }
 
 
-/* DROP INDICATOR — centered exactly on column edge */
+/* DROP INDICATOR — centered on column edge */
 :host([header].drop-before)::before,
 :host([header].drop-after)::after {
   content: '';
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 4px;
+  width: var(--drop-indicator-width);
   background: var(--nuxeo-primary-color);
   pointer-events: none;
   z-index: 6;
 }
 
+/* LEFT edge */
 :host([header].drop-before)::before {
-  left: 0;
+  left: calc(var(--drop-indicator-width) / -2);
 }
 
+/* RIGHT edge */
 :host([header].drop-after)::after {
-  right: 0;
+  right: calc(var(--drop-indicator-width) / -2);
 }
+
 
         </style>
 
@@ -275,31 +280,29 @@ _onDragEnd() {
       // Only lock the cell to an explicit width when the user is actively resizing.
       // This avoids frozen columns on initial load when columns come with configured width values.
       const isUserResize = this.table && this.table._resizing;
-      console.log("width: " + width);
       if (width && isUserResize) {
-        console.log("in if");
         const val = typeof width === 'number' ? `${width}px` : width;
         this.style.flex = `0 0 ${val}`;
         this.style.flexBasis = val;
-        console.log("this: " + this);
-        console.log("this.style.flex: " + this.style.flex);
-        console.log("this.style.flexBasis: " + this.style.flexBasis);
+      //  console.log("this: " + this);
+     //   console.log("in if :::::: " + "width: " + width + "  this.style.flex: " + this.style.flex + "  this.style.flexBasis: " + this.style.flexBasis);
+        
       } else if (!width) {
-        console.log("in else if");
+       // console.log("in else if");
         // restore default CSS behavior (flex: 1 1 0 from iron-data-table)
         this.style.flex = '';
         this.style.flexBasis = '';
-        console.log("this: " + this);
-        console.log("this.style.flex: " + this.style.flex);
-        console.log("this.style.flexBasis: " + this.style.flexBasis);
+        // console.log("this: " + this);
+        // console.log("this.style.flex: " + this.style.flex);
+        // console.log("this.style.flexBasis: " + this.style.flexBasis);
       } else {
-        console.log("in else");
+       // console.log("in else");
         // width present but not user-initiated: don't lock, let stylesheet/CSS handle stretching
         // this.style.flex = '';
         this.style.flexBasis = width;
-        console.log("this: " + this);
-        console.log("this.style.flex: " + this.style.flex);
-        console.log("this.style.flexBasis: " + this.style.flexBasis);
+        // console.log("this: " + this);
+        // console.log("this.style.flex: " + this.style.flex);
+        // console.log("this.style.flexBasis: " + this.style.flexBasis);
       }
     }
 
@@ -324,18 +327,30 @@ _onDragEnd() {
     // --- resizing and dragging handlers (emit events, actual work done by the table) ---
 
  _onResizerDown(e) {
-  console.log('_onResizerDown');
+ // console.log('_onResizerDown');
 
   e.stopPropagation();
   e.preventDefault();
+
+  // 🔑 temporarily disable drag
+  this.draggable = false;
 
   const cellRect = this.getBoundingClientRect();
 
   const edgeX = Math.round(cellRect.right);
   const visualWidth = Math.round(cellRect.width);
 
-  console.log('[CELL] visualWidth:', visualWidth);
-  console.log('[CELL] edgeX (cell.right):', edgeX);
+
+
+  console.log('[RESIZE START]');
+console.log('mousedown clientX:', e.clientX);
+console.log('cellRect.right   :', Math.round(cellRect.right));
+console.log('resizerRect.right:',
+  Math.round(this.shadowRoot.querySelector('.resizer')
+    .getBoundingClientRect().right)
+);
+
+
 
   this.dispatchEvent(
     new CustomEvent('column-resize-start', {
@@ -353,6 +368,14 @@ _onDragEnd() {
 
 
  _onDragStart(e) {
+
+  // 🔑 if resize is active, DO NOT start drag
+  const table = this.closest('nuxeo-data-table');
+  if (table && table._resizing) {
+    e.preventDefault();
+    return;
+  }
+
   
   try {
     e.dataTransfer.setData('text/plain', '');
@@ -364,7 +387,7 @@ _onDragEnd() {
 
 
   // ---- measure visible table height ----
-  const table = this.closest('nuxeo-data-table');
+ // const table = this.closest('nuxeo-data-table');
   const header = table?.shadowRoot?.querySelector('#header');
   const list = table?.shadowRoot?.querySelector('#list');
 
@@ -500,12 +523,12 @@ const intentX = draggingRight
   ? ghostLeft + ghostWidth
   : ghostLeft;
 
-console.log(
-  '[DRAG]',
-  'delta:', delta,
-  'dir:', table._lastDragDirection,
-  'intentX:', intentX
-);
+// console.log(
+//   '[DRAG]',
+//   'delta:', delta,
+//   'dir:', table._lastDragDirection,
+//   'intentX:', intentX
+// );
 
 
 

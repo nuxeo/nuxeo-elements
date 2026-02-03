@@ -952,8 +952,34 @@ this._activeColumn = null;
     // --- Column resizing support ---
 
 
+
+    _getResizerDebugInfo(column) {
+  const headerRow = this._getHeaderRow();
+  if (!headerRow) return null;
+
+  const cell = [...headerRow.querySelectorAll('nuxeo-data-table-cell[header]')]
+    .find(c => c.column === column);
+
+  if (!cell) return null;
+
+  const resizer = cell.shadowRoot?.querySelector('.resizer');
+  if (!resizer) return null;
+
+  const resizerRect = resizer.getBoundingClientRect();
+  const cellRect = cell.getBoundingClientRect();
+
+  return {
+    resizerLeft: Math.round(resizerRect.left),
+    resizerRight: Math.round(resizerRect.right),
+    cellLeft: Math.round(cellRect.left),
+    cellRight: Math.round(cellRect.right),
+  };
+}
+
+
+
 _onColumnResizeStart(e) {
-  console.log('================ RESIZE START ================');
+ // console.log('================ RESIZE START ================');
 
   const { column, startX, startWidth } = e.detail || {};
   if (!column || typeof startX !== 'number') {
@@ -972,43 +998,68 @@ _onColumnResizeStart(e) {
   this._resizeCellContainers();
 
   // ✅ set resize state
-  this._resizing = {
-    column,
-    startX,
-    startWidth
-  };
+ this._resizing = {
+  column,
+  lastX: startX,          // 🔑 track last pointer position
+  startWidth
+};
+
 
   document.addEventListener('mousemove', this._boundDocumentMouseMove);
   document.addEventListener('mouseup', this._boundDocumentMouseUp);
   document.addEventListener('touchmove', this._boundDocumentMouseMove, { passive: false });
   document.addEventListener('touchend', this._boundDocumentMouseUp);
 
-  console.log('[DT] resize state:', this._resizing);
+ // console.log('[DT] resize state:', this._resizing);
 }
-
 
 
 _documentMouseMove(e) {
   if (!this._resizing) return;
 
   const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-
   if (e.touches) e.preventDefault();
 
-  const dx = clientX - this._resizing.startX;
+  
 
   const minWidth =
     parseInt(this._resizing.column?.minWidth, 10) || 24;
 
-  const newWidth = Math.max(
-    minWidth,
-    Math.round(this._resizing.startWidth + dx)
-  );
+  const dx = clientX - this._resizing.lastX;
 
-  console.log('--- MOVE ---');
-  console.log('[DT] clientX:', clientX);
-  console.log('[DT] dx:', dx);
-  console.log('[DT] newWidth:', newWidth);
+const currentWidth =
+  parseInt(this._resizing.column.width, 10) ||
+  this._resizing.startWidth;
+
+const newWidth = Math.max(
+  minWidth,
+  Math.round(currentWidth + dx)
+);
+
+// 🔑 advance the reference frame
+this._resizing.lastX = clientX;
+
+
+  const debug = this._getResizerDebugInfo(this._resizing.column);
+
+  console.group('[RESIZE MOVE]');
+  console.log('clientX           :', Math.round(clientX));
+  console.log('lastX (edge)     :', Math.round(this._resizing.lastX));
+  console.log('dx                :', Math.round(dx));
+  console.log('newWidth          :', newWidth);
+
+  if (debug) {
+    console.log('resizerLeft       :', debug.resizerLeft);
+    console.log('resizerRight      :', debug.resizerRight);
+    console.log('cellRight (edge)  :', debug.cellRight);
+    console.log(
+      'pointer - resizer :',
+      Math.round(clientX - debug.resizerRight),
+      'px'
+    );
+  }
+
+  console.groupEnd();
 
   const colIndex = this.columns.indexOf(this._resizing.column);
   if (colIndex > -1) {
@@ -1026,6 +1077,23 @@ _documentMouseUp() {
   document.removeEventListener('mouseup', this._boundDocumentMouseUp);
   document.removeEventListener('touchmove', this._boundDocumentMouseMove);
   document.removeEventListener('touchend', this._boundDocumentMouseUp);
+
+  // 🔑 re-enable dragging on header cells
+  const headerRow = this._getHeaderRow();
+  if (headerRow) {
+    headerRow
+      .querySelectorAll('nuxeo-data-table-cell[header]')
+      .forEach(cell => {
+        cell.draggable = true;
+      });
+  }
+
+  const { column } = this._resizing;
+  const newWidth = column.width;
+  console.group('[RESIZE END]');
+  console.log('Column name :', column.name || column.field || '(unnamed)');
+  console.log('New width :', newWidth);
+  console.groupEnd();
 
   this._resizing = null;
   this.notifyResize();
@@ -1111,14 +1179,12 @@ _onColumnDragMove(mouseX) {
 
 
 
-
 _resolveDropTargetFromX(x) {
   const headerRow = this._getHeaderRow();
   if (!headerRow) return;
 
-  // 🔑 normalize X into header coordinate space
   const headerRect = headerRow.getBoundingClientRect();
-  const localX = x - headerRect.left;
+  const localX = Math.round(x - headerRect.left);
 
   const cells = Array.from(
     headerRow.querySelectorAll('nuxeo-data-table-cell[header]')
@@ -1126,11 +1192,37 @@ _resolveDropTargetFromX(x) {
 
   let targetCell = null;
 
-  // 1️⃣ find column whose LOCAL bounds contain intent edge
+  console.group('[DROP RESOLVE]');
+  console.log('mouseX (global) :', Math.round(x));
+  console.log('mouseX (local)  :', localX);
+  console.log('drag direction  :', this._lastDragDirection);
+
   for (const cell of cells) {
     const rect = cell.getBoundingClientRect();
-    const left = rect.left - headerRect.left;
-    const right = rect.right - headerRect.left;
+    const left = Math.round(rect.left - headerRect.left);
+    const right = Math.round(rect.right - headerRect.left);
+
+    const resizer = cell.shadowRoot?.querySelector('.resizer');
+    let resizerLeft, resizerRight;
+
+    if (resizer) {
+      const r = resizer.getBoundingClientRect();
+      resizerLeft = Math.round(r.left - headerRect.left);
+      resizerRight = Math.round(r.right - headerRect.left);
+    }
+
+    console.group(`Column: ${cell.column?.name || '(unnamed)'}`);
+    console.log('cell.left       :', left);
+    console.log('cell.right      :', right);
+    if (resizer) {
+      console.log('resizer.left    :', resizerLeft);
+      console.log('resizer.right   :', resizerRight);
+    }
+    console.log(
+      'contains mouse? :',
+      localX >= left && localX <= right
+    );
+    console.groupEnd();
 
     if (localX >= left && localX <= right) {
       targetCell = cell;
@@ -1138,10 +1230,20 @@ _resolveDropTargetFromX(x) {
     }
   }
 
-  if (!targetCell) return;
+  console.groupEnd();
 
-  // 2️⃣ direction decides BEFORE / AFTER (no midpoint)
+  if (!targetCell) {
+    console.log('[DROP] no target cell');
+    return;
+  }
+
   const insertAfter = this._lastDragDirection === 'right';
+
+  console.log(
+    '[DROP TARGET]',
+    targetCell.column?.name,
+    insertAfter ? '(after)' : '(before)'
+  );
 
   this._dragOverColumn = targetCell.column;
   this._dragInsertAfter = insertAfter;
@@ -1154,7 +1256,7 @@ _resolveDropTargetFromX(x) {
     // --- Column reorder support ---
 
     _onColumnDragStart(e) {
-  console.log('[DT] drag start received', e.detail.column.name);
+ // console.log('[DT] drag start received', e.detail.column.name);
   this._reorderingColumns = true;   // 🔑 ADD
   this._draggingColumn = e.detail.column;
   this._dragOverColumn = null;
@@ -1167,12 +1269,6 @@ _onColumnDragEnd() {
   const dragging = this._draggingColumn;
   const target = this._dragOverColumn;
 
-  console.log(
-    '[DT] drag end',
-    'dragging =', dragging?.name,
-    'target =', target?.name,
-    'insert =', this._dragInsertAfter ? 'after' : 'before'
-  );
 
   if (!dragging || !target || dragging === target) {
     this._resetDragState();
@@ -1201,6 +1297,16 @@ _onColumnDragEnd() {
   ordered.forEach((col, index) => {
     col.order = index;
   });
+
+  // 🔑 FINAL ORDER LOG
+  console.group('[COLUMN REORDER END]');
+  ordered.forEach(col => {
+    console.log(
+      `index ${col.order} →`,
+      col.name || col.field || '(unnamed)'
+    );
+  });
+  console.groupEnd();
 
   this.notifyResize();
   this._resetDragState();
