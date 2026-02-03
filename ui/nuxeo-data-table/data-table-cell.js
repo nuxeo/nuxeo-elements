@@ -12,9 +12,9 @@ import './data-table-templatizer-behavior.js';
       return html`
         <style>
           :host {
-          --resizer-hit-width: 8px;
-          --resizer-line-width: 2px;
-          --drop-indicator-width: 6px;
+            --resizer-hit-width: 8px;
+            --resizer-line-width: 2px;
+            --drop-indicator-width: 6px;
             flex: 1 0 120px;
             padding: 0 24px;
             min-height: 48px;
@@ -22,7 +22,6 @@ import './data-table-templatizer-behavior.js';
             align-items: center;
             overflow-x: hidden;
             overflow-y: hidden;
-           
           }
 
           /* header cells need relative positioning for the resizer */
@@ -78,58 +77,52 @@ import './data-table-templatizer-behavior.js';
             display: block;
           }
 
-          
-
           :host(.dragging) {
-           // opacity: 0.6;
             outline: 1px dashed rgba(0, 0, 0, 0.2);
             background: rgba(0, 102, 255, 0.08);
             box-shadow: inset 0 -2px 0 var(--nuxeo-primary-color, #0066ff);
-           cursor: grabbing;
-  cursor: -webkit-grabbing;
+            cursor: grabbing;
+            cursor: -webkit-grabbing;
           }
-  
-           :host([header].column-active) {
-  background: dodgerblue;
-  color: #fff;
-  cursor: grab;
-  cursor: -webkit-grab;
-}
 
-:host([header].column-active)::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-left: 1px solid rgba(0, 102, 255, 0.4);
-  border-right: 1px solid rgba(0, 102, 255, 0.4);
-  pointer-events: none;
-}
+          :host([header].column-active) {
+            background: #1e90ff;
+            color: #fff;
+            cursor: grab;
+            cursor: -webkit-grab;
+          }
 
+          :host([header].column-active)::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-left: 1px solid rgba(0, 102, 255, 0.4);
+            border-right: 1px solid rgba(0, 102, 255, 0.4);
+            pointer-events: none;
+          }
 
-/* DROP INDICATOR — centered on column edge */
-:host([header].drop-before)::before,
-:host([header].drop-after)::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: var(--drop-indicator-width);
-  background: var(--nuxeo-primary-color);
-  pointer-events: none;
-  z-index: 6;
-}
+          /* DROP INDICATOR — centered on column edge */
+          :host([header].drop-before)::before,
+          :host([header].drop-after)::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: var(--drop-indicator-width);
+            background: var(--nuxeo-primary-color);
+            pointer-events: none;
+            z-index: 6;
+          }
 
-/* LEFT edge */
-:host([header].drop-before)::before {
-  left: calc(var(--drop-indicator-width) / -2);
-}
+          /* LEFT edge */
+          :host([header].drop-before)::before {
+            left: calc(var(--drop-indicator-width) / -2);
+          }
 
-/* RIGHT edge */
-:host([header].drop-after)::after {
-  right: calc(var(--drop-indicator-width) / -2);
-}
-
-
+          /* RIGHT edge */
+          :host([header].drop-after)::after {
+            right: calc(var(--drop-indicator-width) / -2);
+          }
         </style>
 
         <div class="resizer" on-mousedown="_onResizerDown" on-touchstart="_onResizerDown"></div>
@@ -173,61 +166,24 @@ import './data-table-templatizer-behavior.js';
         '_hiddenChanged(hidden)',
         '_orderChanged(order)',
         '_widthChanged(width)',
-        '_overflowChanged(overflow)'
+        '_overflowChanged(overflow)',
       ];
     }
 
     ready() {
       super.ready();
-      
       if (this.header) {
         this.setAttribute('scope', 'col');
       } else {
         this.setAttribute('role', 'cell');
       }
 
-      
-
-
-if (this.header) {
-  this.draggable = true;
-  this.addEventListener('dragstart', this._onDragStart.bind(this));
-  
-  this.addEventListener('dragend', this._onDragEnd.bind(this));
-
- 
-  
-
-  
-}
-
-
-
-
-      
+      if (this.header) {
+        this.draggable = true;
+        this.addEventListener('dragstart', this._onDragStart.bind(this));
+        this.addEventListener('dragend', this._onDragEnd.bind(this));
+      }
     }
-
-
-
-
-_onDragEnd() {
-  
-
-  this._cleanupGhostMove?.();
-  document.querySelector('.column-drag-ghost')?.remove();
-  this.classList.remove('dragging');
-
-  this.dispatchEvent(
-    new CustomEvent('column-drag-end', {
-      bubbles: true,
-      composed: true,
-      detail: { column: this.column },
-    }),
-  );
-}
-
-
-
 
     _alignRightChanged(alignRight) {
       this.style.flexDirection = alignRight ? 'row-reverse' : 'row';
@@ -284,25 +240,11 @@ _onDragEnd() {
         const val = typeof width === 'number' ? `${width}px` : width;
         this.style.flex = `0 0 ${val}`;
         this.style.flexBasis = val;
-      //  console.log("this: " + this);
-     //   console.log("in if :::::: " + "width: " + width + "  this.style.flex: " + this.style.flex + "  this.style.flexBasis: " + this.style.flexBasis);
-        
       } else if (!width) {
-       // console.log("in else if");
-        // restore default CSS behavior (flex: 1 1 0 from iron-data-table)
         this.style.flex = '';
         this.style.flexBasis = '';
-        // console.log("this: " + this);
-        // console.log("this.style.flex: " + this.style.flex);
-        // console.log("this.style.flexBasis: " + this.style.flexBasis);
       } else {
-       // console.log("in else");
-        // width present but not user-initiated: don't lock, let stylesheet/CSS handle stretching
-        // this.style.flex = '';
         this.style.flexBasis = width;
-        // console.log("this: " + this);
-        // console.log("this.style.flex: " + this.style.flex);
-        // console.log("this.style.flexBasis: " + this.style.flexBasis);
       }
     }
 
@@ -324,233 +266,192 @@ _onDragEnd() {
       });
     }
 
-    // --- resizing and dragging handlers (emit events, actual work done by the table) ---
-
- _onResizerDown(e) {
- // console.log('_onResizerDown');
-
-  e.stopPropagation();
-  e.preventDefault();
-
-  // 🔑 temporarily disable drag
-  this.draggable = false;
-
-  const cellRect = this.getBoundingClientRect();
-
-  const edgeX = Math.round(cellRect.right);
-  const visualWidth = Math.round(cellRect.width);
-
-
-
-  console.log('[RESIZE START]');
-console.log('mousedown clientX:', e.clientX);
-console.log('cellRect.right   :', Math.round(cellRect.right));
-console.log('resizerRect.right:',
-  Math.round(this.shadowRoot.querySelector('.resizer')
-    .getBoundingClientRect().right)
-);
-
-
-
-  this.dispatchEvent(
-    new CustomEvent('column-resize-start', {
-      composed: true,
-      bubbles: true,
-      detail: {
-        column: this.column,
-        startX: edgeX,          // ✅ visual edge
-        startWidth: visualWidth // ✅ visual width ONLY
-      },
-    }),
-  );
-}
-
-
-
- _onDragStart(e) {
-
-  // 🔑 if resize is active, DO NOT start drag
-  const table = this.closest('nuxeo-data-table');
-  if (table && table._resizing) {
-    e.preventDefault();
-    return;
-  }
-
-  
-  try {
-    e.dataTransfer.setData('text/plain', '');
-  } catch (_) {}
-
-  e.dataTransfer.effectAllowed = 'move';
-  const rect = this.getBoundingClientRect();
-  this._dragOffsetX = e.clientX - rect.left;
-
-
-  // ---- measure visible table height ----
- // const table = this.closest('nuxeo-data-table');
-  const header = table?.shadowRoot?.querySelector('#header');
-  const list = table?.shadowRoot?.querySelector('#list');
-
-  const headerHeight = header ? header.getBoundingClientRect().height : rect.height;
-  const bodyHeight = list ? list.getBoundingClientRect().height : 200;
-  const totalHeight = headerHeight + bodyHeight;
-
-  // ---- ghost container (full column) ----
-  const ghost = document.createElement('div');
-  ghost.style.width = `${rect.width}px`;
-  ghost.style.height = `${totalHeight}px`;
-  ghost.style.display = 'flex';
-  ghost.style.flexDirection = 'column';
-  ghost.style.pointerEvents = 'none';
-  ghost.style.position = 'fixed';
-  
-  ghost.style.opacity = '0.5';               // 🔑 more ghostly
-  ghost.style.background = 'grey';
-  ghost.style.border = '1px solid rgba(0, 0, 0, 0.26)';
-  ghost.style.boxShadow = '0 16px 40px rgba(0,0,0,0.25)';
-  ghost.style.borderRadius = '4px';
-  ghost.style.overflow = 'hidden';
-  ghost.style.transform = 'translateZ(0)';
-
-  ghost.classList.add('column-drag-ghost');
-
-
-  const headerTop = header.getBoundingClientRect().top;
-
-ghost.style.top = `${headerTop}px`;
-ghost.style.left = `${rect.left}px`;
-
-
-  // ---- header clone ----
-  const headerClone = this.cloneNode(false); // 🔑 SHALLOW clone (no children)
-
-// preserve size
-headerClone.style.height = `${rect.height}px`;
-headerClone.style.minHeight = `${rect.height}px`;
-headerClone.style.flex = '0 0 auto';
-
-// ghost look
-headerClone.style.background = 'transparent';
-headerClone.style.borderBottom = '1px solid rgba(0,0,0,0.08)';
-
-// 🔑 REMOVE SLOT CONTENT COMPLETELY
-const slot = document.createElement('slot');
-slot.style.display = 'none';
-headerClone.appendChild(slot);
-
-
-  // ---- column body filler (no data, just shape) ----
-  const bodyFill = document.createElement('div');
-  bodyFill.style.flex = '1';
-  bodyFill.style.background =
-    'repeating-linear-gradient(' +
-    'to bottom,' +
-    'rgba(0,0,0,0.03),' +
-    'rgba(0,0,0,0.03) 1px,' +
-    'transparent 1px,' +
-    'transparent 48px' +
-    ')';
-
-  ghost.appendChild(headerClone);
-  ghost.appendChild(bodyFill);
-
-  document.body.appendChild(ghost);
-
-  // kill native drag image (1x1 transparent)
-const img = new Image();
-img.src =
-  'data:image/svg+xml;base64,' +
-  btoa('<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>');
-
-e.dataTransfer.setDragImage(img, 0, 0);
-
-
-
-  this.classList.add('dragging');
-
-  
-  if (table) {
-    table._dragOffsetX = this._dragOffsetX;
-  }
-
-
-  this.dispatchEvent(
-    new CustomEvent('column-drag-start', {
-      composed: true,
-      bubbles: true,
-      detail: { column: this.column },
-    }),
-  );
-
- 
-  const moveGhost = (ev) => {
-  ev.preventDefault();
-
-  const ghost = document.querySelector('.column-drag-ghost');
-  if (!ghost) return;
-
-  const ghostLeft = ev.clientX - this._dragOffsetX;
-  ghost.style.left = `${ghostLeft}px`;
-
-  const ghostWidth = ghost.offsetWidth;
-
-  const table = this.closest('nuxeo-data-table');
-  if (!table) return;
-
-  // 🔑 determine drag direction
-  // ---- STABLE drag direction detection ----
-
-// initialize on first move
-if (table._dragStartGhostX == null) {
-  table._dragStartGhostX = ghostLeft;
-  table._lastDragDirection = 'right'; // default
-}
-
-const delta = ghostLeft - table._dragStartGhostX;
-const DIRECTION_THRESHOLD = 6; // px (tweakable)
-
-// only flip direction when user *actually* reverses
-if (delta > DIRECTION_THRESHOLD) {
-  table._lastDragDirection = 'right';
-} else if (delta < -DIRECTION_THRESHOLD) {
-  table._lastDragDirection = 'left';
-}
-
-const draggingRight = table._lastDragDirection === 'right';
-
-// intent edge is now STABLE
-const intentX = draggingRight
-  ? ghostLeft + ghostWidth
-  : ghostLeft;
-
-// console.log(
-//   '[DRAG]',
-//   'delta:', delta,
-//   'dir:', table._lastDragDirection,
-//   'intentX:', intentX
-// );
-
-
-
-table._onColumnDragMove(intentX);
-
-
-
-};
-
-
-// 🔥 THIS LINE WAS MISSING
-document.addEventListener('dragover', moveGhost);
-
-this._cleanupGhostMove = () => {
-  document.removeEventListener('dragover', moveGhost);
-};
-
-
-}
-
-
-
+    // ------------------------------------------------------------
+    // Resize & drag emitters (cell-level)
+    // ------------------------------------------------------------
+
+    /**
+     * Emits resize start with visual edge and width.
+     */
+    _onResizerDown(e) {
+      e.stopPropagation();
+      e.preventDefault();
+
+      // Temporarily disable drag during resize
+      this.draggable = false;
+
+      const rect = this.getBoundingClientRect();
+
+      this.dispatchEvent(
+        new CustomEvent('column-resize-start', {
+          composed: true,
+          bubbles: true,
+          detail: {
+            column: this.column,
+            startX: Math.round(rect.right),
+            startWidth: Math.round(rect.width),
+          },
+        }),
+      );
+    }
+
+    /**
+     * Cleans up drag ghost and emits drag end.
+     */
+    _onDragEnd() {
+      this._cleanupGhostMove?.();
+      document.querySelector('.column-drag-ghost')?.remove();
+      this.classList.remove('dragging');
+
+      this.dispatchEvent(
+        new CustomEvent('column-drag-end', {
+          bubbles: true,
+          composed: true,
+          detail: { column: this.column },
+        }),
+      );
+    }
+
+    _onDragStart(e) {
+      //  if resize is active, DO NOT start drag
+      const table = this.closest('nuxeo-data-table');
+      if (table && table._resizing) {
+        e.preventDefault();
+        return;
+      }
+
+      try {
+        e.dataTransfer.setData('text/plain', '');
+      } catch (_) {}
+
+      e.dataTransfer.effectAllowed = 'move';
+      const rect = this.getBoundingClientRect();
+      this._dragOffsetX = e.clientX - rect.left;
+
+      // ---- measure visible table height ----
+      const header = table?.shadowRoot?.querySelector('#header');
+      const list = table?.shadowRoot?.querySelector('#list');
+
+      const headerHeight = header ? header.getBoundingClientRect().height : rect.height;
+      const bodyHeight = list ? list.getBoundingClientRect().height : 200;
+      const totalHeight = headerHeight + bodyHeight;
+
+      // ---- ghost container (full column) ----
+      const ghost = document.createElement('div');
+      ghost.style.width = `${rect.width}px`;
+      ghost.style.height = `${totalHeight}px`;
+      ghost.style.display = 'flex';
+      ghost.style.flexDirection = 'column';
+      ghost.style.pointerEvents = 'none';
+      ghost.style.position = 'fixed';
+      ghost.style.opacity = '0.5';
+      ghost.style.background = 'grey';
+      ghost.style.border = '1px solid rgba(0, 0, 0, 0.26)';
+      ghost.style.boxShadow = '0 16px 40px rgba(0,0,0,0.25)';
+      ghost.style.borderRadius = '4px';
+      ghost.style.overflow = 'hidden';
+      ghost.style.transform = 'translateZ(0)';
+      ghost.classList.add('column-drag-ghost');
+      const headerTop = header.getBoundingClientRect().top;
+      ghost.style.top = `${headerTop}px`;
+      ghost.style.left = `${rect.left}px`;
+
+      // ---- header clone ----
+      const headerClone = this.cloneNode(false);
+      // preserve size
+      headerClone.style.height = `${rect.height}px`;
+      headerClone.style.minHeight = `${rect.height}px`;
+      headerClone.style.flex = '0 0 auto';
+
+      // ghost look
+      headerClone.style.background = 'transparent';
+      headerClone.style.borderBottom = '1px solid rgba(0,0,0,0.08)';
+
+      // 🔑 REMOVE SLOT CONTENT COMPLETELY
+      const slot = document.createElement('slot');
+      slot.style.display = 'none';
+      headerClone.appendChild(slot);
+
+      // ---- column body filler (no data, just shape) ----
+      const bodyFill = document.createElement('div');
+      bodyFill.style.flex = '1';
+      bodyFill.style.background =
+        'repeating-linear-gradient(' +
+        'to bottom,' +
+        'rgba(0,0,0,0.03),' +
+        'rgba(0,0,0,0.03) 1px,' +
+        'transparent 1px,' +
+        'transparent 48px' +
+        ')';
+
+      ghost.appendChild(headerClone);
+      ghost.appendChild(bodyFill);
+
+      document.body.appendChild(ghost);
+      const img = new Image();
+      img.src =
+        'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>');
+
+      e.dataTransfer.setDragImage(img, 0, 0);
+
+      this.classList.add('dragging');
+
+      if (table) {
+        table._dragOffsetX = this._dragOffsetX;
+      }
+
+      this.dispatchEvent(
+        new CustomEvent('column-drag-start', {
+          composed: true,
+          bubbles: true,
+          detail: { column: this.column },
+        }),
+      );
+
+      const moveGhost = (ev) => {
+        ev.preventDefault();
+
+        const ghost = document.querySelector('.column-drag-ghost');
+        if (!ghost) return;
+
+        const ghostLeft = ev.clientX - this._dragOffsetX;
+        ghost.style.left = `${ghostLeft}px`;
+
+        const ghostWidth = ghost.offsetWidth;
+
+        const table = this.closest('nuxeo-data-table');
+        if (!table) return;
+
+        // 🔑 determine drag direction
+        // ---- STABLE drag direction detection ----
+
+        // initialize on first move
+        if (table._dragStartGhostX == null) {
+          table._dragStartGhostX = ghostLeft;
+          table._lastDragDirection = 'right'; // default
+        }
+
+        const delta = ghostLeft - table._dragStartGhostX;
+        const DIRECTION_THRESHOLD = 6; // px (tweakable)
+
+        // only flip direction when user *actually* reverses
+        if (delta > DIRECTION_THRESHOLD) {
+          table._lastDragDirection = 'right';
+        } else if (delta < -DIRECTION_THRESHOLD) {
+          table._lastDragDirection = 'left';
+        }
+
+        const draggingRight = table._lastDragDirection === 'right';
+
+        // intent edge is now STABLE
+        const intentX = draggingRight ? ghostLeft + ghostWidth : ghostLeft;
+        table._onColumnDragMove(intentX);
+      };
+      document.addEventListener('dragover', moveGhost);
+      this._cleanupGhostMove = () => {
+        document.removeEventListener('dragover', moveGhost);
+      };
+    }
   }
 
   customElements.define(DataTableCell.is, DataTableCell);
