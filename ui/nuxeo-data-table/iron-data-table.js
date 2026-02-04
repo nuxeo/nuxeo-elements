@@ -629,10 +629,6 @@ import '../nuxeo-button-styles.js';
       // current visually active column
       this._activeColumn = null;
 
-      this.addEventListener('drop', (e) => {
-        e.preventDefault();
-      });
-
       this.addEventListener('iron-resize', this._resizeCellContainers);
       this.addEventListener('item-changed', this._itemChanged);
       this.addEventListener('scroll', this._onHorizontalScroll);
@@ -1223,12 +1219,23 @@ import '../nuxeo-button-styles.js';
 
       const { column } = this._resizing;
 
-      console.group('[RESIZE END]');
-      console.log('Column name :', column.name || column.field || '(unnamed)');
-      console.log('New width   :', column.width);
-      console.groupEnd();
-
+      this.dispatchEvent(
+        new CustomEvent('column-resize-end', {
+          bubbles: true,
+          composed: true,
+          detail: { column },
+        }),
+      );
+      // finalize resize state FIRST
       this._resizing = null;
+
+      // 🔑 reset drag state deterministically
+      this._dragStartGhostX = undefined;
+      this._lastDragDirection = undefined;
+
+      // force layout flush so browser exits resize mode immediately
+      this.getBoundingClientRect();
+
       this.notifyResize();
     }
 
@@ -1275,12 +1282,6 @@ import '../nuxeo-button-styles.js';
         col.order = index;
       });
 
-      console.group('[COLUMN REORDER END]');
-      ordered.forEach((col) => {
-        console.log(`index ${col.order} →`, col.name || col.field || '(unnamed)');
-      });
-      console.groupEnd();
-
       this.notifyResize();
       this._resetDragState();
     }
@@ -1319,44 +1320,37 @@ import '../nuxeo-button-styles.js';
 
       const draggingRight = this._lastDragDirection === 'right';
 
-      const cells = Array.from(
-        headerRow.querySelectorAll('nuxeo-data-table-cell[header]')
-      ).filter(
-        (c) => !c.hidden && c.column !== this._draggingColumn
+      const cells = Array.from(headerRow.querySelectorAll('nuxeo-data-table-cell[header]')).filter(
+        (c) => !c.hidden && c.column !== this._draggingColumn,
       );
 
-  const targetCell = cells.find((cell) => {
-    const rect = cell.getBoundingClientRect();
-    const left = rect.left - headerRect.left;
-    const right = rect.right - headerRect.left;
-    const center = left + (right - left) / 2;
+      const targetCell = cells.find((cell) => {
+        const rect = cell.getBoundingClientRect();
+        const left = rect.left - headerRect.left;
+        const right = rect.right - headerRect.left;
+        const center = left + (right - left) / 2;
 
-    
+        // 🔑 INTENT-BASED DROP THRESHOLD
+        if (draggingRight) {
+          // ghost must cross CENTER to insert AFTER
+          return localX >= center && localX <= right;
+        } else {
+          // ghost must cross CENTER to insert BEFORE
+          return localX <= center && localX >= left;
+        }
+      });
 
-    // 🔑 INTENT-BASED DROP THRESHOLD
-    if (draggingRight) {
-      // ghost must cross CENTER to insert AFTER
-      return localX >= center && localX <= right;
-    } else {
-      // ghost must cross CENTER to insert BEFORE
-      return localX <= center && localX >= left;
+      if (!targetCell) {
+        this._dragOverColumn = null;
+        this._clearDropIndicators();
+        return;
+      }
+
+      this._dragOverColumn = targetCell.column;
+      this._dragInsertAfter = draggingRight;
+
+      this._setDropIndicator(targetCell.column, draggingRight);
     }
-  });
-
-  if (!targetCell) {
-    this._dragOverColumn = null;
-    this._clearDropIndicators();
-    return;
-  }
-
-  this._dragOverColumn = targetCell.column;
-  this._dragInsertAfter = draggingRight;
-
-  this._setDropIndicator(targetCell.column, draggingRight);
-
-
-  
-}
 
     _markActiveColumn(column) {
       if (this._activeColumn === column) {

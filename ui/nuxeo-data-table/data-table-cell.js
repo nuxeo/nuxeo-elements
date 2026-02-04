@@ -6,16 +6,13 @@ import './data-table-templatizer-behavior.js';
 
 const TRANSPARENT_DRAG_IMAGE = (() => {
   const img = new Image();
-  img.src =
-    'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+  img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
   return img;
 })();
 
-/* Part of `nuxeo-data-table` */
 {
   // eslint-disable-next-line no-undef
   class DataTableCell extends mixinBehaviors([saulis.DataTableTemplatizerBehavior], Nuxeo.Element) {
-    
     static get template() {
       return html`
         <style>
@@ -305,10 +302,14 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
     /**
      * Cleans up drag ghost and emits drag end.
      */
+
     _onDragEnd() {
       this._cleanupGhostMove?.();
       document.querySelector('.column-drag-ghost')?.remove();
       this.classList.remove('dragging');
+
+      // 🔑 re-enable drag for next interaction
+      this.draggable = true;
 
       this.dispatchEvent(
         new CustomEvent('column-drag-end', {
@@ -320,6 +321,18 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
     }
 
     _onDragStart(e) {
+      // 🔑 SAFETY: browser may fire dragstart while draggable=false
+      if (!this.draggable) {
+        e.preventDefault();
+        return;
+      }
+
+      // prevent drag if starting from resizer hit-area
+      if (e.target.closest('.resizer')) {
+        e.preventDefault();
+        return;
+      }
+
       //  if resize is active, DO NOT start drag
       const table = this.closest('nuxeo-data-table');
       if (table && table._resizing) {
@@ -395,10 +408,8 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
       ghost.appendChild(bodyFill);
 
       document.body.appendChild(ghost);
-      
 
       e.dataTransfer.setDragImage(TRANSPARENT_DRAG_IMAGE, 0, 0);
-
 
       this.classList.add('dragging');
 
@@ -416,15 +427,12 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
 
       const moveGhost = (ev) => {
         ev.preventDefault();
-
         const ghost = document.querySelector('.column-drag-ghost');
         if (!ghost) return;
 
         const ghostLeft = ev.clientX - this._dragOffsetX;
         ghost.style.left = `${ghostLeft}px`;
-
         const ghostWidth = ghost.offsetWidth;
-
         const table = this.closest('nuxeo-data-table');
         if (!table) return;
 
