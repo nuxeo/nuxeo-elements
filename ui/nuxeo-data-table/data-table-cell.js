@@ -4,10 +4,18 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import { microTask } from '@polymer/polymer/lib/utils/async.js';
 import './data-table-templatizer-behavior.js';
 
+const TRANSPARENT_DRAG_IMAGE = (() => {
+  const img = new Image();
+  img.src =
+    'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+  return img;
+})();
+
 /* Part of `nuxeo-data-table` */
 {
   // eslint-disable-next-line no-undef
   class DataTableCell extends mixinBehaviors([saulis.DataTableTemplatizerBehavior], Nuxeo.Element) {
+    
     static get template() {
       return html`
         <style>
@@ -387,11 +395,10 @@ import './data-table-templatizer-behavior.js';
       ghost.appendChild(bodyFill);
 
       document.body.appendChild(ghost);
-      const img = new Image();
-      img.src =
-        'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>');
+      
 
-      e.dataTransfer.setDragImage(img, 0, 0);
+      e.dataTransfer.setDragImage(TRANSPARENT_DRAG_IMAGE, 0, 0);
+
 
       this.classList.add('dragging');
 

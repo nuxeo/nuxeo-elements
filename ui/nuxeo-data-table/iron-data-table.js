@@ -644,6 +644,7 @@ import '../nuxeo-button-styles.js';
       this.addEventListener('column-resize-start', this._onColumnResizeStart.bind(this));
       this.addEventListener('column-drag-start', this._onColumnDragStart.bind(this));
       this.addEventListener('column-drag-end', this._onColumnDragEnd.bind(this));
+
       this.$.list._selectionHandler = function(e) {
         const model = this.modelForElement(e.target);
         if (!model) {
@@ -1316,24 +1317,46 @@ import '../nuxeo-button-styles.js';
       const headerRect = headerRow.getBoundingClientRect();
       const localX = Math.round(x - headerRect.left);
 
-      const cells = Array.from(headerRow.querySelectorAll('nuxeo-data-table-cell[header]')).filter(
-        (c) => !c.hidden && c.column !== this._draggingColumn,
+      const draggingRight = this._lastDragDirection === 'right';
+
+      const cells = Array.from(
+        headerRow.querySelectorAll('nuxeo-data-table-cell[header]')
+      ).filter(
+        (c) => !c.hidden && c.column !== this._draggingColumn
       );
 
-      const targetCell = cells.find((cell) => {
-        const rect = cell.getBoundingClientRect();
-        const left = rect.left - headerRect.left;
-        const right = rect.right - headerRect.left;
-        return localX >= left && localX <= right;
-      });
+  const targetCell = cells.find((cell) => {
+    const rect = cell.getBoundingClientRect();
+    const left = rect.left - headerRect.left;
+    const right = rect.right - headerRect.left;
+    const center = left + (right - left) / 2;
 
-      if (!targetCell) return;
+    
 
-      this._dragOverColumn = targetCell.column;
-      this._dragInsertAfter = this._lastDragDirection === 'right';
-
-      this._setDropIndicator(targetCell.column, this._dragInsertAfter);
+    // 🔑 INTENT-BASED DROP THRESHOLD
+    if (draggingRight) {
+      // ghost must cross CENTER to insert AFTER
+      return localX >= center && localX <= right;
+    } else {
+      // ghost must cross CENTER to insert BEFORE
+      return localX <= center && localX >= left;
     }
+  });
+
+  if (!targetCell) {
+    this._dragOverColumn = null;
+    this._clearDropIndicators();
+    return;
+  }
+
+  this._dragOverColumn = targetCell.column;
+  this._dragInsertAfter = draggingRight;
+
+  this._setDropIndicator(targetCell.column, draggingRight);
+
+
+  
+}
 
     _markActiveColumn(column) {
       if (this._activeColumn === column) {
