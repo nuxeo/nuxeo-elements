@@ -503,7 +503,7 @@ import '../nuxeo-button-styles.js';
          */
         editable: {
           type: Boolean,
-          value: false,
+          value: true,
         },
         /**
          * In the context of multivalued fields, it displays icons to reorder the properties up or down.
