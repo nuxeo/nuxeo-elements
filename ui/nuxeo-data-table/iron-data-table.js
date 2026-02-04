@@ -1218,7 +1218,15 @@ import '../nuxeo-button-styles.js';
       if (e.touches) e.preventDefault();
 
       const { column, lastX, startWidth } = this._resizing;
-      const minWidth = parseInt(column?.minWidth, 10) || 24;
+      let minWidth = 24;
+
+      if (column && column.minWidth != null) {
+        const parsed = parseInt(column.minWidth, 10);
+        if (!Number.isNaN(parsed)) {
+          minWidth = parsed;
+        }
+      }
+
       const dx = clientX - lastX;
 
       const currentWidth = parseInt(column.width, 10) || startWidth;
@@ -1362,10 +1370,9 @@ import '../nuxeo-button-styles.js';
         if (draggingRight) {
           // ghost must cross CENTER to insert AFTER
           return localX >= center && localX <= right;
-        } 
-          // ghost must cross CENTER to insert BEFORE
-          return localX <= center && localX >= left;
-        
+        }
+        // ghost must cross CENTER to insert BEFORE
+        return localX <= center && localX >= left;
       });
 
       if (!targetCell) {

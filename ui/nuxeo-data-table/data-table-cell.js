@@ -360,8 +360,13 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
       this._dragOffsetX = e.clientX - rect.left;
 
       // ---- measure visible table height ----
-      const header = table?.shadowRoot?.querySelector('#header');
-      const list = table?.shadowRoot?.querySelector('#list');
+      let header = null;
+      let list = null;
+
+      if (table && table.shadowRoot) {
+        header = table.shadowRoot.querySelector('#header');
+        list = table.shadowRoot.querySelector('#list');
+      }
 
       const headerHeight = header ? header.getBoundingClientRect().height : rect.height;
       const bodyHeight = list ? list.getBoundingClientRect().height : 200;
