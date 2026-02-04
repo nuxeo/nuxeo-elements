@@ -5,6 +5,13 @@ import { microTask } from '@polymer/polymer/lib/utils/async.js';
 import './data-table-templatizer-behavior.js';
 
 /* Part of `nuxeo-data-table` */
+
+const TRANSPARENT_DRAG_IMAGE = (() => {
+  const img = new Image();
+  img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+  return img;
+})();
+
 {
   // eslint-disable-next-line no-undef
   class DataTableCell extends mixinBehaviors([saulis.DataTableTemplatizerBehavior], Nuxeo.Element) {
@@ -12,19 +19,22 @@ import './data-table-templatizer-behavior.js';
       return html`
         <style>
           :host {
+            --resizer-hit-width: 8px;
+            --resizer-line-width: 2px;
+            --drop-indicator-width: 6px;
             flex: 1 0 120px;
-            flex-basis: 120px;
             padding: 0 24px;
             min-height: 48px;
             display: flex;
             align-items: center;
             overflow-x: hidden;
             overflow-y: hidden;
-            transition: flex-basis 200ms, flex-grow 200ms;
-            @apply --iron-data-table-cell;
           }
 
+          /* header cells need relative positioning for the resizer */
           :host([header]) {
+            position: relative;
+            overflow: visible;
             height: 48px;
           }
 
@@ -44,7 +54,84 @@ import './data-table-templatizer-behavior.js';
             text-overflow: ellipsis;
             text-align: start;
           }
+
+          /* resizer handle (visible on header cells) */
+          .resizer {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: var(--resizer-hit-width);
+            cursor: col-resize;
+            z-index: 5;
+          }
+
+          .resizer:after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: var(--resizer-line-width);
+            height: 28px;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 2px;
+          }
+
+          :host([header]) .resizer {
+            display: block;
+          }
+
+          :host(.dragging) {
+            outline: 1px dashed rgba(0, 0, 0, 0.2);
+            background: rgba(0, 102, 255, 0.08);
+            box-shadow: inset 0 -2px 0 var(--nuxeo-primary-color, #0066ff);
+            cursor: grabbing;
+            cursor: -webkit-grabbing;
+          }
+
+          :host([header].column-active) {
+            background: #1e90ff;
+            color: #fff;
+            cursor: grab;
+            cursor: -webkit-grab;
+          }
+
+          :host([header].column-active)::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-left: 1px solid rgba(0, 102, 255, 0.4);
+            border-right: 1px solid rgba(0, 102, 255, 0.4);
+            pointer-events: none;
+          }
+
+          /* DROP INDICATOR */
+          :host([header].drop-before)::before,
+          :host([header].drop-after)::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: var(--drop-indicator-width);
+            background: var(--nuxeo-primary-color);
+            pointer-events: none;
+            z-index: 6;
+          }
+
+          /* LEFT edge */
+          :host([header].drop-before)::before {
+            left: calc(var(--drop-indicator-width) / -2);
+          }
+
+          /* RIGHT edge */
+          :host([header].drop-after)::after {
+            right: calc(var(--drop-indicator-width) / -2);
+          }
         </style>
+
+        <div class="resizer" on-mousedown="_onResizerDown" on-touchstart="_onResizerDown"></div>
         <slot></slot>
       `;
     }
@@ -96,6 +183,12 @@ import './data-table-templatizer-behavior.js';
       } else {
         this.setAttribute('role', 'cell');
       }
+
+      if (this.header) {
+        this.draggable = true;
+        this.addEventListener('dragstart', this._onDragStart.bind(this));
+        this.addEventListener('dragend', this._onDragEnd.bind(this));
+      }
     }
 
     _alignRightChanged(alignRight) {
@@ -146,7 +239,19 @@ import './data-table-templatizer-behavior.js';
     }
 
     _widthChanged(width) {
-      this.style.flexBasis = width;
+      // Only lock the cell to an explicit width when the user is actively resizing.
+      // This avoids frozen columns on initial load when columns come with configured width values.
+      const isUserResize = this.table && this.table._resizing;
+      if (width && isUserResize) {
+        const val = typeof width === 'number' ? `${width}px` : width;
+        this.style.flex = `0 0 ${val}`;
+        this.style.flexBasis = val;
+      } else if (!width) {
+        this.style.flex = '';
+        this.style.flexBasis = '';
+      } else {
+        this.style.flexBasis = width;
+      }
     }
 
     _columnChanged(instance, column) {
@@ -165,6 +270,210 @@ import './data-table-templatizer-behavior.js';
         this._parentProps = this._parentProps || {};
         instance.notifyPath(column.path, column.value);
       });
+    }
+
+    // ------------------------------------------------------------
+    // Resize & drag emitters (cell-level)
+    // ------------------------------------------------------------
+
+    /**
+     * Emits resize start with visual edge and width.
+     */
+    _onResizerDown(e) {
+      e.stopPropagation();
+      e.preventDefault();
+
+      // Temporarily disable drag during resize
+      this.draggable = false;
+
+      const rect = this.getBoundingClientRect();
+
+      this.dispatchEvent(
+        new CustomEvent('column-resize-start', {
+          composed: true,
+          bubbles: true,
+          detail: {
+            column: this.column,
+            startX: Math.round(rect.right),
+            startWidth: Math.round(rect.width),
+          },
+        }),
+      );
+    }
+
+    /**
+     * Cleans up drag ghost and emits drag end.
+     */
+
+    _onDragEnd() {
+      if (this._cleanupGhostMove) {
+        this._cleanupGhostMove();
+      }
+
+      const ghostEl = document.querySelector('.column-drag-ghost');
+      if (ghostEl) {
+        ghostEl.remove();
+      }
+
+      this.classList.remove('dragging');
+
+      // re-enable drag for next interaction
+      this.draggable = true;
+
+      this.dispatchEvent(
+        new CustomEvent('column-drag-end', {
+          bubbles: true,
+          composed: true,
+          detail: { column: this.column },
+        }),
+      );
+    }
+
+    _onDragStart(e) {
+      // SAFETY: browser may fire dragstart while draggable=false
+      if (!this.draggable) {
+        e.preventDefault();
+        return;
+      }
+
+      // prevent drag if starting from resizer hit-area
+      if (e.target.closest('.resizer')) {
+        e.preventDefault();
+        return;
+      }
+
+      //  if resize is active, DO NOT start drag
+      const table = this.closest('nuxeo-data-table');
+      if (table && table._resizing) {
+        e.preventDefault();
+        return;
+      }
+
+      try {
+        e.dataTransfer.setData('text/plain', '');
+      } catch (_) {
+        // ignore – required for Firefox dragstart
+      }
+
+      e.dataTransfer.effectAllowed = 'move';
+      const rect = this.getBoundingClientRect();
+      this._dragOffsetX = e.clientX - rect.left;
+
+      // ---- measure visible table height ----
+      const header = table?.shadowRoot?.querySelector('#header');
+      const list = table?.shadowRoot?.querySelector('#list');
+
+      const headerHeight = header ? header.getBoundingClientRect().height : rect.height;
+      const bodyHeight = list ? list.getBoundingClientRect().height : 200;
+      const totalHeight = headerHeight + bodyHeight;
+
+      // ---- ghost container (full column) ----
+      const ghost = document.createElement('div');
+      ghost.style.width = `${rect.width}px`;
+      ghost.style.height = `${totalHeight}px`;
+      ghost.style.display = 'flex';
+      ghost.style.flexDirection = 'column';
+      ghost.style.pointerEvents = 'none';
+      ghost.style.position = 'fixed';
+      ghost.style.opacity = '0.5';
+      ghost.style.background = 'grey';
+      ghost.style.border = '1px solid rgba(0, 0, 0, 0.26)';
+      ghost.style.boxShadow = '0 16px 40px rgba(0,0,0,0.25)';
+      ghost.style.borderRadius = '4px';
+      ghost.style.overflow = 'hidden';
+      ghost.style.transform = 'translateZ(0)';
+      ghost.classList.add('column-drag-ghost');
+      const headerTop = header.getBoundingClientRect().top;
+      ghost.style.top = `${headerTop}px`;
+      ghost.style.left = `${rect.left}px`;
+
+      // ---- header clone ----
+      const headerClone = this.cloneNode(false);
+      // preserve size
+      headerClone.style.height = `${rect.height}px`;
+      headerClone.style.minHeight = `${rect.height}px`;
+      headerClone.style.flex = '0 0 auto';
+
+      // ghost look
+      headerClone.style.background = 'transparent';
+      headerClone.style.borderBottom = '1px solid rgba(0,0,0,0.08)';
+
+      // REMOVE SLOT CONTENT COMPLETELY
+      const slot = document.createElement('slot');
+      slot.style.display = 'none';
+      headerClone.appendChild(slot);
+
+      // ---- column body filler (no data, just shape) ----
+      const bodyFill = document.createElement('div');
+      bodyFill.style.flex = '1';
+      bodyFill.style.background =
+        'repeating-linear-gradient(' +
+        'to bottom,' +
+        'rgba(0,0,0,0.03),' +
+        'rgba(0,0,0,0.03) 1px,' +
+        'transparent 1px,' +
+        'transparent 48px' +
+        ')';
+
+      ghost.appendChild(headerClone);
+      ghost.appendChild(bodyFill);
+
+      document.body.appendChild(ghost);
+
+      e.dataTransfer.setDragImage(TRANSPARENT_DRAG_IMAGE, 0, 0);
+
+      this.classList.add('dragging');
+
+      if (table) {
+        table._dragOffsetX = this._dragOffsetX;
+      }
+
+      this.dispatchEvent(
+        new CustomEvent('column-drag-start', {
+          composed: true,
+          bubbles: true,
+          detail: { column: this.column },
+        }),
+      );
+
+      const moveGhost = (ev) => {
+        ev.preventDefault();
+
+        const ghostEl = document.querySelector('.column-drag-ghost');
+        if (!ghostEl) return;
+
+        const ghostLeft = ev.clientX - this._dragOffsetX;
+        ghostEl.style.left = `${ghostLeft}px`;
+        const ghostWidth = ghostEl.offsetWidth;
+
+        const dataTable = this.closest('nuxeo-data-table');
+        if (!dataTable) return;
+
+        // initialize on first move
+        if (dataTable._dragStartGhostX == null) {
+          dataTable._dragStartGhostX = ghostLeft;
+          dataTable._lastDragDirection = 'right';
+        }
+
+        const delta = ghostLeft - dataTable._dragStartGhostX;
+        const DIRECTION_THRESHOLD = 6;
+
+        if (delta > DIRECTION_THRESHOLD) {
+          dataTable._lastDragDirection = 'right';
+        } else if (delta < -DIRECTION_THRESHOLD) {
+          dataTable._lastDragDirection = 'left';
+        }
+
+        const draggingRight = dataTable._lastDragDirection === 'right';
+        const intentX = draggingRight ? ghostLeft + ghostWidth : ghostLeft;
+
+        dataTable._onColumnDragMove(intentX);
+      };
+
+      document.addEventListener('dragover', moveGhost);
+      this._cleanupGhostMove = () => {
+        document.removeEventListener('dragover', moveGhost);
+      };
     }
   }
 
