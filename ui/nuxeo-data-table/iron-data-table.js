@@ -570,6 +570,18 @@ import '../nuxeo-button-styles.js';
           type: String,
           value: '',
         },
+
+        columnResizeEnabled: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+        },
+
+        columnReorderEnabled: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+        },
       };
     }
 
@@ -1191,6 +1203,7 @@ import '../nuxeo-button-styles.js';
      * Initializes resize state and binds document listeners.
      */
     _onColumnResizeStart(e) {
+      if (!this.columnResizeEnabled) return;
       const { column, startX, startWidth } = e.detail || {};
       if (!column || typeof startX !== 'number') return;
 
@@ -1212,7 +1225,7 @@ import '../nuxeo-button-styles.js';
      * Tracks pointer movement during resize and updates column width.
      */
     _documentMouseMove(e) {
-      if (!this._resizing) return;
+      if (!this.columnResizeEnabled || !this._resizing) return;
 
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       if (e.touches) e.preventDefault();
@@ -1246,7 +1259,7 @@ import '../nuxeo-button-styles.js';
      * Finalizes resize operation and logs final width.
      */
     _documentMouseUp() {
-      if (!this._resizing) return;
+      if (!this.columnResizeEnabled || !this._resizing) return;
 
       document.removeEventListener('mousemove', this._boundDocumentMouseMove);
       document.removeEventListener('mouseup', this._boundDocumentMouseUp);
@@ -1283,6 +1296,7 @@ import '../nuxeo-button-styles.js';
      * Marks the start of column drag.
      */
     _onColumnDragStart(e) {
+      if (!this.columnReorderEnabled) return;
       this._reorderingColumns = true;
       this._draggingColumn = e.detail.column;
       this._dragOverColumn = null;
@@ -1295,6 +1309,7 @@ import '../nuxeo-button-styles.js';
      * Commits column reorder and logs final order.
      */
     _onColumnDragEnd() {
+      if (!this.columnReorderEnabled) return;
       const dragging = this._draggingColumn;
       const target = this._dragOverColumn;
 
@@ -1340,7 +1355,8 @@ import '../nuxeo-button-styles.js';
      * Resolves drop target column from pointer X coordinate.
      */
     _onColumnDragMove(mouseX) {
-      if (!this._draggingColumn || typeof mouseX !== 'number') return;
+      if (!this.columnReorderEnabled || !this._draggingColumn || typeof mouseX !== 'number') return;
+
       this._resolveDropTargetFromX(mouseX);
     }
 

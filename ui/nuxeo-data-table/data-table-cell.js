@@ -80,6 +80,10 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
           }
 
           :host([header]) .resizer {
+            display: none;
+          }
+
+          :host-context(nuxeo-data-table[column-resize-enabled]) .resizer {
             display: block;
           }
 
@@ -178,6 +182,7 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
 
     ready() {
       super.ready();
+
       if (this.header) {
         this.setAttribute('scope', 'col');
       } else {
@@ -185,10 +190,24 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
       }
 
       if (this.header) {
-        this.draggable = true;
         this.addEventListener('dragstart', this._onDragStart.bind(this));
         this.addEventListener('dragend', this._onDragEnd.bind(this));
       }
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+
+      if (!this.header) return;
+
+      // Wait one microtask to ensure dom-repeat finished
+      microTask.run(() => {
+        const table = this.closest('nuxeo-data-table');
+
+        if (!table) return;
+
+        this.draggable = Boolean(table.columnReorderEnabled);
+      });
     }
 
     _alignRightChanged(alignRight) {
@@ -280,6 +299,11 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
      * Emits resize start with visual edge and width.
      */
     _onResizerDown(e) {
+      const table = this.closest('nuxeo-data-table');
+      if (!table || !table.columnResizeEnabled) {
+        return;
+      }
+
       e.stopPropagation();
       e.preventDefault();
 
@@ -330,6 +354,12 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
     }
 
     _onDragStart(e) {
+      const table = this.closest('nuxeo-data-table');
+      if (!table || !table.columnReorderEnabled) {
+        e.preventDefault();
+        return;
+      }
+
       // SAFETY: browser may fire dragstart while draggable=false
       if (!this.draggable) {
         e.preventDefault();
@@ -343,7 +373,7 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
       }
 
       //  if resize is active, DO NOT start drag
-      const table = this.closest('nuxeo-data-table');
+      // const table = this.closest('nuxeo-data-table');
       if (table && table._resizing) {
         e.preventDefault();
         return;
