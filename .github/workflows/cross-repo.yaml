@@ -11,13 +11,10 @@ on:
         default: maintenance-3.1.x
         type: string
         required: false
-    secrets:
-      GIT_ADMIN_TOKEN:
-        description: 'GIT_ADMIN_TOKEN'
-        required: true
-        
+
 permissions:
   contents: read
+  actions: write   # 👈 REQUIRED for triggering another workflow
 
 env:
   BRANCH_NAME: ${{ github.head_ref || inputs.branch || 'maintenance-3.1.x' }}
@@ -26,7 +23,7 @@ jobs:
   web-ui:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Web UI cross repo check
         uses: nuxeo/ui-team-gh-actions/trigger-workflow@dcf8be425447c7fb9cdd1e048585a6df905ed878
@@ -34,7 +31,7 @@ jobs:
           owner: nuxeo
           repo: nuxeo-web-ui
           workflow-id: cross-repo.yaml
-          access-token: ${{ secrets.GIT_ADMIN_TOKEN }}
+          access-token: ${{ secrets.GITHUB_TOKEN }}
           branch-name: maintenance-3.1.x
           inputs: |
             branch_name: ${{ env.BRANCH_NAME }}
@@ -44,4 +41,4 @@ jobs:
             skip_unit_tests: false
             generate_metrics: false
             run_all: false
-            bail: 0            
+            bail: 0
