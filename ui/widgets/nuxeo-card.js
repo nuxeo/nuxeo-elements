@@ -113,7 +113,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
         <dom-if if="[[_hasHeading(icon, heading, collapsible)]]">
           <template>
-            <h5 on-click="_toggle" on-keydown="_toggleKeydown" class="header" tabindex="0">
+            <h5 on-click="_toggle" on-keydown="_toggleKeydown" class="header" tabindex$="[[_getHeadingTabindex(collapsible)]]">
               <iron-icon class="icon" icon="[[icon]]" hidden$="[[!icon]]"></iron-icon>
               [[heading]]
               <iron-icon class="toggle" icon="[[_toggleIcon(opened)]]" toggle hidden$="[[!collapsible]]"></iron-icon>
@@ -189,6 +189,10 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
     _hasHeading(icon, heading, collapsible) {
       return icon || heading || collapsible;
+    }
+
+    _getHeadingTabindex(collapsible) {
+      return collapsible ? '0' : '-1';
     }
 
     _opened(opened, collapsible) {
