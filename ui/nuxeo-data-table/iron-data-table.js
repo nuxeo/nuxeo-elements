@@ -1211,7 +1211,7 @@ import '../nuxeo-button-styles.js';
 
       this._resizing = {
         column,
-        lastX: startX,
+        startX: startX + this.scrollLeft,
         startWidth,
       };
 
@@ -1230,9 +1230,11 @@ import '../nuxeo-button-styles.js';
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       if (e.touches) e.preventDefault();
 
-      const { column, lastX, startWidth } = this._resizing;
-      let minWidth = 24;
+      const pointerX = clientX + this.scrollLeft;
 
+      const { column, startX, startWidth } = this._resizing;
+
+      let minWidth = 10;
       if (column && column.minWidth != null) {
         const parsed = parseInt(column.minWidth, 10);
         if (!Number.isNaN(parsed)) {
@@ -1240,13 +1242,8 @@ import '../nuxeo-button-styles.js';
         }
       }
 
-      const dx = clientX - lastX;
-
-      const currentWidth = parseInt(column.width, 10) || startWidth;
-
-      const newWidth = Math.max(minWidth, Math.round(currentWidth + dx));
-
-      this._resizing.lastX = clientX;
+      const dx = pointerX - startX;
+      const newWidth = Math.max(minWidth, Math.round(startWidth + dx));
 
       const colIndex = this.columns.indexOf(column);
       if (colIndex > -1) {
@@ -1268,13 +1265,19 @@ import '../nuxeo-button-styles.js';
 
       const { column } = this._resizing;
 
-      this.dispatchEvent(
-        new CustomEvent('column-resize-end', {
-          bubbles: true,
-          composed: true,
-          detail: { column },
-        }),
-      );
+      // Notify all header cells explicitly
+      const headerRow = this._getHeaderRow();
+      if (headerRow) {
+        const cells = headerRow.querySelectorAll('nuxeo-data-table-cell[header]');
+        cells.forEach((cell) => {
+          if (cell.column === column) {
+            cell.classList.remove('resizing');
+            cell.style.cursor = '';
+            cell.draggable = Boolean(this.columnReorderEnabled);
+          }
+        });
+      }
+
       // finalize resize state FIRST
       this._resizing = null;
 

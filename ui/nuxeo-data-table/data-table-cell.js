@@ -29,6 +29,7 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
             align-items: center;
             overflow-x: hidden;
             overflow-y: hidden;
+            box-sizing: border-box;
           }
 
           /* header cells need relative positioning for the resizer */
@@ -181,6 +182,13 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
       if (this.header) {
         this.addEventListener('dragstart', this._onDragStart.bind(this));
         this.addEventListener('dragend', this._onDragEnd.bind(this));
+        this.addEventListener('mousemove', this._updateCursor.bind(this));
+        this.addEventListener('mouseleave', this._resetCursor.bind(this));
+        this.addEventListener('mousedown', this._handleMouseDown.bind(this));
+
+        document.addEventListener('mousemove', (e) => {
+          window._lastMouseEvent = e;
+        });
       }
     }
 
@@ -197,6 +205,65 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
 
         this.draggable = Boolean(table.columnReorderEnabled);
       });
+    }
+
+    _handleMouseDown(e) {
+      const table = this.closest('nuxeo-data-table');
+      if (!table) return;
+
+      const rect = this.getBoundingClientRect();
+      const RESIZE_ZONE = 8;
+      const nearEdge = e.clientX >= rect.right - RESIZE_ZONE;
+      // --- RESIZE INTENT ---
+      if (table.columnResizeEnabled && nearEdge) {
+        // Lock resize state immediately (prevents first-frame grab cursor)
+        this.classList.add('resizing');
+        this.style.cursor = 'col-resize';
+        this.draggable = false;
+        return;
+      }
+
+      // --- REORDER INTENT ---
+      this.classList.remove('resizing');
+      this.draggable = Boolean(table.columnReorderEnabled);
+    }
+
+    _updateCursor(e) {
+      const table = this.closest('nuxeo-data-table');
+      if (!table) return;
+
+      const rect = this.getBoundingClientRect();
+      const RESIZE_ZONE = 8;
+      const nearEdge = e.clientX >= rect.right - RESIZE_ZONE;
+
+      // If resizing → force state
+      if (this.classList.contains('resizing')) {
+        this.style.cursor = 'col-resize';
+        this.draggable = false;
+        return;
+      }
+
+      // Resize mode
+      if (table.columnResizeEnabled && nearEdge) {
+        this.style.cursor = 'col-resize';
+        this.draggable = false; // ← KEY FIX
+        return;
+      }
+
+      // Reorder mode
+      if (table.columnReorderEnabled) {
+        this.style.cursor = 'grab';
+        this.draggable = true;
+      } else {
+        this.style.cursor = '';
+        this.draggable = false;
+      }
+    }
+
+    _resetCursor() {
+      if (!this.classList.contains('resizing')) {
+        this.style.cursor = '';
+      }
     }
 
     _alignRightChanged(alignRight) {
@@ -289,17 +356,19 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
      */
     _onResizerDown(e) {
       const table = this.closest('nuxeo-data-table');
-      if (!table || !table.columnResizeEnabled) {
-        return;
-      }
+      if (!table || !table.columnResizeEnabled) return;
+
+      // --- FIX: force correct cursor immediately ---
+      this._updateCursor(e);
 
       e.stopPropagation();
       e.preventDefault();
 
-      // Temporarily disable drag during resize
       this.draggable = false;
+      this.classList.add('resizing');
 
       const rect = this.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
 
       this.dispatchEvent(
         new CustomEvent('column-resize-start', {
@@ -307,7 +376,7 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
           bubbles: true,
           detail: {
             column: this.column,
-            startX: Math.round(rect.right),
+            startX: clientX,
             startWidth: Math.round(rect.width),
           },
         }),
@@ -329,9 +398,11 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
       }
 
       this.classList.remove('dragging');
+      this.style.cursor = '';
 
       // re-enable drag for next interaction
-      this.draggable = true;
+      const table = this.closest('nuxeo-data-table');
+      this.draggable = Boolean(table && table.columnReorderEnabled);
 
       this.dispatchEvent(
         new CustomEvent('column-drag-end', {
@@ -343,39 +414,49 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
     }
 
     _onDragStart(e) {
+      // safety: clear stale resize state
+      this.classList.remove('resizing');
+
       const table = this.closest('nuxeo-data-table');
       if (!table || !table.columnReorderEnabled) {
         e.preventDefault();
         return;
       }
 
-      // SAFETY: browser may fire dragstart while draggable=false
+      // --- HARD BLOCK CONDITIONS (order matters) ---
+
+      // 1) If we are resizing → NEVER allow drag
+      if (table._resizing || this.classList.contains('resizing')) {
+        e.preventDefault();
+        return;
+      }
+
+      // 2) If draggable is disabled
       if (!this.draggable) {
         e.preventDefault();
         return;
       }
 
-      // prevent drag if starting from resizer hit-area
-      if (e.target.closest('.resizer')) {
+      const rect = this.getBoundingClientRect();
+      const RESIZE_ZONE = 10;
+
+      // 3) Pointer near right edge → treat as resize, not drag
+      if (e.clientX >= rect.right - RESIZE_ZONE) {
         e.preventDefault();
         return;
       }
 
-      //  if resize is active, DO NOT start drag
-      // const table = this.closest('nuxeo-data-table');
-      if (table && table._resizing) {
-        e.preventDefault();
-        return;
-      }
+      // --- Start real drag ---
 
       try {
         e.dataTransfer.setData('text/plain', '');
       } catch (_) {
-        // ignore – required for Firefox dragstart
+        // Firefox requirement
       }
 
       e.dataTransfer.effectAllowed = 'move';
-      const rect = this.getBoundingClientRect();
+
+      // IMPORTANT: calculate offset from pointer to column edge
       this._dragOffsetX = e.clientX - rect.left;
 
       // ---- measure visible table height ----
@@ -391,7 +472,7 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
       const bodyHeight = list ? list.getBoundingClientRect().height : 200;
       const totalHeight = headerHeight + bodyHeight;
 
-      // ---- ghost container (full column) ----
+      // ---- ghost container ----
       const ghost = document.createElement('div');
       ghost.style.width = `${rect.width}px`;
       ghost.style.height = `${totalHeight}px`;
@@ -401,33 +482,30 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
       ghost.style.position = 'fixed';
       ghost.style.opacity = '0.5';
       ghost.style.background = 'grey';
-      ghost.style.border = '1px solid rgba(0, 0, 0, 0.26)';
+      ghost.style.border = '1px solid rgba(0,0,0,0.26)';
       ghost.style.boxShadow = '0 16px 40px rgba(0,0,0,0.25)';
       ghost.style.borderRadius = '4px';
       ghost.style.overflow = 'hidden';
       ghost.style.transform = 'translateZ(0)';
       ghost.classList.add('column-drag-ghost');
-      const headerTop = header.getBoundingClientRect().top;
+
+      const headerTop = header ? header.getBoundingClientRect().top : rect.top;
       ghost.style.top = `${headerTop}px`;
       ghost.style.left = `${rect.left}px`;
 
       // ---- header clone ----
       const headerClone = this.cloneNode(false);
-      // preserve size
       headerClone.style.height = `${rect.height}px`;
       headerClone.style.minHeight = `${rect.height}px`;
       headerClone.style.flex = '0 0 auto';
-
-      // ghost look
       headerClone.style.background = 'transparent';
       headerClone.style.borderBottom = '1px solid rgba(0,0,0,0.08)';
 
-      // REMOVE SLOT CONTENT COMPLETELY
       const slot = document.createElement('slot');
       slot.style.display = 'none';
       headerClone.appendChild(slot);
 
-      // ---- column body filler (no data, just shape) ----
+      // ---- body filler ----
       const bodyFill = document.createElement('div');
       bodyFill.style.flex = '1';
       bodyFill.style.background =
@@ -441,16 +519,16 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
 
       ghost.appendChild(headerClone);
       ghost.appendChild(bodyFill);
-
       document.body.appendChild(ghost);
 
+      // Transparent drag image
       e.dataTransfer.setDragImage(TRANSPARENT_DRAG_IMAGE, 0, 0);
 
+      // Visual state
       this.classList.add('dragging');
+      this.style.cursor = 'grabbing';
 
-      if (table) {
-        table._dragOffsetX = this._dragOffsetX;
-      }
+      table._dragOffsetX = this._dragOffsetX;
 
       this.dispatchEvent(
         new CustomEvent('column-drag-start', {
@@ -460,6 +538,7 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
         }),
       );
 
+      // ---- ghost move ----
       const moveGhost = (ev) => {
         ev.preventDefault();
 
@@ -468,12 +547,12 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
 
         const ghostLeft = ev.clientX - this._dragOffsetX;
         ghostEl.style.left = `${ghostLeft}px`;
-        const ghostWidth = ghostEl.offsetWidth;
 
+        const ghostWidth = ghostEl.offsetWidth;
         const dataTable = this.closest('nuxeo-data-table');
         if (!dataTable) return;
 
-        // initialize on first move
+        // Initialize once
         if (dataTable._dragStartGhostX == null) {
           dataTable._dragStartGhostX = ghostLeft;
           dataTable._lastDragDirection = 'right';
@@ -495,8 +574,10 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
       };
 
       document.addEventListener('dragover', moveGhost);
+
       this._cleanupGhostMove = () => {
         document.removeEventListener('dragover', moveGhost);
+        this.style.cursor = ''; // reset cursor
       };
     }
   }
