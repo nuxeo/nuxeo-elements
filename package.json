@@ -46,7 +46,7 @@
     "@polymer/iron-component-page": "^4.0.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "babel-eslint": "^10.0.1",
-    "chai": "^4.2.0",
+    "chai": "^6.2.2",
     "check-engine": "^1.10.0",
     "coveralls": "^3.0.2",
     "eslint": "^5.15.1",
