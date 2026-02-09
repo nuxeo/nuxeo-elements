@@ -1,4 +1,4 @@
-name: Web UI Cross Repo
+name: Web UI
 
 on:
   pull_request_target:
