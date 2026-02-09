@@ -52,7 +52,7 @@ jobs:
         npx build-storybook -o dist -s ./public
 
     - name: Build and push image
-      uses: docker/build-push-action@v1
+      uses: docker/build-push-action@v6
       with:
         registry: ${{ env.DOCKER_REGISTRY }}
         username: _json_key
