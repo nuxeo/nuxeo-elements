@@ -15,14 +15,11 @@ on:
 permissions:
   contents: read
 
-env:
-  BRANCH_NAME: ${{ github.head_ref || inputs.branch || 'maintenance-3.1.x' }}
-
 jobs:
   web-ui:
     uses: nuxeo/nuxeo-web-ui/.github/workflows/cross-repo.yaml@maintenance-3.1.x
     with:
-      branch_name: ${{ env.BRANCH_NAME }}
+      branch_name: ${{ github.head_ref || inputs.branch || 'maintenance-3.1.x' }}
       sauce_labs: false
       skip_ftests: false
       skip_a11y: false
