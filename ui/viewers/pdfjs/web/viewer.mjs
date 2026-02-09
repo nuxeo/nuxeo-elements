@@ -5470,31 +5470,50 @@ class CommentPopup {
 
 ;// ./web/download_manager.js
 
+// Only allow blob: URLs or carefully validated same-origin http(s) URLs for download.
+function isTrustedDownloadUrl(url) {
+  try {
+    const u = new URL(url, window.location.href);
+    // Always allow blob: URLs created by this origin.
+    if (u.protocol === "blob:") {
+      return true;
+    }
+    // For non-blob URLs, only allow http(s) links from the same origin and
+    // further restrict them to the current viewer URL or obvious PDF resources.
+    if (u.protocol === "http:" || u.protocol === "https:") {
+      if (u.origin !== window.location.origin) {
+        return false;
+      }
+      const current = new URL(window.location.href);
+      // Allow if the URL points back to this viewer (same path+search).
+      if (u.pathname === current.pathname && u.search === current.search) {
+        return true;
+      }
+      // Otherwise, only allow URLs that appear to reference a PDF file.
+      const path = u.pathname || "";
+      if (path.toLowerCase().endsWith(".pdf")) {
+        return true;
+      }
+      return false;
+    }
+    // Disallow all other protocols (ftp, mailto, tel, etc.).
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 function download(blobUrl, filename) {
+  // As a defense-in-depth measure, only proceed for trusted URLs.
+   if (!isTrustedDownloadUrl(blobUrl)) {
+    console.error('DownloadManager: Refusing to download untrusted URL:', blobUrl);
+    return;
+  }
   const a = document.createElement("a");
   if (!a.click) {
     throw new Error('DownloadManager: "a.click()" is not supported.');
   }
-  let trustedHref;
-  try {
-    const u = new URL(blobUrl, window.location.href);
-    // enforce rules inline
-    if (u.protocol === "blob:") {
-      trustedHref = u.href;
-    } else if ((u.protocol === "http:" || u.protocol === "https:") &&
-             u.origin === window.location.origin &&
-             (u.pathname.toLowerCase().endsWith(".pdf") ||
-              (u.pathname === new URL(window.location.href).pathname &&
-               u.search === new URL(window.location.href).search))) {
-                trustedHref = u.href;
-              } else {
-                return;
-              }
-            } catch {
-              return;
-            }
-
-  a.href = trustedHref; // assign sanitized/normalized value
+  a.href = blobUrl;
   a.target = "_parent";
   if ("download" in a) {
     a.download = filename;
@@ -5549,6 +5568,10 @@ class DownloadManager {
       // Ensure the URL is a valid absolute same-origin HTTP(S) URL before proceeding.
       if (!createValidAbsoluteUrl(url, window.location.origin, { requireSameOrigin: true })) {
         console.error(`download - not a valid URL: ${url}`);
+        return;
+      }
+      if (!isTrustedDownloadUrl(url)) {
+        console.error("DownloadManager: Refusing to use untrusted download URL:", url);
         return;
       }
       blobUrl = url + "#pdfjs.action=download";
