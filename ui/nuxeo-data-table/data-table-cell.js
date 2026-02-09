@@ -111,27 +111,16 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
             pointer-events: none;
           }
 
-          /* DROP INDICATOR */
-          :host([header].drop-before)::before,
-          :host([header].drop-after)::after {
+          :host([header].drop-right)::after {
             content: '';
             position: absolute;
             top: 0;
             bottom: 0;
-            width: var(--drop-indicator-width);
+            right: 1px;
+            width: 4px;
             background: var(--nuxeo-primary-color);
             pointer-events: none;
             z-index: 6;
-          }
-
-          /* LEFT edge */
-          :host([header].drop-before)::before {
-            left: calc(var(--drop-indicator-width) / -2);
-          }
-
-          /* RIGHT edge */
-          :host([header].drop-after)::after {
-            right: calc(var(--drop-indicator-width) / -2);
           }
         </style>
 

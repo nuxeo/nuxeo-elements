@@ -1400,7 +1400,19 @@ import '../nuxeo-button-styles.js';
       this._dragOverColumn = targetCell.column;
       this._dragInsertAfter = draggingRight;
 
-      this._setDropIndicator(targetCell.column, draggingRight);
+      let indicatorColumn = targetCell.column;
+
+      if (!draggingRight) {
+        // LEFT drag → show right edge of previous column
+        const orderedCells = cells;
+        const index = orderedCells.indexOf(targetCell);
+
+        if (index > 0) {
+          indicatorColumn = orderedCells[index - 1].column;
+        }
+      }
+
+      this._setDropEdgeIndicator(indicatorColumn, true); // always RIGHT edge
     }
 
     _markActiveColumn(column) {
@@ -1449,20 +1461,19 @@ import '../nuxeo-button-styles.js';
       if (!headerRow) return;
 
       headerRow.querySelectorAll('nuxeo-data-table-cell[header]').forEach((cell) => {
-        cell.classList.remove('drop-before', 'drop-after');
+        cell.classList.remove('drop-left', 'drop-right');
       });
     }
 
-    _setDropIndicator(column, insertAfter) {
+    _setDropEdgeIndicator(column, insertAfter) {
       this._clearDropIndicators();
 
       const headerRow = this._getHeaderRow();
       if (!headerRow) return;
 
-      const cells = headerRow.querySelectorAll('nuxeo-data-table-cell[header]');
-      cells.forEach((cell) => {
+      headerRow.querySelectorAll('nuxeo-data-table-cell[header]').forEach((cell) => {
         if (cell.column === column) {
-          cell.classList.add(insertAfter ? 'drop-after' : 'drop-before');
+          cell.classList.add(insertAfter ? 'drop-right' : 'drop-left');
         }
       });
     }
