@@ -30,7 +30,7 @@
     "highlight.js": "^10.4.1",
     "lit-html": "^1.0.0",
     "nuxeo": "^4.0.3",
-    "polymer-webpack-loader": "^2.0.3",
+    "polymer-webpack-loader": "^3.1.0",
     "uuid": "^3.3.2"
   },
   "scripts": {
