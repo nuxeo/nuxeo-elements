@@ -11,19 +11,37 @@ on:
         default: maintenance-3.1.x
         type: string
         required: false
-
+    secrets:
+      GIT_ADMIN_TOKEN:
+        description: 'GIT_ADMIN_TOKEN'
+        required: true
+        
 permissions:
   contents: read
 
+env:
+  BRANCH_NAME: ${{ github.head_ref || inputs.branch || 'maintenance-3.1.x' }}
+
 jobs:
   web-ui:
-    uses: nuxeo/nuxeo-web-ui/.github/workflows/cross-repo.yaml@maintenance-3.1.x
-    with:
-      branch_name: ${{ github.head_ref || inputs.branch || 'maintenance-3.1.x' }}
-      sauce_labs: false
-      skip_ftests: false
-      skip_a11y: false
-      skip_unit_tests: false
-      generate_metrics: false
-      run_all: false
-      bail: 0
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Web UI cross repo check
+        uses: nuxeo/ui-team-gh-actions/trigger-workflow@dcf8be425447c7fb9cdd1e048585a6df905ed878
+        with:
+          owner: nuxeo
+          repo: nuxeo-web-ui
+          workflow-id: cross-repo.yaml
+          access-token: ${{ secrets.GIT_ADMIN_TOKEN }}
+          branch-name: maintenance-3.1.x
+          inputs: |
+            branch_name: ${{ env.BRANCH_NAME }}
+            sauce_labs: false
+            skip_ftests: false
+            skip_a11y: false
+            skip_unit_tests: false
+            generate_metrics: false
+            run_all: false
+            bail: 0            
