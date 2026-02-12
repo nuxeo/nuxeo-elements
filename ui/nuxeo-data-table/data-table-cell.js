@@ -123,9 +123,24 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
             pointer-events: none;
             z-index: 6;
           }
+
+          :host([header].drop-left)::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 1px;
+            width: 4px;
+            background: var(--nuxeo-primary-color);
+            pointer-events: none;
+            z-index: 6;
+          }
         </style>
 
-        <div class="resizer" on-mousedown="_onResizerDown" on-touchstart="_onResizerDown"></div>
+        <template is="dom-if" if="[[header]]">
+          <div class="resizer" on-mousedown="_onResizerDown" on-touchstart="_onResizerDown"></div>
+        </template>
+
         <slot></slot>
       `;
     }
@@ -358,7 +373,6 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
       const table = this.closest('nuxeo-data-table');
       if (!table || !table.columnResizeEnabled) return;
 
-      // --- FIX: force correct cursor immediately ---
       this._updateCursor(e);
 
       e.stopPropagation();
@@ -400,7 +414,6 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
       this.classList.remove('dragging');
       this.style.cursor = '';
 
-      // re-enable drag for next interaction
       const table = this.closest('nuxeo-data-table');
       this.draggable = Boolean(table && table.columnReorderEnabled);
 
@@ -414,7 +427,6 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
     }
 
     _onDragStart(e) {
-      // safety: clear stale resize state
       this.classList.remove('resizing');
 
       const table = this.closest('nuxeo-data-table');
@@ -422,16 +434,11 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
         e.preventDefault();
         return;
       }
-
-      // --- HARD BLOCK CONDITIONS (order matters) ---
-
-      // 1) If we are resizing → NEVER allow drag
       if (table._resizing || this.classList.contains('resizing')) {
         e.preventDefault();
         return;
       }
 
-      // 2) If draggable is disabled
       if (!this.draggable) {
         e.preventDefault();
         return;
@@ -439,8 +446,6 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
 
       const rect = this.getBoundingClientRect();
       const RESIZE_ZONE = 10;
-
-      // 3) Pointer near right edge → treat as resize, not drag
       if (e.clientX >= rect.right - RESIZE_ZONE) {
         e.preventDefault();
         return;
@@ -520,11 +525,7 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
       ghost.appendChild(headerClone);
       ghost.appendChild(bodyFill);
       document.body.appendChild(ghost);
-
-      // Transparent drag image
       e.dataTransfer.setDragImage(TRANSPARENT_DRAG_IMAGE, 0, 0);
-
-      // Visual state
       this.classList.add('dragging');
       this.style.cursor = 'grabbing';
 
@@ -569,7 +570,6 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
 
         const draggingRight = dataTable._lastDragDirection === 'right';
         const intentX = draggingRight ? ghostLeft + ghostWidth : ghostLeft;
-
         dataTable._onColumnDragMove(intentX);
       };
 
@@ -577,7 +577,7 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
 
       this._cleanupGhostMove = () => {
         document.removeEventListener('dragover', moveGhost);
-        this.style.cursor = ''; // reset cursor
+        this.style.cursor = '';
       };
     }
   }

@@ -770,18 +770,6 @@ import '../nuxeo-button-styles.js';
       return index % 2 === 0;
     }
 
-    _getHeaderRow() {
-      if (!this.$.header) return null;
-
-      const slot = this.$.header.querySelector('slot[name="item0"]');
-      if (!slot) return null;
-
-      const assigned = slot.assignedElements({ flatten: true });
-      if (!assigned.length) return null;
-
-      return assigned.find((el) => el.tagName === 'NUXEO-DATA-TABLE-ROW' && el.hasAttribute('header')) || null;
-    }
-
     _columnsChanged(columns, oldColumns) {
       if (oldColumns) {
         oldColumns.forEach((column) => {
@@ -1257,7 +1245,6 @@ import '../nuxeo-button-styles.js';
      */
     _documentMouseUp() {
       if (!this.columnResizeEnabled || !this._resizing) return;
-
       document.removeEventListener('mousemove', this._boundDocumentMouseMove);
       document.removeEventListener('mouseup', this._boundDocumentMouseUp);
       document.removeEventListener('touchmove', this._boundDocumentMouseMove);
@@ -1265,27 +1252,17 @@ import '../nuxeo-button-styles.js';
 
       const { column } = this._resizing;
 
-      // Notify all header cells explicitly
-      const headerRow = this._getHeaderRow();
-      if (headerRow) {
-        const cells = headerRow.querySelectorAll('nuxeo-data-table-cell[header]');
-        cells.forEach((cell) => {
-          if (cell.column === column) {
-            cell.classList.remove('resizing');
-            cell.style.cursor = '';
-            cell.draggable = Boolean(this.columnReorderEnabled);
-          }
-        });
-      }
-
-      // finalize resize state FIRST
+      const cells = this.querySelectorAll('nuxeo-data-table-cell[header]');
+      cells.forEach((cell) => {
+        if (cell.column === column) {
+          cell.classList.remove('resizing');
+          cell.style.cursor = '';
+          cell.draggable = Boolean(this.columnReorderEnabled);
+        }
+      });
       this._resizing = null;
-
-      //  reset drag state deterministically
       this._dragStartGhostX = undefined;
       this._lastDragDirection = undefined;
-
-      // force layout flush so browser exits resize mode immediately
       this.getBoundingClientRect();
 
       this.notifyResize();
@@ -1366,31 +1343,24 @@ import '../nuxeo-button-styles.js';
     /**
      * Determines which column is being targeted during drag.
      */
+
     _resolveDropTargetFromX(x) {
-      const headerRow = this._getHeaderRow();
-      if (!headerRow) return;
-
-      const headerRect = headerRow.getBoundingClientRect();
+      const headerRect = this.getBoundingClientRect();
       const localX = Math.round(x - headerRect.left);
-
       const draggingRight = this._lastDragDirection === 'right';
-
-      const cells = Array.from(headerRow.querySelectorAll('nuxeo-data-table-cell[header]')).filter(
+      const cells = Array.from(this.querySelectorAll('nuxeo-data-table-cell[header]')).filter(
         (c) => !c.hidden && c.column !== this._draggingColumn,
       );
-
       const targetCell = cells.find((cell) => {
         const rect = cell.getBoundingClientRect();
         const left = rect.left - headerRect.left;
         const right = rect.right - headerRect.left;
         const center = left + (right - left) / 2;
 
-        //  INTENT-BASED DROP THRESHOLD
         if (draggingRight) {
-          // ghost must cross CENTER to insert AFTER
           return localX >= center && localX <= right;
         }
-        // ghost must cross CENTER to insert BEFORE
+
         return localX <= center && localX >= left;
       });
 
@@ -1402,33 +1372,23 @@ import '../nuxeo-button-styles.js';
 
       this._dragOverColumn = targetCell.column;
       this._dragInsertAfter = draggingRight;
-
       let indicatorColumn = targetCell.column;
 
       if (!draggingRight) {
-        // LEFT drag → show right edge of previous column
-        const orderedCells = cells;
-        const index = orderedCells.indexOf(targetCell);
-
+        const index = cells.indexOf(targetCell);
         if (index > 0) {
-          indicatorColumn = orderedCells[index - 1].column;
+          indicatorColumn = cells[index - 1].column;
         }
       }
 
-      this._setDropEdgeIndicator(indicatorColumn, true); // always RIGHT edge
+      this._setDropEdgeIndicator(indicatorColumn);
     }
 
     _markActiveColumn(column) {
       if (this._activeColumn === column) {
         return;
       }
-
-      const headerRow = this._getHeaderRow();
-      if (!headerRow) return;
-
-      const cells = headerRow.querySelectorAll('nuxeo-data-table-cell[header]');
-
-      // remove highlight from old
+      const cells = this.querySelectorAll('nuxeo-data-table-cell[header]');
       cells.forEach((cell) => {
         if (cell.column === this._activeColumn) {
           cell.classList.remove('column-active');
@@ -1436,8 +1396,6 @@ import '../nuxeo-button-styles.js';
       });
 
       this._activeColumn = column;
-
-      // add highlight to new
       if (column) {
         cells.forEach((cell) => {
           if (cell.column === column) {
@@ -1449,34 +1407,26 @@ import '../nuxeo-button-styles.js';
 
     _clearActiveColumn() {
       if (!this._activeColumn) return;
-
-      const headerRow = this._getHeaderRow();
-      if (!headerRow) return;
-
-      const cells = headerRow.querySelectorAll('nuxeo-data-table-cell[header]');
+      const cells = this.querySelectorAll('nuxeo-data-table-cell[header]');
       cells.forEach((cell) => cell.classList.remove('column-active'));
 
       this._activeColumn = null;
     }
 
     _clearDropIndicators() {
-      const headerRow = this._getHeaderRow();
-      if (!headerRow) return;
-
-      headerRow.querySelectorAll('nuxeo-data-table-cell[header]').forEach((cell) => {
+      this.querySelectorAll('nuxeo-data-table-cell[header]').forEach((cell) => {
         cell.classList.remove('drop-left', 'drop-right');
       });
     }
 
-    _setDropEdgeIndicator(column, insertAfter) {
+    _setDropEdgeIndicator(column) {
+      if (!column) return;
+
       this._clearDropIndicators();
 
-      const headerRow = this._getHeaderRow();
-      if (!headerRow) return;
-
-      headerRow.querySelectorAll('nuxeo-data-table-cell[header]').forEach((cell) => {
+      this.querySelectorAll('nuxeo-data-table-cell[header]').forEach((cell) => {
         if (cell.column === column) {
-          cell.classList.add(insertAfter ? 'drop-right' : 'drop-left');
+          cell.classList.add('drop-right');
         }
       });
     }
