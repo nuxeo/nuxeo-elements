@@ -12,6 +12,8 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
   return img;
 })();
 
+const RESIZE_ZONE = 8;
+
 {
   // eslint-disable-next-line no-undef
   class DataTableCell extends mixinBehaviors([saulis.DataTableTemplatizerBehavior], Nuxeo.Element) {
@@ -200,10 +202,6 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
         this.addEventListener('mousemove', this._updateCursor.bind(this));
         this.addEventListener('mouseleave', this._resetCursor.bind(this));
         this.addEventListener('mousedown', this._handleMouseDown.bind(this));
-
-        document.addEventListener('mousemove', (e) => {
-          window._lastMouseEvent = e;
-        });
       }
     }
 
@@ -218,7 +216,7 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
 
         if (!table) return;
 
-        this.draggable = Boolean(table.columnReorderEnabled);
+        this.draggable = !!table.columnReorderEnabled;
       });
     }
 
@@ -227,7 +225,6 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
       if (!table) return;
 
       const rect = this.getBoundingClientRect();
-      const RESIZE_ZONE = 8;
       const nearEdge = e.clientX >= rect.right - RESIZE_ZONE;
       // --- RESIZE INTENT ---
       if (table.columnResizeEnabled && nearEdge) {
@@ -240,7 +237,7 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
 
       // --- REORDER INTENT ---
       this.classList.remove('resizing');
-      this.draggable = Boolean(table.columnReorderEnabled);
+      this.draggable = !!table.columnReorderEnabled;
     }
 
     _updateCursor(e) {
@@ -248,7 +245,6 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
       if (!table) return;
 
       const rect = this.getBoundingClientRect();
-      const RESIZE_ZONE = 8;
       const nearEdge = e.clientX >= rect.right - RESIZE_ZONE;
 
       // If resizing → force state

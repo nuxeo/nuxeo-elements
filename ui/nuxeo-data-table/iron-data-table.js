@@ -693,6 +693,10 @@ import '../nuxeo-button-styles.js';
       });
     }
 
+    _getHeaderCells() {
+      return this.querySelectorAll('nuxeo-data-table-cell[header]');
+    }
+
     _onWrapperHeightChanged() {
       const list = this.shadowRoot.querySelector('iron-list');
       if (list && this._wrapperHeight && !list.parentElement.classList.contains('table-wrapper')) {
@@ -1252,18 +1256,20 @@ import '../nuxeo-button-styles.js';
 
       const { column } = this._resizing;
 
-      const cells = this.querySelectorAll('nuxeo-data-table-cell[header]');
-      cells.forEach((cell) => {
+      const cells = this._getHeaderCells();
+      for (let i = 0; i < cells.length; i++) {
+        const cell = cells[i];
         if (cell.column === column) {
           cell.classList.remove('resizing');
           cell.style.cursor = '';
-          cell.draggable = Boolean(this.columnReorderEnabled);
+          cell.draggable = !!this.columnReorderEnabled;
+          break; // only one match exists
         }
-      });
+      }
+
       this._resizing = null;
       this._dragStartGhostX = undefined;
       this._lastDragDirection = undefined;
-      this.getBoundingClientRect();
 
       this.notifyResize();
     }
@@ -1348,21 +1354,25 @@ import '../nuxeo-button-styles.js';
       const headerRect = this.getBoundingClientRect();
       const localX = Math.round(x - headerRect.left);
       const draggingRight = this._lastDragDirection === 'right';
-      const cells = Array.from(this.querySelectorAll('nuxeo-data-table-cell[header]')).filter(
-        (c) => !c.hidden && c.column !== this._draggingColumn,
-      );
-      const targetCell = cells.find((cell) => {
-        const rect = cell.getBoundingClientRect();
+
+      const cells = Array.from(this._getHeaderCells()).filter((c) => !c.hidden && c.column !== this._draggingColumn);
+
+      let targetCell = null;
+
+      for (let i = 0; i < cells.length; i++) {
+        const rect = cells[i].getBoundingClientRect();
         const left = rect.left - headerRect.left;
         const right = rect.right - headerRect.left;
         const center = left + (right - left) / 2;
 
-        if (draggingRight) {
-          return localX >= center && localX <= right;
+        if (
+          (draggingRight && localX >= center && localX <= right) ||
+          (!draggingRight && localX <= center && localX >= left)
+        ) {
+          targetCell = cells[i];
+          break;
         }
-
-        return localX <= center && localX >= left;
-      });
+      }
 
       if (!targetCell) {
         this._dragOverColumn = null;
@@ -1372,6 +1382,7 @@ import '../nuxeo-button-styles.js';
 
       this._dragOverColumn = targetCell.column;
       this._dragInsertAfter = draggingRight;
+
       let indicatorColumn = targetCell.column;
 
       if (!draggingRight) {
@@ -1388,7 +1399,7 @@ import '../nuxeo-button-styles.js';
       if (this._activeColumn === column) {
         return;
       }
-      const cells = this.querySelectorAll('nuxeo-data-table-cell[header]');
+      const cells = this._getHeaderCells();
       cells.forEach((cell) => {
         if (cell.column === this._activeColumn) {
           cell.classList.remove('column-active');
@@ -1407,16 +1418,17 @@ import '../nuxeo-button-styles.js';
 
     _clearActiveColumn() {
       if (!this._activeColumn) return;
-      const cells = this.querySelectorAll('nuxeo-data-table-cell[header]');
+      const cells = this._getHeaderCells();
       cells.forEach((cell) => cell.classList.remove('column-active'));
 
       this._activeColumn = null;
     }
 
     _clearDropIndicators() {
-      this.querySelectorAll('nuxeo-data-table-cell[header]').forEach((cell) => {
-        cell.classList.remove('drop-left', 'drop-right');
-      });
+      const cells = this._getHeaderCells();
+      for (let i = 0; i < cells.length; i++) {
+        cells[i].classList.remove('drop-left', 'drop-right');
+      }
     }
 
     _setDropEdgeIndicator(column) {
@@ -1424,11 +1436,13 @@ import '../nuxeo-button-styles.js';
 
       this._clearDropIndicators();
 
-      this.querySelectorAll('nuxeo-data-table-cell[header]').forEach((cell) => {
-        if (cell.column === column) {
-          cell.classList.add('drop-right');
+      const cells = this._getHeaderCells();
+      for (let i = 0; i < cells.length; i++) {
+        if (cells[i].column === column) {
+          cells[i].classList.add('drop-right');
+          break;
         }
-      });
+      }
     }
   }
 
