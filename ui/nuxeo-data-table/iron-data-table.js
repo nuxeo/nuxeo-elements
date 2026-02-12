@@ -1282,14 +1282,32 @@ import '../nuxeo-button-styles.js';
      * Marks the start of column drag.
      */
     _onColumnDragStart(e) {
-      if (!this.columnReorderEnabled) return;
-      this._reorderingColumns = true;
-      this._draggingColumn = e.detail.column;
-      this._dragOverColumn = null;
-      this._dragInsertAfter = false;
+  if (!this.columnReorderEnabled) return;
 
-      this._markActiveColumn(e.detail.column);
-    }
+  this._reorderingColumns = true;
+  this._draggingColumn = e.detail.column;
+  this._dragOverColumn = null;
+  this._dragInsertAfter = false;
+
+  this._markActiveColumn(e.detail.column);
+
+  // ---- NEW: cache header geometry ----
+  const headerRect = this.getBoundingClientRect();
+
+  this._dragHeaderLeft = headerRect.left;
+
+  this._dragCellsMeta = Array.from(this._getHeaderCells())
+    .filter((c) => !c.hidden && c.column !== this._draggingColumn)
+    .map((cell) => {
+      const rect = cell.getBoundingClientRect();
+      return {
+        column: cell.column,
+        left: rect.left,
+        right: rect.right,
+      };
+    });
+}
+
 
     /**
      * Commits column reorder and logs final order.
@@ -1333,6 +1351,10 @@ import '../nuxeo-button-styles.js';
       this._lastDragDirection = undefined;
       this._dragStartGhostX = undefined;
 
+      this._dragCellsMeta = null;
+this._dragHeaderLeft = null;
+
+
       this._clearDropIndicators();
       this._clearActiveColumn();
     }
@@ -1350,50 +1372,53 @@ import '../nuxeo-button-styles.js';
      * Determines which column is being targeted during drag.
      */
 
-    _resolveDropTargetFromX(x) {
-      const headerRect = this.getBoundingClientRect();
-      const localX = Math.round(x - headerRect.left);
-      const draggingRight = this._lastDragDirection === 'right';
+  _resolveDropTargetFromX(x) {
+  if (!this._dragCellsMeta) return;
 
-      const cells = Array.from(this._getHeaderCells()).filter((c) => !c.hidden && c.column !== this._draggingColumn);
+  const localX = Math.round(x - this._dragHeaderLeft + this.scrollLeft);
 
-      let targetCell = null;
+  let targetMeta = null;
+  let insertAfter = false;
 
-      for (let i = 0; i < cells.length; i++) {
-        const rect = cells[i].getBoundingClientRect();
-        const left = rect.left - headerRect.left;
-        const right = rect.right - headerRect.left;
-        const center = left + (right - left) / 2;
+  for (let i = 0; i < this._dragCellsMeta.length; i++) {
+    const meta = this._dragCellsMeta[i];
 
-        if (
-          (draggingRight && localX >= center && localX <= right) ||
-          (!draggingRight && localX <= center && localX >= left)
-        ) {
-          targetCell = cells[i];
-          break;
-        }
-      }
+    const left = meta.left - this._dragHeaderLeft + this.scrollLeft;
+    const right = meta.right - this._dragHeaderLeft + this.scrollLeft;
 
-      if (!targetCell) {
-        this._dragOverColumn = null;
-        this._clearDropIndicators();
-        return;
-      }
+    if (localX >= left && localX <= right) {
+      targetMeta = meta;
 
-      this._dragOverColumn = targetCell.column;
-      this._dragInsertAfter = draggingRight;
-
-      let indicatorColumn = targetCell.column;
-
-      if (!draggingRight) {
-        const index = cells.indexOf(targetCell);
-        if (index > 0) {
-          indicatorColumn = cells[index - 1].column;
-        }
-      }
-
-      this._setDropEdgeIndicator(indicatorColumn);
+      const center = left + (right - left) / 2;
+      insertAfter = localX > center;
+      break;
     }
+  }
+
+  if (!targetMeta) {
+    this._dragOverColumn = null;
+    this._clearDropIndicators();
+    return;
+  }
+
+  this._dragOverColumn = targetMeta.column;
+  this._dragInsertAfter = insertAfter;
+
+  // ---- visual mapping (always right edge) ----
+  let indicatorColumn = targetMeta.column;
+
+  if (!insertAfter) {
+    const index = this._dragCellsMeta.findIndex((m) => m.column === targetMeta.column);
+    if (index > 0) {
+      indicatorColumn = this._dragCellsMeta[index - 1].column;
+    }
+  }
+
+  this._setDropEdgeIndicator(indicatorColumn);
+}
+
+
+
 
     _markActiveColumn(column) {
       if (this._activeColumn === column) {
@@ -1439,6 +1464,9 @@ import '../nuxeo-button-styles.js';
       const cells = this._getHeaderCells();
       for (let i = 0; i < cells.length; i++) {
         if (cells[i].column === column) {
+          console.log("setting drop indicator on column:", column.field, "edge: right");
+
+          console.log(cells[i].column.field);
           cells[i].classList.add('drop-right');
           break;
         }
