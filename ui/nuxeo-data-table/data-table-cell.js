@@ -137,6 +137,13 @@ const RESIZE_ZONE = 8;
             pointer-events: none;
             z-index: 6;
           }
+
+          .resizer {
+            display: none;
+          }
+          :host([header][resize-enabled]) .resizer {
+            display: block;
+          }
         </style>
 
         <template is="dom-if" if="[[header]]">
@@ -217,6 +224,12 @@ const RESIZE_ZONE = 8;
         if (!table) return;
 
         this.draggable = !!table.columnReorderEnabled;
+
+        if (table.hasAttribute('column-resize-enabled')) {
+          this.setAttribute('resize-enabled', '');
+        } else {
+          this.removeAttribute('resize-enabled');
+        }
       });
     }
 
