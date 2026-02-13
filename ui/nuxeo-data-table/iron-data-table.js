@@ -175,6 +175,10 @@ import '../nuxeo-button-styles.js';
             bottom: 0;
             display: flex;
             flex-direction: column;
+            /* allow container to grow to full content width so :host overflow-x shows scrollbar */
+            min-width: max-content;
+            /* vendor fallback */
+            min-width: -webkit-max-content;
           }
 
           #header {
@@ -224,6 +228,36 @@ import '../nuxeo-button-styles.js';
             overflow-y: scroll;
             position: relative;
           }
+
+          #header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            height: 48px;
+            align-items: stretch;
+          }
+
+          #header > nuxeo-data-table-row {
+            display: flex;
+            height: 48px;
+            align-items: stretch;
+          }
+
+          #header nuxeo-data-table-cell,
+          #header-fixed {
+            display: flex;
+            align-items: center;
+            height: 100%;
+          }
+          #header-fixed {
+            grid-column: 2;
+            position: relative;
+            top: 12px;
+          }
+
+          :host([settings-enabled]) ::slotted(nuxeo-data-table-row[header]) {
+            position: relative;
+            top: -20px;
+          }
         </style>
 
         <div id="container">
@@ -267,11 +301,13 @@ import '../nuxeo-button-styles.js';
               <div style$="[[_computeActionsStyle(editable, orderable)]]">
                 <nuxeo-data-table-cell></nuxeo-data-table-cell>
               </div>
+            </nuxeo-data-table-row>
+            <div id="header-fixed">
               <nuxeo-data-table-settings
                 columns="{{columns}}"
                 hidden$="[[!settingsEnabled]]"
               ></nuxeo-data-table-settings>
-            </nuxeo-data-table-row>
+            </div>
           </div>
 
           <dom-if if="[[_isEmpty]]">
@@ -534,6 +570,18 @@ import '../nuxeo-button-styles.js';
           type: String,
           value: '',
         },
+
+        columnResizeEnabled: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+        },
+
+        columnReorderEnabled: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+        },
       };
     }
 
@@ -563,6 +611,10 @@ import '../nuxeo-button-styles.js';
           );
         };
 
+        if (this._reorderingColumns) {
+          return;
+        }
+
         if (info.addedNodes.filter(hasColumns).length > 0 || info.removedNodes.filter(hasColumns).length > 0) {
           this.set('columns', this.$.columns.assignedNodes().filter(hasColumns));
           this._backupColumnsState();
@@ -582,6 +634,27 @@ import '../nuxeo-button-styles.js';
 
     ready() {
       super.ready();
+
+      // ------------------------------------------------------------
+      // Interaction state (resize + reorder)
+      // ------------------------------------------------------------
+
+      // Resize state
+      this._resizing = null;
+
+      // Reorder state
+      this._reorderingColumns = false;
+      this._draggingColumn = null;
+      this._dragOverColumn = null;
+      this._dragInsertAfter = false;
+
+      // Cached geometry during drag (for stable hit-testing)
+      this._dragCellsMeta = null;
+      this._dragHeaderLeft = null;
+
+      // Visual state
+      this._activeColumn = null;
+
       this.addEventListener('iron-resize', this._resizeCellContainers);
       this.addEventListener('item-changed', this._itemChanged);
       this.addEventListener('scroll', this._onHorizontalScroll);
@@ -589,6 +662,11 @@ import '../nuxeo-button-styles.js';
       this.addEventListener('delete-entry', this._deleteEntry);
       this.addEventListener('move-upward', this._moveItemUpward);
       this.addEventListener('move-downward', this._moveItemDownward);
+      // column resize and reorder listeners
+      this.addEventListener('column-resize-start', this._onColumnResizeStart.bind(this));
+      this.addEventListener('column-drag-start', this._onColumnDragStart.bind(this));
+      this.addEventListener('column-drag-end', this._onColumnDragEnd.bind(this));
+
       this.$.list._selectionHandler = function(e) {
         const model = this.modelForElement(e.target);
         if (!model) {
@@ -604,6 +682,7 @@ import '../nuxeo-button-styles.js';
         const form = this.getContentChildren('#form')[0];
         form.disabled = true;
       });
+
       this.setAttribute('role', 'table');
       this.setAttribute('aria-multiselectable', this.multiSelection);
       this.setAttribute('aria-label', this.captionText);
@@ -612,6 +691,19 @@ import '../nuxeo-button-styles.js';
         this._wrapperHeight = wrapperHeight;
         this._onWrapperHeightChanged();
       }
+
+      // bound handlers for document-level mouse operations
+      this._boundDocumentMouseMove = this._documentMouseMove.bind(this);
+      this._boundDocumentMouseUp = this._documentMouseUp.bind(this);
+
+      // ensure initial sizing pass after first render so CSS flex rules take effect
+      afterNextRender(this, () => {
+        this._resizeCellContainers();
+      });
+    }
+
+    _getHeaderCells() {
+      return this.querySelectorAll('nuxeo-data-table-cell[header]');
     }
 
     _onWrapperHeightChanged() {
@@ -924,38 +1016,10 @@ import '../nuxeo-button-styles.js';
       this._toggleEditDialog(e.detail.index);
     }
 
-    _isStrictNumberString(value) {
-      return typeof value === 'string' && value.trim() !== '' && Number.isFinite(Number(value));
-    }
-
-    _normalizeItem(item) {
-      if (Array.isArray(item)) {
-        return item.map((v) => this._normalizeItem(v));
-      }
-
-      if (item !== null && typeof item === 'object') {
-        Object.keys(item).forEach((key) => {
-          item[key] = this._normalizeItem(item[key]);
-        });
-        return item;
-      }
-
-      if (this._isStrictNumberString(item)) {
-        return Number(item);
-      }
-
-      return item;
-    }
-
     _validateEntry() {
       const dtform = this.getContentChildren('#form')[0];
-
       if (dtform.validateItem()) {
-        let item = this._deepCopy(dtform.item);
-
-        // ✅ automatic number vs string handling
-        item = this._normalizeItem(item);
-
+        const item = this._deepCopy(dtform.item);
         if (dtform.index > -1) {
           this.set(`items.${dtform.index}`, item);
         } else {
@@ -1098,6 +1162,328 @@ import '../nuxeo-button-styles.js';
       if (form) {
         // disable form when the dialog is closed, to make sure we bypass validation when the form is not visible
         form.disabled = !e.detail.value;
+      }
+    }
+
+    /** ** Column Resizing and Reordering ******* */
+
+    // ------------------------------------------------------------
+    // Column resize lifecycle
+    // ------------------------------------------------------------
+
+    /**
+     * Handles resize start emitted by header cell.
+     * Initializes resize state and binds document listeners.
+     */
+    _onColumnResizeStart(e) {
+      if (!this.columnResizeEnabled) return;
+      const { column, startX, startWidth } = e.detail || {};
+      if (!column || typeof startX !== 'number') return;
+
+      this._resizeCellContainers();
+
+      this._resizing = {
+        column,
+        startX: startX + this.scrollLeft,
+        startWidth,
+      };
+
+      document.addEventListener('mousemove', this._boundDocumentMouseMove);
+      document.addEventListener('mouseup', this._boundDocumentMouseUp);
+      document.addEventListener('touchmove', this._boundDocumentMouseMove, { passive: false });
+      document.addEventListener('touchend', this._boundDocumentMouseUp);
+    }
+
+    /**
+     * Tracks pointer movement during resize and updates column width.
+     */
+    _documentMouseMove(e) {
+      if (!this.columnResizeEnabled || !this._resizing) return;
+
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      if (e.touches) e.preventDefault();
+
+      const pointerX = clientX + this.scrollLeft;
+
+      const { column, startX, startWidth } = this._resizing;
+
+      let minWidth = 10;
+      if (column && column.minWidth != null) {
+        const parsed = parseInt(column.minWidth, 10);
+        if (!Number.isNaN(parsed)) {
+          minWidth = parsed;
+        }
+      }
+
+      // Calculate new width with minimum constraint
+      const dx = pointerX - startX;
+      const newWidth = Math.max(minWidth, Math.round(startWidth + dx));
+
+      const colIndex = this.columns.indexOf(column);
+      if (colIndex > -1) {
+        this.set(`columns.${colIndex}.width`, `${newWidth}px`);
+        this._resizeCellContainers();
+      }
+    }
+
+    /**
+     * Finalizes resize:
+     * - removes document listeners
+     * - restores header cell state
+     * - clears resize state
+     */
+
+    _documentMouseUp() {
+      if (!this.columnResizeEnabled || !this._resizing) return;
+      document.removeEventListener('mousemove', this._boundDocumentMouseMove);
+      document.removeEventListener('mouseup', this._boundDocumentMouseUp);
+      document.removeEventListener('touchmove', this._boundDocumentMouseMove);
+      document.removeEventListener('touchend', this._boundDocumentMouseUp);
+
+      const { column } = this._resizing;
+
+      const cells = this._getHeaderCells();
+      for (let i = 0; i < cells.length; i++) {
+        const cell = cells[i];
+        if (cell.column === column) {
+          cell.classList.remove('resizing');
+          cell.style.cursor = '';
+          cell.draggable = !!this.columnReorderEnabled;
+          break;
+        }
+      }
+
+      this._resizing = null;
+
+      this.notifyResize();
+      this.__columnsFrozen = false;
+    }
+
+    // ------------------------------------------------------------
+    // COLUMN REORDER
+    // Uses cached header geometry captured at drag start.
+    // ------------------------------------------------------------
+
+    /**
+     * Initializes column drag:
+     * - marks active column
+     * - captures header offset
+     * - caches visible column positions (prevents layout thrash)
+     */
+
+    _onColumnDragStart(e) {
+      if (!this.columnReorderEnabled) return;
+
+      this._reorderingColumns = true;
+      this._draggingColumn = e.detail.column;
+      this._dragOverColumn = null;
+      this._dragInsertAfter = false;
+
+      this._markActiveColumn(e.detail.column);
+      const headerRect = this.getBoundingClientRect();
+      this._dragHeaderLeft = headerRect.left;
+      // Visible columns in current visual order (excluding dragged)
+
+      const orderedColumns = [...this.columns]
+        .filter((c) => !c.hidden && c !== this._draggingColumn)
+        .sort((a, b) => a.order - b.order);
+
+      const cells = this._getHeaderCells();
+
+      this._dragCellsMeta = orderedColumns.map((col) => {
+        const cell = Array.from(cells).find((c) => c.column === col);
+        const rect = cell.getBoundingClientRect();
+
+        return {
+          column: col,
+          left: rect.left,
+          right: rect.right,
+        };
+      });
+    }
+
+    /**
+     * Applies final column order based on drop target.
+     */
+
+    _onColumnDragEnd() {
+      if (!this.columnReorderEnabled) return;
+      const dragging = this._draggingColumn;
+      const target = this._dragOverColumn;
+
+      if (!dragging || !target || dragging === target) {
+        this._resetDragState();
+        return;
+      }
+
+      const ordered = [...this.columns].sort((a, b) => a.order - b.order);
+
+      const from = ordered.indexOf(dragging);
+      let to = ordered.indexOf(target);
+
+      ordered.splice(from, 1);
+      if (from < to) to--;
+
+      const insertIndex = this._dragInsertAfter ? to + 1 : to;
+      ordered.splice(insertIndex, 0, dragging);
+
+      ordered.forEach((col, index) => {
+        col.order = index;
+      });
+
+      this.notifyResize();
+      this._resetDragState();
+    }
+
+    /**
+     * Clears transient drag state and visual indicators.
+     */
+    _resetDragState() {
+      this._draggingColumn = null;
+      this._dragOverColumn = null;
+      this._dragInsertAfter = false;
+
+      this._dragCellsMeta = null;
+      this._dragHeaderLeft = null;
+
+      this._clearDropIndicators();
+      this._clearActiveColumn();
+    }
+
+    /**
+     * Resolves drop target column from pointer X coordinate.
+     */
+    _onColumnDragMove(mouseX) {
+      if (!this.columnReorderEnabled || !this._draggingColumn || typeof mouseX !== 'number') return;
+
+      this._resolveDropTargetFromX(mouseX);
+    }
+
+    /**
+     * Hit-tests pointer X against cached column geometry.
+     * Determines:
+     *  - target column
+     *  - insert before/after
+     */
+
+    _resolveDropTargetFromX(x) {
+      if (!this._dragCellsMeta) return;
+
+      const localX = Math.round(x - this._dragHeaderLeft + this.scrollLeft);
+
+      let targetIndex = -1;
+      let insertAfter = false;
+
+      for (let i = 0; i < this._dragCellsMeta.length; i++) {
+        const meta = this._dragCellsMeta[i];
+
+        const left = meta.left - this._dragHeaderLeft + this.scrollLeft;
+        const right = meta.right - this._dragHeaderLeft + this.scrollLeft;
+        const center = left + (right - left) / 2;
+
+        if (localX >= left && localX <= right) {
+          targetIndex = i;
+          insertAfter = localX > center;
+          break;
+        }
+      }
+
+      if (targetIndex === -1 && localX < this._dragCellsMeta[0].left - this._dragHeaderLeft + this.scrollLeft) {
+        this._dragOverColumn = this._dragCellsMeta[0].column;
+        this._dragInsertAfter = false;
+        this._setDropEdgeIndicator(this._dragCellsMeta[0].column);
+        return;
+      }
+
+      if (targetIndex === -1) {
+        this._dragOverColumn = null;
+        this._clearDropIndicators();
+        return;
+      }
+
+      const targetMeta = this._dragCellsMeta[targetIndex];
+
+      this._dragOverColumn = targetMeta.column;
+      this._dragInsertAfter = insertAfter;
+
+      let indicatorColumn = targetMeta.column;
+
+      if (!insertAfter && targetIndex > 0) {
+        indicatorColumn = this._dragCellsMeta[targetIndex - 1].column;
+      }
+
+      this._setDropEdgeIndicator(indicatorColumn);
+    }
+
+    /**
+     * Highlights the column currently being dragged.
+     * Ensures only one header cell has the 'column-active' class at a time.
+     * Used for visual feedback during column reorder.
+     */
+
+    _markActiveColumn(column) {
+      if (this._activeColumn === column) {
+        return;
+      }
+      const cells = this._getHeaderCells();
+      cells.forEach((cell) => {
+        if (cell.column === this._activeColumn) {
+          cell.classList.remove('column-active');
+        }
+      });
+
+      this._activeColumn = column;
+      if (column) {
+        cells.forEach((cell) => {
+          if (cell.column === column) {
+            cell.classList.add('column-active');
+          }
+        });
+      }
+    }
+
+    /**
+     * Removes active (dragged) visual state from all header cells.
+     * Called when drag operation ends or is cancelled.
+     */
+
+    _clearActiveColumn() {
+      if (!this._activeColumn) return;
+      const cells = this._getHeaderCells();
+      cells.forEach((cell) => cell.classList.remove('column-active'));
+
+      this._activeColumn = null;
+    }
+
+    /**
+     * Clears all drop position indicators from header cells.
+     * Resets visual state before applying a new indicator.
+     */
+
+    _clearDropIndicators() {
+      const cells = this._getHeaderCells();
+      for (let i = 0; i < cells.length; i++) {
+        cells[i].classList.remove('drop-left', 'drop-right');
+      }
+    }
+
+    /**
+     * Shows the drop position indicator for column reorder.
+     * Indicator is always rendered on the RIGHT edge of the target column.
+     * (Insert-before is handled by choosing the previous column.)
+     */
+
+    _setDropEdgeIndicator(column) {
+      if (!column) return;
+
+      this._clearDropIndicators();
+
+      const cells = this._getHeaderCells();
+      for (let i = 0; i < cells.length; i++) {
+        if (cells[i].column === column) {
+          cells[i].classList.add('drop-right');
+          break;
+        }
       }
     }
   }
