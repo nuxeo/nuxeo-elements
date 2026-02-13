@@ -1007,38 +1007,10 @@ import '../nuxeo-button-styles.js';
       this._toggleEditDialog(e.detail.index);
     }
 
-    _isStrictNumberString(value) {
-      return typeof value === 'string' && value.trim() !== '' && Number.isFinite(Number(value));
-    }
-
-    _normalizeItem(item) {
-      if (Array.isArray(item)) {
-        return item.map((v) => this._normalizeItem(v));
-      }
-
-      if (item !== null && typeof item === 'object') {
-        Object.keys(item).forEach((key) => {
-          item[key] = this._normalizeItem(item[key]);
-        });
-        return item;
-      }
-
-      if (this._isStrictNumberString(item)) {
-        return Number(item);
-      }
-
-      return item;
-    }
-
     _validateEntry() {
       const dtform = this.getContentChildren('#form')[0];
-
       if (dtform.validateItem()) {
-        let item = this._deepCopy(dtform.item);
-
-        // ✅ automatic number vs string handling
-        item = this._normalizeItem(item);
-
+        const item = this._deepCopy(dtform.item);
         if (dtform.index > -1) {
           this.set(`items.${dtform.index}`, item);
         } else {
@@ -1272,6 +1244,7 @@ import '../nuxeo-button-styles.js';
       this._lastDragDirection = undefined;
 
       this.notifyResize();
+      this.__columnsFrozen = false;
     }
 
     // ------------------------------------------------------------
@@ -1282,32 +1255,40 @@ import '../nuxeo-button-styles.js';
      * Marks the start of column drag.
      */
     _onColumnDragStart(e) {
-  if (!this.columnReorderEnabled) return;
+      if (!this.columnReorderEnabled) return;
 
-  this._reorderingColumns = true;
-  this._draggingColumn = e.detail.column;
-  this._dragOverColumn = null;
-  this._dragInsertAfter = false;
+      this._reorderingColumns = true;
+      this._draggingColumn = e.detail.column;
+      this._dragOverColumn = null;
+      this._dragInsertAfter = false;
 
-  this._markActiveColumn(e.detail.column);
+      this._markActiveColumn(e.detail.column);
 
-  // ---- NEW: cache header geometry ----
-  const headerRect = this.getBoundingClientRect();
+      // Cache header position
+      const headerRect = this.getBoundingClientRect();
+      this._dragHeaderLeft = headerRect.left;
 
-  this._dragHeaderLeft = headerRect.left;
+      // --------------------------------------------------
+      // IMPORTANT FIX:
+      // Build meta in VISUAL order (using column.order)
+      // --------------------------------------------------
+      const orderedColumns = [...this.columns]
+        .filter((c) => !c.hidden && c !== this._draggingColumn)
+        .sort((a, b) => a.order - b.order);
 
-  this._dragCellsMeta = Array.from(this._getHeaderCells())
-    .filter((c) => !c.hidden && c.column !== this._draggingColumn)
-    .map((cell) => {
-      const rect = cell.getBoundingClientRect();
-      return {
-        column: cell.column,
-        left: rect.left,
-        right: rect.right,
-      };
-    });
-}
+      const cells = this._getHeaderCells();
 
+      this._dragCellsMeta = orderedColumns.map((col) => {
+        const cell = Array.from(cells).find((c) => c.column === col);
+        const rect = cell.getBoundingClientRect();
+
+        return {
+          column: col,
+          left: rect.left,
+          right: rect.right,
+        };
+      });
+    }
 
     /**
      * Commits column reorder and logs final order.
@@ -1352,8 +1333,7 @@ import '../nuxeo-button-styles.js';
       this._dragStartGhostX = undefined;
 
       this._dragCellsMeta = null;
-this._dragHeaderLeft = null;
-
+      this._dragHeaderLeft = null;
 
       this._clearDropIndicators();
       this._clearActiveColumn();
@@ -1372,53 +1352,56 @@ this._dragHeaderLeft = null;
      * Determines which column is being targeted during drag.
      */
 
-  _resolveDropTargetFromX(x) {
-  if (!this._dragCellsMeta) return;
+    _resolveDropTargetFromX(x) {
+      if (!this._dragCellsMeta) return;
 
-  const localX = Math.round(x - this._dragHeaderLeft + this.scrollLeft);
+      const localX = Math.round(x - this._dragHeaderLeft + this.scrollLeft);
 
-  let targetMeta = null;
-  let insertAfter = false;
+      let targetIndex = -1;
+      let insertAfter = false;
 
-  for (let i = 0; i < this._dragCellsMeta.length; i++) {
-    const meta = this._dragCellsMeta[i];
+      for (let i = 0; i < this._dragCellsMeta.length; i++) {
+        const meta = this._dragCellsMeta[i];
 
-    const left = meta.left - this._dragHeaderLeft + this.scrollLeft;
-    const right = meta.right - this._dragHeaderLeft + this.scrollLeft;
+        const left = meta.left - this._dragHeaderLeft + this.scrollLeft;
+        const right = meta.right - this._dragHeaderLeft + this.scrollLeft;
+        const center = left + (right - left) / 2;
 
-    if (localX >= left && localX <= right) {
-      targetMeta = meta;
+        if (localX >= left && localX <= right) {
+          targetIndex = i;
+          insertAfter = localX > center;
+          break;
+        }
+      }
 
-      const center = left + (right - left) / 2;
-      insertAfter = localX > center;
-      break;
+      // ---- Handle drop BEFORE first column ----
+      if (targetIndex === -1 && localX < this._dragCellsMeta[0].left - this._dragHeaderLeft + this.scrollLeft) {
+        this._dragOverColumn = this._dragCellsMeta[0].column;
+        this._dragInsertAfter = false;
+        this._setDropEdgeIndicator(this._dragCellsMeta[0].column);
+        return;
+      }
+
+      if (targetIndex === -1) {
+        this._dragOverColumn = null;
+        this._clearDropIndicators();
+        return;
+      }
+
+      const targetMeta = this._dragCellsMeta[targetIndex];
+
+      this._dragOverColumn = targetMeta.column;
+      this._dragInsertAfter = insertAfter;
+
+      // ---- Visual rule: always RIGHT edge ----
+      let indicatorColumn = targetMeta.column;
+
+      if (!insertAfter && targetIndex > 0) {
+        indicatorColumn = this._dragCellsMeta[targetIndex - 1].column;
+      }
+
+      this._setDropEdgeIndicator(indicatorColumn);
     }
-  }
-
-  if (!targetMeta) {
-    this._dragOverColumn = null;
-    this._clearDropIndicators();
-    return;
-  }
-
-  this._dragOverColumn = targetMeta.column;
-  this._dragInsertAfter = insertAfter;
-
-  // ---- visual mapping (always right edge) ----
-  let indicatorColumn = targetMeta.column;
-
-  if (!insertAfter) {
-    const index = this._dragCellsMeta.findIndex((m) => m.column === targetMeta.column);
-    if (index > 0) {
-      indicatorColumn = this._dragCellsMeta[index - 1].column;
-    }
-  }
-
-  this._setDropEdgeIndicator(indicatorColumn);
-}
-
-
-
 
     _markActiveColumn(column) {
       if (this._activeColumn === column) {
@@ -1458,15 +1441,10 @@ this._dragHeaderLeft = null;
 
     _setDropEdgeIndicator(column) {
       if (!column) return;
-
       this._clearDropIndicators();
-
       const cells = this._getHeaderCells();
       for (let i = 0; i < cells.length; i++) {
         if (cells[i].column === column) {
-          console.log("setting drop indicator on column:", column.field, "edge: right");
-
-          console.log(cells[i].column.field);
           cells[i].classList.add('drop-right');
           break;
         }
