@@ -335,10 +335,9 @@ const RESIZE_ZONE = 8;
     _widthChanged(width) {
       // Only lock the cell to an explicit width when the user is actively resizing.
       // This avoids frozen columns on initial load when columns come with configured width values.
-      const table = this.table;
-      const isUserResize = table && table._resizing;
+      const { _resizing: isUserResize, __columnsFrozen } = this.table || {};
 
-      if (width && (isUserResize || (table && table.__columnsFrozen))) {
+      if (width && (isUserResize || __columnsFrozen)) {
         const val = typeof width === 'number' ? `${width}px` : width;
         this.style.flex = `0 0 ${val}`;
         this.style.flexBasis = val;
@@ -451,7 +450,6 @@ const RESIZE_ZONE = 8;
       }
 
       const rect = this.getBoundingClientRect();
-      const RESIZE_ZONE = 10;
       if (e.clientX >= rect.right - RESIZE_ZONE) {
         e.preventDefault();
         return;
