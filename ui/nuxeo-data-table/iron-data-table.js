@@ -176,9 +176,9 @@ import '../nuxeo-button-styles.js';
             display: flex;
             flex-direction: column;
             /* allow container to grow to full content width so :host overflow-x shows scrollbar */
-            min-width: max-content;
             /* vendor fallback */
             min-width: -webkit-max-content;
+            min-width: max-content;
           }
 
           #header {
@@ -702,6 +702,19 @@ import '../nuxeo-button-styles.js';
       });
     }
 
+    disconnectedCallback() {
+      super.disconnectedCallback();
+
+      // Clean up any document-level listeners from resize
+      document.removeEventListener('mousemove', this._boundDocumentMouseMove);
+      document.removeEventListener('mouseup', this._boundDocumentMouseUp);
+      document.removeEventListener('touchmove', this._boundDocumentMouseMove);
+      document.removeEventListener('touchend', this._boundDocumentMouseUp);
+
+      // Reset transient resize state
+      this._resizing = null;
+    }
+
     _getHeaderCells() {
       return this.querySelectorAll('nuxeo-data-table-cell[header]');
     }
@@ -1018,8 +1031,13 @@ import '../nuxeo-button-styles.js';
 
     _validateEntry() {
       const dtform = this.getContentChildren('#form')[0];
+
       if (dtform.validateItem()) {
-        const item = this._deepCopy(dtform.item);
+        let item = this._deepCopy(dtform.item);
+
+        // ✅ automatic number vs string handling
+        item = this._normalizeItem(item);
+
         if (dtform.index > -1) {
           this.set(`items.${dtform.index}`, item);
         } else {
@@ -1222,7 +1240,13 @@ import '../nuxeo-button-styles.js';
       const colIndex = this.columns.indexOf(column);
       if (colIndex > -1) {
         this.set(`columns.${colIndex}.width`, `${newWidth}px`);
-        this._resizeCellContainers();
+        // Throttle expensive resize work to at most once per animation frame
+        if (!this._resizeRafId) {
+          this._resizeRafId = window.requestAnimationFrame(() => {
+            this._resizeRafId = null;
+            this._resizeCellContainers();
+          });
+        }
       }
     }
 
@@ -1256,7 +1280,10 @@ import '../nuxeo-button-styles.js';
       this._resizing = null;
 
       this.notifyResize();
-      this.__columnsFrozen = false;
+      if (this._resizeRafId) {
+        cancelAnimationFrame(this._resizeRafId);
+        this._resizeRafId = null;
+      }
     }
 
     // ------------------------------------------------------------
@@ -1339,6 +1366,9 @@ import '../nuxeo-button-styles.js';
      * Clears transient drag state and visual indicators.
      */
     _resetDragState() {
+      // Drag operation finished → re-enable column slot observer
+      this._reorderingColumns = false;
+
       this._draggingColumn = null;
       this._dragOverColumn = null;
       this._dragInsertAfter = false;

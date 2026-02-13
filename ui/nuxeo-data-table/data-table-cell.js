@@ -10,6 +10,7 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
   return img;
 })();
 
+// Must match CSS --resizer-hit-width to keep resize intent aligned
 const RESIZE_ZONE = 8;
 
 {
@@ -19,6 +20,7 @@ const RESIZE_ZONE = 8;
       return html`
         <style>
           :host {
+            /* Must match RESIZE_ZONE */
             --resizer-hit-width: 8px;
             --resizer-line-width: 2px;
             --drop-indicator-width: 6px;
@@ -239,6 +241,7 @@ const RESIZE_ZONE = 8;
       const nearEdge = e.clientX >= rect.right - RESIZE_ZONE;
       // --- RESIZE INTENT ---
       if (table.columnResizeEnabled && nearEdge) {
+        // Lock resize state immediately (prevents first-frame grab cursor)
         this.classList.add('resizing');
         this.style.cursor = 'col-resize';
         this.draggable = false;
@@ -256,6 +259,8 @@ const RESIZE_ZONE = 8;
 
       const rect = this.getBoundingClientRect();
       const nearEdge = e.clientX >= rect.right - RESIZE_ZONE;
+
+      // If resizing → force state
       if (this.classList.contains('resizing')) {
         this.style.cursor = 'col-resize';
         this.draggable = false;
@@ -265,7 +270,7 @@ const RESIZE_ZONE = 8;
       // Resize mode
       if (table.columnResizeEnabled && nearEdge) {
         this.style.cursor = 'col-resize';
-        this.draggable = false;
+        this.draggable = false; // ← KEY FIX
         return;
       }
 
@@ -335,9 +340,9 @@ const RESIZE_ZONE = 8;
     _widthChanged(width) {
       // Only lock the cell to an explicit width when the user is actively resizing.
       // This avoids frozen columns on initial load when columns come with configured width values.
-      const { _resizing: isUserResize, __columnsFrozen } = this.table || {};
+      const { _resizing: isUserResize } = this.table || {};
 
-      if (width && (isUserResize || __columnsFrozen)) {
+      if (width && isUserResize) {
         const val = typeof width === 'number' ? `${width}px` : width;
         this.style.flex = `0 0 ${val}`;
         this.style.flexBasis = val;
@@ -450,10 +455,13 @@ const RESIZE_ZONE = 8;
       }
 
       const rect = this.getBoundingClientRect();
+      // const RESIZE_ZONE = 10;
       if (e.clientX >= rect.right - RESIZE_ZONE) {
         e.preventDefault();
         return;
       }
+
+      // --- Start real drag ---
 
       try {
         e.dataTransfer.setData('text/plain', '');
@@ -463,7 +471,10 @@ const RESIZE_ZONE = 8;
 
       e.dataTransfer.effectAllowed = 'move';
 
+      // IMPORTANT: calculate offset from pointer to column edge
       this._dragOffsetX = e.clientX - rect.left;
+
+      // ---- measure visible table height ----
       let header = null;
       let list = null;
 
@@ -552,6 +563,7 @@ const RESIZE_ZONE = 8;
         const dataTable = this.closest('nuxeo-data-table');
         if (!dataTable) return;
 
+        // Initialize once
         if (dataTable._dragStartGhostX == null) {
           dataTable._dragStartGhostX = ghostLeft;
           dataTable._lastDragDirection = 'right';
