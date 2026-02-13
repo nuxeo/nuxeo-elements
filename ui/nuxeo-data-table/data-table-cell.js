@@ -4,8 +4,6 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import { microTask } from '@polymer/polymer/lib/utils/async.js';
 import './data-table-templatizer-behavior.js';
 
-/* Part of `nuxeo-data-table` */
-
 const TRANSPARENT_DRAG_IMAGE = (() => {
   const img = new Image();
   img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
@@ -241,7 +239,6 @@ const RESIZE_ZONE = 8;
       const nearEdge = e.clientX >= rect.right - RESIZE_ZONE;
       // --- RESIZE INTENT ---
       if (table.columnResizeEnabled && nearEdge) {
-        // Lock resize state immediately (prevents first-frame grab cursor)
         this.classList.add('resizing');
         this.style.cursor = 'col-resize';
         this.draggable = false;
@@ -259,8 +256,6 @@ const RESIZE_ZONE = 8;
 
       const rect = this.getBoundingClientRect();
       const nearEdge = e.clientX >= rect.right - RESIZE_ZONE;
-
-      // If resizing → force state
       if (this.classList.contains('resizing')) {
         this.style.cursor = 'col-resize';
         this.draggable = false;
@@ -270,7 +265,7 @@ const RESIZE_ZONE = 8;
       // Resize mode
       if (table.columnResizeEnabled && nearEdge) {
         this.style.cursor = 'col-resize';
-        this.draggable = false; // ← KEY FIX
+        this.draggable = false;
         return;
       }
 
@@ -345,8 +340,6 @@ const RESIZE_ZONE = 8;
 
       if (width && (isUserResize || table?.__columnsFrozen)) {
         const val = typeof width === 'number' ? `${width}px` : width;
-
-        // Freeze column completely (header + body)
         this.style.flex = `0 0 ${val}`;
         this.style.flexBasis = val;
       } else if (!width) {
@@ -464,8 +457,6 @@ const RESIZE_ZONE = 8;
         return;
       }
 
-      // --- Start real drag ---
-
       try {
         e.dataTransfer.setData('text/plain', '');
       } catch (_) {
@@ -474,10 +465,7 @@ const RESIZE_ZONE = 8;
 
       e.dataTransfer.effectAllowed = 'move';
 
-      // IMPORTANT: calculate offset from pointer to column edge
       this._dragOffsetX = e.clientX - rect.left;
-
-      // ---- measure visible table height ----
       let header = null;
       let list = null;
 
@@ -566,7 +554,6 @@ const RESIZE_ZONE = 8;
         const dataTable = this.closest('nuxeo-data-table');
         if (!dataTable) return;
 
-        // Initialize once
         if (dataTable._dragStartGhostX == null) {
           dataTable._dragStartGhostX = ghostLeft;
           dataTable._lastDragDirection = 'right';

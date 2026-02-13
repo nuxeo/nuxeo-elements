@@ -635,10 +635,24 @@ import '../nuxeo-button-styles.js';
     ready() {
       super.ready();
 
-      this._dragInsertAfter = false;
-      this._reorderingColumns = false;
+      // ------------------------------------------------------------
+      // Interaction state (resize + reorder)
+      // ------------------------------------------------------------
 
-      // current visually active column
+      // Resize state
+      this._resizing = null;
+
+      // Reorder state
+      this._reorderingColumns = false;
+      this._draggingColumn = null;
+      this._dragOverColumn = null;
+      this._dragInsertAfter = false;
+
+      // Cached geometry during drag (for stable hit-testing)
+      this._dragCellsMeta = null;
+      this._dragHeaderLeft = null;
+
+      // Visual state
       this._activeColumn = null;
 
       this.addEventListener('iron-resize', this._resizeCellContainers);
@@ -677,11 +691,6 @@ import '../nuxeo-button-styles.js';
         this._wrapperHeight = wrapperHeight;
         this._onWrapperHeightChanged();
       }
-
-      // internal state for resizing and reordering
-      this._resizing = null;
-      this._draggingColumn = null;
-      this._dragOverColumn = null;
 
       // bound handlers for document-level mouse operations
       this._boundDocumentMouseMove = this._documentMouseMove.bind(this);
@@ -1206,6 +1215,7 @@ import '../nuxeo-button-styles.js';
         }
       }
 
+      // Calculate new width with minimum constraint
       const dx = pointerX - startX;
       const newWidth = Math.max(minWidth, Math.round(startWidth + dx));
 
@@ -1217,8 +1227,12 @@ import '../nuxeo-button-styles.js';
     }
 
     /**
-     * Finalizes resize operation and logs final width.
+     * Finalizes resize:
+     * - removes document listeners
+     * - restores header cell state
+     * - clears resize state
      */
+
     _documentMouseUp() {
       if (!this.columnResizeEnabled || !this._resizing) return;
       document.removeEventListener('mousemove', this._boundDocumentMouseMove);
@@ -1235,25 +1249,28 @@ import '../nuxeo-button-styles.js';
           cell.classList.remove('resizing');
           cell.style.cursor = '';
           cell.draggable = !!this.columnReorderEnabled;
-          break; // only one match exists
+          break;
         }
       }
 
       this._resizing = null;
-      this._dragStartGhostX = undefined;
-      this._lastDragDirection = undefined;
 
       this.notifyResize();
       this.__columnsFrozen = false;
     }
 
     // ------------------------------------------------------------
-    // Column reorder lifecycle
+    // COLUMN REORDER
+    // Uses cached header geometry captured at drag start.
     // ------------------------------------------------------------
 
     /**
-     * Marks the start of column drag.
+     * Initializes column drag:
+     * - marks active column
+     * - captures header offset
+     * - caches visible column positions (prevents layout thrash)
      */
+
     _onColumnDragStart(e) {
       if (!this.columnReorderEnabled) return;
 
@@ -1263,15 +1280,10 @@ import '../nuxeo-button-styles.js';
       this._dragInsertAfter = false;
 
       this._markActiveColumn(e.detail.column);
-
-      // Cache header position
       const headerRect = this.getBoundingClientRect();
       this._dragHeaderLeft = headerRect.left;
+      // Visible columns in current visual order (excluding dragged)
 
-      // --------------------------------------------------
-      // IMPORTANT FIX:
-      // Build meta in VISUAL order (using column.order)
-      // --------------------------------------------------
       const orderedColumns = [...this.columns]
         .filter((c) => !c.hidden && c !== this._draggingColumn)
         .sort((a, b) => a.order - b.order);
@@ -1291,8 +1303,9 @@ import '../nuxeo-button-styles.js';
     }
 
     /**
-     * Commits column reorder and logs final order.
+     * Applies final column order based on drop target.
      */
+
     _onColumnDragEnd() {
       if (!this.columnReorderEnabled) return;
       const dragging = this._draggingColumn;
@@ -1323,14 +1336,12 @@ import '../nuxeo-button-styles.js';
     }
 
     /**
-     * Clears all drag-related transient state.
+     * Clears transient drag state and visual indicators.
      */
     _resetDragState() {
       this._draggingColumn = null;
       this._dragOverColumn = null;
       this._dragInsertAfter = false;
-      this._lastDragDirection = undefined;
-      this._dragStartGhostX = undefined;
 
       this._dragCellsMeta = null;
       this._dragHeaderLeft = null;
@@ -1349,7 +1360,10 @@ import '../nuxeo-button-styles.js';
     }
 
     /**
-     * Determines which column is being targeted during drag.
+     * Hit-tests pointer X against cached column geometry.
+     * Determines:
+     *  - target column
+     *  - insert before/after
      */
 
     _resolveDropTargetFromX(x) {
@@ -1374,7 +1388,6 @@ import '../nuxeo-button-styles.js';
         }
       }
 
-      // ---- Handle drop BEFORE first column ----
       if (targetIndex === -1 && localX < this._dragCellsMeta[0].left - this._dragHeaderLeft + this.scrollLeft) {
         this._dragOverColumn = this._dragCellsMeta[0].column;
         this._dragInsertAfter = false;
@@ -1393,7 +1406,6 @@ import '../nuxeo-button-styles.js';
       this._dragOverColumn = targetMeta.column;
       this._dragInsertAfter = insertAfter;
 
-      // ---- Visual rule: always RIGHT edge ----
       let indicatorColumn = targetMeta.column;
 
       if (!insertAfter && targetIndex > 0) {
@@ -1402,6 +1414,12 @@ import '../nuxeo-button-styles.js';
 
       this._setDropEdgeIndicator(indicatorColumn);
     }
+
+    /**
+     * Highlights the column currently being dragged.
+     * Ensures only one header cell has the 'column-active' class at a time.
+     * Used for visual feedback during column reorder.
+     */
 
     _markActiveColumn(column) {
       if (this._activeColumn === column) {
@@ -1424,6 +1442,11 @@ import '../nuxeo-button-styles.js';
       }
     }
 
+    /**
+     * Removes active (dragged) visual state from all header cells.
+     * Called when drag operation ends or is cancelled.
+     */
+
     _clearActiveColumn() {
       if (!this._activeColumn) return;
       const cells = this._getHeaderCells();
@@ -1432,6 +1455,11 @@ import '../nuxeo-button-styles.js';
       this._activeColumn = null;
     }
 
+    /**
+     * Clears all drop position indicators from header cells.
+     * Resets visual state before applying a new indicator.
+     */
+
     _clearDropIndicators() {
       const cells = this._getHeaderCells();
       for (let i = 0; i < cells.length; i++) {
@@ -1439,9 +1467,17 @@ import '../nuxeo-button-styles.js';
       }
     }
 
+    /**
+     * Shows the drop position indicator for column reorder.
+     * Indicator is always rendered on the RIGHT edge of the target column.
+     * (Insert-before is handled by choosing the previous column.)
+     */
+
     _setDropEdgeIndicator(column) {
       if (!column) return;
+
       this._clearDropIndicators();
+
       const cells = this._getHeaderCells();
       for (let i = 0; i < cells.length; i++) {
         if (cells[i].column === column) {
