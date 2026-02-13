@@ -514,7 +514,7 @@ const RESIZE_ZONE = 8;
       bodyFill.style.flex = '1';
       bodyFill.style.background =
         'repeating-linear-gradient(' +
-        'to bottom,' +
+        'to bottom, ' +
         'rgba(0,0,0,0.03),' +
         'rgba(0,0,0,0.03) 1px,' +
         'transparent 1px,' +
