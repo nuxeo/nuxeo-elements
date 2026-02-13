@@ -338,7 +338,7 @@ const RESIZE_ZONE = 8;
       const table = this.table;
       const isUserResize = table && table._resizing;
 
-      if (width && (isUserResize || table?.__columnsFrozen)) {
+      if (width && (isUserResize || (table && table.__columnsFrozen))) {
         const val = typeof width === 'number' ? `${width}px` : width;
         this.style.flex = `0 0 ${val}`;
         this.style.flexBasis = val;
