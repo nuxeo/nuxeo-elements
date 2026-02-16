@@ -696,7 +696,6 @@ import '../nuxeo-button-styles.js';
       this._boundDocumentMouseMove = this._documentMouseMove.bind(this);
       this._boundDocumentMouseUp = this._documentMouseUp.bind(this);
 
-      // ensure initial sizing pass after first render so CSS flex rules take effect
       afterNextRender(this, () => {
         this._resizeCellContainers();
       });
