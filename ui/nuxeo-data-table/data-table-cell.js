@@ -216,15 +216,12 @@ const RESIZE_ZONE = 8;
       super.connectedCallback();
 
       if (!this.header) return;
-
-      // Wait one microtask to ensure dom-repeat finished
       microTask.run(() => {
         const table = this.closest('nuxeo-data-table');
-
         if (!table) return;
-
         this.draggable = !!table.columnReorderEnabled;
 
+        /* Safari fix to display column resizer */
         if (table.hasAttribute('column-resize-enabled')) {
           this.setAttribute('resize-enabled', '');
         } else {
@@ -387,10 +384,8 @@ const RESIZE_ZONE = 8;
 
       e.stopPropagation();
       e.preventDefault();
-
       this.draggable = false;
       this.classList.add('resizing');
-
       const rect = this.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
 
@@ -455,13 +450,10 @@ const RESIZE_ZONE = 8;
       }
 
       const rect = this.getBoundingClientRect();
-      // const RESIZE_ZONE = 10;
       if (e.clientX >= rect.right - RESIZE_ZONE) {
         e.preventDefault();
         return;
       }
-
-      // --- Start real drag ---
 
       try {
         e.dataTransfer.setData('text/plain', '');
@@ -470,8 +462,6 @@ const RESIZE_ZONE = 8;
       }
 
       e.dataTransfer.effectAllowed = 'move';
-
-      // IMPORTANT: calculate offset from pointer to column edge
       this._dragOffsetX = e.clientX - rect.left;
 
       // ---- measure visible table height ----
@@ -563,7 +553,6 @@ const RESIZE_ZONE = 8;
         const dataTable = this.closest('nuxeo-data-table');
         if (!dataTable) return;
 
-        // Initialize once
         if (dataTable._dragStartGhostX == null) {
           dataTable._dragStartGhostX = ghostLeft;
           dataTable._lastDragDirection = 'right';
