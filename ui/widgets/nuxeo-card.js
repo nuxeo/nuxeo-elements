@@ -117,7 +117,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
               on-click="_toggle"
               on-keydown="_toggleKeydown"
               class="header"
-              tabindex$="[[_getHeadingTabindex(collapsible)]]"
+              tabindex$="[[_getHeadingTabIndex(collapsible)]]"
             >
               <iron-icon class="icon" icon="[[icon]]" hidden$="[[!icon]]"></iron-icon>
               [[heading]]
