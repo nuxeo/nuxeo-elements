@@ -196,7 +196,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       return icon || heading || collapsible;
     }
 
-    _getHeadingTabindex(collapsible) {
+    _getHeadingTabIndex(collapsible) {
       return collapsible ? '0' : '-1';
     }
 
