@@ -16,6 +16,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import '@polymer/marked-element/marked-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
@@ -24,7 +26,6 @@ import { Templatizer } from '@polymer/polymer/lib/legacy/templatizer-behavior.js
 import './viewers/nuxeo-image-viewer.js';
 import './viewers/nuxeo-pdf-viewer.js';
 import './viewers/nuxeo-video-viewer.js';
-import './marked-element.js';
 
 {
   /**
@@ -264,7 +265,7 @@ import './marked-element.js';
 
     _deepFind(obj, props) {
       for (let i = 0, path = props.split('/'), len = path.length; i < len; i++) {
-        if (!obj || obj === []) {
+        if (!obj || Object.keys(obj).length === 0) {
           break;
         }
         obj = obj[path[i]];
@@ -274,6 +275,20 @@ import './marked-element.js';
         obj.viewUrl = obj.data;
       }
       return obj;
+    }
+
+    _encodeFileNameInUrl(url) {
+      const parts = url.split('/');
+      const lastSegment = parts.pop();
+
+      // Separate query string if exists
+      const [fileName, query] = lastSegment.split('?');
+
+      const encodedFileName = encodeURIComponent(fileName);
+
+      parts.push(query ? `${encodedFileName}?${query}` : encodedFileName);
+
+      return parts.join('/');
     }
 
     _computeImageSource() {
@@ -372,7 +387,7 @@ import './marked-element.js';
         } else {
           viewUrl = viewUrl.replace('/@preview/', `/@blob/${this.xpath}/@preview/`);
         }
-        return viewUrl;
+        return this._encodeFileNameInUrl(viewUrl);
       }
       if (this._blob) {
         return this._blob.viewUrl ? this._blob.viewUrl : this._blob.url;
