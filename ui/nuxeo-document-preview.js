@@ -277,20 +277,6 @@ import './viewers/nuxeo-video-viewer.js';
       return obj;
     }
 
-    _encodeFileNameInUrl(url) {
-      const parts = url.split('/');
-      const lastSegment = parts.pop();
-
-      // Separate query string if exists
-      const [fileName, query] = lastSegment.split('?');
-
-      const encodedFileName = encodeURIComponent(fileName);
-
-      parts.push(query ? `${encodedFileName}?${query}` : encodedFileName);
-
-      return parts.join('/');
-    }
-
     _computeImageSource() {
       if (
         this.document &&
@@ -387,7 +373,7 @@ import './viewers/nuxeo-video-viewer.js';
         } else {
           viewUrl = viewUrl.replace('/@preview/', `/@blob/${this.xpath}/@preview/`);
         }
-        return this._encodeFileNameInUrl(viewUrl);
+        return viewUrl;
       }
       if (this._blob) {
         return this._blob.viewUrl ? this._blob.viewUrl : this._blob.url;
