@@ -118,7 +118,9 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
               on-keydown="_toggleKeydown"
               class="header"
               tabindex$="[[_getHeadingTabIndex(collapsible)]]"
-              aria-expanded$="[[opened]]"
+              role$="[[_getHeadingRole(collapsible)]]"
+              aria-expanded$="[[_getAriaExpanded(opened, collapsible)]]"
+              aria-controls$="[[_getAriaControls(collapsible)]]"
             >
               <iron-icon class="icon" icon="[[icon]]" hidden$="[[!icon]]"></iron-icon>
               [[heading]]
@@ -129,7 +131,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
         <dom-if if="[[collapsible]]">
           <template>
-            <iron-collapse opened="[[_opened(opened, collapsible)]]">
+            <iron-collapse id="collapse" opened="[[_opened(opened, collapsible)]]">
               <slot></slot>
             </iron-collapse>
           </template>
@@ -199,6 +201,18 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
     _getHeadingTabIndex(collapsible) {
       return collapsible ? '0' : '-1';
+    }
+
+    _getHeadingRole(collapsible) {
+      return collapsible ? 'button' : null;
+    }
+
+    _getAriaExpanded(opened, collapsible) {
+      return collapsible ? opened : null;
+    }
+
+    _getAriaControls(collapsible) {
+      return collapsible ? 'collapse' : null;
     }
 
     _opened(opened, collapsible) {
