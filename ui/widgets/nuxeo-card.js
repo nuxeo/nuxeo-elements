@@ -118,6 +118,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
               on-keydown="_toggleKeydown"
               class="header"
               tabindex$="[[_getHeadingTabindex(collapsible)]]"
+              aria-expanded$="[[collapsible ? opened : undefined]]"
             >
               <iron-icon class="icon" icon="[[icon]]" hidden$="[[!icon]]"></iron-icon>
               [[heading]]
