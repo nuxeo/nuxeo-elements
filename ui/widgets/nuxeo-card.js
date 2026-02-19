@@ -118,7 +118,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
               on-keydown="_toggleKeydown"
               class="header"
               tabindex$="[[_getHeadingTabIndex(collapsible)]]"
-              aria-expanded$="[[opened]]"
+              aria-expanded$="[[_getAriaExpanded(collapsible, opened)]]"
             >
               <iron-icon class="icon" icon="[[icon]]" hidden$="[[!icon]]"></iron-icon>
               [[heading]]
@@ -199,6 +199,10 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
     _getHeadingTabIndex(collapsible) {
       return collapsible ? '0' : '-1';
+    }
+
+    _getAriaExpanded(collapsible, opened) {
+      return collapsible ? opened : null;
     }
 
     _opened(opened, collapsible) {
