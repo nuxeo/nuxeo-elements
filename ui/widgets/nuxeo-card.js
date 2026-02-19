@@ -208,7 +208,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
     }
 
     _getAriaExpanded(opened, collapsible) {
-      return collapsible ? opened : null;
+      return collapsible ? String(opened) : null;
     }
 
     _getAriaControls(collapsible) {
