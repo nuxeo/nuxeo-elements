@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
 @license
 ©2023 Hyland Software, Inc. and its affiliates. All rights reserved. 
@@ -82,13 +81,10 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
     }
 
     _path(file) {
-      console.log('PATH CALLED, file =', file);
       // get an absolute href
       const el = document.createElement('a');
       el.href = file;
-      console.log('Encoded URL:', encodeURIComponent(el.href));
-      console.log('Encoded URL encodeURI:', encodeURI(el.href));
-      return this.resolveUrl(`pdfjs/web/viewer.html?file=${encodeURIComponent(el.href)}`);
+      return this.resolveUrl(`pdfjs/web/viewer.html?file=${encodeURI(el.href)}`);
     }
   }
 
