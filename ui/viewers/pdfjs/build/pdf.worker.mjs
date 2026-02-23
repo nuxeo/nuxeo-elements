@@ -37050,13 +37050,25 @@ class FileSpec {
       }
     }
   }
+//------------- Customized code STARTS for maintaining secure update ------------------
   get filename() {
+    let filename = "";
     const item = pickPlatformItem(this.root);
     if (item && typeof item === "string") {
-      return stringToPDFString(item, true).replaceAll("\\\\", "\\").replaceAll("\\/", "/").replaceAll("\\", "/");
+      const raw = stringToPDFString(item, true);
+      let s = raw.split("\\\\").join("\\");
+      s = s.split("\\/").join("/");
+      s = s.split("\\").join("/");
+      filename = s;
+      const item = pickPlatformItem(this.root);
+      if (item && typeof item === "string") {
+        return stringToPDFString(item, true).replaceAll("\\\\", "\\").replaceAll("\\/", "/").replaceAll("\\", "/");
+      }
+      return "";
     }
-    return "";
+    return shadow(this, "filename", filename || "unnamed");
   }
+//------------- Customized code ENDS for maintaining secure update ------------------
   get content() {
     if (!this.#contentAvailable) {
       return null;
