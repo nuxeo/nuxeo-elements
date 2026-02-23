@@ -37060,11 +37060,6 @@ class FileSpec {
       s = s.split("\\/").join("/");
       s = s.split("\\").join("/");
       filename = s;
-      const item = pickPlatformItem(this.root);
-      if (item && typeof item === "string") {
-        return stringToPDFString(item, true).replaceAll("\\\\", "\\").replaceAll("\\/", "/").replaceAll("\\", "/");
-      }
-      return "";
     }
     return shadow(this, "filename", filename || "unnamed");
   }
