@@ -70,9 +70,9 @@ jobs:
         tags: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
 
     - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GKE_SA_KEY }}
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GKE_SA_KEY }}
 
     - name: Get GKE credentials
       uses: google-github-actions/get-gke-credentials@v3.0.0
