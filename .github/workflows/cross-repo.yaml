@@ -1,7 +1,7 @@
 name: Web UI Cross Repo
 
 on:
-  pull_request_target:
+  pull_request:
     branches:
       - maintenance-3.1.x
       - lts-2025
