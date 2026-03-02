@@ -32,10 +32,11 @@ jobs:
 
     - name: Prepare environment
       run: |
-        BRANCH_NAME=${GITHUB_HEAD_REF##*/}
+        BRANCH_NAME=${GITHUB_HEAD_REF}
+        BRANCH_NAME_SANITIZED=$(echo $BRANCH_NAME | sed 's/[^[:alnum:]-]/-/g' | tr '[:upper:]' '[:lower:]')
         echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-        echo "VERSION=$(npx -c 'echo "$npm_package_version"')-$BRANCH_NAME" >> $GITHUB_ENV
-        echo "PREVIEW_NAMESPACE=storybook-$(echo $BRANCH_NAME | sed 's/[^[:alnum:]-]/-/g' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+        echo "VERSION=$(npx -c 'echo "$npm_package_version"')-$BRANCH_NAME_SANITIZED" >> $GITHUB_ENV
+        echo "PREVIEW_NAMESPACE=storybook-$BRANCH_NAME_SANITIZED" >> $GITHUB_ENV
 
     - name: Install
       env:
@@ -80,7 +81,6 @@ jobs:
         cluster_name: ${{ env.GKE_CLUSTER }}
         location: ${{ env.GKE_ZONE }}
         project_id: ${{ secrets.GKE_PROJECT }}
-        credentials: ${{ secrets.GKE_SA_KEY }}
 
     - name: Check preview namespace
       id: preview_ns
@@ -140,7 +140,7 @@ jobs:
 
       - name: Prepare environment
         run: |
-          echo "BRANCH_NAME=${GITHUB_HEAD_REF##*/}" >> $GITHUB_ENV
+          echo "BRANCH_NAME=${GITHUB_HEAD_REF}" >> $GITHUB_ENV
 
       - name: Web UI preview
         id: main
