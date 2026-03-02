@@ -5536,7 +5536,23 @@ function download(blobUrl, filename) {
   if (!a.click) {
     throw new Error('DownloadManager: "a.click()" is not supported.');
   }
-  a.href = blobUrl;
+  let trustedHref;
+  try {
+    const u = new URL(blobUrl, window.location.href);
+    // enforce rules inline
+    if (u.protocol === "blob:") {
+      trustedHref = u.href;
+    } else if ((u.protocol === "http:" || u.protocol === "https:") && u.origin === window.location.origin &&
+     (u.pathname.toLowerCase().endsWith(".pdf") || (u.pathname === new URL(window.location.href).pathname && 
+     u.search === new URL(window.location.href).search))) {
+      trustedHref = u.href;
+    } else {
+      return;
+    }
+  } catch {
+    return;
+  }
+  a.href = trustedHref; // assign sanitized/normalized value
   a.target = "_parent";
   if ("download" in a) {
     a.download = filename;
