@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 .messageBar{
   --closing-button-icon:url(images/messageBar_closingButton.svg);
   --message-bar-close-button-color:var(--text-primary-color);
