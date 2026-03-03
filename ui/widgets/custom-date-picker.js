@@ -252,6 +252,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           type: Object,
           value: null,
         },
+        format: {
+          type: String,
+          value: '',
+      },
 
         _focusedDate: {
           type: Object,
@@ -1062,7 +1066,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               class="input-field"
               type="text"
               value="{{_inputValue::input}}"
-              placeholder$="[[_getDatePlaceholder()]]"
+              placeholder$="[[_getDatePlaceholder(format)]]"
               name$="[[name]]"
               disabled$="[[disabled]]"
               required$="[[required]]"
@@ -1307,35 +1311,38 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             return date ? date.toLocaleDateString() : '';
           }
         },
-        parseDate: (text) => {
-          try {
-            const parseLocaleFormat = moment.localeData().longDateFormat('L');
-            const date = this._moment(text, parseLocaleFormat, true); // strict parsing with locale format
-            if (date.isValid()) {
-              return {
-                day: date.get('D'),
-                month: date.get('M'),
-                year: date.get('Y'),
-              };
-            }
+       parseDate: (text) => {
+  try {
+    const formatToUse = this.format
+      ? this.format
+      : moment.localeData().longDateFormat('L');
 
-            // Return current date instead of hardcoded values
-            const fallbackDate = this._moment();
-            return {
-              day: fallbackDate.get('D'),
-              month: fallbackDate.get('M'),
-              year: fallbackDate.get('Y'),
-            };
-          } catch (error) {
-            // Return current date instead of hardcoded values
-            const fallbackDate = this._moment();
-            return {
-              day: fallbackDate.get('D'),
-              month: fallbackDate.get('M'),
-              year: fallbackDate.get('Y'),
-            };
-          }
-        },
+    const date = this._moment(text, formatToUse, true);
+
+    if (date.isValid()) {
+      return {
+        day: date.get('D'),
+        month: date.get('M'),
+        year: date.get('Y'),
+      };
+    }
+
+    const fallbackDate = this._moment();
+    return {
+      day: fallbackDate.get('D'),
+      month: fallbackDate.get('M'),
+      year: fallbackDate.get('Y'),
+    };
+
+  } catch (error) {
+    const fallbackDate = this._moment();
+    return {
+      day: fallbackDate.get('D'),
+      month: fallbackDate.get('M'),
+      year: fallbackDate.get('Y'),
+    };
+  }
+},
         monthNames: moment.months(),
         weekdays: moment.weekdays(),
         weekdaysShort: moment.weekdaysShort(),
@@ -3429,19 +3436,26 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _parseWithFormat(inputValue, format) {
-      try {
-        // Use moment.js for reliable parsing based on locale format
-        const momentDate = this._moment(inputValue, format, true); // strict parsing
-        if (momentDate.isValid()) {
-          const jsDate = momentDate.toDate();
-          jsDate.setHours(0, 0, 0, 0); // Normalize to start of day
-          return jsDate;
-        }
-        return null;
-      } catch (e) {
-        return null;
-      }
+       try {
+    // 🔥 Fallback to custom format if provided
+    const effectiveFormat =
+      format || this.format || moment.localeData().longDateFormat('L');
+
+    const momentDate = this._moment(inputValue, effectiveFormat, true);
+
+    if (momentDate.isValid()) {
+      const jsDate = momentDate.toDate();
+      jsDate.setHours(0, 0, 0, 0);
+      return jsDate;
     }
+
+    return null;
+  } catch (e) {
+    return null;
+  }
+       
+    }
+    
 
     _validateAndParseInput() {
       const input = this.shadowRoot.querySelector('#dateInput');
@@ -3721,8 +3735,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       return priorities[errorReason] || 0;
     }
 
-    _getDatePlaceholder() {
+    _getDatePlaceholder(format) {
       try {
+         if (format) {
+      return format
+        .replace(/D{1,2}/g, 'dd')
+        .replace(/M{1,2}/g, 'mm')
+        .replace(/Y{2,4}/g, 'yyyy')
+        .toLowerCase();
+    }
+
         // Get the actual locale from browser and moment
         const userLocale = this._getUserLocale();
 
@@ -4806,117 +4828,109 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _formatDateForDisplay(date) {
       if (!date || Number.isNaN(date.getTime())) return '';
 
-      try {
-        // Get user's locale and ensure moment uses it
-        const userLocale = this._getUserLocale();
-        moment.locale(userLocale);
+  try {
+    const userLocale = this._getUserLocale();
+    moment.locale(userLocale);
 
-        // Use moment's locale-specific format
-        const localeFormat = moment.localeData().longDateFormat('L');
-        const formatted = this._moment(date).format(localeFormat);
+    // 🔥 Use custom format if provided
+    const format = this.format || moment.localeData().longDateFormat('L');
 
-        return formatted;
-      } catch (error) {
-        // Safe fallback using Intl.DateTimeFormat
-        return new Intl.DateTimeFormat(navigator.language).format(date);
-      }
+    return this._moment(date).format(format);
+  } catch (error) {
+    return new Intl.DateTimeFormat(navigator.language).format(date);
+  }
     }
 
     // Professional date parser for user input with comprehensive format support
-    _parseUserInput(inputString) {
-      if (!inputString || typeof inputString !== 'string') return null;
+   _parseUserInput(inputString) {
+  if (!inputString || typeof inputString !== 'string') return null;
 
-      const trimmedInput = inputString.trim();
-      if (!trimmedInput) return null;
+  const trimmedInput = inputString.trim();
+  if (!trimmedInput) return null;
 
-      try {
-        // Get user's locale with better fallback
-        const userLocale = this._getUserLocale();
-        moment.locale(userLocale);
-        const localeFormat = moment.localeData().longDateFormat('L');
-        // Try strict parsing first (exact format match)
-        let momentDate = this._moment(trimmedInput, localeFormat, true);
+  try {
+    const userLocale = this._getUserLocale();
+    moment.locale(userLocale);
 
-        if (momentDate.isValid()) {
-          const date = momentDate.toDate();
-          date.setHours(0, 0, 0, 0);
-          return { date, isExactFormat: true };
-        }
+    // 🔥 PRIORITY 1: Use custom format if provided
+    const primaryFormat = this.format || moment.localeData().longDateFormat('L');
 
-        // Try lenient parsing (more flexible)
-        momentDate = this._moment(trimmedInput, localeFormat, false);
+    // Strict parsing with primary format
+    let momentDate = this._moment(trimmedInput, primaryFormat, true);
 
-        if (momentDate.isValid()) {
-          const date = momentDate.toDate();
-          date.setHours(0, 0, 0, 0);
+    if (momentDate.isValid()) {
+      const date = momentDate.toDate();
+      date.setHours(0, 0, 0, 0);
+      return { date, isExactFormat: true };
+    }
 
-          // Verify it's a logical date
-          if (date.getFullYear() < 1900 || date.getFullYear() > 2200) {
-            return null;
-          }
+    // Lenient parsing with primary format
+    momentDate = this._moment(trimmedInput, primaryFormat, false);
 
-          return { date, isExactFormat: false };
-        }
+    if (momentDate.isValid()) {
+      const date = momentDate.toDate();
+      date.setHours(0, 0, 0, 0);
 
-        // Fallback: Try common date formats if locale parsing fails
-        const commonFormats = [
-          'DD/MM/YYYY',
-          'DD-MM-YYYY',
-          'DD.MM.YYYY',
-          'DD/MM/YY',
-          'DD-MM-YY',
-          'DD.MM.YY',
-          'MM/DD/YYYY',
-          'MM-DD-YYYY',
-          'MM.DD.YYYY',
-          'MM/DD/YY',
-          'MM-DD-YY',
-          'MM.DD.YY',
-          'YYYY-MM-DD',
-          'YYYY/MM/DD',
-          'YYYY.MM.DD',
-          'DD MMM YYYY',
-          'DD MMMM YYYY',
-          'MMM DD, YYYY',
-          'MMMM DD, YYYY',
-          'DD/MM',
-          'MM/DD',
-          'DD-MM',
-          'MM-DD',
-        ];
-
-        for (let i = 0; i < commonFormats.length; i++) {
-          const format = commonFormats[i];
-          momentDate = this._moment(trimmedInput, format, true);
-          if (momentDate.isValid()) {
-            const date = momentDate.toDate();
-            date.setHours(0, 0, 0, 0);
-
-            // Verify it's a logical date
-            if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
-              return { date, isExactFormat: false };
-            }
-          }
-        }
-
-        // Last resort: Try moment's natural language parsing
-        momentDate = this._moment(trimmedInput);
-        if (momentDate.isValid()) {
-          const date = momentDate.toDate();
-          date.setHours(0, 0, 0, 0);
-
-          // Verify it's a logical date
-          if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
-            return { date, isExactFormat: false };
-          }
-        }
-
-        return null;
-      } catch (error) {
-        // Date parsing error - using fallback
-        return null;
+      if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
+        return { date, isExactFormat: false };
       }
     }
+
+    // 🔁 PRIORITY 2: Try common fallback formats
+    const commonFormats = [
+      'DD/MM/YYYY',
+      'DD-MM-YYYY',
+      'DD.MM.YYYY',
+      'DD/MM/YY',
+      'DD-MM-YY',
+      'DD.MM.YY',
+      'MM/DD/YYYY',
+      'MM-DD-YYYY',
+      'MM.DD.YYYY',
+      'MM/DD/YY',
+      'MM-DD-YY',
+      'MM.DD.YY',
+      'YYYY-MM-DD',
+      'YYYY/MM/DD',
+      'YYYY.MM.DD',
+      'DD MMM YYYY',
+      'DD MMMM YYYY',
+      'MMM DD, YYYY',
+      'MMMM DD, YYYY',
+      'DD/MM',
+      'MM/DD',
+      'DD-MM',
+      'MM-DD',
+    ];
+
+    for (let i = 0; i < commonFormats.length; i++) {
+      momentDate = this._moment(trimmedInput, commonFormats[i], true);
+      if (momentDate.isValid()) {
+        const date = momentDate.toDate();
+        date.setHours(0, 0, 0, 0);
+
+        if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
+          return { date, isExactFormat: false };
+        }
+      }
+    }
+
+    // 🔁 PRIORITY 3: Natural parsing fallback
+    momentDate = this._moment(trimmedInput);
+    if (momentDate.isValid()) {
+      const date = momentDate.toDate();
+      date.setHours(0, 0, 0, 0);
+
+      if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
+        return { date, isExactFormat: false };
+      }
+    }
+
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
 
     // Helper method to get user locale with better fallback
     _getUserLocale() {
