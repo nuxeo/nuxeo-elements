@@ -131,6 +131,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           type: Boolean,
           value: false,
         },
+          format: {
+          type: String,
+          value: '',
+      },
       };
     }
 
@@ -183,6 +187,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           max="[[max]]"
           error-message="[[errorMessage]]"
           clear-button-visible$="[[!hideClearDateButton]]"
+          format="[[format]]"
         >
         </custom-date-picker>
       `;
