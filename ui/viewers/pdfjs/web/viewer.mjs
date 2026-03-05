@@ -5542,12 +5542,10 @@ function download(blobUrl, filename) {
     // enforce rules inline
     if (u.protocol === "blob:") {
       trustedHref = u.href;
-    } else if ((u.protocol === "http:" || u.protocol === "https:") && u.origin === window.location.origin &&
-     (u.pathname.toLowerCase().endsWith(".pdf") || (u.pathname === new URL(window.location.href).pathname && 
-     u.search === new URL(window.location.href).search))) {
+    } else if ((u.protocol === "http:" || u.protocol === "https:") &&  u.origin === window.location.origin) {
       trustedHref = u.href;
     } else {
-      return;
+      console.warn("DownloadManager: blocked non-blob or cross-origin URL in download()", blobUrl);
     }
   } catch {
     return;
