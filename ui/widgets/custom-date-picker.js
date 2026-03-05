@@ -252,6 +252,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           type: Object,
           value: null,
         },
+        format: {
+          type: String,
+          value: '',
+        },
 
         _focusedDate: {
           type: Object,
@@ -1062,7 +1066,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               class="input-field"
               type="text"
               value="{{_inputValue::input}}"
-              placeholder$="[[_getDatePlaceholder()]]"
+              placeholder$="[[_getDatePlaceholder(format)]]"
               name$="[[name]]"
               disabled$="[[disabled]]"
               required$="[[required]]"
@@ -1309,8 +1313,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         },
         parseDate: (text) => {
           try {
-            const parseLocaleFormat = moment.localeData().longDateFormat('L');
-            const date = this._moment(text, parseLocaleFormat, true); // strict parsing with locale format
+            const formatToUse = this.format ? this.format : moment.localeData().longDateFormat('L');
+
+            const date = this._moment(text, formatToUse, true);
+
             if (date.isValid()) {
               return {
                 day: date.get('D'),
@@ -1319,7 +1325,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               };
             }
 
-            // Return current date instead of hardcoded values
             const fallbackDate = this._moment();
             return {
               day: fallbackDate.get('D'),
@@ -1327,7 +1332,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               year: fallbackDate.get('Y'),
             };
           } catch (error) {
-            // Return current date instead of hardcoded values
             const fallbackDate = this._moment();
             return {
               day: fallbackDate.get('D'),
@@ -3430,13 +3434,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _parseWithFormat(inputValue, format) {
       try {
-        // Use moment.js for reliable parsing based on locale format
-        const momentDate = this._moment(inputValue, format, true); // strict parsing
+        const effectiveFormat = format || this.format || moment.localeData().longDateFormat('L');
+
+        const momentDate = this._moment(inputValue, effectiveFormat, true);
+
         if (momentDate.isValid()) {
           const jsDate = momentDate.toDate();
-          jsDate.setHours(0, 0, 0, 0); // Normalize to start of day
+          jsDate.setHours(0, 0, 0, 0);
           return jsDate;
         }
+
         return null;
       } catch (e) {
         return null;
@@ -3721,8 +3728,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       return priorities[errorReason] || 0;
     }
 
-    _getDatePlaceholder() {
+    _getDatePlaceholder(format) {
       try {
+        if (format) {
+          return format
+            .replace(/D{1,2}/g, 'dd')
+            .replace(/M{1,2}/g, 'mm')
+            .replace(/Y{2,4}/g, 'yyyy')
+            .toLowerCase();
+        }
+
         // Get the actual locale from browser and moment
         const userLocale = this._getUserLocale();
 
@@ -4807,17 +4822,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (!date || Number.isNaN(date.getTime())) return '';
 
       try {
-        // Get user's locale and ensure moment uses it
         const userLocale = this._getUserLocale();
         moment.locale(userLocale);
 
-        // Use moment's locale-specific format
-        const localeFormat = moment.localeData().longDateFormat('L');
-        const formatted = this._moment(date).format(localeFormat);
+        const format = this.format || moment.localeData().longDateFormat('L');
 
-        return formatted;
+        return this._moment(date).format(format);
       } catch (error) {
-        // Safe fallback using Intl.DateTimeFormat
         return new Intl.DateTimeFormat(navigator.language).format(date);
       }
     }
@@ -4830,12 +4841,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (!trimmedInput) return null;
 
       try {
-        // Get user's locale with better fallback
         const userLocale = this._getUserLocale();
         moment.locale(userLocale);
-        const localeFormat = moment.localeData().longDateFormat('L');
-        // Try strict parsing first (exact format match)
-        let momentDate = this._moment(trimmedInput, localeFormat, true);
+
+        const primaryFormat = this.format || moment.localeData().longDateFormat('L');
+
+        // Strict parsing with primary format
+        let momentDate = this._moment(trimmedInput, primaryFormat, true);
 
         if (momentDate.isValid()) {
           const date = momentDate.toDate();
@@ -4843,19 +4855,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           return { date, isExactFormat: true };
         }
 
-        // Try lenient parsing (more flexible)
-        momentDate = this._moment(trimmedInput, localeFormat, false);
+        // Lenient parsing with primary format
+        momentDate = this._moment(trimmedInput, primaryFormat, false);
 
         if (momentDate.isValid()) {
           const date = momentDate.toDate();
           date.setHours(0, 0, 0, 0);
-
           // Verify it's a logical date
-          if (date.getFullYear() < 1900 || date.getFullYear() > 2200) {
-            return null;
+          if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
+            return { date, isExactFormat: false };
           }
-
-          return { date, isExactFormat: false };
         }
 
         // Fallback: Try common date formats if locale parsing fails
@@ -4886,13 +4895,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         ];
 
         for (let i = 0; i < commonFormats.length; i++) {
-          const format = commonFormats[i];
-          momentDate = this._moment(trimmedInput, format, true);
+          momentDate = this._moment(trimmedInput, commonFormats[i], true);
           if (momentDate.isValid()) {
             const date = momentDate.toDate();
             date.setHours(0, 0, 0, 0);
 
-            // Verify it's a logical date
             if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
               return { date, isExactFormat: false };
             }
@@ -4904,7 +4911,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         if (momentDate.isValid()) {
           const date = momentDate.toDate();
           date.setHours(0, 0, 0, 0);
-
           // Verify it's a logical date
           if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
             return { date, isExactFormat: false };
@@ -4913,7 +4919,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         return null;
       } catch (error) {
-        // Date parsing error - using fallback
         return null;
       }
     }
