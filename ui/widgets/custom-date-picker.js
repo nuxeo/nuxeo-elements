@@ -3436,7 +3436,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _parseWithFormat(inputValue, format) {
       try {
-         // Use moment.js for reliable parsing
+        // Use moment.js for reliable parsing
         const effectiveFormat = format || this.format || moment.localeData().longDateFormat('L');
 
         const momentDate = this._moment(inputValue, effectiveFormat, true); // strict parsing
@@ -4828,8 +4828,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Get user's locale and ensure moment uses it
         const userLocale = this._getUserLocale();
         moment.locale(userLocale);
-// Use format property or moment's locale format for display
-      
+        // Use format property or moment's locale format for display
 
         const format = this.format || moment.localeData().longDateFormat('L');
 
