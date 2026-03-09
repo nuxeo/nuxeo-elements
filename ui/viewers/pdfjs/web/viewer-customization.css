@@ -1,0 +1,3 @@
+#printButton, #downloadButton,#editorHighlight, #editorModeSeparator, #editorFreeText, #editorInk, #editorStamp, #secondaryPrint, #secondaryDownload{
+  display:none !important;
+}
