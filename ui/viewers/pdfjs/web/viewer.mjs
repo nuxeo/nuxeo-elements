@@ -5536,7 +5536,21 @@ function download(blobUrl, filename) {
   if (!a.click) {
     throw new Error('DownloadManager: "a.click()" is not supported.');
   }
-  a.href = blobUrl;
+  let trustedHref;
+  try {
+    const u = new URL(blobUrl, window.location.href);
+    // enforce rules inline
+    if (u.protocol === "blob:") {
+      trustedHref = u.href;
+    } else if ((u.protocol === "http:" || u.protocol === "https:") &&  u.origin === window.location.origin) {
+      trustedHref = u.href;
+    } else {
+      console.warn("DownloadManager: blocked non-blob or cross-origin URL in download()", blobUrl);
+    }
+  } catch {
+    return;
+  }
+  a.href = trustedHref; // assign sanitized/normalized value
   a.target = "_parent";
   if ("download" in a) {
     a.download = filename;
