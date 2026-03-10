@@ -1028,6 +1028,29 @@ import '../nuxeo-button-styles.js';
       this._toggleEditDialog(e.detail.index);
     }
 
+    _isStrictNumberString(value) {
+      return typeof value === 'string' && value.trim() !== '' && Number.isFinite(Number(value));
+    }
+
+    _normalizeItem(item) {
+      if (Array.isArray(item)) {
+        return item.map((v) => this._normalizeItem(v));
+      }
+
+      if (item !== null && typeof item === 'object') {
+        Object.keys(item).forEach((key) => {
+          item[key] = this._normalizeItem(item[key]);
+        });
+        return item;
+      }
+
+      if (this._isStrictNumberString(item)) {
+        return Number(item);
+      }
+
+      return item;
+    }
+
     _validateEntry() {
       const dtform = this.getContentChildren('#form')[0];
 
