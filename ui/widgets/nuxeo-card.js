@@ -56,7 +56,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
             box-sizing: border-box;
             background-color: white;
             padding: 16px;
-            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 10px 5px rgba(0, 0, 0, 0.04);
             @apply --nuxeo-card;
           }
 

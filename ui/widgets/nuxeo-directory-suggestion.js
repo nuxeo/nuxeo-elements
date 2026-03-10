@@ -133,7 +133,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
          */
         value: {
           type: String,
-          notify: true,
+          notify: false,
         },
 
         /**
