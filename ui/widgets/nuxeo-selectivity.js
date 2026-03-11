@@ -7386,15 +7386,20 @@ typedArrayTags[weakMapTag] = false;
     }
 
     _valueChanged(newValue) {
-      const valueType = Array.isArray(newValue) ? newValue : [newValue];
       if (this._selectivity && !this._inUpdateSelection) {
-        if (valueType) {
+        if (newValue != null && newValue !== '') {
           this._selectivity.setValue(newValue, { triggerChange: false });
         } else {
           const cv = this._selectivity.getValue();
-          if ((this.multiple && cv.length > 0) || (!this.multiple && cv)) {
-            // in cases where newValue is either undefined or null, clear the value
+          const hasValue = Array.isArray(cv) ? cv.length > 0 : cv != null && cv !== '';
+          if (hasValue) {
             this._selectivity.clear();
+            // Keep Polymer selection properties in sync when value is programmatically cleared
+            if (this.multiple) {
+              this.selectedItems = [];
+            } else {
+              this.set('selectedItem', null);
+            }
           }
         }
       }
