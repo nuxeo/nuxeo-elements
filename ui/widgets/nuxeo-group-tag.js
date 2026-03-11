@@ -105,6 +105,9 @@ import './nuxeo-tag.js';
     }
 
     _name(group) {
+      if (!group) {
+        return '';
+      }
       if (this._isEntity(group)) {
         return group.groupname || group.properties['group:groupname'];
       }
@@ -115,6 +118,9 @@ import './nuxeo-tag.js';
     }
 
     _label(group) {
+      if (!group) {
+        return '';
+      }
       if (this._isEntity(group)) {
         return group.grouplabel || group.properties['group:grouplabel'] || this._name(group);
       }
@@ -125,6 +131,9 @@ import './nuxeo-tag.js';
     }
 
     _href(group) {
+      if (!group) {
+        return '';
+      }
       return this.urlFor('group', this._name(group));
     }
 
