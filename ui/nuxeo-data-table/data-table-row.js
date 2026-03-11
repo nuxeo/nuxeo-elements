@@ -72,6 +72,18 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
             flex-direction: row;
             width: 100%;
           }
+
+          /* Header row: do not let long filter tokens increase row intrinsic width */
+          :host([header]) .cells {
+            min-width: 0;
+            max-width: 100%;
+            overflow: hidden;
+          }
+
+          /* Flex children (the header cells) must be allowed to shrink */
+          :host([header]) .cells ::slotted(*) {
+            min-width: 0;
+          }
         </style>
 
         <div class="cells">
