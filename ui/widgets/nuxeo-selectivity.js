@@ -7391,8 +7391,15 @@ typedArrayTags[weakMapTag] = false;
           this._selectivity.setValue(newValue, { triggerChange: false });
         } else {
           const cv = this._selectivity.getValue();
-          if (cv) {
+          const hasValue = Array.isArray(cv) ? cv.length > 0 : cv != null && cv !== '';
+          if (hasValue) {
             this._selectivity.clear();
+            // Keep Polymer selection properties in sync when value is programmatically cleared
+            if (this.multiple) {
+              this.selectedItems = [];
+            } else {
+              this.set('selectedItem', null);
+            }
           }
         }
       }
