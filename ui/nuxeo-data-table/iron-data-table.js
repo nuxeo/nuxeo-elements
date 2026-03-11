@@ -257,6 +257,16 @@ import '../nuxeo-button-styles.js';
             position: relative;
             top: -20px;
           }
+
+          /* Critical: allow header grid children to shrink instead of contributing huge intrinsic widths */
+          #header > * {
+            min-width: 0;
+          }
+
+          /* Also ensure the header row itself clips long content */
+          #header > nuxeo-data-table-row {
+            overflow: hidden;
+          }
         </style>
 
         <div id="container">

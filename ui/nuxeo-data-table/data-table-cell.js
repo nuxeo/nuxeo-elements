@@ -147,33 +147,6 @@ const RESIZE_ZONE = 8;
           :host([header][resize-enabled]) .resizer {
             display: block;
           }
-
-          :host([header]) {
-            /* keep resizer working */
-            position: relative;
-            height: 48px;
-
-            /* must be hidden to prevent visual blowout */
-            overflow: hidden;
-
-            /* make sure the cell can shrink even if content is long */
-            min-width: 0;
-          }
-
-          :host([header]) ::slotted(nuxeo-dropdown-aggregation) {
-            /* make it participate in the cell flex sizing */
-            flex: 1 1 auto;
-
-            /* critical: allow shrink below content width */
-            min-width: 0;
-
-            /* clip any long selected token rendered inside nested shadow DOM */
-            overflow: hidden;
-
-            /* keep your dropdown fix */
-            --selectivity-dropdown-min-width: 0;
-            --selectivity-dropdown-max-width: 100%;
-          }
         </style>
 
         <template is="dom-if" if="[[header]]">
