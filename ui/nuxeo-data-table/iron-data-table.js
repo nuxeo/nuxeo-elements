@@ -820,22 +820,22 @@ import '../nuxeo-button-styles.js';
     }
 
     _resizeCellContainers() {
-      // reset header width first to make the cells and scroll width to reset their widths.
       this.$.container.style.width = '';
 
       microTask.run(() => {
-        this.$.container.style.width = `${Math.min(this.scrollWidth, this.clientWidth + this.scrollLeft)}px`;
-        // add scrollbar width as padding
+        const viewportWidth = this.clientWidth || this.offsetWidth || 0;
+        this.$.container.style.width = `${viewportWidth}px`;
         this.$.header.style.paddingRight = `${this.$.list.offsetWidth - this.$.list.clientWidth}px`;
       });
     }
 
     _onHorizontalScroll() {
       if (!this.isDebouncerActive('scrolling')) {
-        this.$.container.style.width = `${this.scrollWidth}px`;
+        const viewportWidth = this.clientWidth || this.offsetWidth || 0;
+        this.$.container.style.width = `${viewportWidth}px`;
         this._debouncer = Debouncer.debounce(this._debouncer, timeOut.after(1000), () => {
-          // long timeout here to prevent jerkiness with the rubberband effect on iOS especially.
-          this.$.container.style.width = `${Math.min(this.scrollWidth, this.clientWidth + this.scrollLeft)}px`;
+          const w = this.clientWidth || this.offsetWidth || 0;
+          this.$.container.style.width = `${w}px`;
         });
       }
     }
