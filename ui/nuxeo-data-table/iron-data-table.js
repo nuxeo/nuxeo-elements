@@ -175,10 +175,9 @@ import '../nuxeo-button-styles.js';
             bottom: 0;
             display: flex;
             flex-direction: column;
-            /* allow container to grow to full content width so :host overflow-x shows scrollbar */
-            /* vendor fallback */
-            min-width: -webkit-max-content;
-            min-width: max-content;
+            min-width: 100%;
+            width: 100%;
+            max-width: 100%;
           }
 
           #header {
