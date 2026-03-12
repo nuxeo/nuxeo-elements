@@ -37,11 +37,8 @@ const RESIZE_ZONE = 8;
           /* header cells need relative positioning for the resizer */
           :host([header]) {
             position: relative;
+            overflow: visible;
             height: 48px;
-            min-width: 0;
-
-            /* critical: do NOT allow header content to expand outside the cell */
-            overflow: hidden;
           }
 
           :host([hidden]) {
@@ -146,6 +143,13 @@ const RESIZE_ZONE = 8;
           }
           :host([header][resize-enabled]) .resizer {
             display: block;
+          }
+
+          :host([header]) ::slotted(nuxeo-dropdown-aggregation) {
+            /* prevent dropdown from expanding to fit its content */
+            --selectivity-dropdown-min-width: 0;
+            /* also prevent it from becoming viewport-wide */
+            --selectivity-dropdown-max-width: 100%; /* pick a sane cap for header filters */
           }
         </style>
 

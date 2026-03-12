@@ -175,9 +175,6 @@ import '../nuxeo-button-styles.js';
             bottom: 0;
             display: flex;
             flex-direction: column;
-            min-width: 100%;
-            width: 100%;
-            max-width: 100%;
           }
 
           #header {
@@ -230,7 +227,7 @@ import '../nuxeo-button-styles.js';
 
           #header {
             display: grid;
-            grid-template-columns: 1fr auto;
+            grid-template-columns: minmax(0, 1fr) auto;
             height: 48px;
             align-items: stretch;
           }
@@ -247,6 +244,7 @@ import '../nuxeo-button-styles.js';
             align-items: center;
             height: 100%;
           }
+
           #header-fixed {
             grid-column: 2;
             position: relative;
@@ -256,16 +254,6 @@ import '../nuxeo-button-styles.js';
           :host([settings-enabled]) ::slotted(nuxeo-data-table-row[header]) {
             position: relative;
             top: -20px;
-          }
-
-          /* Critical: allow header grid children to shrink instead of contributing huge intrinsic widths */
-          #header > * {
-            min-width: 0;
-          }
-
-          /* Also ensure the header row itself clips long content */
-          #header > nuxeo-data-table-row {
-            overflow: hidden;
           }
         </style>
 
@@ -820,22 +808,22 @@ import '../nuxeo-button-styles.js';
     }
 
     _resizeCellContainers() {
+      // reset header width first to make the cells and scroll width to reset their widths.
       this.$.container.style.width = '';
 
       microTask.run(() => {
-        const viewportWidth = this.clientWidth || this.offsetWidth || 0;
-        this.$.container.style.width = `${viewportWidth}px`;
+        this.$.container.style.width = `${Math.min(this.scrollWidth, this.clientWidth + this.scrollLeft)}px`;
+        // add scrollbar width as padding
         this.$.header.style.paddingRight = `${this.$.list.offsetWidth - this.$.list.clientWidth}px`;
       });
     }
 
     _onHorizontalScroll() {
       if (!this.isDebouncerActive('scrolling')) {
-        const viewportWidth = this.clientWidth || this.offsetWidth || 0;
-        this.$.container.style.width = `${viewportWidth}px`;
+        this.$.container.style.width = `${this.scrollWidth}px`;
         this._debouncer = Debouncer.debounce(this._debouncer, timeOut.after(1000), () => {
-          const w = this.clientWidth || this.offsetWidth || 0;
-          this.$.container.style.width = `${w}px`;
+          // long timeout here to prevent jerkiness with the rubberband effect on iOS especially.
+          this.$.container.style.width = `${Math.min(this.scrollWidth, this.clientWidth + this.scrollLeft)}px`;
         });
       }
     }
