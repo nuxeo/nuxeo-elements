@@ -1444,6 +1444,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           dateNotSelectable: 'This date is not selectable.',
           movedToMonth: 'Moved to {month} {year}.',
           yearChanged: 'Year changed to {year}.',
+          dayAbbr: 'dd',
+          monthAbbr: 'mm',
+          yearAbbr: 'yyyy',
+          expectedFormat: 'Expected format: {format}',
         },
 
         // Arabic
@@ -3481,7 +3485,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         this.invalid = true;
         this.errorReason = 'format';
         const expectedFormat = this._getDatePlaceholder();
-        this.errorMessage = `${this._getLocalizedText('incorrectFormat')} Expected format: ${expectedFormat}`;
+        this.errorMessage = `${this._getLocalizedText('incorrectFormat')} ${this._getExpectedFormatMessage(expectedFormat)}`;
         this._showErrors = true;
         this._errorPersists = true; // Error should persist until resolved
 
@@ -3730,25 +3734,40 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         moment.locale(userLocale);
         const localeFormat = moment.localeData().longDateFormat('L');
 
-        // Convert moment format to a readable placeholder
+        // Prefer externally-provided i18n values (from messages.json via nuxeo-date-picker bridge),
+        // then fall back to the internal i18n dictionary
+        const dayAbbr = (this.i18n && this.i18n.dayAbbr) || this._getLocalizedText('dayAbbr');
+        const monthAbbr = (this.i18n && this.i18n.monthAbbr) || this._getLocalizedText('monthAbbr');
+        const yearAbbr = (this.i18n && this.i18n.yearAbbr) || this._getLocalizedText('yearAbbr');
+
+        // Convert moment format tokens to locale-aware placeholder abbreviations
         const placeholder = localeFormat
-          .replace(/D{1,2}/g, 'dd')
-          .replace(/M{1,2}/g, 'mm')
-          .replace(/Y{2,4}/g, 'yyyy')
-          .toLowerCase();
+          .replace(/D{1,2}/g, dayAbbr)
+          .replace(/M{1,2}/g, monthAbbr)
+          .replace(/Y{2,4}/g, yearAbbr);
 
         return placeholder;
       } catch (e) {
-        // Fallback to common formats based on locale
-        const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
-        if (userLocale && userLocale.toLowerCase().startsWith('en')) {
-          return 'mm/dd/yyyy';
-        }
-        if (userLocale && (userLocale.toLowerCase().startsWith('fr') || userLocale.toLowerCase().startsWith('de'))) {
-          return 'dd/mm/yyyy';
-        }
-        return 'dd/mm/yyyy'; // Default to European format
+        // Fallback: use externally-provided i18n values or internal dictionary defaults
+        const dayAbbr = (this.i18n && this.i18n.dayAbbr) || this._getLocalizedText('dayAbbr');
+        const monthAbbr = (this.i18n && this.i18n.monthAbbr) || this._getLocalizedText('monthAbbr');
+        const yearAbbr = (this.i18n && this.i18n.yearAbbr) || this._getLocalizedText('yearAbbr');
+        return `${dayAbbr}/${monthAbbr}/${yearAbbr}`;
       }
+    }
+
+    /**
+     * Get the "Expected format: ..." message, preferring the external i18n template
+     * (from messages.json via the nuxeo-date-picker bridge) over the internal dictionary.
+     * External template uses positional placeholders ({0}), internal uses named ({format}).
+     */
+    _getExpectedFormatMessage(format) {
+      // Prefer external i18n template (from messages.json, passed via nuxeo-date-picker bridge)
+      if (this.i18n && this.i18n.expectedFormat) {
+        return this.i18n.expectedFormat.replace('{0}', format);
+      }
+      // Fall back to internal dictionary
+      return this._getLocalizedText('expectedFormat', { format });
     }
 
     _buildOutOfRangeMessage() {
@@ -4172,7 +4191,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           this.invalid = true;
           this.errorReason = 'format';
           const expectedFormat = this._getDatePlaceholder();
-          this.errorMessage = `${this._getLocalizedText('incorrectFormat')} Expected format: ${expectedFormat}`;
+          this.errorMessage = `${this._getLocalizedText('incorrectFormat')} ${this._getExpectedFormatMessage(expectedFormat)}`;
           this._showErrors = true;
           return false;
         }
