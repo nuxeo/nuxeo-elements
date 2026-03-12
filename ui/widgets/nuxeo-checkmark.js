@@ -55,7 +55,7 @@ import '../nuxeo-icons.js';
             height: var(--nuxeo-checkmark-height, 18px);
             cursor: pointer;
             border-radius: 2px;
-            border: 2px solid var(--nuxeo-checkmark-border-color, var(--sat-document-list-table-checkbox-border-color));
+            border: 2px solid var(--nuxeo-checkmark-border-color, var(--nuxeo-text-default, gray));
             background-color: var(--nuxeo-checkmark-background-color, transparent);
             color: var(--nuxeo-icon-color, transparent);
             padding: 0;
