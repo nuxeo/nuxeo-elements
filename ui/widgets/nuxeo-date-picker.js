@@ -220,6 +220,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this.$.date.set('i18n.cancel', this.i18n('command.cancel'));
       this.$.date.set('i18n.clear', this.i18n('command.clear'));
       this.$.date.set('i18n.today', this.i18n('today'));
+      this.$.date.set('i18n.dayAbbr', this.i18n('datePicker.dayAbbr'));
+      this.$.date.set('i18n.monthAbbr', this.i18n('datePicker.monthAbbr'));
+      this.$.date.set('i18n.yearAbbr', this.i18n('datePicker.yearAbbr'));
+      this.$.date.set('i18n.expectedFormat', this.i18n('datePicker.expectedFormat'));
       this.$.date.set(
         'i18n.firstDayOfWeek',
         this.firstDayOfWeek || config.get('firstDayOfWeek', moment.localeData().firstDayOfWeek() || 0),
