@@ -144,6 +144,11 @@ const RESIZE_ZONE = 8;
           :host([header][resize-enabled]) .resizer {
             display: block;
           }
+
+          :host([header]) ::slotted(nuxeo-dropdown-aggregation) {
+            --selectivity-dropdown-min-width: 0;
+            --selectivity-dropdown-max-width: 100%;
+          }
         </style>
 
         <template is="dom-if" if="[[header]]">
