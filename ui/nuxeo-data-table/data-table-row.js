@@ -72,6 +72,10 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
             flex-direction: row;
             width: 100%;
           }
+
+          :host([header]) .cells ::slotted(nuxeo-data-table-settings) {
+            order: 999999;
+          }
         </style>
 
         <div class="cells">
