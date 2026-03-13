@@ -145,7 +145,7 @@ const RESIZE_ZONE = 8;
             display: block;
           }
 
-          host([header]) ::slotted(nuxeo-dropdown-aggregation) {
+          :host([header]) ::slotted(nuxeo-dropdown-aggregation) {
             --selectivity-dropdown-min-width: 0;
             --selectivity-dropdown-max-width: 100%;
           }
