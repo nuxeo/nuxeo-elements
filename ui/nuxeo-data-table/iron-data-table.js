@@ -224,37 +224,6 @@ import '../nuxeo-button-styles.js';
             overflow-y: scroll;
             position: relative;
           }
-
-          #header {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
-            height: 48px;
-            align-items: stretch;
-          }
-
-          #header > nuxeo-data-table-row {
-            display: flex;
-            height: 48px;
-            align-items: stretch;
-          }
-
-          #header nuxeo-data-table-cell,
-          #header-fixed {
-            display: flex;
-            align-items: center;
-            height: 100%;
-          }
-
-          #header-fixed {
-            grid-column: 2;
-            position: relative;
-            top: 12px;
-          }
-
-          :host([settings-enabled]) ::slotted(nuxeo-data-table-row[header]) {
-            position: relative;
-            top: -20px;
-          }
         </style>
 
         <div id="container">
@@ -298,13 +267,12 @@ import '../nuxeo-button-styles.js';
               <div style$="[[_computeActionsStyle(editable, orderable)]]">
                 <nuxeo-data-table-cell></nuxeo-data-table-cell>
               </div>
-            </nuxeo-data-table-row>
-            <div id="header-fixed">
+
               <nuxeo-data-table-settings
                 columns="{{columns}}"
                 hidden$="[[!settingsEnabled]]"
               ></nuxeo-data-table-settings>
-            </div>
+            </nuxeo-data-table-row>
           </div>
 
           <dom-if if="[[_isEmpty]]">
