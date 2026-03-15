@@ -24,12 +24,12 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
-            --nuxeo-data-table-settings-order: 100;
           }
 
           :host([header]) {
             border: initial;
             padding-bottom: 0;
+            --nuxeo-data-table-settings-order: 100;
           }
 
           :host([selected]) {
