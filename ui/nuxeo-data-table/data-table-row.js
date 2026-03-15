@@ -74,7 +74,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
           }
 
           :host([header]) .cells ::slotted(nuxeo-data-table-settings) {
-            order: 100;
+            order: 9999;
           }
         </style>
 
