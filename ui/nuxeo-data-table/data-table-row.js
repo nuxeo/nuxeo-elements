@@ -29,7 +29,6 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
           :host([header]) {
             border: initial;
             padding-bottom: 0;
-            --nuxeo-data-table-settings-order: 100;
           }
 
           :host([selected]) {
@@ -75,7 +74,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
           }
 
           :host([header]) .cells ::slotted(nuxeo-data-table-settings) {
-            order: var(--nuxeo-data-table-settings-order, 10);
+            order: 100;
           }
         </style>
 
