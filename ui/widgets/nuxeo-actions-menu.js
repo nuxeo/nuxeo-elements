@@ -100,6 +100,7 @@ import './nuxeo-tooltip.js';
             icon="icons:more-vert"
             slot="dropdown-trigger"
             aria-labelledby="iconButtonTooltip"
+            on-click="_resetDropdownFocus"
           ></paper-icon-button>
           <paper-listbox slot="dropdown-content" role="list">
             <slot id="dropdown" name="dropdown"></slot>
@@ -216,6 +217,27 @@ import './nuxeo-tooltip.js';
 
     listnerRemove() {
       this.removeEventListener('keydown', this._removeTabIndex.bind(this));
+    }
+
+    /**
+     * Reset dropdown focus behavior when the actions menu is opened.
+     */
+
+    _resetDropdownFocus() {
+      // Get the dropdown listbox
+      const listbox = this.shadowRoot.querySelector('paper-listbox');
+      if (listbox) {
+        // Reset selection to the first item
+        listbox.selected = 0;
+        // Get dropdown items
+        const items = this._getDropdownElements();
+        if (items && items.length) {
+          // Wait for dropdown to render, then focus the first item
+          setTimeout(() => {
+            items[0].focus();
+          }, 0);
+        }
+      }
     }
 
     _moveToDropdown(el) {
