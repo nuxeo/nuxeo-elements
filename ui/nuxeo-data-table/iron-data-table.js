@@ -936,27 +936,21 @@ import '../nuxeo-button-styles.js';
     }
 
     get settings() {
-      const tableSettings = {};
-      tableSettings.columns = {};
+      const tableSettings = {
+        columns: {},
+        sortOrder: this.sortOrder || null,
+      };
 
       if (this.columns) {
         this.columns.forEach((column, idx) => {
           const key = column.field ? column.field : `col-${idx}`;
           tableSettings.columns[key] = {
             hidden: !!column.hidden,
-            // reorder
             order: typeof column.order === 'number' ? column.order : idx,
-            // resize (string like "120px" in your resize code)
             width: column.width || null,
           };
         });
       }
-
-      // sorting (persist current sort state)
-      // NOTE: adjust if your table stores sort state in a different property,
-      // but in this file template we see <nuxeo-data-table-column-sort sort-order="[[sortOrder]]" ...>
-      // so "this.sortOrder" is the load-bearing state to persist.
-      tableSettings.sortOrder = this.sortOrder || null;
 
       return tableSettings;
     }
@@ -966,33 +960,37 @@ import '../nuxeo-button-styles.js';
         return;
       }
 
-      // restore column settings
+      // ---- columns (hidden / order / width) ----
       if (this.columns && settings.columns) {
-        this.columns.forEach((column, idx) => {
+        this.columns.forEach(function(column, idx) {
           const key = column.field ? column.field : `col-${idx}`;
-          const colSettings = settings.columns[key];
+          const colSettings = settings.columns[key] || {};
 
           // hidden
-          this.set(`columns.${idx}.hidden`, colSettings ? !!colSettings.hidden : false);
+          this.set(`columns.${idx}.hidden`, !!colSettings.hidden);
 
-          // order (only if present)
-          if (colSettings && typeof colSettings.order === 'number') {
+          // order (only if provided)
+          if (typeof colSettings.order === 'number') {
             this.set(`columns.${idx}.order`, colSettings.order);
           }
 
-          // width (only if present; can be null)
-          if (colSettings && colSettings.width) {
+          // width (only if provided; allow null to clear)
+          if (Object.prototype.hasOwnProperty.call(colSettings, 'width')) {
             this.set(`columns.${idx}.width`, colSettings.width);
-          } else if (colSettings && colSettings.width === null) {
-            this.set(`columns.${idx}.width`, null);
           }
-        });
+        }, this);
       }
 
-      // restore sorting
+      // ---- sort (root-level) ----
       if (Object.prototype.hasOwnProperty.call(settings, 'sortOrder')) {
         this.sortOrder = settings.sortOrder || null;
+      } else if (settings.columns && Object.prototype.hasOwnProperty.call(settings.columns, 'sortOrder')) {
+        // backward compatibility if you ever saved it under columns
+        this.sortOrder = settings.columns.sortOrder || null;
       }
+
+      // ---- reflow ----
+      this.notifyResize();
     }
 
     _onCheckBoxTap(e) {
