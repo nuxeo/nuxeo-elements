@@ -94,13 +94,13 @@ import './nuxeo-tooltip.js';
           no-overlap
           horizontal-align="right"
           on-paper-dropdown-close="listnerRemove"
+          on-paper-dropdown-open="_resetDropdownFocus"
         >
           <paper-icon-button
             id="iconButton"
             icon="icons:more-vert"
             slot="dropdown-trigger"
             aria-labelledby="iconButtonTooltip"
-            on-click="_resetDropdownFocus"
           ></paper-icon-button>
           <paper-listbox slot="dropdown-content" role="list">
             <slot id="dropdown" name="dropdown"></slot>
@@ -216,7 +216,10 @@ import './nuxeo-tooltip.js';
     }
 
     listnerRemove() {
-      this.removeEventListener('keydown', this._removeTabIndex.bind(this));
+      const dropDownList = this._getDropdownElements();
+      dropDownList.forEach((item) => {
+        item.removeEventListener('keydown', this._removeTabIndex);
+      });
     }
 
     /**
@@ -227,6 +230,12 @@ import './nuxeo-tooltip.js';
       // Get the dropdown listbox
       const listbox = this.shadowRoot.querySelector('paper-listbox');
       if (listbox) {
+        // Ensure the dropdown menu is actually open before moving focus.
+        // This prevents focus from being moved when the menu is closing.
+        const menuButton = listbox.closest && listbox.closest('paper-menu-button');
+        if (menuButton && menuButton.opened === false) {
+          return;
+        }
         // Reset selection to the first item
         listbox.selected = 0;
         // Get dropdown items
