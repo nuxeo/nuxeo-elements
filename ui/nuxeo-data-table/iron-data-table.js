@@ -936,9 +936,13 @@ import '../nuxeo-button-styles.js';
     }
 
     get settings() {
+      const sortOrder = Array.isArray(this.sortOrder)
+        ? this.sortOrder.map((entry) => Object.assign({}, entry))
+        : this.sortOrder || null;
+
       const tableSettings = {
         columns: {},
-        sortOrder: this.sortOrder || null,
+        sortOrder,
       };
 
       if (this.columns) {
