@@ -1302,7 +1302,7 @@ import '../nuxeo-button-styles.js';
       this._resizing = null;
 
       this.notifyResize();
-      // column resize finalized -> notify settings change (column width is not persisted via table.settings)
+      // column resize finalized -> notify settings change so updated column width can be persisted
       this._fireSettingsChanged({ source: 'column-resize', column });
       if (this._resizeRafId) {
         cancelAnimationFrame(this._resizeRafId);
