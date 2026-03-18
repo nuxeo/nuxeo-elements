@@ -936,25 +936,65 @@ import '../nuxeo-button-styles.js';
     }
 
     get settings() {
-      const tableSettings = {};
-      tableSettings.columns = {};
+      const sortOrder = Array.isArray(this.sortOrder)
+        ? this.sortOrder.map((entry) => Object.assign({}, entry))
+        : this.sortOrder || null;
+
+      const tableSettings = {
+        columns: {},
+        sortOrder,
+      };
+
       if (this.columns) {
         this.columns.forEach((column, idx) => {
-          tableSettings.columns[column.field ? column.field : `col-${idx}`] = { hidden: column.hidden };
+          const key = column.field ? column.field : `col-${idx}`;
+          tableSettings.columns[key] = {
+            hidden: !!column.hidden,
+            order: typeof column.order === 'number' ? column.order : idx,
+            width: column.width || null,
+          };
         });
       }
+
       return tableSettings;
     }
 
     set settings(settings) {
-      if (settings) {
-        if (this.columns && settings.columns) {
-          this.columns.forEach(function(column, idx) {
-            const columnField = settings.columns[column.field ? column.field : `col-${idx}`];
-            this.set(`columns.${idx}.hidden`, columnField ? columnField.hidden : false);
-          }, this);
-        }
+      if (!settings) {
+        return;
       }
+
+      // ---- columns (hidden / order / width) ----
+      if (this.columns && settings.columns) {
+        this.columns.forEach(function(column, idx) {
+          const key = column.field ? column.field : `col-${idx}`;
+          const colSettings = settings.columns[key] || {};
+
+          // hidden
+          this.set(`columns.${idx}.hidden`, !!colSettings.hidden);
+
+          // order (only if provided)
+          if (typeof colSettings.order === 'number') {
+            this.set(`columns.${idx}.order`, colSettings.order);
+          }
+
+          // width (only if provided; allow null to clear)
+          if (Object.prototype.hasOwnProperty.call(colSettings, 'width')) {
+            this.set(`columns.${idx}.width`, colSettings.width);
+          }
+        }, this);
+      }
+
+      // ---- sort (root-level) ----
+      if (Object.prototype.hasOwnProperty.call(settings, 'sortOrder')) {
+        this.sortOrder = settings.sortOrder || null;
+      } else if (settings.columns && Object.prototype.hasOwnProperty.call(settings.columns, 'sortOrder')) {
+        // backward compatibility if you ever saved it under columns
+        this.sortOrder = settings.columns.sortOrder || null;
+      }
+
+      // ---- reflow ----
+      this.notifyResize();
     }
 
     _onCheckBoxTap(e) {
@@ -1266,6 +1306,8 @@ import '../nuxeo-button-styles.js';
       this._resizing = null;
 
       this.notifyResize();
+      // column resize finalized -> notify settings change so updated column width can be persisted
+      this._fireSettingsChanged({ source: 'column-resize', column });
       if (this._resizeRafId) {
         cancelAnimationFrame(this._resizeRafId);
         this._resizeRafId = null;
@@ -1344,6 +1386,8 @@ import '../nuxeo-button-styles.js';
         col.order = index;
       });
 
+      // column reorder finalized -> persistable settings changed
+      this._fireSettingsChanged({ source: 'column-reorder' });
       this.notifyResize();
       this._resetDragState();
     }
@@ -1501,6 +1545,16 @@ import '../nuxeo-button-styles.js';
           break;
         }
       }
+    }
+
+    _fireSettingsChanged(detail = {}) {
+      this.dispatchEvent(
+        new CustomEvent('settings-changed', {
+          composed: true,
+          bubbles: true,
+          detail,
+        }),
+      );
     }
   }
 
