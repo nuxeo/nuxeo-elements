@@ -938,22 +938,60 @@ import '../nuxeo-button-styles.js';
     get settings() {
       const tableSettings = {};
       tableSettings.columns = {};
+
       if (this.columns) {
         this.columns.forEach((column, idx) => {
-          tableSettings.columns[column.field ? column.field : `col-${idx}`] = { hidden: column.hidden };
+          const key = column.field ? column.field : `col-${idx}`;
+          tableSettings.columns[key] = {
+            hidden: !!column.hidden,
+            // reorder
+            order: typeof column.order === 'number' ? column.order : idx,
+            // resize (string like "120px" in your resize code)
+            width: column.width || null,
+          };
         });
       }
+
+      // sorting (persist current sort state)
+      // NOTE: adjust if your table stores sort state in a different property,
+      // but in this file template we see <nuxeo-data-table-column-sort sort-order="[[sortOrder]]" ...>
+      // so "this.sortOrder" is the load-bearing state to persist.
+      tableSettings.sortOrder = this.sortOrder || null;
+
       return tableSettings;
     }
 
     set settings(settings) {
-      if (settings) {
-        if (this.columns && settings.columns) {
-          this.columns.forEach(function(column, idx) {
-            const columnField = settings.columns[column.field ? column.field : `col-${idx}`];
-            this.set(`columns.${idx}.hidden`, columnField ? columnField.hidden : false);
-          }, this);
-        }
+      if (!settings) {
+        return;
+      }
+
+      // restore column settings
+      if (this.columns && settings.columns) {
+        this.columns.forEach((column, idx) => {
+          const key = column.field ? column.field : `col-${idx}`;
+          const colSettings = settings.columns[key];
+
+          // hidden
+          this.set(`columns.${idx}.hidden`, colSettings ? !!colSettings.hidden : false);
+
+          // order (only if present)
+          if (colSettings && typeof colSettings.order === 'number') {
+            this.set(`columns.${idx}.order`, colSettings.order);
+          }
+
+          // width (only if present; can be null)
+          if (colSettings && colSettings.width) {
+            this.set(`columns.${idx}.width`, colSettings.width);
+          } else if (colSettings && colSettings.width === null) {
+            this.set(`columns.${idx}.width`, null);
+          }
+        });
+      }
+
+      // restore sorting
+      if (Object.prototype.hasOwnProperty.call(settings, 'sortOrder')) {
+        this.sortOrder = settings.sortOrder || null;
       }
     }
 
