@@ -175,10 +175,6 @@ import '../nuxeo-button-styles.js';
             bottom: 0;
             display: flex;
             flex-direction: column;
-            /* allow container to grow to full content width so :host overflow-x shows scrollbar */
-            /* vendor fallback */
-            min-width: -webkit-max-content;
-            min-width: max-content;
           }
 
           #header {
@@ -228,36 +224,6 @@ import '../nuxeo-button-styles.js';
             overflow-y: scroll;
             position: relative;
           }
-
-          #header {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            height: 48px;
-            align-items: stretch;
-          }
-
-          #header > nuxeo-data-table-row {
-            display: flex;
-            height: 48px;
-            align-items: stretch;
-          }
-
-          #header nuxeo-data-table-cell,
-          #header-fixed {
-            display: flex;
-            align-items: center;
-            height: 100%;
-          }
-          #header-fixed {
-            grid-column: 2;
-            position: relative;
-            top: 12px;
-          }
-
-          :host([settings-enabled]) ::slotted(nuxeo-data-table-row[header]) {
-            position: relative;
-            top: -20px;
-          }
         </style>
 
         <div id="container">
@@ -301,13 +267,11 @@ import '../nuxeo-button-styles.js';
               <div style$="[[_computeActionsStyle(editable, orderable)]]">
                 <nuxeo-data-table-cell></nuxeo-data-table-cell>
               </div>
-            </nuxeo-data-table-row>
-            <div id="header-fixed">
               <nuxeo-data-table-settings
                 columns="{{columns}}"
                 hidden$="[[!settingsEnabled]]"
               ></nuxeo-data-table-settings>
-            </div>
+            </nuxeo-data-table-row>
           </div>
 
           <dom-if if="[[_isEmpty]]">
@@ -1302,6 +1266,8 @@ import '../nuxeo-button-styles.js';
       this._resizing = null;
 
       this.notifyResize();
+      // column resize finalized -> persistable settings changed
+      this._fireSettingsChanged({ source: 'column-resize', column });
       if (this._resizeRafId) {
         cancelAnimationFrame(this._resizeRafId);
         this._resizeRafId = null;
@@ -1380,6 +1346,8 @@ import '../nuxeo-button-styles.js';
         col.order = index;
       });
 
+      // column reorder finalized -> persistable settings changed
+      this._fireSettingsChanged({ source: 'column-reorder' });
       this.notifyResize();
       this._resetDragState();
     }
@@ -1537,6 +1505,16 @@ import '../nuxeo-button-styles.js';
           break;
         }
       }
+    }
+
+    _fireSettingsChanged(detail = {}) {
+      this.dispatchEvent(
+        new CustomEvent('settings-changed', {
+          composed: true,
+          bubbles: true,
+          detail,
+        }),
+      );
     }
   }
 
