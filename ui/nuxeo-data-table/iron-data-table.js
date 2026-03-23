@@ -987,10 +987,11 @@ import '../nuxeo-button-styles.js';
 
       // ---- sort (root-level) ----
       if (Object.prototype.hasOwnProperty.call(settings, 'sortOrder')) {
-        this.sortOrder = settings.sortOrder || null;
+        // keep sortOrder as an array (default to []) when applying settings
+        this.sortOrder = Array.isArray(settings.sortOrder) ? settings.sortOrder : [];
       } else if (settings.columns && Object.prototype.hasOwnProperty.call(settings.columns, 'sortOrder')) {
         // backward compatibility if you ever saved it under columns
-        this.sortOrder = settings.columns.sortOrder || null;
+        this.sortOrder = Array.isArray(settings.columns.sortOrder) ? settings.columns.sortOrder : [];
       }
 
       // ---- reflow ----
