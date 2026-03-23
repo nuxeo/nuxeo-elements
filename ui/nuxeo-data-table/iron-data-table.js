@@ -985,13 +985,24 @@ import '../nuxeo-button-styles.js';
         }, this);
       }
 
-      // ---- sort (root-level) ----
+      let appliedSortOrder = null;
       if (Object.prototype.hasOwnProperty.call(settings, 'sortOrder')) {
         // keep sortOrder as an array (default to []) when applying settings
-        this.sortOrder = Array.isArray(settings.sortOrder) ? settings.sortOrder : [];
+        appliedSortOrder = Array.isArray(settings.sortOrder) ? settings.sortOrder : [];
+        this.sortOrder = appliedSortOrder;
       } else if (settings.columns && Object.prototype.hasOwnProperty.call(settings.columns, 'sortOrder')) {
         // backward compatibility if you ever saved it under columns
-        this.sortOrder = Array.isArray(settings.columns.sortOrder) ? settings.columns.sortOrder : [];
+        appliedSortOrder = Array.isArray(settings.columns.sortOrder) ? settings.columns.sortOrder : [];
+        this.sortOrder = appliedSortOrder;
+      }
+      // sync restored sort with page provider (if any)
+      if (appliedSortOrder && this._hasPageProvider && this._hasPageProvider() && this.nxProvider) {
+        // keep provider sort aligned with the table's sortOrder
+        this._ppSort = appliedSortOrder;
+        this.nxProvider.sort = appliedSortOrder;
+        if (!this.nxProvider.auto && typeof this.nxProvider.fetch === 'function') {
+          this.nxProvider.fetch();
+        }
       }
 
       // ---- reflow ----
