@@ -997,16 +997,25 @@ import '../nuxeo-button-styles.js';
       }
       // sync restored sort with page provider (if any)
       if (appliedSortOrder && this._hasPageProvider && this._hasPageProvider() && this.nxProvider) {
-        // keep provider sort aligned with the table's sortOrder
-        this._ppSort = appliedSortOrder;
-        this.nxProvider.sort = appliedSortOrder;
-        if (!this.nxProvider.auto && typeof this.nxProvider.fetch === 'function') {
-          this.nxProvider.fetch();
-        }
-      }
+        // convert array sortOrder into { path: direction } map expected by the page provider
+        const sortMap = appliedSortOrder.reduce((acc, entry) => {
+          if (entry && entry.path && entry.direction) {
+            acc[entry.path] = entry.direction;
+          }
+          return acc;
+        }, {});
 
-      // ---- reflow ----
-      this.notifyResize();
+        // keep provider sort aligned with the table's sortOrder
+        this._ppSort = sortMap;
+        this.nxProvider.sort = sortMap;
+        // refresh results via the table/behavior fetch so items get updated
+        if (typeof this.fetch === 'function' && !this.nxProvider.auto) {
+          this.fetch();
+        }
+
+        // ---- reflow ----
+        this.notifyResize();
+      }
     }
 
     _onCheckBoxTap(e) {
