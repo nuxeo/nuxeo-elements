@@ -310,7 +310,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (!user) {
         return '';
       }
-      return user.name || (user.properties && user.properties.username) || '';
+      const props = user.properties || {};
+      const identifier =
+        (props && props.username) ||
+        user.name ||
+        user.id ||
+        user.uid;
+      return identifier || '';
     }
 
     _showResults() {
