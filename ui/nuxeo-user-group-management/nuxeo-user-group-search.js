@@ -188,7 +188,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                             </template>
                           </dom-if>
                         </div>
-                        <div name="id" class="flex-2 preserve-white-space">[[item.id]]</div>
+                        <div name="id" class="flex-2 preserve-white-space">[[_userIdentifier(item)]]</div>
                         <div class="flex-4">[[item.properties.email]]</div>
                       </div>
                     </template>
@@ -304,6 +304,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _userHasName(user) {
       return user.properties.firstName || user.properties.lastName;
+    }
+
+    _userIdentifier(user) {
+      if (!user) {
+        return '';
+      }
+      return user.name || (user.properties && user.properties.username) || '';
     }
 
     _showResults() {
