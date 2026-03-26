@@ -247,6 +247,10 @@ import './nuxeo-tooltip.js';
           }, 0);
         }
       }
+      const dropDownList = this._getDropdownElements();
+      setTimeout(() => {
+        dropDownList.map((list) => list.removeAttribute('tabindex'));
+      }, 0);
     }
 
     _moveToDropdown(el) {
