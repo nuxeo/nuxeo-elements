@@ -37,7 +37,8 @@ const RESIZE_ZONE = 8;
           /* header cells need relative positioning for the resizer */
           :host([header]) {
             position: relative;
-            overflow: visible;
+            overflow-x: visible;
+            overflow-y: hidden;
             height: 48px;
           }
 
