@@ -109,7 +109,7 @@ import './nuxeo-tooltip.js';
             </nuxeo-user-avatar>
             <dom-if if="[[_hasLink(disabled, user, _currentUser)]]">
               <template>
-                <a href="#" class$="user-tag" on-click="_navigateToUser">
+                <a href$="[[_href(user)]]" class$="user-tag" on-click="_preventPropagation">
                   <span class$="username-container {{_getUserTagClass(user)}}">
                     [[_name(user)]]
                   </span>
@@ -216,16 +216,6 @@ import './nuxeo-tooltip.js';
 
     _href(user) {
       return this.urlFor('user', this._id(user));
-    }
-
-    _navigateToUser(e) {
-      e.stopPropagation();
-      e.preventDefault();
-      if (this.router && typeof this.router.navigate === 'function') {
-        this.navigateTo('user', this._id(this.user));
-      } else {
-        window.location.href = this._href(this.user);
-      }
     }
 
     /**
