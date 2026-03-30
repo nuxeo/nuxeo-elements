@@ -88,6 +88,9 @@ import './nuxeo-tooltip.js';
             -webkit-box-orient: vertical;
             word-break: break-all;
           }
+          .user-tag-link-disabled {
+            cursor: default;
+          }
         </style>
 
         <nuxeo-connection id="nxcon" user="{{_currentUser}}"></nuxeo-connection>
@@ -106,7 +109,7 @@ import './nuxeo-tooltip.js';
             </nuxeo-user-avatar>
             <dom-if if="[[_hasLink(disabled, user, _currentUser)]]">
               <template>
-                <a href="javascript:void(0);" class$="user_tag" on-click="_navigateToUser">
+                <a href="#" class$="user-tag" on-click="_navigateToUser">
                   <span class$="username-container {{_getUserTagClass(user)}}">
                     [[_name(user)]]
                   </span>
@@ -115,7 +118,7 @@ import './nuxeo-tooltip.js';
             </dom-if>
             <dom-if if="[[!_hasLink(disabled, user, _currentUser)]]">
               <template>
-                <span class$="user_tag" on-click="_preventPropagation" style="cursor: default;">
+                <span class$="user-tag user-tag-link-disabled" on-click="_preventPropagation">
                   <span class$="username-container {{_getUserTagClass(user)}}">
                     [[_name(user)]]
                   </span>
@@ -169,11 +172,6 @@ import './nuxeo-tooltip.js';
         },
 
         /**
-         * The current user. Used to check if user has permission to view user profiles.
-         */
-        currentUser: Object,
-
-        /**
          * Internal current user fetched from nuxeo-connection.
          */
         _currentUser: {
@@ -223,7 +221,11 @@ import './nuxeo-tooltip.js';
     _navigateToUser(e) {
       e.stopPropagation();
       e.preventDefault();
-      this.navigateTo('user', this._id(this.user));
+      if (this.router && typeof this.router.navigate === 'function') {
+        this.navigateTo('user', this._id(this.user));
+      } else {
+        window.location.href = this._href(this.user);
+      }
     }
 
     /**
