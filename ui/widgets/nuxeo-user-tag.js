@@ -86,6 +86,9 @@ import './nuxeo-tooltip.js';
             -webkit-box-orient: vertical;
             word-break: break-all;
           }
+          .user-tag-link-disabled {
+            cursor: default;
+          }
         </style>
         <nuxeo-tag>
           <div class="tag" role="button">
@@ -102,7 +105,7 @@ import './nuxeo-tooltip.js';
             </nuxeo-user-avatar>
             <dom-if if="[[_hasLink(disabled, user)]]">
               <template>
-                <a href$="[[_href(user)]]" class$="user_tag" on-click="_preventPropagation">
+                <a href="#" class$="user-tag" on-click="_navigateToUser">
                   <span class$="username-container {{_getUserTagClass(user)}}">
                     [[_name(user)]]
                   </span>
@@ -111,7 +114,11 @@ import './nuxeo-tooltip.js';
             </dom-if>
             <dom-if if="[[!_hasLink(disabled, user)]]">
               <template>
-                [[_name(user)]]
+                <span class$="user-tag user-tag-link-disabled" on-click="_preventPropagation">
+                  <span class$="username-container {{_getUserTagClass(user)}}">
+                    [[_name(user)]]
+                  </span>
+                </span>
               </template>
             </dom-if>
             <dom-if if="[[_isEntity(user)]]">
@@ -159,6 +166,13 @@ import './nuxeo-tooltip.js';
           type: Boolean,
           value: false,
         },
+
+        /**
+         * Internal current user fetched from nuxeo-connection.
+         */
+        _currentUser: {
+          type: Object,
+        },
       };
     }
 
@@ -200,8 +214,24 @@ import './nuxeo-tooltip.js';
       return this.urlFor('user', this._id(user));
     }
 
-    _hasLink(disabled, user) {
-      return !(disabled || this._name(user) === 'system');
+    _navigateToUser(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      if (this.router && typeof this.router.navigate === 'function') {
+        this.navigateTo('user', this._id(this.user));
+      } else {
+        window.location.href = this._href(this.user);
+      }
+    }
+
+    /**
+     * Checks if the user tag should be a link or not. The link is disabled if the `disabled` property is true,
+     * if the user is the system user, or if the current user doesn't have administration/power user permissions.
+     */
+    _hasLink(disabled, user, currentUser) {
+      const systemUser = this._name(user) === 'system';
+      const userIsAdmin = this.hasAdministrationPermissions(currentUser);
+      return !(disabled || systemUser || !userIsAdmin);
     }
 
     /**
