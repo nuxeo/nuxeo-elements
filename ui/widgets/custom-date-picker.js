@@ -3734,11 +3734,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _getDatePlaceholder(format) {
       try {
         if (format) {
-          return format
-            .replace(/D{1,2}/g, 'dd')
-            .replace(/M{1,2}/g, 'mm')
-            .replace(/Y{2,4}/g, 'yyyy')
-            .toLowerCase();
+          return format;
         }
 
         // Get the actual locale from browser and moment
