@@ -18,9 +18,11 @@ limitations under the License.
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
 import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
+import { FiltersBehavior } from '../nuxeo-filters-behavior.js';
 import './nuxeo-tag.js';
 import './nuxeo-user-avatar.js';
 import './nuxeo-tooltip.js';
@@ -37,7 +39,7 @@ import './nuxeo-tooltip.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-user-tag/index.html
    */
-  class UserTag extends mixinBehaviors([RoutingBehavior, IronResizableBehavior], Nuxeo.Element) {
+  class UserTag extends mixinBehaviors([RoutingBehavior, IronResizableBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style>
@@ -87,6 +89,8 @@ import './nuxeo-tooltip.js';
             word-break: break-all;
           }
         </style>
+
+        <nuxeo-connection id="nxcon" user="{{_currentUser}}"></nuxeo-connection>
         <nuxeo-tag>
           <div class="tag" role="button">
             <nuxeo-user-avatar
@@ -100,18 +104,22 @@ import './nuxeo-tooltip.js';
               class="user-avatar"
             >
             </nuxeo-user-avatar>
-            <dom-if if="[[_hasLink(disabled, user)]]">
+            <dom-if if="[[_hasLink(disabled, user, _currentUser)]]">
               <template>
-                <a href$="[[_href(user)]]" class$="user_tag" on-click="_preventPropagation">
+                <a href="javascript:void(0);" class$="user_tag" on-click="_navigateToUser">
                   <span class$="username-container {{_getUserTagClass(user)}}">
                     [[_name(user)]]
                   </span>
                 </a>
               </template>
             </dom-if>
-            <dom-if if="[[!_hasLink(disabled, user)]]">
+            <dom-if if="[[!_hasLink(disabled, user, _currentUser)]]">
               <template>
-                [[_name(user)]]
+                <span class$="user_tag" on-click="_preventPropagation" style="cursor: default;">
+                  <span class$="username-container {{_getUserTagClass(user)}}">
+                    [[_name(user)]]
+                  </span>
+                </span>
               </template>
             </dom-if>
             <dom-if if="[[_isEntity(user)]]">
@@ -159,6 +167,18 @@ import './nuxeo-tooltip.js';
           type: Boolean,
           value: false,
         },
+
+        /**
+         * The current user. Used to check if user has permission to view user profiles.
+         */
+        currentUser: Object,
+
+        /**
+         * Internal current user fetched from nuxeo-connection.
+         */
+        _currentUser: {
+          type: Object,
+        },
       };
     }
 
@@ -200,8 +220,20 @@ import './nuxeo-tooltip.js';
       return this.urlFor('user', this._id(user));
     }
 
-    _hasLink(disabled, user) {
-      return !(disabled || this._name(user) === 'system');
+    _navigateToUser(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      this.navigateTo('user', this._id(this.user));
+    }
+
+    /**
+     * Checks if the user tag should be a link or not. The link is disabled if the `disabled` property is true,
+     * if the user is the system user, or if the current user doesn't have administration/power user permissions.
+     */
+    _hasLink(disabled, user, currentUser) {
+      const systemUser = this._name(user) === 'system';
+      const userIsAdmin = this.hasAdministrationPermissions(currentUser);
+      return !(disabled || systemUser || !userIsAdmin);
     }
 
     /**
