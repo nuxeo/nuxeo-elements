@@ -18,9 +18,11 @@ limitations under the License.
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
 import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
+import { FiltersBehavior } from '../nuxeo-filters-behavior.js';
 import './nuxeo-tag.js';
 import './nuxeo-user-avatar.js';
 import './nuxeo-tooltip.js';
@@ -37,7 +39,7 @@ import './nuxeo-tooltip.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-user-tag/index.html
    */
-  class UserTag extends mixinBehaviors([RoutingBehavior, IronResizableBehavior], Nuxeo.Element) {
+  class UserTag extends mixinBehaviors([RoutingBehavior, IronResizableBehavior, FiltersBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style>
@@ -90,6 +92,8 @@ import './nuxeo-tooltip.js';
             cursor: default;
           }
         </style>
+
+        <nuxeo-connection id="nxcon" user="{{_currentUser}}"></nuxeo-connection>
         <nuxeo-tag>
           <div class="tag" role="button">
             <nuxeo-user-avatar
@@ -103,7 +107,7 @@ import './nuxeo-tooltip.js';
               class="user-avatar"
             >
             </nuxeo-user-avatar>
-            <dom-if if="[[_hasLink(disabled, user)]]">
+            <dom-if if="[[_hasLink(disabled, user, _currentUser)]]">
               <template>
                 <a href="#" class$="user-tag" on-click="_navigateToUser">
                   <span class$="username-container {{_getUserTagClass(user)}}">
@@ -112,7 +116,7 @@ import './nuxeo-tooltip.js';
                 </a>
               </template>
             </dom-if>
-            <dom-if if="[[!_hasLink(disabled, user)]]">
+            <dom-if if="[[!_hasLink(disabled, user, _currentUser)]]">
               <template>
                 <span class$="user-tag user-tag-link-disabled" on-click="_preventPropagation">
                   <span class$="username-container {{_getUserTagClass(user)}}">
