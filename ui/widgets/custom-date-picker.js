@@ -3439,7 +3439,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Use moment.js for reliable parsing
         const effectiveFormat = format || this.format || moment.localeData().longDateFormat('L');
 
-        const momentDate = this._moment(inputValue, effectiveFormat, true);
+        const momentDate = this._moment(inputValue, effectiveFormat, true); // strict parsing
 
         if (momentDate.isValid()) {
           const jsDate = momentDate.toDate();
@@ -4636,7 +4636,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         });
       }
     }
+
     _isValidMomentFormat(format) {
+      
       if (!format || typeof format !== 'string') return false;
 
       // Allowed moment tokens (extend if needed)
@@ -4856,11 +4858,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Get user's locale and ensure moment uses it
         const userLocale = this._getUserLocale();
         moment.locale(userLocale);
- // Use format property or moment's locale format for display
+        // Use format property or moment's locale format for display
 
         let format = moment.localeData().longDateFormat('L');
 
         if (this.format && this._isValidMomentFormat(this.format)) {
+          // eslint-disable-next-line prefer-destructuring
           format = this.format;
         } else if (this.format) {
           // Invalid format → fallback + error
