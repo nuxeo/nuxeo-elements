@@ -1635,6 +1635,48 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           movedToMonth: 'Verplaatst naar {month} {year}.',
           yearChanged: 'Jaar gewijzigd naar {year}.',
         },
+
+        // Japanese
+        ja: {
+          today: '今日',
+          cancel: 'キャンセル',
+          clear: 'クリア',
+          openCalendar: 'カレンダーを開く',
+          clearDate: '日付をクリア',
+          previousMonth: '前の月へ',
+          nextMonth: '次の月へ',
+          selectYear: '年を選択',
+          calendarOpened: 'カレンダーが開きました。矢印キーで移動できます。',
+          calendarClosed: 'カレンダーが閉じました。',
+          required: 'このフィールドは必須です。',
+          invalidDate: '無効な日付です。',
+          incorrectFormat: '日付の形式が正しくありません。',
+          dateOutOfRange: '日付が範囲外です。',
+          dateNotSelectable: 'この日付は選択できません。',
+          movedToMonth: '{year}年{month}に移動しました。',
+          yearChanged: '{year}年に変更されました。',
+        },
+
+        // Chinese
+        zh: {
+          today: '今天',
+          cancel: '取消',
+          clear: '清除',
+          openCalendar: '打开日历',
+          clearDate: '清除日期',
+          previousMonth: '上个月',
+          nextMonth: '下个月',
+          selectYear: '选择年份',
+          calendarOpened: '日历已打开。使用方向键导航。',
+          calendarClosed: '日历已关闭。',
+          required: '此字段为必填项。',
+          invalidDate: '无效日期。',
+          incorrectFormat: '日期格式不正确。',
+          dateOutOfRange: '日期超出范围。',
+          dateNotSelectable: '此日期不可选择。',
+          movedToMonth: '已切换到 {year}年{month}',
+          yearChanged: '年份已更改为 {year}',
+        },
       };
 
       // Get the appropriate dictionary, fallback to English
@@ -2359,7 +2401,195 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _getMonthName(date) {
       if (!date) return '';
-      return new Intl.DateTimeFormat(this._locale, { month: 'long' }).format(date);
+
+      try {
+        const locale = (this._locale || navigator.language).replace('_', '-');
+        const lang = locale.split('-')[0];
+        const monthIndex = date.getMonth();
+
+        // Regional month names
+        const monthMap = {
+          // English
+          en: [
+            'January',
+            'February',
+            'March',
+            'April',
+            'May',
+            'June',
+            'July',
+            'August',
+            'September',
+            'October',
+            'November',
+            'December',
+          ],
+
+          // French
+          fr: [
+            'janvier',
+            'février',
+            'mars',
+            'avril',
+            'mai',
+            'juin',
+            'juillet',
+            'août',
+            'septembre',
+            'octobre',
+            'novembre',
+            'décembre',
+          ],
+
+          // German
+          de: [
+            'Januar',
+            'Februar',
+            'März',
+            'April',
+            'Mai',
+            'Juni',
+            'Juli',
+            'August',
+            'September',
+            'Oktober',
+            'November',
+            'Dezember',
+          ],
+
+          // Spanish
+          es: [
+            'enero',
+            'febrero',
+            'marzo',
+            'abril',
+            'mayo',
+            'junio',
+            'julio',
+            'agosto',
+            'septiembre',
+            'octubre',
+            'noviembre',
+            'diciembre',
+          ],
+
+          // Italian
+          it: [
+            'gennaio',
+            'febbraio',
+            'marzo',
+            'aprile',
+            'maggio',
+            'giugno',
+            'luglio',
+            'agosto',
+            'settembre',
+            'ottobre',
+            'novembre',
+            'dicembre',
+          ],
+
+          // Portuguese
+          pt: [
+            'janeiro',
+            'fevereiro',
+            'março',
+            'abril',
+            'maio',
+            'junho',
+            'julho',
+            'agosto',
+            'setembro',
+            'outubro',
+            'novembro',
+            'dezembro',
+          ],
+
+          // Dutch
+          nl: [
+            'januari',
+            'februari',
+            'maart',
+            'april',
+            'mei',
+            'juni',
+            'juli',
+            'augustus',
+            'september',
+            'oktober',
+            'november',
+            'december',
+          ],
+
+          // Russian
+          ru: [
+            'январь',
+            'февраль',
+            'март',
+            'апрель',
+            'май',
+            'июнь',
+            'июль',
+            'август',
+            'сентябрь',
+            'октябрь',
+            'ноябрь',
+            'декабрь',
+          ],
+
+          // Japanese
+          ja: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+          // Chinese (Simplified)
+          zh: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+
+          // Arabic
+          ar: [
+            'يناير',
+            'فبراير',
+            'مارس',
+            'أبريل',
+            'مايو',
+            'يونيو',
+            'يوليو',
+            'أغسطس',
+            'سبتمبر',
+            'أكتوبر',
+            'نوفمبر',
+            'ديسمبر',
+          ],
+
+          // Hebrew
+          he: [
+            'ינואר',
+            'פברואר',
+            'מרץ',
+            'אפריל',
+            'מאי',
+            'יוני',
+            'יולי',
+            'אוגוסט',
+            'ספטמבר',
+            'אוקטובר',
+            'נובמבר',
+            'דצמבר',
+          ],
+        };
+
+        // Return from map if exists
+        if (monthMap[lang]) {
+          return monthMap[lang][monthIndex];
+        }
+
+        // Fallback to Intl
+        return new Intl.DateTimeFormat(locale, {
+          month: 'long',
+        }).format(date);
+      } catch (e) {
+        return new Intl.DateTimeFormat('en', {
+          month: 'long',
+        }).format(date);
+      }
     }
 
     _getYear(date) {
@@ -3723,31 +3953,63 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _getDatePlaceholder() {
       try {
-        // Get the actual locale from browser and moment
-        const userLocale = this._getUserLocale();
+        // Get full locale (e.g. "en-US", "fr-FR") with fallback to navigator.language
+        const locale = this._getUserLocale() || navigator.language;
+        const normalizedLocale = locale.toLowerCase();
+        const lang = normalizedLocale.split('-')[0];
 
-        // Ensure moment uses the correct locale
-        moment.locale(userLocale);
-        const localeFormat = moment.localeData().longDateFormat('L');
+        // Get locale-based date order (day/month/year position)
+        const parts = new Intl.DateTimeFormat(locale).formatToParts(new Date(2000, 11, 31));
 
-        // Convert moment format to a readable placeholder
-        const placeholder = localeFormat
-          .replace(/D{1,2}/g, 'dd')
-          .replace(/M{1,2}/g, 'mm')
-          .replace(/Y{2,4}/g, 'yyyy')
-          .toLowerCase();
+        // Specifier mapping ONLY for supported languages
+        const specifierMap = {
+          en: { day: 'dd', month: 'mm', year: 'yyyy' },
+          fr: { day: 'jj', month: 'mm', year: 'aaaa' },
+          de: { day: 'tt', month: 'mm', year: 'jjjj' },
+          es: { day: 'dd', month: 'mm', year: 'aaaa' },
+          it: { day: 'gg', month: 'mm', year: 'aaaa' },
+          pt: { day: 'dd', month: 'mm', year: 'aaaa' },
+          nl: { day: 'dd', month: 'mm', year: 'jjjj' },
+          ru: { day: 'дд', month: 'мм', year: 'гггг' },
+          ar: { day: 'يوم', month: 'شهر', year: 'سنة' },
+          he: { day: 'יום', month: 'חודש', year: 'שנה' },
+          ja: { day: '日', month: '月', year: '年' },
+          zh: { day: '日', month: '月', year: '年' },
+        };
 
-        return placeholder;
+        // Use mapped specifiers or fallback
+        const spec = specifierMap[lang] || {
+          day: 'dd',
+          month: 'mm',
+          year: 'yyyy',
+        };
+
+        // Build placeholder respecting locale order
+        return parts
+          .map((part) => {
+            if (part.type === 'day') return spec.day;
+            if (part.type === 'month') return spec.month;
+            if (part.type === 'year') return spec.year;
+            return part.value; // keep separators like "/", "-", "."
+          })
+          .join('');
       } catch (e) {
-        // Fallback to common formats based on locale
-        const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
-        if (userLocale && userLocale.toLowerCase().startsWith('en')) {
-          return 'mm/dd/yyyy';
-        }
-        if (userLocale && (userLocale.toLowerCase().startsWith('fr') || userLocale.toLowerCase().startsWith('de'))) {
+        // Safe fallback (still respects locale order)
+        try {
+          const locale = navigator.language;
+
+          return new Intl.DateTimeFormat(locale)
+            .formatToParts(new Date(2000, 11, 31))
+            .map((part) => {
+              if (part.type === 'day') return 'dd';
+              if (part.type === 'month') return 'mm';
+              if (part.type === 'year') return 'yyyy';
+              return part.value;
+            })
+            .join('');
+        } catch {
           return 'dd/mm/yyyy';
         }
-        return 'dd/mm/yyyy'; // Default to European format
       }
     }
 
