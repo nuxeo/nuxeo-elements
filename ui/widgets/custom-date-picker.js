@@ -3439,7 +3439,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Use moment.js for reliable parsing
         const effectiveFormat = format || this.format || moment.localeData().longDateFormat('L');
 
-        const momentDate = this._moment(inputValue, effectiveFormat, true); // strict parsing
+        const momentDate = this._moment(inputValue, effectiveFormat, true);
 
         if (momentDate.isValid()) {
           const jsDate = momentDate.toDate();
@@ -3490,7 +3490,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Could not parse the date at all - format error (highest priority)
         this.invalid = true;
         this.errorReason = 'format';
-        const expectedFormat = this._getDatePlaceholder();
+        const expectedFormat = this._getDatePlaceholder(this.format);
         this.errorMessage = `${this._getLocalizedText('incorrectFormat')} Expected format: ${expectedFormat}`;
         this._showErrors = true;
         this._errorPersists = true; // Error should persist until resolved
@@ -3733,7 +3733,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _getDatePlaceholder(format) {
       try {
-        if (format) {
+        if (format && this._isValidMomentFormat(format)) {
           return format;
         }
 
@@ -4185,7 +4185,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         if (!parseResult) {
           this.invalid = true;
           this.errorReason = 'format';
-          const expectedFormat = this._getDatePlaceholder();
+          const expectedFormat = this._getDatePlaceholder(this.format);
           this.errorMessage = `${this._getLocalizedText('incorrectFormat')} Expected format: ${expectedFormat}`;
           this._showErrors = true;
           return false;
@@ -4636,6 +4636,38 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         });
       }
     }
+    _isValidMomentFormat(format) {
+      if (!format || typeof format !== 'string') return false;
+
+      // Allowed moment tokens (extend if needed)
+      const validTokens = [
+        'D',
+        'DD',
+        'Do',
+        'M',
+        'MM',
+        'MMM',
+        'MMMM',
+        'YY',
+        'YYYY',
+        'H',
+        'HH',
+        'h',
+        'hh',
+        'm',
+        'mm',
+        's',
+        'ss',
+        'A',
+        'a',
+      ];
+
+      // Extract tokens from format string
+      const tokens = format.match(/[A-Za-z]+/g) || [];
+
+      // Check if every token is valid
+      return tokens.every((token) => validTokens.includes(token));
+    }
 
     _selectYear(e) {
       if (e) {
@@ -4824,10 +4856,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Get user's locale and ensure moment uses it
         const userLocale = this._getUserLocale();
         moment.locale(userLocale);
-        // Use format property or moment's locale format for display
+ // Use format property or moment's locale format for display
 
-        const format = this.format || moment.localeData().longDateFormat('L');
+        let format = moment.localeData().longDateFormat('L');
 
+        if (this.format && this._isValidMomentFormat(this.format)) {
+          format = this.format;
+        } else if (this.format) {
+          // Invalid format → fallback + error
+          this.invalid = true;
+          this.errorMessage = 'Invalid date format. Using default format instead.';
+        }
         return this._moment(date).format(format);
       } catch (error) {
         // Safe fallback using Intl.DateTimeFormat
@@ -4847,7 +4886,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const userLocale = this._getUserLocale();
         moment.locale(userLocale);
 
-        const primaryFormat = this.format || moment.localeData().longDateFormat('L');
+        const primaryFormat = this._isValidMomentFormat(this.format)
+          ? this.format
+          : moment.localeData().longDateFormat('L');
 
         // Strict parsing with primary format
         let momentDate = this._moment(trimmedInput, primaryFormat, true);
