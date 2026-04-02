@@ -148,7 +148,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                         <div class="flex-4">
                           <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
                         </div>
-                        <div name="id" class="flex-2 preserve-white-space">[[item.groupname]]</div>
+                        <div name="id" class="flex-2 preserve-white-space">[[_groupIdentifier(item)]]</div>
                         <div class="flex-4">
                           <span class="counter">[[_countUsers(item.memberUsers)]]</span>
                           <span class="counter">[[_countGroups(item.memberGroups)]]</span>
@@ -304,6 +304,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _userHasName(user) {
       return user.properties.firstName || user.properties.lastName;
+    }
+
+    _groupIdentifier(group) {
+      if (!group) {
+        return '';
+      }
+      const props = group.properties || {};
+      return group.name || props.groupname || '';
     }
 
     _showResults() {
