@@ -4638,7 +4638,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _isValidMomentFormat(format) {
-      
       if (!format || typeof format !== 'string') return false;
 
       // Allowed moment tokens (extend if needed)
