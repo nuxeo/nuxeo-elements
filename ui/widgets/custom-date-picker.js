@@ -4007,7 +4007,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               return part.value;
             })
             .join('');
-        } catch {
+        } catch (error) {
           return 'dd/mm/yyyy';
         }
       }
