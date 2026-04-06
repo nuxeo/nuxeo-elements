@@ -186,7 +186,6 @@ import './nuxeo-element.js';
         options.repositoryName = this.repositoryName;
       }
 
-      // eslint-disable-next-line no-undef
       nxClients[id] = this.client = this.client || new Nuxeo(options);
 
       // share the connect promise between all instances (one per client)

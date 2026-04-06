@@ -149,7 +149,7 @@ import '../nuxeo-button-styles.js';
             }
             return idxa - idxb;
           });
-        } catch (e) {
+        } catch (_e) {
           this.dispatchEvent(
             new CustomEvent('clear-selected-items', {
               composed: true,

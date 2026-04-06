@@ -172,7 +172,7 @@ import './nuxeo-tree-node.js';
      * might not be rendered yet.
      */
     open() {
-      this._openNodes(arguments); // eslint-disable-line prefer-rest-params
+      this._openNodes(arguments);
     }
 
     /**

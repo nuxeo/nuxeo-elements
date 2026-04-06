@@ -41,7 +41,6 @@ Object.assign(config, {
             type = String;
             break;
           case 'bigint':
-            // eslint-disable-next-line no-undef
             type = BigInt;
             break;
           default:
