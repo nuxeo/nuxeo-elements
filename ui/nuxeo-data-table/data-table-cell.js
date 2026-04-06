@@ -14,7 +14,6 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
 const RESIZE_ZONE = 8;
 
 {
-  // eslint-disable-next-line no-undef
   class DataTableCell extends mixinBehaviors([saulis.DataTableTemplatizerBehavior], Nuxeo.Element) {
     static get template() {
       return html`

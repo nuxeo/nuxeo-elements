@@ -105,7 +105,7 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
          */
         hrefTemplate: {
           type: String,
-          // eslint-disable-next-line no-template-curly-in-string
+
           value: () => '${document.type}/nuxeo-${document.type}-${layout}-layout.html',
         },
         /**
@@ -222,7 +222,7 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
       return () => {
         const matches = tmpl.matchAll(/\${([^}]+)}/g);
         let str = tmpl;
-        // eslint-disable-next-line no-restricted-syntax
+
         for (const [match, prop] of matches) {
           const val = prop.match(/^(layout|document)(\.(.+))?$/) ? this.get(prop).toLowerCase() : '';
           str = str.replace(match, val);

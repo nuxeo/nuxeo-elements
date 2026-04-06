@@ -264,7 +264,7 @@ import './marked-element.js';
 
     _deepFind(obj, props) {
       for (let i = 0, path = props.split('/'), len = path.length; i < len; i++) {
-        if (!obj || obj === []) {
+        if (!obj || (Array.isArray(obj) && obj.length === 0)) {
           break;
         }
         obj = obj[path[i]];

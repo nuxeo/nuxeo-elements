@@ -424,7 +424,6 @@ async function setupServer(numberPages, pageSize) {
   return server;
 }
 
-/* eslint-disable max-len */
 suite('nuxeo-data-table', () => {
   suite('table results', () => {
     setup(async () => setupServer(1, 4));
