@@ -118,7 +118,7 @@ module.exports = (config) => {
           return error;
         }
         return parsed.message;
-      } catch (_) {
+      } catch (_e) {
         return error;
       }
     },
