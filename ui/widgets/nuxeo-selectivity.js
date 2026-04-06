@@ -4768,56 +4768,123 @@ typedArrayTags[weakMapTag] = false;
      *
      * @param delta Either 1 to move to the next item, or -1 to move to the previous item.
      */
-        function moveHighlight(dropdown, delta) {
-          const results = dropdown.results;
-          if (!results.length) {
-            return;
-          }
+      /**
+ * Moves a dropdown's highlight to the next or previous result item.
+ *
+ * @param delta Either 1 to move to the next item, or -1 to move to the previous item.
+ */
+/**
+ * Moves a dropdown's highlight to the next or previous result item.
+ *
+ * @param delta Either 1 to move to the next item, or -1 to move to the previous item.
+ */
+function moveHighlight(dropdown, delta) {
+    var results = dropdown.results;
+    if (!results.length) {
+        return;
+    }
 
-          const resultItems = [].slice.call(dropdown.el.querySelectorAll('.selectivity-result-item'));
+    var resultItems = [].slice.call(dropdown.el.querySelectorAll('.selectivity-result-item'));
 
-          function scrollToHighlight() {
-            let el;
-            if (dropdown.highlightedResult) {
-              el = findResultItem(resultItems, dropdown.highlightedResult.id);
-            } else if (dropdown.loadMoreHighlighted) {
-              el = dropdown.$('.selectivity-load-more');
-            }
+    function scrollToHighlight() {
+        var el;
+        if (dropdown.highlightedResult) {
+            el = findResultItem(resultItems, dropdown.highlightedResult.id);
+        } else if (dropdown.loadMoreHighlighted) {
+            el = dropdown.$('.selectivity-load-more');
+        }
 
-            if (el && el.scrollIntoView) {
-              el.scrollIntoView(delta < 0);
-            }
-          }
+        if (el && el.scrollIntoView) {
+            el.scrollIntoView(delta < 0);
+        }
+    }
 
-          if (dropdown.submenu) {
-            moveHighlight(dropdown.submenu, delta);
-            return;
-          }
+    if (dropdown.submenu) {
+        moveHighlight(dropdown.submenu, delta);
+        return;
+    }
 
-          const defaultIndex = delta > 0 ? 0 : resultItems.length - 1;
-          let index = defaultIndex;
-          const highlightedResult = dropdown.highlightedResult;
-          if (highlightedResult) {
-            const highlightedResultItem = findResultItem(resultItems, highlightedResult.id);
-            index = resultItems.indexOf(highlightedResultItem) + delta;
-            if (delta > 0 ? index >= resultItems.length : index < 0) {
-              if (dropdown.hasMore) {
+    var defaultIndex = delta > 0 ? 0 : resultItems.length - 1;
+    var index = defaultIndex;
+    var highlightedResult = dropdown.highlightedResult;
+    if (highlightedResult) {
+        var highlightedResultItem = findResultItem(resultItems, highlightedResult.id);
+        index = resultItems.indexOf(highlightedResultItem) + delta;
+        if (delta > 0 ? index >= resultItems.length : index < 0) {
+            if (dropdown.hasMore) {
                 dropdown.highlightLoadMore();
                 scrollToHighlight();
                 return;
-              } else {
+            } else {
                 index = defaultIndex;
-              }
             }
-          }
-
-          const resultItem = resultItems[index];
-          const result = Selectivity.findNestedById(results, selectivity.getRelatedItemId(resultItem));
-          if (result) {
-            dropdown.highlight(result, { delay: !!result.submenu });
-            scrollToHighlight();
-          }
         }
+    }
+
+    var resultItem = resultItems[index];
+    var result = Selectivity.findNestedById(results, selectivity.getRelatedItemId(resultItem));
+    if (result) {
+        dropdown.highlight(result, { delay: !!result.submenu });
+        scrollToHighlight();
+
+        // ARIA announcement for screen readers
+        var highlightedEl = dropdown.$('.selectivity-result-item.highlight');
+        
+        if (highlightedEl && dropdown.selectivity && dropdown.selectivity.el) {
+            // Update aria-selected for previously highlighted items
+            var prevHighlighted = dropdown.$('[aria-selected="true"]');
+            if (prevHighlighted) {
+                prevHighlighted.setAttribute('aria-selected', 'false');
+            }
+            
+            // Mark current as selected
+            highlightedEl.setAttribute('aria-selected', 'true');
+            
+            // Get the display label from the result object
+            var ariaLabel = null;
+            if (result && result.text) {
+                ariaLabel = result.text;
+            } else if (result && result.item) {
+                ariaLabel = result.item.displayLabel || result.item.title || result.item.text || result.item.id;
+            }
+            
+            if (!ariaLabel) {
+                ariaLabel = highlightedEl.textContent.trim();
+            }
+            
+            if (ariaLabel) {
+                try {
+                    // Create or get the live region
+                    var liveRegion = dropdown.selectivity.el.querySelector('[role="status"][aria-live="polite"]');
+                    if (!liveRegion) {
+                        liveRegion = document.createElement('div');
+                        liveRegion.setAttribute('role', 'status');
+                        liveRegion.setAttribute('aria-live', 'polite');
+                        liveRegion.setAttribute('aria-atomic', 'true');
+                        liveRegion.style.position = 'absolute';
+                        liveRegion.style.left = '-10000px';
+                        liveRegion.style.width = '1px';
+                        liveRegion.style.height = '1px';
+                        liveRegion.style.overflow = 'hidden';
+                        
+                        // Only append if the parent element still exists
+                        if (dropdown.selectivity.el && dropdown.selectivity.el.parentNode) {
+                            dropdown.selectivity.el.appendChild(liveRegion);
+                        }
+                    }
+                    
+                    // Announce the item
+                    if (liveRegion) {
+                        liveRegion.textContent = ariaLabel;
+                    }
+                } catch (e) {
+                    // Silently fail if there's any issue with the live region
+                    console.warn('Failed to announce selection:', e);
+                }
+            }
+        }
+    }
+}
 
         function keyHeld(event) {
           const dropdown = selectivity.dropdown;
@@ -5853,18 +5920,15 @@ typedArrayTags[weakMapTag] = false;
         /**
      * @private
      */
-        _blur() {
-          if (!this._focusing && !this.el.classList.contains('hover')) {
-            // Without the timeout it appears clicks on result items are not always properly
-            // handled, especially when the user doesn't click exactly on the text of the result
-            // item. I don't understand really why that happens, or why the timeout has to be so
-            // large, but after trial and error, this now seems to work reliably...
-            this._clearCloseTimeout();
-            this._closeTimeout = setTimeout(this.close.bind(this), 166);
+       _blur: function() {
+    if (!this._focusing && !this.el.classList.contains('hover')) {
+        this._clearCloseTimeout();
+        this._closeTimeout = setTimeout(this.close.bind(this), 166);
+        if (this.input) {  // ADD THIS CHECK
             this.input.value = '';
-          }
-        },
-
+        }
+    }
+},
         /**
      * @private
      */
@@ -6162,29 +6226,28 @@ typedArrayTags[weakMapTag] = false;
      *                                  an input element with the 'selectivity-search-input' is
      *                                  expected.
      */
-        dropdown(options) {
-          let extraClass = options.dropdownCssClass ? ` ${options.dropdownCssClass}` : '',
-            searchInput = '';
-          if (options.showSearchInput) {
-            extraClass += ' has-search-input';
-
-            const placeholder = options.searchInputPlaceholder;
-            searchInput =
-                `${'<div class="selectivity-search-input-container">' +
-                '<input type="text" class="selectivity-search-input"'}${
-                  placeholder ? ` placeholder="${escape(placeholder)}"` : ''
-                }>` +
-                '</div>';
-          }
-          return (
-            `<div class="selectivity-dropdown${
-              extraClass
-            }">${
-              searchInput
-            }<div class="selectivity-results-container"></div>` +
-            '</div>'
-          );
-        },
+      dropdown: function(options) {
+  var extraClass = options.dropdownCssClass ? ' ' + options.dropdownCssClass : '',
+      searchInput = '';
+  if (options.showSearchInput) {
+    extraClass += ' has-search-input';
+    var placeholder = options.searchInputPlaceholder;
+    searchInput =
+      '<div class="selectivity-search-input-container">' +
+      '<input type="text" class="selectivity-search-input"' +
+      (placeholder ? ' placeholder="' + escape(placeholder) + '"' : '') +
+      '>' +
+      '</div>';
+  }
+  return (
+    '<div class="selectivity-dropdown' +
+    extraClass +
+    '">' +
+    searchInput +
+    '<div class="selectivity-results-container" role="listbox"></div>' +  // Add role="listbox"
+    '</div>'
+  );
+},
 
         /**
      * Renders an error message in the dropdown.
@@ -6335,21 +6398,16 @@ typedArrayTags[weakMapTag] = false;
      *                disabled - Truthy if the item should be disabled.
      *                submenu - Truthy if the result item has a menu with subresults.
      */
-        resultItem(options) {
-          return (
-            `<div class="selectivity-result-item${
-              options.disabled ? ' disabled' : ''
-            }"` +
-            ` data-item-id="${
-              escape(options.id)
-            }">${
-              escape(options.text)
-            }${options.submenu
-              ? '<span class="selectivity-submenu-icon fa fa-chevron-right"></span>'
-              : ''
-            }</div>`
-          );
-        },
+      resultItem: (opts) => (
+  `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
+        role="option"
+        id="selectivity-option-${this.escapeHTML(opts.id)}"
+        aria-label="${this.escapeHTML(opts.item?.displayLabel || opts.item?.text || opts.item?.title || opts.text || opts.id)}"
+        aria-selected="false"
+        tabindex="-1"
+        style="padding-left: ${7 + (10 * opts.depth)}px"
+        data-item-id="${this.escapeHTML(opts.id)}">${this.resultFormatter(opts.item)}</div>`
+),
 
         /**
      * Render a result label in the dropdown.
@@ -6360,9 +6418,11 @@ typedArrayTags[weakMapTag] = false;
      * @param options Options object containing the following properties:
      *                text - Text label.
      */
-        resultLabel(options) {
-          return `<div class="selectivity-result-label">${escape(options.text)}</div>`;
-        },
+       resultLabel: (opts) => (
+  `<div class="preserve-white-space selectivity-result-label"
+        aria-hidden="true"
+        style="padding-left: ${7 + (10 * opts.depth)}px">${this.escapeHTML(opts.text)}</div>`
+),
 
         /**
      * Renders single-select input boxes.
@@ -6854,6 +6914,8 @@ typedArrayTags[weakMapTag] = false;
             position: fixed;
             z-index: 9999;
             word-break: break-all;
+            min-width: var(--selectivity-dropdown-min-width, fit-content);
+            max-width: var(--selectivity-dropdown-max-width, none);
           }
 
           .selectivity-search-input-container {
@@ -6878,6 +6940,8 @@ typedArrayTags[weakMapTag] = false;
           .selectivity-result-item {
             cursor: pointer;
             padding: 7px;
+            white-space: var(--selectivity-result-item-white-space, normal);
+            word-wrap: var(--selectivity-result-item-word-wrap, normal);
           }
 
           .selectivity-result-children .selectivity-result-item {
@@ -7176,17 +7240,21 @@ typedArrayTags[weakMapTag] = false;
         idFunction: (value) => this.idFunction(value),
 
         // override templates since formatter should already escape text
-        templates: {
-          resultItem: (opts) => (
-            `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
-                  style="padding-left: ${7 + (10 * opts.depth)}px"
-                  data-item-id="${escapeHTML(opts.id)}">${this.resultFormatter(opts.item)}</div>`
-          ),
+       templates: {
+  resultItem: (opts) => (
+    `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
+          role="option"
+          aria-label="${this.escapeHTML(opts.item?.text || opts.item?.id || opts.id)}"
+          aria-selected="false"
+          id="selectivity-option-${this.escapeHTML(opts.id)}"
+          style="padding-left: ${7 + (10 * opts.depth)}px"
+          data-item-id="${this.escapeHTML(opts.id)}">${this.resultFormatter(opts.item)}</div>`
+  ),
 
-          resultLabel: (opts) => (
-            `<div class="preserve-white-space selectivity-result-label"
-                  style="padding-left: ${7 + (10 * opts.depth)}px">${escapeHTML(opts.text)}</div>`
-          ),
+  resultLabel: (opts) => (
+    `<div class="preserve-white-space selectivity-result-label"
+          style="padding-left: ${7 + (10 * opts.depth)}px">${this.escapeHTML(opts.text)}</div>`
+  ),
 
           singleSelectedItem: (opts) => (
             `<span class="selectivity-single-selected-item" data-item-id="${escapeHTML(opts.id)}">${
@@ -7382,15 +7450,20 @@ typedArrayTags[weakMapTag] = false;
     }
 
     _valueChanged(newValue) {
-      const valueType = Array.isArray(newValue) ? newValue : [newValue];
       if (this._selectivity && !this._inUpdateSelection) {
-        if (valueType) {
+        if (newValue != null && newValue !== '') {
           this._selectivity.setValue(newValue, { triggerChange: false });
         } else {
           const cv = this._selectivity.getValue();
-          if ((this.multiple && cv.length > 0) || (!this.multiple && cv)) {
-            // in cases where newValue is either undefined or null, clear the value
+          const hasValue = Array.isArray(cv) ? cv.length > 0 : cv != null && cv !== '';
+          if (hasValue) {
             this._selectivity.clear();
+            // Keep Polymer selection properties in sync when value is programmatically cleared
+            if (this.multiple) {
+              this.selectedItems = [];
+            } else {
+              this.set('selectedItem', null);
+            }
           }
         }
       }
