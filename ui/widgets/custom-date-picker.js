@@ -2402,12 +2402,18 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _getMonthName(date) {
       if (!date) return '';
 
-      try {
-        const locale = (this._locale || navigator.language).replace('_', '-');
-        const lang = locale.split('-')[0];
-        const monthIndex = date.getMonth();
+      const locale = (this._locale || navigator.language).replace('_', '-');
 
-        // Regional month names
+      try {
+        // ✅ Primary: Intl
+        return new Intl.DateTimeFormat(locale, {
+          month: 'long',
+        }).format(date);
+      } catch (e) {
+        // ⚠️ Fallback
+        const lang = locale.split('-')[0];
+        const monthIndex = date.getMonth(); // ✅ define here
+
         const monthMap = {
           // English
           en: [
@@ -2576,19 +2582,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           ],
         };
 
-        // Return from map if exists
-        if (monthMap[lang]) {
-          return monthMap[lang][monthIndex];
-        }
-
-        // Fallback to Intl
-        return new Intl.DateTimeFormat(locale, {
-          month: 'long',
-        }).format(date);
-      } catch (e) {
-        return new Intl.DateTimeFormat('en', {
-          month: 'long',
-        }).format(date);
+        return monthMap[lang]?.[monthIndex] || '';
       }
     }
 
