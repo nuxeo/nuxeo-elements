@@ -2582,7 +2582,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           ],
         };
 
-        return monthMap[lang]?.[monthIndex] || '';
+        const months = monthMap[lang];
+        return months && months[monthIndex] ? months[monthIndex] : '';
       }
     }
 
