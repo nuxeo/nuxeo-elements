@@ -2402,12 +2402,18 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _getMonthName(date) {
       if (!date) return '';
 
-      try {
-        const locale = (this._locale || navigator.language).replace('_', '-');
-        const lang = locale.split('-')[0];
-        const monthIndex = date.getMonth();
+      const locale = (this._locale || navigator.language).replace('_', '-');
 
-        // Regional month names
+      try {
+        // ✅ Primary: Intl
+        return new Intl.DateTimeFormat(locale, {
+          month: 'long',
+        }).format(date);
+      } catch (e) {
+        // ⚠️ Fallback
+        const lang = locale.split('-')[0];
+        const monthIndex = date.getMonth(); // ✅ define here
+
         const monthMap = {
           // English
           en: [
@@ -2576,19 +2582,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           ],
         };
 
-        // Return from map if exists
-        if (monthMap[lang]) {
-          return monthMap[lang][monthIndex];
-        }
-
-        // Fallback to Intl
-        return new Intl.DateTimeFormat(locale, {
-          month: 'long',
-        }).format(date);
-      } catch (e) {
-        return new Intl.DateTimeFormat('en', {
-          month: 'long',
-        }).format(date);
+        const months = monthMap[lang];
+        return months && months[monthIndex] ? months[monthIndex] : '';
       }
     }
 
@@ -3953,13 +3948,26 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _getDatePlaceholder() {
       try {
-        // Get full locale (e.g. "en-US", "fr-FR") with fallback to navigator.language
-        const locale = this._getUserLocale() || navigator.language;
-        const normalizedLocale = locale.toLowerCase();
+        // Get raw locale
+        const rawLocale = this._getUserLocale() || navigator.language;
+
+        // Normalize: replace underscore with hyphen
+        let normalizedLocale = rawLocale.replace(/_/g, '-');
+
+        try {
+          // Canonicalize locale (handles casing, region format, etc.)
+          const [canonicalLocale] = Intl.getCanonicalLocales(normalizedLocale);
+          normalizedLocale = canonicalLocale;
+        } catch (e) {
+          // Fallback safely
+          normalizedLocale = 'en-US';
+        }
+
+        // Extract language
         const lang = normalizedLocale.split('-')[0];
 
-        // Get locale-based date order (day/month/year position)
-        const parts = new Intl.DateTimeFormat(locale).formatToParts(new Date(2000, 11, 31));
+        // Use normalized locale consistently
+        const parts = new Intl.DateTimeFormat(normalizedLocale).formatToParts(new Date(2000, 11, 31));
 
         // Specifier mapping ONLY for supported languages
         const specifierMap = {
@@ -3971,10 +3979,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           pt: { day: 'dd', month: 'mm', year: 'aaaa' },
           nl: { day: 'dd', month: 'mm', year: 'jjjj' },
           ru: { day: 'дд', month: 'мм', year: 'гггг' },
-          ar: { day: 'يوم', month: 'شهر', year: 'سنة' },
-          he: { day: 'יום', month: 'חודש', year: 'שנה' },
-          ja: { day: '日', month: '月', year: '年' },
-          zh: { day: '日', month: '月', year: '年' },
         };
 
         // Use mapped specifiers or fallback
