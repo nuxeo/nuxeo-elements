@@ -94,7 +94,7 @@ import './nuxeo-tooltip.js';
           no-overlap
           horizontal-align="right"
           on-paper-dropdown-close="listnerRemove"
-          on-paper-dropdown-open="_resetDropdownFocus"
+          on-paper-dropdown-open="_onDropdownOpen"
           on-keydown="_onDropdownTriggerKeydown"
         >
           <paper-icon-button
@@ -146,6 +146,7 @@ import './nuxeo-tooltip.js';
 
     ready() {
       super.ready();
+      this.__openByKeyboard = false;
     }
 
     get contentWidth() {
@@ -223,6 +224,32 @@ import './nuxeo-tooltip.js';
       });
     }
 
+    _onDropdownTriggerKeydown(e) {
+      // This IS a real keyboard event, so e.key will be present.
+      const { key } = e;
+      const isEnter = key === 'Enter';
+      const isSpace = key === ' ' || key === 'Spacebar';
+      if (!(isEnter || isSpace)) {
+        return;
+      }
+
+      this.__openByKeyboard = true;
+
+      // Prevent Space from scrolling the page
+      if (isSpace) {
+        e.preventDefault();
+      }
+    }
+
+    _onDropdownOpen() {
+      // This is a dropdown-open event, not keyboard. Use the flag.
+      if (!this.__openByKeyboard) {
+        return;
+      }
+      this.__openByKeyboard = false;
+      this._resetDropdownFocus();
+    }
+
     /**
      * Reset dropdown focus behavior when the actions menu is opened.
      */
@@ -251,37 +278,6 @@ import './nuxeo-tooltip.js';
       const dropDownList = this._getDropdownElements();
       setTimeout(() => {
         dropDownList.map((list) => list.removeAttribute('tabindex'));
-      }, 0);
-    }
-
-    /**
-     * When opening the menu via keyboard, move focus to the first enabled dropdown item.
-     * (Do NOT run on mouse opens — it breaks automation and click flows.)
-     */
-    _onDropdownTriggerKeydown(e) {
-      // Only react to keyboard interactions that typically open menus
-      const openKeys = ['ArrowDown', 'Enter', ' '];
-      if (!openKeys.includes(e.key)) {
-        return;
-      }
-
-      // Defer until the overlay has opened and the dropdown items are rendered
-      setTimeout(() => {
-        const menuButton = this.$.dropdownButton;
-        if (!menuButton || !menuButton.opened) {
-          return;
-        }
-
-        const items = this._getDropdownElements();
-        if (!items || !items.length) {
-          return;
-        }
-
-        // Focus first enabled item if possible; otherwise focus first item.
-        const firstEnabled = items.find((it) => !it.hasAttribute('disabled') && it.disabled !== true) || items[0];
-        if (firstEnabled && typeof firstEnabled.focus === 'function') {
-          firstEnabled.focus();
-        }
       }, 0);
     }
 
