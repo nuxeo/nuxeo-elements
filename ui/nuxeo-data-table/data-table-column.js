@@ -69,7 +69,7 @@ import './data-table-column-filter.js';
          */
         width: {
           type: String,
-          value: '100px',
+          value: '150px',
         },
 
         /**
