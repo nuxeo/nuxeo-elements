@@ -94,7 +94,8 @@ import './nuxeo-tooltip.js';
           no-overlap
           horizontal-align="right"
           on-paper-dropdown-close="listnerRemove"
-          on-paper-dropdown-open="_resetDropdownFocus"
+          on-paper-dropdown-open="_onDropdownOpen"
+          on-keydown="_onDropdownTriggerKeydown"
         >
           <paper-icon-button
             id="iconButton"
@@ -145,6 +146,7 @@ import './nuxeo-tooltip.js';
 
     ready() {
       super.ready();
+      this.__openByKeyboard = false;
     }
 
     get contentWidth() {
@@ -220,6 +222,32 @@ import './nuxeo-tooltip.js';
       dropDownList.forEach((item) => {
         item.removeEventListener('keydown', this._removeTabIndex);
       });
+    }
+
+    _onDropdownTriggerKeydown(e) {
+      // This IS a real keyboard event, so e.key will be present.
+      const { key } = e;
+      const isEnter = key === 'Enter';
+      const isSpace = key === ' ' || key === 'Spacebar';
+      if (!(isEnter || isSpace)) {
+        return;
+      }
+
+      this.__openByKeyboard = true;
+
+      // Prevent Space from scrolling the page
+      if (isSpace) {
+        e.preventDefault();
+      }
+    }
+
+    _onDropdownOpen() {
+      // This is a dropdown-open event, not keyboard. Use the flag.
+      if (!this.__openByKeyboard) {
+        return;
+      }
+      this.__openByKeyboard = false;
+      this._resetDropdownFocus();
     }
 
     /**
