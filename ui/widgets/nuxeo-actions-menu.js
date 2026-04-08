@@ -95,13 +95,13 @@ import './nuxeo-tooltip.js';
           horizontal-align="right"
           on-paper-dropdown-close="listnerRemove"
           on-paper-dropdown-open="_onDropdownOpen"
-          on-keydown="_onDropdownTriggerKeydown"
         >
           <paper-icon-button
             id="iconButton"
             icon="icons:more-vert"
             slot="dropdown-trigger"
             aria-labelledby="iconButtonTooltip"
+            on-keydown="_onDropdownTriggerKeydown"
           ></paper-icon-button>
           <paper-listbox slot="dropdown-content" role="list">
             <slot id="dropdown" name="dropdown"></slot>
@@ -217,10 +217,22 @@ import './nuxeo-tooltip.js';
       }
     }
 
+    /**
+     * Lazily creates and returns a bound keydown handler so that the same
+     * function reference is used for both addEventListener and removeEventListener.
+     */
+    _getRemoveTabIndexHandler() {
+      if (!this._boundRemoveTabIndex) {
+        this._boundRemoveTabIndex = this._removeTabIndex.bind(this);
+      }
+      return this._boundRemoveTabIndex;
+    }
+
     listnerRemove() {
       const dropDownList = this._getDropdownElements();
+      const handler = this._getRemoveTabIndexHandler();
       dropDownList.forEach((item) => {
-        item.removeEventListener('keydown', this._removeTabIndex);
+        item.removeEventListener('keydown', handler);
       });
     }
 
@@ -277,7 +289,7 @@ import './nuxeo-tooltip.js';
       }
       const dropDownList = this._getDropdownElements();
       setTimeout(() => {
-        dropDownList.map((list) => list.removeAttribute('tabindex'));
+        dropDownList.forEach((list) => list.removeAttribute('tabindex'));
       }, 0);
     }
 
