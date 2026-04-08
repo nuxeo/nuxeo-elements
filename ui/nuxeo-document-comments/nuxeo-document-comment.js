@@ -30,7 +30,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-resource.js';
 import { NotifyBehavior } from '@nuxeo/nuxeo-elements/nuxeo-notify-behavior.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-tooltip.js';
-// eslint-disable-next-line import/no-cycle
+
 import './nuxeo-document-comment-thread.js';
 import './nuxeo-document-comments-styles.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';

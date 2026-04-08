@@ -220,8 +220,8 @@ import '../nuxeo-button-styles.js';
             if (text) {
               try {
                 ({ message } = JSON.parse(text));
-              } catch (e) {
-                throw e;
+              } catch (_e) {
+                // JSON parse failed, keep original error message
               }
             }
           } else if (error.message) {
