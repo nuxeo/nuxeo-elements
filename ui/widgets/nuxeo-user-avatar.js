@@ -222,8 +222,8 @@ import '../nuxeo-icons.js';
       let hash = 0;
       const userId = this._id(this.user);
       Object.keys(userId).forEach((user) => {
-        hash &= hash; // eslint-disable-line no-bitwise
-        hash = userId.charCodeAt(user) + ((hash << 5) - hash); // eslint-disable-line no-bitwise
+        hash &= hash;
+        hash = userId.charCodeAt(user) + ((hash << 5) - hash);
       });
       return Math.abs(hash % 360);
     }

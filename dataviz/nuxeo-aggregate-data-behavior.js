@@ -196,7 +196,7 @@ Nuxeo.AggregateDataBehavior = {
   get _metricsAggregation() {
     const parts = this.metrics.match(/[^()]+/g);
 
-    if (!parts) return;
+    if (!parts) return undefined;
 
     let metricsOn;
     let metricsOp;
@@ -374,7 +374,7 @@ Nuxeo.AggregateDataBehavior = {
 
   get _dateRange() {
     if (!this.startDate && !this.endDate) {
-      return;
+      return undefined;
     }
     const term = { range: {} };
     const range = (term.range[this.dateField] = {});
