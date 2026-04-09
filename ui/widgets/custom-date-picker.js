@@ -4965,6 +4965,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         }
         this.pickerI18n[i18nProperty] = value;
 
+        // Backward compatibility: expose i18n.* values on the legacy i18n holder.
+        // In this component, i18n may be a function (I18nBehavior), and functions can carry properties.
+        if (this.i18n && (typeof this.i18n === 'function' || typeof this.i18n === 'object')) {
+          this.i18n[i18nProperty] = value;
+        }
+
         // Handle specific i18n properties that affect calendar display
         if (i18nProperty === 'firstDayOfWeek') {
           this.firstDayOfWeek = value;
