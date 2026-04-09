@@ -249,6 +249,7 @@ import '../nuxeo-button-styles.js';
                     flex="[[column.flex]]"
                     hidden="[[column.hidden]]"
                     order="[[column.order]]"
+                    resized="[[column.resized]]"
                     table="[[_this]]"
                     template="[[column.headerTemplate]]"
                     width="[[column.width]]"
@@ -319,6 +320,7 @@ import '../nuxeo-button-styles.js';
                         index="[[index]]"
                         item="[[item]]"
                         order="[[column.order]]"
+                        resized="[[column.resized]]"
                         selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
                         width="[[column.width]]"
                         before-bind="[[beforeCellBind]]"
@@ -952,6 +954,7 @@ import '../nuxeo-button-styles.js';
             hidden: !!column.hidden,
             order: typeof column.order === 'number' ? column.order : idx,
             width: column.width || null,
+            resized: !!column.resized,
           };
         });
       }
@@ -981,6 +984,12 @@ import '../nuxeo-button-styles.js';
           // width (only if provided; allow null to clear)
           if (Object.prototype.hasOwnProperty.call(colSettings, 'width')) {
             this.set(`columns.${idx}.width`, colSettings.width);
+            // Backward-compatible restore: old persisted settings had width but no resized flag.
+            // Any explicit persisted width should behave as fixed.
+            this.set(
+              `columns.${idx}.resized`,
+              Object.prototype.hasOwnProperty.call(colSettings, 'resized') ? !!colSettings.resized : true,
+            );
           }
         }, this);
       }
@@ -1287,6 +1296,7 @@ import '../nuxeo-button-styles.js';
       const colIndex = this.columns.indexOf(column);
       if (colIndex > -1) {
         this.set(`columns.${colIndex}.width`, `${newWidth}px`);
+        this.set(`columns.${colIndex}.resized`, true);
         // Throttle expensive resize work to at most once per animation frame
         if (!this._resizeRafId) {
           this._resizeRafId = window.requestAnimationFrame(() => {
