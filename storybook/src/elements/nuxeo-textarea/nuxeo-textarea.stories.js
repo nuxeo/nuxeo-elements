@@ -1,32 +1,36 @@
-import { html } from 'lit-html';
-import { storiesOf } from '@storybook/polymer';
-import { boolean, number, text } from '@storybook/addon-knobs';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-textarea.js';
 
-storiesOf('UI/nuxeo-textarea', module).add('Default', () => {
-  const numberOfRows = number('Number of rows', 3);
-  const label = text('Label', 'Label');
-  const placeholder = text('Placeholder', 'This element represents a multi-line plain-text editing control');
-  const required = boolean('Required', false);
-  const disabled = boolean('Disabled', false);
-  const invalid = boolean('Invalid', false);
-  const readonly = boolean('Read only', false);
-  return html`
+export default {
+  title: 'UI/nuxeo-textarea',
+};
+
+export const Default = {
+  args: {
+    numberOfRows: 3,
+    label: 'Label',
+    placeholder: 'This element represents a multi-line plain-text editing control',
+    required: false,
+    disabled: false,
+    invalid: false,
+    readonly: false,
+  },
+  render: (args) => html`
     <style>
       nuxeo-textarea {
         max-width: 300px;
       }
     </style>
     <nuxeo-textarea
-      label="${label}"
+      label="${args.label}"
       name="description"
-      rows="${numberOfRows}"
-      placeholder="${placeholder}"
-      ?required="${required}"
-      ?disabled="${disabled}"
-      ?invalid="${invalid}"
-      ?readonly="${readonly}"
+      rows="${args.numberOfRows}"
+      placeholder="${args.placeholder}"
+      ?required="${args.required}"
+      ?disabled="${args.disabled}"
+      ?invalid="${args.invalid}"
+      ?readonly="${args.readonly}"
     >
     </nuxeo-textarea>
-  `;
-});
+  `,
+};

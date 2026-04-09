@@ -1,4 +1,4 @@
-import { create } from '@storybook/theming';
+import { create } from 'storybook/theming';
 import NECLogo from '../src/img/nuxeo-elements-catalog.svg';
 
 export default create({

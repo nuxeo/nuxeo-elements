@@ -1,20 +1,28 @@
-import { storiesOf } from '@storybook/polymer';
-import { boolean, color } from '@storybook/addon-knobs';
-import { html } from 'lit-html';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-checkmark';
 
-storiesOf('UI/nuxeo-checkmark', module).add('nuxeo-checkmark', () => {
-  const bgColor = color('--nuxeo-checkmark-background-color', '#fffff', 'CSS variables');
-  const bgColorChecked = color('--nuxeo-checkmark-background-color-checked', '#0000ff', 'CSS variables');
-  const checked = boolean('checked', false);
-  const disabled = boolean('disabled', false);
-  return html`
+export default {
+  title: 'UI/nuxeo-checkmark',
+};
+
+export const NuxeoCheckmark = {
+  args: {
+    bgColor: '#fffff',
+    bgColorChecked: '#0000ff',
+    checked: false,
+    disabled: false,
+  },
+  argTypes: {
+    bgColor: { control: 'color', name: '--nuxeo-checkmark-background-color' },
+    bgColorChecked: { control: 'color', name: '--nuxeo-checkmark-background-color-checked' },
+  },
+  render: (args) => html`
     <style>
       * {
-        --nuxeo-checkmark-background-color: ${bgColor};
-        --nuxeo-checkmark-background-color-checked: ${bgColorChecked};
+        --nuxeo-checkmark-background-color: ${args.bgColor};
+        --nuxeo-checkmark-background-color-checked: ${args.bgColorChecked};
       }
     </style>
-    <nuxeo-checkmark ?checked="${checked}" ?disabled="${disabled}"></nuxeo-checkmark>
-  `;
-});
+    <nuxeo-checkmark ?checked="${args.checked}" ?disabled="${args.disabled}"></nuxeo-checkmark>
+  `,
+};

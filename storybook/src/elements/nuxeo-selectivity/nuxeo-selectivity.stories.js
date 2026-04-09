@@ -1,64 +1,70 @@
-import { html } from 'lit-html';
-import { storiesOf } from '@storybook/polymer';
-import { boolean, number, text } from '@storybook/addon-knobs';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-selectivity.js';
 import { cities as CITIES } from '../../data/lists.data.js';
 
-storiesOf('UI/nuxeo-selectivity', module)
-  .add('Single', () => {
-    const label = text('Label', 'Label');
-    const placeholder = text('Placeholder', 'Placeholder');
-    const required = boolean('Required', false);
-    const disabled = boolean('Disabled', false);
-    const invalid = boolean('Invalid', false);
-    const readonly = boolean('Read only', false);
-    const minChars = number('minChars', 0);
-    return html`
-      <style>
-        nuxeo-selectivity {
-          margin: 2rem;
-          max-width: 300px;
-        }
-      </style>
-      <nuxeo-selectivity
-        .data="${CITIES}"
-        label="${label}"
-        placeholder="${placeholder}"
-        ?required="${required}"
-        ?disabled="${disabled}"
-        ?invalid="${invalid}"
-        ?readonly="${readonly}"
-        min-chars="${minChars}"
-      >
-      </nuxeo-selectivity>
-    `;
-  })
-  .add('Multiple', () => {
-    const label = text('Label', 'Label');
-    const placeholder = text('Placeholder', 'Placeholder');
-    const required = boolean('Required', false);
-    const disabled = boolean('Disabled', false);
-    const invalid = boolean('Invalid', false);
-    const readonly = boolean('Read only', false);
-    const minChars = number('minChars', 0);
-    return html`
-      <style>
-        nuxeo-selectivity {
-          margin: 2rem;
-          max-width: 300px;
-        }
-      </style>
-      <nuxeo-selectivity
-        .data="${CITIES}"
-        label="${label}"
-        placeholder="${placeholder}"
-        ?required="${required}"
-        ?disabled="${disabled}"
-        ?invalid="${invalid}"
-        ?readonly="${readonly}"
-        min-chars="${minChars}"
-        multiple
-      >
-      </nuxeo-selectivity>
-    `;
-  });
+export default {
+  title: 'UI/nuxeo-selectivity',
+};
+
+export const Single = {
+  args: {
+    label: 'Label',
+    placeholder: 'Placeholder',
+    required: false,
+    disabled: false,
+    invalid: false,
+    readonly: false,
+    minChars: 0,
+  },
+  render: (args) => html`
+    <style>
+      nuxeo-selectivity {
+        margin: 2rem;
+        max-width: 300px;
+      }
+    </style>
+    <nuxeo-selectivity
+      .data="${CITIES}"
+      label="${args.label}"
+      placeholder="${args.placeholder}"
+      ?required="${args.required}"
+      ?disabled="${args.disabled}"
+      ?invalid="${args.invalid}"
+      ?readonly="${args.readonly}"
+      min-chars="${args.minChars}"
+    >
+    </nuxeo-selectivity>
+  `,
+};
+
+export const Multiple = {
+  args: {
+    label: 'Label',
+    placeholder: 'Placeholder',
+    required: false,
+    disabled: false,
+    invalid: false,
+    readonly: false,
+    minChars: 0,
+  },
+  render: (args) => html`
+    <style>
+      nuxeo-selectivity {
+        margin: 2rem;
+        max-width: 300px;
+      }
+    </style>
+    <nuxeo-selectivity
+      .data="${CITIES}"
+      label="${args.label}"
+      placeholder="${args.placeholder}"
+      ?required="${args.required}"
+      ?disabled="${args.disabled}"
+      ?invalid="${args.invalid}"
+      ?readonly="${args.readonly}"
+      min-chars="${args.minChars}"
+      multiple
+    >
+    </nuxeo-selectivity>
+  `,
+};
