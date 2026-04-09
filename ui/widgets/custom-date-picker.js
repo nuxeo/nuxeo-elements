@@ -1315,7 +1315,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           try {
             const formatToUse = this.format ? this.format : moment.localeData().longDateFormat('L');
 
-            const date = this._moment(text, formatToUse, true);
+            const date = this._moment(text, formatToUse, true); //strict parsing
 
             if (date.isValid()) {
               return {
@@ -1332,6 +1332,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               year: fallbackDate.get('Y'),
             };
           } catch (error) {
+            // Return current date instead of hardcoded values
             const fallbackDate = this._moment();
             return {
               day: fallbackDate.get('D'),
@@ -3434,13 +3435,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _parseWithFormat(inputValue, format) {
       try {
+        // Use moment.js for reliable parsing
         const effectiveFormat = format || this.format || moment.localeData().longDateFormat('L');
 
-        const momentDate = this._moment(inputValue, effectiveFormat, true);
+        const momentDate = this._moment(inputValue, effectiveFormat, true); //strict parsing
 
         if (momentDate.isValid()) {
           const jsDate = momentDate.toDate();
-          jsDate.setHours(0, 0, 0, 0);
+          jsDate.setHours(0, 0, 0, 0); //Normalize to start of day
           return jsDate;
         }
 
@@ -4853,8 +4855,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (!date || Number.isNaN(date.getTime())) return '';
 
       try {
+        // Get User's locale and ensure moment uses it
         const userLocale = this._getUserLocale();
         moment.locale(userLocale);
+        // Use format property or moment's locale format for display
         let format = moment.localeData().longDateFormat('L');
 
         if (this.format) {
@@ -4869,6 +4873,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         }
         return this._moment(date).format(format);
       } catch (error) {
+        // Safe fallback using Intl.DateTimeFormat
         return new Intl.DateTimeFormat(navigator.language).format(date);
       }
     }
@@ -4892,6 +4897,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (!trimmedInput) return null;
 
       try {
+        // Get user's locale with better fallback
         const userLocale = this._getUserLocale();
         moment.locale(userLocale);
 
