@@ -1,50 +1,56 @@
-import { storiesOf } from '@storybook/polymer';
-import { boolean, color, number, select, text } from '@storybook/addon-knobs';
-import { html } from 'lit-html';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-input';
 
-storiesOf('UI/nuxeo-input', module).add('nuxeo-input', () => {
-  const listOfTypes = ['email', 'number', 'password', 'tel', 'text', 'url'];
-  const type = select('Type', listOfTypes, 'text');
-  const label = text('Label', 'Label');
-  const placeholder = text('Placeholder', 'Placeholder');
-  const errorMessage = text('Error message', '');
-  const readOnly = boolean('readonly', false);
-  const disabled = boolean('Disabled', false);
-  const required = boolean('Required', false);
-  const invalid = boolean('Invalid', false);
-  const autoFocus = boolean('Autofocus', false);
-  const minLength = number('minlength', 0);
-  const maxLength = number('maxLength', 10);
-  const min = number('min', 0);
-  const max = number('max', 100);
-  const step = number('Step', 1);
-  const invalidColor = color('--paper-input-container-invalid-color', '#de350b', 'CSS variables');
+export default {
+  title: 'UI/nuxeo-input',
+};
 
-  return html`
+export const NuxeoInput = {
+  args: {
+    type: 'text',
+    label: 'Label',
+    placeholder: 'Placeholder',
+    errorMessage: '',
+    readonly: false,
+    disabled: false,
+    required: false,
+    invalid: false,
+    autofocus: false,
+    minlength: 0,
+    maxLength: 10,
+    min: 0,
+    max: 100,
+    step: 1,
+    invalidColor: '#de350b',
+  },
+  argTypes: {
+    type: { control: 'select', options: ['email', 'number', 'password', 'tel', 'text', 'url'] },
+    invalidColor: { control: 'color' },
+  },
+  render: (args) => html`
     <style>
       nuxeo-input {
         margin: 2rem;
         max-width: 300px;
-        --paper-input-container-invalid-color: ${invalidColor};
+        --paper-input-container-invalid-color: ${args.invalidColor};
       }
     </style>
     <nuxeo-input
-      type="${type}"
-      placeholder="${placeholder}"
-      error-message="${errorMessage}"
-      auto-focus="${autoFocus}"
-      ?readonly="${readOnly}"
-      ?disabled="${disabled}"
-      ?required="${required}"
-      minlength="${minLength}"
-      maxlength="${maxLength}"
-      min="${min}"
-      max="${max}"
-      step="${step}"
-      ?invalid="${invalid}"
-      label="${label}"
+      type="${args.type}"
+      placeholder="${args.placeholder}"
+      error-message="${args.errorMessage}"
+      auto-focus="${args.autofocus}"
+      ?readonly="${args.readonly}"
+      ?disabled="${args.disabled}"
+      ?required="${args.required}"
+      minlength="${args.minlength}"
+      maxlength="${args.maxLength}"
+      min="${args.min}"
+      max="${args.max}"
+      step="${args.step}"
+      ?invalid="${args.invalid}"
+      label="${args.label}"
     >
     </nuxeo-input>
-  `;
-});
+  `,
+};
