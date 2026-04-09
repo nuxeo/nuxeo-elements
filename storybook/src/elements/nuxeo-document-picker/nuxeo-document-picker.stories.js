@@ -1,14 +1,16 @@
-import { storiesOf } from '@storybook/polymer';
-import { html } from 'lit-html';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-document-picker/nuxeo-document-picker.js';
 import { codePanelTemplate } from '../code-panel-template.js';
 
 window.nuxeo.I18n.en['pickerSearch.title'] = 'Quick Search';
 window.nuxeo.I18n.en['searchResults.noResults'] = 'No documents match the search criteria.';
 
-storiesOf('UI/nuxeo-document-picker', module).add(
-  'nuxeo-document-picker',
-  () => html`
+export default {
+  title: 'UI/nuxeo-document-picker',
+};
+
+export const NuxeoDocumentPicker = {
+  render: () => html`
     <style>
       button {
         padding: 1em;
@@ -33,7 +35,7 @@ storiesOf('UI/nuxeo-document-picker', module).add(
       @picked="${(e) => {
         const picked = e.detail.selectedItems;
         const span = e.target.parentElement.querySelector('span.info');
-        span.innerText = `${picked.length} document(s) picked (${picked.map((doc) => doc.title).join(', ')})`;
+        span.innerText = picked.length + ' document(s) picked (' + picked.map((doc) => doc.title).join(', ') + ')';
       }}"
     ></nuxeo-document-picker>
     <button @click=${(e) => e.target.parentElement.querySelector('nuxeo-document-picker').open()}>
@@ -43,4 +45,4 @@ storiesOf('UI/nuxeo-document-picker', module).add(
     ${codePanelTemplate('search/picker/nuxeo-picker-search-form.html')}
     ${codePanelTemplate('search/picker/nuxeo-picker-search-results.html')}
   `,
-);
+};
