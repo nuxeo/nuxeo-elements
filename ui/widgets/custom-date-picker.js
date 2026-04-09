@@ -258,16 +258,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           value: null,
         },
 
-        // i18n properties for compatibility with nuxeo-date-picker
-        i18n: {
-          type: Object,
-          value() {
-            return {};
-          },
-        },
-
-        // Internationalization text labels
-        i18nLabels: {
+        // Date picker i18n config for compatibility with nuxeo-date-picker
+        pickerI18n: {
           type: Object,
           value() {
             return {};
@@ -1084,7 +1076,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                 <button
                   type="button"
                   class="clear-button"
-                  aria-label$="[[_getLocalizedText('clearDate')]]"
+                  aria-label="[[i18n('customDatePicker.clearDate')]]"
                   disabled$="[[disabled]]"
                   aria-disabled$="[[disabled]]"
                   tabindex="0"
@@ -1097,7 +1089,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               <button
                 type="button"
                 class="calendar-icon"
-                aria-label$="[[_getLocalizedText('openCalendar')]]"
+                aria-label="[[i18n('customDatePicker.openCalendar')]]"
                 disabled$="[[disabled]]"
                 tabindex="0"
                 on-click="_openCalendarViaMouse"
@@ -1136,7 +1128,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             class="calendar-popover"
             id="calendarPopover"
             role="dialog"
-            aria-label="Calendar"
+            aria-label="[[i18n('customDatePicker.calendar')]]"
             aria-modal$="[[_isCalendarOpen]]"
           >
             <div class="calendar-header">
@@ -1147,16 +1139,26 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                   on-click="_toggleYearDropdown"
                   tabindex="0"
                   role="button"
-                  aria-label$="[[_getLocalizedText('selectYear')]]"
+                  aria-label="[[i18n('customDatePicker.selectYear')]]"
                   aria-haspopup="listbox"
                   aria-expanded$="[[_isYearDropdownOpen]]"
                   on-keydown="_handleYearDropdownKeydown"
                 >
                   <span class="year-text">[[_getYear(_viewDate)]]</span>
-                  <button type="button" class="year-dropdown-button" aria-label="Select year" tabindex="-1">
+                  <button
+                    type="button"
+                    class="year-dropdown-button"
+                    aria-label="[[i18n('customDatePicker.selectYear')]]"
+                    tabindex="-1"
+                  >
                     <iron-icon icon$="[[_getDropdownIcon(_isYearDropdownOpen)]]"></iron-icon>
                   </button>
-                  <div class="year-options" id="yearOptions" role="listbox" aria-label="Year options">
+                  <div
+                    class="year-options"
+                    id="yearOptions"
+                    role="listbox"
+                    aria-label="[[i18n('customDatePicker.yearOptions')]]"
+                  >
                     <template is="dom-repeat" items="[[_yearOptions]]">
                       <button
                         type="button"
@@ -1214,7 +1216,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             <div
               class="calendar-grid"
               role="grid"
-              aria-label="Calendar dates"
+              aria-label="[[i18n('customDatePicker.calendarDates')]]"
               aria-activedescendant$="[[_getActiveDescendant(_focusedDate)]]"
               on-keydown="_handleGridKeydown"
               on-click="_handleCalendarGridClick"
@@ -1241,10 +1243,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
             <div class="calendar-footer">
               <button type="button" class="footer-button today-button" on-click="_selectToday" tabindex="0">
-                [[_getLocalizedText('today')]]
+                [[i18n('customDatePicker.today')]]
               </button>
               <button type="button" class="footer-button cancel-button" on-click="_closeCalendar" tabindex="0">
-                [[_getLocalizedText('cancel')]]
+                [[i18n('customDatePicker.cancel')]]
               </button>
             </div>
           </div>
@@ -1293,13 +1295,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Set up internationalization
       this._setupI18n(userLocale);
 
-      // Force update of template bindings after i18n setup
-      this.notifyPath('i18nLabels');
-
-      // Set up i18n properties for compatibility with nuxeo-date-picker
-
-      // Set up the i18n configuration object
-      this.i18n = {
+      // Set up i18n configuration for compatibility with nuxeo-date-picker
+      this.pickerI18n = {
         formatDate: (date) => {
           try {
             return this._formatDateForDisplay(date);
@@ -1339,9 +1336,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         monthNames: moment.months(),
         weekdays: moment.weekdays(),
         weekdaysShort: moment.weekdaysShort(),
-        cancel: this._getLocalizedText('cancel'),
-        clear: this._getLocalizedText('clear'),
-        today: this._getLocalizedText('today'),
+        cancel: this.i18n('customDatePicker.cancel'),
+        clear: this.i18n('customDatePicker.clear'),
+        today: this.i18n('customDatePicker.today'),
         firstDayOfWeek: this.firstDayOfWeek || config.get('firstDayOfWeek', moment.localeData().firstDayOfWeek() || 0),
       };
 
@@ -1350,19 +1347,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._generateCalendar();
       this._setupEventListeners();
       this._setupFocusTrap();
-    }
-
-    // Helper method to safely get i18n text with fallbacks
-    _getI18nText(i18nFn, key, fallback) {
-      try {
-        if (i18nFn) {
-          const result = i18nFn(key);
-          return result || fallback;
-        }
-      } catch (error) {
-        // Ignore error and fall through to fallback
-      }
-      return fallback;
     }
 
     // Detect RTL languages
@@ -1419,278 +1403,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
     }
 
-    // Set up internationalization support
+    // Set up internationalization support (simplified - uses I18nBehavior)
     _setupI18n(locale) {
-      const languageCode = locale ? locale.toLowerCase().split('-')[0] : 'en';
-
-      // Comprehensive i18n dictionary for multiple languages
-      const i18nDict = {
-        // English
-        en: {
-          today: 'Today',
-          cancel: 'Cancel',
-          clear: 'Clear',
-          openCalendar: 'Open calendar',
-          clearDate: 'Clear date',
-          previousMonth: 'Go to previous month',
-          nextMonth: 'Go to next month',
-          selectYear: 'Select year',
-          calendarOpened: 'Calendar opened. Use arrow keys to navigate dates. Press Escape to close.',
-          calendarClosed: 'Calendar closed.',
-          required: 'This field is required.',
-          invalidDate: 'Invalid date. Please enter a valid date.',
-          incorrectFormat: 'Incorrect date format.',
-          dateOutOfRange: 'Date out of range.',
-          dateNotSelectable: 'This date is not selectable.',
-          movedToMonth: 'Moved to {month} {year}.',
-          yearChanged: 'Year changed to {year}.',
-        },
-
-        // Arabic
-        ar: {
-          today: 'اليوم',
-          cancel: 'إلغاء',
-          clear: 'مسح',
-          openCalendar: 'فتح التقويم',
-          clearDate: 'مسح التاريخ',
-          previousMonth: 'الانتقال إلى الشهر السابق',
-          nextMonth: 'الانتقال إلى الشهر التالي',
-          selectYear: 'اختر السنة',
-          calendarOpened: 'تم فتح التقويم. استخدم مفاتيح الأسهم للتنقل بين التواريخ. اضغط Escape للإغلاق.',
-          calendarClosed: 'تم إغلاق التقويم.',
-          required: 'هذا الحقل مطلوب.',
-          invalidDate: 'تاريخ غير صحيح. يرجى إدخال تاريخ صحيح.',
-          incorrectFormat: 'تنسيق التاريخ غير صحيح.',
-          dateOutOfRange: 'التاريخ خارج النطاق المسموح.',
-          dateNotSelectable: 'هذا التاريخ غير قابل للاختيار.',
-          movedToMonth: 'انتقل إلى {month} {year}.',
-          yearChanged: 'تم تغيير السنة إلى {year}.',
-        },
-
-        // Hebrew
-        he: {
-          today: 'היום',
-          cancel: 'ביטול',
-          clear: 'נקה',
-          openCalendar: 'פתח לוח שנה',
-          clearDate: 'נקה תאריך',
-          previousMonth: 'חודש קודם',
-          nextMonth: 'חודש הבא',
-          selectYear: 'בחר שנה',
-          calendarOpened: 'לוח השנה נפתח. השתמש במקשי החצים כדי לנווט בין התאריכים. לחץ Escape כדי לסגור.',
-          calendarClosed: 'לוח השנה נסגר.',
-          required: 'שדה זה חובה.',
-          invalidDate: 'תאריך לא תקין. אנא הזן תאריך תקין.',
-          incorrectFormat: 'פורמט תאריך שגוי.',
-          dateOutOfRange: 'תאריך מחוץ לטווח.',
-          dateNotSelectable: 'תאריך זה אינו ניתן לבחירה.',
-          movedToMonth: 'עבר ל{month} {year}.',
-          yearChanged: 'השנה שונתה ל{year}.',
-        },
-
-        // French
-        fr: {
-          today: "Aujourd'hui",
-          cancel: 'Annuler',
-          clear: 'Effacer',
-          openCalendar: 'Ouvrir le calendrier',
-          clearDate: 'Effacer la date',
-          previousMonth: 'Aller au mois précédent',
-          nextMonth: 'Aller au mois suivant',
-          selectYear: "Sélectionner l'année",
-          calendarOpened: 'Calendrier ouvert. Utilisez les flèches pour naviguer. Appuyez sur Échap pour fermer.',
-          calendarClosed: 'Calendrier fermé.',
-          required: 'Ce champ est requis.',
-          invalidDate: 'Date invalide. Veuillez saisir une date valide.',
-          incorrectFormat: 'Format de date incorrect.',
-          dateOutOfRange: 'Date hors limites.',
-          dateNotSelectable: "Cette date n'est pas sélectionnable.",
-          movedToMonth: 'Déplacé vers {month} {year}.',
-          yearChanged: 'Année changée à {year}.',
-        },
-
-        // German
-        de: {
-          today: 'Heute',
-          cancel: 'Abbrechen',
-          clear: 'Löschen',
-          openCalendar: 'Kalender öffnen',
-          clearDate: 'Datum löschen',
-          previousMonth: 'Zum vorherigen Monat gehen',
-          nextMonth: 'Zum nächsten Monat gehen',
-          selectYear: 'Jahr auswählen',
-          calendarOpened:
-            'Kalender geöffnet. Verwenden Sie die Pfeiltasten zur Navigation. Drücken Sie Escape zum Schließen.',
-          calendarClosed: 'Kalender geschlossen.',
-          required: 'Dieses Feld ist erforderlich.',
-          invalidDate: 'Ungültiges Datum. Bitte geben Sie ein gültiges Datum ein.',
-          incorrectFormat: 'Falsches Datumsformat.',
-          dateOutOfRange: 'Datum außerhalb des Bereichs.',
-          dateNotSelectable: 'Dieses Datum ist nicht auswählbar.',
-          movedToMonth: 'Zu {month} {year} gewechselt.',
-          yearChanged: 'Jahr geändert zu {year}.',
-        },
-
-        // Spanish
-        es: {
-          today: 'Hoy',
-          cancel: 'Cancelar',
-          clear: 'Limpiar',
-          openCalendar: 'Abrir calendario',
-          clearDate: 'Limpiar fecha',
-          previousMonth: 'Mes anterior',
-          nextMonth: 'Mes siguiente',
-          selectYear: 'Seleccionar año',
-          calendarOpened: 'Calendario abierto. Use las flechas para navegar. Presione Escape para cerrar.',
-          calendarClosed: 'Calendario cerrado.',
-          required: 'Este campo es obligatorio.',
-          invalidDate: 'Fecha inválida. Por favor ingrese una fecha válida.',
-          incorrectFormat: 'Formato de fecha incorrecto.',
-          dateOutOfRange: 'Fecha fuera de rango.',
-          dateNotSelectable: 'Esta fecha no se puede seleccionar.',
-          movedToMonth: 'Movido a {month} {year}.',
-          yearChanged: 'Año cambiado a {year}.',
-        },
-
-        // Italian
-        it: {
-          today: 'Oggi',
-          cancel: 'Annulla',
-          clear: 'Cancella',
-          openCalendar: 'Apri calendario',
-          clearDate: 'Cancella data',
-          previousMonth: 'Mese precedente',
-          nextMonth: 'Mese successivo',
-          selectYear: 'Seleziona anno',
-          calendarOpened: 'Calendario aperto. Usa le frecce per navigare. Premi Escape per chiudere.',
-          calendarClosed: 'Calendario chiuso.',
-          required: 'Questo campo è obbligatorio.',
-          invalidDate: 'Data non valida. Inserisci una data valida.',
-          incorrectFormat: 'Formato data errato.',
-          dateOutOfRange: 'Data fuori intervallo.',
-          dateNotSelectable: 'Questa data non è selezionabile.',
-          movedToMonth: 'Spostato a {month} {year}.',
-          yearChanged: 'Anno cambiato a {year}.',
-        },
-
-        // Portuguese
-        pt: {
-          today: 'Hoje',
-          cancel: 'Cancelar',
-          clear: 'Limpar',
-          openCalendar: 'Abrir calendário',
-          clearDate: 'Limpar data',
-          previousMonth: 'Mês anterior',
-          nextMonth: 'Próximo mês',
-          selectYear: 'Selecionar ano',
-          calendarOpened: 'Calendário aberto. Use as setas para navegar. Pressione Escape para fechar.',
-          calendarClosed: 'Calendário fechado.',
-          required: 'Este campo é obrigatório.',
-          invalidDate: 'Data inválida. Por favor, insira uma data válida.',
-          incorrectFormat: 'Formato de data incorreto.',
-          dateOutOfRange: 'Data fora do intervalo.',
-          dateNotSelectable: 'Esta data não pode ser selecionada.',
-          movedToMonth: 'Movido para {month} {year}.',
-          yearChanged: 'Ano alterado para {year}.',
-        },
-
-        // Russian
-        ru: {
-          today: 'Сегодня',
-          cancel: 'Отмена',
-          clear: 'Очистить',
-          openCalendar: 'Открыть календарь',
-          clearDate: 'Очистить дату',
-          previousMonth: 'Предыдущий месяц',
-          nextMonth: 'Следующий месяц',
-          selectYear: 'Выбрать год',
-          calendarOpened: 'Календарь открыт. Используйте стрелки для навигации. Нажмите Escape для закрытия.',
-          calendarClosed: 'Календарь закрыт.',
-          required: 'Это поле обязательно.',
-          invalidDate: 'Неверная дата. Введите корректную дату.',
-          incorrectFormat: 'Неверный формат даты.',
-          dateOutOfRange: 'Дата вне диапазона.',
-          dateNotSelectable: 'Эта дата недоступна для выбора.',
-          movedToMonth: 'Перешли к {month} {year}.',
-          yearChanged: 'Год изменен на {year}.',
-        },
-
-        // Dutch
-        nl: {
-          today: 'Vandaag',
-          cancel: 'Annuleren',
-          clear: 'Wissen',
-          openCalendar: 'Kalender openen',
-          clearDate: 'Datum wissen',
-          previousMonth: 'Vorige maand',
-          nextMonth: 'Volgende maand',
-          selectYear: 'Jaar selecteren',
-          calendarOpened: 'Kalender geopend. Gebruik pijltjestoetsen om te navigeren. Druk op Escape om te sluiten.',
-          calendarClosed: 'Kalender gesloten.',
-          required: 'Dit veld is verplicht.',
-          invalidDate: 'Ongeldige datum. Voer een geldige datum in.',
-          incorrectFormat: 'Onjuist datumformaat.',
-          dateOutOfRange: 'Datum buiten bereik.',
-          dateNotSelectable: 'Deze datum kan niet geselecteerd worden.',
-          movedToMonth: 'Verplaatst naar {month} {year}.',
-          yearChanged: 'Jaar gewijzigd naar {year}.',
-        },
-
-        // Japanese
-        ja: {
-          today: '今日',
-          cancel: 'キャンセル',
-          clear: 'クリア',
-          openCalendar: 'カレンダーを開く',
-          clearDate: '日付をクリア',
-          previousMonth: '前の月へ',
-          nextMonth: '次の月へ',
-          selectYear: '年を選択',
-          calendarOpened: 'カレンダーが開きました。矢印キーで移動できます。',
-          calendarClosed: 'カレンダーが閉じました。',
-          required: 'このフィールドは必須です。',
-          invalidDate: '無効な日付です。',
-          incorrectFormat: '日付の形式が正しくありません。',
-          dateOutOfRange: '日付が範囲外です。',
-          dateNotSelectable: 'この日付は選択できません。',
-          movedToMonth: '{year}年{month}に移動しました。',
-          yearChanged: '{year}年に変更されました。',
-        },
-
-        // Chinese
-        zh: {
-          today: '今天',
-          cancel: '取消',
-          clear: '清除',
-          openCalendar: '打开日历',
-          clearDate: '清除日期',
-          previousMonth: '上个月',
-          nextMonth: '下个月',
-          selectYear: '选择年份',
-          calendarOpened: '日历已打开。使用方向键导航。',
-          calendarClosed: '日历已关闭。',
-          required: '此字段为必填项。',
-          invalidDate: '无效日期。',
-          incorrectFormat: '日期格式不正确。',
-          dateOutOfRange: '日期超出范围。',
-          dateNotSelectable: '此日期不可选择。',
-          movedToMonth: '已切换到 {year}年{month}',
-          yearChanged: '年份已更改为 {year}',
-        },
-      };
-
-      // Get the appropriate dictionary, fallback to English
-      this.i18nLabels = i18nDict[languageCode] || i18nDict.en;
+      this._locale = locale || 'en-US';
+      this._detectRTL(locale);
     }
 
     // Get localized text with placeholder replacement
     _getLocalizedText(key, placeholders = {}) {
-      // Ensure i18nLabels is initialized
-      if (!this.i18nLabels || Object.keys(this.i18nLabels).length === 0) {
-        this._setupI18n(navigator.languages ? navigator.languages[0] : navigator.language);
-      }
-
-      let text = this.i18nLabels[key] || key;
+      let text = this.i18n(`customDatePicker.${key}`);
 
       // Replace placeholders
       Object.keys(placeholders).forEach((placeholder) => {
@@ -2410,180 +2131,31 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           month: 'long',
         }).format(date);
       } catch (e) {
-        // ⚠️ Fallback
+        // ⚠️ Fallback: Use i18n for English months
         const lang = locale.split('-')[0];
-        const monthIndex = date.getMonth(); // ✅ define here
+        const monthIndex = date.getMonth();
 
-        const monthMap = {
-          // English
-          en: [
-            'January',
-            'February',
-            'March',
-            'April',
-            'May',
-            'June',
-            'July',
-            'August',
-            'September',
-            'October',
-            'November',
-            'December',
-          ],
+        // Use i18n for English months from messages.json
+        if (lang === 'en') {
+          const monthNames = [
+            'customDatePicker.january',
+            'customDatePicker.february',
+            'customDatePicker.march',
+            'customDatePicker.april',
+            'customDatePicker.may',
+            'customDatePicker.june',
+            'customDatePicker.july',
+            'customDatePicker.august',
+            'customDatePicker.september',
+            'customDatePicker.october',
+            'customDatePicker.november',
+            'customDatePicker.december',
+          ];
+          return monthIndex >= 0 && monthIndex < 12 ? this.i18n(monthNames[monthIndex]) : '';
+        }
 
-          // French
-          fr: [
-            'janvier',
-            'février',
-            'mars',
-            'avril',
-            'mai',
-            'juin',
-            'juillet',
-            'août',
-            'septembre',
-            'octobre',
-            'novembre',
-            'décembre',
-          ],
-
-          // German
-          de: [
-            'Januar',
-            'Februar',
-            'März',
-            'April',
-            'Mai',
-            'Juni',
-            'Juli',
-            'August',
-            'September',
-            'Oktober',
-            'November',
-            'Dezember',
-          ],
-
-          // Spanish
-          es: [
-            'enero',
-            'febrero',
-            'marzo',
-            'abril',
-            'mayo',
-            'junio',
-            'julio',
-            'agosto',
-            'septiembre',
-            'octubre',
-            'noviembre',
-            'diciembre',
-          ],
-
-          // Italian
-          it: [
-            'gennaio',
-            'febbraio',
-            'marzo',
-            'aprile',
-            'maggio',
-            'giugno',
-            'luglio',
-            'agosto',
-            'settembre',
-            'ottobre',
-            'novembre',
-            'dicembre',
-          ],
-
-          // Portuguese
-          pt: [
-            'janeiro',
-            'fevereiro',
-            'março',
-            'abril',
-            'maio',
-            'junho',
-            'julho',
-            'agosto',
-            'setembro',
-            'outubro',
-            'novembro',
-            'dezembro',
-          ],
-
-          // Dutch
-          nl: [
-            'januari',
-            'februari',
-            'maart',
-            'april',
-            'mei',
-            'juni',
-            'juli',
-            'augustus',
-            'september',
-            'oktober',
-            'november',
-            'december',
-          ],
-
-          // Russian
-          ru: [
-            'январь',
-            'февраль',
-            'март',
-            'апрель',
-            'май',
-            'июнь',
-            'июль',
-            'август',
-            'сентябрь',
-            'октябрь',
-            'ноябрь',
-            'декабрь',
-          ],
-
-          // Japanese
-          ja: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
-
-          // Chinese (Simplified)
-          zh: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
-
-          // Arabic
-          ar: [
-            'يناير',
-            'فبراير',
-            'مارس',
-            'أبريل',
-            'مايو',
-            'يونيو',
-            'يوليو',
-            'أغسطس',
-            'سبتمبر',
-            'أكتوبر',
-            'نوفمبر',
-            'ديسمبر',
-          ],
-
-          // Hebrew
-          he: [
-            'ינואר',
-            'פברואר',
-            'מרץ',
-            'אפריל',
-            'מאי',
-            'יוני',
-            'יולי',
-            'אוגוסט',
-            'ספטמבר',
-            'אוקטובר',
-            'נובמבר',
-            'דצמבר',
-          ],
-        };
-
-        const months = monthMap[lang];
-        return months && months[monthIndex] ? months[monthIndex] : '';
+        // For other languages, return empty (Intl should handle them)
+        return '';
       }
     }
 
@@ -3979,6 +3551,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           pt: { day: 'dd', month: 'mm', year: 'aaaa' },
           nl: { day: 'dd', month: 'mm', year: 'jjjj' },
           ru: { day: 'дд', month: 'мм', year: 'гггг' },
+          ja: { year: '年', month: '月', day: '日' },
+          zh: { year: '年', month: '月', day: '日' },
         };
 
         // Use mapped specifiers or fallback
@@ -4027,24 +3601,24 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           const maxDate = this._parseDateOnly(this.max);
           const minFormatted = minDate ? this._formatDateForDisplay(minDate) : this.min;
           const maxFormatted = maxDate ? this._formatDateForDisplay(maxDate) : this.max;
-          return `Date out of range. Must be between ${minFormatted} and ${maxFormatted}`;
+          return `${this.i18n('customDatePicker.dateOutOfRange')} Must be between ${minFormatted} and ${maxFormatted}`;
         }
 
         if (hasMin) {
           const minDate = this._parseDateOnly(this.min);
           const minFormatted = minDate ? this._formatDateForDisplay(minDate) : this.min;
-          return `Date out of range. Must be on or after ${minFormatted}`;
+          return `${this.i18n('customDatePicker.dateOutOfRange')} Must be on or after ${minFormatted}`;
         }
 
         if (hasMax) {
           const maxDate = this._parseDateOnly(this.max);
           const maxFormatted = maxDate ? this._formatDateForDisplay(maxDate) : this.max;
-          return `Date out of range. Must be on or before ${maxFormatted}`;
+          return `${this.i18n('customDatePicker.dateOutOfRange')} Must be on or before ${maxFormatted}`;
         }
       } catch (error) {
         // Error building range message - using fallback
       }
-      return 'Date out of range.';
+      return this.i18n('customDatePicker.dateOutOfRange');
     }
 
     _formatMonthYear(date) {
@@ -4275,7 +3849,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         input.setAttribute('aria-invalid', String(!!newVal));
       }
       if (newVal && this._showErrors) {
-        const msg = this.errorMessage || 'Invalid date.';
+        const msg = this.errorMessage || this.i18n('customDatePicker.invalidDate');
         this._announce(msg);
       }
       // Ensure error text visibility aligns with state
@@ -5386,10 +4960,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     set(path, value) {
       if (path.startsWith('i18n.')) {
         const i18nProperty = path.substring(5); // Remove 'i18n.' prefix
-        if (!this.i18n) {
-          this.i18n = {};
+        if (!this.pickerI18n) {
+          this.pickerI18n = {};
         }
-        this.i18n[i18nProperty] = value;
+        this.pickerI18n[i18nProperty] = value;
 
         // Handle specific i18n properties that affect calendar display
         if (i18nProperty === 'firstDayOfWeek') {
@@ -5424,8 +4998,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     // Add getter for external access to the formatted date value like nuxeo-date-picker
     get formattedValue() {
-      if (this._selectedDate && this.i18n && this.i18n.formatDate) {
-        return this.i18n.formatDate(this._selectedDate);
+      if (this._selectedDate && this.pickerI18n && this.pickerI18n.formatDate) {
+        return this.pickerI18n.formatDate(this._selectedDate);
       }
       return this.value;
     }
