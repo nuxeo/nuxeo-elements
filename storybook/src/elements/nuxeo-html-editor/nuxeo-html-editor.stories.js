@@ -1,10 +1,12 @@
-import { storiesOf } from '@storybook/polymer';
-import { html } from 'lit-html';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-html-editor';
 
-storiesOf('UI/nuxeo-html-editor', module).add(
-  'nuxeo-html-editor',
-  () => html`
+export default {
+  title: 'UI/nuxeo-html-editor',
+};
+
+export const NuxeoHtmlEditor = {
+  render: () => html`
     <style>
       .htmlEditor {
         margin: 20px;
@@ -15,4 +17,4 @@ storiesOf('UI/nuxeo-html-editor', module).add(
       <nuxeo-html-editor> </nuxeo-html-editor>
     </div>
   `,
-);
+};
