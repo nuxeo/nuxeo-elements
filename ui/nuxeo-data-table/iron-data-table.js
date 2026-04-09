@@ -249,6 +249,7 @@ import '../nuxeo-button-styles.js';
                     flex="[[column.flex]]"
                     hidden="[[column.hidden]]"
                     order="[[column.order]]"
+                    resized="[[column.resized]]"
                     table="[[_this]]"
                     template="[[column.headerTemplate]]"
                     width="[[column.width]]"
@@ -319,6 +320,7 @@ import '../nuxeo-button-styles.js';
                         index="[[index]]"
                         item="[[item]]"
                         order="[[column.order]]"
+                        resized="[[column.resized]]"
                         selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
                         width="[[column.width]]"
                         before-bind="[[beforeCellBind]]"
@@ -952,6 +954,7 @@ import '../nuxeo-button-styles.js';
             hidden: !!column.hidden,
             order: typeof column.order === 'number' ? column.order : idx,
             width: column.width || null,
+            resized: !!column.resized,
           };
         });
       }
@@ -981,20 +984,47 @@ import '../nuxeo-button-styles.js';
           // width (only if provided; allow null to clear)
           if (Object.prototype.hasOwnProperty.call(colSettings, 'width')) {
             this.set(`columns.${idx}.width`, colSettings.width);
+            // Backward-compatible restore: old persisted settings had width but no resized flag.
+            // Any explicit persisted width should behave as fixed.
+            this.set(
+              `columns.${idx}.resized`,
+              Object.prototype.hasOwnProperty.call(colSettings, 'resized') ? !!colSettings.resized : true,
+            );
           }
         }, this);
       }
 
-      // ---- sort (root-level) ----
+      let appliedSortOrder = null;
       if (Object.prototype.hasOwnProperty.call(settings, 'sortOrder')) {
-        this.sortOrder = settings.sortOrder || null;
+        // keep sortOrder as an array (default to []) when applying settings
+        appliedSortOrder = Array.isArray(settings.sortOrder) ? settings.sortOrder : [];
+        this.sortOrder = appliedSortOrder;
       } else if (settings.columns && Object.prototype.hasOwnProperty.call(settings.columns, 'sortOrder')) {
         // backward compatibility if you ever saved it under columns
-        this.sortOrder = settings.columns.sortOrder || null;
+        appliedSortOrder = Array.isArray(settings.columns.sortOrder) ? settings.columns.sortOrder : [];
+        this.sortOrder = appliedSortOrder;
       }
+      // sync restored sort with page provider (if any)
+      if (appliedSortOrder && this._hasPageProvider && this._hasPageProvider() && this.nxProvider) {
+        // convert array sortOrder into { path: direction } map expected by the page provider
+        const sortMap = appliedSortOrder.reduce((acc, entry) => {
+          if (entry && entry.path && entry.direction) {
+            acc[entry.path] = entry.direction;
+          }
+          return acc;
+        }, {});
 
-      // ---- reflow ----
-      this.notifyResize();
+        // keep provider sort aligned with the table's sortOrder
+        this._ppSort = sortMap;
+        this.nxProvider.sort = sortMap;
+        // refresh results via the table/behavior fetch so items get updated
+        if (typeof this.fetch === 'function' && !this.nxProvider.auto) {
+          this.fetch();
+        }
+
+        // ---- reflow ----
+        this.notifyResize();
+      }
     }
 
     _onCheckBoxTap(e) {
@@ -1266,6 +1296,7 @@ import '../nuxeo-button-styles.js';
       const colIndex = this.columns.indexOf(column);
       if (colIndex > -1) {
         this.set(`columns.${colIndex}.width`, `${newWidth}px`);
+        this.set(`columns.${colIndex}.resized`, true);
         // Throttle expensive resize work to at most once per animation frame
         if (!this._resizeRafId) {
           this._resizeRafId = window.requestAnimationFrame(() => {
