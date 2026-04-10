@@ -198,7 +198,7 @@ window.nuxeo.slots.setSharedModel = (model) => {
         if (c$ && c$.length) {
           // use first child parent, for case when dom-if may have been detached
           const p = dom(dom(c$[0]).parentNode);
-          // eslint-disable-next-line no-cond-assign
+
           for (let i = 0, n; i < c$.length && (n = c$[i]); i++) {
             p.removeChild(n);
           }
@@ -241,7 +241,7 @@ window.nuxeo.slots.setSharedModel = (model) => {
           const ctor = templatize(template, this);
           // setting the model in the constructor seems to require instanceProps to be properly set
           // so we're doing it ourselves after
-          const el = new ctor({}); // eslint-disable-line new-cap
+          const el = new ctor({});
           Object.keys(sharedModel).forEach((shared) => el._setPendingProperty(shared, sharedModel[shared]));
           Object.keys(this.model).forEach((prop) => el._setPendingProperty(prop, this.model[prop]));
           el._flushProperties();

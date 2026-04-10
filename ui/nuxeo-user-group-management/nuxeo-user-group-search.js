@@ -311,7 +311,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         return '';
       }
       const props = user.properties || {};
-      const identifier = (props && props.username) || user.name || user.id || user.uid;
+      const identifier =
+        (props && props.username) ||
+        user.name ||
+        user.id ||
+        user.uid;
       return identifier || '';
     }
 

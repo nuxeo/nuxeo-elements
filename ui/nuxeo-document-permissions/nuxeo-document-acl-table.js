@@ -28,7 +28,6 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
 import './nuxeo-popup-confirm.js';
 import './nuxeo-popup-permission.js';
 
-/* eslint-disable prefer-spread, prefer-rest-params */
 {
   /**
    * Element displaying a table with document ACLs.

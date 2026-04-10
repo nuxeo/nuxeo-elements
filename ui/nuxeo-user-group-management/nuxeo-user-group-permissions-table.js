@@ -295,7 +295,7 @@ import '../nuxeo-button-styles.js';
     connectedCallback() {
       try {
         super.connectedCallback();
-      } catch (e) {
+      } catch (_e) {
         // Safe fallback if super.connectedCallback doesn't exist
       }
 
@@ -438,7 +438,7 @@ import '../nuxeo-button-styles.js';
       }
       try {
         super.disconnectedCallback();
-      } catch (e) {
+      } catch (_e) {
         // Safe fallback if super.disconnectedCallback doesn't exist
       }
     }
