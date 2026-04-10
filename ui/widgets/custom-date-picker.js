@@ -3736,7 +3736,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           const normalizedFormat = this._normalizeFormat(format);
 
           if (this._isValidMomentFormat(normalizedFormat)) {
-            return normalizedFormat.toLowerCase(); // for placeholder style
+            return format; // return original format to preserve user's case (lowercase/uppercase)
           }
         }
         // Get the actual locale from browser and moment
