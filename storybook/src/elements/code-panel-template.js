@@ -87,7 +87,7 @@ export const codePanelTemplate = (path) => html`
     <span style="margin-left: 4px; color: #ddd">layout source</span>
     <span class="hljs">
       ${until(
-        fetch(`/layouts/${path}`)
+        fetch(`layouts/${path}`)
           .then((response) => response.text())
           .then((text) => {
             const val = hljs.highlight('html', text).value;
