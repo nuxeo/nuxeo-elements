@@ -3733,6 +3733,20 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _getDatePlaceholder(format) {
       try {
         if (format) {
+          // Check for mixed case format and fallback to locale format if detected
+          if (this._isMixedCaseFormat(format)) {
+            // Mixed format detected, use locale format as fallback
+            const userLocale = this._getUserLocale();
+            moment.locale(userLocale);
+            const localeFormat = moment.localeData().longDateFormat('L');
+            const placeholder = localeFormat
+              .replace(/D{1,2}/g, 'dd')
+              .replace(/M{1,2}/g, 'mm')
+              .replace(/Y{2,4}/g, 'yyyy')
+              .toLowerCase();
+            return placeholder;
+          }
+
           const normalizedFormat = this._normalizeFormat(format);
 
           if (this._isValidMomentFormat(normalizedFormat)) {
@@ -4862,13 +4876,19 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         let format = moment.localeData().longDateFormat('L');
 
         if (this.format) {
-          const normalizedFormat = this._normalizeFormat(this.format);
-
-          if (this._isValidMomentFormat(normalizedFormat)) {
-            format = normalizedFormat;
+          // Check for mixed case format and fallback to locale format if detected
+          if (this._isMixedCaseFormat(this.format)) {
+            // Mixed format detected, use locale format for display
+            format = moment.localeData().longDateFormat('L');
           } else {
-            this.invalid = true;
-            this.errorMessage = `Invalid date format "${this.format}". Using default format instead.`;
+            const normalizedFormat = this._normalizeFormat(this.format);
+
+            if (this._isValidMomentFormat(normalizedFormat)) {
+              format = normalizedFormat;
+            } else {
+              this.invalid = true;
+              this.errorMessage = `Invalid date format "${this.format}". Using default format instead.`;
+            }
           }
         }
         return this._moment(date).format(format);
@@ -4877,6 +4897,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         return new Intl.DateTimeFormat(navigator.language).format(date);
       }
     }
+    _isMixedCaseFormat(format) {
+      if (!format) return false;
+      // Check if format contains both uppercase and lowercase letters (excluding separators)
+      const hasLowercase = /[a-z]/.test(format);
+      const hasUppercase = /[A-Z]/.test(format);
+      return hasLowercase && hasUppercase;
+    }
+
     _normalizeFormat(format) {
       if (!format) return format;
 
@@ -4904,13 +4932,19 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         let primaryFormat = moment.localeData().longDateFormat('L');
 
         if (this.format) {
-          const normalizedFormat = this._normalizeFormat(this.format);
-
-          if (this._isValidMomentFormat(normalizedFormat)) {
-            primaryFormat = normalizedFormat;
+          // Check for mixed case format and fallback to locale format if detected
+          if (this._isMixedCaseFormat(this.format)) {
+            // Mixed format detected, use locale format as fallback
+            primaryFormat = moment.localeData().longDateFormat('L');
           } else {
-            this.invalid = true;
-            this.errorMessage = `Invalid date format "${this.format}"`;
+            const normalizedFormat = this._normalizeFormat(this.format);
+
+            if (this._isValidMomentFormat(normalizedFormat)) {
+              primaryFormat = normalizedFormat;
+            } else {
+              this.invalid = true;
+              this.errorMessage = `Invalid date format "${this.format}"`;
+            }
           }
         }
 
