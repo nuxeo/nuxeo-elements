@@ -94,12 +94,14 @@ import './nuxeo-tooltip.js';
           no-overlap
           horizontal-align="right"
           on-paper-dropdown-close="listnerRemove"
+          on-paper-dropdown-open="_onDropdownOpen"
         >
           <paper-icon-button
             id="iconButton"
             icon="icons:more-vert"
             slot="dropdown-trigger"
             aria-labelledby="iconButtonTooltip"
+            on-keydown="_onDropdownTriggerKeydown"
           ></paper-icon-button>
           <paper-listbox slot="dropdown-content" role="list">
             <slot id="dropdown" name="dropdown"></slot>
@@ -144,6 +146,7 @@ import './nuxeo-tooltip.js';
 
     ready() {
       super.ready();
+      this.__openByKeyboard = false;
     }
 
     get contentWidth() {
@@ -214,8 +217,80 @@ import './nuxeo-tooltip.js';
       }
     }
 
+    /**
+     * Lazily creates and returns a bound keydown handler so that the same
+     * function reference is used for both addEventListener and removeEventListener.
+     */
+    _getRemoveTabIndexHandler() {
+      if (!this._boundRemoveTabIndex) {
+        this._boundRemoveTabIndex = this._removeTabIndex.bind(this);
+      }
+      return this._boundRemoveTabIndex;
+    }
+
     listnerRemove() {
-      this.removeEventListener('keydown', this._removeTabIndex.bind(this));
+      const dropDownList = this._getDropdownElements();
+      const handler = this._getRemoveTabIndexHandler();
+      dropDownList.forEach((item) => {
+        item.removeEventListener('keydown', handler);
+      });
+    }
+
+    _onDropdownTriggerKeydown(e) {
+      // This IS a real keyboard event, so e.key will be present.
+      const { key } = e;
+      const isEnter = key === 'Enter';
+      const isSpace = key === ' ' || key === 'Spacebar';
+      if (!(isEnter || isSpace)) {
+        return;
+      }
+
+      this.__openByKeyboard = true;
+
+      // Prevent Space from scrolling the page
+      if (isSpace) {
+        e.preventDefault();
+      }
+    }
+
+    _onDropdownOpen() {
+      // This is a dropdown-open event, not keyboard. Use the flag.
+      if (!this.__openByKeyboard) {
+        return;
+      }
+      this.__openByKeyboard = false;
+      this._resetDropdownFocus();
+    }
+
+    /**
+     * Reset dropdown focus behavior when the actions menu is opened.
+     */
+
+    _resetDropdownFocus() {
+      // Get the dropdown listbox
+      const listbox = this.shadowRoot.querySelector('paper-listbox');
+      if (listbox) {
+        // Ensure the dropdown menu is actually open before moving focus.
+        // This prevents focus from being moved when the menu is closing.
+        const menuButton = listbox.closest && listbox.closest('paper-menu-button');
+        if (menuButton && menuButton.opened === false) {
+          return;
+        }
+        // Reset selection to the first item
+        listbox.selected = 0;
+        // Get dropdown items
+        const items = this._getDropdownElements();
+        if (items && items.length) {
+          // Wait for dropdown to render, then focus the first item
+          setTimeout(() => {
+            items[0].focus();
+          }, 0);
+        }
+      }
+      const dropDownList = this._getDropdownElements();
+      setTimeout(() => {
+        dropDownList.forEach((list) => list.removeAttribute('tabindex'));
+      }, 0);
     }
 
     _moveToDropdown(el) {

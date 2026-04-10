@@ -14,7 +14,6 @@ const TRANSPARENT_DRAG_IMAGE = (() => {
 const RESIZE_ZONE = 8;
 
 {
-  // eslint-disable-next-line no-undef
   class DataTableCell extends mixinBehaviors([saulis.DataTableTemplatizerBehavior], Nuxeo.Element) {
     static get template() {
       return html`
@@ -37,7 +36,8 @@ const RESIZE_ZONE = 8;
           /* header cells need relative positioning for the resizer */
           :host([header]) {
             position: relative;
-            overflow: visible;
+            overflow-x: auto;
+            overflow-y: hidden;
             height: 48px;
           }
 
@@ -166,6 +166,7 @@ const RESIZE_ZONE = 8;
         header: Boolean,
         hidden: Boolean,
         order: Number,
+        resized: Boolean,
         template: Object,
         width: String,
         overflow: String,
@@ -189,7 +190,7 @@ const RESIZE_ZONE = 8;
         '_flexChanged(flex)',
         '_hiddenChanged(hidden)',
         '_orderChanged(order)',
-        '_widthChanged(width)',
+        '_widthChanged(width, resized)',
         '_overflowChanged(overflow)',
       ];
     }
@@ -323,6 +324,11 @@ const RESIZE_ZONE = 8;
     }
 
     _flexChanged(flex) {
+      if (this._shouldLockWidth(this.width, this.resized)) {
+        this.style.flexGrow = '0';
+        this.style.flexShrink = '0';
+        return;
+      }
       this.style.flexGrow = flex;
     }
 
@@ -334,21 +340,37 @@ const RESIZE_ZONE = 8;
       }
     }
 
-    _widthChanged(width) {
-      // Only lock the cell to an explicit width when the user is actively resizing.
-      // This avoids frozen columns on initial load when columns come with configured width values.
-      const { _resizing: isUserResize } = this.table || {};
+    _widthChanged(width, resized) {
+      const shouldLockWidth = this._shouldLockWidth(width, resized);
 
-      if (width && isUserResize) {
+      if (shouldLockWidth) {
         const val = typeof width === 'number' ? `${width}px` : width;
         this.style.flex = `0 0 ${val}`;
         this.style.flexBasis = val;
+        this.style.flexGrow = '0';
+        this.style.flexShrink = '0';
       } else if (!width) {
         this.style.flex = '';
         this.style.flexBasis = '';
+        this.style.flexGrow = this.flex;
+        this.style.flexShrink = '';
       } else {
+        // Clear any previous fixed-width shorthand from active resizing.
+        this.style.flex = '';
         this.style.flexBasis = width;
+        this.style.flexGrow = this.flex;
+        this.style.flexShrink = '';
       }
+    }
+
+    _shouldLockWidth(width, resized) {
+      if (!width) {
+        return false;
+      }
+
+      const resizing = this.table && this.table._resizing;
+      const isActiveResizingColumn = !!(resizing && resizing.column && this.column === resizing.column);
+      return isActiveResizingColumn || !!resized;
     }
 
     _columnChanged(instance, column) {

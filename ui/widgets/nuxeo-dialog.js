@@ -126,7 +126,7 @@ IronOverlayManager._overlayWithBackdrop = function() {
         if (c$ && c$.length) {
           // use first child parent, for case when dom-if may have been detached
           const parent = dom(dom(c$[0]).parentNode);
-          // eslint-disable-next-line no-cond-assign
+
           for (let i = 0, n; i < c$.length && (n = c$[i]); i++) {
             parent.removeChild(n);
           }
