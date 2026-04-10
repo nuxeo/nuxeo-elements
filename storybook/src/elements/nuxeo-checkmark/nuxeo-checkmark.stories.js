@@ -7,7 +7,7 @@ export default {
 
 export const NuxeoCheckmark = {
   args: {
-    bgColor: '#fffff',
+    bgColor: '#ffffff',
     bgColorChecked: '#0000ff',
     checked: false,
     disabled: false,
