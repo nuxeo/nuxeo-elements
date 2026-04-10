@@ -32,7 +32,7 @@ export const NuxeoUserSuggestion = {
     <div class="container">
       <nuxeo-user-suggestion
         label="${args.label}"
-        .search-type="${args.searchType}"
+        search-type="${args.searchType}"
         ?multiple="${args.multiple}"
         ?stay-open-on-select="${args.stayOpenOnSelect}"
         ?readonly="${args.readonly}"
