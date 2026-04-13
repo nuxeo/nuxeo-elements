@@ -252,6 +252,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           type: Object,
           value: null,
         },
+        format: {
+          type: String,
+          value: '',
+        },
 
         _focusedDate: {
           type: Object,
@@ -1062,7 +1066,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               class="input-field"
               type="text"
               value="{{_inputValue::input}}"
-              placeholder$="[[_getDatePlaceholder()]]"
+              placeholder$="[[_getDatePlaceholder(format)]]"
               name$="[[name]]"
               disabled$="[[disabled]]"
               required$="[[required]]"
@@ -1309,8 +1313,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         },
         parseDate: (text) => {
           try {
-            const parseLocaleFormat = moment.localeData().longDateFormat('L');
-            const date = this._moment(text, parseLocaleFormat, true); // strict parsing with locale format
+            const formatToUse = this.format ? this.format : moment.localeData().longDateFormat('L');
+
+            const date = this._moment(text, formatToUse, true); //strict parsing
+
             if (date.isValid()) {
               return {
                 day: date.get('D'),
@@ -1319,7 +1325,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               };
             }
 
-            // Return current date instead of hardcoded values
             const fallbackDate = this._moment();
             return {
               day: fallbackDate.get('D'),
@@ -3430,13 +3435,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _parseWithFormat(inputValue, format) {
       try {
-        // Use moment.js for reliable parsing based on locale format
-        const momentDate = this._moment(inputValue, format, true); // strict parsing
+        // Use moment.js for reliable parsing
+        const effectiveFormat = format || this.format || moment.localeData().longDateFormat('L');
+
+        const momentDate = this._moment(inputValue, effectiveFormat, true); //strict parsing
+
         if (momentDate.isValid()) {
           const jsDate = momentDate.toDate();
-          jsDate.setHours(0, 0, 0, 0); // Normalize to start of day
+          jsDate.setHours(0, 0, 0, 0); //Normalize to start of day
           return jsDate;
         }
+
         return null;
       } catch (e) {
         return null;
@@ -3480,7 +3489,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Could not parse the date at all - format error (highest priority)
         this.invalid = true;
         this.errorReason = 'format';
-        const expectedFormat = this._getDatePlaceholder();
+        const expectedFormat = this._getDatePlaceholder(this.format);
         this.errorMessage = `${this._getLocalizedText('incorrectFormat')} Expected format: ${expectedFormat}`;
         this._showErrors = true;
         this._errorPersists = true; // Error should persist until resolved
@@ -3721,8 +3730,29 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       return priorities[errorReason] || 0;
     }
 
-    _getDatePlaceholder() {
+    _getDatePlaceholder(format) {
       try {
+        if (format) {
+          // Check for mixed case format and fallback to locale format if detected
+          if (this._isMixedCaseFormat(format)) {
+            // Mixed format detected, use locale format as fallback
+            const userLocale = this._getUserLocale();
+            moment.locale(userLocale);
+            const localeFormat = moment.localeData().longDateFormat('L');
+            const placeholder = localeFormat
+              .replace(/D{1,2}/g, 'dd')
+              .replace(/M{1,2}/g, 'mm')
+              .replace(/Y{2,4}/g, 'yyyy')
+              .toLowerCase();
+            return placeholder;
+          }
+
+          const normalizedFormat = this._normalizeFormat(format);
+
+          if (this._isValidMomentFormat(normalizedFormat)) {
+            return format; // return original format to preserve user's case (lowercase/uppercase)
+          }
+        }
         // Get the actual locale from browser and moment
         const userLocale = this._getUserLocale();
 
@@ -4171,7 +4201,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         if (!parseResult) {
           this.invalid = true;
           this.errorReason = 'format';
-          const expectedFormat = this._getDatePlaceholder();
+          const expectedFormat = this._getDatePlaceholder(this.format);
           this.errorMessage = `${this._getLocalizedText('incorrectFormat')} Expected format: ${expectedFormat}`;
           this._showErrors = true;
           return false;
@@ -4622,6 +4652,38 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         });
       }
     }
+    _isValidMomentFormat(format) {
+      if (!format || typeof format !== 'string') return false;
+
+      // Allowed moment tokens (extend if needed)
+      const validTokens = [
+        'D',
+        'DD',
+        'Do',
+        'M',
+        'MM',
+        'MMM',
+        'MMMM',
+        'YY',
+        'YYYY',
+        'H',
+        'HH',
+        'h',
+        'hh',
+        'm',
+        'mm',
+        's',
+        'ss',
+        'A',
+        'a',
+      ];
+
+      // Extract tokens from format string
+      const tokens = format.match(/[A-Za-z]+/g) || [];
+
+      // Check if every token is valid
+      return tokens.every((token) => validTokens.includes(token));
+    }
 
     _selectYear(e) {
       if (e) {
@@ -4807,19 +4869,52 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (!date || Number.isNaN(date.getTime())) return '';
 
       try {
-        // Get user's locale and ensure moment uses it
+        // Get User's locale and ensure moment uses it
         const userLocale = this._getUserLocale();
         moment.locale(userLocale);
+        // Use format property or moment's locale format for display
+        let format = moment.localeData().longDateFormat('L');
 
-        // Use moment's locale-specific format
-        const localeFormat = moment.localeData().longDateFormat('L');
-        const formatted = this._moment(date).format(localeFormat);
+        if (this.format) {
+          // Check for mixed case format and fallback to locale format if detected
+          if (this._isMixedCaseFormat(this.format)) {
+            // Mixed format detected, use locale format for display
+            format = moment.localeData().longDateFormat('L');
+          } else {
+            const normalizedFormat = this._normalizeFormat(this.format);
 
-        return formatted;
+            if (this._isValidMomentFormat(normalizedFormat)) {
+              format = normalizedFormat;
+            } else {
+              this.invalid = true;
+              this.errorMessage = `Invalid date format "${this.format}". Using default format instead.`;
+            }
+          }
+        }
+        return this._moment(date).format(format);
       } catch (error) {
         // Safe fallback using Intl.DateTimeFormat
         return new Intl.DateTimeFormat(navigator.language).format(date);
       }
+    }
+    _isMixedCaseFormat(format) {
+      if (!format) return false;
+      // Check if format contains both uppercase and lowercase letters (excluding separators)
+      const hasLowercase = /[a-z]/.test(format);
+      const hasUppercase = /[A-Z]/.test(format);
+      return hasLowercase && hasUppercase;
+    }
+
+    _normalizeFormat(format) {
+      if (!format) return format;
+
+      return format
+        .replace(/yyyy/g, 'YYYY')
+        .replace(/yy/g, 'YY')
+        .replace(/dd/g, 'DD')
+        .replace(/d(?![a-zA-Z])/g, 'D')
+        .replace(/mm/g, 'MM') // ⚠ careful: mm = minutes, MM = month
+        .replace(/m(?![a-zA-Z])/g, 'M');
     }
 
     // Professional date parser for user input with comprehensive format support
@@ -4833,9 +4928,28 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Get user's locale with better fallback
         const userLocale = this._getUserLocale();
         moment.locale(userLocale);
-        const localeFormat = moment.localeData().longDateFormat('L');
-        // Try strict parsing first (exact format match)
-        let momentDate = this._moment(trimmedInput, localeFormat, true);
+
+        let primaryFormat = moment.localeData().longDateFormat('L');
+
+        if (this.format) {
+          // Check for mixed case format and fallback to locale format if detected
+          if (this._isMixedCaseFormat(this.format)) {
+            // Mixed format detected, use locale format as fallback
+            primaryFormat = moment.localeData().longDateFormat('L');
+          } else {
+            const normalizedFormat = this._normalizeFormat(this.format);
+
+            if (this._isValidMomentFormat(normalizedFormat)) {
+              primaryFormat = normalizedFormat;
+            } else {
+              this.invalid = true;
+              this.errorMessage = `Invalid date format "${this.format}"`;
+            }
+          }
+        }
+
+        // Strict parsing with primary format
+        let momentDate = this._moment(trimmedInput, primaryFormat, true);
 
         if (momentDate.isValid()) {
           const date = momentDate.toDate();
@@ -4843,19 +4957,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           return { date, isExactFormat: true };
         }
 
-        // Try lenient parsing (more flexible)
-        momentDate = this._moment(trimmedInput, localeFormat, false);
+        // Lenient parsing with primary format
+        momentDate = this._moment(trimmedInput, primaryFormat, false);
 
         if (momentDate.isValid()) {
           const date = momentDate.toDate();
           date.setHours(0, 0, 0, 0);
-
           // Verify it's a logical date
-          if (date.getFullYear() < 1900 || date.getFullYear() > 2200) {
-            return null;
+          if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
+            return { date, isExactFormat: false };
           }
-
-          return { date, isExactFormat: false };
         }
 
         // Fallback: Try common date formats if locale parsing fails
@@ -4886,13 +4997,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         ];
 
         for (let i = 0; i < commonFormats.length; i++) {
-          const format = commonFormats[i];
-          momentDate = this._moment(trimmedInput, format, true);
+          momentDate = this._moment(trimmedInput, commonFormats[i], true);
           if (momentDate.isValid()) {
             const date = momentDate.toDate();
             date.setHours(0, 0, 0, 0);
 
-            // Verify it's a logical date
             if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
               return { date, isExactFormat: false };
             }
@@ -4904,7 +5013,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         if (momentDate.isValid()) {
           const date = momentDate.toDate();
           date.setHours(0, 0, 0, 0);
-
           // Verify it's a logical date
           if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
             return { date, isExactFormat: false };
@@ -4913,7 +5021,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         return null;
       } catch (error) {
-        // Date parsing error - using fallback
         return null;
       }
     }
