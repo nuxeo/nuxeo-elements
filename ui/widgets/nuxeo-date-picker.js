@@ -60,7 +60,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Reflect external invalid state and propagate to inner picker
         invalid: {
           type: Boolean,
-          value: false,
+          value: true,
           reflectToAttribute: true,
         },
 

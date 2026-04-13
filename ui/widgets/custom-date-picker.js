@@ -1626,7 +1626,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           nextMonth: 'Volgende maand',
           selectYear: 'Jaar selecteren',
           calendarOpened: 'Kalender geopend. Gebruik pijltjestoetsen om te navigeren. Druk op Escape om te sluiten.',
-          calendarClosed: 'Kalender gesloten.',
+          calendarClosed: 'Kalender gesloten......',
           required: 'Dit veld is verplicht.',
           invalidDate: 'Ongeldige datum. Voer een geldige datum in.',
           incorrectFormat: 'Onjuist datumformaat.',
