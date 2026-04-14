@@ -73,6 +73,14 @@ import './data-table-column-filter.js';
         },
 
         /**
+         * `true` when width was explicitly set by user resize and should be treated as fixed.
+         */
+        resized: {
+          type: Boolean,
+          value: false,
+        },
+
+        /**
          * Ratio of how the extra space between columns is distributed. If every cell
          * has the same `flex` value, the space will be distributed evenly.
          */
@@ -166,6 +174,7 @@ import './data-table-column-filter.js';
         '_alwaysVisibleChanged(table, alwaysVisible)',
         '_nameChanged(table, name)',
         '_orderChanged(table, order)',
+        '_resizedChanged(table, resized)',
         '_sortByChanged(table, sortBy)',
         '_templateChanged(table, template)',
         '_widthChanged(table, width)',
@@ -224,6 +233,10 @@ import './data-table-column-filter.js';
 
     _orderChanged(table, order) {
       this._notifyTable(table, 'order', order);
+    }
+
+    _resizedChanged(table, resized) {
+      this._notifyTable(table, 'resized', resized);
     }
 
     _templateChanged(table, template) {

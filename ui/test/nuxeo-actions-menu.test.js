@@ -205,7 +205,6 @@ suite('nuxeo-actions-menu', () => {
         }
 
         static get template() {
-          // eslint-disable-next-line no-undef
           return polymer.html`
           <style include="nuxeo-action-button-styles"></style>
           <div class="action">

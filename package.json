@@ -21,8 +21,8 @@
     "test:dataviz": "karma start --package dataviz --coverage",
     "test:watch": "karma start --auto-watch=true --single-run=false",
     "docs": "lerna run docs --parallel",
-    "lint:eslint": "eslint --ext .js,.html .",
-    "format:eslint": "eslint --ext .js,.html . --fix",
+    "lint:eslint": "eslint .",
+    "format:eslint": "eslint . --fix",
     "lint:prettier": "prettier \"**/*.{js,html}\" --list-different || (echo '↑↑ these files are not prettier formatted ↑↑' && exit 1)",
     "format:prettier": "prettier \"**/*.{js,html}\" --write",
     "lint:polymer": "polymer lint -i {core,dataviz,ui}/**/*.js",
@@ -40,17 +40,19 @@
     "react-draggable": "4.4.5"
   },
   "devDependencies": {
-    "@open-wc/eslint-config": "^0.3.0",
+    "@eslint/js": "^9.0.0",
     "@open-wc/karma-esm": "^2.12.6",
     "@open-wc/prettier-config": "^0.1.0",
     "@polymer/iron-component-page": "^4.0.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
-    "babel-eslint": "^10.0.1",
     "chai": "^4.2.0",
     "check-engine": "^1.10.0",
     "coveralls": "^3.0.2",
-    "eslint": "^5.15.1",
-    "eslint-plugin-html": "^5.0.3",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-html": "^8.1.4",
+    "eslint-plugin-import": "^2.32.0",
+    "globals": "^17.4.0",
     "husky": "^4.2.3",
     "istanbul-instrumenter-loader": "^3.0.1",
     "karma": "^6.4.4",
@@ -128,7 +130,7 @@
     "@polymer/paper-tooltip": "^3.0.0",
     "@polymer/polymer": "^3.0.0",
     "@polymer/test-fixture": "^4.0.2",
-    "nuxeo": "^4.0.3",
-    "marked": "^4.0.17"
+    "marked": "^4.0.17",
+    "nuxeo": "^4.0.3"
   }
 }

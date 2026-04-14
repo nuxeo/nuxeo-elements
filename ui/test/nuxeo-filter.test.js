@@ -412,7 +412,6 @@ suite('nuxeo-filter', () => {
         `;
       }
 
-      // eslint-disable-line no-undef
       static get properties() {
         return {
           label: {
