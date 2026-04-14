@@ -202,6 +202,7 @@
   "htmlEditor.superscript": "Superíndice",
   "htmlEditor.underline": "Subrayado",
   "imagePreviewer.fitToRealSize": "Ajustar al tamaño real",
+  "imagePreviewer.fitToViewer": "Fit to viewer",
   "imagePreviewer.rotate.left": "Rotar izquierda",
   "imagePreviewer.rotate.right": "Rotar derecha",
   "imagePreviewer.zoom.in": "Acercarse",

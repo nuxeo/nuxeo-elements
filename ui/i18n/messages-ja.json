@@ -202,6 +202,7 @@
   "htmlEditor.superscript": "上付き文字",
   "htmlEditor.underline": "下線",
   "imagePreviewer.fitToRealSize": "実際のサイズに合わせる",
+  "imagePreviewer.fitToViewer": "Fit to viewer",
   "imagePreviewer.rotate.left": "左に回転",
   "imagePreviewer.rotate.right": "右に回転",
   "imagePreviewer.zoom.in": "ズームイン",

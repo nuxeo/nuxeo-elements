@@ -41,7 +41,7 @@ import '../nuxeo-icons.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-image-viewer/index.html
    */
-  class ImageViewer extends mixinBehaviors([IronResizableBehavior], Nuxeo.Element) {
+  class ImageViewer extends mixinBehaviors([IronResizableBehavior, Nuxeo.I18nBehavior], Nuxeo.Element) {
     static get is() {
       return 'nuxeo-image-viewer';
     }
@@ -110,6 +110,10 @@ import '../nuxeo-icons.js';
             position: relative;
             width: 100%;
             height: 100%;
+            --nuxeo-image-viewer-toolbar-color: #fff;
+            --nuxeo-image-viewer-toolbar-bg: rgba(0, 0, 0, 0.88);
+            --nuxeo-image-viewer-toolbar-ink-color: #fff;
+            --nuxeo-image-viewer-toolbar-icon-shadow: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
           }
 
           #canvas {
@@ -128,19 +132,21 @@ import '../nuxeo-icons.js';
             max-width: 300px;
             left: 50%;
             transform: translateX(-50%);
-            color: #fff;
+            color: var(--nuxeo-image-viewer-toolbar-color);
             z-index: 25;
             text-align: center;
-            padding: 2px;
-            border-radius: 4px;
-            background-color: rgba(0, 0, 0, 0.5);
+            padding: 4px;
+            border-radius: 6px;
+            background: var(--nuxeo-image-viewer-toolbar-bg);
+            backdrop-filter: blur(6px);
           }
 
           paper-icon-button {
             width: 34px;
             height: 34px;
-            color: white !important;
-            --paper-icon-button-ink-color: white;
+            color: var(--nuxeo-image-viewer-toolbar-color) !important;
+            --paper-icon-button-ink-color: var(--nuxeo-image-viewer-toolbar-ink-color);
+            filter: var(--nuxeo-image-viewer-toolbar-icon-shadow);
           }
 
           #image {
@@ -159,33 +165,38 @@ import '../nuxeo-icons.js';
                   on-click="_click"
                   icon="zoom-out"
                   data-action="zoom-out"
-                  aria-label$="[[i18n('imagePreviewer.zoom.out')]]"
+                  aria-label$="[[_getLabel('imagePreviewer.zoom.out')]]"
+                  title$="[[_getLabel('imagePreviewer.zoom.out')]]"
                 ></paper-icon-button>
                 <paper-icon-button
                   on-click="_click"
                   icon="[[_getFitIcon(_fitToRealSize)]]"
                   data-action$="[[_computeFitAction(_fitToRealSize)]]"
-                  aria-label$="[[i18n('imagePreviewer.fitToRealSize')]]"
+                  aria-label$="[[_getFitLabel(_fitToRealSize)]]"
+                  title$="[[_getFitLabel(_fitToRealSize)]]"
                 >
                 </paper-icon-button>
                 <paper-icon-button
                   on-click="_click"
                   icon="zoom-in"
                   data-action="zoom-in"
-                  aria-label$="[[i18n('imagePreviewer.zoom.in')]]"
+                  aria-label$="[[_getLabel('imagePreviewer.zoom.in')]]"
+                  title$="[[_getLabel('imagePreviewer.zoom.in')]]"
                 ></paper-icon-button>
                 <paper-icon-button
                   on-click="_click"
                   icon="image:rotate-left"
                   data-action="rotate-left"
-                  aria-label$="[[i18n('imagePreviewer.rotate.left')]]"
+                  aria-label$="[[_getLabel('imagePreviewer.rotate.left')]]"
+                  title$="[[_getLabel('imagePreviewer.rotate.left')]]"
                 >
                 </paper-icon-button>
                 <paper-icon-button
                   on-click="_click"
                   icon="image:rotate-right"
                   data-action="rotate-right"
-                  aria-label$="[[i18n('imagePreviewer.rotate.right')]]"
+                  aria-label$="[[_getLabel('imagePreviewer.rotate.right')]]"
+                  title$="[[_getLabel('imagePreviewer.rotate.right')]]"
                 >
                 </paper-icon-button>
               </div>
@@ -198,6 +209,17 @@ import '../nuxeo-icons.js';
     ready() {
       super.ready();
       this.addEventListener('iron-resize', this._resize);
+      this._applyToolbarTheme(this._getThemeByName('dark'));
+    }
+
+    _getLabel(key) {
+      return this.i18n ? this.i18n(key) : key;
+    }
+
+    _getFitLabel(fitToRealSize) {
+      return fitToRealSize
+        ? this._getLabel('imagePreviewer.fitToViewer')
+        : this._getLabel('imagePreviewer.fitToRealSize');
     }
 
     _init() {
@@ -217,6 +239,8 @@ import '../nuxeo-icons.js';
           toggleDragModeOnDblclick: false,
           viewMode: 1,
           zoomOnWheel: this.zoomOnWheel,
+          ready: () => this._scheduleToolbarContrastUpdate(),
+          cropend: () => this._scheduleToolbarContrastUpdate(),
           zoom: (data) => this._verifyZoomRatio(data),
         };
         this._el = new Cropper(this.$.image, options);
@@ -247,6 +271,7 @@ import '../nuxeo-icons.js';
         default:
         // do nothing
       }
+      this._scheduleToolbarContrastUpdate();
     }
 
     _computeFitAction(fitToRealSize) {
@@ -269,6 +294,7 @@ import '../nuxeo-icons.js';
         this._el.resize();
         this._el.zoomTo(this._getOriginalZoomRatio());
         this._fitToRealSize = false;
+        this._scheduleToolbarContrastUpdate();
       }
     }
 
@@ -289,6 +315,178 @@ import '../nuxeo-icons.js';
 
     _isToolbarVisible(controls, src, el) {
       return controls && src && el;
+    }
+
+    _scheduleToolbarContrastUpdate() {
+      if (this.__toolbarContrastFrame) {
+        cancelAnimationFrame(this.__toolbarContrastFrame);
+      }
+      this.__toolbarContrastFrame = requestAnimationFrame(() => {
+        this.__toolbarContrastFrame = null;
+        this._updateToolbarContrast();
+      });
+    }
+
+    _updateToolbarContrast() {
+      if (!this.controls || !this._el) {
+        return;
+      }
+
+      const sampleLuminance = this._getToolbarBackgroundLuminance();
+      if (sampleLuminance === null) {
+        this._applyToolbarTheme(this._getThemeByName('dark'));
+        return;
+      }
+
+      const themes = [this._getThemeByName('dark'), this._getThemeByName('light')];
+      const rankedThemes = themes
+        .map((theme) => {
+          const mixedLuminance = this._mixLuminance(theme.surfaceLuminance, sampleLuminance, theme.surfaceAlpha);
+          const iconContrast = this._contrastRatio(theme.iconLuminance, mixedLuminance);
+          const surfaceContrast = this._contrastRatio(mixedLuminance, sampleLuminance);
+          return {
+            theme,
+            iconContrast,
+            surfaceContrast,
+            passes: iconContrast >= 3 && surfaceContrast >= 3,
+          };
+        })
+        .sort((a, b) => {
+          if (a.passes && !b.passes) {
+            return -1;
+          }
+          if (!a.passes && b.passes) {
+            return 1;
+          }
+          const aScore = Math.min(a.iconContrast, a.surfaceContrast);
+          const bScore = Math.min(b.iconContrast, b.surfaceContrast);
+          return bScore - aScore;
+        });
+
+      this._applyToolbarTheme(rankedThemes[0].theme);
+    }
+
+    _getToolbarBackgroundLuminance() {
+      const toolbar = this.shadowRoot && this.shadowRoot.querySelector('#toolbar');
+      if (!toolbar || !this.$.image || !this.$.image.naturalWidth || !this.$.image.naturalHeight) {
+        return null;
+      }
+
+      const canvasData = this._el.getCanvasData && this._el.getCanvasData();
+      if (!canvasData || !canvasData.width || !canvasData.height) {
+        return null;
+      }
+
+      const viewerRect = this.$.canvas.getBoundingClientRect();
+      const toolbarRect = toolbar.getBoundingClientRect();
+      const toolbarLeft = toolbarRect.left - viewerRect.left;
+      const toolbarTop = toolbarRect.top - viewerRect.top;
+      const toolbarWidth = toolbarRect.width;
+      const toolbarHeight = toolbarRect.height;
+
+      const areaLeft = Math.max(toolbarLeft, canvasData.left);
+      const areaTop = Math.max(toolbarTop, canvasData.top);
+      const areaRight = Math.min(toolbarLeft + toolbarWidth, canvasData.left + canvasData.width);
+      const areaBottom = Math.min(toolbarTop + toolbarHeight, canvasData.top + canvasData.height);
+
+      const areaWidth = areaRight - areaLeft;
+      const areaHeight = areaBottom - areaTop;
+      if (areaWidth <= 1 || areaHeight <= 1) {
+        return null;
+      }
+
+      const { naturalWidth, naturalHeight } = this.$.image;
+      const sx = Math.max(0, ((areaLeft - canvasData.left) / canvasData.width) * naturalWidth);
+      const sy = Math.max(0, ((areaTop - canvasData.top) / canvasData.height) * naturalHeight);
+      const sw = Math.min(naturalWidth - sx, (areaWidth / canvasData.width) * naturalWidth);
+      const sh = Math.min(naturalHeight - sy, (areaHeight / canvasData.height) * naturalHeight);
+      if (sw <= 1 || sh <= 1) {
+        return null;
+      }
+
+      try {
+        if (!this.__contrastCanvas) {
+          this.__contrastCanvas = document.createElement('canvas');
+          this.__contrastCanvas.width = 24;
+          this.__contrastCanvas.height = 24;
+        }
+        const context = this.__contrastCanvas.getContext('2d', { willReadFrequently: true });
+        context.clearRect(0, 0, this.__contrastCanvas.width, this.__contrastCanvas.height);
+        context.drawImage(
+          this.$.image,
+          sx,
+          sy,
+          sw,
+          sh,
+          0,
+          0,
+          this.__contrastCanvas.width,
+          this.__contrastCanvas.height,
+        );
+        const imageData = context.getImageData(0, 0, this.__contrastCanvas.width, this.__contrastCanvas.height).data;
+        let total = 0;
+        const pixels = imageData.length / 4;
+        for (let index = 0; index < imageData.length; index += 4) {
+          total += this._relativeLuminanceFromRgb(imageData[index], imageData[index + 1], imageData[index + 2]);
+        }
+        return pixels > 0 ? total / pixels : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    _applyToolbarTheme(theme) {
+      if (!theme) {
+        return;
+      }
+      this.updateStyles({
+        '--nuxeo-image-viewer-toolbar-color': theme.iconColor,
+        '--nuxeo-image-viewer-toolbar-ink-color': theme.iconColor,
+        '--nuxeo-image-viewer-toolbar-bg': `rgba(${theme.surfaceRgb.r}, ${theme.surfaceRgb.g}, ${theme.surfaceRgb.b}, ${theme.surfaceAlpha})`,
+        '--nuxeo-image-viewer-toolbar-icon-shadow': theme.iconShadow,
+      });
+    }
+
+    _getThemeByName(name) {
+      if (name === 'light') {
+        return {
+          iconColor: '#111111',
+          iconLuminance: this._relativeLuminanceFromRgb(17, 17, 17),
+          surfaceRgb: { r: 255, g: 255, b: 255 },
+          surfaceLuminance: 1,
+          surfaceAlpha: 0.82,
+          iconShadow: 'drop-shadow(0 0 1px rgba(255, 255, 255, 0.9))',
+        };
+      }
+      return {
+        iconColor: '#ffffff',
+        iconLuminance: 1,
+        surfaceRgb: { r: 0, g: 0, b: 0 },
+        surfaceLuminance: 0,
+        surfaceAlpha: 0.82,
+        iconShadow: 'drop-shadow(0 0 2px rgba(0, 0, 0, 0.8))',
+      };
+    }
+
+    _mixLuminance(foreground, background, alpha) {
+      return foreground * alpha + background * (1 - alpha);
+    }
+
+    _contrastRatio(firstLuminance, secondLuminance) {
+      const light = Math.max(firstLuminance, secondLuminance);
+      const dark = Math.min(firstLuminance, secondLuminance);
+      return (light + 0.05) / (dark + 0.05);
+    }
+
+    _relativeLuminanceFromRgb(red, green, blue) {
+      const r = this._linearizeSrgb(red / 255);
+      const g = this._linearizeSrgb(green / 255);
+      const b = this._linearizeSrgb(blue / 255);
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    _linearizeSrgb(value) {
+      return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
     }
   }
 
