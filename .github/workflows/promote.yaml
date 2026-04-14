@@ -16,7 +16,7 @@ on:
         required: false
 
 env:
-  LERNA: lerna@6.6.2        
+  LERNA: lerna@9.0.7
 
 permissions:
   contents: write
