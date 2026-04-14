@@ -24,6 +24,7 @@ import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import Cropper from 'cropperjs/dist/cropper.esm.js';
+import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-icons.js';
 
 {
@@ -41,7 +42,7 @@ import '../nuxeo-icons.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-image-viewer/index.html
    */
-  class ImageViewer extends mixinBehaviors([IronResizableBehavior, Nuxeo.I18nBehavior], Nuxeo.Element) {
+  class ImageViewer extends mixinBehaviors([IronResizableBehavior, I18nBehavior], Nuxeo.Element) {
     static get is() {
       return 'nuxeo-image-viewer';
     }
@@ -165,38 +166,38 @@ import '../nuxeo-icons.js';
                   on-click="_click"
                   icon="zoom-out"
                   data-action="zoom-out"
-                  aria-label$="[[_getLabel('imagePreviewer.zoom.out')]]"
-                  title$="[[_getLabel('imagePreviewer.zoom.out')]]"
+                  aria-label$="[[i18n('imagePreviewer.zoom.out')]]"
+                  title$="[[i18n('imagePreviewer.zoom.out')]]"
                 ></paper-icon-button>
                 <paper-icon-button
                   on-click="_click"
                   icon="[[_getFitIcon(_fitToRealSize)]]"
                   data-action$="[[_computeFitAction(_fitToRealSize)]]"
-                  aria-label$="[[_getFitLabel(_fitToRealSize)]]"
-                  title$="[[_getFitLabel(_fitToRealSize)]]"
+                  aria-label$="[[i18n(_getFitLabel(_fitToRealSize))]]"
+                  title$="[[i18n(_getFitLabel(_fitToRealSize))]]"
                 >
                 </paper-icon-button>
                 <paper-icon-button
                   on-click="_click"
                   icon="zoom-in"
                   data-action="zoom-in"
-                  aria-label$="[[_getLabel('imagePreviewer.zoom.in')]]"
-                  title$="[[_getLabel('imagePreviewer.zoom.in')]]"
+                  aria-label$="[[i18n('imagePreviewer.zoom.in')]]"
+                  title$="[[i18n('imagePreviewer.zoom.in')]]"
                 ></paper-icon-button>
                 <paper-icon-button
                   on-click="_click"
                   icon="image:rotate-left"
                   data-action="rotate-left"
-                  aria-label$="[[_getLabel('imagePreviewer.rotate.left')]]"
-                  title$="[[_getLabel('imagePreviewer.rotate.left')]]"
+                  aria-label$="[[i18n('imagePreviewer.rotate.left')]]"
+                  title$="[[i18n('imagePreviewer.rotate.left')]]"
                 >
                 </paper-icon-button>
                 <paper-icon-button
                   on-click="_click"
                   icon="image:rotate-right"
                   data-action="rotate-right"
-                  aria-label$="[[_getLabel('imagePreviewer.rotate.right')]]"
-                  title$="[[_getLabel('imagePreviewer.rotate.right')]]"
+                  aria-label$="[[i18n('imagePreviewer.rotate.right')]]"
+                  title$="[[i18n('imagePreviewer.rotate.right')]]"
                 >
                 </paper-icon-button>
               </div>
@@ -212,14 +213,8 @@ import '../nuxeo-icons.js';
       this._applyToolbarTheme(this._getThemeByName('dark'));
     }
 
-    _getLabel(key) {
-      return this.i18n ? this.i18n(key) : key;
-    }
-
     _getFitLabel(fitToRealSize) {
-      return fitToRealSize
-        ? this._getLabel('imagePreviewer.fitToViewer')
-        : this._getLabel('imagePreviewer.fitToRealSize');
+      return fitToRealSize ? 'imagePreviewer.fitToViewer' : 'imagePreviewer.fitToRealSize';
     }
 
     _init() {
@@ -241,7 +236,10 @@ import '../nuxeo-icons.js';
           zoomOnWheel: this.zoomOnWheel,
           ready: () => this._scheduleToolbarContrastUpdate(),
           cropend: () => this._scheduleToolbarContrastUpdate(),
-          zoom: (data) => this._verifyZoomRatio(data),
+          zoom: (data) => {
+            this._verifyZoomRatio(data);
+            this._scheduleToolbarContrastUpdate();
+          },
         };
         this._el = new Cropper(this.$.image, options);
       }
@@ -411,6 +409,9 @@ import '../nuxeo-icons.js';
           this.__contrastCanvas.height = 24;
         }
         const context = this.__contrastCanvas.getContext('2d', { willReadFrequently: true });
+        if (!context) {
+          return null;
+        }
         context.clearRect(0, 0, this.__contrastCanvas.width, this.__contrastCanvas.height);
         context.drawImage(
           this.$.image,
@@ -442,7 +443,8 @@ import '../nuxeo-icons.js';
       this.updateStyles({
         '--nuxeo-image-viewer-toolbar-color': theme.iconColor,
         '--nuxeo-image-viewer-toolbar-ink-color': theme.iconColor,
-        '--nuxeo-image-viewer-toolbar-bg': `rgba(${theme.surfaceRgb.r}, ${theme.surfaceRgb.g}, ${theme.surfaceRgb.b}, ${theme.surfaceAlpha})`,
+        '--nuxeo-image-viewer-toolbar-bg': `rgba(${theme.surfaceRgb.r},
+        ${theme.surfaceRgb.g}, ${theme.surfaceRgb.b}, ${theme.surfaceAlpha})`,
         '--nuxeo-image-viewer-toolbar-icon-shadow': theme.iconShadow,
       });
     }
