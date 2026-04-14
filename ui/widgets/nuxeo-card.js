@@ -117,7 +117,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
               on-click="_toggle"
               on-keydown="_toggleKeydown"
               class="header"
-              tabindex$="[[_getHeadingTabindex(collapsible)]]"
+              tabindex$="[[_getHeadingTabIndex(collapsible)]]"
               aria-expanded$="[[collapsible ? opened : undefined]]"
             >
               <iron-icon class="icon" icon="[[icon]]" hidden$="[[!icon]]"></iron-icon>
@@ -197,7 +197,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       return icon || heading || collapsible;
     }
 
-    _getHeadingTabindex(collapsible) {
+    _getHeadingTabIndex(collapsible) {
       return collapsible ? '0' : '-1';
     }
 
@@ -211,7 +211,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
         if (key !== 'Enter' && key !== ' ' && key !== 'Spacebar') {
           return;
         }
-        e.preventDefault(); // Prevents vertical scroll on spacebar keypress
+        e.preventDefault(); // prevents vertical scroll on spacebar keypress
         e.stopPropagation();
         this._toggle();
       }

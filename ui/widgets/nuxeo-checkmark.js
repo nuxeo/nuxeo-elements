@@ -120,14 +120,14 @@ import '../nuxeo-icons.js';
       super.ready();
       this.setAttribute('role', 'checkbox');
       this.setAttribute('aria-checked', false);
-      this.setAttribute('tabindex', '0');
+      this.setAttribute('tabindex', '0'); // Make focusable by keyboard
       this.addEventListener('keydown', this._onKeyDown.bind(this));
     }
 
     _onKeyDown(e) {
       if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
         e.preventDefault();
-        this._tap(true);
+        this._tap(true); // true = triggered from keyboard
         this.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
       }
     }

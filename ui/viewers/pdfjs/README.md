@@ -31,5 +31,4 @@ Commit your changes:
 
 
 Apply the following patch for making customizations for hiding print and download icons.
-https://patch-diff.githubusercontent.com/raw/nuxeo/nuxeo-elements/pull/1303.patch
-
+https://patch-diff.githubusercontent.com/raw/nuxeo/nuxeo-elements/pull/1302.patch

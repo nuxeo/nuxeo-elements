@@ -1,28 +1,28 @@
-import { html } from 'lit-html';
-import { storiesOf } from '@storybook/polymer';
-import { boolean, number, select, text } from '@storybook/addon-knobs';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-user-suggestion.js';
 import { USER_SUGGESTION_ENTRIES } from '../../data/user-suggestion.data';
 
 const server = window.nuxeo.mock;
 server.respondWith('post', '/api/v1/automation/UserGroup.Suggestion', () => USER_SUGGESTION_ENTRIES);
-storiesOf('UI/nuxeo-user-suggestion', module).add('nuxeo-user-suggestion', () => {
-  const label = text('Label', 'Label');
-  const searchType = select(
-    'searchType',
-    {
-      USER_TYPE: 'USER_TYPE',
-      GROUP_TYPE: 'GROUP_TYPE',
-      USER_GROUP_TYPE: 'USER_GROUP_TYPE',
-    },
-    'USER_GROUP_TYPE',
-  );
-  const multiple = boolean('multiple', false);
-  const stayOpenOnSelect = boolean('stayOpenOnSelect', false);
-  const readonly = boolean('readonly', false);
-  const minChars = number('minChars', 0);
-  const placeholder = text('Placeholder', 'Placeholder');
-  return html`
+
+export default {
+  title: 'UI/nuxeo-user-suggestion',
+};
+
+export const NuxeoUserSuggestion = {
+  args: {
+    label: 'Label',
+    searchType: 'USER_GROUP_TYPE',
+    multiple: false,
+    stayOpenOnSelect: false,
+    readonly: false,
+    minChars: 0,
+    placeholder: 'Placeholder',
+  },
+  argTypes: {
+    searchType: { control: 'select', options: ['USER_TYPE', 'GROUP_TYPE', 'USER_GROUP_TYPE'] },
+  },
+  render: (args) => html`
     <style>
       .container {
         margin: 2rem;
@@ -31,15 +31,15 @@ storiesOf('UI/nuxeo-user-suggestion', module).add('nuxeo-user-suggestion', () =>
     </style>
     <div class="container">
       <nuxeo-user-suggestion
-        label="${label}"
-        .search-type="${searchType}"
-        ?multiple="${multiple}"
-        ?stay-open-on-select="${stayOpenOnSelect}"
-        ?readonly="${readonly}"
-        min-chars="${minChars}"
-        placeholder="${placeholder}"
+        label="${args.label}"
+        search-type="${args.searchType}"
+        ?multiple="${args.multiple}"
+        ?stay-open-on-select="${args.stayOpenOnSelect}"
+        ?readonly="${args.readonly}"
+        min-chars="${args.minChars}"
+        placeholder="${args.placeholder}"
       >
       </nuxeo-user-suggestion>
     </div>
-  `;
-});
+  `,
+};
