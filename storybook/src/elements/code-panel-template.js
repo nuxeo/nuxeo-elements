@@ -88,11 +88,17 @@ export const codePanelTemplate = (path) => html`
     <span class="hljs">
       ${until(
         fetch(`layouts/${path}`)
-          .then((response) => response.text())
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`Failed to load layout source: ${response.status}`);
+            }
+            return response.text();
+          })
           .then((text) => {
             const val = hljs.highlight('html', text).value;
             return unsafeHTML(`<pre>${val}</pre>`);
-          }),
+          })
+          .catch((error) => html`<span>Error loading layout source: ${error.message}</span>`),
         html`
           <span>Loading layout source...</span>
         `,
