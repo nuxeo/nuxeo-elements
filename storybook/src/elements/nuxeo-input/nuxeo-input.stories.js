@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-input';
+import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-input.js';
 
 export default {
   title: 'UI/nuxeo-input',
