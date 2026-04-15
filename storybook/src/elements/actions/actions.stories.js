@@ -14,7 +14,7 @@ import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-untrash-document-button.js';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-icons';
 import { html } from 'lit';
 import { action } from 'storybook/actions';
-import DocumentBuilder from '../../data/documents.data';
+import DocumentBuilder from '../../data/documents.data.js';
 import image from '../../img/nuxeo-elements-catalog.svg';
 import iconMap from '../../lists/icons';
 

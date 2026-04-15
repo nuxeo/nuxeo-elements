@@ -1,4 +1,4 @@
-import { LIST } from '../../data/lists.data';
+import { LIST } from '../../data/lists.data.js';
 import { tableTemplate } from './nuxeo-data-table-structure.js';
 
 export default {
