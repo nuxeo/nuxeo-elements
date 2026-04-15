@@ -6,7 +6,7 @@ import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-input.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-date-picker.js';
 import '../../../.storybook/i18n';
 import image from '../../img/image01.jpg';
-import DocumentBuilder from '../../data/documents.data';
+import DocumentBuilder from '../../data/documents.data.js';
 import { codePanelTemplate } from '../code-panel-template.js';
 
 window.Polymer = Polymer;

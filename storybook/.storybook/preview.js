@@ -1,7 +1,7 @@
 import { fakeServer } from '@nuxeo/testing-helpers';
-import './nuxeo-demo-theme';
-import './i18n';
-import './routing';
+import './nuxeo-demo-theme.js';
+import './i18n.js';
+import './routing.js';
 
 // Create mock server so story modules can register handlers at import time
 window.nuxeo.mock = fakeServer.create();
