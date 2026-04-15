@@ -7,8 +7,8 @@ import '@nuxeo/nuxeo-ui-elements/nuxeo-data-table/iron-data-table.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-directory-radio-group.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-select.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-user-suggestion.js';
-import { USER_SUGGESTION_ENTRIES } from '../../data/user-suggestion.data';
-import { cities as CITIES, LIST } from '../../data/lists.data';
+import { USER_SUGGESTION_ENTRIES } from '../../data/user-suggestion.data.js';
+import { cities as CITIES, LIST } from '../../data/lists.data.js';
 import { DIRECTORY_SUGGESTION_ENTRIES } from '../../data/directory-suggestion.data.js';
 
 const server = window.nuxeo.mock;
