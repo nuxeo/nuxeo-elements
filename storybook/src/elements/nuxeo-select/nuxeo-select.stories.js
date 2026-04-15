@@ -1,6 +1,6 @@
 import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-select.js';
-import { cities as CITIES } from '../../data/lists.data';
+import { cities as CITIES } from '../../data/lists.data.js';
 
 export default {
   title: 'UI/nuxeo-select',

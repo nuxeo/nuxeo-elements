@@ -1,6 +1,6 @@
 import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-user-suggestion.js';
-import { USER_SUGGESTION_ENTRIES } from '../../data/user-suggestion.data';
+import { USER_SUGGESTION_ENTRIES } from '../../data/user-suggestion.data.js';
 
 const server = window.nuxeo.mock;
 server.respondWith('post', '/api/v1/automation/UserGroup.Suggestion', () => USER_SUGGESTION_ENTRIES);

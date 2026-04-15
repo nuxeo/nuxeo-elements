@@ -1,7 +1,7 @@
 import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-video/nuxeo-video-info';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-card';
-import DocumentBuilder from '../../data/documents.data';
+import DocumentBuilder from '../../data/documents.data.js';
 import videoProperties from '../../data/video.data.js';
 
 export default {
