@@ -47,7 +47,7 @@ jobs:
         run: npx lerna run analysis --parallel
 
       - name: Build storybook
-        working-directory: storybook 
+        working-directory: storybook
         run: |
           npx storybook build -o dist
 
