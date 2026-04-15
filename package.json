@@ -3,7 +3,7 @@
   "repository": "nuxeo/nuxeo-elements.git",
   "name": "nuxeo-elements",
   "private": true,
-  "version": "3.1.29-SNAPSHOT",
+  "version": "3.1.30-SNAPSHOT",
   "workspaces": [
     "core",
     "dataviz",
@@ -42,6 +42,9 @@
     "win-format": "npm run win-format:polymer && npm run format:prettier && npm run format:eslint ",
     "storybook": "lerna run analysis --parallel && cd storybook && npm start",
     "bump-version:date-hash": "TIMESTAMP=$(date -u +%Y%m%d.%H%M%S) && lerna exec \"npm --no-git-tag-version version \\$(node -pe \\\"require('./package.json').version + '.$TIMESTAMP-' + require('child_process').execSync('git rev-parse --short HEAD').toString()\\\")\" --ignore @nuxeo/nuxeo-elements-storybook"
+  },
+  "overrides": {
+    "react-draggable": "4.4.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
