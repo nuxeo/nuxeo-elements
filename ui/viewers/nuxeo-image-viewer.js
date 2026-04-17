@@ -165,21 +165,41 @@ import '../nuxeo-icons.js';
                 <paper-icon-button
                   on-click="_click"
                   icon="zoom-out"
+                  alt=""
                   data-action="zoom-out"
                   aria-label$="[[i18n('imagePreviewer.zoom.out')]]"
                   title$="[[i18n('imagePreviewer.zoom.out')]]"
                 ></paper-icon-button>
-                <paper-icon-button
-                  on-click="_click"
-                  icon="[[_getFitIcon(_fitToRealSize)]]"
-                  data-action$="[[_computeFitAction(_fitToRealSize)]]"
-                  aria-label$="[[i18n(_getFitLabel(_fitToRealSize))]]"
-                  title$="[[i18n(_getFitLabel(_fitToRealSize))]]"
-                >
-                </paper-icon-button>
+                <dom-if if="[[!_fitToRealSize]]">
+                  <template>
+                    <paper-icon-button
+                      on-click="_click"
+                      icon="nuxeo:fit-to-real-size"
+                      alt=""
+                      data-action="fit-to-real-size"
+                      aria-label$="[[i18n('imagePreviewer.fitToRealSize')]]"
+                      title$="[[i18n('imagePreviewer.fitToRealSize')]]"
+                    >
+                    </paper-icon-button>
+                  </template>
+                </dom-if>
+                <dom-if if="[[_fitToRealSize]]">
+                  <template>
+                    <paper-icon-button
+                      on-click="_click"
+                      icon="nuxeo:fit-to-viewer"
+                      alt=""
+                      data-action="fit-to-viewer"
+                      aria-label$="[[i18n('imagePreviewer.fitToViewer')]]"
+                      title$="[[i18n('imagePreviewer.fitToViewer')]]"
+                    >
+                    </paper-icon-button>
+                  </template>
+                </dom-if>
                 <paper-icon-button
                   on-click="_click"
                   icon="zoom-in"
+                  alt=""
                   data-action="zoom-in"
                   aria-label$="[[i18n('imagePreviewer.zoom.in')]]"
                   title$="[[i18n('imagePreviewer.zoom.in')]]"
@@ -187,6 +207,7 @@ import '../nuxeo-icons.js';
                 <paper-icon-button
                   on-click="_click"
                   icon="image:rotate-left"
+                  alt=""
                   data-action="rotate-left"
                   aria-label$="[[i18n('imagePreviewer.rotate.left')]]"
                   title$="[[i18n('imagePreviewer.rotate.left')]]"
@@ -195,6 +216,7 @@ import '../nuxeo-icons.js';
                 <paper-icon-button
                   on-click="_click"
                   icon="image:rotate-right"
+                  alt=""
                   data-action="rotate-right"
                   aria-label$="[[i18n('imagePreviewer.rotate.right')]]"
                   title$="[[i18n('imagePreviewer.rotate.right')]]"
@@ -211,10 +233,6 @@ import '../nuxeo-icons.js';
       super.ready();
       this.addEventListener('iron-resize', this._resize);
       this._applyToolbarTheme(this._getThemeByName('dark'));
-    }
-
-    _getFitLabel(fitToRealSize) {
-      return fitToRealSize ? 'imagePreviewer.fitToViewer' : 'imagePreviewer.fitToRealSize';
     }
 
     _init() {
@@ -270,14 +288,6 @@ import '../nuxeo-icons.js';
         // do nothing
       }
       this._scheduleToolbarContrastUpdate();
-    }
-
-    _computeFitAction(fitToRealSize) {
-      return fitToRealSize ? 'fit-to-viewer' : 'fit-to-real-size';
-    }
-
-    _getFitIcon(fitToRealSize) {
-      return `nuxeo:${this._computeFitAction(fitToRealSize)}`;
     }
 
     _getOriginalZoomRatio() {
