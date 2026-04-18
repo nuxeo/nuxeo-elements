@@ -12,11 +12,9 @@ import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-notifications-toggle-button';
 import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-share-button.js';
 import '@nuxeo/nuxeo-ui-elements/actions/nuxeo-untrash-document-button.js';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-icons';
-import { html } from 'lit-html';
-import { storiesOf } from '@storybook/polymer';
-import { color, select, text, boolean } from '@storybook/addon-knobs';
-import { action } from '@storybook/addon-actions';
-import DocumentBuilder from '../../data/documents.data';
+import { html } from 'lit';
+import { action } from 'storybook/actions';
+import DocumentBuilder from '../../data/documents.data.js';
 import image from '../../img/nuxeo-elements-catalog.svg';
 import iconMap from '../../lists/icons';
 
@@ -25,7 +23,6 @@ const documentBuilder = new DocumentBuilder()
   .setPermissions(['Write', 'ManageWorkflows']);
 
 const DOCUMENTS = [documentBuilder.build(), documentBuilder.build(), documentBuilder.build()];
-
 const listOfIcons = iconMap.nuxeo;
 
 const server = window.nuxeo.mock;
@@ -38,137 +35,145 @@ server.respondWith('POST', '/api/v1/automation/Document.Subscribe', DOCUMENTS[0]
 server.respondWith('POST', '/api/v1/automation/Document.Unsubscribe', DOCUMENTS[0]);
 server.respondWith('POST', '/api/v1/automation/Document.Untrash', DOCUMENTS[0]);
 
-const stories = storiesOf('UI/Actions', module);
-stories
-  .add(
-    'nuxeo-add-to-collection-button',
-    () =>
-      html`
-        <nuxeo-add-to-collection-button
-          @click=${action('clicked')}
-          .document="${DOCUMENTS[0]}"
-        ></nuxeo-add-to-collection-button>
-      `,
-  )
+export default {
+  title: 'UI/Actions',
+};
 
-  .add(
-    'nuxeo-delete-blob-button',
-    () =>
-      html`
-        <nuxeo-delete-blob-button @click=${action('clicked')} .document="${DOCUMENTS[0]}"> </nuxeo-delete-blob-button>
-      `,
-  )
+export const NuxeoAddToCollectionButton = {
+  render: () => html`
+    <nuxeo-add-to-collection-button
+      @click=${action('clicked')}
+      .document="${DOCUMENTS[0]}"
+    ></nuxeo-add-to-collection-button>
+  `,
+};
 
-  .add(
-    'nuxeo-delete-document-button',
-    () =>
-      html`
-        <nuxeo-delete-document-button @click=${action('clicked')} .document="${DOCUMENTS[0]}">
-        </nuxeo-delete-document-button>
-      `,
-  )
+export const NuxeoDeleteBlobButton = {
+  render: () => html`
+    <nuxeo-delete-blob-button @click=${action('clicked')} .document="${DOCUMENTS[0]}"> </nuxeo-delete-blob-button>
+  `,
+};
 
-  .add(
-    'nuxeo-download-button',
-    () =>
-      html`
-        <nuxeo-download-button @click=${action('clicked')} .document="${DOCUMENTS[0]}"> </nuxeo-download-button>
-      `,
-  )
+export const NuxeoDeleteDocumentButton = {
+  render: () => html`
+    <nuxeo-delete-document-button @click=${action('clicked')} .document="${DOCUMENTS[0]}">
+    </nuxeo-delete-document-button>
+  `,
+};
 
-  .add(
-    'nuxeo-export-button',
-    () =>
-      html`
-        <nuxeo-export-button @click=${action('clicked')} .document="${document}"> </nuxeo-export-button>
-      `,
-  )
+export const NuxeoDownloadButton = {
+  render: () => html`
+    <nuxeo-download-button @click=${action('clicked')} .document="${DOCUMENTS[0]}"> </nuxeo-download-button>
+  `,
+};
 
-  .add('nuxeo-favorites-toggle-button', () => {
-    const favorite = boolean('Favorite', false);
-    return html`
-      <style>
-        * {
-          --nuxeo-action-color-activated: ${color('--nuxeo-action-color-activated', '#00aded', 'CSS variables')};
-        }
-      </style>
-      <nuxeo-favorites-toggle-button @click=${action('clicked')} .document="${DOCUMENTS[0]}" ?favorite="${favorite}">
-      </nuxeo-favorites-toggle-button>
-    `;
-  })
+export const NuxeoExportButton = {
+  render: () => html`
+    <nuxeo-export-button @click=${action('clicked')} .document="${DOCUMENTS[0]}"> </nuxeo-export-button>
+  `,
+};
 
-  .add('nuxeo-link-button', () => {
-    const href = text('Href', 'https://nuxeo.com');
-    const icon = select('Icons', listOfIcons, 'nuxeo:add');
-    const label = text('Label', 'Nuxeo');
-    const showLabel = boolean('Show Label', false);
-    return html`
-      <nuxeo-link-button
-        @click=${action('clicked')}
-        href="${href}"
-        icon="${icon}"
-        label="${label}"
-        ?show-label="${showLabel}"
-      ></nuxeo-link-button>
-    `;
-  })
+export const NuxeoFavoritesToggleButton = {
+  args: {
+    favorite: false,
+    activatedColor: '#00aded',
+  },
+  argTypes: {
+    activatedColor: { control: 'color', name: '--nuxeo-action-color-activated' },
+  },
+  render: (args) => html`
+    <style>
+      * {
+        --nuxeo-action-color-activated: ${args.activatedColor};
+      }
+    </style>
+    <nuxeo-favorites-toggle-button @click=${action('clicked')} .document="${DOCUMENTS[0]}" ?favorite="${args.favorite}">
+    </nuxeo-favorites-toggle-button>
+  `,
+};
 
-  .add('nuxeo-lock-toggle-button', () => {
-    const locked = boolean('Locked', false);
-    return html`
-      <nuxeo-lock-toggle-button @click=${action('clicked')} .document="${DOCUMENTS[0]}" ?locked=${locked}>
-      </nuxeo-lock-toggle-button>
-    `;
-  })
+export const NuxeoLinkButton = {
+  args: {
+    href: 'https://nuxeo.com',
+    icon: 'nuxeo:add',
+    label: 'Nuxeo',
+    showLabel: false,
+  },
+  argTypes: {
+    icon: { control: 'select', options: listOfIcons },
+  },
+  render: (args) => html`
+    <nuxeo-link-button
+      @click=${action('clicked')}
+      href="${args.href}"
+      icon="${args.icon}"
+      label="${args.label}"
+      ?show-label="${args.showLabel}"
+    ></nuxeo-link-button>
+  `,
+};
 
-  .add('nuxeo-move-documents-down-button', () => {
-    const documents = DOCUMENTS;
-    const selectedDocuments = [DOCUMENTS[1]];
-    return html`
-      <nuxeo-move-documents-down-button
-        @click=${action('clicked')}
-        .documents="${documents}"
-        .selectedDocuments="${selectedDocuments}"
-      >
-      </nuxeo-move-documents-down-button>
-    `;
-  })
+export const NuxeoLockToggleButton = {
+  args: { locked: false },
+  render: (args) => html`
+    <nuxeo-lock-toggle-button @click=${action('clicked')} .document="${DOCUMENTS[0]}" ?locked=${args.locked}>
+    </nuxeo-lock-toggle-button>
+  `,
+};
 
-  .add('nuxeo-move-documents-up-button', () => {
-    const documents = DOCUMENTS;
-    const selectedDocuments = [DOCUMENTS[1]];
-    return html`
-      <nuxeo-move-documents-up-button
-        @click=${action('clicked')}
-        .documents="${documents}"
-        .selectedDocuments="${selectedDocuments}"
-      >
-      </nuxeo-move-documents-up-button>
-    `;
-  })
+export const NuxeoMoveDocumentsDownButton = {
+  render: () => html`
+    <nuxeo-move-documents-down-button
+      @click=${action('clicked')}
+      .documents="${DOCUMENTS}"
+      .selectedDocuments="${[DOCUMENTS[1]]}"
+    >
+    </nuxeo-move-documents-down-button>
+  `,
+};
 
-  .add('nuxeo-notifications-toggle-button', () => {
-    const subscribed = boolean('Subscribed', false);
-    return html`
-      <style>
-        * {
-          --nuxeo-action-color-activated: ${color('--nuxeo-action-color-activated', '#00aded', 'CSS variables')};
-        }
-      </style>
-      <nuxeo-notifications-toggle-button @click=${action('clicked')} .document="${document}" ?subscribed=${subscribed}>
-      </nuxeo-notifications-toggle-button>
-    `;
-  })
+export const NuxeoMoveDocumentsUpButton = {
+  render: () => html`
+    <nuxeo-move-documents-up-button
+      @click=${action('clicked')}
+      .documents="${DOCUMENTS}"
+      .selectedDocuments="${[DOCUMENTS[1]]}"
+    >
+    </nuxeo-move-documents-up-button>
+  `,
+};
 
-  .add(
-    'nuxeo-share-button',
-    () =>
-      html`
-        <nuxeo-share-button @click=${action('clicked')} .document="${document}"> </nuxeo-share-button>
-      `,
-  )
+export const NuxeoNotificationsToggleButton = {
+  args: {
+    subscribed: false,
+    activatedColor: '#00aded',
+  },
+  argTypes: {
+    activatedColor: { control: 'color', name: '--nuxeo-action-color-activated' },
+  },
+  render: (args) => html`
+    <style>
+      * {
+        --nuxeo-action-color-activated: ${args.activatedColor};
+      }
+    </style>
+    <nuxeo-notifications-toggle-button
+      @click=${action('clicked')}
+      .document="${DOCUMENTS[0]}"
+      ?subscribed=${args.subscribed}
+    >
+    </nuxeo-notifications-toggle-button>
+  `,
+};
 
-  .add('nuxeo-untrash-document-button', () => {
+export const NuxeoShareButton = {
+  render: () => html`
+    <nuxeo-share-button @click=${action('clicked')} .document="${DOCUMENTS[0]}"> </nuxeo-share-button>
+  `,
+};
+
+export const NuxeoUntrashDocumentButton = {
+  render: () => {
     const DOCUMENT_TRASHED = new DocumentBuilder()
       .setSystemProperties({ isTrashed: true })
       .setPermissions(['Write', 'ManageWorkflows'])
@@ -177,4 +182,5 @@ stories
       <nuxeo-untrash-document-button @click=${action('clicked')} .document="${DOCUMENT_TRASHED}">
       </nuxeo-untrash-document-button>
     `;
-  });
+  },
+};
