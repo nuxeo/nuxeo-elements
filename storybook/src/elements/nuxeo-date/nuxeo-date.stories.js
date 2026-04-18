@@ -1,13 +1,22 @@
-import { html } from 'lit-html';
-import { storiesOf } from '@storybook/polymer';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-date';
-import { select, date } from '@storybook/addon-knobs';
 
-storiesOf('UI/nuxeo-date', module).add('Nuxeo Date', () => {
-  const dateTime = date('Date', new Date());
-  const relativeFormat = select('Format', ['MMM D, YYYY', 'MMMM D, YYYY HH:mm', 'relative'], 'MMM D, YYYY');
-  const tooltipFormat = select('Tooltip Format', ['MMMM D, YYYY HH:mm', 'relative'], 'MMMM D, YYYY HH:mm');
-  return html`
-    <nuxeo-date datetime=${new Date(dateTime)} format="${relativeFormat}" tooltip-format="${tooltipFormat}" />
-  `;
-});
+export default {
+  title: 'UI/nuxeo-date',
+};
+
+export const NuxeoDate = {
+  args: {
+    dateTime: new Date().getTime(),
+    format: 'MMM D, YYYY',
+    tooltipFormat: 'MMMM D, YYYY HH:mm',
+  },
+  argTypes: {
+    dateTime: { control: 'date' },
+    format: { control: 'select', options: ['MMM D, YYYY', 'MMMM D, YYYY HH:mm', 'relative'] },
+    tooltipFormat: { control: 'select', options: ['MMMM D, YYYY HH:mm', 'relative'] },
+  },
+  render: (args) => html`
+    <nuxeo-date datetime=${new Date(args.dateTime)} format="${args.format}" tooltip-format="${args.tooltipFormat}" />
+  `,
+};
