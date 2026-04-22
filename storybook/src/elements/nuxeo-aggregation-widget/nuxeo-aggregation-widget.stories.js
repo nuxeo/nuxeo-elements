@@ -1,6 +1,4 @@
-import { storiesOf } from '@storybook/polymer';
-import { html } from 'lit-html';
-import { boolean, number, text } from '@storybook/addon-knobs';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-aggregation/nuxeo-checkbox-aggregation.js';
 
 const DATA = {
@@ -10,9 +8,7 @@ const DATA = {
       docCount: 2,
       fetchedKey: {
         'entity-type': 'document',
-        properties: {
-          'dc:title': 'Tolkien',
-        },
+        properties: { 'dc:title': 'Tolkien' },
         uid: '59cf794f-6875-45ca-a837-053c196b2292',
       },
       key: '59cf794f-6875-45ca-a837-053c196b2292',
@@ -21,9 +17,7 @@ const DATA = {
       docCount: 1,
       fetchedKey: {
         'entity-type': 'document',
-        properties: {
-          'dc:title': 'Asimov',
-        },
+        properties: { 'dc:title': 'Asimov' },
         uid: '59cf794f-6875-45ca-a837-053c196b2291',
       },
       key: '59cf794f-6875-45ca-a837-053c196b2291',
@@ -32,9 +26,7 @@ const DATA = {
       docCount: 3,
       fetchedKey: {
         'entity-type': 'document',
-        properties: {
-          'dc:title': 'Hemingway',
-        },
+        properties: { 'dc:title': 'Hemingway' },
         uid: '59cf794f-6875-45ca-a837-053c196b2291',
       },
       key: '59cf794f-6875-45ca-a837-053c196b2291',
@@ -43,9 +35,7 @@ const DATA = {
       docCount: 4,
       fetchedKey: {
         'entity-type': 'document',
-        properties: {
-          'dc:title': 'Dostoevsky',
-        },
+        properties: { 'dc:title': 'Dostoevsky' },
         uid: '59cf794f-6875-45ca-a837-053c196b2291',
       },
       key: '59cf794f-6875-45ca-a837-053c196b2291',
@@ -54,9 +44,7 @@ const DATA = {
       docCount: 5,
       fetchedKey: {
         'entity-type': 'document',
-        properties: {
-          'dc:title': 'Tolstoy',
-        },
+        properties: { 'dc:title': 'Tolstoy' },
         uid: '59cf794f-6875-45ca-a837-053c196b2291',
       },
       key: '59cf794f-6875-45ca-a837-053c196b2291',
@@ -65,9 +53,7 @@ const DATA = {
       docCount: 6,
       fetchedKey: {
         'entity-type': 'document',
-        properties: {
-          'dc:title': 'Pessoa',
-        },
+        properties: { 'dc:title': 'Pessoa' },
         uid: '59cf794f-6875-45ca-a837-053c196b2291',
       },
       key: '59cf794f-6875-45ca-a837-053c196b2291',
@@ -76,9 +62,7 @@ const DATA = {
       docCount: 7,
       fetchedKey: {
         'entity-type': 'document',
-        properties: {
-          'dc:title': 'Balzac',
-        },
+        properties: { 'dc:title': 'Balzac' },
         uid: '59cf794f-6875-45ca-a837-053c196b2291',
       },
       key: '59cf794f-6875-45ca-a837-053c196b2291',
@@ -87,9 +71,7 @@ const DATA = {
       docCount: 8,
       fetchedKey: {
         'entity-type': 'document',
-        properties: {
-          'dc:title': 'Cervantes',
-        },
+        properties: { 'dc:title': 'Cervantes' },
         uid: '59cf794f-6875-45ca-a837-053c196b2291',
       },
       key: '59cf794f-6875-45ca-a837-053c196b2291',
@@ -98,9 +80,7 @@ const DATA = {
       docCount: 9,
       fetchedKey: {
         'entity-type': 'document',
-        properties: {
-          'dc:title': 'Shakespeare',
-        },
+        properties: { 'dc:title': 'Shakespeare' },
         uid: '59cf794f-6875-45ca-a837-053c196b2291',
       },
       key: '59cf794f-6875-45ca-a837-053c196b2291',
@@ -108,21 +88,24 @@ const DATA = {
   ],
   field: 'book:author',
   id: 'book_author_agg',
-  properties: {
-    order: 'count desc',
-    size: '20',
-  },
+  properties: { order: 'count desc', size: '20' },
   ranges: [],
   selection: [],
   type: 'terms',
 };
 
-storiesOf('UI/nuxeo-checkbox-aggregation', module).add('Default', () => {
-  const label = text('Label', 'Some Label');
-  const collapsible = boolean('Collapsible', false);
-  const opened = boolean('Opened (collapsible)', false);
-  const visibleItems = number('Number of visible items (collapsible)', 8);
-  return html`
+export default {
+  title: 'UI/nuxeo-checkbox-aggregation',
+};
+
+export const Default = {
+  args: {
+    label: 'Some Label',
+    collapsible: false,
+    opened: false,
+    visibleItems: 8,
+  },
+  render: (args) => html`
     <style>
       :root {
         display: block;
@@ -132,11 +115,11 @@ storiesOf('UI/nuxeo-checkbox-aggregation', module).add('Default', () => {
     </style>
     <nuxeo-checkbox-aggregation
       .data="${DATA}"
-      label="${label}"
-      ?collapsible="${collapsible}"
-      ?opened="${opened}"
-      visible-items="${visibleItems}"
+      label="${args.label}"
+      ?collapsible="${args.collapsible}"
+      ?opened="${args.opened}"
+      visible-items="${args.visibleItems}"
     >
     </nuxeo-checkbox-aggregation>
-  `;
-});
+  `,
+};
