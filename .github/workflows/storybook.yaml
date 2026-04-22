@@ -56,4 +56,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
         working-directory: storybook
-        run: npm run deploy -- --ci
+        run: npm run deploy -- --ci --existing-output-dir=dist
