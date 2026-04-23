@@ -224,7 +224,7 @@ suite('nuxeo-selectivity', () => {
       });
 
       test('First item should be announced when dropdown opens', async () => {
-        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-input');
+        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-select-input');
         input.click();
         await flush();
 
@@ -244,17 +244,17 @@ suite('nuxeo-selectivity', () => {
         expect(highlightedItem.getAttribute('aria-selected')).to.equal('true');
 
         // Verify live region exists and contains the announcement
-        const liveRegion = selectivityWidget.querySelector('[role="status"][aria-live="polite"]');
+        const liveRegion = dom(selectivityWidget.root).querySelector('[role="status"][aria-live="polite"]');
         expect(liveRegion).to.not.be.null;
         expect(liveRegion.textContent).to.equal('Collection A');
       });
 
       test('Live region should have proper ARIA attributes', async () => {
-        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-input');
+        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-select-input');
         input.click();
         await flush();
 
-        const liveRegion = selectivityWidget.querySelector('[role="status"][aria-live="polite"]');
+        const liveRegion = dom(selectivityWidget.root).querySelector('[role="status"][aria-live="polite"]');
         expect(liveRegion).to.not.be.null;
         expect(liveRegion.getAttribute('aria-atomic')).to.equal('true');
         expect(liveRegion.style.position).to.equal('absolute');
@@ -263,7 +263,7 @@ suite('nuxeo-selectivity', () => {
       });
 
       test('aria-selected should be correctly updated when highlighting items', async () => {
-        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-input');
+        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-select-input');
         input.click();
         await flush();
 
@@ -294,7 +294,7 @@ suite('nuxeo-selectivity', () => {
       });
 
       test('Pressing arrow down should announce next item', async () => {
-        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-input');
+        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-select-input');
         input.click();
         await flush();
 
@@ -305,7 +305,7 @@ suite('nuxeo-selectivity', () => {
         }
 
         // Initial state: Collection A is highlighted
-        let liveRegion = selectivityWidget.querySelector('[role="status"][aria-live="polite"]');
+        let liveRegion = dom(selectivityWidget.root).querySelector('[role="status"][aria-live="polite"]');
         expect(liveRegion.textContent).to.equal('Collection A');
 
         // Press down arrow
@@ -314,7 +314,7 @@ suite('nuxeo-selectivity', () => {
         await flush();
 
         // Verify Collection B is now announced
-        liveRegion = selectivityWidget.querySelector('[role="status"][aria-live="polite"]');
+        liveRegion = dom(selectivityWidget.root).querySelector('[role="status"][aria-live="polite"]');
         expect(liveRegion.textContent).to.equal('Collection B');
 
         // Verify aria-selected is updated
@@ -328,7 +328,7 @@ suite('nuxeo-selectivity', () => {
       });
 
       test('Pressing arrow up should announce previous item', async () => {
-        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-input');
+        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-select-input');
         input.click();
         await flush();
 
@@ -348,7 +348,7 @@ suite('nuxeo-selectivity', () => {
         await flush();
 
         // Verify Collection A is announced again
-        const liveRegion = selectivityWidget.querySelector('[role="status"][aria-live="polite"]');
+        const liveRegion = dom(selectivityWidget.root).querySelector('[role="status"][aria-live="polite"]');
         expect(liveRegion.textContent).to.equal('Collection A');
 
         // Verify aria-selected is updated
@@ -371,11 +371,11 @@ suite('nuxeo-selectivity', () => {
           <nuxeo-selectivity placeholder="Select" .data=${itemsWithDisplayLabel}></nuxeo-selectivity>
         `);
 
-        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-input');
+        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-select-input');
         input.click();
         await flush();
 
-        const liveRegion = selectivityWidget.querySelector('[role="status"][aria-live="polite"]');
+        const liveRegion = dom(selectivityWidget.root).querySelector('[role="status"][aria-live="polite"]');
         expect(liveRegion.textContent).to.equal('My Collection 1');
       });
 
@@ -388,11 +388,11 @@ suite('nuxeo-selectivity', () => {
           <nuxeo-selectivity placeholder="Select" .data=${itemsWithTitle}></nuxeo-selectivity>
         `);
 
-        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-input');
+        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-select-input');
         input.click();
         await flush();
 
-        const liveRegion = selectivityWidget.querySelector('[role="status"][aria-live="polite"]');
+        const liveRegion = dom(selectivityWidget.root).querySelector('[role="status"][aria-live="polite"]');
         expect(liveRegion.textContent).to.equal('Title Collection 1');
       });
 
@@ -405,11 +405,11 @@ suite('nuxeo-selectivity', () => {
           <nuxeo-selectivity placeholder="Select" .data=${itemsWithText}></nuxeo-selectivity>
         `);
 
-        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-input');
+        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-select-input');
         input.click();
         await flush();
 
-        const liveRegion = selectivityWidget.querySelector('[role="status"][aria-live="polite"]');
+        const liveRegion = dom(selectivityWidget.root).querySelector('[role="status"][aria-live="polite"]');
         expect(liveRegion.textContent).to.equal('Text Collection 1');
       });
 
@@ -422,28 +422,28 @@ suite('nuxeo-selectivity', () => {
           <nuxeo-selectivity placeholder="Select" .data=${itemsWithIdOnly}></nuxeo-selectivity>
         `);
 
-        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-input');
+        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-select-input');
         input.click();
         await flush();
 
-        const liveRegion = selectivityWidget.querySelector('[role="status"][aria-live="polite"]');
+        const liveRegion = dom(selectivityWidget.root).querySelector('[role="status"][aria-live="polite"]');
         expect(liveRegion.textContent).to.equal('collection-1');
       });
 
       test('Should handle nested item objects with item property', async () => {
         const itemsWithNestedStructure = [
-          { item: { displayLabel: 'Nested Collection 1' }, id: 'col-1' },
-          { item: { displayLabel: 'Nested Collection 2' }, id: 'col-2' },
+          { displayLabel: 'Nested Collection 1', id: 'col-1' },
+          { displayLabel: 'Nested Collection 2', id: 'col-2' },
         ];
         selectivityWidget = await fixture(html`
           <nuxeo-selectivity placeholder="Select" .data=${itemsWithNestedStructure}></nuxeo-selectivity>
         `);
 
-        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-input');
+        const input = dom(selectivityWidget.root).querySelector('.selectivity-single-select-input');
         input.click();
         await flush();
 
-        const liveRegion = selectivityWidget.querySelector('[role="status"][aria-live="polite"]');
+        const liveRegion = dom(selectivityWidget.root).querySelector('[role="status"][aria-live="polite"]');
         expect(liveRegion.textContent).to.equal('Nested Collection 1');
       });
     });
@@ -470,7 +470,7 @@ suite('nuxeo-selectivity', () => {
         const highlightedItem = dropdown.querySelector('.selectivity-result-item.highlight');
         expect(highlightedItem).to.not.be.null;
 
-        const liveRegion = selectivityWidget.querySelector('[role="status"][aria-live="polite"]');
+        const liveRegion = dom(selectivityWidget.root).querySelector('[role="status"][aria-live="polite"]');
         expect(liveRegion).to.not.be.null;
         expect(liveRegion.textContent).to.equal('Collection A');
       });
@@ -490,7 +490,7 @@ suite('nuxeo-selectivity', () => {
         pressAndReleaseKeyOn(input, 40); // Move to next item
         await flush();
 
-        const liveRegion = selectivityWidget.querySelector('[role="status"][aria-live="polite"]');
+        const liveRegion = dom(selectivityWidget.root).querySelector('[role="status"][aria-live="polite"]');
         expect(liveRegion.textContent).to.equal('Collection B');
       });
     });
