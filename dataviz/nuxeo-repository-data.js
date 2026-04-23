@@ -113,7 +113,7 @@ import './nuxeo-aggregate-data-element.js';
     static get observers() {
       return [
         '_query(ecmPrimaryType, ecmLifecycleState, ecmMixinType, where, startDate, endDate)',
-        '_aggregates(groupedBy, groupLimit, withRanges, withDateIntervals, metrics, metricsOperator, startDate, endDate)', // eslint-disable-line max-len
+        '_aggregates(groupedBy, groupLimit, withRanges, withDateIntervals, metrics, metricsOperator, startDate, endDate)',
       ];
     }
 

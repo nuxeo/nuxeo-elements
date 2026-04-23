@@ -62,7 +62,6 @@ export const RoutingBehavior = {
   // Caches the router
   _routerChanged(router) {
     if (router && !RoutingBehavior.__router) {
-      // eslint-disable-next-line no-use-before-define
       setRouter(router);
     }
   },

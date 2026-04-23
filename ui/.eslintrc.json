@@ -1,9 +1,0 @@
-{
-  "globals": {
-    "d3": false,
-    "Quill": false,
-    "Selectivity": false,
-    "saulis": false
-  },
-  "parser": "babel-eslint"
-}

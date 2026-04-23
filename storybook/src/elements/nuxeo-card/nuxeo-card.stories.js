@@ -1,6 +1,4 @@
-import { storiesOf } from '@storybook/polymer';
-import { text, select, boolean } from '@storybook/addon-knobs';
-import { html } from 'lit-html';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-card';
 
 const ICONS = {
@@ -10,18 +8,30 @@ const ICONS = {
   none: '',
 };
 
-storiesOf('UI/nuxeo-card', module).add('nuxeo-card', () => {
-  const heading = text('Heading', 'About Nuxeo');
-  const icon = select('Icon', ICONS, ICONS.attachment);
-  const collapsible = boolean('Collapsible', false);
-  const opened = boolean('Opened', false);
-  return html`
-    <nuxeo-card heading="${heading}" icon="${icon}" ?collapsible="${collapsible}" ?opened="${opened}">
-      ${text(
-        'Content',
-        `Nuxeo makes it easy to build smart content applications that enhance customer experiences,
-        improve decision making, and accelerate products to market.`,
-      )}
+export default {
+  title: 'UI/nuxeo-card',
+};
+
+export const NuxeoCard = {
+  args: {
+    heading: 'About Nuxeo',
+    icon: ICONS.attachment,
+    collapsible: false,
+    opened: false,
+    content:
+      'Nuxeo makes it easy to build smart content applications that enhance customer experiences, improve decision making, and accelerate products to market.',
+  },
+  argTypes: {
+    icon: { control: 'select', options: Object.values(ICONS) },
+  },
+  render: (args) => html`
+    <nuxeo-card
+      heading="${args.heading}"
+      icon="${args.icon}"
+      ?collapsible="${args.collapsible}"
+      ?opened="${args.opened}"
+    >
+      ${args.content}
     </nuxeo-card>
-  `;
-});
+  `,
+};

@@ -1,14 +1,10 @@
-import { html } from 'lit-html';
-import { storiesOf } from '@storybook/polymer';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-tree/nuxeo-tree.js';
 
 const data = {
   title: 'Home',
   children: [
-    {
-      title: 'Kitchen',
-      children: [],
-    },
+    { title: 'Kitchen', children: [] },
     {
       title: 'Bedroom',
       children: [
@@ -20,7 +16,6 @@ const data = {
 };
 
 const controller = {
-  // How to get children of a node. Returns a promise.
   getChildren(node) {
     return Promise.resolve(node.children);
   },
@@ -29,9 +24,12 @@ const controller = {
   },
 };
 
-storiesOf('UI/nuxeo-tree', module).add(
-  'Default',
-  () => html`
+export default {
+  title: 'UI/nuxeo-tree',
+};
+
+export const Default = {
+  render: () => html`
     <nuxeo-tree .data="${data}" .controller="${controller}">
       <template>
         <template class="flex" is="dom-if" if="[[!isLeaf]]">
@@ -41,4 +39,4 @@ storiesOf('UI/nuxeo-tree', module).add(
       </template>
     </nuxeo-tree>
   `,
-);
+};
