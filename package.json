@@ -46,7 +46,7 @@
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "@open-wc/karma-esm": "^2.12.6",
-    "@open-wc/prettier-config": "^0.1.0",
+    "@open-wc/prettier-config": "^1.1.0",
     "@polymer/iron-component-page": "^4.0.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "chai": "^6.2.2",
