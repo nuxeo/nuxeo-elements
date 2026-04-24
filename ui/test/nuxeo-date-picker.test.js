@@ -129,6 +129,25 @@ suite('nuxeo-date-picker', () => {
         expect(element.value).to.be.null;
         testValueWithLocale(element, '2003-06-13T00:00:00.000Z', 'ar', conf.timezone);
       });
+
+      test('the inner picker exposes formatDate on the legacy i18n holder', () => {
+        expect(getInput(element).i18n).to.exist;
+        expect(getInput(element).i18n.formatDate).to.be.a('function');
+      });
+
+      test('validity uses pickerI18n formatter when legacy i18n formatter is unavailable', () => {
+        element.value = '2022-03-12T00:00:00.000Z';
+        const input = getInput(element);
+        const originalI18nFormatter = input.i18n && input.i18n.formatDate;
+        const pickerFormatter = input.pickerI18n && input.pickerI18n.formatDate;
+
+        expect(pickerFormatter).to.be.a('function');
+        input.i18n.formatDate = undefined;
+
+        expect(() => element._getValidity()).to.not.throw();
+
+        input.i18n.formatDate = originalI18nFormatter;
+      });
     });
   });
 });

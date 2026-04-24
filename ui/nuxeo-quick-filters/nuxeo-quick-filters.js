@@ -95,13 +95,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           this.set(`quickFilters.${i}.active`, !this.quickFilters[i].active);
         }
       }
-      this.dispatchEvent(
-        new CustomEvent('quick-filters-changed', {
-          bubbles: true,
-          composed: true,
-          detail: { value: this.quickFilters },
-        }),
-      );
     }
 
     _computeFilterLabel(filter) {
