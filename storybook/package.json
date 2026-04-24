@@ -15,7 +15,7 @@
     "@polymer/iron-meta": "^3.0.1",
     "@polymer/polymer": "^3.0.0",
     "@storybook/web-components-vite": "^10.3.5",
-    "highlight.js": "^10.4.1",
+    "highlight.js": "^11.11.1",
     "lit": "^3.0.0",
     "nuxeo": "^4.0.3",
     "storybook": "^10.3.5",
