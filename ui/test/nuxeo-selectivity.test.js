@@ -42,9 +42,7 @@ suite('nuxeo-selectivity', () => {
       let i;
       const getSelectedItem = () => dom(selectivityWidget.root).querySelector('.selectivity-single-selected-item');
       const resetValue = () =>
-        dom(selectivityWidget.root)
-          .querySelector('a.selectivity-single-selected-item-remove')
-          .click();
+        dom(selectivityWidget.root).querySelector('a.selectivity-single-selected-item-remove').click();
       for (i = 0; i < data.length; i++) {
         selectivityWidget.value = data[i];
         const item = getSelectedItem();
@@ -79,9 +77,7 @@ suite('nuxeo-selectivity', () => {
       expect(items[0].textContent).to.be.equal('Berlin');
       expect(items[1].textContent).to.be.equal('Lisbon');
       expect(items[1].classList.contains('highlighted')).to.be.false;
-      dom(selectivityWidget.root)
-        .querySelector('input.selectivity-multiple-input')
-        .focus();
+      dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input').focus();
       hitBackspace();
       await flush();
 
@@ -95,9 +91,7 @@ suite('nuxeo-selectivity', () => {
         await waitForAttrMutation(items[1], 'class');
       }
       expect(items[1].classList.contains('highlighted')).to.be.true;
-      dom(selectivityWidget.root)
-        .querySelector('input.selectivity-multiple-input')
-        .focus();
+      dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input').focus();
       hitBackspace();
       await flush();
 
@@ -268,8 +262,10 @@ suite('nuxeo-selectivity', () => {
         await flush();
 
         let dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
+
         if (!dropdown) {
-          await waitForChildListMutation(selectivityWidget);
+          const container = dom(selectivityWidget.root).querySelector('#input');
+          await waitForChildListMutation(container);
           dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
         }
 
@@ -299,11 +295,12 @@ suite('nuxeo-selectivity', () => {
         await flush();
 
         let dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
+
         if (!dropdown) {
-          await waitForChildListMutation(selectivityWidget);
+          const container = dom(selectivityWidget.root).querySelector('#input');
+          await waitForChildListMutation(container);
           dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
         }
-
         // Initial state: Collection A is highlighted
         let liveRegion = dom(selectivityWidget.root).querySelector('[role="status"][aria-live="polite"]');
         expect(liveRegion.textContent).to.equal('Collection A');
@@ -333,8 +330,10 @@ suite('nuxeo-selectivity', () => {
         await flush();
 
         let dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
+
         if (!dropdown) {
-          await waitForChildListMutation(selectivityWidget);
+          const container = dom(selectivityWidget.root).querySelector('#input');
+          await waitForChildListMutation(container);
           dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
         }
 
@@ -414,10 +413,7 @@ suite('nuxeo-selectivity', () => {
       });
 
       test('Should announce item with id when no text property exists', async () => {
-        const itemsWithIdOnly = [
-          { id: 'collection-1' },
-          { id: 'collection-2' },
-        ];
+        const itemsWithIdOnly = [{ id: 'collection-1' }, { id: 'collection-2' }];
         selectivityWidget = await fixture(html`
           <nuxeo-selectivity placeholder="Select" .data=${itemsWithIdOnly}></nuxeo-selectivity>
         `);
@@ -435,6 +431,7 @@ suite('nuxeo-selectivity', () => {
           { displayLabel: 'Nested Collection 1', id: 'col-1' },
           { displayLabel: 'Nested Collection 2', id: 'col-2' },
         ];
+
         selectivityWidget = await fixture(html`
           <nuxeo-selectivity placeholder="Select" .data=${itemsWithNestedStructure}></nuxeo-selectivity>
         `);
@@ -461,11 +458,12 @@ suite('nuxeo-selectivity', () => {
         await flush();
 
         let dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
+
         if (!dropdown) {
-          await waitForChildListMutation(selectivityWidget);
+          const container = dom(selectivityWidget.root).querySelector('#input');
+          await waitForChildListMutation(container);
           dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
         }
-
         // Verify first item is highlighted and announced
         const highlightedItem = dropdown.querySelector('.selectivity-result-item.highlight');
         expect(highlightedItem).to.not.be.null;
@@ -481,8 +479,10 @@ suite('nuxeo-selectivity', () => {
         await flush();
 
         let dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
+
         if (!dropdown) {
-          await waitForChildListMutation(selectivityWidget);
+          const container = dom(selectivityWidget.root).querySelector('#input');
+          await waitForChildListMutation(container);
           dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
         }
 
