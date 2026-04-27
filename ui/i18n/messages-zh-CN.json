@@ -202,6 +202,7 @@
   "htmlEditor.superscript": "上标",
   "htmlEditor.underline": "下划线",
   "imagePreviewer.fitToRealSize": "Fit to real size",
+  "imagePreviewer.fitToViewer": "Fit to viewer",
   "imagePreviewer.rotate.left": "逆时针旋转",
   "imagePreviewer.rotate.right": "顺时针旋转",
   "imagePreviewer.zoom.in": "放大",
