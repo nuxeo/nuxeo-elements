@@ -285,7 +285,7 @@ import '@polymer/iron-icon/iron-icon.js';
 
         /** Used to detect if a method is native. */
         const reIsNative = RegExp(`^${funcToString.call(hasOwnProperty).replace(reRegExpChar, '\\$&')
-          .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?')}$`);
+            .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?')}$`);
 
         /**
    * The base implementation of `_.isNative` without bad shim checks.
@@ -6406,7 +6406,13 @@ import '@polymer/iron-icon/iron-icon.js';
             `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
         role="option"
         id="selectivity-option-${this.escapeHTML(opts.id)}"
-        aria-label="${this.escapeHTML(opts.item?.displayLabel || opts.item?.text || opts.item?.title || opts.text || opts.id)}"
+    aria-label="${this.escapeHTML(
+  (opts.item && opts.item.displayLabel) ||
+  (opts.item && opts.item.text) ||
+  (opts.item && opts.item.title) ||
+  opts.text ||
+  opts.id
+)}"
         aria-selected="false"
         tabindex="-1"
         style="padding-left: ${7 + (10 * opts.depth)}px"
@@ -7245,7 +7251,11 @@ import '@polymer/iron-icon/iron-icon.js';
           resultItem: (opts) => (
             `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
           role="option"
-          aria-label="${this.escapeHTML(opts.item?.text || opts.item?.id || opts.id)}"
+         aria-label="${this.escapeHTML(
+  (opts.item && opts.item.text) ||
+  (opts.item && opts.item.id) ||
+  opts.id
+)}"
           aria-selected="false"
           id="selectivity-option-${this.escapeHTML(opts.id)}"
           style="padding-left: ${7 + (10 * opts.depth)}px"
