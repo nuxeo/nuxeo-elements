@@ -202,6 +202,7 @@
   "htmlEditor.superscript": "Apice",
   "htmlEditor.underline": "Sottolineato",
   "imagePreviewer.fitToRealSize": "Adatta alla dimensione reale",
+  "imagePreviewer.fitToViewer": "Adatta al visualizzatore",
   "imagePreviewer.rotate.left": "Ruota a sinistra",
   "imagePreviewer.rotate.right": "Ruota a destra",
   "imagePreviewer.zoom.in": "Ingrandire",
