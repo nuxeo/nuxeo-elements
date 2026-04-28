@@ -15,7 +15,7 @@ cd nuxeo-elements
 # Install dependencies
 npm install
 
-# Bootstrap cross-workspace links
+# Bootstrap workspace dependencies
 npm run bootstrap
 
 # Run all tests
