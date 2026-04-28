@@ -24,9 +24,9 @@ Nuxeo Elements is a library of reusable web components that forms the foundation
 │  │  ┌────────────┐ ┌──────────┐ ┌───────────┐ ┌───────────┐ │  │
 │  │  │ connection │ │operation │ │ document  │ │  resource │ │  │
 │  │  └────────────┘ └──────────┘ └───────────┘ └───────────┘ │  │
-│  │  ┌────────────┐ ┌──────────┐ ┌───────────┐               │  │
-│  │  │page-provdr │ │  search  │ │   utils   │               │  │
-│  │  └────────────┘ └──────────┘ └───────────┘               │  │
+│  │  ┌─────────────┐ ┌──────────┐ ┌───────────┐              │  │
+│  │  │page-provider│ │  search  │ │   utils   │              │  │
+│  │  └─────────────┘ └──────────┘ └───────────┘              │  │
 │  └─────────────────────────┬──────────────────────────────────┘  │
 │                            │ REST / Automation API               │
 └────────────────────────────┼─────────────────────────────────────┘
@@ -47,7 +47,7 @@ Nuxeo Elements is a library of reusable web components that forms the foundation
 | Web Components Polyfills | @webcomponents/webcomponentsjs | ^2.0 |
 | Package Manager | npm | ≥ 8 |
 | Node.js | Node.js | ≥ 18 |
-| Monorepo | Lerna | ^5.5 |
+| Monorepo | Lerna | ^9.0.7 |
 | Unit Testing | Karma + Mocha + Chai + Sinon | Various |
 | Linting | ESLint 9 (flat config) + Prettier | ^9.0 / ^3.8 |
 | Documentation | Storybook 10 (web-components-vite) | ^10.3 |

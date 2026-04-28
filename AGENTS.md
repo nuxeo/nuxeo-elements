@@ -10,7 +10,7 @@ Always follow this sequence when making changes:
 
 ```bash
 npm install                # Install dependencies (Node ≥ 18)
-npm run bootstrap          # Lerna bootstrap (link cross-deps)
+npm run bootstrap          # npm install (workspace dependency resolution)
 npm run lint               # ESLint + Prettier + Polymer lint — must pass
 npm test                   # Karma unit tests (all packages) — must pass
 npm run format             # Auto-fix formatting (Prettier → ESLint)
@@ -43,7 +43,7 @@ ui/                  → @nuxeo/nuxeo-ui-elements (70+ UI components)
   nuxeo-user-group-management/ → User/group admin (11 files)
   search/             → Search form components
   i18n/               → 16 locale files
-  test/               → 43 test files
+  test/               → 39 test files
 dataviz/             → @nuxeo/nuxeo-dataviz-elements (analytics)
   test/               → 4 test files
 testing-helpers/     → @nuxeo/testing-helpers (fixtures, mocks)
@@ -127,7 +127,7 @@ PRs run lint and test workflows automatically.
 
 - This is a **library** repo — there is no bundler or dev server. Components are consumed via npm by `nuxeo-web-ui`.
 - `@nuxeo` npm packages come from `https://packages.nuxeo.com/repository/npm-public/`, not npmjs.org.
-- After `npm install`, run `npm run bootstrap` to link cross-workspace dependencies.
+- After `npm install`, run `npm run bootstrap` to resolve workspace dependencies.
 - The `ui/` package has its own `eslint.config.mjs` in addition to the root config.
 - `ui/viewers/pdfjs/` and `ui/js-interpreter/` are vendored/forked — do not modify.
 - Crowdin syncs translations daily — do not manually edit non-English `ui/i18n/messages-*.json` files.

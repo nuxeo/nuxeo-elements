@@ -21,9 +21,9 @@ Generate unit test files for Nuxeo Elements Polymer components using Karma + Moc
 ## File Location
 
 ```
-core/test/nuxeo-<element-name>.test.js    # For core elements
-ui/test/nuxeo-<element-name>.test.js      # For UI elements
-dataviz/test/nuxeo-<element-name>.test.js  # For dataviz elements
+core/test/nuxeo-{element-name}.test.js    # For core elements
+ui/test/nuxeo-{element-name}.test.js      # For UI elements
+dataviz/test/nuxeo-{element-name}.test.js  # For dataviz elements
 ```
 
 ## Template: Basic Test
@@ -47,13 +47,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { fixture, html } from '@nuxeo/testing-helpers';
-import '../nuxeo-<element-name>.js';
+import '../nuxeo-{element-name}.js';
 
-suite('nuxeo-<element-name>', () => {
+suite('nuxeo-{element-name}', () => {
   let element;
 
   setup(async () => {
-    element = await fixture(html`<nuxeo-<element-name>></nuxeo-<element-name>>`);
+    element = await fixture(html`<nuxeo-{element-name}></nuxeo-{element-name}>`);
   });
 
   test('should initialize with default properties', () => {
@@ -66,9 +66,9 @@ suite('nuxeo-<element-name>', () => {
 
 ```javascript
 import { fixture, html } from '@nuxeo/testing-helpers';
-import '../nuxeo-<element-name>.js';
+import '../nuxeo-{element-name}.js';
 
-suite('nuxeo-<element-name>', () => {
+suite('nuxeo-{element-name}', () => {
   let element;
   const document = {
     'entity-type': 'document',
@@ -91,7 +91,7 @@ suite('nuxeo-<element-name>', () => {
   };
 
   setup(async () => {
-    element = await fixture(html`<nuxeo-<element-name> .document="${document}"></nuxeo-<element-name>>`);
+    element = await fixture(html`<nuxeo-{element-name} .document="${document}"></nuxeo-{element-name}>`);
   });
 
   test('should display document title', () => {
@@ -104,13 +104,13 @@ suite('nuxeo-<element-name>', () => {
 
 ```javascript
 import { fixture, html } from '@nuxeo/testing-helpers';
-import '../nuxeo-<element-name>.js';
+import '../nuxeo-{element-name}.js';
 
-suite('nuxeo-<element-name>', () => {
+suite('nuxeo-{element-name}', () => {
   let element;
 
   setup(async () => {
-    element = await fixture(html`<nuxeo-<element-name>></nuxeo-<element-name>>`);
+    element = await fixture(html`<nuxeo-{element-name}></nuxeo-{element-name}>`);
     sinon.stub(element, 'hasPermission').returns(true);
     sinon.stub(element, 'isTrashed').returns(false);
   });
@@ -133,15 +133,15 @@ suite('nuxeo-<element-name>', () => {
 
 ```javascript
 import { fixture, html, login, waitForEvent } from '@nuxeo/testing-helpers';
-import '../nuxeo-<element-name>.js';
+import '../nuxeo-{element-name}.js';
 
-suite('nuxeo-<element-name>', () => {
+suite('nuxeo-{element-name}', () => {
   let server;
   let element;
 
   setup(async () => {
     server = await login();
-    element = await fixture(html`<nuxeo-<element-name>></nuxeo-<element-name>>`);
+    element = await fixture(html`<nuxeo-{element-name}></nuxeo-{element-name}>`);
   });
 
   test('should fetch data from server', async () => {
@@ -160,7 +160,7 @@ suite('nuxeo-<element-name>', () => {
 
 ## Rules
 
-- **File naming**: `<package>/test/nuxeo-<element-name>.test.js`
+- **File naming**: `<package>/test/nuxeo-{element-name}.test.js`
 - **NEVER use `.only`** — lint will block it
 - **Globals available** (from `test/setup.js`): `expect`, `assert`, `sinon`
 - **Use `@nuxeo/testing-helpers`** for `fixture`, `html`, `login`, `waitForEvent`
