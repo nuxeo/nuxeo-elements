@@ -78,6 +78,10 @@ module.exports = (config) => {
         watched: false,
       },
       {
+        pattern: 'test/setup.js',
+        type: 'module',
+      },
+      {
         pattern: `${config.package || 'core'}/test/*${config.grep || '*.test.js'}`,
         type: 'module',
       },
@@ -89,7 +93,7 @@ module.exports = (config) => {
       // fallback: resolve any karma- plugins
       'karma-*',
     ],
-    frameworks: ['esm', 'mocha', 'sinon-chai', 'source-map-support'],
+    frameworks: ['esm', 'mocha', 'source-map-support'],
     esm: {
       // prevent auto loading of polyfills
       compatibility: 'none',
@@ -135,9 +139,6 @@ module.exports = (config) => {
         reporter: 'html',
         ui: 'tdd',
         timeout: 3000,
-      },
-      chai: {
-        includeStack: true,
       },
     },
   });

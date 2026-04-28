@@ -202,6 +202,7 @@
   "htmlEditor.superscript": "Hochgestellt",
   "htmlEditor.underline": "Unterstreichen",
   "imagePreviewer.fitToRealSize": "An Originalgröße anpassen",
+  "imagePreviewer.fitToViewer": "An Viewer anpassen",
   "imagePreviewer.rotate.left": "Nach links drehen",
   "imagePreviewer.rotate.right": "Nach rechts drehen",
   "imagePreviewer.zoom.in": "Vergrößern",
