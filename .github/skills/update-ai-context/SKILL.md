@@ -166,7 +166,6 @@ After making changes:
 ```bash
 # Verify the documented commands actually work
 npm install
-npm run bootstrap
 npm run lint
 npm test
 ```

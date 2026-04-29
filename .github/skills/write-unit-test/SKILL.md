@@ -132,7 +132,7 @@ suite('nuxeo-{element-name}', () => {
 ## Template: Test with Nuxeo Server Mock
 
 ```javascript
-import { fixture, html, login, waitForEvent } from '@nuxeo/testing-helpers';
+import { fixture, fakeServer, html, waitForEvent } from '@nuxeo/testing-helpers';
 import '../nuxeo-{element-name}.js';
 
 suite('nuxeo-{element-name}', () => {
@@ -140,16 +140,18 @@ suite('nuxeo-{element-name}', () => {
   let element;
 
   setup(async () => {
-    server = await login();
+    server = fakeServer.create();
     element = await fixture(html`<nuxeo-{element-name}></nuxeo-{element-name}>`);
   });
 
+  teardown(() => {
+    server.restore();
+  });
+
   test('should fetch data from server', async () => {
-    server.respondWith('GET', '/api/v1/path/to/resource', [
-      200,
-      { 'Content-Type': 'application/json' },
-      JSON.stringify({ 'entity-type': 'document', title: 'Test' }),
-    ]);
+    server.respondWith('GET', '/api/v1/path/to/resource',
+      { 'entity-type': 'document', title: 'Test' },
+    );
 
     element.someProperty = 'value';
     await waitForEvent(element, 'response');
@@ -163,7 +165,7 @@ suite('nuxeo-{element-name}', () => {
 - **File naming**: `<package>/test/nuxeo-{element-name}.test.js`
 - **NEVER use `.only`** — lint will block it
 - **Globals available** (from `test/setup.js`): `expect`, `assert`, `sinon`
-- **Use `@nuxeo/testing-helpers`** for `fixture`, `html`, `login`, `waitForEvent`
+- **Use `@nuxeo/testing-helpers`** for `fixture`, `fakeServer`, `html`, `waitForEvent`
 - **Use `suite`/`test`** (Mocha TDD interface), not `describe`/`it`
 - **Use `setup`/`teardown`**, not `beforeEach`/`afterEach`
 - **Async setup**: `setup(async () => { element = await fixture(…) })`

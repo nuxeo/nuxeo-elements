@@ -93,7 +93,7 @@ Helpers for unit testing Nuxeo web components:
 - **Fixtures** — Create and manage test element instances
 - **Mock Client** — Simulate Nuxeo server responses
 - **Event Helpers** — Wait for asynchronous events
-- **Login Helpers** — Set up authenticated test contexts
+- **Server Mocking** — Use MockClient and fakeServer to simulate authenticated server interactions
 
 ## Internationalization
 
