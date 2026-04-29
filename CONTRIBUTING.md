@@ -94,10 +94,11 @@ Most UI elements use the class-based pattern extending `Nuxeo.Element`:
 
 ```javascript
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import Nuxeo from '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 
-class MyWidget extends Nuxeo.Element {
+class MyWidget extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
   static get is() { return 'nuxeo-my-widget'; }
   static get template() {
     return html`
