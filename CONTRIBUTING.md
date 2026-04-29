@@ -28,7 +28,7 @@ npm test
 3. Format and lint before committing:
 
 ```bash
-npm run format   # Prettier + ESLint auto-fix
+npm run format   # Polymer lint --fix + Prettier + ESLint auto-fix
 npm run lint     # Verify lint passes
 npm test         # Run all unit tests
 ```
