@@ -62,7 +62,7 @@ test/                → Shared test setup
 ### Polymer / Web Components
 
 - **Core elements**: Use class-based pattern extending `Nuxeo.Element` (which extends `PolymerElement`)
-- **UI elements**: Mix of legacy `Polymer({…})` factory and class-based patterns. Do NOT convert between styles unless explicitly asked.
+- **UI elements**: Predominantly class-based extending `Nuxeo.Element`. A few older `.html` files in `nuxeo-user-group-management/` use the legacy `Polymer({…})` factory. Do NOT convert between styles unless explicitly asked.
 - **Behaviors**: Shared logic uses Polymer behaviors (`FiltersBehavior`, `FormatBehavior`, `RoutingBehavior`, `I18nBehavior`), not mixins.
 - **Data access**: Use `<nuxeo-operation>`, `<nuxeo-resource>`, `<nuxeo-document>`, `<nuxeo-page-provider>` for server communication — never raw `fetch()`.
 
@@ -97,7 +97,7 @@ test/                → Shared test setup
 
 ## CI / GitHub Actions
 
-- **Workflows**: lint → test → storybook → publish (sequential gates)
+- **Workflows**: lint → test → storybook → build (tag + publish) (sequential gates)
 - **Node version**: 22 in CI
 - **Registry**: `@nuxeo` packages come from `https://packages.nuxeo.com/repository/npm-public/`
 - **Cross-repo**: Changes can trigger nuxeo-web-ui builds

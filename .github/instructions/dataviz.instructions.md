@@ -19,7 +19,7 @@ Dataviz elements use the `AggregateDataBehavior` for shared query logic:
 ## Dependencies
 
 - Depends on `@nuxeo/nuxeo-elements` (core) for server communication
-- Uses `moment` for date handling
+- Uses `@nuxeo/moment` for date handling
 
 ## Testing
 
