@@ -165,7 +165,7 @@ suite('nuxeo-my-element', () => {
 ### Test with Server Mock
 
 ```javascript
-import { fixture, html, login } from '@nuxeo/testing-helpers';
+import { fixture, fakeServer, html, waitForEvent } from '@nuxeo/testing-helpers';
 import '../nuxeo-my-element.js';
 
 suite('nuxeo-my-element', () => {
@@ -173,16 +173,18 @@ suite('nuxeo-my-element', () => {
   let element;
 
   setup(async () => {
-    server = await login();
+    server = fakeServer.create();
     element = await fixture(html`<nuxeo-my-element></nuxeo-my-element>`);
   });
 
+  teardown(() => {
+    server.restore();
+  });
+
   test('should fetch data', async () => {
-    server.respondWith('GET', '/api/v1/path/to/resource', [
-      200,
-      { 'Content-Type': 'application/json' },
-      JSON.stringify({ 'entity-type': 'document', title: 'Test' }),
-    ]);
+    server.respondWith('GET', '/api/v1/path/to/resource',
+      { 'entity-type': 'document', title: 'Test' },
+    );
     // trigger and assert...
   });
 });

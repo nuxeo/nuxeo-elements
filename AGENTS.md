@@ -10,13 +10,13 @@ Always follow this sequence when making changes:
 
 ```bash
 npm install                # Install all workspace dependencies (Node ≥ 18)
+npm run format             # Auto-fix formatting (Polymer lint fix → Prettier → ESLint)
 npm run lint               # ESLint + Prettier + Polymer lint — must pass
 npm test                   # Karma unit tests (all packages) — must pass
-npm run format             # Auto-fix formatting (Prettier → ESLint)
 ```
 
 - `npm run lint` runs ESLint, Prettier check, and Polymer lint.
-- `npm run format` runs Prettier write first, then ESLint fix.
+- `npm run format` runs Polymer lint fix first, then Prettier write, then ESLint fix.
 - Always run `npm run format` before committing.
 - Do NOT commit `.only` in test files.
 - To test a single package: `npm run test:core`, `npm run test:ui`, or `npm run test:dataviz`.

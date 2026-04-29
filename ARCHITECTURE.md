@@ -146,9 +146,10 @@ Test utilities consumed by this repo and by `nuxeo-web-ui`:
 | Export | Purpose |
 |---|---|
 | `fixture(html)` | Create element fixtures for testing |
-| `login()` | Set up mock server with authentication |
+| `fakeServer.create()` | Preferred helper to set up a fake server for mocking backend responses |
 | `waitForEvent(el, event)` | Wait for async events |
-| `MockClient` | Mock Nuxeo client for server responses |
+| `MockClient` | Preferred mock Nuxeo client for server responses |
+| `login()` *(deprecated)* | Legacy authentication/mock setup helper retained for backward compatibility |
 
 ## Layout System
 

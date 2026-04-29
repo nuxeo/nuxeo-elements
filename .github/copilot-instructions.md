@@ -49,7 +49,7 @@ test/                → Shared test setup
 |---|---|---|
 | Install | `npm install` | Installs all workspace packages |
 | Lint | `npm run lint` | ESLint + Prettier check + Polymer lint |
-| Format | `npm run format` | Prettier write → ESLint fix |
+| Format | `npm run format` | Polymer lint fix → Prettier write → ESLint fix |
 | All tests | `npm test` | Karma + Chrome headless, all packages |
 | Core tests | `npm run test:core` | Tests for `core/` only |
 | UI tests | `npm run test:ui` | Tests for `ui/` only |
