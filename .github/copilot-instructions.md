@@ -48,7 +48,6 @@ test/                → Shared test setup
 | Task | Command | Notes |
 |---|---|---|
 | Install | `npm install` | Installs all workspace packages |
-| Bootstrap | `npm run bootstrap` | Workspace dependency resolution (runs npm install) |
 | Lint | `npm run lint` | ESLint + Prettier check + Polymer lint |
 | Format | `npm run format` | Prettier write → ESLint fix |
 | All tests | `npm test` | Karma + Chrome headless, all packages |
