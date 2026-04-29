@@ -28,7 +28,7 @@ npm test
 3. Format and lint before committing:
 
 ```bash
-npm run format   # Prettier + ESLint auto-fix
+npm run format   # Polymer lint --fix + Prettier + ESLint auto-fix
 npm run lint     # Verify lint passes
 npm test         # Run all unit tests
 ```
@@ -88,7 +88,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 }
 ```
 
-### UI Elements (legacy factory pattern)
+### UI Elements (class-based)
 
 Most UI elements use the class-based pattern extending `Nuxeo.Element`:
 
