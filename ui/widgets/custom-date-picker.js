@@ -496,6 +496,25 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             color: #dc2626;
           }
 
+          /*
+           * Host for backdrop + calendar in the document top layer (Popover API).
+           * When the picker is inside a transformed ancestor (e.g. iron-list rows), plain
+           * position:fixed overlays are trapped in that stacking context; top layer escapes it.
+           */
+          .calendar-overlay-container {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            max-width: none;
+            max-height: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+            background: transparent;
+            pointer-events: none;
+          }
+
           .calendar-popover {
             position: fixed;
             top: 0;
@@ -509,6 +528,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             width: 280px; /* Reduced from 320px to be proportional */
             display: none;
             animation: fadeIn 0.15s ease-out;
+            pointer-events: auto;
           }
 
           .calendar-popover.open {
@@ -530,6 +550,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             background: transparent;
             z-index: 999998; /* Just below the popover */
             display: none;
+            pointer-events: auto;
           }
 
           .calendar-backdrop.open {
@@ -1133,123 +1154,125 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           <!-- Screen reader live status region -->
           <div id="srStatus" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 
-          <!-- Modal backdrop for calendar popover -->
-          <div class="calendar-backdrop" id="calendarBackdrop" on-click="_closeCalendar"></div>
+          <!-- Modal backdrop + calendar: wrapped for Popover API top layer (WEBUI-1986 / iron-list transform) -->
+          <div id="calendarOverlay" class="calendar-overlay-container" popover="manual">
+            <div class="calendar-backdrop" id="calendarBackdrop" on-click="_closeCalendar"></div>
 
-          <div
-            class="calendar-popover"
-            id="calendarPopover"
-            role="dialog"
-            aria-label="Calendar"
-            aria-modal$="[[_isCalendarOpen]]"
-          >
-            <div class="calendar-header">
-              <div class="month-year-display">
-                <span class="month-text">[[_getMonthName(_viewDate)]]</span>
-                <div
-                  class="year-dropdown"
-                  on-click="_toggleYearDropdown"
-                  tabindex="0"
-                  role="button"
-                  aria-label$="[[_getLocalizedText('selectYear')]]"
-                  aria-haspopup="listbox"
-                  aria-expanded$="[[_isYearDropdownOpen]]"
-                  on-keydown="_handleYearDropdownKeydown"
-                >
-                  <span class="year-text">[[_getYear(_viewDate)]]</span>
-                  <button type="button" class="year-dropdown-button" aria-label="Select year" tabindex="-1">
-                    <iron-icon icon$="[[_getDropdownIcon(_isYearDropdownOpen)]]"></iron-icon>
-                  </button>
-                  <div class="year-options" id="yearOptions" role="listbox" aria-label="Year options">
-                    <template is="dom-repeat" items="[[_yearOptions]]">
-                      <button
-                        type="button"
-                        class$="year-option [[_getYearOptionClass(item, _viewDate)]]"
-                        data-year$="[[item]]"
-                        on-click="_selectYear"
-                        tabindex$="[[_getYearTabIndex(item, _viewDate)]]"
-                        role="option"
-                        aria-selected$="[[_isSelectedYear(item, _viewDate)]]"
-                      >
-                        [[item]]
-                      </button>
-                    </template>
+            <div
+              class="calendar-popover"
+              id="calendarPopover"
+              role="dialog"
+              aria-label="Calendar"
+              aria-modal$="[[_isCalendarOpen]]"
+            >
+              <div class="calendar-header">
+                <div class="month-year-display">
+                  <span class="month-text">[[_getMonthName(_viewDate)]]</span>
+                  <div
+                    class="year-dropdown"
+                    on-click="_toggleYearDropdown"
+                    tabindex="0"
+                    role="button"
+                    aria-label$="[[_getLocalizedText('selectYear')]]"
+                    aria-haspopup="listbox"
+                    aria-expanded$="[[_isYearDropdownOpen]]"
+                    on-keydown="_handleYearDropdownKeydown"
+                  >
+                    <span class="year-text">[[_getYear(_viewDate)]]</span>
+                    <button type="button" class="year-dropdown-button" aria-label="Select year" tabindex="-1">
+                      <iron-icon icon$="[[_getDropdownIcon(_isYearDropdownOpen)]]"></iron-icon>
+                    </button>
+                    <div class="year-options" id="yearOptions" role="listbox" aria-label="Year options">
+                      <template is="dom-repeat" items="[[_yearOptions]]">
+                        <button
+                          type="button"
+                          class$="year-option [[_getYearOptionClass(item, _viewDate)]]"
+                          data-year$="[[item]]"
+                          on-click="_selectYear"
+                          tabindex$="[[_getYearTabIndex(item, _viewDate)]]"
+                          role="option"
+                          aria-selected$="[[_isSelectedYear(item, _viewDate)]]"
+                        >
+                          [[item]]
+                        </button>
+                      </template>
+                    </div>
                   </div>
+                </div>
+
+                <div class="navigation">
+                  <button
+                    type="button"
+                    class="nav-button"
+                    id="prevMonth"
+                    aria-label$="[[_previousMonthAriaLabel]]"
+                    title$="[[_previousMonthAriaLabel]]"
+                    tabindex="0"
+                    on-click="_previousMonth"
+                    on-keydown="_handleNavButtonKeydown"
+                    disabled$="[[_isPreviousMonthDisabled()]]"
+                  >
+                    <iron-icon icon="icons:chevron-left"></iron-icon>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="nav-button"
+                    id="nextMonth"
+                    aria-label$="[[_nextMonthAriaLabel]]"
+                    title$="[[_nextMonthAriaLabel]]"
+                    tabindex="0"
+                    on-click="_nextMonth"
+                    on-keydown="_handleNavButtonKeydown"
+                    disabled$="[[_isNextMonthDisabled()]]"
+                  >
+                    <iron-icon icon="icons:chevron-right"></iron-icon>
+                  </button>
                 </div>
               </div>
 
-              <div class="navigation">
-                <button
-                  type="button"
-                  class="nav-button"
-                  id="prevMonth"
-                  aria-label$="[[_previousMonthAriaLabel]]"
-                  title$="[[_previousMonthAriaLabel]]"
-                  tabindex="0"
-                  on-click="_previousMonth"
-                  on-keydown="_handleNavButtonKeydown"
-                  disabled$="[[_isPreviousMonthDisabled()]]"
-                >
-                  <iron-icon icon="icons:chevron-left"></iron-icon>
-                </button>
+              <div class="weekday-headers" role="row">
+                <template is="dom-repeat" items="[[_weekdayNames]]">
+                  <div class="weekday-header" role="columnheader">[[item]]</div>
+                </template>
+              </div>
 
-                <button
-                  type="button"
-                  class="nav-button"
-                  id="nextMonth"
-                  aria-label$="[[_nextMonthAriaLabel]]"
-                  title$="[[_nextMonthAriaLabel]]"
-                  tabindex="0"
-                  on-click="_nextMonth"
-                  on-keydown="_handleNavButtonKeydown"
-                  disabled$="[[_isNextMonthDisabled()]]"
-                >
-                  <iron-icon icon="icons:chevron-right"></iron-icon>
+              <div
+                class="calendar-grid"
+                role="grid"
+                aria-label="Calendar dates"
+                aria-activedescendant$="[[_getActiveDescendant(_focusedDate)]]"
+                on-keydown="_handleGridKeydown"
+                on-click="_handleCalendarGridClick"
+              >
+                <template is="dom-repeat" items="[[_calendarDays]]">
+                  <button
+                    type="button"
+                    class$="calendar-day [[_getDayClasses(item, _focusedDate)]]"
+                    role="gridcell"
+                    tabindex$="[[_getDayTabIndex(item, _focusedDate, index)]]"
+                    aria-label$="[[_getDayAriaLabel(item)]]"
+                    aria-selected$="[[item.isSelected]]"
+                    aria-current$="[[_getAriaCurrent(item)]]"
+                    disabled$="[[item.isDisabled]]"
+                    data-date$="[[item.dateISO]]"
+                    id$="date-[[item.dateISO]]"
+                    on-click="_handleDateClick"
+                    on-keydown="_handleDateKeydown"
+                  >
+                    [[item.day]]
+                  </button>
+                </template>
+              </div>
+
+              <div class="calendar-footer">
+                <button type="button" class="footer-button today-button" on-click="_selectToday" tabindex="0">
+                  [[_getLocalizedText('today')]]
+                </button>
+                <button type="button" class="footer-button cancel-button" on-click="_closeCalendar" tabindex="0">
+                  [[_getLocalizedText('cancel')]]
                 </button>
               </div>
-            </div>
-
-            <div class="weekday-headers" role="row">
-              <template is="dom-repeat" items="[[_weekdayNames]]">
-                <div class="weekday-header" role="columnheader">[[item]]</div>
-              </template>
-            </div>
-
-            <div
-              class="calendar-grid"
-              role="grid"
-              aria-label="Calendar dates"
-              aria-activedescendant$="[[_getActiveDescendant(_focusedDate)]]"
-              on-keydown="_handleGridKeydown"
-              on-click="_handleCalendarGridClick"
-            >
-              <template is="dom-repeat" items="[[_calendarDays]]">
-                <button
-                  type="button"
-                  class$="calendar-day [[_getDayClasses(item, _focusedDate)]]"
-                  role="gridcell"
-                  tabindex$="[[_getDayTabIndex(item, _focusedDate, index)]]"
-                  aria-label$="[[_getDayAriaLabel(item)]]"
-                  aria-selected$="[[item.isSelected]]"
-                  aria-current$="[[_getAriaCurrent(item)]]"
-                  disabled$="[[item.isDisabled]]"
-                  data-date$="[[item.dateISO]]"
-                  id$="date-[[item.dateISO]]"
-                  on-click="_handleDateClick"
-                  on-keydown="_handleDateKeydown"
-                >
-                  [[item.day]]
-                </button>
-              </template>
-            </div>
-
-            <div class="calendar-footer">
-              <button type="button" class="footer-button today-button" on-click="_selectToday" tabindex="0">
-                [[_getLocalizedText('today')]]
-              </button>
-              <button type="button" class="footer-button cancel-button" on-click="_closeCalendar" tabindex="0">
-                [[_getLocalizedText('cancel')]]
-              </button>
             </div>
           </div>
         </div>
@@ -2833,11 +2856,19 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       const popover = this.shadowRoot.querySelector('#calendarPopover');
       const backdrop = this.shadowRoot.querySelector('#calendarBackdrop');
+      const overlay = this.shadowRoot.querySelector('#calendarOverlay');
       if (popover) {
         popover.classList.add('open');
       }
       if (backdrop) {
         backdrop.classList.add('open');
+      }
+      if (overlay && typeof overlay.showPopover === 'function') {
+        try {
+          overlay.showPopover();
+        } catch (_) {
+          /* already open or unsupported environment */
+        }
       }
 
       // Clear the flag after calendar has had time to settle
@@ -2947,6 +2978,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       const popover = this.shadowRoot.querySelector('#calendarPopover');
       const backdrop = this.shadowRoot.querySelector('#calendarBackdrop');
+      const overlay = this.shadowRoot.querySelector('#calendarOverlay');
+      if (overlay && typeof overlay.hidePopover === 'function') {
+        try {
+          overlay.hidePopover();
+        } catch (_) {
+          /* not open */
+        }
+      }
       if (popover) {
         popover.classList.remove('open');
         popover.classList.remove('open-up');
@@ -4469,6 +4508,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     disconnectedCallback() {
       super.disconnectedCallback();
+
+      const overlay = this.shadowRoot && this.shadowRoot.querySelector('#calendarOverlay');
+      if (overlay && typeof overlay.hidePopover === 'function') {
+        try {
+          overlay.hidePopover();
+        } catch (_) {
+          /* not open or already hidden */
+        }
+      }
 
       // Clean up event listeners
       document.removeEventListener('click', this._handleDocumentClick);
