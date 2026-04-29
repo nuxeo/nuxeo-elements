@@ -229,7 +229,7 @@ import '../nuxeo-button-styles.js';
         <nuxeo-card heading="[[i18n('userManagement.localPermissions.heading')]]">
           <nuxeo-user-group-permissions-table
             entity="[[user.id]]"
-            entity-label="[[_userDisplayName(user)]]"
+            label="[[_userDisplayName(user)]]"
             caption-text="[[i18n('userManagement.localPermissions.heading')]]"
             readonly
           ></nuxeo-user-group-permissions-table>
