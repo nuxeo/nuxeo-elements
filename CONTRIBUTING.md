@@ -12,11 +12,8 @@
 git clone https://github.com/nuxeo/nuxeo-elements.git
 cd nuxeo-elements
 
-# Install dependencies
+# Install all workspace dependencies
 npm install
-
-# Bootstrap workspace dependencies
-npm run bootstrap
 
 # Run all tests
 npm test
