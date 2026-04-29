@@ -8,10 +8,9 @@ This package (`@nuxeo/nuxeo-ui-elements`) provides 70+ UI components.
 
 ## Element Patterns
 
-- Most elements use the **legacy Polymer factory**: `Polymer({ is: '...', _template: html`...` })`
-- Some elements are class-based extending `Nuxeo.Element`
+- Most `ui/**/*.js` elements are **class-based modules** extending `Nuxeo.Element` and registered with `customElements.define(...)`
+- Some older elements in `nuxeo-user-group-management/` still use the **legacy Polymer factory** in `.html` files with `<dom-module>` + inline `<script>`
 - Do NOT convert between styles unless explicitly asked
-- Some elements in `nuxeo-user-group-management/` are `.html` files with `<dom-module>` + inline `<script>` — this is intentional
 
 ## Behaviors
 

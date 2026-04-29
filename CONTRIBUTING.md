@@ -93,27 +93,33 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
 ### UI Elements (legacy factory pattern)
 
-Most UI elements use the legacy Polymer factory:
+Most UI elements use the class-based pattern extending `Nuxeo.Element`:
 
 ```javascript
-import { Polymer } from '@polymer/polymer/lib/legacy/polymer-fn.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import Nuxeo from '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 
-Polymer({
-  is: 'nuxeo-my-widget',
-  _template: html`
-    <style>
-      :host { display: block; }
-    </style>
-    <div>[[i18n('myWidget.label')]]</div>
-  `,
-  behaviors: [I18nBehavior],
-  properties: {
-    document: { type: Object },
-  },
-});
+class MyWidget extends Nuxeo.Element {
+  static get is() { return 'nuxeo-my-widget'; }
+  static get template() {
+    return html`
+      <style>
+        :host { display: block; }
+      </style>
+      <div>[[i18n('myWidget.label')]]</div>
+    `;
+  }
+  static get properties() {
+    return {
+      document: { type: Object },
+    };
+  }
+}
+customElements.define(MyWidget.is, MyWidget);
 ```
+
+A few older elements in `nuxeo-user-group-management/*.html` use the legacy `Polymer({ ... })` factory with `<dom-module>`. Do not convert between styles unless explicitly asked.
 
 ### Adding i18n Keys
 

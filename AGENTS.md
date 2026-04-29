@@ -65,17 +65,17 @@ class MyElement extends Nuxeo.Element {
 customElements.define(MyElement.is, MyElement);
 ```
 
-### UI Elements (legacy factory — majority)
+### UI Elements (class-based — majority)
 
 ```javascript
-Polymer({
-  is: 'nuxeo-my-widget',
-  _template: html`...`,
-  behaviors: [FormatBehavior, I18nBehavior],
-  properties: { document: { type: Object } },
-  _myMethod() { ... },
-});
+class MyWidget extends Nuxeo.Element {
+  static get is() { return 'nuxeo-my-widget'; }
+  static get properties() { return { document: { type: Object } }; }
+}
+customElements.define(MyWidget.is, MyWidget);
 ```
+
+A few older elements in `nuxeo-user-group-management/*.html` use the legacy `Polymer({ ... })` factory with `<dom-module>`.
 
 Do NOT convert between legacy and class-based patterns unless explicitly asked.
 
@@ -119,7 +119,7 @@ npm run test:dataviz  # Dataviz only
 
 ## CI Workflow
 
-Push to `maintenance-3.1.x` triggers: **lint → test → storybook → publish** (all must pass).
+Push to `maintenance-3.1.x` triggers: **lint → test → storybook → build (tag + publish)** (all must pass).
 
 PRs run lint and test workflows automatically.
 

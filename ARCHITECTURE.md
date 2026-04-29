@@ -49,7 +49,7 @@ Nuxeo Elements is a library of reusable web components that forms the foundation
 | Node.js | Node.js | ≥ 18 |
 | Monorepo | Lerna | ^9.0.7 |
 | Unit Testing | Karma + Mocha + Chai + Sinon | Various |
-| Linting | ESLint 9 (flat config) + Prettier | ^9.0 / ^3.8 |
+| Linting | ESLint 9 (flat config) + Prettier | ^9.0 |
 | Documentation | Storybook 10 (web-components-vite) | ^10.3 |
 
 ## Package Architecture
@@ -204,7 +204,7 @@ Push to maintenance-3.1.x triggers:
   lint     → ESLint + Prettier + Polymer lint
   test     → Karma unit tests (all packages)
   storybook → Build storybook documentation
-  publish  → Publish packages to npm registry
+  build    → Tag and publish packages to npm registry
 ```
 
 Additional workflows: `preview.yaml` (PR preview environments), `cross-repo.yaml` (triggers nuxeo-web-ui builds), `crowdin.yaml` (daily translation sync), `promote.yaml` (release promotion), `cleanup.yaml` (preview namespace cleanup).
