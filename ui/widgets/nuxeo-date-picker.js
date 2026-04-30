@@ -131,6 +131,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           type: Boolean,
           value: false,
         },
+        format: {
+          type: String,
+          value: '',
+        },
       };
     }
 
@@ -183,6 +187,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           max="[[max]]"
           error-message="[[errorMessage]]"
           clear-button-visible$="[[!hideClearDateButton]]"
+          format="[[format]]"
         >
         </custom-date-picker>
       `;
@@ -232,10 +237,19 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _getValidity() {
-      return (
-        this.$.date.validate(this.value ? this.$.date.i18n.formatDate(this.value) : this.value) &&
-        (this.required ? !!this.value : true)
-      );
+      const datePicker = this.$ && this.$.date;
+      const formatDate =
+        (datePicker &&
+          datePicker.i18n &&
+          typeof datePicker.i18n.formatDate === 'function' &&
+          datePicker.i18n.formatDate.bind(datePicker.i18n)) ||
+        (datePicker &&
+          datePicker.pickerI18n &&
+          typeof datePicker.pickerI18n.formatDate === 'function' &&
+          datePicker.pickerI18n.formatDate.bind(datePicker.pickerI18n));
+      const formattedValue = this.value && formatDate ? formatDate(this.value) : this.value;
+
+      return datePicker.validate(formattedValue) && (this.required ? !!this.value : true);
     }
 
     _valueChanged() {

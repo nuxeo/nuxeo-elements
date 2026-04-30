@@ -3,7 +3,14 @@
   "repository": "nuxeo/nuxeo-elements.git",
   "name": "nuxeo-elements",
   "private": true,
-  "version": "3.1.29-SNAPSHOT",
+  "version": "3.1.30-SNAPSHOT",
+  "workspaces": [
+    "core",
+    "dataviz",
+    "storybook",
+    "testing-helpers",
+    "ui"
+  ],
   "author": "Nuxeo",
   "license": "Apache-2.0",
   "engines": {
@@ -11,9 +18,9 @@
   },
   "scripts": {
     "postinstall": "check-engine --ignore",
-    "bootstrap": "lerna bootstrap",
-    "clean": "lerna clean --yes && lerna bootstrap",
-    "nuke": "rm -rf package-lock.json node_modules && npm install && lerna exec \"rm -f package-lock.json\" && lerna clean --yes && lerna bootstrap && lerna exec --stream -- \"test -f package-lock.json || npm install --package-lock-only\"",
+    "bootstrap": "npm install",
+    "clean": "rm -rf core/node_modules dataviz/node_modules storybook/node_modules testing-helpers/node_modules ui/node_modules && npm install",
+    "nuke": "rm -rf package-lock.json node_modules core/node_modules dataviz/node_modules storybook/node_modules testing-helpers/node_modules ui/node_modules && npm install",
     "test": "npm-run-all test:core test:ui test:dataviz",
     "test-ci": "npm run test:core && sleep 10 && npm run test:dataviz && sleep 10 && npm run test:ui",
     "test:core": "karma start --package core --coverage",
@@ -36,16 +43,13 @@
     "storybook": "lerna run analysis --parallel && cd storybook && npm start",
     "bump-version:date-hash": "TIMESTAMP=$(date -u +%Y%m%d.%H%M%S) && lerna exec \"npm --no-git-tag-version version \\$(node -pe \\\"require('./package.json').version + '.$TIMESTAMP-' + require('child_process').execSync('git rev-parse --short HEAD').toString()\\\")\" --ignore @nuxeo/nuxeo-elements-storybook"
   },
-  "overrides": {
-    "react-draggable": "4.4.5"
-  },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "@open-wc/karma-esm": "^2.12.6",
     "@open-wc/prettier-config": "^0.1.0",
     "@polymer/iron-component-page": "^4.0.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
-    "chai": "^4.2.0",
+    "chai": "^6.2.2",
     "check-engine": "^1.10.0",
     "coveralls": "^3.0.2",
     "eslint": "^9.0.0",
@@ -62,18 +66,17 @@
     "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
     "karma-sauce-launcher": "^4.3.6",
-    "karma-sinon-chai": "^2.0.2",
     "karma-source-map-support": "^1.4.0",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-static": "^1.0.1",
-    "lerna": "^3.13.1",
+    "lerna": "^9.0.7",
     "lint-staged": "^10.1.1",
     "mocha": "^7.1.1",
     "npm-run-all": "^4.1.5",
     "polymer-cli": "^1.8.0",
     "semver": "^7.3.2",
     "sinon": "^9.0.1",
-    "sinon-chai": "^3.3.0"
+    "sinon-chai": "^4.0.1"
   },
   "husky": {
     "hooks": {

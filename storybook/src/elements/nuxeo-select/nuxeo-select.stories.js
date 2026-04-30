@@ -1,20 +1,28 @@
-import { html } from 'lit-html';
-import { storiesOf } from '@storybook/polymer';
-import { boolean, select, text } from '@storybook/addon-knobs';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-select.js';
-import { cities as CITIES } from '../../data/lists.data';
+import { cities as CITIES } from '../../data/lists.data.js';
 
-storiesOf('UI/nuxeo-select', module).add('Default', () => {
-  const label = text('Label', 'Label');
-  const placeholder = text('Placeholder', 'Placeholder');
-  const errorMessage = text('Error message', 'Error message');
-  const horizontalAlign = select('horizontalAlign', { left: 'left', right: 'right' }, 'left');
-  const verticalAlign = select('verticalAlign', { top: 'top', bottom: 'bottom' }, 'top');
-  const dynamicAlign = boolean('dynamicAlign', false);
-  const readonly = boolean('Read only', false);
-  const disabled = boolean('Disabled', false);
-  const required = boolean('Required', false);
-  return html`
+export default {
+  title: 'UI/nuxeo-select',
+};
+
+export const Default = {
+  args: {
+    label: 'Label',
+    placeholder: 'Placeholder',
+    errorMessage: 'Error message',
+    horizontalAlign: 'left',
+    verticalAlign: 'top',
+    dynamicAlign: false,
+    readonly: false,
+    disabled: false,
+    required: false,
+  },
+  argTypes: {
+    horizontalAlign: { control: 'select', options: ['left', 'right'] },
+    verticalAlign: { control: 'select', options: ['top', 'bottom'] },
+  },
+  render: (args) => html`
     <style>
       .container {
         margin: 2rem;
@@ -23,19 +31,19 @@ storiesOf('UI/nuxeo-select', module).add('Default', () => {
     </style>
     <div class="container">
       <nuxeo-select
-        label="${label}"
-        placeholder="${placeholder}"
-        error-message="${errorMessage}"
+        label="${args.label}"
+        placeholder="${args.placeholder}"
+        error-message="${args.errorMessage}"
         .options="${CITIES}"
         .selected="${CITIES[0]}"
-        horizontal-align="${horizontalAlign}"
-        vertical-align="${verticalAlign}"
-        ?dynamic-align="${dynamicAlign}"
-        ?readonly="${readonly}"
-        ?disabled="${disabled}"
-        ?required="${required}"
+        horizontal-align="${args.horizontalAlign}"
+        vertical-align="${args.verticalAlign}"
+        ?dynamic-align="${args.dynamicAlign}"
+        ?readonly="${args.readonly}"
+        ?disabled="${args.disabled}"
+        ?required="${args.required}"
       >
       </nuxeo-select>
     </div>
-  `;
-});
+  `,
+};

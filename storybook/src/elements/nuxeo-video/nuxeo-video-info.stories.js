@@ -1,18 +1,23 @@
-import { html } from 'lit-html';
-import { storiesOf } from '@storybook/polymer';
+import { html } from 'lit';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-video/nuxeo-video-info';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-card';
-import DocumentBuilder from '../../data/documents.data';
+import DocumentBuilder from '../../data/documents.data.js';
 import videoProperties from '../../data/video.data.js';
 
-storiesOf('UI/nuxeo-video', module).add('Nuxeo Video Info', () => {
-  const document = new DocumentBuilder()
-    .setType('File')
-    .setProperties({ 'vid:info': videoProperties['vid:info'] })
-    .build();
-  return html`
-    <nuxeo-card>
-      <nuxeo-video-info .document="${document}"></nuxeo-video-info>
-    </nuxeo-card>
-  `;
-});
+export default {
+  title: 'UI/nuxeo-video',
+};
+
+export const NuxeoVideoInfo = {
+  render: () => {
+    const document = new DocumentBuilder()
+      .setType('File')
+      .setProperties({ 'vid:info': videoProperties['vid:info'] })
+      .build();
+    return html`
+      <nuxeo-card>
+        <nuxeo-video-info .document="${document}"></nuxeo-video-info>
+      </nuxeo-card>
+    `;
+  },
+};

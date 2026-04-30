@@ -1,10 +1,9 @@
 import '@nuxeo/nuxeo-ui-elements/nuxeo-document-comments/nuxeo-document-comment';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-document-comments/nuxeo-document-comment-thread';
-import { boolean, color, radios } from '@storybook/addon-knobs';
-import { storiesOf } from '@storybook/polymer';
-import { html } from 'lit-html';
+import { html } from 'lit';
 import uuid from 'uuid/v4';
 import { getCommentsSample } from '../../data/comments.data.js';
+import { analyse } from '../../../.storybook/analysis';
 
 const commentsSample = getCommentsSample;
 const server = window.nuxeo.mock;
@@ -19,21 +18,14 @@ server.respondWith('get', new RegExp(/\/api\/v1\/id\/(\S+)\/@comment\//), ({ que
   }
   const comment = commentsSample.find((c) => c.id === id);
   if (!comment) {
-    return {
-      entries: [],
-      totalSize: 0,
-    };
+    return { entries: [], totalSize: 0 };
   }
   const replies = [];
-  // To avoid showing threads with more than two levels
   const repliesSample = commentsSample.filter((c) => c.numberOfReplies === 0);
   for (let i = 0; i < comment.numberOfReplies; i++) {
     replies.push(repliesSample[Math.floor(Math.random() * repliesSample.length)]);
   }
-  return {
-    entries: replies,
-    totalSize: comment ? comment.numberOfReplies : commentsSample.length,
-  };
+  return { entries: replies, totalSize: comment ? comment.numberOfReplies : commentsSample.length };
 });
 server.respondWith('post', new RegExp(/\/api\/v1\/id\/(\S+)\/@comment\//), ({ body }) => {
   return {
@@ -65,39 +57,69 @@ server.respondWith('put', new RegExp(/\/api\/v1\/id\/(\S+)\/@comment\/(\S+)/), (
   return comment;
 });
 
-storiesOf('UI/Comments', module)
-  .addElement('nuxeo-document-comment', () => {
-    const level = radios('Comment Type', { Comment: '1', Response: '2' }, '1', 'States');
-    const hasReplies = boolean('Has Replies?', false, 'States');
-    const isTruncated = boolean('Is text big?', false, 'States');
+const commentAnalysis = analyse('nuxeo-document-comment');
+const threadAnalysis = analyse('nuxeo-document-comment-thread');
+
+export default {
+  title: 'UI/Comments',
+};
+
+export const NuxeoDocumentComment = {
+  parameters: {
+    docs: { description: { story: commentAnalysis.notes } },
+  },
+  args: {
+    level: '1',
+    hasReplies: false,
+    isTruncated: false,
+    moreContentColor: '#1f28bf',
+    placeholderColor: '#939caa',
+  },
+  argTypes: {
+    level: { control: 'radio', options: ['1', '2'], name: 'Comment Type' },
+    moreContentColor: { control: 'color', name: '--nuxeo-comment-more-content-color' },
+    placeholderColor: { control: 'color', name: '--nuxeo-comment-placeholder-color' },
+  },
+  render: (args) => {
     const comment = Object.assign(
       {},
       commentsSample.find(
         (entry) =>
-          (hasReplies ? entry.numberOfReplies > 0 : entry.numberOfReplies === 0) &&
-          (isTruncated ? entry.text.length >= 256 : entry.text.length < 256),
+          (args.hasReplies ? entry.numberOfReplies > 0 : entry.numberOfReplies === 0) &&
+          (args.isTruncated ? entry.text.length >= 256 : entry.text.length < 256),
       ),
     );
     return html`
       <style>
         nuxeo-document-comment {
-          --nuxeo-comment-more-content-color: ${color('--nuxeo-comment-more-content-color', '#1f28bf', 'CSS')};
-          --nuxeo-comment-placeholder-color: ${color('--nuxeo-comment-placeholder-color', '#939caa', 'CSS')};
+          --nuxeo-comment-more-content-color: ${args.moreContentColor};
+          --nuxeo-comment-placeholder-color: ${args.placeholderColor};
         }
       </style>
-      <nuxeo-document-comment .comment="${comment}" .level="${Number(level)}"></nuxeo-document-comment>
+      <nuxeo-document-comment .comment="${comment}" .level="${Number(args.level)}"></nuxeo-document-comment>
     `;
-  })
-  .addElement(
-    'nuxeo-document-comment-thread',
-    () =>
-      html`
-        <style>
-          nuxeo-document-comment-thread {
-            --nuxeo-comment-more-content-color: ${color('--nuxeo-comment-more-content-color', '#1f28bf', 'CSS')};
-            --nuxeo-comment-placeholder-color: ${color('--nuxeo-comment-placeholder-color', '#939caa', 'CSS')};
-          }
-        </style>
-        <nuxeo-document-comment-thread uid="doc-id"></nuxeo-document-comment-thread>
-      `,
-  );
+  },
+};
+
+export const NuxeoDocumentCommentThread = {
+  parameters: {
+    docs: { description: { story: threadAnalysis.notes } },
+  },
+  args: {
+    moreContentColor: '#1f28bf',
+    placeholderColor: '#939caa',
+  },
+  argTypes: {
+    moreContentColor: { control: 'color', name: '--nuxeo-comment-more-content-color' },
+    placeholderColor: { control: 'color', name: '--nuxeo-comment-placeholder-color' },
+  },
+  render: (args) => html`
+    <style>
+      nuxeo-document-comment-thread {
+        --nuxeo-comment-more-content-color: ${args.moreContentColor};
+        --nuxeo-comment-placeholder-color: ${args.placeholderColor};
+      }
+    </style>
+    <nuxeo-document-comment-thread uid="doc-id"></nuxeo-document-comment-thread>
+  `,
+};
