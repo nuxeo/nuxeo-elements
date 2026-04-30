@@ -504,8 +504,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           .calendar-overlay-container {
             position: fixed;
             inset: 0;
-            width: 100vw;
-            height: 100vh;
             max-width: none;
             max-height: none;
             border: none;
