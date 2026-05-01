@@ -42,9 +42,7 @@ suite('nuxeo-selectivity', () => {
       let i;
       const getSelectedItem = () => dom(selectivityWidget.root).querySelector('.selectivity-single-selected-item');
       const resetValue = () =>
-        dom(selectivityWidget.root)
-          .querySelector('a.selectivity-single-selected-item-remove')
-          .click();
+        dom(selectivityWidget.root).querySelector('a.selectivity-single-selected-item-remove').click();
       for (i = 0; i < data.length; i++) {
         selectivityWidget.value = data[i];
         const item = getSelectedItem();
@@ -79,9 +77,7 @@ suite('nuxeo-selectivity', () => {
       expect(items[0].textContent).to.be.equal('Berlin');
       expect(items[1].textContent).to.be.equal('Lisbon');
       expect(items[1].classList.contains('highlighted')).to.be.false;
-      dom(selectivityWidget.root)
-        .querySelector('input.selectivity-multiple-input')
-        .focus();
+      dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input').focus();
       hitBackspace();
       await flush();
 
@@ -95,9 +91,7 @@ suite('nuxeo-selectivity', () => {
         await waitForAttrMutation(items[1], 'class');
       }
       expect(items[1].classList.contains('highlighted')).to.be.true;
-      dom(selectivityWidget.root)
-        .querySelector('input.selectivity-multiple-input')
-        .focus();
+      dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input').focus();
       hitBackspace();
       await flush();
 
@@ -137,7 +131,7 @@ suite('nuxeo-selectivity', () => {
       expect(resultsContainer).to.not.be.null;
       let results = resultsContainer.querySelectorAll('.selectivity-result-item.highlight');
       if (results.length === 0) {
-        await waitForChildListMutation(resultsContainer);
+        await waitForChildListMutation(dropdown);
         results = resultsContainer.querySelectorAll('.selectivity-result-item.highlight');
       }
 
@@ -231,7 +225,7 @@ suite('nuxeo-selectivity', () => {
         // Wait for dropdown to be rendered
         let dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
         if (!dropdown) {
-          await waitForChildListMutation(selectivityWidget);
+          await waitForChildListMutation(selectivityWidget.root);
           dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
         }
 
@@ -269,7 +263,7 @@ suite('nuxeo-selectivity', () => {
 
         let dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
         if (!dropdown) {
-          await waitForChildListMutation(selectivityWidget);
+          await waitForChildListMutation(selectivityWidget.root);
           dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
         }
 
@@ -300,7 +294,7 @@ suite('nuxeo-selectivity', () => {
 
         let dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
         if (!dropdown) {
-          await waitForChildListMutation(selectivityWidget);
+          await waitForChildListMutation(selectivityWidget.root);
           dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
         }
 
@@ -334,7 +328,7 @@ suite('nuxeo-selectivity', () => {
 
         let dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
         if (!dropdown) {
-          await waitForChildListMutation(selectivityWidget);
+          await waitForChildListMutation(selectivityWidget.root);
           dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
         }
 
@@ -371,7 +365,9 @@ suite('nuxeo-selectivity', () => {
 
         const activeId = input.getAttribute('aria-activedescendant');
         expect(activeId).to.not.be.null;
-        expect(activeId).to.contain('selectivity-option-');
+        expect(activeId).to.not.equal('');
+        const activeItem = dom(selectivityWidget.root).querySelector(`#${activeId}`);
+        expect(activeItem).to.exist;
       });
     });
 
@@ -443,8 +439,8 @@ suite('nuxeo-selectivity', () => {
 
       test('Should handle nested item objects with item property', async () => {
         const itemsWithNestedStructure = [
-          { displayLabel: 'Nested Collection 1', id: 'col-1' },
-          { displayLabel: 'Nested Collection 2', id: 'col-2' },
+          { item: { displayLabel: 'Nested Collection 1', id: 'col-1' } },
+          { item: { displayLabel: 'Nested Collection 2', id: 'col-2' } },
         ];
         selectivityWidget = await fixture(html`
           <nuxeo-selectivity placeholder="Select" .data=${itemsWithNestedStructure}></nuxeo-selectivity>
@@ -473,7 +469,7 @@ suite('nuxeo-selectivity', () => {
 
         let dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
         if (!dropdown) {
-          await waitForChildListMutation(selectivityWidget);
+          await waitForChildListMutation(selectivityWidget.root);
           dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
         }
 
@@ -493,7 +489,7 @@ suite('nuxeo-selectivity', () => {
 
         let dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
         if (!dropdown) {
-          await waitForChildListMutation(selectivityWidget);
+          await waitForChildListMutation(selectivityWidget.root);
           dropdown = dom(selectivityWidget.root).querySelector('.selectivity-dropdown');
         }
 

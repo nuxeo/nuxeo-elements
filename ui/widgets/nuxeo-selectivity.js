@@ -2227,11 +2227,7 @@ typedArrayTags[weakMapTag] = false;
             id: item.id,
             reason: (options && options.reason) || 'unspecified',
           });
-          // Only announce highlight if it's not the automatic first result highlight
-          // Automatic highlighting on dropdown open should not announce to avoid duplicate announcements
-          if (!(options && options.reason === 'first_result')) {
-            this._announceHighlight(item);
-          }
+          this._announceHighlight(item);
         },
 
         _announceHighlight(item) {
@@ -2240,10 +2236,10 @@ typedArrayTags[weakMapTag] = false;
             return;
           }
 
-          const prevHighlighted = this.$('[aria-selected="true"]');
-          if (prevHighlighted) {
-            prevHighlighted.setAttribute('aria-selected', 'false');
-          }
+          const resultItems = this.selectivity.el.querySelectorAll(RESULT_ITEM_SELECTOR);
+          resultItems.forEach((resultItem) => {
+            resultItem.setAttribute('aria-selected', 'false');
+          });
           highlightedEl.setAttribute('aria-selected', 'true');
 
           if (this.resultsContainer && !this.resultsContainer.id) {
@@ -6409,13 +6405,16 @@ typedArrayTags[weakMapTag] = false;
      *                submenu - Truthy if the result item has a menu with subresults.
      */
         resultItem(options) {
+          const itemId = `selectivity-option-${escape(options.id)}`;
           return (
             `<div class="selectivity-result-item${
               options.disabled ? ' disabled' : ''
             }"` +
-            ` data-item-id="${
+            ` id="${
+              itemId
+            }" data-item-id="${
               escape(options.id)
-            }">${
+            }" aria-selected="false">${
               escape(options.text)
             }${options.submenu
               ? '<span class="selectivity-submenu-icon fa fa-chevron-right"></span>'
@@ -7257,11 +7256,14 @@ typedArrayTags[weakMapTag] = false;
 
         // override templates since formatter should already escape text
         templates: {
-          resultItem: (opts) => (
-            `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
+          resultItem: (opts) => {
+            const itemId = `selectivity-option-${escapeHTML(opts.id)}`;
+            return `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
+                  id="${itemId}"
                   style="padding-left: ${7 + (10 * opts.depth)}px"
-                  data-item-id="${escapeHTML(opts.id)}">${this.resultFormatter(opts.item)}</div>`
-          ),
+                  data-item-id="${escapeHTML(opts.id)}"
+                  aria-selected="false">${this.resultFormatter(opts.item)}</div>`;
+          },
 
           resultLabel: (opts) => (
             `<div class="preserve-white-space selectivity-result-label"
