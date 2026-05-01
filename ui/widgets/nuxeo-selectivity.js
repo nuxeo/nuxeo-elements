@@ -2227,7 +2227,11 @@ typedArrayTags[weakMapTag] = false;
             id: item.id,
             reason: (options && options.reason) || 'unspecified',
           });
-          this._announceHighlight(item);
+          // Only announce highlight if it's not the automatic first result highlight
+          // Automatic highlighting on dropdown open should not announce to avoid duplicate announcements
+          if (!(options && options.reason === 'first_result')) {
+            this._announceHighlight(item);
+          }
         },
 
         _announceHighlight(item) {
@@ -5923,7 +5927,9 @@ typedArrayTags[weakMapTag] = false;
             // large, but after trial and error, this now seems to work reliably...
             this._clearCloseTimeout();
             this._closeTimeout = setTimeout(this.close.bind(this), 166);
-            this.input.value = '';
+            if (this.input) {
+              this.input.value = '';
+            }
           }
         },
 
