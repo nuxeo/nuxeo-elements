@@ -2227,6 +2227,72 @@ typedArrayTags[weakMapTag] = false;
             id: item.id,
             reason: (options && options.reason) || 'unspecified',
           });
+          // Only announce highlight if it's not the automatic first result highlight
+          // Automatic highlighting on dropdown open should not announce to avoid duplicate announcements
+          if (!(options && options.reason === 'first_result')) {
+            this._announceHighlight(item);
+          }
+        },
+
+        _announceHighlight(item) {
+          const highlightedEl = this.$(HIGHLIGHT_SELECTOR);
+          if (!highlightedEl || !this.selectivity || !this.selectivity.el) {
+            return;
+          }
+
+          const prevHighlighted = this.$('[aria-selected="true"]');
+          if (prevHighlighted) {
+            prevHighlighted.setAttribute('aria-selected', 'false');
+          }
+          highlightedEl.setAttribute('aria-selected', 'true');
+
+          if (this.resultsContainer && !this.resultsContainer.id) {
+            this.resultsContainer.id = `selectivity-listbox-${Date.now()}`;
+          }
+          if (this.selectivity.input) {
+            if (this.resultsContainer && this.resultsContainer.id) {
+              this.selectivity.input.setAttribute('aria-controls', this.resultsContainer.id);
+            }
+            this.selectivity.input.setAttribute('aria-expanded', 'true');
+            if (highlightedEl.id) {
+              this.selectivity.input.setAttribute('aria-activedescendant', highlightedEl.id);
+            }
+          }
+
+          let ariaLabel = null;
+          if (item && item.text) {
+            ariaLabel = item.text;
+          } else if (item && item.item) {
+            ariaLabel = item.item.displayLabel || item.item.title || item.item.text || item.item.id;
+          }
+
+          if (!ariaLabel) {
+            ariaLabel = highlightedEl.textContent.trim();
+          }
+
+          if (!ariaLabel) {
+            return;
+          }
+
+          let liveRegion = this.selectivity.el.querySelector('[role="status"][aria-live="polite"]');
+          if (!liveRegion) {
+            liveRegion = document.createElement('div');
+            liveRegion.setAttribute('role', 'status');
+            liveRegion.setAttribute('aria-live', 'polite');
+            liveRegion.setAttribute('aria-atomic', 'true');
+            liveRegion.style.position = 'absolute';
+            liveRegion.style.left = '-10000px';
+            liveRegion.style.width = '1px';
+            liveRegion.style.height = '1px';
+            liveRegion.style.overflow = 'hidden';
+            if (this.selectivity.el && this.selectivity.el.parentNode) {
+              this.selectivity.el.appendChild(liveRegion);
+            }
+          }
+
+          if (liveRegion) {
+            liveRegion.textContent = ariaLabel;
+          }
         },
 
         /**
@@ -5861,7 +5927,9 @@ typedArrayTags[weakMapTag] = false;
             // large, but after trial and error, this now seems to work reliably...
             this._clearCloseTimeout();
             this._closeTimeout = setTimeout(this.close.bind(this), 166);
-            this.input.value = '';
+            if (this.input) {
+              this.input.value = '';
+            }
           }
         },
 
@@ -5889,6 +5957,11 @@ typedArrayTags[weakMapTag] = false;
      */
         _closed() {
           this.dropdown = null;
+
+          if (this.input) {
+            this.input.setAttribute('aria-expanded', 'false');
+            this.input.removeAttribute('aria-activedescendant');
+          }
 
           toggleClass(this.el, 'open', false);
         },
@@ -6236,7 +6309,7 @@ typedArrayTags[weakMapTag] = false;
      */
         multipleSelectInput(options) {
           const enabledTemplate = '<input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" ' +
-            'class="selectivity-multiple-input">';
+            'class="selectivity-multiple-input" role="combobox" aria-autocomplete="list" aria-expanded="false">';
           const disabledTemplate = '<div class="selectivity-multiple-input selectivity-placeholder"/>';
           return `
             <div class="selectivity-multiple-input-container">
@@ -6374,7 +6447,7 @@ typedArrayTags[weakMapTag] = false;
         singleSelectInput(options) {
           return `
             <div class="selectivity-single-select">
-              <input type="text" class="selectivity-single-select-input" ${options.required ? ' required' : ''}>
+              <input type="text" class="selectivity-single-select-input" role="combobox" aria-autocomplete="list" aria-expanded="false" ${options.required ? ' required' : ''}>
               <div class="selectivity-single-result-container"></div>
               <iron-icon icon="icons:arrow-drop-down" class="selectivity-caret"></iron-icon>
               <span class="underline"></span>
@@ -6603,7 +6676,10 @@ typedArrayTags[weakMapTag] = false;
         /**
          * Label.
          */
-        label: String,
+        label: {
+          type: String,
+          observer: '_labelChanged',
+        },
 
         /**
          * Selected value(s).
@@ -7247,6 +7323,7 @@ typedArrayTags[weakMapTag] = false;
       this.$.input.addEventListener('selectivity-change', this._updateSelectionHandler);
 
       this._selectivity = new InputType(options);
+      this._syncInputAriaLabel();
 
       const self = this;
       Selectivity.Locale = {
@@ -7441,6 +7518,28 @@ typedArrayTags[weakMapTag] = false;
         if (!this.multiple && singleInputPlaceholder) {
           singleInputPlaceholder.innerText = this.placeholder;
         }
+      }
+      this._syncInputAriaLabel();
+    }
+
+    _labelChanged() {
+      this._syncInputAriaLabel();
+    }
+
+    _syncInputAriaLabel() {
+      const input = this.shadowRoot && this.shadowRoot.querySelector('.selectivity-single-select-input, .selectivity-multiple-input');
+      if (!input) {
+        return;
+      }
+
+      const label = (this.label || '').trim();
+      const placeholder = (this.placeholder || '').trim();
+      const ariaLabel = [label, placeholder].filter((value) => !!value).join(', ');
+
+      if (ariaLabel) {
+        input.setAttribute('aria-label', ariaLabel);
+      } else {
+        input.removeAttribute('aria-label');
       }
     }
 
