@@ -219,7 +219,7 @@ import '../nuxeo-button-styles.js';
           <div class="horizontal layout center header">
             <iron-icon icon="nuxeo:user" class="user-icon"></iron-icon>
             <div class="layout vertical">
-              <div class="user heading" name="userHeading">[[user.id]]</div>
+              <div class="user heading" name="userHeading">[[_userDisplayName(user)]]</div>
               <div>[[user.properties.firstName]] [[user.properties.lastName]]</div>
             </div>
 
@@ -755,6 +755,17 @@ import '../nuxeo-button-styles.js';
 
     _layoutHref(layout) {
       return this.resolveUrl(layout);
+    }
+
+    _userDisplayName(user) {
+      if (!user) {
+        return '';
+      }
+      const properties = user.properties || {};
+      const firstName = properties.firstName || properties['user:firstName'];
+      const lastName = properties.lastName || properties['user:lastName'];
+      const email = properties.email || properties['user:email'];
+      return [firstName, lastName].join(' ').trim() || user.name || email || user.id || user.uid || '';
     }
   }
 
