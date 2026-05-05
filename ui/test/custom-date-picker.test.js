@@ -238,4 +238,88 @@ suite('custom-date-picker', () => {
       expect(el._selectedDate).to.equal(null);
     });
   });
+
+  suite('keyboard navigation with parent key handlers (e.g. iron-list)', () => {
+    test('calendar grid arrow keys stop propagation', async () => {
+      const el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+
+      let bubbledToDocument = false;
+      const onDocKeydown = (ev) => {
+        if (ev.key === 'ArrowLeft') {
+          bubbledToDocument = true;
+        }
+      };
+      document.addEventListener('keydown', onDocKeydown);
+
+      try {
+        el._openCalendar(null, false);
+        await flush();
+        await new Promise((r) => setTimeout(r, 350));
+
+        const day = el.shadowRoot.querySelector('.calendar-day[tabindex="0"]');
+        expect(day, 'expected a focused calendar day after open').to.be.ok;
+
+        day.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: 'ArrowLeft',
+            bubbles: true,
+            cancelable: true,
+            composed: true,
+          }),
+        );
+
+        expect(bubbledToDocument).to.equal(false, 'ArrowLeft should not bubble to document when handled in the grid');
+      } finally {
+        document.removeEventListener('keydown', onDocKeydown);
+        if (el._isCalendarOpen) {
+          el._closeCalendar();
+        }
+      }
+    });
+
+    test('arrow keys on Today (footer) stop propagation via popover', async () => {
+      const el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+
+      let bubbledToDocument = false;
+      const onDocKeydown = (ev) => {
+        if (ev.key === 'ArrowDown') {
+          bubbledToDocument = true;
+        }
+      };
+      document.addEventListener('keydown', onDocKeydown);
+
+      try {
+        el._openCalendar(null, false);
+        await flush();
+        await new Promise((r) => setTimeout(r, 350));
+
+        const today = el.shadowRoot.querySelector('.today-button');
+        expect(today, 'Today button').to.be.ok;
+        today.focus();
+        expect(el.shadowRoot.activeElement).to.equal(today);
+
+        today.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: 'ArrowDown',
+            bubbles: true,
+            cancelable: true,
+            composed: true,
+          }),
+        );
+
+        expect(bubbledToDocument).to.equal(false, 'ArrowDown from footer should not bubble past the calendar popover');
+      } finally {
+        document.removeEventListener('keydown', onDocKeydown);
+        if (el._isCalendarOpen) {
+          el._closeCalendar();
+        }
+      }
+    });
+  });
 });
