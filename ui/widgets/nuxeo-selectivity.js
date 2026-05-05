@@ -2227,6 +2227,68 @@ typedArrayTags[weakMapTag] = false;
             id: item.id,
             reason: (options && options.reason) || 'unspecified',
           });
+          this._announceHighlight(item);
+        },
+
+        _announceHighlight(item) {
+          const highlightedEl = this.$(HIGHLIGHT_SELECTOR);
+          if (!highlightedEl || !this.selectivity || !this.selectivity.el) {
+            return;
+          }
+
+          const resultItems = this.selectivity.el.querySelectorAll(RESULT_ITEM_SELECTOR);
+          resultItems.forEach((resultItem) => {
+            resultItem.setAttribute('aria-selected', 'false');
+          });
+          highlightedEl.setAttribute('aria-selected', 'true');
+
+          if (this.resultsContainer && !this.resultsContainer.id) {
+            this.resultsContainer.id = `selectivity-listbox-${Date.now()}`;
+          }
+          if (this.selectivity.input) {
+            if (this.resultsContainer && this.resultsContainer.id) {
+              this.selectivity.input.setAttribute('aria-controls', this.resultsContainer.id);
+            }
+            this.selectivity.input.setAttribute('aria-expanded', 'true');
+            if (highlightedEl.id) {
+              this.selectivity.input.setAttribute('aria-activedescendant', highlightedEl.id);
+            }
+          }
+
+          let ariaLabel = null;
+          if (item && item.text) {
+            ariaLabel = item.text;
+          } else if (item && item.item) {
+            ariaLabel = item.item.displayLabel || item.item.title || item.item.text || item.item.id;
+          }
+
+          if (!ariaLabel) {
+            ariaLabel = highlightedEl.textContent.trim();
+          }
+
+          if (!ariaLabel) {
+            return;
+          }
+
+          let liveRegion = this.selectivity.el.querySelector('[role="status"][aria-live="polite"]');
+          if (!liveRegion) {
+            liveRegion = document.createElement('div');
+            liveRegion.setAttribute('role', 'status');
+            liveRegion.setAttribute('aria-live', 'polite');
+            liveRegion.setAttribute('aria-atomic', 'true');
+            liveRegion.style.position = 'absolute';
+            liveRegion.style.left = '-10000px';
+            liveRegion.style.width = '1px';
+            liveRegion.style.height = '1px';
+            liveRegion.style.overflow = 'hidden';
+            if (this.selectivity.el && this.selectivity.el.parentNode) {
+              this.selectivity.el.appendChild(liveRegion);
+            }
+          }
+
+          if (liveRegion) {
+            liveRegion.textContent = ariaLabel;
+          }
         },
 
         /**
@@ -4761,6 +4823,7 @@ typedArrayTags[weakMapTag] = false;
  */
       function listener(selectivity, input) {
         let keydownCanceled = false;
+        let arrowHandledOnKeyDown = false;
         let closeSubmenu = null;
 
         /**
@@ -4821,6 +4884,7 @@ typedArrayTags[weakMapTag] = false;
 
         function keyHeld(event) {
           const dropdown = selectivity.dropdown;
+          arrowHandledOnKeyDown = false;
           if (dropdown) {
             const keyCode = getKeyCode(event);
             if (keyCode === KEY_BACKSPACE) {
@@ -4837,8 +4901,10 @@ typedArrayTags[weakMapTag] = false;
                 keydownCanceled = true;
               }
             } else if (keyCode === KEY_DOWN_ARROW) {
+              arrowHandledOnKeyDown = true;
               moveHighlight(dropdown, 1);
             } else if (keyCode === KEY_UP_ARROW) {
+              arrowHandledOnKeyDown = true;
               moveHighlight(dropdown, -1);
             } else if (keyCode === KEY_TAB) {
               setTimeout(() => {
@@ -4888,7 +4954,11 @@ typedArrayTags[weakMapTag] = false;
             // handled in keyHeld() because the response feels faster and it works with repeated
             // events if the user holds the key for a longer period
             // still, we issue an open() call here in case the dropdown was not yet open...
+            if (!arrowHandledOnKeyDown && dropdown) {
+              moveHighlight(dropdown, keyCode === KEY_DOWN_ARROW ? 1 : -1);
+            }
             open();
+            arrowHandledOnKeyDown = false;
 
             event.preventDefault();
           } else {
@@ -5861,7 +5931,9 @@ typedArrayTags[weakMapTag] = false;
             // large, but after trial and error, this now seems to work reliably...
             this._clearCloseTimeout();
             this._closeTimeout = setTimeout(this.close.bind(this), 166);
-            this.input.value = '';
+            if (this.input) {
+              this.input.value = '';
+            }
           }
         },
 
@@ -5889,6 +5961,11 @@ typedArrayTags[weakMapTag] = false;
      */
         _closed() {
           this.dropdown = null;
+
+          if (this.input) {
+            this.input.setAttribute('aria-expanded', 'false');
+            this.input.removeAttribute('aria-activedescendant');
+          }
 
           toggleClass(this.el, 'open', false);
         },
@@ -6236,7 +6313,7 @@ typedArrayTags[weakMapTag] = false;
      */
         multipleSelectInput(options) {
           const enabledTemplate = '<input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" ' +
-            'class="selectivity-multiple-input">';
+            'class="selectivity-multiple-input" role="combobox" aria-autocomplete="list" aria-expanded="false">';
           const disabledTemplate = '<div class="selectivity-multiple-input selectivity-placeholder"/>';
           return `
             <div class="selectivity-multiple-input-container">
@@ -6336,13 +6413,16 @@ typedArrayTags[weakMapTag] = false;
      *                submenu - Truthy if the result item has a menu with subresults.
      */
         resultItem(options) {
+          const itemId = `selectivity-option-${escape(options.id)}`;
           return (
             `<div class="selectivity-result-item${
               options.disabled ? ' disabled' : ''
             }"` +
-            ` data-item-id="${
+            ` id="${
+              itemId
+            }" data-item-id="${
               escape(options.id)
-            }">${
+            }" aria-selected="false">${
               escape(options.text)
             }${options.submenu
               ? '<span class="selectivity-submenu-icon fa fa-chevron-right"></span>'
@@ -6374,7 +6454,7 @@ typedArrayTags[weakMapTag] = false;
         singleSelectInput(options) {
           return `
             <div class="selectivity-single-select">
-              <input type="text" class="selectivity-single-select-input" ${options.required ? ' required' : ''}>
+              <input type="text" class="selectivity-single-select-input" role="combobox" aria-autocomplete="list" aria-expanded="false" ${options.required ? ' required' : ''}>
               <div class="selectivity-single-result-container"></div>
               <iron-icon icon="icons:arrow-drop-down" class="selectivity-caret"></iron-icon>
               <span class="underline"></span>
@@ -6603,7 +6683,10 @@ typedArrayTags[weakMapTag] = false;
         /**
          * Label.
          */
-        label: String,
+        label: {
+          type: String,
+          observer: '_labelChanged',
+        },
 
         /**
          * Selected value(s).
@@ -7181,11 +7264,14 @@ typedArrayTags[weakMapTag] = false;
 
         // override templates since formatter should already escape text
         templates: {
-          resultItem: (opts) => (
-            `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
+          resultItem: (opts) => {
+            const itemId = `selectivity-option-${escapeHTML(opts.id)}`;
+            return `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
+                  id="${itemId}"
                   style="padding-left: ${7 + (10 * opts.depth)}px"
-                  data-item-id="${escapeHTML(opts.id)}">${this.resultFormatter(opts.item)}</div>`
-          ),
+                  data-item-id="${escapeHTML(opts.id)}"
+                  aria-selected="false">${this.resultFormatter(opts.item)}</div>`;
+          },
 
           resultLabel: (opts) => (
             `<div class="preserve-white-space selectivity-result-label"
@@ -7247,6 +7333,7 @@ typedArrayTags[weakMapTag] = false;
       this.$.input.addEventListener('selectivity-change', this._updateSelectionHandler);
 
       this._selectivity = new InputType(options);
+      this._syncInputAriaLabel();
 
       const self = this;
       Selectivity.Locale = {
@@ -7441,6 +7528,28 @@ typedArrayTags[weakMapTag] = false;
         if (!this.multiple && singleInputPlaceholder) {
           singleInputPlaceholder.innerText = this.placeholder;
         }
+      }
+      this._syncInputAriaLabel();
+    }
+
+    _labelChanged() {
+      this._syncInputAriaLabel();
+    }
+
+    _syncInputAriaLabel() {
+      const input = this.shadowRoot && this.shadowRoot.querySelector('.selectivity-single-select-input, .selectivity-multiple-input');
+      if (!input) {
+        return;
+      }
+
+      const label = (this.label || '').trim();
+      const placeholder = (this.placeholder || '').trim();
+      const ariaLabel = [label, placeholder].filter((value) => !!value).join(', ');
+
+      if (ariaLabel) {
+        input.setAttribute('aria-label', ariaLabel);
+      } else {
+        input.removeAttribute('aria-label');
       }
     }
 
