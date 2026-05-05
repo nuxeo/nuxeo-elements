@@ -1745,6 +1745,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           // Allow opening calendar with specific keys when input is focused
           if (e.key === 'F4' || e.key === 'ArrowDown') {
             e.preventDefault();
+            e.stopPropagation();
             this._openCalendar(e, true); // Opened via keyboard
           } else if (e.key === 'Enter') {
             // Enter validates input
@@ -1850,13 +1851,35 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _handlePopoverKeydown(e) {
       if (e.key === 'Escape') {
         e.preventDefault();
+        e.stopPropagation();
         this._closeCalendar();
         return;
       }
 
       if (e.key === 'Tab') {
         e.preventDefault();
+        e.stopPropagation();
         this._handleCalendarTabNavigation(e.shiftKey);
+        return;
+      }
+
+      // Focus may be on month/year, prev/next, Today, or Cancel — not on a .calendar-day.
+      // Those targets do not stopPropagation; arrow keys then bubble to ancestor iron-list
+      // (nuxeo-data-table) which moves row focus and closes the calendar (WEBUI-1986 follow-up).
+      if (this._isCalendarOpen) {
+        const blockAncestors = new Set([
+          'ArrowUp',
+          'ArrowDown',
+          'ArrowLeft',
+          'ArrowRight',
+          'Home',
+          'End',
+          'PageUp',
+          'PageDown',
+        ]);
+        if (blockAncestors.has(e.key)) {
+          e.stopPropagation();
+        }
       }
     }
 
@@ -2970,10 +2993,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const currentDate = new Date(currentButton.dataset.date);
       const targetDate = new Date(currentDate);
 
+      // Stop bubbling so parent lists (e.g. iron-list in nuxeo-data-table) do not handle
+      // Arrow keys / Enter and steal focus while the calendar is open (WEBUI-1986 follow-up).
       switch (e.key) {
         case 'Enter':
         case ' ':
           e.preventDefault();
+          e.stopPropagation();
           // Allow selection of any current month date, not just non-empty
           if (!currentButton.disabled && currentButton.classList.contains('calendar-day')) {
             // Check if it's a valid current month date
@@ -2988,6 +3014,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         case 'ArrowLeft':
           e.preventDefault();
+          e.stopPropagation();
           targetDate.setDate(currentDate.getDate() - 1);
           // Only navigate within current month - don't allow month transitions
           if (
@@ -3000,6 +3027,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         case 'ArrowRight':
           e.preventDefault();
+          e.stopPropagation();
           targetDate.setDate(currentDate.getDate() + 1);
           // Only navigate within current month - don't allow month transitions
           if (
@@ -3012,6 +3040,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         case 'ArrowUp':
           e.preventDefault();
+          e.stopPropagation();
           targetDate.setDate(currentDate.getDate() - 7);
           // Only navigate within current month - don't allow month transitions
           if (
@@ -3024,6 +3053,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         case 'ArrowDown':
           e.preventDefault();
+          e.stopPropagation();
           targetDate.setDate(currentDate.getDate() + 7);
           // Only navigate within current month - don't allow month transitions
           if (
@@ -3036,6 +3066,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         case 'Home': {
           e.preventDefault();
+          e.stopPropagation();
           const dayOfWeek = currentDate.getDay();
           targetDate.setDate(currentDate.getDate() - dayOfWeek);
           // Only navigate within current month - don't allow month transitions
@@ -3050,6 +3081,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         case 'End': {
           e.preventDefault();
+          e.stopPropagation();
           const daysToEnd = 6 - currentDate.getDay();
           targetDate.setDate(currentDate.getDate() + daysToEnd);
           // Only navigate within current month - don't allow month transitions
@@ -3064,6 +3096,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         case 'PageUp':
           e.preventDefault();
+          e.stopPropagation();
           // PageUp: Previous year only - no month navigation via keyboard
           targetDate.setFullYear(currentDate.getFullYear() - 1);
           this._focusDateWithMonthTransition(targetDate);
@@ -3071,6 +3104,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         case 'PageDown':
           e.preventDefault();
+          e.stopPropagation();
           // PageDown: Next year only - no month navigation via keyboard
           targetDate.setFullYear(currentDate.getFullYear() + 1);
           this._focusDateWithMonthTransition(targetDate);
@@ -4628,9 +4662,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _handleCalendarIconKeydown(e) {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
+        e.stopPropagation();
         this._openCalendar(e, true); // Opened via keyboard
       } else if (e.key === 'ArrowDown' || e.key === 'F4') {
         e.preventDefault();
+        e.stopPropagation();
         this._openCalendar(e, true); // Opened via keyboard
       }
     }
@@ -4658,6 +4694,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
+        e.stopPropagation();
         if (!this._isYearDropdownOpen) {
           this._toggleYearDropdown();
         } else {
@@ -4673,6 +4710,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         }
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
+        e.stopPropagation();
         if (this._isYearDropdownOpen) {
           moveWithinOptions(+1);
         } else {
@@ -4680,6 +4718,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         }
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
+        e.stopPropagation();
         if (this._isYearDropdownOpen) {
           moveWithinOptions(-1);
         } else {
@@ -4687,18 +4726,23 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         }
       } else if (e.key === 'Home') {
         e.preventDefault();
+        e.stopPropagation();
         moveWithinOptions(-9999);
       } else if (e.key === 'End') {
         e.preventDefault();
+        e.stopPropagation();
         moveWithinOptions(9999);
       } else if (e.key === 'PageUp') {
         e.preventDefault();
+        e.stopPropagation();
         moveWithinOptions(-10);
       } else if (e.key === 'PageDown') {
         e.preventDefault();
+        e.stopPropagation();
         moveWithinOptions(10);
       } else if (e.key === 'Escape') {
         e.preventDefault();
+        e.stopPropagation();
         this._closeYearDropdown();
       } else if (e.key === 'Tab') {
         // Close dropdown when user tabs away
