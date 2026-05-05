@@ -42,7 +42,9 @@ suite('nuxeo-selectivity', () => {
       let i;
       const getSelectedItem = () => dom(selectivityWidget.root).querySelector('.selectivity-single-selected-item');
       const resetValue = () =>
-        dom(selectivityWidget.root).querySelector('a.selectivity-single-selected-item-remove').click();
+        dom(selectivityWidget.root)
+          .querySelector('a.selectivity-single-selected-item-remove')
+          .click();
       for (i = 0; i < data.length; i++) {
         selectivityWidget.value = data[i];
         const item = getSelectedItem();
@@ -77,7 +79,9 @@ suite('nuxeo-selectivity', () => {
       expect(items[0].textContent).to.be.equal('Berlin');
       expect(items[1].textContent).to.be.equal('Lisbon');
       expect(items[1].classList.contains('highlighted')).to.be.false;
-      dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input').focus();
+      dom(selectivityWidget.root)
+        .querySelector('input.selectivity-multiple-input')
+        .focus();
       hitBackspace();
       await flush();
 
@@ -91,7 +95,9 @@ suite('nuxeo-selectivity', () => {
         await waitForAttrMutation(items[1], 'class');
       }
       expect(items[1].classList.contains('highlighted')).to.be.true;
-      dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input').focus();
+      dom(selectivityWidget.root)
+        .querySelector('input.selectivity-multiple-input')
+        .focus();
       hitBackspace();
       await flush();
 
