@@ -2100,8 +2100,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
 
       // Focus may be on month/year, prev/next, Today, or Cancel — not on a .calendar-day.
-      // Those targets do not stopPropagation; arrow keys then bubble to ancestor iron-list
-      // (nuxeo-data-table) which moves row focus and closes the calendar (WEBUI-1986 follow-up).
+      // Those targets do not stopPropagation; keys then bubble to ancestor iron-list
+      // (nuxeo-data-table): arrows move row focus; Enter runs selection / _focusPhysicalItem
+      // and prevents footer buttons from receiving activation (WEBUI-1986 follow-up).
       if (this._isCalendarOpen) {
         const blockAncestors = new Set([
           'ArrowUp',
@@ -2112,6 +2113,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           'End',
           'PageUp',
           'PageDown',
+          'Enter',
+          ' ',
         ]);
         if (blockAncestors.has(e.key)) {
           e.stopPropagation();

@@ -321,5 +321,49 @@ suite('custom-date-picker', () => {
         }
       }
     });
+
+    test('Enter on Today (footer) stops propagation so ancestor lists do not steal activation', async () => {
+      const el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+
+      let bubbledToDocument = false;
+      const onDocKeydown = (ev) => {
+        if (ev.key === 'Enter') {
+          bubbledToDocument = true;
+        }
+      };
+      document.addEventListener('keydown', onDocKeydown);
+
+      try {
+        el._openCalendar(null, false);
+        await flush();
+        await new Promise((r) => setTimeout(r, 350));
+
+        const today = el.shadowRoot.querySelector('.today-button');
+        expect(today, 'Today button').to.be.ok;
+        today.focus();
+
+        today.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: 'Enter',
+            bubbles: true,
+            cancelable: true,
+            composed: true,
+          }),
+        );
+
+        expect(bubbledToDocument).to.equal(
+          false,
+          'Enter from Today should not bubble to document (iron-list uses Enter for rows)',
+        );
+      } finally {
+        document.removeEventListener('keydown', onDocKeydown);
+        if (el._isCalendarOpen) {
+          el._closeCalendar();
+        }
+      }
+    });
   });
 });
