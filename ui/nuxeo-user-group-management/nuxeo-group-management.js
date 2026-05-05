@@ -259,7 +259,7 @@ import '../nuxeo-button-styles.js';
         </nuxeo-dialog>
 
         <nuxeo-dialog id="rmFromGroupDialog" with-backdrop class="vertical layout">
-          <h2>[[i18n('groupManagement.removeUserFromGroup.confirm', _removedMember.id)]]</h2>
+          <h2>[[i18n('groupManagement.removeUserFromGroup.confirm', _memberDisplayName(_removedMember))]]</h2>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
               <paper-button noink dialog-dismiss class="secondary">[[i18n('label.no')]]</paper-button>
@@ -396,7 +396,7 @@ import '../nuxeo-button-styles.js';
                             </template>
                           </dom-if>
                         </div>
-                        <div class="flex-4 preserve-white-space" role="columnheader">[[item.id]]</div>
+                        <div class="flex-4 preserve-white-space" role="columnheader">[[_memberDisplayName(item)]]</div>
                         <div class="flex-4" role="columnheader">
                           <div class="email-wrapper">
                             <span class="email-text">
@@ -624,6 +624,13 @@ import '../nuxeo-button-styles.js';
       return properties && properties.email;
     }
 
+    _memberDisplayName(member) {
+      if (!member) {
+        return '';
+      }
+      return member.name || member.displayLabel || member.id || member.groupname || '';
+    }
+
     _fetch() {
       if (this.groupname) {
         this.$.request.get().then(() => {
@@ -705,7 +712,9 @@ import '../nuxeo-button-styles.js';
           } else {
             this._fetchGroups();
           }
-          this._toast(this.i18n('groupManagement.addedUserToGroup', member.displayLabel, this.group.groupname));
+          this._toast(
+            this.i18n('groupManagement.addedUserToGroup', this._memberDisplayName(member), this.group.groupname),
+          );
         });
       }
       this.selectedMember = null;
@@ -739,7 +748,7 @@ import '../nuxeo-button-styles.js';
           this._fetchGroups();
         }
         this._removeRecent(this._removedMember.id);
-        this._toast(this.i18n('groupManagement.removedUserFromGroup', this._removedMember.id));
+        this._toast(this.i18n('groupManagement.removedUserFromGroup', this._memberDisplayName(this._removedMember)));
       });
     }
 
