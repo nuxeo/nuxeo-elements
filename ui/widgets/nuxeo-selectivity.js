@@ -2250,9 +2250,6 @@ typedArrayTags[weakMapTag] = false;
               this.selectivity.input.setAttribute('aria-controls', this.resultsContainer.id);
             }
             this.selectivity.input.setAttribute('aria-expanded', 'true');
-            if (highlightedEl.id) {
-              this.selectivity.input.setAttribute('aria-activedescendant', highlightedEl.id);
-            }
           }
 
           let ariaLabel = null;
@@ -5956,7 +5953,6 @@ typedArrayTags[weakMapTag] = false;
 
           if (this.input) {
             this.input.setAttribute('aria-expanded', 'false');
-            this.input.removeAttribute('aria-activedescendant');
           }
 
           toggleClass(this.el, 'open', false);
