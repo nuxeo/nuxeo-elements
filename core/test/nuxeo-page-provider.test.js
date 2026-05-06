@@ -99,7 +99,7 @@ suite('nuxeo-page-provider', () => {
       try {
         await pp.fetch();
       } catch (error) {
-        expect(error).to.exist; // eslint-disable-line no-unused-expressions
+        expect(error).to.exist;
         expect(error.status).to.be.eq(500);
         expect(error.message).to.be.eq('Internal Server Error');
         document.removeEventListener('error', eventHandler); // Cleaning the workaround listener

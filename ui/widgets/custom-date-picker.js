@@ -1312,7 +1312,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           try {
             const formatToUse = this.format ? this.format : moment.localeData().longDateFormat('L');
 
-            const date = this._moment(text, formatToUse, true); // strict parsing
+            const date = this._moment(text, formatToUse, true); //strict parsing
 
             if (date.isValid()) {
               return {
@@ -3235,11 +3235,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Use moment.js for reliable parsing
         const effectiveFormat = format || this.format || moment.localeData().longDateFormat('L');
 
-        const momentDate = this._moment(inputValue, effectiveFormat, true); // strict parsing
+        const momentDate = this._moment(inputValue, effectiveFormat, true); //strict parsing
 
         if (momentDate.isValid()) {
           const jsDate = momentDate.toDate();
-          jsDate.setHours(0, 0, 0, 0); // Normalize to start of day
+          jsDate.setHours(0, 0, 0, 0); //Normalize to start of day
           return jsDate;
         }
 
@@ -4492,7 +4492,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         });
       }
     }
-
     _isValidMomentFormat(format) {
       if (!format || typeof format !== 'string') return false;
 

@@ -315,7 +315,7 @@ import './nuxeo-connection.js';
             if (contentType && contentType.includes('application/json')) {
               try {
                 return text ? JSON.parse(text) : {};
-              } catch (e) {
+              } catch (_e) {
                 return { error: 'Invalid json' };
               }
             } else {
@@ -357,7 +357,7 @@ import './nuxeo-connection.js';
                   this.error = JSON.parse(text);
                   this.error.status = error.response.status;
                   console.warn(`Resource request failed: ${this.error.message}`);
-                } catch (e) {
+                } catch (_e) {
                   this.error = { message: 'Invalid json', status: error.response.status };
                 }
               } else {

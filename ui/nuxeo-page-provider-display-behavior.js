@@ -492,6 +492,7 @@ export const PageProviderDisplayBehavior = [
           this.clearSelection();
           this._ppSort = tmpSort;
           this.nxProvider.sort = this._ppSort;
+          this._fireSettingsChanged({ source: 'sort' });
           if (!this.nxProvider.auto) {
             this.fetch();
           }

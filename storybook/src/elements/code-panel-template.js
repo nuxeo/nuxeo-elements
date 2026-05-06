@@ -1,6 +1,6 @@
-import { html } from 'lit-html';
-import { unsafeHTML } from 'lit-html/directives/unsafe-html.js';
-import { until } from 'lit-html/directives/until.js';
+import { html } from 'lit';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import { until } from 'lit/directives/until.js';
 import hljs from 'highlight.js';
 
 export const codePanelTemplate = (path) => html`
@@ -87,10 +87,23 @@ export const codePanelTemplate = (path) => html`
     <span style="margin-left: 4px; color: #ddd">layout source</span>
     <span class="hljs">
       ${until(
-        import(`!!raw-loader!../../public/layouts/${path}`).then((module) => {
-          const val = hljs.highlight('html', module.default).value;
-          return unsafeHTML(`<pre>${val}</pre>`);
-        }),
+        fetch(`layouts/${path}`)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`Failed to load layout source: ${response.status}`);
+            }
+            return response.text();
+          })
+          .then((text) => {
+            const val = hljs.highlight('html', text).value;
+            return unsafeHTML(`<pre>${val}</pre>`);
+          })
+          .catch(
+            (error) =>
+              html`
+                <span>Error loading layout source: ${error.message}</span>
+              `,
+          ),
         html`
           <span>Loading layout source...</span>
         `,

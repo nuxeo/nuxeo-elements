@@ -234,6 +234,7 @@
   "htmlEditor.superscript": "Superscript",
   "htmlEditor.underline": "Underline",
   "imagePreviewer.fitToRealSize": "Fit to real size",
+  "imagePreviewer.fitToViewer": "Fit to viewer",
   "imagePreviewer.rotate.left": "Rotate left",
   "imagePreviewer.rotate.right": "Rotate right",
   "imagePreviewer.zoom.in": "Zoom in",

@@ -48,15 +48,12 @@ jobs:
 
       - name: Build storybook
         working-directory: storybook
-        env:
-          NODE_OPTIONS: --openssl-legacy-provider        
         run: |
-          npx build-storybook -o dist -s ./public
+          npx storybook build -o dist
 
       - name: Deploy
         if: ${{ env.BRANCH_NAME == 'lts-2025' }}
         env:
           GH_TOKEN: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
-          NODE_OPTIONS: --openssl-legacy-provider
         working-directory: storybook
-        run: npm run deploy -- --ci
+        run: npm run deploy -- --ci --existing-output-dir=dist

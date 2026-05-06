@@ -1,5 +1,4 @@
-import { html } from 'lit-html';
-import { storiesOf } from '@storybook/polymer';
+import { html } from 'lit';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-icons.js';
 import '@nuxeo/nuxeo-ui-elements/widgets/nuxeo-card.js';
@@ -9,9 +8,12 @@ const items = Object.keys(iconMap).map((key) => {
   return { name: key, icons: iconMap[key] };
 });
 
-storiesOf('UI/nuxeo-icons', module).add(
-  'Icon catalogue',
-  () => html`
+export default {
+  title: 'UI/nuxeo-icons',
+};
+
+export const IconCatalogue = {
+  render: () => html`
     <style>
       .set {
         display: flex;
@@ -43,4 +45,4 @@ storiesOf('UI/nuxeo-icons', module).add(
       </nuxeo-card>
     </dom-repeat>
   `,
-);
+};

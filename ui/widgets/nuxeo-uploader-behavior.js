@@ -314,7 +314,7 @@ export const UploaderBehavior = {
       return;
     }
     if (!this.connection) {
-      throw 'Missing connection'; // eslint-disable-line no-throw-literal
+      throw 'Missing connection';
     }
 
     if (!this.batchAppend) {

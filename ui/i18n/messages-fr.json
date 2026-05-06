@@ -234,6 +234,7 @@
   "htmlEditor.superscript": "Exposant",
   "htmlEditor.underline": "Souligner",
   "imagePreviewer.fitToRealSize": "Adapter à la taille réelle",
+  "imagePreviewer.fitToViewer": "Adapter à la visionneuse",
   "imagePreviewer.rotate.left": "Faire pivoter à gauche",
   "imagePreviewer.rotate.right": "Faire pivoter à droite",
   "imagePreviewer.zoom.in": "Zoom avant",
