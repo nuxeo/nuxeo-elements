@@ -488,6 +488,23 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             color: #dc2626;
           }
 
+          /*
+           * Host for backdrop + calendar in the document top layer (Popover API).
+           * When the picker is inside a transformed ancestor (e.g. iron-list rows), plain
+           * position:fixed overlays are trapped in that stacking context; top layer escapes it.
+           */
+          .calendar-overlay-container {
+            position: fixed;
+            inset: 0;
+            max-width: none;
+            max-height: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+            background: transparent;
+            pointer-events: none;
+          }
+
           .calendar-popover {
             position: fixed;
             top: 0;
@@ -501,6 +518,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             width: 280px; /* Reduced from 320px to be proportional */
             display: none;
             animation: fadeIn 0.15s ease-out;
+            pointer-events: auto;
           }
 
           .calendar-popover.open {
@@ -522,6 +540,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             background: transparent;
             z-index: 999998; /* Just below the popover */
             display: none;
+            pointer-events: auto;
           }
 
           .calendar-backdrop.open {
@@ -1125,133 +1144,136 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           <!-- Screen reader live status region -->
           <div id="srStatus" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 
-          <!-- Modal backdrop for calendar popover -->
-          <div class="calendar-backdrop" id="calendarBackdrop" on-click="_closeCalendar"></div>
+          <!-- Modal backdrop + calendar: wrapped for Popover API top layer (WEBUI-1986 / iron-list transform) -->
+          <div id="calendarOverlay" class="calendar-overlay-container" popover="manual">
+            <!-- Modal backdrop for calendar popover -->
+            <div class="calendar-backdrop" id="calendarBackdrop" on-click="_closeCalendar"></div>
 
-          <div
-            class="calendar-popover"
-            id="calendarPopover"
-            role="dialog"
-            aria-label="[[i18n('customDatePicker.calendar')]]"
-            aria-modal$="[[_isCalendarOpen]]"
-          >
-            <div class="calendar-header">
-              <div class="month-year-display">
-                <span class="month-text">[[_getMonthName(_viewDate)]]</span>
-                <div
-                  class="year-dropdown"
-                  on-click="_toggleYearDropdown"
-                  tabindex="0"
-                  role="button"
-                  aria-label="[[i18n('customDatePicker.selectYear')]]"
-                  aria-haspopup="listbox"
-                  aria-expanded$="[[_isYearDropdownOpen]]"
-                  on-keydown="_handleYearDropdownKeydown"
-                >
-                  <span class="year-text">[[_getYear(_viewDate)]]</span>
+            <div
+              class="calendar-popover"
+              id="calendarPopover"
+              role="dialog"
+              aria-label="[[i18n('customDatePicker.calendar')]]"
+              aria-modal$="[[_isCalendarOpen]]"
+            >
+              <div class="calendar-header">
+                <div class="month-year-display">
+                  <span class="month-text">[[_getMonthName(_viewDate)]]</span>
+                  <div
+                    class="year-dropdown"
+                    on-click="_toggleYearDropdown"
+                    tabindex="0"
+                    role="button"
+                    aria-label="[[i18n('customDatePicker.selectYear')]]"
+                    aria-haspopup="listbox"
+                    aria-expanded$="[[_isYearDropdownOpen]]"
+                    on-keydown="_handleYearDropdownKeydown"
+                  >
+                    <span class="year-text">[[_getYear(_viewDate)]]</span>
+                    <button
+                      type="button"
+                      class="year-dropdown-button"
+                      aria-label="[[i18n('customDatePicker.selectYear')]]"
+                      tabindex="-1"
+                    >
+                      <iron-icon icon$="[[_getDropdownIcon(_isYearDropdownOpen)]]"></iron-icon>
+                    </button>
+                    <div
+                      class="year-options"
+                      id="yearOptions"
+                      role="listbox"
+                      aria-label="[[i18n('customDatePicker.yearOptions')]]"
+                    >
+                      <template is="dom-repeat" items="[[_yearOptions]]">
+                        <button
+                          type="button"
+                          class$="year-option [[_getYearOptionClass(item, _viewDate)]]"
+                          data-year$="[[item]]"
+                          on-click="_selectYear"
+                          tabindex$="[[_getYearTabIndex(item, _viewDate)]]"
+                          role="option"
+                          aria-selected$="[[_isSelectedYear(item, _viewDate)]]"
+                        >
+                          [[item]]
+                        </button>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="navigation">
                   <button
                     type="button"
-                    class="year-dropdown-button"
-                    aria-label="[[i18n('customDatePicker.selectYear')]]"
-                    tabindex="-1"
+                    class="nav-button"
+                    id="prevMonth"
+                    aria-label$="[[_previousMonthAriaLabel]]"
+                    title$="[[_previousMonthAriaLabel]]"
+                    tabindex="0"
+                    on-click="_previousMonth"
+                    on-keydown="_handleNavButtonKeydown"
+                    disabled$="[[_isPreviousMonthDisabled()]]"
                   >
-                    <iron-icon icon$="[[_getDropdownIcon(_isYearDropdownOpen)]]"></iron-icon>
+                    <iron-icon icon="icons:chevron-left"></iron-icon>
                   </button>
-                  <div
-                    class="year-options"
-                    id="yearOptions"
-                    role="listbox"
-                    aria-label="[[i18n('customDatePicker.yearOptions')]]"
+
+                  <button
+                    type="button"
+                    class="nav-button"
+                    id="nextMonth"
+                    aria-label$="[[_nextMonthAriaLabel]]"
+                    title$="[[_nextMonthAriaLabel]]"
+                    tabindex="0"
+                    on-click="_nextMonth"
+                    on-keydown="_handleNavButtonKeydown"
+                    disabled$="[[_isNextMonthDisabled()]]"
                   >
-                    <template is="dom-repeat" items="[[_yearOptions]]">
-                      <button
-                        type="button"
-                        class$="year-option [[_getYearOptionClass(item, _viewDate)]]"
-                        data-year$="[[item]]"
-                        on-click="_selectYear"
-                        tabindex$="[[_getYearTabIndex(item, _viewDate)]]"
-                        role="option"
-                        aria-selected$="[[_isSelectedYear(item, _viewDate)]]"
-                      >
-                        [[item]]
-                      </button>
-                    </template>
-                  </div>
+                    <iron-icon icon="icons:chevron-right"></iron-icon>
+                  </button>
                 </div>
               </div>
 
-              <div class="navigation">
-                <button
-                  type="button"
-                  class="nav-button"
-                  id="prevMonth"
-                  aria-label$="[[_previousMonthAriaLabel]]"
-                  title$="[[_previousMonthAriaLabel]]"
-                  tabindex="0"
-                  on-click="_previousMonth"
-                  on-keydown="_handleNavButtonKeydown"
-                  disabled$="[[_isPreviousMonthDisabled()]]"
-                >
-                  <iron-icon icon="icons:chevron-left"></iron-icon>
-                </button>
+              <div class="weekday-headers" role="row">
+                <template is="dom-repeat" items="[[_weekdayNames]]">
+                  <div class="weekday-header" role="columnheader">[[item]]</div>
+                </template>
+              </div>
 
-                <button
-                  type="button"
-                  class="nav-button"
-                  id="nextMonth"
-                  aria-label$="[[_nextMonthAriaLabel]]"
-                  title$="[[_nextMonthAriaLabel]]"
-                  tabindex="0"
-                  on-click="_nextMonth"
-                  on-keydown="_handleNavButtonKeydown"
-                  disabled$="[[_isNextMonthDisabled()]]"
-                >
-                  <iron-icon icon="icons:chevron-right"></iron-icon>
+              <div
+                class="calendar-grid"
+                role="grid"
+                aria-label="[[i18n('customDatePicker.calendarDates')]]"
+                aria-activedescendant$="[[_getActiveDescendant(_focusedDate)]]"
+                on-keydown="_handleGridKeydown"
+                on-click="_handleCalendarGridClick"
+              >
+                <template is="dom-repeat" items="[[_calendarDays]]">
+                  <button
+                    type="button"
+                    class$="calendar-day [[_getDayClasses(item, _focusedDate)]]"
+                    role="gridcell"
+                    tabindex$="[[_getDayTabIndex(item, _focusedDate, index)]]"
+                    aria-label$="[[_getDayAriaLabel(item)]]"
+                    aria-selected$="[[item.isSelected]]"
+                    aria-current$="[[_getAriaCurrent(item)]]"
+                    disabled$="[[item.isDisabled]]"
+                    data-date$="[[item.dateISO]]"
+                    id$="date-[[item.dateISO]]"
+                    on-click="_handleDateClick"
+                    on-keydown="_handleDateKeydown"
+                  >
+                    [[item.day]]
+                  </button>
+                </template>
+              </div>
+
+              <div class="calendar-footer">
+                <button type="button" class="footer-button today-button" on-click="_selectToday" tabindex="0">
+                  [[i18n('customDatePicker.today')]]
+                </button>
+                <button type="button" class="footer-button cancel-button" on-click="_closeCalendar" tabindex="0">
+                  [[i18n('customDatePicker.cancel')]]
                 </button>
               </div>
-            </div>
-
-            <div class="weekday-headers" role="row">
-              <template is="dom-repeat" items="[[_weekdayNames]]">
-                <div class="weekday-header" role="columnheader">[[item]]</div>
-              </template>
-            </div>
-
-            <div
-              class="calendar-grid"
-              role="grid"
-              aria-label="[[i18n('customDatePicker.calendarDates')]]"
-              aria-activedescendant$="[[_getActiveDescendant(_focusedDate)]]"
-              on-keydown="_handleGridKeydown"
-              on-click="_handleCalendarGridClick"
-            >
-              <template is="dom-repeat" items="[[_calendarDays]]">
-                <button
-                  type="button"
-                  class$="calendar-day [[_getDayClasses(item, _focusedDate)]]"
-                  role="gridcell"
-                  tabindex$="[[_getDayTabIndex(item, _focusedDate, index)]]"
-                  aria-label$="[[_getDayAriaLabel(item)]]"
-                  aria-selected$="[[item.isSelected]]"
-                  aria-current$="[[_getAriaCurrent(item)]]"
-                  disabled$="[[item.isDisabled]]"
-                  data-date$="[[item.dateISO]]"
-                  id$="date-[[item.dateISO]]"
-                  on-click="_handleDateClick"
-                  on-keydown="_handleDateKeydown"
-                >
-                  [[item.day]]
-                </button>
-              </template>
-            </div>
-
-            <div class="calendar-footer">
-              <button type="button" class="footer-button today-button" on-click="_selectToday" tabindex="0">
-                [[i18n('customDatePicker.today')]]
-              </button>
-              <button type="button" class="footer-button cancel-button" on-click="_closeCalendar" tabindex="0">
-                [[i18n('customDatePicker.cancel')]]
-              </button>
             </div>
           </div>
         </div>
@@ -1723,6 +1745,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           // Allow opening calendar with specific keys when input is focused
           if (e.key === 'F4' || e.key === 'ArrowDown') {
             e.preventDefault();
+            e.stopPropagation();
             this._openCalendar(e, true); // Opened via keyboard
           } else if (e.key === 'Enter') {
             // Enter validates input
@@ -1828,13 +1851,38 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _handlePopoverKeydown(e) {
       if (e.key === 'Escape') {
         e.preventDefault();
+        e.stopPropagation();
         this._closeCalendar();
         return;
       }
 
       if (e.key === 'Tab') {
         e.preventDefault();
+        e.stopPropagation();
         this._handleCalendarTabNavigation(e.shiftKey);
+        return;
+      }
+
+      // Focus may be on month/year, prev/next, Today, or Cancel — not on a .calendar-day.
+      // Those targets do not stopPropagation; keys then bubble to ancestor iron-list
+      // (nuxeo-data-table): arrows move row focus; Enter runs selection / _focusPhysicalItem
+      // and prevents footer buttons from receiving activation (WEBUI-1986 follow-up).
+      if (this._isCalendarOpen) {
+        const blockAncestors = new Set([
+          'ArrowUp',
+          'ArrowDown',
+          'ArrowLeft',
+          'ArrowRight',
+          'Home',
+          'End',
+          'PageUp',
+          'PageDown',
+          'Enter',
+          ' ',
+        ]);
+        if (blockAncestors.has(e.key)) {
+          e.stopPropagation();
+        }
       }
     }
 
@@ -2630,11 +2678,19 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       const popover = this.shadowRoot.querySelector('#calendarPopover');
       const backdrop = this.shadowRoot.querySelector('#calendarBackdrop');
+      const overlay = this.shadowRoot.querySelector('#calendarOverlay');
       if (popover) {
         popover.classList.add('open');
       }
       if (backdrop) {
         backdrop.classList.add('open');
+      }
+      if (overlay && typeof overlay.showPopover === 'function') {
+        try {
+          overlay.showPopover();
+        } catch (_) {
+          /* already open or unsupported environment */
+        }
       }
 
       // Clear the flag after calendar has had time to settle
@@ -2744,6 +2800,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       const popover = this.shadowRoot.querySelector('#calendarPopover');
       const backdrop = this.shadowRoot.querySelector('#calendarBackdrop');
+      const overlay = this.shadowRoot.querySelector('#calendarOverlay');
+      if (overlay && typeof overlay.hidePopover === 'function') {
+        try {
+          overlay.hidePopover();
+        } catch (_) {
+          /* not open */
+        }
+      }
       if (popover) {
         popover.classList.remove('open');
         popover.classList.remove('open-up');
@@ -2932,10 +2996,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const currentDate = new Date(currentButton.dataset.date);
       const targetDate = new Date(currentDate);
 
+      // Stop bubbling so parent lists (e.g. iron-list in nuxeo-data-table) do not handle
+      // Arrow keys / Enter and steal focus while the calendar is open (WEBUI-1986 follow-up).
       switch (e.key) {
         case 'Enter':
         case ' ':
           e.preventDefault();
+          e.stopPropagation();
           // Allow selection of any current month date, not just non-empty
           if (!currentButton.disabled && currentButton.classList.contains('calendar-day')) {
             // Check if it's a valid current month date
@@ -2950,6 +3017,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         case 'ArrowLeft':
           e.preventDefault();
+          e.stopPropagation();
           targetDate.setDate(currentDate.getDate() - 1);
           // Only navigate within current month - don't allow month transitions
           if (
@@ -2962,6 +3030,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         case 'ArrowRight':
           e.preventDefault();
+          e.stopPropagation();
           targetDate.setDate(currentDate.getDate() + 1);
           // Only navigate within current month - don't allow month transitions
           if (
@@ -2974,6 +3043,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         case 'ArrowUp':
           e.preventDefault();
+          e.stopPropagation();
           targetDate.setDate(currentDate.getDate() - 7);
           // Only navigate within current month - don't allow month transitions
           if (
@@ -2986,6 +3056,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         case 'ArrowDown':
           e.preventDefault();
+          e.stopPropagation();
           targetDate.setDate(currentDate.getDate() + 7);
           // Only navigate within current month - don't allow month transitions
           if (
@@ -2998,6 +3069,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         case 'Home': {
           e.preventDefault();
+          e.stopPropagation();
           const dayOfWeek = currentDate.getDay();
           targetDate.setDate(currentDate.getDate() - dayOfWeek);
           // Only navigate within current month - don't allow month transitions
@@ -3012,6 +3084,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         case 'End': {
           e.preventDefault();
+          e.stopPropagation();
           const daysToEnd = 6 - currentDate.getDay();
           targetDate.setDate(currentDate.getDate() + daysToEnd);
           // Only navigate within current month - don't allow month transitions
@@ -3026,6 +3099,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         case 'PageUp':
           e.preventDefault();
+          e.stopPropagation();
           // PageUp: Previous year only - no month navigation via keyboard
           targetDate.setFullYear(currentDate.getFullYear() - 1);
           this._focusDateWithMonthTransition(targetDate);
@@ -3033,6 +3107,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         case 'PageDown':
           e.preventDefault();
+          e.stopPropagation();
           // PageDown: Next year only - no month navigation via keyboard
           targetDate.setFullYear(currentDate.getFullYear() + 1);
           this._focusDateWithMonthTransition(targetDate);
@@ -4310,6 +4385,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     disconnectedCallback() {
       super.disconnectedCallback();
 
+      const overlay = this.shadowRoot && this.shadowRoot.querySelector('#calendarOverlay');
+      if (overlay && typeof overlay.hidePopover === 'function') {
+        try {
+          overlay.hidePopover();
+        } catch (_) {
+          /* not open or already hidden */
+        }
+      }
+
       // Clean up event listeners
       document.removeEventListener('click', this._handleDocumentClick);
       document.removeEventListener('keydown', this._handleEscapeKey);
@@ -4581,9 +4665,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _handleCalendarIconKeydown(e) {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
+        e.stopPropagation();
         this._openCalendar(e, true); // Opened via keyboard
       } else if (e.key === 'ArrowDown' || e.key === 'F4') {
         e.preventDefault();
+        e.stopPropagation();
         this._openCalendar(e, true); // Opened via keyboard
       }
     }
@@ -4611,6 +4697,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
+        e.stopPropagation();
         if (!this._isYearDropdownOpen) {
           this._toggleYearDropdown();
         } else {
@@ -4626,6 +4713,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         }
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
+        e.stopPropagation();
         if (this._isYearDropdownOpen) {
           moveWithinOptions(+1);
         } else {
@@ -4633,6 +4721,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         }
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
+        e.stopPropagation();
         if (this._isYearDropdownOpen) {
           moveWithinOptions(-1);
         } else {
@@ -4640,18 +4729,23 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         }
       } else if (e.key === 'Home') {
         e.preventDefault();
+        e.stopPropagation();
         moveWithinOptions(-9999);
       } else if (e.key === 'End') {
         e.preventDefault();
+        e.stopPropagation();
         moveWithinOptions(9999);
       } else if (e.key === 'PageUp') {
         e.preventDefault();
+        e.stopPropagation();
         moveWithinOptions(-10);
       } else if (e.key === 'PageDown') {
         e.preventDefault();
+        e.stopPropagation();
         moveWithinOptions(10);
       } else if (e.key === 'Escape') {
         e.preventDefault();
+        e.stopPropagation();
         this._closeYearDropdown();
       } else if (e.key === 'Tab') {
         // Close dropdown when user tabs away
