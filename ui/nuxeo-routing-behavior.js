@@ -75,7 +75,7 @@ export const RoutingBehavior = {
    * Returns a computed `urlFor` method, based on the current `router`.
    */
   _computeUrlFor() {
-    return function (...args) {
+    return function(...args) {
       if (this.router) {
         const [route, ...params] = args;
         if (!route) {
@@ -112,7 +112,7 @@ export const RoutingBehavior = {
    * Invokes `router.navigate` to trigger the actual navigation.
    */
   _computeNavigateTo() {
-    return function (...args) {
+    return function(...args) {
       if (this.router) {
         const [route, ...params] = args;
         let path;
