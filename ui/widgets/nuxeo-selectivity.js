@@ -2250,6 +2250,9 @@ typedArrayTags[weakMapTag] = false;
               this.selectivity.input.setAttribute('aria-controls', this.resultsContainer.id);
             }
             this.selectivity.input.setAttribute('aria-expanded', 'true');
+            if (highlightedEl.id) {
+              this.selectivity.input.setAttribute('aria-activedescendant', highlightedEl.id);
+            }
           }
 
         },
@@ -6426,7 +6429,7 @@ typedArrayTags[weakMapTag] = false;
      *                placeholder - The placeholder text.
      */
         singleSelectPlaceholder(options) {
-          return `<div class="selectivity-placeholder" aria-hidden="true">${escape(options.placeholder)}</div>`;
+          return `<div class="selectivity-placeholder">${escape(options.placeholder)}</div>`;
         },
 
         /**
@@ -7498,7 +7501,7 @@ typedArrayTags[weakMapTag] = false;
 
       const label = (this.label || '').trim();
       const placeholder = (this.placeholder || '').trim();
-      const ariaLabel = [label, placeholder !== label ? placeholder : ''].filter((value) => !!value).join(', ');
+      const ariaLabel = label || placeholder;
 
       if (ariaLabel) {
         input.setAttribute('aria-label', ariaLabel);
