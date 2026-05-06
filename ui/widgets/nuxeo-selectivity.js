@@ -2252,40 +2252,6 @@ typedArrayTags[weakMapTag] = false;
             this.selectivity.input.setAttribute('aria-expanded', 'true');
           }
 
-          let ariaLabel = null;
-          if (item && item.text) {
-            ariaLabel = item.text;
-          } else if (item && item.item) {
-            ariaLabel = item.item.displayLabel || item.item.title || item.item.text || item.item.id;
-          }
-
-          if (!ariaLabel) {
-            ariaLabel = highlightedEl.textContent.trim();
-          }
-
-          if (!ariaLabel) {
-            return;
-          }
-
-          let liveRegion = this.selectivity.el.querySelector('[role="status"][aria-live="polite"]');
-          if (!liveRegion) {
-            liveRegion = document.createElement('div');
-            liveRegion.setAttribute('role', 'status');
-            liveRegion.setAttribute('aria-live', 'polite');
-            liveRegion.setAttribute('aria-atomic', 'true');
-            liveRegion.style.position = 'absolute';
-            liveRegion.style.left = '-10000px';
-            liveRegion.style.width = '1px';
-            liveRegion.style.height = '1px';
-            liveRegion.style.overflow = 'hidden';
-            if (this.selectivity.el && this.selectivity.el.parentNode) {
-              this.selectivity.el.appendChild(liveRegion);
-            }
-          }
-
-          if (liveRegion) {
-            liveRegion.textContent = ariaLabel;
-          }
         },
 
         /**
@@ -7532,7 +7498,7 @@ typedArrayTags[weakMapTag] = false;
 
       const label = (this.label || '').trim();
       const placeholder = (this.placeholder || '').trim();
-      const ariaLabel = [label, placeholder].filter((value) => !!value).join(', ');
+      const ariaLabel = label || placeholder;
 
       if (ariaLabel) {
         input.setAttribute('aria-label', ariaLabel);
