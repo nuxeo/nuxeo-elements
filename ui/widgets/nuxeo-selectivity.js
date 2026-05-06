@@ -2227,6 +2227,31 @@ typedArrayTags[weakMapTag] = false;
             id: item.id,
             reason: (options && options.reason) || 'unspecified',
           });
+          this._announceHighlight(item);
+        },
+
+        _announceHighlight(item) {
+          const highlightedEl = this.$(HIGHLIGHT_SELECTOR);
+          if (!highlightedEl || !this.selectivity || !this.selectivity.el) {
+            return;
+          }
+
+          const resultItems = this.selectivity.el.querySelectorAll(RESULT_ITEM_SELECTOR);
+          resultItems.forEach((resultItem) => {
+            resultItem.setAttribute('aria-selected', 'false');
+          });
+          highlightedEl.setAttribute('aria-selected', 'true');
+
+          if (this.resultsContainer && !this.resultsContainer.id) {
+            this.resultsContainer.id = `selectivity-listbox-${Date.now()}`;
+          }
+          if (this.selectivity.input) {
+            if (this.resultsContainer && this.resultsContainer.id) {
+              this.selectivity.input.setAttribute('aria-controls', this.resultsContainer.id);
+            }
+            this.selectivity.input.setAttribute('aria-expanded', 'true');
+          }
+
         },
 
         /**
@@ -5861,7 +5886,9 @@ typedArrayTags[weakMapTag] = false;
             // large, but after trial and error, this now seems to work reliably...
             this._clearCloseTimeout();
             this._closeTimeout = setTimeout(this.close.bind(this), 166);
-            this.input.value = '';
+            if (this.input) {
+              this.input.value = '';
+            }
           }
         },
 
@@ -5889,6 +5916,10 @@ typedArrayTags[weakMapTag] = false;
      */
         _closed() {
           this.dropdown = null;
+
+          if (this.input) {
+            this.input.setAttribute('aria-expanded', 'false');
+          }
 
           toggleClass(this.el, 'open', false);
         },
@@ -6236,7 +6267,7 @@ typedArrayTags[weakMapTag] = false;
      */
         multipleSelectInput(options) {
           const enabledTemplate = '<input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" ' +
-            'class="selectivity-multiple-input">';
+            'class="selectivity-multiple-input" role="combobox" aria-autocomplete="list" aria-expanded="false">';
           const disabledTemplate = '<div class="selectivity-multiple-input selectivity-placeholder"/>';
           return `
             <div class="selectivity-multiple-input-container">
@@ -6336,13 +6367,16 @@ typedArrayTags[weakMapTag] = false;
      *                submenu - Truthy if the result item has a menu with subresults.
      */
         resultItem(options) {
+          const itemId = `selectivity-option-${escape(options.id)}`;
           return (
             `<div class="selectivity-result-item${
               options.disabled ? ' disabled' : ''
             }"` +
-            ` data-item-id="${
+            ` id="${
+              itemId
+            }" data-item-id="${
               escape(options.id)
-            }">${
+            }" aria-selected="false">${
               escape(options.text)
             }${options.submenu
               ? '<span class="selectivity-submenu-icon fa fa-chevron-right"></span>'
@@ -6374,7 +6408,7 @@ typedArrayTags[weakMapTag] = false;
         singleSelectInput(options) {
           return `
             <div class="selectivity-single-select">
-              <input type="text" class="selectivity-single-select-input" ${options.required ? ' required' : ''}>
+              <input type="text" class="selectivity-single-select-input" role="combobox" aria-autocomplete="list" aria-expanded="false" ${options.required ? ' required' : ''}>
               <div class="selectivity-single-result-container"></div>
               <iron-icon icon="icons:arrow-drop-down" class="selectivity-caret"></iron-icon>
               <span class="underline"></span>
@@ -6603,7 +6637,10 @@ typedArrayTags[weakMapTag] = false;
         /**
          * Label.
          */
-        label: String,
+        label: {
+          type: String,
+          observer: '_labelChanged',
+        },
 
         /**
          * Selected value(s).
@@ -7181,11 +7218,14 @@ typedArrayTags[weakMapTag] = false;
 
         // override templates since formatter should already escape text
         templates: {
-          resultItem: (opts) => (
-            `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
+          resultItem: (opts) => {
+            const itemId = `selectivity-option-${escapeHTML(opts.id)}`;
+            return `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
+                  id="${itemId}"
                   style="padding-left: ${7 + (10 * opts.depth)}px"
-                  data-item-id="${escapeHTML(opts.id)}">${this.resultFormatter(opts.item)}</div>`
-          ),
+                  data-item-id="${escapeHTML(opts.id)}"
+                  aria-selected="false">${this.resultFormatter(opts.item)}</div>`;
+          },
 
           resultLabel: (opts) => (
             `<div class="preserve-white-space selectivity-result-label"
@@ -7247,6 +7287,7 @@ typedArrayTags[weakMapTag] = false;
       this.$.input.addEventListener('selectivity-change', this._updateSelectionHandler);
 
       this._selectivity = new InputType(options);
+      this._syncInputAriaLabel();
 
       const self = this;
       Selectivity.Locale = {
@@ -7441,6 +7482,28 @@ typedArrayTags[weakMapTag] = false;
         if (!this.multiple && singleInputPlaceholder) {
           singleInputPlaceholder.innerText = this.placeholder;
         }
+      }
+      this._syncInputAriaLabel();
+    }
+
+    _labelChanged() {
+      this._syncInputAriaLabel();
+    }
+
+    _syncInputAriaLabel() {
+      const input = this.shadowRoot && this.shadowRoot.querySelector('.selectivity-single-select-input, .selectivity-multiple-input');
+      if (!input) {
+        return;
+      }
+
+      const label = (this.label || '').trim();
+      const placeholder = (this.placeholder || '').trim();
+      const ariaLabel = label || placeholder;
+
+      if (ariaLabel) {
+        input.setAttribute('aria-label', ariaLabel);
+      } else {
+        input.removeAttribute('aria-label');
       }
     }
 
