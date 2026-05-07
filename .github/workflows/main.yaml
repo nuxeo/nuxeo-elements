@@ -36,9 +36,17 @@ jobs:
     with:
       branch: maintenance-3.1.x
 
+  sonar:
+    uses: nuxeo/nuxeo-elements/.github/workflows/sonar.yaml@maintenance-3.1.x
+    secrets:
+      NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    with:
+      branch: maintenance-3.1.x
+
   build:
     runs-on: ubuntu-latest
-    needs: [ lint, test, storybook ]
+    needs: [ lint, test, storybook, sonar ]
     steps:
     - uses: actions/checkout@v6
 

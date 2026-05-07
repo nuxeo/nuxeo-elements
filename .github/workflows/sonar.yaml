@@ -1,0 +1,89 @@
+name: SonarQube
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - maintenance-3.1.x
+
+  workflow_dispatch:
+
+  workflow_call:
+    inputs:
+      branch:
+        description: 'Branch to analyze'
+        type: string
+        required: false
+    secrets:
+      NPM_PACKAGES_TOKEN:
+        required: true
+      SONAR_TOKEN:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  sonar:
+    name: Build and analyze
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: catchpoint/workflow-telemetry-action@v2
+        with:
+          comment_on_pr: false
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+
+      - name: Run git config
+        run: git config user.name "nuxeo-elements-jx-bot" && git config user.email "elements@hyland.com"
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
+          node-version: 22
+          scope: '@nuxeo'
+
+      - name: Cache npm packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package.json') }}
+          restore-keys: ${{ runner.os }}-node-
+
+      - name: Install npm dependencies
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+        # npm install is required (not npm ci) because the preinstall script runs
+        # npm install in sub-packages that do not have a package-lock.json
+        run: npm install
+        working-directory: ${{ github.workspace }}
+
+      - name: Run unit tests with coverage
+        run: npm test
+        working-directory: ${{ github.workspace }}
+
+      - name: Build and analyze
+        id: sonar_scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        uses: SonarSource/sonarqube-scan-action@v8.0.0
+        with:
+          projectBaseDir: ${{ github.workspace }}
+
+      - name: Enforce Quality Gate
+        # Fails the job if the sonar scan step did not succeed, blocking PR merge.
+        if: always()
+        run: |
+          if [ "${{ steps.sonar_scan.outcome }}" != "success" ]; then
+            echo "❌ SonarCloud Quality Gate FAILED. Fix flagged issues before merging."
+            echo "   • New-code coverage must be ≥ 90 %"
+            echo "   • No unresolved code-quality issues on new/changed code"
+            exit 1
+          fi
+          echo "✅ SonarCloud Quality Gate passed."
