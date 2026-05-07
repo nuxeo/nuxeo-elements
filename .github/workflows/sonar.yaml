@@ -40,7 +40,7 @@ jobs:
           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
 
       - name: Run git config
-        run: git config user.name "nuxeo-elements-jx-bot" && git config user.email "elements@hyland.com"
+        run: git config user.name "nuxeo-webui-jx-bot" && git config user.email "webui@hyland.com"
 
       - name: Setup Node
         uses: actions/setup-node@v6
