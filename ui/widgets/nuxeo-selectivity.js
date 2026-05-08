@@ -2250,6 +2250,9 @@ typedArrayTags[weakMapTag] = false;
               this.selectivity.input.setAttribute('aria-controls', this.resultsContainer.id);
             }
             this.selectivity.input.setAttribute('aria-expanded', 'true');
+            if (highlightedEl.id) {
+              this.selectivity.input.setAttribute('aria-activedescendant', highlightedEl.id);
+            }
           }
 
         },
