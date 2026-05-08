@@ -88,9 +88,28 @@ IronOverlayManager._overlayWithBackdrop = function() {
       };
     }
 
+    static get observers() {
+      return ['_openedModalChanged(opened, modal)'];
+    }
+
     ready() {
       super.ready();
       this.addEventListener('iron-overlay-opened', this._opened);
+      this.addEventListener('iron-overlay-closed', this._onDialogClosed);
+      this._boundTrapTab = this._trapTab.bind(this);
+    }
+
+    /**
+     * Override IronOverlayBehavior's tab-trapping methods. IronOverlayManager registers
+     * its own document-level keydown listener that calls _onCaptureTab on the current overlay.
+     * That handler uses a shallow focusable-node list that doesn't traverse shadow DOM deeply,
+     * causing focus to escape in complex components like nuxeo-document-create-popup.
+     *
+     * Our _trapTab handles focus trapping correctly via a deep shadow DOM traversal for
+     * both modal and withBackdrop dialogs, so both hooks are suppressed.
+     */
+    _onCaptureTab() {
+      // No-op: focus trapping handled by _trapTab
     }
 
     disconnectedCallback() {
@@ -98,6 +117,8 @@ IronOverlayManager._overlayWithBackdrop = function() {
       if (this._observer) {
         this.detached();
       }
+      document.removeEventListener('keydown', this._boundTrapTab, true);
+      this._setBackgroundInert(false);
       this._clear();
     }
 
@@ -116,6 +137,253 @@ IronOverlayManager._overlayWithBackdrop = function() {
           }
           this._instance = this.stamp();
           this.appendChild(this._instance.root);
+        }
+      }
+
+      // Enable focus trapping for modal or withBackdrop dialogs
+      if (this.modal || this.withBackdrop) {
+        this._enableFocusTrap(true);
+        // Use setTimeout to allow nested templates and custom elements to fully render
+        setTimeout(() => {
+          if (!this.contains(this._getDeepActiveElement())) {
+            const focusTarget = this.querySelector('[autofocus]');
+            if (focusTarget) {
+              focusTarget.focus();
+            } else {
+              const focusables = this._getFocusableElements();
+              if (focusables.length > 0) {
+                focusables[0].focus();
+              } else {
+                this.focus();
+              }
+            }
+          }
+        }, 50);
+      }
+    }
+
+    /**
+     * Observes opened + modal to apply aria-modal and inert.
+     * Focus trap is enabled in _opened handler (iron-overlay-opened event)
+     * to avoid timing issues with withBackdrop which may be undefined initially.
+     */
+    _openedModalChanged(opened, modal) {
+      if (opened && modal) {
+        this.setAttribute('aria-modal', 'true');
+        this._enableFocusTrap(true);
+      } else if (!opened && modal) {
+        this.removeAttribute('aria-modal');
+        this._disableFocusTrap(true);
+      }
+    }
+
+    _onDialogClosed() {
+      if (this.modal || this.withBackdrop) {
+        if (this.modal) {
+          this.removeAttribute('aria-modal');
+        }
+        this._disableFocusTrap(true);
+      }
+    }
+
+    _enableFocusTrap(setInert) {
+      if (setInert) {
+        this._setBackgroundInert(true);
+      }
+      // Remove first to prevent duplicate registrations
+      document.removeEventListener('keydown', this._boundTrapTab, true);
+      document.addEventListener('keydown', this._boundTrapTab, true);
+    }
+
+    _disableFocusTrap(clearInert) {
+      document.removeEventListener('keydown', this._boundTrapTab, true);
+      if (clearInert) {
+        this._setBackgroundInert(false);
+      }
+    }
+
+    /**
+     * Traps Tab/Shift+Tab within the dialog by wrapping focus at the boundaries.
+     * Only intercepts Tab when focus would escape the dialog (at the first or last
+     * focusable element). For all other positions, the browser's native Tab behavior
+     * is preserved — this ensures that components with their own Tab key handling
+     * (e.g., nuxeo-selectivity dropdowns) continue to work correctly.
+     */
+    _trapTab(e) {
+      if (e.key !== 'Tab' || !this.opened || !(this.modal || this.withBackdrop)) {
+        return;
+      }
+
+      const focusables = this._getFocusableElements();
+      if (focusables.length === 0) {
+        e.preventDefault();
+        this.focus();
+        return;
+      }
+
+      const active = this._getDeepActiveElement();
+      let activeIndex = focusables.indexOf(active);
+
+      // If not found directly, the active element may be inside a focusable (e.g., inside
+      // a paper-tab's shadow DOM). Find the closest ancestor/host that's in the list.
+      if (activeIndex === -1) {
+        activeIndex = this._findContainingFocusableIndex(active, focusables);
+      }
+
+      if (e.shiftKey) {
+        // Shift+Tab at or before first focusable: wrap to last
+        if (activeIndex <= 0) {
+          e.preventDefault();
+          focusables[focusables.length - 1].focus();
+        }
+        // Otherwise let the browser handle Tab naturally
+      } else if (activeIndex === -1 || activeIndex >= focusables.length - 1) {
+        // Tab at or past last focusable, or not found: wrap to first
+        e.preventDefault();
+        focusables[0].focus();
+      }
+      // Otherwise let the browser handle Tab naturally
+    }
+
+    /**
+     * Gets all focusable elements within the dialog, traversing shadow roots.
+     * Uses a Set to avoid collecting duplicates when the same element is reachable
+     * through multiple paths (light DOM children + slot assignments + shadow roots).
+     * When an element is itself focusable, we do NOT descend into its shadow root —
+     * the element manages its own internal focus (e.g., paper-tabs uses arrow keys).
+     */
+    _getFocusableElements() {
+      const selectors = [
+        'a[href]:not([disabled]):not([inert])',
+        'button:not([disabled]):not([inert])',
+        'input:not([disabled]):not([inert]):not([type="hidden"])',
+        'select:not([disabled]):not([inert])',
+        'textarea:not([disabled]):not([inert])',
+        '[tabindex]:not([tabindex="-1"]):not([disabled]):not([inert])',
+      ].join(',');
+
+      const results = [];
+      const visited = new Set();
+      this._collectFocusables(this, selectors, results, visited);
+      return results;
+    }
+
+    _collectFocusables(root, selectors, results, visited) {
+      // Avoid traversing the same root multiple times
+      if (visited.has(root)) {
+        return;
+      }
+      visited.add(root);
+
+      const children = Array.from(root.children);
+      children.forEach((el) => {
+        // Skip non-Element nodes (e.g. document fragments, text nodes)
+        if (!el.matches) {
+          return;
+        }
+        // Traverse into slotted content (assigned nodes of <slot> elements)
+        if (el.localName === 'slot') {
+          const assigned = el.assignedElements({ flatten: true });
+          assigned.forEach((slotted) => {
+            if (!visited.has(slotted)) {
+              if (slotted.matches && slotted.matches(selectors) && this._isVisible(slotted)) {
+                // Element is focusable — add it and skip its subtree
+                results.push(slotted);
+                visited.add(slotted);
+              } else {
+                // Not focusable — descend into it
+                this._collectFocusables(slotted, selectors, results, visited);
+                if (slotted.shadowRoot) {
+                  this._collectFocusables(slotted.shadowRoot, selectors, results, visited);
+                }
+              }
+            }
+          });
+          return;
+        }
+        if (!visited.has(el)) {
+          if (el.matches(selectors) && this._isVisible(el)) {
+            // Element is focusable — add it and skip its subtree (including shadow root)
+            results.push(el);
+            visited.add(el);
+          } else {
+            // Not focusable — recurse into children and shadow root.
+            // _collectFocusables will add el to visited as it processes it.
+            this._collectFocusables(el, selectors, results, visited);
+            if (el.shadowRoot) {
+              this._collectFocusables(el.shadowRoot, selectors, results, visited);
+            }
+          }
+        }
+      });
+    }
+
+    _isVisible(el) {
+      return el.offsetParent !== null || el.offsetWidth > 0 || el.offsetHeight > 0;
+    }
+
+    /**
+     * Returns the deepest active element, traversing shadow roots.
+     */
+    _getDeepActiveElement() {
+      let active = document.activeElement;
+      while (active && active.shadowRoot && active.shadowRoot.activeElement) {
+        active = active.shadowRoot.activeElement;
+      }
+      return active;
+    }
+
+    /**
+     * Finds the index of the focusable element that contains the given active element,
+     * walking up through parents and shadow DOM hosts. This handles cases where focus
+     * is on a child inside a focusable (e.g., inside paper-tab's shadow DOM).
+     */
+    _findContainingFocusableIndex(active, focusables) {
+      let current = active;
+      while (current && current !== this) {
+        const idx = focusables.indexOf(current);
+        if (idx !== -1) {
+          return idx;
+        }
+        // Walk up: if inside a shadow root, go to the host; otherwise go to parentElement
+        if (current.parentNode instanceof ShadowRoot) {
+          current = current.parentNode.host;
+        } else {
+          current = current.parentElement;
+        }
+      }
+      return -1;
+    }
+
+    /**
+     * Sets the `inert` attribute on sibling elements at every ancestor level from the dialog
+     * up to document.body, including siblings within shadow roots. This prevents keyboard
+     * focus and screen readers from accessing background content behind the dialog.
+     */
+    _setBackgroundInert(inert) {
+      let current = this;
+      let parent = this.parentNode;
+
+      while (parent) {
+        Array.from(parent.children).forEach((sibling) => {
+          if (sibling === current || sibling.localName === 'style' || sibling.localName === 'script') {
+            return;
+          }
+          if (inert) {
+            sibling.setAttribute('inert', '');
+            sibling.__nuxeoDialogInert = true;
+          } else if (sibling.__nuxeoDialogInert) {
+            sibling.removeAttribute('inert');
+            delete sibling.__nuxeoDialogInert;
+          }
+        });
+
+        if (parent instanceof ShadowRoot) {
+          current = parent.host;
+          parent = current.parentNode;
+        } else {
+          current = parent;
+          parent = parent.parentNode;
         }
       }
     }
