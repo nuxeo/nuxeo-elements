@@ -131,4 +131,97 @@ suite('nuxeo-date-picker', () => {
       });
     });
   });
+
+  // Regression tests: when `min` is set, navigating Next then Previous back to the
+  // boundary month must NOT collapse the calendar. The fixes live in
+  // ui/widgets/custom-date-picker.js (`_preventNavButtonFocus`,
+  // `_updateNavigationButtonStates` focus redirection, and `_onInputFocus` activeElement
+  // guard).
+  suite('month navigation with min boundary', () => {
+    let picker;
+    let inner;
+
+    setup(async () => {
+      picker = await fixture(
+        html`
+          <nuxeo-date-picker min="2026-05-02"></nuxeo-date-picker>
+        `,
+      );
+      inner = picker.shadowRoot.querySelector('#date');
+      // Open the calendar so the popover (and nav buttons) are rendered and wired up.
+      inner._openCalendar(null, false);
+      // Ensure the async _updateNavigationButtonStates inside _generateCalendar has run.
+      await new Promise((resolve) => setTimeout(resolve, 30));
+    });
+
+    test('nav buttons prevent default on mousedown so they do not steal focus', () => {
+      const prev = inner.shadowRoot.querySelector('#prevMonth');
+      const next = inner.shadowRoot.querySelector('#nextMonth');
+      expect(prev).to.exist;
+      expect(next).to.exist;
+
+      const evt = new MouseEvent('mousedown', { bubbles: true, cancelable: true, composed: true });
+      next.dispatchEvent(evt);
+      expect(evt.defaultPrevented).to.be.true;
+
+      const evt2 = new MouseEvent('mousedown', { bubbles: true, cancelable: true, composed: true });
+      prev.dispatchEvent(evt2);
+      expect(evt2.defaultPrevented).to.be.true;
+    });
+
+    test('clicking next then previous keeps the calendar open at the min-month boundary', async () => {
+      const prev = inner.shadowRoot.querySelector('#prevMonth');
+      const next = inner.shadowRoot.querySelector('#nextMonth');
+
+      // The calendar opens on the min month (May 2026) — prev should be disabled.
+      expect(inner._isCalendarOpen).to.be.true;
+      expect(prev.disabled).to.be.true;
+
+      // Move to next month (June 2026). Prev should now be enabled.
+      next.click();
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      expect(inner._isCalendarOpen).to.be.true;
+      expect(prev.disabled).to.be.false;
+
+      // Move back to the min month (May 2026). Prev becomes disabled again, but the
+      // calendar must remain open.
+      prev.click();
+      await new Promise((resolve) => setTimeout(resolve, 60));
+      expect(inner._isCalendarOpen).to.be.true;
+      expect(prev.disabled).to.be.true;
+    });
+
+    test('disabling the focused prev button moves focus inside the popover instead of out', async () => {
+      const prev = inner.shadowRoot.querySelector('#prevMonth');
+      const next = inner.shadowRoot.querySelector('#nextMonth');
+
+      // Move forward so prev becomes enabled.
+      next.click();
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      expect(prev.disabled).to.be.false;
+
+      // Simulate the focused-nav-button case directly: stub shadow active element to
+      // be `prev`, force prev to be disabled by jumping back to the min month, and
+      // verify the focus-redirection branch in _updateNavigationButtonStates kicks in
+      // (calendar stays open and prev gets disabled without relying on real focus).
+      Object.defineProperty(inner.shadowRoot, 'activeElement', { value: prev, configurable: true });
+
+      inner._previousMonth();
+      await new Promise((resolve) => setTimeout(resolve, 30));
+
+      expect(inner._isCalendarOpen).to.be.true;
+      expect(prev.disabled).to.be.true;
+    });
+
+    test('_onInputFocus does not close the calendar when the input is not actually focused', async () => {
+      expect(inner._isCalendarOpen).to.be.true;
+
+      // Simulate the wrapper's focusout-refocus path: _onInputFocus may fire while the
+      // input is not the shadow active element. In that case the calendar must stay open.
+      inner._onInputFocus();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      expect(inner._isCalendarOpen).to.be.true;
+    });
+  });
 });
