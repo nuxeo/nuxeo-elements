@@ -46,6 +46,13 @@ evolves with the codebase.
 | `.github/skills/add-i18n-keys/SKILL.md` | Add/update i18n message keys |
 | `.github/skills/write-unit-test/SKILL.md` | Generate unit tests |
 | `.github/skills/update-ai-context/SKILL.md` | Audit and update all AI context files |
+| `.github/skills/fix-dependabot-pr/SKILL.md` | Fix breaking changes in Dependabot PRs |
+
+### Tier 3b: Agent Modes (specialized agent configurations)
+
+| File | Purpose |
+|---|---|
+| `.github/agents/dependabot-fixer.agent.md` | Review and fix Dependabot version update PRs |
 
 ### Tier 4: Human-Facing Docs (also read by AI for context)
 
