@@ -103,16 +103,7 @@ jobs:
           gh pr review "${{ github.event.pull_request.number }}" \
             --repo "${{ github.repository }}" \
             --approve \
-            --body "✅ **Dependabot Auto-Fix**: Lint and tests passed. Auto-approved."
-
-      - name: Enable auto-merge
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr merge "${{ github.event.pull_request.number }}" \
-            --repo "${{ github.repository }}" \
-            --auto \
-            --squash
+            --body "✅ **Dependabot Auto-Fix**: Lint and tests passed. Auto-approved. A human reviewer must still merge this PR."
 
   # When lint or test fails, assign Copilot coding agent to fix the PR
   assign-copilot:
