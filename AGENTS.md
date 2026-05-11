@@ -9,7 +9,7 @@ This is a Polymer 3 web components library for the Nuxeo content services platfo
 Always follow this sequence when making changes:
 
 ```bash
-npm install                # Install all workspace dependencies (Node ≥ 18)
+npm install                # Install all workspace dependencies (Node ≥ 22)
 npm run format             # Auto-fix formatting (Polymer lint fix → Prettier → ESLint)
 npm run lint               # ESLint + Prettier + Polymer lint — must pass
 npm test                   # Karma unit tests (all packages) — must pass
