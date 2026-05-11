@@ -184,9 +184,9 @@ IronOverlayManager._overlayWithBackdrop = function() {
         this._enableFocusTrap(true);
       } else if (opened && !modal) {
         // modal was toggled off while dialog is open
-        this.removeAttribute('aria-modal');
-        // Disable focus trap and clear inert unless withBackdrop still requires it
+        // Only remove aria-modal if withBackdrop is not active (it still behaves modally)
         if (!this.withBackdrop) {
+          this.removeAttribute('aria-modal');
           this._disableFocusTrap(true);
         }
       } else if (!opened && modal) {

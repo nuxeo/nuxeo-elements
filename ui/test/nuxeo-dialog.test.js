@@ -548,7 +548,9 @@ suite('nuxeo-dialog', () => {
       `);
       dialog.style.display = '';
       dialog.setAttribute('tabindex', '-1');
-      dialog.opened = true;
+      // Set opened in Polymer's internal data store to satisfy the afterNextRender guard
+      // without triggering IronOverlayBehavior's _openedChanged observer
+      dialog.__data.opened = true;
       dialog._opened({ target: dialog });
       // Wait for afterNextRender to complete
       await new Promise((resolve) => afterNextRender(dialog, resolve));
@@ -566,8 +568,7 @@ suite('nuxeo-dialog', () => {
       `);
       const addSpy = sinon.spy(document, 'addEventListener');
       await waitForOpen(dialog);
-      const keydownCalls = addSpy.getCalls().filter((c) => c.args[0] === 'keydown');
-      expect(keydownCalls.length).to.be.greaterThan(0);
+      expect(addSpy.calledWith('keydown', dialog._boundTrapTab, true)).to.be.true;
       addSpy.restore();
     });
 
@@ -580,8 +581,7 @@ suite('nuxeo-dialog', () => {
       await waitForOpen(dialog);
       const removeSpy = sinon.spy(document, 'removeEventListener');
       await waitForClose(dialog);
-      const keydownCalls = removeSpy.getCalls().filter((c) => c.args[0] === 'keydown');
-      expect(keydownCalls.length).to.be.greaterThan(0);
+      expect(removeSpy.calledWith('keydown', dialog._boundTrapTab, true)).to.be.true;
       removeSpy.restore();
     });
   });
@@ -614,8 +614,7 @@ suite('nuxeo-dialog', () => {
       await waitForOpen(dialog);
       const removeSpy = sinon.spy(document, 'removeEventListener');
       await waitForClose(dialog);
-      const keydownCalls = removeSpy.getCalls().filter((c) => c.args[0] === 'keydown');
-      expect(keydownCalls.length).to.be.greaterThan(0);
+      expect(removeSpy.calledWith('keydown', dialog._boundTrapTab, true)).to.be.true;
       removeSpy.restore();
     });
   });
