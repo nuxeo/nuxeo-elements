@@ -200,26 +200,36 @@ suite('nuxeo-date-picker', () => {
       await new Promise((resolve) => setTimeout(resolve, 30));
       expect(prev.disabled).to.be.false;
 
-      // Simulate the focused-nav-button case directly: stub shadow active element to
-      // be `prev`, force prev to be disabled by jumping back to the min month, and
-      // verify the focus-redirection branch in _updateNavigationButtonStates kicks in
-      // (calendar stays open and prev gets disabled without relying on real focus).
-      Object.defineProperty(inner.shadowRoot, 'activeElement', { value: prev, configurable: true });
+      // Reproduce the focused-nav-button scenario with real focus, then force the
+      // min-month state and run nav-state update to verify focus redirection.
+      prev.focus();
+      expect(inner.shadowRoot.activeElement).to.equal(prev);
 
-      inner._previousMonth();
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      inner._viewDate = new Date(2026, 4, 1); // May 2026 (min month)
+      inner._updateNavigationButtonStates();
 
       expect(inner._isCalendarOpen).to.be.true;
       expect(prev.disabled).to.be.true;
+      const yearDropdown = inner.shadowRoot.querySelector('.year-dropdown');
+      const focused = inner.shadowRoot.activeElement;
+      expect(focused).to.not.equal(prev);
+      expect([next, yearDropdown, inner.shadowRoot.querySelector('#calendarPopover')]).to.include(focused);
     });
 
     test('_onInputFocus does not close the calendar when the input is not actually focused', async () => {
       expect(inner._isCalendarOpen).to.be.true;
 
-      // Simulate the wrapper's focusout-refocus path: _onInputFocus may fire while the
-      // input is not the shadow active element. In that case the calendar must stay open.
+      // Make the precondition explicit: _onInputFocus may run asynchronously while
+      // focus is on another calendar control, and must not close in that case.
+      const dateInput = inner.shadowRoot.querySelector('#dateInput');
+      const next = inner.shadowRoot.querySelector('#nextMonth');
+      expect(dateInput).to.exist;
+      expect(next).to.exist;
+      next.focus();
+      expect(inner.shadowRoot.activeElement).to.equal(next);
+
       inner._onInputFocus();
-      await new Promise((resolve) => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 25));
 
       expect(inner._isCalendarOpen).to.be.true;
     });
