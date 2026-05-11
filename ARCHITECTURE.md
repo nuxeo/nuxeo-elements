@@ -46,7 +46,7 @@ Nuxeo Elements is a library of reusable web components that forms the foundation
 | UI Framework | Polymer 3 (legacy factory + class-based) | ^3.5.1 |
 | Web Components Polyfills | @webcomponents/webcomponentsjs | ^2.0 |
 | Package Manager | npm | ≥ 8 |
-| Node.js | Node.js | ≥ 18 |
+| Node.js | Node.js | ≥ 22 |
 | Monorepo | Lerna | ^9.0.7 |
 | Unit Testing | Karma + Mocha + Chai + Sinon | Various |
 | Linting | ESLint 9 (flat config) + Prettier | ^9.0 |
