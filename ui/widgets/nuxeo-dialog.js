@@ -148,9 +148,14 @@ IronOverlayManager._overlayWithBackdrop = function() {
 
       // Enable focus trapping for modal or withBackdrop dialogs
       if (this.modal || this.withBackdrop) {
+        this.setAttribute('aria-modal', 'true');
         this._enableFocusTrap(true);
         // Wait for nested templates and custom elements to fully render before focusing
         afterNextRender(this, () => {
+          // Bail out if the dialog was disconnected before the callback fired
+          if (!this.isConnected) {
+            return;
+          }
           if (!this._containsDeepFocus()) {
             const focusTarget = this.querySelector('[autofocus]');
             if (focusTarget) {
@@ -192,9 +197,7 @@ IronOverlayManager._overlayWithBackdrop = function() {
 
     _onDialogClosed() {
       if (this.modal || this.withBackdrop) {
-        if (this.modal) {
-          this.removeAttribute('aria-modal');
-        }
+        this.removeAttribute('aria-modal');
         this._disableFocusTrap(true);
       }
     }
@@ -340,7 +343,11 @@ IronOverlayManager._overlayWithBackdrop = function() {
     }
 
     _isVisible(el) {
-      return el.offsetParent !== null || el.offsetWidth > 0 || el.offsetHeight > 0;
+      if (el.offsetParent === null && el.offsetWidth === 0 && el.offsetHeight === 0) {
+        return false;
+      }
+      const style = window.getComputedStyle(el);
+      return style.display !== 'none' && style.visibility !== 'hidden';
     }
 
     /**
