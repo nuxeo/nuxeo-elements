@@ -689,8 +689,7 @@ suite('nuxeo-dialog', () => {
       const removeSpy = sinon.spy(document, 'removeEventListener');
       const inertSpy = sinon.spy(dialog, '_setBackgroundInert');
       dialog.parentNode.removeChild(dialog);
-      const keydownCalls = removeSpy.getCalls().filter((c) => c.args[0] === 'keydown');
-      expect(keydownCalls.length).to.be.greaterThan(0);
+      expect(removeSpy.calledWith('keydown', dialog._boundTrapTab, true)).to.be.true;
       expect(inertSpy).to.have.been.calledWith(false);
       removeSpy.restore();
       inertSpy.restore();
