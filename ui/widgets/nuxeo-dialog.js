@@ -207,6 +207,10 @@ IronOverlayManager._overlayWithBackdrop = function() {
         this._setBackgroundInert(true);
         this._inertApplied = true;
       }
+      // Lazily initialize in case observer fires before ready()
+      if (!this._boundTrapTab) {
+        this._boundTrapTab = this._trapTab.bind(this);
+      }
       // Remove first to prevent duplicate registrations
       document.removeEventListener('keydown', this._boundTrapTab, true);
       document.addEventListener('keydown', this._boundTrapTab, true);
