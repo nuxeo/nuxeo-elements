@@ -128,6 +128,28 @@ suite('nuxeo-dialog', () => {
       await flush();
       expect(dialog.hasAttribute('aria-modal')).to.be.false;
     });
+
+    test('should set aria-modal for withBackdrop dialogs', async () => {
+      dialog = await fixture(html`
+        <nuxeo-dialog with-backdrop>
+          <p>Backdrop content</p>
+        </nuxeo-dialog>
+      `);
+      await waitForOpen(dialog);
+      expect(dialog.getAttribute('aria-modal')).to.equal('true');
+    });
+
+    test('should remove aria-modal when withBackdrop dialog is closed', async () => {
+      dialog = await fixture(html`
+        <nuxeo-dialog with-backdrop>
+          <p>Backdrop content</p>
+        </nuxeo-dialog>
+      `);
+      await waitForOpen(dialog);
+      expect(dialog.getAttribute('aria-modal')).to.equal('true');
+      await waitForClose(dialog);
+      expect(dialog.hasAttribute('aria-modal')).to.be.false;
+    });
   });
 
   suite('_containsDeepFocus', () => {
@@ -262,6 +284,20 @@ suite('nuxeo-dialog', () => {
       const ids = focusables.map((el) => el.id);
       expect(ids).to.include('visible');
       expect(ids).to.not.include('hidden');
+    });
+
+    test('should exclude elements with visibility hidden', async () => {
+      dialog = await fixture(html`
+        <nuxeo-dialog modal>
+          <button id="visibleBtn">Visible</button>
+          <button id="hiddenBtn" style="visibility: hidden">Hidden</button>
+        </nuxeo-dialog>
+      `);
+      await waitForOpen(dialog);
+      const focusables = dialog._getFocusableElements();
+      const ids = focusables.map((el) => el.id);
+      expect(ids).to.include('visibleBtn');
+      expect(ids).to.not.include('hiddenBtn');
     });
 
     test('should return empty array when no focusable elements exist', async () => {
