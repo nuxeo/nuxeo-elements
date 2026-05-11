@@ -65,9 +65,10 @@ suite('nuxeo-dialog', () => {
     }
     // Safety net: clear any stale inert flags
     Array.from(document.body.children).forEach((child) => {
-      if (child.__nuxeoDialogInert) {
+      if (child.__nuxeoDialogInertCount) {
         child.removeAttribute('inert');
-        delete child.__nuxeoDialogInert;
+        delete child.__nuxeoDialogInertCount;
+        delete child.__nuxeoDialogWasInert;
       }
     });
   });
@@ -114,6 +115,38 @@ suite('nuxeo-dialog', () => {
       expect(dialog.getAttribute('aria-modal')).to.equal('true');
       await waitForClose(dialog);
       expect(dialog.hasAttribute('aria-modal')).to.be.false;
+    });
+
+    test('should remove aria-modal when modal is toggled off while open', async () => {
+      await waitForOpen(dialog);
+      expect(dialog.getAttribute('aria-modal')).to.equal('true');
+      dialog.modal = false;
+      await flush();
+      expect(dialog.hasAttribute('aria-modal')).to.be.false;
+    });
+  });
+
+  suite('_containsDeepFocus', () => {
+    test('should return true when focus is inside the dialog', async () => {
+      dialog = await fixture(html`
+        <nuxeo-dialog modal>
+          <button id="btn">OK</button>
+        </nuxeo-dialog>
+      `);
+      await waitForOpen(dialog);
+      dialog.querySelector('#btn').focus();
+      expect(dialog._containsDeepFocus()).to.be.true;
+    });
+
+    test('should return false when focus is outside the dialog', async () => {
+      dialog = await fixture(html`
+        <nuxeo-dialog>
+          <button id="btn">OK</button>
+        </nuxeo-dialog>
+      `);
+      // Don't open as modal to avoid inert on siblings
+      document.body.focus();
+      expect(dialog._containsDeepFocus()).to.be.false;
     });
   });
 
@@ -374,7 +407,8 @@ suite('nuxeo-dialog', () => {
     teardown(() => {
       if (sibling && sibling.parentNode) {
         sibling.removeAttribute('inert');
-        delete sibling.__nuxeoDialogInert;
+        delete sibling.__nuxeoDialogInertCount;
+        delete sibling.__nuxeoDialogWasInert;
         sibling.parentNode.removeChild(sibling);
       }
     });
@@ -382,7 +416,7 @@ suite('nuxeo-dialog', () => {
     test('should set inert on sibling elements', () => {
       dialog._setBackgroundInert(true);
       expect(sibling.hasAttribute('inert')).to.be.true;
-      expect(sibling.__nuxeoDialogInert).to.be.true;
+      expect(sibling.__nuxeoDialogInertCount).to.equal(1);
     });
 
     test('should remove inert from sibling elements', () => {
@@ -390,7 +424,7 @@ suite('nuxeo-dialog', () => {
       expect(sibling.hasAttribute('inert')).to.be.true;
       dialog._setBackgroundInert(false);
       expect(sibling.hasAttribute('inert')).to.be.false;
-      expect(sibling.__nuxeoDialogInert).to.be.undefined;
+      expect(sibling.__nuxeoDialogInertCount).to.be.undefined;
     });
 
     test('should not set inert on the dialog itself', () => {
@@ -398,7 +432,7 @@ suite('nuxeo-dialog', () => {
       expect(dialog.hasAttribute('inert')).to.be.false;
     });
 
-    test('should not remove inert from elements not marked by this dialog', () => {
+    test('should not remove inert from elements that were already inert before the dialog', () => {
       const externalInert = document.createElement('div');
       externalInert.id = 'external-inert';
       externalInert.setAttribute('inert', '');
@@ -407,12 +441,37 @@ suite('nuxeo-dialog', () => {
       dialog._setBackgroundInert(true);
       dialog._setBackgroundInert(false);
 
-      // The externally-set inert should remain because __nuxeoDialogInert was not set initially
-      // But since _setBackgroundInert(true) sets it on ALL siblings, it will also be managed.
-      // This test verifies the flag-based approach works.
-      expect(externalInert.hasAttribute('inert')).to.be.false;
+      // The externally-set inert should remain because the element was already inert
+      expect(externalInert.hasAttribute('inert')).to.be.true;
 
       externalInert.parentNode.removeChild(externalInert);
+    });
+
+    test('should handle stacked dialogs with ref-counting', async () => {
+      const dialog2 = await fixture(html`
+        <nuxeo-dialog modal>
+          <button>OK2</button>
+        </nuxeo-dialog>
+      `);
+
+      // First dialog sets inert
+      dialog._setBackgroundInert(true);
+      expect(sibling.hasAttribute('inert')).to.be.true;
+      expect(sibling.__nuxeoDialogInertCount).to.equal(1);
+
+      // Second dialog also sets inert — ref count goes to 2
+      dialog2._setBackgroundInert(true);
+      expect(sibling.__nuxeoDialogInertCount).to.equal(2);
+
+      // First dialog clears inert — ref count drops to 1, inert stays
+      dialog._setBackgroundInert(false);
+      expect(sibling.hasAttribute('inert')).to.be.true;
+      expect(sibling.__nuxeoDialogInertCount).to.equal(1);
+
+      // Second dialog clears inert — ref count drops to 0, inert removed
+      dialog2._setBackgroundInert(false);
+      expect(sibling.hasAttribute('inert')).to.be.false;
+      expect(sibling.__nuxeoDialogInertCount).to.be.undefined;
     });
   });
 
@@ -432,8 +491,9 @@ suite('nuxeo-dialog', () => {
       dialog.style.display = '';
       dialog.setAttribute('tabindex', '-1');
       dialog._opened({ target: dialog });
-      // Wait for the setTimeout(50ms) in _opened
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // Wait for afterNextRender to complete
+      await flush();
+      await new Promise((resolve) => setTimeout(resolve, 50));
       expect(dialog._getDeepActiveElement()).to.equal(dialog.querySelector('#btn2'));
     });
 
@@ -447,8 +507,9 @@ suite('nuxeo-dialog', () => {
       dialog.style.display = '';
       dialog.setAttribute('tabindex', '-1');
       dialog._opened({ target: dialog });
-      // Wait for the setTimeout(50ms) in _opened
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // Wait for afterNextRender to complete
+      await flush();
+      await new Promise((resolve) => setTimeout(resolve, 50));
       expect(dialog._getDeepActiveElement()).to.equal(dialog.querySelector('#btn1'));
     });
   });

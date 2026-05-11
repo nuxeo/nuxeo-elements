@@ -21,6 +21,7 @@ import { PaperDialogBehavior } from '@polymer/paper-dialog-behavior/paper-dialog
 import '@polymer/paper-dialog-behavior/paper-dialog-shared-styles.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
+import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { Templatizer } from '@polymer/polymer/lib/legacy/templatizer-behavior.js';
 import { IronOverlayManager } from '@polymer/iron-overlay-behavior/iron-overlay-manager.js';
@@ -143,9 +144,9 @@ IronOverlayManager._overlayWithBackdrop = function() {
       // Enable focus trapping for modal or withBackdrop dialogs
       if (this.modal || this.withBackdrop) {
         this._enableFocusTrap(true);
-        // Use setTimeout to allow nested templates and custom elements to fully render
-        setTimeout(() => {
-          if (!this.contains(this._getDeepActiveElement())) {
+        // Wait for nested templates and custom elements to fully render before focusing
+        afterNextRender(this, () => {
+          if (!this._containsDeepFocus()) {
             const focusTarget = this.querySelector('[autofocus]');
             if (focusTarget) {
               focusTarget.focus();
@@ -158,7 +159,7 @@ IronOverlayManager._overlayWithBackdrop = function() {
               }
             }
           }
-        }, 50);
+        });
       }
     }
 
@@ -171,6 +172,9 @@ IronOverlayManager._overlayWithBackdrop = function() {
       if (opened && modal) {
         this.setAttribute('aria-modal', 'true');
         this._enableFocusTrap(true);
+      } else if (opened && !modal) {
+        // modal was toggled off while dialog is open
+        this.removeAttribute('aria-modal');
       } else if (!opened && modal) {
         this.removeAttribute('aria-modal');
         this._disableFocusTrap(true);
@@ -211,6 +215,12 @@ IronOverlayManager._overlayWithBackdrop = function() {
      */
     _trapTab(e) {
       if (e.key !== 'Tab' || !this.opened || !(this.modal || this.withBackdrop)) {
+        return;
+      }
+
+      // Only trap if the focused element is within this dialog (composed tree).
+      // This prevents stealing focus from other overlays when multiple dialogs are open.
+      if (!this._containsDeepFocus()) {
         return;
       }
 
@@ -334,6 +344,25 @@ IronOverlayManager._overlayWithBackdrop = function() {
     }
 
     /**
+     * Checks whether the currently focused element is within this dialog,
+     * traversing through shadow DOM boundaries (composed tree).
+     */
+    _containsDeepFocus() {
+      let current = this._getDeepActiveElement();
+      while (current) {
+        if (current === this) {
+          return true;
+        }
+        if (current.parentNode instanceof ShadowRoot) {
+          current = current.parentNode.host;
+        } else {
+          current = current.parentElement;
+        }
+      }
+      return false;
+    }
+
+    /**
      * Finds the index of the focusable element that contains the given active element,
      * walking up through parents and shadow DOM hosts. This handles cases where focus
      * is on a child inside a focusable (e.g., inside paper-tab's shadow DOM).
@@ -359,6 +388,10 @@ IronOverlayManager._overlayWithBackdrop = function() {
      * Sets the `inert` attribute on sibling elements at every ancestor level from the dialog
      * up to document.body, including siblings within shadow roots. This prevents keyboard
      * focus and screen readers from accessing background content behind the dialog.
+     *
+     * Uses a ref-counting approach via `__nuxeoDialogInertCount` to safely handle:
+     * - Multiple stacked dialogs (each dialog increments/decrements the counter)
+     * - Pre-existing inert attributes (only removes inert when all dialog references are cleared)
      */
     _setBackgroundInert(inert) {
       let current = this;
@@ -370,11 +403,23 @@ IronOverlayManager._overlayWithBackdrop = function() {
             return;
           }
           if (inert) {
+            if (!sibling.__nuxeoDialogInertCount) {
+              sibling.__nuxeoDialogInertCount = 0;
+              // Track whether the element was already inert before we touched it
+              sibling.__nuxeoDialogWasInert = sibling.hasAttribute('inert');
+            }
+            sibling.__nuxeoDialogInertCount++;
             sibling.setAttribute('inert', '');
-            sibling.__nuxeoDialogInert = true;
-          } else if (sibling.__nuxeoDialogInert) {
-            sibling.removeAttribute('inert');
-            delete sibling.__nuxeoDialogInert;
+          } else if (sibling.__nuxeoDialogInertCount > 0) {
+            sibling.__nuxeoDialogInertCount--;
+            if (sibling.__nuxeoDialogInertCount === 0) {
+              // Only remove inert if the element wasn't already inert before
+              if (!sibling.__nuxeoDialogWasInert) {
+                sibling.removeAttribute('inert');
+              }
+              delete sibling.__nuxeoDialogInertCount;
+              delete sibling.__nuxeoDialogWasInert;
+            }
           }
         });
 
