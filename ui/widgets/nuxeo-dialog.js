@@ -98,6 +98,7 @@ IronOverlayManager._overlayWithBackdrop = function() {
       this.addEventListener('iron-overlay-opened', this._opened);
       this.addEventListener('iron-overlay-closed', this._onDialogClosed);
       this._boundTrapTab = this._trapTab.bind(this);
+      this._inertApplied = false;
     }
 
     /**
@@ -119,7 +120,11 @@ IronOverlayManager._overlayWithBackdrop = function() {
         this.detached();
       }
       document.removeEventListener('keydown', this._boundTrapTab, true);
-      this._setBackgroundInert(false);
+      // Only clear inert if this instance previously applied it
+      if (this._inertApplied) {
+        this._setBackgroundInert(false);
+        this._inertApplied = false;
+      }
       this._clear();
     }
 
@@ -175,6 +180,10 @@ IronOverlayManager._overlayWithBackdrop = function() {
       } else if (opened && !modal) {
         // modal was toggled off while dialog is open
         this.removeAttribute('aria-modal');
+        // Disable focus trap and clear inert unless withBackdrop still requires it
+        if (!this.withBackdrop) {
+          this._disableFocusTrap(true);
+        }
       } else if (!opened && modal) {
         this.removeAttribute('aria-modal');
         this._disableFocusTrap(true);
@@ -191,8 +200,9 @@ IronOverlayManager._overlayWithBackdrop = function() {
     }
 
     _enableFocusTrap(setInert) {
-      if (setInert) {
+      if (setInert && !this._inertApplied) {
         this._setBackgroundInert(true);
+        this._inertApplied = true;
       }
       // Remove first to prevent duplicate registrations
       document.removeEventListener('keydown', this._boundTrapTab, true);
@@ -201,8 +211,9 @@ IronOverlayManager._overlayWithBackdrop = function() {
 
     _disableFocusTrap(clearInert) {
       document.removeEventListener('keydown', this._boundTrapTab, true);
-      if (clearInert) {
+      if (clearInert && this._inertApplied) {
         this._setBackgroundInert(false);
+        this._inertApplied = false;
       }
     }
 

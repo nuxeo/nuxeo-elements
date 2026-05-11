@@ -17,6 +17,7 @@ limitations under the License.
 */
 import { fixture, html, flush } from '@nuxeo/testing-helpers';
 import { IronOverlayManager } from '@polymer/iron-overlay-behavior/iron-overlay-manager.js';
+import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import '../widgets/nuxeo-dialog.js';
 
 function waitForOpen(dialog) {
@@ -54,7 +55,10 @@ suite('nuxeo-dialog', () => {
       // Do NOT set dialog.opened = false here — that triggers Polymer's async observer
       // (_openedModalChanged), which can race with fixture() cleanup and leave
       // IronOverlayManager in a corrupt state where the next dialog's open is queued forever.
-      dialog._setBackgroundInert(false);
+      if (dialog._inertApplied) {
+        dialog._setBackgroundInert(false);
+        dialog._inertApplied = false;
+      }
       document.removeEventListener('keydown', dialog._boundTrapTab, true);
       dialog.removeAttribute('aria-modal');
     }
@@ -492,8 +496,7 @@ suite('nuxeo-dialog', () => {
       dialog.setAttribute('tabindex', '-1');
       dialog._opened({ target: dialog });
       // Wait for afterNextRender to complete
-      await flush();
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => afterNextRender(dialog, resolve));
       expect(dialog._getDeepActiveElement()).to.equal(dialog.querySelector('#btn2'));
     });
 
@@ -508,8 +511,7 @@ suite('nuxeo-dialog', () => {
       dialog.setAttribute('tabindex', '-1');
       dialog._opened({ target: dialog });
       // Wait for afterNextRender to complete
-      await flush();
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => afterNextRender(dialog, resolve));
       expect(dialog._getDeepActiveElement()).to.equal(dialog.querySelector('#btn1'));
     });
   });
@@ -598,6 +600,14 @@ suite('nuxeo-dialog', () => {
       const inertSpy = sinon.spy(dialog, '_setBackgroundInert');
       dialog._enableFocusTrap(true);
       expect(inertSpy).to.have.been.calledWith(true);
+      inertSpy.restore();
+    });
+
+    test('_enableFocusTrap should not apply inert twice (idempotent)', () => {
+      dialog._enableFocusTrap(true);
+      const inertSpy = sinon.spy(dialog, '_setBackgroundInert');
+      dialog._enableFocusTrap(true);
+      expect(inertSpy).to.not.have.been.called;
       inertSpy.restore();
     });
 
