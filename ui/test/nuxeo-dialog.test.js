@@ -530,7 +530,9 @@ suite('nuxeo-dialog', () => {
       // Make dialog visible and focusable without going through IronOverlayBehavior
       dialog.style.display = '';
       dialog.setAttribute('tabindex', '-1');
-      dialog.opened = true;
+      // Set opened in Polymer's internal data store to satisfy the afterNextRender guard
+      // without triggering IronOverlayBehavior's _openedChanged observer
+      dialog.__data.opened = true;
       dialog._opened({ target: dialog });
       // Wait for afterNextRender to complete
       await new Promise((resolve) => afterNextRender(dialog, resolve));
@@ -546,7 +548,9 @@ suite('nuxeo-dialog', () => {
       `);
       dialog.style.display = '';
       dialog.setAttribute('tabindex', '-1');
-      dialog.opened = true;
+      // Set opened in Polymer's internal data store to satisfy the afterNextRender guard
+      // without triggering IronOverlayBehavior's _openedChanged observer
+      dialog.__data.opened = true;
       dialog._opened({ target: dialog });
       // Wait for afterNextRender to complete
       await new Promise((resolve) => afterNextRender(dialog, resolve));
