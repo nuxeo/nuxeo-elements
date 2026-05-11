@@ -2,5 +2,5 @@
   "packages": [
     "*"
   ],
-  "version": "3.1.31-SNAPSHOT"
+  "version": "3.1.31-rc.0"
 }
