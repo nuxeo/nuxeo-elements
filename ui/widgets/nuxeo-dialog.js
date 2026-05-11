@@ -152,8 +152,8 @@ IronOverlayManager._overlayWithBackdrop = function() {
         this._enableFocusTrap(true);
         // Wait for nested templates and custom elements to fully render before focusing
         afterNextRender(this, () => {
-          // Bail out if the dialog was disconnected before the callback fired
-          if (!this.isConnected) {
+          // Bail out if the dialog was closed or disconnected before the callback fired
+          if (!this.opened || !this.isConnected) {
             return;
           }
           if (!this._containsDeepFocus()) {
@@ -417,7 +417,12 @@ IronOverlayManager._overlayWithBackdrop = function() {
 
       while (parent) {
         Array.from(parent.children).forEach((sibling) => {
-          if (sibling === current || sibling.localName === 'style' || sibling.localName === 'script') {
+          if (
+            sibling === current ||
+            sibling.localName === 'style' ||
+            sibling.localName === 'script' ||
+            sibling === this.backdropElement
+          ) {
             return;
           }
           if (inert) {
