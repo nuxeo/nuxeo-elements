@@ -154,6 +154,126 @@ suite('nuxeo-selectivity', () => {
     });
   });
 
+  suite('clearing value (single mode)', () => {
+    const getSelectedItem = () => dom(selectivityWidget.root).querySelector('.selectivity-single-selected-item');
+
+    setup(async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity placeholder="No city selected" .data=${data}></nuxeo-selectivity>
+      `);
+    });
+
+    test('Should clear value when set to null', async () => {
+      selectivityWidget.value = 'Berlin';
+      await flush();
+      expect(getSelectedItem()).not.to.be.null;
+      selectivityWidget.value = null;
+      await flush();
+      expect(getSelectedItem()).to.be.null;
+      expect(selectivityWidget.value).to.be.null;
+      expect(selectivityWidget.selectedItem).to.be.null;
+    });
+
+    test('Should clear value when set to undefined', async () => {
+      selectivityWidget.value = 'Berlin';
+      await flush();
+      expect(getSelectedItem()).not.to.be.null;
+      selectivityWidget.value = undefined;
+      await flush();
+      expect(getSelectedItem()).to.be.null;
+      expect(selectivityWidget.value).to.be.undefined;
+      expect(selectivityWidget.selectedItem).to.be.null;
+    });
+
+    test('Should clear value when set to empty string', async () => {
+      selectivityWidget.value = 'Berlin';
+      await flush();
+      expect(getSelectedItem()).not.to.be.null;
+      selectivityWidget.value = '';
+      await flush();
+      expect(getSelectedItem()).to.be.null;
+      expect(selectivityWidget.value).to.equal('');
+      expect(selectivityWidget.selectedItem).to.be.null;
+    });
+
+    test('Should set value normally with a valid string', async () => {
+      selectivityWidget.value = 'Berlin';
+      await flush();
+      const item = getSelectedItem();
+      expect(item).not.to.be.null;
+      expect(item.textContent).to.be.equal('Berlin');
+    });
+
+    test('Should keep selectedItem in sync when clearing', async () => {
+      selectivityWidget.value = 'Berlin';
+      await flush();
+      selectivityWidget.value = null;
+      await flush();
+      expect(selectivityWidget.selectedItem).to.be.null;
+    });
+  });
+
+  suite('clearing value (multiple mode)', () => {
+    const getSelectedItems = () => dom(selectivityWidget.root).querySelectorAll('.selectivity-multiple-selected-item');
+
+    setup(async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity placeholder="No city selected" .data=${data} multiple></nuxeo-selectivity>
+      `);
+    });
+
+    test('Should clear value when set to null', async () => {
+      selectivityWidget.value = ['Berlin', 'Lisbon'];
+      await flush();
+      expect(getSelectedItems().length).to.be.equal(2);
+      selectivityWidget.value = null;
+      await flush();
+      expect(getSelectedItems().length).to.be.equal(0);
+      expect(selectivityWidget.value).to.be.null;
+      expect(selectivityWidget.selectedItems).to.deep.equal([]);
+    });
+
+    test('Should clear value when set to undefined', async () => {
+      selectivityWidget.value = ['Berlin', 'Lisbon'];
+      await flush();
+      expect(getSelectedItems().length).to.be.equal(2);
+      selectivityWidget.value = undefined;
+      await flush();
+      expect(getSelectedItems().length).to.be.equal(0);
+      expect(selectivityWidget.value).to.be.undefined;
+      expect(selectivityWidget.selectedItems).to.deep.equal([]);
+    });
+
+    test('Should clear value when set to empty string', async () => {
+      selectivityWidget.value = ['Berlin', 'Lisbon'];
+      await flush();
+      expect(getSelectedItems().length).to.be.equal(2);
+      selectivityWidget.value = '';
+      await flush();
+      expect(getSelectedItems().length).to.be.equal(0);
+      expect(selectivityWidget.value).to.equal('');
+      expect(selectivityWidget.selectedItems).to.deep.equal([]);
+    });
+
+    test('Should clear value when set to empty array', async () => {
+      selectivityWidget.value = ['Berlin'];
+      await flush();
+      expect(getSelectedItems().length).to.be.equal(1);
+      selectivityWidget.value = [];
+      await flush();
+      expect(getSelectedItems().length).to.be.equal(0);
+      expect(selectivityWidget.value).to.deep.equal([]);
+    });
+
+    test('Should keep selectedItems in sync when clearing', async () => {
+      selectivityWidget.value = ['Berlin'];
+      await flush();
+      selectivityWidget.value = null;
+      await flush();
+      expect(selectivityWidget.selectedItems).to.deep.equal([]);
+    });
+  });
+
   suite('ID Function', () => {
     setup(async () => {
       selectivityWidget = await fixture(html`
