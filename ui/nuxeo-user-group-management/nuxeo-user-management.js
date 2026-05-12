@@ -220,7 +220,7 @@ import '../nuxeo-button-styles.js';
             <iron-icon icon="nuxeo:user" class="user-icon"></iron-icon>
             <div class="layout vertical">
               <div class="user heading" name="userHeading">[[_userDisplayName(user)]]</div>
-              <div>[[user.properties.firstName]] [[user.properties.lastName]]</div>
+              <div>[[user.id]]</div>
             </div>
 
             <div class="actions">

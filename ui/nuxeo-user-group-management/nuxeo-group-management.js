@@ -396,7 +396,7 @@ import '../nuxeo-button-styles.js';
                             </template>
                           </dom-if>
                         </div>
-                        <div class="flex-4 preserve-white-space" role="columnheader">[[_memberDisplayName(item)]]</div>
+                        <div class="flex-4 preserve-white-space" role="columnheader">[[item.id]]</div>
                         <div class="flex-4" role="columnheader">
                           <div class="email-wrapper">
                             <span class="email-text">
