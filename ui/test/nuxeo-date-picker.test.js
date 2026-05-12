@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, html } from '@nuxeo/testing-helpers';
+import { fixture, flush, html } from '@nuxeo/testing-helpers';
 import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import '../widgets/nuxeo-date-picker.js';
 
@@ -150,8 +150,8 @@ suite('nuxeo-date-picker', () => {
       inner = picker.shadowRoot.querySelector('#date');
       // Open the calendar so the popover (and nav buttons) are rendered and wired up.
       inner._openCalendar(null, false);
-      // Ensure the async _updateNavigationButtonStates inside _generateCalendar has run.
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await flush();
+      inner._updateNavigationButtonStates();
     });
 
     test('nav buttons prevent default on mousedown so they do not steal focus', () => {
@@ -179,14 +179,16 @@ suite('nuxeo-date-picker', () => {
 
       // Move to next month (June 2026). Prev should now be enabled.
       next.click();
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await flush();
+      inner._updateNavigationButtonStates();
       expect(inner._isCalendarOpen).to.be.true;
       expect(prev.disabled).to.be.false;
 
       // Move back to the min month (May 2026). Prev becomes disabled again, but the
       // calendar must remain open.
       prev.click();
-      await new Promise((resolve) => setTimeout(resolve, 60));
+      await flush();
+      inner._updateNavigationButtonStates();
       expect(inner._isCalendarOpen).to.be.true;
       expect(prev.disabled).to.be.true;
     });
@@ -197,7 +199,8 @@ suite('nuxeo-date-picker', () => {
 
       // Move forward so prev becomes enabled.
       next.click();
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await flush();
+      inner._updateNavigationButtonStates();
       expect(prev.disabled).to.be.false;
 
       // Reproduce the focused-nav-button scenario with real focus, then force the
@@ -229,7 +232,7 @@ suite('nuxeo-date-picker', () => {
       expect(inner.shadowRoot.activeElement).to.equal(next);
 
       inner._onInputFocus();
-      await new Promise((resolve) => setTimeout(resolve, 25));
+      await flush();
 
       expect(inner._isCalendarOpen).to.be.true;
     });

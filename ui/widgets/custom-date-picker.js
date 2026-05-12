@@ -28,6 +28,10 @@ import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
+// A short grace period prevents transient focus reroutes from immediately
+// collapsing the popover during month navigation.
+const FOCUS_SUPPRESSION_MS = 200;
+
 {
   class CustomDatePicker extends mixinBehaviors(
     [I18nBehavior, IronFormElementBehavior, IronValidatableBehavior],
@@ -2930,6 +2934,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           year: this._getYear(this._viewDate),
         }),
       );
+
+      // End nav-key interaction in the same lifecycle as month update.
+      this._interactingWithCalendar = false;
     }
 
     _nextMonth(e) {
@@ -2959,6 +2966,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           year: this._getYear(this._viewDate),
         }),
       );
+
+      // End nav-key interaction in the same lifecycle as month update.
+      this._interactingWithCalendar = false;
     }
 
     _changeYear(e) {
@@ -5101,15 +5111,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         // Mirror mouse behavior: suppress transient wrapper-driven input refocus
         // while keyboard month navigation is being processed.
-        this._suppressInputFocusCloseUntil = Date.now() + 200;
+        this._suppressInputFocusCloseUntil = Date.now() + FOCUS_SUPPRESSION_MS;
 
         // Mark that we're interacting with the calendar to prevent it from closing
         this._interactingWithCalendar = true;
-
-        // Clear the flag after a short delay
-        this.async(() => {
-          this._interactingWithCalendar = false;
-        }, 50);
 
         // Call the appropriate navigation method directly
         if (e.target.id === 'prevMonth') {
@@ -5129,9 +5134,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     // mousedown's default action, focus stays on whatever element previously held it.
     _preventNavButtonFocus(e) {
       if (e) {
-        // A short suppression window prevents wrapper-driven input refocus from
-        // closing the calendar while a nav interaction is being processed.
-        this._suppressInputFocusCloseUntil = Date.now() + 200;
+        // Keep this short: enough to cover focus hand-off caused by nav updates
+        // without masking legitimate later input focus events.
+        this._suppressInputFocusCloseUntil = Date.now() + FOCUS_SUPPRESSION_MS;
         e.preventDefault();
       }
     }
