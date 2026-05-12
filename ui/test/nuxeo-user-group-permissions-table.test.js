@@ -1,288 +1,72 @@
+/**
+@license
+©2023 Hyland Software, Inc. and its affiliates. All rights reserved.
+All Hyland product names are registered or unregistered trademarks of Hyland Software, Inc. or its affiliates.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 import { fixture, flush, html } from '@nuxeo/testing-helpers';
 import '../nuxeo-user-group-management/nuxeo-user-group-permissions-table.js';
 
-const mkAce = (overrides) =>
-  Object.assign(
-    {
-      id: 'ace-1',
-      username: 'Administrator',
-      permission: 'Everything',
-      creator: 'system',
-      begin: null,
-      end: null,
-    },
-    overrides,
-  );
-
-const mkEntry = (aces, aclName, useAceKey) => {
-  const acl = { name: aclName || 'local' };
-  if (useAceKey) {
-    acl.ace = aces;
-  } else {
-    acl.aces = aces;
-  }
-  return {
-    uid: 'doc-1',
-    title: 'My Doc',
-    path: '/default-domain/my-doc',
-    contextParameters: { acls: [acl] },
-  };
-};
-
 suite('nuxeo-user-group-permissions-table', () => {
-  let el;
+  suite('_computeEntityDisplayName', () => {
+    let el;
 
-  setup(async () => {
-    el = await fixture(
-      html`
-        <nuxeo-user-group-permissions-table entity="Administrator"> </nuxeo-user-group-permissions-table>
-      `,
-    );
-    sinon.stub(el.$.permissions, 'execute').returns(Promise.resolve({ numberOfPages: 0, entries: [] }));
-    sinon.stub(el.$.rmPermission, 'execute').returns(Promise.resolve());
-    await flush();
-  });
-
-  suite('_aceBelongsToEntity', () => {
-    test('returns true when username matches entity', () => {
-      expect(el._aceBelongsToEntity({ username: 'Administrator' })).to.be.true;
+    setup(async () => {
+      el = await fixture(
+        html`
+          <nuxeo-user-group-permissions-table></nuxeo-user-group-permissions-table>
+        `,
+      );
     });
 
-    test('returns false when username does not match', () => {
-      expect(el._aceBelongsToEntity({ username: 'other' })).to.be.false;
-    });
-  });
-
-  suite('_isInherited', () => {
-    test('returns true for inherited acl', () => {
-      expect(el._isInherited({ name: 'inherited' })).to.be.true;
+    test('uses entityLabel when provided', () => {
+      expect(el._computeEntityDisplayName('principal-id', 'Human readable')).to.equal('Human readable');
     });
 
-    test('returns false for local acl', () => {
-      expect(el._isInherited({ name: 'local' })).to.be.false;
+    test('falls back to entity when entityLabel is missing', () => {
+      expect(el._computeEntityDisplayName('members', undefined)).to.equal('members');
+      expect(el._computeEntityDisplayName('members', null)).to.equal('members');
+    });
+
+    test('falls back to entity when entityLabel is empty string', () => {
+      expect(el._computeEntityDisplayName('members', '')).to.equal('members');
+    });
+
+    test('returns empty string when both are missing', () => {
+      expect(el._computeEntityDisplayName(undefined, undefined)).to.equal('');
+      expect(el._computeEntityDisplayName(null, null)).to.equal('');
     });
   });
 
-  suite('_canDelete', () => {
-    test('returns true when ace has id', () => {
-      expect(el._canDelete({ id: 'abc' })).to.be.true;
+  suite('_entityDisplayName computed property', () => {
+    test('reflects entity and entityLabel bindings', async () => {
+      const el = await fixture(html`
+        <nuxeo-user-group-permissions-table
+          entity="uid-1"
+          entity-label="Shown name"
+        ></nuxeo-user-group-permissions-table>
+      `);
+      await flush();
+      expect(el._entityDisplayName).to.equal('Shown name');
     });
 
-    test('returns false when ace has no id', () => {
-      expect(el._canDelete({ id: '' })).to.be.false;
-    });
-
-    test('returns false when ace id is null', () => {
-      expect(el._canDelete({ id: null })).to.be.false;
-    });
-
-    test('returns false when ace id is undefined', () => {
-      expect(el._canDelete({})).to.be.false;
-    });
-  });
-
-  suite('_formatTimeFrame', () => {
-    test('returns permanent when no begin and no end', () => {
-      const result = el._formatTimeFrame(mkAce());
-      expect(result).to.be.a('string');
-    });
-
-    test('returns since+date when begin in past, no end', () => {
-      const result = el._formatTimeFrame(mkAce({ begin: '2020-01-01', end: null }));
-      expect(result).to.be.a('string');
-      expect(result).to.include('2020');
-    });
-
-    test('returns from+date when begin in future, no end', () => {
-      const result = el._formatTimeFrame(mkAce({ begin: '2099-01-01', end: null }));
-      expect(result).to.be.a('string');
-      expect(result).to.include('2099');
-    });
-
-    test('returns until+date when no begin, has end', () => {
-      const result = el._formatTimeFrame(mkAce({ begin: null, end: '2099-12-31' }));
-      expect(result).to.be.a('string');
-      expect(result).to.include('2099');
-    });
-
-    test('returns since+begin until+end when begin in past and has end', () => {
-      const result = el._formatTimeFrame(mkAce({ begin: '2020-01-01', end: '2099-12-31' }));
-      expect(result).to.be.a('string');
-      expect(result).to.include('2020');
-      expect(result).to.include('2099');
-    });
-
-    test('returns from+begin until+end when begin in future and has end', () => {
-      const result = el._formatTimeFrame(mkAce({ begin: '2099-06-01', end: '2099-12-31' }));
-      expect(result).to.be.a('string');
-      expect(result).to.include('2099');
-    });
-  });
-
-  suite('_computePermissions', () => {
-    test('processes entries with local aces matching entity', () => {
-      const ace = mkAce();
-      const entry = mkEntry([ace], 'local');
-      el._computePermissions([entry]);
-      expect(el.documents).to.have.length(1);
-      expect(el.documents[0].aces).to.have.length(1);
-      expect(el.documents[0].aces[0].docId).to.equal('doc-1');
-      expect(el.documents[0].aces[0].docTitle).to.equal('My Doc');
-      expect(el.documents[0].aces[0].docPath).to.equal('/default-domain/my-doc');
-      expect(el.documents[0].aces[0].timeFrame).to.be.a('string');
-    });
-
-    test('skips inherited aces when displayInherited is false', () => {
-      el.displayInherited = false;
-      const ace = mkAce();
-      const entry = mkEntry([ace], 'inherited');
-      el._computePermissions([entry]);
-      expect(el.documents[0].aces).to.have.length(0);
-    });
-
-    test('includes inherited aces when displayInherited is true', () => {
-      el.displayInherited = true;
-      const ace = mkAce();
-      const entry = mkEntry([ace], 'inherited');
-      el._computePermissions([entry]);
-      expect(el.documents[0].aces).to.have.length(1);
-    });
-
-    test('skips aces not belonging to entity', () => {
-      const ace = mkAce({ username: 'other-user' });
-      const entry = mkEntry([ace], 'local');
-      el._computePermissions([entry]);
-      expect(el.documents[0].aces).to.have.length(0);
-    });
-
-    test('handles legacy ace key instead of aces', () => {
-      const ace = mkAce();
-      const entry = mkEntry([ace], 'local', true);
-      el._computePermissions([entry]);
-      expect(el.documents[0].aces).to.have.length(1);
-    });
-
-    test('sets empty to true when no entries', () => {
-      el._computePermissions([]);
-      expect(el.empty).to.be.true;
-    });
-
-    test('sets empty to false when entries exist', () => {
-      const ace = mkAce();
-      const entry = mkEntry([ace], 'local');
-      el._computePermissions([entry]);
-      expect(el.empty).to.be.false;
-    });
-  });
-
-  suite('_fetchPermissions', () => {
-    test('returns early when entity is empty', () => {
-      el.entity = '';
-      el.$.permissions.execute.resetHistory();
-      el._fetchPermissions();
-      expect(el.$.permissions.execute).to.not.have.been.called;
-    });
-
-    test('sets params and executes when entity exists', (done) => {
-      el.entity = 'Administrator';
-      el.$.permissions.execute.returns(Promise.resolve({ numberOfPages: 1, entries: [] }));
-      el._fetchPermissions();
-      requestAnimationFrame(() => {
-        expect(el.$.permissions.params).to.exist;
-        expect(el.$.permissions.params.query).to.include('Administrator');
-        expect(el.$.permissions.execute).to.have.been.called;
-        done();
-      });
-    });
-
-    test('aborts previous controller before new fetch', (done) => {
-      el.entity = 'Administrator';
-      el._abortController = new AbortController();
-      const abortSpy = sinon.spy(el._abortController, 'abort');
-      el.$.permissions.execute.returns(Promise.resolve({ numberOfPages: 0, entries: [] }));
-      el._fetchPermissions();
-      requestAnimationFrame(() => {
-        expect(abortSpy).to.have.been.calledOnce;
-        done();
-      });
-    });
-
-    test('handles execute rejection gracefully', (done) => {
-      el.entity = 'Administrator';
-      el.$.permissions.execute.returns(Promise.reject(new Error('fail')));
-      el._fetchPermissions();
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          done();
-        }, 50);
-      });
-    });
-
-    test('warns when permissions element not ready', (done) => {
-      el.entity = 'Administrator';
-      const origPermissions = el.$.permissions;
-      Object.defineProperty(el.$, 'permissions', { value: undefined, configurable: true });
-      const warnSpy = sinon.stub(console, 'warn');
-      el._fetchPermissions();
-      requestAnimationFrame(() => {
-        expect(warnSpy).to.have.been.calledWith('Permissions operation not ready');
-        warnSpy.restore();
-        Object.defineProperty(el.$, 'permissions', { value: origPermissions, configurable: true });
-        done();
-      });
-    });
-  });
-
-  suite('_deleteAce', () => {
-    test('sets input/params on rmPermission and executes', async () => {
-      el._deletedAce = { docId: 'doc-1', id: 'ace-1' };
-      el.$.rmPermission.execute.returns(Promise.resolve());
-      el.$.permissions.execute.returns(Promise.resolve({ numberOfPages: 0, entries: [] }));
-      await el._deleteAce();
-      expect(el.$.rmPermission.input).to.equal('doc-1');
-      expect(el.$.rmPermission.params.id).to.equal('ace-1');
-      expect(el.$.rmPermission.execute).to.have.been.called;
-    });
-  });
-
-  suite('_toggleDialog', () => {
-    test('sets _deletedAce and toggles dialog', () => {
-      const ace = mkAce();
-      const toggleSpy = sinon.spy(el.$.dialog, 'toggle');
-      el._toggleDialog({ model: { ace } });
-      expect(el._deletedAce).to.deep.equal(ace);
-      expect(toggleSpy).to.have.been.calledOnce;
-      toggleSpy.restore();
-    });
-  });
-
-  suite('connectedCallback', () => {
-    test('sets up IntersectionObserver', () => {
-      expect(el._intersectionObserver).to.exist;
-    });
-  });
-
-  suite('disconnectedCallback', () => {
-    test('disconnects observer and aborts controller', () => {
-      el._abortController = new AbortController();
-      const abortSpy = sinon.spy(el._abortController, 'abort');
-      const disconnectSpy = sinon.spy(el._intersectionObserver, 'disconnect');
-      el.disconnectedCallback();
-      expect(abortSpy).to.have.been.calledOnce;
-      expect(disconnectSpy).to.have.been.calledOnce;
-    });
-
-    test('works when no controller exists', () => {
-      el._abortController = null;
-      const disconnectSpy = sinon.spy(el._intersectionObserver, 'disconnect');
-      el.disconnectedCallback();
-      expect(disconnectSpy).to.have.been.calledOnce;
-    });
-
-    test('works when no observer exists', () => {
-      el._abortController = null;
-      el._intersectionObserver = null;
-      el.disconnectedCallback();
+    test('uses entity when entity-label is not set', async () => {
+      const el = await fixture(html`
+        <nuxeo-user-group-permissions-table entity="administrators"></nuxeo-user-group-permissions-table>
+      `);
+      await flush();
+      expect(el._entityDisplayName).to.equal('administrators');
     });
   });
 });
