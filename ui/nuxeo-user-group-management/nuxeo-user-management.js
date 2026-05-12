@@ -219,7 +219,7 @@ import '../nuxeo-button-styles.js';
           <div class="horizontal layout center header">
             <iron-icon icon="nuxeo:user" class="user-icon"></iron-icon>
             <div class="layout vertical">
-              <div class="user heading" name="userHeading">[[user.id]]</div>
+              <div class="user heading" name="userHeading">[[_userDisplayName(user)]]</div>
               <div>[[user.properties.firstName]] [[user.properties.lastName]]</div>
             </div>
 
@@ -365,7 +365,11 @@ import '../nuxeo-button-styles.js';
 
         <!-- local permissions -->
         <nuxeo-card heading="[[i18n('userManagement.localPermissions.heading')]]">
-          <nuxeo-user-group-permissions-table entity="[[username]]" readonly="[[readonly]]">
+          <nuxeo-user-group-permissions-table
+            entity="[[user.id]]"
+            entity-label="[[_userDisplayName(user)]]"
+            readonly="[[readonly]]"
+          >
           </nuxeo-user-group-permissions-table>
         </nuxeo-card>
 
@@ -531,6 +535,13 @@ import '../nuxeo-button-styles.js';
         event.preventDefault();
         this._savePassword();
       });
+    }
+
+    _userDisplayName(user) {
+      if (!user) {
+        return '';
+      }
+      return user.name || (user.properties && user.properties.username) || '';
     }
 
     _fetch() {
