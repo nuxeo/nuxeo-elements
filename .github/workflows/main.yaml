@@ -37,7 +37,7 @@ jobs:
       branch: lts-2025
 
   sonar:
-    uses: nuxeo/nuxeo-elements/.github/workflows/sonar.yaml@lts-2025
+    uses: ./.github/workflows/sonar.yaml
     secrets:
       NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
