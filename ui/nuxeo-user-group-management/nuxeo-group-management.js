@@ -396,7 +396,7 @@ import '../nuxeo-button-styles.js';
                             </template>
                           </dom-if>
                         </div>
-                        <div class="flex-4 preserve-white-space" role="columnheader">[[item.id]]</div>
+                        <div class="flex-4 preserve-white-space" role="columnheader">[[_userDisplayName(item)]]</div>
                         <div class="flex-4" role="columnheader">
                           <div class="email-wrapper">
                             <span class="email-text">
@@ -617,7 +617,14 @@ import '../nuxeo-button-styles.js';
     }
 
     _userHasName(user) {
-      return user.properties.firstName || user.properties.lastName;
+      return user && (user.properties.firstName || user.properties.lastName);
+    }
+
+    _userDisplayName(user) {
+      if (!user) {
+        return '';
+      }
+      return user.name || (user.properties && user.properties.username) || user.id || '';
     }
 
     _getEmail(properties) {
