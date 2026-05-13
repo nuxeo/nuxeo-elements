@@ -37,7 +37,7 @@ jobs:
       branch: maintenance-3.1.x
 
   sonar:
-    uses: nuxeo/nuxeo-elements/.github/workflows/sonar.yaml@maintenance-3.1.x
+    uses: ./.github/workflows/sonar.yaml
     secrets:
       NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
