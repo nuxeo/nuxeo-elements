@@ -132,11 +132,6 @@ suite('nuxeo-date-picker', () => {
     });
   });
 
-  // Regression tests: when `min` is set, navigating Next then Previous back to the
-  // boundary month must NOT collapse the calendar. The fixes live in
-  // ui/widgets/custom-date-picker.js (`_preventNavButtonFocus`,
-  // `_updateNavigationButtonStates` focus redirection, and `_onInputFocus` activeElement
-  // guard).
   suite('month navigation with min boundary', () => {
     let picker;
     let inner;
