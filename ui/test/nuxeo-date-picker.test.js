@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, flush, html } from '@nuxeo/testing-helpers';
+import { fixture, html } from '@nuxeo/testing-helpers';
 import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import '../widgets/nuxeo-date-picker.js';
 
@@ -129,107 +129,6 @@ suite('nuxeo-date-picker', () => {
         expect(element.value).to.be.null;
         testValueWithLocale(element, '2003-06-13T00:00:00.000Z', 'ar', conf.timezone);
       });
-    });
-  });
-
-  suite('month navigation with min boundary', () => {
-    let picker;
-    let inner;
-
-    setup(async () => {
-      picker = await fixture(
-        html`
-          <nuxeo-date-picker min="2026-05-02"></nuxeo-date-picker>
-        `,
-      );
-      inner = picker.shadowRoot.querySelector('#date');
-      // Open the calendar so the popover (and nav buttons) are rendered and wired up.
-      inner._openCalendar(null, false);
-      await flush();
-      inner._updateNavigationButtonStates();
-    });
-
-    test('nav buttons prevent default on mousedown so they do not steal focus', () => {
-      const prev = inner.shadowRoot.querySelector('#prevMonth');
-      const next = inner.shadowRoot.querySelector('#nextMonth');
-      expect(prev).to.exist;
-      expect(next).to.exist;
-
-      const evt = new MouseEvent('mousedown', { bubbles: true, cancelable: true, composed: true });
-      next.dispatchEvent(evt);
-      expect(evt.defaultPrevented).to.be.true;
-
-      const evt2 = new MouseEvent('mousedown', { bubbles: true, cancelable: true, composed: true });
-      prev.dispatchEvent(evt2);
-      expect(evt2.defaultPrevented).to.be.true;
-    });
-
-    test('clicking next then previous keeps the calendar open at the min-month boundary', async () => {
-      const prev = inner.shadowRoot.querySelector('#prevMonth');
-      const next = inner.shadowRoot.querySelector('#nextMonth');
-
-      // The calendar opens on the min month (May 2026) — prev should be disabled.
-      expect(inner._isCalendarOpen).to.be.true;
-      expect(prev.disabled).to.be.true;
-
-      // Move to next month (June 2026). Prev should now be enabled.
-      next.click();
-      await flush();
-      inner._updateNavigationButtonStates();
-      expect(inner._isCalendarOpen).to.be.true;
-      expect(prev.disabled).to.be.false;
-
-      // Move back to the min month (May 2026). Prev becomes disabled again, but the
-      // calendar must remain open.
-      prev.click();
-      await flush();
-      inner._updateNavigationButtonStates();
-      expect(inner._isCalendarOpen).to.be.true;
-      expect(prev.disabled).to.be.true;
-    });
-
-    test('disabling the focused prev button moves focus inside the popover instead of out', async () => {
-      const prev = inner.shadowRoot.querySelector('#prevMonth');
-      const next = inner.shadowRoot.querySelector('#nextMonth');
-
-      // Move forward so prev becomes enabled.
-      next.click();
-      await flush();
-      inner._updateNavigationButtonStates();
-      expect(prev.disabled).to.be.false;
-
-      // Reproduce the focused-nav-button scenario with real focus, then force the
-      // min-month state and run nav-state update to verify focus redirection.
-      prev.focus();
-      expect(inner.shadowRoot.activeElement).to.equal(prev);
-
-      inner._viewDate = new Date(2026, 4, 1); // May 2026 (min month)
-      inner._updateNavigationButtonStates();
-
-      expect(inner._isCalendarOpen).to.be.true;
-      expect(prev.disabled).to.be.true;
-      const yearDropdown = inner.shadowRoot.querySelector('.year-dropdown');
-      const focused = inner.shadowRoot.activeElement;
-      expect(focused).to.not.equal(prev);
-      expect([next, yearDropdown, inner.shadowRoot.querySelector('#calendarPopover')]).to.include(focused);
-    });
-
-    test('_onInputFocus does not close the calendar when the input is not actually focused', async () => {
-      expect(inner._isCalendarOpen).to.be.true;
-
-      // Make the precondition explicit: _onInputFocus may run asynchronously while
-      // focus is on another calendar control, and must not close in that case.
-      const dateInput = inner.shadowRoot.querySelector('#dateInput');
-      const next = inner.shadowRoot.querySelector('#nextMonth');
-      expect(dateInput).to.exist;
-      expect(next).to.exist;
-      next.focus();
-      expect(inner.shadowRoot.activeElement).to.equal(next);
-
-      inner._onInputFocus();
-      await flush();
-
-      expect(inner._isCalendarOpen).to.be.true;
     });
   });
 });

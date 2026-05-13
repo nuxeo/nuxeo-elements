@@ -366,4 +366,103 @@ suite('custom-date-picker', () => {
       }
     });
   });
+
+  suite('month navigation with min boundary', () => {
+    let el;
+
+    setup(async () => {
+      el = await fixture(
+        html`
+          <custom-date-picker min="2026-05-02"></custom-date-picker>
+        `,
+      );
+      // Open the calendar so the popover (and nav buttons) are rendered and wired up.
+      el._openCalendar(null, false);
+      await flush();
+      el._updateNavigationButtonStates();
+    });
+
+    test('nav buttons prevent default on mousedown so they do not steal focus', () => {
+      const prev = el.shadowRoot.querySelector('#prevMonth');
+      const next = el.shadowRoot.querySelector('#nextMonth');
+      expect(prev).to.exist;
+      expect(next).to.exist;
+
+      const evt = new MouseEvent('mousedown', { bubbles: true, cancelable: true, composed: true });
+      next.dispatchEvent(evt);
+      expect(evt.defaultPrevented).to.be.true;
+
+      const evt2 = new MouseEvent('mousedown', { bubbles: true, cancelable: true, composed: true });
+      prev.dispatchEvent(evt2);
+      expect(evt2.defaultPrevented).to.be.true;
+    });
+
+    test('clicking next then previous keeps the calendar open at the min-month boundary', async () => {
+      const prev = el.shadowRoot.querySelector('#prevMonth');
+      const next = el.shadowRoot.querySelector('#nextMonth');
+
+      // The calendar opens on the min month (May 2026) - prev should be disabled.
+      expect(el._isCalendarOpen).to.be.true;
+      expect(prev.disabled).to.be.true;
+
+      // Move to next month (June 2026). Prev should now be enabled.
+      next.click();
+      await flush();
+      el._updateNavigationButtonStates();
+      expect(el._isCalendarOpen).to.be.true;
+      expect(prev.disabled).to.be.false;
+
+      // Move back to the min month (May 2026). Prev becomes disabled again, but the
+      // calendar must remain open.
+      prev.click();
+      await flush();
+      el._updateNavigationButtonStates();
+      expect(el._isCalendarOpen).to.be.true;
+      expect(prev.disabled).to.be.true;
+    });
+
+    test('disabling the focused prev button moves focus inside the popover instead of out', async () => {
+      const prev = el.shadowRoot.querySelector('#prevMonth');
+      const next = el.shadowRoot.querySelector('#nextMonth');
+
+      // Move forward so prev becomes enabled.
+      next.click();
+      await flush();
+      el._updateNavigationButtonStates();
+      expect(prev.disabled).to.be.false;
+
+      // Reproduce the focused-nav-button scenario with real focus, then force the
+      // min-month state and run nav-state update to verify focus redirection.
+      prev.focus();
+      expect(el.shadowRoot.activeElement).to.equal(prev);
+
+      el._viewDate = new Date(2026, 4, 1); // May 2026 (min month)
+      el._updateNavigationButtonStates();
+
+      expect(el._isCalendarOpen).to.be.true;
+      expect(prev.disabled).to.be.true;
+      const yearDropdown = el.shadowRoot.querySelector('.year-dropdown');
+      const focused = el.shadowRoot.activeElement;
+      expect(focused).to.not.equal(prev);
+      expect([next, yearDropdown, el.shadowRoot.querySelector('#calendarPopover')]).to.include(focused);
+    });
+
+    test('_onInputFocus does not close the calendar when the input is not actually focused', async () => {
+      expect(el._isCalendarOpen).to.be.true;
+
+      // Make the precondition explicit: _onInputFocus may run asynchronously while
+      // focus is on another calendar control, and must not close in that case.
+      const dateInput = el.shadowRoot.querySelector('#dateInput');
+      const next = el.shadowRoot.querySelector('#nextMonth');
+      expect(dateInput).to.exist;
+      expect(next).to.exist;
+      next.focus();
+      expect(el.shadowRoot.activeElement).to.equal(next);
+
+      el._onInputFocus();
+      await flush();
+
+      expect(el._isCalendarOpen).to.be.true;
+    });
+  });
 });
