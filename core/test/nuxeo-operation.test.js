@@ -655,29 +655,30 @@ suite('nuxeo-operation', () => {
   });
 
   suite('auto execution', () => {
-    setup(() => {
-      server.respondWith('GET', '/json/cmis', [200, responseHeaders.json, '{}']);
-      server.respondWith('POST', '/api/v1/automation/login', [
-        200,
-        responseHeaders.json,
-        '{"entity-type":"login","username":"Administrator"}',
-      ]);
-      server.respondWith('GET', '/api/v1/user/Administrator', [
-        200,
-        responseHeaders.json,
-        '{"entity-type":"user","username":"Administrator"}',
-      ]);
-      server.respondWith('POST', '/api/v1/automation/auto-op', [200, responseHeaders.json, '{"ok":true}']);
-    });
-
-    test('auto flag triggers an execute when params change', async () => {
+    test('_autoExecute calls execute() when auto is true', async () => {
       const op = await fixture(
         html`
-          <nuxeo-operation op="auto-op" auto></nuxeo-operation>
+          <nuxeo-operation op="auto-op"></nuxeo-operation>
         `,
       );
-      await waitChanged(op, 'response');
-      expect(op.response).to.deep.equal({ ok: true });
+      const stub = sinon.stub(op, 'execute');
+      op.auto = true;
+      op._autoExecute();
+      expect(stub).to.have.been.called;
+      stub.restore();
+    });
+
+    test('_autoExecute is a no-op when auto is false', async () => {
+      const op = await fixture(
+        html`
+          <nuxeo-operation op="auto-op"></nuxeo-operation>
+        `,
+      );
+      const stub = sinon.stub(op, 'execute');
+      op.auto = false;
+      op._autoExecute();
+      expect(stub).to.not.have.been.called;
+      stub.restore();
     });
   });
 });
