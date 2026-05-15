@@ -84,9 +84,9 @@ suite('config', () => {
       expect(config.get('numberAsString', 0)).to.equal(42));
 
     test('coerces a string value to bigint when fallback is a bigint', () => {
-      const result = config.get('bigIntAsString', 0n);
+      const result = config.get('bigIntAsString', BigInt(0));
       expect(typeof result).to.equal('bigint');
-      expect(result).to.equal(9007199254740993n);
+      expect(result).to.equal(BigInt('9007199254740993'));
     });
 
     test('coerces a number value to string when fallback is a string', () =>
