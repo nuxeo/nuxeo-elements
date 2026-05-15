@@ -9,7 +9,6 @@ window.assert = assert;
 window.sinon = sinon;
 
 const _logIgnoredAsyncFailure = (label, info) => {
-   
   console.warn(`[test-setup] ignoring stray ${label} after test boundary:`, info);
 };
 
