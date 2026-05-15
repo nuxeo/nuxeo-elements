@@ -72,9 +72,13 @@ suite('nuxeo-video-conversions', () => {
     test('Should display an anchor tag when the video contains content', () => {
       const anchor = element.shadowRoot.querySelector('a');
       expect(isElementVisible(anchor)).to.be.true;
-      expect(anchor.href).to.equal(
-        `http://localhost:9876/${videoProperties['vid:transcodedVideos'][0].content.downloadUrl}`,
-      );
+      // Karma may run on 127.0.0.1 vs localhost and on a non-default port; resolve the expected
+      // href against the same origin the browser used so the test is location-agnostic.
+      const expected = new URL(
+        videoProperties['vid:transcodedVideos'][0].content.downloadUrl,
+        window.location.origin + '/',
+      ).href;
+      expect(anchor.href).to.equal(expected);
     });
 
     test('Should fetch download url when blob has downloadUrl property', () => {

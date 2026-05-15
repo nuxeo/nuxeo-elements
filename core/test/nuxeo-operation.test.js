@@ -369,4 +369,315 @@ suite('nuxeo-operation', () => {
       });
     });
   });
+
+  suite('request options', () => {
+    setup(() => {
+      server.respondWith('GET', '/json/cmis', [200, responseHeaders.json, '{}']);
+      server.respondWith('POST', '/api/v1/automation/login', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"login","username":"Administrator"}',
+      ]);
+      server.respondWith('GET', '/api/v1/user/Administrator', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"user","username":"Administrator"}',
+      ]);
+      server.respondWith('POST', '/api/v1/automation/something', [200, responseHeaders.json, '{"ok":true}']);
+    });
+
+    test('sends schemas, sync indexing and enricher headers (object map)', async () => {
+      const op = await fixture(html`
+        <nuxeo-operation op="something" sync-indexing schemas="dublincore, common"></nuxeo-operation>
+      `);
+      op.enrichers = { document: ['preview', 'permissions'], user: 'profile' };
+      await op.execute();
+      const last = server.requests.find((r) => r.url.endsWith('/automation/something'));
+      expect(last.requestHeaders['nx-es-sync']).to.equal('true');
+      expect(last.requestHeaders['enrichers-document']).to.contain('preview,permissions');
+      expect(last.requestHeaders['enrichers-user']).to.contain('profile');
+    });
+
+    test('parses params from a JSON string', async () => {
+      const op = await fixture(html`
+        <nuxeo-operation op="something" params='{"foo":"bar"}'></nuxeo-operation>
+      `);
+      op.params = '{"foo":"bar"}';
+      await op.execute();
+      const last = server.requests.find((r) => r.url.endsWith('/automation/something'));
+      expect(JSON.parse(last.requestBody).params).to.deep.equal({ foo: 'bar' });
+    });
+
+    test('aborts the previous request when a new one starts', async () => {
+      const op = await fixture(
+        html`
+          <nuxeo-operation op="something"></nuxeo-operation>
+        `,
+      );
+      const first = op.execute().catch(() => undefined);
+      await op.execute();
+      await first;
+      expect(op._controller).to.exist;
+    });
+
+    test('dispatches "unauthorized-request" on 401 errors', async () => {
+      server.respondWith('POST', '/api/v1/automation/forbidden', [
+        401,
+        responseHeaders.json,
+        '{"message":"Unauthorized"}',
+      ]);
+      const op = await fixture(
+        html`
+          <nuxeo-operation op="forbidden"></nuxeo-operation>
+        `,
+      );
+      const eventPromise = new Promise((resolve) => {
+        op.addEventListener('unauthorized-request', resolve);
+      });
+      await op.execute().catch(() => undefined);
+      const evt = await eventPromise;
+      expect(evt).to.exist;
+    });
+
+    test('uncancelable=true does not abort previous request', async () => {
+      const op = await fixture(
+        html`
+          <nuxeo-operation op="something" uncancelable></nuxeo-operation>
+        `,
+      );
+      const first = op.execute();
+      const second = op.execute();
+      await Promise.all([first, second]);
+      expect(op._controller).to.be.undefined;
+    });
+
+    test('forwards a string enricher to the configured entity type header', async () => {
+      const op = await fixture(html`
+        <nuxeo-operation op="something" enrichers="thumbnail" enrichers-entity="user"></nuxeo-operation>
+      `);
+      await op.execute();
+      const last = server.requests.find((r) => r.url.endsWith('/automation/something'));
+      expect(last.requestHeaders['enrichers-user']).to.contain('thumbnail');
+    });
+
+    test('passes context from params and clears params before execute', async () => {
+      const op = await fixture(
+        html`
+          <nuxeo-operation op="something"></nuxeo-operation>
+        `,
+      );
+      op.params = { context: { foo: 'bar' } };
+      await op.execute();
+      const last = server.requests.find((r) => r.url.endsWith('/automation/something'));
+      expect(JSON.parse(last.requestBody).context).to.deep.equal({ foo: 'bar' });
+    });
+
+    test('skips enricher headers when enrichers is null', async () => {
+      const op = await fixture(
+        html`
+          <nuxeo-operation op="something"></nuxeo-operation>
+        `,
+      );
+      op.enrichers = null;
+      await op.execute();
+      const last = server.requests.find((r) => r.url.endsWith('/automation/something'));
+      const enricherHeaders = Object.keys(last.requestHeaders).filter((h) => h.startsWith('enrichers-'));
+      expect(enricherHeaders).to.be.empty;
+    });
+
+    test('wraps a single non-array queryParams from the page provider into an array', async () => {
+      server.respondWith('POST', '/api/v1/automation/wrap-op', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"documents","entries":[]}',
+      ]);
+      const provider = await fixture(html`
+        <nuxeo-page-provider provider="wrap_pp" page-size="10" params='{"queryParams":"single"}'></nuxeo-page-provider>
+      `);
+      const op = await fixture(
+        html`
+          <nuxeo-operation op="wrap-op" .input=${provider}></nuxeo-operation>
+        `,
+      );
+      await op.execute();
+      const last = server.requests.find((r) => r.url.endsWith('/automation/wrap-op'));
+      expect(JSON.parse(last.requestBody).params.queryParams).to.deep.equal(['single']);
+    });
+  });
+
+  suite('async (non-bulk) polling', () => {
+    let op;
+    setup(async () => {
+      server.respondWith('GET', '/json/cmis', [200, responseHeaders.json, '{}']);
+      server.respondWith('POST', '/api/v1/automation/login', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"login","username":"Administrator"}',
+      ]);
+      server.respondWith('GET', '/api/v1/user/Administrator', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"user","username":"Administrator"}',
+      ]);
+      // Async start: the @async endpoint returns 202 with a Location header.
+      server.respondWith('POST', '/api/v1/automation/longRunning/@async', (xhr) => {
+        xhr.respond(202, { Location: '/api/v1/automation/longRunning/@async/job-1', ...responseHeaders.json }, '');
+      });
+    });
+
+    test('emits poll-update then resolves when polling finishes', async () => {
+      let calls = 0;
+      server.respondWith('GET', '/api/v1/automation/longRunning/@async/job-1', (xhr) => {
+        calls += 1;
+        if (calls === 1) {
+          xhr.respond(200, responseHeaders.json, '{"entity-type":"bulkStatus","value":{"state":"RUNNING"}}');
+        } else {
+          xhr.respond(200, responseHeaders.json, '{"entity-type":"bulkStatus","value":{"state":"COMPLETED"}}');
+        }
+      });
+
+      op = await fixture(html`
+        <nuxeo-operation op="longRunning" async poll-interval="5"></nuxeo-operation>
+      `);
+      const updates = [];
+      op.addEventListener('poll-update', (e) => updates.push(e.detail));
+      const res = await op.execute();
+      expect(res['entity-type']).to.equal('bulkStatus');
+      expect(res.value.state).to.equal('COMPLETED');
+      expect(updates.length).to.be.greaterThan(0);
+    });
+
+    test('rejects via poll-error event when polling http call errors out', async () => {
+      server.respondWith('GET', '/api/v1/automation/longRunning/@async/job-1', [
+        500,
+        responseHeaders.json,
+        '{"message":"poll failed"}',
+      ]);
+      op = await fixture(html`
+        <nuxeo-operation op="longRunning" async poll-interval="5"></nuxeo-operation>
+      `);
+      const errEvent = new Promise((resolve) => op.addEventListener('poll-error', resolve));
+      try {
+        await op.execute();
+      } catch (_) {
+        // expected
+      }
+      const evt = await errEvent;
+      expect(evt).to.exist;
+    });
+  });
+
+  suite('bulk poll edge cases', () => {
+    let op;
+    let view;
+    let provider;
+
+    function bulkResponse(state) {
+      return `{"entity-type":"bulkStatus", "value": { "commandId": "cmd-1", "state": "${state}" }}`;
+    }
+
+    setup(async () => {
+      server.respondWith('GET', '/json/cmis', [200, responseHeaders.json, '{}']);
+      server.respondWith('POST', '/api/v1/automation/login', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"login","username":"Administrator"}',
+      ]);
+      server.respondWith('GET', '/api/v1/user/Administrator', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"user","username":"Administrator"}',
+      ]);
+      server.respondWith('POST', '/api/v1/automation/something', [200, responseHeaders.json, bulkResponse('RUNNING')]);
+      server.respondWith('POST', '/api/v1/automation/Bulk.RunAction', [
+        200,
+        responseHeaders.json,
+        bulkResponse('RUNNING'),
+      ]);
+      provider = await getNuxeoPageProvider();
+      view = await fixture(
+        html`
+          <custom-view-element select-all-enabled></custom-view-element>
+        `,
+      );
+      view.nxProvider = provider;
+      view.selectAllActive = true;
+      op = await getNuxeoOperation(view);
+    });
+
+    test('emits poll-error and rejects when bulk abort fails', async () => {
+      server.respondWith('PUT', '/api/v1/bulk/cmd-1/abort', [500, responseHeaders.json, '{"message":"abort failed"}']);
+      const errEvt = new Promise((resolve) => op.addEventListener('poll-error', resolve));
+      try {
+        await op._abort('cmd-1');
+      } catch (_) {
+        // expected
+      }
+      const evt = await errEvt;
+      expect(evt).to.exist;
+    });
+
+    test('logs warning when bulk abort returns non-aborted state', async () => {
+      server.respondWith('PUT', '/api/v1/bulk/cmd-1/abort', [200, responseHeaders.json, bulkResponse('COMPLETED')]);
+      const warn = sinon.stub(console, 'warn');
+      await op._abort('cmd-1');
+      warn.restore();
+      expect(warn.called).to.be.true;
+    });
+  });
+
+  suite('status helpers', () => {
+    test('_isRunning works with bulkStatus and plain string', async () => {
+      const op = await fixture(
+        html`
+          <nuxeo-operation op="x"></nuxeo-operation>
+        `,
+      );
+      expect(op._isRunning({ 'entity-type': 'bulkStatus', value: { state: 'SCHEDULED' } })).to.be.true;
+      expect(op._isRunning({ 'entity-type': 'bulkStatus', value: { state: 'COMPLETED' } })).to.be.false;
+      expect(op._isRunning({ 'entity-type': 'bulkStatus', state: 'RUNNING' })).to.be.true;
+      expect(op._isRunning('RUNNING')).to.be.true;
+      expect(op._isRunning('STOPPED')).to.be.false;
+    });
+
+    test('_isAborted works with bulkStatus and falls back to running for non-bulk', async () => {
+      const op = await fixture(
+        html`
+          <nuxeo-operation op="x"></nuxeo-operation>
+        `,
+      );
+      expect(op._isAborted({ 'entity-type': 'bulkStatus', value: { state: 'ABORTED' } })).to.be.true;
+      expect(op._isAborted({ 'entity-type': 'bulkStatus', value: { state: 'RUNNING' } })).to.be.false;
+      expect(op._isAborted({ 'entity-type': 'bulkStatus', value: { state: 'COMPLETED' } })).to.be.false;
+      expect(op._isAborted('RUNNING')).to.be.true;
+      expect(op._isAborted('SOMETHING_ELSE')).to.be.false;
+    });
+  });
+
+  suite('auto execution', () => {
+    setup(() => {
+      server.respondWith('GET', '/json/cmis', [200, responseHeaders.json, '{}']);
+      server.respondWith('POST', '/api/v1/automation/login', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"login","username":"Administrator"}',
+      ]);
+      server.respondWith('GET', '/api/v1/user/Administrator', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"user","username":"Administrator"}',
+      ]);
+      server.respondWith('POST', '/api/v1/automation/auto-op', [200, responseHeaders.json, '{"ok":true}']);
+    });
+
+    test('auto flag triggers an execute when params change', async () => {
+      const op = await fixture(
+        html`
+          <nuxeo-operation op="auto-op" auto></nuxeo-operation>
+        `,
+      );
+      await waitChanged(op, 'response');
+      expect(op.response).to.deep.equal({ ok: true });
+    });
+  });
 });

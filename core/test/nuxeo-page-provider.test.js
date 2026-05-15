@@ -284,5 +284,221 @@ suite('nuxeo-page-provider', () => {
       expect(transformedParams.namedParameters.user).to.be.equal('jdoe');
       expect(transformedParams.namedParameters.document).to.be.equal('a-meaningless-uid');
     });
+
+    test('Should pass queryParams from params object through', async () => {
+      const provider = await fixture(html`
+        <nuxeo-page-provider id="nx-pp" params='{"queryParams": ["one", "two"]}'></nuxeo-page-provider>
+      `);
+      const transformedParams = provider._params;
+      expect(transformedParams.queryParams).to.deep.equal(['one', 'two']);
+    });
+
+    test('Should drop null/undefined named parameters', async () => {
+      const provider = await fixture(html`
+        <nuxeo-page-provider id="nx-pp" params='{"keep":"yes","drop":null}'></nuxeo-page-provider>
+      `);
+      const transformedParams = provider._params;
+      expect(transformedParams.namedParameters.keep).to.equal('yes');
+      expect(transformedParams.namedParameters).to.not.have.property('drop');
+    });
+
+    test('Should serialise an array of strings into a JSON string', async () => {
+      const provider = await fixture(html`
+        <nuxeo-page-provider id="nx-pp" params='{"plainArray":["a","b","c"]}'></nuxeo-page-provider>
+      `);
+      expect(provider._params.namedParameters.plainArray).to.equal('["a","b","c"]');
+    });
+
+    test('Should keep string parameters as-is', async () => {
+      const provider = await fixture(html`
+        <nuxeo-page-provider id="nx-pp" params='{"plain":"hello"}'></nuxeo-page-provider>
+      `);
+      expect(provider._params.namedParameters.plain).to.equal('hello');
+    });
+
+    test('Should map an array of entity-typed items by uid or id', async () => {
+      const params = {
+        docs: [
+          { 'entity-type': 'document', uid: 'with-uid' },
+          { 'entity-type': 'document', id: 'with-id' },
+          'leftAlone',
+        ],
+      };
+      const provider = await fixture(html`
+        <nuxeo-page-provider id="nx-pp" params="${JSON.stringify(params)}"></nuxeo-page-provider>
+      `);
+      expect(provider._params.namedParameters.docs).to.equal('["with-uid","with-id","leftAlone"]');
+    });
+
+    test('Should fall back to id when an entity-typed object has no uid', async () => {
+      const params = {
+        record: { 'entity-type': 'document', id: 'only-id' },
+      };
+      const provider = await fixture(html`
+        <nuxeo-page-provider id="nx-pp" params="${JSON.stringify(params)}"></nuxeo-page-provider>
+      `);
+      expect(provider._params.namedParameters.record).to.equal('only-id');
+    });
+
+    test('Should fetch via GET path when params is an array (no namedParameters branch)', async () => {
+      server.respondWith('GET', '/json/cmis', [200, responseHeaders.json, '{}']);
+      server.respondWith('POST', '/api/v1/automation/login', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"login","username":"Administrator"}',
+      ]);
+      server.respondWith('GET', '/api/v1/user/Administrator', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"user","username":"Administrator"}',
+      ]);
+      server.respondWith('GET', /\/api\/v1\/search\/pp\/array_pp\/execute.*/, [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"documents","entries":[]}',
+      ]);
+      const provider = await fixture(html`
+        <nuxeo-page-provider provider="array_pp" params='["x","y"]' page-size="10"></nuxeo-page-provider>
+      `);
+      const res = await provider.fetch();
+      expect(res['entity-type']).to.equal('documents');
+    });
+  });
+
+  suite('headers and aggregates', () => {
+    setup(() => {
+      server.respondWith('GET', '/json/cmis', [200, responseHeaders.json, '{}']);
+      server.respondWith('POST', '/api/v1/automation/login', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"login","username":"Administrator"}',
+      ]);
+      server.respondWith('GET', '/api/v1/user/Administrator', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"user","username":"Administrator"}',
+      ]);
+      server.respondWith('GET', /\/api\/v1\/search\/pp\/headers_pp\/execute.*/, [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"documents","entries":[]}',
+      ]);
+    });
+
+    test('skipAggregates=true sets the skipAggregates header', async () => {
+      const pp = await fixture(html`
+        <nuxeo-page-provider provider="headers_pp" skip-aggregates></nuxeo-page-provider>
+      `);
+      await pp.fetch();
+      const last = server.requests.find((r) => r.url.indexOf('/headers_pp/') >= 0);
+      expect(last.requestHeaders.skipAggregates).to.equal('true');
+    });
+
+    test('skipAggregates option overrides default and is removed when false', async () => {
+      const pp = await fixture(html`
+        <nuxeo-page-provider provider="headers_pp"></nuxeo-page-provider>
+      `);
+      await pp.fetch({ skipAggregates: true });
+      let last = server.requests.find((r) => r.url.indexOf('/headers_pp/') >= 0);
+      expect(last.requestHeaders.skipAggregates).to.equal('true');
+      // Reset and call again without skipAggregates - header should not be present
+      server.requests.length = 0;
+      await pp.fetch();
+      last = server.requests.find((r) => r.url.indexOf('/headers_pp/') >= 0);
+      expect(last.requestHeaders.skipAggregates).to.be.undefined;
+    });
+
+    test('fetchAggregates true sets the fetch-aggregate header and removes it when toggled off', async () => {
+      const pp = await fixture(html`
+        <nuxeo-page-provider provider="headers_pp" fetch-aggregates></nuxeo-page-provider>
+      `);
+      expect(pp.headers['fetch-aggregate']).to.equal('key');
+      pp.fetchAggregates = false;
+      expect(pp.headers['fetch-aggregate']).to.be.undefined;
+    });
+
+    test('fetch initialises headers when null', async () => {
+      const pp = await fixture(html`
+        <nuxeo-page-provider provider="headers_pp"></nuxeo-page-provider>
+      `);
+      pp.headers = null;
+      await pp.fetch();
+      expect(pp.headers).to.be.an('object');
+    });
+  });
+
+  suite('POST method via Repository operations', () => {
+    setup(() => {
+      server.respondWith('GET', '/json/cmis', [200, responseHeaders.json, '{}']);
+      server.respondWith('POST', '/api/v1/automation/login', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"login","username":"Administrator"}',
+      ]);
+      server.respondWith('GET', '/api/v1/user/Administrator', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"user","username":"Administrator"}',
+      ]);
+      server.respondWith('POST', '/api/v1/automation/Repository.PageProvider', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"documents","entries":[]}',
+      ]);
+      server.respondWith('POST', '/api/v1/automation/Repository.Query', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"documents","entries":[]}',
+      ]);
+    });
+
+    test('uses Repository.PageProvider when method is POST and provider is set', async () => {
+      const pp = await fixture(html`
+        <nuxeo-page-provider provider="post_provider" method="post"></nuxeo-page-provider>
+      `);
+      await pp.fetch();
+      const last = server.requests.find((r) => r.url.endsWith('/automation/Repository.PageProvider'));
+      expect(last).to.exist;
+      const body = JSON.parse(last.requestBody);
+      expect(body.params.providerName).to.equal('post_provider');
+    });
+
+    test('uses Repository.Query when method is POST and query is set', async () => {
+      const pp = await fixture(html`
+        <nuxeo-page-provider query="select * from Document" method="post"></nuxeo-page-provider>
+      `);
+      await pp.fetch();
+      const last = server.requests.find((r) => r.url.endsWith('/automation/Repository.Query'));
+      expect(last).to.exist;
+    });
+  });
+
+  suite('auto fetch', () => {
+    setup(() => {
+      server.respondWith('GET', '/json/cmis', [200, responseHeaders.json, '{}']);
+      server.respondWith('POST', '/api/v1/automation/login', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"login","username":"Administrator"}',
+      ]);
+      server.respondWith('GET', '/api/v1/user/Administrator', [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"user","username":"Administrator"}',
+      ]);
+      server.respondWith('GET', /\/api\/v1\/search\/pp\/auto_provider\/execute.*/, [
+        200,
+        responseHeaders.json,
+        '{"entity-type":"documents","entries":[]}',
+      ]);
+    });
+
+    test('auto flag triggers a fetch when provider is set', async () => {
+      await fixture(html`
+        <nuxeo-page-provider provider="auto_provider" auto auto-delay="0"></nuxeo-page-provider>
+      `);
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(server.requests.some((r) => r.url.indexOf('/auto_provider/') >= 0)).to.be.true;
+    });
   });
 });
