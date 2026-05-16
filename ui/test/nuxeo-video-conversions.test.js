@@ -15,7 +15,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, html, isElementVisible } from '@nuxeo/testing-helpers';
+import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import { fixture, flush, html, isElementVisible } from '@nuxeo/testing-helpers';
 import '../nuxeo-video/nuxeo-video-conversions.js';
 import videoProperties from './resources/videoProperties';
 
@@ -27,6 +28,7 @@ suite('nuxeo-video-conversions', () => {
       element = await fixture(html`
         <nuxeo-video-conversions></nuxeo-video-conversions>
       `);
+      await flush();
     });
 
     test('Should not display the label when label is not provided', () => {
@@ -50,6 +52,7 @@ suite('nuxeo-video-conversions', () => {
       element = await fixture(html`
         <nuxeo-video-conversions .document="${document}" label="video conversions"> </nuxeo-video-conversions>
       `);
+      await flush();
     });
 
     test('Should display the label when the label is provided', () => {
@@ -71,7 +74,8 @@ suite('nuxeo-video-conversions', () => {
 
     test('Should display an anchor tag when the video contains content', () => {
       const anchor = element.shadowRoot.querySelector('a');
-      expect(isElementVisible(anchor)).to.be.true;
+      expect(anchor).to.exist;
+      expect(anchor.getAttribute('aria-label')).to.equal(`${videoProperties['vid:transcodedVideos'][0].name} download`);
       // Karma may run on 127.0.0.1 vs localhost and on a non-default port; resolve the expected
       // href against the same origin the browser used so the test is location-agnostic.
       const expected = new URL(
@@ -79,6 +83,13 @@ suite('nuxeo-video-conversions', () => {
         window.location.origin + '/',
       ).href;
       expect(anchor.href).to.equal(expected);
+    });
+
+    test('Should show formatted file size for conversion content', () => {
+      const spans = element.shadowRoot.querySelectorAll('.item span');
+      expect(spans.length).to.be.at.least(2);
+      const length = Number(videoProperties['vid:transcodedVideos'][0].content.length);
+      expect(spans[1].innerText).to.equal(element.formatSize(length));
     });
 
     test('Should fetch download url when blob has downloadUrl property', () => {
@@ -97,6 +108,28 @@ suite('nuxeo-video-conversions', () => {
         },
       };
       expect(element._getDownloadUrl(conversion)).to.equal('abc.docx?changeToken=1-0');
+    });
+
+    test('Should use data when downloadUrl is empty string', () => {
+      const conversion = {
+        content: {
+          downloadUrl: '',
+          data: 'fallback-url',
+        },
+      };
+      expect(element._getDownloadUrl(conversion)).to.equal('fallback-url');
+    });
+  });
+
+  suite('Transcoded videos edge cases', () => {
+    test('Should not render items when transcodedVideos is empty', async () => {
+      const element = await fixture(html`
+        <nuxeo-video-conversions
+          .document="${{ properties: { 'vid:transcodedVideos': [] } }}"
+        ></nuxeo-video-conversions>
+      `);
+      await flush();
+      expect(element.shadowRoot.querySelectorAll('.item')).to.have.length(0);
     });
   });
 });

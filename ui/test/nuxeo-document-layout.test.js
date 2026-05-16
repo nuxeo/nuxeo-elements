@@ -84,9 +84,7 @@ suite('nuxeo-document-layout', () => {
     expect(documentLayout.$.layout.$.error.url).to.equal(documentLayout._href);
   };
 
-  // Skipped: the error-suppression in test/setup.js prevents importHref's 404 error callback
-  // from firing, so the layout never transitions to the error state. See WEBUI-2022.
-  test.skip('Should display an error when the layout is not found', async () => {
+  test('Should display an error when the layout is not found', async () => {
     documentLayout = await buildLayout(buildDoc(), 'metadata');
     assertNotFound();
   });
@@ -143,8 +141,7 @@ suite('nuxeo-document-layout', () => {
     expect(children[2].tagName).to.equal('DIV');
   });
 
-  // Skipped: switches to a doc type whose layout 404s; requires importHref error propagation.
-  test.skip('Should reload when document changes', async () => {
+  test('Should reload when document changes', async () => {
     documentLayout = await buildLayout();
     expect(documentLayout.element).to.exist;
     documentLayout.document = { type: 'File', uid: '12ae', properties: {} };
@@ -172,8 +169,7 @@ suite('nuxeo-document-layout', () => {
     expect(children[1].tagName).to.equal('NUXEO-INPUT');
   });
 
-  // Skipped: new href base causes 404; requires importHref error propagation.
-  test.skip('Should reload when href base changes', async () => {
+  test('Should reload when href base changes', async () => {
     documentLayout = await buildLayout();
     expect(documentLayout.element).to.exist;
     documentLayout.hrefBase = `${base}/layout/`;

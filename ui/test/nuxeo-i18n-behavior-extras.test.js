@@ -8,6 +8,8 @@ You may obtain a copy of the License at
 
     http://www.apache.org/licenses/LICENSE-2.0
 */
+import '../nuxeo-i18n-behavior.js';
+
 suite('Nuxeo.I18nBehavior extras', () => {
   let origLang;
   let origTranslate;
