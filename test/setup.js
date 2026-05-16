@@ -8,8 +8,13 @@
  * Unlike blanket suppression, we only swallow failures when Mocha is not executing a
  * test, plus a small allowlist of known benign errors that can occur during a test.
  * Real regressions during an active test still fail the suite.
+ *
+ * Coverage: in coverage runs, suiteTeardown bulk-imports paths from coverage-imports-data.js
+ * (see scripts/generate-coverage-imports.js) so files never touched by tests still appear
+ * in Istanbul reports at 0%, matching SonarQube.
  */
 import { expect, assert, use } from 'chai';
+import { coverageModulePaths } from './coverage-imports-data.js';
 import sinonChai from 'sinon-chai';
 import sinon from 'sinon';
 
@@ -230,3 +235,53 @@ if (typeof window.__karma__ !== 'undefined' && !window.__karma__.__nuxeoStrayPat
   };
   window.__karma__.__nuxeoStrayPatched = true;
 }
+
+const _coveragePathIsRecorded = (posixPath, coverageKeys) => {
+  if (coverageKeys.has(posixPath)) {
+    return true;
+  }
+  for (const key of coverageKeys) {
+    if (key === posixPath || key.endsWith(`/${posixPath}`)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+// Coverage-only: load product modules not already hit by tests (see file header).
+suiteTeardown(async function coverageMaterializationTeardown() {
+  if (typeof window.__coverage__ === 'undefined') {
+    return;
+  }
+
+  if (!Array.isArray(coverageModulePaths) || coverageModulePaths.length === 0) {
+    expect.fail('test/coverage-imports-data.js has no paths. Run: npm run update-coverage-imports (or npm test).');
+  }
+
+  const coveragePackage =
+    (window.__karma__ && window.__karma__.config && window.__karma__.config.coveragePackage) || 'core';
+  const prefix = `${coveragePackage}/`;
+
+  this.timeout(0);
+  const root = new URL('../', import.meta.url);
+  const coverageKeys = new Set(Object.keys(window.__coverage__));
+  const toLoad = coverageModulePaths.filter((p) => p.startsWith(prefix) && !_coveragePathIsRecorded(p, coverageKeys));
+  const failures = [];
+
+  await Promise.all(
+    toLoad.map((p) => {
+      const href = new URL(p, root).href;
+      return import(href).catch((err) => {
+        failures.push({ specifier: p, err });
+      });
+    }),
+  );
+
+  if (failures.length > 0) {
+    const message = failures.map((f) => `${f.specifier}: ${f.err && f.err.message ? f.err.message : f.err}`).join('\n');
+    console.error(
+      `coverage materialization: ${failures.length} of ${toLoad.length} modules failed to load:\n${message}`,
+    );
+    expect(failures, 'every product module should load in the test environment').to.have.length(0);
+  }
+});
