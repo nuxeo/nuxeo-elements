@@ -145,7 +145,7 @@ window.addEventListener(
   'unhandledrejection',
   (event) => {
     const reason = event.reason;
-    const message = _messageText(reason && reason.message ? reason : reason);
+    const message = _messageText(reason);
     _suppressEvent('unhandledrejection', message, event);
   },
   true,
