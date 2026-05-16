@@ -44,7 +44,7 @@ suite('RoutingBehavior extras', () => {
       expect(result).to.equal('/nuxeo/ui/browse');
     });
 
-    test('does not double-slash when path starts with /', () => {
+    test('joins base and path without extra separator when both have slashes', () => {
       router.useHashbang = false;
       const result = ctx._generateUrl('/nuxeo/ui/', '/browse');
       expect(result).to.equal('/nuxeo/ui//browse');

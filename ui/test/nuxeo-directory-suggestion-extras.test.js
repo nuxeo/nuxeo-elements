@@ -117,10 +117,11 @@ suite('nuxeo-directory-suggestion extras', () => {
     });
 
     test('uses lang from nuxeo.I18n.language', () => {
+      const origLang = window.nuxeo.I18n.language;
       window.nuxeo.I18n.language = 'fr';
       const result = el._computeParams();
       expect(result.lang).to.equal('fr');
-      window.nuxeo.I18n.language = 'en';
+      window.nuxeo.I18n.language = origLang;
     });
 
     test('defaults lang to en when language is null', () => {
