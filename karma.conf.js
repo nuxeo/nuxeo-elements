@@ -135,10 +135,12 @@ module.exports = (config) => {
       reports: ['html', 'lcovonly', 'text-summary'],
       dir: path.join(__dirname, 'coverage', config.package),
       combineBrowserReports: true,
-      skipFilesWithNoCoverage: true,
+      // Keep 0%-hit files in reports so local HTML/LCOV align with SonarQube source scope.
+      skipFilesWithNoCoverage: false,
     },
 
     client: {
+      coveragePackage: config.package || 'core',
       mocha: {
         reporter: 'html',
         ui: 'tdd',
