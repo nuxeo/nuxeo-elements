@@ -31,7 +31,9 @@ function getNativeInput(el) {
   const paperInput = getPaperInput(el);
   return (
     (paperInput.inputElement && paperInput.inputElement._inputElement) ||
-    (paperInput.inputElement && paperInput.inputElement.querySelector && paperInput.inputElement.querySelector('input')) ||
+    (paperInput.inputElement &&
+      paperInput.inputElement.querySelector &&
+      paperInput.inputElement.querySelector('input')) ||
     (paperInput.shadowRoot && paperInput.shadowRoot.querySelector('input'))
   );
 }
