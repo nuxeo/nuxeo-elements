@@ -72,6 +72,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
           name="[[name]]"
           value="{{value}}"
           placeholder$="[[placeholder]]"
+          aria-label$="[[_computeAriaLabel(label, placeholder)]]"
           error-message="[[errorMessage]]"
           autofocus$="[[autofocus]]"
           readonly$="[[readonly]]"
@@ -101,7 +102,10 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
         /**
          * Label.
          */
-        label: String,
+        label: {
+          type: String,
+          observer: '_syncNativeInputAriaLabel',
+        },
 
         /**
          * Type.
@@ -124,7 +128,10 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
         /**
          * Placeholder.
          */
-        placeholder: String,
+        placeholder: {
+          type: String,
+          observer: '_syncNativeInputAriaLabel',
+        },
 
         /**
          * Error message to show when `invalid` is true.
@@ -216,9 +223,71 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       this.$.paperInput.focus();
     }
 
+    ready() {
+      super.ready();
+      // Re-sync once the inner native <input> is actually wired up by iron-input;
+      // before that event the aria-labelledby we need to clear may not be present.
+      if (this.$ && this.$.paperInput) {
+        this.$.paperInput.addEventListener('iron-input-ready', () => this._syncNativeInputAriaLabel());
+      }
+      this._syncNativeInputAriaLabel();
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      this._syncNativeInputAriaLabel();
+    }
+
     /* Override method from Polymer.IronValidatableBehavior. */
     _getValidity() {
       return this.$.paperInput.validate();
+    }
+
+    _computeAriaLabel(label, placeholder) {
+      const normalizedLabel = (label || '').trim();
+      if (normalizedLabel) {
+        return normalizedLabel;
+      }
+      const normalizedPlaceholder = (placeholder || '').trim();
+      return normalizedPlaceholder || null;
+    }
+
+    _syncNativeInputAriaLabel() {
+      // paper-input wraps a native input; keep both in sync for AT compatibility.
+      setTimeout(() => {
+        const paperInput = this.$ && this.$.paperInput;
+        if (!paperInput) {
+          return;
+        }
+
+        const ariaLabel = this._computeAriaLabel(this.label, this.placeholder);
+        if (ariaLabel) {
+          paperInput.setAttribute('aria-label', ariaLabel);
+        } else {
+          paperInput.removeAttribute('aria-label');
+        }
+
+        let nativeInput =
+          (paperInput.inputElement && paperInput.inputElement._inputElement) || paperInput.$.nativeInput;
+        if (!nativeInput && paperInput.inputElement) {
+          // iron-input wraps the native input in its light DOM
+          nativeInput = paperInput.inputElement.querySelector && paperInput.inputElement.querySelector('input');
+        }
+        if (!nativeInput && paperInput.shadowRoot) {
+          nativeInput = paperInput.shadowRoot.querySelector('input');
+        }
+        if (nativeInput) {
+          if (ariaLabel) {
+            nativeInput.setAttribute('aria-label', ariaLabel);
+          } else {
+            nativeInput.removeAttribute('aria-label');
+          }
+          // paper-input binds aria-labelledby to its own internal (empty) <label>,
+          // which would otherwise win over aria-label and leave the field unnamed
+          // for assistive technologies. Drop it so our aria-label is announced.
+          nativeInput.removeAttribute('aria-labelledby');
+        }
+      }, 0);
     }
   }
 

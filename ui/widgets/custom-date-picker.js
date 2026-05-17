@@ -44,6 +44,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         ariaLabelledby: {
           type: String,
         },
+        // Forwarded aria-label to internal input for SRs (works across shadow roots,
+        // unlike aria-labelledby which cannot reference IDs in a different shadow tree)
+        ariaLabel: {
+          type: String,
+        },
         // Optional name forwarding to internal input (helps with form autofill/AT)
         name: {
           type: String,
@@ -1084,6 +1089,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               aria-invalid$="[[invalid]]"
               aria-describedby$="[[_getAriaDescribedBy(invalid, errorMessage)]]"
               aria-labelledby$="[[ariaLabelledby]]"
+              aria-label$="[[ariaLabel]]"
               aria-expanded$="[[_isCalendarOpen]]"
               aria-haspopup="grid"
               autocomplete="off"
@@ -1146,6 +1152,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           <!-- Modal backdrop + calendar: wrapped for Popover API top layer (WEBUI-1986 / iron-list transform) -->
           <div id="calendarOverlay" class="calendar-overlay-container" popover="manual">
+            <!-- Modal backdrop for calendar popover -->
             <div class="calendar-backdrop" id="calendarBackdrop" on-click="_closeCalendar"></div>
 
             <div
@@ -1333,7 +1340,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           try {
             const formatToUse = this.format ? this.format : moment.localeData().longDateFormat('L');
 
-            const date = this._moment(text, formatToUse, true); //strict parsing
+            const date = this._moment(text, formatToUse, true); // strict parsing
 
             if (date.isValid()) {
               return {
@@ -3309,11 +3316,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Use moment.js for reliable parsing
         const effectiveFormat = format || this.format || moment.localeData().longDateFormat('L');
 
-        const momentDate = this._moment(inputValue, effectiveFormat, true); //strict parsing
+        const momentDate = this._moment(inputValue, effectiveFormat, true); // strict parsing
 
         if (momentDate.isValid()) {
           const jsDate = momentDate.toDate();
-          jsDate.setHours(0, 0, 0, 0); //Normalize to start of day
+          jsDate.setHours(0, 0, 0, 0); // Normalize to start of day
           return jsDate;
         }
 
@@ -4575,6 +4582,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         });
       }
     }
+
     _isValidMomentFormat(format) {
       if (!format || typeof format !== 'string') return false;
 
@@ -4742,9 +4750,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         e.stopPropagation();
         moveWithinOptions(10);
       } else if (e.key === 'Escape') {
-        e.preventDefault();
-        e.stopPropagation();
-        this._closeYearDropdown();
+        // Only consume Escape when the year-options panel is actually open so
+        // it just collapses the dropdown. Otherwise let the event bubble up so
+        // the popover/document Escape handlers can close the whole calendar
+        // (which is the focused element when the calendar is opened via keyboard).
+        if (this._isYearDropdownOpen) {
+          e.preventDefault();
+          e.stopPropagation();
+          this._closeYearDropdown();
+        }
       } else if (e.key === 'Tab') {
         // Close dropdown when user tabs away
         this._closeYearDropdown();

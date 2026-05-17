@@ -200,7 +200,6 @@ suite('custom-date-picker', () => {
       expect(el._isValidDate(mid)).to.equal(true);
       expect(el._isValidDate(before)).to.equal(false);
       expect(el._isValidDate(after)).to.equal(false);
-
       const bad = el._validateDate(before);
       expect(bad.isValid).to.equal(false);
       expect(bad.errorReason).to.equal('outOfRange');
@@ -364,6 +363,97 @@ suite('custom-date-picker', () => {
           el._closeCalendar();
         }
       }
+    });
+  });
+});
+
+// Covers the staged changes in ui/widgets/custom-date-picker.js:
+//   - new `ariaLabel` property forwarded to the inner <input id="dateInput">
+//     (aria-labelledby cannot resolve IDs across shadow boundaries).
+//   - Escape inside _handleYearDropdownKeydown now only stops propagation when
+//     the year-options panel is actually open; otherwise the event bubbles up
+//     so the popover/document Escape handlers can close the whole calendar.
+suite('custom-date-picker accessibility', () => {
+  suite('ariaLabel forwarding', () => {
+    test('forwards the ariaLabel property to the inner input as aria-label', async () => {
+      const el = await fixture(html`
+        <custom-date-picker aria-label="Created at"></custom-date-picker>
+      `);
+      await flush();
+
+      expect(getDateInput(el).getAttribute('aria-label')).to.equal('Created at');
+    });
+
+    test('updates the inner input aria-label when the property changes', async () => {
+      const el = await fixture(html`
+        <custom-date-picker aria-label="Initial"></custom-date-picker>
+      `);
+      await flush();
+      expect(getDateInput(el).getAttribute('aria-label')).to.equal('Initial');
+
+      el.ariaLabel = 'Updated';
+      await flush();
+
+      expect(getDateInput(el).getAttribute('aria-label')).to.equal('Updated');
+    });
+
+    test('does not set aria-label on the inner input when not provided', async () => {
+      const el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+
+      // Polymer drops the attribute when the bound property is empty/null.
+      const value = getDateInput(el).getAttribute('aria-label');
+      expect(value === null || value === '').to.be.true;
+    });
+  });
+
+  suite('Escape inside year-dropdown keydown handler', () => {
+    let el;
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+    });
+
+    function makeEscapeEvent() {
+      let prevented = false;
+      let propagationStopped = false;
+      return {
+        key: 'Escape',
+        preventDefault() {
+          prevented = true;
+        },
+        stopPropagation() {
+          propagationStopped = true;
+        },
+        wasPrevented: () => prevented,
+        wasPropagationStopped: () => propagationStopped,
+      };
+    }
+
+    test('does NOT consume Escape when the year-options panel is closed (so it can bubble and close the calendar)', () => {
+      el._isYearDropdownOpen = false;
+      const event = makeEscapeEvent();
+
+      el._handleYearDropdownKeydown(event);
+
+      expect(event.wasPrevented()).to.be.false;
+      expect(event.wasPropagationStopped()).to.be.false;
+    });
+
+    test('consumes Escape and closes the dropdown when the year-options panel is open', () => {
+      el._isYearDropdownOpen = true;
+      const event = makeEscapeEvent();
+
+      el._handleYearDropdownKeydown(event);
+
+      expect(event.wasPrevented()).to.be.true;
+      expect(event.wasPropagationStopped()).to.be.true;
+      expect(el._isYearDropdownOpen).to.be.false;
     });
   });
 });
