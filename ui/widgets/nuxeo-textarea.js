@@ -71,6 +71,7 @@ import '@polymer/paper-input/paper-textarea.js';
           name="[[name]]"
           value="{{value}}"
           rows$="[[rows]]"
+          aria-label$="[[_computeAriaLabel(label, placeholder)]]"
           required$="[[required]]"
           disabled$="[[disabled]]"
           readonly$="[[readonly]]"
@@ -93,7 +94,10 @@ import '@polymer/paper-input/paper-textarea.js';
         /**
          * Label.
          */
-        label: String,
+        label: {
+          type: String,
+          observer: '_syncNativeTextareaAriaLabel',
+        },
 
         /**
          * Name.
@@ -116,7 +120,10 @@ import '@polymer/paper-input/paper-textarea.js';
         /**
          * Placeholder.
          */
-        placeholder: String,
+        placeholder: {
+          type: String,
+          observer: '_syncNativeTextareaAriaLabel',
+        },
 
         /**
          * Error message to show when `invalid` is true.
@@ -164,6 +171,63 @@ import '@polymer/paper-input/paper-textarea.js';
     /* Override method from Polymer.IronValidatableBehavior. */
     _getValidity() {
       return this.$.paperTextarea.validate();
+    }
+
+    ready() {
+      super.ready();
+      // Re-sync once iron-autogrow-textarea reports its inner native <textarea>
+      // is wired up; before that the aria-labelledby we need to clear may not exist.
+      if (this.$ && this.$.paperTextarea) {
+        this.$.paperTextarea.addEventListener('iron-input-ready', () => this._syncNativeTextareaAriaLabel());
+      }
+      this._syncNativeTextareaAriaLabel();
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      this._syncNativeTextareaAriaLabel();
+    }
+
+    _computeAriaLabel(label, placeholder) {
+      const normalizedLabel = (label || '').trim();
+      if (normalizedLabel) {
+        return normalizedLabel;
+      }
+      const normalizedPlaceholder = (placeholder || '').trim();
+      return normalizedPlaceholder || null;
+    }
+
+    _syncNativeTextareaAriaLabel() {
+      // paper-textarea wraps a native textarea; keep both in sync for AT compatibility.
+      setTimeout(() => {
+        const paperTextarea = this.$ && this.$.paperTextarea;
+        if (!paperTextarea) {
+          return;
+        }
+
+        const ariaLabel = this._computeAriaLabel(this.label, this.placeholder);
+        if (ariaLabel) {
+          paperTextarea.setAttribute('aria-label', ariaLabel);
+        } else {
+          paperTextarea.removeAttribute('aria-label');
+        }
+
+        let nativeTextarea = paperTextarea.shadowRoot && paperTextarea.shadowRoot.querySelector('textarea');
+        if (!nativeTextarea && paperTextarea.$ && paperTextarea.$.input && paperTextarea.$.input.textarea) {
+          nativeTextarea = paperTextarea.$.input.textarea;
+        }
+        if (nativeTextarea) {
+          if (ariaLabel) {
+            nativeTextarea.setAttribute('aria-label', ariaLabel);
+          } else {
+            nativeTextarea.removeAttribute('aria-label');
+          }
+          // paper-textarea binds aria-labelledby on the inner textarea to its own
+          // internal (empty) <label>, which would otherwise win over aria-label
+          // and leave the field unnamed for assistive technologies.
+          nativeTextarea.removeAttribute('aria-labelledby');
+        }
+      }, 0);
     }
   }
 
