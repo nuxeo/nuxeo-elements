@@ -228,4 +228,27 @@ suite('nuxeo-audit-page-provider', () => {
       });
     });
   });
+
+  suite('Auto fetch', () => {
+    test('auto triggers fetch on doc-id change', async () => {
+      mockDocHistoryResponse();
+      const provider = await fixture(html`
+        <nuxeo-audit-page-provider auto auto-delay="0" page-size="40"></nuxeo-audit-page-provider>
+      `);
+      const updateEvt = waitForEvent(provider, 'update');
+      provider.docId = documentId;
+      await updateEvt;
+      const last = server.getLastRequest('GET', documentHistoryPath);
+      expect(last).to.exist;
+    });
+  });
+
+  suite('_stringifyJSONObject', () => {
+    test('returns null when input is null', async () => {
+      const provider = await fixture(html`
+        <nuxeo-audit-page-provider doc-id="ignored"></nuxeo-audit-page-provider>
+      `);
+      expect(provider._stringifyJSONObject(null)).to.be.null;
+    });
+  });
 });
