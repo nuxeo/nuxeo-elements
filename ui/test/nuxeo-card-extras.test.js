@@ -49,13 +49,13 @@ suite('nuxeo-card extras', () => {
     });
   });
 
-  suite('_getHeadingTabIndex', () => {
+  suite('_getHeadingTabindex', () => {
     test('returns "0" for collapsible cards', () => {
-      expect(el._getHeadingTabIndex(true)).to.equal('0');
+      expect(el._getHeadingTabindex(true)).to.equal('0');
     });
 
     test('returns "-1" for non-collapsible cards', () => {
-      expect(el._getHeadingTabIndex(false)).to.equal('-1');
+      expect(el._getHeadingTabindex(false)).to.equal('-1');
     });
   });
 
