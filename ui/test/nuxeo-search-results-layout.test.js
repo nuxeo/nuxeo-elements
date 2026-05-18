@@ -43,6 +43,22 @@ suite('nuxeo-search-results-layout', () => {
   let searchResultsLayout;
   const baseUrl = `${base}/layouts/search/`;
 
+  const waitForLayoutOrError = (layoutEl, timeout = 2500) =>
+    Promise.race([
+      waitForLayoutLoad(layoutEl),
+      new Promise((resolve) => {
+        const check = () => {
+          if (layoutEl.element || (layoutEl.$.error && !layoutEl.$.error.hidden)) {
+            resolve();
+          } else {
+            setTimeout(check, 50);
+          }
+        };
+        check();
+        setTimeout(resolve, timeout);
+      }),
+    ]);
+
   const buildLayout = async (searchName = 'test') => {
     const sl = await fixture(
       html`
@@ -50,7 +66,7 @@ suite('nuxeo-search-results-layout', () => {
       `,
     );
     if (!sl.element) {
-      await waitForLayoutLoad(sl.$.results);
+      await waitForLayoutOrError(sl.$.results);
     }
     await flush();
     return sl;

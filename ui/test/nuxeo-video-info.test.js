@@ -15,7 +15,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, html, isElementVisible } from '@nuxeo/testing-helpers';
+import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import { fixture, flush, html, isElementVisible } from '@nuxeo/testing-helpers';
 import '../nuxeo-video/nuxeo-video-info.js';
 import videoProperties from './resources/videoProperties';
 
@@ -32,6 +33,7 @@ suite('nuxeo-video-info', () => {
     element = await fixture(html`
       <nuxeo-video-info .document="${document}"></nuxeo-video-info>
     `);
+    await flush();
     const items = element.shadowRoot.querySelectorAll('.item div');
     const labels = element.shadowRoot.querySelectorAll('.item label');
     expect(isElementVisible(items[0])).to.be.true;
@@ -55,6 +57,7 @@ suite('nuxeo-video-info', () => {
     element = await fixture(html`
       <nuxeo-video-info></nuxeo-video-info>
     `);
+    await flush();
     const items = element.shadowRoot.querySelectorAll('.item div');
     const labels = element.shadowRoot.querySelectorAll('.item label');
     expect(isElementVisible(labels[0])).to.be.true;
@@ -67,5 +70,17 @@ suite('nuxeo-video-info', () => {
     expect(items[3].innerText).to.be.empty;
     expect(isElementVisible(labels[4])).to.be.true;
     expect(items[4].innerText).to.be.empty;
+  });
+
+  test('Should show empty values when document has no vid:info', async () => {
+    element = await fixture(html`
+      <nuxeo-video-info .document="${{ properties: {} }}"></nuxeo-video-info>
+    `);
+    await flush();
+    const items = element.shadowRoot.querySelectorAll('.item div');
+    expect(items).to.have.length(5);
+    items.forEach((item) => {
+      expect(item.innerText).to.be.empty;
+    });
   });
 });

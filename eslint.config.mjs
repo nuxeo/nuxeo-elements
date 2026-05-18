@@ -133,13 +133,15 @@ export default [
 
   // Test files
   {
-    files: ['**/*.test.js'],
+    files: ['**/*.test.js', 'test/setup.js'],
     languageOptions: {
       globals: {
         ...globals.mocha,
         assert: 'readonly',
         expect: 'readonly',
         sinon: 'readonly',
+        suiteTeardown: 'readonly',
+        suiteSetup: 'readonly',
       },
     },
     rules: {
@@ -160,7 +162,7 @@ export default [
 
   // CommonJS config files (Node.js context)
   {
-    files: ['karma.conf.js', 'prettier.config.js'],
+    files: ['karma.conf.js', 'prettier.config.js', 'scripts/**/*.js'],
     languageOptions: {
       sourceType: 'commonjs',
       globals: {
