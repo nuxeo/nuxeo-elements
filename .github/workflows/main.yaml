@@ -46,39 +46,39 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: [lint, test, storybook, sonar]
+    needs: [ lint, test, storybook, sonar ]
     steps:
-      - uses: actions/checkout@v6
+    - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
-          scope: '@nuxeo'
+    - uses: actions/setup-node@v6
+      with:
+        node-version: 22
+        registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
+        scope: '@nuxeo'
 
-      - name: Prepare environment
-        run: |
-          git config user.name "nuxeo-webui-jx-bot" && git config user.email "webui@hyland.com"
-          echo "PACKAGE_VERSION=$(npx -c 'echo "$npm_package_version"')" >> $GITHUB_ENV
+    - name: Prepare environment
+      run: |
+        git config user.name "nuxeo-webui-jx-bot" && git config user.email "webui@hyland.com"
+        echo "PACKAGE_VERSION=$(npx -c 'echo "$npm_package_version"')" >> $GITHUB_ENV
 
-      - name: Get prerelease version
-        run: |
-          git fetch origin --tags
-          RC_VERSION=$(git tag --sort=taggerdate --list "v${PACKAGE_VERSION/-SNAPSHOT}*" | tail -1 | tr -d '\n')
-          echo "VERSION=$(npx semver -i prerelease --preid rc ${RC_VERSION:-$PACKAGE_VERSION}  | tr -d '\n')" >> $GITHUB_ENV
+    - name: Get prerelease version
+      run: |
+        git fetch origin --tags
+        RC_VERSION=$(git tag --sort=taggerdate --list "v${PACKAGE_VERSION/-SNAPSHOT}*" | tail -1 | tr -d '\n')
+        echo "VERSION=$(npx semver -i prerelease --preid rc ${RC_VERSION:-$PACKAGE_VERSION}  | tr -d '\n')" >> $GITHUB_ENV
 
-      - name: Set version to ${{ env.VERSION }}
-        run: |
-          npm version $VERSION --no-git-tag-version
-          npx ${{ env.LERNA }} version $VERSION --no-push --force-publish --no-git-tag-version --yes
+    - name: Set version to ${{ env.VERSION }}
+      run: |
+        npm version $VERSION --no-git-tag-version
+        npx ${{ env.LERNA }} version $VERSION --no-push --force-publish --no-git-tag-version --yes
 
-      - name: Tag
-        run: |
-          git commit -a -m "Release ${VERSION}"
-          git tag -a v${VERSION} -m "Release ${VERSION}"
-          git push origin v${VERSION}
+    - name: Tag
+      run: |
+        git commit -a -m "Release ${VERSION}"
+        git tag -a v${VERSION} -m "Release ${VERSION}"
+        git push origin v${VERSION}
 
-      - name: Publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-        run: npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --tag SNAPSHOT
+    - name: Publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+      run: npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --tag SNAPSHOT
