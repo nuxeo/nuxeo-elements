@@ -43,7 +43,7 @@ jobs:
           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
 
       - name: Run git config
-        run: git config user.name "nuxeo-elements-jx-bot" && git config user.email "elements@hyland.com"
+        run: git config user.name "nuxeo-webui-jx-bot" && git config user.email "webui@hyland.com"
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -107,11 +107,11 @@ jobs:
             -Dsonar.scm.revision=${{ github.sha }}
             -Dsonar.qualitygate.wait=true
             ${{ github.event_name == 'pull_request' &&
-              format('-Dsonar.pullrequest.key={0} -Dsonar.pullrequest.branch={1} -Dsonar.pullrequest.base={2}',
-                github.event.pull_request.number,
-                github.event.pull_request.head.ref,
-                github.event.pull_request.base.ref)
-              || format('-Dsonar.branch.name={0}', steps.project_meta.outputs.branch) }}
+            format('-Dsonar.pullrequest.key={0} -Dsonar.pullrequest.branch={1} -Dsonar.pullrequest.base={2}',
+            github.event.pull_request.number,
+            github.event.pull_request.head.ref,
+            github.event.pull_request.base.ref)
+            || format('-Dsonar.branch.name={0}', steps.project_meta.outputs.branch) }}
 
       - name: Enforce Quality Gate
         # Fails if sonar scan was skipped (e.g. prior step failed) or gate not passed.
