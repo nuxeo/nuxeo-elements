@@ -434,6 +434,10 @@ suite('custom-date-picker', () => {
 //   - Escape inside _handleYearDropdownKeydown now only stops propagation when
 //     the year-options panel is actually open; otherwise the event bubbles up
 //     so the popover/document Escape handlers can close the whole calendar.
+function getDateInput(el) {
+  return el.shadowRoot.querySelector('#dateInput');
+}
+
 suite('custom-date-picker accessibility', () => {
   suite('ariaLabel forwarding', () => {
     test('forwards the ariaLabel property to the inner input as aria-label', async () => {
