@@ -48,11 +48,24 @@ suite('nuxeo-task-page-provider', () => {
       test('Should fire "error" event when server returns fetch error', async () => {
         server.rejectWith('get', '/api/v1/task');
 
-        pageProvider.fetch();
-        const event = await waitForEvent(pageProvider, 'error');
-        expect(event.detail)
+        let capturedEvent = null;
+        const origDispatch = pageProvider.dispatchEvent.bind(pageProvider);
+        sinon.stub(pageProvider, 'dispatchEvent').callsFake((e) => {
+          if (e.type === 'error') {
+            capturedEvent = e;
+          }
+          return origDispatch(e);
+        });
+        try {
+          await pageProvider.fetch();
+        } catch (_) {
+          // expected rejection
+        }
+        expect(capturedEvent).to.not.be.null;
+        expect(capturedEvent.detail)
           .to.exist.and.to.have.property('error')
           .that.is.an.instanceof(Error);
+        pageProvider.dispatchEvent.restore();
       });
 
       test('Should throw an error when server returns fetch error', async () => {
@@ -165,6 +178,18 @@ suite('nuxeo-task-page-provider', () => {
         expect(request.queryParams.myBoolean).to.be.equal('false');
       });
 
+      test('Should map array members with entity-type to their uid/id', async () => {
+        const params = {
+          users: [{ 'entity-type': 'user', uid: 'u1' }, { 'entity-type': 'user', id: 'u2' }, 'plainString'],
+        };
+        const pageProvider = await fixture(html`
+          <nuxeo-task-page-provider params="${JSON.stringify(params)}"></nuxeo-task-page-provider>
+        `);
+        await pageProvider.fetch();
+        const request = server.getLastRequest('get', '/api/v1/task');
+        expect(request.queryParams.users).to.equal('["u1","u2","plainString"]');
+      });
+
       test('Should include the ID when a parameter is an object with "entity-type"', async () => {
         const params = {
           user: {
@@ -189,6 +214,25 @@ suite('nuxeo-task-page-provider', () => {
         assertBaseRequest(request);
         expect(request.queryParams.user).to.be.equal('jdoe');
         expect(request.queryParams.document).to.be.equal('a-meaningless-uid');
+      });
+
+      test('initialises headers when null', async () => {
+        const pageProvider = await fixture(html`
+          <nuxeo-task-page-provider></nuxeo-task-page-provider>
+        `);
+        pageProvider.headers = null;
+        await pageProvider.fetch();
+        expect(pageProvider.headers).to.be.an('object');
+      });
+
+      test('auto fetches when enabled', async () => {
+        const pageProvider = await fixture(html`
+          <nuxeo-task-page-provider auto auto-delay="0"></nuxeo-task-page-provider>
+        `);
+        await new Promise((resolve) => setTimeout(resolve, 30));
+        const request = server.getLastRequest('get', '/api/v1/task');
+        expect(request).to.exist;
+        expect(pageProvider.page).to.equal(1);
       });
     });
   });

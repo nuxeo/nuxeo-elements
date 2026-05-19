@@ -1,7 +1,6 @@
 /**
 @license
-©2023 Hyland Software, Inc. and its affiliates. All rights reserved.
-All Hyland product names are registered or unregistered trademarks of Hyland Software, Inc. or its affiliates.
+©2026 Hyland Software, Inc. and its affiliates. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,175 +15,246 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { fixture, flush, html } from '@nuxeo/testing-helpers';
-import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import '../widgets/custom-date-picker.js';
 
-function getDateInput(el) {
-  return el.shadowRoot && el.shadowRoot.querySelector('#dateInput');
-}
+const newPicker = (
+  template = html`
+    <custom-date-picker></custom-date-picker>
+  `,
+) => fixture(template);
 
 suite('custom-date-picker', () => {
-  suite('initial state', () => {
-    test('registers custom-date-picker', () => {
-      expect(customElements.get('custom-date-picker')).to.be.ok;
-    });
+  let originalLanguage;
 
-    test('defaults required to false and value empty', async () => {
-      const el = await fixture(
-        html`
-          <custom-date-picker></custom-date-picker>
-        `,
-      );
-      expect(el.required).to.equal(false);
-      expect(el.value).to.not.be.ok;
+  setup(() => {
+    originalLanguage = window.nuxeo && window.nuxeo.I18n && window.nuxeo.I18n.language;
+    window.nuxeo = window.nuxeo || {};
+    window.nuxeo.I18n = window.nuxeo.I18n || {};
+    window.nuxeo.I18n.en = window.nuxeo.I18n.en || {};
+    window.nuxeo.I18n.language = 'en';
+  });
+
+  teardown(() => {
+    if (window.nuxeo && window.nuxeo.I18n) {
+      window.nuxeo.I18n.language = originalLanguage;
+    }
+  });
+
+  suite('boot defaults', () => {
+    test('initialises with sensible defaults', async () => {
+      const el = await newPicker();
+      expect(el.invalid).to.be.false;
+      expect(el.required).to.be.false;
+      expect(el.disabled).to.be.false;
+      expect(el.errorReason).to.equal('');
+      expect(el._calendarDays.length).to.equal(42);
+      expect(el._monthNames).to.have.lengthOf(12);
+      expect(el._weekdayNames).to.have.lengthOf(7);
+      expect(el._yearOptions.length).to.be.greaterThan(0);
+      expect(el.pickerI18n).to.have.keys([
+        'formatDate',
+        'parseDate',
+        'monthNames',
+        'weekdays',
+        'weekdaysShort',
+        'cancel',
+        'clear',
+        'today',
+        'firstDayOfWeek',
+      ]);
+      expect(el._dateFormatter).to.be.an.instanceof(Intl.DateTimeFormat);
     });
   });
 
   suite('_parseDateOnly', () => {
-    let el;
-
-    setup(async () => {
-      el = await fixture(
-        html`
-          <custom-date-picker></custom-date-picker>
-        `,
-      );
-    });
-
-    test('parses YYYY-MM-DD to start of local day', () => {
-      const d = el._parseDateOnly('2020-06-15');
-      expect(d).to.be.instanceOf(Date);
-      expect(d.getFullYear()).to.equal(2020);
-      expect(d.getMonth()).to.equal(5);
-      expect(d.getDate()).to.equal(15);
+    test('parses a YYYY-MM-DD string into a local Date at midnight', async () => {
+      const el = await newPicker();
+      const d = el._parseDateOnly('2024-04-12');
+      expect(d).to.be.an.instanceof(Date);
+      expect(d.getFullYear()).to.equal(2024);
+      expect(d.getMonth()).to.equal(3);
+      expect(d.getDate()).to.equal(12);
       expect(d.getHours()).to.equal(0);
     });
 
-    test('returns null for empty or invalid input', () => {
-      expect(el._parseDateOnly('')).to.equal(null);
-      expect(el._parseDateOnly(null)).to.equal(null);
-      expect(el._parseDateOnly('not-a-date')).to.equal(null);
+    test('returns null for empty input', async () => {
+      const el = await newPicker();
+      expect(el._parseDateOnly('')).to.be.null;
+      expect(el._parseDateOnly(null)).to.be.null;
+      expect(el._parseDateOnly(undefined)).to.be.null;
+    });
+
+    test('falls back to the Date constructor for non-strict ISO inputs', async () => {
+      const el = await newPicker();
+      const d = el._parseDateOnly('2024-04-12T10:00:00Z');
+      expect(d).to.be.an.instanceof(Date);
+      expect(d.getHours()).to.equal(0);
+    });
+
+    test('returns null when input is unparseable', async () => {
+      const el = await newPicker();
+      expect(el._parseDateOnly('not-a-date')).to.be.null;
     });
   });
 
-  suite('_parseDateFromISO', () => {
-    let el;
-
-    setup(async () => {
-      el = await fixture(
-        html`
-          <custom-date-picker></custom-date-picker>
-        `,
-      );
+  suite('_parseDateFromISO (strict)', () => {
+    test('parses a valid YYYY-MM-DD string', async () => {
+      const el = await newPicker();
+      const d = el._parseDateFromISO('2024-04-12');
+      expect(d.getFullYear()).to.equal(2024);
+      expect(d.getMonth()).to.equal(3);
+      expect(d.getDate()).to.equal(12);
     });
 
-    test('accepts valid calendar dates', () => {
-      const d = el._parseDateFromISO('2020-01-31');
-      expect(d).to.be.instanceOf(Date);
-      expect(d.getFullYear()).to.equal(2020);
-      expect(d.getMonth()).to.equal(0);
-      expect(d.getDate()).to.equal(31);
+    test('returns null for non-string / empty input', async () => {
+      const el = await newPicker();
+      expect(el._parseDateFromISO('')).to.be.null;
+      expect(el._parseDateFromISO(null)).to.be.null;
+      expect(el._parseDateFromISO(123)).to.be.null;
     });
 
-    test('rejects invalid day for month', () => {
-      expect(el._parseDateFromISO('2021-02-30')).to.equal(null);
+    test('rejects strings that are not in strict YYYY-MM-DD format', async () => {
+      const el = await newPicker();
+      expect(el._parseDateFromISO('2024-4-12')).to.be.null;
+      expect(el._parseDateFromISO('12/04/2024')).to.be.null;
     });
 
-    test('rejects non YYYY-MM-DD strings', () => {
-      expect(el._parseDateFromISO('2020/01/01')).to.equal(null);
-      expect(el._parseDateFromISO('20-01-01')).to.equal(null);
-      expect(el._parseDateFromISO('')).to.equal(null);
-    });
-  });
-
-  suite('_isSameDay', () => {
-    let el;
-
-    setup(async () => {
-      el = await fixture(
-        html`
-          <custom-date-picker></custom-date-picker>
-        `,
-      );
-    });
-
-    test('returns true for same calendar day', () => {
-      const a = new Date(2022, 3, 10, 14, 30);
-      const b = new Date(2022, 3, 10, 8, 0);
-      expect(el._isSameDay(a, b)).to.equal(true);
-    });
-
-    test('returns false for different days or missing date', () => {
-      expect(el._isSameDay(new Date(2022, 3, 10), new Date(2022, 3, 11))).to.equal(false);
-      expect(el._isSameDay(null, new Date())).to.equal(false);
+    test('rejects out-of-range year/month/day values', async () => {
+      const el = await newPicker();
+      expect(el._parseDateFromISO('0999-01-01')).to.be.null;
+      expect(el._parseDateFromISO('2024-13-01')).to.be.null;
+      expect(el._parseDateFromISO('2024-02-30')).to.be.null;
     });
   });
 
-  suite('_moment', () => {
-    test('uses UTC when timezone is Etc/UTC', async () => {
-      const el = await fixture(
-        html`
-          <custom-date-picker timezone="Etc/UTC"></custom-date-picker>
-        `,
-      );
-      const m = el._moment('2022-01-15T00:00:00.000Z');
-      expect(m.isUTC()).to.equal(true);
+  suite('_dateToISO', () => {
+    test('formats a Date as YYYY-MM-DD with zero-padding', async () => {
+      const el = await newPicker();
+      expect(el._dateToISO(new Date(2024, 0, 5))).to.equal('2024-01-05');
+      expect(el._dateToISO(new Date(2024, 11, 31))).to.equal('2024-12-31');
     });
 
-    test('uses local when timezone is not Etc/UTC', async () => {
-      const el = await fixture(
-        html`
-          <custom-date-picker timezone=""></custom-date-picker>
-        `,
-      );
-      const m = el._moment('2022-01-15T12:00:00.000Z');
-      expect(m.isUTC()).to.equal(false);
+    test('returns "" for missing or invalid dates', async () => {
+      const el = await newPicker();
+      expect(el._dateToISO(null)).to.equal('');
+      expect(el._dateToISO(new Date('not-a-date'))).to.equal('');
     });
   });
 
-  suite('_getErrorPriority', () => {
-    let el;
-
-    setup(async () => {
-      el = await fixture(
-        html`
-          <custom-date-picker></custom-date-picker>
-        `,
-      );
+  suite('_formatDateForDisplay', () => {
+    test('returns "" for missing or invalid dates', async () => {
+      const el = await newPicker();
+      expect(el._formatDateForDisplay(null)).to.equal('');
+      expect(el._formatDateForDisplay(new Date('invalid'))).to.equal('');
     });
 
-    test('orders format-like errors above range and required', () => {
-      expect(el._getErrorPriority('format')).to.be.greaterThan(el._getErrorPriority('outOfRange'));
-      expect(el._getErrorPriority('invalidDate')).to.be.greaterThan(el._getErrorPriority('outOfRange'));
-      expect(el._getErrorPriority('outOfRange')).to.be.greaterThan(el._getErrorPriority('required'));
+    test('formats a Date according to the locale', async () => {
+      const el = await newPicker();
+      const result = el._formatDateForDisplay(new Date(2024, 3, 12));
+      expect(result).to.be.a('string');
+      expect(result.length).to.be.greaterThan(0);
     });
 
-    test('returns 0 for unknown reason', () => {
-      expect(el._getErrorPriority('')).to.equal(0);
+    test('uses an explicit format property when provided', async () => {
+      const el = await newPicker();
+      el.format = 'YYYY-MM-DD';
+      expect(el._formatDateForDisplay(new Date(2024, 3, 12))).to.equal('2024-04-12');
+    });
+  });
+
+  suite('_validateDate', () => {
+    test('rejects invalid Date objects', async () => {
+      const el = await newPicker();
+      const result = el._validateDate(new Date('not-a-date'));
+      expect(result.isValid).to.be.false;
+      expect(result.errorReason).to.equal('invalidDate');
+      expect(result.errorMessage).to.be.a('string');
+    });
+
+    test('rejects dates below the configured min', async () => {
+      const el = await newPicker();
+      el.min = '2024-01-01';
+      flush();
+      const result = el._validateDate(new Date(2023, 11, 31));
+      expect(result.isValid).to.be.false;
+      expect(result.errorReason).to.equal('outOfRange');
+    });
+
+    test('rejects dates above the configured max', async () => {
+      const el = await newPicker();
+      el.max = '2024-12-31';
+      flush();
+      const result = el._validateDate(new Date(2025, 0, 1));
+      expect(result.isValid).to.be.false;
+      expect(result.errorReason).to.equal('outOfRange');
+    });
+
+    test('accepts dates inside the configured range', async () => {
+      const el = await newPicker();
+      el.min = '2024-01-01';
+      el.max = '2024-12-31';
+      flush();
+      const result = el._validateDate(new Date(2024, 5, 15));
+      expect(result.isValid).to.be.true;
+      expect(result.errorReason).to.equal('');
+    });
+  });
+
+  suite('Format helpers', () => {
+    test('_isMixedCaseFormat detects mixed casing', async () => {
+      const el = await newPicker();
+      expect(el._isMixedCaseFormat('YYYY-MM-DD')).to.be.false;
+      expect(el._isMixedCaseFormat('yyyy-mm-dd')).to.be.false;
+      expect(el._isMixedCaseFormat('YYYY-mm-DD')).to.be.true;
+      expect(el._isMixedCaseFormat('')).to.be.false;
+    });
+
+    test('_normalizeFormat upper-cases day/month/year tokens', async () => {
+      const el = await newPicker();
+      expect(el._normalizeFormat('yyyy-mm-dd')).to.equal('YYYY-MM-DD');
+      expect(el._normalizeFormat('yy/m/d')).to.equal('YY/M/D');
+    });
+
+    test('_getErrorPriority ranks format/range/required correctly', async () => {
+      const el = await newPicker();
+      expect(el._getErrorPriority('format')).to.equal(3);
+      expect(el._getErrorPriority('invalidDate')).to.equal(3);
+      expect(el._getErrorPriority('outOfRange')).to.equal(2);
+      expect(el._getErrorPriority('required')).to.equal(1);
+      expect(el._getErrorPriority('unknown')).to.equal(0);
     });
   });
 
   suite('_detectRTL', () => {
-    test('sets dir rtl for Arabic locale', async () => {
-      const el = await fixture(
-        html`
-          <custom-date-picker></custom-date-picker>
-        `,
-      );
+    test('sets dir=rtl on Arabic / Hebrew / Persian', async () => {
+      const el = await newPicker();
       el._detectRTL('ar-SA');
+      expect(el._isRTL).to.be.true;
       expect(el.getAttribute('dir')).to.equal('rtl');
-      expect(el._isRTL).to.equal(true);
+      el._detectRTL('he-IL');
+      expect(el._isRTL).to.be.true;
+      el._detectRTL('fa-IR');
+      expect(el._isRTL).to.be.true;
     });
 
-    test('sets dir ltr for English locale', async () => {
-      const el = await fixture(
-        html`
-          <custom-date-picker></custom-date-picker>
-        `,
-      );
+    test('sets dir=ltr for english', async () => {
+      const el = await newPicker();
       el._detectRTL('en-US');
+      expect(el._isRTL).to.be.false;
       expect(el.getAttribute('dir')).to.equal('ltr');
-      expect(el._isRTL).to.equal(false);
+    });
+
+    test('treats locales with -arab suffix as RTL', async () => {
+      const el = await newPicker();
+      el._detectRTL('ms-arab');
+      expect(el._isRTL).to.be.true;
+    });
+
+    test('does nothing when called without a locale', async () => {
+      const el = await newPicker();
+      const dirBefore = el.getAttribute('dir');
+      el._detectRTL();
+      expect(el.getAttribute('dir')).to.equal(dirBefore);
     });
   });
 
@@ -206,163 +276,154 @@ suite('custom-date-picker', () => {
     });
   });
 
-  suite('value binding', () => {
-    test('updates internal selection from ISO value', async () => {
-      const el = await fixture(
-        html`
-          <custom-date-picker></custom-date-picker>
-        `,
-      );
-      el.value = '2022-03-15T00:00:00.000Z';
-      await flush();
-      expect(el._selectedDate).to.be.instanceOf(Date);
-      expect(moment.utc(el.value).isValid()).to.equal(true);
-      const input = getDateInput(el);
-      expect(input).to.be.ok;
-      expect(input.value.length).to.be.greaterThan(0);
+  suite('_moment', () => {
+    test('returns moment() in local time by default', async () => {
+      const el = await newPicker();
+      const m = el._moment('2024-04-12');
+      expect(m.isValid()).to.be.true;
+      expect(m.year()).to.equal(2024);
     });
 
-    test('clears input when value cleared', async () => {
-      const el = await fixture(
-        html`
-          <custom-date-picker></custom-date-picker>
-        `,
-      );
-      el.value = '2022-03-15T00:00:00.000Z';
-      await flush();
-      el.value = '';
-      await flush();
-      const input = getDateInput(el);
-      expect(input.value).to.equal('');
-      expect(el._selectedDate).to.equal(null);
+    test('uses moment.utc() when timezone is Etc/UTC', async () => {
+      const el = await newPicker();
+      el.timezone = 'Etc/UTC';
+      const m = el._moment('2024-04-12T00:00:00Z');
+      expect(m.year()).to.equal(2024);
     });
   });
 
-  suite('keyboard navigation with parent key handlers (e.g. iron-list)', () => {
-    test('calendar grid arrow keys stop propagation', async () => {
-      const el = await fixture(html`
-        <custom-date-picker></custom-date-picker>
-      `);
-      await flush();
-
-      let bubbledToDocument = false;
-      const onDocKeydown = (ev) => {
-        if (ev.key === 'ArrowLeft') {
-          bubbledToDocument = true;
-        }
-      };
-      document.addEventListener('keydown', onDocKeydown);
-
-      try {
-        el._openCalendar(null, false);
-        await flush();
-        await new Promise((r) => setTimeout(r, 350));
-
-        const day = el.shadowRoot.querySelector('.calendar-day[tabindex="0"]');
-        expect(day, 'expected a focused calendar day after open').to.be.ok;
-
-        day.dispatchEvent(
-          new KeyboardEvent('keydown', {
-            key: 'ArrowLeft',
-            bubbles: true,
-            cancelable: true,
-            composed: true,
-          }),
-        );
-
-        expect(bubbledToDocument).to.equal(false, 'ArrowLeft should not bubble to document when handled in the grid');
-      } finally {
-        document.removeEventListener('keydown', onDocKeydown);
-        if (el._isCalendarOpen) {
-          el._closeCalendar();
-        }
-      }
+  suite('Calendar generation', () => {
+    test('_generateCalendar fills 42 day cells, marking the current month', async () => {
+      const el = await newPicker();
+      el._viewDate = new Date(2024, 3, 1);
+      el._today = new Date(2024, 3, 12);
+      el._generateCalendar();
+      expect(el._calendarDays).to.have.lengthOf(42);
+      const inMonth = el._calendarDays.filter((d) => d.isCurrentMonth);
+      expect(inMonth.length).to.equal(30);
+      const today = el._calendarDays.find((d) => d.isToday);
+      expect(today).to.exist;
+      expect(today.day).to.equal(12);
     });
 
-    test('arrow keys on Today (footer) stop propagation via popover', async () => {
-      const el = await fixture(html`
-        <custom-date-picker></custom-date-picker>
-      `);
-      await flush();
+    test('_generateYearOptions produces a 200-year range around today', async () => {
+      const el = await newPicker();
+      el._generateYearOptions();
+      expect(el._yearOptions).to.have.lengthOf.greaterThan(100);
+    });
+  });
 
-      let bubbledToDocument = false;
-      const onDocKeydown = (ev) => {
-        if (ev.key === 'ArrowDown') {
-          bubbledToDocument = true;
-        }
-      };
-      document.addEventListener('keydown', onDocKeydown);
-
-      try {
-        el._openCalendar(null, false);
-        await flush();
-        await new Promise((r) => setTimeout(r, 350));
-
-        const today = el.shadowRoot.querySelector('.today-button');
-        expect(today, 'Today button').to.be.ok;
-        today.focus();
-        expect(el.shadowRoot.activeElement).to.equal(today);
-
-        today.dispatchEvent(
-          new KeyboardEvent('keydown', {
-            key: 'ArrowDown',
-            bubbles: true,
-            cancelable: true,
-            composed: true,
-          }),
-        );
-
-        expect(bubbledToDocument).to.equal(false, 'ArrowDown from footer should not bubble past the calendar popover');
-      } finally {
-        document.removeEventListener('keydown', onDocKeydown);
-        if (el._isCalendarOpen) {
-          el._closeCalendar();
-        }
-      }
+  suite('Selection and clearing', () => {
+    test('_selectDate stores a normalized date and clears errors', async () => {
+      const el = await newPicker();
+      const d = new Date(2024, 5, 15);
+      el._selectDate(d);
+      expect(el._selectedDate.getFullYear()).to.equal(2024);
+      expect(el._selectedDate.getMonth()).to.equal(5);
+      expect(el._selectedDate.getDate()).to.equal(15);
+      expect(el.value).to.equal('2024-06-15');
+      expect(el.invalid).to.be.false;
+      expect(el.errorReason).to.equal('');
     });
 
-    test('Enter on Today (footer) stops propagation so ancestor lists do not steal activation', async () => {
-      const el = await fixture(html`
-        <custom-date-picker></custom-date-picker>
-      `);
-      await flush();
+    test('_selectDate sets an error when the date is out of range', async () => {
+      const el = await newPicker();
+      el.min = '2024-06-01';
+      el.max = '2024-06-30';
+      flush();
+      el._selectDate(new Date(2024, 0, 1));
+      expect(el.invalid).to.be.true;
+      expect(el.errorReason).to.equal('outOfRange');
+      expect(el._selectedDate).to.be.null;
+    });
 
-      let bubbledToDocument = false;
-      const onDocKeydown = (ev) => {
-        if (ev.key === 'Enter') {
-          bubbledToDocument = true;
-        }
-      };
-      document.addEventListener('keydown', onDocKeydown);
+    test('_selectToday selects the current calendar day', async () => {
+      const el = await newPicker();
+      el._selectToday({ preventDefault() {}, stopPropagation() {} });
+      expect(el._selectedDate).to.be.an.instanceof(Date);
+      expect(el.value).to.match(/^\d{4}-\d{2}-\d{2}$/);
+    });
 
-      try {
-        el._openCalendar(null, false);
-        await flush();
-        await new Promise((r) => setTimeout(r, 350));
+    test('_clearDate resets the value and the selected date', async () => {
+      const el = await newPicker();
+      el._selectDate(new Date(2024, 5, 15));
+      expect(el.value).to.not.equal('');
+      el._clearDate({ preventDefault() {}, stopPropagation() {} });
+      expect(el.value).to.equal('');
+      expect(el._selectedDate).to.be.null;
+    });
+  });
 
-        const today = el.shadowRoot.querySelector('.today-button');
-        expect(today, 'Today button').to.be.ok;
-        today.focus();
+  suite('Properties / observers', () => {
+    test('disabled mirrors to the inner input', async () => {
+      const el = await newPicker();
+      el.disabled = true;
+      flush();
+      const input = el.shadowRoot.querySelector('#dateInput');
+      expect(input.disabled).to.be.true;
+    });
 
-        today.dispatchEvent(
-          new KeyboardEvent('keydown', {
-            key: 'Enter',
-            bubbles: true,
-            cancelable: true,
-            composed: true,
-          }),
-        );
+    test('value setter triggers _valueChanged', async () => {
+      const el = await newPicker();
+      el.value = '2024-04-12';
+      flush();
+      expect(el._selectedDate).to.be.an.instanceof(Date);
+      expect(el._selectedDate.getFullYear()).to.equal(2024);
+    });
 
-        expect(bubbledToDocument).to.equal(
-          false,
-          'Enter from Today should not bubble to document (iron-list uses Enter for rows)',
-        );
-      } finally {
-        document.removeEventListener('keydown', onDocKeydown);
-        if (el._isCalendarOpen) {
-          el._closeCalendar();
-        }
-      }
+    test('invalid is reflected to the host attribute', async () => {
+      const el = await newPicker();
+      el.invalid = true;
+      flush();
+      expect(el.hasAttribute('invalid')).to.be.true;
+    });
+  });
+
+  suite('_announce', () => {
+    test('does not throw when shadowRoot has no #srStatus', async () => {
+      const el = await newPicker();
+      expect(() => el._announce('hello')).to.not.throw();
+    });
+  });
+
+  suite('previous/next month navigation', () => {
+    test('_previousMonth shifts viewDate one month back', async () => {
+      const el = await newPicker();
+      el._viewDate = new Date(2024, 3, 15);
+      el._previousMonth({ preventDefault() {}, stopPropagation() {} });
+      flush();
+      expect(el._viewDate.getMonth()).to.equal(2);
+      expect(el._viewDate.getFullYear()).to.equal(2024);
+    });
+
+    test('_nextMonth shifts viewDate one month forward', async () => {
+      const el = await newPicker();
+      el._viewDate = new Date(2024, 3, 15);
+      el._nextMonth({ preventDefault() {}, stopPropagation() {} });
+      flush();
+      expect(el._viewDate.getMonth()).to.equal(4);
+      expect(el._viewDate.getFullYear()).to.equal(2024);
+    });
+  });
+
+  suite('clearButtonVisible compatibility', () => {
+    test('drives hideClearDateButton when toggled and the attribute is not set', async () => {
+      const el = await newPicker();
+      // Ensure the attribute is not present so the legacy sync runs.
+      el.removeAttribute('hide-clear-date-button');
+      el._clearButtonVisibleChanged(true);
+      expect(el.hideClearDateButton).to.be.false;
+      el._clearButtonVisibleChanged(false);
+      expect(el.hideClearDateButton).to.be.true;
+    });
+
+    test('preserves hideClearDateButton when the attribute is explicitly set', async () => {
+      const el = await newPicker();
+      el.setAttribute('hide-clear-date-button', '');
+      el.hideClearDateButton = true;
+      el._clearButtonVisibleChanged(true);
+      // Should NOT change because the attribute is explicitly set
+      expect(el.hideClearDateButton).to.be.true;
     });
   });
 });

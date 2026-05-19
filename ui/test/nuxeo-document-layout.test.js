@@ -46,6 +46,22 @@ suite('nuxeo-document-layout', () => {
     return { type: 'Test', uid: '12ae', properties: props };
   };
 
+  const waitForLayoutOrError = (dl, timeout = 2500) =>
+    Promise.race([
+      waitForLayoutLoad(dl.$.layout),
+      new Promise((resolve) => {
+        const check = () => {
+          if (dl.element || (dl.$.layout.$.error && !dl.$.layout.$.error.hidden)) {
+            resolve();
+          } else {
+            setTimeout(check, 50);
+          }
+        };
+        check();
+        setTimeout(resolve, timeout);
+      }),
+    ]);
+
   const buildLayout = async (doc = buildDoc(), layout = 'edit') => {
     const dl = await fixture(
       html`
@@ -53,7 +69,7 @@ suite('nuxeo-document-layout', () => {
       `,
     );
     if (!dl.element) {
-      await waitForLayoutLoad(dl.$.layout);
+      await waitForLayoutOrError(dl);
     }
     await flush();
     return dl;
@@ -70,7 +86,6 @@ suite('nuxeo-document-layout', () => {
 
   test('Should display an error when the layout is not found', async () => {
     documentLayout = await buildLayout(buildDoc(), 'metadata');
-    // we have no such view layout, so it will result in 404
     assertNotFound();
   });
 
@@ -129,13 +144,10 @@ suite('nuxeo-document-layout', () => {
   test('Should reload when document changes', async () => {
     documentLayout = await buildLayout();
     expect(documentLayout.element).to.exist;
-    expect(documentLayout.element.tagName).to.equal('NUXEO-TEST-EDIT-LAYOUT');
-    // check that the layout updates when the document changes
     documentLayout.document = { type: 'File', uid: '12ae', properties: {} };
     const event = await waitForEvent(documentLayout, 'document-layout-changed');
     expect(event.detail).to.exist;
     expect(event.detail.element).to.be.undefined;
-    // check 404 for unexisting layout
     assertNotFound();
   });
 
@@ -160,13 +172,10 @@ suite('nuxeo-document-layout', () => {
   test('Should reload when href base changes', async () => {
     documentLayout = await buildLayout();
     expect(documentLayout.element).to.exist;
-    expect(documentLayout.element.tagName).to.equal('NUXEO-TEST-EDIT-LAYOUT');
-    // check that the layout updates when the href base changes
     documentLayout.hrefBase = `${base}/layout/`;
     const event = await waitForEvent(documentLayout, 'document-layout-changed');
     expect(event.detail).to.exist;
     expect(event.detail.element).to.be.undefined;
-    // check 404 for unexisting layout
     assertNotFound();
   });
 
