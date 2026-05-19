@@ -729,4 +729,67 @@ suite('nuxeo-dialog', () => {
       expect(dialog._getDeepActiveElement()).to.equal(dialog.querySelector('#last'));
     });
   });
+
+  suite('child overlay interaction', () => {
+    test('should not disable focus trap when a child overlay fires iron-overlay-closed', async () => {
+      dialog = await fixture(html`
+        <nuxeo-dialog modal>
+          <button id="first">First</button>
+          <button id="last">Last</button>
+        </nuxeo-dialog>
+      `);
+      await waitForOpen(dialog);
+      await flush();
+
+      // Simulate a child overlay (e.g., paper-dropdown-menu) firing iron-overlay-closed
+      const childClosedEvent = new CustomEvent('iron-overlay-closed', { bubbles: true, composed: true });
+      const childElement = dialog.querySelector('#first');
+      childElement.dispatchEvent(childClosedEvent);
+      await flush();
+
+      // Focus trap should still be active
+      expect(dialog._inertApplied).to.be.true;
+      const first = dialog.querySelector('#first');
+      first.focus();
+      const event = pressTab(true);
+      // Shift+Tab at first element should still wrap to last
+      expect(event.defaultPrevented).to.be.true;
+    });
+
+    test('should not re-stamp template when a child overlay fires iron-overlay-opened', async () => {
+      dialog = await fixture(html`
+        <nuxeo-dialog modal>
+          <button id="first">First</button>
+          <button id="last">Last</button>
+        </nuxeo-dialog>
+      `);
+      await waitForOpen(dialog);
+      await flush();
+
+      // Simulate a child overlay (e.g., paper-dropdown-menu) firing iron-overlay-opened
+      const childOpenedEvent = new CustomEvent('iron-overlay-opened', { bubbles: true, composed: true });
+      const childElement = dialog.querySelector('#first');
+      childElement.dispatchEvent(childOpenedEvent);
+      await flush();
+
+      // Focus trap should still be active (not re-triggered by child event)
+      expect(dialog._inertApplied).to.be.true;
+    });
+
+    test('should still disable focus trap when dialog itself closes', async () => {
+      dialog = await fixture(html`
+        <nuxeo-dialog modal>
+          <button id="first">First</button>
+          <button id="last">Last</button>
+        </nuxeo-dialog>
+      `);
+      await waitForOpen(dialog);
+      await flush();
+      expect(dialog._inertApplied).to.be.true;
+
+      await waitForClose(dialog);
+      await flush();
+      expect(dialog._inertApplied).to.be.false;
+    });
+  });
 });
