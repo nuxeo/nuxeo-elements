@@ -396,8 +396,14 @@ async function tableFixture(canSelectAll = false) {
   return table;
 }
 
+// Tracks the last fake server created via login() so the outer suite teardown can restore it.
+// Without this, sinon.fakeServer.create() (called inside login()) leaks the global XHR fake
+// after this file's last test, which silently kills every suite registered after it.
+let _activeFakeServer = null;
+
 async function setupServer(numberPages, pageSize) {
   const server = await login();
+  _activeFakeServer = server;
   for (let page = 0; page < numberPages; page++) {
     const tableResp = Object.assign({}, tableRespTemplate);
     tableResp.entries = buildTableData(pageSize);
@@ -425,6 +431,13 @@ async function setupServer(numberPages, pageSize) {
 }
 
 suite('nuxeo-data-table', () => {
+  teardown(() => {
+    if (_activeFakeServer && typeof _activeFakeServer.restore === 'function') {
+      _activeFakeServer.restore();
+      _activeFakeServer = null;
+    }
+  });
+
   suite('table results', () => {
     setup(async () => setupServer(1, 4));
 

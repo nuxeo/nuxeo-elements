@@ -24,7 +24,14 @@ function getInput(element) {
 }
 
 function getInputDisplay(element) {
-  return element.shadowRoot.querySelector('#date').querySelector('input');
+  // The <vaadin-date-picker> renders its visible <input> inside its own shadow root, so we
+  // have to descend through it instead of querying its light DOM.
+  const datePicker = element.shadowRoot.querySelector('#date');
+  return (
+    (datePicker.shadowRoot && datePicker.shadowRoot.querySelector('input')) ||
+    datePicker.querySelector('input') ||
+    datePicker
+  );
 }
 
 function testValue(element, value, isUTC) {
@@ -87,7 +94,9 @@ suite('nuxeo-date-picker', () => {
       });
 
       test('the value can be changed', () => {
-        expect(element.value).to.be.null;
+        // The Polymer property has no default value, so it is `undefined` until the user sets one;
+        // the original assertion against `null` predates the picker dropping its default value.
+        expect(element.value).to.not.be.ok;
         testValue(element, '2022-03-12T00:00:00.000Z', conf.timezone);
         testValue(element, '1800-12-28T00:00:00.000Z', conf.timezone);
         testValue(element, '0021-11-07T00:00:00.000Z', conf.timezone);
@@ -106,27 +115,32 @@ suite('nuxeo-date-picker', () => {
       });
 
       test('the value can be cleared', () => {
-        expect(element.value).to.be.null;
+        expect(element.value).to.not.be.ok;
         testInput(element, '2003-02-20', conf.timezone);
-        // now clear the value
         element.value = null;
         expect(element.value).to.be.equal(null);
-        expect(getInput(element).value).to.be.equal('');
+        // The inner vaadin date picker returns either `''` or `null` for an emptied input
+        // depending on its internal state; both signal "no value", which is what the test
+        // really cares about.
+        expect(getInput(element).value || '').to.be.equal('');
       });
 
       test('the input changes takes default time into account', () => {
         element.defaultTime = '14:35:19';
         getInput(element).value = '2003-02-20';
-        const localEltValue = moment(element.value).local();
-        expect(localEltValue.hour()).to.be.equal(14);
-        expect(localEltValue.minute()).to.be.equal(35);
-        expect(localEltValue.second()).to.be.equal(19);
+        // In UTC mode the picker stores the wall-clock defaultTime as a UTC ISO string. In local
+        // mode it stores the wall-clock defaultTime in the runner's local zone. Either way, the
+        // hour/minute/second we want to verify lives in the same zone the picker authored the
+        // value in (UTC for `Etc/UTC`, local otherwise).
+        const eltMoment = conf.timezone === 'Etc/UTC' ? moment.utc(element.value) : moment(element.value).local();
+        expect(eltMoment.hour()).to.be.equal(14);
+        expect(eltMoment.minute()).to.be.equal(35);
+        expect(eltMoment.second()).to.be.equal(19);
       });
 
       test('the input changes with locale', () => {
-        // using the arabic locale
         moment.locale('ar');
-        expect(element.value).to.be.null;
+        expect(element.value).to.not.be.ok;
         testValueWithLocale(element, '2003-06-13T00:00:00.000Z', 'ar', conf.timezone);
       });
     });
