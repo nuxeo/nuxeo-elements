@@ -650,5 +650,67 @@ suite('custom-date-picker', () => {
       expect(el._suppressInputFocusCloseUntil).to.be.greaterThan(Date.now());
       expect(el._interactingWithCalendar).to.be.false;
     });
+
+    test('_getNavButtonFallbackFocusTarget returns nextButton when prevButton is focused and next is enabled', () => {
+      const prev = el.shadowRoot.querySelector('#prevMonth');
+      const next = el.shadowRoot.querySelector('#nextMonth');
+      const result = el._getNavButtonFallbackFocusTarget(prev, prev, next, true, false);
+      expect(result).to.equal(next);
+    });
+
+    test('_updateNavigationButtonStates does not relocate focus when calendar is closed', () => {
+      const prev = el.shadowRoot.querySelector('#prevMonth');
+      el._isCalendarOpen = false;
+      prev.focus();
+      const focusSpy = sinon.spy(prev, 'focus');
+      el._updateNavigationButtonStates();
+      expect(focusSpy.called).to.be.false;
+      focusSpy.restore();
+    });
+
+    test('_updateNavigationButtonStates does not relocate focus when no focused nav button is disabled', () => {
+      const next = el.shadowRoot.querySelector('#nextMonth');
+      next.focus();
+      // Navigate so neither button is at a boundary and neither becomes disabled.
+      el._viewDate = new Date(2026, 5, 1); // June 2026 — well within bounds
+      const focusSpy = sinon.spy(next, 'focus');
+      el._updateNavigationButtonStates();
+      expect(focusSpy.called).to.be.false;
+      focusSpy.restore();
+    });
+
+    test('_updateNavigationButtonStates tolerates a null fallback from _getNavButtonFallbackFocusTarget', () => {
+      const prev = el.shadowRoot.querySelector('#prevMonth');
+      prev.focus();
+      const stub = sinon.stub(el, '_getNavButtonFallbackFocusTarget').returns(null);
+      el._viewDate = new Date(2026, 4, 1); // min month — prev becomes disabled
+      expect(() => el._updateNavigationButtonStates()).to.not.throw();
+      stub.restore();
+    });
+
+    test('_updateNavigationButtonStates is a no-op when nav buttons are not rendered', () => {
+      const detached = document.createElement('custom-date-picker');
+      document.body.appendChild(detached);
+      try {
+        expect(() => detached._updateNavigationButtonStates()).to.not.throw();
+      } finally {
+        detached.remove();
+      }
+    });
+
+    test('_isInputFocusCloseSuppressed returns false after the suppression window has expired', () => {
+      el._suppressInputFocusCloseUntil = Date.now() - 1;
+      expect(el._isInputFocusCloseSuppressed()).to.be.false;
+    });
+
+    test('_handleDocumentFocusIn proceeds when suppression window has expired', () => {
+      el._openCalendar();
+      el._isYearDropdownOpen = true;
+      el._suppressInputFocusCloseUntil = Date.now() - 1;
+      const asyncSpy = sinon.spy(el, 'async');
+      el._handleDocumentFocusIn({ target: document.body });
+      expect(asyncSpy.called).to.be.true;
+      asyncSpy.restore();
+    });
   });
 });
