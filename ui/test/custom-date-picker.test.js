@@ -561,5 +561,95 @@ suite('custom-date-picker', () => {
       expect(fallback.id).to.not.equal('prevMonth');
       expect(fallback.id).to.not.equal('nextMonth');
     });
+
+    test('_selectFocusFallback returns prev when focus is on next and prev is enabled', () => {
+      const prev = el.shadowRoot.querySelector('#prevMonth');
+      const next = el.shadowRoot.querySelector('#nextMonth');
+      const fallback = el._selectFocusFallback({
+        activeElement: next,
+        prevButton: prev,
+        nextButton: next,
+        isPrevDisabled: false,
+        isNextDisabled: true,
+      });
+      expect(fallback).to.equal(prev);
+    });
+
+    test('_relocateFocusIfNavButtonDisabled is a no-op when the calendar is closed', () => {
+      const prev = el.shadowRoot.querySelector('#prevMonth');
+      const next = el.shadowRoot.querySelector('#nextMonth');
+      prev.focus();
+      el._isCalendarOpen = false;
+      const fallbackSpy = sinon.spy(el, '_selectFocusFallback');
+      el._relocateFocusIfNavButtonDisabled({
+        activeElement: prev,
+        prevButton: prev,
+        nextButton: next,
+        isPrevDisabled: true,
+        isNextDisabled: false,
+      });
+      expect(fallbackSpy.called).to.be.false;
+      fallbackSpy.restore();
+    });
+
+    test('_relocateFocusIfNavButtonDisabled is a no-op when focus is not on a disabled button', () => {
+      const prev = el.shadowRoot.querySelector('#prevMonth');
+      const next = el.shadowRoot.querySelector('#nextMonth');
+      const fallbackSpy = sinon.spy(el, '_selectFocusFallback');
+      el._relocateFocusIfNavButtonDisabled({
+        activeElement: next,
+        prevButton: prev,
+        nextButton: next,
+        isPrevDisabled: true,
+        isNextDisabled: false,
+      });
+      expect(fallbackSpy.called).to.be.false;
+      fallbackSpy.restore();
+    });
+
+    test('_relocateFocusIfNavButtonDisabled tolerates a null fallback', () => {
+      const prev = el.shadowRoot.querySelector('#prevMonth');
+      const next = el.shadowRoot.querySelector('#nextMonth');
+      const stub = sinon.stub(el, '_selectFocusFallback').returns(null);
+      expect(() =>
+        el._relocateFocusIfNavButtonDisabled({
+          activeElement: prev,
+          prevButton: prev,
+          nextButton: next,
+          isPrevDisabled: true,
+          isNextDisabled: false,
+        }),
+      ).to.not.throw();
+      stub.restore();
+    });
+
+    test('_updateNavigationButtonStates is a no-op when nav buttons are not rendered', () => {
+      const closed = document.createElement('custom-date-picker');
+      document.body.appendChild(closed);
+      try {
+        expect(() => closed._updateNavigationButtonStates()).to.not.throw();
+      } finally {
+        closed.remove();
+      }
+    });
+
+    test('_preventNavButtonFocus is a no-op when called without an event', () => {
+      const before = el._suppressInputFocusCloseUntil;
+      expect(() => el._preventNavButtonFocus()).to.not.throw();
+      expect(el._suppressInputFocusCloseUntil).to.equal(before);
+    });
+
+    test('_handleDocumentFocusIn proceeds after the suppression window expires', () => {
+      el._openCalendar();
+      el._isYearDropdownOpen = true;
+      // Set a window in the past so the second condition (Date.now() < end) is false.
+      el._suppressInputFocusCloseUntil = Date.now() - 1;
+      const asyncSpy = sinon.spy(el, 'async');
+      el._handleDocumentFocusIn({ target: document.body });
+      // The early-return guard should not trigger, allowing the year-dropdown
+      // outside-focus branch to schedule its async close.
+      expect(asyncSpy.called).to.be.true;
+      asyncSpy.restore();
+    });
   });
 });
