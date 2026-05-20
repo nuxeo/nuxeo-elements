@@ -1743,21 +1743,42 @@ const FOCUS_SUPPRESSION_MS = 200;
 
       // If the currently focused nav button just became disabled, move focus to a
       // sibling element inside the calendar to keep focus within the popover.
-      if (
-        this._isCalendarOpen &&
-        ((activeElement === prevButton && isPrevDisabled) || (activeElement === nextButton && isNextDisabled))
-      ) {
-        const fallback =
-          (activeElement === prevButton && nextButton && !isNextDisabled && nextButton) ||
-          (activeElement === nextButton && prevButton && !isPrevDisabled && prevButton) ||
-          this.shadowRoot.querySelector('.year-dropdown') ||
-          this.shadowRoot.querySelector('.calendar-day[tabindex="0"]') ||
-          this.shadowRoot.querySelector('.month-year-dropdown') ||
-          this.shadowRoot.querySelector('#calendarPopover');
+      if (this._isCalendarOpen && this._isFocusedNavButtonNowDisabled(activeElement, prevButton, nextButton)) {
+        const fallback = this._getNavButtonFallbackFocusTarget(
+          activeElement,
+          prevButton,
+          nextButton,
+          isPrevDisabled,
+          isNextDisabled,
+        );
         if (fallback && typeof fallback.focus === 'function') {
           fallback.focus();
         }
       }
+    }
+
+    _isFocusedNavButtonNowDisabled(activeElement, prevButton, nextButton) {
+      return (
+        (activeElement === prevButton && this._isPreviousMonthDisabled()) ||
+        (activeElement === nextButton && this._isNextMonthDisabled())
+      );
+    }
+
+    _getNavButtonFallbackFocusTarget(activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled) {
+      if (activeElement === prevButton && nextButton && !isNextDisabled) {
+        return nextButton;
+      }
+
+      if (activeElement === nextButton && prevButton && !isPrevDisabled) {
+        return prevButton;
+      }
+
+      return (
+        this.shadowRoot.querySelector('.year-dropdown') ||
+        this.shadowRoot.querySelector('.calendar-day[tabindex="0"]') ||
+        this.shadowRoot.querySelector('.month-year-dropdown') ||
+        this.shadowRoot.querySelector('#calendarPopover')
+      );
     }
 
     _setupEventListeners() {
@@ -2311,7 +2332,7 @@ const FOCUS_SUPPRESSION_MS = 200;
     // Bug fix: Handle focus moving outside the component
     _handleDocumentFocusIn(e) {
       // Ignore transient focus changes right after calendar navigation interactions.
-      if (this._suppressInputFocusCloseUntil && Date.now() < this._suppressInputFocusCloseUntil) {
+      if (this._isInputFocusCloseSuppressed()) {
         return;
       }
 
@@ -2464,13 +2485,13 @@ const FOCUS_SUPPRESSION_MS = 200;
         // Ignore transient input refocus that can occur right after calendar
         // navigation interactions (e.g. when a nav button becomes disabled at
         // min/max boundaries and outer wrappers momentarily re-route focus).
-        if (this._suppressInputFocusCloseUntil && Date.now() < this._suppressInputFocusCloseUntil) {
+        if (this._isInputFocusCloseSuppressed()) {
           return;
         }
 
         // Use async to ensure this happens after any other click handlers
         this.async(() => {
-          if (this._suppressInputFocusCloseUntil && Date.now() < this._suppressInputFocusCloseUntil) {
+          if (this._isInputFocusCloseSuppressed()) {
             return;
           }
 
@@ -2485,6 +2506,10 @@ const FOCUS_SUPPRESSION_MS = 200;
           this._closeCalendar();
         }, 1);
       }
+    }
+
+    _isInputFocusCloseSuppressed() {
+      return this._suppressInputFocusCloseUntil && Date.now() < this._suppressInputFocusCloseUntil;
     }
 
     _onInputClick(e) {
