@@ -456,6 +456,7 @@ suite('custom-date-picker', () => {
       const evt2 = new MouseEvent('mousedown', { bubbles: true, cancelable: true, composed: true });
       prev.dispatchEvent(evt2);
       expect(evt2.defaultPrevented).to.be.true;
+      expect(el._suppressInputFocusCloseUntil).to.be.greaterThan(Date.now());
     });
 
     test('clicking next then previous keeps the calendar open at the min-month boundary', async () => {
@@ -523,6 +524,42 @@ suite('custom-date-picker', () => {
       await flush();
 
       expect(el._isCalendarOpen).to.be.true;
+    });
+
+    test('_onInputFocus does not close the calendar during suppression window', async () => {
+      expect(el._isCalendarOpen).to.be.true;
+      el._suppressInputFocusCloseUntil = Date.now() + 200;
+      el._onInputFocus();
+      await flush();
+      expect(el._isCalendarOpen).to.be.true;
+    });
+
+    test('_handleDocumentFocusIn exits early during suppression window', () => {
+      el._openCalendar();
+      el._isYearDropdownOpen = true;
+      el._suppressInputFocusCloseUntil = Date.now() + 200;
+      const closeYearSpy = sinon.spy(el, '_closeYearDropdown');
+      const closeCalendarSpy = sinon.spy(el, '_closeCalendar');
+      el._handleDocumentFocusIn({ target: document.body });
+      expect(closeYearSpy.called).to.be.false;
+      expect(closeCalendarSpy.called).to.be.false;
+      closeYearSpy.restore();
+      closeCalendarSpy.restore();
+    });
+
+    test('_selectFocusFallback returns in-popover fallback elements when both nav buttons are unavailable', () => {
+      const prev = el.shadowRoot.querySelector('#prevMonth');
+      const next = el.shadowRoot.querySelector('#nextMonth');
+      const fallback = el._selectFocusFallback({
+        activeElement: prev,
+        prevButton: prev,
+        nextButton: next,
+        isPrevDisabled: true,
+        isNextDisabled: true,
+      });
+      expect(fallback).to.exist;
+      expect(fallback.id).to.not.equal('prevMonth');
+      expect(fallback.id).to.not.equal('nextMonth');
     });
   });
 });
