@@ -181,6 +181,11 @@ const FOCUS_SUPPRESSION_MS = 200;
           value: false,
         },
 
+        _suppressInputFocusCloseUntil: {
+          type: Number,
+          value: 0,
+        },
+
         _showErrors: {
           type: Boolean,
           value: false,
@@ -1745,7 +1750,7 @@ const FOCUS_SUPPRESSION_MS = 200;
       // sibling element inside the calendar to keep focus within the popover.
       if (
         this._isCalendarOpen &&
-        this._isFocusedNavButtonNowDisabled(activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled)
+        this._isActiveNavButtonDisabled(activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled)
       ) {
         const fallback = this._getNavButtonFallbackFocusTarget(
           activeElement,
@@ -1760,7 +1765,7 @@ const FOCUS_SUPPRESSION_MS = 200;
       }
     }
 
-    _isFocusedNavButtonNowDisabled(activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled) {
+    _isActiveNavButtonDisabled(activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled) {
       return (activeElement === prevButton && isPrevDisabled) || (activeElement === nextButton && isNextDisabled);
     }
 
@@ -2509,7 +2514,7 @@ const FOCUS_SUPPRESSION_MS = 200;
     }
 
     _isInputFocusCloseSuppressed() {
-      return this._suppressInputFocusCloseUntil && Date.now() < this._suppressInputFocusCloseUntil;
+      return Date.now() < this._suppressInputFocusCloseUntil;
     }
 
     _onInputClick(e) {
