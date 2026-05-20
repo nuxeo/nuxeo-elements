@@ -1741,23 +1741,55 @@ const FOCUS_SUPPRESSION_MS = 200;
         nextButton.disabled = isNextDisabled;
       }
 
+      this._keepFocusInCalendarOnDisabledNavButton({
+        activeElement,
+        prevButton,
+        nextButton,
+        isPrevDisabled,
+        isNextDisabled,
+      });
+    }
+
+    _keepFocusInCalendarOnDisabledNavButton({ activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled }) {
       // If the currently focused nav button just became disabled, move focus to a
       // sibling element inside the calendar to keep focus within the popover.
-      if (
-        this._isCalendarOpen &&
-        ((activeElement === prevButton && isPrevDisabled) || (activeElement === nextButton && isNextDisabled))
-      ) {
-        const fallback =
-          (activeElement === prevButton && nextButton && !isNextDisabled && nextButton) ||
-          (activeElement === nextButton && prevButton && !isPrevDisabled && prevButton) ||
-          this.shadowRoot.querySelector('.year-dropdown') ||
-          this.shadowRoot.querySelector('.calendar-day[tabindex="0"]') ||
-          this.shadowRoot.querySelector('.month-year-dropdown') ||
-          this.shadowRoot.querySelector('#calendarPopover');
-        if (fallback && typeof fallback.focus === 'function') {
-          fallback.focus();
-        }
+      if (!this._isCalendarOpen) {
+        return;
       }
+
+      const focusedDisabledNavButton =
+        (activeElement === prevButton && isPrevDisabled) || (activeElement === nextButton && isNextDisabled);
+      if (!focusedDisabledNavButton) {
+        return;
+      }
+
+      const fallback = this._getCalendarNavFocusFallback({
+        activeElement,
+        prevButton,
+        nextButton,
+        isPrevDisabled,
+        isNextDisabled,
+      });
+      if (fallback && typeof fallback.focus === 'function') {
+        fallback.focus();
+      }
+    }
+
+    _getCalendarNavFocusFallback({ activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled }) {
+      if (activeElement === prevButton && nextButton && !isNextDisabled) {
+        return nextButton;
+      }
+
+      if (activeElement === nextButton && prevButton && !isPrevDisabled) {
+        return prevButton;
+      }
+
+      return (
+        this.shadowRoot.querySelector('.year-dropdown') ||
+        this.shadowRoot.querySelector('.calendar-day[tabindex="0"]') ||
+        this.shadowRoot.querySelector('.month-year-dropdown') ||
+        this.shadowRoot.querySelector('#calendarPopover')
+      );
     }
 
     _setupEventListeners() {
