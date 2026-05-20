@@ -89,13 +89,8 @@ suite('nuxeo-dialog extras', () => {
         </nuxeo-dialog>
       `);
       expect(el._instance).to.not.be.ok;
-      const parent = el.parentNode;
       const fakeEvent = {
-        target: {
-          withBackdrop: false,
-          parentNode: parent,
-          backdropElement: document.createElement('div'),
-        },
+        target: el,
       };
       el._opened(fakeEvent);
       expect(el._instance).to.be.ok;
@@ -145,13 +140,8 @@ suite('nuxeo-dialog extras', () => {
           <template><div>Content</div></template>
         </nuxeo-dialog>
       `);
-      const parent = el.parentNode;
       const fakeEvent = {
-        target: {
-          withBackdrop: false,
-          parentNode: parent,
-          backdropElement: document.createElement('div'),
-        },
+        target: el,
       };
       el._opened(fakeEvent);
       const inst = el._instance;
@@ -169,13 +159,8 @@ suite('nuxeo-dialog extras', () => {
           <template><div>Hello</div></template>
         </nuxeo-dialog>
       `);
-      const parent = el.parentNode;
       const fakeEvent = {
-        target: {
-          withBackdrop: false,
-          parentNode: parent,
-          backdropElement: document.createElement('div'),
-        },
+        target: el,
       };
       el._opened(fakeEvent);
       expect(el._instance).to.be.ok;
