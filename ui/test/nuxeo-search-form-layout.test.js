@@ -50,6 +50,22 @@ suite('nuxeo-search-form-layout', () => {
     aggregation2: 'value2',
   };
 
+  const waitForLayoutOrError = (layoutEl, timeout = 2500) =>
+    Promise.race([
+      waitForLayoutLoad(layoutEl),
+      new Promise((resolve) => {
+        const check = () => {
+          if (layoutEl.element || (layoutEl.$.error && !layoutEl.$.error.hidden)) {
+            resolve();
+          } else {
+            setTimeout(check, 50);
+          }
+        };
+        check();
+        setTimeout(resolve, timeout);
+      }),
+    ]);
+
   const buildLayout = async (provider = 'pp_test', searchName = 'test') => {
     const sl = await fixture(
       html`
@@ -63,7 +79,7 @@ suite('nuxeo-search-form-layout', () => {
       `,
     );
     if (!sl.element) {
-      await waitForLayoutLoad(sl.$.layout);
+      await waitForLayoutOrError(sl.$.layout);
     }
     await flush();
     return sl;
