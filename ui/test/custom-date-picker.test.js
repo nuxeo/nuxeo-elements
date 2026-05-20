@@ -525,5 +525,104 @@ suite('custom-date-picker', () => {
 
       expect(el._isCalendarOpen).to.be.true;
     });
+
+    test('_isInputFocusCloseSuppressed returns true while suppression is active and false after it expires', () => {
+      expect(el._isInputFocusCloseSuppressed()).to.be.false;
+
+      el._suppressInputFocusCloseUntil = Date.now() + 5000;
+      expect(el._isInputFocusCloseSuppressed()).to.be.true;
+
+      el._suppressInputFocusCloseUntil = 0;
+      expect(el._isInputFocusCloseSuppressed()).to.be.false;
+    });
+
+    test('_onInputFocus does not close the calendar when suppression is active at call time', async () => {
+      expect(el._isCalendarOpen).to.be.true;
+
+      // Activate suppression before calling _onInputFocus so the outer early return fires.
+      el._suppressInputFocusCloseUntil = Date.now() + 5000;
+      el._onInputFocus();
+      await flush();
+
+      expect(el._isCalendarOpen).to.be.true;
+      el._suppressInputFocusCloseUntil = 0;
+    });
+
+    test('_onInputFocus async callback respects suppression set after the call', async () => {
+      expect(el._isCalendarOpen).to.be.true;
+
+      // Focus the date input so that the activeElement check inside the async callback
+      // would normally allow the calendar to close.
+      const dateInput = el.shadowRoot.querySelector('#dateInput');
+      dateInput.focus();
+
+      // Call _onInputFocus without suppression so the outer check passes and the async
+      // callback is scheduled. Then immediately activate suppression so the inner check
+      // inside the callback returns early instead of closing the calendar.
+      el._onInputFocus();
+      el._suppressInputFocusCloseUntil = Date.now() + 5000;
+      await flush();
+
+      expect(el._isCalendarOpen).to.be.true;
+      el._suppressInputFocusCloseUntil = 0;
+    });
+
+    test('_handleDocumentFocusIn returns early when suppression is active', () => {
+      expect(el._isCalendarOpen).to.be.true;
+
+      el._suppressInputFocusCloseUntil = Date.now() + 5000;
+      // Dispatch a focusin to document body; the handler should return early without side-effects.
+      expect(() => el._handleDocumentFocusIn({ target: document.body })).to.not.throw();
+      expect(el._isCalendarOpen).to.be.true;
+
+      el._suppressInputFocusCloseUntil = 0;
+    });
+
+    test('focus moves to prev button when focused next button becomes disabled at max boundary', async () => {
+      const prev = el.shadowRoot.querySelector('#prevMonth');
+      const next = el.shadowRoot.querySelector('#nextMonth');
+
+      // Navigate to June 2026 so both nav buttons are enabled.
+      next.click();
+      await flush();
+      el._updateNavigationButtonStates();
+      expect(prev.disabled).to.be.false;
+      expect(next.disabled).to.be.false;
+
+      // Set max so that July (the next month after June) is beyond the boundary,
+      // meaning the next button should now be disabled.
+      el.max = '2026-06-30';
+
+      // Focus the next button before it becomes disabled.
+      next.focus();
+      expect(el.shadowRoot.activeElement).to.equal(next);
+
+      // Trigger navigation state update — next becomes disabled and focus should move to prev.
+      el._updateNavigationButtonStates();
+
+      expect(el._isCalendarOpen).to.be.true;
+      expect(next.disabled).to.be.true;
+      expect(prev.disabled).to.be.false;
+      const focused = el.shadowRoot.activeElement;
+      expect(focused).to.not.equal(next);
+      expect(focused).to.equal(prev);
+    });
+
+    test('_getNavButtonFallbackFocusTarget falls back to calendarPopover when both nav buttons are disabled', () => {
+      const prev = el.shadowRoot.querySelector('#prevMonth');
+      const next = el.shadowRoot.querySelector('#nextMonth');
+      const calendarPopover = el.shadowRoot.querySelector('#calendarPopover');
+
+      // Directly exercise the fallback path: active element is prev, but next is also
+      // disabled (e.g. picker constrained to a single month).
+      const result = el._getNavButtonFallbackFocusTarget(prev, prev, next, true, true);
+      expect(result).to.be.oneOf([
+        el.shadowRoot.querySelector('.year-dropdown'),
+        el.shadowRoot.querySelector('.calendar-day[tabindex="0"]'),
+        el.shadowRoot.querySelector('.month-year-dropdown'),
+        calendarPopover,
+      ]);
+      expect(result).to.not.be.null;
+    });
   });
 });

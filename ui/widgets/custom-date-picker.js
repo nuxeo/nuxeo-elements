@@ -5163,12 +5163,10 @@ const FOCUS_SUPPRESSION_MS = 200;
     // turn focuses the inner input and triggers the calendar to close. By preventing
     // mousedown's default action, focus stays on whatever element previously held it.
     _preventNavButtonFocus(e) {
-      if (e) {
-        // Keep this short: enough to cover focus hand-off caused by nav updates
-        // without masking legitimate later input focus events.
-        this._suppressInputFocusCloseUntil = Date.now() + FOCUS_SUPPRESSION_MS;
-        e.preventDefault();
-      }
+      // Keep this short: enough to cover focus hand-off caused by nav updates
+      // without masking legitimate later input focus events.
+      this._suppressInputFocusCloseUntil = Date.now() + FOCUS_SUPPRESSION_MS;
+      e.preventDefault();
     }
 
     // Grid tab navigation is now handled by central focus management
