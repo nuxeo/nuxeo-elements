@@ -1743,7 +1743,10 @@ const FOCUS_SUPPRESSION_MS = 200;
 
       // If the currently focused nav button just became disabled, move focus to a
       // sibling element inside the calendar to keep focus within the popover.
-      if (this._isCalendarOpen && this._isFocusedNavButtonNowDisabled(activeElement, prevButton, nextButton)) {
+      if (
+        this._isCalendarOpen &&
+        this._isFocusedNavButtonNowDisabled(activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled)
+      ) {
         const fallback = this._getNavButtonFallbackFocusTarget(
           activeElement,
           prevButton,
@@ -1757,11 +1760,8 @@ const FOCUS_SUPPRESSION_MS = 200;
       }
     }
 
-    _isFocusedNavButtonNowDisabled(activeElement, prevButton, nextButton) {
-      return (
-        (activeElement === prevButton && this._isPreviousMonthDisabled()) ||
-        (activeElement === nextButton && this._isNextMonthDisabled())
-      );
+    _isFocusedNavButtonNowDisabled(activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled) {
+      return (activeElement === prevButton && isPrevDisabled) || (activeElement === nextButton && isNextDisabled);
     }
 
     _getNavButtonFallbackFocusTarget(activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled) {
