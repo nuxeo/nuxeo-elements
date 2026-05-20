@@ -624,5 +624,31 @@ suite('custom-date-picker', () => {
       ]);
       expect(result).to.not.be.null;
     });
+
+    test('disabled-active-nav detection reflects each disabled button state', () => {
+      const prev = el.shadowRoot.querySelector('#prevMonth');
+      const next = el.shadowRoot.querySelector('#nextMonth');
+
+      expect(el._isActiveNavButtonDisabled(prev, prev, next, true, false)).to.be.true;
+      expect(el._isActiveNavButtonDisabled(next, prev, next, false, true)).to.be.true;
+      expect(el._isActiveNavButtonDisabled(next, prev, next, false, false)).to.be.false;
+    });
+
+    test('keyboard month navigation sets and clears interaction state', () => {
+      const prev = el.shadowRoot.querySelector('#prevMonth');
+      expect(prev).to.exist;
+
+      const event = new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        cancelable: true,
+      });
+
+      prev.dispatchEvent(event);
+
+      expect(event.defaultPrevented).to.be.true;
+      expect(el._suppressInputFocusCloseUntil).to.be.greaterThan(Date.now());
+      expect(el._interactingWithCalendar).to.be.false;
+    });
   });
 });
