@@ -502,10 +502,9 @@ suite('custom-date-picker', () => {
 
       expect(el._isCalendarOpen).to.be.true;
       expect(prev.disabled).to.be.true;
-      const yearDropdown = el.shadowRoot.querySelector('.year-dropdown');
       const focused = el.shadowRoot.activeElement;
       expect(focused).to.not.equal(prev);
-      expect([next, yearDropdown, el.shadowRoot.querySelector('#calendarPopover')]).to.include(focused);
+      expect(focused).to.equal(next);
     });
 
     test('_onInputFocus does not close the calendar when the input is not actually focused', async () => {
