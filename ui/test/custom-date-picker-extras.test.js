@@ -1432,6 +1432,7 @@ suite('custom-date-picker extras', () => {
       el._isCalendarOpen = true;
       el._openedViaCalendarIcon = false;
       const dateInput = el.shadowRoot.querySelector('#dateInput');
+      expect(dateInput).to.exist;
       dateInput.focus();
       el._onInputFocus();
       await sleep(10);
