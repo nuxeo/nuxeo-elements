@@ -98,6 +98,8 @@ module.exports = (config) => {
       // prevent auto loading of polyfills
       compatibility: 'none',
       coverage,
+      // Vendored interpreter fork (see AGENTS.md); omit from coverage metrics.
+      ...(coverage ? { coverageExclude: ['**/ui/js-interpreter/**'] } : {}),
       // if you are using 'bare module imports' you will need this option
       nodeResolve: true,
       // needed for npm link or lerna support
@@ -108,7 +110,9 @@ module.exports = (config) => {
     port: 9876,
     colors: true,
     browserConsoleLogOptions: {
-      level: 'error',
+      // Set KARMA_VERBOSE=1 to surface karma-esm "Error loading test file" lines that are
+      // otherwise hidden — useful when diagnosing silently-skipped suites.
+      level: process.env.KARMA_VERBOSE === '1' ? 'log' : 'error',
     },
     logLevel: config.LOG_WARN,
     /** Some errors come in JSON format with a message property. */
@@ -131,10 +135,12 @@ module.exports = (config) => {
       reports: ['html', 'lcovonly', 'text-summary'],
       dir: path.join(__dirname, 'coverage', config.package),
       combineBrowserReports: true,
-      skipFilesWithNoCoverage: true,
+      // Keep 0%-hit files in reports so local HTML/LCOV align with SonarQube source scope.
+      skipFilesWithNoCoverage: false,
     },
 
     client: {
+      coveragePackage: config.package || 'core',
       mocha: {
         reporter: 'html',
         ui: 'tdd',
