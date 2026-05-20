@@ -134,6 +134,11 @@ IronOverlayManager._overlayWithBackdrop = function() {
         e.target.parentNode.insertBefore(e.target.backdropElement, e.target);
       }
 
+      // Ignore iron-overlay-opened from child overlays (e.g., paper-dropdown-menu's iron-dropdown)
+      if (e.target !== this) {
+        return;
+      }
+
       if (!this._instance) {
         const template = dom(this).querySelector('nuxeo-dialog > template');
         if (template) {
@@ -195,7 +200,11 @@ IronOverlayManager._overlayWithBackdrop = function() {
       }
     }
 
-    _onDialogClosed() {
+    _onDialogClosed(e) {
+      // Ignore iron-overlay-closed from child overlays (e.g., paper-dropdown-menu's iron-dropdown)
+      if (e.target !== this) {
+        return;
+      }
       if (this.modal || this.withBackdrop) {
         this.removeAttribute('aria-modal');
         this._disableFocusTrap(true);
@@ -287,6 +296,10 @@ IronOverlayManager._overlayWithBackdrop = function() {
         'input:not([disabled]):not([inert]):not([type="hidden"])',
         'select:not([disabled]):not([inert])',
         'textarea:not([disabled]):not([inert])',
+        '[contenteditable]:not([contenteditable="false"]):not([inert])',
+        'iframe:not([disabled]):not([inert])',
+        'audio[controls]:not([disabled]):not([inert])',
+        'video[controls]:not([disabled]):not([inert])',
         '[tabindex]:not([tabindex="-1"]):not([disabled]):not([inert])',
       ].join(',');
 
