@@ -429,7 +429,28 @@ suite('custom-date-picker', () => {
   });
 
   suite('month navigation with min boundary', () => {
+    const NAV_PREV_SELECTOR = '#prevMonth';
+    const NAV_NEXT_SELECTOR = '#nextMonth';
+    const DATE_INPUT_SELECTOR = '#dateInput';
+    const CALENDAR_POPOVER_SELECTOR = '#calendarPopover';
+    const FOCUS_SUPPRESSION_WINDOW_MS = 5000;
+
     let el;
+
+    const getNavButtons = () => {
+      return {
+        prev: el.shadowRoot.querySelector(NAV_PREV_SELECTOR),
+        next: el.shadowRoot.querySelector(NAV_NEXT_SELECTOR),
+      };
+    };
+
+    const setFocusSuppression = () => {
+      el._suppressInputFocusCloseUntil = Date.now() + FOCUS_SUPPRESSION_WINDOW_MS;
+    };
+
+    const clearFocusSuppression = () => {
+      el._suppressInputFocusCloseUntil = 0;
+    };
 
     setup(async () => {
       el = await fixture(
@@ -444,8 +465,7 @@ suite('custom-date-picker', () => {
     });
 
     test('nav buttons prevent default on mousedown so they do not steal focus', () => {
-      const prev = el.shadowRoot.querySelector('#prevMonth');
-      const next = el.shadowRoot.querySelector('#nextMonth');
+      const { prev, next } = getNavButtons();
       expect(prev).to.exist;
       expect(next).to.exist;
 
@@ -459,8 +479,7 @@ suite('custom-date-picker', () => {
     });
 
     test('clicking next then previous keeps the calendar open at the min-month boundary', async () => {
-      const prev = el.shadowRoot.querySelector('#prevMonth');
-      const next = el.shadowRoot.querySelector('#nextMonth');
+      const { prev, next } = getNavButtons();
 
       // The calendar opens on the min month (May 2026) - prev should be disabled.
       expect(el._isCalendarOpen).to.be.true;
@@ -483,8 +502,7 @@ suite('custom-date-picker', () => {
     });
 
     test('disabling the focused prev button moves focus inside the popover instead of out', async () => {
-      const prev = el.shadowRoot.querySelector('#prevMonth');
-      const next = el.shadowRoot.querySelector('#nextMonth');
+      const { prev, next } = getNavButtons();
 
       // Move forward so prev becomes enabled.
       next.click();
@@ -505,7 +523,7 @@ suite('custom-date-picker', () => {
       const yearDropdown = el.shadowRoot.querySelector('.year-dropdown');
       const focused = el.shadowRoot.activeElement;
       expect(focused).to.not.equal(prev);
-      expect([next, yearDropdown, el.shadowRoot.querySelector('#calendarPopover')]).to.include(focused);
+      expect([next, yearDropdown, el.shadowRoot.querySelector(CALENDAR_POPOVER_SELECTOR)]).to.include(focused);
     });
 
     test('_onInputFocus does not close the calendar when the input is not actually focused', async () => {
@@ -513,8 +531,8 @@ suite('custom-date-picker', () => {
 
       // Make the precondition explicit: _onInputFocus may run asynchronously while
       // focus is on another calendar control, and must not close in that case.
-      const dateInput = el.shadowRoot.querySelector('#dateInput');
-      const next = el.shadowRoot.querySelector('#nextMonth');
+      const dateInput = el.shadowRoot.querySelector(DATE_INPUT_SELECTOR);
+      const { next } = getNavButtons();
       expect(dateInput).to.exist;
       expect(next).to.exist;
       next.focus();
@@ -529,10 +547,10 @@ suite('custom-date-picker', () => {
     test('_isInputFocusCloseSuppressed returns true while suppression is active and false after it expires', () => {
       expect(el._isInputFocusCloseSuppressed()).to.be.false;
 
-      el._suppressInputFocusCloseUntil = Date.now() + 5000;
+      setFocusSuppression();
       expect(el._isInputFocusCloseSuppressed()).to.be.true;
 
-      el._suppressInputFocusCloseUntil = 0;
+      clearFocusSuppression();
       expect(el._isInputFocusCloseSuppressed()).to.be.false;
     });
 
@@ -540,12 +558,12 @@ suite('custom-date-picker', () => {
       expect(el._isCalendarOpen).to.be.true;
 
       // Activate suppression before calling _onInputFocus so the outer early return fires.
-      el._suppressInputFocusCloseUntil = Date.now() + 5000;
+      setFocusSuppression();
       el._onInputFocus();
       await flush();
 
       expect(el._isCalendarOpen).to.be.true;
-      el._suppressInputFocusCloseUntil = 0;
+      clearFocusSuppression();
     });
 
     test('_onInputFocus async callback respects suppression set after the call', async () => {
@@ -553,34 +571,33 @@ suite('custom-date-picker', () => {
 
       // Focus the date input so that the activeElement check inside the async callback
       // would normally allow the calendar to close.
-      const dateInput = el.shadowRoot.querySelector('#dateInput');
+      const dateInput = el.shadowRoot.querySelector(DATE_INPUT_SELECTOR);
       dateInput.focus();
 
       // Call _onInputFocus without suppression so the outer check passes and the async
       // callback is scheduled. Then immediately activate suppression so the inner check
       // inside the callback returns early instead of closing the calendar.
       el._onInputFocus();
-      el._suppressInputFocusCloseUntil = Date.now() + 5000;
+      setFocusSuppression();
       await flush();
 
       expect(el._isCalendarOpen).to.be.true;
-      el._suppressInputFocusCloseUntil = 0;
+      clearFocusSuppression();
     });
 
     test('_handleDocumentFocusIn returns early when suppression is active', () => {
       expect(el._isCalendarOpen).to.be.true;
 
-      el._suppressInputFocusCloseUntil = Date.now() + 5000;
+      setFocusSuppression();
       // Dispatch a focusin to document body; the handler should return early without side-effects.
       expect(() => el._handleDocumentFocusIn({ target: document.body })).to.not.throw();
       expect(el._isCalendarOpen).to.be.true;
 
-      el._suppressInputFocusCloseUntil = 0;
+      clearFocusSuppression();
     });
 
     test('focus moves to prev button when focused next button becomes disabled at max boundary', async () => {
-      const prev = el.shadowRoot.querySelector('#prevMonth');
-      const next = el.shadowRoot.querySelector('#nextMonth');
+      const { prev, next } = getNavButtons();
 
       // Navigate to June 2026 so both nav buttons are enabled.
       next.click();
@@ -609,9 +626,8 @@ suite('custom-date-picker', () => {
     });
 
     test('_getNavButtonFallbackFocusTarget falls back to calendarPopover when both nav buttons are disabled', () => {
-      const prev = el.shadowRoot.querySelector('#prevMonth');
-      const next = el.shadowRoot.querySelector('#nextMonth');
-      const calendarPopover = el.shadowRoot.querySelector('#calendarPopover');
+      const { prev, next } = getNavButtons();
+      const calendarPopover = el.shadowRoot.querySelector(CALENDAR_POPOVER_SELECTOR);
 
       // Directly exercise the fallback path: active element is prev, but next is also
       // disabled (e.g. picker constrained to a single month).
@@ -626,8 +642,7 @@ suite('custom-date-picker', () => {
     });
 
     test('disabled-active-nav detection reflects each disabled button state', () => {
-      const prev = el.shadowRoot.querySelector('#prevMonth');
-      const next = el.shadowRoot.querySelector('#nextMonth');
+      const { prev, next } = getNavButtons();
 
       expect(el._isActiveNavButtonDisabled(prev, prev, next, true, false)).to.be.true;
       expect(el._isActiveNavButtonDisabled(next, prev, next, false, true)).to.be.true;
@@ -635,7 +650,7 @@ suite('custom-date-picker', () => {
     });
 
     test('keyboard month navigation sets and clears interaction state', () => {
-      const prev = el.shadowRoot.querySelector('#prevMonth');
+      const { prev } = getNavButtons();
       expect(prev).to.exist;
 
       const event = new KeyboardEvent('keydown', {
@@ -652,14 +667,13 @@ suite('custom-date-picker', () => {
     });
 
     test('_getNavButtonFallbackFocusTarget returns nextButton when prevButton is focused and next is enabled', () => {
-      const prev = el.shadowRoot.querySelector('#prevMonth');
-      const next = el.shadowRoot.querySelector('#nextMonth');
+      const { prev, next } = getNavButtons();
       const result = el._getNavButtonFallbackFocusTarget(prev, prev, next, true, false);
       expect(result).to.equal(next);
     });
 
     test('_updateNavigationButtonStates does not relocate focus when calendar is closed', () => {
-      const prev = el.shadowRoot.querySelector('#prevMonth');
+      const { prev } = getNavButtons();
       el._isCalendarOpen = false;
       prev.focus();
       const focusSpy = sinon.spy(prev, 'focus');
@@ -669,7 +683,7 @@ suite('custom-date-picker', () => {
     });
 
     test('_updateNavigationButtonStates does not relocate focus when no focused nav button is disabled', () => {
-      const next = el.shadowRoot.querySelector('#nextMonth');
+      const { next } = getNavButtons();
       next.focus();
       // Navigate so neither button is at a boundary and neither becomes disabled.
       el._viewDate = new Date(2026, 5, 1); // June 2026 — well within bounds
@@ -680,7 +694,7 @@ suite('custom-date-picker', () => {
     });
 
     test('_updateNavigationButtonStates tolerates a null fallback from _getNavButtonFallbackFocusTarget', () => {
-      const prev = el.shadowRoot.querySelector('#prevMonth');
+      const { prev } = getNavButtons();
       prev.focus();
       const stub = sinon.stub(el, '_getNavButtonFallbackFocusTarget').returns(null);
       el._viewDate = new Date(2026, 4, 1); // min month — prev becomes disabled
