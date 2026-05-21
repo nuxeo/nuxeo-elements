@@ -28,6 +28,10 @@ import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
+// A short grace period prevents transient focus reroutes from immediately
+// collapsing the popover during month navigation.
+const FOCUS_SUPPRESSION_MS = 200;
+
 {
   class CustomDatePicker extends mixinBehaviors(
     [I18nBehavior, IronFormElementBehavior, IronValidatableBehavior],
@@ -1146,12 +1150,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           <!-- Modal backdrop + calendar: wrapped for Popover API top layer (WEBUI-1986 / iron-list transform) -->
           <div id="calendarOverlay" class="calendar-overlay-container" popover="manual">
+            <!-- Modal backdrop for calendar popover -->
             <div class="calendar-backdrop" id="calendarBackdrop" on-click="_closeCalendar"></div>
 
             <div
               class="calendar-popover"
               id="calendarPopover"
               role="dialog"
+              tabindex="-1"
               aria-label="[[i18n('customDatePicker.calendar')]]"
               aria-modal$="[[_isCalendarOpen]]"
             >
@@ -1208,6 +1214,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                     aria-label$="[[_previousMonthAriaLabel]]"
                     title$="[[_previousMonthAriaLabel]]"
                     tabindex="0"
+                    on-mousedown="_preventNavButtonFocus"
                     on-click="_previousMonth"
                     on-keydown="_handleNavButtonKeydown"
                     disabled$="[[_isPreviousMonthDisabled()]]"
@@ -1222,6 +1229,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                     aria-label$="[[_nextMonthAriaLabel]]"
                     title$="[[_nextMonthAriaLabel]]"
                     tabindex="0"
+                    on-mousedown="_preventNavButtonFocus"
                     on-click="_nextMonth"
                     on-keydown="_handleNavButtonKeydown"
                     disabled$="[[_isNextMonthDisabled()]]"
@@ -1333,7 +1341,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           try {
             const formatToUse = this.format ? this.format : moment.localeData().longDateFormat('L');
 
-            const date = this._moment(text, formatToUse, true); //strict parsing
+            const date = this._moment(text, formatToUse, true); // strict parsing
 
             if (date.isValid()) {
               return {
@@ -1716,15 +1724,72 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const prevButton = this.shadowRoot.querySelector('#prevMonth');
       const nextButton = this.shadowRoot.querySelector('#nextMonth');
 
+      // Track the currently focused nav button before updating disabled state, so that
+      // we can move focus to a safe element if the focused button is about to be disabled.
+      // Without this, the browser blurs the disabled button to <body>, which can trigger
+      // outer focusout listeners (e.g. in nuxeo-date-picker) that end up closing the calendar.
+      const activeElement = this.shadowRoot.activeElement;
+
+      const isPrevDisabled = prevButton ? this._isPreviousMonthDisabled() : false;
+      const isNextDisabled = nextButton ? this._isNextMonthDisabled() : false;
+
       if (prevButton) {
-        const isPrevDisabled = this._isPreviousMonthDisabled();
         prevButton.disabled = isPrevDisabled;
       }
 
       if (nextButton) {
-        const isNextDisabled = this._isNextMonthDisabled();
         nextButton.disabled = isNextDisabled;
       }
+
+      this._relocateFocusIfNavButtonDisabled({
+        activeElement,
+        prevButton,
+        nextButton,
+        isPrevDisabled,
+        isNextDisabled,
+      });
+    }
+
+    _relocateFocusIfNavButtonDisabled({ activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled }) {
+      // If the currently focused nav button just became disabled, move focus to a
+      // sibling element inside the calendar to keep focus within the popover.
+      if (!this._isCalendarOpen) {
+        return;
+      }
+
+      const focusedDisabledNavButton =
+        (activeElement === prevButton && isPrevDisabled) || (activeElement === nextButton && isNextDisabled);
+      if (!focusedDisabledNavButton) {
+        return;
+      }
+
+      const fallback = this._selectFocusFallback({
+        activeElement,
+        prevButton,
+        nextButton,
+        isPrevDisabled,
+        isNextDisabled,
+      });
+      if (fallback && typeof fallback.focus === 'function') {
+        fallback.focus();
+      }
+    }
+
+    _selectFocusFallback({ activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled }) {
+      if (activeElement === prevButton && nextButton && !isNextDisabled) {
+        return nextButton;
+      }
+
+      if (activeElement === nextButton && prevButton && !isPrevDisabled) {
+        return prevButton;
+      }
+
+      return (
+        this.shadowRoot.querySelector('.year-dropdown') ||
+        this.shadowRoot.querySelector('.calendar-day[tabindex="0"]') ||
+        this.shadowRoot.querySelector('.month-year-dropdown') ||
+        this.shadowRoot.querySelector('#calendarPopover')
+      );
     }
 
     _setupEventListeners() {
@@ -2277,6 +2342,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     // Bug fix: Handle focus moving outside the component
     _handleDocumentFocusIn(e) {
+      // Ignore transient focus changes right after calendar navigation interactions.
+      if (this._suppressInputFocusCloseUntil && Date.now() < this._suppressInputFocusCloseUntil) {
+        return;
+      }
+
       // Handle year dropdown focus outside
       if (this._isYearDropdownOpen) {
         const focusedElement = e.target;
@@ -2423,8 +2493,27 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Close calendar when user focuses on input to type
       // But not if calendar was just opened via calendar icon
       if (this._isCalendarOpen && !this._openedViaCalendarIcon) {
+        // Ignore transient input refocus that can occur right after calendar
+        // navigation interactions (e.g. when a nav button becomes disabled at
+        // min/max boundaries and outer wrappers momentarily re-route focus).
+        if (this._suppressInputFocusCloseUntil && Date.now() < this._suppressInputFocusCloseUntil) {
+          return;
+        }
+
         // Use async to ensure this happens after any other click handlers
         this.async(() => {
+          if (this._suppressInputFocusCloseUntil && Date.now() < this._suppressInputFocusCloseUntil) {
+            return;
+          }
+
+          // Only close if the input is still the focused element. The wrapper element
+          // (nuxeo-date-picker) re-focuses the host on focusout, which can transiently
+          // route focus through the input even though the user is interacting with the
+          // calendar (e.g. clicking month navigation buttons that become disabled).
+          const dateInput = this.shadowRoot.querySelector('#dateInput');
+          if (dateInput && this.shadowRoot.activeElement !== dateInput) {
+            return;
+          }
           this._closeCalendar();
         }, 1);
       }
@@ -2877,6 +2966,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           year: this._getYear(this._viewDate),
         }),
       );
+
+      // End nav-key interaction in the same lifecycle as month update.
+      this._interactingWithCalendar = false;
     }
 
     _nextMonth(e) {
@@ -2906,6 +2998,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           year: this._getYear(this._viewDate),
         }),
       );
+
+      // End nav-key interaction in the same lifecycle as month update.
+      this._interactingWithCalendar = false;
     }
 
     _changeYear(e) {
@@ -3309,11 +3404,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Use moment.js for reliable parsing
         const effectiveFormat = format || this.format || moment.localeData().longDateFormat('L');
 
-        const momentDate = this._moment(inputValue, effectiveFormat, true); //strict parsing
+        const momentDate = this._moment(inputValue, effectiveFormat, true); // strict parsing
 
         if (momentDate.isValid()) {
           const jsDate = momentDate.toDate();
-          jsDate.setHours(0, 0, 0, 0); //Normalize to start of day
+          jsDate.setHours(0, 0, 0, 0); // Normalize to start of day
           return jsDate;
         }
 
@@ -4575,6 +4670,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         });
       }
     }
+
     _isValidMomentFormat(format) {
       if (!format || typeof format !== 'string') return false;
 
@@ -5045,6 +5141,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         e.preventDefault();
         e.stopPropagation();
 
+        // Mirror mouse behavior: suppress transient wrapper-driven input refocus
+        // while keyboard month navigation is being processed.
+        this._suppressInputFocusCloseUntil = Date.now() + FOCUS_SUPPRESSION_MS;
+
+        // Mark that we're interacting with the calendar to prevent it from closing
+        this._interactingWithCalendar = true;
+
         // Call the appropriate navigation method directly
         if (e.target.id === 'prevMonth') {
           this._previousMonth(e);
@@ -5053,6 +5156,21 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         }
       }
       // Tab navigation is now handled by _handlePopoverKeydown
+    }
+
+    // Prevent the nav buttons from acquiring focus on mouse interaction.
+    // If a nav button gets focused and then becomes disabled (e.g. clicking previous
+    // month at the min-month boundary), the browser blurs it which bubbles a focusout
+    // up to the wrapping nuxeo-date-picker. The wrapper re-focuses the host, which in
+    // turn focuses the inner input and triggers the calendar to close. By preventing
+    // mousedown's default action, focus stays on whatever element previously held it.
+    _preventNavButtonFocus(e) {
+      if (e) {
+        // Keep this short: enough to cover focus hand-off caused by nav updates
+        // without masking legitimate later input focus events.
+        this._suppressInputFocusCloseUntil = Date.now() + FOCUS_SUPPRESSION_MS;
+        e.preventDefault();
+      }
     }
 
     // Grid tab navigation is now handled by central focus management
