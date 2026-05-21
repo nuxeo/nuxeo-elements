@@ -228,7 +228,7 @@ import '../nuxeo-button-styles.js';
         <!-- local permissions -->
         <nuxeo-card heading="[[i18n('userManagement.localPermissions.heading')]]">
           <nuxeo-user-group-permissions-table
-            entity="[[username]]"
+            entity="[[_userDisplayName(user)]]"
             caption-text="[[i18n('userManagement.localPermissions.heading')]]"
             readonly
           ></nuxeo-user-group-permissions-table>
@@ -307,6 +307,13 @@ import '../nuxeo-button-styles.js';
 
     _computeGroups() {
       return this.user.extendedGroups.filter((group) => this.user.properties.groups.indexOf(group.name) > -1);
+    }
+
+    _userDisplayName(user) {
+      if (!user) {
+        return '';
+      }
+      return user.name || (user.properties && user.properties.username) || '';
     }
 
     _openChangePasswordDialog() {
