@@ -181,11 +181,6 @@ const FOCUS_SUPPRESSION_MS = 200;
           value: false,
         },
 
-        _suppressInputFocusCloseUntil: {
-          type: Number,
-          value: 0,
-        },
-
         _showErrors: {
           type: Boolean,
           value: false,
@@ -1746,30 +1741,41 @@ const FOCUS_SUPPRESSION_MS = 200;
         nextButton.disabled = isNextDisabled;
       }
 
+      this._relocateFocusIfNavButtonDisabled({
+        activeElement,
+        prevButton,
+        nextButton,
+        isPrevDisabled,
+        isNextDisabled,
+      });
+    }
+
+    _relocateFocusIfNavButtonDisabled({ activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled }) {
       // If the currently focused nav button just became disabled, move focus to a
       // sibling element inside the calendar to keep focus within the popover.
-      if (
-        this._isCalendarOpen &&
-        this._isActiveNavButtonDisabled(activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled)
-      ) {
-        const fallback = this._getNavButtonFallbackFocusTarget(
-          activeElement,
-          prevButton,
-          nextButton,
-          isPrevDisabled,
-          isNextDisabled,
-        );
-        if (fallback && typeof fallback.focus === 'function') {
-          fallback.focus();
-        }
+      if (!this._isCalendarOpen) {
+        return;
+      }
+
+      const focusedDisabledNavButton =
+        (activeElement === prevButton && isPrevDisabled) || (activeElement === nextButton && isNextDisabled);
+      if (!focusedDisabledNavButton) {
+        return;
+      }
+
+      const fallback = this._selectFocusFallback({
+        activeElement,
+        prevButton,
+        nextButton,
+        isPrevDisabled,
+        isNextDisabled,
+      });
+      if (fallback && typeof fallback.focus === 'function') {
+        fallback.focus();
       }
     }
 
-    _isActiveNavButtonDisabled(activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled) {
-      return (activeElement === prevButton && isPrevDisabled) || (activeElement === nextButton && isNextDisabled);
-    }
-
-    _getNavButtonFallbackFocusTarget(activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled) {
+    _selectFocusFallback({ activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled }) {
       if (activeElement === prevButton && nextButton && !isNextDisabled) {
         return nextButton;
       }
@@ -2337,7 +2343,7 @@ const FOCUS_SUPPRESSION_MS = 200;
     // Bug fix: Handle focus moving outside the component
     _handleDocumentFocusIn(e) {
       // Ignore transient focus changes right after calendar navigation interactions.
-      if (this._isInputFocusCloseSuppressed()) {
+      if (this._suppressInputFocusCloseUntil && Date.now() < this._suppressInputFocusCloseUntil) {
         return;
       }
 
@@ -2490,13 +2496,13 @@ const FOCUS_SUPPRESSION_MS = 200;
         // Ignore transient input refocus that can occur right after calendar
         // navigation interactions (e.g. when a nav button becomes disabled at
         // min/max boundaries and outer wrappers momentarily re-route focus).
-        if (this._isInputFocusCloseSuppressed()) {
+        if (this._suppressInputFocusCloseUntil && Date.now() < this._suppressInputFocusCloseUntil) {
           return;
         }
 
         // Use async to ensure this happens after any other click handlers
         this.async(() => {
-          if (this._isInputFocusCloseSuppressed()) {
+          if (this._suppressInputFocusCloseUntil && Date.now() < this._suppressInputFocusCloseUntil) {
             return;
           }
 
@@ -2511,10 +2517,6 @@ const FOCUS_SUPPRESSION_MS = 200;
           this._closeCalendar();
         }, 1);
       }
-    }
-
-    _isInputFocusCloseSuppressed() {
-      return Date.now() < this._suppressInputFocusCloseUntil;
     }
 
     _onInputClick(e) {
@@ -5163,10 +5165,12 @@ const FOCUS_SUPPRESSION_MS = 200;
     // turn focuses the inner input and triggers the calendar to close. By preventing
     // mousedown's default action, focus stays on whatever element previously held it.
     _preventNavButtonFocus(e) {
-      // Keep this short: enough to cover focus hand-off caused by nav updates
-      // without masking legitimate later input focus events.
-      this._suppressInputFocusCloseUntil = Date.now() + FOCUS_SUPPRESSION_MS;
-      e.preventDefault();
+      if (e) {
+        // Keep this short: enough to cover focus hand-off caused by nav updates
+        // without masking legitimate later input focus events.
+        this._suppressInputFocusCloseUntil = Date.now() + FOCUS_SUPPRESSION_MS;
+        e.preventDefault();
+      }
     }
 
     // Grid tab navigation is now handled by central focus management

@@ -1432,6 +1432,7 @@ suite('custom-date-picker extras', () => {
       el._isCalendarOpen = true;
       el._openedViaCalendarIcon = false;
       const dateInput = el.shadowRoot.querySelector('#dateInput');
+      expect(dateInput).to.exist;
       dateInput.focus();
       el._onInputFocus();
       await sleep(10);
@@ -1445,6 +1446,33 @@ suite('custom-date-picker extras', () => {
       el._onInputFocus();
       await sleep(10);
       expect(el._isCalendarOpen).to.be.true;
+    });
+
+    test('does not close calendar during focus suppression window', async () => {
+      const el = await newPicker();
+      el._isCalendarOpen = true;
+      el._openedViaCalendarIcon = false;
+      el._suppressInputFocusCloseUntil = Date.now() + 200;
+      el._onInputFocus();
+      await sleep(10);
+      expect(el._isCalendarOpen).to.be.true;
+    });
+
+    test('keeps calendar open when async focus check is suppressed', async () => {
+      const el = await newPicker();
+      el._isCalendarOpen = true;
+      el._openedViaCalendarIcon = false;
+      const originalAsync = el.async;
+      el.async = (callback) => {
+        el._suppressInputFocusCloseUntil = Date.now() + 200;
+        callback();
+      };
+
+      el._onInputFocus();
+      await sleep(10);
+      expect(el._isCalendarOpen).to.be.true;
+
+      el.async = originalAsync;
     });
   });
 
@@ -2129,6 +2157,18 @@ suite('custom-date-picker extras', () => {
       el._justOpenedCalendar = false;
       el._handleDocumentFocusIn({ target: document.body });
       await sleep(100);
+    });
+
+    test('returns early during suppression window', async () => {
+      const el = await newPicker();
+      el._openCalendar();
+      el._justOpenedCalendar = false;
+      el._suppressInputFocusCloseUntil = Date.now() + 200;
+      const closeSpy = sinon.spy(el, '_closeCalendar');
+      el._handleDocumentFocusIn({ target: document.documentElement });
+      await sleep(60);
+      expect(closeSpy).not.to.have.been.called;
+      closeSpy.restore();
     });
   });
 
