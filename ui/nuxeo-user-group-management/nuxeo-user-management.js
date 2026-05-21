@@ -365,11 +365,7 @@ import '../nuxeo-button-styles.js';
 
         <!-- local permissions -->
         <nuxeo-card heading="[[i18n('userManagement.localPermissions.heading')]]">
-          <nuxeo-user-group-permissions-table
-            entity="[[user.id]]"
-            entity-label="[[_userDisplayName(user)]]"
-            readonly="[[readonly]]"
-          >
+          <nuxeo-user-group-permissions-table entity="[[_userDisplayName(user)]]" readonly="[[readonly]]">
           </nuxeo-user-group-permissions-table>
         </nuxeo-card>
 
