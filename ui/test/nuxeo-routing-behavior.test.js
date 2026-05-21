@@ -257,7 +257,7 @@ suite('RoutingBehavior extras', () => {
       expect(result).to.equal('/nuxeo/ui/browse');
     });
 
-    test('joins base and path without extra separator when both have slashes', () => {
+    test('keeps both slashes (no extra separator added) when base ends with / and path starts with /', () => {
       router.useHashbang = false;
       const result = ctx._generateUrl('/nuxeo/ui/', '/browse');
       expect(result).to.equal('/nuxeo/ui//browse');
@@ -317,12 +317,14 @@ suite('RoutingBehavior extras', () => {
     });
 
     test('logs error when router is null', () => {
-      const origError = console.error;
-      console.error = sinon.stub();
-      ctx.router = null;
-      navigateTo.call(ctx, 'someRoute');
-      expect(console.error).to.have.been.calledWith('No router defined');
-      console.error = origError;
+      const errorStub = sinon.stub(console, 'error');
+      try {
+        ctx.router = null;
+        navigateTo.call(ctx, 'someRoute');
+        expect(errorStub).to.have.been.calledWith('No router defined');
+      } finally {
+        errorStub.restore();
+      }
     });
 
     test('navigates to entity object', () => {

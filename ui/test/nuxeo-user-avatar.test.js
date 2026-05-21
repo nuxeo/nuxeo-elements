@@ -247,7 +247,7 @@ suite('nuxeo-user-avatar extras', () => {
       const hue = el.__generateHue();
       expect(hue).to.be.a('number');
       expect(hue).to.be.at.least(0);
-      expect(hue).to.be.at.most(360);
+      expect(hue).to.be.at.most(359);
     });
 
     test('produces same hue for same user', () => {

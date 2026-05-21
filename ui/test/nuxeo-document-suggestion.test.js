@@ -376,57 +376,73 @@ suite('nuxeo-document-suggestion extras', () => {
   });
 
   suite('_resolveDocs', () => {
-    test('calls operation and returns single entry for non-multiple', () => {
+    // Wait for the `.then()` chain attached to the stubbed `execute()` promise to flush.
+    // The stub resolves synchronously, so awaiting the stub's returned promise (plus one
+    // microtask hop) is deterministic — no need for arbitrary setTimeout delays.
+    const flushResolveDocs = async (execStub) => {
+      await execStub.firstCall.returnValue;
+      await Promise.resolve();
+    };
+
+    test('calls operation and returns single entry for non-multiple', async () => {
       el.multiple = false;
       const entry = { uid: 'u1', title: 'Doc' };
-      sinon.stub(el.$.op, 'execute').resolves({ entries: [entry] });
-      const cb = sinon.spy();
-      el._resolveDocs('u1', cb);
-      return new Promise((r) => setTimeout(r, 50)).then(() => {
+      const execStub = sinon.stub(el.$.op, 'execute').resolves({ entries: [entry] });
+      try {
+        const cb = sinon.spy();
+        el._resolveDocs('u1', cb);
+        await flushResolveDocs(execStub);
         expect(cb).to.have.been.calledWith(entry);
-        el.$.op.execute.restore();
-      });
+      } finally {
+        execStub.restore();
+      }
     });
 
-    test('returns docs when entries is empty for non-multiple', () => {
+    test('returns docs when entries is empty for non-multiple', async () => {
       el.multiple = false;
-      sinon.stub(el.$.op, 'execute').resolves({ entries: [] });
-      const cb = sinon.spy();
-      el._resolveDocs('u1', cb);
-      return new Promise((r) => setTimeout(r, 50)).then(() => {
+      const execStub = sinon.stub(el.$.op, 'execute').resolves({ entries: [] });
+      try {
+        const cb = sinon.spy();
+        el._resolveDocs('u1', cb);
+        await flushResolveDocs(execStub);
         expect(cb).to.have.been.calledWith('u1');
-        el.$.op.execute.restore();
-      });
+      } finally {
+        execStub.restore();
+      }
     });
 
-    test('reconciles missing entries for multiple', () => {
+    test('reconciles missing entries for multiple', async () => {
       el.multiple = true;
       el.idProperty = 'ecm:uuid';
       const entry = { uid: 'u1', title: 'Doc' };
-      sinon.stub(el.$.op, 'execute').resolves({ entries: [entry] });
-      const cb = sinon.spy();
-      el._resolveDocs(['u1', 'u2'], cb);
-      return new Promise((r) => setTimeout(r, 50)).then(() => {
+      const execStub = sinon.stub(el.$.op, 'execute').resolves({ entries: [entry] });
+      try {
+        const cb = sinon.spy();
+        el._resolveDocs(['u1', 'u2'], cb);
+        await flushResolveDocs(execStub);
         expect(cb).to.have.been.calledOnce;
         const args = cb.firstCall.args[0];
         expect(args).to.have.lengthOf(2);
         expect(args[0]).to.equal(entry);
         expect(args[1]).to.equal('u2');
-        el.$.op.execute.restore();
-      });
+      } finally {
+        execStub.restore();
+      }
     });
 
-    test('returns all entries when counts match for multiple', () => {
+    test('returns all entries when counts match for multiple', async () => {
       el.multiple = true;
       const e1 = { uid: 'u1' };
       const e2 = { uid: 'u2' };
-      sinon.stub(el.$.op, 'execute').resolves({ entries: [e1, e2] });
-      const cb = sinon.spy();
-      el._resolveDocs(['u1', 'u2'], cb);
-      return new Promise((r) => setTimeout(r, 50)).then(() => {
+      const execStub = sinon.stub(el.$.op, 'execute').resolves({ entries: [e1, e2] });
+      try {
+        const cb = sinon.spy();
+        el._resolveDocs(['u1', 'u2'], cb);
+        await flushResolveDocs(execStub);
         expect(cb).to.have.been.calledWith([e1, e2]);
-        el.$.op.execute.restore();
-      });
+      } finally {
+        execStub.restore();
+      }
     });
   });
 });
