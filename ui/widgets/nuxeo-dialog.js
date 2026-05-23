@@ -98,7 +98,9 @@ IronOverlayManager._overlayWithBackdrop = function() {
       this.addEventListener('iron-overlay-opened', this._opened);
       this.addEventListener('iron-overlay-closed', this._onDialogClosed);
       this._boundTrapTab = this._trapTab.bind(this);
+      this._boundRecoverFocus = this._recoverFocus.bind(this);
       this._inertApplied = false;
+      this._inertedElements = [];
     }
 
     /**
@@ -120,6 +122,7 @@ IronOverlayManager._overlayWithBackdrop = function() {
         this.detached();
       }
       document.removeEventListener('keydown', this._boundTrapTab, true);
+      this.removeEventListener('focusout', this._boundRecoverFocus);
       // Only clear inert if this instance previously applied it
       if (this._inertApplied) {
         this._setBackgroundInert(false);
@@ -220,17 +223,70 @@ IronOverlayManager._overlayWithBackdrop = function() {
       if (!this._boundTrapTab) {
         this._boundTrapTab = this._trapTab.bind(this);
       }
+      if (!this._boundRecoverFocus) {
+        this._boundRecoverFocus = this._recoverFocus.bind(this);
+      }
       // Remove first to prevent duplicate registrations
       document.removeEventListener('keydown', this._boundTrapTab, true);
       document.addEventListener('keydown', this._boundTrapTab, true);
+      this.removeEventListener('focusout', this._boundRecoverFocus);
+      this.addEventListener('focusout', this._boundRecoverFocus);
     }
 
     _disableFocusTrap(clearInert) {
       document.removeEventListener('keydown', this._boundTrapTab, true);
+      this.removeEventListener('focusout', this._boundRecoverFocus);
       if (clearInert && this._inertApplied) {
         this._setBackgroundInert(false);
         this._inertApplied = false;
       }
+    }
+
+    /**
+     * Recovers focus when it escapes the dialog while it's still open and modal/withBackdrop.
+     * This handles cases where DOM changes inside the dialog remove the focused element
+     * (e.g., pressing "Back" in creation wizard removes the form, causing focus to fall to body).
+     */
+    _recoverFocus(e) {
+      if (!this.opened || !(this.modal || this.withBackdrop)) {
+        return;
+      }
+      // If relatedTarget is inside the dialog, focus is staying inside — no recovery needed
+      if (e.relatedTarget && this._containsDeep(e.relatedTarget)) {
+        return;
+      }
+      // relatedTarget is null (element removed from DOM) or outside the dialog.
+      // Use requestAnimationFrame to check after the browser settles focus.
+      requestAnimationFrame(() => {
+        if (!this.opened || !(this.modal || this.withBackdrop)) {
+          return;
+        }
+        if (!this._containsDeepFocus()) {
+          const focusables = this._getFocusableElements();
+          if (focusables.length > 0) {
+            focusables[0].focus();
+          } else {
+            this.focus();
+          }
+        }
+      });
+    }
+
+    /**
+     * Checks if an element is contained within this dialog's composed tree.
+     */
+    _containsDeep(el) {
+      let current = el;
+      while (current) {
+        if (current === this) {
+          return true;
+        }
+        current = current.parentNode || (current.getRootNode && current.getRootNode()).host;
+        if (current instanceof ShadowRoot) {
+          current = current.host;
+        }
+      }
+      return false;
     }
 
     /**
@@ -286,8 +342,10 @@ IronOverlayManager._overlayWithBackdrop = function() {
      * Gets all focusable elements within the dialog, traversing shadow roots.
      * Uses a Set to avoid collecting duplicates when the same element is reachable
      * through multiple paths (light DOM children + slot assignments + shadow roots).
-     * When an element is itself focusable, we do NOT descend into its shadow root —
-     * the element manages its own internal focus (e.g., paper-tabs uses arrow keys).
+     * When a custom element (with shadow root) is focusable, we do NOT descend into
+     * its shadow root — the element manages its own internal focus (e.g., paper-tabs
+     * uses arrow keys). For plain elements with tabindex (e.g., a dropzone div), we
+     * still descend to collect their focusable children.
      */
     _getFocusableElements() {
       const selectors = [
@@ -324,9 +382,15 @@ IronOverlayManager._overlayWithBackdrop = function() {
           assigned.forEach((slotted) => {
             if (!visited.has(slotted)) {
               if (slotted.matches && slotted.matches(selectors) && this._isVisible(slotted)) {
-                // Element is focusable — add it and skip its subtree
                 results.push(slotted);
-                visited.add(slotted);
+                // Custom elements with shadow DOM manage their own internal focus (e.g., paper-tabs
+                // uses arrow keys). Plain elements with tabindex (e.g., a dropzone div) are just
+                // containers — also collect their focusable children.
+                if (slotted.shadowRoot) {
+                  visited.add(slotted);
+                } else {
+                  this._collectFocusables(slotted, selectors, results, visited);
+                }
               } else {
                 // Not focusable — descend into it
                 this._collectFocusables(slotted, selectors, results, visited);
@@ -340,12 +404,17 @@ IronOverlayManager._overlayWithBackdrop = function() {
         }
         if (!visited.has(el)) {
           if (el.matches(selectors) && this._isVisible(el)) {
-            // Element is focusable — add it and skip its subtree (including shadow root)
             results.push(el);
-            visited.add(el);
+            // Custom elements with shadow DOM manage their own internal focus (e.g., paper-tabs
+            // uses arrow keys). Plain elements with tabindex (e.g., a dropzone div) are just
+            // containers — also collect their focusable children.
+            if (el.shadowRoot) {
+              visited.add(el);
+            } else {
+              this._collectFocusables(el, selectors, results, visited);
+            }
           } else {
             // Not focusable — recurse into children and shadow root.
-            // _collectFocusables will add el to visited as it processes it.
             this._collectFocusables(el, selectors, results, visited);
             if (el.shadowRoot) {
               this._collectFocusables(el.shadowRoot, selectors, results, visited);
@@ -423,22 +492,28 @@ IronOverlayManager._overlayWithBackdrop = function() {
      * Uses a ref-counting approach via `__nuxeoDialogInertCount` to safely handle:
      * - Multiple stacked dialogs (each dialog increments/decrements the counter)
      * - Pre-existing inert attributes (only removes inert when all dialog references are cleared)
+     *
+     * When applying inert, stores affected elements so that cleanup always works correctly
+     * even if the dialog's position in the DOM changes between open and close (e.g., due to
+     * nuxeo-actions-menu reparenting).
      */
     _setBackgroundInert(inert) {
-      let current = this;
-      let parent = this.parentNode;
+      if (inert) {
+        // Apply inert and store affected elements for later cleanup
+        this._inertedElements = [];
+        let current = this;
+        let parent = this.parentNode;
 
-      while (parent) {
-        Array.from(parent.children).forEach((sibling) => {
-          if (
-            sibling === current ||
-            sibling.localName === 'style' ||
-            sibling.localName === 'script' ||
-            sibling === this.backdropElement
-          ) {
-            return;
-          }
-          if (inert) {
+        while (parent) {
+          Array.from(parent.children).forEach((sibling) => {
+            if (
+              sibling === current ||
+              sibling.localName === 'style' ||
+              sibling.localName === 'script' ||
+              sibling === this.backdropElement
+            ) {
+              return;
+            }
             if (!sibling.__nuxeoDialogInertCount) {
               sibling.__nuxeoDialogInertCount = 0;
               // Track whether the element was already inert before we touched it
@@ -446,7 +521,21 @@ IronOverlayManager._overlayWithBackdrop = function() {
             }
             sibling.__nuxeoDialogInertCount++;
             sibling.setAttribute('inert', '');
-          } else if (sibling.__nuxeoDialogInertCount > 0) {
+            this._inertedElements.push(sibling);
+          });
+
+          if (parent instanceof ShadowRoot) {
+            current = parent.host;
+            parent = current.parentNode;
+          } else {
+            current = parent;
+            parent = parent.parentNode;
+          }
+        }
+      } else {
+        // Remove inert using the stored list, ensuring cleanup works regardless of DOM moves
+        this._inertedElements.forEach((sibling) => {
+          if (sibling.__nuxeoDialogInertCount > 0) {
             sibling.__nuxeoDialogInertCount--;
             if (sibling.__nuxeoDialogInertCount === 0) {
               // Only remove inert if the element wasn't already inert before
@@ -458,14 +547,7 @@ IronOverlayManager._overlayWithBackdrop = function() {
             }
           }
         });
-
-        if (parent instanceof ShadowRoot) {
-          current = parent.host;
-          parent = current.parentNode;
-        } else {
-          current = parent;
-          parent = parent.parentNode;
-        }
+        this._inertedElements = [];
       }
     }
 
