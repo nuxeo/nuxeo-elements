@@ -95,5 +95,26 @@ suite('nuxeo-notify-behavior', () => {
       expect(evt.detail.message).to.equal(message);
       expect(evt.target).to.equal(outer);
     });
+
+    test('Should silently no-op when no target nor fallback is available', async () => {
+      const outer = await fixture(html`
+        <outer-element>
+          <inner-element></inner-element>
+        </outer-element>
+      `);
+      setFallbackNotificationTarget(undefined);
+
+      const inner = outer.querySelector('inner-element');
+      outer.removeChild(inner);
+      await flush();
+      expect(inner.isConnected).to.be.false;
+
+      const notifySpy = sinon.spy();
+      document.addEventListener('notify', notifySpy);
+      inner.notify({ message: 'ignored' });
+      await flush();
+      document.removeEventListener('notify', notifySpy);
+      expect(notifySpy.called).to.be.false;
+    });
   });
 });

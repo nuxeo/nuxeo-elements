@@ -354,6 +354,10 @@ IronOverlayManager._overlayWithBackdrop = function() {
         'input:not([disabled]):not([inert]):not([type="hidden"])',
         'select:not([disabled]):not([inert])',
         'textarea:not([disabled]):not([inert])',
+        '[contenteditable]:not([contenteditable="false"]):not([inert])',
+        'iframe:not([disabled]):not([inert])',
+        'audio[controls]:not([disabled]):not([inert])',
+        'video[controls]:not([disabled]):not([inert])',
         '[tabindex]:not([tabindex="-1"]):not([disabled]):not([inert])',
       ].join(',');
 

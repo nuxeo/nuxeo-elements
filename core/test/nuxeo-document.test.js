@@ -237,6 +237,190 @@ suite('nuxeo-document', () => {
     });
   });
 
+  suite('http method helpers', () => {
+    setup(() => {
+      server.respondWith('POST', '/api/v1/path/something', [200, responseHeaders.json, '{"ok":true}']);
+      server.respondWith('PUT', '/api/v1/path/something', [200, responseHeaders.json, '{"ok":true}']);
+      server.respondWith('DELETE', '/api/v1/path/something', [200, responseHeaders.json, '{}']);
+    });
+
+    test('post creates the document with POST verb', async () => {
+      const doc = await fixture(
+        html`
+          <nuxeo-document doc-path="something"></nuxeo-document>
+        `,
+      );
+      doc.data = { 'entity-type': 'document', name: 'foo' };
+      await doc.post();
+      const last = server.requests.find((r) => r.method === 'POST' && r.url.endsWith('/path/something'));
+      expect(last).to.exist;
+    });
+
+    test('put updates the document with PUT verb', async () => {
+      const doc = await fixture(
+        html`
+          <nuxeo-document doc-path="something"></nuxeo-document>
+        `,
+      );
+      await doc.put();
+      const last = server.requests.find((r) => r.method === 'PUT' && r.url.endsWith('/path/something'));
+      expect(last).to.exist;
+    });
+
+    test('remove deletes the document with DELETE verb', async () => {
+      const doc = await fixture(
+        html`
+          <nuxeo-document doc-path="something"></nuxeo-document>
+        `,
+      );
+      await doc.remove();
+      const last = server.requests.find((r) => r.method === 'DELETE' && r.url.endsWith('/path/something'));
+      expect(last).to.exist;
+    });
+  });
+
+  suite('files:files response handling', () => {
+    setup(() => {
+      server.respondWith('GET', '/api/v1/path/files-doc', [
+        200,
+        responseHeaders.json,
+        JSON.stringify({
+          properties: {
+            'files:files': [{ file: { data: '/nuxeo/file-a.txt' } }, { file: { data: '/nuxeo/file-b.txt' } }],
+          },
+        }),
+      ]);
+    });
+
+    test('appends clientReason for entries inside files:files', async () => {
+      const doc = await fixture(
+        html`
+          <nuxeo-document doc-path="files-doc"></nuxeo-document>
+        `,
+      );
+      await doc.get();
+      expect(doc.documentData.properties['files:files'][0].file.viewUrl).to.contain('clientReason=view');
+      expect(doc.documentData.properties['files:files'][0].file.downloadUrl).to.contain('clientReason=download');
+    });
+  });
+
+  suite('setDocumentViewDownloadProp branches', () => {
+    test('does nothing when documentData is empty', async () => {
+      const doc = await fixture(
+        html`
+          <nuxeo-document doc-id="x"></nuxeo-document>
+        `,
+      );
+      doc.documentData = null;
+      expect(() => doc.setDocumentViewDownloadProp()).to.not.throw();
+    });
+
+    test('handles documentData without contextParameters or properties', async () => {
+      const doc = await fixture(
+        html`
+          <nuxeo-document doc-id="x"></nuxeo-document>
+        `,
+      );
+      doc.documentData = {};
+      expect(() => doc.setDocumentViewDownloadProp()).to.not.throw();
+    });
+
+    test('appendClientReason uses url when only url field is present', async () => {
+      const doc = await fixture(
+        html`
+          <nuxeo-document doc-id="x"></nuxeo-document>
+        `,
+      );
+      const prop = { url: 'http://example.com/file' };
+      doc.appendClientReason(prop);
+      expect(prop.viewUrl).to.equal('http://example.com/file?clientReason=view');
+      expect(prop.downloadUrl).to.equal('http://example.com/file?clientReason=download');
+    });
+
+    test('appendClientReason no-ops when neither url nor data is present', async () => {
+      const doc = await fixture(
+        html`
+          <nuxeo-document doc-id="x"></nuxeo-document>
+        `,
+      );
+      const prop = { other: 'value' };
+      doc.appendClientReason(prop);
+      expect(prop.viewUrl).to.be.undefined;
+      expect(prop.downloadUrl).to.be.undefined;
+    });
+  });
+
+  suite('_computePath fallback', () => {
+    test('returns empty path when neither docId nor docPath is set', async () => {
+      const doc = await fixture(
+        html`
+          <nuxeo-document></nuxeo-document>
+        `,
+      );
+      expect(doc.path).to.equal('');
+    });
+  });
+
+  suite('response listener edge cases', () => {
+    test('clears documentData when the resource response has no detail', async () => {
+      const doc = await fixture(
+        html`
+          <nuxeo-document doc-id="x"></nuxeo-document>
+        `,
+      );
+      doc.documentData = { previous: true };
+      doc.$.nxResource.dispatchEvent(new CustomEvent('response', { bubbles: true, composed: true, detail: null }));
+      expect(doc.documentData).to.be.null;
+    });
+
+    test('does not append clientReason when file:content has no data', async () => {
+      const doc = await fixture(
+        html`
+          <nuxeo-document doc-id="x"></nuxeo-document>
+        `,
+      );
+      doc.$.nxResource.dispatchEvent(
+        new CustomEvent('response', {
+          bubbles: true,
+          composed: true,
+          detail: { response: { properties: { 'file:content': { 'mime-type': 'text/plain' } } } },
+        }),
+      );
+      expect(doc.documentData.properties['file:content']).to.not.have.property('viewUrl');
+    });
+  });
+
+  suite('isFollowRedirectEnabled', () => {
+    setup(() => {
+      Nuxeo.UI = Nuxeo.UI || {};
+      Nuxeo.UI.config = Nuxeo.UI.config || {};
+      Nuxeo.UI.config.url = Nuxeo.UI.config.url || {};
+    });
+    teardown(() => {
+      delete Nuxeo.UI.config.url.followRedirect;
+    });
+
+    test('returns true when followRedirect is "true"', async () => {
+      const doc = await fixture(
+        html`
+          <nuxeo-document doc-path="x"></nuxeo-document>
+        `,
+      );
+      Nuxeo.UI.config.url.followRedirect = 'true';
+      expect(doc.isFollowRedirectEnabled()).to.be.true;
+    });
+
+    test('returns false when followRedirect is unset', async () => {
+      const doc = await fixture(
+        html`
+          <nuxeo-document doc-path="x"></nuxeo-document>
+        `,
+      );
+      delete Nuxeo.UI.config.url.followRedirect;
+      expect(doc.isFollowRedirectEnabled()).to.be.false;
+    });
+  });
+
   suite('when setting document view or download action', () => {
     test('should set view and download data', async () => {
       const document = await fixture(
