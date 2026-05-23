@@ -272,6 +272,24 @@ suite('nuxeo-dialog', () => {
       expect(ids).to.include('tabbable');
     });
 
+    test('should descend into plain focusable containers without shadow DOM', async () => {
+      dialog = await fixture(html`
+        <nuxeo-dialog modal>
+          <div id="container" tabindex="0">
+            <button id="innerBtn">Inner</button>
+            <input id="innerInput" type="text" />
+          </div>
+        </nuxeo-dialog>
+      `);
+      await waitForOpen(dialog);
+      const focusables = dialog._getFocusableElements();
+      const ids = focusables.map((el) => el.id);
+      // The container itself AND its children should be found
+      expect(ids).to.include('container');
+      expect(ids).to.include('innerBtn');
+      expect(ids).to.include('innerInput');
+    });
+
     test('should exclude hidden inputs', async () => {
       dialog = await fixture(html`
         <nuxeo-dialog modal>
@@ -512,6 +530,28 @@ suite('nuxeo-dialog', () => {
       dialog2._setBackgroundInert(false);
       expect(sibling.hasAttribute('inert')).to.be.false;
       expect(sibling.__nuxeoDialogInertCount).to.be.undefined;
+    });
+
+    test('should clear inert correctly even if dialog is reparented after applying', () => {
+      // Simulates the nuxeo-actions-menu reparenting scenario:
+      // Dialog opens inside an action button (sibling gets inerted), then the action
+      // button is moved to a different DOM location. On close, inert must still be cleared.
+      const wrapper = document.createElement('div');
+      wrapper.id = 'reparent-wrapper';
+      document.body.appendChild(wrapper);
+
+      dialog._setBackgroundInert(true);
+      expect(sibling.hasAttribute('inert')).to.be.true;
+
+      // Reparent the dialog's host to a different container (simulating nuxeo-actions-menu._reparent)
+      wrapper.appendChild(dialog);
+
+      // Now clear inert — should still work because we stored the elements
+      dialog._setBackgroundInert(false);
+      expect(sibling.hasAttribute('inert')).to.be.false;
+      expect(sibling.__nuxeoDialogInertCount).to.be.undefined;
+
+      wrapper.parentNode.removeChild(wrapper);
     });
   });
 
