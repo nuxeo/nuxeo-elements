@@ -675,14 +675,22 @@ suite('nuxeo-dialog', () => {
       addSpy.restore();
     });
 
-    test('_enableFocusTrap should set inert when flag is true', () => {
+    test('_enableFocusTrap should not apply background inert (deferred — see _setBackgroundInert suite)', () => {
+      // The focus trap intentionally no longer applies `inert` to ancestor/sibling elements
+      // because it caused `pointer-events: none` to leak into notification panels (toasts),
+      // breaking dismiss-button clicks. Focus containment is provided by the keydown Tab
+      // trap plus `aria-modal`. Direct callers can still invoke _setBackgroundInert.
       const inertSpy = sinon.spy(dialog, '_setBackgroundInert');
       dialog._enableFocusTrap(true);
-      expect(inertSpy).to.have.been.calledWith(true);
+      expect(inertSpy).to.not.have.been.called;
+      expect(dialog._inertApplied).to.not.be.true;
+      expect(dialog._focusTrapEnabled).to.be.true;
       inertSpy.restore();
     });
 
     test('_enableFocusTrap should not apply inert twice (idempotent)', () => {
+      // _enableFocusTrap no longer calls _setBackgroundInert at all; verify it remains uncalled
+      // across repeated invocations.
       dialog._enableFocusTrap(true);
       const inertSpy = sinon.spy(dialog, '_setBackgroundInert');
       dialog._enableFocusTrap(true);
@@ -698,11 +706,14 @@ suite('nuxeo-dialog', () => {
       removeSpy.restore();
     });
 
-    test('_disableFocusTrap should clear inert when flag is true', () => {
+    test('_disableFocusTrap should not call _setBackgroundInert when no inert was applied', () => {
+      // Since _enableFocusTrap no longer applies inert, _inertApplied stays false and the
+      // defensive cleanup in _disableFocusTrap should skip the call.
       dialog._enableFocusTrap(true);
       const inertSpy = sinon.spy(dialog, '_setBackgroundInert');
       dialog._disableFocusTrap(true);
-      expect(inertSpy).to.have.been.calledWith(false);
+      expect(inertSpy).to.not.have.been.called;
+      expect(dialog._focusTrapEnabled).to.be.false;
       inertSpy.restore();
     });
 
@@ -719,7 +730,7 @@ suite('nuxeo-dialog', () => {
   });
 
   suite('disconnectedCallback cleanup', () => {
-    test('should remove keydown listener and clear inert on disconnect', async () => {
+    test('should remove keydown listener on disconnect', async () => {
       dialog = await fixture(html`
         <nuxeo-dialog modal>
           <button>OK</button>
@@ -727,10 +738,12 @@ suite('nuxeo-dialog', () => {
       `);
       await waitForOpen(dialog);
       const removeSpy = sinon.spy(document, 'removeEventListener');
+      // _enableFocusTrap no longer applies inert, so disconnectedCallback should skip
+      // the _setBackgroundInert(false) call (guarded by _inertApplied).
       const inertSpy = sinon.spy(dialog, '_setBackgroundInert');
       dialog.parentNode.removeChild(dialog);
       expect(removeSpy.calledWith('keydown', dialog._boundTrapTab, true)).to.be.true;
-      expect(inertSpy).to.have.been.calledWith(false);
+      expect(inertSpy).to.not.have.been.called;
       removeSpy.restore();
       inertSpy.restore();
     });
@@ -788,7 +801,7 @@ suite('nuxeo-dialog', () => {
       await flush();
 
       // Focus trap should still be active
-      expect(dialog._inertApplied).to.be.true;
+      expect(dialog._focusTrapEnabled).to.be.true;
       const first = dialog.querySelector('#first');
       first.focus();
       const event = pressTab(true);
@@ -813,7 +826,7 @@ suite('nuxeo-dialog', () => {
       await flush();
 
       // Focus trap should still be active (not re-triggered by child event)
-      expect(dialog._inertApplied).to.be.true;
+      expect(dialog._focusTrapEnabled).to.be.true;
     });
 
     test('should still disable focus trap when dialog itself closes', async () => {
@@ -825,11 +838,11 @@ suite('nuxeo-dialog', () => {
       `);
       await waitForOpen(dialog);
       await flush();
-      expect(dialog._inertApplied).to.be.true;
+      expect(dialog._focusTrapEnabled).to.be.true;
 
       await waitForClose(dialog);
       await flush();
-      expect(dialog._inertApplied).to.be.false;
+      expect(dialog._focusTrapEnabled).to.be.false;
     });
   });
 });
