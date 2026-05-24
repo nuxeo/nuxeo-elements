@@ -167,13 +167,13 @@ IronOverlayManager._overlayWithBackdrop = function() {
           if (!this._containsDeepFocus()) {
             const focusTarget = this.querySelector('[autofocus]');
             if (focusTarget) {
-              focusTarget.focus();
+              focusTarget.focus({ preventScroll: true });
             } else {
               const focusables = this._getFocusableElements();
               if (focusables.length > 0) {
-                focusables[0].focus();
+                focusables[0].focus({ preventScroll: true });
               } else {
-                this.focus();
+                this.focus({ preventScroll: true });
               }
             }
           }
@@ -272,9 +272,9 @@ IronOverlayManager._overlayWithBackdrop = function() {
         if (!this._containsDeepFocus()) {
           const focusables = this._getFocusableElements();
           if (focusables.length > 0) {
-            focusables[0].focus();
+            focusables[0].focus({ preventScroll: true });
           } else {
-            this.focus();
+            this.focus({ preventScroll: true });
           }
         }
       });
@@ -318,7 +318,7 @@ IronOverlayManager._overlayWithBackdrop = function() {
       const focusables = this._getFocusableElements();
       if (focusables.length === 0) {
         e.preventDefault();
-        this.focus();
+        this.focus({ preventScroll: true });
         return;
       }
 
@@ -335,13 +335,13 @@ IronOverlayManager._overlayWithBackdrop = function() {
         // Shift+Tab at or before first focusable: wrap to last
         if (activeIndex <= 0) {
           e.preventDefault();
-          focusables[focusables.length - 1].focus();
+          focusables[focusables.length - 1].focus({ preventScroll: true });
         }
         // Otherwise let the browser handle Tab naturally
       } else if (activeIndex === -1 || activeIndex >= focusables.length - 1) {
         // Tab at or past last focusable, or not found: wrap to first
         e.preventDefault();
-        focusables[0].focus();
+        focusables[0].focus({ preventScroll: true });
       }
       // Otherwise let the browser handle Tab naturally
     }
