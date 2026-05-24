@@ -613,10 +613,11 @@ import '../nuxeo-button-styles.js';
         }
         const group = {
           name: this.selectedGroup.groupname,
+          id: this.selectedGroup.id,
           label: this.selectedGroup.grouplabel,
         };
         this.push('activity', group);
-        this.$.request.path = `user/${this.user.id}/group/${group.name}`;
+        this.$.request.path = `user/${this.user.id}/group/${group.id}`;
         this.$.request.post().then((response) => {
           this.user = response;
           this._toast(this.i18n('userManagement.addedUserToGroup', this.user.id, group.name));
@@ -627,7 +628,7 @@ import '../nuxeo-button-styles.js';
 
     _remove() {
       const group = this._removedGroup;
-      this.$.request.path = `user/${this.user.id}/group/${group.name}`;
+      this.$.request.path = `user/${this.user.id}/group/${group.id}`;
       return this.$.request.remove().then(() => {
         this._removeRecent(group.name);
         this._removeFromGroup(group.name);
