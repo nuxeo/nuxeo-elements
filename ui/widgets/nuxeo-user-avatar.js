@@ -143,7 +143,7 @@ import '../nuxeo-icons.js';
     }
 
     _username(user) {
-      return this._isEntity(user) ? user.properties.username || user.properties['user:username'] : this._id(user);
+      return this._isEntity(user) ? user.id : this._id(user);
     }
 
     _isEntity(user) {
