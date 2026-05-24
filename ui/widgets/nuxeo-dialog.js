@@ -501,6 +501,22 @@ IronOverlayManager._overlayWithBackdrop = function() {
      * even if the dialog's position in the DOM changes between open and close (e.g., due to
      * nuxeo-actions-menu reparenting).
      */
+    /**
+     * Returns true if the given element is (or contains) a notification/live region
+     * such as a toast or snackbar. Those surfaces must remain interactive while the
+     * dialog is open — making them `inert` would propagate `pointer-events: none`
+     * to descendants and cause click-through to underlying elements (e.g. the toast
+     * dismiss button getting intercepted by the page content behind it).
+     */
+    _isNotificationRegion(el) {
+      if (!el || !el.matches) {
+        return false;
+      }
+      const selector =
+        'mwc-snackbar,paper-toast,nuxeo-toast,[role="status"],[role="alert"],[aria-live]:not([aria-live="off"])';
+      return el.matches(selector) || !!el.querySelector(selector);
+    }
+
     _setBackgroundInert(inert) {
       if (inert) {
         // Apply inert and store affected elements for later cleanup
@@ -514,7 +530,10 @@ IronOverlayManager._overlayWithBackdrop = function() {
               sibling === current ||
               sibling.localName === 'style' ||
               sibling.localName === 'script' ||
-              sibling === this.backdropElement
+              sibling === this.backdropElement ||
+              // Notification surfaces (toasts/snackbars/live regions) must remain
+              // interactive while the dialog is open. See _isNotificationRegion.
+              this._isNotificationRegion(sibling)
             ) {
               return;
             }
