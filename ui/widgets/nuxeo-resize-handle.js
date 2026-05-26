@@ -27,6 +27,19 @@ export const RESIZE_HANDLE_KEY_STEP_PX = 16;
 export const RESIZE_HANDLE_KEY_STEP_SHIFT_PX = 64;
 
 /**
+ * Returns the first touch point for touch events, or the event itself for mouse/pointer events.
+ * @param {MouseEvent|TouchEvent} event
+ * @returns {Touch|MouseEvent|TouchEvent}
+ */
+function primaryPointerSource(event) {
+  const { touches } = event;
+  if (touches == null) {
+    return event;
+  }
+  return touches[0] || event;
+}
+
+/**
  * Width delta (px) for an arrow key, given pane edge and text direction.
  *
  * @param {string} key
@@ -348,7 +361,7 @@ export function resizeDeltaFromPointer(startX, clientX, { edge = 'end', rtl = fa
       anchor.style.top = `${top}px`;
 
       const resizeHandleTooltip = this.$.resizeHandleTooltip;
-      if (resizeHandleTooltip && resizeHandleTooltip.updatePositionIfShowing) {
+      if (resizeHandleTooltip) {
         resizeHandleTooltip.updatePositionIfShowing();
       }
     }
@@ -401,8 +414,7 @@ export function resizeDeltaFromPointer(startX, clientX, { edge = 'end', rtl = fa
       if (this.dir === 'ltr') {
         return false;
       }
-      const root = document.documentElement;
-      return root && root.getAttribute('dir') === 'rtl';
+      return document.documentElement.getAttribute('dir') === 'rtl';
     }
 
     _fire(name, detail) {
@@ -475,7 +487,7 @@ export function resizeDeltaFromPointer(startX, clientX, { edge = 'end', rtl = fa
       }
       e.preventDefault();
       e.stopPropagation();
-      const point = (e.touches && e.touches[0]) || e;
+      const point = primaryPointerSource(e);
       const startX = point.clientX;
       this._finishDrag();
       this.active = true;
@@ -491,7 +503,7 @@ export function resizeDeltaFromPointer(startX, clientX, { edge = 'end', rtl = fa
         if (ev.cancelable) {
           ev.preventDefault();
         }
-        const p = (ev.touches && ev.touches[0]) || ev;
+        const p = primaryPointerSource(ev);
         const deltaFromStart = resizeDeltaFromPointer(startX, p.clientX, { edge, rtl });
         this._fire('resize-drag', { deltaFromStart });
       };
