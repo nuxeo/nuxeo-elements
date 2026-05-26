@@ -867,14 +867,14 @@ import '../nuxeo-button-styles.js';
     }
 
     _usersPath() {
-      if (this.group && this.group.id) {
-        return `group/${this.group.id}/@users`;
+      if (this.group) {
+        return `group/${this.group.id || this.group.groupname || this.groupname}/@users`;
       }
     }
 
     _groupsPath() {
-      if (this.group && this.group.id) {
-        return `group/${this.group.id}/@groups`;
+      if (this.group) {
+        return `group/${this.group.id || this.group.groupname || this.groupname}/@groups`;
       }
     }
   }
