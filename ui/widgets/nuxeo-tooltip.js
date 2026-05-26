@@ -21,6 +21,32 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { microTask } from '@polymer/polymer/lib/utils/async.js';
 
+const CLONED_CONTENT_STYLES_ID = 'nuxeo-tooltip-cloned-content-styles';
+
+/**
+ * Slot content is cloned into `paper-tooltip` on `document.body`, so shadow-DOM styles do not apply.
+ * Role-specific rules for cloned nodes live here; set `data-nx-tooltip-role` on `<nuxeo-tooltip>`.
+ */
+function ensureClonedContentStyles() {
+  if (document.getElementById(CLONED_CONTENT_STYLES_ID)) {
+    return;
+  }
+  const style = document.createElement('style');
+  style.id = CLONED_CONTENT_STYLES_ID;
+  style.textContent = `
+    [data-nx-tooltip-role="resize-handle"].resize-handle-tooltip-label {
+      display: block;
+      max-width: 280px;
+      white-space: normal;
+      line-height: 1.4;
+      text-align: start;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+ensureClonedContentStyles();
+
 {
   /**
    * Example:
@@ -34,6 +60,13 @@ import { microTask } from '@polymer/polymer/lib/utils/async.js';
    *       <span id="btn">Hover me!</span>
    *       <nuxeo-tooltip for="btn">Tooltip text</nuxeo-tooltip>
    *     </div>
+   *
+   * ### Cloned slot content
+   *
+   * On show, assigned slot nodes are cloned into a `paper-tooltip` attached to `document.body`.
+   * Styles from the consumer shadow tree are not applied to the clone. For multi-line labels,
+   * set `data-nx-tooltip-role` on this element (copied onto the cloned root) and add matching
+   * rules in the cloned-content stylesheet above (see `ensureClonedContentStyles`).
    *
    * @memberof Nuxeo
    * @demo demo/nuxeo-tooltip/index.html
@@ -119,8 +152,13 @@ import { microTask } from '@polymer/polymer/lib/utils/async.js';
         this._tooltip = document.createElement('paper-tooltip');
         document.body.appendChild(this._tooltip);
         // clone content in <slot> and append to paper-tooltip body
+        const tooltipRole = this.getAttribute('data-nx-tooltip-role');
         this.$.content.assignedNodes().forEach((node) => {
-          this._tooltip.appendChild(node.cloneNode(true));
+          const clone = node.cloneNode(true);
+          if (tooltipRole && clone.nodeType === Node.ELEMENT_NODE && !clone.hasAttribute('data-nx-tooltip-role')) {
+            clone.setAttribute('data-nx-tooltip-role', tooltipRole);
+          }
+          this._tooltip.appendChild(clone);
         });
         // set manual mode to avoid setting extra listeners in paper-tooltip
         this._tooltip.manualMode = true;
@@ -137,11 +175,13 @@ import { microTask } from '@polymer/polymer/lib/utils/async.js';
     }
 
     hide() {
-      const paperToolTip = document.getElementsByTagName('paper-tooltip')[0];
-      if (paperToolTip) {
-        document.body.removeChild(paperToolTip);
+      if (this._tooltip) {
+        this._tooltip.hide();
+        if (this._tooltip.parentNode) {
+          this._tooltip.parentNode.removeChild(this._tooltip);
+        }
+        this._tooltip = null;
       }
-      this._tooltip = null;
     }
 
     keydown() {

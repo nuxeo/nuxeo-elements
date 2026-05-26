@@ -45,4 +45,23 @@ suite('nuxeo-tooltip', async () => {
     expect(paperTooltip.innerHTML).to.equal('Hello');
     expect(isElementVisible(paperTooltip));
   });
+
+  test('Should stamp data-nx-tooltip-role onto cloned slot content', async () => {
+    const tooltip = await fixture(
+      html`
+        <nuxeo-tooltip data-nx-tooltip-role="resize-handle">
+          <span class="resize-handle-tooltip-label">Resize pane</span>
+        </nuxeo-tooltip>
+      `,
+    );
+
+    tooltip.show();
+    await flush();
+    const paperTooltip = document.body.querySelector('paper-tooltip');
+    const label = paperTooltip.querySelector('[data-nx-tooltip-role="resize-handle"]');
+    expect(label).to.exist;
+    expect(label.classList.contains('resize-handle-tooltip-label')).to.be.true;
+    tooltip.hide();
+    await flush();
+  });
 });
