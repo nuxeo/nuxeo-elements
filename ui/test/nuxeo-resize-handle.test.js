@@ -133,6 +133,11 @@ suite('nuxeo-resize-handle extras', () => {
     test('end edge RTL mirrors pointer delta', () => {
       expect(resizeDeltaFromPointer(100, 120, { edge: 'end', rtl: true })).to.equal(-20);
     });
+
+    test('uses default options when none are passed', () => {
+      expect(resizeDeltaForKey('ArrowRight')).to.equal(RESIZE_HANDLE_KEY_STEP_PX);
+      expect(resizeDeltaFromPointer(0, 10)).to.equal(10);
+    });
   });
 
   suite('keyboard events', () => {
@@ -213,6 +218,24 @@ suite('nuxeo-resize-handle extras', () => {
       expect(el.active).to.be.false;
     });
 
+    test('mousedown with a touches list uses the first touch clientX', async () => {
+      const dragStart = sinon.spy();
+      el.addEventListener('resize-drag-start', dragStart);
+
+      const down = new MouseEvent('mousedown', { bubbles: true, composed: true, clientX: 999 });
+      Object.defineProperty(down, 'touches', { value: [{ clientX: 70 }] });
+      el.dispatchEvent(down);
+
+      const move = new MouseEvent('mousemove', { bubbles: true, clientX: 999 });
+      Object.defineProperty(move, 'touches', { value: [{ clientX: 90 }] });
+      globalThis.dispatchEvent(move);
+
+      globalThis.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      await flush();
+
+      expect(dragStart.firstCall.args[0].detail.clientX).to.equal(70);
+    });
+
     test('touchstart and touchend fire drag events', async () => {
       const dragEnd = sinon.spy();
       el.addEventListener('resize-drag-end', dragEnd);
@@ -285,6 +308,22 @@ suite('nuxeo-resize-handle extras', () => {
     expect(spy).to.have.been.calledOnce;
   });
 
+  test('_isRtl reads document dir when handle dir is not ltr or rtl', () => {
+    const previousDir = document.documentElement.getAttribute('dir');
+    document.documentElement.setAttribute('dir', 'rtl');
+    try {
+      el.removeAttribute('dir');
+      el.dir = '';
+      expect(el._isRtl()).to.be.true;
+    } finally {
+      if (previousDir == null) {
+        document.documentElement.removeAttribute('dir');
+      } else {
+        document.documentElement.setAttribute('dir', previousDir);
+      }
+    }
+  });
+
   test('uses document dir for RTL when dir attribute is unset', async () => {
     const previousDir = document.documentElement.getAttribute('dir');
     document.documentElement.setAttribute('dir', 'rtl');
@@ -324,6 +363,67 @@ suite('nuxeo-resize-handle extras', () => {
     expect(Number.parseFloat(anchor.style.top, 10)).to.be.closeTo(100, 2);
   });
 
+  test('ignores unhandled keys without firing resize-step', () => {
+    const spy = sinon.spy();
+    el.addEventListener('resize-step', spy);
+    el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true }));
+    expect(spy).to.not.have.been.called;
+  });
+
+  test('does not reset on double-click when hidden', () => {
+    const spy = sinon.spy();
+    el.hidden = true;
+    el.addEventListener('resize-reset', spy);
+    el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, composed: true }));
+    expect(spy).to.not.have.been.called;
+  });
+
+  test('does not sync tooltip anchor when hidden', async () => {
+    el.hidden = true;
+    const anchor = el.shadowRoot.querySelector('#tooltipAnchor');
+    const topBefore = anchor.style.top;
+    el.dispatchEvent(new MouseEvent('mouseenter', { clientY: 40, bubbles: true, composed: true }));
+    await flush();
+    expect(anchor.style.top).to.equal(topBefore);
+  });
+
+  test('dir=rtl uses mirrored keyboard delta on the handle', () => {
+    const rtl = document.createElement('nuxeo-resize-handle');
+    rtl.setAttribute('edge', 'end');
+    rtl.setAttribute('dir', 'rtl');
+    document.body.appendChild(rtl);
+    const spy = sinon.spy();
+    rtl.addEventListener('resize-step', spy);
+    rtl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, composed: true }));
+    expect(spy.firstCall.args[0].detail.delta).to.equal(-RESIZE_HANDLE_KEY_STEP_PX);
+    rtl.remove();
+  });
+
+  test('guards when tooltip anchor nodes are missing', () => {
+    const original$ = el.$;
+    el.$ = {};
+    try {
+      el._syncTooltipAnchor();
+      el._forwardTooltipAnchorEvent('mouseenter');
+    } finally {
+      el.$ = original$;
+    }
+  });
+
+  test('_finishDrag without active does not fire resize-drag-end', () => {
+    const dragEnd = sinon.spy();
+    el.addEventListener('resize-drag-end', dragEnd);
+    el._dragAbortController = new AbortController();
+    el.active = false;
+    el._finishDrag();
+    expect(dragEnd).to.not.have.been.called;
+    expect(el._dragAbortController).to.be.null;
+  });
+
+  test('_computeLabel falls back to the key when i18n is not a function', () => {
+    expect(el._computeLabel('app.drawer.resize', null)).to.equal('app.drawer.resize');
+  });
+
   test('calls updatePositionIfShowing while tooltip is visible', async () => {
     const host = await fixture(html`
       <div style="position:relative;width:16px;height:200px;">
@@ -332,16 +432,32 @@ suite('nuxeo-resize-handle extras', () => {
     `);
     const handle = host.querySelector('nuxeo-resize-handle');
     const tooltip = handle.$.resizeHandleTooltip;
-    const updateStub = sinon.stub(tooltip, 'updatePositionIfShowing');
     const hostRect = host.getBoundingClientRect();
 
     handle.dispatchEvent(new MouseEvent('mouseenter', { clientY: hostRect.top + 40, bubbles: true, composed: true }));
     await flush();
+
+    const updateSpy = sinon.spy(tooltip, 'updatePositionIfShowing');
     handle.dispatchEvent(new MouseEvent('mousemove', { clientY: hostRect.top + 60, bubbles: true, composed: true }));
-    expect(updateStub).to.have.been.called;
-    updateStub.restore();
+    expect(updateSpy).to.have.been.called;
+    updateSpy.restore();
     tooltip.hide();
     await flush();
+  });
+
+  test('skips updatePositionIfShowing when the child tooltip omits the API', async () => {
+    const host = await fixture(html`
+      <div style="position:relative;width:16px;height:200px;">
+        <nuxeo-resize-handle label-key="app.drawer.resize"></nuxeo-resize-handle>
+      </div>
+    `);
+    const handle = host.querySelector('nuxeo-resize-handle');
+    const tooltip = handle.$.resizeHandleTooltip;
+    const saved = tooltip.updatePositionIfShowing;
+    delete tooltip.updatePositionIfShowing;
+
+    handle.dispatchEvent(new MouseEvent('mousemove', { clientY: 40, bubbles: true, composed: true }));
+    tooltip.updatePositionIfShowing = saved;
   });
 
   test('moves tooltip anchor with pointer on the handle', async () => {

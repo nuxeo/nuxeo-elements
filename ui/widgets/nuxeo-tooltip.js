@@ -27,7 +27,7 @@ const CLONED_CONTENT_STYLES_ID = 'nuxeo-tooltip-cloned-content-styles';
  * Slot content is cloned into `paper-tooltip` on `document.body`, so shadow-DOM styles do not apply.
  * Role-specific rules for cloned nodes live here; set `data-nx-tooltip-role` on `<nuxeo-tooltip>`.
  */
-function ensureClonedContentStyles() {
+export function ensureClonedContentStyles() {
   if (document.getElementById(CLONED_CONTENT_STYLES_ID)) {
     return;
   }
@@ -152,11 +152,11 @@ ensureClonedContentStyles();
         this._tooltip = document.createElement('paper-tooltip');
         document.body.appendChild(this._tooltip);
         // clone content in <slot> and append to paper-tooltip body
-        const tooltipRole = this.getAttribute('data-nx-tooltip-role');
+        const tooltipRole = this.dataset.nxTooltipRole;
         this.$.content.assignedNodes().forEach((node) => {
           const clone = node.cloneNode(true);
-          if (tooltipRole && clone.nodeType === Node.ELEMENT_NODE && !clone.hasAttribute('data-nx-tooltip-role')) {
-            clone.setAttribute('data-nx-tooltip-role', tooltipRole);
+          if (tooltipRole && clone.nodeType === Node.ELEMENT_NODE && !clone.dataset.nxTooltipRole) {
+            clone.dataset.nxTooltipRole = tooltipRole;
           }
           this._tooltip.appendChild(clone);
         });
@@ -177,16 +177,18 @@ ensureClonedContentStyles();
     hide() {
       if (this._tooltip) {
         this._tooltip.hide();
-        if (this._tooltip.parentNode) {
-          this._tooltip.parentNode.removeChild(this._tooltip);
-        }
+        this._tooltip.remove();
         this._tooltip = null;
       }
     }
 
     /** Whether this instance currently has a visible `paper-tooltip` on the document. */
     isShowing() {
-      return !!(this._tooltip && this._tooltip._showing);
+      const activeTooltip = this._tooltip;
+      if (activeTooltip == null) {
+        return false;
+      }
+      return !!activeTooltip._showing;
     }
 
     /** Repositions the active tooltip after its anchor moved; no-op when hidden. */
