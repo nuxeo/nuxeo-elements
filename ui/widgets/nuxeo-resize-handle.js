@@ -241,7 +241,10 @@ export function resizeDeltaFromPointer(startX, clientX, { edge = 'end', rtl = fa
           value: false,
         },
 
-        /** When true, the handle ignores pointer and keyboard input. */
+        /**
+         * When true, the handle is hidden and ignores pointer and keyboard input
+         * (same as `hidden` for visibility; use `hidden` when the host removes the control from layout).
+         */
         disabled: {
           type: Boolean,
           reflectToAttribute: true,
@@ -301,6 +304,11 @@ export function resizeDeltaFromPointer(startX, clientX, { edge = 'end', rtl = fa
       return ['_syncAria(labelKey, ariaValueMin, ariaValueMax, ariaValueNow, _label)'];
     }
 
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      this._finishDrag();
+    }
+
     ready() {
       super.ready();
       this.setAttribute('role', 'separator');
@@ -340,9 +348,8 @@ export function resizeDeltaFromPointer(startX, clientX, { edge = 'end', rtl = fa
       anchor.style.top = `${top}px`;
 
       const resizeHandleTooltip = this.$.resizeHandleTooltip;
-      const paperTooltip = resizeHandleTooltip && resizeHandleTooltip._tooltip;
-      if (paperTooltip && paperTooltip._showing) {
-        paperTooltip.updatePosition();
+      if (resizeHandleTooltip && resizeHandleTooltip.updatePositionIfShowing) {
+        resizeHandleTooltip.updatePositionIfShowing();
       }
     }
 
@@ -448,6 +455,20 @@ export function resizeDeltaFromPointer(startX, clientX, { edge = 'end', rtl = fa
       this._fire('resize-reset');
     }
 
+    _finishDrag() {
+      if (!this._dragAbortController) {
+        return;
+      }
+      const wasDragging = this.active;
+      const controller = this._dragAbortController;
+      this._dragAbortController = null;
+      this.active = false;
+      controller.abort();
+      if (wasDragging) {
+        this._fire('resize-drag-end');
+      }
+    }
+
     _onPointerDown(e) {
       if (!this._isInteractive()) {
         return;
@@ -456,11 +477,15 @@ export function resizeDeltaFromPointer(startX, clientX, { edge = 'end', rtl = fa
       e.stopPropagation();
       const point = (e.touches && e.touches[0]) || e;
       const startX = point.clientX;
+      this._finishDrag();
       this.active = true;
       this._fire('resize-drag-start', { clientX: startX });
 
       const rtl = this._isRtl();
       const edge = this.edge;
+      const controller = new AbortController();
+      this._dragAbortController = controller;
+      const { signal } = controller;
 
       const onMove = (ev) => {
         if (ev.cancelable) {
@@ -471,19 +496,10 @@ export function resizeDeltaFromPointer(startX, clientX, { edge = 'end', rtl = fa
         this._fire('resize-drag', { deltaFromStart });
       };
 
-      const onEnd = () => {
-        this.active = false;
-        globalThis.removeEventListener('mousemove', onMove);
-        globalThis.removeEventListener('mouseup', onEnd);
-        globalThis.removeEventListener('touchmove', onMove);
-        globalThis.removeEventListener('touchend', onEnd);
-        this._fire('resize-drag-end');
-      };
-
-      globalThis.addEventListener('mousemove', onMove);
-      globalThis.addEventListener('mouseup', onEnd);
-      globalThis.addEventListener('touchmove', onMove, { passive: false });
-      globalThis.addEventListener('touchend', onEnd);
+      globalThis.addEventListener('mousemove', onMove, { signal });
+      globalThis.addEventListener('mouseup', () => this._finishDrag(), { signal, once: true });
+      globalThis.addEventListener('touchmove', onMove, { passive: false, signal });
+      globalThis.addEventListener('touchend', () => this._finishDrag(), { signal, once: true });
     }
 
     /** @see resizeDeltaForKey */

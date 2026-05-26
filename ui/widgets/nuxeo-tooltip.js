@@ -184,6 +184,18 @@ ensureClonedContentStyles();
       }
     }
 
+    /** Whether this instance currently has a visible `paper-tooltip` on the document. */
+    isShowing() {
+      return !!(this._tooltip && this._tooltip._showing);
+    }
+
+    /** Repositions the active tooltip after its anchor moved; no-op when hidden. */
+    updatePositionIfShowing() {
+      if (this.isShowing() && typeof this._tooltip.updatePosition === 'function') {
+        this._tooltip.updatePosition();
+      }
+    }
+
     keydown() {
       this.hide();
     }
