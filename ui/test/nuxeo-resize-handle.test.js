@@ -86,7 +86,7 @@ suite('nuxeo-resize-handle extras', () => {
 
   test('updates aria-valuenow when ariaValueNow changes', async () => {
     el.ariaValueNow = 500;
-    await el.updateComplete;
+    await flush();
     expect(el.getAttribute('aria-valuenow')).to.equal('500');
   });
 
@@ -166,6 +166,182 @@ suite('nuxeo-resize-handle extras', () => {
       el.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, composed: true }));
       expect(spy).to.not.have.been.called;
     });
+
+    test('End fires resize-bound max', () => {
+      const spy = sinon.spy();
+      el.addEventListener('resize-bound', spy);
+      el.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true, composed: true }));
+      expect(spy).to.have.been.calledOnce;
+      expect(spy.firstCall.args[0].detail.bound).to.equal('max');
+    });
+
+    test('Space fires resize-reset', () => {
+      const spy = sinon.spy();
+      el.addEventListener('resize-reset', spy);
+      el.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true, composed: true }));
+      expect(spy).to.have.been.calledOnce;
+    });
+
+    test('does not fire when disabled', () => {
+      el.disabled = true;
+      const spy = sinon.spy();
+      el.addEventListener('resize-step', spy);
+      el.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, composed: true }));
+      expect(spy).to.not.have.been.called;
+    });
+  });
+
+  suite('pointer drag', () => {
+    test('mousedown, mousemove, and mouseup fire drag events', async () => {
+      const dragStart = sinon.spy();
+      const drag = sinon.spy();
+      const dragEnd = sinon.spy();
+      el.addEventListener('resize-drag-start', dragStart);
+      el.addEventListener('resize-drag', drag);
+      el.addEventListener('resize-drag-end', dragEnd);
+
+      el.dispatchEvent(new MouseEvent('mousedown', { clientX: 100, bubbles: true, composed: true }));
+      globalThis.dispatchEvent(new MouseEvent('mousemove', { clientX: 120, bubbles: true }));
+      globalThis.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      await flush();
+
+      expect(dragStart).to.have.been.calledOnce;
+      expect(dragStart.firstCall.args[0].detail.clientX).to.equal(100);
+      expect(drag).to.have.been.called;
+      expect(drag.firstCall.args[0].detail.deltaFromStart).to.equal(20);
+      expect(dragEnd).to.have.been.calledOnce;
+      expect(el.active).to.be.false;
+    });
+
+    test('touchstart and touchend fire drag events', async () => {
+      const dragEnd = sinon.spy();
+      el.addEventListener('resize-drag-end', dragEnd);
+
+      const startTouch = new Touch({ identifier: 0, target: el, clientX: 80, clientY: 0 });
+      const moveTouch = new Touch({ identifier: 0, target: el, clientX: 100, clientY: 0 });
+
+      el.dispatchEvent(
+        new TouchEvent('touchstart', {
+          bubbles: true,
+          composed: true,
+          touches: [startTouch],
+          targetTouches: [startTouch],
+          changedTouches: [startTouch],
+        }),
+      );
+      globalThis.dispatchEvent(
+        new TouchEvent('touchmove', {
+          bubbles: true,
+          cancelable: true,
+          touches: [moveTouch],
+          targetTouches: [moveTouch],
+          changedTouches: [moveTouch],
+        }),
+      );
+      globalThis.dispatchEvent(
+        new TouchEvent('touchend', {
+          bubbles: true,
+          changedTouches: [moveTouch],
+        }),
+      );
+      await flush();
+
+      expect(dragEnd).to.have.been.calledOnce;
+      expect(el.active).to.be.false;
+    });
+
+    test('disconnect during drag cleans up listeners and fires resize-drag-end', async () => {
+      const dragEnd = sinon.spy();
+      el.addEventListener('resize-drag-end', dragEnd);
+
+      el.dispatchEvent(new MouseEvent('mousedown', { clientX: 50, bubbles: true, composed: true }));
+      expect(el.active).to.be.true;
+      el.remove();
+      await flush();
+
+      expect(dragEnd).to.have.been.calledOnce;
+      expect(el.active).to.be.false;
+    });
+
+    test('does not start drag when hidden or disabled', () => {
+      const dragStart = sinon.spy();
+      el.addEventListener('resize-drag-start', dragStart);
+
+      el.hidden = true;
+      el.dispatchEvent(new MouseEvent('mousedown', { clientX: 10, bubbles: true, composed: true }));
+      expect(dragStart).to.not.have.been.called;
+
+      el.hidden = false;
+      el.disabled = true;
+      el.dispatchEvent(new MouseEvent('mousedown', { clientX: 10, bubbles: true, composed: true }));
+      expect(dragStart).to.not.have.been.called;
+    });
+  });
+
+  test('double-click fires resize-reset', () => {
+    const spy = sinon.spy();
+    el.addEventListener('resize-reset', spy);
+    el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, composed: true }));
+    expect(spy).to.have.been.calledOnce;
+  });
+
+  test('uses document dir for RTL when dir attribute is unset', async () => {
+    const previousDir = document.documentElement.getAttribute('dir');
+    document.documentElement.setAttribute('dir', 'rtl');
+    try {
+      const handle = await fixture(html`
+        <nuxeo-resize-handle edge="end" dir="" label-key="app.drawer.resize"></nuxeo-resize-handle>
+      `);
+      const spy = sinon.spy();
+      handle.addEventListener('resize-step', spy);
+      handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, composed: true }));
+      expect(spy).to.have.been.calledOnce;
+      expect(spy.firstCall.args[0].detail.delta).to.equal(-RESIZE_HANDLE_KEY_STEP_PX);
+    } finally {
+      if (previousDir == null) {
+        document.documentElement.removeAttribute('dir');
+      } else {
+        document.documentElement.setAttribute('dir', previousDir);
+      }
+    }
+  });
+
+  test('static delta helpers delegate to exported functions', () => {
+    expect(Nuxeo.ResizeHandle.deltaForKey('ArrowLeft', { edge: 'end' })).to.equal(-RESIZE_HANDLE_KEY_STEP_PX);
+    expect(Nuxeo.ResizeHandle.deltaFromPointer(10, 30, { edge: 'end' })).to.equal(20);
+  });
+
+  test('focus moves tooltip anchor to vertical center', async () => {
+    const host = await fixture(html`
+      <div style="position:relative;width:16px;height:200px;">
+        <nuxeo-resize-handle label-key="app.drawer.resize"></nuxeo-resize-handle>
+      </div>
+    `);
+    const handle = host.querySelector('nuxeo-resize-handle');
+    const anchor = handle.shadowRoot.querySelector('#tooltipAnchor');
+    handle.dispatchEvent(new FocusEvent('focus', { bubbles: true, composed: true }));
+    await flush();
+    expect(Number.parseFloat(anchor.style.top, 10)).to.be.closeTo(100, 2);
+  });
+
+  test('calls updatePositionIfShowing while tooltip is visible', async () => {
+    const host = await fixture(html`
+      <div style="position:relative;width:16px;height:200px;">
+        <nuxeo-resize-handle label-key="app.drawer.resize"></nuxeo-resize-handle>
+      </div>
+    `);
+    const handle = host.querySelector('nuxeo-resize-handle');
+    const tooltip = handle.$.resizeHandleTooltip;
+    const updateStub = sinon.stub(tooltip, 'updatePositionIfShowing');
+    const hostRect = host.getBoundingClientRect();
+
+    handle.dispatchEvent(new MouseEvent('mouseenter', { clientY: hostRect.top + 40, bubbles: true, composed: true }));
+    await flush();
+    handle.dispatchEvent(new MouseEvent('mousemove', { clientY: hostRect.top + 60, bubbles: true, composed: true }));
+    expect(updateStub).to.have.been.called;
+    updateStub.restore();
+    tooltip.hide();
+    await flush();
   });
 
   test('moves tooltip anchor with pointer on the handle', async () => {
@@ -235,7 +411,7 @@ suite('nuxeo-resize-handle extras', () => {
     window.nuxeo.I18n.en['app.drawer.resize'] = 'Resize drawer';
     window.nuxeo.I18n.translate = (key) => window.nuxeo.I18n.en[key] || key;
     early.refreshI18n();
-    await early.updateComplete;
+    await flush();
 
     expect(early._label).to.equal('Resize drawer');
     expect(early.getAttribute('aria-label')).to.equal('Resize drawer');
