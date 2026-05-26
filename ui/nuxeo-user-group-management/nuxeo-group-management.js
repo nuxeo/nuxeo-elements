@@ -236,8 +236,8 @@ import '../nuxeo-button-styles.js';
           headers='{"fetch-group": "memberUsers,memberGroups"}'
         >
         </nuxeo-resource>
-        <nuxeo-resource id="users" path="[[_usersPath(groupname)]]" response="{{memberUsers}}" auto></nuxeo-resource>
-        <nuxeo-resource id="groups" path="[[_groupsPath(groupname)]]" response="{{memberGroups}}" auto></nuxeo-resource>
+        <nuxeo-resource id="users" path="[[_usersPath(group)]]" response="{{memberUsers}}" auto></nuxeo-resource>
+        <nuxeo-resource id="groups" path="[[_groupsPath(group)]]" response="{{memberGroups}}" auto></nuxeo-resource>
         <nuxeo-resource
           id="editRequest"
           path="group/[[groupname]]"
@@ -867,14 +867,14 @@ import '../nuxeo-button-styles.js';
     }
 
     _usersPath() {
-      if (this.groupname) {
-        return `group/${this.groupname}/@users`;
+      if (this.group) {
+        return `group/${this.group.id || this.group.groupname || this.groupname}/@users`;
       }
     }
 
     _groupsPath() {
-      if (this.groupname) {
-        return `group/${this.groupname}/@groups`;
+      if (this.group) {
+        return `group/${this.group.id || this.group.groupname || this.groupname}/@groups`;
       }
     }
   }
