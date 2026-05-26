@@ -300,6 +300,8 @@
   "popupPermission.userGroup": "User / Group",
   "popupPermission.userGroup.placeholder": "Search for users and groups",
   "previewButton.tooltip": "Preview",
+  "app.drawer.resize": "Resize the side navigation panel. Use Left/Right arrow keys to adjust width, Home or End for minimum or maximum, Enter or Space to reset.",
+  "documentPage.resize.side": "Resize the information pane. Use Left/Right arrow keys to adjust width, Home or End for minimum or maximum, Enter or Space to reset.",
   "resultsView.filters.heading": "Filters",
   "searchResults.layoutNotFound": "Failed to find results layout for {0}.",
   "selectivity.failedFetchResults": "Failed to fetch results",
