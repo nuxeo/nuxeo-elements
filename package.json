@@ -3,7 +3,7 @@
   "repository": "nuxeo/nuxeo-elements.git",
   "name": "nuxeo-elements",
   "private": true,
-  "version": "3.1.30-SNAPSHOT",
+  "version": "3.1.31-SNAPSHOT",
   "workspaces": [
     "core",
     "dataviz",
@@ -21,7 +21,8 @@
     "bootstrap": "npm install",
     "clean": "rm -rf core/node_modules dataviz/node_modules storybook/node_modules testing-helpers/node_modules ui/node_modules && npm install",
     "nuke": "rm -rf package-lock.json node_modules core/node_modules dataviz/node_modules storybook/node_modules testing-helpers/node_modules ui/node_modules && npm install",
-    "test": "npm-run-all test:core test:ui test:dataviz",
+    "update-coverage-imports": "node scripts/generate-coverage-imports.js",
+    "test": "npm run update-coverage-imports && npm-run-all test:core test:ui test:dataviz",
     "test-ci": "npm run test:core && sleep 10 && npm run test:dataviz && sleep 10 && npm run test:ui",
     "test:core": "karma start --package core --coverage",
     "test:ui": "karma start --package ui --coverage",

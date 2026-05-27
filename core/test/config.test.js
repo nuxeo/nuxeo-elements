@@ -73,4 +73,42 @@ suite('config', () => {
     test('existent string with true string', () =>
       expect(config.get('trueStringBooleanProperty', 'true')).to.equal('true'));
   });
+
+  suite('type coercion when fallback type differs', () => {
+    setup(() => {
+      config.set('numberAsString', '42');
+      config.set('bigIntAsString', '9007199254740993');
+    });
+
+    test('coerces a string value to number when fallback is a number', () =>
+      expect(config.get('numberAsString', 0)).to.equal(42));
+
+    test('coerces a string value to bigint when fallback is a bigint', () => {
+      const result = config.get('bigIntAsString', BigInt(0));
+      expect(typeof result).to.equal('bigint');
+      expect(result).to.equal(BigInt('9007199254740993'));
+    });
+
+    test('coerces a number value to string when fallback is a string', () =>
+      expect(config.get('numberProperty', 'fallback')).to.equal('101'));
+  });
+
+  suite('set creates intermediate path segments', () => {
+    test('creates parent path when it does not exist', () => {
+      config.set('newSection.newKey', 'value');
+      expect(config.get('newSection.newKey')).to.equal('value');
+    });
+
+    test('creates a deeply nested path', () => {
+      config.set('a.b.c.d', 'leaf');
+      expect(config.get('a.b.c.d')).to.equal('leaf');
+    });
+
+    test('reuses an existing parent when setting a sibling key', () => {
+      config.set('siblings.first', 'one');
+      config.set('siblings.second', 'two');
+      expect(config.get('siblings.first')).to.equal('one');
+      expect(config.get('siblings.second')).to.equal('two');
+    });
+  });
 });

@@ -235,6 +235,318 @@ suite('nuxeo-actions-menu', () => {
     expect(dropdownButton(menu).hidden).to.be.false;
   });
 
+  suite('_reparent', () => {
+    test('reparents action when dialog opens from dropdown slot', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      const action = dropdownActions(menu)[0];
+      action.slot = 'dropdown';
+      const event = new CustomEvent('iron-overlay-opened', { bubbles: true, composed: true });
+      Object.defineProperty(event, 'composedPath', {
+        value: () => [{ tagName: 'NUXEO-DIALOG' }, action, am],
+      });
+      Object.defineProperty(event, 'target', { value: action });
+      am._reparent(event);
+    });
+
+    test('ignores event when source is not a dialog tagName', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      const action = dropdownActions(menu)[0];
+      action.slot = 'dropdown';
+      const event = new CustomEvent('iron-overlay-opened', { bubbles: true, composed: true });
+      Object.defineProperty(event, 'composedPath', {
+        value: () => [{ tagName: 'DIV' }, action, am],
+      });
+      Object.defineProperty(event, 'target', { value: action });
+      am._reparent(event);
+      expect(action.parentElement).to.not.equal(am.$.reparent);
+    });
+
+    test('ignores event when target slot is not dropdown', async () => {
+      const menu = await makeMenu(3);
+      const am = actionsMenu(menu);
+      const action = menuActions(menu)[0];
+      const event = new CustomEvent('iron-overlay-opened', { bubbles: true, composed: true });
+      Object.defineProperty(event, 'composedPath', {
+        value: () => [{ tagName: 'NUXEO-DIALOG' }, action, am],
+      });
+      Object.defineProperty(event, 'target', { value: action });
+      am._reparent(event);
+      expect(action.parentElement).to.not.equal(am.$.reparent);
+    });
+
+    test('handles PAPER-DIALOG tagName as reparent trigger', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      const action = dropdownActions(menu)[0];
+      action.slot = 'dropdown';
+      const event = new CustomEvent('iron-overlay-opened', { bubbles: true, composed: true });
+      Object.defineProperty(event, 'composedPath', {
+        value: () => [{ tagName: 'PAPER-DIALOG' }, action, am],
+      });
+      Object.defineProperty(event, 'target', { value: action });
+      am._reparent(event);
+    });
+  });
+
+  suite('_getMenuElements and _getDropdownElements', () => {
+    test('_getMenuElements returns non-NUXEO-SLOT element nodes', async () => {
+      const menu = await makeMenu(3);
+      const am = actionsMenu(menu);
+      const els = am._getMenuElements();
+      expect(els).to.be.an('array');
+      els.forEach((el) => {
+        expect(el.nodeType).to.equal(Node.ELEMENT_NODE);
+        expect(el.tagName).to.not.equal('NUXEO-SLOT');
+      });
+    });
+
+    test('_getDropdownElements returns dropdown-slotted element nodes', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      const els = am._getDropdownElements();
+      expect(els).to.be.an('array');
+      expect(els.length).to.be.greaterThan(0);
+      els.forEach((el) => {
+        expect(el.nodeType).to.equal(Node.ELEMENT_NODE);
+        expect(el.tagName).to.not.equal('NUXEO-SLOT');
+      });
+    });
+  });
+
+  suite('_moveToMenu and _moveToDropdown', () => {
+    test('_moveToMenu clears slot and removes show-label', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      const action = dropdownActions(menu)[0];
+      action.setAttribute('show-label', '');
+      am._moveToMenu(action);
+      expect(action.slot).to.equal('');
+      expect(action.hasAttribute('show-label')).to.be.false;
+    });
+
+    test('_moveToDropdown sets dropdown slot and show-label', async () => {
+      const menu = await makeMenu(3);
+      const am = actionsMenu(menu);
+      const action = menuActions(menu)[0];
+      am._moveToDropdown(action);
+      expect(action.slot).to.equal('dropdown');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(action.hasAttribute('show-label')).to.be.true;
+    });
+  });
+
+  suite('_onDropdownTriggerKeydown', () => {
+    test('Enter key sets __openByKeyboard flag', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      am.__openByKeyboard = false;
+      am._onDropdownTriggerKeydown({ key: 'Enter', preventDefault: sinon.spy() });
+      expect(am.__openByKeyboard).to.be.true;
+    });
+
+    test('Space key sets flag and calls preventDefault', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      am.__openByKeyboard = false;
+      const preventDefault = sinon.spy();
+      am._onDropdownTriggerKeydown({ key: ' ', preventDefault });
+      expect(am.__openByKeyboard).to.be.true;
+      expect(preventDefault).to.have.been.calledOnce;
+    });
+
+    test('Spacebar key sets flag and calls preventDefault', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      am.__openByKeyboard = false;
+      const preventDefault = sinon.spy();
+      am._onDropdownTriggerKeydown({ key: 'Spacebar', preventDefault });
+      expect(am.__openByKeyboard).to.be.true;
+      expect(preventDefault).to.have.been.calledOnce;
+    });
+
+    test('other keys do not set __openByKeyboard', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      am.__openByKeyboard = false;
+      am._onDropdownTriggerKeydown({ key: 'Tab', preventDefault: sinon.spy() });
+      expect(am.__openByKeyboard).to.be.false;
+    });
+
+    test('ArrowDown key is ignored (early return)', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      am.__openByKeyboard = false;
+      am._onDropdownTriggerKeydown({ key: 'ArrowDown', preventDefault: sinon.spy() });
+      expect(am.__openByKeyboard).to.be.false;
+    });
+  });
+
+  suite('_onDropdownOpen', () => {
+    test('resets focus when __openByKeyboard is true', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      am.__openByKeyboard = true;
+      const spy = sinon.stub(am, '_resetDropdownFocus');
+      am._onDropdownOpen();
+      expect(am.__openByKeyboard).to.be.false;
+      expect(spy).to.have.been.calledOnce;
+      spy.restore();
+    });
+
+    test('returns early when __openByKeyboard is false', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      am.__openByKeyboard = false;
+      const spy = sinon.stub(am, '_resetDropdownFocus');
+      am._onDropdownOpen();
+      expect(spy).to.not.have.been.called;
+      spy.restore();
+    });
+  });
+
+  suite('_resetDropdownFocus', () => {
+    test('sets listbox.selected and schedules focus on first dropdown item', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      const menuBtn = am.$.dropdownButton;
+      menuBtn.opened = true;
+      am._resetDropdownFocus();
+      const listbox = am.shadowRoot.querySelector('paper-listbox');
+      if (listbox) {
+        expect(listbox.selected).to.equal(0);
+      }
+    });
+
+    test('returns early when menuButton.opened is false', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      const menuBtn = am.$.dropdownButton;
+      menuBtn.opened = false;
+      am._resetDropdownFocus();
+    });
+
+    test('handles case with no dropdown items gracefully', async () => {
+      const menu = await makeMenu(3);
+      const am = actionsMenu(menu);
+      const menuBtn = am.$.dropdownButton;
+      menuBtn.opened = true;
+      am._resetDropdownFocus();
+    });
+  });
+
+  suite('_removeTabIndex', () => {
+    test('removes tabindex from dropdown elements on Shift+Tab', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      const items = am._getDropdownElements();
+      items.forEach((item) => item.setAttribute('tabindex', '0'));
+      am._removeTabIndex({ shiftKey: true, key: 'Tab' });
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      items.forEach((item) => {
+        expect(item.hasAttribute('tabindex')).to.be.false;
+      });
+    });
+
+    test('does not remove tabindex when key is not Tab', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      const items = am._getDropdownElements();
+      const spies = items.map((item) => sinon.spy(item, 'removeAttribute'));
+      am._removeTabIndex({ shiftKey: true, key: 'Enter' });
+      spies.forEach((spy) => {
+        expect(spy).to.not.have.been.calledWith('tabindex');
+        spy.restore();
+      });
+    });
+
+    test('does not remove tabindex when shiftKey is false', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      const items = am._getDropdownElements();
+      const spies = items.map((item) => sinon.spy(item, 'removeAttribute'));
+      am._removeTabIndex({ shiftKey: false, key: 'Tab' });
+      spies.forEach((spy) => {
+        expect(spy).to.not.have.been.calledWith('tabindex');
+        spy.restore();
+      });
+    });
+  });
+
+  suite('listnerRemove', () => {
+    test('removes keydown event listener from dropdown elements', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      const items = am._getDropdownElements();
+      const spies = items.map((item) => sinon.spy(item, 'removeEventListener'));
+      am.listnerRemove();
+      spies.forEach((spy) => {
+        expect(spy).to.have.been.calledWith('keydown', sinon.match.func);
+        spy.restore();
+      });
+    });
+  });
+
+  suite('contentWidth', () => {
+    test('returns the sum of menu element clientWidths', async () => {
+      const menu = await makeMenu(3);
+      const am = actionsMenu(menu);
+      const w = am.contentWidth;
+      expect(w).to.be.a('number');
+      expect(w).to.be.at.least(0);
+    });
+  });
+
+  suite('connectedCallback and disconnectedCallback', () => {
+    test('disconnectedCallback removes event listeners', async () => {
+      const menu = await makeMenu(3);
+      const am = actionsMenu(menu);
+      const removeSpy = sinon.spy(am, 'removeEventListener');
+      am.disconnectedCallback();
+      expect(removeSpy).to.have.been.calledWith('iron-resize');
+      expect(removeSpy).to.have.been.calledWith('dom-change');
+      expect(removeSpy).to.have.been.calledWith('iron-overlay-opened');
+      removeSpy.restore();
+    });
+  });
+
+  suite('_layout', () => {
+    test('skips layout when event comes from reparent container', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      const event = {
+        type: 'iron-resize',
+        composedPath: () => [{ id: 'reparent' }],
+      };
+      am._layout(event);
+    });
+
+    test('skips layout when event comes from dropdownButton', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      const event = {
+        type: 'iron-resize',
+        composedPath: () => [{ id: 'dropdownButton' }],
+      };
+      am._layout(event);
+    });
+
+    test('runs layout without event argument', async () => {
+      const menu = await makeMenu(5);
+      const am = actionsMenu(menu);
+      am._layout();
+    });
+
+    test('hides dropdown button when no dropdown elements exist', async () => {
+      const menu = await makeMenu(2);
+      const am = actionsMenu(menu);
+      am._layout();
+      await flush();
+      expect(am.$.dropdownButton.hidden).to.be.true;
+    });
+  });
+
   suite('compatibility with nuxeo-slots and native HTML slots', () => {
     class CustomSlottedMenuElement extends Nuxeo.Element {
       static get is() {

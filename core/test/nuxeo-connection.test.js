@@ -142,4 +142,74 @@ suite('nuxeo-connection', () => {
       expect(connection.connected).to.be.equal(true);
     });
   });
+
+  suite('authentication methods and options', () => {
+    setup(() => {
+      server.respondWith('GET', '/json/cmis', cmisResponse);
+      server.respondWith('POST', '/api/v1/automation/login', loginResponse);
+      server.respondWith('GET', '/api/v1/user/Administrator', userResponse);
+    });
+
+    test('connects using token authentication and sets repository name', async () => {
+      const connection = await fixture(
+        html`
+          <nuxeo-connection
+            connection-id="nxc-token"
+            method="token"
+            token="abc"
+            repository-name="default"
+          ></nuxeo-connection>
+        `,
+      );
+      await connection.connect();
+      expect(connection.connected).to.be.true;
+      expect(connection.client._auth).to.deep.equal({ method: 'token', token: 'abc' });
+      expect(connection.client._baseOptions.repositoryName).to.equal('default');
+    });
+
+    test('non-basic methods set the X-No-Basic-Header header', async () => {
+      const connection = await fixture(
+        html`
+          <nuxeo-connection connection-id="nxc-form" method="form"></nuxeo-connection>
+        `,
+      );
+      await connection.connect();
+      expect(connection.client._baseOptions.headers).to.have.property('X-No-Basic-Header', true);
+    });
+
+    test('overrides the cached client when credentials change', async () => {
+      const first = await fixture(
+        html`
+          <nuxeo-connection connection-id="nxc-override" username="A" password="P1"></nuxeo-connection>
+        `,
+      );
+      await first.connect();
+      const second = await fixture(
+        html`
+          <nuxeo-connection connection-id="nxc-override" username="A" password="P2"></nuxeo-connection>
+        `,
+      );
+      await second.connect();
+      expect(second.client._auth).to.deep.equal({ method: 'basic', username: 'A', password: 'P2' });
+    });
+
+    test('exposes client helpers (active, request, operation, http, batchUpload)', async () => {
+      const connection = await fixture(
+        html`
+          <nuxeo-connection connection-id="nxc-helpers"></nuxeo-connection>
+        `,
+      );
+      await connection.connect();
+      expect(connection.active).to.be.false;
+      const req = await connection.request();
+      expect(req).to.exist;
+      const op = await connection.operation('Some.Op');
+      expect(op).to.exist;
+      const upload = await connection.batchUpload();
+      expect(upload).to.exist;
+      const httpPromise = connection.http('/json/cmis');
+      expect(httpPromise).to.be.an.instanceOf(Promise);
+      await httpPromise.catch(() => {});
+    });
+  });
 });
