@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, html } from '@nuxeo/testing-helpers';
+import { fixture, flush, html } from '@nuxeo/testing-helpers';
 import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import '../widgets/nuxeo-date-picker.js';
 
