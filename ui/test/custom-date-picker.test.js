@@ -270,6 +270,7 @@ suite('custom-date-picker', () => {
       expect(el._isValidDate(mid)).to.equal(true);
       expect(el._isValidDate(before)).to.equal(false);
       expect(el._isValidDate(after)).to.equal(false);
+
       const bad = el._validateDate(before);
       expect(bad.isValid).to.equal(false);
       expect(bad.errorReason).to.equal('outOfRange');

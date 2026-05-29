@@ -27,6 +27,19 @@ import {
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { escapeHTML } from '../widgets/nuxeo-selectivity.js';
 
+/**
+ * Tests for `<nuxeo-selectivity>`.
+ *
+ * The tests are organised in two layers:
+ *   1. Integration tests that exercise the underlying selectivity.js DOM (single/multiple
+ *      selection, programmatic value changes, backspace deletion).
+ *   2. Unit tests on the public/internal methods of the Polymer element
+ *      (`_idFunction`, `_resolveEntry`, `_selectionFormatter`, `_resultFormatter`,
+ *      `_newEntryFormatter`, `_wrap`, `_getValidity`, `_syncInputAriaLabel`,
+ *      `_placeholderChanged`, `_initSelection`, `escapeHTML`, ...).
+ *
+ * Assertions are aligned with the current implementation in `ui/widgets/nuxeo-selectivity.js`.
+ */
 // Keyboard accessibility (Tab) — two-step Tab pattern so screen readers can
 // announce the field's label before any options are revealed:
 //   - Tab while CLOSED -> open the dropdown, keep focus on this field.
@@ -162,20 +175,6 @@ suite('nuxeo-selectivity keyboard accessibility (Tab)', () => {
     });
   });
 });
-
-/**
- * Tests for `<nuxeo-selectivity>`.
- *
- * The tests are organised in two layers:
- *   1. Integration tests that exercise the underlying selectivity.js DOM (single/multiple
- *      selection, programmatic value changes, backspace deletion).
- *   2. Unit tests on the public/internal methods of the Polymer element
- *      (`_idFunction`, `_resolveEntry`, `_selectionFormatter`, `_resultFormatter`,
- *      `_newEntryFormatter`, `_wrap`, `_getValidity`, `_syncInputAriaLabel`,
- *      `_placeholderChanged`, `_initSelection`, `escapeHTML`, ...).
- *
- * Assertions are aligned with the current implementation in `ui/widgets/nuxeo-selectivity.js`.
- */
 suite('nuxeo-selectivity', () => {
   let selectivityWidget;
   const data = ['Berlin', 'Lisbon', 'London', 'Rennes', 'Rome'];
