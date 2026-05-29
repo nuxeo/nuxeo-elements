@@ -174,4 +174,27 @@ suite('nuxeo-user-profile', () => {
       el._savePassword.restore();
     });
   });
+
+  suite('_userDisplayName', () => {
+    test('returns empty string when user is null or undefined', () => {
+      expect(el._userDisplayName(null)).to.equal('');
+      expect(el._userDisplayName(undefined)).to.equal('');
+    });
+
+    test('prefers user.name over properties.username', () => {
+      expect(el._userDisplayName({ name: 'jdoe', properties: { username: 'login' } })).to.equal('jdoe');
+    });
+
+    test('falls back to properties.username when name is absent', () => {
+      expect(el._userDisplayName({ properties: { username: 'jdoe' } })).to.equal('jdoe');
+    });
+
+    test('returns empty string when user has no name or username', () => {
+      expect(el._userDisplayName({ properties: {} })).to.equal('');
+    });
+
+    test('returns empty string when user.properties is absent', () => {
+      expect(el._userDisplayName({ id: 'some-uuid' })).to.equal('');
+    });
+  });
 });

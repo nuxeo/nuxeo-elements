@@ -426,6 +426,7 @@ suite('nuxeo-group-management', () => {
       el.group = {};
       el.groupname = 'admins';
       expect(el._usersPath()).to.equal('group/admins/@users');
+      expect(el._groupsPath()).to.equal('group/admins/@groups');
     });
 
     test('returns undefined when group is not set', () => {

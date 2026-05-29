@@ -148,6 +148,28 @@ suite('nuxeo-user-management', () => {
   });
 
   suite('_remove', () => {
+    test('removes group membership using group.id when available', async () => {
+      el.user = {
+        id: 'jdoe',
+        properties: { username: 'jdoe', groups: ['g1'] },
+        extendedGroups: [{ name: 'g1', label: 'G1' }],
+      };
+      sinon.spy(el, '_removeRecent');
+      sinon.spy(el, '_removeFromGroup');
+      sinon.spy(el, '_toast');
+      sinon.stub(el.$.request, 'remove').returns(Promise.resolve());
+      el._removedGroup = { id: 'g1-uuid', name: 'g1', label: 'G1' };
+      await el._remove();
+      await Promise.resolve();
+      expect(el.$.request.path).to.equal('user/jdoe/group/g1-uuid');
+      expect(el._removeRecent).to.have.been.calledWith('g1');
+      expect(el._removeFromGroup).to.have.been.calledWith('g1');
+      el.$.request.remove.restore();
+      el._removeRecent.restore();
+      el._removeFromGroup.restore();
+      el._toast.restore();
+    });
+
     test('removes group membership', async () => {
       el.user = {
         id: 'jdoe',
@@ -461,6 +483,10 @@ suite('nuxeo-user-management', () => {
           properties: { username: 'jdoe' },
         }),
       ).to.equal('jdoe');
+    });
+
+    test('returns empty string when user.properties is absent', () => {
+      expect(el._userDisplayName({ id: 'generated-uuid' })).to.equal('');
     });
   });
 });
