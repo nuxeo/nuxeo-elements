@@ -457,23 +457,24 @@ suite('nuxeo-user-management', () => {
       expect(el._userDisplayName(undefined)).to.equal('');
     });
 
-    test('prefers user.name over properties.username', () => {
+    test('prefers properties.username over user.name to avoid showing UUID', () => {
       expect(
         el._userDisplayName({
           id: 'internal-uid',
-          name: 'Directory display name',
-          properties: { username: 'loginName' },
-        }),
-      ).to.equal('Directory display name');
-    });
-
-    test('falls back to properties.username when name is absent', () => {
-      expect(
-        el._userDisplayName({
-          id: 'internal-uid',
+          name: 'some-uuid',
           properties: { username: 'loginName' },
         }),
       ).to.equal('loginName');
+    });
+
+    test('falls back to user.name when properties.username is absent', () => {
+      expect(
+        el._userDisplayName({
+          id: 'internal-uid',
+          name: 'jdoe',
+          properties: {},
+        }),
+      ).to.equal('jdoe');
     });
 
     test('does not use user.id as display name', () => {
