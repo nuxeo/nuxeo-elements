@@ -181,12 +181,12 @@ suite('nuxeo-user-profile', () => {
       expect(el._userDisplayName(undefined)).to.equal('');
     });
 
-    test('prefers user.name over properties.username', () => {
-      expect(el._userDisplayName({ name: 'jdoe', properties: { username: 'login' } })).to.equal('jdoe');
+    test('prefers properties.username over user.name to avoid showing UUID', () => {
+      expect(el._userDisplayName({ name: 'some-uuid', properties: { username: 'jdoe' } })).to.equal('jdoe');
     });
 
-    test('falls back to properties.username when name is absent', () => {
-      expect(el._userDisplayName({ properties: { username: 'jdoe' } })).to.equal('jdoe');
+    test('falls back to user.name when properties.username is absent', () => {
+      expect(el._userDisplayName({ name: 'jdoe', properties: {} })).to.equal('jdoe');
     });
 
     test('returns empty string when user has no name or username', () => {

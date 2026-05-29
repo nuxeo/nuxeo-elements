@@ -479,14 +479,14 @@ suite('nuxeo-group-management', () => {
       expect(el._userDisplayName(undefined)).to.equal('');
     });
 
-    test('prefers user.name over properties.username and id', () => {
+    test('prefers properties.username over user.name to avoid showing UUID', () => {
       expect(
         el._userDisplayName({
           id: 'internal-uid',
-          name: 'Directory name',
+          name: 'some-uuid',
           properties: { username: 'login', firstName: 'A', lastName: 'B' },
         }),
-      ).to.equal('Directory name');
+      ).to.equal('login');
     });
 
     test('falls back to properties.username when name is absent', () => {

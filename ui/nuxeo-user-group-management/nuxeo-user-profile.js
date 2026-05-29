@@ -313,7 +313,7 @@ import '../nuxeo-button-styles.js';
       if (!user) {
         return '';
       }
-      return user.name || (user.properties && user.properties.username) || '';
+      return (user.properties && user.properties.username) || user.name || '';
     }
 
     _openChangePasswordDialog() {

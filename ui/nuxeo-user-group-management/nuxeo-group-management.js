@@ -624,7 +624,7 @@ import '../nuxeo-button-styles.js';
       if (!user) {
         return '';
       }
-      return user.name || (user.properties && user.properties.username) || user.id || '';
+      return (user.properties && user.properties.username) || user.name || user.id || '';
     }
 
     _getEmail(properties) {
