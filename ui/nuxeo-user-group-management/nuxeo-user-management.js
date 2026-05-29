@@ -314,7 +314,7 @@ import '../nuxeo-button-styles.js';
             <dom-repeat items="[[activity]]">
               <template>
                 <div class="activity-entry">
-                  [[i18n('userManagement.memberOf.group', user.id)]]
+                  [[i18n('userManagement.memberOf.group', _displayName)]]
                   <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
                   <span class="remove" on-click="_toggleDialog">[[i18n('userManagement.group.remove')]]</span>
                 </div>
@@ -380,7 +380,7 @@ import '../nuxeo-button-styles.js';
         </dom-repeat>
 
         <nuxeo-dialog id="dialog" with-backdrop>
-          <h2>[[i18n('userManagement.removeUserFromGroup.confirm', user.id, _removedGroup.name)]]</h2>
+          <h2>[[i18n('userManagement.removeUserFromGroup.confirm', _displayName, _removedGroup.name)]]</h2>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
               <paper-button noink dialog-dismiss class="secondary">[[i18n('label.no')]]</paper-button>
@@ -504,6 +504,11 @@ import '../nuxeo-button-styles.js';
         _currentUser: {
           type: Object,
         },
+
+        _displayName: {
+          type: String,
+          computed: '_userDisplayName(user)',
+        },
       };
     }
 
@@ -620,7 +625,7 @@ import '../nuxeo-button-styles.js';
         this.$.request.path = `user/${this.user.id}/group/${group.id || group.name}`;
         this.$.request.post().then((response) => {
           this.user = response;
-          this._toast(this.i18n('userManagement.addedUserToGroup', this.user.id, group.name));
+          this._toast(this.i18n('userManagement.addedUserToGroup', this._userDisplayName(this.user), group.name));
         });
       }
       this.selectedGroup = null;
@@ -632,7 +637,7 @@ import '../nuxeo-button-styles.js';
       return this.$.request.remove().then(() => {
         this._removeRecent(group.name);
         this._removeFromGroup(group.name);
-        this._toast(this.i18n('userManagement.removedUserFromGroup', this.user.id, group.name));
+        this._toast(this.i18n('userManagement.removedUserFromGroup', this._userDisplayName(this.user), group.name));
       });
     }
 
