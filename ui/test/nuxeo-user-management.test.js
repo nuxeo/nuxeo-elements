@@ -158,15 +158,13 @@ suite('nuxeo-user-management', () => {
     });
 
     test('uses group.id when available in POST path', async () => {
-      sinon
-        .stub(el.$.request, 'post')
-        .returns(
-          Promise.resolve({
-            id: 'user-uuid',
-            properties: { username: 'jdoe', groups: ['g1'] },
-            extendedGroups: [{ name: 'g1' }],
-          }),
-        );
+      sinon.stub(el.$.request, 'post').returns(
+        Promise.resolve({
+          id: 'user-uuid',
+          properties: { username: 'jdoe', groups: ['g1'] },
+          extendedGroups: [{ name: 'g1' }],
+        }),
+      );
       sinon.spy(el, '_toast');
       // Set directly on __data to bypass Polymer observer / selectivity widget
       el.__data.selectedGroup = { id: 'g1-uuid', groupname: 'g1', grouplabel: 'G1' };
@@ -180,15 +178,13 @@ suite('nuxeo-user-management', () => {
     });
 
     test('falls back to group.name when group.id is absent', async () => {
-      sinon
-        .stub(el.$.request, 'post')
-        .returns(
-          Promise.resolve({
-            id: 'user-uuid',
-            properties: { username: 'jdoe', groups: ['g1'] },
-            extendedGroups: [{ name: 'g1' }],
-          }),
-        );
+      sinon.stub(el.$.request, 'post').returns(
+        Promise.resolve({
+          id: 'user-uuid',
+          properties: { username: 'jdoe', groups: ['g1'] },
+          extendedGroups: [{ name: 'g1' }],
+        }),
+      );
       sinon.spy(el, '_toast');
       el.__data.selectedGroup = { groupname: 'g1', grouplabel: 'G1' };
       el._groupSelected();
