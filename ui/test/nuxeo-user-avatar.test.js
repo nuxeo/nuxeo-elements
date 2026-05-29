@@ -175,14 +175,14 @@ suite('nuxeo-user-avatar extras', () => {
   });
 
   suite('_username', () => {
-    test('returns username from entity properties', () => {
-      const u = { 'entity-type': 'user', properties: { username: 'jdoe' } };
-      expect(el._username(u)).to.equal('jdoe');
+    test('returns user.id from entity', () => {
+      const u = { 'entity-type': 'user', id: 'jdoe-id', properties: { username: 'jdoe' } };
+      expect(el._username(u)).to.equal('jdoe-id');
     });
 
-    test('uses user:username when username is missing', () => {
-      const u = { 'entity-type': 'user', properties: { 'user:username': 'alt' } };
-      expect(el._username(u)).to.equal('alt');
+    test('uses user.id when entity has both id and user:username', () => {
+      const u = { 'entity-type': 'user', id: 'alt-id', properties: { 'user:username': 'alt' } };
+      expect(el._username(u)).to.equal('alt-id');
     });
 
     test('falls back to _id for non-entity', () => {
