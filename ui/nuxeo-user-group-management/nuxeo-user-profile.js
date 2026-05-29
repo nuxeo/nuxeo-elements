@@ -339,7 +339,8 @@ import '../nuxeo-button-styles.js';
           this.$.changePasswordDialog.close();
 
           // update connection
-          this.$.nxcon.username = (this.user.properties && this.user.properties.username) || this.user.name;
+          const props = this.user.properties || {};
+          this.$.nxcon.username = props.username || this.user.name;
           this.$.nxcon.password = this.$.passwordNew.value;
           this.$.nxcon.connect();
         })
