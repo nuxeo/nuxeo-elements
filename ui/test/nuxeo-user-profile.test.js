@@ -110,8 +110,8 @@ suite('nuxeo-user-profile', () => {
       el.$.passwordNew.value = 'new';
     });
 
-    test('updates user closes dialog reconnects on success', async () => {
-      const updated = { id: 'jdoe', properties: {} };
+    test('updates user closes dialog reconnects on success using properties.username', async () => {
+      const updated = { id: 'some-uuid', name: 'jdoe', properties: { username: 'jdoe' } };
       sinon.stub(el.$.changePassword, 'put').returns(Promise.resolve(updated));
       sinon.spy(el.$.changePasswordDialog, 'close');
       sinon.stub(el.$.nxcon, 'connect');
@@ -125,6 +125,21 @@ suite('nuxeo-user-profile', () => {
       expect(el.$.nxcon.username).to.equal('jdoe');
       expect(el.$.nxcon.password).to.equal('new');
       expect(el.$.nxcon.connect).to.have.been.calledOnce;
+      el.$.changePassword.put.restore();
+      el.$.changePasswordDialog.close.restore();
+      el.$.nxcon.connect.restore();
+    });
+
+    test('falls back to user.name for nxcon.username when properties.username absent', async () => {
+      const updated = { id: 'some-uuid', name: 'jdoe', properties: {} };
+      sinon.stub(el.$.changePassword, 'put').returns(Promise.resolve(updated));
+      sinon.spy(el.$.changePasswordDialog, 'close');
+      sinon.stub(el.$.nxcon, 'connect');
+      el.$.nxcon.username = '';
+      el._savePassword();
+      await flush();
+      await Promise.resolve();
+      expect(el.$.nxcon.username).to.equal('jdoe');
       el.$.changePassword.put.restore();
       el.$.changePasswordDialog.close.restore();
       el.$.nxcon.connect.restore();
@@ -195,6 +210,20 @@ suite('nuxeo-user-profile', () => {
 
     test('returns empty string when user.properties is absent', () => {
       expect(el._userDisplayName({ id: 'some-uuid' })).to.equal('');
+    });
+  });
+
+  suite('_displayName computed property', () => {
+    test('reflects _userDisplayName of current user', async () => {
+      el.user = { name: 'some-uuid', properties: { username: 'Administrator' } };
+      await flush();
+      expect(el._displayName).to.equal('Administrator');
+    });
+
+    test('is empty string when user is not set', async () => {
+      el.user = null;
+      await flush();
+      expect(el._displayName || '').to.equal('');
     });
   });
 });

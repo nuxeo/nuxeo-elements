@@ -506,5 +506,28 @@ suite('nuxeo-group-management', () => {
         }),
       ).to.equal('only-id');
     });
+
+    test('returns empty string when user.properties is absent', () => {
+      expect(el._userDisplayName({ id: 'some-uuid' })).to.equal('some-uuid');
+    });
+  });
+
+  suite('_removedMemberDisplayName computed property', () => {
+    test('reflects _userDisplayName of _removedMember using properties.username', async () => {
+      el._removedMember = {
+        id: 'some-uuid',
+        name: 'some-uuid',
+        'entity-type': 'user',
+        properties: { username: 'jdoe' },
+      };
+      await flush();
+      expect(el._removedMemberDisplayName).to.equal('jdoe');
+    });
+
+    test('falls back to user.name when properties.username is absent', async () => {
+      el._removedMember = { id: 'some-uuid', name: 'jdoe', 'entity-type': 'user', properties: {} };
+      await flush();
+      expect(el._removedMemberDisplayName).to.equal('jdoe');
+    });
   });
 });
