@@ -114,7 +114,7 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
           }
         </style>
 
-        <label>[[label]]</label>
+        <label aria-hidden="true">[[label]]</label>
 
         <paper-dropdown-menu
           id="paperDropdownMenu"
@@ -167,6 +167,7 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
         label: {
           type: String,
           value: null,
+          observer: '_syncAriaLabel',
         },
 
         /**
@@ -273,6 +274,23 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
     disconnectedCallback() {
       super.disconnectedCallback();
       this._resizeObserver.unobserve(this);
+      this._detachDropdownTabHandler();
+    }
+
+    ready() {
+      super.ready();
+      this._syncAriaLabel();
+      const pdm = this.$.paperDropdownMenu;
+      pdm.addEventListener('paper-dropdown-open', () => this._attachDropdownTabHandler());
+      pdm.addEventListener('paper-dropdown-close', () => this._detachDropdownTabHandler());
+      // When the trigger is focused and the dropdown is closed, Tab opens the dropdown
+      // instead of moving focus to the next field (Shift+Tab is left to the browser).
+      pdm.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab' && !e.shiftKey && !pdm.opened) {
+          e.preventDefault();
+          pdm.open();
+        }
+      });
     }
 
     close() {
@@ -303,6 +321,148 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
 
     _computeAttrForSelected(attrForSelected, options) {
       return options ? 'option' : attrForSelected;
+    }
+
+    _syncAriaLabel() {
+      // Deferred so Polymer has finished rendering the inner paper-dropdown-menu.
+      setTimeout(() => {
+        const pdm = this.$ && this.$.paperDropdownMenu;
+        if (!pdm) return;
+        const ariaLabel = (this.label || '').trim() || null;
+
+        // paper-dropdown-menu exposes its paper-input trigger as $.input.
+        const paperInput = (pdm.$ && pdm.$.input) || (pdm.shadowRoot && pdm.shadowRoot.querySelector('paper-input'));
+        if (!paperInput) return;
+
+        if (ariaLabel) {
+          paperInput.setAttribute('aria-label', ariaLabel);
+        } else {
+          paperInput.removeAttribute('aria-label');
+        }
+
+        // Set aria-label on the native <input> and remove aria-labelledby so the
+        // screen reader uses our label instead of Polymer's auto-generated one.
+        let nativeInput =
+          (paperInput.inputElement && paperInput.inputElement._inputElement) || paperInput.$.nativeInput;
+        if (!nativeInput && paperInput.inputElement) {
+          nativeInput = paperInput.inputElement.querySelector && paperInput.inputElement.querySelector('input');
+        }
+        if (!nativeInput && paperInput.shadowRoot) {
+          nativeInput = paperInput.shadowRoot.querySelector('input');
+        }
+        if (nativeInput) {
+          if (ariaLabel) {
+            nativeInput.setAttribute('aria-label', ariaLabel);
+            nativeInput.removeAttribute('aria-labelledby');
+          } else {
+            nativeInput.removeAttribute('aria-label');
+          }
+        }
+      }, 0);
+    }
+
+    // Attach a document-level Tab handler while the dropdown is open.
+    // We use the capture phase so we intercept Tab regardless of where focus is
+    // (trigger input OR a paper-item inside the iron-dropdown overlay in document.body).
+    _attachDropdownTabHandler() {
+      this._dropdownTabHandler = (e) => {
+        if (e.key !== 'Tab') return;
+        e.preventDefault();
+        const forward = !e.shiftKey;
+        this.$.paperDropdownMenu.close();
+        // Defer focus change to a microtask so iron-dropdown teardown settles first.
+        Promise.resolve().then(() => {
+          const next = this._getAdjacentFocusable(forward);
+          if (next && typeof next.focus === 'function') {
+            next.focus();
+          }
+        });
+      };
+      document.addEventListener('keydown', this._dropdownTabHandler, true);
+    }
+
+    _detachDropdownTabHandler() {
+      if (this._dropdownTabHandler) {
+        document.removeEventListener('keydown', this._dropdownTabHandler, true);
+        this._dropdownTabHandler = null;
+      }
+    }
+
+    // Walks the composed tree (shadow roots included) and returns the first/last
+    // tabbable element following/preceding this element in document order.
+    _getAdjacentFocusable(forward) {
+      const all = [];
+      const collect = (root) => {
+        let node = root.firstElementChild;
+        while (node) {
+          if (node.tabIndex >= 0 && !node.disabled && node.offsetParent !== null && node.getClientRects().length > 0) {
+            all.push(node);
+          }
+          if (node.shadowRoot) collect(node.shadowRoot);
+          collect(node);
+          node = node.nextElementSibling;
+        }
+      };
+      collect(document.body);
+
+      // Element.contains() does NOT cross shadow DOM boundaries, so we walk the
+      // composed tree via getRootNode() to correctly detect elements that live
+      // inside nuxeo-select's own shadow subtrees.
+      const isInsideMe = (el) => {
+        let n = el;
+        while (n) {
+          if (n === this) return true;
+          const root = n.getRootNode();
+          n = root instanceof ShadowRoot ? root.host : n.parentElement;
+        }
+        return false;
+      };
+
+      if (forward) {
+        // Find the last element in 'all' that belongs to nuxeo-select's composed
+        // subtree; the correct next field is the first tabbable element after it.
+        let anchor = -1;
+        for (let i = 0; i < all.length; i++) {
+          if (isInsideMe(all[i])) anchor = i;
+        }
+        if (anchor >= 0) {
+          for (let i = anchor + 1; i < all.length; i++) {
+            if (!isInsideMe(all[i])) return all[i];
+          }
+        } else {
+          // No composed-subtree elements collected — fall back to document order.
+          for (const el of all) {
+            if (!isInsideMe(el) && this.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) {
+              return el;
+            }
+          }
+        }
+      } else {
+        // Find the first element that belongs to nuxeo-select's composed subtree;
+        // the correct previous field is the last tabbable element before it.
+        let anchor = all.length;
+        for (let i = 0; i < all.length; i++) {
+          if (isInsideMe(all[i])) {
+            anchor = i;
+            break;
+          }
+        }
+        if (anchor < all.length) {
+          for (let i = anchor - 1; i >= 0; i--) {
+            if (!isInsideMe(all[i])) return all[i];
+          }
+        } else {
+          // No composed-subtree elements collected — fall back to document order.
+          let found = null;
+          for (const el of all) {
+            if (!isInsideMe(el) && this.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING) {
+              found = el;
+            }
+          }
+          return found;
+        }
+      }
+      return null;
     }
 
     /* Override method from Polymer.IronValidatableBehavior. */
