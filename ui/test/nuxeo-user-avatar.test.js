@@ -239,6 +239,20 @@ suite('nuxeo-user-avatar extras', () => {
       el.__obsBorderRadius();
       expect(el.$.container.style.borderRadius).to.equal('50%');
     });
+
+    test('__obsBoxShadow sets box shadow styles', () => {
+      el.boxShadow = '2px 2px 4px rgba(0,0,0,0.5)';
+      el.__obsBoxShadow();
+      expect(el.$.container.style.boxShadow).to.include('2px');
+      expect(el.$.container.style.boxShadow).to.include('4px');
+    });
+
+    test('__obsTextShadow sets text shadow styles', () => {
+      el.textShadow = '1px 1px 2px rgba(0,0,0,0.3)';
+      el.__obsTextShadow();
+      expect(el.$.character.style.textShadow).to.include('1px');
+      expect(el.$.character.style.textShadow).to.include('2px');
+    });
   });
 
   suite('__generateHue', () => {
@@ -295,6 +309,65 @@ suite('nuxeo-user-avatar extras', () => {
       el.user = { id: '!!special' };
       el.__makeAvatar();
       expect(el._isInTheAlphabet).to.be.false;
+    });
+
+    test('fetches avatar when fetchAvatar is true and updates user when avatar returned', async () => {
+      const avatarUser = {
+        id: 'jdoe-id',
+        'entity-type': 'user',
+        properties: { firstName: 'John', lastName: 'Doe' },
+        contextParameters: {
+          userprofile: {
+            avatar: { data: 'data:image/png;base64,fetched' },
+          },
+        },
+      };
+      el.user = {
+        id: 'jdoe-id',
+        'entity-type': 'user',
+        properties: { firstName: 'John', lastName: 'Doe' },
+      };
+      el.fetchAvatar = true;
+      sinon.stub(el.$.getUserProfile, 'get').returns(Promise.resolve(avatarUser));
+      el.__makeAvatar();
+      await flush();
+      await Promise.resolve();
+      expect(el.$.getUserProfile.path).to.equal('user/jdoe-id');
+      expect(el.user).to.equal(avatarUser);
+      el.$.getUserProfile.get.restore();
+    });
+
+    test('does not update user when fetched response has no avatar', async () => {
+      const originalUser = {
+        id: 'jdoe-id',
+        'entity-type': 'user',
+        properties: { firstName: 'John', lastName: 'Doe' },
+      };
+      el.user = originalUser;
+      el.fetchAvatar = true;
+      sinon.stub(el.$.getUserProfile, 'get').returns(Promise.resolve({ id: 'jdoe-id', contextParameters: {} }));
+      el.__makeAvatar();
+      await flush();
+      await Promise.resolve();
+      expect(el.user).to.equal(originalUser);
+      el.$.getUserProfile.get.restore();
+    });
+
+    test('logs warning when avatar fetch fails', async () => {
+      el.user = {
+        id: 'jdoe-id',
+        'entity-type': 'user',
+        properties: { firstName: 'John', lastName: 'Doe' },
+      };
+      el.fetchAvatar = true;
+      sinon.stub(el.$.getUserProfile, 'get').returns(Promise.reject(new Error('network error')));
+      const warnSpy = sinon.stub(console, 'warn');
+      el.__makeAvatar();
+      await flush();
+      await Promise.resolve();
+      expect(warnSpy).to.have.been.called;
+      warnSpy.restore();
+      el.$.getUserProfile.get.restore();
     });
   });
 });
