@@ -259,7 +259,7 @@ import '../nuxeo-button-styles.js';
         </nuxeo-dialog>
 
         <nuxeo-dialog id="rmFromGroupDialog" with-backdrop class="vertical layout">
-          <h2>[[i18n('groupManagement.removeUserFromGroup.confirm', _removedMember.id)]]</h2>
+          <h2>[[i18n('groupManagement.removeUserFromGroup.confirm', _removedMemberDisplayName)]]</h2>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
               <paper-button noink dialog-dismiss class="secondary">[[i18n('label.no')]]</paper-button>
@@ -580,6 +580,11 @@ import '../nuxeo-button-styles.js';
         _currentUser: {
           type: Object,
         },
+
+        _removedMemberDisplayName: {
+          type: String,
+          computed: '_userDisplayName(_removedMember)',
+        },
       };
     }
 
@@ -746,7 +751,7 @@ import '../nuxeo-button-styles.js';
           this._fetchGroups();
         }
         this._removeRecent(this._removedMember.id);
-        this._toast(this.i18n('groupManagement.removedUserFromGroup', this._removedMember.id));
+        this._toast(this.i18n('groupManagement.removedUserFromGroup', this._userDisplayName(this._removedMember)));
       });
     }
 
