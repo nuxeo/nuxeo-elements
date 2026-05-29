@@ -542,7 +542,8 @@ import '../nuxeo-button-styles.js';
       if (!user) {
         return '';
       }
-      return (user.properties && user.properties.username) || user.name || '';
+      const props = user.properties || {};
+      return props.username || user.name || '';
     }
 
     _fetch() {
