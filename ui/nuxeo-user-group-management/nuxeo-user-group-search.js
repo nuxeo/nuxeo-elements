@@ -277,7 +277,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         new CustomEvent('manageGroup', {
           composed: true,
           bubbles: true,
-          detail: { group: e.model.item.id },
+          detail: { group: e.model.item.id || e.model.item.groupname },
         }),
       );
     }
