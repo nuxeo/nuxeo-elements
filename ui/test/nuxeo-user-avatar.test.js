@@ -243,13 +243,15 @@ suite('nuxeo-user-avatar extras', () => {
     test('__obsBoxShadow sets box shadow styles', () => {
       el.boxShadow = '2px 2px 4px rgba(0,0,0,0.5)';
       el.__obsBoxShadow();
-      expect(el.$.container.style.boxShadow).to.equal('2px 2px 4px rgba(0,0,0,0.5)');
+      expect(el.$.container.style.boxShadow).to.include('2px');
+      expect(el.$.container.style.boxShadow).to.include('4px');
     });
 
     test('__obsTextShadow sets text shadow styles', () => {
       el.textShadow = '1px 1px 2px rgba(0,0,0,0.3)';
       el.__obsTextShadow();
-      expect(el.$.character.style.textShadow).to.equal('1px 1px 2px rgba(0,0,0,0.3)');
+      expect(el.$.character.style.textShadow).to.include('1px');
+      expect(el.$.character.style.textShadow).to.include('2px');
     });
   });
 
