@@ -137,7 +137,7 @@ import '../nuxeo-button-styles.js';
           <div class="horizontal layout center header">
             <iron-icon class="user-icon" icon="nuxeo:user"></iron-icon>
             <div class="layout vertical">
-              <div class="user heading">[[user.id]]</div>
+              <div class="user heading">[[_userDisplayName(user)]]</div>
               <div>[[user.properties.firstName]] [[user.properties.lastName]]</div>
             </div>
 
