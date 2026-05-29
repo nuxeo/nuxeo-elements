@@ -311,7 +311,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         return '';
       }
       const props = group.properties || {};
-      return group.name || props.groupname || '';
+      return group.name || group.groupname || props.groupname || group.id || '';
     }
 
     _userIdentifier(user) {
