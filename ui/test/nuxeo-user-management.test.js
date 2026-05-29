@@ -147,6 +147,66 @@ suite('nuxeo-user-management', () => {
     });
   });
 
+  suite('_groupSelected', () => {
+    setup(() => {
+      el.user = {
+        id: 'user-uuid',
+        properties: { username: 'jdoe', groups: [] },
+        extendedGroups: [],
+      };
+      el._currentUser = { isAdministrator: true, properties: { username: 'admin' } };
+    });
+
+    test('uses group.id when available in POST path', async () => {
+      sinon
+        .stub(el.$.request, 'post')
+        .returns(
+          Promise.resolve({
+            id: 'user-uuid',
+            properties: { username: 'jdoe', groups: ['g1'] },
+            extendedGroups: [{ name: 'g1' }],
+          }),
+        );
+      sinon.spy(el, '_toast');
+      // Set directly on __data to bypass Polymer observer / selectivity widget
+      el.__data.selectedGroup = { id: 'g1-uuid', groupname: 'g1', grouplabel: 'G1' };
+      el._groupSelected();
+      await flush();
+      await Promise.resolve();
+      expect(el.$.request.path).to.equal('user/user-uuid/group/g1-uuid');
+      expect(el._toast).to.have.been.calledWith(el.i18n('userManagement.addedUserToGroup', 'jdoe', 'g1'));
+      el.$.request.post.restore();
+      el._toast.restore();
+    });
+
+    test('falls back to group.name when group.id is absent', async () => {
+      sinon
+        .stub(el.$.request, 'post')
+        .returns(
+          Promise.resolve({
+            id: 'user-uuid',
+            properties: { username: 'jdoe', groups: ['g1'] },
+            extendedGroups: [{ name: 'g1' }],
+          }),
+        );
+      sinon.spy(el, '_toast');
+      el.__data.selectedGroup = { groupname: 'g1', grouplabel: 'G1' };
+      el._groupSelected();
+      await flush();
+      await Promise.resolve();
+      expect(el.$.request.path).to.equal('user/user-uuid/group/g1');
+      el.$.request.post.restore();
+      el._toast.restore();
+    });
+
+    test('rejects adding non-admin to administrators group', () => {
+      el._currentUser = { isAdministrator: false, extendedGroups: [], properties: { username: 'jdoe' } };
+      el.__data.selectedGroup = { groupname: 'administrators' };
+      el._groupSelected();
+      expect(el.errors).to.be.ok;
+    });
+  });
+
   suite('_remove', () => {
     test('removes group membership using group.id when available', async () => {
       el.user = {
@@ -164,6 +224,7 @@ suite('nuxeo-user-management', () => {
       expect(el.$.request.path).to.equal('user/jdoe/group/g1-uuid');
       expect(el._removeRecent).to.have.been.calledWith('g1');
       expect(el._removeFromGroup).to.have.been.calledWith('g1');
+      expect(el._toast).to.have.been.calledWith(el.i18n('userManagement.removedUserFromGroup', 'jdoe', 'g1'));
       el.$.request.remove.restore();
       el._removeRecent.restore();
       el._removeFromGroup.restore();
