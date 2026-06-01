@@ -126,6 +126,52 @@ suite('nuxeo-select', () => {
         const result = selectEl._getAdjacentFocusable(false);
         expect(result).to.equal(prevBtn);
       });
+
+      test('Tab while dropdown is open moves focus to the button after nuxeo-select', async () => {
+        selectEl.$.paperDropdownMenu.open();
+        await flush();
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
+        // Wait for the Promise.resolve().then() in _attachDropdownTabHandler to run
+        await Promise.resolve();
+        expect(document.activeElement).to.equal(nextBtn);
+      });
+    });
+
+    suite('fallback paths when no shadow elements are tabbable', () => {
+      // Hiding nuxeo-select's paper-dropdown-menu (display:none) makes all of its
+      // shadow subtree have offsetParent=null, so they are excluded from the
+      // tabbable-elements collection. This exercises the compareDocumentPosition
+      // fallback path (anchor === -1 for forward, anchor === all.length for backward).
+      let hiddenSel, afterBtn, beforeBtn;
+
+      setup(async () => {
+        const cont = await fixture(html`
+          <div>
+            <button id="fb-before">Before</button>
+            <nuxeo-select id="fb-sel" label="Hidden" .options="${['A']}"></nuxeo-select>
+            <button id="fb-after">After</button>
+          </div>
+        `);
+        beforeBtn = cont.querySelector('#fb-before');
+        afterBtn = cont.querySelector('#fb-after');
+        hiddenSel = cont.querySelector('#fb-sel');
+        await flush();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        // Hide the trigger so all of hiddenSel's composed shadow subtree has
+        // offsetParent === null and is not collected by _getAdjacentFocusable,
+        // while hiddenSel itself remains addressable in the document tree.
+        hiddenSel.$.paperDropdownMenu.style.display = 'none';
+      });
+
+      test('forward: compareDocumentPosition fallback returns element after nuxeo-select', () => {
+        const result = hiddenSel._getAdjacentFocusable(true);
+        expect(result).to.equal(afterBtn);
+      });
+
+      test('backward: compareDocumentPosition fallback returns element before nuxeo-select', () => {
+        const result = hiddenSel._getAdjacentFocusable(false);
+        expect(result).to.equal(beforeBtn);
+      });
     });
   });
 
@@ -135,6 +181,18 @@ suite('nuxeo-select', () => {
       expect(el._dropdownTabHandler).to.be.a('function');
       el._detachDropdownTabHandler();
       expect(el._dropdownTabHandler).to.be.null;
+    });
+
+    test('non-Tab key while dropdown is open does not close it', async () => {
+      el.$.paperDropdownMenu.open();
+      await flush();
+      expect(el.$.paperDropdownMenu.opened).to.be.true;
+      // A non-Tab key should cause the handler to return early, leaving the dropdown open.
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true, cancelable: true }));
+      await flush();
+      expect(el.$.paperDropdownMenu.opened).to.be.true;
+      el.$.paperDropdownMenu.close();
+      await flush();
     });
 
     test('Tab key closes the dropdown', async () => {
@@ -150,6 +208,35 @@ suite('nuxeo-select', () => {
       await flush();
 
       expect(el.$.paperDropdownMenu.opened).to.be.false;
+    });
+  });
+
+  suite('close()', () => {
+    test('close() closes an open dropdown', async () => {
+      el.$.paperDropdownMenu.open();
+      await flush();
+      expect(el.$.paperDropdownMenu.opened).to.be.true;
+      el.close();
+      await flush();
+      expect(el.$.paperDropdownMenu.opened).to.be.false;
+    });
+  });
+
+  suite('lifecycle – disconnectedCallback', () => {
+    test('disconnectedCallback removes the Tab handler', async () => {
+      const el2 = await fixture(
+        html`
+          <nuxeo-select label="Test" .options="${['A']}"></nuxeo-select>
+        `,
+      );
+      await flush();
+      // Arm the handler by opening the dropdown
+      el2.$.paperDropdownMenu.open();
+      await flush();
+      expect(el2._dropdownTabHandler).to.be.a('function');
+      // Disconnect el2 from the DOM (keeps the fixture wrapper intact for cleanup)
+      el2.remove();
+      expect(el2._dropdownTabHandler).to.be.null;
     });
   });
 
