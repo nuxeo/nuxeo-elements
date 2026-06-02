@@ -162,4 +162,44 @@ suite('nuxeo-input accessibility', () => {
       expect(getNativeInput(el).getAttribute('aria-label')).to.equal('Second');
     });
   });
+
+  // Defensive-fallback paths inside _applyNativeInputAriaLabel(). These exercise
+  // the early-return when paper-input is missing and the shadowRoot.querySelector
+  // fallback used when iron-input's wrapped native input cannot be discovered
+  // via inputElement._inputElement / paperInput.$.nativeInput / light-DOM query.
+  suite('_applyNativeInputAriaLabel defensive paths', () => {
+    test('returns silently when paper-input is not present', async () => {
+      const el = await fixture(html`
+        <nuxeo-input label="X"></nuxeo-input>
+      `);
+      await flush();
+      await tick();
+      const saved = el.$.paperInput;
+      el.$.paperInput = null;
+      expect(() => el._applyNativeInputAriaLabel()).to.not.throw();
+      el.$.paperInput = saved;
+    });
+
+    test('uses paper-input shadowRoot.querySelector fallback when other lookups fail', async () => {
+      const el = await fixture(html`
+        <nuxeo-input label="Subject"></nuxeo-input>
+      `);
+      await flush();
+      await tick();
+      const saved = el.$.paperInput;
+      const fakeNative = document.createElement('input');
+      fakeNative.setAttribute('aria-labelledby', 'foo');
+      el.$.paperInput = {
+        setAttribute: () => {},
+        removeAttribute: () => {},
+        inputElement: null,
+        $: { nativeInput: null },
+        shadowRoot: { querySelector: (sel) => (sel === 'input' ? fakeNative : null) },
+      };
+      el._applyNativeInputAriaLabel();
+      expect(fakeNative.getAttribute('aria-label')).to.equal('Subject');
+      expect(fakeNative.hasAttribute('aria-labelledby')).to.be.false;
+      el.$.paperInput = saved;
+    });
+  });
 });

@@ -287,4 +287,54 @@ suite('nuxeo-select', () => {
       expect(el.$.paperDropdownMenu.opened).to.be.false;
     });
   });
+
+  // Defensive-fallback paths inside _applyAriaLabel(), _nextFocusable(),
+  // _prevFocusable(), and _getValidity() that the integration tests above don't
+  // naturally hit. Stubbed so they don't depend on iron-dropdown internals.
+  suite('defensive paths', () => {
+    test('_getValidity delegates to paper-dropdown-menu._getValidity()', () => {
+      const stub = sinon.stub(el.$.paperDropdownMenu, '_getValidity').returns(true);
+      expect(el._getValidity()).to.be.true;
+      expect(stub).to.have.been.calledOnce;
+      stub.restore();
+    });
+
+    test('_applyAriaLabel uses paper-input shadowRoot.querySelector fallback when other lookups fail', () => {
+      const fakeNative = document.createElement('input');
+      fakeNative.setAttribute('aria-labelledby', 'foo');
+      const fakePaperInput = {
+        setAttribute: () => {},
+        removeAttribute: () => {},
+        inputElement: null,
+        $: { nativeInput: null },
+        shadowRoot: { querySelector: (sel) => (sel === 'input' ? fakeNative : null) },
+      };
+      const savedPdm = el.$.paperDropdownMenu;
+      el.$.paperDropdownMenu = {
+        $: { input: fakePaperInput },
+        shadowRoot: null,
+      };
+      el._applyAriaLabel();
+      expect(fakeNative.getAttribute('aria-label')).to.equal('Format');
+      expect(fakeNative.hasAttribute('aria-labelledby')).to.be.false;
+      el.$.paperDropdownMenu = savedPdm;
+    });
+
+    test('_nextFocusable returns null when no element is collected (anchor = -1 fallback with empty list)', () => {
+      // Empty collection: anchor stays -1 and the fallback loop finds nothing.
+      expect(el._nextFocusable([])).to.be.null;
+    });
+
+    test('_prevFocusable returns null when the only in-subtree element is at the start of the list', () => {
+      // anchor = 0 (first element is in subtree); the loop from -1 doesn't
+      // execute, exercising the `return null` at the end of the inner-loop
+      // branch.
+      const fake = { tabIndex: 0 };
+      // Stub _isInMySubtree so the first (and only) element is reported as in
+      // this element's subtree.
+      const stub = sinon.stub(el, '_isInMySubtree').callsFake((node) => node === fake);
+      expect(el._prevFocusable([fake])).to.be.null;
+      stub.restore();
+    });
+  });
 });

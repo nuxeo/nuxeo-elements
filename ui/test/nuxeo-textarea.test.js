@@ -157,4 +157,54 @@ suite('nuxeo-textarea accessibility', () => {
       expect(getNativeTextarea(el).getAttribute('aria-label')).to.equal('Second');
     });
   });
+
+  // Defensive-fallback paths inside _applyNativeTextareaAriaLabel() and
+  // _getValidity(). These cover the early-return when paper-textarea is missing
+  // and the secondary discovery of the inner native <textarea> via
+  // paperTextarea.$.input.textarea when shadowRoot.querySelector fails.
+  suite('defensive paths', () => {
+    test('_getValidity delegates to paper-textarea.validate()', async () => {
+      const el = await fixture(html`
+        <nuxeo-textarea></nuxeo-textarea>
+      `);
+      await flush();
+      const stub = sinon.stub(el.$.paperTextarea, 'validate').returns(true);
+      expect(el._getValidity()).to.be.true;
+      expect(stub).to.have.been.calledOnce;
+      stub.restore();
+    });
+
+    test('_applyNativeTextareaAriaLabel returns silently when paper-textarea is not present', async () => {
+      const el = await fixture(html`
+        <nuxeo-textarea label="X"></nuxeo-textarea>
+      `);
+      await flush();
+      await tick();
+      const saved = el.$.paperTextarea;
+      el.$.paperTextarea = null;
+      expect(() => el._applyNativeTextareaAriaLabel()).to.not.throw();
+      el.$.paperTextarea = saved;
+    });
+
+    test('uses paperTextarea.$.input.textarea fallback when shadowRoot lookup fails', async () => {
+      const el = await fixture(html`
+        <nuxeo-textarea label="Description"></nuxeo-textarea>
+      `);
+      await flush();
+      await tick();
+      const saved = el.$.paperTextarea;
+      const fakeNative = document.createElement('textarea');
+      fakeNative.setAttribute('aria-labelledby', 'foo');
+      el.$.paperTextarea = {
+        setAttribute: () => {},
+        removeAttribute: () => {},
+        shadowRoot: { querySelector: () => null },
+        $: { input: { textarea: fakeNative } },
+      };
+      el._applyNativeTextareaAriaLabel();
+      expect(fakeNative.getAttribute('aria-label')).to.equal('Description');
+      expect(fakeNative.hasAttribute('aria-labelledby')).to.be.false;
+      el.$.paperTextarea = saved;
+    });
+  });
 });
