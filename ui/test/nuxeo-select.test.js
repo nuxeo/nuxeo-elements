@@ -131,7 +131,7 @@ suite('nuxeo-select', () => {
         selectEl.$.paperDropdownMenu.open();
         await flush();
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
-        // Wait for the Promise.resolve().then() in _attachDropdownTabHandler to run
+        // Wait for the queueMicrotask() in _attachDropdownTabHandler to run
         await Promise.resolve();
         expect(document.activeElement).to.equal(nextBtn);
       });

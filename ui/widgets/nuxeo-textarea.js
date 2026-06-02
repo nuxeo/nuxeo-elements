@@ -199,35 +199,37 @@ import '@polymer/paper-input/paper-textarea.js';
 
     _syncNativeTextareaAriaLabel() {
       // paper-textarea wraps a native textarea; keep both in sync for AT compatibility.
-      setTimeout(() => {
-        const paperTextarea = this.$ && this.$.paperTextarea;
-        if (!paperTextarea) {
-          return;
-        }
+      setTimeout(() => this._applyNativeTextareaAriaLabel(), 0);
+    }
 
-        const ariaLabel = this._computeAriaLabel(this.label, this.placeholder);
+    _applyNativeTextareaAriaLabel() {
+      const paperTextarea = this.$ && this.$.paperTextarea;
+      if (!paperTextarea) {
+        return;
+      }
+
+      const ariaLabel = this._computeAriaLabel(this.label, this.placeholder);
+      if (ariaLabel) {
+        paperTextarea.setAttribute('aria-label', ariaLabel);
+      } else {
+        paperTextarea.removeAttribute('aria-label');
+      }
+
+      let nativeTextarea = paperTextarea.shadowRoot && paperTextarea.shadowRoot.querySelector('textarea');
+      if (!nativeTextarea && paperTextarea.$ && paperTextarea.$.input && paperTextarea.$.input.textarea) {
+        nativeTextarea = paperTextarea.$.input.textarea;
+      }
+      if (nativeTextarea) {
         if (ariaLabel) {
-          paperTextarea.setAttribute('aria-label', ariaLabel);
+          nativeTextarea.setAttribute('aria-label', ariaLabel);
         } else {
-          paperTextarea.removeAttribute('aria-label');
+          nativeTextarea.removeAttribute('aria-label');
         }
-
-        let nativeTextarea = paperTextarea.shadowRoot && paperTextarea.shadowRoot.querySelector('textarea');
-        if (!nativeTextarea && paperTextarea.$ && paperTextarea.$.input && paperTextarea.$.input.textarea) {
-          nativeTextarea = paperTextarea.$.input.textarea;
-        }
-        if (nativeTextarea) {
-          if (ariaLabel) {
-            nativeTextarea.setAttribute('aria-label', ariaLabel);
-          } else {
-            nativeTextarea.removeAttribute('aria-label');
-          }
-          // paper-textarea binds aria-labelledby on the inner textarea to its own
-          // internal (empty) <label>, which would otherwise win over aria-label
-          // and leave the field unnamed for assistive technologies.
-          nativeTextarea.removeAttribute('aria-labelledby');
-        }
-      }, 0);
+        // paper-textarea binds aria-labelledby on the inner textarea to its own
+        // internal (empty) <label>, which would otherwise win over aria-label
+        // and leave the field unnamed for assistive technologies.
+        nativeTextarea.removeAttribute('aria-labelledby');
+      }
     }
   }
 

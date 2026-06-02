@@ -254,40 +254,41 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
     _syncNativeInputAriaLabel() {
       // paper-input wraps a native input; keep both in sync for AT compatibility.
-      setTimeout(() => {
-        const paperInput = this.$ && this.$.paperInput;
-        if (!paperInput) {
-          return;
-        }
+      setTimeout(() => this._applyNativeInputAriaLabel(), 0);
+    }
 
-        const ariaLabel = this._computeAriaLabel(this.label, this.placeholder);
+    _applyNativeInputAriaLabel() {
+      const paperInput = this.$ && this.$.paperInput;
+      if (!paperInput) {
+        return;
+      }
+
+      const ariaLabel = this._computeAriaLabel(this.label, this.placeholder);
+      if (ariaLabel) {
+        paperInput.setAttribute('aria-label', ariaLabel);
+      } else {
+        paperInput.removeAttribute('aria-label');
+      }
+
+      let nativeInput = (paperInput.inputElement && paperInput.inputElement._inputElement) || paperInput.$.nativeInput;
+      if (!nativeInput && paperInput.inputElement) {
+        // iron-input wraps the native input in its light DOM
+        nativeInput = paperInput.inputElement.querySelector && paperInput.inputElement.querySelector('input');
+      }
+      if (!nativeInput && paperInput.shadowRoot) {
+        nativeInput = paperInput.shadowRoot.querySelector('input');
+      }
+      if (nativeInput) {
         if (ariaLabel) {
-          paperInput.setAttribute('aria-label', ariaLabel);
+          nativeInput.setAttribute('aria-label', ariaLabel);
         } else {
-          paperInput.removeAttribute('aria-label');
+          nativeInput.removeAttribute('aria-label');
         }
-
-        let nativeInput =
-          (paperInput.inputElement && paperInput.inputElement._inputElement) || paperInput.$.nativeInput;
-        if (!nativeInput && paperInput.inputElement) {
-          // iron-input wraps the native input in its light DOM
-          nativeInput = paperInput.inputElement.querySelector && paperInput.inputElement.querySelector('input');
-        }
-        if (!nativeInput && paperInput.shadowRoot) {
-          nativeInput = paperInput.shadowRoot.querySelector('input');
-        }
-        if (nativeInput) {
-          if (ariaLabel) {
-            nativeInput.setAttribute('aria-label', ariaLabel);
-          } else {
-            nativeInput.removeAttribute('aria-label');
-          }
-          // paper-input binds aria-labelledby to its own internal (empty) <label>,
-          // which would otherwise win over aria-label and leave the field unnamed
-          // for assistive technologies. Drop it so our aria-label is announced.
-          nativeInput.removeAttribute('aria-labelledby');
-        }
-      }, 0);
+        // paper-input binds aria-labelledby to its own internal (empty) <label>,
+        // which would otherwise win over aria-label and leave the field unnamed
+        // for assistive technologies. Drop it so our aria-label is announced.
+        nativeInput.removeAttribute('aria-labelledby');
+      }
     }
   }
 
