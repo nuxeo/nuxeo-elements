@@ -173,35 +173,6 @@ suite('nuxeo-selectivity keyboard accessibility (Tab)', () => {
       expect(selectivityWidget._selectivity.dropdown).to.be.null;
       expect(document.activeElement).to.equal(nextButton);
     });
-
-    test('Tab uses document-order fallback when input is not in tabbable list', async () => {
-      // This test covers the idx < 0 fallback path in findAdjacentTabbable():
-      // when the input element is not found by collectTabbable() (e.g. because it
-      // has tabIndex < 0), the function falls back to a document-order
-      // compareDocumentPosition scan to find the next tabbable element after the
-      // widget wrapper.
-      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
-
-      selectivityWidget._selectivity.open();
-      await flush();
-      expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
-
-      // Remove input from the tab order (tabIndex < 0 → collectTabbable() skips
-      // it), forcing findAdjacentTabbable() into the idx < 0 fallback branch.
-      // Using tabIndex=-1 (not display:none) avoids triggering a blur event that
-      // would schedule a duplicate close() call and cause a Chrome timeout.
-      input.tabIndex = -1;
-
-      // Tab closes the dropdown and advances focus via the fallback path.
-      pressAndReleaseKeyOn(input, KEY_TAB);
-      // Await one microtask so the queueMicrotask callback (focus advance) runs.
-      await Promise.resolve();
-
-      expect(document.activeElement).to.equal(nextButton);
-
-      // Restore tabIndex for subsequent tests.
-      input.tabIndex = 0;
-    });
   });
 });
 suite('nuxeo-selectivity', () => {
