@@ -675,27 +675,28 @@ suite('nuxeo-dialog', () => {
       addSpy.restore();
     });
 
-    test('_enableFocusTrap should not apply background inert (deferred — see _setBackgroundInert suite)', () => {
-      // The focus trap intentionally no longer applies `inert` to ancestor/sibling elements
-      // because it caused `pointer-events: none` to leak into notification panels (toasts),
-      // breaking dismiss-button clicks. Focus containment is provided by the keydown Tab
-      // trap plus `aria-modal`. Direct callers can still invoke _setBackgroundInert.
+    test('_enableFocusTrap should apply background inert when setInert is true', () => {
       const inertSpy = sinon.spy(dialog, '_setBackgroundInert');
       dialog._enableFocusTrap(true);
-      expect(inertSpy).to.not.have.been.called;
-      expect(dialog._inertApplied).to.not.be.true;
+      expect(inertSpy).to.have.been.calledWith(true);
+      expect(dialog._inertApplied).to.be.true;
       expect(dialog._focusTrapEnabled).to.be.true;
       inertSpy.restore();
+      // cleanup
+      dialog._setBackgroundInert(false);
+      dialog._inertApplied = false;
     });
 
     test('_enableFocusTrap should not apply inert twice (idempotent)', () => {
-      // _enableFocusTrap no longer calls _setBackgroundInert at all; verify it remains uncalled
-      // across repeated invocations.
       dialog._enableFocusTrap(true);
+      expect(dialog._inertApplied).to.be.true;
       const inertSpy = sinon.spy(dialog, '_setBackgroundInert');
       dialog._enableFocusTrap(true);
       expect(inertSpy).to.not.have.been.called;
       inertSpy.restore();
+      // cleanup
+      dialog._setBackgroundInert(false);
+      dialog._inertApplied = false;
     });
 
     test('_disableFocusTrap should remove keydown listener', () => {
@@ -706,13 +707,13 @@ suite('nuxeo-dialog', () => {
       removeSpy.restore();
     });
 
-    test('_disableFocusTrap should not call _setBackgroundInert when no inert was applied', () => {
-      // Since _enableFocusTrap no longer applies inert, _inertApplied stays false and the
-      // defensive cleanup in _disableFocusTrap should skip the call.
+    test('_disableFocusTrap should call _setBackgroundInert(false) when inert was applied', () => {
       dialog._enableFocusTrap(true);
+      expect(dialog._inertApplied).to.be.true;
       const inertSpy = sinon.spy(dialog, '_setBackgroundInert');
       dialog._disableFocusTrap(true);
-      expect(inertSpy).to.not.have.been.called;
+      expect(inertSpy).to.have.been.calledWith(false);
+      expect(dialog._inertApplied).to.be.false;
       expect(dialog._focusTrapEnabled).to.be.false;
       inertSpy.restore();
     });
@@ -730,7 +731,7 @@ suite('nuxeo-dialog', () => {
   });
 
   suite('disconnectedCallback cleanup', () => {
-    test('should remove keydown listener on disconnect', async () => {
+    test('should remove keydown listener and clear inert on disconnect', async () => {
       dialog = await fixture(html`
         <nuxeo-dialog modal>
           <button>OK</button>
@@ -738,12 +739,10 @@ suite('nuxeo-dialog', () => {
       `);
       await waitForOpen(dialog);
       const removeSpy = sinon.spy(document, 'removeEventListener');
-      // _enableFocusTrap no longer applies inert, so disconnectedCallback should skip
-      // the _setBackgroundInert(false) call (guarded by _inertApplied).
       const inertSpy = sinon.spy(dialog, '_setBackgroundInert');
       dialog.parentNode.removeChild(dialog);
       expect(removeSpy.calledWith('keydown', dialog._boundTrapTab, true)).to.be.true;
-      expect(inertSpy).to.not.have.been.called;
+      expect(inertSpy).to.have.been.calledWith(false);
       removeSpy.restore();
       inertSpy.restore();
     });
