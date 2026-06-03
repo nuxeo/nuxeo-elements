@@ -215,13 +215,6 @@ IronOverlayManager._overlayWithBackdrop = function() {
     }
 
     _enableFocusTrap(setInert) {
-      // Note: `setInert` is intentionally ignored. Applying `inert` to sibling/ancestor
-      // elements caused `pointer-events: none` to cascade into surfaces that must remain
-      // interactive while a dialog is open (e.g., toast/snackbar notification panels),
-      // making their controls unclickable from outside the dialog. The keydown-based Tab
-      // trap and `aria-modal` already provide focus containment for both keyboard and
-      // assistive technologies, so the inert mechanism is no longer engaged here.
-      void setInert;
       // Lazily initialize in case observer fires before ready()
       if (!this._boundTrapTab) {
         this._boundTrapTab = this._trapTab.bind(this);
@@ -235,14 +228,19 @@ IronOverlayManager._overlayWithBackdrop = function() {
       this.removeEventListener('focusout', this._boundRecoverFocus);
       this.addEventListener('focusout', this._boundRecoverFocus);
       this._focusTrapEnabled = true;
+      // Apply inert to background siblings so they cannot intercept pointer events
+      // or receive focus while the dialog is open. Notification regions (toasts, snackbars)
+      // are excluded via _isNotificationRegion so they remain interactive.
+      if (setInert && !this._inertApplied) {
+        this._setBackgroundInert(true);
+        this._inertApplied = true;
+      }
     }
 
     _disableFocusTrap(clearInert) {
       document.removeEventListener('keydown', this._boundTrapTab, true);
       this.removeEventListener('focusout', this._boundRecoverFocus);
-      // Defensive cleanup: if some other code path set `inert` on background siblings
-      // via _setBackgroundInert, undo it here. _enableFocusTrap no longer applies inert,
-      // so in practice _inertApplied should be false.
+      // Remove inert from background siblings when the dialog closes
       if (clearInert && this._inertApplied) {
         this._setBackgroundInert(false);
         this._inertApplied = false;
