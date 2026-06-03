@@ -622,7 +622,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _userHasName(user) {
-      return user && (user.properties.firstName || user.properties.lastName);
+      return user && (user.properties.firstName || user.properties.lastName || user.properties.username);
     }
 
     _userDisplayName(user) {
