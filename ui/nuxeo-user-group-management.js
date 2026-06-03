@@ -310,11 +310,12 @@ import './nuxeo-button-styles.js';
       let msg;
       switch (event.type) {
         case 'nuxeo-user-created':
-        case 'nuxeo-user-invited':
-          msg = `${this.i18n('userGroupManagement.new.user')} ${event.detail.id} ${this.i18n(
-            'label.ui.state.created',
-          )}`;
+        case 'nuxeo-user-invited': {
+          const userId =
+            (event.detail.properties && event.detail.properties.username) || event.detail.name || event.detail.id;
+          msg = `${this.i18n('userGroupManagement.new.user')} ${userId} ${this.i18n('label.ui.state.created')}`;
           break;
+        }
         case 'nuxeo-group-created':
           msg = `${this.i18n('label.group')} ${event.detail.groupname} ${this.i18n('label.ui.state.created')}`;
           break;

@@ -303,7 +303,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _userHasName(user) {
-      return user.properties.firstName || user.properties.lastName;
+      return user.properties.firstName || user.properties.lastName || user.properties.username;
     }
 
     _groupIdentifier(group) {
