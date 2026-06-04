@@ -151,5 +151,59 @@ suite('nuxeo-user-group-search', () => {
       });
       el._manageGroup({ model: { item: { groupname: 'admins' } } });
     });
+
+    test('prefers group id over groupname', (done) => {
+      el.addEventListener('manageGroup', (evt) => {
+        expect(evt.detail.group).to.equal('admins-uuid');
+        done();
+      });
+      el._manageGroup({ model: { item: { id: 'admins-uuid', groupname: 'admins' } } });
+    });
+  });
+
+  suite('_groupIdentifier', () => {
+    test('returns empty string for null or undefined', () => {
+      expect(el._groupIdentifier(null)).to.equal('');
+      expect(el._groupIdentifier(undefined)).to.equal('');
+    });
+
+    test('returns group.name when present', () => {
+      expect(el._groupIdentifier({ name: 'administrators', properties: {} })).to.equal('administrators');
+    });
+
+    test('falls back to properties.groupname when name is absent', () => {
+      expect(el._groupIdentifier({ properties: { groupname: 'managers' } })).to.equal('managers');
+    });
+
+    test('returns empty string when neither name nor properties.groupname', () => {
+      expect(el._groupIdentifier({ properties: {} })).to.equal('');
+    });
+  });
+
+  suite('_userIdentifier', () => {
+    test('returns empty string for null or undefined', () => {
+      expect(el._userIdentifier(null)).to.equal('');
+      expect(el._userIdentifier(undefined)).to.equal('');
+    });
+
+    test('returns properties.username when present', () => {
+      expect(el._userIdentifier({ properties: { username: 'jdoe' } })).to.equal('jdoe');
+    });
+
+    test('falls back to user.name when properties.username is absent', () => {
+      expect(el._userIdentifier({ name: 'jdoe', properties: {} })).to.equal('jdoe');
+    });
+
+    test('falls back to user.id when name is absent', () => {
+      expect(el._userIdentifier({ id: 'jdoe-uuid', properties: {} })).to.equal('jdoe-uuid');
+    });
+
+    test('falls back to user.uid when id is absent', () => {
+      expect(el._userIdentifier({ uid: 'jdoe-uid', properties: {} })).to.equal('jdoe-uid');
+    });
+
+    test('returns empty string when all fields are absent', () => {
+      expect(el._userIdentifier({ properties: {} })).to.equal('');
+    });
   });
 });

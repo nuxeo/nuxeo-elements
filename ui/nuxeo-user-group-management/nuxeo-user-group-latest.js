@@ -241,7 +241,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _userHasName(user) {
-      return user.properties['user:firstName'] || user.properties['user:lastName'];
+      return user.properties['user:firstName'] || user.properties['user:lastName'] || user.properties['user:username'];
     }
 
     _getEmail(user) {
