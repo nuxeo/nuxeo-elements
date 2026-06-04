@@ -70,6 +70,12 @@ suite('nuxeo-user-group-latest', () => {
     test('returns falsy when neither name', () => {
       expect(el._userHasName(mkUser('', ''))).to.not.be.ok;
     });
+
+    test('returns truthy when only user:username present', () => {
+      const user = mkUser('', '');
+      user.properties['user:username'] = 'johndoe';
+      expect(el._userHasName(user)).to.be.ok;
+    });
   });
 
   suite('_getEmail', () => {
