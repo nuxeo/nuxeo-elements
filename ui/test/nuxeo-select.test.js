@@ -126,6 +126,52 @@ suite('nuxeo-select', () => {
         const result = selectEl._getAdjacentFocusable(false);
         expect(result).to.equal(prevBtn);
       });
+
+      test('Tab while dropdown is open moves focus to the button after nuxeo-select', async () => {
+        selectEl.$.paperDropdownMenu.open();
+        await flush();
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
+        // Wait for the queueMicrotask() in _attachDropdownTabHandler to run
+        await Promise.resolve();
+        expect(document.activeElement).to.equal(nextBtn);
+      });
+    });
+
+    suite('fallback paths when no shadow elements are tabbable', () => {
+      // Hiding nuxeo-select's paper-dropdown-menu (display:none) makes all of its
+      // shadow subtree have offsetParent=null, so they are excluded from the
+      // tabbable-elements collection. This exercises the compareDocumentPosition
+      // fallback path (anchor === -1 for forward, anchor === all.length for backward).
+      let hiddenSel, afterBtn, beforeBtn;
+
+      setup(async () => {
+        const cont = await fixture(html`
+          <div>
+            <button id="fb-before">Before</button>
+            <nuxeo-select id="fb-sel" label="Hidden" .options="${['A']}"></nuxeo-select>
+            <button id="fb-after">After</button>
+          </div>
+        `);
+        beforeBtn = cont.querySelector('#fb-before');
+        afterBtn = cont.querySelector('#fb-after');
+        hiddenSel = cont.querySelector('#fb-sel');
+        await flush();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        // Hide the trigger so all of hiddenSel's composed shadow subtree has
+        // offsetParent === null and is not collected by _getAdjacentFocusable,
+        // while hiddenSel itself remains addressable in the document tree.
+        hiddenSel.$.paperDropdownMenu.style.display = 'none';
+      });
+
+      test('forward: compareDocumentPosition fallback returns element after nuxeo-select', () => {
+        const result = hiddenSel._getAdjacentFocusable(true);
+        expect(result).to.equal(afterBtn);
+      });
+
+      test('backward: compareDocumentPosition fallback returns element before nuxeo-select', () => {
+        const result = hiddenSel._getAdjacentFocusable(false);
+        expect(result).to.equal(beforeBtn);
+      });
     });
   });
 
@@ -135,6 +181,18 @@ suite('nuxeo-select', () => {
       expect(el._dropdownTabHandler).to.be.a('function');
       el._detachDropdownTabHandler();
       expect(el._dropdownTabHandler).to.be.null;
+    });
+
+    test('non-Tab key while dropdown is open does not close it', async () => {
+      el.$.paperDropdownMenu.open();
+      await flush();
+      expect(el.$.paperDropdownMenu.opened).to.be.true;
+      // A non-Tab key should cause the handler to return early, leaving the dropdown open.
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true, cancelable: true }));
+      await flush();
+      expect(el.$.paperDropdownMenu.opened).to.be.true;
+      el.$.paperDropdownMenu.close();
+      await flush();
     });
 
     test('Tab key closes the dropdown', async () => {
@@ -150,6 +208,35 @@ suite('nuxeo-select', () => {
       await flush();
 
       expect(el.$.paperDropdownMenu.opened).to.be.false;
+    });
+  });
+
+  suite('close()', () => {
+    test('close() closes an open dropdown', async () => {
+      el.$.paperDropdownMenu.open();
+      await flush();
+      expect(el.$.paperDropdownMenu.opened).to.be.true;
+      el.close();
+      await flush();
+      expect(el.$.paperDropdownMenu.opened).to.be.false;
+    });
+  });
+
+  suite('lifecycle – disconnectedCallback', () => {
+    test('disconnectedCallback removes the Tab handler', async () => {
+      const el2 = await fixture(
+        html`
+          <nuxeo-select label="Test" .options="${['A']}"></nuxeo-select>
+        `,
+      );
+      await flush();
+      // Arm the handler by opening the dropdown
+      el2.$.paperDropdownMenu.open();
+      await flush();
+      expect(el2._dropdownTabHandler).to.be.a('function');
+      // Disconnect el2 from the DOM (keeps the fixture wrapper intact for cleanup)
+      el2.remove();
+      expect(el2._dropdownTabHandler).to.be.null;
     });
   });
 
@@ -198,6 +285,56 @@ suite('nuxeo-select', () => {
 
       // Dropdown should now be closed
       expect(el.$.paperDropdownMenu.opened).to.be.false;
+    });
+  });
+
+  // Defensive-fallback paths inside _applyAriaLabel(), _nextFocusable(),
+  // _prevFocusable(), and _getValidity() that the integration tests above don't
+  // naturally hit. Stubbed so they don't depend on iron-dropdown internals.
+  suite('defensive paths', () => {
+    test('_getValidity delegates to paper-dropdown-menu._getValidity()', () => {
+      const stub = sinon.stub(el.$.paperDropdownMenu, '_getValidity').returns(true);
+      expect(el._getValidity()).to.be.true;
+      expect(stub).to.have.been.calledOnce;
+      stub.restore();
+    });
+
+    test('_applyAriaLabel uses paper-input shadowRoot.querySelector fallback when other lookups fail', () => {
+      const fakeNative = document.createElement('input');
+      fakeNative.setAttribute('aria-labelledby', 'foo');
+      const fakePaperInput = {
+        setAttribute: () => {},
+        removeAttribute: () => {},
+        inputElement: null,
+        $: { nativeInput: null },
+        shadowRoot: { querySelector: (sel) => (sel === 'input' ? fakeNative : null) },
+      };
+      const savedPdm = el.$.paperDropdownMenu;
+      el.$.paperDropdownMenu = {
+        $: { input: fakePaperInput },
+        shadowRoot: null,
+      };
+      el._applyAriaLabel();
+      expect(fakeNative.getAttribute('aria-label')).to.equal('Format');
+      expect(fakeNative.hasAttribute('aria-labelledby')).to.be.false;
+      el.$.paperDropdownMenu = savedPdm;
+    });
+
+    test('_nextFocusable returns null when no element is collected (anchor = -1 fallback with empty list)', () => {
+      // Empty collection: anchor stays -1 and the fallback loop finds nothing.
+      expect(el._nextFocusable([])).to.be.null;
+    });
+
+    test('_prevFocusable returns null when the only in-subtree element is at the start of the list', () => {
+      // anchor = 0 (first element is in subtree); the loop from -1 doesn't
+      // execute, exercising the `return null` at the end of the inner-loop
+      // branch.
+      const fake = { tabIndex: 0 };
+      // Stub _isInMySubtree so the first (and only) element is reported as in
+      // this element's subtree.
+      const stub = sinon.stub(el, '_isInMySubtree').callsFake((node) => node === fake);
+      expect(el._prevFocusable([fake])).to.be.null;
+      stub.restore();
     });
   });
 });

@@ -3024,16 +3024,8 @@ typedArrayTags[weakMapTag] = false;
       const SELECTED_ITEM_SELECTOR = '.selectivity-multiple-selected-item';
 
       // Walks the composed tree (descending through any open shadow roots) and
-      // returns the next sequentially focusable element after `current`, or the
-      // previous one if `direction` is -1. Used to advance focus out of a
-      // multiple-mode selectivity widget when the browser's default Tab handling
-      // fails to leave the field (which can happen when the widget is wrapped in
-      // Polymer form components that intercept focus).
-      //
-      // `excludeRoot`, if provided, causes any element that is a descendant of
-      // it (including the element itself) to be skipped — used to prevent the
-      // helper from landing on a leftover focusable inside the current widget.
-      function findAdjacentTabbable(current, direction, excludeRoot) {
+      // collects all sequentially tabbable elements under document.body.
+      function collectTabbable() {
         const all = [];
         (function collect(root) {
           let node = root.firstElementChild;
@@ -3052,12 +3044,20 @@ typedArrayTags[weakMapTag] = false;
             node = node.nextElementSibling;
           }
         })(document.body);
+        return all;
+      }
+
+      // Returns the next sequentially focusable element after `current`, skipping
+      // any element that is a descendant of `excludeRoot` (including itself).
+      // Used to advance focus out of a multiple-mode selectivity widget when the
+      // browser's default Tab handling fails to leave the field.
+      function findAdjacentTabbable(current, excludeRoot) {
+        const all = collectTabbable();
         const idx = all.indexOf(current);
         if (idx < 0) {
-          // current is not in the list (probably because it was just removed or
-          // is hidden) — fall back to the first tabbable element strictly after
-          // excludeRoot in document order.
-          if (excludeRoot && (direction || 1) > 0) {
+          // current is not in the list — fall back to the first tabbable element
+          // strictly after excludeRoot in document order.
+          if (excludeRoot) {
             for (let i = 0; i < all.length; i++) {
               if (
                 !excludeRoot.contains(all[i]) &&
@@ -3069,13 +3069,12 @@ typedArrayTags[weakMapTag] = false;
           }
           return null;
         }
-        const step = direction || 1;
-        let i = idx + step;
-        while (i >= 0 && i < all.length) {
+        let i = idx + 1;
+        while (i < all.length) {
           if (!excludeRoot || !excludeRoot.contains(all[i])) {
             return all[i];
           }
-          i += step;
+          i++;
         }
         return null;
       }
@@ -3497,8 +3496,8 @@ typedArrayTags[weakMapTag] = false;
               // Polymer focus delegation) settle before we move focus. Without
               // this, surrounding form wrappers can re-focus the input AFTER our
               // explicit focus() call, trapping the user.
-              Promise.resolve().then(() => {
-                const next = findAdjacentTabbable(inputEl, 1, wrapperEl);
+              queueMicrotask(() => {
+                const next = findAdjacentTabbable(inputEl, wrapperEl);
                 if (next && typeof next.focus === 'function') {
                   next.focus();
                 }
@@ -3518,9 +3517,8 @@ typedArrayTags[weakMapTag] = false;
      * @private
      */
         _focused() {
-          // Intentionally a no-op: focusing the field (e.g. via Tab) must NOT open
-          // the dropdown. The first Tab focuses the field so the screen reader can
-          // announce its label; the user presses Tab again to actually open.
+          // Two-step Tab accessibility model: focusing must NOT open dropdown.
+          if (!this.enabled || this._tabbingOut) return;
         },
 
         /**
@@ -3812,9 +3810,8 @@ typedArrayTags[weakMapTag] = false;
      * @private
      */
         _focused() {
-          // Intentionally a no-op: focusing the field (e.g. via Tab) must NOT open
-          // the dropdown. The first Tab focuses the field so the screen reader can
-          // announce its label; the user presses Tab again to actually open.
+          // Two-step Tab accessibility model: focusing must NOT open dropdown.
+          if (!this.enabled || this._tabbingOut) return;
         },
 
         /**
