@@ -148,7 +148,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                         <div class="flex-4">
                           <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
                         </div>
-                        <div name="id" class="flex-2 preserve-white-space">[[item.groupname]]</div>
+                        <div name="id" class="flex-2 preserve-white-space">[[_groupIdentifier(item)]]</div>
                         <div class="flex-4">
                           <span class="counter">[[_countUsers(item.memberUsers)]]</span>
                           <span class="counter">[[_countGroups(item.memberGroups)]]</span>
@@ -188,7 +188,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                             </template>
                           </dom-if>
                         </div>
-                        <div name="id" class="flex-2 preserve-white-space">[[item.id]]</div>
+                        <div name="id" class="flex-2 preserve-white-space">[[_userIdentifier(item)]]</div>
                         <div class="flex-4">[[item.properties.email]]</div>
                       </div>
                     </template>
@@ -277,7 +277,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         new CustomEvent('manageGroup', {
           composed: true,
           bubbles: true,
-          detail: { group: e.model.item.groupname },
+          detail: { group: e.model.item.id || e.model.item.groupname },
         }),
       );
     }
@@ -303,7 +303,24 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _userHasName(user) {
-      return user.properties.firstName || user.properties.lastName;
+      return user.properties.firstName || user.properties.lastName || user.properties.username;
+    }
+
+    _groupIdentifier(group) {
+      if (!group) {
+        return '';
+      }
+      const props = group.properties || {};
+      return group.name || group.groupname || props.groupname || group.id || '';
+    }
+
+    _userIdentifier(user) {
+      if (!user) {
+        return '';
+      }
+      const props = user.properties || {};
+      const identifier = props.username || user.name || user.id || user.uid;
+      return identifier || '';
     }
 
     _showResults() {
