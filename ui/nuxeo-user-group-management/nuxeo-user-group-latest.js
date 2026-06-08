@@ -30,6 +30,7 @@ import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import '../nuxeo-pagination-controls.js';
+import '../nuxeo-data-table/data-table-icons.js';
 import '../widgets/nuxeo-card.js';
 import '../widgets/nuxeo-group-tag.js';
 import '../widgets/nuxeo-input.js';
@@ -129,6 +130,58 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           .preserve-white-space {
             white-space: pre;
           }
+
+          .sortable {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            user-select: none;
+          }
+
+          .sortable:hover {
+            color: var(--nuxeo-primary-color, #0066ff);
+          }
+
+          .sort-btn {
+            width: 24px;
+            height: 24px;
+            padding: 2px;
+            color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.54));
+            opacity: 0.6;
+            transition: transform 0.2s, opacity 0.2s, color 0.2s;
+            flex-shrink: 0;
+          }
+
+          .sort-btn[direction='desc'] {
+            transform: rotate(-180deg);
+          }
+
+          .sortable:hover .sort-btn {
+            color: var(--nuxeo-primary-color, #0066ff);
+            opacity: 1;
+          }
+
+          .sortable[active='true'] .sort-btn {
+            color: var(--nuxeo-primary-color, #0066ff);
+            opacity: 1;
+          }
+
+          .sort-container {
+            position: relative;
+            width: 32px;
+            flex-shrink: 0;
+          }
+
+          .sort-order {
+            font-size: 0.7rem;
+            font-weight: bold;
+            position: absolute;
+            right: 2px;
+            bottom: 6px;
+            color: var(--nuxeo-primary-color, #0066ff);
+            pointer-events: none;
+            line-height: 1;
+          }
         </style>
 
         <nuxeo-resource
@@ -148,9 +201,69 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             aria-rowcount="[[latestCreatedUsersGroups.entries.length]]"
           >
             <div class="table-header" role="row">
-              <div class="flex-4" role="columnheader">[[i18n('userGroupLatest.name')]]</div>
-              <div class="flex-4" role="columnheader">[[i18n('userGroupLatest.identifier')]]</div>
-              <div class="flex-4" role="columnheader">[[i18n('label.directories.nature.email')]]</div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isLatestSortActive(_latestSortColumns, 'name')]]"
+                on-click="_sortLatest"
+                data-field="name"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_latestSortColumns, 'name')]]"
+              >
+                [[i18n('userGroupLatest.name')]]
+                <div class="sort-container">
+                  <paper-icon-button
+                    noink
+                    class="sort-btn"
+                    icon="data-table:arrow-upward"
+                    direction$="[[_sortDirection(_latestSortColumns, 'name')]]"
+                    aria-hidden="true"
+                    tabindex="-1"
+                  ></paper-icon-button>
+                  <span class="sort-order">[[_sortIndex(_latestSortColumns, 'name')]]</span>
+                </div>
+              </div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isLatestSortActive(_latestSortColumns, 'uid')]]"
+                on-click="_sortLatest"
+                data-field="uid"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_latestSortColumns, 'uid')]]"
+              >
+                [[i18n('userGroupLatest.identifier')]]
+                <div class="sort-container">
+                  <paper-icon-button
+                    noink
+                    class="sort-btn"
+                    icon="data-table:arrow-upward"
+                    direction$="[[_sortDirection(_latestSortColumns, 'uid')]]"
+                    aria-hidden="true"
+                    tabindex="-1"
+                  ></paper-icon-button>
+                  <span class="sort-order">[[_sortIndex(_latestSortColumns, 'uid')]]</span>
+                </div>
+              </div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isLatestSortActive(_latestSortColumns, 'email')]]"
+                on-click="_sortLatest"
+                data-field="email"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_latestSortColumns, 'email')]]"
+              >
+                [[i18n('label.directories.nature.email')]]
+                <div class="sort-container">
+                  <paper-icon-button
+                    noink
+                    class="sort-btn"
+                    icon="data-table:arrow-upward"
+                    direction$="[[_sortDirection(_latestSortColumns, 'email')]]"
+                    aria-hidden="true"
+                    tabindex="-1"
+                  ></paper-icon-button>
+                  <span class="sort-order">[[_sortIndex(_latestSortColumns, 'email')]]</span>
+                </div>
+              </div>
               <div class="table-actions" role="columnheader">
                 <paper-icon-button
                   noink
@@ -161,7 +274,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               </div>
             </div>
             <div class="table-rows">
-              <dom-repeat items="[[latestCreatedUsersGroups.entries]]" as="item">
+              <dom-repeat items="[[_sortedLatest]]" as="item">
                 <template>
                   <div class="table-row" on-click="_manageUserOrGroup" role="row">
                     <div class="flex-4" role="columnheader">
@@ -217,7 +330,22 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       return {
         // Holds the list of last created users or groups
         latestCreatedUsersGroups: Object,
+
+        // Array of { field, order } objects for multi-column sort
+        _latestSortColumns: {
+          type: Array,
+          value: () => [],
+        },
+
+        _sortedLatest: {
+          type: Array,
+          value: () => [],
+        },
       };
+    }
+
+    static get observers() {
+      return ['_onEntriesChanged(latestCreatedUsersGroups.entries)'];
     }
 
     ready() {
@@ -297,7 +425,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _refreshLatest() {
       this.latestCreatedUsersGroups = {};
-      this.$.latestCreatedUsersGroups.execute();
+      this.$.latestCreatedUsersGroups.execute().then(() => {
+        this._applySort();
+      });
     }
 
     _refreshLatestWithDelay() {
@@ -307,6 +437,89 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // (dirty, I know ..)
         this._refreshLatest();
       }, 1000);
+    }
+
+    _sortLatest(e) {
+      const field = e.currentTarget.dataset.field;
+      const cols = this._latestSortColumns.slice();
+      const idx = cols.findIndex((c) => c.field === field);
+      if (idx >= 0) {
+        if (cols[idx].order === 'asc') {
+          cols[idx] = { field, order: 'desc' };
+        } else {
+          cols.splice(idx, 1);
+        }
+      } else {
+        cols.push({ field, order: 'asc' });
+      }
+      this._latestSortColumns = cols;
+      this._applySort();
+    }
+
+    _onEntriesChanged() {
+      this._applySort();
+    }
+
+    _applySort() {
+      const entries = (this.latestCreatedUsersGroups && this.latestCreatedUsersGroups.entries) || [];
+      const cols = this._latestSortColumns;
+      if (!cols || cols.length === 0) {
+        this._sortedLatest = entries.slice();
+        return;
+      }
+      this._sortedLatest = entries.slice().sort((a, b) => {
+        for (let i = 0; i < cols.length; i++) {
+          const { field, order } = cols[i];
+          const valA = this._getLatestSortValue(a, field);
+          const valB = this._getLatestSortValue(b, field);
+          const cmp = valA.localeCompare(valB, undefined, { sensitivity: 'base' });
+          if (cmp !== 0) {
+            return order === 'asc' ? cmp : -cmp;
+          }
+        }
+        return 0;
+      });
+    }
+
+    _getLatestSortValue(item, field) {
+      if (field === 'name') {
+        return this._displayLCUserGroup(item) || item.uid || '';
+      }
+      if (field === 'uid') {
+        return item.uid || '';
+      }
+      if (field === 'email') {
+        return this._getEmail(item) || '';
+      }
+      return '';
+    }
+
+    _isLatestSortActive(cols, field) {
+      return cols && cols.some((c) => c.field === field);
+    }
+
+    _sortDirection(cols, field) {
+      const col = cols && cols.find((c) => c.field === field);
+      if (!col) {
+        return null;
+      }
+      return col.order === 'asc' ? 'asc' : 'desc';
+    }
+
+    _sortIndex(cols, field) {
+      if (!cols || cols.length <= 1) {
+        return '';
+      }
+      const idx = cols.findIndex((c) => c.field === field);
+      return idx >= 0 ? String(idx + 1) : '';
+    }
+
+    _ariaSort(cols, field) {
+      const col = cols && cols.find((c) => c.field === field);
+      if (!col) {
+        return 'none';
+      }
+      return col.order === 'asc' ? 'ascending' : 'descending';
     }
   }
 
