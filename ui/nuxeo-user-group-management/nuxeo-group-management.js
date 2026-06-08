@@ -31,6 +31,7 @@ import { FiltersBehavior } from '../nuxeo-filters-behavior.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-pagination-controls.js';
 import '../nuxeo-data-table/data-table-icons.js';
+import '../nuxeo-data-table/data-table-column-sort.js';
 import '../widgets/nuxeo-card.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-group-tag.js';
@@ -238,45 +239,8 @@ import '../nuxeo-button-styles.js';
             color: var(--nuxeo-primary-color, #0066ff);
           }
 
-          .sort-btn {
-            width: 24px;
-            height: 24px;
-            padding: 2px;
-            color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.54));
-            opacity: 0.6;
-            transition: transform 0.2s, opacity 0.2s, color 0.2s;
-            flex-shrink: 0;
-          }
-
-          .sort-btn[direction='desc'] {
-            transform: rotate(-180deg);
-          }
-
-          .sortable:hover .sort-btn {
-            color: var(--nuxeo-primary-color, #0066ff);
-            opacity: 1;
-          }
-
-          .sortable[active='true'] .sort-btn {
-            color: var(--nuxeo-primary-color, #0066ff);
-            opacity: 1;
-          }
-
-          .sort-container {
-            position: relative;
-            width: 32px;
-            flex-shrink: 0;
-          }
-
-          .sort-order {
-            font-size: 0.7rem;
-            font-weight: bold;
-            position: absolute;
-            right: 2px;
-            bottom: 6px;
-            color: var(--nuxeo-primary-color, #0066ff);
-            pointer-events: none;
-            line-height: 1;
+          .sortable[active='true'] nuxeo-data-table-column-sort {
+            --default-primary-color: var(--nuxeo-primary-color, #0066ff);
           }
         </style>
 
@@ -433,66 +397,42 @@ import '../nuxeo-button-styles.js';
             <div class="table-header" role="row">
               <div
                 class="flex-4 sortable"
-                active$="[[_isMemberUserSortActive(_memberUserSortColumns, 'lastName')]]"
-                on-click="_sortMemberUsers"
-                data-field="lastName"
+                active$="[[_isSortActive(_memberUserSortOrder, 'lastName')]]"
                 role="columnheader"
-                aria-sort$="[[_ariaSort(_memberUserSortColumns, 'lastName')]]"
+                aria-sort$="[[_ariaSort(_memberUserSortOrder, 'lastName')]]"
               >
                 [[i18n('groupManagement.name')]]
-                <div class="sort-container">
-                  <paper-icon-button
-                    noink
-                    class="sort-btn"
-                    icon="data-table:arrow-upward"
-                    direction$="[[_sortDirection(_memberUserSortColumns, 'lastName')]]"
-                    aria-hidden="true"
-                    tabindex="-1"
-                  ></paper-icon-button>
-                  <span class="sort-order">[[_sortIndex(_memberUserSortColumns, 'lastName')]]</span>
-                </div>
+                <nuxeo-data-table-column-sort
+                  path="lastName"
+                  sort-order="[[_memberUserSortOrder]]"
+                  on-sort-direction-changed="_onMemberUserSortChanged"
+                ></nuxeo-data-table-column-sort>
               </div>
               <div
                 class="flex-4 sortable"
-                active$="[[_isMemberUserSortActive(_memberUserSortColumns, 'username')]]"
-                on-click="_sortMemberUsers"
-                data-field="username"
+                active$="[[_isSortActive(_memberUserSortOrder, 'username')]]"
                 role="columnheader"
-                aria-sort$="[[_ariaSort(_memberUserSortColumns, 'username')]]"
+                aria-sort$="[[_ariaSort(_memberUserSortOrder, 'username')]]"
               >
                 [[i18n('groupManagement.identifier')]]
-                <div class="sort-container">
-                  <paper-icon-button
-                    noink
-                    class="sort-btn"
-                    icon="data-table:arrow-upward"
-                    direction$="[[_sortDirection(_memberUserSortColumns, 'username')]]"
-                    aria-hidden="true"
-                    tabindex="-1"
-                  ></paper-icon-button>
-                  <span class="sort-order">[[_sortIndex(_memberUserSortColumns, 'username')]]</span>
-                </div>
+                <nuxeo-data-table-column-sort
+                  path="username"
+                  sort-order="[[_memberUserSortOrder]]"
+                  on-sort-direction-changed="_onMemberUserSortChanged"
+                ></nuxeo-data-table-column-sort>
               </div>
               <div
                 class="flex-4 sortable"
-                active$="[[_isMemberUserSortActive(_memberUserSortColumns, 'email')]]"
-                on-click="_sortMemberUsers"
-                data-field="email"
+                active$="[[_isSortActive(_memberUserSortOrder, 'email')]]"
                 role="columnheader"
-                aria-sort$="[[_ariaSort(_memberUserSortColumns, 'email')]]"
+                aria-sort$="[[_ariaSort(_memberUserSortOrder, 'email')]]"
               >
                 [[i18n('label.directories.nature.email')]]
-                <div class="sort-container">
-                  <paper-icon-button
-                    noink
-                    class="sort-btn"
-                    icon="data-table:arrow-upward"
-                    direction$="[[_sortDirection(_memberUserSortColumns, 'email')]]"
-                    aria-hidden="true"
-                    tabindex="-1"
-                  ></paper-icon-button>
-                  <span class="sort-order">[[_sortIndex(_memberUserSortColumns, 'email')]]</span>
-                </div>
+                <nuxeo-data-table-column-sort
+                  path="email"
+                  sort-order="[[_memberUserSortOrder]]"
+                  on-sort-direction-changed="_onMemberUserSortChanged"
+                ></nuxeo-data-table-column-sort>
               </div>
               <div class="table-actions" role="columnheader"></div>
             </div>
@@ -571,45 +511,29 @@ import '../nuxeo-button-styles.js';
             <div class="table-header" role="row">
               <div
                 class="flex-4 sortable"
-                active$="[[_isMemberGroupSortActive(_memberGroupSortColumns, 'grouplabel')]]"
-                on-click="_sortMemberGroups"
-                data-field="grouplabel"
+                active$="[[_isSortActive(_memberGroupSortOrder, 'grouplabel')]]"
                 role="columnheader"
-                aria-sort$="[[_ariaSort(_memberGroupSortColumns, 'grouplabel')]]"
+                aria-sort$="[[_ariaSort(_memberGroupSortOrder, 'grouplabel')]]"
               >
                 [[i18n('groupManagement.name')]]
-                <div class="sort-container">
-                  <paper-icon-button
-                    noink
-                    class="sort-btn"
-                    icon="data-table:arrow-upward"
-                    direction$="[[_sortDirection(_memberGroupSortColumns, 'grouplabel')]]"
-                    aria-hidden="true"
-                    tabindex="-1"
-                  ></paper-icon-button>
-                  <span class="sort-order">[[_sortIndex(_memberGroupSortColumns, 'grouplabel')]]</span>
-                </div>
+                <nuxeo-data-table-column-sort
+                  path="grouplabel"
+                  sort-order="[[_memberGroupSortOrder]]"
+                  on-sort-direction-changed="_onMemberGroupSortChanged"
+                ></nuxeo-data-table-column-sort>
               </div>
               <div
                 class="flex-4 sortable"
-                active$="[[_isMemberGroupSortActive(_memberGroupSortColumns, 'groupname')]]"
-                on-click="_sortMemberGroups"
-                data-field="groupname"
+                active$="[[_isSortActive(_memberGroupSortOrder, 'groupname')]]"
                 role="columnheader"
-                aria-sort$="[[_ariaSort(_memberGroupSortColumns, 'groupname')]]"
+                aria-sort$="[[_ariaSort(_memberGroupSortOrder, 'groupname')]]"
               >
                 [[i18n('groupManagement.identifier')]]
-                <div class="sort-container">
-                  <paper-icon-button
-                    noink
-                    class="sort-btn"
-                    icon="data-table:arrow-upward"
-                    direction$="[[_sortDirection(_memberGroupSortColumns, 'groupname')]]"
-                    aria-hidden="true"
-                    tabindex="-1"
-                  ></paper-icon-button>
-                  <span class="sort-order">[[_sortIndex(_memberGroupSortColumns, 'groupname')]]</span>
-                </div>
+                <nuxeo-data-table-column-sort
+                  path="groupname"
+                  sort-order="[[_memberGroupSortOrder]]"
+                  on-sort-direction-changed="_onMemberGroupSortChanged"
+                ></nuxeo-data-table-column-sort>
               </div>
               <div class="table-actions" role="columnheader"></div>
             </div>
@@ -739,14 +663,14 @@ import '../nuxeo-button-styles.js';
           computed: '_userDisplayName(_removedMember)',
         },
 
-        // Array of { field, order } for multi-column sort on member users
-        _memberUserSortColumns: {
+        // Array of { path, direction } for multi-column sort on member users (nuxeo-data-table-column-sort contract)
+        _memberUserSortOrder: {
           type: Array,
           value: () => [],
         },
 
-        // Array of { field, order } for multi-column sort on member groups
-        _memberGroupSortColumns: {
+        // Array of { path, direction } for multi-column sort on member groups
+        _memberGroupSortOrder: {
           type: Array,
           value: () => [],
         },
@@ -834,9 +758,9 @@ import '../nuxeo-button-styles.js';
           q: this.groupsFilter,
           currentPageIndex: this.groupsCurrentPage - 1,
         };
-        if (this._memberGroupSortColumns.length > 0) {
-          params.sortBy = this._memberGroupSortColumns.map((c) => c.field).join(',');
-          params.sortOrder = this._memberGroupSortColumns.map((c) => c.order).join(',');
+        if (this._memberGroupSortOrder.length > 0) {
+          params.sortBy = this._memberGroupSortOrder.map((c) => c.path).join(',');
+          params.sortOrder = this._memberGroupSortOrder.map((c) => c.direction).join(',');
         }
         this.$.groups.params = params;
       }
@@ -854,9 +778,9 @@ import '../nuxeo-button-styles.js';
           q: this.usersFilter,
           currentPageIndex: this.usersCurrentPage - 1,
         };
-        if (this._memberUserSortColumns.length > 0) {
-          params.sortBy = this._memberUserSortColumns.map((c) => c.field).join(',');
-          params.sortOrder = this._memberUserSortColumns.map((c) => c.order).join(',');
+        if (this._memberUserSortOrder.length > 0) {
+          params.sortBy = this._memberUserSortOrder.map((c) => c.path).join(',');
+          params.sortOrder = this._memberUserSortOrder.map((c) => c.direction).join(',');
         }
         this.$.users.params = params;
       }
@@ -1057,66 +981,52 @@ import '../nuxeo-button-styles.js';
       }
     }
 
-    _sortMemberUsers(e) {
-      this._memberUserSortColumns = this._toggleSortColumn(this._memberUserSortColumns, e.currentTarget.dataset.field);
+    _onMemberUserSortChanged(e) {
+      this._memberUserSortOrder = this._applySortDirectionChanged(
+        this._memberUserSortOrder,
+        e.detail.path,
+        e.detail.direction,
+      );
       this.usersCurrentPage = 1;
       this._fetchUsers();
     }
 
-    _sortMemberGroups(e) {
-      this._memberGroupSortColumns = this._toggleSortColumn(
-        this._memberGroupSortColumns,
-        e.currentTarget.dataset.field,
+    _onMemberGroupSortChanged(e) {
+      this._memberGroupSortOrder = this._applySortDirectionChanged(
+        this._memberGroupSortOrder,
+        e.detail.path,
+        e.detail.direction,
       );
       this.groupsCurrentPage = 1;
       this._fetchGroups();
     }
 
-    _toggleSortColumn(cols, field) {
-      const result = cols.slice();
-      const idx = result.findIndex((c) => c.field === field);
+    // Mirrors _sortDirectionChanged in PageProviderDisplayBehavior; direction=null means remove the column.
+    _applySortDirectionChanged(sortOrder, path, direction) {
+      const result = sortOrder.slice();
+      const idx = result.findIndex((c) => c.path === path);
       if (idx >= 0) {
-        if (result[idx].order === 'asc') {
-          result[idx] = { field, order: 'desc' };
+        if (direction) {
+          result[idx] = { path, direction };
         } else {
           result.splice(idx, 1);
         }
-      } else {
-        result.push({ field, order: 'asc' });
+      } else if (direction) {
+        result.push({ path, direction });
       }
       return result;
     }
 
-    _isMemberUserSortActive(cols, field) {
-      return cols && cols.some((c) => c.field === field);
+    _isSortActive(sortOrder, path) {
+      return sortOrder && sortOrder.some((c) => c.path === path);
     }
 
-    _isMemberGroupSortActive(cols, field) {
-      return cols && cols.some((c) => c.field === field);
-    }
-
-    _sortDirection(cols, field) {
-      const col = cols && cols.find((c) => c.field === field);
-      if (!col) {
-        return null;
-      }
-      return col.order === 'asc' ? 'asc' : 'desc';
-    }
-
-    _sortIndex(cols, field) {
-      if (!cols || cols.length <= 1) {
-        return '';
-      }
-      const idx = cols.findIndex((c) => c.field === field);
-      return idx >= 0 ? String(idx + 1) : '';
-    }
-
-    _ariaSort(cols, field) {
-      const col = cols && cols.find((c) => c.field === field);
+    _ariaSort(sortOrder, path) {
+      const col = sortOrder && sortOrder.find((c) => c.path === path);
       if (!col) {
         return 'none';
       }
-      return col.order === 'asc' ? 'ascending' : 'descending';
+      return col.direction === 'asc' ? 'ascending' : 'descending';
     }
   }
 

@@ -30,7 +30,7 @@ import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import '../nuxeo-pagination-controls.js';
-import '../nuxeo-data-table/data-table-icons.js';
+import '../nuxeo-data-table/data-table-column-sort.js';
 import '../widgets/nuxeo-card.js';
 import '../widgets/nuxeo-group-tag.js';
 import '../widgets/nuxeo-input.js';
@@ -142,45 +142,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             color: var(--nuxeo-primary-color, #0066ff);
           }
 
-          .sort-btn {
-            width: 24px;
-            height: 24px;
-            padding: 2px;
-            color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.54));
-            opacity: 0.6;
-            transition: transform 0.2s, opacity 0.2s, color 0.2s;
-            flex-shrink: 0;
-          }
-
-          .sort-btn[direction='desc'] {
-            transform: rotate(-180deg);
-          }
-
-          .sortable:hover .sort-btn {
-            color: var(--nuxeo-primary-color, #0066ff);
-            opacity: 1;
-          }
-
-          .sortable[active='true'] .sort-btn {
-            color: var(--nuxeo-primary-color, #0066ff);
-            opacity: 1;
-          }
-
-          .sort-container {
-            position: relative;
-            width: 32px;
-            flex-shrink: 0;
-          }
-
-          .sort-order {
-            font-size: 0.7rem;
-            font-weight: bold;
-            position: absolute;
-            right: 2px;
-            bottom: 6px;
-            color: var(--nuxeo-primary-color, #0066ff);
-            pointer-events: none;
-            line-height: 1;
+          .sortable[active='true'] nuxeo-data-table-column-sort {
+            --default-primary-color: var(--nuxeo-primary-color, #0066ff);
           }
         </style>
 
@@ -203,66 +166,42 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             <div class="table-header" role="row">
               <div
                 class="flex-4 sortable"
-                active$="[[_isLatestSortActive(_latestSortColumns, 'name')]]"
-                on-click="_sortLatest"
-                data-field="name"
+                active$="[[_isSortActive(_latestSortOrder, 'name')]]"
                 role="columnheader"
-                aria-sort$="[[_ariaSort(_latestSortColumns, 'name')]]"
+                aria-sort$="[[_ariaSort(_latestSortOrder, 'name')]]"
               >
                 [[i18n('userGroupLatest.name')]]
-                <div class="sort-container">
-                  <paper-icon-button
-                    noink
-                    class="sort-btn"
-                    icon="data-table:arrow-upward"
-                    direction$="[[_sortDirection(_latestSortColumns, 'name')]]"
-                    aria-hidden="true"
-                    tabindex="-1"
-                  ></paper-icon-button>
-                  <span class="sort-order">[[_sortIndex(_latestSortColumns, 'name')]]</span>
-                </div>
+                <nuxeo-data-table-column-sort
+                  path="name"
+                  sort-order="[[_latestSortOrder]]"
+                  on-sort-direction-changed="_onLatestSortChanged"
+                ></nuxeo-data-table-column-sort>
               </div>
               <div
                 class="flex-4 sortable"
-                active$="[[_isLatestSortActive(_latestSortColumns, 'uid')]]"
-                on-click="_sortLatest"
-                data-field="uid"
+                active$="[[_isSortActive(_latestSortOrder, 'uid')]]"
                 role="columnheader"
-                aria-sort$="[[_ariaSort(_latestSortColumns, 'uid')]]"
+                aria-sort$="[[_ariaSort(_latestSortOrder, 'uid')]]"
               >
                 [[i18n('userGroupLatest.identifier')]]
-                <div class="sort-container">
-                  <paper-icon-button
-                    noink
-                    class="sort-btn"
-                    icon="data-table:arrow-upward"
-                    direction$="[[_sortDirection(_latestSortColumns, 'uid')]]"
-                    aria-hidden="true"
-                    tabindex="-1"
-                  ></paper-icon-button>
-                  <span class="sort-order">[[_sortIndex(_latestSortColumns, 'uid')]]</span>
-                </div>
+                <nuxeo-data-table-column-sort
+                  path="uid"
+                  sort-order="[[_latestSortOrder]]"
+                  on-sort-direction-changed="_onLatestSortChanged"
+                ></nuxeo-data-table-column-sort>
               </div>
               <div
                 class="flex-4 sortable"
-                active$="[[_isLatestSortActive(_latestSortColumns, 'email')]]"
-                on-click="_sortLatest"
-                data-field="email"
+                active$="[[_isSortActive(_latestSortOrder, 'email')]]"
                 role="columnheader"
-                aria-sort$="[[_ariaSort(_latestSortColumns, 'email')]]"
+                aria-sort$="[[_ariaSort(_latestSortOrder, 'email')]]"
               >
                 [[i18n('label.directories.nature.email')]]
-                <div class="sort-container">
-                  <paper-icon-button
-                    noink
-                    class="sort-btn"
-                    icon="data-table:arrow-upward"
-                    direction$="[[_sortDirection(_latestSortColumns, 'email')]]"
-                    aria-hidden="true"
-                    tabindex="-1"
-                  ></paper-icon-button>
-                  <span class="sort-order">[[_sortIndex(_latestSortColumns, 'email')]]</span>
-                </div>
+                <nuxeo-data-table-column-sort
+                  path="email"
+                  sort-order="[[_latestSortOrder]]"
+                  on-sort-direction-changed="_onLatestSortChanged"
+                ></nuxeo-data-table-column-sort>
               </div>
               <div class="table-actions" role="columnheader">
                 <paper-icon-button
@@ -331,8 +270,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Holds the list of last created users or groups
         latestCreatedUsersGroups: Object,
 
-        // Array of { field, order } objects for multi-column sort
-        _latestSortColumns: {
+        // Array of { path, direction } objects for multi-column sort
+        _latestSortOrder: {
           type: Array,
           value: () => [],
         },
@@ -439,20 +378,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }, 1000);
     }
 
-    _sortLatest(e) {
-      const field = e.currentTarget.dataset.field;
-      const cols = this._latestSortColumns.slice();
-      const idx = cols.findIndex((c) => c.field === field);
-      if (idx >= 0) {
-        if (cols[idx].order === 'asc') {
-          cols[idx] = { field, order: 'desc' };
-        } else {
-          cols.splice(idx, 1);
-        }
-      } else {
-        cols.push({ field, order: 'asc' });
-      }
-      this._latestSortColumns = cols;
+    _onLatestSortChanged(e) {
+      this._latestSortOrder = this._applySortDirectionChanged(this._latestSortOrder, e.detail.path, e.detail.direction);
       this._applySort();
     }
 
@@ -462,19 +389,19 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _applySort() {
       const entries = (this.latestCreatedUsersGroups && this.latestCreatedUsersGroups.entries) || [];
-      const cols = this._latestSortColumns;
+      const cols = this._latestSortOrder;
       if (!cols || cols.length === 0) {
         this._sortedLatest = entries.slice();
         return;
       }
       this._sortedLatest = entries.slice().sort((a, b) => {
         for (let i = 0; i < cols.length; i++) {
-          const { field, order } = cols[i];
-          const valA = this._getLatestSortValue(a, field);
-          const valB = this._getLatestSortValue(b, field);
+          const { path, direction } = cols[i];
+          const valA = this._getLatestSortValue(a, path);
+          const valB = this._getLatestSortValue(b, path);
           const cmp = valA.localeCompare(valB, undefined, { sensitivity: 'base' });
           if (cmp !== 0) {
-            return order === 'asc' ? cmp : -cmp;
+            return direction === 'asc' ? cmp : -cmp;
           }
         }
         return 0;
@@ -494,32 +421,32 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       return '';
     }
 
-    _isLatestSortActive(cols, field) {
-      return cols && cols.some((c) => c.field === field);
-    }
-
-    _sortDirection(cols, field) {
-      const col = cols && cols.find((c) => c.field === field);
-      if (!col) {
-        return null;
+    // Mirrors _sortDirectionChanged in PageProviderDisplayBehavior; direction=null means remove the column.
+    _applySortDirectionChanged(sortOrder, path, direction) {
+      const result = sortOrder.slice();
+      const idx = result.findIndex((c) => c.path === path);
+      if (idx >= 0) {
+        if (direction) {
+          result[idx] = { path, direction };
+        } else {
+          result.splice(idx, 1);
+        }
+      } else if (direction) {
+        result.push({ path, direction });
       }
-      return col.order === 'asc' ? 'asc' : 'desc';
+      return result;
     }
 
-    _sortIndex(cols, field) {
-      if (!cols || cols.length <= 1) {
-        return '';
-      }
-      const idx = cols.findIndex((c) => c.field === field);
-      return idx >= 0 ? String(idx + 1) : '';
+    _isSortActive(sortOrder, path) {
+      return sortOrder && sortOrder.some((c) => c.path === path);
     }
 
-    _ariaSort(cols, field) {
-      const col = cols && cols.find((c) => c.field === field);
+    _ariaSort(sortOrder, path) {
+      const col = sortOrder && sortOrder.find((c) => c.path === path);
       if (!col) {
         return 'none';
       }
-      return col.order === 'asc' ? 'ascending' : 'descending';
+      return col.direction === 'asc' ? 'ascending' : 'descending';
     }
   }
 

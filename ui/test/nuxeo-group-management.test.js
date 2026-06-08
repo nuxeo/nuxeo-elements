@@ -531,199 +531,132 @@ suite('nuxeo-group-management', () => {
     });
   });
 
-  suite('_toggleSortColumn', () => {
-    test('adds field with asc order when not present', () => {
-      const result = el._toggleSortColumn([], 'lastName');
-      expect(result).to.deep.equal([{ field: 'lastName', order: 'asc' }]);
+  suite('_applySortDirectionChanged', () => {
+    test('adds path with asc direction when not present', () => {
+      const result = el._applySortDirectionChanged([], 'lastName', 'asc');
+      expect(result).to.deep.equal([{ path: 'lastName', direction: 'asc' }]);
     });
 
-    test('cycles to desc when already asc', () => {
-      const result = el._toggleSortColumn([{ field: 'lastName', order: 'asc' }], 'lastName');
-      expect(result).to.deep.equal([{ field: 'lastName', order: 'desc' }]);
+    test('updates direction when path already present', () => {
+      const result = el._applySortDirectionChanged([{ path: 'lastName', direction: 'asc' }], 'lastName', 'desc');
+      expect(result).to.deep.equal([{ path: 'lastName', direction: 'desc' }]);
     });
 
-    test('removes field when already desc', () => {
-      const result = el._toggleSortColumn([{ field: 'lastName', order: 'desc' }], 'lastName');
+    test('removes path when direction is null', () => {
+      const result = el._applySortDirectionChanged([{ path: 'lastName', direction: 'asc' }], 'lastName', null);
       expect(result).to.deep.equal([]);
     });
 
-    test('appends new field without affecting existing ones', () => {
-      const result = el._toggleSortColumn([{ field: 'lastName', order: 'asc' }], 'email');
+    test('appends new path without affecting existing ones', () => {
+      const result = el._applySortDirectionChanged([{ path: 'lastName', direction: 'asc' }], 'email', 'asc');
       expect(result).to.deep.equal([
-        { field: 'lastName', order: 'asc' },
-        { field: 'email', order: 'asc' },
+        { path: 'lastName', direction: 'asc' },
+        { path: 'email', direction: 'asc' },
       ]);
     });
 
     test('does not mutate the original array', () => {
-      const cols = [{ field: 'lastName', order: 'asc' }];
-      el._toggleSortColumn(cols, 'lastName');
-      expect(cols).to.deep.equal([{ field: 'lastName', order: 'asc' }]);
+      const cols = [{ path: 'lastName', direction: 'asc' }];
+      el._applySortDirectionChanged(cols, 'lastName', null);
+      expect(cols).to.deep.equal([{ path: 'lastName', direction: 'asc' }]);
+    });
+
+    test('does not add entry when direction is null and path is absent', () => {
+      const result = el._applySortDirectionChanged([], 'lastName', null);
+      expect(result).to.deep.equal([]);
     });
   });
 
-  suite('_isMemberUserSortActive', () => {
-    test('returns true when field is active', () => {
-      expect(el._isMemberUserSortActive([{ field: 'lastName', order: 'asc' }], 'lastName')).to.be.true;
+  suite('_isSortActive', () => {
+    test('returns true when path is active', () => {
+      expect(el._isSortActive([{ path: 'lastName', direction: 'asc' }], 'lastName')).to.be.true;
     });
 
-    test('returns false when field is not active', () => {
-      expect(el._isMemberUserSortActive([{ field: 'lastName', order: 'asc' }], 'email')).to.be.false;
+    test('returns false when path is not active', () => {
+      expect(el._isSortActive([{ path: 'lastName', direction: 'asc' }], 'email')).to.be.false;
     });
 
     test('returns false for empty array', () => {
-      expect(el._isMemberUserSortActive([], 'lastName')).to.be.false;
+      expect(el._isSortActive([], 'lastName')).to.be.false;
     });
 
-    test('returns falsy for null cols', () => {
-      expect(el._isMemberUserSortActive(null, 'lastName')).to.not.be.ok;
-    });
-  });
-
-  suite('_isMemberGroupSortActive', () => {
-    test('returns true when field is active', () => {
-      expect(el._isMemberGroupSortActive([{ field: 'grouplabel', order: 'asc' }], 'grouplabel')).to.be.true;
-    });
-
-    test('returns false when field is not active', () => {
-      expect(el._isMemberGroupSortActive([{ field: 'grouplabel', order: 'asc' }], 'groupname')).to.be.false;
-    });
-
-    test('returns false for empty array', () => {
-      expect(el._isMemberGroupSortActive([], 'grouplabel')).to.be.false;
-    });
-
-    test('returns falsy for null cols', () => {
-      expect(el._isMemberGroupSortActive(null, 'grouplabel')).to.not.be.ok;
-    });
-  });
-
-  suite('_sortDirection', () => {
-    test('returns asc for ascending column', () => {
-      expect(el._sortDirection([{ field: 'lastName', order: 'asc' }], 'lastName')).to.equal('asc');
-    });
-
-    test('returns desc for descending column', () => {
-      expect(el._sortDirection([{ field: 'lastName', order: 'desc' }], 'lastName')).to.equal('desc');
-    });
-
-    test('returns null when field is not present', () => {
-      expect(el._sortDirection([{ field: 'lastName', order: 'asc' }], 'email')).to.be.null;
-    });
-
-    test('returns null for empty cols', () => {
-      expect(el._sortDirection([], 'lastName')).to.be.null;
-    });
-  });
-
-  suite('_sortIndex', () => {
-    test('returns empty string for single-column sort', () => {
-      expect(el._sortIndex([{ field: 'lastName', order: 'asc' }], 'lastName')).to.equal('');
-    });
-
-    test('returns "1" for first field in multi-column sort', () => {
-      const cols = [
-        { field: 'lastName', order: 'asc' },
-        { field: 'email', order: 'asc' },
-      ];
-      expect(el._sortIndex(cols, 'lastName')).to.equal('1');
-    });
-
-    test('returns "2" for second field in multi-column sort', () => {
-      const cols = [
-        { field: 'lastName', order: 'asc' },
-        { field: 'email', order: 'asc' },
-      ];
-      expect(el._sortIndex(cols, 'email')).to.equal('2');
-    });
-
-    test('returns empty string for field not in multi-column sort', () => {
-      const cols = [
-        { field: 'lastName', order: 'asc' },
-        { field: 'email', order: 'asc' },
-      ];
-      expect(el._sortIndex(cols, 'username')).to.equal('');
-    });
-
-    test('returns empty string for empty array', () => {
-      expect(el._sortIndex([], 'lastName')).to.equal('');
+    test('returns falsy for null sortOrder', () => {
+      expect(el._isSortActive(null, 'lastName')).to.not.be.ok;
     });
   });
 
   suite('_ariaSort', () => {
     test('returns ascending for asc column', () => {
-      expect(el._ariaSort([{ field: 'lastName', order: 'asc' }], 'lastName')).to.equal('ascending');
+      expect(el._ariaSort([{ path: 'lastName', direction: 'asc' }], 'lastName')).to.equal('ascending');
     });
 
     test('returns descending for desc column', () => {
-      expect(el._ariaSort([{ field: 'lastName', order: 'desc' }], 'lastName')).to.equal('descending');
+      expect(el._ariaSort([{ path: 'lastName', direction: 'desc' }], 'lastName')).to.equal('descending');
     });
 
-    test('returns none when field is not present', () => {
+    test('returns none when path is not present', () => {
       expect(el._ariaSort([], 'lastName')).to.equal('none');
     });
   });
 
-  suite('_sortMemberUsers', () => {
+  suite('_onMemberUserSortChanged', () => {
     test('adds column, resets users page to 1, and refetches', () => {
       el.group = {};
       el.usersCurrentPage = 4;
       sinon.spy(el, '_fetchUsers');
-      el._sortMemberUsers({ currentTarget: { dataset: { field: 'lastName' } } });
-      expect(el._memberUserSortColumns).to.deep.equal([{ field: 'lastName', order: 'asc' }]);
+      el._onMemberUserSortChanged({ detail: { path: 'lastName', direction: 'asc' } });
+      expect(el._memberUserSortOrder).to.deep.equal([{ path: 'lastName', direction: 'asc' }]);
       expect(el.usersCurrentPage).to.equal(1);
       expect(el._fetchUsers).to.have.been.calledOnce;
       el._fetchUsers.restore();
     });
 
-    test('cycles sort direction on repeated clicks', () => {
+    test('updates direction on second event', () => {
       el.group = {};
       sinon.stub(el, '_fetchUsers');
-      el._sortMemberUsers({ currentTarget: { dataset: { field: 'email' } } });
-      el._sortMemberUsers({ currentTarget: { dataset: { field: 'email' } } });
-      expect(el._memberUserSortColumns).to.deep.equal([{ field: 'email', order: 'desc' }]);
+      el._onMemberUserSortChanged({ detail: { path: 'email', direction: 'asc' } });
+      el._onMemberUserSortChanged({ detail: { path: 'email', direction: 'desc' } });
+      expect(el._memberUserSortOrder).to.deep.equal([{ path: 'email', direction: 'desc' }]);
       el._fetchUsers.restore();
     });
 
-    test('removes column on third click', () => {
+    test('removes column when direction is null', () => {
       el.group = {};
       sinon.stub(el, '_fetchUsers');
-      el._sortMemberUsers({ currentTarget: { dataset: { field: 'username' } } });
-      el._sortMemberUsers({ currentTarget: { dataset: { field: 'username' } } });
-      el._sortMemberUsers({ currentTarget: { dataset: { field: 'username' } } });
-      expect(el._memberUserSortColumns).to.deep.equal([]);
+      el._onMemberUserSortChanged({ detail: { path: 'username', direction: 'asc' } });
+      el._onMemberUserSortChanged({ detail: { path: 'username', direction: null } });
+      expect(el._memberUserSortOrder).to.deep.equal([]);
       el._fetchUsers.restore();
     });
   });
 
-  suite('_sortMemberGroups', () => {
+  suite('_onMemberGroupSortChanged', () => {
     test('adds column, resets groups page to 1, and refetches', () => {
       el.group = {};
       el.groupsCurrentPage = 2;
       sinon.spy(el, '_fetchGroups');
-      el._sortMemberGroups({ currentTarget: { dataset: { field: 'grouplabel' } } });
-      expect(el._memberGroupSortColumns).to.deep.equal([{ field: 'grouplabel', order: 'asc' }]);
+      el._onMemberGroupSortChanged({ detail: { path: 'grouplabel', direction: 'asc' } });
+      expect(el._memberGroupSortOrder).to.deep.equal([{ path: 'grouplabel', direction: 'asc' }]);
       expect(el.groupsCurrentPage).to.equal(1);
       expect(el._fetchGroups).to.have.been.calledOnce;
       el._fetchGroups.restore();
     });
 
-    test('cycles sort direction on repeated clicks', () => {
+    test('updates direction on second event', () => {
       el.group = {};
       sinon.stub(el, '_fetchGroups');
-      el._sortMemberGroups({ currentTarget: { dataset: { field: 'groupname' } } });
-      el._sortMemberGroups({ currentTarget: { dataset: { field: 'groupname' } } });
-      expect(el._memberGroupSortColumns).to.deep.equal([{ field: 'groupname', order: 'desc' }]);
+      el._onMemberGroupSortChanged({ detail: { path: 'groupname', direction: 'asc' } });
+      el._onMemberGroupSortChanged({ detail: { path: 'groupname', direction: 'desc' } });
+      expect(el._memberGroupSortOrder).to.deep.equal([{ path: 'groupname', direction: 'desc' }]);
       el._fetchGroups.restore();
     });
 
-    test('removes column on third click', () => {
+    test('removes column when direction is null', () => {
       el.group = {};
       sinon.stub(el, '_fetchGroups');
-      el._sortMemberGroups({ currentTarget: { dataset: { field: 'grouplabel' } } });
-      el._sortMemberGroups({ currentTarget: { dataset: { field: 'grouplabel' } } });
-      el._sortMemberGroups({ currentTarget: { dataset: { field: 'grouplabel' } } });
-      expect(el._memberGroupSortColumns).to.deep.equal([]);
+      el._onMemberGroupSortChanged({ detail: { path: 'grouplabel', direction: 'asc' } });
+      el._onMemberGroupSortChanged({ detail: { path: 'grouplabel', direction: null } });
+      expect(el._memberGroupSortOrder).to.deep.equal([]);
       el._fetchGroups.restore();
     });
   });
@@ -733,9 +666,9 @@ suite('nuxeo-group-management', () => {
       el.group = {};
       el.usersFilter = '';
       el.usersCurrentPage = 1;
-      el._memberUserSortColumns = [
-        { field: 'lastName', order: 'asc' },
-        { field: 'email', order: 'desc' },
+      el._memberUserSortOrder = [
+        { path: 'lastName', direction: 'asc' },
+        { path: 'email', direction: 'desc' },
       ];
       el._fetchUsers();
       expect(el.$.users.params.sortBy).to.equal('lastName,email');
@@ -744,7 +677,7 @@ suite('nuxeo-group-management', () => {
 
     test('omits sortBy and sortOrder when no sort columns', () => {
       el.group = {};
-      el._memberUserSortColumns = [];
+      el._memberUserSortOrder = [];
       el._fetchUsers();
       expect(el.$.users.params.sortBy).to.be.undefined;
       expect(el.$.users.params.sortOrder).to.be.undefined;
@@ -752,7 +685,7 @@ suite('nuxeo-group-management', () => {
 
     test('applies single-column sort correctly', () => {
       el.group = {};
-      el._memberUserSortColumns = [{ field: 'username', order: 'asc' }];
+      el._memberUserSortOrder = [{ path: 'username', direction: 'asc' }];
       el._fetchUsers();
       expect(el.$.users.params.sortBy).to.equal('username');
       expect(el.$.users.params.sortOrder).to.equal('asc');
@@ -764,9 +697,9 @@ suite('nuxeo-group-management', () => {
       el.group = {};
       el.groupsFilter = '';
       el.groupsCurrentPage = 1;
-      el._memberGroupSortColumns = [
-        { field: 'grouplabel', order: 'desc' },
-        { field: 'groupname', order: 'asc' },
+      el._memberGroupSortOrder = [
+        { path: 'grouplabel', direction: 'desc' },
+        { path: 'groupname', direction: 'asc' },
       ];
       el._fetchGroups();
       expect(el.$.groups.params.sortBy).to.equal('grouplabel,groupname');
@@ -775,7 +708,7 @@ suite('nuxeo-group-management', () => {
 
     test('omits sortBy and sortOrder when no sort columns', () => {
       el.group = {};
-      el._memberGroupSortColumns = [];
+      el._memberGroupSortOrder = [];
       el._fetchGroups();
       expect(el.$.groups.params.sortBy).to.be.undefined;
       expect(el.$.groups.params.sortOrder).to.be.undefined;
@@ -783,7 +716,7 @@ suite('nuxeo-group-management', () => {
 
     test('applies single-column sort correctly', () => {
       el.group = {};
-      el._memberGroupSortColumns = [{ field: 'grouplabel', order: 'desc' }];
+      el._memberGroupSortOrder = [{ path: 'grouplabel', direction: 'desc' }];
       el._fetchGroups();
       expect(el.$.groups.params.sortBy).to.equal('grouplabel');
       expect(el.$.groups.params.sortOrder).to.equal('desc');

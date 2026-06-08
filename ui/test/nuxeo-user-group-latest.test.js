@@ -229,86 +229,34 @@ suite('nuxeo-user-group-latest', () => {
     });
   });
 
-  suite('_isLatestSortActive', () => {
-    test('returns true when field is active', () => {
-      expect(el._isLatestSortActive([{ field: 'name', order: 'asc' }], 'name')).to.be.true;
+  suite('_isSortActive', () => {
+    test('returns true when path is active', () => {
+      expect(el._isSortActive([{ path: 'name', direction: 'asc' }], 'name')).to.be.true;
     });
 
-    test('returns false when field is not active', () => {
-      expect(el._isLatestSortActive([{ field: 'name', order: 'asc' }], 'uid')).to.be.false;
+    test('returns false when path is not active', () => {
+      expect(el._isSortActive([{ path: 'name', direction: 'asc' }], 'uid')).to.be.false;
     });
 
     test('returns false for empty array', () => {
-      expect(el._isLatestSortActive([], 'name')).to.be.false;
+      expect(el._isSortActive([], 'name')).to.be.false;
     });
 
-    test('returns falsy for null cols', () => {
-      expect(el._isLatestSortActive(null, 'name')).to.not.be.ok;
-    });
-  });
-
-  suite('_sortDirection', () => {
-    test('returns asc for ascending column', () => {
-      expect(el._sortDirection([{ field: 'name', order: 'asc' }], 'name')).to.equal('asc');
-    });
-
-    test('returns desc for descending column', () => {
-      expect(el._sortDirection([{ field: 'name', order: 'desc' }], 'name')).to.equal('desc');
-    });
-
-    test('returns null when field is not present', () => {
-      expect(el._sortDirection([{ field: 'name', order: 'asc' }], 'uid')).to.be.null;
-    });
-
-    test('returns null for empty cols', () => {
-      expect(el._sortDirection([], 'name')).to.be.null;
-    });
-  });
-
-  suite('_sortIndex', () => {
-    test('returns empty string for single-column sort', () => {
-      expect(el._sortIndex([{ field: 'name', order: 'asc' }], 'name')).to.equal('');
-    });
-
-    test('returns "1" for first field in multi-column sort', () => {
-      const cols = [
-        { field: 'name', order: 'asc' },
-        { field: 'uid', order: 'asc' },
-      ];
-      expect(el._sortIndex(cols, 'name')).to.equal('1');
-    });
-
-    test('returns "2" for second field in multi-column sort', () => {
-      const cols = [
-        { field: 'name', order: 'asc' },
-        { field: 'uid', order: 'asc' },
-      ];
-      expect(el._sortIndex(cols, 'uid')).to.equal('2');
-    });
-
-    test('returns empty string for field not in multi-column sort', () => {
-      const cols = [
-        { field: 'name', order: 'asc' },
-        { field: 'uid', order: 'asc' },
-      ];
-      expect(el._sortIndex(cols, 'email')).to.equal('');
-    });
-
-    test('returns empty string for empty array', () => {
-      expect(el._sortIndex([], 'name')).to.equal('');
+    test('returns falsy for null sortOrder', () => {
+      expect(el._isSortActive(null, 'name')).to.not.be.ok;
     });
   });
 
   suite('_ariaSort', () => {
     test('returns ascending for asc column', () => {
-      expect(el._ariaSort([{ field: 'name', order: 'asc' }], 'name')).to.equal('ascending');
+      expect(el._ariaSort([{ path: 'name', direction: 'asc' }], 'name')).to.equal('ascending');
     });
 
     test('returns descending for desc column', () => {
-      expect(el._ariaSort([{ field: 'name', order: 'desc' }], 'name')).to.equal('descending');
+      expect(el._ariaSort([{ path: 'name', direction: 'desc' }], 'name')).to.equal('descending');
     });
 
-    test('returns none when field is not present', () => {
+    test('returns none when path is not present', () => {
       expect(el._ariaSort([], 'name')).to.equal('none');
     });
   });
@@ -356,36 +304,35 @@ suite('nuxeo-user-group-latest', () => {
     });
   });
 
-  suite('_sortLatest', () => {
+  suite('_onLatestSortChanged', () => {
     test('adds column and applies sort', () => {
       el.latestCreatedUsersGroups = { entries: [mkUser('B', 'Beta'), mkUser('A', 'Alpha')] };
       el._applySort();
-      el._sortLatest({ currentTarget: { dataset: { field: 'name' } } });
-      expect(el._latestSortColumns).to.deep.equal([{ field: 'name', order: 'asc' }]);
+      el._onLatestSortChanged({ detail: { path: 'name', direction: 'asc' } });
+      expect(el._latestSortOrder).to.deep.equal([{ path: 'name', direction: 'asc' }]);
       expect(el._sortedLatest[0]).to.equal(el.latestCreatedUsersGroups.entries[1]);
     });
 
-    test('cycles to desc on second click', () => {
+    test('updates to desc direction on second event', () => {
       el.latestCreatedUsersGroups = { entries: [mkUser('A', 'Alpha'), mkUser('B', 'Beta')] };
-      el._sortLatest({ currentTarget: { dataset: { field: 'name' } } });
-      el._sortLatest({ currentTarget: { dataset: { field: 'name' } } });
-      expect(el._latestSortColumns).to.deep.equal([{ field: 'name', order: 'desc' }]);
+      el._onLatestSortChanged({ detail: { path: 'name', direction: 'asc' } });
+      el._onLatestSortChanged({ detail: { path: 'name', direction: 'desc' } });
+      expect(el._latestSortOrder).to.deep.equal([{ path: 'name', direction: 'desc' }]);
       expect(el._sortedLatest[0]).to.equal(el.latestCreatedUsersGroups.entries[1]);
     });
 
-    test('removes column on third click', () => {
+    test('removes column when direction is null', () => {
       el.latestCreatedUsersGroups = { entries: [] };
-      el._sortLatest({ currentTarget: { dataset: { field: 'name' } } });
-      el._sortLatest({ currentTarget: { dataset: { field: 'name' } } });
-      el._sortLatest({ currentTarget: { dataset: { field: 'name' } } });
-      expect(el._latestSortColumns).to.deep.equal([]);
+      el._onLatestSortChanged({ detail: { path: 'name', direction: 'asc' } });
+      el._onLatestSortChanged({ detail: { path: 'name', direction: null } });
+      expect(el._latestSortOrder).to.deep.equal([]);
     });
 
     test('supports multi-column sort', () => {
       el.latestCreatedUsersGroups = { entries: [mkUser('A', 'Z'), mkUser('A', 'A'), mkUser('B', 'A')] };
-      el._sortLatest({ currentTarget: { dataset: { field: 'name' } } });
-      el._sortLatest({ currentTarget: { dataset: { field: 'uid' } } });
-      expect(el._latestSortColumns.length).to.equal(2);
+      el._onLatestSortChanged({ detail: { path: 'name', direction: 'asc' } });
+      el._onLatestSortChanged({ detail: { path: 'uid', direction: 'asc' } });
+      expect(el._latestSortOrder.length).to.equal(2);
     });
   });
 
@@ -393,7 +340,7 @@ suite('nuxeo-user-group-latest', () => {
     test('returns original order when no sort columns', () => {
       const entries = [mkUser('B', 'B'), mkUser('A', 'A')];
       el.latestCreatedUsersGroups = { entries };
-      el._latestSortColumns = [];
+      el._latestSortOrder = [];
       el._applySort();
       expect(el._sortedLatest).to.deep.equal(entries);
     });
@@ -402,7 +349,7 @@ suite('nuxeo-user-group-latest', () => {
       const alpha = mkUser('A', 'Alpha');
       const beta = mkUser('B', 'Beta');
       el.latestCreatedUsersGroups = { entries: [beta, alpha] };
-      el._latestSortColumns = [{ field: 'name', order: 'asc' }];
+      el._latestSortOrder = [{ path: 'name', direction: 'asc' }];
       el._applySort();
       expect(el._sortedLatest[0]).to.equal(alpha);
       expect(el._sortedLatest[1]).to.equal(beta);
@@ -412,7 +359,7 @@ suite('nuxeo-user-group-latest', () => {
       const alpha = mkUser('A', 'Alpha');
       const beta = mkUser('B', 'Beta');
       el.latestCreatedUsersGroups = { entries: [alpha, beta] };
-      el._latestSortColumns = [{ field: 'name', order: 'desc' }];
+      el._latestSortOrder = [{ path: 'name', direction: 'desc' }];
       el._applySort();
       expect(el._sortedLatest[0]).to.equal(beta);
       expect(el._sortedLatest[1]).to.equal(alpha);
@@ -421,21 +368,21 @@ suite('nuxeo-user-group-latest', () => {
     test('does not mutate the original entries array', () => {
       const entries = [mkUser('B', 'Beta'), mkUser('A', 'Alpha')];
       el.latestCreatedUsersGroups = { entries };
-      el._latestSortColumns = [{ field: 'name', order: 'asc' }];
+      el._latestSortOrder = [{ path: 'name', direction: 'asc' }];
       el._applySort();
       expect(el.latestCreatedUsersGroups.entries[0]).to.equal(entries[0]);
     });
 
     test('handles null latestCreatedUsersGroups gracefully', () => {
       el.latestCreatedUsersGroups = null;
-      el._latestSortColumns = [{ field: 'name', order: 'asc' }];
+      el._latestSortOrder = [{ path: 'name', direction: 'asc' }];
       el._applySort();
       expect(el._sortedLatest).to.deep.equal([]);
     });
 
     test('handles missing entries gracefully', () => {
       el.latestCreatedUsersGroups = {};
-      el._latestSortColumns = [{ field: 'name', order: 'asc' }];
+      el._latestSortOrder = [{ path: 'name', direction: 'asc' }];
       el._applySort();
       expect(el._sortedLatest).to.deep.equal([]);
     });
@@ -446,7 +393,7 @@ suite('nuxeo-user-group-latest', () => {
       const u2 = mkUser('B', 'B');
       u2.uid = 'a-uid';
       el.latestCreatedUsersGroups = { entries: [u1, u2] };
-      el._latestSortColumns = [{ field: 'uid', order: 'asc' }];
+      el._latestSortOrder = [{ path: 'uid', direction: 'asc' }];
       el._applySort();
       expect(el._sortedLatest[0]).to.equal(u2);
       expect(el._sortedLatest[1]).to.equal(u1);

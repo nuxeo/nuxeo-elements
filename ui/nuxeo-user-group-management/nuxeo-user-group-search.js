@@ -21,6 +21,7 @@ import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/editor-icons.js';
 import '../nuxeo-data-table/data-table-icons.js';
+import '../nuxeo-data-table/data-table-column-sort.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-resource.js';
 import '@polymer/paper-button/paper-button.js';
@@ -121,45 +122,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             color: var(--nuxeo-primary-color, #0066ff);
           }
 
-          .sort-btn {
-            width: 24px;
-            height: 24px;
-            padding: 2px;
-            color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.54));
-            opacity: 0.6;
-            transition: transform 0.2s, opacity 0.2s, color 0.2s;
-            flex-shrink: 0;
-          }
-
-          .sort-btn[direction='desc'] {
-            transform: rotate(-180deg);
-          }
-
-          .sortable:hover .sort-btn {
-            color: var(--nuxeo-primary-color, #0066ff);
-            opacity: 1;
-          }
-
-          .sortable[active='true'] .sort-btn {
-            color: var(--nuxeo-primary-color, #0066ff);
-            opacity: 1;
-          }
-
-          .sort-container {
-            position: relative;
-            width: 32px;
-            flex-shrink: 0;
-          }
-
-          .sort-order {
-            font-size: 0.7rem;
-            font-weight: bold;
-            position: absolute;
-            right: 2px;
-            bottom: 6px;
-            color: var(--nuxeo-primary-color, #0066ff);
-            pointer-events: none;
-            line-height: 1;
+          .sortable[active='true'] nuxeo-data-table-column-sort {
+            --default-primary-color: var(--nuxeo-primary-color, #0066ff);
           }
         </style>
 
@@ -192,45 +156,29 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                 <div class="table-header">
                   <div
                     class="flex-4 sortable"
-                    active$="[[_isGroupSortActive(_groupSortColumns, 'grouplabel')]]"
-                    on-click="_sortGroups"
-                    data-field="grouplabel"
+                    active$="[[_isSortActive(_groupSortOrder, 'grouplabel')]]"
                     role="columnheader"
-                    aria-sort$="[[_ariaSort(_groupSortColumns, 'grouplabel')]]"
+                    aria-sort$="[[_ariaSort(_groupSortOrder, 'grouplabel')]]"
                   >
                     [[i18n('userGroupSearch.name')]]
-                    <div class="sort-container">
-                      <paper-icon-button
-                        noink
-                        class="sort-btn"
-                        icon="data-table:arrow-upward"
-                        direction$="[[_sortDirection(_groupSortColumns, 'grouplabel')]]"
-                        aria-hidden="true"
-                        tabindex="-1"
-                      ></paper-icon-button>
-                      <span class="sort-order">[[_sortIndex(_groupSortColumns, 'grouplabel')]]</span>
-                    </div>
+                    <nuxeo-data-table-column-sort
+                      path="grouplabel"
+                      sort-order="[[_groupSortOrder]]"
+                      on-sort-direction-changed="_onGroupSortChanged"
+                    ></nuxeo-data-table-column-sort>
                   </div>
                   <div
                     class="flex-2 sortable"
-                    active$="[[_isGroupSortActive(_groupSortColumns, 'groupname')]]"
-                    on-click="_sortGroups"
-                    data-field="groupname"
+                    active$="[[_isSortActive(_groupSortOrder, 'groupname')]]"
                     role="columnheader"
-                    aria-sort$="[[_ariaSort(_groupSortColumns, 'groupname')]]"
+                    aria-sort$="[[_ariaSort(_groupSortOrder, 'groupname')]]"
                   >
                     [[i18n('userGroupSearch.identifier')]]
-                    <div class="sort-container">
-                      <paper-icon-button
-                        noink
-                        class="sort-btn"
-                        icon="data-table:arrow-upward"
-                        direction$="[[_sortDirection(_groupSortColumns, 'groupname')]]"
-                        aria-hidden="true"
-                        tabindex="-1"
-                      ></paper-icon-button>
-                      <span class="sort-order">[[_sortIndex(_groupSortColumns, 'groupname')]]</span>
-                    </div>
+                    <nuxeo-data-table-column-sort
+                      path="groupname"
+                      sort-order="[[_groupSortOrder]]"
+                      on-sort-direction-changed="_onGroupSortChanged"
+                    ></nuxeo-data-table-column-sort>
                   </div>
                   <div class="flex-4" role="columnheader">[[i18n('userGroupSearch.contains')]]</div>
                 </div>
@@ -268,66 +216,42 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                 <div class="table-header">
                   <div
                     class="flex-4 sortable"
-                    active$="[[_isUserSortActive(_userSortColumns, 'lastName')]]"
-                    on-click="_sortUsers"
-                    data-field="lastName"
+                    active$="[[_isSortActive(_userSortOrder, 'lastName')]]"
                     role="columnheader"
-                    aria-sort$="[[_ariaSort(_userSortColumns, 'lastName')]]"
+                    aria-sort$="[[_ariaSort(_userSortOrder, 'lastName')]]"
                   >
                     [[i18n('userGroupSearch.name')]]
-                    <div class="sort-container">
-                      <paper-icon-button
-                        noink
-                        class="sort-btn"
-                        icon="data-table:arrow-upward"
-                        direction$="[[_sortDirection(_userSortColumns, 'lastName')]]"
-                        aria-hidden="true"
-                        tabindex="-1"
-                      ></paper-icon-button>
-                      <span class="sort-order">[[_sortIndex(_userSortColumns, 'lastName')]]</span>
-                    </div>
+                    <nuxeo-data-table-column-sort
+                      path="lastName"
+                      sort-order="[[_userSortOrder]]"
+                      on-sort-direction-changed="_onUserSortChanged"
+                    ></nuxeo-data-table-column-sort>
                   </div>
                   <div
                     class="flex-2 sortable"
-                    active$="[[_isUserSortActive(_userSortColumns, 'username')]]"
-                    on-click="_sortUsers"
-                    data-field="username"
+                    active$="[[_isSortActive(_userSortOrder, 'username')]]"
                     role="columnheader"
-                    aria-sort$="[[_ariaSort(_userSortColumns, 'username')]]"
+                    aria-sort$="[[_ariaSort(_userSortOrder, 'username')]]"
                   >
                     [[i18n('userGroupSearch.identifier')]]
-                    <div class="sort-container">
-                      <paper-icon-button
-                        noink
-                        class="sort-btn"
-                        icon="data-table:arrow-upward"
-                        direction$="[[_sortDirection(_userSortColumns, 'username')]]"
-                        aria-hidden="true"
-                        tabindex="-1"
-                      ></paper-icon-button>
-                      <span class="sort-order">[[_sortIndex(_userSortColumns, 'username')]]</span>
-                    </div>
+                    <nuxeo-data-table-column-sort
+                      path="username"
+                      sort-order="[[_userSortOrder]]"
+                      on-sort-direction-changed="_onUserSortChanged"
+                    ></nuxeo-data-table-column-sort>
                   </div>
                   <div
                     class="flex-4 sortable"
-                    active$="[[_isUserSortActive(_userSortColumns, 'email')]]"
-                    on-click="_sortUsers"
-                    data-field="email"
+                    active$="[[_isSortActive(_userSortOrder, 'email')]]"
                     role="columnheader"
-                    aria-sort$="[[_ariaSort(_userSortColumns, 'email')]]"
+                    aria-sort$="[[_ariaSort(_userSortOrder, 'email')]]"
                   >
                     [[i18n('userGroupSearch.email')]]
-                    <div class="sort-container">
-                      <paper-icon-button
-                        noink
-                        class="sort-btn"
-                        icon="data-table:arrow-upward"
-                        direction$="[[_sortDirection(_userSortColumns, 'email')]]"
-                        aria-hidden="true"
-                        tabindex="-1"
-                      ></paper-icon-button>
-                      <span class="sort-order">[[_sortIndex(_userSortColumns, 'email')]]</span>
-                    </div>
+                    <nuxeo-data-table-column-sort
+                      path="email"
+                      sort-order="[[_userSortOrder]]"
+                      on-sort-direction-changed="_onUserSortChanged"
+                    ></nuxeo-data-table-column-sort>
                   </div>
                 </div>
                 <div class="table-rows">
@@ -383,14 +307,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         usersCurrentPage: Number,
 
-        // Array of { field, order } for multi-column sort on groups
-        _groupSortColumns: {
+        // Array of { path, direction } for multi-column sort on groups (matches nuxeo-data-table-column-sort contract)
+        _groupSortOrder: {
           type: Array,
           value: () => [],
         },
 
-        // Array of { field, order } for multi-column sort on users
-        _userSortColumns: {
+        // Array of { path, direction } for multi-column sort on users
+        _userSortOrder: {
           type: Array,
           value: () => [],
         },
@@ -416,9 +340,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         q: this.searchTerm,
         currentPageIndex: this.groupsCurrentPage - 1,
       };
-      if (this._groupSortColumns.length > 0) {
-        params.sortBy = this._groupSortColumns.map((c) => c.field).join(',');
-        params.sortOrder = this._groupSortColumns.map((c) => c.order).join(',');
+      if (this._groupSortOrder.length > 0) {
+        params.sortBy = this._groupSortOrder.map((c) => c.path).join(',');
+        params.sortOrder = this._groupSortOrder.map((c) => c.direction).join(',');
       }
       this.$.groupSearch.params = params;
     }
@@ -428,70 +352,52 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         q: this.searchTerm,
         currentPageIndex: this.usersCurrentPage - 1,
       };
-      if (this._userSortColumns.length > 0) {
-        params.sortBy = this._userSortColumns.map((c) => c.field).join(',');
-        params.sortOrder = this._userSortColumns.map((c) => c.order).join(',');
+      if (this._userSortOrder.length > 0) {
+        params.sortBy = this._userSortOrder.map((c) => c.path).join(',');
+        params.sortOrder = this._userSortOrder.map((c) => c.direction).join(',');
       }
       this.$.userSearch.params = params;
     }
 
-    _sortGroups(e) {
-      this._groupSortColumns = this._toggleSortColumn(this._groupSortColumns, e.currentTarget.dataset.field);
+    _onGroupSortChanged(e) {
+      this._groupSortOrder = this._applySortDirectionChanged(this._groupSortOrder, e.detail.path, e.detail.direction);
       this.groupsCurrentPage = 1;
       this._searchGroups();
     }
 
-    _sortUsers(e) {
-      this._userSortColumns = this._toggleSortColumn(this._userSortColumns, e.currentTarget.dataset.field);
+    _onUserSortChanged(e) {
+      this._userSortOrder = this._applySortDirectionChanged(this._userSortOrder, e.detail.path, e.detail.direction);
       this.usersCurrentPage = 1;
       this._searchUsers();
     }
 
-    _toggleSortColumn(cols, field) {
-      const result = cols.slice();
-      const idx = result.findIndex((c) => c.field === field);
+    // Mirrors the logic of _sortDirectionChanged in PageProviderDisplayBehavior, adapted for REST params.
+    // Accepts the element's { path, direction } schema where direction=null means "remove this column".
+    _applySortDirectionChanged(sortOrder, path, direction) {
+      const result = sortOrder.slice();
+      const idx = result.findIndex((c) => c.path === path);
       if (idx >= 0) {
-        if (result[idx].order === 'asc') {
-          result[idx] = { field, order: 'desc' };
+        if (direction) {
+          result[idx] = { path, direction };
         } else {
           result.splice(idx, 1);
         }
-      } else {
-        result.push({ field, order: 'asc' });
+      } else if (direction) {
+        result.push({ path, direction });
       }
       return result;
     }
 
-    _isGroupSortActive(cols, field) {
-      return cols && cols.some((c) => c.field === field);
+    _isSortActive(sortOrder, path) {
+      return sortOrder && sortOrder.some((c) => c.path === path);
     }
 
-    _isUserSortActive(cols, field) {
-      return cols && cols.some((c) => c.field === field);
-    }
-
-    _sortDirection(cols, field) {
-      const col = cols && cols.find((c) => c.field === field);
-      if (!col) {
-        return null;
-      }
-      return col.order === 'asc' ? 'asc' : 'desc';
-    }
-
-    _sortIndex(cols, field) {
-      if (!cols || cols.length <= 1) {
-        return '';
-      }
-      const idx = cols.findIndex((c) => c.field === field);
-      return idx >= 0 ? String(idx + 1) : '';
-    }
-
-    _ariaSort(cols, field) {
-      const col = cols && cols.find((c) => c.field === field);
+    _ariaSort(sortOrder, path) {
+      const col = sortOrder && sortOrder.find((c) => c.path === path);
       if (!col) {
         return 'none';
       }
-      return col.order === 'asc' ? 'ascending' : 'descending';
+      return col.direction === 'asc' ? 'ascending' : 'descending';
     }
 
     _manageUser(e) {
