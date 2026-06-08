@@ -219,7 +219,7 @@ import '../nuxeo-button-styles.js';
           <div class="horizontal layout center header">
             <iron-icon icon="nuxeo:user" class="user-icon"></iron-icon>
             <div class="layout vertical">
-              <div class="user heading" name="userHeading">[[user.id]]</div>
+              <div class="user heading" name="userHeading">[[_userDisplayName(user)]]</div>
               <div>[[user.properties.firstName]] [[user.properties.lastName]]</div>
             </div>
 
@@ -314,7 +314,7 @@ import '../nuxeo-button-styles.js';
             <dom-repeat items="[[activity]]">
               <template>
                 <div class="activity-entry">
-                  [[i18n('userManagement.memberOf.group', user.id)]]
+                  [[i18n('userManagement.memberOf.group', _displayName)]]
                   <nuxeo-group-tag group="[[item]]"></nuxeo-group-tag>
                   <span class="remove" on-click="_toggleDialog">[[i18n('userManagement.group.remove')]]</span>
                 </div>
@@ -365,7 +365,7 @@ import '../nuxeo-button-styles.js';
 
         <!-- local permissions -->
         <nuxeo-card heading="[[i18n('userManagement.localPermissions.heading')]]">
-          <nuxeo-user-group-permissions-table entity="[[username]]" readonly="[[readonly]]">
+          <nuxeo-user-group-permissions-table entity="[[_userDisplayName(user)]]" readonly="[[readonly]]">
           </nuxeo-user-group-permissions-table>
         </nuxeo-card>
 
@@ -380,7 +380,7 @@ import '../nuxeo-button-styles.js';
         </dom-repeat>
 
         <nuxeo-dialog id="dialog" with-backdrop>
-          <h2>[[i18n('userManagement.removeUserFromGroup.confirm', user.id, _removedGroup.name)]]</h2>
+          <h2>[[i18n('userManagement.removeUserFromGroup.confirm', _displayName, _removedGroup.name)]]</h2>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
               <paper-button noink dialog-dismiss class="secondary">[[i18n('label.no')]]</paper-button>
@@ -504,6 +504,11 @@ import '../nuxeo-button-styles.js';
         _currentUser: {
           type: Object,
         },
+
+        _displayName: {
+          type: String,
+          computed: '_userDisplayName(user)',
+        },
       };
     }
 
@@ -531,6 +536,14 @@ import '../nuxeo-button-styles.js';
         event.preventDefault();
         this._savePassword();
       });
+    }
+
+    _userDisplayName(user) {
+      if (!user) {
+        return '';
+      }
+      const props = user.properties || {};
+      return props.username || user.name || '';
     }
 
     _fetch() {
@@ -606,13 +619,14 @@ import '../nuxeo-button-styles.js';
         }
         const group = {
           name: this.selectedGroup.groupname,
+          id: this.selectedGroup.id,
           label: this.selectedGroup.grouplabel,
         };
         this.push('activity', group);
-        this.$.request.path = `user/${this.user.id}/group/${group.name}`;
+        this.$.request.path = `user/${this.user.id}/group/${group.id || group.name}`;
         this.$.request.post().then((response) => {
           this.user = response;
-          this._toast(this.i18n('userManagement.addedUserToGroup', this.user.id, group.name));
+          this._toast(this.i18n('userManagement.addedUserToGroup', this._userDisplayName(this.user), group.name));
         });
       }
       this.selectedGroup = null;
@@ -620,11 +634,11 @@ import '../nuxeo-button-styles.js';
 
     _remove() {
       const group = this._removedGroup;
-      this.$.request.path = `user/${this.user.id}/group/${group.name}`;
+      this.$.request.path = `user/${this.user.id}/group/${group.id || group.name}`;
       return this.$.request.remove().then(() => {
         this._removeRecent(group.name);
         this._removeFromGroup(group.name);
-        this._toast(this.i18n('userManagement.removedUserFromGroup', this.user.id, group.name));
+        this._toast(this.i18n('userManagement.removedUserFromGroup', this._userDisplayName(this.user), group.name));
       });
     }
 
