@@ -33,6 +33,7 @@ jobs:
     uses: nuxeo/nuxeo-elements/.github/workflows/storybook.yaml@maintenance-3.1.x
     secrets:
       NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+      GIT_ADMIN_TOKEN: ${{ secrets.GIT_ADMIN_TOKEN }}
     with:
       branch: maintenance-3.1.x
 
