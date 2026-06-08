@@ -206,4 +206,271 @@ suite('nuxeo-user-group-search', () => {
       expect(el._userIdentifier({ properties: {} })).to.equal('');
     });
   });
+
+  suite('_toggleSortColumn', () => {
+    test('adds field with asc order when not present', () => {
+      const result = el._toggleSortColumn([], 'grouplabel');
+      expect(result).to.deep.equal([{ field: 'grouplabel', order: 'asc' }]);
+    });
+
+    test('cycles to desc when already asc', () => {
+      const result = el._toggleSortColumn([{ field: 'grouplabel', order: 'asc' }], 'grouplabel');
+      expect(result).to.deep.equal([{ field: 'grouplabel', order: 'desc' }]);
+    });
+
+    test('removes field when already desc', () => {
+      const result = el._toggleSortColumn([{ field: 'grouplabel', order: 'desc' }], 'grouplabel');
+      expect(result).to.deep.equal([]);
+    });
+
+    test('appends new field without affecting existing ones', () => {
+      const result = el._toggleSortColumn([{ field: 'grouplabel', order: 'asc' }], 'groupname');
+      expect(result).to.deep.equal([
+        { field: 'grouplabel', order: 'asc' },
+        { field: 'groupname', order: 'asc' },
+      ]);
+    });
+
+    test('removes only the toggled field from multi-column array', () => {
+      const cols = [
+        { field: 'grouplabel', order: 'asc' },
+        { field: 'groupname', order: 'desc' },
+      ];
+      const result = el._toggleSortColumn(cols, 'groupname');
+      expect(result).to.deep.equal([{ field: 'grouplabel', order: 'asc' }]);
+    });
+
+    test('does not mutate the original array', () => {
+      const cols = [{ field: 'grouplabel', order: 'asc' }];
+      el._toggleSortColumn(cols, 'grouplabel');
+      expect(cols).to.deep.equal([{ field: 'grouplabel', order: 'asc' }]);
+    });
+  });
+
+  suite('_isGroupSortActive', () => {
+    test('returns true when field is active', () => {
+      expect(el._isGroupSortActive([{ field: 'grouplabel', order: 'asc' }], 'grouplabel')).to.be.true;
+    });
+
+    test('returns false when field is not active', () => {
+      expect(el._isGroupSortActive([{ field: 'grouplabel', order: 'asc' }], 'groupname')).to.be.false;
+    });
+
+    test('returns false for empty array', () => {
+      expect(el._isGroupSortActive([], 'grouplabel')).to.be.false;
+    });
+
+    test('returns falsy for null cols', () => {
+      expect(el._isGroupSortActive(null, 'grouplabel')).to.not.be.ok;
+    });
+  });
+
+  suite('_isUserSortActive', () => {
+    test('returns true when field is active', () => {
+      expect(el._isUserSortActive([{ field: 'lastName', order: 'asc' }], 'lastName')).to.be.true;
+    });
+
+    test('returns false when field is not active', () => {
+      expect(el._isUserSortActive([{ field: 'lastName', order: 'asc' }], 'email')).to.be.false;
+    });
+
+    test('returns false for empty array', () => {
+      expect(el._isUserSortActive([], 'lastName')).to.be.false;
+    });
+
+    test('returns falsy for null cols', () => {
+      expect(el._isUserSortActive(null, 'lastName')).to.not.be.ok;
+    });
+  });
+
+  suite('_sortDirection', () => {
+    test('returns asc for ascending column', () => {
+      expect(el._sortDirection([{ field: 'grouplabel', order: 'asc' }], 'grouplabel')).to.equal('asc');
+    });
+
+    test('returns desc for descending column', () => {
+      expect(el._sortDirection([{ field: 'grouplabel', order: 'desc' }], 'grouplabel')).to.equal('desc');
+    });
+
+    test('returns null when field is not present', () => {
+      expect(el._sortDirection([{ field: 'grouplabel', order: 'asc' }], 'groupname')).to.be.null;
+    });
+
+    test('returns null for empty cols', () => {
+      expect(el._sortDirection([], 'grouplabel')).to.be.null;
+    });
+  });
+
+  suite('_sortIndex', () => {
+    test('returns empty string for single-column sort', () => {
+      expect(el._sortIndex([{ field: 'grouplabel', order: 'asc' }], 'grouplabel')).to.equal('');
+    });
+
+    test('returns "1" for first field in multi-column sort', () => {
+      const cols = [
+        { field: 'grouplabel', order: 'asc' },
+        { field: 'groupname', order: 'asc' },
+      ];
+      expect(el._sortIndex(cols, 'grouplabel')).to.equal('1');
+    });
+
+    test('returns "2" for second field in multi-column sort', () => {
+      const cols = [
+        { field: 'grouplabel', order: 'asc' },
+        { field: 'groupname', order: 'asc' },
+      ];
+      expect(el._sortIndex(cols, 'groupname')).to.equal('2');
+    });
+
+    test('returns empty string for field not in multi-column sort', () => {
+      const cols = [
+        { field: 'grouplabel', order: 'asc' },
+        { field: 'groupname', order: 'asc' },
+      ];
+      expect(el._sortIndex(cols, 'email')).to.equal('');
+    });
+
+    test('returns empty string for empty array', () => {
+      expect(el._sortIndex([], 'grouplabel')).to.equal('');
+    });
+  });
+
+  suite('_ariaSort', () => {
+    test('returns ascending for asc column', () => {
+      expect(el._ariaSort([{ field: 'grouplabel', order: 'asc' }], 'grouplabel')).to.equal('ascending');
+    });
+
+    test('returns descending for desc column', () => {
+      expect(el._ariaSort([{ field: 'grouplabel', order: 'desc' }], 'grouplabel')).to.equal('descending');
+    });
+
+    test('returns none when field is not present', () => {
+      expect(el._ariaSort([], 'grouplabel')).to.equal('none');
+    });
+  });
+
+  suite('_sortGroups', () => {
+    test('adds column, resets page to 1, and re-searches', () => {
+      el.searchTerm = 'test';
+      el.groupsCurrentPage = 3;
+      sinon.spy(el, '_searchGroups');
+      el._sortGroups({ currentTarget: { dataset: { field: 'grouplabel' } } });
+      expect(el._groupSortColumns).to.deep.equal([{ field: 'grouplabel', order: 'asc' }]);
+      expect(el.groupsCurrentPage).to.equal(1);
+      expect(el._searchGroups).to.have.been.calledOnce;
+      el._searchGroups.restore();
+    });
+
+    test('cycles sort direction on repeated clicks', () => {
+      el.searchTerm = 'test';
+      sinon.stub(el, '_searchGroups');
+      el._sortGroups({ currentTarget: { dataset: { field: 'grouplabel' } } });
+      el._sortGroups({ currentTarget: { dataset: { field: 'grouplabel' } } });
+      expect(el._groupSortColumns).to.deep.equal([{ field: 'grouplabel', order: 'desc' }]);
+      el._searchGroups.restore();
+    });
+
+    test('removes column on third click', () => {
+      el.searchTerm = 'test';
+      sinon.stub(el, '_searchGroups');
+      el._sortGroups({ currentTarget: { dataset: { field: 'grouplabel' } } });
+      el._sortGroups({ currentTarget: { dataset: { field: 'grouplabel' } } });
+      el._sortGroups({ currentTarget: { dataset: { field: 'grouplabel' } } });
+      expect(el._groupSortColumns).to.deep.equal([]);
+      el._searchGroups.restore();
+    });
+  });
+
+  suite('_sortUsers', () => {
+    test('adds column, resets page to 1, and re-searches', () => {
+      el.searchTerm = 'test';
+      el.usersCurrentPage = 5;
+      sinon.spy(el, '_searchUsers');
+      el._sortUsers({ currentTarget: { dataset: { field: 'lastName' } } });
+      expect(el._userSortColumns).to.deep.equal([{ field: 'lastName', order: 'asc' }]);
+      expect(el.usersCurrentPage).to.equal(1);
+      expect(el._searchUsers).to.have.been.calledOnce;
+      el._searchUsers.restore();
+    });
+
+    test('cycles sort direction on repeated clicks', () => {
+      el.searchTerm = 'test';
+      sinon.stub(el, '_searchUsers');
+      el._sortUsers({ currentTarget: { dataset: { field: 'email' } } });
+      el._sortUsers({ currentTarget: { dataset: { field: 'email' } } });
+      expect(el._userSortColumns).to.deep.equal([{ field: 'email', order: 'desc' }]);
+      el._searchUsers.restore();
+    });
+
+    test('removes column on third click', () => {
+      el.searchTerm = 'test';
+      sinon.stub(el, '_searchUsers');
+      el._sortUsers({ currentTarget: { dataset: { field: 'username' } } });
+      el._sortUsers({ currentTarget: { dataset: { field: 'username' } } });
+      el._sortUsers({ currentTarget: { dataset: { field: 'username' } } });
+      expect(el._userSortColumns).to.deep.equal([]);
+      el._searchUsers.restore();
+    });
+  });
+
+  suite('_searchGroups with sort', () => {
+    test('includes sortBy and sortOrder when sort columns are set', () => {
+      el.searchTerm = 'test';
+      el.groupsCurrentPage = 1;
+      el._groupSortColumns = [
+        { field: 'grouplabel', order: 'asc' },
+        { field: 'groupname', order: 'desc' },
+      ];
+      el._searchGroups();
+      expect(el.$.groupSearch.params.sortBy).to.equal('grouplabel,groupname');
+      expect(el.$.groupSearch.params.sortOrder).to.equal('asc,desc');
+    });
+
+    test('omits sortBy and sortOrder when no sort columns', () => {
+      el.searchTerm = 'test';
+      el.groupsCurrentPage = 1;
+      el._groupSortColumns = [];
+      el._searchGroups();
+      expect(el.$.groupSearch.params.sortBy).to.be.undefined;
+      expect(el.$.groupSearch.params.sortOrder).to.be.undefined;
+    });
+
+    test('applies single-column sort correctly', () => {
+      el.searchTerm = 'test';
+      el._groupSortColumns = [{ field: 'grouplabel', order: 'desc' }];
+      el._searchGroups();
+      expect(el.$.groupSearch.params.sortBy).to.equal('grouplabel');
+      expect(el.$.groupSearch.params.sortOrder).to.equal('desc');
+    });
+  });
+
+  suite('_searchUsers with sort', () => {
+    test('includes sortBy and sortOrder when sort columns are set', () => {
+      el.searchTerm = 'test';
+      el.usersCurrentPage = 1;
+      el._userSortColumns = [
+        { field: 'lastName', order: 'asc' },
+        { field: 'email', order: 'desc' },
+      ];
+      el._searchUsers();
+      expect(el.$.userSearch.params.sortBy).to.equal('lastName,email');
+      expect(el.$.userSearch.params.sortOrder).to.equal('asc,desc');
+    });
+
+    test('omits sortBy and sortOrder when no sort columns', () => {
+      el.searchTerm = 'test';
+      el._userSortColumns = [];
+      el._searchUsers();
+      expect(el.$.userSearch.params.sortBy).to.be.undefined;
+      expect(el.$.userSearch.params.sortOrder).to.be.undefined;
+    });
+
+    test('applies single-column sort correctly', () => {
+      el.searchTerm = 'test';
+      el._userSortColumns = [{ field: 'username', order: 'asc' }];
+      el._searchUsers();
+      expect(el.$.userSearch.params.sortBy).to.equal('username');
+      expect(el.$.userSearch.params.sortOrder).to.equal('asc');
+    });
+  });
 });

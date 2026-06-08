@@ -228,4 +228,237 @@ suite('nuxeo-user-group-latest', () => {
       spy.restore();
     });
   });
+
+  suite('_isLatestSortActive', () => {
+    test('returns true when field is active', () => {
+      expect(el._isLatestSortActive([{ field: 'name', order: 'asc' }], 'name')).to.be.true;
+    });
+
+    test('returns false when field is not active', () => {
+      expect(el._isLatestSortActive([{ field: 'name', order: 'asc' }], 'uid')).to.be.false;
+    });
+
+    test('returns false for empty array', () => {
+      expect(el._isLatestSortActive([], 'name')).to.be.false;
+    });
+
+    test('returns falsy for null cols', () => {
+      expect(el._isLatestSortActive(null, 'name')).to.not.be.ok;
+    });
+  });
+
+  suite('_sortDirection', () => {
+    test('returns asc for ascending column', () => {
+      expect(el._sortDirection([{ field: 'name', order: 'asc' }], 'name')).to.equal('asc');
+    });
+
+    test('returns desc for descending column', () => {
+      expect(el._sortDirection([{ field: 'name', order: 'desc' }], 'name')).to.equal('desc');
+    });
+
+    test('returns null when field is not present', () => {
+      expect(el._sortDirection([{ field: 'name', order: 'asc' }], 'uid')).to.be.null;
+    });
+
+    test('returns null for empty cols', () => {
+      expect(el._sortDirection([], 'name')).to.be.null;
+    });
+  });
+
+  suite('_sortIndex', () => {
+    test('returns empty string for single-column sort', () => {
+      expect(el._sortIndex([{ field: 'name', order: 'asc' }], 'name')).to.equal('');
+    });
+
+    test('returns "1" for first field in multi-column sort', () => {
+      const cols = [
+        { field: 'name', order: 'asc' },
+        { field: 'uid', order: 'asc' },
+      ];
+      expect(el._sortIndex(cols, 'name')).to.equal('1');
+    });
+
+    test('returns "2" for second field in multi-column sort', () => {
+      const cols = [
+        { field: 'name', order: 'asc' },
+        { field: 'uid', order: 'asc' },
+      ];
+      expect(el._sortIndex(cols, 'uid')).to.equal('2');
+    });
+
+    test('returns empty string for field not in multi-column sort', () => {
+      const cols = [
+        { field: 'name', order: 'asc' },
+        { field: 'uid', order: 'asc' },
+      ];
+      expect(el._sortIndex(cols, 'email')).to.equal('');
+    });
+
+    test('returns empty string for empty array', () => {
+      expect(el._sortIndex([], 'name')).to.equal('');
+    });
+  });
+
+  suite('_ariaSort', () => {
+    test('returns ascending for asc column', () => {
+      expect(el._ariaSort([{ field: 'name', order: 'asc' }], 'name')).to.equal('ascending');
+    });
+
+    test('returns descending for desc column', () => {
+      expect(el._ariaSort([{ field: 'name', order: 'desc' }], 'name')).to.equal('descending');
+    });
+
+    test('returns none when field is not present', () => {
+      expect(el._ariaSort([], 'name')).to.equal('none');
+    });
+  });
+
+  suite('_getLatestSortValue', () => {
+    test('returns display name for user via "name" field', () => {
+      const user = mkUser('John', 'Doe');
+      expect(el._getLatestSortValue(user, 'name')).to.equal('John Doe');
+    });
+
+    test('returns uid as fallback for "name" when display name is empty', () => {
+      const user = mkUser('', '');
+      user.uid = 'jdoe-fallback';
+      expect(el._getLatestSortValue(user, 'name')).to.equal('jdoe-fallback');
+    });
+
+    test('returns grouplabel as "name" for group', () => {
+      const group = mkGroup('Admins');
+      expect(el._getLatestSortValue(group, 'name')).to.equal('Admins');
+    });
+
+    test('returns uid for "uid" field', () => {
+      const user = mkUser('John', 'Doe');
+      user.uid = 'uid-123';
+      expect(el._getLatestSortValue(user, 'uid')).to.equal('uid-123');
+    });
+
+    test('returns empty string when uid is absent for "uid" field', () => {
+      const item = { type: 'user', properties: {} };
+      expect(el._getLatestSortValue(item, 'uid')).to.equal('');
+    });
+
+    test('returns email for "email" field', () => {
+      const user = mkUser('John', 'Doe', 'john@example.com');
+      expect(el._getLatestSortValue(user, 'email')).to.equal('john@example.com');
+    });
+
+    test('returns empty string when email is absent', () => {
+      const user = mkUser('John', 'Doe', '');
+      expect(el._getLatestSortValue(user, 'email')).to.equal('');
+    });
+
+    test('returns empty string for unknown field', () => {
+      expect(el._getLatestSortValue(mkUser('A', 'B'), 'unknown')).to.equal('');
+    });
+  });
+
+  suite('_sortLatest', () => {
+    test('adds column and applies sort', () => {
+      el.latestCreatedUsersGroups = { entries: [mkUser('B', 'Beta'), mkUser('A', 'Alpha')] };
+      el._applySort();
+      el._sortLatest({ currentTarget: { dataset: { field: 'name' } } });
+      expect(el._latestSortColumns).to.deep.equal([{ field: 'name', order: 'asc' }]);
+      expect(el._sortedLatest[0]).to.equal(el.latestCreatedUsersGroups.entries[1]);
+    });
+
+    test('cycles to desc on second click', () => {
+      el.latestCreatedUsersGroups = { entries: [mkUser('A', 'Alpha'), mkUser('B', 'Beta')] };
+      el._sortLatest({ currentTarget: { dataset: { field: 'name' } } });
+      el._sortLatest({ currentTarget: { dataset: { field: 'name' } } });
+      expect(el._latestSortColumns).to.deep.equal([{ field: 'name', order: 'desc' }]);
+      expect(el._sortedLatest[0]).to.equal(el.latestCreatedUsersGroups.entries[1]);
+    });
+
+    test('removes column on third click', () => {
+      el.latestCreatedUsersGroups = { entries: [] };
+      el._sortLatest({ currentTarget: { dataset: { field: 'name' } } });
+      el._sortLatest({ currentTarget: { dataset: { field: 'name' } } });
+      el._sortLatest({ currentTarget: { dataset: { field: 'name' } } });
+      expect(el._latestSortColumns).to.deep.equal([]);
+    });
+
+    test('supports multi-column sort', () => {
+      el.latestCreatedUsersGroups = { entries: [mkUser('A', 'Z'), mkUser('A', 'A'), mkUser('B', 'A')] };
+      el._sortLatest({ currentTarget: { dataset: { field: 'name' } } });
+      el._sortLatest({ currentTarget: { dataset: { field: 'uid' } } });
+      expect(el._latestSortColumns.length).to.equal(2);
+    });
+  });
+
+  suite('_applySort', () => {
+    test('returns original order when no sort columns', () => {
+      const entries = [mkUser('B', 'B'), mkUser('A', 'A')];
+      el.latestCreatedUsersGroups = { entries };
+      el._latestSortColumns = [];
+      el._applySort();
+      expect(el._sortedLatest).to.deep.equal(entries);
+    });
+
+    test('sorts by name ascending', () => {
+      const alpha = mkUser('A', 'Alpha');
+      const beta = mkUser('B', 'Beta');
+      el.latestCreatedUsersGroups = { entries: [beta, alpha] };
+      el._latestSortColumns = [{ field: 'name', order: 'asc' }];
+      el._applySort();
+      expect(el._sortedLatest[0]).to.equal(alpha);
+      expect(el._sortedLatest[1]).to.equal(beta);
+    });
+
+    test('sorts by name descending', () => {
+      const alpha = mkUser('A', 'Alpha');
+      const beta = mkUser('B', 'Beta');
+      el.latestCreatedUsersGroups = { entries: [alpha, beta] };
+      el._latestSortColumns = [{ field: 'name', order: 'desc' }];
+      el._applySort();
+      expect(el._sortedLatest[0]).to.equal(beta);
+      expect(el._sortedLatest[1]).to.equal(alpha);
+    });
+
+    test('does not mutate the original entries array', () => {
+      const entries = [mkUser('B', 'Beta'), mkUser('A', 'Alpha')];
+      el.latestCreatedUsersGroups = { entries };
+      el._latestSortColumns = [{ field: 'name', order: 'asc' }];
+      el._applySort();
+      expect(el.latestCreatedUsersGroups.entries[0]).to.equal(entries[0]);
+    });
+
+    test('handles null latestCreatedUsersGroups gracefully', () => {
+      el.latestCreatedUsersGroups = null;
+      el._latestSortColumns = [{ field: 'name', order: 'asc' }];
+      el._applySort();
+      expect(el._sortedLatest).to.deep.equal([]);
+    });
+
+    test('handles missing entries gracefully', () => {
+      el.latestCreatedUsersGroups = {};
+      el._latestSortColumns = [{ field: 'name', order: 'asc' }];
+      el._applySort();
+      expect(el._sortedLatest).to.deep.equal([]);
+    });
+
+    test('sorts by uid field', () => {
+      const u1 = mkUser('A', 'A');
+      u1.uid = 'b-uid';
+      const u2 = mkUser('B', 'B');
+      u2.uid = 'a-uid';
+      el.latestCreatedUsersGroups = { entries: [u1, u2] };
+      el._latestSortColumns = [{ field: 'uid', order: 'asc' }];
+      el._applySort();
+      expect(el._sortedLatest[0]).to.equal(u2);
+      expect(el._sortedLatest[1]).to.equal(u1);
+    });
+  });
+
+  suite('_onEntriesChanged', () => {
+    test('re-applies sort when entries change', () => {
+      const spy = sinon.spy(el, '_applySort');
+      el._onEntriesChanged();
+      expect(spy).to.have.been.calledOnce;
+      spy.restore();
+    });
+  });
 });

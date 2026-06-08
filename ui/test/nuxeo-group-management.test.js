@@ -530,4 +530,263 @@ suite('nuxeo-group-management', () => {
       expect(el._removedMemberDisplayName).to.equal('jdoe');
     });
   });
+
+  suite('_toggleSortColumn', () => {
+    test('adds field with asc order when not present', () => {
+      const result = el._toggleSortColumn([], 'lastName');
+      expect(result).to.deep.equal([{ field: 'lastName', order: 'asc' }]);
+    });
+
+    test('cycles to desc when already asc', () => {
+      const result = el._toggleSortColumn([{ field: 'lastName', order: 'asc' }], 'lastName');
+      expect(result).to.deep.equal([{ field: 'lastName', order: 'desc' }]);
+    });
+
+    test('removes field when already desc', () => {
+      const result = el._toggleSortColumn([{ field: 'lastName', order: 'desc' }], 'lastName');
+      expect(result).to.deep.equal([]);
+    });
+
+    test('appends new field without affecting existing ones', () => {
+      const result = el._toggleSortColumn([{ field: 'lastName', order: 'asc' }], 'email');
+      expect(result).to.deep.equal([
+        { field: 'lastName', order: 'asc' },
+        { field: 'email', order: 'asc' },
+      ]);
+    });
+
+    test('does not mutate the original array', () => {
+      const cols = [{ field: 'lastName', order: 'asc' }];
+      el._toggleSortColumn(cols, 'lastName');
+      expect(cols).to.deep.equal([{ field: 'lastName', order: 'asc' }]);
+    });
+  });
+
+  suite('_isMemberUserSortActive', () => {
+    test('returns true when field is active', () => {
+      expect(el._isMemberUserSortActive([{ field: 'lastName', order: 'asc' }], 'lastName')).to.be.true;
+    });
+
+    test('returns false when field is not active', () => {
+      expect(el._isMemberUserSortActive([{ field: 'lastName', order: 'asc' }], 'email')).to.be.false;
+    });
+
+    test('returns false for empty array', () => {
+      expect(el._isMemberUserSortActive([], 'lastName')).to.be.false;
+    });
+
+    test('returns falsy for null cols', () => {
+      expect(el._isMemberUserSortActive(null, 'lastName')).to.not.be.ok;
+    });
+  });
+
+  suite('_isMemberGroupSortActive', () => {
+    test('returns true when field is active', () => {
+      expect(el._isMemberGroupSortActive([{ field: 'grouplabel', order: 'asc' }], 'grouplabel')).to.be.true;
+    });
+
+    test('returns false when field is not active', () => {
+      expect(el._isMemberGroupSortActive([{ field: 'grouplabel', order: 'asc' }], 'groupname')).to.be.false;
+    });
+
+    test('returns false for empty array', () => {
+      expect(el._isMemberGroupSortActive([], 'grouplabel')).to.be.false;
+    });
+
+    test('returns falsy for null cols', () => {
+      expect(el._isMemberGroupSortActive(null, 'grouplabel')).to.not.be.ok;
+    });
+  });
+
+  suite('_sortDirection', () => {
+    test('returns asc for ascending column', () => {
+      expect(el._sortDirection([{ field: 'lastName', order: 'asc' }], 'lastName')).to.equal('asc');
+    });
+
+    test('returns desc for descending column', () => {
+      expect(el._sortDirection([{ field: 'lastName', order: 'desc' }], 'lastName')).to.equal('desc');
+    });
+
+    test('returns null when field is not present', () => {
+      expect(el._sortDirection([{ field: 'lastName', order: 'asc' }], 'email')).to.be.null;
+    });
+
+    test('returns null for empty cols', () => {
+      expect(el._sortDirection([], 'lastName')).to.be.null;
+    });
+  });
+
+  suite('_sortIndex', () => {
+    test('returns empty string for single-column sort', () => {
+      expect(el._sortIndex([{ field: 'lastName', order: 'asc' }], 'lastName')).to.equal('');
+    });
+
+    test('returns "1" for first field in multi-column sort', () => {
+      const cols = [
+        { field: 'lastName', order: 'asc' },
+        { field: 'email', order: 'asc' },
+      ];
+      expect(el._sortIndex(cols, 'lastName')).to.equal('1');
+    });
+
+    test('returns "2" for second field in multi-column sort', () => {
+      const cols = [
+        { field: 'lastName', order: 'asc' },
+        { field: 'email', order: 'asc' },
+      ];
+      expect(el._sortIndex(cols, 'email')).to.equal('2');
+    });
+
+    test('returns empty string for field not in multi-column sort', () => {
+      const cols = [
+        { field: 'lastName', order: 'asc' },
+        { field: 'email', order: 'asc' },
+      ];
+      expect(el._sortIndex(cols, 'username')).to.equal('');
+    });
+
+    test('returns empty string for empty array', () => {
+      expect(el._sortIndex([], 'lastName')).to.equal('');
+    });
+  });
+
+  suite('_ariaSort', () => {
+    test('returns ascending for asc column', () => {
+      expect(el._ariaSort([{ field: 'lastName', order: 'asc' }], 'lastName')).to.equal('ascending');
+    });
+
+    test('returns descending for desc column', () => {
+      expect(el._ariaSort([{ field: 'lastName', order: 'desc' }], 'lastName')).to.equal('descending');
+    });
+
+    test('returns none when field is not present', () => {
+      expect(el._ariaSort([], 'lastName')).to.equal('none');
+    });
+  });
+
+  suite('_sortMemberUsers', () => {
+    test('adds column, resets users page to 1, and refetches', () => {
+      el.group = {};
+      el.usersCurrentPage = 4;
+      sinon.spy(el, '_fetchUsers');
+      el._sortMemberUsers({ currentTarget: { dataset: { field: 'lastName' } } });
+      expect(el._memberUserSortColumns).to.deep.equal([{ field: 'lastName', order: 'asc' }]);
+      expect(el.usersCurrentPage).to.equal(1);
+      expect(el._fetchUsers).to.have.been.calledOnce;
+      el._fetchUsers.restore();
+    });
+
+    test('cycles sort direction on repeated clicks', () => {
+      el.group = {};
+      sinon.stub(el, '_fetchUsers');
+      el._sortMemberUsers({ currentTarget: { dataset: { field: 'email' } } });
+      el._sortMemberUsers({ currentTarget: { dataset: { field: 'email' } } });
+      expect(el._memberUserSortColumns).to.deep.equal([{ field: 'email', order: 'desc' }]);
+      el._fetchUsers.restore();
+    });
+
+    test('removes column on third click', () => {
+      el.group = {};
+      sinon.stub(el, '_fetchUsers');
+      el._sortMemberUsers({ currentTarget: { dataset: { field: 'username' } } });
+      el._sortMemberUsers({ currentTarget: { dataset: { field: 'username' } } });
+      el._sortMemberUsers({ currentTarget: { dataset: { field: 'username' } } });
+      expect(el._memberUserSortColumns).to.deep.equal([]);
+      el._fetchUsers.restore();
+    });
+  });
+
+  suite('_sortMemberGroups', () => {
+    test('adds column, resets groups page to 1, and refetches', () => {
+      el.group = {};
+      el.groupsCurrentPage = 2;
+      sinon.spy(el, '_fetchGroups');
+      el._sortMemberGroups({ currentTarget: { dataset: { field: 'grouplabel' } } });
+      expect(el._memberGroupSortColumns).to.deep.equal([{ field: 'grouplabel', order: 'asc' }]);
+      expect(el.groupsCurrentPage).to.equal(1);
+      expect(el._fetchGroups).to.have.been.calledOnce;
+      el._fetchGroups.restore();
+    });
+
+    test('cycles sort direction on repeated clicks', () => {
+      el.group = {};
+      sinon.stub(el, '_fetchGroups');
+      el._sortMemberGroups({ currentTarget: { dataset: { field: 'groupname' } } });
+      el._sortMemberGroups({ currentTarget: { dataset: { field: 'groupname' } } });
+      expect(el._memberGroupSortColumns).to.deep.equal([{ field: 'groupname', order: 'desc' }]);
+      el._fetchGroups.restore();
+    });
+
+    test('removes column on third click', () => {
+      el.group = {};
+      sinon.stub(el, '_fetchGroups');
+      el._sortMemberGroups({ currentTarget: { dataset: { field: 'grouplabel' } } });
+      el._sortMemberGroups({ currentTarget: { dataset: { field: 'grouplabel' } } });
+      el._sortMemberGroups({ currentTarget: { dataset: { field: 'grouplabel' } } });
+      expect(el._memberGroupSortColumns).to.deep.equal([]);
+      el._fetchGroups.restore();
+    });
+  });
+
+  suite('_fetchUsers with sort', () => {
+    test('includes sortBy and sortOrder when member user sort columns are set', () => {
+      el.group = {};
+      el.usersFilter = '';
+      el.usersCurrentPage = 1;
+      el._memberUserSortColumns = [
+        { field: 'lastName', order: 'asc' },
+        { field: 'email', order: 'desc' },
+      ];
+      el._fetchUsers();
+      expect(el.$.users.params.sortBy).to.equal('lastName,email');
+      expect(el.$.users.params.sortOrder).to.equal('asc,desc');
+    });
+
+    test('omits sortBy and sortOrder when no sort columns', () => {
+      el.group = {};
+      el._memberUserSortColumns = [];
+      el._fetchUsers();
+      expect(el.$.users.params.sortBy).to.be.undefined;
+      expect(el.$.users.params.sortOrder).to.be.undefined;
+    });
+
+    test('applies single-column sort correctly', () => {
+      el.group = {};
+      el._memberUserSortColumns = [{ field: 'username', order: 'asc' }];
+      el._fetchUsers();
+      expect(el.$.users.params.sortBy).to.equal('username');
+      expect(el.$.users.params.sortOrder).to.equal('asc');
+    });
+  });
+
+  suite('_fetchGroups with sort', () => {
+    test('includes sortBy and sortOrder when member group sort columns are set', () => {
+      el.group = {};
+      el.groupsFilter = '';
+      el.groupsCurrentPage = 1;
+      el._memberGroupSortColumns = [
+        { field: 'grouplabel', order: 'desc' },
+        { field: 'groupname', order: 'asc' },
+      ];
+      el._fetchGroups();
+      expect(el.$.groups.params.sortBy).to.equal('grouplabel,groupname');
+      expect(el.$.groups.params.sortOrder).to.equal('desc,asc');
+    });
+
+    test('omits sortBy and sortOrder when no sort columns', () => {
+      el.group = {};
+      el._memberGroupSortColumns = [];
+      el._fetchGroups();
+      expect(el.$.groups.params.sortBy).to.be.undefined;
+      expect(el.$.groups.params.sortOrder).to.be.undefined;
+    });
+
+    test('applies single-column sort correctly', () => {
+      el.group = {};
+      el._memberGroupSortColumns = [{ field: 'grouplabel', order: 'desc' }];
+      el._fetchGroups();
+      expect(el.$.groups.params.sortBy).to.equal('grouplabel');
+      expect(el.$.groups.params.sortOrder).to.equal('desc');
+    });
+  });
 });
