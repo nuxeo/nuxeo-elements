@@ -15,6 +15,9 @@ on:
       NPM_PACKAGES_TOKEN:
         description: 'NPM_PACKAGES_TOKEN'
         required: true
+      GIT_ADMIN_TOKEN:
+        description: 'GIT_ADMIN_TOKEN'
+        required: false
 
 permissions:
   contents: write
@@ -54,6 +57,6 @@ jobs:
       - name: Deploy
         if: ${{ env.BRANCH_NAME == 'lts-2025' }}
         env:
-          GH_TOKEN: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: nuxeo-webui-jx-bot:${{ secrets.GIT_ADMIN_TOKEN }}
         working-directory: storybook
         run: npm run deploy -- --ci --existing-output-dir=dist
