@@ -20,6 +20,8 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/editor-icons.js';
+import '../nuxeo-data-table/data-table-icons.js';
+import '../nuxeo-data-table/data-table-column-sort.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-resource.js';
 import '@polymer/paper-button/paper-button.js';
@@ -108,6 +110,21 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           .preserve-white-space {
             white-space: pre;
           }
+
+          .sortable {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            user-select: none;
+          }
+
+          .sortable:hover {
+            color: var(--nuxeo-primary-color, #0066ff);
+          }
+
+          .sortable[active='true'] nuxeo-data-table-column-sort {
+            --default-primary-color: var(--nuxeo-primary-color, #0066ff);
+          }
         </style>
 
         <nuxeo-resource id="userSearch" auto path="/user/search" response="{{users}}"></nuxeo-resource>
@@ -137,9 +154,33 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             <nuxeo-card name="groups" icon="nuxeo:group" heading="[[i18n('userGroupSearch.groups')]]">
               <div class="table">
                 <div class="table-header">
-                  <div class="flex-4">[[i18n('userGroupSearch.name')]]</div>
-                  <div class="flex-2">[[i18n('userGroupSearch.identifier')]]</div>
-                  <div class="flex-4">[[i18n('userGroupSearch.contains')]]</div>
+                  <div
+                    class="flex-4 sortable"
+                    active$="[[_isSortActive(_groupSortOrder, 'grouplabel')]]"
+                    role="columnheader"
+                    aria-sort$="[[_ariaSort(_groupSortOrder, 'grouplabel')]]"
+                  >
+                    [[i18n('userGroupSearch.name')]]
+                    <nuxeo-data-table-column-sort
+                      path="grouplabel"
+                      sort-order="[[_groupSortOrder]]"
+                      on-sort-direction-changed="_onGroupSortChanged"
+                    ></nuxeo-data-table-column-sort>
+                  </div>
+                  <div
+                    class="flex-2 sortable"
+                    active$="[[_isSortActive(_groupSortOrder, 'groupname')]]"
+                    role="columnheader"
+                    aria-sort$="[[_ariaSort(_groupSortOrder, 'groupname')]]"
+                  >
+                    [[i18n('userGroupSearch.identifier')]]
+                    <nuxeo-data-table-column-sort
+                      path="groupname"
+                      sort-order="[[_groupSortOrder]]"
+                      on-sort-direction-changed="_onGroupSortChanged"
+                    ></nuxeo-data-table-column-sort>
+                  </div>
+                  <div class="flex-4" role="columnheader">[[i18n('userGroupSearch.contains')]]</div>
                 </div>
                 <div class="table-rows">
                   <dom-repeat items="[[groups.entries]]" as="item">
@@ -173,9 +214,45 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             <nuxeo-card name="users" icon="nuxeo:user" heading="[[i18n('userGroupSearch.users.heading')]]">
               <div class="table">
                 <div class="table-header">
-                  <div class="flex-4">[[i18n('userGroupSearch.name')]]</div>
-                  <div class="flex-2">[[i18n('userGroupSearch.identifier')]]</div>
-                  <div class="flex-4">[[i18n('userGroupSearch.email')]]</div>
+                  <div
+                    class="flex-4 sortable"
+                    active$="[[_isSortActive(_userSortOrder, 'lastName')]]"
+                    role="columnheader"
+                    aria-sort$="[[_ariaSort(_userSortOrder, 'lastName')]]"
+                  >
+                    [[i18n('userGroupSearch.name')]]
+                    <nuxeo-data-table-column-sort
+                      path="lastName"
+                      sort-order="[[_userSortOrder]]"
+                      on-sort-direction-changed="_onUserSortChanged"
+                    ></nuxeo-data-table-column-sort>
+                  </div>
+                  <div
+                    class="flex-2 sortable"
+                    active$="[[_isSortActive(_userSortOrder, 'username')]]"
+                    role="columnheader"
+                    aria-sort$="[[_ariaSort(_userSortOrder, 'username')]]"
+                  >
+                    [[i18n('userGroupSearch.identifier')]]
+                    <nuxeo-data-table-column-sort
+                      path="username"
+                      sort-order="[[_userSortOrder]]"
+                      on-sort-direction-changed="_onUserSortChanged"
+                    ></nuxeo-data-table-column-sort>
+                  </div>
+                  <div
+                    class="flex-4 sortable"
+                    active$="[[_isSortActive(_userSortOrder, 'email')]]"
+                    role="columnheader"
+                    aria-sort$="[[_ariaSort(_userSortOrder, 'email')]]"
+                  >
+                    [[i18n('userGroupSearch.email')]]
+                    <nuxeo-data-table-column-sort
+                      path="email"
+                      sort-order="[[_userSortOrder]]"
+                      on-sort-direction-changed="_onUserSortChanged"
+                    ></nuxeo-data-table-column-sort>
+                  </div>
                 </div>
                 <div class="table-rows">
                   <dom-repeat items="[[users.entries]]" as="item">
@@ -229,6 +306,18 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         groupsCurrentPage: Number,
 
         usersCurrentPage: Number,
+
+        // Array of { path, direction } for multi-column sort on groups (matches nuxeo-data-table-column-sort contract)
+        _groupSortOrder: {
+          type: Array,
+          value: () => [],
+        },
+
+        // Array of { path, direction } for multi-column sort on users
+        _userSortOrder: {
+          type: Array,
+          value: () => [],
+        },
       };
     }
 
@@ -251,6 +340,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         q: this.searchTerm,
         currentPageIndex: this.groupsCurrentPage - 1,
       };
+      if (this._groupSortOrder.length > 0) {
+        params.sortBy = this._groupSortOrder.map((c) => c.path).join(',');
+        params.sortOrder = this._groupSortOrder.map((c) => c.direction).join(',');
+      }
       this.$.groupSearch.params = params;
     }
 
@@ -259,7 +352,58 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         q: this.searchTerm,
         currentPageIndex: this.usersCurrentPage - 1,
       };
+      if (this._userSortOrder.length > 0) {
+        params.sortBy = this._userSortOrder.map((c) => c.path).join(',');
+        params.sortOrder = this._userSortOrder.map((c) => c.direction).join(',');
+      }
       this.$.userSearch.params = params;
+    }
+
+    _onGroupSortChanged(e) {
+      this._groupSortOrder = this._applySortDirectionChanged(this._groupSortOrder, e.detail.path, e.detail.direction);
+      if (this.groupsCurrentPage === 1) {
+        this._searchGroups();
+      } else {
+        this.groupsCurrentPage = 1;
+      }
+    }
+
+    _onUserSortChanged(e) {
+      this._userSortOrder = this._applySortDirectionChanged(this._userSortOrder, e.detail.path, e.detail.direction);
+      if (this.usersCurrentPage === 1) {
+        this._searchUsers();
+      } else {
+        this.usersCurrentPage = 1;
+      }
+    }
+
+    // Mirrors the logic of _sortDirectionChanged in PageProviderDisplayBehavior, adapted for REST params.
+    // Accepts the element's { path, direction } schema where direction=null means "remove this column".
+    _applySortDirectionChanged(sortOrder, path, direction) {
+      const result = sortOrder.slice();
+      const idx = result.findIndex((c) => c.path === path);
+      if (idx >= 0) {
+        if (direction) {
+          result[idx] = { path, direction };
+        } else {
+          result.splice(idx, 1);
+        }
+      } else if (direction) {
+        result.push({ path, direction });
+      }
+      return result;
+    }
+
+    _isSortActive(sortOrder, path) {
+      return sortOrder && sortOrder.some((c) => c.path === path);
+    }
+
+    _ariaSort(sortOrder, path) {
+      const col = sortOrder && sortOrder.find((c) => c.path === path);
+      if (!col) {
+        return 'none';
+      }
+      return col.direction === 'asc' ? 'ascending' : 'descending';
     }
 
     _manageUser(e) {

@@ -30,6 +30,8 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { FiltersBehavior } from '../nuxeo-filters-behavior.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-pagination-controls.js';
+import '../nuxeo-data-table/data-table-icons.js';
+import '../nuxeo-data-table/data-table-column-sort.js';
 import '../widgets/nuxeo-card.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-group-tag.js';
@@ -225,6 +227,21 @@ import '../nuxeo-button-styles.js';
           .preserve-white-space {
             white-space: pre;
           }
+
+          .sortable {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            user-select: none;
+          }
+
+          .sortable:hover {
+            color: var(--nuxeo-primary-color, #0066ff);
+          }
+
+          .sortable[active='true'] nuxeo-data-table-column-sort {
+            --default-primary-color: var(--nuxeo-primary-color, #0066ff);
+          }
         </style>
 
         <nuxeo-connection user="{{_currentUser}}"></nuxeo-connection>
@@ -378,9 +395,45 @@ import '../nuxeo-button-styles.js';
             aria-rowcount="[[memberUsers.entries.length]]"
           >
             <div class="table-header" role="row">
-              <div class="flex-4" role="columnheader">[[i18n('groupManagement.name')]]</div>
-              <div class="flex-4" role="columnheader">[[i18n('groupManagement.identifier')]]</div>
-              <div class="flex-4" role="columnheader">[[i18n('label.directories.nature.email')]]</div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isSortActive(_memberUserSortOrder, 'lastName')]]"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_memberUserSortOrder, 'lastName')]]"
+              >
+                [[i18n('groupManagement.name')]]
+                <nuxeo-data-table-column-sort
+                  path="lastName"
+                  sort-order="[[_memberUserSortOrder]]"
+                  on-sort-direction-changed="_onMemberUserSortChanged"
+                ></nuxeo-data-table-column-sort>
+              </div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isSortActive(_memberUserSortOrder, 'username')]]"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_memberUserSortOrder, 'username')]]"
+              >
+                [[i18n('groupManagement.identifier')]]
+                <nuxeo-data-table-column-sort
+                  path="username"
+                  sort-order="[[_memberUserSortOrder]]"
+                  on-sort-direction-changed="_onMemberUserSortChanged"
+                ></nuxeo-data-table-column-sort>
+              </div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isSortActive(_memberUserSortOrder, 'email')]]"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_memberUserSortOrder, 'email')]]"
+              >
+                [[i18n('label.directories.nature.email')]]
+                <nuxeo-data-table-column-sort
+                  path="email"
+                  sort-order="[[_memberUserSortOrder]]"
+                  on-sort-direction-changed="_onMemberUserSortChanged"
+                ></nuxeo-data-table-column-sort>
+              </div>
               <div class="table-actions" role="columnheader"></div>
             </div>
             <div class="table-rows" role="rowgroup">
@@ -456,8 +509,32 @@ import '../nuxeo-button-styles.js';
             aria-rowcount="[[memberGroups.entries.length]]"
           >
             <div class="table-header" role="row">
-              <div class="flex-4" role="columnheader">[[i18n('groupManagement.name')]]</div>
-              <div class="flex-4" role="columnheader">[[i18n('groupManagement.identifier')]]</div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isSortActive(_memberGroupSortOrder, 'grouplabel')]]"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_memberGroupSortOrder, 'grouplabel')]]"
+              >
+                [[i18n('groupManagement.name')]]
+                <nuxeo-data-table-column-sort
+                  path="grouplabel"
+                  sort-order="[[_memberGroupSortOrder]]"
+                  on-sort-direction-changed="_onMemberGroupSortChanged"
+                ></nuxeo-data-table-column-sort>
+              </div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isSortActive(_memberGroupSortOrder, 'groupname')]]"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_memberGroupSortOrder, 'groupname')]]"
+              >
+                [[i18n('groupManagement.identifier')]]
+                <nuxeo-data-table-column-sort
+                  path="groupname"
+                  sort-order="[[_memberGroupSortOrder]]"
+                  on-sort-direction-changed="_onMemberGroupSortChanged"
+                ></nuxeo-data-table-column-sort>
+              </div>
               <div class="table-actions" role="columnheader"></div>
             </div>
             <div class="table-rows" role="rowgroup">
@@ -585,6 +662,18 @@ import '../nuxeo-button-styles.js';
           type: String,
           computed: '_userDisplayName(_removedMember)',
         },
+
+        // Array of { path, direction } for multi-column sort on member users (nuxeo-data-table-column-sort contract)
+        _memberUserSortOrder: {
+          type: Array,
+          value: () => [],
+        },
+
+        // Array of { path, direction } for multi-column sort on member groups
+        _memberGroupSortOrder: {
+          type: Array,
+          value: () => [],
+        },
       };
     }
 
@@ -669,6 +758,10 @@ import '../nuxeo-button-styles.js';
           q: this.groupsFilter,
           currentPageIndex: this.groupsCurrentPage - 1,
         };
+        if (this._memberGroupSortOrder.length > 0) {
+          params.sortBy = this._memberGroupSortOrder.map((c) => c.path).join(',');
+          params.sortOrder = this._memberGroupSortOrder.map((c) => c.direction).join(',');
+        }
         this.$.groups.params = params;
       }
     }
@@ -685,6 +778,10 @@ import '../nuxeo-button-styles.js';
           q: this.usersFilter,
           currentPageIndex: this.usersCurrentPage - 1,
         };
+        if (this._memberUserSortOrder.length > 0) {
+          params.sortBy = this._memberUserSortOrder.map((c) => c.path).join(',');
+          params.sortOrder = this._memberUserSortOrder.map((c) => c.direction).join(',');
+        }
         this.$.users.params = params;
       }
     }
@@ -882,6 +979,60 @@ import '../nuxeo-button-styles.js';
       if (this.group) {
         return `group/${this.group.id || this.group.groupname || this.groupname}/@groups`;
       }
+    }
+
+    _onMemberUserSortChanged(e) {
+      this._memberUserSortOrder = this._applySortDirectionChanged(
+        this._memberUserSortOrder,
+        e.detail.path,
+        e.detail.direction,
+      );
+      if (this.usersCurrentPage === 1) {
+        this._fetchUsers();
+      } else {
+        this.usersCurrentPage = 1;
+      }
+    }
+
+    _onMemberGroupSortChanged(e) {
+      this._memberGroupSortOrder = this._applySortDirectionChanged(
+        this._memberGroupSortOrder,
+        e.detail.path,
+        e.detail.direction,
+      );
+      if (this.groupsCurrentPage === 1) {
+        this._fetchGroups();
+      } else {
+        this.groupsCurrentPage = 1;
+      }
+    }
+
+    // Mirrors _sortDirectionChanged in PageProviderDisplayBehavior; direction=null means remove the column.
+    _applySortDirectionChanged(sortOrder, path, direction) {
+      const result = sortOrder.slice();
+      const idx = result.findIndex((c) => c.path === path);
+      if (idx >= 0) {
+        if (direction) {
+          result[idx] = { path, direction };
+        } else {
+          result.splice(idx, 1);
+        }
+      } else if (direction) {
+        result.push({ path, direction });
+      }
+      return result;
+    }
+
+    _isSortActive(sortOrder, path) {
+      return sortOrder && sortOrder.some((c) => c.path === path);
+    }
+
+    _ariaSort(sortOrder, path) {
+      const col = sortOrder && sortOrder.find((c) => c.path === path);
+      if (!col) {
+        return 'none';
+      }
+      return col.direction === 'asc' ? 'ascending' : 'descending';
     }
   }
 
