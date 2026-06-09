@@ -80,6 +80,42 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
       return import.meta;
     }
 
+    connectedCallback() {
+      super.connectedCallback();
+      this._iframeLoadHandler = () => {
+        try {
+          const iframeWindow = this.shadowRoot.querySelector('iframe').contentWindow;
+          if (iframeWindow) {
+            iframeWindow.addEventListener(
+              'keydown',
+              (e) => {
+                if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P' || e.key === 's' || e.key === 'S')) {
+                  e.preventDefault();
+                  e.stopImmediatePropagation();
+                }
+              },
+              true,
+            );
+          }
+        } catch (_e) {
+          // cross-origin iframe — cannot inject keyboard blocker
+        }
+      };
+      // Shadow DOM is ready synchronously after connectedCallback in custom elements v1
+      const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
+      if (iframe) {
+        iframe.addEventListener('load', this._iframeLoadHandler);
+      }
+    }
+
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
+      if (iframe && this._iframeLoadHandler) {
+        iframe.removeEventListener('load', this._iframeLoadHandler);
+      }
+    }
+
     _path(file) {
       // get an absolute href
       const el = document.createElement('a');
