@@ -30,6 +30,7 @@ import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import '../nuxeo-pagination-controls.js';
+import '../nuxeo-data-table/data-table-icons.js';
 import '../nuxeo-data-table/data-table-column-sort.js';
 import '../widgets/nuxeo-card.js';
 import '../widgets/nuxeo-group-tag.js';
