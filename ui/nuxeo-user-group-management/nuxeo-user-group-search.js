@@ -361,14 +361,20 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _onGroupSortChanged(e) {
       this._groupSortOrder = this._applySortDirectionChanged(this._groupSortOrder, e.detail.path, e.detail.direction);
-      this.groupsCurrentPage = 1;
-      this._searchGroups();
+      if (this.groupsCurrentPage === 1) {
+        this._searchGroups();
+      } else {
+        this.groupsCurrentPage = 1;
+      }
     }
 
     _onUserSortChanged(e) {
       this._userSortOrder = this._applySortDirectionChanged(this._userSortOrder, e.detail.path, e.detail.direction);
-      this.usersCurrentPage = 1;
-      this._searchUsers();
+      if (this.usersCurrentPage === 1) {
+        this._searchUsers();
+      } else {
+        this.usersCurrentPage = 1;
+      }
     }
 
     // Mirrors the logic of _sortDirectionChanged in PageProviderDisplayBehavior, adapted for REST params.

@@ -987,8 +987,11 @@ import '../nuxeo-button-styles.js';
         e.detail.path,
         e.detail.direction,
       );
-      this.usersCurrentPage = 1;
-      this._fetchUsers();
+      if (this.usersCurrentPage === 1) {
+        this._fetchUsers();
+      } else {
+        this.usersCurrentPage = 1;
+      }
     }
 
     _onMemberGroupSortChanged(e) {
@@ -997,8 +1000,11 @@ import '../nuxeo-button-styles.js';
         e.detail.path,
         e.detail.direction,
       );
-      this.groupsCurrentPage = 1;
-      this._fetchGroups();
+      if (this.groupsCurrentPage === 1) {
+        this._fetchGroups();
+      } else {
+        this.groupsCurrentPage = 1;
+      }
     }
 
     // Mirrors _sortDirectionChanged in PageProviderDisplayBehavior; direction=null means remove the column.
