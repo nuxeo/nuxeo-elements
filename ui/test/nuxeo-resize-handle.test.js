@@ -299,6 +299,98 @@ suite('nuxeo-resize-handle extras', () => {
       el.dispatchEvent(new MouseEvent('mousedown', { clientX: 10, bubbles: true, composed: true }));
       expect(dragStart).to.not.have.been.called;
     });
+
+    test('mouse drag end moves focus to the handle so arrow keys keep working after a click', async () => {
+      const externalButton = document.createElement('button');
+      externalButton.textContent = 'outside';
+      document.body.appendChild(externalButton);
+      try {
+        externalButton.focus();
+        expect(document.activeElement).to.equal(externalButton);
+
+        el.dispatchEvent(new MouseEvent('mousedown', { clientX: 50, bubbles: true, composed: true }));
+        expect(document.activeElement).to.equal(externalButton);
+        globalThis.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+        await flush();
+
+        expect(document.activeElement).to.equal(el);
+
+        const step = sinon.spy();
+        el.addEventListener('resize-step', step);
+        el.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, composed: true }));
+        expect(step).to.have.been.calledOnce;
+        expect(step.firstCall.args[0].detail.delta).to.equal(RESIZE_HANDLE_KEY_STEP_PX);
+      } finally {
+        externalButton.remove();
+      }
+    });
+
+    test('drag end does not refocus the handle when it already has focus', () => {
+      el.focus();
+      expect(document.activeElement).to.equal(el);
+      const focusSpy = sinon.spy(el, 'focus');
+      try {
+        el.dispatchEvent(new MouseEvent('mousedown', { clientX: 50, bubbles: true, composed: true }));
+        globalThis.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+        expect(focusSpy).to.not.have.been.called;
+      } finally {
+        focusSpy.restore();
+      }
+    });
+
+    test('drag end skips focus when the handle is disconnected during drag', () => {
+      const focusSpy = sinon.spy(el, 'focus');
+      try {
+        el.dispatchEvent(new MouseEvent('mousedown', { clientX: 50, bubbles: true, composed: true }));
+        el.remove();
+        expect(focusSpy).to.not.have.been.called;
+      } finally {
+        focusSpy.restore();
+      }
+    });
+
+    test('drag end focus does not re-show the tooltip', async () => {
+      const externalButton = document.createElement('button');
+      document.body.appendChild(externalButton);
+      const forwardSpy = sinon.spy(el, '_forwardTooltipAnchorEvent');
+      try {
+        externalButton.focus();
+        expect(document.activeElement).to.equal(externalButton);
+
+        el.dispatchEvent(new MouseEvent('mousedown', { clientX: 50, bubbles: true, composed: true }));
+        globalThis.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+        await flush();
+
+        expect(document.activeElement).to.equal(el);
+        expect(forwardSpy).to.not.have.been.calledWith('focus');
+      } finally {
+        forwardSpy.restore();
+        externalButton.remove();
+      }
+    });
+
+    test('keyboard focus after a drag still shows the tooltip', async () => {
+      const externalButton = document.createElement('button');
+      document.body.appendChild(externalButton);
+      try {
+        externalButton.focus();
+        el.dispatchEvent(new MouseEvent('mousedown', { clientX: 50, bubbles: true, composed: true }));
+        globalThis.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+        await flush();
+
+        externalButton.focus();
+        const forwardSpy = sinon.spy(el, '_forwardTooltipAnchorEvent');
+        try {
+          el.dispatchEvent(new FocusEvent('focus', { bubbles: true, composed: true }));
+          await flush();
+          expect(forwardSpy).to.have.been.calledWith('focus');
+        } finally {
+          forwardSpy.restore();
+        }
+      } finally {
+        externalButton.remove();
+      }
+    });
   });
 
   test('double-click fires resize-reset', () => {
