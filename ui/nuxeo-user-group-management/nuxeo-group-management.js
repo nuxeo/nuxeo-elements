@@ -29,6 +29,7 @@ import '@polymer/polymer/lib/elements/dom-if.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { FiltersBehavior } from '../nuxeo-filters-behavior.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { SortBehavior } from '../nuxeo-sort-behavior.js';
 import '../nuxeo-pagination-controls.js';
 import '../nuxeo-data-table/data-table-icons.js';
 import '../nuxeo-data-table/data-table-column-sort.js';
@@ -42,6 +43,7 @@ import '../widgets/nuxeo-selectivity.js';
 import '../widgets/nuxeo-user-tag.js';
 import './nuxeo-user-group-permissions-table.js';
 import '../nuxeo-button-styles.js';
+import '../nuxeo-sort-styles.js';
 
 {
   /**
@@ -54,12 +56,13 @@ import '../nuxeo-button-styles.js';
    *
    * @appliesMixin Nuxeo.I18nBehavior
    * @appliesMixin Nuxeo.FiltersBehavior
+   * @appliesMixin Nuxeo.SortBehavior
    * @memberof Nuxeo
    */
-  class GroupManagement extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
+  class GroupManagement extends mixinBehaviors([I18nBehavior, FiltersBehavior, SortBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="iron-flex iron-flex-alignment iron-flex-factors nuxeo-button-styles">
+        <style include="iron-flex iron-flex-alignment iron-flex-factors nuxeo-button-styles nuxeo-sort-styles">
           :host {
             display: block;
           }
@@ -226,21 +229,6 @@ import '../nuxeo-button-styles.js';
 
           .preserve-white-space {
             white-space: pre;
-          }
-
-          .sortable {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            user-select: none;
-          }
-
-          .sortable:hover {
-            color: var(--nuxeo-primary-color, #0066ff);
-          }
-
-          .sortable[active='true'] nuxeo-data-table-column-sort {
-            --default-primary-color: var(--nuxeo-primary-color, #0066ff);
           }
         </style>
 
@@ -1005,34 +993,6 @@ import '../nuxeo-button-styles.js';
       } else {
         this.groupsCurrentPage = 1;
       }
-    }
-
-    // Mirrors _sortDirectionChanged in PageProviderDisplayBehavior; direction=null means remove the column.
-    _applySortDirectionChanged(sortOrder, path, direction) {
-      const result = sortOrder.slice();
-      const idx = result.findIndex((c) => c.path === path);
-      if (idx >= 0) {
-        if (direction) {
-          result[idx] = { path, direction };
-        } else {
-          result.splice(idx, 1);
-        }
-      } else if (direction) {
-        result.push({ path, direction });
-      }
-      return result;
-    }
-
-    _isSortActive(sortOrder, path) {
-      return sortOrder && sortOrder.some((c) => c.path === path);
-    }
-
-    _ariaSort(sortOrder, path) {
-      const col = sortOrder && sortOrder.find((c) => c.path === path);
-      if (!col) {
-        return 'none';
-      }
-      return col.direction === 'asc' ? 'ascending' : 'descending';
     }
   }
 

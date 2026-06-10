@@ -37,6 +37,8 @@ import '../widgets/nuxeo-group-tag.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-user-tag.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { SortBehavior } from '../nuxeo-sort-behavior.js';
+import '../nuxeo-sort-styles.js';
 
 {
   /**
@@ -47,13 +49,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
    *     <nuxeo-user-group-latest></nuxeo-user-group-latest>
    *
    * @appliesMixin Nuxeo.I18nBehavior
+   * @appliesMixin Nuxeo.SortBehavior
    * @memberof Nuxeo
    * @demo demo/nuxeo-user-group-latest/index.html
    */
-  class UserGroupLatest extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
+  class UserGroupLatest extends mixinBehaviors([I18nBehavior, SortBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="iron-flex-factors">
+        <style include="iron-flex-factors nuxeo-sort-styles">
           :host {
             display: block;
             @apply --nuxeo-user-group-latest-layout;
@@ -130,21 +133,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           .preserve-white-space {
             white-space: pre;
-          }
-
-          .sortable {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            user-select: none;
-          }
-
-          .sortable:hover {
-            color: var(--nuxeo-primary-color, #0066ff);
-          }
-
-          .sortable[active='true'] nuxeo-data-table-column-sort {
-            --default-primary-color: var(--nuxeo-primary-color, #0066ff);
           }
         </style>
 
@@ -420,34 +408,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         return this._getEmail(item) || '';
       }
       return '';
-    }
-
-    // Mirrors _sortDirectionChanged in PageProviderDisplayBehavior; direction=null means remove the column.
-    _applySortDirectionChanged(sortOrder, path, direction) {
-      const result = sortOrder.slice();
-      const idx = result.findIndex((c) => c.path === path);
-      if (idx >= 0) {
-        if (direction) {
-          result[idx] = { path, direction };
-        } else {
-          result.splice(idx, 1);
-        }
-      } else if (direction) {
-        result.push({ path, direction });
-      }
-      return result;
-    }
-
-    _isSortActive(sortOrder, path) {
-      return sortOrder && sortOrder.some((c) => c.path === path);
-    }
-
-    _ariaSort(sortOrder, path) {
-      const col = sortOrder && sortOrder.find((c) => c.path === path);
-      if (!col) {
-        return 'none';
-      }
-      return col.direction === 'asc' ? 'ascending' : 'descending';
     }
   }
 
