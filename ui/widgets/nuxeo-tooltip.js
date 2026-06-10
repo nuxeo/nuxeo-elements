@@ -169,7 +169,11 @@ ensureClonedContentStyles();
         this._tooltip.position = this.position;
         this._tooltip.fitToVisibleBounds = true;
         microTask.run(() => {
-          this._tooltip.show();
+          // hide() may have nulled this._tooltip between scheduling and execution
+          // (e.g., focus + immediate disconnect during a pointer interaction).
+          if (this._tooltip && typeof this._tooltip.show === 'function') {
+            this._tooltip.show();
+          }
         });
       }
     }

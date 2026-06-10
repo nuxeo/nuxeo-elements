@@ -184,11 +184,11 @@ export function resizeDeltaFromPointer(startX, clientX, { edge = 'end', rtl = fa
             left: auto;
           }
 
+          /* Light up only the handle the user is interacting with.
+             :host([active]) is set in _onPointerDown / cleared in _finishDrag.*/
           :host(:hover)::after,
           :host(:focus-visible)::after,
-          :host([active])::after,
-          :host-context([drawer-resizing]):host::after,
-          :host-context([side-resizing]):host::after {
+          :host([active])::after {
             background-color: var(--nuxeo-resize-handle-color, #989898);
             opacity: 1;
           }
@@ -387,6 +387,13 @@ export function resizeDeltaFromPointer(startX, clientX, { edge = 'end', rtl = fa
       if (!this._isInteractive()) {
         return;
       }
+      // Skip the focus tooltip path when focus was set programmatically by
+      // _finishDrag (so the tooltip does not flash after every mouse drag).
+      // Keyboard focus from Tab still shows the tooltip via the same path.
+      if (eventType === 'focus' && this._suppressNextFocusTooltip) {
+        this._suppressNextFocusTooltip = false;
+        return;
+      }
       this._syncTooltipAnchor(e);
       const type = eventType || 'mouseenter';
       this._forwardTooltipAnchorEvent(type);
@@ -477,6 +484,19 @@ export function resizeDeltaFromPointer(startX, clientX, { edge = 'end', rtl = fa
       this.active = false;
       controller.abort();
       if (wasDragging) {
+        // preventDefault() on mousedown/touchstart suppresses the browser's
+        // default focus transfer; without an explicit focus on pointer release
+        // the handle would not receive subsequent keydown events after a
+        // mouse interaction, breaking arrow-key width adjustment after a click.
+        // We mark this focus as pointer-driven so the tooltip path skips it.
+        if (this.isConnected && document.activeElement !== this) {
+          this._suppressNextFocusTooltip = true;
+          try {
+            this.focus({ preventScroll: true });
+          } catch (_) {
+            this.focus();
+          }
+        }
         this._fire('resize-drag-end');
       }
     }
