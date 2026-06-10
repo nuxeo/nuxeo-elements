@@ -1211,6 +1211,13 @@ import '../nuxeo-button-styles.js';
         return item;
       }
 
+      if (this.columns && this.columns.length === 1 && typeof item === 'string' && item.trim() !== '') {
+        const num = Number(item.trim());
+        if (Number.isFinite(num)) {
+          return num;
+        }
+      }
+
       // No field hint: only coerce when numeric round-trip is stable.
       if (this._isStrictNumberString(item)) {
         return Number(item);

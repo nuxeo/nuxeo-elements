@@ -630,6 +630,41 @@ suite('iron-data-table extras', () => {
       expect(result).to.deep.equal({ code: '1234' });
       expect(result.code).to.be.a('string');
     });
+
+    test('single-column: coerces leading-zero numeric string to number', async () => {
+      const el = await newTable();
+      el.columns = [{}]; // single column
+      const result = el._normalizeItem('001234');
+
+      expect(result).to.equal(1234);
+      expect(result).to.be.a('number');
+    });
+
+    test('single-column: coerces plain numeric string to number', async () => {
+      const el = await newTable();
+      el.columns = [{}]; // single column
+      const result = el._normalizeItem('42');
+
+      expect(result).to.equal(42);
+      expect(result).to.be.a('number');
+    });
+
+    test('single-column: leaves non-numeric strings unchanged', async () => {
+      const el = await newTable();
+      el.columns = [{}]; // single column
+      const result = el._normalizeItem('abc');
+
+      expect(result).to.equal('abc');
+    });
+
+    test('multi-column: preserves leading-zero string without hint', async () => {
+      const el = await newTable();
+      el.columns = [{}, {}]; // two columns
+      const result = el._normalizeItem('001234');
+
+      expect(result).to.equal('001234');
+      expect(result).to.be.a('string');
+    });
   });
 
   // ------------------------------------------------------------------
