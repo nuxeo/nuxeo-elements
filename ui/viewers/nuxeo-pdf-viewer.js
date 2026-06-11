@@ -96,8 +96,10 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
           if (iframeWindow.parent && iframeWindow.parent !== iframeWindow) {
             try {
               iframeWindow.parent.print = () => {};
-            } catch (_err) {
-              // ignore — parent may be cross-origin in some embeds
+            } catch (err) {
+              // Intentionally swallowed: setting parent.print throws a SecurityError
+              // when the parent frame is cross-origin. There is nothing to act on.
+              void err;
             }
           }
           // Block Ctrl/Cmd+S (save) and act as a backup for Ctrl/Cmd+P.
@@ -112,8 +114,10 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
           if (iframeWindow.document) {
             iframeWindow.document.addEventListener('keydown', this._keydownBlocker, true);
           }
-        } catch (_e) {
-          // cross-origin iframe — cannot inject keyboard blocker
+        } catch (e) {
+          // Intentionally swallowed: accessing contentWindow properties throws a
+          // SecurityError for cross-origin iframes. There is nothing to act on.
+          void e;
         }
       };
       // Shadow DOM is ready synchronously after connectedCallback in custom elements v1
@@ -135,8 +139,10 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
           if (this._blockedIframeWindow.document) {
             this._blockedIframeWindow.document.removeEventListener('keydown', this._keydownBlocker, true);
           }
-        } catch (_e) {
-          // cross-origin iframe — removal may fail, nothing to do
+        } catch (e) {
+          // Intentionally swallowed: removeEventListener throws a SecurityError
+          // for cross-origin iframes. There is nothing to act on.
+          void e;
         }
         this._blockedIframeWindow = null;
         this._keydownBlocker = null;
