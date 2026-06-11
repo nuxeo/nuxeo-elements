@@ -115,19 +115,107 @@ suite('nuxeo-pdf-viewer', () => {
   });
 
   suite('disconnectedCallback', () => {
-    test('should remove the load event listener from the iframe on disconnect', async () => {
-      const element = await fixture(
+    let element;
+
+    setup(async () => {
+      element = await fixture(
         html`
           <nuxeo-pdf-viewer src="sample.pdf"></nuxeo-pdf-viewer>
         `,
       );
+    });
+
+    teardown(() => {
+      sinon.restore();
+    });
+
+    test('should remove the load event listener from the iframe on disconnect', () => {
       const iframe = element.shadowRoot.querySelector('iframe');
       const spy = sinon.spy(iframe, 'removeEventListener');
 
       element.disconnectedCallback();
 
       expect(spy).to.have.been.calledWith('load', element._iframeLoadHandler);
-      spy.restore();
+    });
+
+    test('should remove keydown blocker from _blockedIframeWindow on disconnect', () => {
+      const mockWin = {
+        print: () => {},
+        addEventListener: sinon.spy(),
+        removeEventListener: sinon.spy(),
+        document: { addEventListener: sinon.spy(), removeEventListener: sinon.spy() },
+        get parent() {
+          return this;
+        },
+      };
+      const mockIframe = { contentWindow: mockWin, addEventListener: sinon.spy(), removeEventListener: sinon.spy() };
+      sinon.stub(element.shadowRoot, 'querySelector').returns(mockIframe);
+      element._iframeLoadHandler();
+
+      const blocker = element._keydownBlocker;
+      element.disconnectedCallback();
+
+      expect(mockWin.removeEventListener).to.have.been.calledWith('keydown', blocker, true);
+      expect(mockWin.document.removeEventListener).to.have.been.calledWith('keydown', blocker, true);
+    });
+
+    test('should clear _blockedIframeWindow and _keydownBlocker after disconnect', () => {
+      const mockWin = {
+        print: () => {},
+        addEventListener: sinon.spy(),
+        removeEventListener: sinon.spy(),
+        document: { addEventListener: sinon.spy(), removeEventListener: sinon.spy() },
+        get parent() {
+          return this;
+        },
+      };
+      const mockIframe = { contentWindow: mockWin, addEventListener: sinon.spy(), removeEventListener: sinon.spy() };
+      sinon.stub(element.shadowRoot, 'querySelector').returns(mockIframe);
+      element._iframeLoadHandler();
+
+      element.disconnectedCallback();
+
+      expect(element._blockedIframeWindow).to.be.null;
+      expect(element._keydownBlocker).to.be.null;
+    });
+
+    test('should not throw on disconnect when keydown blocker was never installed', () => {
+      // No _iframeLoadHandler called — _blockedIframeWindow is undefined
+      expect(() => element.disconnectedCallback()).to.not.throw();
+    });
+
+    test('should not throw on disconnect when _blockedIframeWindow.document is null', () => {
+      const mockWin = {
+        print: () => {},
+        addEventListener: sinon.spy(),
+        removeEventListener: sinon.spy(),
+        document: null,
+        get parent() {
+          return this;
+        },
+      };
+      const mockIframe = { contentWindow: mockWin, addEventListener: sinon.spy(), removeEventListener: sinon.spy() };
+      sinon.stub(element.shadowRoot, 'querySelector').returns(mockIframe);
+      element._iframeLoadHandler();
+
+      expect(() => element.disconnectedCallback()).to.not.throw();
+    });
+
+    test('should not throw on disconnect when removing keydown listener throws (cross-origin)', () => {
+      const mockWin = {
+        print: () => {},
+        addEventListener: sinon.spy(),
+        removeEventListener: sinon.stub().throws(new DOMException('SecurityError', 'SecurityError')),
+        document: { addEventListener: sinon.spy(), removeEventListener: sinon.spy() },
+        get parent() {
+          return this;
+        },
+      };
+      const mockIframe = { contentWindow: mockWin, addEventListener: sinon.spy(), removeEventListener: sinon.spy() };
+      sinon.stub(element.shadowRoot, 'querySelector').returns(mockIframe);
+      element._iframeLoadHandler();
+
+      expect(() => element.disconnectedCallback()).to.not.throw();
     });
   });
 
@@ -192,7 +280,7 @@ suite('nuxeo-pdf-viewer', () => {
 
       element._iframeLoadHandler();
 
-      expect(win.addEventListener).to.have.been.calledWith('keydown', sinon.match.func, true);
+      expect(win.addEventListener).to.have.been.calledWith('keydown', element._keydownBlocker, true);
     });
 
     test('should install keydown blocker on iframeWindow.document', () => {
@@ -201,7 +289,16 @@ suite('nuxeo-pdf-viewer', () => {
 
       element._iframeLoadHandler();
 
-      expect(win.document.addEventListener).to.have.been.calledWith('keydown', sinon.match.func, true);
+      expect(win.document.addEventListener).to.have.been.calledWith('keydown', element._keydownBlocker, true);
+    });
+
+    test('should store _blockedIframeWindow reference after load', () => {
+      const win = createMockWindow();
+      sinon.stub(element.shadowRoot, 'querySelector').returns({ contentWindow: win });
+
+      element._iframeLoadHandler();
+
+      expect(element._blockedIframeWindow).to.equal(win);
     });
 
     test('should not throw when iframeWindow.document is null', () => {
@@ -269,7 +366,6 @@ suite('nuxeo-pdf-viewer', () => {
   });
 
   suite('keydown blocker', () => {
-    let blocker;
     let element;
 
     setup(async () => {
@@ -279,15 +375,11 @@ suite('nuxeo-pdf-viewer', () => {
         `,
       );
 
-      // Capture the blocker function registered on iframeWindow via addEventListener
       const mockWin = {
         print: () => {},
-        addEventListener: (event, fn, capture) => {
-          if (event === 'keydown' && capture === true) {
-            blocker = fn;
-          }
-        },
-        document: { addEventListener: sinon.spy() },
+        addEventListener: sinon.spy(),
+        removeEventListener: sinon.spy(),
+        document: { addEventListener: sinon.spy(), removeEventListener: sinon.spy() },
         get parent() {
           return this;
         },
@@ -310,56 +402,56 @@ suite('nuxeo-pdf-viewer', () => {
 
     test('should block Ctrl+P', () => {
       const e = makeKeyEvent(true, false, 'p');
-      blocker(e);
+      element._keydownBlocker(e);
       expect(e.preventDefault).to.have.been.calledOnce;
       expect(e.stopImmediatePropagation).to.have.been.calledOnce;
     });
 
     test('should block Ctrl+Shift+P (uppercase P)', () => {
       const e = makeKeyEvent(true, false, 'P');
-      blocker(e);
+      element._keydownBlocker(e);
       expect(e.preventDefault).to.have.been.calledOnce;
       expect(e.stopImmediatePropagation).to.have.been.calledOnce;
     });
 
     test('should block Ctrl+S', () => {
       const e = makeKeyEvent(true, false, 's');
-      blocker(e);
+      element._keydownBlocker(e);
       expect(e.preventDefault).to.have.been.calledOnce;
       expect(e.stopImmediatePropagation).to.have.been.calledOnce;
     });
 
     test('should block Ctrl+Shift+S (uppercase S)', () => {
       const e = makeKeyEvent(true, false, 'S');
-      blocker(e);
+      element._keydownBlocker(e);
       expect(e.preventDefault).to.have.been.calledOnce;
       expect(e.stopImmediatePropagation).to.have.been.calledOnce;
     });
 
     test('should block Cmd+P', () => {
       const e = makeKeyEvent(false, true, 'p');
-      blocker(e);
+      element._keydownBlocker(e);
       expect(e.preventDefault).to.have.been.calledOnce;
       expect(e.stopImmediatePropagation).to.have.been.calledOnce;
     });
 
     test('should block Cmd+S', () => {
       const e = makeKeyEvent(false, true, 's');
-      blocker(e);
+      element._keydownBlocker(e);
       expect(e.preventDefault).to.have.been.calledOnce;
       expect(e.stopImmediatePropagation).to.have.been.calledOnce;
     });
 
     test('should not block an unrelated key combination (Ctrl+A)', () => {
       const e = makeKeyEvent(true, false, 'a');
-      blocker(e);
+      element._keydownBlocker(e);
       expect(e.preventDefault).to.not.have.been.called;
       expect(e.stopImmediatePropagation).to.not.have.been.called;
     });
 
     test('should not block when no modifier key is held (plain P)', () => {
       const e = makeKeyEvent(false, false, 'p');
-      blocker(e);
+      element._keydownBlocker(e);
       expect(e.preventDefault).to.not.have.been.called;
       expect(e.stopImmediatePropagation).to.not.have.been.called;
     });

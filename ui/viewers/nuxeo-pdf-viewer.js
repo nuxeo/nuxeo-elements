@@ -101,15 +101,16 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
             }
           }
           // Block Ctrl/Cmd+S (save) and act as a backup for Ctrl/Cmd+P.
-          const blocker = (e) => {
+          this._keydownBlocker = (e) => {
             if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P' || e.key === 's' || e.key === 'S')) {
               e.preventDefault();
               e.stopImmediatePropagation();
             }
           };
-          iframeWindow.addEventListener('keydown', blocker, true);
+          this._blockedIframeWindow = iframeWindow;
+          iframeWindow.addEventListener('keydown', this._keydownBlocker, true);
           if (iframeWindow.document) {
-            iframeWindow.document.addEventListener('keydown', blocker, true);
+            iframeWindow.document.addEventListener('keydown', this._keydownBlocker, true);
           }
         } catch (_e) {
           // cross-origin iframe — cannot inject keyboard blocker
@@ -127,6 +128,18 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
       const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
       if (iframe && this._iframeLoadHandler) {
         iframe.removeEventListener('load', this._iframeLoadHandler);
+      }
+      if (this._blockedIframeWindow && this._keydownBlocker) {
+        try {
+          this._blockedIframeWindow.removeEventListener('keydown', this._keydownBlocker, true);
+          if (this._blockedIframeWindow.document) {
+            this._blockedIframeWindow.document.removeEventListener('keydown', this._keydownBlocker, true);
+          }
+        } catch (_e) {
+          // cross-origin iframe — removal may fail, nothing to do
+        }
+        this._blockedIframeWindow = null;
+        this._keydownBlocker = null;
       }
     }
 
