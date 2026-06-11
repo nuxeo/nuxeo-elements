@@ -84,18 +84,32 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
       super.connectedCallback();
       this._iframeLoadHandler = () => {
         try {
-          const iframeWindow = this.shadowRoot.querySelector('iframe').contentWindow;
-          if (iframeWindow) {
-            iframeWindow.addEventListener(
-              'keydown',
-              (e) => {
-                if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P' || e.key === 's' || e.key === 'S')) {
-                  e.preventDefault();
-                  e.stopImmediatePropagation();
-                }
-              },
-              true,
-            );
+          const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
+          const iframeWindow = iframe && iframe.contentWindow;
+          if (!iframeWindow) {
+            return;
+          }
+          // Neutralize window.print so Ctrl/Cmd+P cannot trigger the print dialog,
+          // even when PDF.js's own keydown handler (registered earlier inside the
+          // iframe during DOMContentLoaded) runs first and calls window.print().
+          iframeWindow.print = () => {};
+          if (iframeWindow.parent && iframeWindow.parent !== iframeWindow) {
+            try {
+              iframeWindow.parent.print = () => {};
+            } catch (_err) {
+              // ignore — parent may be cross-origin in some embeds
+            }
+          }
+          // Block Ctrl/Cmd+S (save) and act as a backup for Ctrl/Cmd+P.
+          const blocker = (e) => {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P' || e.key === 's' || e.key === 'S')) {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+            }
+          };
+          iframeWindow.addEventListener('keydown', blocker, true);
+          if (iframeWindow.document) {
+            iframeWindow.document.addEventListener('keydown', blocker, true);
           }
         } catch (_e) {
           // cross-origin iframe — cannot inject keyboard blocker
