@@ -392,13 +392,15 @@ suite('nuxeo-pdf-viewer', () => {
       sinon.restore();
     });
 
-    const makeKeyEvent = (ctrlKey, metaKey, key) => {return {
-      ctrlKey,
-      metaKey,
-      key,
-      preventDefault: sinon.spy(),
-      stopImmediatePropagation: sinon.spy(),
-    }};
+    const makeKeyEvent = (ctrlKey, metaKey, key) => {
+      return {
+        ctrlKey,
+        metaKey,
+        key,
+        preventDefault: sinon.spy(),
+        stopImmediatePropagation: sinon.spy(),
+      };
+    };
 
     test('should block Ctrl+P', () => {
       const e = makeKeyEvent(true, false, 'p');
