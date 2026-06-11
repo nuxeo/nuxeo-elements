@@ -80,6 +80,56 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
       return import.meta;
     }
 
+    connectedCallback() {
+      super.connectedCallback();
+      this._iframeLoadHandler = () => {
+        try {
+          const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
+          const iframeWindow = iframe && iframe.contentWindow;
+          if (!iframeWindow) {
+            return;
+          }
+          // Neutralize window.print so Ctrl/Cmd+P cannot trigger the print dialog,
+          // even when PDF.js's own keydown handler (registered earlier inside the
+          // iframe during DOMContentLoaded) runs first and calls window.print().
+          iframeWindow.print = () => {};
+          if (iframeWindow.parent && iframeWindow.parent !== iframeWindow) {
+            try {
+              iframeWindow.parent.print = () => {};
+            } catch (_err) {
+              // ignore — parent may be cross-origin in some embeds
+            }
+          }
+          // Block Ctrl/Cmd+S (save) and act as a backup for Ctrl/Cmd+P.
+          const blocker = (e) => {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P' || e.key === 's' || e.key === 'S')) {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+            }
+          };
+          iframeWindow.addEventListener('keydown', blocker, true);
+          if (iframeWindow.document) {
+            iframeWindow.document.addEventListener('keydown', blocker, true);
+          }
+        } catch (_e) {
+          // cross-origin iframe — cannot inject keyboard blocker
+        }
+      };
+      // Shadow DOM is ready synchronously after connectedCallback in custom elements v1
+      const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
+      if (iframe) {
+        iframe.addEventListener('load', this._iframeLoadHandler);
+      }
+    }
+
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
+      if (iframe && this._iframeLoadHandler) {
+        iframe.removeEventListener('load', this._iframeLoadHandler);
+      }
+    }
+
     _path(file) {
       // get an absolute href
       const el = document.createElement('a');
