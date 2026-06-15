@@ -177,6 +177,11 @@ import './nuxeo-tooltip.js';
         _currentUser: {
           type: Object,
         },
+
+        maxCharacters: {
+          type: Number,
+          value: null,
+        },
       };
     }
 
@@ -198,14 +203,24 @@ import './nuxeo-tooltip.js';
     }
 
     _name(user) {
+      let name;
+
       if (this._isEntity(user)) {
         const firstName = user.properties.firstName || user.properties['user:firstName'];
         const lastName = user.properties.lastName || user.properties['user:lastName'];
         const email = user.properties.email || user.properties['user:email'];
         const username = user.properties.username || user.properties['user:username'];
-        return [firstName, lastName].join(' ').trim() || email || username || this._id(user);
+
+        name = [firstName, lastName].join(' ').trim() || email || username || this._id(user);
+      } else {
+        name = this._id(user);
       }
-      return this._id(user);
+
+      if (this.maxCharacters && name && name.length > this.maxCharacters) {
+        return `${name.substring(0, this.maxCharacters)}...`;
+      }
+
+      return name;
     }
 
     _email(user) {
