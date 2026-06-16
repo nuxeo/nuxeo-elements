@@ -158,6 +158,18 @@ suite('nuxeo-user-tag extras', () => {
     test('returns undefined for null', () => {
       expect(el._id(null)).to.be.undefined;
     });
+
+    test('returns properties.username over user.id', () => {
+      expect(el._id({ id: 'jdoe', properties: { username: 'johndoe' } })).to.equal('johndoe');
+    });
+
+    test('returns properties[user:username] when username property is missing', () => {
+      expect(el._id({ id: 'jdoe', properties: { 'user:username': 'johndoe2' } })).to.equal('johndoe2');
+    });
+
+    test('falls back to user.id when properties has no username', () => {
+      expect(el._id({ id: 'jdoe', properties: {} })).to.equal('jdoe');
+    });
   });
 
   suite('_name', () => {
@@ -179,6 +191,16 @@ suite('nuxeo-user-tag extras', () => {
     test('falls back to id when entity has no name or email', () => {
       const u = { 'entity-type': 'user', id: 'fallback', properties: {} };
       expect(el._name(u)).to.equal('fallback');
+    });
+
+    test('falls back to username when entity has no name or email', () => {
+      const u = { 'entity-type': 'user', id: 'fallback', properties: { username: 'johndoe' } };
+      expect(el._name(u)).to.equal('johndoe');
+    });
+
+    test('falls back to user:username when entity has no name or email', () => {
+      const u = { 'entity-type': 'user', id: 'fallback', properties: { 'user:username': 'johndoe2' } };
+      expect(el._name(u)).to.equal('johndoe2');
     });
 
     test('returns _id for non-entity', () => {
@@ -277,6 +299,14 @@ suite('nuxeo-user-tag extras', () => {
         <nuxeo-user-tag disabled .user="${user}"></nuxeo-user-tag>
       `);
       expect(tag.shadowRoot.innerHTML).to.include('jdoe');
+    });
+
+    test('shows username when no names or email are present', async () => {
+      const user = { 'entity-type': 'user', id: 'jdoe', properties: { username: 'johndoe' } };
+      const tag = await fixture(html`
+        <nuxeo-user-tag disabled .user="${user}"></nuxeo-user-tag>
+      `);
+      expect(tag.shadowRoot.innerHTML).to.include('johndoe');
     });
   });
 });

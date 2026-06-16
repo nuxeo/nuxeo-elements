@@ -191,7 +191,8 @@ import './nuxeo-tooltip.js';
 
     _id(user) {
       if (user) {
-        const id = user.id || user.uid;
+        const id =
+          (user.properties && (user.properties.username || user.properties['user:username'])) || user.id || user.uid;
         return id || user.replace('user:', '');
       }
     }
@@ -201,7 +202,8 @@ import './nuxeo-tooltip.js';
         const firstName = user.properties.firstName || user.properties['user:firstName'];
         const lastName = user.properties.lastName || user.properties['user:lastName'];
         const email = user.properties.email || user.properties['user:email'];
-        return [firstName, lastName].join(' ').trim() || email || this._id(user);
+        const username = user.properties.username || user.properties['user:username'];
+        return [firstName, lastName].join(' ').trim() || email || username || this._id(user);
       }
       return this._id(user);
     }
