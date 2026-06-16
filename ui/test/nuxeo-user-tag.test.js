@@ -119,6 +119,14 @@ suite('nuxeo-user-tag extras', () => {
     expect(el.hasAttribute('dir')).to.be.true;
   });
 
+  test('connectedCallback keeps existing dir attribute', async () => {
+    const preconfigured = await fixture(html`
+      <nuxeo-user-tag dir="rtl"></nuxeo-user-tag>
+    `);
+
+    expect(preconfigured.getAttribute('dir')).to.equal('rtl');
+  });
+
   suite('_isEntity', () => {
     test('returns truthy for user entity with properties', () => {
       expect(el._isEntity({ 'entity-type': 'user', properties: {} })).to.be.ok;
@@ -273,8 +281,16 @@ suite('nuxeo-user-tag extras', () => {
 
   suite('_href', () => {
     test('returns a URL based on user id', () => {
-      const href = el._href({ id: 'jdoe' });
-      expect(href).to.be.a('string');
+      const urlForSpy = sinon.spy((type, id) => `/ui/#!/${type}/${id}`);
+      const context = {
+        _id: (user) => user.id,
+        urlFor: urlForSpy,
+      };
+
+      const href = Nuxeo.UserTag.prototype._href.call(context, { id: 'jdoe' });
+
+      expect(urlForSpy).to.have.been.calledWith('user', 'jdoe');
+      expect(href).to.equal('/ui/#!/user/jdoe');
     });
   });
 
@@ -296,6 +312,14 @@ suite('nuxeo-user-tag extras', () => {
       const currentUser = { 'entity-type': 'user', properties: { extendedGroups: [] } };
       expect(el._hasLink(false, user, currentUser)).to.be.false;
     });
+
+    test('returns true when enabled, non-system user and current user is admin', () => {
+      const user = { 'entity-type': 'user', id: 'jdoe', properties: {} };
+      const currentUser = { 'entity-type': 'user', properties: { extendedGroups: [{ name: 'administrators' }] } };
+      const hasAdminStub = sinon.stub(el, 'hasAdministrationPermissions').returns(true);
+      expect(el._hasLink(false, user, currentUser)).to.be.true;
+      hasAdminStub.restore();
+    });
   });
 
   suite('_preventPropagation', () => {
@@ -315,6 +339,117 @@ suite('nuxeo-user-tag extras', () => {
     test('returns "user-tag-nowrap" when name has no whitespace', () => {
       const u = { 'entity-type': 'user', id: 'jdoe', properties: {} };
       expect(el._getUserTagClass(u)).to.equal('user-tag-nowrap');
+    });
+  });
+
+  suite('layout helpers', () => {
+    test('_calculateElementWidth returns a numeric width', () => {
+      const div = document.createElement('div');
+      div.style.width = '80px';
+      div.style.padding = '4px';
+      div.style.border = '2px solid transparent';
+      document.body.appendChild(div);
+
+      const width = el._calculateElementWidth(div);
+
+      expect(width).to.be.a('number');
+      expect(width).to.be.at.least(0);
+      div.remove();
+    });
+
+    test('_getHTMLRootNode returns parent outside shadow root', () => {
+      const wrapper = document.createElement('div');
+      const host = document.createElement('div');
+      const shadow = host.attachShadow({ mode: 'open' });
+      const inner = document.createElement('span');
+
+      shadow.appendChild(inner);
+      wrapper.appendChild(host);
+      document.body.appendChild(wrapper);
+
+      expect(el._getHTMLRootNode(inner)).to.equal(wrapper);
+
+      wrapper.remove();
+    });
+  });
+
+  suite('lifecycle and layout', () => {
+    test('disconnectedCallback removes layout listeners', () => {
+      const removeSpy = sinon.spy(el, 'removeEventListener');
+
+      el.disconnectedCallback();
+
+      expect(removeSpy).to.have.been.calledWith('dom-change', el._layout);
+      expect(removeSpy).to.have.been.calledWith('iron-resize', el._layout);
+      removeSpy.restore();
+    });
+
+    test('_layout applies max-width style to username container when width is available', () => {
+      const parentElement = document.createElement('div');
+      const sibling = document.createElement('div');
+      parentElement.appendChild(el);
+      parentElement.appendChild(sibling);
+
+      const getRootStub = sinon.stub(el, '_getHTMLRootNode').returns(parentElement);
+      const calcWidthStub = sinon.stub(el, '_calculateElementWidth');
+      calcWidthStub.withArgs(parentElement).returns(120);
+      calcWidthStub.withArgs(sibling).returns(20);
+
+      el._layout();
+
+      const username = el.shadowRoot.querySelector('.username-container');
+      expect(username.getAttribute('style')).to.equal('max-width:100px');
+
+      getRootStub.restore();
+      calcWidthStub.restore();
+      parentElement.remove();
+    });
+
+    test('_layout does not set style when computed width is not positive', () => {
+      const parentElement = document.createElement('div');
+      const sibling = document.createElement('div');
+      parentElement.appendChild(el);
+      parentElement.appendChild(sibling);
+
+      const getRootStub = sinon.stub(el, '_getHTMLRootNode').returns(parentElement);
+      const calcWidthStub = sinon.stub(el, '_calculateElementWidth');
+      calcWidthStub.withArgs(parentElement).returns(20);
+      calcWidthStub.withArgs(sibling).returns(25);
+
+      const username = el.shadowRoot.querySelector('.username-container');
+      username.removeAttribute('style');
+      el._layout();
+
+      expect(username.hasAttribute('style')).to.be.false;
+
+      getRootStub.restore();
+      calcWidthStub.restore();
+      parentElement.remove();
+    });
+
+    test('_layout skips siblings with shadowRoot when calculating sibling width', () => {
+      const parentElement = document.createElement('div');
+      const siblingWithShadowRoot = document.createElement('div');
+      siblingWithShadowRoot.attachShadow({ mode: 'open' });
+      parentElement.appendChild(el);
+      parentElement.appendChild(siblingWithShadowRoot);
+
+      const getRootStub = sinon.stub(el, '_getHTMLRootNode').returns(parentElement);
+      const calcWidthStub = sinon.stub(el, '_calculateElementWidth');
+      calcWidthStub.withArgs(parentElement).returns(100);
+
+      el._layout();
+
+      expect(calcWidthStub).to.have.been.calledOnceWithExactly(parentElement);
+
+      getRootStub.restore();
+      calcWidthStub.restore();
+      parentElement.remove();
+    });
+
+    test('_layout is a no-op when element has no parentNode', () => {
+      const detached = document.createElement('nuxeo-user-tag');
+      expect(() => detached._layout()).to.not.throw();
     });
   });
 
