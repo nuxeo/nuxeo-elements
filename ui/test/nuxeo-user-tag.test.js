@@ -210,6 +210,44 @@ suite('nuxeo-user-tag extras', () => {
     test('returns _id for string', () => {
       expect(el._name('user:joe')).to.equal('joe');
     });
+
+    suite('maxCharacters truncation', () => {
+      test('truncates name and appends ellipsis when name exceeds maxCharacters', () => {
+        el.maxCharacters = 5;
+        const u = { 'entity-type': 'user', properties: { firstName: 'Alexander', lastName: 'Smith' } };
+        expect(el._name(u)).to.equal('Alexa...');
+      });
+
+      test('does not truncate when name equals maxCharacters exactly', () => {
+        el.maxCharacters = 13;
+        const u = { 'entity-type': 'user', properties: { firstName: 'Alexander', lastName: 'Sm' } };
+        expect(el._name(u)).to.equal('Alexander Sm');
+      });
+
+      test('does not truncate when name is shorter than maxCharacters', () => {
+        el.maxCharacters = 50;
+        const u = { 'entity-type': 'user', properties: { firstName: 'John', lastName: 'Doe' } };
+        expect(el._name(u)).to.equal('John Doe');
+      });
+
+      test('does not truncate when maxCharacters is null', () => {
+        el.maxCharacters = null;
+        const u = { 'entity-type': 'user', properties: { firstName: 'Alexander', lastName: 'Smith' } };
+        expect(el._name(u)).to.equal('Alexander Smith');
+      });
+
+      test('truncates non-entity id when name exceeds maxCharacters', () => {
+        el.maxCharacters = 4;
+        expect(el._name({ id: 'verylongusername' })).to.equal('very...');
+      });
+
+      test('system user name is not affected by truncation for _hasLink check', () => {
+        el.maxCharacters = 3;
+        const currentUser = { 'entity-type': 'user', properties: { extendedGroups: [{ name: 'administrators' }] } };
+        // _name would return 'sys...' but _hasLink must still detect system user via _id
+        expect(el._hasLink(false, 'user:system', currentUser)).to.be.false;
+      });
+    });
   });
 
   suite('_email', () => {

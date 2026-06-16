@@ -178,6 +178,11 @@ import './nuxeo-tooltip.js';
           type: Object,
         },
 
+        /**
+         * Maximum number of characters to display for the user name.
+         * When the resolved name exceeds this limit, it is truncated and an ellipsis (`...`) is appended.
+         * Set to `null` (default) to disable truncation.
+         */
         maxCharacters: {
           type: Number,
           value: null,
@@ -240,7 +245,7 @@ import './nuxeo-tooltip.js';
      * if the user is the system user, or if the current user doesn't have administration/power user permissions.
      */
     _hasLink(disabled, user, currentUser) {
-      const systemUser = this._name(user) === 'system';
+      const systemUser = this._id(user) === 'system';
       const userIsAdmin = this.hasAdministrationPermissions(currentUser);
       return !(disabled || systemUser || !userIsAdmin);
     }
