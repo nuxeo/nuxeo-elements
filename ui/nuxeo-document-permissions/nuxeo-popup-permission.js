@@ -54,6 +54,18 @@ import '../nuxeo-button-styles.js';
             line-height: 35px !important;
           }
 
+          .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+          }
+
           .buttons {
             @apply --buttons-bar;
             margin-top: 2em;
@@ -79,7 +91,8 @@ import '../nuxeo-button-styles.js';
         <dom-if if="{{!updatingACE}}">
           <template>
             <paper-button on-click="togglePopup" id="newPermissionButton" class="text small">
-              <span>
+              <span class="sr-only">[[_computedNewPermissionLabel]]</span>
+              <span aria-hidden="true">
                 [[i18n('popupPermission.newPermission')]]
               </span>
             </paper-button>
@@ -271,6 +284,10 @@ import '../nuxeo-button-styles.js';
           type: Array,
           computed: '_computeUserVisiblePermissions(userVisiblePermissions, i18n)',
         },
+        _computedNewPermissionLabel: {
+          type: String,
+          computed: '_computeNewPermissionLabel(shareWithExternal)',
+        },
       };
     }
 
@@ -313,6 +330,12 @@ import '../nuxeo-button-styles.js';
       return this.userVisiblePermissions.map((perm) =>
         typeof perm === 'string' ? { id: perm, label: this.formatPermission(perm) } : perm,
       );
+    }
+
+    _computeNewPermissionLabel(shareWithExternal) {
+      return shareWithExternal
+        ? this.i18n('popupPermission.newExternalPermission')
+        : this.i18n('popupPermission.newLocalPermission');
     }
 
     _doSend(togglePopup) {
