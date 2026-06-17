@@ -281,11 +281,7 @@ IronOverlayManager._overlayWithBackdrop = function() {
           node = node.host;
           continue;
         }
-        if (
-          node.nodeType === Node.ELEMENT_NODE &&
-          node.localName === 'nuxeo-dialog' &&
-          node._inertApplied
-        ) {
+        if (node.nodeType === Node.ELEMENT_NODE && node.localName === 'nuxeo-dialog' && node._inertApplied) {
           return true;
         }
         node = node.parentNode;
