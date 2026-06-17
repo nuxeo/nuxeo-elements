@@ -222,24 +222,87 @@ IronOverlayManager._overlayWithBackdrop = function() {
       if (!this._boundRecoverFocus) {
         this._boundRecoverFocus = this._recoverFocus.bind(this);
       }
+      if (!this._boundPointerDown) {
+        // Track in-flight pointer interactions so _recoverFocus does not race against
+        // a click that the user is currently dispatching. Without this guard, the
+        // focusout fired when pressing a non-focusable child (e.g. a selectivity caret
+        // icon) schedules a rAF that re-focuses the dialog's first focusable, which
+        // closes any just-opened popups and steals subsequent keystrokes — see e.g.
+        // datatable_editing.feature MultiComplex scenario.
+        this._boundPointerDown = () => {
+          this._pointerInteractionDepth = (this._pointerInteractionDepth || 0) + 1;
+        };
+        this._boundPointerUp = () => {
+          // Reset on next tick so the trailing focusout/focusin from the click has
+          // settled before _recoverFocus is re-armed.
+          setTimeout(() => {
+            this._pointerInteractionDepth = Math.max(0, (this._pointerInteractionDepth || 1) - 1);
+          }, 0);
+        };
+      }
       // Remove first to prevent duplicate registrations
       document.removeEventListener('keydown', this._boundTrapTab, true);
       document.addEventListener('keydown', this._boundTrapTab, true);
       this.removeEventListener('focusout', this._boundRecoverFocus);
       this.addEventListener('focusout', this._boundRecoverFocus);
+      // Pointer-interaction depth counter — captured globally to also see clicks on
+      // elements outside this dialog (e.g. clicks targeting child custom elements
+      // whose composed event path is observed at the document level).
+      document.removeEventListener('pointerdown', this._boundPointerDown, true);
+      document.addEventListener('pointerdown', this._boundPointerDown, true);
+      document.removeEventListener('pointerup', this._boundPointerUp, true);
+      document.addEventListener('pointerup', this._boundPointerUp, true);
       this._focusTrapEnabled = true;
       // Apply inert to background siblings so they cannot intercept pointer events
       // or receive focus while the dialog is open. Notification regions (toasts, snackbars)
       // are excluded via _isNotificationRegion so they remain interactive.
-      if (setInert && !this._inertApplied) {
+      //
+      // Skip when an ancestor nuxeo-dialog already applied inert: in that case the
+      // background is already protected by the outer dialog, and walking up from this
+      // nested dialog would also inert siblings inside the outer dialog's content,
+      // breaking interactivity in the very surface that opened us (e.g. the data-table
+      // row form opened from within a create-document popup).
+      if (setInert && !this._inertApplied && !this._hasAncestorDialogWithInert()) {
         this._setBackgroundInert(true);
         this._inertApplied = true;
       }
     }
 
+    /**
+     * Returns true if any ancestor `nuxeo-dialog` in the composed tree has already
+     * applied background inert. Used by `_enableFocusTrap` to avoid stacking inert
+     * walks for nested dialogs, where the inner walk would inert siblings inside the
+     * outer dialog's own content.
+     */
+    _hasAncestorDialogWithInert() {
+      let node = this.parentNode;
+      while (node) {
+        if (node instanceof ShadowRoot) {
+          node = node.host;
+          continue;
+        }
+        if (
+          node.nodeType === Node.ELEMENT_NODE &&
+          node.localName === 'nuxeo-dialog' &&
+          node._inertApplied
+        ) {
+          return true;
+        }
+        node = node.parentNode;
+      }
+      return false;
+    }
+
     _disableFocusTrap(clearInert) {
       document.removeEventListener('keydown', this._boundTrapTab, true);
       this.removeEventListener('focusout', this._boundRecoverFocus);
+      if (this._boundPointerDown) {
+        document.removeEventListener('pointerdown', this._boundPointerDown, true);
+      }
+      if (this._boundPointerUp) {
+        document.removeEventListener('pointerup', this._boundPointerUp, true);
+      }
+      this._pointerInteractionDepth = 0;
       // Remove inert from background siblings when the dialog closes
       if (clearInert && this._inertApplied) {
         this._setBackgroundInert(false);
@@ -257,6 +320,13 @@ IronOverlayManager._overlayWithBackdrop = function() {
       if (!this.opened || !(this.modal || this.withBackdrop)) {
         return;
       }
+      // A pointer interaction is currently in progress (mouse/touch is between
+      // pointerdown and pointerup). Skip recovery — the upcoming focusin/click
+      // will land focus on the intended target. Forcing focus back to the dialog's
+      // first focusable here would close popups or steal the click.
+      if (this._pointerInteractionDepth > 0) {
+        return;
+      }
       // If relatedTarget is inside the dialog, focus is staying inside — no recovery needed
       if (e.relatedTarget && this._containsDeep(e.relatedTarget)) {
         return;
@@ -265,6 +335,12 @@ IronOverlayManager._overlayWithBackdrop = function() {
       // Use requestAnimationFrame to check after the browser settles focus.
       requestAnimationFrame(() => {
         if (!this.opened || !(this.modal || this.withBackdrop)) {
+          return;
+        }
+        // Re-check pointer state — the click that triggered the focusout may still
+        // be resolving (pointerup -> click). Skip recovery so the click's natural
+        // focus target wins.
+        if (this._pointerInteractionDepth > 0) {
           return;
         }
         if (!this._containsDeepFocus()) {
@@ -529,8 +605,9 @@ IronOverlayManager._overlayWithBackdrop = function() {
         this._inertedElements = [];
         let current = this;
         let parent = this.parentNode;
+        let stopped = false;
 
-        while (parent) {
+        while (parent && !stopped) {
           Array.from(parent.children).forEach((sibling) => {
             if (
               sibling === current ||
@@ -559,6 +636,15 @@ IronOverlayManager._overlayWithBackdrop = function() {
           } else {
             current = parent;
             parent = parent.parentNode;
+          }
+
+          // Stop the walk once we cross into an ancestor nuxeo-dialog's content:
+          // that dialog has already inerted everything outside itself, so continuing
+          // would only inert siblings INSIDE its content (e.g. other form fields next
+          // to the nested data-table that opened us), breaking interactivity in the
+          // surface that opened this nested dialog.
+          if (current && current.nodeType === Node.ELEMENT_NODE && current.localName === 'nuxeo-dialog') {
+            stopped = true;
           }
         }
       } else {
