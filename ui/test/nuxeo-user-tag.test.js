@@ -481,5 +481,30 @@ suite('nuxeo-user-tag extras', () => {
       `);
       expect(tag.shadowRoot.innerHTML).to.include('johndoe');
     });
+
+    test('shows the id when the user is a plain object', async () => {
+      const user = { id: 'plain-user' };
+      const tag = await fixture(html`
+        <nuxeo-user-tag disabled .user="${user}"></nuxeo-user-tag>
+      `);
+      expect(tag.shadowRoot.innerHTML).to.include('plain-user');
+    });
+
+    test('truncates the display name when maxCharacters is shorter than the resolved name', async () => {
+      const user = { id: 'verylongusername' };
+      const tag = await fixture(html`
+        <nuxeo-user-tag disabled .maxCharacters="${4}" .user="${user}"></nuxeo-user-tag>
+      `);
+      expect(tag.shadowRoot.innerHTML).to.include('very...');
+    });
+
+    test('does not truncate the display name when maxCharacters is longer than the resolved name', async () => {
+      const user = { id: 'short' };
+      const tag = await fixture(html`
+        <nuxeo-user-tag disabled .maxCharacters="${20}" .user="${user}"></nuxeo-user-tag>
+      `);
+      expect(tag.shadowRoot.innerHTML).to.include('short');
+      expect(tag.shadowRoot.innerHTML).to.not.include('...');
+    });
   });
 });
