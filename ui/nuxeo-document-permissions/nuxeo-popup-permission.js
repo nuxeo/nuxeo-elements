@@ -286,7 +286,7 @@ import '../nuxeo-button-styles.js';
         },
         _computedNewPermissionLabel: {
           type: String,
-          computed: '_computeNewPermissionLabel(shareWithExternal)',
+          computed: '_computeNewPermissionLabel(shareWithExternal, i18n)',
         },
       };
     }
