@@ -776,13 +776,6 @@ import '../nuxeo-button-styles.js';
           column.table = this;
           this.listen(column, 'filter-value-changed', '_onColumnFilterChanged');
         });
-
-        // Apply any settings that arrived before columns were populated (WEBUI-1885)
-        if (this._pendingSettings && columns.length > 0) {
-          const pending = this._pendingSettings;
-          this._pendingSettings = null;
-          this.settings = pending;
-        }
       }
     }
 
@@ -965,10 +958,14 @@ import '../nuxeo-button-styles.js';
             order: typeof column.order === 'number' ? column.order : idx,
             width: column.width || null,
             resized: !!column.resized,
-            // Persist filterValue for all columns (WEBUI-1885)
-            filterValue: column.filterValue || '',
-            filterExpression: column.filterExpression || null,
           };
+          // Persist filter state only when set, to keep saved settings compact (ELEMENTS-1966)
+          if (column.filterValue) {
+            tableSettings.columns[key].filterValue = column.filterValue;
+          }
+          if (column.filterExpression) {
+            tableSettings.columns[key].filterExpression = column.filterExpression;
+          }
         });
       }
 
@@ -979,19 +976,6 @@ import '../nuxeo-button-styles.js';
       if (!settings) {
         return;
       }
-
-      // Defer settings application if columns aren't populated yet (WEBUI-1885)
-      // Columns are added asynchronously by slotted nuxeo-data-table-column children;
-      // if settings arrive before they are mounted, we stash them and re-apply once
-      // _columnsChanged fires.
-      if (!this.columns || this.columns.length === 0) {
-        this._pendingSettings = settings;
-        return;
-      }
-
-      // Mark that we're restoring settings - prevents empty-value filter events
-      // from clearing params during the settling period after restore (WEBUI-1885)
-      this._recentlyRestoredFilters = true;
 
       // ---- columns (hidden / order / width / filterValue) ----
       if (this.columns && settings.columns) {
@@ -1072,12 +1056,6 @@ import '../nuxeo-button-styles.js';
           }
         }
       }
-
-      // Clear the recently-restored flag after a delay (WEBUI-1885)
-      // Use 1000ms to ensure all async Polymer observers and DOM operations complete
-      setTimeout(() => {
-        this._recentlyRestoredFilters = false;
-      }, 1000);
 
       let appliedSortOrder = null;
       if (Object.prototype.hasOwnProperty.call(settings, 'sortOrder')) {
