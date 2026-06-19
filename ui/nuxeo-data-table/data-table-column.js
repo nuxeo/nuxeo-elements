@@ -252,13 +252,20 @@ import './data-table-column-filter.js';
     }
 
     _filterValueChanged(table, filterValue, filterBy, filterExpression) {
-      if (table && filterBy && filterValue !== undefined) {
+      // Use filterBy if set, otherwise fall back to field (WEBUI-1885)
+      const effectiveFilterBy = filterBy || this.field || null;
+      if (table && filterValue !== undefined) {
         this._notifyTable(table, 'filterValue', filterValue);
+        // Skip event dispatch if table is suppressing filter events during restore (WEBUI-1885)
+        // Also skip if we're in the recently-restored window (async observers may fire after _suppressFilterEvents is cleared)
+        if (table._suppressFilterEvents || table._recentlyRestoredFilters) {
+          return;
+        }
         this.dispatchEvent(
           new CustomEvent('column-filter-changed', {
             composed: true,
             bubbles: true,
-            detail: { value: filterValue, filterBy, filterExpression },
+            detail: { value: filterValue, filterBy: effectiveFilterBy, filterExpression, name: this.name },
           }),
         );
       }
