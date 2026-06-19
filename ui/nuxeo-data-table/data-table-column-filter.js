@@ -59,15 +59,44 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
         value: {
           type: String,
           notify: true,
+          observer: '_valuePropertyChanged',
         },
         hidden: Boolean,
       };
+    }
+
+    // Observer for external value changes (e.g., from settings restore) (WEBUI-1885)
+    _valuePropertyChanged(newValue) {
+      // Cancel any pending debounced propagation from paper-input init events,
+      // so an externally-set value can't be clobbered by a stale '' from init (WEBUI-1885)
+      if (this._debouncer && this._debouncer.cancel) {
+        this._debouncer.cancel();
+      }
+      // Ensure the paper-input reflects the new value
+      const input = this.shadowRoot && this.shadowRoot.querySelector('paper-input');
+      if (input && input.value !== newValue) {
+        input.value = newValue || '';
+      }
     }
 
     _valueChanged(e) {
       // store value in a variable, referring to e.detail.value inside the debounce
       // function results in weird outcomes. event object might be reused by Polymer?
       const { value } = e.detail;
+
+      // Ignore paper-input's initial empty value event when our own value is also
+      // empty/unset. paper-input fires value-changed='' on first stamp; without
+      // this guard, a freshly-stamped column-filter would propagate '' upward and
+      // clobber an externally-restored column.filterValue (WEBUI-1885)
+      const empty = (v) => v == null || v === '';
+      if (empty(value) && empty(this.value)) {
+        return;
+      }
+      // Skip echoes where the incoming value already matches our current value
+      if (value === this.value) {
+        return;
+      }
+
       this._debouncer = Debouncer.debounce(this._debouncer, timeOut.after(250), () => {
         this.value = value;
       });

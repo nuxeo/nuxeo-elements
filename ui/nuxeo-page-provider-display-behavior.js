@@ -502,20 +502,40 @@ export const PageProviderDisplayBehavior = [
 
     _onColumnFilterChanged(e) {
       if (this._hasPageProvider()) {
-        let notFound = true;
+        // Skip all events during restore window (WEBUI-1885)
+        if (this._recentlyRestoredFilters) {
+          return;
+        }
+
+        // Skip columns without a proper filterBy (action/checkbox columns) (WEBUI-1885)
+        if (!e.detail.filterBy) {
+          return;
+        }
+
+        // Check if we have an existing filter entry for this filterBy
+        let existingFilterIndex = -1;
         for (let i = 0; i < this.filters.length; i++) {
           if (this.filters[i].path === e.detail.filterBy) {
-            if (e.detail.value.length === 0) {
-              this.splice('filters', i, 1);
-            } else {
-              this.set(`filters.${i}.value`, e.detail.value);
-            }
-            notFound = false;
+            existingFilterIndex = i;
             break;
           }
         }
 
-        if (notFound && e.detail.value.length !== 0) {
+        // If value is empty and we don't have an existing filter entry,
+        // skip processing - this prevents column initialization from
+        // clearing params that were set by settings restore (WEBUI-1885)
+        if (e.detail.value.length === 0 && existingFilterIndex === -1) {
+          return;
+        }
+
+        // Update filters array
+        if (existingFilterIndex !== -1) {
+          if (e.detail.value.length === 0) {
+            this.splice('filters', existingFilterIndex, 1);
+          } else {
+            this.set(`filters.${existingFilterIndex}.value`, e.detail.value);
+          }
+        } else if (e.detail.value.length !== 0) {
           this.push('filters', {
             path: e.detail.filterBy,
             value: e.detail.value,
@@ -528,10 +548,12 @@ export const PageProviderDisplayBehavior = [
           this.nxProvider.page = 1;
         }
 
-        if (this.nxProvider.params[e.detail.filterBy] && e.detail.value.length === 0) {
-          this.clearSelection();
-          delete this.nxProvider.params[e.detail.filterBy];
-          this.fetch();
+        // Update provider params and debounce fetch (WEBUI-1885)
+        if (e.detail.value.length === 0) {
+          if (this.nxProvider.params[e.detail.filterBy]) {
+            this.clearSelection();
+            delete this.nxProvider.params[e.detail.filterBy];
+          }
         } else if (e.detail.value.length > 0) {
           this.clearSelection();
           if (e.detail.filterExpression) {
@@ -539,7 +561,18 @@ export const PageProviderDisplayBehavior = [
           } else {
             this.nxProvider.params[e.detail.filterBy] = e.detail.value;
           }
-          this.fetch();
+        }
+
+        // Debounce fetch to batch rapid filter updates (WEBUI-1885)
+        this._columnFilterDebouncer = Debouncer.debounce(this._columnFilterDebouncer, timeOut.after(50), () => {
+          if (this._hasPageProvider() && this.nxProvider && !this._recentlyRestoredFilters) {
+            this.fetch();
+          }
+        });
+
+        // Notify that settings changed so filter values are persisted (WEBUI-1885)
+        if (typeof this._fireSettingsChanged === 'function') {
+          this._fireSettingsChanged({ source: 'column-filter' });
         }
       }
     },
