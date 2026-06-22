@@ -3510,6 +3510,22 @@ typedArrayTags[weakMapTag] = false;
               event.preventDefault();
               this.open();
             }
+          } else if (keyCode === KEY_TAB && event.shiftKey && !event.ctrlKey && !event.altKey) {
+            // Shift+Tab while the dropdown is OPEN must also close it as focus
+            // leaves the field backwards. The browser's default Shift+Tab already
+            // moves focus to the previous tabbable element correctly, so we only
+            // close the dropdown here (without preventing the default). _tabbingOut
+            // guards against close()/blur side-effects re-opening the dropdown
+            // during the transition.
+            if (this.dropdown) {
+              clearTimeout(this._tabbingOutTimeout);
+              this._tabbingOut = true;
+              this.close();
+              this._tabbingOutTimeout = setTimeout(() => {
+                this._tabbingOut = false;
+                this._tabbingOutTimeout = 0;
+              }, 300);
+            }
           }
         },
 
@@ -3810,8 +3826,19 @@ typedArrayTags[weakMapTag] = false;
      * @private
      */
         _focused() {
-          // Two-step Tab accessibility model: focusing must NOT open dropdown.
-          if (!this.enabled || this._tabbingOut) return;
+          // Single-select opens the dropdown as soon as the field receives focus, giving a clear
+          // visual indication that the field is focused (ELEMENTS-1953). The two-step "Tab to open"
+          // model is kept only for multiple-select. `_tabbingOut` guards against the close()/focus
+          // side-effects re-opening the dropdown while focus is leaving the field via Tab/Shift+Tab.
+          if (
+            this.enabled &&
+            !this._closing &&
+            !this._opening &&
+            !this._tabbingOut &&
+            this.options.showDropdown !== false
+          ) {
+            this.open();
+          }
         },
 
         /**
