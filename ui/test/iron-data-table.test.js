@@ -1579,6 +1579,56 @@ suite('iron-data-table extras', () => {
       el.notifyResize.restore();
     });
 
+    test('updates expression and name on existing filter entry (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', name: 'Title', hidden: false }];
+      el.filters = [{ path: 'dc:title', value: 'old', name: 'Stale Name', expression: 'stale' }];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = {
+        columns: { 'dc:title': { hidden: false, filterValue: 'new', filterExpression: '%$term%' } },
+      };
+
+      expect(el.filters).to.have.lengthOf(1);
+      expect(el.filters[0].value).to.equal('new');
+      expect(el.filters[0].expression).to.equal('%$term%');
+      expect(el.filters[0].name).to.equal('Title');
+
+      el.fetch.restore();
+      el.notifyResize.restore();
+    });
+
+    test('treats $ in user filter value literally when applying filterExpression (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      // $1 in the search term must not be treated as a back-reference
+      el.settings = {
+        columns: { 'dc:title': { hidden: false, filterValue: '$1 test', filterExpression: '%$term%' } },
+      };
+
+      expect(provider.params['dc:title']).to.equal('%$1 test%');
+
+      el.fetch.restore();
+      el.notifyResize.restore();
+    });
+
     test('resets nxProvider.page to 1 when paginable', async () => {
       const el = await newTable();
       el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
@@ -1616,6 +1666,72 @@ suite('iron-data-table extras', () => {
       sinon.stub(el, 'notifyResize');
 
       el.settings = { columns: { 'dc:title': { hidden: true } } };
+
+      expect(fetchStub).to.not.have.been.called;
+
+      fetchStub.restore();
+      el.notifyResize.restore();
+    });
+
+    test('fetches only once when both filters and sortOrder are restored (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      const fetchStub = sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = {
+        columns: { 'dc:title': { hidden: false, filterValue: 'hello' } },
+        sortOrder: [{ path: 'dc:title', direction: 'asc' }],
+      };
+
+      expect(fetchStub).to.have.been.calledOnce;
+
+      fetchStub.restore();
+      el.notifyResize.restore();
+    });
+
+    test('fetches when only sortOrder is restored and nxProvider.auto is false (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      const fetchStub = sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = { sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
+
+      expect(fetchStub).to.have.been.calledOnce;
+
+      fetchStub.restore();
+      el.notifyResize.restore();
+    });
+
+    test('does not fetch when only sortOrder is restored and nxProvider.auto is true (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = true;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      const fetchStub = sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = { sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
 
       expect(fetchStub).to.not.have.been.called;
 
