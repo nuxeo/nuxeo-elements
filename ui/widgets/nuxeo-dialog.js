@@ -165,17 +165,7 @@ IronOverlayManager._overlayWithBackdrop = function() {
             return;
           }
           if (!this._containsDeepFocus()) {
-            const focusTarget = this.querySelector('[autofocus]');
-            if (focusTarget) {
-              focusTarget.focus({ preventScroll: true });
-            } else {
-              const focusables = this._getFocusableElements();
-              if (focusables.length > 0) {
-                focusables[0].focus({ preventScroll: true });
-              } else {
-                this.focus({ preventScroll: true });
-              }
-            }
+            this._focusInitialTarget();
           }
         });
       }
@@ -340,14 +330,74 @@ IronOverlayManager._overlayWithBackdrop = function() {
           return;
         }
         if (!this._containsDeepFocus()) {
-          const focusables = this._getFocusableElements();
-          if (focusables.length > 0) {
-            focusables[0].focus({ preventScroll: true });
-          } else {
-            this.focus({ preventScroll: true });
-          }
+          this._focusInitialTarget();
         }
       });
+    }
+
+    /**
+     * Returns true if focusing the given element would open a Nuxeo suggestion
+     * dropdown (e.g. nuxeo-directory/user/document-suggestion, nuxeo-selectivity,
+     * nuxeo-dropdown-aggregation). These widgets call their selectivity `open()`
+     * from a `focus` handler, so programmatically focusing them on dialog open or
+     * focus recovery pops a dropdown that overlays the field's own controls (e.g.
+     * the selectivity caret), breaking subsequent pointer interactions.
+     */
+    _opensDropdownOnFocus(el) {
+      let node = el;
+      while (node && node !== this) {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const name = node.localName || '';
+          if (name === 'nuxeo-selectivity' || name === 'nuxeo-dropdown-aggregation' || name.endsWith('-suggestion')) {
+            return true;
+          }
+          if (
+            node.classList &&
+            (node.classList.contains('selectivity-single-select-input') ||
+              node.classList.contains('selectivity-single-select') ||
+              node.classList.contains('selectivity-multiple-input'))
+          ) {
+            return true;
+          }
+        }
+        if (node.parentNode instanceof ShadowRoot) {
+          node = node.parentNode.host;
+        } else if (node.parentNode) {
+          node = node.parentNode;
+        } else if (node.getRootNode && node.getRootNode() instanceof ShadowRoot) {
+          node = node.getRootNode().host;
+        } else {
+          break;
+        }
+      }
+      return false;
+    }
+
+    /**
+     * Picks the initial/recovery focus target inside the dialog while keeping focus
+     * trapped. Prefers an explicit `[autofocus]` element, then the first focusable
+     * that does not open a suggestion dropdown on focus (see _opensDropdownOnFocus),
+     * and finally falls back to the dialog itself so focus stays within the trap
+     * without triggering field side-effects.
+     */
+    _focusInitialTarget() {
+      const autofocusEl = this.querySelector('[autofocus]');
+      if (autofocusEl) {
+        autofocusEl.focus({ preventScroll: true });
+        return;
+      }
+      const focusables = this._getFocusableElements();
+      const safe = focusables.find((el) => !this._opensDropdownOnFocus(el));
+      if (safe) {
+        safe.focus({ preventScroll: true });
+        return;
+      }
+      // Only dropdown-opening fields are available — focus the dialog itself so the
+      // focus trap remains effective without popping a dropdown.
+      if (!this.hasAttribute('tabindex')) {
+        this.setAttribute('tabindex', '-1');
+      }
+      this.focus({ preventScroll: true });
     }
 
     /**
