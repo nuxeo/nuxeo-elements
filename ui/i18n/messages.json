@@ -288,6 +288,8 @@
   "popupPermission.dateBased": "Date-based",
   "popupPermission.email": "Email",
   "popupPermission.from": "From",
+  "popupPermission.newExternalPermission": "New External Permission",
+  "popupPermission.newLocalPermission": "New Local Permission",
   "popupPermission.newPermission": "New",
   "popupPermission.notify": "Send an email to notify user",
   "popupPermission.notifyLabel": "Notification email",
