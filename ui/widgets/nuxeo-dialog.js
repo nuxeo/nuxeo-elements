@@ -306,6 +306,14 @@ IronOverlayManager._overlayWithBackdrop = function() {
       if (!this.opened || !(this.modal || this.withBackdrop)) {
         return;
       }
+      // Another overlay (e.g. a paper-dropdown-menu / nuxeo-select listbox, or a
+      // nested dialog) is open on top of this dialog. Its own focus management is in
+      // charge while it is open, and forcing focus back into this dialog here would
+      // close that menu — which breaks both real users and automated interactions
+      // (e.g. opening a nuxeo-select inside the bulk-edit dialog). Skip recovery.
+      if (this._hasOverlayOnTop()) {
+        return;
+      }
       // A pointer interaction is currently in progress (mouse/touch is between
       // pointerdown and pointerup). Skip recovery — the upcoming focusin/click
       // will land focus on the intended target. Forcing focus back to the dialog's
@@ -321,6 +329,10 @@ IronOverlayManager._overlayWithBackdrop = function() {
       // Use requestAnimationFrame to check after the browser settles focus.
       requestAnimationFrame(() => {
         if (!this.opened || !(this.modal || this.withBackdrop)) {
+          return;
+        }
+        // Re-check: a menu/overlay may have opened on top in the meantime.
+        if (this._hasOverlayOnTop()) {
           return;
         }
         // Re-check pointer state — the click that triggered the focusout may still
@@ -398,6 +410,23 @@ IronOverlayManager._overlayWithBackdrop = function() {
         this.setAttribute('tabindex', '-1');
       }
       this.focus({ preventScroll: true });
+    }
+
+    /**
+     * Returns true when an overlay (paper-dropdown-menu listbox, nested dialog,
+     * tooltip, etc.) is currently open on top of this dialog. Uses IronOverlayManager's
+     * stack: the last entry is the topmost overlay. While something other than this
+     * dialog is on top, this dialog must not steal focus back (which would dismiss the
+     * inner overlay). The selectivity dropdowns used by suggestion widgets are not
+     * iron-overlays, so they are handled separately via the pointer-interaction guard.
+     */
+    _hasOverlayOnTop() {
+      const overlays = IronOverlayManager._overlays;
+      if (!overlays || overlays.length === 0) {
+        return false;
+      }
+      const top = overlays[overlays.length - 1];
+      return !!top && top !== this;
     }
 
     /**
