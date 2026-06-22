@@ -975,6 +975,8 @@ import '../nuxeo-button-styles.js';
       }
 
       // ---- columns (hidden / order / width / filterValue) ----
+      // Track whether a fetch is needed; deferred to a single call after all settings (filters + sort) are applied (ELEMENTS-1966)
+      let needsFetch = false;
       if (this.columns && settings.columns) {
         // Suppress per-column filter event dispatch while restoring to
         // avoid firing many fetches that may abort each other (WEBUI-1885)
@@ -1030,7 +1032,8 @@ import '../nuxeo-button-styles.js';
             if (effectiveFilterBy && entry.value) {
               // Set provider param
               if (entry.expression) {
-                this.nxProvider.params[effectiveFilterBy] = entry.expression.replace(/(\$term)/g, entry.value);
+                // Use a function replacement to prevent $ in user values being treated as back-references (ELEMENTS-1966)
+                this.nxProvider.params[effectiveFilterBy] = entry.expression.replace(/\$term/g, () => entry.value);
               } else {
                 this.nxProvider.params[effectiveFilterBy] = entry.value;
               }
@@ -1044,16 +1047,14 @@ import '../nuxeo-button-styles.js';
                   expression: entry.expression,
                 });
               } else {
+                // Update all fields to avoid stale expression/name in the filters array (ELEMENTS-1966)
                 this.set(`filters.${existingIdx}.value`, entry.value);
+                this.set(`filters.${existingIdx}.expression`, entry.expression);
+                this.set(`filters.${existingIdx}.name`, column.name);
               }
             }
           });
-          // Single fetch to reflect all restored filters. We call this even when
-          // nxProvider.auto is true because we mutated params in-place
-          // (params[k] = v), which Polymer's auto observer can't detect (WEBUI-1885)
-          if (typeof this.fetch === 'function') {
-            this.fetch();
-          }
+          needsFetch = true; // always needed: params were mutated in-place, Polymer's auto observer can't detect it
         }
       }
 
@@ -1080,13 +1081,17 @@ import '../nuxeo-button-styles.js';
         // keep provider sort aligned with the table's sortOrder
         this._ppSort = sortMap;
         this.nxProvider.sort = sortMap;
-        // refresh results via the table/behavior fetch so items get updated
-        if (typeof this.fetch === 'function' && !this.nxProvider.auto) {
-          this.fetch();
+        if (!this.nxProvider.auto) {
+          needsFetch = true;
         }
 
         // ---- reflow ----
         this.notifyResize();
+      }
+
+      // Single consolidated fetch after all settings (filters + sort) are applied (ELEMENTS-1966)
+      if (needsFetch && typeof this.fetch === 'function') {
+        this.fetch();
       }
     }
 
