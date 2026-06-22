@@ -390,7 +390,7 @@ import './nuxeo-popup-permission.js';
           const last = entity.properties.lastName;
           if (first === null || first.length === 0) {
             if (last === null || last.length === 0) {
-              return id;
+              return (entity.properties && entity.properties.username) || id;
             }
             return last;
           }
@@ -431,7 +431,8 @@ import './nuxeo-popup-permission.js';
       if (typeof entity === 'object') {
         if (entity['entity-type'] === 'user') {
           const { email } = entity.properties;
-          return entity.id + (email !== null && email.length > 0 ? ` - ${email}` : '');
+          const displayId = (entity.properties && entity.properties.username) || entity.id;
+          return displayId + (email !== null && email.length > 0 ? ` - ${email}` : '');
         }
         if (entity['entity-type'] === 'group') {
           return entity.groupname;
