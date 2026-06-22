@@ -1009,6 +1009,9 @@ import '../nuxeo-button-styles.js';
           // filterValue (WEBUI-1885) - restore column filter values
           if (Object.prototype.hasOwnProperty.call(colSettings, 'filterValue') && colSettings.filterValue) {
             this.set(`columns.${idx}.filterValue`, colSettings.filterValue);
+            if (colSettings.filterExpression) {
+              this.set(`columns.${idx}.filterExpression`, colSettings.filterExpression);
+            }
             restoredFilters.push({
               index: idx,
               value: colSettings.filterValue,

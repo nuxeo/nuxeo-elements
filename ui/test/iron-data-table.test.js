@@ -1513,6 +1513,50 @@ suite('iron-data-table extras', () => {
       el.notifyResize.restore();
     });
 
+    test('restores filterExpression onto the column object (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = {
+        columns: { 'dc:title': { hidden: false, filterValue: 'hello', filterExpression: '%$term%' } },
+      };
+
+      expect(el.columns[0].filterExpression).to.equal('%$term%');
+
+      el.fetch.restore();
+      el.notifyResize.restore();
+    });
+
+    test('does not set filterExpression on column when absent from saved settings (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
+
+      expect(el.columns[0].filterExpression).to.be.undefined;
+
+      el.fetch.restore();
+      el.notifyResize.restore();
+    });
+
     test('updates existing entry in this.filters instead of pushing a duplicate', async () => {
       const el = await newTable();
       el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
