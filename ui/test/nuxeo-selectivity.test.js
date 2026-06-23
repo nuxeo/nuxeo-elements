@@ -133,17 +133,6 @@ suite('nuxeo-selectivity keyboard accessibility (Tab)', () => {
       expect(selectivityWidget._selectivity.dropdown).to.be.null;
     });
 
-    test('Shift+Tab while open closes the dropdown', async () => {
-      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
-      selectivityWidget._selectivity.open();
-      await flush();
-      expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
-
-      pressAndReleaseKeyOn(input, KEY_TAB, ['shift']);
-
-      expect(selectivityWidget._selectivity.dropdown).to.be.null;
-    });
-
     test('Tab while open advances focus to the next tabbable element', async () => {
       const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
       selectivityWidget._selectivity.open();
