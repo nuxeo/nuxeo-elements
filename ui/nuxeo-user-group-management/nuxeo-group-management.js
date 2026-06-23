@@ -236,8 +236,8 @@ import '../nuxeo-button-styles.js';
           headers='{"fetch-group": "memberUsers,memberGroups"}'
         >
         </nuxeo-resource>
-        <nuxeo-resource id="users" path="[[_usersPath(groupname)]]" response="{{memberUsers}}" auto></nuxeo-resource>
-        <nuxeo-resource id="groups" path="[[_groupsPath(groupname)]]" response="{{memberGroups}}" auto></nuxeo-resource>
+        <nuxeo-resource id="users" path="[[_usersPath(group)]]" response="{{memberUsers}}" auto></nuxeo-resource>
+        <nuxeo-resource id="groups" path="[[_groupsPath(group)]]" response="{{memberGroups}}" auto></nuxeo-resource>
         <nuxeo-resource
           id="editRequest"
           path="group/[[groupname]]"
@@ -259,7 +259,7 @@ import '../nuxeo-button-styles.js';
         </nuxeo-dialog>
 
         <nuxeo-dialog id="rmFromGroupDialog" with-backdrop class="vertical layout">
-          <h2>[[i18n('groupManagement.removeUserFromGroup.confirm', _removedMember.id)]]</h2>
+          <h2>[[i18n('groupManagement.removeUserFromGroup.confirm', _removedMemberDisplayName)]]</h2>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
               <paper-button noink dialog-dismiss class="secondary">[[i18n('label.no')]]</paper-button>
@@ -396,7 +396,7 @@ import '../nuxeo-button-styles.js';
                             </template>
                           </dom-if>
                         </div>
-                        <div class="flex-4 preserve-white-space" role="columnheader">[[item.id]]</div>
+                        <div class="flex-4 preserve-white-space" role="columnheader">[[_userDisplayName(item)]]</div>
                         <div class="flex-4" role="columnheader">
                           <div class="email-wrapper">
                             <span class="email-text">
@@ -580,6 +580,11 @@ import '../nuxeo-button-styles.js';
         _currentUser: {
           type: Object,
         },
+
+        _removedMemberDisplayName: {
+          type: String,
+          computed: '_userDisplayName(_removedMember)',
+        },
       };
     }
 
@@ -617,7 +622,15 @@ import '../nuxeo-button-styles.js';
     }
 
     _userHasName(user) {
-      return user.properties.firstName || user.properties.lastName;
+      return user && (user.properties.firstName || user.properties.lastName || user.properties.username);
+    }
+
+    _userDisplayName(user) {
+      if (!user) {
+        return '';
+      }
+      const props = user.properties || {};
+      return props.username || user.name || user.id || '';
     }
 
     _getEmail(properties) {
@@ -739,7 +752,7 @@ import '../nuxeo-button-styles.js';
           this._fetchGroups();
         }
         this._removeRecent(this._removedMember.id);
-        this._toast(this.i18n('groupManagement.removedUserFromGroup', this._removedMember.id));
+        this._toast(this.i18n('groupManagement.removedUserFromGroup', this._userDisplayName(this._removedMember)));
       });
     }
 
@@ -860,14 +873,14 @@ import '../nuxeo-button-styles.js';
     }
 
     _usersPath() {
-      if (this.groupname) {
-        return `group/${this.groupname}/@users`;
+      if (this.group) {
+        return `group/${this.group.id || this.group.groupname || this.groupname}/@users`;
       }
     }
 
     _groupsPath() {
-      if (this.groupname) {
-        return `group/${this.groupname}/@groups`;
+      if (this.group) {
+        return `group/${this.group.id || this.group.groupname || this.groupname}/@groups`;
       }
     }
   }

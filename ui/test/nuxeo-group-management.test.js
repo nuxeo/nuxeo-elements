@@ -410,12 +410,29 @@ suite('nuxeo-group-management', () => {
   });
 
   suite('_paths', () => {
-    test('_usersPath and _groupsPath use groupname', () => {
+    test('_usersPath and _groupsPath use group.id when available', () => {
+      el.group = { id: 'admins-id', groupname: 'admins' };
+      expect(el._usersPath()).to.equal('group/admins-id/@users');
+      expect(el._groupsPath()).to.equal('group/admins-id/@groups');
+    });
+
+    test('falls back to group.groupname when id is absent', () => {
+      el.group = { groupname: 'admins' };
+      expect(el._usersPath()).to.equal('group/admins/@users');
+      expect(el._groupsPath()).to.equal('group/admins/@groups');
+    });
+
+    test('falls back to this.groupname when group has neither id nor groupname', () => {
+      el.group = {};
       el.groupname = 'admins';
       expect(el._usersPath()).to.equal('group/admins/@users');
       expect(el._groupsPath()).to.equal('group/admins/@groups');
-      el.groupname = '';
+    });
+
+    test('returns undefined when group is not set', () => {
+      el.group = null;
       expect(el._usersPath()).to.not.be.ok;
+      expect(el._groupsPath()).to.not.be.ok;
     });
   });
 
@@ -453,6 +470,64 @@ suite('nuxeo-group-management', () => {
       expect(ev.defaultPrevented).to.be.true;
       expect(el._saveGroup).to.have.been.calledOnce;
       el._saveGroup.restore();
+    });
+  });
+
+  suite('_userDisplayName', () => {
+    test('returns empty string when user is null or undefined', () => {
+      expect(el._userDisplayName(null)).to.equal('');
+      expect(el._userDisplayName(undefined)).to.equal('');
+    });
+
+    test('prefers properties.username over user.name to avoid showing UUID', () => {
+      expect(
+        el._userDisplayName({
+          id: 'internal-uid',
+          name: 'some-uuid',
+          properties: { username: 'login', firstName: 'A', lastName: 'B' },
+        }),
+      ).to.equal('login');
+    });
+
+    test('falls back to properties.username when name is absent', () => {
+      expect(
+        el._userDisplayName({
+          id: 'uid-1',
+          properties: { username: 'jdoe' },
+        }),
+      ).to.equal('jdoe');
+    });
+
+    test('falls back to id when name and username are absent', () => {
+      expect(
+        el._userDisplayName({
+          id: 'only-id',
+          properties: {},
+        }),
+      ).to.equal('only-id');
+    });
+
+    test('returns empty string when user.properties is absent', () => {
+      expect(el._userDisplayName({ id: 'some-uuid' })).to.equal('some-uuid');
+    });
+  });
+
+  suite('_removedMemberDisplayName computed property', () => {
+    test('reflects _userDisplayName of _removedMember using properties.username', async () => {
+      el._removedMember = {
+        id: 'some-uuid',
+        name: 'some-uuid',
+        'entity-type': 'user',
+        properties: { username: 'jdoe' },
+      };
+      await flush();
+      expect(el._removedMemberDisplayName).to.equal('jdoe');
+    });
+
+    test('falls back to user.name when properties.username is absent', async () => {
+      el._removedMember = { id: 'some-uuid', name: 'jdoe', 'entity-type': 'user', properties: {} };
+      await flush();
+      expect(el._removedMemberDisplayName).to.equal('jdoe');
     });
   });
 });

@@ -147,7 +147,86 @@ suite('nuxeo-user-management', () => {
     });
   });
 
+  suite('_groupSelected', () => {
+    setup(() => {
+      el.user = {
+        id: 'user-uuid',
+        properties: { username: 'jdoe', groups: [] },
+        extendedGroups: [],
+      };
+      el._currentUser = { isAdministrator: true, properties: { username: 'admin' } };
+    });
+
+    test('uses group.id when available in POST path', async () => {
+      sinon.stub(el.$.request, 'post').returns(
+        Promise.resolve({
+          id: 'user-uuid',
+          properties: { username: 'jdoe', groups: ['g1'] },
+          extendedGroups: [{ name: 'g1' }],
+        }),
+      );
+      sinon.spy(el, '_toast');
+      // Set directly on __data to bypass Polymer observer / selectivity widget
+      el.__data.selectedGroup = { id: 'g1-uuid', groupname: 'g1', grouplabel: 'G1' };
+      el._groupSelected();
+      await flush();
+      await Promise.resolve();
+      expect(el.$.request.path).to.equal('user/user-uuid/group/g1-uuid');
+      expect(el._toast).to.have.been.calledWith(el.i18n('userManagement.addedUserToGroup', 'jdoe', 'g1'));
+      el.$.request.post.restore();
+      el._toast.restore();
+    });
+
+    test('falls back to group.name when group.id is absent', async () => {
+      sinon.stub(el.$.request, 'post').returns(
+        Promise.resolve({
+          id: 'user-uuid',
+          properties: { username: 'jdoe', groups: ['g1'] },
+          extendedGroups: [{ name: 'g1' }],
+        }),
+      );
+      sinon.spy(el, '_toast');
+      el.__data.selectedGroup = { groupname: 'g1', grouplabel: 'G1' };
+      el._groupSelected();
+      await flush();
+      await Promise.resolve();
+      expect(el.$.request.path).to.equal('user/user-uuid/group/g1');
+      el.$.request.post.restore();
+      el._toast.restore();
+    });
+
+    test('rejects adding non-admin to administrators group', () => {
+      el._currentUser = { isAdministrator: false, extendedGroups: [], properties: { username: 'jdoe' } };
+      el.__data.selectedGroup = { groupname: 'administrators' };
+      el._groupSelected();
+      expect(el.errors).to.be.ok;
+    });
+  });
+
   suite('_remove', () => {
+    test('removes group membership using group.id when available', async () => {
+      el.user = {
+        id: 'jdoe',
+        properties: { username: 'jdoe', groups: ['g1'] },
+        extendedGroups: [{ name: 'g1', label: 'G1' }],
+      };
+      sinon.spy(el, '_removeRecent');
+      sinon.spy(el, '_removeFromGroup');
+      sinon.spy(el, '_toast');
+      sinon.stub(el.$.request, 'remove').returns(Promise.resolve());
+      el._removedGroup = { id: 'g1-uuid', name: 'g1', label: 'G1' };
+      await el._remove();
+      await Promise.resolve();
+      expect(el.$.request.path).to.equal('user/jdoe/group/g1-uuid');
+      expect(el._removeRecent).to.have.been.calledWith('g1');
+      expect(el._removeFromGroup).to.have.been.calledWith('g1');
+      expect(el._toast).to.have.been.calledWith(el.i18n('userManagement.removedUserFromGroup', 'jdoe', 'g1'));
+      el.$.request.remove.restore();
+      el._removeRecent.restore();
+      el._removeFromGroup.restore();
+      el._toast.restore();
+    });
+
     test('removes group membership', async () => {
       el.user = {
         id: 'jdoe',
@@ -426,6 +505,46 @@ suite('nuxeo-user-management', () => {
       expect(ev.defaultPrevented).to.be.true;
       expect(el._savePassword).to.have.been.calledOnce;
       el._savePassword.restore();
+    });
+  });
+
+  suite('_userDisplayName', () => {
+    test('returns empty string when user is null or undefined', () => {
+      expect(el._userDisplayName(null)).to.equal('');
+      expect(el._userDisplayName(undefined)).to.equal('');
+    });
+
+    test('prefers properties.username over user.name to avoid showing UUID', () => {
+      expect(
+        el._userDisplayName({
+          id: 'internal-uid',
+          name: 'some-uuid',
+          properties: { username: 'loginName' },
+        }),
+      ).to.equal('loginName');
+    });
+
+    test('falls back to user.name when properties.username is absent', () => {
+      expect(
+        el._userDisplayName({
+          id: 'internal-uid',
+          name: 'jdoe',
+          properties: {},
+        }),
+      ).to.equal('jdoe');
+    });
+
+    test('does not use user.id as display name', () => {
+      expect(
+        el._userDisplayName({
+          id: 'generated-uuid',
+          properties: { username: 'jdoe' },
+        }),
+      ).to.equal('jdoe');
+    });
+
+    test('returns empty string when user.properties is absent', () => {
+      expect(el._userDisplayName({ id: 'generated-uuid' })).to.equal('');
     });
   });
 });
