@@ -23,8 +23,6 @@ import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import './widgets/nuxeo-select.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 
 {
   /**
@@ -39,7 +37,7 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-pagination-controls/index.html
    */
-  class PaginationControls extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
+  class PaginationControls extends Nuxeo.Element {
     static get template() {
       return html`
         <style>
@@ -109,7 +107,6 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
             id="firstPage"
             icon="av:skip-previous"
             title="First Page"
-            aria-label$="[[i18n('paginationControls.firstPage')]]"
             on-click="_first"
             disabled$="[[_isFirst(page)]]"
           >
@@ -118,7 +115,6 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
             id="previousPage"
             icon="icons:chevron-left"
             title="Previous Page"
-            aria-label$="[[i18n('paginationControls.previousPage')]]"
             on-click="_previous"
             disabled$="[[_isFirst(page)]]"
           >
@@ -135,7 +131,6 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
             id="nextPage"
             icon="icons:chevron-right"
             title="Next Page"
-            aria-label$="[[i18n('paginationControls.nextPage')]]"
             on-click="_next"
             disabled$="[[_isLast(page, numberOfPages)]]"
           >
@@ -144,7 +139,6 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
             id="lastPage"
             icon="av:skip-next"
             title="Last Page"
-            aria-label$="[[i18n('paginationControls.lastPage')]]"
             on-click="_last"
             disabled$="[[_isLast(page, numberOfPages)]]"
           >
