@@ -8,7 +8,7 @@ You may obtain a copy of the License at
 
     http://www.apache.org/licenses/LICENSE-2.0
 */
-import { fixture, html } from '@nuxeo/testing-helpers';
+import { fixture, flush, html } from '@nuxeo/testing-helpers';
 import '../nuxeo-document-thumbnail/nuxeo-document-thumbnail.js';
 
 suite('nuxeo-document-thumbnail extras', () => {
@@ -88,7 +88,7 @@ suite('nuxeo-document-thumbnail extras', () => {
 
     test('reflects alt value on the img element', async () => {
       el.alt = 'Document thumbnail';
-      await el.updateComplete;
+      await flush();
       expect(el.$.img.getAttribute('alt')).to.equal('Document thumbnail');
     });
 
