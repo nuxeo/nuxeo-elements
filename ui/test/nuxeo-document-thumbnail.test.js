@@ -81,6 +81,22 @@ suite('nuxeo-document-thumbnail extras', () => {
     });
   });
 
+  suite('alt property', () => {
+    test('has empty string as default value', () => {
+      expect(el.alt).to.equal('');
+    });
+
+    test('reflects alt value on the img element', async () => {
+      el.alt = 'Document thumbnail';
+      await el.updateComplete;
+      expect(el.$.img.getAttribute('alt')).to.equal('Document thumbnail');
+    });
+
+    test('img has empty alt when alt property is not set', () => {
+      expect(el.$.img.getAttribute('alt')).to.equal('');
+    });
+  });
+
   suite('isFollowRedirectEnabled', () => {
     let originalConfig;
 

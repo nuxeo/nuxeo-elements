@@ -184,8 +184,8 @@ import '../nuxeo-button-styles.js';
       return this.i18n && this.i18n(`favoritesToggleButton.tooltip.${favorite ? 'remove' : 'add'}`);
     }
 
-    _computeHoverLabel(favorite, doc) {
-      return `${doc && doc.title}${this._computeLabel(favorite)}`;
+    _computeHoverLabel(favorite, _doc) {
+      return this._computeLabel(favorite);
     }
 
     _computeIcon(favorite) {

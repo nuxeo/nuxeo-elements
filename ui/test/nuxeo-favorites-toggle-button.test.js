@@ -144,9 +144,15 @@ suite('nuxeo-favorites-toggle-button extras', () => {
   });
 
   suite('_computeHoverLabel', () => {
-    test('combines doc title and label', () => {
+    test('returns only the action label, not the document title', () => {
       const result = el._computeHoverLabel(false, { title: 'MyDoc' });
-      expect(result).to.include('MyDoc');
+      expect(result).to.not.include('MyDoc');
+      expect(result).to.be.a('string');
+    });
+
+    test('returns the same value as _computeLabel for the given favorite state', () => {
+      expect(el._computeHoverLabel(false, { title: 'MyDoc' })).to.equal(el._computeLabel(false));
+      expect(el._computeHoverLabel(true, { title: 'MyDoc' })).to.equal(el._computeLabel(true));
     });
 
     test('handles null doc gracefully', () => {

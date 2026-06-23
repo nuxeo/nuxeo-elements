@@ -124,8 +124,8 @@ import '../nuxeo-button-styles.js';
       return this.i18n('downloadButton.tooltip');
     }
 
-    _computeHoverLabel(doc) {
-      return `${doc && doc.title}${this._computeLabel()}`;
+    _computeHoverLabel(_doc) {
+      return this._computeLabel();
     }
 
     async _download() {
