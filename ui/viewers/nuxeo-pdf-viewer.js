@@ -80,6 +80,75 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
       return import.meta;
     }
 
+    connectedCallback() {
+      super.connectedCallback();
+      this._iframeLoadHandler = () => {
+        try {
+          const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
+          const iframeWindow = iframe && iframe.contentWindow;
+          if (!iframeWindow) {
+            return;
+          }
+          // Neutralize window.print so Ctrl/Cmd+P cannot trigger the print dialog,
+          // even when PDF.js's own keydown handler (registered earlier inside the
+          // iframe during DOMContentLoaded) runs first and calls window.print().
+          iframeWindow.print = () => {};
+          if (iframeWindow.parent && iframeWindow.parent !== iframeWindow) {
+            try {
+              iframeWindow.parent.print = () => {};
+            } catch (err) {
+              // Intentionally swallowed: setting parent.print throws a SecurityError
+              // when the parent frame is cross-origin. There is nothing to act on.
+              void err;
+            }
+          }
+          // Block Ctrl/Cmd+S (save) and act as a backup for Ctrl/Cmd+P.
+          this._keydownBlocker = (e) => {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P' || e.key === 's' || e.key === 'S')) {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+            }
+          };
+          this._blockedIframeWindow = iframeWindow;
+          iframeWindow.addEventListener('keydown', this._keydownBlocker, true);
+          if (iframeWindow.document) {
+            iframeWindow.document.addEventListener('keydown', this._keydownBlocker, true);
+          }
+        } catch (e) {
+          // Intentionally swallowed: accessing contentWindow properties throws a
+          // SecurityError for cross-origin iframes. There is nothing to act on.
+          void e;
+        }
+      };
+      // Shadow DOM is ready synchronously after connectedCallback in custom elements v1
+      const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
+      if (iframe) {
+        iframe.addEventListener('load', this._iframeLoadHandler);
+      }
+    }
+
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
+      if (iframe && this._iframeLoadHandler) {
+        iframe.removeEventListener('load', this._iframeLoadHandler);
+      }
+      if (this._blockedIframeWindow && this._keydownBlocker) {
+        try {
+          this._blockedIframeWindow.removeEventListener('keydown', this._keydownBlocker, true);
+          if (this._blockedIframeWindow.document) {
+            this._blockedIframeWindow.document.removeEventListener('keydown', this._keydownBlocker, true);
+          }
+        } catch (e) {
+          // Intentionally swallowed: removeEventListener throws a SecurityError
+          // for cross-origin iframes. There is nothing to act on.
+          void e;
+        }
+        this._blockedIframeWindow = null;
+        this._keydownBlocker = null;
+      }
+    }
+
     _path(file) {
       // get an absolute href
       const el = document.createElement('a');
