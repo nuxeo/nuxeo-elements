@@ -43,9 +43,14 @@ suite('nuxeo-download-button extras', () => {
   });
 
   suite('_computeHoverLabel', () => {
-    test('combines title and label', () => {
+    test('returns only the action label, not the document title', () => {
       const result = el._computeHoverLabel({ title: 'MyFile' });
-      expect(result).to.include('MyFile');
+      expect(result).to.not.include('MyFile');
+      expect(result).to.be.a('string');
+    });
+
+    test('returns the same value as _computeLabel', () => {
+      expect(el._computeHoverLabel({ title: 'MyFile' })).to.equal(el._computeLabel());
     });
 
     test('handles null doc', () => {
