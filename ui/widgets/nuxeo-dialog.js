@@ -98,9 +98,6 @@ IronOverlayManager._overlayWithBackdrop = function() {
       this.addEventListener('iron-overlay-opened', this._opened);
       this.addEventListener('iron-overlay-closed', this._onDialogClosed);
       this._boundTrapTab = this._trapTab.bind(this);
-      this._boundRecoverFocus = this._recoverFocus.bind(this);
-      this._inertApplied = false;
-      this._inertedElements = [];
     }
 
     /**
@@ -122,12 +119,6 @@ IronOverlayManager._overlayWithBackdrop = function() {
         this.detached();
       }
       document.removeEventListener('keydown', this._boundTrapTab, true);
-      this.removeEventListener('focusout', this._boundRecoverFocus);
-      // Only clear inert if this instance previously applied it
-      if (this._inertApplied) {
-        this._setBackgroundInert(false);
-        this._inertApplied = false;
-      }
       this._clear();
     }
 
@@ -157,39 +148,51 @@ IronOverlayManager._overlayWithBackdrop = function() {
       // Enable focus trapping for modal or withBackdrop dialogs
       if (this.modal || this.withBackdrop) {
         this.setAttribute('aria-modal', 'true');
-        this._enableFocusTrap(true);
-        // Wait for nested templates and custom elements to fully render before focusing
+        this._enableFocusTrap();
+        // Move initial focus into the dialog so the first Tab stays within the modal
+        // instead of escaping to background content (e.g. the skip link). Wait for nested
+        // templates and custom elements to render before resolving the focus target.
         afterNextRender(this, () => {
           // Bail out if the dialog was closed or disconnected before the callback fired
           if (!this.opened || !this.isConnected) {
             return;
           }
           if (!this._containsDeepFocus()) {
-            this._focusInitialTarget();
+            const focusTarget = this.querySelector('[autofocus]');
+            if (focusTarget) {
+              focusTarget.focus({ preventScroll: true });
+            } else {
+              const focusables = this._getFocusableElements();
+              if (focusables.length > 0) {
+                focusables[0].focus({ preventScroll: true });
+              } else {
+                this.focus({ preventScroll: true });
+              }
+            }
           }
         });
       }
     }
 
     /**
-     * Observes opened + modal to apply aria-modal and inert.
+     * Observes opened + modal to apply aria-modal.
      * Focus trap is enabled in _opened handler (iron-overlay-opened event)
      * to avoid timing issues with withBackdrop which may be undefined initially.
      */
     _openedModalChanged(opened, modal) {
       if (opened && modal) {
         this.setAttribute('aria-modal', 'true');
-        this._enableFocusTrap(true);
+        this._enableFocusTrap();
       } else if (opened && !modal) {
         // modal was toggled off while dialog is open
         // Only remove aria-modal if withBackdrop is not active (it still behaves modally)
         if (!this.withBackdrop) {
           this.removeAttribute('aria-modal');
-          this._disableFocusTrap(true);
+          this._disableFocusTrap();
         }
       } else if (!opened && modal) {
         this.removeAttribute('aria-modal');
-        this._disableFocusTrap(true);
+        this._disableFocusTrap();
       }
     }
 
@@ -200,250 +203,26 @@ IronOverlayManager._overlayWithBackdrop = function() {
       }
       if (this.modal || this.withBackdrop) {
         this.removeAttribute('aria-modal');
-        this._disableFocusTrap(true);
+        this._disableFocusTrap();
       }
     }
 
-    _enableFocusTrap(setInert) {
-      // Lazily initialize in case observer fires before ready()
+    _enableFocusTrap() {
+      // Lazily initialize in case the observer fires before ready().
       if (!this._boundTrapTab) {
         this._boundTrapTab = this._trapTab.bind(this);
       }
-      if (!this._boundRecoverFocus) {
-        this._boundRecoverFocus = this._recoverFocus.bind(this);
-      }
-      if (!this._boundPointerDown) {
-        // Track in-flight pointer interactions so _recoverFocus does not race against
-        // a click that the user is currently dispatching. Without this guard, the
-        // focusout fired when pressing a non-focusable child (e.g. a selectivity caret
-        // icon) schedules a rAF that re-focuses the dialog's first focusable, which
-        // closes any just-opened popups and steals subsequent keystrokes — see e.g.
-        // datatable_editing.feature MultiComplex scenario.
-        this._boundPointerDown = () => {
-          this._pointerInteractionDepth = (this._pointerInteractionDepth || 0) + 1;
-        };
-        this._boundPointerUp = () => {
-          // Reset on next tick so the trailing focusout/focusin from the click has
-          // settled before _recoverFocus is re-armed.
-          setTimeout(() => {
-            this._pointerInteractionDepth = Math.max(0, (this._pointerInteractionDepth || 1) - 1);
-          }, 0);
-        };
-      }
-      // Remove first to prevent duplicate registrations
+      // Trap Tab/Shift+Tab at the document level so keyboard focus cannot leave the
+      // dialog. Remove first to prevent duplicate registrations. aria-modal (set by
+      // the caller) signals modality to assistive technology.
       document.removeEventListener('keydown', this._boundTrapTab, true);
       document.addEventListener('keydown', this._boundTrapTab, true);
-      this.removeEventListener('focusout', this._boundRecoverFocus);
-      this.addEventListener('focusout', this._boundRecoverFocus);
-      // Pointer-interaction depth counter — captured globally to also see clicks on
-      // elements outside this dialog (e.g. clicks targeting child custom elements
-      // whose composed event path is observed at the document level).
-      document.removeEventListener('pointerdown', this._boundPointerDown, true);
-      document.addEventListener('pointerdown', this._boundPointerDown, true);
-      document.removeEventListener('pointerup', this._boundPointerUp, true);
-      document.addEventListener('pointerup', this._boundPointerUp, true);
       this._focusTrapEnabled = true;
-      // Apply inert to background siblings so they cannot intercept pointer events
-      // or receive focus while the dialog is open. Notification regions (toasts, snackbars)
-      // are excluded via _isNotificationRegion so they remain interactive.
-      //
-      // Skip when an ancestor nuxeo-dialog already applied inert: in that case the
-      // background is already protected by the outer dialog, and walking up from this
-      // nested dialog would also inert siblings inside the outer dialog's content,
-      // breaking interactivity in the very surface that opened us (e.g. the data-table
-      // row form opened from within a create-document popup).
-      if (setInert && !this._inertApplied && !this._hasAncestorDialogWithInert()) {
-        this._setBackgroundInert(true);
-        this._inertApplied = true;
-      }
     }
 
-    /**
-     * Returns true if any ancestor `nuxeo-dialog` in the composed tree has already
-     * applied background inert. Used by `_enableFocusTrap` to avoid stacking inert
-     * walks for nested dialogs, where the inner walk would inert siblings inside the
-     * outer dialog's own content.
-     */
-    _hasAncestorDialogWithInert() {
-      let node = this.parentNode;
-      while (node) {
-        if (node instanceof ShadowRoot) {
-          node = node.host;
-          continue;
-        }
-        if (node.nodeType === Node.ELEMENT_NODE && node.localName === 'nuxeo-dialog' && node._inertApplied) {
-          return true;
-        }
-        node = node.parentNode;
-      }
-      return false;
-    }
-
-    _disableFocusTrap(clearInert) {
+    _disableFocusTrap() {
       document.removeEventListener('keydown', this._boundTrapTab, true);
-      this.removeEventListener('focusout', this._boundRecoverFocus);
-      if (this._boundPointerDown) {
-        document.removeEventListener('pointerdown', this._boundPointerDown, true);
-      }
-      if (this._boundPointerUp) {
-        document.removeEventListener('pointerup', this._boundPointerUp, true);
-      }
-      this._pointerInteractionDepth = 0;
-      // Remove inert from background siblings when the dialog closes
-      if (clearInert && this._inertApplied) {
-        this._setBackgroundInert(false);
-        this._inertApplied = false;
-      }
       this._focusTrapEnabled = false;
-    }
-
-    /**
-     * Recovers focus when it escapes the dialog while it's still open and modal/withBackdrop.
-     * This handles cases where DOM changes inside the dialog remove the focused element
-     * (e.g., pressing "Back" in creation wizard removes the form, causing focus to fall to body).
-     */
-    _recoverFocus(e) {
-      if (!this.opened || !(this.modal || this.withBackdrop)) {
-        return;
-      }
-      // Another overlay (e.g. a paper-dropdown-menu / nuxeo-select listbox, or a
-      // nested dialog) is open on top of this dialog. Its own focus management is in
-      // charge while it is open, and forcing focus back into this dialog here would
-      // close that menu — which breaks both real users and automated interactions
-      // (e.g. opening a nuxeo-select inside the bulk-edit dialog). Skip recovery.
-      if (this._hasOverlayOnTop()) {
-        return;
-      }
-      // A pointer interaction is currently in progress (mouse/touch is between
-      // pointerdown and pointerup). Skip recovery — the upcoming focusin/click
-      // will land focus on the intended target. Forcing focus back to the dialog's
-      // first focusable here would close popups or steal the click.
-      if (this._pointerInteractionDepth > 0) {
-        return;
-      }
-      // If relatedTarget is inside the dialog, focus is staying inside — no recovery needed
-      if (e.relatedTarget && this._containsDeep(e.relatedTarget)) {
-        return;
-      }
-      // relatedTarget is null (element removed from DOM) or outside the dialog.
-      // Use requestAnimationFrame to check after the browser settles focus.
-      requestAnimationFrame(() => {
-        if (!this.opened || !(this.modal || this.withBackdrop)) {
-          return;
-        }
-        // Re-check: a menu/overlay may have opened on top in the meantime.
-        if (this._hasOverlayOnTop()) {
-          return;
-        }
-        // Re-check pointer state — the click that triggered the focusout may still
-        // be resolving (pointerup -> click). Skip recovery so the click's natural
-        // focus target wins.
-        if (this._pointerInteractionDepth > 0) {
-          return;
-        }
-        if (!this._containsDeepFocus()) {
-          this._focusInitialTarget();
-        }
-      });
-    }
-
-    /**
-     * Returns true if focusing the given element would open a Nuxeo suggestion
-     * dropdown (e.g. nuxeo-directory/user/document-suggestion, nuxeo-selectivity,
-     * nuxeo-dropdown-aggregation). These widgets call their selectivity `open()`
-     * from a `focus` handler, so programmatically focusing them on dialog open or
-     * focus recovery pops a dropdown that overlays the field's own controls (e.g.
-     * the selectivity caret), breaking subsequent pointer interactions.
-     */
-    _opensDropdownOnFocus(el) {
-      let node = el;
-      while (node && node !== this) {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          const name = node.localName || '';
-          if (name === 'nuxeo-selectivity' || name === 'nuxeo-dropdown-aggregation' || name.endsWith('-suggestion')) {
-            return true;
-          }
-          if (
-            node.classList &&
-            (node.classList.contains('selectivity-single-select-input') ||
-              node.classList.contains('selectivity-single-select') ||
-              node.classList.contains('selectivity-multiple-input'))
-          ) {
-            return true;
-          }
-        }
-        if (node.parentNode instanceof ShadowRoot) {
-          node = node.parentNode.host;
-        } else if (node.parentNode) {
-          node = node.parentNode;
-        } else if (node.getRootNode && node.getRootNode() instanceof ShadowRoot) {
-          node = node.getRootNode().host;
-        } else {
-          break;
-        }
-      }
-      return false;
-    }
-
-    /**
-     * Picks the initial/recovery focus target inside the dialog while keeping focus
-     * trapped. Prefers an explicit `[autofocus]` element, then the first focusable
-     * that does not open a suggestion dropdown on focus (see _opensDropdownOnFocus),
-     * and finally falls back to the dialog itself so focus stays within the trap
-     * without triggering field side-effects.
-     */
-    _focusInitialTarget() {
-      const autofocusEl = this.querySelector('[autofocus]');
-      if (autofocusEl) {
-        autofocusEl.focus({ preventScroll: true });
-        return;
-      }
-      const focusables = this._getFocusableElements();
-      const safe = focusables.find((el) => !this._opensDropdownOnFocus(el));
-      if (safe) {
-        safe.focus({ preventScroll: true });
-        return;
-      }
-      // Only dropdown-opening fields are available — focus the dialog itself so the
-      // focus trap remains effective without popping a dropdown.
-      if (!this.hasAttribute('tabindex')) {
-        this.setAttribute('tabindex', '-1');
-      }
-      this.focus({ preventScroll: true });
-    }
-
-    /**
-     * Returns true when an overlay (paper-dropdown-menu listbox, nested dialog,
-     * tooltip, etc.) is currently open on top of this dialog. Uses IronOverlayManager's
-     * stack: the last entry is the topmost overlay. While something other than this
-     * dialog is on top, this dialog must not steal focus back (which would dismiss the
-     * inner overlay). The selectivity dropdowns used by suggestion widgets are not
-     * iron-overlays, so they are handled separately via the pointer-interaction guard.
-     */
-    _hasOverlayOnTop() {
-      const overlays = IronOverlayManager._overlays;
-      if (!overlays || overlays.length === 0) {
-        return false;
-      }
-      const top = overlays[overlays.length - 1];
-      return !!top && top !== this;
-    }
-
-    /**
-     * Checks if an element is contained within this dialog's composed tree.
-     */
-    _containsDeep(el) {
-      let current = el;
-      while (current) {
-        if (current === this) {
-          return true;
-        }
-        current = current.parentNode || (current.getRootNode && current.getRootNode()).host;
-        if (current instanceof ShadowRoot) {
-          current = current.host;
-        }
-      }
-      return false;
     }
 
     /**
@@ -452,15 +231,32 @@ IronOverlayManager._overlayWithBackdrop = function() {
      * focusable element). For all other positions, the browser's native Tab behavior
      * is preserved — this ensures that components with their own Tab key handling
      * (e.g., nuxeo-selectivity dropdowns) continue to work correctly.
+     *
+     * If focus is still outside the dialog when Tab is first pressed (e.g. after a
+     * deep-link/page reload where the modal opens with focus on document.body), the
+     * first Tab pulls focus into the modal instead of escaping to background content.
      */
     _trapTab(e) {
       if (e.key !== 'Tab' || !this.opened || !(this.modal || this.withBackdrop)) {
         return;
       }
 
-      // Only trap if the focused element is within this dialog (composed tree).
-      // This prevents stealing focus from other overlays when multiple dialogs are open.
+      // When focus is outside this dialog (composed tree), normally we let other overlays
+      // manage their own focus. But on a deep-link / page reload the modal opens with focus
+      // still on document.body, so the very first Tab would escape to background content
+      // (e.g. the app skip link). In that case, pull focus into this modal — but only when
+      // it is the topmost overlay, to avoid stealing focus from a dialog stacked above it.
       if (!this._containsDeepFocus()) {
+        if (IronOverlayManager.currentOverlay() !== this) {
+          return;
+        }
+        const escaped = this._getFocusableElements();
+        if (escaped.length === 0) {
+          return;
+        }
+        e.preventDefault();
+        const target = e.shiftKey ? escaped[escaped.length - 1] : escaped[0];
+        target.focus({ preventScroll: true });
         return;
       }
 
@@ -643,102 +439,6 @@ IronOverlayManager._overlayWithBackdrop = function() {
         }
       }
       return -1;
-    }
-
-    /**
-     * Sets the `inert` attribute on sibling elements at every ancestor level from the dialog
-     * up to document.body, including siblings within shadow roots. This prevents keyboard
-     * focus and screen readers from accessing background content behind the dialog.
-     *
-     * Uses a ref-counting approach via `__nuxeoDialogInertCount` to safely handle:
-     * - Multiple stacked dialogs (each dialog increments/decrements the counter)
-     * - Pre-existing inert attributes (only removes inert when all dialog references are cleared)
-     *
-     * When applying inert, stores affected elements so that cleanup always works correctly
-     * even if the dialog's position in the DOM changes between open and close (e.g., due to
-     * nuxeo-actions-menu reparenting).
-     */
-    /**
-     * Returns true if the given element is (or contains) a notification/live region
-     * such as a toast or snackbar. Those surfaces must remain interactive while the
-     * dialog is open — making them `inert` would propagate `pointer-events: none`
-     * to descendants and cause click-through to underlying elements (e.g. the toast
-     * dismiss button getting intercepted by the page content behind it).
-     */
-    _isNotificationRegion(el) {
-      if (!el || !el.matches) {
-        return false;
-      }
-      const selector =
-        'mwc-snackbar,paper-toast,nuxeo-toast,[role="status"],[role="alert"],[aria-live]:not([aria-live="off"])';
-      return el.matches(selector) || !!el.querySelector(selector);
-    }
-
-    _setBackgroundInert(inert) {
-      if (inert) {
-        // Apply inert and store affected elements for later cleanup
-        this._inertedElements = [];
-        let current = this;
-        let parent = this.parentNode;
-        let stopped = false;
-
-        while (parent && !stopped) {
-          Array.from(parent.children).forEach((sibling) => {
-            if (
-              sibling === current ||
-              sibling.localName === 'style' ||
-              sibling.localName === 'script' ||
-              sibling === this.backdropElement ||
-              // Notification surfaces (toasts/snackbars/live regions) must remain
-              // interactive while the dialog is open. See _isNotificationRegion.
-              this._isNotificationRegion(sibling)
-            ) {
-              return;
-            }
-            if (!sibling.__nuxeoDialogInertCount) {
-              sibling.__nuxeoDialogInertCount = 0;
-              // Track whether the element was already inert before we touched it
-              sibling.__nuxeoDialogWasInert = sibling.hasAttribute('inert');
-            }
-            sibling.__nuxeoDialogInertCount++;
-            sibling.setAttribute('inert', '');
-            this._inertedElements.push(sibling);
-          });
-
-          if (parent instanceof ShadowRoot) {
-            current = parent.host;
-            parent = current.parentNode;
-          } else {
-            current = parent;
-            parent = parent.parentNode;
-          }
-
-          // Stop the walk once we cross into an ancestor nuxeo-dialog's content:
-          // that dialog has already inerted everything outside itself, so continuing
-          // would only inert siblings INSIDE its content (e.g. other form fields next
-          // to the nested data-table that opened us), breaking interactivity in the
-          // surface that opened this nested dialog.
-          if (current && current.nodeType === Node.ELEMENT_NODE && current.localName === 'nuxeo-dialog') {
-            stopped = true;
-          }
-        }
-      } else {
-        // Remove inert using the stored list, ensuring cleanup works regardless of DOM moves
-        this._inertedElements.forEach((sibling) => {
-          if (sibling.__nuxeoDialogInertCount > 0) {
-            sibling.__nuxeoDialogInertCount--;
-            if (sibling.__nuxeoDialogInertCount === 0) {
-              // Only remove inert if the element wasn't already inert before
-              if (!sibling.__nuxeoDialogWasInert) {
-                sibling.removeAttribute('inert');
-              }
-              delete sibling.__nuxeoDialogInertCount;
-              delete sibling.__nuxeoDialogWasInert;
-            }
-          }
-        });
-        this._inertedElements = [];
-      }
     }
 
     _clear() {

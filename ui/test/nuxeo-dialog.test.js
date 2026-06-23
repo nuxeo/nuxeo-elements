@@ -55,10 +55,6 @@ suite('nuxeo-dialog', () => {
       // Do NOT set dialog.opened = false here — that triggers Polymer's async observer
       // (_openedModalChanged), which can race with fixture() cleanup and leave
       // IronOverlayManager in a corrupt state where the next dialog's open is queued forever.
-      if (dialog._inertApplied) {
-        dialog._setBackgroundInert(false);
-        dialog._inertApplied = false;
-      }
       document.removeEventListener('keydown', dialog._boundTrapTab, true);
       dialog.removeAttribute('aria-modal');
     }
@@ -67,14 +63,6 @@ suite('nuxeo-dialog', () => {
     while (IronOverlayManager._overlays && IronOverlayManager._overlays.length) {
       IronOverlayManager.removeOverlay(IronOverlayManager._overlays[0]);
     }
-    // Safety net: clear any stale inert flags
-    Array.from(document.body.children).forEach((child) => {
-      if (child.__nuxeoDialogInertCount) {
-        child.removeAttribute('inert');
-        delete child.__nuxeoDialogInertCount;
-        delete child.__nuxeoDialogWasInert;
-      }
-    });
   });
 
   suite('basic', () => {
@@ -418,6 +406,49 @@ suite('nuxeo-dialog', () => {
       expect(spy).to.have.been.calledOnce;
       spy.restore();
     });
+
+    test('should pull focus into the modal on first Tab when focus is outside the dialog', async () => {
+      dialog = await fixture(html`
+        <nuxeo-dialog modal>
+          <button id="first">First</button>
+          <button id="last">Last</button>
+        </nuxeo-dialog>
+      `);
+      await waitForOpen(dialog);
+      // Simulate a deep-link / page reload where the modal opens with focus still on the body
+      if (document.activeElement && document.activeElement.blur) {
+        document.activeElement.blur();
+      }
+      document.body.focus();
+      await flush();
+      expect(dialog._containsDeepFocus()).to.be.false;
+      const first = dialog.querySelector('#first');
+      const event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+      dialog._trapTab(event);
+      expect(event.defaultPrevented).to.be.true;
+      expect(dialog._getDeepActiveElement()).to.equal(first);
+    });
+
+    test('should pull focus to last element on first Shift+Tab when focus is outside the dialog', async () => {
+      dialog = await fixture(html`
+        <nuxeo-dialog modal>
+          <button id="first">First</button>
+          <button id="last">Last</button>
+        </nuxeo-dialog>
+      `);
+      await waitForOpen(dialog);
+      if (document.activeElement && document.activeElement.blur) {
+        document.activeElement.blur();
+      }
+      document.body.focus();
+      await flush();
+      expect(dialog._containsDeepFocus()).to.be.false;
+      const last = dialog.querySelector('#last');
+      const event = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true });
+      dialog._trapTab(event);
+      expect(event.defaultPrevented).to.be.true;
+      expect(dialog._getDeepActiveElement()).to.equal(last);
+    });
   });
 
   suite('_findContainingFocusableIndex', () => {
@@ -445,113 +476,6 @@ suite('nuxeo-dialog', () => {
       const child = dialog.querySelector('#child');
       const focusables = [container];
       expect(dialog._findContainingFocusableIndex(child, focusables)).to.equal(0);
-    });
-  });
-
-  suite('_setBackgroundInert', () => {
-    let sibling;
-
-    setup(async () => {
-      sibling = document.createElement('div');
-      sibling.id = 'bg-sibling';
-      document.body.appendChild(sibling);
-      dialog = await fixture(html`
-        <nuxeo-dialog modal>
-          <button>OK</button>
-        </nuxeo-dialog>
-      `);
-    });
-
-    teardown(() => {
-      if (sibling && sibling.parentNode) {
-        sibling.removeAttribute('inert');
-        delete sibling.__nuxeoDialogInertCount;
-        delete sibling.__nuxeoDialogWasInert;
-        sibling.parentNode.removeChild(sibling);
-      }
-    });
-
-    test('should set inert on sibling elements', () => {
-      dialog._setBackgroundInert(true);
-      expect(sibling.hasAttribute('inert')).to.be.true;
-      expect(sibling.__nuxeoDialogInertCount).to.equal(1);
-    });
-
-    test('should remove inert from sibling elements', () => {
-      dialog._setBackgroundInert(true);
-      expect(sibling.hasAttribute('inert')).to.be.true;
-      dialog._setBackgroundInert(false);
-      expect(sibling.hasAttribute('inert')).to.be.false;
-      expect(sibling.__nuxeoDialogInertCount).to.be.undefined;
-    });
-
-    test('should not set inert on the dialog itself', () => {
-      dialog._setBackgroundInert(true);
-      expect(dialog.hasAttribute('inert')).to.be.false;
-    });
-
-    test('should not remove inert from elements that were already inert before the dialog', () => {
-      const externalInert = document.createElement('div');
-      externalInert.id = 'external-inert';
-      externalInert.setAttribute('inert', '');
-      document.body.appendChild(externalInert);
-
-      dialog._setBackgroundInert(true);
-      dialog._setBackgroundInert(false);
-
-      // The externally-set inert should remain because the element was already inert
-      expect(externalInert.hasAttribute('inert')).to.be.true;
-
-      externalInert.parentNode.removeChild(externalInert);
-    });
-
-    test('should handle stacked dialogs with ref-counting', async () => {
-      const dialog2 = await fixture(html`
-        <nuxeo-dialog modal>
-          <button>OK2</button>
-        </nuxeo-dialog>
-      `);
-
-      // First dialog sets inert
-      dialog._setBackgroundInert(true);
-      expect(sibling.hasAttribute('inert')).to.be.true;
-      expect(sibling.__nuxeoDialogInertCount).to.equal(1);
-
-      // Second dialog also sets inert — ref count goes to 2
-      dialog2._setBackgroundInert(true);
-      expect(sibling.__nuxeoDialogInertCount).to.equal(2);
-
-      // First dialog clears inert — ref count drops to 1, inert stays
-      dialog._setBackgroundInert(false);
-      expect(sibling.hasAttribute('inert')).to.be.true;
-      expect(sibling.__nuxeoDialogInertCount).to.equal(1);
-
-      // Second dialog clears inert — ref count drops to 0, inert removed
-      dialog2._setBackgroundInert(false);
-      expect(sibling.hasAttribute('inert')).to.be.false;
-      expect(sibling.__nuxeoDialogInertCount).to.be.undefined;
-    });
-
-    test('should clear inert correctly even if dialog is reparented after applying', () => {
-      // Simulates the nuxeo-actions-menu reparenting scenario:
-      // Dialog opens inside an action button (sibling gets inerted), then the action
-      // button is moved to a different DOM location. On close, inert must still be cleared.
-      const wrapper = document.createElement('div');
-      wrapper.id = 'reparent-wrapper';
-      document.body.appendChild(wrapper);
-
-      dialog._setBackgroundInert(true);
-      expect(sibling.hasAttribute('inert')).to.be.true;
-
-      // Reparent the dialog's host to a different container (simulating nuxeo-actions-menu._reparent)
-      wrapper.appendChild(dialog);
-
-      // Now clear inert — should still work because we stored the elements
-      dialog._setBackgroundInert(false);
-      expect(sibling.hasAttribute('inert')).to.be.false;
-      expect(sibling.__nuxeoDialogInertCount).to.be.undefined;
-
-      wrapper.parentNode.removeChild(wrapper);
     });
   });
 
@@ -670,59 +594,26 @@ suite('nuxeo-dialog', () => {
 
     test('_enableFocusTrap should add keydown listener', () => {
       const addSpy = sinon.spy(document, 'addEventListener');
-      dialog._enableFocusTrap(false);
+      dialog._enableFocusTrap();
       expect(addSpy).to.have.been.calledWith('keydown', dialog._boundTrapTab, true);
+      expect(dialog._focusTrapEnabled).to.be.true;
       addSpy.restore();
     });
 
-    test('_enableFocusTrap should apply background inert when setInert is true', () => {
-      const inertSpy = sinon.spy(dialog, '_setBackgroundInert');
-      dialog._enableFocusTrap(true);
-      expect(inertSpy).to.have.been.calledWith(true);
-      expect(dialog._inertApplied).to.be.true;
-      expect(dialog._focusTrapEnabled).to.be.true;
-      inertSpy.restore();
-      // cleanup
-      dialog._setBackgroundInert(false);
-      dialog._inertApplied = false;
-    });
-
-    test('_enableFocusTrap should not apply inert twice (idempotent)', () => {
-      dialog._enableFocusTrap(true);
-      expect(dialog._inertApplied).to.be.true;
-      const inertSpy = sinon.spy(dialog, '_setBackgroundInert');
-      dialog._enableFocusTrap(true);
-      expect(inertSpy).to.not.have.been.called;
-      inertSpy.restore();
-      // cleanup
-      dialog._setBackgroundInert(false);
-      dialog._inertApplied = false;
-    });
-
     test('_disableFocusTrap should remove keydown listener', () => {
-      dialog._enableFocusTrap(false);
+      dialog._enableFocusTrap();
       const removeSpy = sinon.spy(document, 'removeEventListener');
-      dialog._disableFocusTrap(false);
+      dialog._disableFocusTrap();
       expect(removeSpy).to.have.been.calledWith('keydown', dialog._boundTrapTab, true);
-      removeSpy.restore();
-    });
-
-    test('_disableFocusTrap should call _setBackgroundInert(false) when inert was applied', () => {
-      dialog._enableFocusTrap(true);
-      expect(dialog._inertApplied).to.be.true;
-      const inertSpy = sinon.spy(dialog, '_setBackgroundInert');
-      dialog._disableFocusTrap(true);
-      expect(inertSpy).to.have.been.calledWith(false);
-      expect(dialog._inertApplied).to.be.false;
       expect(dialog._focusTrapEnabled).to.be.false;
-      inertSpy.restore();
+      removeSpy.restore();
     });
 
     test('_enableFocusTrap should prevent duplicate listeners', () => {
       const addSpy = sinon.spy(document, 'addEventListener');
       const removeSpy = sinon.spy(document, 'removeEventListener');
-      dialog._enableFocusTrap(false);
-      dialog._enableFocusTrap(false);
+      dialog._enableFocusTrap();
+      dialog._enableFocusTrap();
       // Should call removeEventListener before each addEventListener to prevent duplicates
       expect(removeSpy).to.have.been.calledWith('keydown', dialog._boundTrapTab, true);
       addSpy.restore();
@@ -731,7 +622,7 @@ suite('nuxeo-dialog', () => {
   });
 
   suite('disconnectedCallback cleanup', () => {
-    test('should remove keydown listener and clear inert on disconnect', async () => {
+    test('should remove keydown listener on disconnect', async () => {
       dialog = await fixture(html`
         <nuxeo-dialog modal>
           <button>OK</button>
@@ -739,12 +630,9 @@ suite('nuxeo-dialog', () => {
       `);
       await waitForOpen(dialog);
       const removeSpy = sinon.spy(document, 'removeEventListener');
-      const inertSpy = sinon.spy(dialog, '_setBackgroundInert');
       dialog.parentNode.removeChild(dialog);
       expect(removeSpy.calledWith('keydown', dialog._boundTrapTab, true)).to.be.true;
-      expect(inertSpy).to.have.been.calledWith(false);
       removeSpy.restore();
-      inertSpy.restore();
     });
   });
 
@@ -1065,23 +953,12 @@ suite('nuxeo-dialog extras', () => {
 
     teardown(() => {
       if (dialog) {
-        if (dialog._inertApplied) {
-          dialog._setBackgroundInert(false);
-          dialog._inertApplied = false;
-        }
         document.removeEventListener('keydown', dialog._boundTrapTab, true);
         dialog.removeAttribute('aria-modal');
       }
       while (IronOverlayManager._overlays && IronOverlayManager._overlays.length) {
         IronOverlayManager.removeOverlay(IronOverlayManager._overlays[0]);
       }
-      Array.from(document.body.children).forEach((child) => {
-        if (child.__nuxeoDialogInertCount) {
-          child.removeAttribute('inert');
-          delete child.__nuxeoDialogInertCount;
-          delete child.__nuxeoDialogWasInert;
-        }
-      });
     });
 
     suite('_opened branches', () => {
@@ -1094,41 +971,9 @@ suite('nuxeo-dialog extras', () => {
         // Invoke _opened directly to bypass IronOverlayBehavior; modal/withBackdrop are both false.
         dialog.__data.opened = true;
         dialog._opened({ target: dialog });
-        await new Promise((resolve) => afterNextRender(dialog, resolve));
+        await flush();
         expect(dialog.hasAttribute('aria-modal')).to.be.false;
         expect(dialog._focusTrapEnabled).to.not.equal(true);
-      });
-
-      test('focuses dialog itself when no focusables exist', async () => {
-        dialog = await fixture(html`
-          <nuxeo-dialog modal>
-            <p>no controls</p>
-          </nuxeo-dialog>
-        `);
-        dialog.style.display = '';
-        if (!dialog.hasAttribute('tabindex')) {
-          dialog.setAttribute('tabindex', '-1');
-        }
-        dialog.__data.opened = true;
-        dialog._opened({ target: dialog });
-        await new Promise((resolve) => afterNextRender(dialog, resolve));
-        expect(dialog._getDeepActiveElement()).to.equal(dialog);
-      });
-
-      test('leaves focus where it is when focus is already inside dialog', async () => {
-        dialog = await fixture(html`
-          <nuxeo-dialog modal>
-            <button id="a">A</button>
-            <button id="b">B</button>
-          </nuxeo-dialog>
-        `);
-        dialog.style.display = '';
-        const b = dialog.querySelector('#b');
-        b.focus();
-        dialog.__data.opened = true;
-        dialog._opened({ target: dialog });
-        await new Promise((resolve) => afterNextRender(dialog, resolve));
-        expect(dialog._getDeepActiveElement()).to.equal(b);
       });
     });
 
@@ -1140,96 +985,10 @@ suite('nuxeo-dialog extras', () => {
           </nuxeo-dialog>
         `);
         dialog._boundTrapTab = null;
-        dialog._boundRecoverFocus = null;
-        dialog._enableFocusTrap(false);
+        dialog._enableFocusTrap();
         expect(dialog._boundTrapTab).to.be.a('function');
-        expect(dialog._boundRecoverFocus).to.be.a('function');
         // cleanup
         dialog._disableFocusTrap();
-      });
-    });
-
-    suite('_recoverFocus branches', () => {
-      test('returns early when dialog is not open', async () => {
-        dialog = await fixture(html`
-          <nuxeo-dialog>
-            <button>OK</button>
-          </nuxeo-dialog>
-        `);
-        const spy = sinon.spy(dialog, '_getFocusableElements');
-        dialog._recoverFocus({ relatedTarget: document.body });
-        await new Promise((resolve) => requestAnimationFrame(resolve));
-        expect(spy).to.not.have.been.called;
-        spy.restore();
-      });
-
-      test('returns early when focus moved within the dialog', async () => {
-        dialog = await fixture(html`
-          <nuxeo-dialog modal>
-            <button id="x">X</button>
-          </nuxeo-dialog>
-        `);
-        // Avoid IronOverlayBehavior cross-test corruption by faking opened state.
-        dialog.modal = true;
-        dialog.__data.opened = true;
-        const spy = sinon.spy(dialog, '_getFocusableElements');
-        dialog._recoverFocus({ relatedTarget: dialog.querySelector('#x') });
-        await new Promise((resolve) => requestAnimationFrame(resolve));
-        expect(spy).to.not.have.been.called;
-        spy.restore();
-      });
-
-      test('rAF callback bails out if dialog closed before frame', async () => {
-        dialog = await fixture(html`
-          <nuxeo-dialog modal>
-            <button>OK</button>
-          </nuxeo-dialog>
-        `);
-        dialog.modal = true;
-        dialog.__data.opened = true;
-        const spy = sinon.spy(dialog, '_getFocusableElements');
-        dialog._recoverFocus({ relatedTarget: document.body });
-        // Flip opened to false before rAF callback runs to exercise the guard.
-        dialog.__data.opened = false;
-        await new Promise((resolve) => requestAnimationFrame(resolve));
-        expect(spy).to.not.have.been.called;
-        spy.restore();
-      });
-
-      test('focuses dialog itself when focus escapes and no focusables exist', async () => {
-        dialog = await fixture(html`
-          <nuxeo-dialog modal>
-            <span>nothing</span>
-          </nuxeo-dialog>
-        `);
-        dialog.modal = true;
-        dialog.__data.opened = true;
-        // Exercise: rAF callback should reach the "no focusables" branch.
-        const getSpy = sinon.spy(dialog, '_getFocusableElements');
-        dialog._recoverFocus({ relatedTarget: document.body });
-        await new Promise((resolve) => requestAnimationFrame(resolve));
-        expect(getSpy).to.have.been.called;
-        expect(getSpy.firstCall.returnValue).to.be.empty;
-        getSpy.restore();
-      });
-
-      test('focuses first focusable when focus escapes the dialog', async () => {
-        dialog = await fixture(html`
-          <nuxeo-dialog modal>
-            <button id="a">A</button>
-            <button id="b">B</button>
-          </nuxeo-dialog>
-        `);
-        dialog.modal = true;
-        dialog.__data.opened = true;
-        const a = dialog.querySelector('#a');
-        sinon.stub(dialog, '_isVisible').returns(true);
-        const focusSpy = sinon.spy(a, 'focus');
-        dialog._recoverFocus({ relatedTarget: document.body });
-        await new Promise((resolve) => requestAnimationFrame(resolve));
-        expect(focusSpy).to.have.been.called;
-        focusSpy.restore();
-        dialog._isVisible.restore();
       });
     });
 
@@ -1371,63 +1130,6 @@ suite('nuxeo-dialog extras', () => {
         const focusables = dialog._getFocusableElements();
         const idx = dialog._findContainingFocusableIndex(inner, focusables);
         expect(idx).to.equal(focusables.indexOf(host));
-      });
-    });
-
-    suite('_setBackgroundInert tolerant of zero-count entries', () => {
-      test('does not throw if a tracked element has zero count', async () => {
-        const sibling = document.createElement('div');
-        document.body.appendChild(sibling);
-        dialog = await fixture(html`
-          <nuxeo-dialog>
-            <button>OK</button>
-          </nuxeo-dialog>
-        `);
-        dialog._inertedElements = [sibling];
-        sibling.__nuxeoDialogInertCount = 0;
-        expect(() => dialog._setBackgroundInert(false)).to.not.throw();
-        document.body.removeChild(sibling);
-      });
-    });
-
-    suite('disconnectedCallback defensive inert cleanup', () => {
-      test('clears _inertApplied state when detached', async () => {
-        const sibling = document.createElement('div');
-        document.body.appendChild(sibling);
-        dialog = await fixture(html`
-          <nuxeo-dialog modal>
-            <button>OK</button>
-          </nuxeo-dialog>
-        `);
-        // Simulate stale state from a prior open cycle.
-        dialog._inertApplied = true;
-        dialog._inertedElements = [sibling];
-        sibling.__nuxeoDialogInertCount = 1;
-        sibling.setAttribute('inert', '');
-        const inertSpy = sinon.spy(dialog, '_setBackgroundInert');
-        dialog.parentNode.removeChild(dialog);
-        expect(inertSpy).to.have.been.calledWith(false);
-        expect(dialog._inertApplied).to.be.false;
-        inertSpy.restore();
-        document.body.removeChild(sibling);
-        dialog = null;
-      });
-    });
-
-    suite('_disableFocusTrap with clearInert=true and _inertApplied=true', () => {
-      test('invokes _setBackgroundInert(false) and resets flag', async () => {
-        dialog = await fixture(html`
-          <nuxeo-dialog modal>
-            <button>OK</button>
-          </nuxeo-dialog>
-        `);
-        dialog._inertApplied = true;
-        dialog._inertedElements = [];
-        const inertSpy = sinon.spy(dialog, '_setBackgroundInert');
-        dialog._disableFocusTrap(true);
-        expect(inertSpy).to.have.been.calledWith(false);
-        expect(dialog._inertApplied).to.be.false;
-        inertSpy.restore();
       });
     });
 
