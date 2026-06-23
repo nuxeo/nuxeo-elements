@@ -44,24 +44,6 @@ suite('nuxeo-user-profile', () => {
     });
   });
 
-  suite('_fetch', () => {
-    test('loads user when username is set', async () => {
-      const body = {
-        id: 'jdoe',
-        properties: { password: 'secret', firstName: 'Jane', lastName: 'Doe', groups: ['g1'] },
-        extendedGroups: [{ name: 'g1' }, { name: 'g2' }],
-      };
-      sinon.stub(el.$.request, 'get').returns(Promise.resolve(JSON.parse(JSON.stringify(body))));
-      el.username = 'jdoe';
-      await flush();
-      await Promise.resolve();
-      await Promise.resolve();
-      expect(el.user.properties.password).to.be.undefined;
-      expect(el.user.id).to.equal('jdoe');
-      el.$.request.get.restore();
-    });
-  });
-
   suite('_computeErrorMessage', () => {
     test('matches edit-password messaging', () => {
       expect(el._computeErrorMessage('')).to.equal(el.i18n('editPassword.required'));
@@ -105,13 +87,18 @@ suite('nuxeo-user-profile', () => {
 
   suite('_savePassword', () => {
     setup(() => {
-      el.user = { id: 'jdoe' };
+      el.user = { id: 'jdoe', properties: { groups: [] }, extendedGroups: [] };
       el.$.passwordOld.value = 'old';
       el.$.passwordNew.value = 'new';
     });
 
-    test('updates user closes dialog reconnects on success', async () => {
-      const updated = { id: 'jdoe', properties: {} };
+    test('updates user closes dialog reconnects on success using properties.username', async () => {
+      const updated = {
+        id: 'some-uuid',
+        name: 'jdoe',
+        properties: { username: 'jdoe', groups: [] },
+        extendedGroups: [],
+      };
       sinon.stub(el.$.changePassword, 'put').returns(Promise.resolve(updated));
       sinon.spy(el.$.changePasswordDialog, 'close');
       sinon.stub(el.$.nxcon, 'connect');
@@ -125,6 +112,21 @@ suite('nuxeo-user-profile', () => {
       expect(el.$.nxcon.username).to.equal('jdoe');
       expect(el.$.nxcon.password).to.equal('new');
       expect(el.$.nxcon.connect).to.have.been.calledOnce;
+      el.$.changePassword.put.restore();
+      el.$.changePasswordDialog.close.restore();
+      el.$.nxcon.connect.restore();
+    });
+
+    test('falls back to user.name for nxcon.username when properties.username absent', async () => {
+      const updated = { id: 'some-uuid', name: 'jdoe', properties: { groups: [] }, extendedGroups: [] };
+      sinon.stub(el.$.changePassword, 'put').returns(Promise.resolve(updated));
+      sinon.spy(el.$.changePasswordDialog, 'close');
+      sinon.stub(el.$.nxcon, 'connect');
+      el.$.nxcon.username = '';
+      el._savePassword();
+      await flush();
+      await Promise.resolve();
+      expect(el.$.nxcon.username).to.equal('jdoe');
       el.$.changePassword.put.restore();
       el.$.changePasswordDialog.close.restore();
       el.$.nxcon.connect.restore();
@@ -172,6 +174,50 @@ suite('nuxeo-user-profile', () => {
       expect(ev.defaultPrevented).to.be.true;
       expect(el._savePassword).to.have.been.calledOnce;
       el._savePassword.restore();
+    });
+  });
+
+  suite('_userDisplayName', () => {
+    test('returns empty string when user is null or undefined', () => {
+      expect(el._userDisplayName(null)).to.equal('');
+      expect(el._userDisplayName(undefined)).to.equal('');
+    });
+
+    test('prefers properties.username over user.name to avoid showing UUID', () => {
+      expect(el._userDisplayName({ name: 'some-uuid', properties: { username: 'jdoe' } })).to.equal('jdoe');
+    });
+
+    test('falls back to user.name when properties.username is absent', () => {
+      expect(el._userDisplayName({ name: 'jdoe', properties: {} })).to.equal('jdoe');
+    });
+
+    test('returns empty string when user has no name or username', () => {
+      expect(el._userDisplayName({ properties: {} })).to.equal('');
+    });
+
+    test('returns empty string when user.properties is absent', () => {
+      expect(el._userDisplayName({ id: 'some-uuid' })).to.equal('');
+    });
+  });
+
+  // Keep _fetch last: it sets user with extendedGroups which triggers async rendering of
+  // <nuxeo-group-tag> children. Their stray error after the test boundary can halt the
+  // browser-side mocha runner, so running this suite last avoids skipping subsequent tests.
+  suite('_fetch', () => {
+    test('loads user when username is set', async () => {
+      const body = {
+        id: 'jdoe',
+        properties: { password: 'secret', firstName: 'Jane', lastName: 'Doe', groups: ['g1'] },
+        extendedGroups: [{ name: 'g1' }, { name: 'g2' }],
+      };
+      sinon.stub(el.$.request, 'get').returns(Promise.resolve(JSON.parse(JSON.stringify(body))));
+      el.username = 'jdoe';
+      await flush();
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(el.user.properties.password).to.be.undefined;
+      expect(el.user.id).to.equal('jdoe');
+      el.$.request.get.restore();
     });
   });
 });

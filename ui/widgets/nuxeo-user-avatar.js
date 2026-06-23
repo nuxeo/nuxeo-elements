@@ -143,7 +143,7 @@ import '../nuxeo-icons.js';
     }
 
     _username(user) {
-      return this._isEntity(user) ? user.properties.username || user.properties['user:username'] : this._id(user);
+      return this._isEntity(user) ? user.id : this._id(user);
     }
 
     _isEntity(user) {
@@ -157,7 +157,8 @@ import '../nuxeo-icons.js';
 
     _id(user) {
       if (user) {
-        const id = user.id || user.uid;
+        const id =
+          (user.properties && (user.properties.username || user.properties['user:username'])) || user.id || user.uid;
         return id || user.replace('user:', '');
       }
     }
@@ -166,7 +167,8 @@ import '../nuxeo-icons.js';
       if (this._isEntity(user)) {
         const firstName = user.properties.firstName || user.properties['user:firstName'];
         const lastName = user.properties.lastName || user.properties['user:lastName'];
-        return [firstName, lastName].join(' ').trim() || this._id(user);
+        const username = user.properties.username || user.properties['user:username'];
+        return [firstName, lastName].join(' ').trim() || username || this._id(user);
       }
       return this._id(user);
     }
