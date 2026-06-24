@@ -96,6 +96,7 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
             cursor: pointer;
             text-decoration: none;
             font-size: 1rem;
+            color: var(--nuxeo-text-default);
           }
           /* to fix a blinking default style on safari */
           button:active {
@@ -109,6 +110,7 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
             width: calc(100% - 20px);
             overflow-x: hidden;
             text-align: start;
+            color: var(--nuxeo-text-default);
           }
           iron-icon {
             --iron-icon-height: 20px;
