@@ -233,11 +233,6 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       this._syncNativeInputAriaLabel();
     }
 
-    connectedCallback() {
-      super.connectedCallback();
-      this._syncNativeInputAriaLabel();
-    }
-
     /* Override method from Polymer.IronValidatableBehavior. */
     _getValidity() {
       return this.$.paperInput.validate();
@@ -264,11 +259,6 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
       }
 
       const ariaLabel = this._computeAriaLabel(this.label, this.placeholder);
-      if (ariaLabel) {
-        paperInput.setAttribute('aria-label', ariaLabel);
-      } else {
-        paperInput.removeAttribute('aria-label');
-      }
 
       let nativeInput = (paperInput.inputElement && paperInput.inputElement._inputElement) || paperInput.$.nativeInput;
       if (!nativeInput && paperInput.inputElement) {

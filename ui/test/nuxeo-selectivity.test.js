@@ -40,12 +40,12 @@ import { escapeHTML } from '../widgets/nuxeo-selectivity.js';
  *
  * Assertions are aligned with the current implementation in `ui/widgets/nuxeo-selectivity.js`.
  */
-// Keyboard accessibility (Tab) — two-step Tab pattern so screen readers can
-// announce the field's label before any options are revealed:
-//   - Tab while CLOSED -> open the dropdown, keep focus on this field.
-//   - Tab while OPEN   -> close the dropdown and advance focus to the next
-//                         tabbable element outside the widget.
-// Focusing the field (without pressing Tab) must NOT open the dropdown.
+// Keyboard accessibility (Tab) — two-step Tab pattern for multiple-select; focus-to-open for single-select:
+//   - Single-select: focusing opens the dropdown immediately (gives clear visual feedback).
+//   - Multiple-select: Tab while CLOSED -> open the dropdown, keep focus on this field.
+//                      Tab while OPEN   -> close the dropdown and advance focus to the next
+//                                         tabbable element outside the widget.
+//   - Multiple-select: Focusing the field (without pressing Tab) must NOT open the dropdown.
 suite('nuxeo-selectivity keyboard accessibility (Tab)', () => {
   const KEY_TAB = 9;
   const tabData = ['Berlin', 'Lisbon', 'London', 'Rennes', 'Rome'];
@@ -90,12 +90,13 @@ suite('nuxeo-selectivity keyboard accessibility (Tab)', () => {
       expect(selectivityWidget._selectivity._tabbingOut).to.be.true;
     });
 
-    test('Focusing the input does not open the dropdown (label-only announce)', async () => {
+    test('Focusing the input opens the dropdown (single-select focus-to-open behaviour)', async () => {
       const mainInput = dom(selectivityWidget.root).querySelector('.selectivity-single-select-input');
       mainInput.focus();
       await flush();
 
-      expect(selectivityWidget._selectivity.dropdown).to.be.null;
+      expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
+      selectivityWidget._selectivity.close();
     });
   });
 
@@ -128,6 +129,17 @@ suite('nuxeo-selectivity keyboard accessibility (Tab)', () => {
       expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
 
       pressAndReleaseKeyOn(input, KEY_TAB);
+
+      expect(selectivityWidget._selectivity.dropdown).to.be.null;
+    });
+
+    test('Shift+Tab while open closes the dropdown', async () => {
+      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
+      selectivityWidget._selectivity.open();
+      await flush();
+      expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
+
+      pressAndReleaseKeyOn(input, KEY_TAB, ['shift']);
 
       expect(selectivityWidget._selectivity.dropdown).to.be.null;
     });

@@ -183,11 +183,6 @@ import '@polymer/paper-input/paper-textarea.js';
       this._syncNativeTextareaAriaLabel();
     }
 
-    connectedCallback() {
-      super.connectedCallback();
-      this._syncNativeTextareaAriaLabel();
-    }
-
     _computeAriaLabel(label, placeholder) {
       const normalizedLabel = (label || '').trim();
       if (normalizedLabel) {
@@ -209,11 +204,6 @@ import '@polymer/paper-input/paper-textarea.js';
       }
 
       const ariaLabel = this._computeAriaLabel(this.label, this.placeholder);
-      if (ariaLabel) {
-        paperTextarea.setAttribute('aria-label', ariaLabel);
-      } else {
-        paperTextarea.removeAttribute('aria-label');
-      }
 
       let nativeTextarea = paperTextarea.shadowRoot && paperTextarea.shadowRoot.querySelector('textarea');
       if (!nativeTextarea && paperTextarea.$ && paperTextarea.$.input && paperTextarea.$.input.textarea) {
