@@ -530,4 +530,196 @@ suite('nuxeo-group-management', () => {
       expect(el._removedMemberDisplayName).to.equal('jdoe');
     });
   });
+
+  suite('_applySortDirectionChanged', () => {
+    test('adds path with asc direction when not present', () => {
+      const result = el._applySortDirectionChanged([], 'lastName', 'asc');
+      expect(result).to.deep.equal([{ path: 'lastName', direction: 'asc' }]);
+    });
+
+    test('updates direction when path already present', () => {
+      const result = el._applySortDirectionChanged([{ path: 'lastName', direction: 'asc' }], 'lastName', 'desc');
+      expect(result).to.deep.equal([{ path: 'lastName', direction: 'desc' }]);
+    });
+
+    test('removes path when direction is null', () => {
+      const result = el._applySortDirectionChanged([{ path: 'lastName', direction: 'asc' }], 'lastName', null);
+      expect(result).to.deep.equal([]);
+    });
+
+    test('appends new path without affecting existing ones', () => {
+      const result = el._applySortDirectionChanged([{ path: 'lastName', direction: 'asc' }], 'email', 'asc');
+      expect(result).to.deep.equal([
+        { path: 'lastName', direction: 'asc' },
+        { path: 'email', direction: 'asc' },
+      ]);
+    });
+
+    test('does not mutate the original array', () => {
+      const cols = [{ path: 'lastName', direction: 'asc' }];
+      el._applySortDirectionChanged(cols, 'lastName', null);
+      expect(cols).to.deep.equal([{ path: 'lastName', direction: 'asc' }]);
+    });
+
+    test('does not add entry when direction is null and path is absent', () => {
+      const result = el._applySortDirectionChanged([], 'lastName', null);
+      expect(result).to.deep.equal([]);
+    });
+  });
+
+  suite('_isSortActive', () => {
+    test('returns true when path is active', () => {
+      expect(el._isSortActive([{ path: 'lastName', direction: 'asc' }], 'lastName')).to.be.true;
+    });
+
+    test('returns false when path is not active', () => {
+      expect(el._isSortActive([{ path: 'lastName', direction: 'asc' }], 'email')).to.be.false;
+    });
+
+    test('returns false for empty array', () => {
+      expect(el._isSortActive([], 'lastName')).to.be.false;
+    });
+
+    test('returns falsy for null sortOrder', () => {
+      expect(el._isSortActive(null, 'lastName')).to.not.be.ok;
+    });
+  });
+
+  suite('_ariaSort', () => {
+    test('returns ascending for asc column', () => {
+      expect(el._ariaSort([{ path: 'lastName', direction: 'asc' }], 'lastName')).to.equal('ascending');
+    });
+
+    test('returns descending for desc column', () => {
+      expect(el._ariaSort([{ path: 'lastName', direction: 'desc' }], 'lastName')).to.equal('descending');
+    });
+
+    test('returns none when path is not present', () => {
+      expect(el._ariaSort([], 'lastName')).to.equal('none');
+    });
+  });
+
+  suite('_onMemberUserSortChanged', () => {
+    test('adds column, resets users page to 1, and refetches', () => {
+      el.group = {};
+      el.usersCurrentPage = 4;
+      sinon.spy(el, '_fetchUsers');
+      el._onMemberUserSortChanged({ detail: { path: 'lastName', direction: 'asc' } });
+      expect(el._memberUserSortOrder).to.deep.equal([{ path: 'lastName', direction: 'asc' }]);
+      expect(el.usersCurrentPage).to.equal(1);
+      expect(el._fetchUsers).to.have.been.calledOnce;
+      el._fetchUsers.restore();
+    });
+
+    test('updates direction on second event', () => {
+      el.group = {};
+      sinon.stub(el, '_fetchUsers');
+      el._onMemberUserSortChanged({ detail: { path: 'email', direction: 'asc' } });
+      el._onMemberUserSortChanged({ detail: { path: 'email', direction: 'desc' } });
+      expect(el._memberUserSortOrder).to.deep.equal([{ path: 'email', direction: 'desc' }]);
+      el._fetchUsers.restore();
+    });
+
+    test('removes column when direction is null', () => {
+      el.group = {};
+      sinon.stub(el, '_fetchUsers');
+      el._onMemberUserSortChanged({ detail: { path: 'username', direction: 'asc' } });
+      el._onMemberUserSortChanged({ detail: { path: 'username', direction: null } });
+      expect(el._memberUserSortOrder).to.deep.equal([]);
+      el._fetchUsers.restore();
+    });
+  });
+
+  suite('_onMemberGroupSortChanged', () => {
+    test('adds column, resets groups page to 1, and refetches', () => {
+      el.group = {};
+      el.groupsCurrentPage = 2;
+      sinon.spy(el, '_fetchGroups');
+      el._onMemberGroupSortChanged({ detail: { path: 'grouplabel', direction: 'asc' } });
+      expect(el._memberGroupSortOrder).to.deep.equal([{ path: 'grouplabel', direction: 'asc' }]);
+      expect(el.groupsCurrentPage).to.equal(1);
+      expect(el._fetchGroups).to.have.been.calledOnce;
+      el._fetchGroups.restore();
+    });
+
+    test('updates direction on second event', () => {
+      el.group = {};
+      sinon.stub(el, '_fetchGroups');
+      el._onMemberGroupSortChanged({ detail: { path: 'groupname', direction: 'asc' } });
+      el._onMemberGroupSortChanged({ detail: { path: 'groupname', direction: 'desc' } });
+      expect(el._memberGroupSortOrder).to.deep.equal([{ path: 'groupname', direction: 'desc' }]);
+      el._fetchGroups.restore();
+    });
+
+    test('removes column when direction is null', () => {
+      el.group = {};
+      sinon.stub(el, '_fetchGroups');
+      el._onMemberGroupSortChanged({ detail: { path: 'grouplabel', direction: 'asc' } });
+      el._onMemberGroupSortChanged({ detail: { path: 'grouplabel', direction: null } });
+      expect(el._memberGroupSortOrder).to.deep.equal([]);
+      el._fetchGroups.restore();
+    });
+  });
+
+  suite('_fetchUsers with sort', () => {
+    test('includes sortBy and sortOrder when member user sort columns are set', () => {
+      el.group = {};
+      el.usersFilter = '';
+      el.usersCurrentPage = 1;
+      el._memberUserSortOrder = [
+        { path: 'lastName', direction: 'asc' },
+        { path: 'email', direction: 'desc' },
+      ];
+      el._fetchUsers();
+      expect(el.$.users.params.sortBy).to.equal('lastName,email');
+      expect(el.$.users.params.sortOrder).to.equal('asc,desc');
+    });
+
+    test('omits sortBy and sortOrder when no sort columns', () => {
+      el.group = {};
+      el._memberUserSortOrder = [];
+      el._fetchUsers();
+      expect(el.$.users.params.sortBy).to.be.undefined;
+      expect(el.$.users.params.sortOrder).to.be.undefined;
+    });
+
+    test('applies single-column sort correctly', () => {
+      el.group = {};
+      el._memberUserSortOrder = [{ path: 'username', direction: 'asc' }];
+      el._fetchUsers();
+      expect(el.$.users.params.sortBy).to.equal('username');
+      expect(el.$.users.params.sortOrder).to.equal('asc');
+    });
+  });
+
+  suite('_fetchGroups with sort', () => {
+    test('includes sortBy and sortOrder when member group sort columns are set', () => {
+      el.group = {};
+      el.groupsFilter = '';
+      el.groupsCurrentPage = 1;
+      el._memberGroupSortOrder = [
+        { path: 'grouplabel', direction: 'desc' },
+        { path: 'groupname', direction: 'asc' },
+      ];
+      el._fetchGroups();
+      expect(el.$.groups.params.sortBy).to.equal('grouplabel,groupname');
+      expect(el.$.groups.params.sortOrder).to.equal('desc,asc');
+    });
+
+    test('omits sortBy and sortOrder when no sort columns', () => {
+      el.group = {};
+      el._memberGroupSortOrder = [];
+      el._fetchGroups();
+      expect(el.$.groups.params.sortBy).to.be.undefined;
+      expect(el.$.groups.params.sortOrder).to.be.undefined;
+    });
+
+    test('applies single-column sort correctly', () => {
+      el.group = {};
+      el._memberGroupSortOrder = [{ path: 'grouplabel', direction: 'desc' }];
+      el._fetchGroups();
+      expect(el.$.groups.params.sortBy).to.equal('grouplabel');
+      expect(el.$.groups.params.sortOrder).to.equal('desc');
+    });
+  });
 });
