@@ -69,5 +69,3 @@ export const SortBehavior = {
     return col.direction === 'asc' ? 'ascending' : 'descending';
   },
 };
-
-Nuxeo.SortBehavior = SortBehavior;
