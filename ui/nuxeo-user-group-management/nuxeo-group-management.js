@@ -29,7 +29,10 @@ import '@polymer/polymer/lib/elements/dom-if.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { FiltersBehavior } from '../nuxeo-filters-behavior.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { SortBehavior } from '../nuxeo-sort-behavior.js';
 import '../nuxeo-pagination-controls.js';
+import '../nuxeo-data-table/data-table-icons.js';
+import '../nuxeo-data-table/data-table-column-sort.js';
 import '../widgets/nuxeo-card.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-group-tag.js';
@@ -40,6 +43,7 @@ import '../widgets/nuxeo-selectivity.js';
 import '../widgets/nuxeo-user-tag.js';
 import './nuxeo-user-group-permissions-table.js';
 import '../nuxeo-button-styles.js';
+import '../nuxeo-sort-styles.js';
 
 {
   /**
@@ -52,12 +56,13 @@ import '../nuxeo-button-styles.js';
    *
    * @appliesMixin Nuxeo.I18nBehavior
    * @appliesMixin Nuxeo.FiltersBehavior
+   * @appliesMixin Nuxeo.SortBehavior
    * @memberof Nuxeo
    */
-  class GroupManagement extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
+  class GroupManagement extends mixinBehaviors([I18nBehavior, FiltersBehavior, SortBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="iron-flex iron-flex-alignment iron-flex-factors nuxeo-button-styles">
+        <style include="iron-flex iron-flex-alignment iron-flex-factors nuxeo-button-styles nuxeo-sort-styles">
           :host {
             display: block;
           }
@@ -378,9 +383,45 @@ import '../nuxeo-button-styles.js';
             aria-rowcount="[[memberUsers.entries.length]]"
           >
             <div class="table-header" role="row">
-              <div class="flex-4" role="columnheader">[[i18n('groupManagement.name')]]</div>
-              <div class="flex-4" role="columnheader">[[i18n('groupManagement.identifier')]]</div>
-              <div class="flex-4" role="columnheader">[[i18n('label.directories.nature.email')]]</div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isSortActive(_memberUserSortOrder, 'lastName')]]"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_memberUserSortOrder, 'lastName')]]"
+              >
+                [[i18n('groupManagement.name')]]
+                <nuxeo-data-table-column-sort
+                  path="lastName"
+                  sort-order="[[_memberUserSortOrder]]"
+                  on-sort-direction-changed="_onMemberUserSortChanged"
+                ></nuxeo-data-table-column-sort>
+              </div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isSortActive(_memberUserSortOrder, 'username')]]"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_memberUserSortOrder, 'username')]]"
+              >
+                [[i18n('groupManagement.identifier')]]
+                <nuxeo-data-table-column-sort
+                  path="username"
+                  sort-order="[[_memberUserSortOrder]]"
+                  on-sort-direction-changed="_onMemberUserSortChanged"
+                ></nuxeo-data-table-column-sort>
+              </div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isSortActive(_memberUserSortOrder, 'email')]]"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_memberUserSortOrder, 'email')]]"
+              >
+                [[i18n('label.directories.nature.email')]]
+                <nuxeo-data-table-column-sort
+                  path="email"
+                  sort-order="[[_memberUserSortOrder]]"
+                  on-sort-direction-changed="_onMemberUserSortChanged"
+                ></nuxeo-data-table-column-sort>
+              </div>
               <div class="table-actions" role="columnheader"></div>
             </div>
             <div class="table-rows" role="rowgroup">
@@ -456,8 +497,32 @@ import '../nuxeo-button-styles.js';
             aria-rowcount="[[memberGroups.entries.length]]"
           >
             <div class="table-header" role="row">
-              <div class="flex-4" role="columnheader">[[i18n('groupManagement.name')]]</div>
-              <div class="flex-4" role="columnheader">[[i18n('groupManagement.identifier')]]</div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isSortActive(_memberGroupSortOrder, 'grouplabel')]]"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_memberGroupSortOrder, 'grouplabel')]]"
+              >
+                [[i18n('groupManagement.name')]]
+                <nuxeo-data-table-column-sort
+                  path="grouplabel"
+                  sort-order="[[_memberGroupSortOrder]]"
+                  on-sort-direction-changed="_onMemberGroupSortChanged"
+                ></nuxeo-data-table-column-sort>
+              </div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isSortActive(_memberGroupSortOrder, 'groupname')]]"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_memberGroupSortOrder, 'groupname')]]"
+              >
+                [[i18n('groupManagement.identifier')]]
+                <nuxeo-data-table-column-sort
+                  path="groupname"
+                  sort-order="[[_memberGroupSortOrder]]"
+                  on-sort-direction-changed="_onMemberGroupSortChanged"
+                ></nuxeo-data-table-column-sort>
+              </div>
               <div class="table-actions" role="columnheader"></div>
             </div>
             <div class="table-rows" role="rowgroup">
@@ -585,6 +650,18 @@ import '../nuxeo-button-styles.js';
           type: String,
           computed: '_userDisplayName(_removedMember)',
         },
+
+        // Array of { path, direction } for multi-column sort on member users (nuxeo-data-table-column-sort contract)
+        _memberUserSortOrder: {
+          type: Array,
+          value: () => [],
+        },
+
+        // Array of { path, direction } for multi-column sort on member groups
+        _memberGroupSortOrder: {
+          type: Array,
+          value: () => [],
+        },
       };
     }
 
@@ -669,6 +746,10 @@ import '../nuxeo-button-styles.js';
           q: this.groupsFilter,
           currentPageIndex: this.groupsCurrentPage - 1,
         };
+        if (this._memberGroupSortOrder.length > 0) {
+          params.sortBy = this._memberGroupSortOrder.map((c) => c.path).join(',');
+          params.sortOrder = this._memberGroupSortOrder.map((c) => c.direction).join(',');
+        }
         this.$.groups.params = params;
       }
     }
@@ -685,6 +766,10 @@ import '../nuxeo-button-styles.js';
           q: this.usersFilter,
           currentPageIndex: this.usersCurrentPage - 1,
         };
+        if (this._memberUserSortOrder.length > 0) {
+          params.sortBy = this._memberUserSortOrder.map((c) => c.path).join(',');
+          params.sortOrder = this._memberUserSortOrder.map((c) => c.direction).join(',');
+        }
         this.$.users.params = params;
       }
     }
@@ -881,6 +966,32 @@ import '../nuxeo-button-styles.js';
     _groupsPath() {
       if (this.group) {
         return `group/${this.group.id || this.group.groupname || this.groupname}/@groups`;
+      }
+    }
+
+    _onMemberUserSortChanged(e) {
+      this._memberUserSortOrder = this._applySortDirectionChanged(
+        this._memberUserSortOrder,
+        e.detail.path,
+        e.detail.direction,
+      );
+      if (this.usersCurrentPage === 1) {
+        this._fetchUsers();
+      } else {
+        this.usersCurrentPage = 1;
+      }
+    }
+
+    _onMemberGroupSortChanged(e) {
+      this._memberGroupSortOrder = this._applySortDirectionChanged(
+        this._memberGroupSortOrder,
+        e.detail.path,
+        e.detail.direction,
+      );
+      if (this.groupsCurrentPage === 1) {
+        this._fetchGroups();
+      } else {
+        this.groupsCurrentPage = 1;
       }
     }
   }
