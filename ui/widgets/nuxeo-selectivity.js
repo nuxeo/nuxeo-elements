@@ -3532,14 +3532,6 @@ typedArrayTags[weakMapTag] = false;
         /**
      * @private
      */
-        _focused() {
-          // Two-step Tab accessibility model: focusing must NOT open dropdown.
-          if (!this.enabled || this._tabbingOut) return;
-        },
-
-        /**
-     * @private
-     */
         _keyReleased(event) {
           const inputHadText = !!this._originalValue;
           const keyCode = getKeyCode(event);
