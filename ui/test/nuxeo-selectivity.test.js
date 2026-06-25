@@ -40,6 +40,153 @@ import { escapeHTML } from '../widgets/nuxeo-selectivity.js';
  *
  * Assertions are aligned with the current implementation in `ui/widgets/nuxeo-selectivity.js`.
  */
+// Keyboard accessibility (Tab) — two-step Tab pattern for multiple-select; focus-to-open for single-select:
+//   - Single-select: focusing opens the dropdown immediately (gives clear visual feedback).
+//   - Multiple-select: Tab while CLOSED -> open the dropdown, keep focus on this field.
+//                      Tab while OPEN   -> close the dropdown and advance focus to the next
+//                                         tabbable element outside the widget.
+//   - Multiple-select: Focusing the field (without pressing Tab) must NOT open the dropdown.
+suite('nuxeo-selectivity keyboard accessibility (Tab)', () => {
+  const KEY_TAB = 9;
+  const tabData = ['Berlin', 'Lisbon', 'London', 'Rennes', 'Rome'];
+  let container;
+  let selectivityWidget;
+  let nextButton;
+
+  suite('single value', () => {
+    setup(async () => {
+      container = await fixture(html`
+        <div>
+          <nuxeo-selectivity placeholder="No city selected" .data=${tabData}></nuxeo-selectivity>
+          <button id="after">after</button>
+        </div>
+      `);
+      selectivityWidget = container.querySelector('nuxeo-selectivity');
+      nextButton = container.querySelector('#after');
+      await flush();
+    });
+
+    test('Tab while closed opens the dropdown', () => {
+      const mainInput = dom(selectivityWidget.root).querySelector('.selectivity-single-select-input');
+      expect(selectivityWidget._selectivity.dropdown).to.be.null;
+
+      pressAndReleaseKeyOn(mainInput, KEY_TAB);
+
+      expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
+    });
+
+    test('Tab while open closes the dropdown and arms _tabbingOut', async () => {
+      selectivityWidget._selectivity.open();
+      await flush();
+      expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
+
+      const searchInput = dom(selectivityWidget.root).querySelector('.selectivity-search-input');
+      expect(searchInput).to.not.be.null;
+      pressAndReleaseKeyOn(searchInput, KEY_TAB);
+
+      expect(selectivityWidget._selectivity.dropdown).to.be.null;
+      // _tabbingOut is set so that the synchronous mainInput.focus() that the
+      // shared listener performs cannot re-open the dropdown via _focused().
+      expect(selectivityWidget._selectivity._tabbingOut).to.be.true;
+    });
+
+    test('Focusing the input opens the dropdown (single-select focus-to-open behaviour)', async () => {
+      const mainInput = dom(selectivityWidget.root).querySelector('.selectivity-single-select-input');
+      mainInput.focus();
+      await flush();
+
+      expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
+      selectivityWidget._selectivity.close();
+    });
+  });
+
+  suite('multiple value', () => {
+    setup(async () => {
+      container = await fixture(html`
+        <div>
+          <nuxeo-selectivity placeholder="No city selected" .data=${tabData} multiple></nuxeo-selectivity>
+          <button id="after">after</button>
+        </div>
+      `);
+      selectivityWidget = container.querySelector('nuxeo-selectivity');
+      nextButton = container.querySelector('#after');
+      await flush();
+    });
+
+    test('Tab while closed opens the dropdown', () => {
+      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
+      expect(selectivityWidget._selectivity.dropdown).to.be.null;
+
+      pressAndReleaseKeyOn(input, KEY_TAB);
+
+      expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
+    });
+
+    test('Tab while open closes the dropdown', async () => {
+      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
+      selectivityWidget._selectivity.open();
+      await flush();
+      expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
+
+      pressAndReleaseKeyOn(input, KEY_TAB);
+
+      expect(selectivityWidget._selectivity.dropdown).to.be.null;
+    });
+
+    test('Shift+Tab while open closes the dropdown', async () => {
+      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
+      selectivityWidget._selectivity.open();
+      await flush();
+      expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
+
+      pressAndReleaseKeyOn(input, KEY_TAB, ['shift']);
+
+      expect(selectivityWidget._selectivity.dropdown).to.be.null;
+    });
+
+    test('Tab while open advances focus to the next tabbable element', async () => {
+      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
+      selectivityWidget._selectivity.open();
+      await flush();
+
+      pressAndReleaseKeyOn(input, KEY_TAB);
+      // Focus advance is deferred to a microtask so the close() side-effects
+      // settle first. Await one microtask cycle before asserting.
+      await Promise.resolve();
+
+      expect(document.activeElement).to.equal(nextButton);
+    });
+
+    test('Focusing the input does not open the dropdown (label-only announce)', async () => {
+      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
+      input.focus();
+      await flush();
+
+      expect(selectivityWidget._selectivity.dropdown).to.be.null;
+    });
+
+    test('Repeated Tab does not trap focus on the field (regression for shared-listener fight)', async () => {
+      // Regression: the shared InputListener's KEY_TAB branch used to run for
+      // multiple-mode inputs too. It nulled `dropdown` without preventDefault,
+      // then MultipleInput._keyHeld saw `dropdown == null` and re-opened on
+      // every Tab — trapping focus on the field. With the shared handler now
+      // gated on `.selectivity-single-select-input`, two consecutive Tabs must
+      // open then close+advance exactly once.
+      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
+
+      // First Tab opens.
+      pressAndReleaseKeyOn(input, KEY_TAB);
+      expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
+
+      // Second Tab closes and advances focus out.
+      pressAndReleaseKeyOn(input, KEY_TAB);
+      await Promise.resolve();
+
+      expect(selectivityWidget._selectivity.dropdown).to.be.null;
+      expect(document.activeElement).to.equal(nextButton);
+    });
+  });
+});
 suite('nuxeo-selectivity', () => {
   let selectivityWidget;
   const data = ['Berlin', 'Lisbon', 'London', 'Rennes', 'Rome'];
