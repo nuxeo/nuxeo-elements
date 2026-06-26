@@ -7498,7 +7498,7 @@ typedArrayTags[weakMapTag] = false;
       if (!input) {
         return;
       }
-
+ 
       const label = (this.label || '').trim();
       const placeholder = (this.placeholder || '').trim();
       const ariaLabel = label || placeholder;
