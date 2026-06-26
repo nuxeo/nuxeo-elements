@@ -54,10 +54,14 @@ globalThis.sinon = sinon;
     err instanceof TypeError &&
     (String(err.message).includes('non-configurable') || String(err.message).includes('non configurable'));
 
-  sinon.stub = function stubPatched(obj, prop, ...rest) {
-    if (rest.length > 0) {
-      return origStub(obj, prop, ...rest);
+  sinon.stub = function stubPatched(...args) {
+    // Only the two-argument form `sinon.stub(obj, prop)` can hit the non-configurable-property error,
+    // so forward every other arity (0-arg `sinon.stub()`, 1-arg `sinon.stub(obj)`, 3+-arg fakes)
+    // untouched to preserve Sinon's exact behavior.
+    if (args.length !== 2) {
+      return origStub(...args);
     }
+    const [obj, prop] = args;
     try {
       return origStub(obj, prop);
     } catch (err) {

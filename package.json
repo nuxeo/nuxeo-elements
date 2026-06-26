@@ -30,7 +30,7 @@
     "test:core": "node scripts/test/unit/print-test-runner-notice.js core && cross-env NX_PACKAGE=core web-test-runner --coverage && cross-env NX_PACKAGE=core node scripts/test/unit/inject-zero-coverage.js",
     "test:ui": "node scripts/test/unit/print-test-runner-notice.js ui && cross-env NX_PACKAGE=ui web-test-runner --coverage && cross-env NX_PACKAGE=ui node scripts/test/unit/inject-zero-coverage.js",
     "test:dataviz": "node scripts/test/unit/print-test-runner-notice.js dataviz && cross-env NX_PACKAGE=dataviz web-test-runner --coverage && cross-env NX_PACKAGE=dataviz node scripts/test/unit/inject-zero-coverage.js",
-    "test:watch": "npm run update-coverage-imports && npm run update-test-load-all && cross-env NX_PACKAGE=${NX_PACKAGE:-core} web-test-runner --watch",
+    "test:watch": "npm run update-coverage-imports && npm run update-test-load-all && web-test-runner --watch",
     "docs": "lerna run docs --parallel",
     "lint:eslint": "eslint .",
     "format:eslint": "eslint . --fix",
