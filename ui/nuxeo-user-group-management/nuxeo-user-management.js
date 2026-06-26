@@ -605,7 +605,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _computeGroups() {
-      if (this.user) {
+      if (this.user && this.user.extendedGroups && this.user.properties && this.user.properties.groups) {
         return this.user.extendedGroups.filter((group) => this.user.properties.groups.indexOf(group.name) > -1);
       }
     }

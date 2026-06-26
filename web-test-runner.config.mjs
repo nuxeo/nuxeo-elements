@@ -49,6 +49,19 @@ const chromeArgs = ['--disable-gpu', '--no-sandbox', '--disable-dev-shm-usage', 
 const verbose = process.env.WTR_VERBOSE === '1';
 const coverageEnabled = process.argv.includes('--coverage');
 
+// A focused run (`web-test-runner --files ...` / `--group ...`) is treated as a debugging session:
+// stray uncaught-promise errors ARE shown so the developer can trace them to the file under test.
+// The default aggregate run (the generated load-all-tests.js barrel) instead suppresses that noise —
+// at the all-suites level the errors can't be attributed to any single suite, they fire after the
+// triggering test already passed, and the run itself is green. `WTR_VERBOSE=1` also re-enables them.
+const singleFileRun = process.argv.includes('--files') || process.argv.includes('--group');
+const suppressStrayUncaught = !verbose && !singleFileRun;
+
+// Set when a "thrown in a Promise outside a test" banner is seen, so the immediately-following error
+// log (the wrapped error) is dropped too. Safe because @web/browser-logs emits the two back-to-back
+// and the runner uses concurrency: 1.
+let suppressNextStrayUncaught = false;
+
 /**
  * Wraps the default WTR reporter to suppress the built-in "Code coverage: X %" line.
  * Our inject-zero-coverage.js post-run script prints the authoritative number instead.
@@ -57,6 +70,26 @@ function noCoverageSummaryReporter() {
   const inner = defaultReporter();
   return {
     ...inner,
+    reportTestFileResults(args) {
+      // In the default aggregate run, suppress WTR's "🚧 404 network requests" list. Every 404 in this
+      // suite is an intentional negative-path test (missing layouts, importHref / nuxeo-error /
+      // image-viewer / audio failure cases). Restored for focused/verbose runs so genuinely unexpected
+      // 404s stay visible.
+      if (suppressStrayUncaught && Array.isArray(args.sessionsForTestFile)) {
+        const saved = args.sessionsForTestFile.map((session) => session.request404s);
+        args.sessionsForTestFile.forEach((session) => {
+          session.request404s = [];
+        });
+        try {
+          return inner.reportTestFileResults(args);
+        } finally {
+          args.sessionsForTestFile.forEach((session, i) => {
+            session.request404s = saved[i];
+          });
+        }
+      }
+      return inner.reportTestFileResults(args);
+    },
     getTestProgress(args) {
       const lines = inner.getTestProgress(args);
       return lines.filter((line) => !/Code coverage:|coverage report at/.test(line));
@@ -162,6 +195,22 @@ export default {
         }
       })
       .join(' ');
+    // @web/browser-logs logs every uncaught promise rejection as a generic
+    // "An error was thrown in a Promise outside a test" banner followed by the error itself. In the
+    // aggregate barrel run these are stray async rejections from negative-path tests (mock rejectWith,
+    // late 404s, detached-dialog cleanup) that fire after the triggering test already passed and that
+    // cannot be attributed to a single suite. Drop the banner and the one error line it wraps. Genuine
+    // failures surface as Mocha test failures, never via this banner, so nothing real is hidden.
+    if (suppressStrayUncaught) {
+      if (/thrown in a Promise outside a test/.test(text)) {
+        suppressNextStrayUncaught = true;
+        return false;
+      }
+      if (suppressNextStrayUncaught) {
+        suppressNextStrayUncaught = false;
+        return false;
+      }
+    }
     // Benign stray-async noise logged by test/setup.js after a test boundary.
     if (/\[test-setup\] ignoring stray/.test(text)) {
       return false;

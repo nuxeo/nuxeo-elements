@@ -96,7 +96,14 @@ IronOverlayManager._overlayWithBackdrop = function() {
     disconnectedCallback() {
       // workaround to prevent IronOverlayBehavior.detached() from being called when unattached
       if (this._observer) {
-        this.detached();
+        try {
+          this.detached();
+        } catch (_e) {
+          // During teardown the node-observer handle can already be invalidated; IronOverlayBehavior
+          // .detached() then throws in unobserveNodes (observerHandle.disconnect is not a function).
+          // The element is going away, so it is safe to drop the stale handle and continue.
+          this._observer = null;
+        }
       }
       this._clear();
     }

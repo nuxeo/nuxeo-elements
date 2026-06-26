@@ -108,20 +108,20 @@ import './nuxeo-tag.js';
       if (this._isEntity(group)) {
         return group.groupname || group.properties['group:groupname'];
       }
-      if (group.name) {
+      if (group && group.name) {
         return group.name.replace('group:', '');
       }
-      return group.replace('group:', '');
+      return typeof group === 'string' ? group.replace('group:', '') : '';
     }
 
     _label(group) {
       if (this._isEntity(group)) {
         return group.grouplabel || group.properties['group:grouplabel'] || this._name(group);
       }
-      if (group.label) {
+      if (group && group.label) {
         return group.label.replace('group:', '');
       }
-      return group.replace('group:', '');
+      return typeof group === 'string' ? group.replace('group:', '') : '';
     }
 
     _href(group) {
