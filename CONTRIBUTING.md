@@ -222,7 +222,7 @@ This symlinks `@nuxeo` packages in Web UI's `node_modules` to the local `nuxeo-e
 GitHub Actions run on every push to `lts-2025` and on PRs:
 
 1. **Lint** — ESLint + Prettier + Polymer lint
-2. **Test** — Karma unit tests (all packages)
+2. **Test** — @web/test-runner unit tests (all packages)
 3. **Storybook** — Build documentation
 4. **Publish** — Publish packages to npm registry (only after all above pass)
 

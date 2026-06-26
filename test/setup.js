@@ -1,139 +1,194 @@
 /**
- * Shared Karma/Mocha bootstrap for all nuxeo-elements packages (core, ui, dataviz).
+@license
+©2026 Hyland Software, Inc. and its affiliates. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+/**
+ * Shared Mocha bootstrap for all nuxeo-elements packages (core, ui, dataviz).
+ * Loaded first from each package's test/load-all-tests.js barrel.
  *
- * Stray async failures: many suites trigger fetches or Polymer observers whose work
- * resolves after the test has finished. Those unhandled rejections / window errors reach
- * Karma and abort the remaining suites (artificially low test counts and coverage gaps).
+ * What this file does:
+ * - Registers Chai, Sinon, and common globals (`expect`, `assert`, `should`) expected by legacy tests.
+ * - Installs error/rejection suppression so stray async failures between tests don't abort the run.
+ * - Patches sinon.stub to handle non-configurable Polymer element properties.
+ * - Auto-restores leaked sinon fakes/clocks after each test.
  *
- * Unlike blanket suppression, we only swallow failures when Mocha is not executing a
- * test, plus a small allowlist of known benign errors that can occur during a test.
- * Real regressions during an active test still fail the suite.
- *
- * Coverage: in coverage runs, suiteTeardown bulk-imports paths from coverage-imports-data.js
- * (see scripts/generate-coverage-imports.js) so files never touched by tests still appear
- * in Istanbul reports at 0%, matching SonarQube.
+ * Coverage strategy:
+ * Istanbul source instrumentation (via rollup-plugin-istanbul in web-test-runner.config.mjs) only
+ * reports modules that the browser actually loaded. Files never imported by any test are NOT
+ * bulk-loaded here — they are added as 0% records by `scripts/test/unit/inject-zero-coverage.js`
+ * after the run. This keeps coverage honest: only code that tests actually exercise gets a
+ * non-zero percentage.
  */
-import { expect, assert, use } from 'chai';
-import { coverageModulePaths } from './coverage-imports-data.js';
-import sinonChai from 'sinon-chai';
+
+import * as chai from 'chai';
 import sinon from 'sinon';
+import sinonChai from 'sinon-chai';
 
-use(sinonChai);
+chai.config.includeStack = true;
+chai.use(sinonChai);
 
-window.expect = expect;
-window.assert = assert;
-window.sinon = sinon;
+// Globals previously provided by legacy Karma HTML test pages; many suites assume these exist.
+globalThis.chai = chai;
+globalThis.sinon = sinon;
 
-let _activeTests = 0;
+// Sinon ≥ 11 rejects stubbing non-configurable accessors (common on Polymer / Nuxeo.Element:
+// `i18n`, `navigateTo`, etc.). Shadow the property with a configurable own data property whose
+// value is an anonymous `sinon.stub()` so existing patterns keep working:
+// `sinon.stub(el, 'i18n').callsFake(fn)` and `const s = sinon.stub(el, 'navigateTo')`.
+(function patchSinonStubForNonConfigurableProps() {
+  const origStub = sinon.stub.bind(sinon);
+  const isNonConfigurableStubError = (err) =>
+    err instanceof TypeError &&
+    (String(err.message).includes('non-configurable') || String(err.message).includes('non configurable'));
 
-const _logIgnoredAsyncFailure = (label, info) => {
-  console.warn(`[test-setup] ignoring stray ${label}:`, info);
-};
-
-const _messageText = (info) => {
-  if (info && typeof info === 'object' && info.message) {
-    return String(info.message);
-  }
-  return String(info ?? '');
-};
-
-const _isBenignAsyncFailure = (message) => {
-  if (!message) {
-    return false;
-  }
-  return (
-    /ResizeObserver loop completed with undelivered notifications/i.test(message) ||
-    /Non-Error promise rejection captured/i.test(message) ||
-    /Failed to fetch/i.test(message) ||
-    /NetworkError/i.test(message) ||
-    /Load failed/i.test(message) ||
-    /The user aborted a request/i.test(message) ||
-    /AbortError/i.test(message) ||
-    /Unexpected end of JSON input/i.test(message) ||
-    /Invalid JSON/i.test(message) ||
-    /Could not find requested file/i.test(message) ||
-    /\b404\b/.test(message)
-  );
-};
-
-const _isResourceLoadError = (event) =>
-  event.target &&
-  event.target !== window &&
-  event.target.nodeType === 1 &&
-  ['LINK', 'SCRIPT', 'IMG'].includes(event.target.tagName || '');
-
-const _isMochaRunningTest = () => _activeTests > 0;
-
-const _shouldSuppress = (message) => {
-  if (_isBenignAsyncFailure(message)) {
-    return true;
-  }
-  return !_isMochaRunningTest();
-};
-
-const _suppressEvent = (label, message, event) => {
-  if (!_shouldSuppress(message)) {
-    return false;
-  }
-  const suffix = _isMochaRunningTest() ? ' (benign during test)' : ' after test boundary';
-  _logIgnoredAsyncFailure(`${label}${suffix}`, message);
-  if (event) {
-    event.stopImmediatePropagation();
-    if (typeof event.preventDefault === 'function') {
-      event.preventDefault();
+  sinon.stub = function stubPatched(obj, prop, ...rest) {
+    if (rest.length > 0) {
+      return origStub(obj, prop, ...rest);
     }
-  }
-  return true;
-};
-
-const _installRunnerHooks = () => {
-  const { mocha } = window;
-  if (!mocha || !mocha.Runner || mocha.__nuxeoRunnerPatched) {
-    return false;
-  }
-  const run = mocha.Runner.prototype.run;
-  mocha.Runner.prototype.run = function runWithNuxeoHooks(fn) {
-    this.on('test', () => {
-      _activeTests += 1;
-    });
-    this.on('test end', () => {
-      _activeTests = Math.max(0, _activeTests - 1);
-      _restoreLeakedSinonGlobals();
-    });
-    return run.call(this, fn);
-  };
-  mocha.__nuxeoRunnerPatched = true;
-  return true;
-};
-
-if (!_installRunnerHooks()) {
-  const _karmaLoaded = window.__karma__ && window.__karma__.loaded;
-  if (typeof _karmaLoaded === 'function') {
-    window.__karma__.loaded = function karmaLoadedWithHooks() {
-      _installRunnerHooks();
-      return _karmaLoaded.apply(this, arguments);
-    };
-  } else {
-    const _waitForMocha = () => {
-      if (!_installRunnerHooks()) {
-        setTimeout(_waitForMocha, 0);
+    try {
+      return origStub(obj, prop);
+    } catch (err) {
+      if (!isNonConfigurableStubError(err) || obj == null || typeof prop !== 'string') {
+        throw err;
       }
-    };
-    _waitForMocha();
-  }
+      const fake = sinon.stub();
+      Object.defineProperty(obj, prop, {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: fake,
+      });
+      const innerRestore = typeof fake.restore === 'function' ? fake.restore.bind(fake) : () => {};
+      fake.restore = () => {
+        try {
+          delete obj[prop];
+        } catch (_) {
+          /* ignore */
+        }
+        innerRestore();
+      };
+      return fake;
+    }
+  };
+})();
+
+// Common assertion entry points used throughout the test suite.
+globalThis.expect = chai.expect;
+globalThis.assert = chai.assert;
+globalThis.should = chai.should();
+
+// Prevent stray async errors from killing the entire mocha run.
+//
+// Why: a few suites trigger fetches / Polymer observers whose async work resolves AFTER the
+// triggering test has already passed. When those requests reject as 404 / Aborted / Invalid json
+// AFTER the test ends, the unhandled rejection / window error reaches mocha and the test runner,
+// which can abort the run and treat it as complete. Result: the remaining tests in the offending
+// suite (and every suite registered after it) never execute, the test count is artificially low,
+// and coverage on those modules looks like 0%.
+//
+// The capture-phase listeners below intercept stray events before mocha's listeners can see them,
+// but only after Mocha has actually started running suites AND no test is actively running. Benign
+// 404 / Invalid json noise is silently dropped; other stray failures are logged via console.debug
+// so they don't pollute CI output but remain available when debugging locally.
+//
+// `_mochaStarted` guards against suppressing errors thrown during initial test-module loading and
+// suite registration (before any Mocha hook has run). Without that guard, real import failures
+// would be silently swallowed and the run would continue with missing suites.
+let _testRunning = false;
+let _mochaStarted = false;
+
+if (typeof window.suiteSetup === 'function') {
+  window.suiteSetup(() => {
+    _mochaStarted = true;
+    _testRunning = true;
+  });
 }
 
-// Defer ResizeObserver notifications to avoid benign loop errors during fixture layout.
+if (typeof window.setup === 'function') {
+  window.setup(() => {
+    _testRunning = true;
+  });
+}
+
+if (typeof window.teardown === 'function') {
+  window.teardown(function _markTestBoundaryEnd() {
+    // Defer flipping the flag until after all other teardown hooks have run, so genuine errors
+    // thrown during fixture cleanup are not suppressed.
+    setTimeout(() => {
+      _testRunning = false;
+    }, 0);
+  });
+}
+
+if (typeof window.suiteTeardown === 'function') {
+  window.suiteTeardown(() => {
+    _testRunning = false;
+  });
+}
+
+const _shouldSuppressStrayAsyncFailure = () => _mochaStarted && !_testRunning;
+
+const _isBenignNuxeoNetworkFailure = (info) => {
+  if (info == null) {
+    return false;
+  }
+  const message = String(typeof info === 'object' && info.message != null ? info.message : info);
+  const hasBenignMessage =
+    message.includes('Invalid json') ||
+    message.includes('No message') ||
+    /NetworkError|Failed to fetch|Load failed|Unexpected end of JSON input|Could not find requested file/i.test(
+      message,
+    );
+  if (!hasBenignMessage) {
+    return false;
+  }
+  if (typeof info === 'object' && info.status != null) {
+    return info.status === 404;
+  }
+  return message.includes('404') || /NetworkError|Failed to fetch|Load failed/i.test(message);
+};
+
+const _logIgnoredAsyncFailure = (label, info) => {
+  if (_isBenignNuxeoNetworkFailure(info)) {
+    return;
+  }
+  const display = typeof info === 'object' && info.message != null ? info.message : info;
+  // Downgraded to `debug` so it does not pollute the WTR console output for every suppressed
+  // post-teardown rejection. Set `WTR_VERBOSE=1` (or open DevTools) to see them.
+  // eslint-disable-next-line no-console
+  console.debug(`[test-setup] ignoring stray ${label} after test boundary:`, display);
+};
+
+// Wrap ResizeObserver to defer notifications via requestAnimationFrame. Chrome occasionally
+// dispatches "ResizeObserver loop completed with undelivered notifications" as an uncaught error
+// during fixture rendering; mocha's hook runner treats that as a hook failure even though it is
+// benign. Deferring callbacks one frame avoids the loop and the error.
 if (typeof window.ResizeObserver === 'function') {
-  const OriginalResizeObserver = window.ResizeObserver;
-  window.ResizeObserver = class SafeResizeObserver extends OriginalResizeObserver {
+  const _OriginalResizeObserver = window.ResizeObserver;
+  window.ResizeObserver = class _SafeResizeObserver extends _OriginalResizeObserver {
     constructor(callback) {
       super((entries, observer) => {
         const run = () => {
           try {
             callback(entries, observer);
           } catch (err) {
-            _suppressEvent('ResizeObserver', _messageText(err), null);
+            if (_testRunning) {
+              throw err;
+            }
+            _logIgnoredAsyncFailure('ResizeObserver', err);
           }
         };
         if (typeof window.requestAnimationFrame === 'function') {
@@ -149,9 +204,18 @@ if (typeof window.ResizeObserver === 'function') {
 window.addEventListener(
   'unhandledrejection',
   (event) => {
+    if (!_shouldSuppressStrayAsyncFailure()) {
+      return;
+    }
     const reason = event.reason;
-    const message = _messageText(reason);
-    _suppressEvent('unhandledrejection', message, event);
+    if (_isBenignNuxeoNetworkFailure(reason)) {
+      event.stopImmediatePropagation();
+      event.preventDefault();
+      return;
+    }
+    _logIgnoredAsyncFailure('unhandledrejection', reason);
+    event.stopImmediatePropagation();
+    event.preventDefault();
   },
   true,
 );
@@ -159,40 +223,74 @@ window.addEventListener(
 window.addEventListener(
   'error',
   (event) => {
-    if (_isResourceLoadError(event)) {
+    // Ignore resource load errors (LINK/SCRIPT/IMG) regardless of test boundary — they are noise.
+    const target = event.target;
+    const isResourceLoadError =
+      target && target !== window && target.nodeType === 1 && ['LINK', 'SCRIPT', 'IMG'].includes(target.tagName || '');
+    if (isResourceLoadError) {
       return;
     }
-    const message = event.message || _messageText(event.error);
-    _suppressEvent('error', message, event);
+    if (!_shouldSuppressStrayAsyncFailure()) {
+      return;
+    }
+    _logIgnoredAsyncFailure('error', event.error || event.message);
+    event.stopImmediatePropagation();
+    event.preventDefault();
   },
   true,
 );
 
+// Belt-and-braces: mocha's browser bundle installs a `window.onerror` IDL handler which is invoked
+// even after `stopImmediatePropagation()` on the error event in some Chrome builds.
 const _previousOnError = window.onerror;
-window.onerror = function filteredOnError(message, source, lineno, colno, error) {
-  const text = _messageText(error) || String(message || '');
-  if (_suppressEvent('window.onerror', text, null)) {
-    return true;
+window.onerror = function _suppressedOnError(message, source, lineno, colno, error) {
+  if (!_shouldSuppressStrayAsyncFailure()) {
+    if (typeof _previousOnError === 'function') {
+      return _previousOnError.call(this, message, source, lineno, colno, error);
+    }
+    return false;
   }
+  _logIgnoredAsyncFailure('window.onerror', error || message);
   if (typeof _previousOnError === 'function') {
-    return _previousOnError.call(this, message, source, lineno, colno, error);
+    try {
+      _previousOnError.call(this, message, source, lineno, colno, error);
+    } catch (_) {
+      /* ignore */
+    }
   }
-  return false;
+  return true;
 };
 
 const _previousOnRejection = window.onunhandledrejection;
-window.onunhandledrejection = function filteredOnRejection(event) {
+window.onunhandledrejection = function _suppressedOnRejection(event) {
+  if (!_shouldSuppressStrayAsyncFailure()) {
+    if (typeof _previousOnRejection === 'function') {
+      return _previousOnRejection.call(this, event);
+    }
+    return false;
+  }
   const reason = event && event.reason;
-  const message = _messageText(reason);
-  if (_suppressEvent('window.onunhandledrejection', message, event)) {
-    return true;
-  }
+  _logIgnoredAsyncFailure('window.onunhandledrejection', reason);
   if (typeof _previousOnRejection === 'function') {
-    return _previousOnRejection.call(this, event);
+    try {
+      _previousOnRejection.call(this, event);
+    } catch (_) {
+      /* ignore */
+    }
   }
-  return false;
+  if (event && typeof event.preventDefault === 'function') {
+    event.preventDefault();
+  }
+  return true;
 };
 
+// Restore leaked sinon fakes between every test.
+//
+// Why: several suites install `sinon.useFakeTimers()` / `sinon.useFakeXMLHttpRequest()` /
+// `sinon.fakeServer.create()` and call `clock.restore()` (or equivalent) AFTER assertions. When an
+// assertion fails, the restore line never runs and the global `setTimeout` / `Date` / `XHR` stay
+// overridden. The next test's timer-bound async work then hangs and mocha reports a hook timeout.
+// This safety net disposes of any global sinon doubles left in place after every test.
 const _restoreLeakedSinonGlobals = () => {
   try {
     if (sinon.clock && typeof sinon.clock.restore === 'function') {
@@ -222,66 +320,6 @@ const _restoreLeakedSinonGlobals = () => {
   }
 };
 
-// Karma may report uncaught errors through __karma__.error after Mocha has moved on.
-if (typeof window.__karma__ !== 'undefined' && !window.__karma__.__nuxeoStrayPatched) {
-  const _karmaError = window.__karma__.error.bind(window.__karma__);
-  window.__karma__.error = function karmaFilteredError(error) {
-    const message = _messageText(error);
-    if (_shouldSuppress(message)) {
-      _logIgnoredAsyncFailure('karma.error after test boundary', message);
-      return;
-    }
-    return _karmaError(error);
-  };
-  window.__karma__.__nuxeoStrayPatched = true;
+if (typeof window.teardown === 'function') {
+  window.teardown(_restoreLeakedSinonGlobals);
 }
-
-const _coveragePathIsRecorded = (posixPath, coverageKeys) => {
-  if (coverageKeys.has(posixPath)) {
-    return true;
-  }
-  for (const key of coverageKeys) {
-    if (key === posixPath || key.endsWith(`/${posixPath}`)) {
-      return true;
-    }
-  }
-  return false;
-};
-
-// Coverage-only: load product modules not already hit by tests (see file header).
-suiteTeardown(async function coverageMaterializationTeardown() {
-  if (typeof window.__coverage__ === 'undefined') {
-    return;
-  }
-
-  if (!Array.isArray(coverageModulePaths) || coverageModulePaths.length === 0) {
-    expect.fail('test/coverage-imports-data.js has no paths. Run: npm run update-coverage-imports (or npm test).');
-  }
-
-  const coveragePackage =
-    (window.__karma__ && window.__karma__.config && window.__karma__.config.coveragePackage) || 'core';
-  const prefix = `${coveragePackage}/`;
-
-  this.timeout(0);
-  const root = new URL('../', import.meta.url);
-  const coverageKeys = new Set(Object.keys(window.__coverage__));
-  const toLoad = coverageModulePaths.filter((p) => p.startsWith(prefix) && !_coveragePathIsRecorded(p, coverageKeys));
-  const failures = [];
-
-  await Promise.all(
-    toLoad.map((p) => {
-      const href = new URL(p, root).href;
-      return import(href).catch((err) => {
-        failures.push({ specifier: p, err });
-      });
-    }),
-  );
-
-  if (failures.length > 0) {
-    const message = failures.map((f) => `${f.specifier}: ${f.err && f.err.message ? f.err.message : f.err}`).join('\n');
-    console.error(
-      `coverage materialization: ${failures.length} of ${toLoad.length} modules failed to load:\n${message}`,
-    );
-    expect(failures, 'every product module should load in the test environment').to.have.length(0);
-  }
-});
