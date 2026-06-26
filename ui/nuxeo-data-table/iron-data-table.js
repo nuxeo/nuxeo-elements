@@ -956,6 +956,13 @@ import '../nuxeo-button-styles.js';
             width: column.width || null,
             resized: !!column.resized,
           };
+          // Persist filter state only when set, to keep saved settings compact (ELEMENTS-1966)
+          if (column.filterValue) {
+            tableSettings.columns[key].filterValue = column.filterValue;
+          }
+          if (column.filterExpression) {
+            tableSettings.columns[key].filterExpression = column.filterExpression;
+          }
         });
       }
 
@@ -967,8 +974,14 @@ import '../nuxeo-button-styles.js';
         return;
       }
 
-      // ---- columns (hidden / order / width) ----
+      // ---- columns (hidden / order / width / filterValue) ----
+      // Track whether a fetch is needed; deferred to a single call after all settings (filters + sort) are applied (ELEMENTS-1966)
+      let needsFetch = false;
       if (this.columns && settings.columns) {
+        // Suppress per-column filter event dispatch while restoring to
+        // avoid firing many fetches that may abort each other (WEBUI-1885)
+        this._suppressFilterEvents = true;
+        const restoredFilters = [];
         this.columns.forEach(function(column, idx) {
           const key = column.field ? column.field : `col-${idx}`;
           const colSettings = settings.columns[key] || {};
@@ -991,7 +1004,58 @@ import '../nuxeo-button-styles.js';
               Object.prototype.hasOwnProperty.call(colSettings, 'resized') ? !!colSettings.resized : true,
             );
           }
+
+          // filterValue (WEBUI-1885) - restore column filter values
+          if (Object.prototype.hasOwnProperty.call(colSettings, 'filterValue') && colSettings.filterValue) {
+            this.set(`columns.${idx}.filterValue`, colSettings.filterValue);
+            if (colSettings.filterExpression) {
+              this.set(`columns.${idx}.filterExpression`, colSettings.filterExpression);
+            }
+            restoredFilters.push({
+              index: idx,
+              value: colSettings.filterValue,
+              expression: colSettings.filterExpression || null,
+            });
+          }
         }, this);
+
+        // Re-enable per-column events and apply restored filters to the provider once
+        this._suppressFilterEvents = false;
+        if (restoredFilters.length > 0 && this._hasPageProvider && this._hasPageProvider() && this.nxProvider) {
+          if (this.paginable) {
+            this.nxProvider.page = 1;
+          }
+          // Apply restored filters to nxProvider.params AND to this.filters array
+          restoredFilters.forEach((entry) => {
+            const column = this.columns[entry.index];
+            const effectiveFilterBy = column.filterBy || column.field || null;
+            if (effectiveFilterBy && entry.value) {
+              // Set provider param
+              if (entry.expression) {
+                // Use a function replacement to prevent $ in user values being treated as back-references (ELEMENTS-1966)
+                this.nxProvider.params[effectiveFilterBy] = entry.expression.replace(/\$term/g, () => entry.value);
+              } else {
+                this.nxProvider.params[effectiveFilterBy] = entry.value;
+              }
+              // Also add to filters array so user can later clear it
+              const existingIdx = this.filters.findIndex((f) => f.path === effectiveFilterBy);
+              if (existingIdx === -1) {
+                this.push('filters', {
+                  path: effectiveFilterBy,
+                  value: entry.value,
+                  name: column.name,
+                  expression: entry.expression,
+                });
+              } else {
+                // Update all fields to avoid stale expression/name in the filters array (ELEMENTS-1966)
+                this.set(`filters.${existingIdx}.value`, entry.value);
+                this.set(`filters.${existingIdx}.expression`, entry.expression);
+                this.set(`filters.${existingIdx}.name`, column.name);
+              }
+            }
+          });
+          needsFetch = true; // always needed: params were mutated in-place, Polymer's auto observer can't detect it
+        }
       }
 
       let appliedSortOrder = null;
@@ -1017,13 +1081,17 @@ import '../nuxeo-button-styles.js';
         // keep provider sort aligned with the table's sortOrder
         this._ppSort = sortMap;
         this.nxProvider.sort = sortMap;
-        // refresh results via the table/behavior fetch so items get updated
-        if (typeof this.fetch === 'function' && !this.nxProvider.auto) {
-          this.fetch();
+        if (!this.nxProvider.auto) {
+          needsFetch = true;
         }
 
         // ---- reflow ----
         this.notifyResize();
+      }
+
+      // Single consolidated fetch after all settings (filters + sort) are applied (ELEMENTS-1966)
+      if (needsFetch && typeof this.fetch === 'function') {
+        this.fetch();
       }
     }
 
