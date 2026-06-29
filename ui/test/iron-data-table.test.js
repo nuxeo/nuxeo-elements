@@ -416,11 +416,17 @@ suite('iron-data-table extras', () => {
       expect(el._isStrictNumberString('-1')).to.be.true;
       expect(el._isStrictNumberString('0')).to.be.true;
       expect(el._isStrictNumberString(' 7 ')).to.be.true;
+      expect(el._isStrictNumberString('1.0')).to.be.true;
+      expect(el._isStrictNumberString('1e3')).to.be.true;
+      expect(el._isStrictNumberString('+1')).to.be.true;
+      expect(el._isStrictNumberString('-0')).to.be.true;
     });
 
     test('returns false for non-number strings', async () => {
       const el = await newTable();
       expect(el._isStrictNumberString('abc')).to.be.false;
+      expect(el._isStrictNumberString('001234')).to.be.false;
+      expect(el._isStrictNumberString('+001')).to.be.false;
       expect(el._isStrictNumberString('')).to.be.false;
       expect(el._isStrictNumberString('  ')).to.be.false;
       expect(el._isStrictNumberString('NaN')).to.be.false;
@@ -433,6 +439,113 @@ suite('iron-data-table extras', () => {
       expect(el._isStrictNumberString(null)).to.be.false;
       expect(el._isStrictNumberString(undefined)).to.be.false;
       expect(el._isStrictNumberString(true)).to.be.false;
+    });
+  });
+
+  // ------------------------------------------------------------------
+  // _inferFieldTypes
+  // ------------------------------------------------------------------
+  suite('_inferFieldTypes', () => {
+    test('infers field types from homogeneous rows', async () => {
+      const el = await newTable();
+      const types = el._inferFieldTypes([
+        { code: '00123', qty: 10 },
+        { code: '00124', qty: 11 },
+      ]);
+
+      expect(types).to.deep.equal({ code: 'string', qty: 'number' });
+    });
+
+    test('marks a field as null when rows have mixed string and number types', async () => {
+      const el = await newTable();
+      const types = el._inferFieldTypes([{ code: '00123' }, { code: 123 }]);
+
+      expect(types).to.deep.equal({ code: null });
+    });
+
+    test('returns empty map for empty input', async () => {
+      const el = await newTable();
+      const types = el._inferFieldTypes([]);
+
+      expect(types).to.deep.equal({});
+    });
+
+    test('ignores null, arrays and unsupported scalar types', async () => {
+      const el = await newTable();
+      const types = el._inferFieldTypes([null, ['x'], { code: true, meta: {} }, { code: '00123' }]);
+
+      expect(types).to.deep.equal({ code: 'string' });
+    });
+  });
+
+  // ------------------------------------------------------------------
+  // cache helper methods
+  // ------------------------------------------------------------------
+  suite('field type cache helpers', () => {
+    test('_getScalarType returns null for unsupported types', async () => {
+      const el = await newTable();
+
+      expect(el._getScalarType(true)).to.be.null;
+      expect(el._getScalarType({})).to.be.null;
+      expect(el._getScalarType([])).to.be.null;
+    });
+
+    test('_computeFieldTypeHintsFromStats returns null for mixed stats', async () => {
+      const el = await newTable();
+      const hints = el._computeFieldTypeHintsFromStats({
+        code: { number: 0, string: 2 },
+        qty: { number: 3, string: 0 },
+        mixed: { number: 1, string: 1 },
+      });
+
+      expect(hints).to.deep.equal({ code: 'string', qty: 'number', mixed: null });
+    });
+
+    test('_ensureFieldTypeCache reuses an existing cache', async () => {
+      const el = await newTable();
+      el._fieldTypeStats = { code: { number: 0, string: 1 } };
+      el._fieldTypeHints = { code: 'string' };
+      const inferSpy = sinon.spy(el, '_inferFieldTypes');
+
+      const hints = el._ensureFieldTypeCache();
+
+      expect(hints).to.deep.equal({ code: 'string' });
+      expect(inferSpy).to.not.have.been.called;
+      inferSpy.restore();
+    });
+
+    test('_adjustFieldTypeStatsForItem removes keys when counters drop to zero', async () => {
+      const el = await newTable();
+      el._fieldTypeStats = { code: { number: 0, string: 1 } };
+
+      el._adjustFieldTypeStatsForItem({ code: '001' }, -1);
+
+      expect(el._fieldTypeStats.code).to.be.undefined;
+    });
+
+    test('_buildFieldTypeStats handles null items and duplicate keys', async () => {
+      const el = await newTable();
+
+      const emptyStats = el._buildFieldTypeStats(null);
+      expect(emptyStats).to.deep.equal({});
+
+      const stats = el._buildFieldTypeStats([null, ['x'], { code: '001' }, { code: '002' }, { qty: 3 }]);
+      expect(stats).to.deep.equal({
+        code: { number: 0, string: 2 },
+        qty: { number: 1, string: 0 },
+      });
+    });
+
+    test('_ensureFieldTypeCache builds from empty items fallback', async () => {
+      const el = await newTable();
+      el.items = null;
+      el._fieldTypeStats = null;
+      el._fieldTypeHints = null;
+
+      const hints = el._ensureFieldTypeCache();
+
+      expect(hints).to.deep.equal({});
+      expect(el._fieldTypeStats).to.deep.equal({});
     });
   });
 
@@ -476,6 +589,194 @@ suite('iron-data-table extras', () => {
       expect(el._normalizeItem(undefined)).to.be.undefined;
       expect(el._normalizeItem(true)).to.be.true;
       expect(el._normalizeItem(false)).to.be.false;
+    });
+
+    test('preserves numeric-looking text with leading zeros when hint is string', async () => {
+      const el = await newTable();
+      const result = el._normalizeItem({ code: '001234' }, { code: 'string' });
+
+      expect(result).to.deep.equal({ code: '001234' });
+      expect(result.code).to.be.a('string');
+    });
+
+    test('coerces numeric-looking text to number when hint is number', async () => {
+      const el = await newTable();
+      const result = el._normalizeItem({ code: '001234' }, { code: 'number' });
+
+      expect(result).to.deep.equal({ code: 1234 });
+      expect(result.code).to.be.a('number');
+    });
+
+    test('falls back to round-trip heuristic for mixed type hint', async () => {
+      const el = await newTable();
+      const result = el._normalizeItem({ code: '001234', count: '42' }, { code: null, count: null });
+
+      expect(result).to.deep.equal({ code: '001234', count: 42 });
+      expect(result.code).to.be.a('string');
+      expect(result.count).to.be.a('number');
+    });
+
+    test('keeps original value when number-hinted field cannot be parsed', async () => {
+      const el = await newTable();
+      const result = el._normalizeItem({ code: 'abc' }, { code: 'number' });
+
+      expect(result).to.deep.equal({ code: 'abc' });
+    });
+
+    test('casts number to string when hint is string', async () => {
+      const el = await newTable();
+      const result = el._normalizeItem({ code: 1234 }, { code: 'string' });
+
+      expect(result).to.deep.equal({ code: '1234' });
+      expect(result.code).to.be.a('string');
+    });
+
+    test('single-column: coerces leading-zero numeric string to number', async () => {
+      const el = await newTable();
+      el.columns = [{}]; // single column
+      const result = el._normalizeItem('001234');
+
+      expect(result).to.equal(1234);
+      expect(result).to.be.a('number');
+    });
+
+    test('single-column: coerces plain numeric string to number', async () => {
+      const el = await newTable();
+      el.columns = [{}]; // single column
+      const result = el._normalizeItem('42');
+
+      expect(result).to.equal(42);
+      expect(result).to.be.a('number');
+    });
+
+    test('single-column: leaves non-numeric strings unchanged', async () => {
+      const el = await newTable();
+      el.columns = [{}]; // single column
+      const result = el._normalizeItem('abc');
+
+      expect(result).to.equal('abc');
+    });
+
+    test('multi-column: preserves leading-zero string without hint', async () => {
+      const el = await newTable();
+      el.columns = [{}, {}]; // two columns
+      const result = el._normalizeItem('001234');
+
+      expect(result).to.equal('001234');
+      expect(result).to.be.a('string');
+    });
+  });
+
+  // ------------------------------------------------------------------
+  // _validateEntry
+  // ------------------------------------------------------------------
+  suite('_validateEntry', () => {
+    function mockForm(el, { valid, index, item }) {
+      const form = {
+        index,
+        item,
+        validateItem: sinon.stub().returns(valid),
+      };
+      sinon.stub(el, 'getContentChildren').returns([form]);
+      return form;
+    }
+
+    test('pushes a new item and preserves leading-zero strings when inferred as string', async () => {
+      const el = await newTable();
+      el.items = [{ code: '0001' }];
+      const pushSpy = sinon.spy(el, 'push');
+      mockForm(el, {
+        valid: true,
+        index: -1,
+        item: { code: '001234' },
+      });
+
+      el._validateEntry();
+
+      expect(pushSpy).to.have.been.calledOnce;
+      expect(pushSpy.firstCall.args[0]).to.equal('items');
+      expect(pushSpy.firstCall.args[1]).to.deep.equal({ code: '001234' });
+      expect(pushSpy.firstCall.args[1].code).to.be.a('string');
+      pushSpy.restore();
+    });
+
+    test('updates an existing item and coerces to number when inferred as number', async () => {
+      const el = await newTable();
+      el.items = [{ code: 100 }];
+      const setSpy = sinon.spy(el, 'set');
+      mockForm(el, {
+        valid: true,
+        index: 0,
+        item: { code: '001234' },
+      });
+
+      el._validateEntry();
+
+      expect(setSpy).to.have.been.calledOnce;
+      expect(setSpy.firstCall.args[0]).to.equal('items.0');
+      expect(setSpy.firstCall.args[1]).to.deep.equal({ code: 1234 });
+      expect(setSpy.firstCall.args[1].code).to.be.a('number');
+      setSpy.restore();
+    });
+
+    test('does nothing when form validation fails', async () => {
+      const el = await newTable();
+      const pushSpy = sinon.spy(el, 'push');
+      const setSpy = sinon.spy(el, 'set');
+      mockForm(el, {
+        valid: false,
+        index: -1,
+        item: { code: '001234' },
+      });
+
+      el._validateEntry();
+
+      expect(pushSpy).to.not.have.been.called;
+      expect(setSpy).to.not.have.been.called;
+      pushSpy.restore();
+      setSpy.restore();
+    });
+
+    test('reuses cached type hints across consecutive saves', async () => {
+      const el = await newTable();
+      el.items = [{ code: '0001', qty: 1 }];
+      const inferSpy = sinon.spy(el, '_inferFieldTypes');
+      const form = {
+        index: 0,
+        item: { code: '0002', qty: '2' },
+        validateItem: sinon.stub().returns(true),
+      };
+      sinon.stub(el, 'getContentChildren').returns([form]);
+
+      el._validateEntry();
+      form.item = { code: '0003', qty: '3' };
+      el._validateEntry();
+
+      expect(inferSpy.callCount).to.equal(1);
+      inferSpy.restore();
+    });
+  });
+
+  // ------------------------------------------------------------------
+  // _deleteEntry
+  // ------------------------------------------------------------------
+  suite('_deleteEntry', () => {
+    test('removes the selected item and notifies resize', async () => {
+      const el = await newTable();
+      el.items = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+      const spliceSpy = sinon.spy(el, 'splice');
+      const resizeSpy = sinon.spy(el, 'notifyResize');
+
+      el._deleteEntry({
+        stopPropagation: sinon.spy(),
+        detail: { index: 1 },
+      });
+
+      expect(spliceSpy).to.have.been.calledOnceWith('items', 1, 1);
+      expect(el.items).to.deep.equal([{ id: 'a' }, { id: 'c' }]);
+      expect(resizeSpy).to.have.been.calledOnce;
+      spliceSpy.restore();
+      resizeSpy.restore();
     });
   });
 
