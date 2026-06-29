@@ -23,7 +23,7 @@
     "nuke": "rm -rf package-lock.json node_modules core/node_modules dataviz/node_modules storybook/node_modules testing-helpers/node_modules ui/node_modules && npm install",
     "update-coverage-imports": "node scripts/test/unit/generate-coverage-imports.js",
     "update-test-load-all": "node scripts/test/unit/generate-test-load-all.js",
-    "install:chromium": "puppeteer browsers install chrome",
+    "install:chromium": "node scripts/test/unit/ensure-chromium.js",
     "pretest": "npm run install:chromium",
     "pretest:core": "npm run install:chromium",
     "pretest:ui": "npm run install:chromium",
