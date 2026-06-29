@@ -125,7 +125,8 @@ import './nuxeo-tag.js';
     }
 
     _href(group) {
-      return this.urlFor('group', this._name(group));
+      const name = this._name(group);
+      return name ? this.urlFor('group', name) : undefined;
     }
 
     /**
