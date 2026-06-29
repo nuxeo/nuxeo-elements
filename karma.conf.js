@@ -1,4 +1,18 @@
 const path = require('path');
+const http = require('http');
+const https = require('https');
+
+/*
+ * Workaround for node-fetch v2 "Premature close" errors on Node >= 19 (CI runs Node 22).
+ * Since Node 19 the global HTTP/HTTPS agents enable keep-alive by default, so the node-fetch
+ * used by @open-wc/karma-esm to load `context.html` reuses a pooled socket that the peer has
+ * already closed, which surfaces as `FetchError: ... Premature close`. Forcing keep-alive off
+ * makes each request open a fresh socket. Remove once Karma/karma-esm is replaced by WTR.
+ */
+[http.globalAgent, https.globalAgent].forEach((agent) => {
+  agent.keepAlive = false;
+  agent.options.keepAlive = false;
+});
 
 const coverage = process.argv.find((arg) => arg.includes('coverage'));
 
