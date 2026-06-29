@@ -98,11 +98,16 @@ IronOverlayManager._overlayWithBackdrop = function() {
       if (this._observer) {
         try {
           this.detached();
-        } catch (_e) {
+        } catch (e) {
           // During teardown the node-observer handle can already be invalidated; IronOverlayBehavior
           // .detached() then throws in unobserveNodes (observerHandle.disconnect is not a function).
-          // The element is going away, so it is safe to drop the stale handle and continue.
-          this._observer = null;
+          // The element is going away, so it is safe to drop the stale handle and continue; any other
+          // error is unexpected and must be rethrown so real regressions are not masked.
+          if (e instanceof TypeError && /disconnect is not a function/.test(e.message)) {
+            this._observer = null;
+          } else {
+            throw e;
+          }
         }
       }
       this._clear();

@@ -608,6 +608,7 @@ import '../nuxeo-button-styles.js';
       if (this.user && this.user.extendedGroups && this.user.properties && this.user.properties.groups) {
         return this.user.extendedGroups.filter((group) => this.user.properties.groups.indexOf(group.name) > -1);
       }
+      return [];
     }
 
     _groupSelected() {

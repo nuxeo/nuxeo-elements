@@ -130,10 +130,11 @@ if (typeof window.setup === 'function') {
 if (typeof window.teardown === 'function') {
   window.teardown(function _markTestBoundaryEnd() {
     // Defer flipping the flag until after all other teardown hooks have run, so genuine errors
-    // thrown during fixture cleanup are not suppressed.
-    setTimeout(() => {
+    // thrown during fixture cleanup are not suppressed. A microtask is used instead of setTimeout
+    // so it is unaffected by Sinon fake timers that may still be active during teardown.
+    Promise.resolve().then(() => {
       _testRunning = false;
-    }, 0);
+    });
   });
 }
 
