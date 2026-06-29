@@ -556,13 +556,15 @@ import '../nuxeo-button-styles.js';
     }
 
     static get observers() {
-      return ['_alignHeaderRow(items.length)'];
+      return ['_alignHeaderRow(items.length)', '_invalidateFieldTypeCacheFromItems(items)'];
     }
 
     constructor() {
       super();
       this.handlesSorting = true;
       this.handlesSelectAll = true;
+      this._fieldTypeStats = null;
+      this._fieldTypeHints = null;
       this._observer = dom(this).observeNodes((info) => {
         const hasColumns = function(node) {
           return node.nodeType === Node.ELEMENT_NODE && node instanceof Nuxeo.DataTableColumn;
@@ -735,6 +737,7 @@ import '../nuxeo-button-styles.js';
             path += `.${e.detail.path}`;
           }
           this.set(path, e.detail.value);
+          this._invalidateFieldTypeCache();
         }
       }
     }
@@ -956,6 +959,13 @@ import '../nuxeo-button-styles.js';
             width: column.width || null,
             resized: !!column.resized,
           };
+          // Persist filter state only when set, to keep saved settings compact (ELEMENTS-1966)
+          if (column.filterValue) {
+            tableSettings.columns[key].filterValue = column.filterValue;
+          }
+          if (column.filterExpression) {
+            tableSettings.columns[key].filterExpression = column.filterExpression;
+          }
         });
       }
 
@@ -967,8 +977,14 @@ import '../nuxeo-button-styles.js';
         return;
       }
 
-      // ---- columns (hidden / order / width) ----
+      // ---- columns (hidden / order / width / filterValue) ----
+      // Track whether a fetch is needed; deferred to a single call after all settings (filters + sort) are applied (ELEMENTS-1966)
+      let needsFetch = false;
       if (this.columns && settings.columns) {
+        // Suppress per-column filter event dispatch while restoring to
+        // avoid firing many fetches that may abort each other (WEBUI-1885)
+        this._suppressFilterEvents = true;
+        const restoredFilters = [];
         this.columns.forEach(function(column, idx) {
           const key = column.field ? column.field : `col-${idx}`;
           const colSettings = settings.columns[key] || {};
@@ -991,7 +1007,58 @@ import '../nuxeo-button-styles.js';
               Object.prototype.hasOwnProperty.call(colSettings, 'resized') ? !!colSettings.resized : true,
             );
           }
+
+          // filterValue (WEBUI-1885) - restore column filter values
+          if (Object.prototype.hasOwnProperty.call(colSettings, 'filterValue') && colSettings.filterValue) {
+            this.set(`columns.${idx}.filterValue`, colSettings.filterValue);
+            if (colSettings.filterExpression) {
+              this.set(`columns.${idx}.filterExpression`, colSettings.filterExpression);
+            }
+            restoredFilters.push({
+              index: idx,
+              value: colSettings.filterValue,
+              expression: colSettings.filterExpression || null,
+            });
+          }
         }, this);
+
+        // Re-enable per-column events and apply restored filters to the provider once
+        this._suppressFilterEvents = false;
+        if (restoredFilters.length > 0 && this._hasPageProvider && this._hasPageProvider() && this.nxProvider) {
+          if (this.paginable) {
+            this.nxProvider.page = 1;
+          }
+          // Apply restored filters to nxProvider.params AND to this.filters array
+          restoredFilters.forEach((entry) => {
+            const column = this.columns[entry.index];
+            const effectiveFilterBy = column.filterBy || column.field || null;
+            if (effectiveFilterBy && entry.value) {
+              // Set provider param
+              if (entry.expression) {
+                // Use a function replacement to prevent $ in user values being treated as back-references (ELEMENTS-1966)
+                this.nxProvider.params[effectiveFilterBy] = entry.expression.replace(/\$term/g, () => entry.value);
+              } else {
+                this.nxProvider.params[effectiveFilterBy] = entry.value;
+              }
+              // Also add to filters array so user can later clear it
+              const existingIdx = this.filters.findIndex((f) => f.path === effectiveFilterBy);
+              if (existingIdx === -1) {
+                this.push('filters', {
+                  path: effectiveFilterBy,
+                  value: entry.value,
+                  name: column.name,
+                  expression: entry.expression,
+                });
+              } else {
+                // Update all fields to avoid stale expression/name in the filters array (ELEMENTS-1966)
+                this.set(`filters.${existingIdx}.value`, entry.value);
+                this.set(`filters.${existingIdx}.expression`, entry.expression);
+                this.set(`filters.${existingIdx}.name`, column.name);
+              }
+            }
+          });
+          needsFetch = true; // always needed: params were mutated in-place, Polymer's auto observer can't detect it
+        }
       }
 
       let appliedSortOrder = null;
@@ -1017,13 +1084,17 @@ import '../nuxeo-button-styles.js';
         // keep provider sort aligned with the table's sortOrder
         this._ppSort = sortMap;
         this.nxProvider.sort = sortMap;
-        // refresh results via the table/behavior fetch so items get updated
-        if (typeof this.fetch === 'function' && !this.nxProvider.auto) {
-          this.fetch();
+        if (!this.nxProvider.auto) {
+          needsFetch = true;
         }
 
         // ---- reflow ----
         this.notifyResize();
+      }
+
+      // Single consolidated fetch after all settings (filters + sort) are applied (ELEMENTS-1966)
+      if (needsFetch && typeof this.fetch === 'function') {
+        this.fetch();
       }
     }
 
@@ -1063,21 +1134,159 @@ import '../nuxeo-button-styles.js';
     }
 
     _isStrictNumberString(value) {
-      return typeof value === 'string' && value.trim() !== '' && Number.isFinite(Number(value));
+      if (typeof value !== 'string' || value.trim() === '') {
+        return false;
+      }
+      const normalized = value.trim();
+      const num = Number(normalized);
+      // Keep integer-like strings with leading zeros as text (e.g. "00123", "+001").
+      if (/^[+-]?0\d+$/.test(normalized)) {
+        return false;
+      }
+      return Number.isFinite(num);
     }
 
-    _normalizeItem(item) {
+    // Build per-field type hints from existing rows to keep user input consistent.
+    _inferFieldTypes(existingItems) {
+      const typeMap = {};
+      if (!existingItems || existingItems.length === 0) {
+        return typeMap;
+      }
+      existingItems.forEach((row) => {
+        if (row === null || typeof row !== 'object' || Array.isArray(row)) {
+          return;
+        }
+        Object.keys(row).forEach((key) => {
+          const t = typeof row[key];
+          if (t !== 'number' && t !== 'string') {
+            return;
+          }
+          if (!(key in typeMap)) {
+            typeMap[key] = t;
+          } else if (typeMap[key] !== t) {
+            typeMap[key] = null; // mixed — no inference
+          }
+        });
+      });
+      return typeMap;
+    }
+
+    _invalidateFieldTypeCache() {
+      this._fieldTypeStats = null;
+      this._fieldTypeHints = null;
+    }
+
+    _invalidateFieldTypeCacheFromItems() {
+      this._invalidateFieldTypeCache();
+    }
+
+    _getScalarType(value) {
+      const type = typeof value;
+      return type === 'number' || type === 'string' ? type : null;
+    }
+
+    _buildFieldTypeStats(items) {
+      const stats = {};
+      (items || []).forEach((row) => {
+        if (row === null || typeof row !== 'object' || Array.isArray(row)) {
+          return;
+        }
+        Object.keys(row).forEach((key) => {
+          const type = this._getScalarType(row[key]);
+          if (!type) {
+            return;
+          }
+          if (!stats[key]) {
+            stats[key] = { number: 0, string: 0 };
+          }
+          stats[key][type] += 1;
+        });
+      });
+      return stats;
+    }
+
+    _computeFieldTypeHintsFromStats(stats) {
+      const hints = {};
+      Object.keys(stats).forEach((key) => {
+        if (stats[key].number > 0 && stats[key].string === 0) {
+          hints[key] = 'number';
+        } else if (stats[key].string > 0 && stats[key].number === 0) {
+          hints[key] = 'string';
+        } else {
+          hints[key] = null;
+        }
+      });
+      return hints;
+    }
+
+    _ensureFieldTypeCache() {
+      if (!this._fieldTypeStats || !this._fieldTypeHints) {
+        // Reuse existing inference semantics for compatibility.
+        this._fieldTypeHints = this._inferFieldTypes(this.items || []);
+        this._fieldTypeStats = this._buildFieldTypeStats(this.items || []);
+      }
+      return this._fieldTypeHints;
+    }
+
+    _adjustFieldTypeStatsForItem(item, delta) {
+      if (!this._fieldTypeStats || item === null || typeof item !== 'object' || Array.isArray(item)) {
+        return;
+      }
+      Object.keys(item).forEach((key) => {
+        const type = this._getScalarType(item[key]);
+        if (!type) {
+          return;
+        }
+        if (!this._fieldTypeStats[key]) {
+          this._fieldTypeStats[key] = { number: 0, string: 0 };
+        }
+        this._fieldTypeStats[key][type] = Math.max(0, this._fieldTypeStats[key][type] + delta);
+        if (this._fieldTypeStats[key].number === 0 && this._fieldTypeStats[key].string === 0) {
+          delete this._fieldTypeStats[key];
+        }
+      });
+    }
+
+    _updateFieldTypeCache(previousItem, nextItem) {
+      if (!this._fieldTypeStats || !this._fieldTypeHints) {
+        this._invalidateFieldTypeCache();
+        return;
+      }
+      this._adjustFieldTypeStatsForItem(previousItem, -1);
+      this._adjustFieldTypeStatsForItem(nextItem, 1);
+      this._fieldTypeHints = this._computeFieldTypeHintsFromStats(this._fieldTypeStats);
+    }
+
+    _normalizeItem(item, typeHints) {
       if (Array.isArray(item)) {
-        return item.map((v) => this._normalizeItem(v));
+        return item.map((v) => this._normalizeItem(v, typeHints));
       }
 
       if (item !== null && typeof item === 'object') {
         Object.keys(item).forEach((key) => {
-          item[key] = this._normalizeItem(item[key]);
+          const hint = typeHints && typeHints[key];
+          if (hint === 'number' && typeof item[key] === 'string' && item[key].trim() !== '') {
+            // Keep numeric columns numeric.
+            const num = Number(item[key]);
+            item[key] = Number.isFinite(num) ? num : item[key];
+          } else if (hint === 'string') {
+            // Keep string columns as strings (for ID-like values such as "00123").
+            item[key] = typeof item[key] === 'number' ? String(item[key]) : item[key];
+          } else {
+            item[key] = this._normalizeItem(item[key]);
+          }
         });
         return item;
       }
 
+      if (this.columns && this.columns.length === 1 && typeof item === 'string' && item.trim() !== '') {
+        const num = Number(item.trim());
+        if (Number.isFinite(num)) {
+          return num;
+        }
+      }
+
+      // No field hint: only coerce when numeric round-trip is stable.
       if (this._isStrictNumberString(item)) {
         return Number(item);
       }
@@ -1089,15 +1298,19 @@ import '../nuxeo-button-styles.js';
       const dtform = this.getContentChildren('#form')[0];
 
       if (dtform.validateItem()) {
+        const previousItem = dtform.index > -1 ? this._deepCopy(this.items[dtform.index]) : null;
         let item = this._deepCopy(dtform.item);
 
-        // ✅ automatic number vs string handling
-        item = this._normalizeItem(item);
+        // Use cached hints to avoid scanning all rows on every save.
+        const typeHints = this._ensureFieldTypeCache();
+        item = this._normalizeItem(item, typeHints);
 
         if (dtform.index > -1) {
           this.set(`items.${dtform.index}`, item);
+          this._updateFieldTypeCache(previousItem, item);
         } else {
           this.push('items', item);
+          this._updateFieldTypeCache(null, item);
         }
         this.__renderDebouncer = Debouncer.debounce(this.__renderDebouncer, timeOut.after(10), () => {
           this.notifyResize();
@@ -1145,7 +1358,9 @@ import '../nuxeo-button-styles.js';
 
     _deleteEntry(e) {
       e.stopPropagation();
+      const removedItem = this.items && this.items[e.detail.index];
       this.splice('items', e.detail.index, 1);
+      this._updateFieldTypeCache(removedItem, null);
       this.notifyResize();
     }
 

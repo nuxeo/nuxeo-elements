@@ -252,13 +252,19 @@ import './data-table-column-filter.js';
     }
 
     _filterValueChanged(table, filterValue, filterBy, filterExpression) {
-      if (table && filterBy && filterValue !== undefined) {
+      // Use filterBy if set, otherwise fall back to field (ELEMENTS-1966)
+      const effectiveFilterBy = filterBy || this.field || null;
+      if (table && filterValue !== undefined) {
         this._notifyTable(table, 'filterValue', filterValue);
+        // Skip event dispatch while the table is restoring settings (ELEMENTS-1966)
+        if (table._suppressFilterEvents) {
+          return;
+        }
         this.dispatchEvent(
           new CustomEvent('column-filter-changed', {
             composed: true,
             bubbles: true,
-            detail: { value: filterValue, filterBy, filterExpression },
+            detail: { value: filterValue, filterBy: effectiveFilterBy, filterExpression, name: this.name },
           }),
         );
       }
