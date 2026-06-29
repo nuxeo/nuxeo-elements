@@ -46,6 +46,13 @@ if (!VALID_PACKAGES.includes(pkg)) {
 
 const chromeArgs = ['--disable-gpu', '--no-sandbox', '--disable-dev-shm-usage', '--disable-setuid-sandbox'];
 
+// Allow overriding the tests-finish timeout via env, but fall back to the default when the value is
+// missing or non-numeric (e.g. "10m") so a bad override can't silently disable the timeout (NaN).
+const DEFAULT_FINISH_TIMEOUT = 900000;
+const parsedFinishTimeout = Number(process.env.NX_FINISH_TIMEOUT);
+const finishTimeout =
+  Number.isFinite(parsedFinishTimeout) && parsedFinishTimeout > 0 ? parsedFinishTimeout : DEFAULT_FINISH_TIMEOUT;
+
 const verbose = process.env.WTR_VERBOSE === '1';
 const coverageEnabled = process.argv.includes('--coverage');
 
@@ -147,7 +154,7 @@ export default {
   concurrentBrowsers: 1,
   hostname: '127.0.0.1',
   testsStartTimeout: 180000,
-  testsFinishTimeout: process.env.NX_FINISH_TIMEOUT ? Number(process.env.NX_FINISH_TIMEOUT) : 900000,
+  testsFinishTimeout: finishTimeout,
   // Single entry imports every suite module; dev-server transform + first page load can exceed 30s in CI.
   browserStartTimeout: 120000,
   coverage: coverageEnabled,

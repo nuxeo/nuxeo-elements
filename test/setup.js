@@ -20,7 +20,7 @@ limitations under the License.
  * Loaded first from each package's test/load-all-tests.js barrel.
  *
  * What this file does:
- * - Registers Chai, Sinon, and common globals (`expect`, `assert`, `should`) expected by legacy tests.
+ * - Registers Chai, Sinon, and common globals (`expect`, `assert`, `sinon`) expected by legacy tests.
  * - Installs error/rejection suppression so stray async failures between tests don't abort the run.
  * - Patches sinon.stub to handle non-configurable Polymer element properties.
  * - Auto-restores leaked sinon fakes/clocks after each test.
@@ -44,7 +44,7 @@ chai.use(sinonChai);
 globalThis.chai = chai;
 globalThis.sinon = sinon;
 
-// Sinon ≥ 11 rejects stubbing non-configurable accessors (common on Polymer / Nuxeo.Element:
+// Sinon refuses to stub non-configurable accessors (common on Polymer / Nuxeo.Element:
 // `i18n`, `navigateTo`, etc.). Shadow the property with a configurable own data property whose
 // value is an anonymous `sinon.stub()` so existing patterns keep working:
 // `sinon.stub(el, 'i18n').callsFake(fn)` and `const s = sinon.stub(el, 'navigateTo')`.
@@ -92,7 +92,6 @@ globalThis.sinon = sinon;
 // Common assertion entry points used throughout the test suite.
 globalThis.expect = chai.expect;
 globalThis.assert = chai.assert;
-globalThis.should = chai.should();
 
 // Prevent stray async errors from killing the entire mocha run.
 //

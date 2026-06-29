@@ -110,7 +110,7 @@ provided by `@web/test-runner-mocha`).
 | ---------------------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | `test`                                   | `karma start` per package  | `update-coverage-imports && update-test-load-all && npm-run-all test:core test:ui test:dataviz`                                              |
 | `test:core` / `test:ui` / `test:dataviz` | `karma start --browsers …` | `print-test-runner-notice <pkg> && cross-env NX_PACKAGE=<pkg> web-test-runner --coverage && cross-env NX_PACKAGE=<pkg> inject-zero-coverage` |
-| `test:watch`                             | `karma start --auto-watch` | `cross-env NX_PACKAGE=${NX_PACKAGE:-core} web-test-runner --watch`                                                                           |
+| `test:watch`                             | `karma start --auto-watch` | `update-coverage-imports && update-test-load-all && web-test-runner --watch` (set `NX_PACKAGE` to target ui/dataviz; defaults to `core`)                                                                                                          |
 | `pretest`                                | (none)                     | `puppeteer browsers install chrome`                                                                                                          |
 | `update-coverage-imports`                | same                       | same                                                                                                                                         |
 | `update-test-load-all`                   | same                       | same                                                                                                                                         |
@@ -156,8 +156,8 @@ package. The single-entry pattern preserves the deterministic suite registration
 
 One bootstrap shared by all three packages (imported first by every barrel):
 
-- Registers Chai + Sinon globals (`expect`, `assert`, `should`, `sinon`).
-- Patches `sinon.stub` to tolerate non-configurable Polymer accessors (Sinon ≥ 11 strictness).
+- Registers Chai + Sinon globals (`expect`, `assert`, `sinon`).
+- Patches `sinon.stub` to tolerate non-configurable Polymer accessors (Sinon's stubbing strictness).
 - Suppresses stray async errors / unhandled rejections that fire **after** a test boundary
   (benign `nuxeo-client` 404 / abort noise) without hiding real load-time failures.
 - Wraps `ResizeObserver` to defer notifications one frame (avoids the "loop completed" uncaught error).
@@ -174,9 +174,10 @@ One bootstrap shared by all three packages (imported first by every barrel):
 ### 6. Delete `karma.conf.js` and update CI
 
 `.github/workflows/test.yaml` installs dependencies and runs `npm run test`; the `pretest` hook
-provisions the bundled Chromium. The SonarCloud workflow (`sonar.yaml`) is unchanged — `npm test`
-now runs WTR, and its `--ignore-scripts` install does not skip npm lifecycle hooks, so `pretest`
-still installs Chromium.
+provisions the bundled Chromium. The SonarCloud workflow (`sonar.yaml`) is unchanged: it installs
+dependencies with `npm install --ignore-scripts` (which skips install lifecycle hooks such as
+`postinstall`), but the Chromium install is wired to the `pretest` hook of `npm test` rather than
+to an install hook, so it still runs when the Sonar job executes `npm test`.
 
 ---
 
