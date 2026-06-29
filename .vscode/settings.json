@@ -1,0 +1,6 @@
+{
+    "sonarlint.connectedMode.project": {
+        "connectionId": "nuxeo",
+        "projectKey": "nuxeo_nuxeo-elements"
+    }
+}
