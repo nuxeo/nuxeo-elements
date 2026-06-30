@@ -283,14 +283,6 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
       const pdm = this.$.paperDropdownMenu;
       pdm.addEventListener('paper-dropdown-open', () => this._attachDropdownTabHandler());
       pdm.addEventListener('paper-dropdown-close', () => this._detachDropdownTabHandler());
-      // When the trigger is focused and the dropdown is closed, Tab opens the dropdown
-      // instead of moving focus to the next field (Shift+Tab is left to the browser).
-      pdm.addEventListener('keydown', (e) => {
-        if (e.key === 'Tab' && !e.shiftKey && !pdm.opened) {
-          e.preventDefault();
-          pdm.open();
-        }
-      });
     }
 
     close() {
@@ -362,127 +354,46 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
       }
     }
 
-    // Attach a document-level Tab handler while the dropdown is open.
-    // We use the capture phase so we intercept Tab regardless of where focus is
-    // (trigger input OR a paper-item inside the iron-dropdown overlay in document.body).
+    // Attach a Tab handler to the iron-dropdown overlay while it is open.
+    // Standard combobox pattern: Tab closes the dropdown and returns focus to
+    // the trigger input; native Tab then advances focus from that position.
+    // Scoping to the overlay (rather than document) avoids cross-talk between
+    // multiple open selects and keeps the listener's lifetime tightly bounded.
     _attachDropdownTabHandler() {
+      const pdm = this.$.paperDropdownMenu;
+      // paper-menu-button exposes its iron-dropdown as $.menuButton.$.dropdown.
+      const overlay =
+        pdm.$.menuButton && pdm.$.menuButton.$ && pdm.$.menuButton.$.dropdown ? pdm.$.menuButton.$.dropdown : null;
+      this._dropdownTabOverlay = overlay;
       this._dropdownTabHandler = (e) => {
         if (e.key !== 'Tab') return;
         e.preventDefault();
-        const forward = !e.shiftKey;
-        this.$.paperDropdownMenu.close();
-        // Defer focus change to a microtask so iron-dropdown teardown settles first.
-        queueMicrotask(() => {
-          const next = this._getAdjacentFocusable(forward);
-          if (next && typeof next.focus === 'function') {
-            next.focus();
-          }
-        });
+        pdm.close();
+        // Focus the trigger input so that the user's next Tab keystroke uses
+        // native focus order starting from the widget's real DOM position.
+        const trigger = (pdm.$ && pdm.$.input) || (pdm.shadowRoot && pdm.shadowRoot.querySelector('paper-input'));
+        if (trigger && typeof trigger.focus === 'function') {
+          trigger.focus();
+        }
       };
-      document.addEventListener('keydown', this._dropdownTabHandler, true);
+      if (overlay) {
+        overlay.addEventListener('keydown', this._dropdownTabHandler);
+      } else {
+        // Fallback when overlay reference is unavailable.
+        document.addEventListener('keydown', this._dropdownTabHandler, true);
+      }
     }
 
     _detachDropdownTabHandler() {
       if (this._dropdownTabHandler) {
-        document.removeEventListener('keydown', this._dropdownTabHandler, true);
+        if (this._dropdownTabOverlay) {
+          this._dropdownTabOverlay.removeEventListener('keydown', this._dropdownTabHandler);
+        } else {
+          document.removeEventListener('keydown', this._dropdownTabHandler, true);
+        }
         this._dropdownTabHandler = null;
+        this._dropdownTabOverlay = null;
       }
-    }
-
-    // Walks the composed tree (shadow roots included) and returns the flat list of
-    // sequentially tabbable elements under document.body.
-    _collectTabbable() {
-      const all = [];
-      const collect = (root) => {
-        let node = root.firstElementChild;
-        while (node) {
-          if (node.tabIndex >= 0 && !node.disabled && node.offsetParent !== null && node.getClientRects().length > 0) {
-            all.push(node);
-          }
-          if (node.shadowRoot) collect(node.shadowRoot);
-          collect(node);
-          node = node.nextElementSibling;
-        }
-      };
-      collect(document.body);
-      return all;
-    }
-
-    // Returns true if el is inside nuxeo-select's own composed shadow subtree.
-    _isInMySubtree(el) {
-      let n = el;
-      while (n) {
-        if (n === this) return true;
-        const root = n.getRootNode();
-        n = root instanceof ShadowRoot ? root.host : n.parentElement;
-      }
-      return false;
-    }
-
-    // Returns the next tabbable element after this component in DOM order.
-    _nextFocusable(all) {
-      let anchor = -1;
-      for (let i = 0; i < all.length; i++) {
-        if (this._isInMySubtree(all[i])) anchor = i;
-      }
-      if (anchor >= 0) {
-        for (let i = anchor + 1; i < all.length; i++) {
-          if (!this._isInMySubtree(all[i])) return all[i];
-        }
-        return null;
-      }
-      // Fallback: document-order comparison when no shadow elements were collected.
-      const myRoot = this.getRootNode();
-      for (const el of all) {
-        if (
-          !this._isInMySubtree(el) &&
-          el.getRootNode() === myRoot &&
-          this.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING
-        ) {
-          return el;
-        }
-      }
-      return null;
-    }
-
-    // Returns the previous tabbable element before this component in DOM order.
-    _prevFocusable(all) {
-      let anchor = all.length;
-      for (let i = 0; i < all.length; i++) {
-        if (this._isInMySubtree(all[i])) {
-          anchor = i;
-          break;
-        }
-      }
-      if (anchor < all.length) {
-        for (let i = anchor - 1; i >= 0; i--) {
-          if (!this._isInMySubtree(all[i])) return all[i];
-        }
-        return null;
-      }
-      // Fallback: document-order comparison when no shadow elements were collected.
-      const myRoot = this.getRootNode();
-      let found = null;
-      for (const el of all) {
-        if (
-          !this._isInMySubtree(el) &&
-          el.getRootNode() === myRoot &&
-          this.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING
-        ) {
-          found = el;
-        }
-      }
-      return found;
-    }
-
-    // Walks the composed tree (shadow roots included) and returns the first/last
-    // tabbable element following/preceding this element in document order.
-    _getAdjacentFocusable(forward) {
-      const all = this._collectTabbable();
-      if (forward) {
-        return this._nextFocusable(all);
-      }
-      return this._prevFocusable(all);
     }
 
     /* Override method from Polymer.IronValidatableBehavior. */
