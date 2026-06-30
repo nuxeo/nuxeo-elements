@@ -416,11 +416,17 @@ suite('iron-data-table extras', () => {
       expect(el._isStrictNumberString('-1')).to.be.true;
       expect(el._isStrictNumberString('0')).to.be.true;
       expect(el._isStrictNumberString(' 7 ')).to.be.true;
+      expect(el._isStrictNumberString('1.0')).to.be.true;
+      expect(el._isStrictNumberString('1e3')).to.be.true;
+      expect(el._isStrictNumberString('+1')).to.be.true;
+      expect(el._isStrictNumberString('-0')).to.be.true;
     });
 
     test('returns false for non-number strings', async () => {
       const el = await newTable();
       expect(el._isStrictNumberString('abc')).to.be.false;
+      expect(el._isStrictNumberString('001234')).to.be.false;
+      expect(el._isStrictNumberString('+001')).to.be.false;
       expect(el._isStrictNumberString('')).to.be.false;
       expect(el._isStrictNumberString('  ')).to.be.false;
       expect(el._isStrictNumberString('NaN')).to.be.false;
@@ -433,6 +439,113 @@ suite('iron-data-table extras', () => {
       expect(el._isStrictNumberString(null)).to.be.false;
       expect(el._isStrictNumberString(undefined)).to.be.false;
       expect(el._isStrictNumberString(true)).to.be.false;
+    });
+  });
+
+  // ------------------------------------------------------------------
+  // _inferFieldTypes
+  // ------------------------------------------------------------------
+  suite('_inferFieldTypes', () => {
+    test('infers field types from homogeneous rows', async () => {
+      const el = await newTable();
+      const types = el._inferFieldTypes([
+        { code: '00123', qty: 10 },
+        { code: '00124', qty: 11 },
+      ]);
+
+      expect(types).to.deep.equal({ code: 'string', qty: 'number' });
+    });
+
+    test('marks a field as null when rows have mixed string and number types', async () => {
+      const el = await newTable();
+      const types = el._inferFieldTypes([{ code: '00123' }, { code: 123 }]);
+
+      expect(types).to.deep.equal({ code: null });
+    });
+
+    test('returns empty map for empty input', async () => {
+      const el = await newTable();
+      const types = el._inferFieldTypes([]);
+
+      expect(types).to.deep.equal({});
+    });
+
+    test('ignores null, arrays and unsupported scalar types', async () => {
+      const el = await newTable();
+      const types = el._inferFieldTypes([null, ['x'], { code: true, meta: {} }, { code: '00123' }]);
+
+      expect(types).to.deep.equal({ code: 'string' });
+    });
+  });
+
+  // ------------------------------------------------------------------
+  // cache helper methods
+  // ------------------------------------------------------------------
+  suite('field type cache helpers', () => {
+    test('_getScalarType returns null for unsupported types', async () => {
+      const el = await newTable();
+
+      expect(el._getScalarType(true)).to.be.null;
+      expect(el._getScalarType({})).to.be.null;
+      expect(el._getScalarType([])).to.be.null;
+    });
+
+    test('_computeFieldTypeHintsFromStats returns null for mixed stats', async () => {
+      const el = await newTable();
+      const hints = el._computeFieldTypeHintsFromStats({
+        code: { number: 0, string: 2 },
+        qty: { number: 3, string: 0 },
+        mixed: { number: 1, string: 1 },
+      });
+
+      expect(hints).to.deep.equal({ code: 'string', qty: 'number', mixed: null });
+    });
+
+    test('_ensureFieldTypeCache reuses an existing cache', async () => {
+      const el = await newTable();
+      el._fieldTypeStats = { code: { number: 0, string: 1 } };
+      el._fieldTypeHints = { code: 'string' };
+      const inferSpy = sinon.spy(el, '_inferFieldTypes');
+
+      const hints = el._ensureFieldTypeCache();
+
+      expect(hints).to.deep.equal({ code: 'string' });
+      expect(inferSpy).to.not.have.been.called;
+      inferSpy.restore();
+    });
+
+    test('_adjustFieldTypeStatsForItem removes keys when counters drop to zero', async () => {
+      const el = await newTable();
+      el._fieldTypeStats = { code: { number: 0, string: 1 } };
+
+      el._adjustFieldTypeStatsForItem({ code: '001' }, -1);
+
+      expect(el._fieldTypeStats.code).to.be.undefined;
+    });
+
+    test('_buildFieldTypeStats handles null items and duplicate keys', async () => {
+      const el = await newTable();
+
+      const emptyStats = el._buildFieldTypeStats(null);
+      expect(emptyStats).to.deep.equal({});
+
+      const stats = el._buildFieldTypeStats([null, ['x'], { code: '001' }, { code: '002' }, { qty: 3 }]);
+      expect(stats).to.deep.equal({
+        code: { number: 0, string: 2 },
+        qty: { number: 1, string: 0 },
+      });
+    });
+
+    test('_ensureFieldTypeCache builds from empty items fallback', async () => {
+      const el = await newTable();
+      el.items = null;
+      el._fieldTypeStats = null;
+      el._fieldTypeHints = null;
+
+      const hints = el._ensureFieldTypeCache();
+
+      expect(hints).to.deep.equal({});
+      expect(el._fieldTypeStats).to.deep.equal({});
     });
   });
 
@@ -476,6 +589,194 @@ suite('iron-data-table extras', () => {
       expect(el._normalizeItem(undefined)).to.be.undefined;
       expect(el._normalizeItem(true)).to.be.true;
       expect(el._normalizeItem(false)).to.be.false;
+    });
+
+    test('preserves numeric-looking text with leading zeros when hint is string', async () => {
+      const el = await newTable();
+      const result = el._normalizeItem({ code: '001234' }, { code: 'string' });
+
+      expect(result).to.deep.equal({ code: '001234' });
+      expect(result.code).to.be.a('string');
+    });
+
+    test('coerces numeric-looking text to number when hint is number', async () => {
+      const el = await newTable();
+      const result = el._normalizeItem({ code: '001234' }, { code: 'number' });
+
+      expect(result).to.deep.equal({ code: 1234 });
+      expect(result.code).to.be.a('number');
+    });
+
+    test('falls back to round-trip heuristic for mixed type hint', async () => {
+      const el = await newTable();
+      const result = el._normalizeItem({ code: '001234', count: '42' }, { code: null, count: null });
+
+      expect(result).to.deep.equal({ code: '001234', count: 42 });
+      expect(result.code).to.be.a('string');
+      expect(result.count).to.be.a('number');
+    });
+
+    test('keeps original value when number-hinted field cannot be parsed', async () => {
+      const el = await newTable();
+      const result = el._normalizeItem({ code: 'abc' }, { code: 'number' });
+
+      expect(result).to.deep.equal({ code: 'abc' });
+    });
+
+    test('casts number to string when hint is string', async () => {
+      const el = await newTable();
+      const result = el._normalizeItem({ code: 1234 }, { code: 'string' });
+
+      expect(result).to.deep.equal({ code: '1234' });
+      expect(result.code).to.be.a('string');
+    });
+
+    test('single-column: coerces leading-zero numeric string to number', async () => {
+      const el = await newTable();
+      el.columns = [{}]; // single column
+      const result = el._normalizeItem('001234');
+
+      expect(result).to.equal(1234);
+      expect(result).to.be.a('number');
+    });
+
+    test('single-column: coerces plain numeric string to number', async () => {
+      const el = await newTable();
+      el.columns = [{}]; // single column
+      const result = el._normalizeItem('42');
+
+      expect(result).to.equal(42);
+      expect(result).to.be.a('number');
+    });
+
+    test('single-column: leaves non-numeric strings unchanged', async () => {
+      const el = await newTable();
+      el.columns = [{}]; // single column
+      const result = el._normalizeItem('abc');
+
+      expect(result).to.equal('abc');
+    });
+
+    test('multi-column: preserves leading-zero string without hint', async () => {
+      const el = await newTable();
+      el.columns = [{}, {}]; // two columns
+      const result = el._normalizeItem('001234');
+
+      expect(result).to.equal('001234');
+      expect(result).to.be.a('string');
+    });
+  });
+
+  // ------------------------------------------------------------------
+  // _validateEntry
+  // ------------------------------------------------------------------
+  suite('_validateEntry', () => {
+    function mockForm(el, { valid, index, item }) {
+      const form = {
+        index,
+        item,
+        validateItem: sinon.stub().returns(valid),
+      };
+      sinon.stub(el, 'getContentChildren').returns([form]);
+      return form;
+    }
+
+    test('pushes a new item and preserves leading-zero strings when inferred as string', async () => {
+      const el = await newTable();
+      el.items = [{ code: '0001' }];
+      const pushSpy = sinon.spy(el, 'push');
+      mockForm(el, {
+        valid: true,
+        index: -1,
+        item: { code: '001234' },
+      });
+
+      el._validateEntry();
+
+      expect(pushSpy).to.have.been.calledOnce;
+      expect(pushSpy.firstCall.args[0]).to.equal('items');
+      expect(pushSpy.firstCall.args[1]).to.deep.equal({ code: '001234' });
+      expect(pushSpy.firstCall.args[1].code).to.be.a('string');
+      pushSpy.restore();
+    });
+
+    test('updates an existing item and coerces to number when inferred as number', async () => {
+      const el = await newTable();
+      el.items = [{ code: 100 }];
+      const setSpy = sinon.spy(el, 'set');
+      mockForm(el, {
+        valid: true,
+        index: 0,
+        item: { code: '001234' },
+      });
+
+      el._validateEntry();
+
+      expect(setSpy).to.have.been.calledOnce;
+      expect(setSpy.firstCall.args[0]).to.equal('items.0');
+      expect(setSpy.firstCall.args[1]).to.deep.equal({ code: 1234 });
+      expect(setSpy.firstCall.args[1].code).to.be.a('number');
+      setSpy.restore();
+    });
+
+    test('does nothing when form validation fails', async () => {
+      const el = await newTable();
+      const pushSpy = sinon.spy(el, 'push');
+      const setSpy = sinon.spy(el, 'set');
+      mockForm(el, {
+        valid: false,
+        index: -1,
+        item: { code: '001234' },
+      });
+
+      el._validateEntry();
+
+      expect(pushSpy).to.not.have.been.called;
+      expect(setSpy).to.not.have.been.called;
+      pushSpy.restore();
+      setSpy.restore();
+    });
+
+    test('reuses cached type hints across consecutive saves', async () => {
+      const el = await newTable();
+      el.items = [{ code: '0001', qty: 1 }];
+      const inferSpy = sinon.spy(el, '_inferFieldTypes');
+      const form = {
+        index: 0,
+        item: { code: '0002', qty: '2' },
+        validateItem: sinon.stub().returns(true),
+      };
+      sinon.stub(el, 'getContentChildren').returns([form]);
+
+      el._validateEntry();
+      form.item = { code: '0003', qty: '3' };
+      el._validateEntry();
+
+      expect(inferSpy.callCount).to.equal(1);
+      inferSpy.restore();
+    });
+  });
+
+  // ------------------------------------------------------------------
+  // _deleteEntry
+  // ------------------------------------------------------------------
+  suite('_deleteEntry', () => {
+    test('removes the selected item and notifies resize', async () => {
+      const el = await newTable();
+      el.items = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+      const spliceSpy = sinon.spy(el, 'splice');
+      const resizeSpy = sinon.spy(el, 'notifyResize');
+
+      el._deleteEntry({
+        stopPropagation: sinon.spy(),
+        detail: { index: 1 },
+      });
+
+      expect(spliceSpy).to.have.been.calledOnceWith('items', 1, 1);
+      expect(el.items).to.deep.equal([{ id: 'a' }, { id: 'c' }]);
+      expect(resizeSpy).to.have.been.calledOnce;
+      spliceSpy.restore();
+      resizeSpy.restore();
     });
   });
 
@@ -920,6 +1221,55 @@ suite('iron-data-table extras', () => {
       const s = el.settings;
       expect(s.sortOrder).to.be.null;
     });
+
+    test('persists filterValue when set (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false, order: 0, width: null, filterValue: 'hello' }];
+      el.sortOrder = [];
+
+      const s = el.settings;
+      expect(s.columns['dc:title'].filterValue).to.equal('hello');
+    });
+
+    test('does not persist filterValue when empty/unset (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [
+        { field: 'dc:title', hidden: false, order: 0, width: null, filterValue: '' },
+        { field: 'dc:modified', hidden: false, order: 1, width: null },
+      ];
+      el.sortOrder = [];
+
+      const s = el.settings;
+      expect(s.columns['dc:title']).to.not.have.property('filterValue');
+      expect(s.columns['dc:modified']).to.not.have.property('filterValue');
+    });
+
+    test('persists filterExpression when set (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [
+        {
+          field: 'dc:title',
+          hidden: false,
+          order: 0,
+          width: null,
+          filterValue: 'hello',
+          filterExpression: '%$term%',
+        },
+      ];
+      el.sortOrder = [];
+
+      const s = el.settings;
+      expect(s.columns['dc:title'].filterExpression).to.equal('%$term%');
+    });
+
+    test('does not persist filterExpression when unset (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false, order: 0, width: null, filterValue: 'hello' }];
+      el.sortOrder = [];
+
+      const s = el.settings;
+      expect(s.columns['dc:title']).to.not.have.property('filterExpression');
+    });
   });
 
   suite('set settings', () => {
@@ -1050,6 +1400,343 @@ suite('iron-data-table extras', () => {
 
       expect(setSpy).to.have.been.calledWith('columns.0.hidden', true);
       setSpy.restore();
+    });
+
+    // ------------------------------------------------------------------
+    // filter restore (WEBUI-1885)
+    // ------------------------------------------------------------------
+    test('restores filterValue from saved settings', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false }];
+      const setSpy = sinon.spy(el, 'set');
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
+
+      expect(setSpy).to.have.been.calledWith('columns.0.filterValue', 'hello');
+      setSpy.restore();
+    });
+
+    test('does not restore filterValue when missing from saved settings', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false }];
+      const setSpy = sinon.spy(el, 'set');
+
+      el.settings = { columns: { 'dc:title': { hidden: false } } };
+
+      const filterValueCalls = setSpy
+        .getCalls()
+        .filter((c) => typeof c.args[0] === 'string' && c.args[0].endsWith('.filterValue'));
+      expect(filterValueCalls).to.have.lengthOf(0);
+      setSpy.restore();
+    });
+
+    test('does not restore filterValue when persisted value is empty/falsy', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false }];
+      const setSpy = sinon.spy(el, 'set');
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: '' } } };
+
+      const filterValueCalls = setSpy
+        .getCalls()
+        .filter((c) => typeof c.args[0] === 'string' && c.args[0].endsWith('.filterValue'));
+      expect(filterValueCalls).to.have.lengthOf(0);
+      setSpy.restore();
+    });
+
+    test('toggles _suppressFilterEvents around the restore loop', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false }];
+      const observed = [];
+      const origSet = el.set.bind(el);
+      sinon.stub(el, 'set').callsFake((path, value) => {
+        if (typeof path === 'string' && path.endsWith('.filterValue')) {
+          observed.push(el._suppressFilterEvents);
+        }
+        return origSet(path, value);
+      });
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
+
+      // While the per-column set was happening, suppression must have been true
+      expect(observed.every((v) => v === true)).to.be.true;
+      // After restore, it must be reset to false
+      expect(el._suppressFilterEvents).to.be.false;
+      el.set.restore();
+    });
+
+    test('applies restored filters to nxProvider.params and this.filters then fetches once', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false, name: 'Title' }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      const fetchStub = sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
+
+      expect(provider.params['dc:title']).to.equal('hello');
+      expect(el.filters).to.have.lengthOf(1);
+      expect(el.filters[0]).to.include({ path: 'dc:title', value: 'hello', name: 'Title' });
+      expect(fetchStub).to.have.been.calledOnce;
+
+      fetchStub.restore();
+      el.notifyResize.restore();
+    });
+
+    test('substitutes $term in filterExpression when restoring', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = {
+        columns: { 'dc:title': { hidden: false, filterValue: 'hello', filterExpression: '%$term%' } },
+      };
+
+      expect(provider.params['dc:title']).to.equal('%hello%');
+      expect(el.filters[0].expression).to.equal('%$term%');
+
+      el.fetch.restore();
+      el.notifyResize.restore();
+    });
+
+    test('restores filterExpression onto the column object (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = {
+        columns: { 'dc:title': { hidden: false, filterValue: 'hello', filterExpression: '%$term%' } },
+      };
+
+      expect(el.columns[0].filterExpression).to.equal('%$term%');
+
+      el.fetch.restore();
+      el.notifyResize.restore();
+    });
+
+    test('does not set filterExpression on column when absent from saved settings (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
+
+      expect(el.columns[0].filterExpression).to.be.undefined;
+
+      el.fetch.restore();
+      el.notifyResize.restore();
+    });
+
+    test('updates existing entry in this.filters instead of pushing a duplicate', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [{ path: 'dc:title', value: 'old', name: 'Title' }];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'new' } } };
+
+      expect(el.filters).to.have.lengthOf(1);
+      expect(el.filters[0].value).to.equal('new');
+
+      el.fetch.restore();
+      el.notifyResize.restore();
+    });
+
+    test('updates expression and name on existing filter entry (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', name: 'Title', hidden: false }];
+      el.filters = [{ path: 'dc:title', value: 'old', name: 'Stale Name', expression: 'stale' }];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = {
+        columns: { 'dc:title': { hidden: false, filterValue: 'new', filterExpression: '%$term%' } },
+      };
+
+      expect(el.filters).to.have.lengthOf(1);
+      expect(el.filters[0].value).to.equal('new');
+      expect(el.filters[0].expression).to.equal('%$term%');
+      expect(el.filters[0].name).to.equal('Title');
+
+      el.fetch.restore();
+      el.notifyResize.restore();
+    });
+
+    test('treats $ in user filter value literally when applying filterExpression (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      // $1 in the search term must not be treated as a back-reference
+      el.settings = {
+        columns: { 'dc:title': { hidden: false, filterValue: '$1 test', filterExpression: '%$term%' } },
+      };
+
+      expect(provider.params['dc:title']).to.equal('%$1 test%');
+
+      el.fetch.restore();
+      el.notifyResize.restore();
+    });
+
+    test('resets nxProvider.page to 1 when paginable', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [];
+      el.paginable = true;
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.page = 5;
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
+
+      expect(provider.page).to.equal(1);
+
+      el.fetch.restore();
+      el.notifyResize.restore();
+    });
+
+    test('does not fetch when no filters were restored', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      const fetchStub = sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = { columns: { 'dc:title': { hidden: true } } };
+
+      expect(fetchStub).to.not.have.been.called;
+
+      fetchStub.restore();
+      el.notifyResize.restore();
+    });
+
+    test('fetches only once when both filters and sortOrder are restored (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      const fetchStub = sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = {
+        columns: { 'dc:title': { hidden: false, filterValue: 'hello' } },
+        sortOrder: [{ path: 'dc:title', direction: 'asc' }],
+      };
+
+      expect(fetchStub).to.have.been.calledOnce;
+
+      fetchStub.restore();
+      el.notifyResize.restore();
+    });
+
+    test('fetches when only sortOrder is restored and nxProvider.auto is false (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      const fetchStub = sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = { sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
+
+      expect(fetchStub).to.have.been.calledOnce;
+
+      fetchStub.restore();
+      el.notifyResize.restore();
+    });
+
+    test('does not fetch when only sortOrder is restored and nxProvider.auto is true (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = true;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      const fetchStub = sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = { sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
+
+      expect(fetchStub).to.not.have.been.called;
+
+      fetchStub.restore();
+      el.notifyResize.restore();
     });
   });
 

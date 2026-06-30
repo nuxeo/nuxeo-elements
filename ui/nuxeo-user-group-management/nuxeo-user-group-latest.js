@@ -30,11 +30,15 @@ import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import '../nuxeo-pagination-controls.js';
+import '../nuxeo-data-table/data-table-icons.js';
+import '../nuxeo-data-table/data-table-column-sort.js';
 import '../widgets/nuxeo-card.js';
 import '../widgets/nuxeo-group-tag.js';
 import '../widgets/nuxeo-input.js';
 import '../widgets/nuxeo-user-tag.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { SortBehavior } from '../nuxeo-sort-behavior.js';
+import '../nuxeo-sort-styles.js';
 
 {
   /**
@@ -45,13 +49,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
    *     <nuxeo-user-group-latest></nuxeo-user-group-latest>
    *
    * @appliesMixin Nuxeo.I18nBehavior
+   * @appliesMixin Nuxeo.SortBehavior
    * @memberof Nuxeo
    * @demo demo/nuxeo-user-group-latest/index.html
    */
-  class UserGroupLatest extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
+  class UserGroupLatest extends mixinBehaviors([I18nBehavior, SortBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="iron-flex-factors">
+        <style include="iron-flex-factors nuxeo-sort-styles">
           :host {
             display: block;
             @apply --nuxeo-user-group-latest-layout;
@@ -148,9 +153,45 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             aria-rowcount="[[latestCreatedUsersGroups.entries.length]]"
           >
             <div class="table-header" role="row">
-              <div class="flex-4" role="columnheader">[[i18n('userGroupLatest.name')]]</div>
-              <div class="flex-4" role="columnheader">[[i18n('userGroupLatest.identifier')]]</div>
-              <div class="flex-4" role="columnheader">[[i18n('label.directories.nature.email')]]</div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isSortActive(_latestSortOrder, 'name')]]"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_latestSortOrder, 'name')]]"
+              >
+                [[i18n('userGroupLatest.name')]]
+                <nuxeo-data-table-column-sort
+                  path="name"
+                  sort-order="[[_latestSortOrder]]"
+                  on-sort-direction-changed="_onLatestSortChanged"
+                ></nuxeo-data-table-column-sort>
+              </div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isSortActive(_latestSortOrder, 'uid')]]"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_latestSortOrder, 'uid')]]"
+              >
+                [[i18n('userGroupLatest.identifier')]]
+                <nuxeo-data-table-column-sort
+                  path="uid"
+                  sort-order="[[_latestSortOrder]]"
+                  on-sort-direction-changed="_onLatestSortChanged"
+                ></nuxeo-data-table-column-sort>
+              </div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isSortActive(_latestSortOrder, 'email')]]"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_latestSortOrder, 'email')]]"
+              >
+                [[i18n('label.directories.nature.email')]]
+                <nuxeo-data-table-column-sort
+                  path="email"
+                  sort-order="[[_latestSortOrder]]"
+                  on-sort-direction-changed="_onLatestSortChanged"
+                ></nuxeo-data-table-column-sort>
+              </div>
               <div class="table-actions" role="columnheader">
                 <paper-icon-button
                   noink
@@ -161,7 +202,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               </div>
             </div>
             <div class="table-rows">
-              <dom-repeat items="[[latestCreatedUsersGroups.entries]]" as="item">
+              <dom-repeat items="[[_sortedLatest]]" as="item">
                 <template>
                   <div class="table-row" on-click="_manageUserOrGroup" role="row">
                     <div class="flex-4" role="columnheader">
@@ -217,7 +258,22 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       return {
         // Holds the list of last created users or groups
         latestCreatedUsersGroups: Object,
+
+        // Array of { path, direction } objects for multi-column sort
+        _latestSortOrder: {
+          type: Array,
+          value: () => [],
+        },
+
+        _sortedLatest: {
+          type: Array,
+          value: () => [],
+        },
       };
+    }
+
+    static get observers() {
+      return ['_onEntriesChanged(latestCreatedUsersGroups.entries)'];
     }
 
     ready() {
@@ -297,7 +353,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _refreshLatest() {
       this.latestCreatedUsersGroups = {};
-      this.$.latestCreatedUsersGroups.execute();
+      this.$.latestCreatedUsersGroups.execute().then(() => {
+        this._applySort();
+      });
     }
 
     _refreshLatestWithDelay() {
@@ -307,6 +365,49 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // (dirty, I know ..)
         this._refreshLatest();
       }, 1000);
+    }
+
+    _onLatestSortChanged(e) {
+      this._latestSortOrder = this._applySortDirectionChanged(this._latestSortOrder, e.detail.path, e.detail.direction);
+      this._applySort();
+    }
+
+    _onEntriesChanged() {
+      this._applySort();
+    }
+
+    _applySort() {
+      const entries = (this.latestCreatedUsersGroups && this.latestCreatedUsersGroups.entries) || [];
+      const cols = this._latestSortOrder;
+      if (!cols || cols.length === 0) {
+        this._sortedLatest = entries.slice();
+        return;
+      }
+      this._sortedLatest = entries.slice().sort((a, b) => {
+        for (let i = 0; i < cols.length; i++) {
+          const { path, direction } = cols[i];
+          const valA = this._getLatestSortValue(a, path);
+          const valB = this._getLatestSortValue(b, path);
+          const cmp = valA.localeCompare(valB, undefined, { sensitivity: 'base' });
+          if (cmp !== 0) {
+            return direction === 'asc' ? cmp : -cmp;
+          }
+        }
+        return 0;
+      });
+    }
+
+    _getLatestSortValue(item, field) {
+      if (field === 'name') {
+        return this._displayLCUserGroup(item) || item.uid || '';
+      }
+      if (field === 'uid') {
+        return item.uid || '';
+      }
+      if (field === 'email') {
+        return this._getEmail(item) || '';
+      }
+      return '';
     }
   }
 
