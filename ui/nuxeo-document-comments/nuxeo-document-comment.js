@@ -174,7 +174,7 @@ import '../nuxeo-button-styles.js';
               <div class="info">
                 <div id="body">
                   <div id="header" class="horizontal">
-                    <span class="author">[[comment.author]]</span>
+                    <span class="author">[[_authorLabel(comment.author)]]</span>
                     <span class="smaller opaque"
                       >[[_computeDateLabel(comment, comment.creationDate, comment.modificationDate, i18n)]]</span
                     >
@@ -610,10 +610,36 @@ import '../nuxeo-button-styles.js';
     /** Visibility Methods * */
 
     _areExtendedOptionsAvailable(author, currentUser) {
+      const username = this._authorUsername(author);
       return (
         currentUser &&
-        ((currentUser.properties && currentUser.properties.username === author) || currentUser.isAdministrator)
+        ((currentUser.properties && currentUser.properties.username === username) || currentUser.isAdministrator)
       );
+    }
+
+    _authorLabel(author) {
+      if (!author) {
+        return '';
+      }
+      if (author['entity-type'] === 'user' && author.properties) {
+        const { firstName, lastName, username } = author.properties;
+        return (
+          [firstName, lastName]
+            .filter(Boolean)
+            .join(' ')
+            .trim() ||
+          username ||
+          ''
+        );
+      }
+      return author;
+    }
+
+    _authorUsername(author) {
+      if (author && author['entity-type'] === 'user' && author.properties) {
+        return author.properties.username || author.id || '';
+      }
+      return author || '';
     }
 
     _isBlank(text) {

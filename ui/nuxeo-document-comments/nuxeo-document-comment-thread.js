@@ -224,7 +224,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
         currentPageIndex: 0,
       };
       this.$.commentRequest.headers = {
-        'fetch-comment': 'repliesSummary',
+        'fetch-comment': 'repliesSummary,author',
       };
       this.$.commentRequest
         .get()
@@ -305,6 +305,9 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
       if (this._isSubmitting) return;
       this._isSubmitting = true;
       this._clearRequest();
+      this.$.commentRequest.headers = {
+        'fetch-comment': 'author',
+      };
       this.$.commentRequest.data = {
         'entity-type': 'comment',
         parentId: this.uid,
