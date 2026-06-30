@@ -618,7 +618,10 @@ import '../nuxeo-button-styles.js';
     }
 
     _isAuthorEntity(author) {
-      if (!author || !author.properties) {
+      if (author == null) {
+        return false;
+      }
+      if (author.properties == null) {
         return false;
       }
       return author['entity-type'] === 'user' || (author['entity-type'] === 'document' && author.type === 'user');
