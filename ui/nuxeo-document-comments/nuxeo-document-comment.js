@@ -617,18 +617,30 @@ import '../nuxeo-button-styles.js';
       );
     }
 
+    _isAuthorEntity(author) {
+      return (
+        author &&
+        author.properties &&
+        (author['entity-type'] === 'user' || (author['entity-type'] === 'document' && author.type === 'user'))
+      );
+    }
+
     _authorLabel(author) {
       if (!author) {
         return '';
       }
-      if (author['entity-type'] === 'user' && author.properties) {
-        const { firstName, lastName, username } = author.properties;
+      if (this._isAuthorEntity(author)) {
+        const props = author.properties;
+        const firstName = props.firstName || props['user:firstName'];
+        const lastName = props.lastName || props['user:lastName'];
+        const username = props.username || props['user:username'];
         return (
           [firstName, lastName]
             .filter(Boolean)
             .join(' ')
             .trim() ||
           username ||
+          author.id ||
           ''
         );
       }
@@ -636,8 +648,9 @@ import '../nuxeo-button-styles.js';
     }
 
     _authorUsername(author) {
-      if (author && author['entity-type'] === 'user' && author.properties) {
-        return author.properties.username || author.id || '';
+      if (this._isAuthorEntity(author)) {
+        const props = author.properties;
+        return props.username || props['user:username'] || author.id || '';
       }
       return author || '';
     }
