@@ -97,6 +97,27 @@ suite('nuxeo-select', () => {
       expect(el._dropdownTabOverlay).to.be.null;
     });
 
+    test('uses document as fallback when the overlay is unavailable', () => {
+      const pdm = el.$.paperDropdownMenu;
+      const savedMenuButton = pdm.$.menuButton;
+      pdm.$.menuButton = null;
+
+      const addSpy = sinon.spy(document, 'addEventListener');
+      const removeSpy = sinon.spy(document, 'removeEventListener');
+
+      el._attachDropdownTabHandler();
+      expect(el._dropdownTabHandler).to.be.a('function');
+      expect(addSpy).to.have.been.calledWith('keydown', el._dropdownTabHandler, true);
+
+      el._detachDropdownTabHandler();
+      expect(el._dropdownTabHandler).to.be.null;
+      expect(removeSpy).to.have.been.calledWith('keydown', sinon.match.func, true);
+
+      pdm.$.menuButton = savedMenuButton;
+      addSpy.restore();
+      removeSpy.restore();
+    });
+
     test('non-Tab key while dropdown is open does not close it', async () => {
       el.$.paperDropdownMenu.open();
       await flush();

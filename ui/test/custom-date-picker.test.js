@@ -6783,4 +6783,49 @@ suite('custom-date-picker accessibility', () => {
       expect(el._isYearDropdownOpen).to.be.false;
     });
   });
+
+  suite('_boundEscapeCapture', () => {
+    let el;
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+    });
+
+    test('closes the calendar, stops propagation and prevents default when calendar is open and Escape is pressed', () => {
+      el._isCalendarOpen = true;
+      const closeStub = sinon.stub(el, '_closeCalendar');
+      let stopped = false;
+      let prevented = false;
+      const fakeEvent = {
+        key: 'Escape',
+        stopPropagation() {
+          stopped = true;
+        },
+        preventDefault() {
+          prevented = true;
+        },
+      };
+
+      el._boundEscapeCapture(fakeEvent);
+
+      expect(closeStub).to.have.been.calledOnce;
+      expect(stopped).to.be.true;
+      expect(prevented).to.be.true;
+      closeStub.restore();
+    });
+
+    test('does nothing when the calendar is not open', () => {
+      el._isCalendarOpen = false;
+      const closeStub = sinon.stub(el, '_closeCalendar');
+      const fakeEvent = { key: 'Escape', stopPropagation() {}, preventDefault() {} };
+
+      el._boundEscapeCapture(fakeEvent);
+
+      expect(closeStub).to.not.have.been.called;
+      closeStub.restore();
+    });
+  });
 });
