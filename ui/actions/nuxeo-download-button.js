@@ -49,7 +49,7 @@ import '../nuxeo-button-styles.js';
 
         <dom-if if="[[_isAvailable(document)]]">
           <template>
-            <div class="action" on-click="_download">
+            <div class="action" role="presentation" on-click="_download">
               <paper-icon-button
                 icon="[[icon]]"
                 noink
@@ -109,6 +109,9 @@ import '../nuxeo-button-styles.js';
 
     ready() {
       super.ready();
+      if (!this.hasAttribute('role')) {
+        this.setAttribute('role', 'presentation');
+      }
       this.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
           event.stopPropagation();

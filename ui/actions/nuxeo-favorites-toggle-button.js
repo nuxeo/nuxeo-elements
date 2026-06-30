@@ -61,7 +61,7 @@ import '../nuxeo-button-styles.js';
 
         <dom-if if="[[_isAvailable(document)]]">
           <template>
-            <div class="action">
+            <div class="action" role="presentation">
               <paper-icon-button
                 icon="[[_computeIcon(favorite, icon)]]"
                 noink
@@ -122,6 +122,9 @@ import '../nuxeo-button-styles.js';
 
     ready() {
       super.ready();
+      if (!this.hasAttribute('role')) {
+        this.setAttribute('role', 'presentation');
+      }
       this.removeFromFavoritesHandler = (e) => {
         if (this.document && e.detail.docUid && e.detail.docUid === this.document.uid) {
           this._setFavorite(false);

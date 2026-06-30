@@ -205,3 +205,42 @@ suite('nuxeo-favorites-toggle-button extras', () => {
     });
   });
 });
+
+suite('nuxeo-favorites-toggle-button accessibility', () => {
+  test('host has role="presentation" by default to collapse it out of the a11y tree', async () => {
+    const el = await fixture(
+      html`
+        <nuxeo-favorites-toggle-button></nuxeo-favorites-toggle-button>
+      `,
+    );
+    expect(el.getAttribute('role')).to.equal('presentation');
+  });
+
+  test('host preserves a pre-existing role attribute', async () => {
+    const el = await fixture(
+      html`
+        <nuxeo-favorites-toggle-button role="button"></nuxeo-favorites-toggle-button>
+      `,
+    );
+    expect(el.getAttribute('role')).to.equal('button');
+  });
+
+  test('inner .action wrapper has role="presentation"', async () => {
+    const doc = {
+      'entity-type': 'document',
+      uid: '1',
+      contextParameters: { favorites: { isFavorite: false } },
+      facets: ['CollectionMember'],
+      type: 'File',
+      isVersion: false,
+    };
+    const el = await fixture(
+      html`
+        <nuxeo-favorites-toggle-button .document=${doc}></nuxeo-favorites-toggle-button>
+      `,
+    );
+    const action = el.shadowRoot.querySelector('.action');
+    expect(action).to.exist;
+    expect(action.getAttribute('role')).to.equal('presentation');
+  });
+});
