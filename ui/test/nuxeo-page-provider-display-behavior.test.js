@@ -790,6 +790,56 @@ suite('PageProviderDisplayBehavior', () => {
       });
       expect(host.filters).to.deep.equal(origFilters);
     });
+
+    test('returns early when filterBy is missing (e.g. action column) (ELEMENTS-1966)', () => {
+      const spy = sinon.spy(host, 'fetch');
+      host._onColumnFilterChanged({
+        detail: { filterBy: null, value: 'test', name: 'actions' },
+      });
+      expect(host.filters).to.have.lengthOf(0);
+      expect(spy).to.not.have.been.called;
+      spy.restore();
+    });
+
+    test('returns early when filterBy is undefined (ELEMENTS-1966)', () => {
+      const spy = sinon.spy(host, 'fetch');
+      host._onColumnFilterChanged({
+        detail: { value: 'test' },
+      });
+      expect(host.filters).to.have.lengthOf(0);
+      expect(spy).to.not.have.been.called;
+      spy.restore();
+    });
+
+    test('fires settings-changed with source=column-filter on handled events (ELEMENTS-1966)', () => {
+      const spy = sinon.spy();
+      host._fireSettingsChanged = spy;
+      host._onColumnFilterChanged({
+        detail: { filterBy: 'dc:title', value: 'test', name: 'title' },
+      });
+      expect(spy).to.have.been.calledOnce;
+      expect(spy.firstCall.args[0]).to.deep.equal({ source: 'column-filter' });
+      delete host._fireSettingsChanged;
+    });
+
+    test('does not fire settings-changed when filterBy is missing', () => {
+      const spy = sinon.spy();
+      host._fireSettingsChanged = spy;
+      host._onColumnFilterChanged({
+        detail: { filterBy: null, value: 'test' },
+      });
+      expect(spy).to.not.have.been.called;
+      delete host._fireSettingsChanged;
+    });
+
+    test('does not throw when _fireSettingsChanged is not defined on host', () => {
+      delete host._fireSettingsChanged;
+      expect(() =>
+        host._onColumnFilterChanged({
+          detail: { filterBy: 'dc:title', value: 'test', name: 'title' },
+        }),
+      ).to.not.throw();
+    });
   });
 
   suite('_computeLabel', () => {

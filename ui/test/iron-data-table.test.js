@@ -1221,6 +1221,55 @@ suite('iron-data-table extras', () => {
       const s = el.settings;
       expect(s.sortOrder).to.be.null;
     });
+
+    test('persists filterValue when set (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false, order: 0, width: null, filterValue: 'hello' }];
+      el.sortOrder = [];
+
+      const s = el.settings;
+      expect(s.columns['dc:title'].filterValue).to.equal('hello');
+    });
+
+    test('does not persist filterValue when empty/unset (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [
+        { field: 'dc:title', hidden: false, order: 0, width: null, filterValue: '' },
+        { field: 'dc:modified', hidden: false, order: 1, width: null },
+      ];
+      el.sortOrder = [];
+
+      const s = el.settings;
+      expect(s.columns['dc:title']).to.not.have.property('filterValue');
+      expect(s.columns['dc:modified']).to.not.have.property('filterValue');
+    });
+
+    test('persists filterExpression when set (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [
+        {
+          field: 'dc:title',
+          hidden: false,
+          order: 0,
+          width: null,
+          filterValue: 'hello',
+          filterExpression: '%$term%',
+        },
+      ];
+      el.sortOrder = [];
+
+      const s = el.settings;
+      expect(s.columns['dc:title'].filterExpression).to.equal('%$term%');
+    });
+
+    test('does not persist filterExpression when unset (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false, order: 0, width: null, filterValue: 'hello' }];
+      el.sortOrder = [];
+
+      const s = el.settings;
+      expect(s.columns['dc:title']).to.not.have.property('filterExpression');
+    });
   });
 
   suite('set settings', () => {
@@ -1351,6 +1400,343 @@ suite('iron-data-table extras', () => {
 
       expect(setSpy).to.have.been.calledWith('columns.0.hidden', true);
       setSpy.restore();
+    });
+
+    // ------------------------------------------------------------------
+    // filter restore (WEBUI-1885)
+    // ------------------------------------------------------------------
+    test('restores filterValue from saved settings', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false }];
+      const setSpy = sinon.spy(el, 'set');
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
+
+      expect(setSpy).to.have.been.calledWith('columns.0.filterValue', 'hello');
+      setSpy.restore();
+    });
+
+    test('does not restore filterValue when missing from saved settings', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false }];
+      const setSpy = sinon.spy(el, 'set');
+
+      el.settings = { columns: { 'dc:title': { hidden: false } } };
+
+      const filterValueCalls = setSpy
+        .getCalls()
+        .filter((c) => typeof c.args[0] === 'string' && c.args[0].endsWith('.filterValue'));
+      expect(filterValueCalls).to.have.lengthOf(0);
+      setSpy.restore();
+    });
+
+    test('does not restore filterValue when persisted value is empty/falsy', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false }];
+      const setSpy = sinon.spy(el, 'set');
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: '' } } };
+
+      const filterValueCalls = setSpy
+        .getCalls()
+        .filter((c) => typeof c.args[0] === 'string' && c.args[0].endsWith('.filterValue'));
+      expect(filterValueCalls).to.have.lengthOf(0);
+      setSpy.restore();
+    });
+
+    test('toggles _suppressFilterEvents around the restore loop', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', hidden: false }];
+      const observed = [];
+      const origSet = el.set.bind(el);
+      sinon.stub(el, 'set').callsFake((path, value) => {
+        if (typeof path === 'string' && path.endsWith('.filterValue')) {
+          observed.push(el._suppressFilterEvents);
+        }
+        return origSet(path, value);
+      });
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
+
+      // While the per-column set was happening, suppression must have been true
+      expect(observed.every((v) => v === true)).to.be.true;
+      // After restore, it must be reset to false
+      expect(el._suppressFilterEvents).to.be.false;
+      el.set.restore();
+    });
+
+    test('applies restored filters to nxProvider.params and this.filters then fetches once', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false, name: 'Title' }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      const fetchStub = sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
+
+      expect(provider.params['dc:title']).to.equal('hello');
+      expect(el.filters).to.have.lengthOf(1);
+      expect(el.filters[0]).to.include({ path: 'dc:title', value: 'hello', name: 'Title' });
+      expect(fetchStub).to.have.been.calledOnce;
+
+      fetchStub.restore();
+      el.notifyResize.restore();
+    });
+
+    test('substitutes $term in filterExpression when restoring', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = {
+        columns: { 'dc:title': { hidden: false, filterValue: 'hello', filterExpression: '%$term%' } },
+      };
+
+      expect(provider.params['dc:title']).to.equal('%hello%');
+      expect(el.filters[0].expression).to.equal('%$term%');
+
+      el.fetch.restore();
+      el.notifyResize.restore();
+    });
+
+    test('restores filterExpression onto the column object (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = {
+        columns: { 'dc:title': { hidden: false, filterValue: 'hello', filterExpression: '%$term%' } },
+      };
+
+      expect(el.columns[0].filterExpression).to.equal('%$term%');
+
+      el.fetch.restore();
+      el.notifyResize.restore();
+    });
+
+    test('does not set filterExpression on column when absent from saved settings (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
+
+      expect(el.columns[0].filterExpression).to.be.undefined;
+
+      el.fetch.restore();
+      el.notifyResize.restore();
+    });
+
+    test('updates existing entry in this.filters instead of pushing a duplicate', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [{ path: 'dc:title', value: 'old', name: 'Title' }];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'new' } } };
+
+      expect(el.filters).to.have.lengthOf(1);
+      expect(el.filters[0].value).to.equal('new');
+
+      el.fetch.restore();
+      el.notifyResize.restore();
+    });
+
+    test('updates expression and name on existing filter entry (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', name: 'Title', hidden: false }];
+      el.filters = [{ path: 'dc:title', value: 'old', name: 'Stale Name', expression: 'stale' }];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = {
+        columns: { 'dc:title': { hidden: false, filterValue: 'new', filterExpression: '%$term%' } },
+      };
+
+      expect(el.filters).to.have.lengthOf(1);
+      expect(el.filters[0].value).to.equal('new');
+      expect(el.filters[0].expression).to.equal('%$term%');
+      expect(el.filters[0].name).to.equal('Title');
+
+      el.fetch.restore();
+      el.notifyResize.restore();
+    });
+
+    test('treats $ in user filter value literally when applying filterExpression (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      // $1 in the search term must not be treated as a back-reference
+      el.settings = {
+        columns: { 'dc:title': { hidden: false, filterValue: '$1 test', filterExpression: '%$term%' } },
+      };
+
+      expect(provider.params['dc:title']).to.equal('%$1 test%');
+
+      el.fetch.restore();
+      el.notifyResize.restore();
+    });
+
+    test('resets nxProvider.page to 1 when paginable', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [];
+      el.paginable = true;
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.page = 5;
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = { columns: { 'dc:title': { hidden: false, filterValue: 'hello' } } };
+
+      expect(provider.page).to.equal(1);
+
+      el.fetch.restore();
+      el.notifyResize.restore();
+    });
+
+    test('does not fetch when no filters were restored', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      const fetchStub = sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = { columns: { 'dc:title': { hidden: true } } };
+
+      expect(fetchStub).to.not.have.been.called;
+
+      fetchStub.restore();
+      el.notifyResize.restore();
+    });
+
+    test('fetches only once when both filters and sortOrder are restored (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [{ field: 'dc:title', filterBy: 'dc:title', hidden: false }];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      const fetchStub = sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = {
+        columns: { 'dc:title': { hidden: false, filterValue: 'hello' } },
+        sortOrder: [{ path: 'dc:title', direction: 'asc' }],
+      };
+
+      expect(fetchStub).to.have.been.calledOnce;
+
+      fetchStub.restore();
+      el.notifyResize.restore();
+    });
+
+    test('fetches when only sortOrder is restored and nxProvider.auto is false (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = false;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      const fetchStub = sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = { sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
+
+      expect(fetchStub).to.have.been.calledOnce;
+
+      fetchStub.restore();
+      el.notifyResize.restore();
+    });
+
+    test('does not fetch when only sortOrder is restored and nxProvider.auto is true (ELEMENTS-1966)', async () => {
+      const el = await newTable();
+      el.columns = [];
+      el.filters = [];
+      const provider = document.createElement('div');
+      provider.params = {};
+      provider.auto = true;
+      sinon.stub(el, '_nxProviderChanged');
+      el.nxProvider = provider;
+      sinon.stub(el, '_hasPageProvider').returns(true);
+      const fetchStub = sinon.stub(el, 'fetch');
+      sinon.stub(el, 'notifyResize');
+
+      el.settings = { sortOrder: [{ path: 'dc:title', direction: 'asc' }] };
+
+      expect(fetchStub).to.not.have.been.called;
+
+      fetchStub.restore();
+      el.notifyResize.restore();
     });
   });
 
