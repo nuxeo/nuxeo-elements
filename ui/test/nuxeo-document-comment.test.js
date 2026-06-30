@@ -701,6 +701,15 @@ suite('nuxeo-document-comment extras', () => {
       const user = { isAdministrator: false, properties: { username: 'nco-admin' } };
       expect(el._areExtendedOptionsAvailable(author, user)).to.be.true;
     });
+
+    test('returns true when author uses prefixed username property', () => {
+      const author = {
+        'entity-type': 'user',
+        properties: { 'user:username': 'nco-admin', 'user:firstName': 'NCO', 'user:lastName': 'Admin' },
+      };
+      const user = { isAdministrator: false, properties: { username: 'nco-admin' } };
+      expect(el._areExtendedOptionsAvailable(author, user)).to.be.true;
+    });
   });
 
   suite('_authorLabel', () => {
@@ -725,6 +734,25 @@ suite('nuxeo-document-comment extras', () => {
         }),
       ).to.equal('Administrator');
     });
+
+    test('returns full name from prefixed user property keys', () => {
+      expect(
+        el._authorLabel({
+          'entity-type': 'user',
+          properties: { 'user:firstName': 'NCO', 'user:lastName': 'Admin', 'user:username': 'nco-admin' },
+        }),
+      ).to.equal('NCO Admin');
+    });
+
+    test('returns full name for document user entity', () => {
+      expect(
+        el._authorLabel({
+          'entity-type': 'document',
+          type: 'user',
+          properties: { firstName: 'NCO', lastName: 'Admin', username: 'nco-admin' },
+        }),
+      ).to.equal('NCO Admin');
+    });
   });
 
   suite('_authorUsername', () => {
@@ -738,6 +766,15 @@ suite('nuxeo-document-comment extras', () => {
 
     test('returns string author as-is', () => {
       expect(el._authorUsername('nco-admin')).to.equal('nco-admin');
+    });
+
+    test('returns username from prefixed user property key', () => {
+      expect(
+        el._authorUsername({
+          'entity-type': 'user',
+          properties: { 'user:username': 'nco-admin' },
+        }),
+      ).to.equal('nco-admin');
     });
   });
 
