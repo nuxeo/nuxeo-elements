@@ -82,3 +82,41 @@ suite('nuxeo-download-button extras', () => {
     });
   });
 });
+
+suite('nuxeo-download-button accessibility', () => {
+  test('host has role="presentation" by default to collapse it out of the a11y tree', async () => {
+    const el = await fixture(
+      html`
+        <nuxeo-download-button></nuxeo-download-button>
+      `,
+    );
+    expect(el.getAttribute('role')).to.equal('presentation');
+  });
+
+  test('host preserves a pre-existing role attribute', async () => {
+    const el = await fixture(
+      html`
+        <nuxeo-download-button role="button"></nuxeo-download-button>
+      `,
+    );
+    expect(el.getAttribute('role')).to.equal('button');
+  });
+
+  test('inner .action wrapper has role="presentation"', async () => {
+    const doc = {
+      'entity-type': 'document',
+      uid: '1',
+      properties: {
+        'file:content': { name: 'file.pdf', data: 'http://example/file.pdf' },
+      },
+    };
+    const el = await fixture(
+      html`
+        <nuxeo-download-button .document=${doc}></nuxeo-download-button>
+      `,
+    );
+    const action = el.shadowRoot.querySelector('.action');
+    expect(action).to.exist;
+    expect(action.getAttribute('role')).to.equal('presentation');
+  });
+});
