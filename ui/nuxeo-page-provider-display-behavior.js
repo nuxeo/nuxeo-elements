@@ -502,6 +502,10 @@ export const PageProviderDisplayBehavior = [
 
     _onColumnFilterChanged(e) {
       if (this._hasPageProvider()) {
+        // Ignore columns without a proper filterBy (e.g. action/checkbox columns) (ELEMENTS-1966)
+        if (!e.detail.filterBy) {
+          return;
+        }
         let notFound = true;
         for (let i = 0; i < this.filters.length; i++) {
           if (this.filters[i].path === e.detail.filterBy) {
@@ -540,6 +544,11 @@ export const PageProviderDisplayBehavior = [
             this.nxProvider.params[e.detail.filterBy] = e.detail.value;
           }
           this.fetch();
+        }
+
+        // Notify that settings changed so filter values are persisted (ELEMENTS-1966)
+        if (typeof this._fireSettingsChanged === 'function') {
+          this._fireSettingsChanged({ source: 'column-filter' });
         }
       }
     },
