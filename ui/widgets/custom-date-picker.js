@@ -1799,6 +1799,16 @@ const FOCUS_SUPPRESSION_MS = 200;
     }
 
     _setupEventListeners() {
+      // Bind a window-level capture handler so we can intercept Escape before
+      // IronOverlayManager's document-level capture listener closes a parent dialog.
+      this._boundEscapeCapture = (e) => {
+        if (this._isCalendarOpen && e.key === 'Escape') {
+          e.stopPropagation();
+          e.preventDefault();
+          this._closeCalendar();
+        }
+      };
+
       // Navigation buttons are now handled by template bindings (on-click)
 
       // Input field events - only validation, no calendar opening on click or focus
@@ -2770,6 +2780,10 @@ const FOCUS_SUPPRESSION_MS = 200;
       this._justOpenedCalendar = true;
       this._isCalendarOpen = true;
 
+      // Register window-level capture listener to intercept Escape before
+      // IronOverlayManager's document-level capture closes the parent dialog.
+      window.addEventListener('keydown', this._boundEscapeCapture, true);
+
       const popover = this.shadowRoot.querySelector('#calendarPopover');
       const backdrop = this.shadowRoot.querySelector('#calendarBackdrop');
       const overlay = this.shadowRoot.querySelector('#calendarOverlay');
@@ -2889,6 +2903,8 @@ const FOCUS_SUPPRESSION_MS = 200;
       if (!this._isCalendarOpen) return;
 
       this._isCalendarOpen = false;
+      // Remove the window-level capture listener now that the calendar is closing.
+      window.removeEventListener('keydown', this._boundEscapeCapture, true);
       this._justOpenedCalendar = false; // Clear flag when closing
       this._interactingWithCalendar = false; // Clear interaction flag
 
@@ -4505,6 +4521,11 @@ const FOCUS_SUPPRESSION_MS = 200;
       if (this._boundReposition) {
         window.removeEventListener('resize', this._boundReposition);
         window.removeEventListener('scroll', this._boundReposition);
+      }
+
+      // Clean up escape capture listener in case element is removed while calendar is open.
+      if (this._boundEscapeCapture) {
+        window.removeEventListener('keydown', this._boundEscapeCapture, true);
       }
     }
 
