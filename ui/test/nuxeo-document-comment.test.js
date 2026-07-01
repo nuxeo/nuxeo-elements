@@ -710,6 +710,12 @@ suite('nuxeo-document-comment extras', () => {
       const user = { isAdministrator: false, properties: { username: 'nco-admin' } };
       expect(el._areExtendedOptionsAvailable(author, user)).to.be.true;
     });
+
+    test('returns true when author is a user entity without properties', () => {
+      const author = { 'entity-type': 'user', id: 'nco-admin' };
+      const user = { isAdministrator: false, properties: { username: 'nco-admin' } };
+      expect(el._areExtendedOptionsAvailable(author, user)).to.be.true;
+    });
   });
 
   suite('_authorLabel', () => {
@@ -753,6 +759,19 @@ suite('nuxeo-document-comment extras', () => {
         }),
       ).to.equal('NCO Admin');
     });
+
+    test('returns id when user entity has no properties', () => {
+      expect(
+        el._authorLabel({
+          'entity-type': 'user',
+          id: 'nco-admin',
+        }),
+      ).to.equal('nco-admin');
+    });
+
+    test('returns id for non-entity object author', () => {
+      expect(el._authorLabel({ id: 'nco-admin' })).to.equal('nco-admin');
+    });
   });
 
   suite('_authorUsername', () => {
@@ -775,6 +794,23 @@ suite('nuxeo-document-comment extras', () => {
           properties: { 'user:username': 'nco-admin' },
         }),
       ).to.equal('nco-admin');
+    });
+
+    test('returns id when user entity has no properties', () => {
+      expect(
+        el._authorUsername({
+          'entity-type': 'user',
+          id: 'nco-admin',
+        }),
+      ).to.equal('nco-admin');
+    });
+
+    test('returns id for non-entity object author', () => {
+      expect(el._authorUsername({ id: 'nco-admin' })).to.equal('nco-admin');
+    });
+
+    test('returns empty string for malformed object author', () => {
+      expect(el._authorUsername({})).to.equal('');
     });
   });
 
