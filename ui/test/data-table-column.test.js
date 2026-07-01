@@ -59,16 +59,66 @@ suite('nuxeo-data-table-column extras', () => {
       el._filterValueChanged(null, 'search', 'dc:title', null);
     });
 
-    test('no-op when filterBy is null', () => {
+    test('falls back to this.field when filterBy is null (ELEMENTS-1966)', () => {
+      el.field = 'dc:description';
+      const spy = sinon.spy();
+      el.addEventListener('column-filter-changed', spy);
       const table = { columns: [el], notifyPath: sinon.stub() };
       el._filterValueChanged(table, 'search', null, null);
-      expect(table.notifyPath).to.not.have.been.called;
+      expect(table.notifyPath).to.have.been.calledWith('columns.0.filterValue', 'search');
+      expect(spy).to.have.been.calledOnce;
+      expect(spy.firstCall.args[0].detail.filterBy).to.equal('dc:description');
+    });
+
+    test('uses null filterBy when both filterBy and this.field are missing', () => {
+      const spy = sinon.spy();
+      el.addEventListener('column-filter-changed', spy);
+      const table = { columns: [el], notifyPath: sinon.stub() };
+      el._filterValueChanged(table, 'search', null, null);
+      expect(spy).to.have.been.calledOnce;
+      expect(spy.firstCall.args[0].detail.filterBy).to.be.null;
+    });
+
+    test('includes name and filterExpression in event detail (ELEMENTS-1966)', () => {
+      el.name = 'title';
+      const spy = sinon.spy();
+      el.addEventListener('column-filter-changed', spy);
+      const table = { columns: [el], notifyPath: sinon.stub() };
+      el._filterValueChanged(table, 'search', 'dc:title', '%$term%');
+      expect(spy.firstCall.args[0].detail).to.deep.equal({
+        value: 'search',
+        filterBy: 'dc:title',
+        filterExpression: '%$term%',
+        name: 'title',
+      });
+    });
+
+    test('still notifies table but does not dispatch when _suppressFilterEvents (ELEMENTS-1966)', () => {
+      const spy = sinon.spy();
+      el.addEventListener('column-filter-changed', spy);
+      const table = {
+        columns: [el],
+        notifyPath: sinon.stub(),
+        _suppressFilterEvents: true,
+      };
+      el._filterValueChanged(table, 'search', 'dc:title', null);
+      expect(table.notifyPath).to.have.been.calledWith('columns.0.filterValue', 'search');
+      expect(spy).to.not.have.been.called;
     });
 
     test('no-op when filterValue is undefined', () => {
       const table = { columns: [el], notifyPath: sinon.stub() };
       el._filterValueChanged(table, undefined, 'dc:title', null);
       expect(table.notifyPath).to.not.have.been.called;
+    });
+
+    test('dispatches when filterValue is an empty string (clearing a filter)', () => {
+      const spy = sinon.spy();
+      el.addEventListener('column-filter-changed', spy);
+      const table = { columns: [el], notifyPath: sinon.stub() };
+      el._filterValueChanged(table, '', 'dc:title', null);
+      expect(spy).to.have.been.calledOnce;
+      expect(spy.firstCall.args[0].detail.value).to.equal('');
     });
   });
 
