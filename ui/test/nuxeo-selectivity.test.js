@@ -144,6 +144,15 @@ suite('nuxeo-selectivity keyboard accessibility (Tab)', () => {
       expect(selectivityWidget._selectivity.dropdown).to.be.null;
     });
 
+    test('Shift+Tab while closed does nothing', () => {
+      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
+      expect(selectivityWidget._selectivity.dropdown).to.be.null;
+
+      pressAndReleaseKeyOn(input, KEY_TAB, ['shift']);
+
+      expect(selectivityWidget._selectivity.dropdown).to.be.null;
+    });
+
     test('Tab while open advances focus to the next tabbable element', async () => {
       const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
       selectivityWidget._selectivity.open();
@@ -155,6 +164,50 @@ suite('nuxeo-selectivity keyboard accessibility (Tab)', () => {
       await Promise.resolve();
 
       expect(document.activeElement).to.equal(nextButton);
+    });
+
+    test('Tab while open uses idx<0 fallback when the multiple-input is not in the tabbable list', async () => {
+      // When the multiple-input has tabIndex=-1, collectTabbable() will not
+      // include it, so findAdjacentTabbable falls back to scanning for the
+      // first non-excluded element that follows the widget in document order.
+      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
+      selectivityWidget._selectivity.open();
+      await flush();
+
+      input.setAttribute('tabindex', '-1');
+
+      pressAndReleaseKeyOn(input, KEY_TAB);
+      await Promise.resolve();
+
+      // The fallback should still find nextButton.
+      expect(document.activeElement).to.equal(nextButton);
+
+      input.removeAttribute('tabindex');
+    });
+
+    test('Tab while open returns null from findAdjacentTabbable when there is no following tabbable element', async () => {
+      // Remove nextButton from the tabbable order so findAdjacentTabbable
+      // reaches the end of the list without finding a suitable target.
+      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
+      selectivityWidget._selectivity.open();
+      await flush();
+
+      nextButton.setAttribute('tabindex', '-1');
+
+      pressAndReleaseKeyOn(input, KEY_TAB);
+      await Promise.resolve();
+
+      // next was null — focus should NOT have moved to nextButton.
+      expect(document.activeElement).to.not.equal(nextButton);
+
+      nextButton.removeAttribute('tabindex');
+    });
+
+    test('Enter key on the multiple input calls event.preventDefault', () => {
+      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
+      const event = new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true, cancelable: true });
+      input.dispatchEvent(event);
+      expect(event.defaultPrevented).to.be.true;
     });
 
     test('Focusing the input does not open the dropdown (label-only announce)', async () => {

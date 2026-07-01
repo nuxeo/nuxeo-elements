@@ -3473,60 +3473,65 @@ typedArrayTags[weakMapTag] = false;
           if (keyCode === KEY_ENTER && !event.ctrlKey) {
             event.preventDefault();
           } else if (keyCode === KEY_TAB && !event.shiftKey && !event.ctrlKey && !event.altKey) {
-            // Two-step keyboard model so screen readers can announce the field's
-            // label before any options are revealed:
-            //   - Tab while CLOSED  -> open the dropdown, keep focus on this field.
-            //   - Tab while OPEN    -> close the dropdown and explicitly advance
-            //                          focus to the next tabbable element. We do
-            //                          this manually (instead of relying on the
-            //                          browser's default Tab action) because
-            //                          surrounding Polymer/iron-form wrappers can
-            //                          intercept the default and trap focus on the
-            //                          input. _tabbingOut suppresses any focus-
-            //                          driven reopen during the close.
-            if (this.dropdown) {
-              event.preventDefault();
-              clearTimeout(this._tabbingOutTimeout);
-              this._tabbingOut = true;
-              const inputEl = this.input;
-              const wrapperEl = this.el;
-              this.close();
-              // Defer the focus advance to a microtask so any synchronous focus
-              // side-effects from close() (blur listeners, mutation observers,
-              // Polymer focus delegation) settle before we move focus. Without
-              // this, surrounding form wrappers can re-focus the input AFTER our
-              // explicit focus() call, trapping the user.
-              queueMicrotask(() => {
-                const next = findAdjacentTabbable(inputEl, wrapperEl);
-                if (next && typeof next.focus === 'function') {
-                  next.focus();
-                }
-              });
-              this._tabbingOutTimeout = setTimeout(() => {
-                this._tabbingOut = false;
-                this._tabbingOutTimeout = 0;
-              }, 300);
-            } else if (this.enabled && this.options.showDropdown !== false) {
-              event.preventDefault();
-              this.open();
-            }
+            this._handleForwardTab(event);
           } else if (keyCode === KEY_TAB && event.shiftKey && !event.ctrlKey && !event.altKey) {
-            // Shift+Tab while the dropdown is OPEN must also close it as focus
-            // leaves the field backwards. The browser's default Shift+Tab already
-            // moves focus to the previous tabbable element correctly, so we only
-            // close the dropdown here (without preventing the default). _tabbingOut
-            // guards against close()/blur side-effects re-opening the dropdown
-            // during the transition.
-            if (this.dropdown) {
-              clearTimeout(this._tabbingOutTimeout);
-              this._tabbingOut = true;
-              this.close();
-              this._tabbingOutTimeout = setTimeout(() => {
-                this._tabbingOut = false;
-                this._tabbingOutTimeout = 0;
-              }, 300);
-            }
+            this._handleBackwardTab();
           }
+        },
+
+        /**
+     * @private
+     * Two-step keyboard model: Tab while CLOSED opens the dropdown; Tab while
+     * OPEN closes it and advances focus to the next tabbable element outside
+     * the widget. Focus is moved manually because surrounding Polymer/iron-form
+     * wrappers can intercept the default Tab action and trap focus on the input.
+     */
+        _handleForwardTab(event) {
+          if (this.dropdown) {
+            event.preventDefault();
+            const inputEl = this.input;
+            const wrapperEl = this.el;
+            this._beginTabbingOut();
+            this.close();
+            // Defer the focus advance to a microtask so any synchronous focus
+            // side-effects from close() settle before we move focus.
+            queueMicrotask(() => {
+              const next = findAdjacentTabbable(inputEl, wrapperEl);
+              if (next && typeof next.focus === 'function') {
+                next.focus();
+              }
+            });
+          } else if (this.enabled && this.options.showDropdown !== false) {
+            event.preventDefault();
+            this.open();
+          }
+        },
+
+        /**
+     * @private
+     * Shift+Tab while the dropdown is OPEN closes it so focus can leave the
+     * field backwards. The browser's default Shift+Tab handles the focus
+     * movement; only the dropdown needs to be closed here.
+     */
+        _handleBackwardTab() {
+          if (this.dropdown) {
+            this._beginTabbingOut();
+            this.close();
+          }
+        },
+
+        /**
+     * @private
+     * Arms _tabbingOut and schedules its reset, suppressing any focus-driven
+     * reopen of the dropdown during the Tab / Shift+Tab transition.
+     */
+        _beginTabbingOut() {
+          clearTimeout(this._tabbingOutTimeout);
+          this._tabbingOut = true;
+          this._tabbingOutTimeout = setTimeout(() => {
+            this._tabbingOut = false;
+            this._tabbingOutTimeout = 0;
+          }, 300);
         },
 
         /**
