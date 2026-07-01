@@ -618,13 +618,20 @@ import '../nuxeo-button-styles.js';
     }
 
     _isAuthorEntity(author) {
-      if (author == null) {
-        return false;
-      }
-      if (author.properties == null) {
+      if (author == null || typeof author !== 'object') {
         return false;
       }
       return author['entity-type'] === 'user' || (author['entity-type'] === 'document' && author.type === 'user');
+    }
+
+    _authorStringFallback(author) {
+      if (typeof author === 'string') {
+        return author;
+      }
+      if (author && typeof author === 'object') {
+        return author.id || author.uid || '';
+      }
+      return '';
     }
 
     _authorLabel(author) {
@@ -632,7 +639,7 @@ import '../nuxeo-button-styles.js';
         return '';
       }
       if (this._isAuthorEntity(author)) {
-        const props = author.properties;
+        const props = author.properties || {};
         const firstName = props.firstName || props['user:firstName'];
         const lastName = props.lastName || props['user:lastName'];
         const username = props.username || props['user:username'];
@@ -643,18 +650,19 @@ import '../nuxeo-button-styles.js';
             .trim() ||
           username ||
           author.id ||
+          author.uid ||
           ''
         );
       }
-      return author;
+      return this._authorStringFallback(author);
     }
 
     _authorUsername(author) {
       if (this._isAuthorEntity(author)) {
-        const props = author.properties;
-        return props.username || props['user:username'] || author.id || '';
+        const props = author.properties || {};
+        return props.username || props['user:username'] || author.id || author.uid || '';
       }
-      return author || '';
+      return this._authorStringFallback(author);
     }
 
     _isBlank(text) {
