@@ -182,7 +182,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           invalid="[[invalid]]"
           value="{{_inputValue}}"
           disabled$="[[disabled]]"
-          aria-labelledby="date_label"
+          aria-label$="[[_computeDateAriaLabel(label)]]"
           min="[[min]]"
           max="[[max]]"
           error-message="[[errorMessage]]"
@@ -234,6 +234,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _moment(...args) {
       const fn = this.timezone === 'Etc/UTC' ? moment.utc : moment;
       return fn(...args);
+    }
+
+    _computeDateAriaLabel(label) {
+      const normalized = (label || '').trim();
+      return normalized || null;
     }
 
     _getValidity() {
