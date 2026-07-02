@@ -3047,6 +3047,21 @@ typedArrayTags[weakMapTag] = false;
         return all;
       }
 
+      // True when `node` is `host` itself or lives anywhere inside its (possibly
+      // nested) shadow tree. Unlike Node.contains(), this walks up through shadow
+      // roots via ShadowRoot.host, so it reliably matches every element that
+      // belongs to a custom element — including content in its shadow DOM.
+      function composedContains(host, node) {
+        let current = node;
+        while (current) {
+          if (current === host) {
+            return true;
+          }
+          current = current.parentNode || current.host;
+        }
+        return false;
+      }
+
       // Returns the next sequentially focusable element after `current`, skipping
       // any element that is a descendant of `excludeRoot` (including itself).
       // Used to advance focus out of a multiple-mode selectivity widget when the
@@ -3060,7 +3075,7 @@ typedArrayTags[weakMapTag] = false;
           if (excludeRoot) {
             for (let i = 0; i < all.length; i++) {
               if (
-                !excludeRoot.contains(all[i]) &&
+                !composedContains(excludeRoot, all[i]) &&
                 excludeRoot.compareDocumentPosition(all[i]) & Node.DOCUMENT_POSITION_FOLLOWING
               ) {
                 return all[i];
@@ -3071,7 +3086,7 @@ typedArrayTags[weakMapTag] = false;
         }
         let i = idx + 1;
         while (i < all.length) {
-          if (!excludeRoot || !excludeRoot.contains(all[i])) {
+          if (!excludeRoot || !composedContains(excludeRoot, all[i])) {
             return all[i];
           }
           i++;
@@ -3490,7 +3505,13 @@ typedArrayTags[weakMapTag] = false;
           if (this.dropdown) {
             event.preventDefault();
             const inputEl = this.input;
-            const wrapperEl = this.el;
+            // Exclude the whole host element (including its shadow content), not just
+            // this.el (the inner `#input` div). this.el lives inside the widget's shadow
+            // tree, so excluding only it lets findAdjacentTabbable land on a sibling
+            // element still inside the widget — trapping focus. Climbing to the shadow
+            // host makes focus advance past the entire widget.
+            const rootNode = this.el.getRootNode && this.el.getRootNode();
+            const wrapperEl = (rootNode && rootNode.host) || this.el;
             this._beginTabbingOut();
             this.close();
             // Defer the focus advance to a microtask so any synchronous focus
