@@ -6828,4 +6828,53 @@ suite('custom-date-picker accessibility', () => {
       closeStub.restore();
     });
   });
+
+  suite('window escape-capture listener lifecycle', () => {
+    let el;
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+    });
+
+    test('_openCalendar registers _boundEscapeCapture on the window', () => {
+      const spy = sinon.spy(window, 'addEventListener');
+
+      el._openCalendar();
+
+      const matched = spy.args.some(
+        ([type, fn, capture]) => type === 'keydown' && fn === el._boundEscapeCapture && capture === true,
+      );
+      expect(matched).to.be.true;
+      spy.restore();
+      el._closeCalendar();
+    });
+
+    test('_closeCalendar removes _boundEscapeCapture from the window', () => {
+      el._openCalendar();
+      const spy = sinon.spy(window, 'removeEventListener');
+
+      el._closeCalendar();
+
+      const matched = spy.args.some(
+        ([type, fn, capture]) => type === 'keydown' && fn === el._boundEscapeCapture && capture === true,
+      );
+      expect(matched).to.be.true;
+      spy.restore();
+    });
+
+    test('disconnectedCallback removes _boundEscapeCapture from the window', () => {
+      const spy = sinon.spy(window, 'removeEventListener');
+
+      el.remove();
+
+      const matched = spy.args.some(
+        ([type, fn, capture]) => type === 'keydown' && fn === el._boundEscapeCapture && capture === true,
+      );
+      expect(matched).to.be.true;
+      spy.restore();
+    });
+  });
 });
