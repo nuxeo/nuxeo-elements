@@ -6689,3 +6689,192 @@ suite('custom-date-picker extras', () => {
     });
   });
 });
+
+// Covers the staged changes in ui/widgets/custom-date-picker.js:
+//   - new `ariaLabel` property forwarded to the inner <input id="dateInput">
+//     (aria-labelledby cannot resolve IDs across shadow boundaries).
+//   - Escape inside _handleYearDropdownKeydown now only stops propagation when
+//     the year-options panel is actually open; otherwise the event bubbles up
+//     so the popover/document Escape handlers can close the whole calendar.
+function getDateInput(el) {
+  return el.shadowRoot.querySelector('#dateInput');
+}
+
+suite('custom-date-picker accessibility', () => {
+  suite('ariaLabel forwarding', () => {
+    test('forwards the ariaLabel property to the inner input as aria-label', async () => {
+      const el = await fixture(html`
+        <custom-date-picker aria-label="Created at"></custom-date-picker>
+      `);
+      await flush();
+
+      expect(getDateInput(el).getAttribute('aria-label')).to.equal('Created at');
+    });
+
+    test('updates the inner input aria-label when the property changes', async () => {
+      const el = await fixture(html`
+        <custom-date-picker aria-label="Initial"></custom-date-picker>
+      `);
+      await flush();
+      expect(getDateInput(el).getAttribute('aria-label')).to.equal('Initial');
+
+      el.ariaLabel = 'Updated';
+      await flush();
+
+      expect(getDateInput(el).getAttribute('aria-label')).to.equal('Updated');
+    });
+
+    test('does not set aria-label on the inner input when not provided', async () => {
+      const el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+
+      // Polymer drops the attribute when the bound property is empty/null.
+      const value = getDateInput(el).getAttribute('aria-label');
+      expect(value === null || value === '').to.be.true;
+    });
+  });
+
+  suite('Escape inside year-dropdown keydown handler', () => {
+    let el;
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+    });
+
+    function makeEscapeEvent() {
+      let prevented = false;
+      let propagationStopped = false;
+      return {
+        key: 'Escape',
+        preventDefault() {
+          prevented = true;
+        },
+        stopPropagation() {
+          propagationStopped = true;
+        },
+        wasPrevented: () => prevented,
+        wasPropagationStopped: () => propagationStopped,
+      };
+    }
+
+    test('does NOT consume Escape when the year-options panel is closed (so it can bubble and close the calendar)', () => {
+      el._isYearDropdownOpen = false;
+      const event = makeEscapeEvent();
+
+      el._handleYearDropdownKeydown(event);
+
+      expect(event.wasPrevented()).to.be.false;
+      expect(event.wasPropagationStopped()).to.be.false;
+    });
+
+    test('consumes Escape and closes the dropdown when the year-options panel is open', () => {
+      el._isYearDropdownOpen = true;
+      const event = makeEscapeEvent();
+
+      el._handleYearDropdownKeydown(event);
+
+      expect(event.wasPrevented()).to.be.true;
+      expect(event.wasPropagationStopped()).to.be.true;
+      expect(el._isYearDropdownOpen).to.be.false;
+    });
+  });
+
+  suite('_boundEscapeCapture', () => {
+    let el;
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+    });
+
+    test('closes the calendar, stops propagation and prevents default when calendar is open and Escape is pressed', () => {
+      el._isCalendarOpen = true;
+      const closeStub = sinon.stub(el, '_closeCalendar');
+      let stopped = false;
+      let prevented = false;
+      const fakeEvent = {
+        key: 'Escape',
+        stopPropagation() {
+          stopped = true;
+        },
+        preventDefault() {
+          prevented = true;
+        },
+      };
+
+      el._boundEscapeCapture(fakeEvent);
+
+      expect(closeStub).to.have.been.calledOnce;
+      expect(stopped).to.be.true;
+      expect(prevented).to.be.true;
+      closeStub.restore();
+    });
+
+    test('does nothing when the calendar is not open', () => {
+      el._isCalendarOpen = false;
+      const closeStub = sinon.stub(el, '_closeCalendar');
+      const fakeEvent = { key: 'Escape', stopPropagation() {}, preventDefault() {} };
+
+      el._boundEscapeCapture(fakeEvent);
+
+      expect(closeStub).to.not.have.been.called;
+      closeStub.restore();
+    });
+  });
+
+  suite('window escape-capture listener lifecycle', () => {
+    let el;
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+    });
+
+    test('_openCalendar registers _boundEscapeCapture on the window', () => {
+      const spy = sinon.spy(window, 'addEventListener');
+
+      el._openCalendar();
+
+      const matched = spy.args.some(
+        ([type, fn, capture]) => type === 'keydown' && fn === el._boundEscapeCapture && capture === true,
+      );
+      expect(matched).to.be.true;
+      spy.restore();
+      el._closeCalendar();
+    });
+
+    test('_closeCalendar removes _boundEscapeCapture from the window', () => {
+      el._openCalendar();
+      const spy = sinon.spy(window, 'removeEventListener');
+
+      el._closeCalendar();
+
+      const matched = spy.args.some(
+        ([type, fn, capture]) => type === 'keydown' && fn === el._boundEscapeCapture && capture === true,
+      );
+      expect(matched).to.be.true;
+      spy.restore();
+    });
+
+    test('disconnectedCallback removes _boundEscapeCapture from the window', () => {
+      const spy = sinon.spy(window, 'removeEventListener');
+
+      el.remove();
+
+      const matched = spy.args.some(
+        ([type, fn, capture]) => type === 'keydown' && fn === el._boundEscapeCapture && capture === true,
+      );
+      expect(matched).to.be.true;
+      spy.restore();
+    });
+  });
+});
