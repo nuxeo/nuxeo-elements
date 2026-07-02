@@ -3086,7 +3086,7 @@ typedArrayTags[weakMapTag] = false;
         }
         let i = idx + 1;
         while (i < all.length) {
-          if (!excludeRoot || !composedContains(excludeRoot, all[i])) {
+          if (!composedContains(excludeRoot, all[i])) {
             return all[i];
           }
           i++;
@@ -3510,8 +3510,7 @@ typedArrayTags[weakMapTag] = false;
             // tree, so excluding only it lets findAdjacentTabbable land on a sibling
             // element still inside the widget — trapping focus. Climbing to the shadow
             // host makes focus advance past the entire widget.
-            const rootNode = this.el.getRootNode && this.el.getRootNode();
-            const wrapperEl = (rootNode && rootNode.host) || this.el;
+            const wrapperEl = this.el.getRootNode().host;
             this._beginTabbingOut();
             this.close();
             // Defer the focus advance to a microtask so any synchronous focus
