@@ -166,6 +166,44 @@ suite('nuxeo-selectivity keyboard accessibility (Tab)', () => {
       expect(document.activeElement).to.equal(nextButton);
     });
 
+    test('Tab while open uses idx<0 fallback when the multiple-input is not in the tabbable list', async () => {
+      // When the multiple-input has tabIndex=-1, collectTabbable() will not
+      // include it, so findAdjacentTabbable falls back to scanning for the
+      // first non-excluded element that follows the widget in document order.
+      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
+      selectivityWidget._selectivity.open();
+      await flush();
+
+      input.setAttribute('tabindex', '-1');
+
+      pressAndReleaseKeyOn(input, KEY_TAB);
+      await Promise.resolve();
+
+      // The fallback should still find nextButton.
+      expect(document.activeElement).to.equal(nextButton);
+
+      input.removeAttribute('tabindex');
+    });
+
+    test('Tab while open skips tabbable elements inside the widget shadow tree', async () => {
+      // A focusable element living inside the widget's shadow DOM must not capture
+      // focus. findAdjacentTabbable uses a composed-tree check that crosses shadow
+      // boundaries, so the injected button is skipped and focus lands on nextButton.
+      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
+      const innerButton = document.createElement('button');
+      innerButton.textContent = 'inner';
+      selectivityWidget.shadowRoot.appendChild(innerButton);
+      selectivityWidget._selectivity.open();
+      await flush();
+
+      pressAndReleaseKeyOn(input, KEY_TAB);
+      await Promise.resolve();
+
+      expect(document.activeElement).to.equal(nextButton);
+
+      innerButton.remove();
+    });
+
     test('Tab while open returns null from findAdjacentTabbable when there is no following tabbable element', async () => {
       // Remove nextButton from the tabbable order so findAdjacentTabbable
       // reaches the end of the list without finding a suitable target.
