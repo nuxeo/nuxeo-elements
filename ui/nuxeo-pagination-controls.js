@@ -23,6 +23,8 @@ import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import './widgets/nuxeo-select.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 
 {
   /**
@@ -37,7 +39,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-pagination-controls/index.html
    */
-  class PaginationControls extends Nuxeo.Element {
+  class PaginationControls extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style>
@@ -100,13 +102,25 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
           paper-icon-button {
             padding-top: 6px;
           }
+          .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+          }
         </style>
 
-        <div class="container">
+        <nav class="container">
           <paper-icon-button
             id="firstPage"
             icon="av:skip-previous"
             title="First Page"
+            aria-label$="[[i18n('paginationControls.firstPage')]]"
             on-click="_first"
             disabled$="[[_isFirst(page)]]"
           >
@@ -115,22 +129,38 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
             id="previousPage"
             icon="icons:chevron-left"
             title="Previous Page"
+            aria-label$="[[i18n('paginationControls.previousPage')]]"
             on-click="_previous"
             disabled$="[[_isFirst(page)]]"
           >
           </paper-icon-button>
-          <div class="controls">
+          <div class="controls" aria-label$="[[i18n('paginationControls.pageInfo', page, numberOfPages)]]">
+            <div class="sr-only" role="status" aria-live="polite" aria-atomic="true">
+              [[i18n('paginationControls.pageInfo', page, numberOfPages)]]
+            </div>
             <template is="dom-if" if="[[_computeLimitForOptions(numberOfPages)]]">
-              <nuxeo-select options="[[_computePageOptions(numberOfPages)]]" selected="{{page}}" vertical-align>
+              <nuxeo-select
+                options="[[_computePageOptions(numberOfPages)]]"
+                selected="{{page}}"
+                vertical-align
+                aria-label$="[[i18n('paginationControls.pageInfo', page, numberOfPages)]]"
+              >
               </nuxeo-select>
             </template>
-            <span class="currentPage" hidden$="[[_computeLimitForOptions(numberOfPages)]]">[[page]]</span>
+            <span
+              class="currentPage"
+              hidden$="[[_computeLimitForOptions(numberOfPages)]]"
+              aria-label$="[[i18n('paginationControls.pageInfo', page, numberOfPages)]]"
+            >
+              [[page]]
+            </span>
             <span class="total">/ [[numberOfPages]]</span>
           </div>
           <paper-icon-button
             id="nextPage"
             icon="icons:chevron-right"
             title="Next Page"
+            aria-label$="[[i18n('paginationControls.nextPage')]]"
             on-click="_next"
             disabled$="[[_isLast(page, numberOfPages)]]"
           >
@@ -139,11 +169,12 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
             id="lastPage"
             icon="av:skip-next"
             title="Last Page"
+            aria-label$="[[i18n('paginationControls.lastPage')]]"
             on-click="_last"
             disabled$="[[_isLast(page, numberOfPages)]]"
           >
           </paper-icon-button>
-        </div>
+        </nav>
       `;
     }
 
