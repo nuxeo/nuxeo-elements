@@ -323,7 +323,7 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
     _applyAriaLabel() {
       const pdm = this.$ && this.$.paperDropdownMenu;
       if (!pdm) return;
-      const ariaLabel = (this.label || '').trim() || null;
+      const ariaLabel = (this.getAttribute('aria-label') || '').trim() || (this.label || '').trim() || null;
 
       // paper-dropdown-menu exposes its paper-input trigger as $.input.
       const paperInput = (pdm.$ && pdm.$.input) || (pdm.shadowRoot && pdm.shadowRoot.querySelector('paper-input'));
