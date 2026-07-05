@@ -184,7 +184,7 @@ import '../nuxeo-icons.js';
           return `${firstInitial ? firstInitial.charAt(0) : ''}${lastInitial ? lastInitial.charAt(0) : ''}`;
         }
       }
-      const parts = this._name(user)
+      const parts = (this._name(user) || '')
         .trim()
         .split(/\s+/)
         .filter(Boolean);

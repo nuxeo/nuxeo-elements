@@ -21,7 +21,11 @@ import '../widgets/nuxeo-user-avatar.js';
 
 suite('nuxeo-user-avatar', () => {
   test('should get initial characters based on first and last name', async () => {
-    const element = await fixture(html`<nuxeo-user-avatar></nuxeo-avatar>`);
+    const element = await fixture(
+      html`
+        <nuxeo-user-avatar></nuxeo-user-avatar>
+      `,
+    );
     const character = dom(element.root).querySelector('#character');
     const icon = dom(element.root).querySelector('iron-icon');
     element.user = {
@@ -39,7 +43,11 @@ suite('nuxeo-user-avatar', () => {
   });
 
   test('should limit initials to first and last name parts', async () => {
-    const element = await fixture(html`<nuxeo-user-avatar></nuxeo-avatar>`);
+    const element = await fixture(
+      html`
+        <nuxeo-user-avatar></nuxeo-user-avatar>
+      `,
+    );
     element.user = {
       'entity-type': 'user',
       id: 'multi',
@@ -55,7 +63,11 @@ suite('nuxeo-user-avatar', () => {
   });
 
   test('should get the user icon if non Latin characters exist on user information', async () => {
-    const element = await fixture(html`<nuxeo-user-avatar></nuxeo-avatar>`);
+    const element = await fixture(
+      html`
+        <nuxeo-user-avatar></nuxeo-user-avatar>
+      `,
+    );
     element.user = {
       'entity-type': 'user',
       id: 'はると',
