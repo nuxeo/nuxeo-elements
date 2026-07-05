@@ -173,6 +173,27 @@ import '../nuxeo-icons.js';
       return this._id(user);
     }
 
+    _initials(user) {
+      if (this._isEntity(user)) {
+        const firstName = (user.properties.firstName || user.properties['user:firstName'] || '').trim();
+        const lastName = (user.properties.lastName || user.properties['user:lastName'] || '').trim();
+        if (firstName || lastName) {
+          const firstInitial = firstName.split(/\s+/).filter(Boolean)[0];
+          const lastParts = lastName.split(/\s+/).filter(Boolean);
+          const lastInitial = lastParts[lastParts.length - 1];
+          return `${firstInitial ? firstInitial.charAt(0) : ''}${lastInitial ? lastInitial.charAt(0) : ''}`;
+        }
+      }
+      const parts = this._name(user)
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+      if (parts.length <= 1) {
+        return parts[0] ? parts[0].charAt(0) : '';
+      }
+      return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`;
+    }
+
     _email(user) {
       if (this._isEntity(user)) {
         const email = user.properties.email || user.properties['user:email'];
@@ -286,12 +307,7 @@ import '../nuxeo-icons.js';
           this.$.container.style.backgroundColor = `hsl(${this.__generateHue()}, 70%, 42%)`;
           this._isInTheAlphabet = alphabetPosition > -1;
           if (this._isInTheAlphabet) {
-            let tempName = '';
-            const splitName = name.split(' ');
-            for (let i = 0; i < splitName.length; i++) {
-              tempName += splitName[i].charAt(0);
-            }
-            this._output = tempName;
+            this._output = this._initials(this.user);
           }
 
           if (this.fetchAvatar) {

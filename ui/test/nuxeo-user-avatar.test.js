@@ -38,6 +38,22 @@ suite('nuxeo-user-avatar', () => {
     expect(character.innerText).to.equal('JD');
   });
 
+  test('should limit initials to first and last name parts', async () => {
+    const element = await fixture(html`<nuxeo-user-avatar></nuxeo-avatar>`);
+    element.user = {
+      'entity-type': 'user',
+      id: 'multi',
+      properties: {
+        username: 'multi',
+        firstName: 'First Middle',
+        lastName: 'Middle Last',
+      },
+    };
+    await flush();
+    const character = dom(element.root).querySelector('#character');
+    expect(character.innerText).to.equal('FL');
+  });
+
   test('should get the user icon if non Latin characters exist on user information', async () => {
     const element = await fixture(html`<nuxeo-user-avatar></nuxeo-avatar>`);
     element.user = {
@@ -146,6 +162,56 @@ suite('nuxeo-user-avatar extras', () => {
 
     test('returns _id for string', () => {
       expect(el._name('user:joe')).to.equal('joe');
+    });
+  });
+
+  suite('_initials', () => {
+    test('returns first and last name initials for multi-part names', () => {
+      const u = {
+        'entity-type': 'user',
+        properties: { firstName: 'First Middle', lastName: 'Middle Last' },
+      };
+      expect(el._initials(u)).to.equal('FL');
+    });
+
+    test('returns first and last name initials for simple names', () => {
+      const u = {
+        'entity-type': 'user',
+        properties: { firstName: 'John', lastName: 'Doe' },
+      };
+      expect(el._initials(u)).to.equal('JD');
+    });
+
+    test('falls back to user:firstName / user:lastName', () => {
+      const u = {
+        'entity-type': 'user',
+        properties: { 'user:firstName': 'A B', 'user:lastName': 'C D' },
+      };
+      expect(el._initials(u)).to.equal('AD');
+    });
+
+    test('returns first initial only when last name is empty', () => {
+      const u = {
+        'entity-type': 'user',
+        properties: { firstName: 'John', lastName: '' },
+      };
+      expect(el._initials(u)).to.equal('J');
+    });
+
+    test('returns last initial only when first name is empty', () => {
+      const u = {
+        'entity-type': 'user',
+        properties: { firstName: '', lastName: 'Doe' },
+      };
+      expect(el._initials(u)).to.equal('D');
+    });
+
+    test('falls back to first and last word for non-entity', () => {
+      expect(el._initials({ id: 'first middle last' })).to.equal('fl');
+    });
+
+    test('returns single initial for non-entity with one word', () => {
+      expect(el._initials({ id: 'jdoe' })).to.equal('j');
     });
   });
 
