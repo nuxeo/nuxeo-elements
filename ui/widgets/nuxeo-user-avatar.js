@@ -178,10 +178,15 @@ import '../nuxeo-icons.js';
         const firstName = (user.properties.firstName || user.properties['user:firstName'] || '').trim();
         const lastName = (user.properties.lastName || user.properties['user:lastName'] || '').trim();
         if (firstName || lastName) {
-          const firstInitial = firstName.split(/\s+/).filter(Boolean)[0];
-          const lastParts = lastName.split(/\s+/).filter(Boolean);
-          const lastInitial = lastParts[lastParts.length - 1];
-          return `${firstInitial ? firstInitial.charAt(0) : ''}${lastInitial ? lastInitial.charAt(0) : ''}`;
+          const parts = [firstName, lastName]
+            .join(' ')
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean);
+          if (parts.length <= 1) {
+            return parts[0] ? parts[0].charAt(0) : '';
+          }
+          return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`;
         }
       }
       const parts = (this._name(user) || '')

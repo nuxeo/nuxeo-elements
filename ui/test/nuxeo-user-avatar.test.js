@@ -37,6 +37,7 @@ suite('nuxeo-user-avatar', () => {
         lastName: 'Doe',
       },
     };
+    await flush();
     expect(character.hidden).to.equal(false);
     expect(icon.hidden).to.equal(true);
     expect(character.innerText).to.equal('JD');
@@ -208,6 +209,14 @@ suite('nuxeo-user-avatar extras', () => {
         properties: { firstName: 'John', lastName: '' },
       };
       expect(el._initials(u)).to.equal('J');
+    });
+
+    test('returns first and last word initials when one name field is empty', () => {
+      const u = {
+        'entity-type': 'user',
+        properties: { firstName: 'John Paul', lastName: '' },
+      };
+      expect(el._initials(u)).to.equal('JP');
     });
 
     test('returns last initial only when first name is empty', () => {
