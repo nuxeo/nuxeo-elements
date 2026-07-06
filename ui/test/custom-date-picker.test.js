@@ -973,7 +973,8 @@ suite('custom-date-picker extras', () => {
 
       test('is fully localized with no hardcoded English fragment', async () => {
         // A translated bundle fully controls the sentence, colon and spacing.
-        window.nuxeo.I18n.en['customDatePicker.incorrectFormatExpected'] = '不正な日付形式です。想定される形式：{format}';
+        window.nuxeo.I18n.en['customDatePicker.incorrectFormatExpected'] =
+          '不正な日付形式です。想定される形式：{format}';
         const el = await newPicker();
         el.format = 'YYYY-MM-DD';
         const input = el.shadowRoot.querySelector('#dateInput');
@@ -984,7 +985,8 @@ suite('custom-date-picker extras', () => {
       });
 
       test('validate() builds the same localized message for an invalid value', async () => {
-        window.nuxeo.I18n.en['customDatePicker.incorrectFormatExpected'] = '不正な日付形式です。想定される形式：{format}';
+        window.nuxeo.I18n.en['customDatePicker.incorrectFormatExpected'] =
+          '不正な日付形式です。想定される形式：{format}';
         const el = await newPicker();
         el.format = 'YYYY-MM-DD';
         el.value = 'not-a-date';
