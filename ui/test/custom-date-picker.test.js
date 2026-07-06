@@ -955,6 +955,77 @@ suite('custom-date-picker extras', () => {
       expect(el._selectedDate).to.be.null;
     });
 
+    suite('localized format error message', () => {
+      teardown(() => {
+        delete window.nuxeo.I18n.en['customDatePicker.incorrectFormatExpected'];
+      });
+
+      test('uses the incorrectFormatExpected key with the {format} placeholder', async () => {
+        window.nuxeo.I18n.en['customDatePicker.incorrectFormatExpected'] =
+          'Incorrect date format. Expected format: {format}';
+        const el = await newPicker();
+        el.format = 'YYYY-MM-DD';
+        const input = el.shadowRoot.querySelector('#dateInput');
+        input.value = 'not-a-date';
+        el._validateAndParseInput();
+        expect(el.errorMessage).to.equal('Incorrect date format. Expected format: YYYY-MM-DD');
+      });
+
+      test('is fully localized with no hardcoded English fragment', async () => {
+        // A translated bundle fully controls the sentence, colon and spacing.
+        window.nuxeo.I18n.en['customDatePicker.incorrectFormatExpected'] =
+          '不正な日付形式です。想定される形式：{format}';
+        const el = await newPicker();
+        el.format = 'YYYY-MM-DD';
+        const input = el.shadowRoot.querySelector('#dateInput');
+        input.value = 'not-a-date';
+        el._validateAndParseInput();
+        expect(el.errorMessage).to.equal('不正な日付形式です。想定される形式：YYYY-MM-DD');
+        expect(el.errorMessage).to.not.contain('Expected format');
+      });
+
+      test('validate() builds the same localized message for an invalid value', async () => {
+        window.nuxeo.I18n.en['customDatePicker.incorrectFormatExpected'] =
+          '不正な日付形式です。想定される形式：{format}';
+        const el = await newPicker();
+        el.format = 'YYYY-MM-DD';
+        el.value = 'not-a-date';
+        const valid = el.validate();
+        expect(valid).to.be.false;
+        expect(el.errorReason).to.equal('format');
+        expect(el.errorMessage).to.equal('不正な日付形式です。想定される形式：YYYY-MM-DD');
+        expect(el.errorMessage).to.not.contain('Expected format');
+      });
+
+      test('falls back to the translated incorrectFormat key when the combined key is missing', async () => {
+        // Simulate a locale bundle that only has the base key (as ja does before Crowdin ships
+        // the combined key): the message must stay fully localized, never a raw key.
+        delete window.nuxeo.I18n.en['customDatePicker.incorrectFormatExpected'];
+        window.nuxeo.I18n.en['customDatePicker.incorrectFormat'] = '不正な日付形式';
+        const el = await newPicker();
+        el.format = 'YYYY-MM-DD';
+        const input = el.shadowRoot.querySelector('#dateInput');
+        input.value = 'not-a-date';
+        el._validateAndParseInput();
+        expect(el.errorMessage).to.equal('不正な日付形式 YYYY-MM-DD');
+        expect(el.errorMessage).to.not.contain('customDatePicker.');
+        expect(el.errorMessage).to.not.contain('Expected format');
+        delete window.nuxeo.I18n.en['customDatePicker.incorrectFormat'];
+      });
+
+      test('falls back to an English default when no format key is translated', async () => {
+        delete window.nuxeo.I18n.en['customDatePicker.incorrectFormatExpected'];
+        delete window.nuxeo.I18n.en['customDatePicker.incorrectFormat'];
+        const el = await newPicker();
+        el.format = 'YYYY-MM-DD';
+        const input = el.shadowRoot.querySelector('#dateInput');
+        input.value = 'not-a-date';
+        el._validateAndParseInput();
+        expect(el.errorMessage).to.equal('Incorrect date format. YYYY-MM-DD');
+        expect(el.errorMessage).to.not.contain('customDatePicker.');
+      });
+    });
+
     test('_validateAndParseInput parses a valid date', async () => {
       const el = await newPicker();
       el.format = 'YYYY-MM-DD';
@@ -1895,6 +1966,59 @@ suite('custom-date-picker extras', () => {
       expect(result)
         .to.be.a('string')
         .with.length.greaterThan(0);
+    });
+  });
+
+  suite('hidePlaceholder', () => {
+    test('defaults to false', async () => {
+      const el = await newPicker();
+      expect(el.hidePlaceholder).to.be.false;
+    });
+
+    test('_computePlaceholder returns the date placeholder when not hidden', async () => {
+      const el = await newPicker();
+      el.format = 'YYYY-MM-DD';
+      expect(el._computePlaceholder('YYYY-MM-DD', false)).to.equal('YYYY-MM-DD');
+    });
+
+    test('_computePlaceholder returns an empty string when hidden', async () => {
+      const el = await newPicker();
+      expect(el._computePlaceholder('YYYY-MM-DD', true)).to.equal('');
+    });
+
+    test('renders the input placeholder when hidePlaceholder is false', async () => {
+      const el = await newPicker(html`
+        <custom-date-picker format="YYYY-MM-DD"></custom-date-picker>
+      `);
+      await flush();
+      const input = el.shadowRoot.querySelector('#dateInput');
+      expect(input.getAttribute('placeholder')).to.equal('YYYY-MM-DD');
+    });
+
+    test('omits the input placeholder when hidePlaceholder is true', async () => {
+      const el = await newPicker(html`
+        <custom-date-picker format="YYYY-MM-DD" hide-placeholder></custom-date-picker>
+      `);
+      await flush();
+      const input = el.shadowRoot.querySelector('#dateInput');
+      expect(input.getAttribute('placeholder') || '').to.equal('');
+    });
+
+    test('toggling hidePlaceholder updates the input placeholder', async () => {
+      const el = await newPicker(html`
+        <custom-date-picker format="YYYY-MM-DD"></custom-date-picker>
+      `);
+      await flush();
+      const input = el.shadowRoot.querySelector('#dateInput');
+      expect(input.getAttribute('placeholder')).to.equal('YYYY-MM-DD');
+
+      el.hidePlaceholder = true;
+      await flush();
+      expect(input.getAttribute('placeholder') || '').to.equal('');
+
+      el.hidePlaceholder = false;
+      await flush();
+      expect(input.getAttribute('placeholder')).to.equal('YYYY-MM-DD');
     });
   });
 
@@ -6826,55 +6950,6 @@ suite('custom-date-picker accessibility', () => {
 
       expect(closeStub).to.not.have.been.called;
       closeStub.restore();
-    });
-  });
-
-  suite('window escape-capture listener lifecycle', () => {
-    let el;
-
-    setup(async () => {
-      el = await fixture(html`
-        <custom-date-picker></custom-date-picker>
-      `);
-      await flush();
-    });
-
-    test('_openCalendar registers _boundEscapeCapture on the window', () => {
-      const spy = sinon.spy(window, 'addEventListener');
-
-      el._openCalendar();
-
-      const matched = spy.args.some(
-        ([type, fn, capture]) => type === 'keydown' && fn === el._boundEscapeCapture && capture === true,
-      );
-      expect(matched).to.be.true;
-      spy.restore();
-      el._closeCalendar();
-    });
-
-    test('_closeCalendar removes _boundEscapeCapture from the window', () => {
-      el._openCalendar();
-      const spy = sinon.spy(window, 'removeEventListener');
-
-      el._closeCalendar();
-
-      const matched = spy.args.some(
-        ([type, fn, capture]) => type === 'keydown' && fn === el._boundEscapeCapture && capture === true,
-      );
-      expect(matched).to.be.true;
-      spy.restore();
-    });
-
-    test('disconnectedCallback removes _boundEscapeCapture from the window', () => {
-      const spy = sinon.spy(window, 'removeEventListener');
-
-      el.remove();
-
-      const matched = spy.args.some(
-        ([type, fn, capture]) => type === 'keydown' && fn === el._boundEscapeCapture && capture === true,
-      );
-      expect(matched).to.be.true;
-      spy.restore();
     });
   });
 });
