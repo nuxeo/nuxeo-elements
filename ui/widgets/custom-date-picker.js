@@ -135,6 +135,15 @@ const FOCUS_SUPPRESSION_MS = 200;
           value: false,
           reflectToAttribute: true,
         },
+
+        /**
+         * When true, hides the format placeholder shown inside the date input field.
+         * Can be controlled via the `nuxeo.ui.date.picker.hide.placeholder` property in nuxeo.conf.
+         */
+        hidePlaceholder: {
+          type: Boolean,
+          value: false,
+        },
         // Compatibility with vaadin's clear-button-visible attribute
         clearButtonVisible: {
           type: Boolean,
@@ -1086,7 +1095,7 @@ const FOCUS_SUPPRESSION_MS = 200;
               class="input-field"
               type="text"
               value="{{_inputValue::input}}"
-              placeholder$="[[_getDatePlaceholder(format)]]"
+              placeholder$="[[_computePlaceholder(format, hidePlaceholder)]]"
               name$="[[name]]"
               disabled$="[[disabled]]"
               required$="[[required]]"
@@ -1460,6 +1469,29 @@ const FOCUS_SUPPRESSION_MS = 200;
       });
 
       return text;
+    }
+
+    // Returns true when a translation key actually resolved to a value, i.e. the i18n
+    // layer did not fall back to returning the key itself or an empty string. This lets
+    // us degrade gracefully when a message key is missing from the active locale bundle.
+    _hasTranslation(key, text) {
+      return !!text && text !== `customDatePicker.${key}` && text !== key;
+    }
+
+    // Builds the "incorrect date format" error message. Prefers the fully localized
+    // combined key (`incorrectFormatExpected`), but falls back to the already-translated
+    // `incorrectFormat` key plus the expected pattern when the combined key is missing from
+    // the active locale bundle (e.g. before Crowdin ships it), so a readable, fully
+    // localized error is always shown instead of a raw key or a mixed-language string.
+    _buildIncorrectFormatError() {
+      const expectedFormat = this._getDatePlaceholder(this.format);
+      const combined = this.i18n('customDatePicker.incorrectFormatExpected');
+      if (this._hasTranslation('incorrectFormatExpected', combined)) {
+        return combined.replace(/\{format\}/g, expectedFormat);
+      }
+      const base = this.i18n('customDatePicker.incorrectFormat');
+      const baseText = this._hasTranslation('incorrectFormat', base) ? base : 'Incorrect date format.';
+      return `${baseText} ${expectedFormat}`;
     }
 
     // Screen reader announcement utility
@@ -3477,8 +3509,7 @@ const FOCUS_SUPPRESSION_MS = 200;
         // Could not parse the date at all - format error (highest priority)
         this.invalid = true;
         this.errorReason = 'format';
-        const expectedFormat = this._getDatePlaceholder(this.format);
-        this.errorMessage = `${this._getLocalizedText('incorrectFormat')} Expected format: ${expectedFormat}`;
+        this.errorMessage = this._buildIncorrectFormatError();
         this._showErrors = true;
         this._errorPersists = true; // Error should persist until resolved
 
@@ -3716,6 +3747,13 @@ const FOCUS_SUPPRESSION_MS = 200;
         required: 1, // Lowest priority
       };
       return priorities[errorReason] || 0;
+    }
+
+    _computePlaceholder(format, hidePlaceholder) {
+      if (hidePlaceholder) {
+        return '';
+      }
+      return this._getDatePlaceholder(format);
     }
 
     _getDatePlaceholder(format) {
@@ -4232,8 +4270,7 @@ const FOCUS_SUPPRESSION_MS = 200;
         if (!parseResult) {
           this.invalid = true;
           this.errorReason = 'format';
-          const expectedFormat = this._getDatePlaceholder(this.format);
-          this.errorMessage = `${this._getLocalizedText('incorrectFormat')} Expected format: ${expectedFormat}`;
+          this.errorMessage = this._buildIncorrectFormatError();
           this._showErrors = true;
           return false;
         }
