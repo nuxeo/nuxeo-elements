@@ -1425,6 +1425,23 @@ suite('PageProviderDisplayBehavior', () => {
       expect(prov.fetch).not.to.have.been.called;
     });
 
+    test('swallows AbortError', async () => {
+      const err = new DOMException('Aborted', 'AbortError');
+      prov.fetch.rejects(err);
+      const result = await host._fetchRange(0, 9, true);
+      expect(result).to.be.undefined;
+    });
+
+    test('re-throws non-AbortError', async () => {
+      prov.fetch.rejects(new Error('network'));
+      try {
+        await host._fetchRange(0, 9, true);
+        expect.fail('should have thrown');
+      } catch (e) {
+        expect(e.message).to.equal('network');
+      }
+    });
+
     test('does nothing without a provider', () => {
       host.nxProvider = null;
       const result = host._fetchRange(0, 9, true);
