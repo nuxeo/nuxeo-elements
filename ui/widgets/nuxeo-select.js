@@ -114,7 +114,7 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
           }
         </style>
 
-        <label>[[label]]</label>
+        <label aria-hidden="true">[[label]]</label>
 
         <paper-dropdown-menu
           id="paperDropdownMenu"
@@ -167,6 +167,7 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
         label: {
           type: String,
           value: null,
+          observer: '_syncAriaLabel',
         },
 
         /**
@@ -273,6 +274,15 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
     disconnectedCallback() {
       super.disconnectedCallback();
       this._resizeObserver.unobserve(this);
+      this._detachDropdownTabHandler();
+    }
+
+    ready() {
+      super.ready();
+      this._syncAriaLabel();
+      const pdm = this.$.paperDropdownMenu;
+      pdm.addEventListener('paper-dropdown-open', () => this._attachDropdownTabHandler());
+      pdm.addEventListener('paper-dropdown-close', () => this._detachDropdownTabHandler());
     }
 
     close() {
@@ -303,6 +313,87 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
 
     _computeAttrForSelected(attrForSelected, options) {
       return options ? 'option' : attrForSelected;
+    }
+
+    _syncAriaLabel() {
+      // Deferred so Polymer has finished rendering the inner paper-dropdown-menu.
+      setTimeout(() => this._applyAriaLabel(), 0);
+    }
+
+    _applyAriaLabel() {
+      const pdm = this.$ && this.$.paperDropdownMenu;
+      if (!pdm) return;
+      const ariaLabel = (this.label || '').trim() || null;
+
+      // paper-dropdown-menu exposes its paper-input trigger as $.input.
+      const paperInput = (pdm.$ && pdm.$.input) || (pdm.shadowRoot && pdm.shadowRoot.querySelector('paper-input'));
+      if (!paperInput) return;
+
+      if (ariaLabel) {
+        paperInput.setAttribute('aria-label', ariaLabel);
+      } else {
+        paperInput.removeAttribute('aria-label');
+      }
+
+      // Set aria-label on the native <input> and remove aria-labelledby so the
+      // screen reader uses our label instead of Polymer's auto-generated one.
+      let nativeInput = (paperInput.inputElement && paperInput.inputElement._inputElement) || paperInput.$.nativeInput;
+      if (!nativeInput && paperInput.inputElement) {
+        nativeInput = paperInput.inputElement.querySelector && paperInput.inputElement.querySelector('input');
+      }
+      if (!nativeInput && paperInput.shadowRoot) {
+        nativeInput = paperInput.shadowRoot.querySelector('input');
+      }
+      if (nativeInput) {
+        if (ariaLabel) {
+          nativeInput.setAttribute('aria-label', ariaLabel);
+          nativeInput.removeAttribute('aria-labelledby');
+        } else {
+          nativeInput.removeAttribute('aria-label');
+        }
+      }
+    }
+
+    // Attach a Tab handler to the iron-dropdown overlay while it is open.
+    // Standard combobox pattern: Tab closes the dropdown and returns focus to
+    // the trigger input; native Tab then advances focus from that position.
+    // Scoping to the overlay (rather than document) avoids cross-talk between
+    // multiple open selects and keeps the listener's lifetime tightly bounded.
+    _attachDropdownTabHandler() {
+      const pdm = this.$.paperDropdownMenu;
+      // paper-menu-button exposes its iron-dropdown as $.menuButton.$.dropdown.
+      const overlay =
+        pdm.$.menuButton && pdm.$.menuButton.$ && pdm.$.menuButton.$.dropdown ? pdm.$.menuButton.$.dropdown : null;
+      this._dropdownTabOverlay = overlay;
+      this._dropdownTabHandler = (e) => {
+        if (e.key !== 'Tab') return;
+        e.preventDefault();
+        pdm.close();
+        // Focus the trigger input so that the user's next Tab keystroke uses
+        // native focus order starting from the widget's real DOM position.
+        const trigger = (pdm.$ && pdm.$.input) || (pdm.shadowRoot && pdm.shadowRoot.querySelector('paper-input'));
+        if (trigger && typeof trigger.focus === 'function') {
+          trigger.focus();
+        }
+      };
+      if (overlay) {
+        overlay.addEventListener('keydown', this._dropdownTabHandler);
+      } else {
+        // Fallback when overlay reference is unavailable.
+        document.addEventListener('keydown', this._dropdownTabHandler, true);
+      }
+    }
+
+    _detachDropdownTabHandler() {
+      if (this._dropdownTabHandler) {
+        if (this._dropdownTabOverlay) {
+          this._dropdownTabOverlay.removeEventListener('keydown', this._dropdownTabHandler);
+        } else {
+          document.removeEventListener('keydown', this._dropdownTabHandler, true);
+        }
+        this._dropdownTabHandler = null;
+        this._dropdownTabOverlay = null;
+      }
     }
 
     /* Override method from Polymer.IronValidatableBehavior. */
