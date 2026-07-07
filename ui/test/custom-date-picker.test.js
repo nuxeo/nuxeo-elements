@@ -956,8 +956,26 @@ suite('custom-date-picker extras', () => {
     });
 
     suite('localized format error message', () => {
+      let originalIncorrectFormatExpected;
+      let originalIncorrectFormat;
+
+      setup(() => {
+        originalIncorrectFormatExpected = window.nuxeo.I18n.en['customDatePicker.incorrectFormatExpected'];
+        originalIncorrectFormat = window.nuxeo.I18n.en['customDatePicker.incorrectFormat'];
+      });
+
       teardown(() => {
-        delete window.nuxeo.I18n.en['customDatePicker.incorrectFormatExpected'];
+        if (originalIncorrectFormatExpected === undefined) {
+          delete window.nuxeo.I18n.en['customDatePicker.incorrectFormatExpected'];
+        } else {
+          window.nuxeo.I18n.en['customDatePicker.incorrectFormatExpected'] = originalIncorrectFormatExpected;
+        }
+
+        if (originalIncorrectFormat === undefined) {
+          delete window.nuxeo.I18n.en['customDatePicker.incorrectFormat'];
+        } else {
+          window.nuxeo.I18n.en['customDatePicker.incorrectFormat'] = originalIncorrectFormat;
+        }
       });
 
       test('uses the incorrectFormatExpected key with the {format} placeholder', async () => {
@@ -1010,7 +1028,6 @@ suite('custom-date-picker extras', () => {
         expect(el.errorMessage).to.equal('不正な日付形式 YYYY-MM-DD');
         expect(el.errorMessage).to.not.contain('customDatePicker.');
         expect(el.errorMessage).to.not.contain('Expected format');
-        delete window.nuxeo.I18n.en['customDatePicker.incorrectFormat'];
       });
 
       test('falls back to an English default when no format key is translated', async () => {
