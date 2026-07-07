@@ -800,61 +800,73 @@ export const PageProviderDisplayBehavior = [
         const options = {
           skipAggregates: firstIndex !== 0,
         };
-        return this.nxProvider.fetch(options).then((response) => {
-          if (!response) {
-            return;
-          }
-
-          // get results count, and reset the array if it differs from current array length
-          let count;
-          if (response.resultsCount < 0) {
-            // negative resultCount means unknown value, fall back on currentPageSize
-            count = response.resultsCountLimit > 0 ? response.resultsCountLimit : response.currentPageSize;
-          } else if (response.resultsCountLimit > 0 && response.resultsCountLimit < response.resultsCount) {
-            count = response.resultsCountLimit;
-          } else {
-            count = response.resultsCount;
-          }
-          if (this.maxItems) {
-            if (count > this.maxItems) {
-              count = this.maxItems;
+        return this.nxProvider
+          .fetch(options)
+          .then((response) => {
+            if (!response) {
+              return;
             }
-          }
-          if (clear || this.items.length !== count) {
-            this.reset(count);
-          }
 
-          // fill items range based on response
-          let entryIndex = 0;
-          for (let i = firstIndex; i <= lastIndex; i++) {
-            if (entryIndex < response.entries.length) {
-              const prevItem = this.items[i];
-              const isSelected = this._isSelected(prevItem);
-              this.set(`items.${i}`, response.entries[entryIndex++]);
-              const item = this.items[i];
+            // get results count, and reset the array if it differs from current array length
+            let count;
+            if (response.resultsCount < 0) {
+              // negative resultCount means unknown value, fall back on currentPageSize
+              count = response.resultsCountLimit > 0 ? response.resultsCountLimit : response.currentPageSize;
+            } else if (response.resultsCountLimit > 0 && response.resultsCountLimit < response.resultsCount) {
+              count = response.resultsCountLimit;
+            } else {
+              count = response.resultsCount;
+            }
+            if (this.maxItems) {
+              if (count > this.maxItems) {
+                count = this.maxItems;
+              }
+            }
+            if (clear || this.items.length !== count) {
+              this.reset(count);
+            }
 
-              if (isSelected && !this._excludedItems.includes(item.uid)) {
-                if (this.selectAllActive) {
-                  // remove the previous item from array-selector selection, since it was an empty object
-                  this.$.list.$.selector.__selectedMap.delete(prevItem);
-                  /**
-                   * if select all is active we need to update the `selectedItems` entry to keep it in sync with the
-                   * one in `items` that we have just loaded
-                   */
-                  this.set(`selectedItems.${i}`, item);
-                  this._selectItemModel(i);
-                } else {
-                  this.selectIndex(i);
+            // fill items range based on response
+            let entryIndex = 0;
+            for (let i = firstIndex; i <= lastIndex; i++) {
+              if (entryIndex < response.entries.length) {
+                const prevItem = this.items[i];
+                const isSelected = this._isSelected(prevItem);
+                this.set(`items.${i}`, response.entries[entryIndex++]);
+                const item = this.items[i];
+
+                if (isSelected && !this._excludedItems.includes(item.uid)) {
+                  if (this.selectAllActive) {
+                    // remove the previous item from array-selector selection, since it was an empty object
+                    this.$.list.$.selector.__selectedMap.delete(prevItem);
+                    /**
+                     * if select all is active we need to update the `selectedItems` entry to keep it in sync with the
+                     * one in `items` that we have just loaded
+                     */
+                    this.set(`selectedItems.${i}`, item);
+                    this._selectItemModel(i);
+                  } else {
+                    this.selectIndex(i);
+                  }
                 }
               }
             }
-          }
 
-          // quick filters
-          this._updateQuickFiltersAndBuckets(response);
+            // quick filters
+            this._updateQuickFiltersAndBuckets(response);
 
-          this.fire('nuxeo-page-loaded');
-        });
+            this.fire('nuxeo-page-loaded');
+          })
+          .catch((err) => {
+            // Prevent unhandled rejection noise on intentionally aborted requests:
+            // cancelable nuxeo-resource/nuxeo-operation aborts the previous in-flight
+            // fetch when a newer one supersedes it (navigation, rapid filter/sort/refresh,
+            // component detach). Same guard as _fetchPage.
+            if (err && err.name === 'AbortError') {
+              return;
+            }
+            throw err;
+          });
       }
     },
 
