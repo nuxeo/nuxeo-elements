@@ -807,50 +807,13 @@ export const PageProviderDisplayBehavior = [
               return;
             }
 
-            // get results count, and reset the array if it differs from current array length
-            let count;
-            if (response.resultsCount < 0) {
-              // negative resultCount means unknown value, fall back on currentPageSize
-              count = response.resultsCountLimit > 0 ? response.resultsCountLimit : response.currentPageSize;
-            } else if (response.resultsCountLimit > 0 && response.resultsCountLimit < response.resultsCount) {
-              count = response.resultsCountLimit;
-            } else {
-              count = response.resultsCount;
-            }
-            if (this.maxItems) {
-              if (count > this.maxItems) {
-                count = this.maxItems;
-              }
-            }
+            // reset the array if the results count differs from the current array length
+            const count = this._computeRangeCount(response);
             if (clear || this.items.length !== count) {
               this.reset(count);
             }
 
-            // fill items range based on response
-            let entryIndex = 0;
-            for (let i = firstIndex; i <= lastIndex; i++) {
-              if (entryIndex < response.entries.length) {
-                const prevItem = this.items[i];
-                const isSelected = this._isSelected(prevItem);
-                this.set(`items.${i}`, response.entries[entryIndex++]);
-                const item = this.items[i];
-
-                if (isSelected && !this._excludedItems.includes(item.uid)) {
-                  if (this.selectAllActive) {
-                    // remove the previous item from array-selector selection, since it was an empty object
-                    this.$.list.$.selector.__selectedMap.delete(prevItem);
-                    /**
-                     * if select all is active we need to update the `selectedItems` entry to keep it in sync with the
-                     * one in `items` that we have just loaded
-                     */
-                    this.set(`selectedItems.${i}`, item);
-                    this._selectItemModel(i);
-                  } else {
-                    this.selectIndex(i);
-                  }
-                }
-              }
-            }
+            this._fillItemsRange(response, firstIndex, lastIndex);
 
             // quick filters
             this._updateQuickFiltersAndBuckets(response);
@@ -867,6 +830,63 @@ export const PageProviderDisplayBehavior = [
             }
             throw err;
           });
+      }
+    },
+
+    /**
+     * Computes the number of results for a range fetch response, capped by `maxItems`.
+     */
+    _computeRangeCount(response) {
+      let count;
+      if (response.resultsCount < 0) {
+        // negative resultCount means unknown value, fall back on currentPageSize
+        count = response.resultsCountLimit > 0 ? response.resultsCountLimit : response.currentPageSize;
+      } else if (response.resultsCountLimit > 0 && response.resultsCountLimit < response.resultsCount) {
+        count = response.resultsCountLimit;
+      } else {
+        count = response.resultsCount;
+      }
+      if (this.maxItems && count > this.maxItems) {
+        count = this.maxItems;
+      }
+      return count;
+    },
+
+    /**
+     * Fills the items array in the given range with the fetched response entries,
+     * preserving any previously selected items.
+     */
+    _fillItemsRange(response, firstIndex, lastIndex) {
+      let entryIndex = 0;
+      for (let i = firstIndex; i <= lastIndex; i++) {
+        if (entryIndex < response.entries.length) {
+          const prevItem = this.items[i];
+          const isSelected = this._isSelected(prevItem);
+          this.set(`items.${i}`, response.entries[entryIndex++]);
+          const item = this.items[i];
+
+          if (isSelected && !this._excludedItems.includes(item.uid)) {
+            this._reselectLoadedItem(i, prevItem, item);
+          }
+        }
+      }
+    },
+
+    /**
+     * Re-applies selection to an item that has just been loaded into the range.
+     */
+    _reselectLoadedItem(index, prevItem, item) {
+      if (this.selectAllActive) {
+        // remove the previous item from array-selector selection, since it was an empty object
+        this.$.list.$.selector.__selectedMap.delete(prevItem);
+        /**
+         * if select all is active we need to update the `selectedItems` entry to keep it in sync with the
+         * one in `items` that we have just loaded
+         */
+        this.set(`selectedItems.${index}`, item);
+        this._selectItemModel(index);
+      } else {
+        this.selectIndex(index);
       }
     },
 
