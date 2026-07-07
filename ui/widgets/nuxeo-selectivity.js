@@ -3018,9 +3018,81 @@ typedArrayTags[weakMapTag] = false;
       const KEY_BACKSPACE = 8;
       const KEY_DELETE = 46;
       const KEY_ENTER = 13;
+      const KEY_TAB = 9;
 
       const INPUT_SELECTOR = '.selectivity-multiple-input';
       const SELECTED_ITEM_SELECTOR = '.selectivity-multiple-selected-item';
+
+      // Walks the composed tree (descending through any open shadow roots) and
+      // collects all sequentially tabbable elements under document.body.
+      function collectTabbable() {
+        const all = [];
+        (function collect(root) {
+          let node = root.firstElementChild;
+          while (node) {
+            const ti = node.tabIndex;
+            if (
+              ti >= 0 &&
+              !node.disabled &&
+              node.offsetParent !== null &&
+              node.getClientRects().length > 0
+            ) {
+              all.push(node);
+            }
+            if (node.shadowRoot) collect(node.shadowRoot);
+            collect(node);
+            node = node.nextElementSibling;
+          }
+        })(document.body);
+        return all;
+      }
+
+      // True when `node` is `host` itself or lives anywhere inside its (possibly
+      // nested) shadow tree. Unlike Node.contains(), this walks up through shadow
+      // roots via ShadowRoot.host, so it reliably matches every element that
+      // belongs to a custom element — including content in its shadow DOM.
+      function composedContains(host, node) {
+        let current = node;
+        while (current) {
+          if (current === host) {
+            return true;
+          }
+          current = current.parentNode || current.host;
+        }
+        return false;
+      }
+
+      // Returns the next sequentially focusable element after `current`, skipping
+      // any element that is a descendant of `excludeRoot` (including itself).
+      // Used to advance focus out of a multiple-mode selectivity widget when the
+      // browser's default Tab handling fails to leave the field.
+      function findAdjacentTabbable(current, excludeRoot) {
+        const all = collectTabbable();
+        const idx = all.indexOf(current);
+        if (idx < 0) {
+          // current is not in the list — fall back to the first tabbable element
+          // strictly after excludeRoot in document order.
+          if (excludeRoot) {
+            for (let i = 0; i < all.length; i++) {
+              if (
+                !composedContains(excludeRoot, all[i]) &&
+                excludeRoot.compareDocumentPosition(all[i]) & Node.DOCUMENT_POSITION_FOLLOWING
+              ) {
+                return all[i];
+              }
+            }
+          }
+          return null;
+        }
+        let i = idx + 1;
+        while (i < all.length) {
+          if (!composedContains(excludeRoot, all[i])) {
+            return all[i];
+          }
+          i++;
+        }
+        return null;
+      }
 
       const hasTouch = 'ontouchstart' in window;
 
@@ -3412,9 +3484,74 @@ typedArrayTags[weakMapTag] = false;
         _keyHeld(event) {
           this._originalValue = this.input.value;
 
-          if (getKeyCode(event) === KEY_ENTER && !event.ctrlKey) {
+          const keyCode = getKeyCode(event);
+          if (keyCode === KEY_ENTER && !event.ctrlKey) {
             event.preventDefault();
+          } else if (keyCode === KEY_TAB && !event.shiftKey && !event.ctrlKey && !event.altKey) {
+            this._handleForwardTab(event);
+          } else if (keyCode === KEY_TAB && event.shiftKey && !event.ctrlKey && !event.altKey) {
+            this._handleBackwardTab();
           }
+        },
+
+        /**
+     * @private
+     * Two-step keyboard model: Tab while CLOSED opens the dropdown; Tab while
+     * OPEN closes it and advances focus to the next tabbable element outside
+     * the widget. Focus is moved manually because surrounding Polymer/iron-form
+     * wrappers can intercept the default Tab action and trap focus on the input.
+     */
+        _handleForwardTab(event) {
+          if (this.dropdown) {
+            event.preventDefault();
+            const inputEl = this.input;
+            // Exclude the whole host element (including its shadow content), not just
+            // this.el (the inner `#input` div). this.el lives inside the widget's shadow
+            // tree, so excluding only it lets findAdjacentTabbable land on a sibling
+            // element still inside the widget — trapping focus. Climbing to the shadow
+            // host makes focus advance past the entire widget.
+            const wrapperEl = this.el.getRootNode().host;
+            this._beginTabbingOut();
+            this.close();
+            // Defer the focus advance to a microtask so any synchronous focus
+            // side-effects from close() settle before we move focus.
+            queueMicrotask(() => {
+              const next = findAdjacentTabbable(inputEl, wrapperEl);
+              if (next && typeof next.focus === 'function') {
+                next.focus();
+              }
+            });
+          } else if (this.enabled && this.options.showDropdown !== false) {
+            event.preventDefault();
+            this.open();
+          }
+        },
+
+        /**
+     * @private
+     * Shift+Tab while the dropdown is OPEN closes it so focus can leave the
+     * field backwards. The browser's default Shift+Tab handles the focus
+     * movement; only the dropdown needs to be closed here.
+     */
+        _handleBackwardTab() {
+          if (this.dropdown) {
+            this._beginTabbingOut();
+            this.close();
+          }
+        },
+
+        /**
+     * @private
+     * Arms _tabbingOut and schedules its reset, suppressing any focus-driven
+     * reopen of the dropdown during the Tab / Shift+Tab transition.
+     */
+        _beginTabbingOut() {
+          clearTimeout(this._tabbingOutTimeout);
+          this._tabbingOut = true;
+          this._tabbingOutTimeout = setTimeout(() => {
+            this._tabbingOut = false;
+            this._tabbingOutTimeout = 0;
+          }, 300);
         },
 
         /**
@@ -3706,10 +3843,15 @@ typedArrayTags[weakMapTag] = false;
      * @private
      */
         _focused() {
+          // Single-select opens the dropdown as soon as the field receives focus, giving a clear
+          // visual indication that the field is focused (ELEMENTS-1953). The two-step "Tab to open"
+          // model is kept only for multiple-select. `_tabbingOut` guards against the close()/focus
+          // side-effects re-opening the dropdown while focus is leaving the field via Tab/Shift+Tab.
           if (
             this.enabled &&
             !this._closing &&
             !this._opening &&
+            !this._tabbingOut &&
             this.options.showDropdown !== false
           ) {
             this.open();
@@ -4869,9 +5011,32 @@ typedArrayTags[weakMapTag] = false;
             } else if (keyCode === KEY_UP_ARROW) {
               moveHighlight(dropdown, -1);
             } else if (keyCode === KEY_TAB) {
-              setTimeout(() => {
+              // SingleInput-only Tab handling: synchronously move focus back to the
+              // widget's main input, then close the dropdown, and let the browser's
+              // default Tab action proceed from that stable element. MultipleInput
+              // manages Tab entirely in its own _keyHeld (see line ~3470), so we MUST
+              // skip this branch for multiple-mode widgets — otherwise we'd close the
+              // dropdown and clear _tabbingOut here, while MultipleInput._keyHeld then
+              // sees this.dropdown == null and re-opens it on every keystroke, trapping
+              // focus on the field.
+              const mainInput = selectivity.el.querySelector('.selectivity-single-select-input');
+              if (mainInput) {
+                // _tabbingOut is set so that the focus event fired by the synchronous
+                // `mainInput.focus()` does NOT re-open the dropdown via _focused(). It
+                // is also checked by open() as a belt-and-braces guard. The flag is
+                // per-instance, so it does NOT block sibling selectivity widgets from
+                // opening on their own focus event.
+                clearTimeout(selectivity._tabbingOutTimeout);
+                selectivity._tabbingOut = true;
+                if (typeof mainInput.focus === 'function') {
+                  mainInput.focus();
+                }
                 selectivity.close();
-              }, 1);
+                selectivity._tabbingOutTimeout = setTimeout(() => {
+                  selectivity._tabbingOut = false;
+                  selectivity._tabbingOutTimeout = 0;
+                }, 300);
+              }
             } else if (keyCode === KEY_ENTER) {
               event.preventDefault(); // don't submit forms on keydown
             }
@@ -4912,6 +5077,9 @@ typedArrayTags[weakMapTag] = false;
             selectivity.close();
 
             event.preventDefault();
+          } else if (keyCode === KEY_TAB) {
+            // Let the browser advance focus naturally on Tab without
+            // re-opening the dropdown from the catch-all `else` below.
           } else if (keyCode === KEY_DOWN_ARROW || keyCode === KEY_UP_ARROW) {
             // handled in keyHeld() because the response feels faster and it works with repeated
             // events if the user holds the key for a longer period
@@ -5384,7 +5552,11 @@ typedArrayTags[weakMapTag] = false;
           this.setData(options.data || null, { triggerChange: false });
         }
 
-        this.el.setAttribute('tabindex', options.tabIndex || 0);
+        // Keep the wrapper out of the natural tab order by default. The actual input
+        // inside the widget is the stable sequential focus target; making the wrapper
+        // tabbable creates an extra tab stop and causes Tab to cycle through wrapper,
+        // input, and dropdown state instead of leaving the field cleanly.
+        this.el.setAttribute('tabindex', options.tabIndex !== undefined ? options.tabIndex : -1);
 
         this.events = new EventListener(this.el, this);
         this.events.on({
@@ -5569,7 +5741,7 @@ typedArrayTags[weakMapTag] = false;
      * Opens the dropdown.
      */
         open() {
-          if (this._opening || this.dropdown || !this.triggerEvent('selectivity-opening')) {
+          if (this._opening || this.dropdown || this._tabbingOut || !this.triggerEvent('selectivity-opening')) {
             return;
           }
 
@@ -5911,6 +6083,24 @@ typedArrayTags[weakMapTag] = false;
        _keydown(event) {
         if ((event.key === 'Backspace' || event.keyCode === 8) && this.constructor.name === 'SingleInput') {
           this.clear();
+      } else if (
+        (event.key === 'Tab' || event.keyCode === 9) &&
+        !event.shiftKey &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !this._tabbingOut
+      ) {
+        // Two-step keyboard model so screen readers can announce the field's
+        // label before any options are revealed:
+        //   - Tab while CLOSED -> open the dropdown, keep focus on this field.
+        //   - Tab while OPEN   -> handled by the search input's keyHeld listener
+        //                         (close + advance focus). _tabbingOut, set there,
+        //                         prevents this handler from re-opening on the
+        //                         bubble pass.
+        if (!this.dropdown && this.enabled && this.options.showDropdown !== false) {
+          event.preventDefault();
+          this.open();
+        }
       }
     },
 
@@ -6203,6 +6393,13 @@ typedArrayTags[weakMapTag] = false;
             extraClass += ' has-search-input';
 
             const placeholder = options.searchInputPlaceholder;
+            // The search input keeps its natural tab order (no tabindex attribute)
+            // so that when the dropdown is open and the user presses Tab, the browser
+            // advances focus past the widget to the next tabbable element in the
+            // document — instead of falling back to the wrapper's main input (which
+            // is what happens with tabindex="-1" because Chrome's sequential focus
+            // navigation skips tabindex="-1" and resolves to the next tabbable inside
+            // the same shadow scope, trapping focus on the same widget).
             searchInput =
                 `${'<div class="selectivity-search-input-container">' +
                 '<input type="text" class="selectivity-search-input"'}${
