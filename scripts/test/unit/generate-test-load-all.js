@@ -34,10 +34,12 @@ const banner = (pkg) => `/**
  * Test files are imported sequentially (never in parallel) via top-level await, so Mocha registers
  * every suite in a stable order before the run starts — Web Test Runner's mocha autorun awaits this
  * module before calling mocha.run(). Each import is wrapped in try/catch: a single file that fails to
- * import (syntax / bad import) is logged with its path via [test-load] and no longer takes down the
- * whole package suite — the remaining files still load and run. Before each import the file path is
- * published on globalThis.__NX_CURRENT_TEST_FILE__ so test/setup.js can attribute each suite (and any
- * hang) to it.
+ * import (syntax / bad import) is logged with its path via [test-load] so it no longer takes down the
+ * whole package suite — the remaining files still load and run. To keep this safe for CI, any import
+ * failure is also re-surfaced as a failing Mocha test (see below), so a broken/missing suite makes the
+ * run exit non-zero instead of passing green while silently skipped. Before each import the file path
+ * is published on globalThis.__NX_CURRENT_TEST_FILE__ so test/setup.js can attribute each suite (and
+ * any hang) to it.
  */
 
 import '../../test/setup.js';
@@ -47,6 +49,8 @@ const loader = (imports) => `const testFiles = [
 ${imports.map((p) => `  './${p}',`).join('\n')}
 ];
 
+const failedImports = [];
+
 /* eslint-disable no-await-in-loop */
 for (const testFile of testFiles) {
   globalThis.__NX_CURRENT_TEST_FILE__ = testFile;
@@ -55,10 +59,24 @@ for (const testFile of testFiles) {
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(\`[test-load] FAILED to import \${testFile}:\`, (error && error.stack) || error);
+    failedImports.push({ testFile, error });
   }
 }
 globalThis.__NX_CURRENT_TEST_FILE__ = undefined;
 /* eslint-enable no-await-in-loop */
+
+// A swallowed import failure must not let the run pass silently: re-surface each one as a failing
+// Mocha test so Web Test Runner exits non-zero and the missing/invalid suite is reported instead of
+// skipped (its coverage is still lost, but the failure is now impossible to overlook in CI).
+if (failedImports.length > 0) {
+  suite('load-all-tests: failed suite imports', () => {
+    failedImports.forEach(({ testFile, error }) => {
+      test(\`imports \${testFile}\`, () => {
+        throw error instanceof Error ? error : new Error(\`Failed to import \${testFile}: \${error}\`);
+      });
+    });
+  });
+}
 `;
 
 let total = 0;
