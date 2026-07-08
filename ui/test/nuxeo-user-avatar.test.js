@@ -179,6 +179,10 @@ suite('nuxeo-user-avatar extras', () => {
   });
 
   suite('_lastPart', () => {
+    test('returns undefined for an empty array', () => {
+      expect(el._lastPart([])).to.be.undefined;
+    });
+
     test('returns the only part for a single-element array', () => {
       expect(el._lastPart(['John'])).to.equal('John');
     });
