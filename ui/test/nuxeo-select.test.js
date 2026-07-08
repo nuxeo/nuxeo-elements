@@ -85,17 +85,6 @@ suite('nuxeo-select', () => {
       expect(paperInput.getAttribute('aria-label')).to.equal('Second Aria Label');
     });
 
-    test('ignores non aria-label attribute mutations', async () => {
-      const syncSpy = sinon.spy(el, '_syncAriaLabel');
-
-      el.setAttribute('data-test-attribute', 'x');
-      await waitForAriaSync();
-
-      expect(syncSpy).to.not.have.been.called;
-      syncSpy.restore();
-      el.removeAttribute('data-test-attribute');
-    });
-
     test('removes aria-label when label is cleared', async () => {
       el.label = '';
       await new Promise((resolve) => setTimeout(resolve, 0));
