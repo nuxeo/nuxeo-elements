@@ -20,9 +20,11 @@ import '../nuxeo-pagination-controls.js';
 
 suite('nuxeo-pagination-controls', () => {
   let element;
+  let hadUI;
   let originalUIConfig;
 
   setup(async () => {
+    hadUI = Boolean(Nuxeo.UI);
     originalUIConfig = Nuxeo.UI && Nuxeo.UI.config;
     element = await fixture(
       html`
@@ -32,7 +34,15 @@ suite('nuxeo-pagination-controls', () => {
   });
 
   teardown(() => {
+    if (!hadUI) {
+      delete Nuxeo.UI;
+      return;
+    }
     Nuxeo.UI = Nuxeo.UI || {};
+    if (typeof originalUIConfig === 'undefined') {
+      delete Nuxeo.UI.config;
+      return;
+    }
     Nuxeo.UI.config = originalUIConfig;
   });
 

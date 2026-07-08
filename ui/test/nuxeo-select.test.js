@@ -20,6 +20,12 @@ import '../widgets/nuxeo-select.js';
 
 suite('nuxeo-select', () => {
   let el;
+  const waitForAriaSync = async () => {
+    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  };
 
   setup(async () => {
     el = await fixture(html`
@@ -55,6 +61,28 @@ suite('nuxeo-select', () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
       const paperInput = getPaperInput(el);
       expect(paperInput.getAttribute('aria-label')).to.equal('Updated Label');
+    });
+
+    test('host aria-label attribute takes precedence over label property', async () => {
+      el.label = 'Label Property';
+      el.setAttribute('aria-label', 'Host Aria Label');
+      await waitForAriaSync();
+      const paperInput = getPaperInput(el);
+      expect(paperInput.getAttribute('aria-label')).to.equal('Host Aria Label');
+    });
+
+    test('updates aria-label when host aria-label attribute changes', async () => {
+      el.setAttribute('aria-label', 'First Aria Label');
+      await waitForAriaSync();
+
+      let paperInput = getPaperInput(el);
+      expect(paperInput.getAttribute('aria-label')).to.equal('First Aria Label');
+
+      el.setAttribute('aria-label', 'Second Aria Label');
+      await waitForAriaSync();
+
+      paperInput = getPaperInput(el);
+      expect(paperInput.getAttribute('aria-label')).to.equal('Second Aria Label');
     });
 
     test('removes aria-label when label is cleared', async () => {
