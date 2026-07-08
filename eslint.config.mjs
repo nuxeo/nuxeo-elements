@@ -12,6 +12,7 @@ export default [
     ignores: [
       '**/node_modules/**',
       '**/coverage/**',
+      '**/test/load-all-tests.js',
       'ui/import-href.js',
       'ui/widgets/nuxeo-selectivity.js',
       'ui/viewers/pdfjs/**',

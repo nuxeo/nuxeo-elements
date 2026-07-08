@@ -143,6 +143,85 @@ if (typeof window.suiteTeardown === 'function') {
   });
 }
 
+// --- Hang diagnostics --------------------------------------------------------------------------
+// A test that hangs (a synchronous infinite loop, or an `await` that never resolves under
+// `this.timeout(0)`) never lets Mocha fire its per-test timeout, so the whole run stalls until Web
+// Test Runner's `testsFinishTimeout` kills it — historically with no indication of which test was to
+// blame. Browser console logs cannot help: Web Test Runner buffers them and only flushes them when
+// the session finishes, which never happens during a hang. Instead, at each test boundary we push a
+// tiny breadcrumb straight to a Node dev-server endpoint (see the nuxeo-hang-breadcrumb plugin in
+// web-test-runner.config.mjs). Node records it immediately — even when the browser JS thread is later
+// blocked in a synchronous loop, because the request is dispatched by the browser process — so if the
+// run times out, the last breadcrumb names the file + test that started but never finished.
+
+// Stamp each suite with the source file that registered it. The barrel
+// (<package>/test/load-all-tests.js) sets globalThis.__NX_CURRENT_TEST_FILE__ before importing each
+// test file, so suites created during that import inherit the correct path.
+if (typeof window.suite === 'function' && !window.suite.__nxWrapped) {
+  const _origSuite = window.suite;
+  const _wrappedSuite = function nxSuite(...args) {
+    const created = _origSuite.apply(this, args);
+    try {
+      if (created && created.__nxFile == null) {
+        created.__nxFile = globalThis.__NX_CURRENT_TEST_FILE__;
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    return created;
+  };
+  _wrappedSuite.__nxWrapped = true;
+  if (typeof _origSuite.only === 'function') {
+    _wrappedSuite.only = (...args) => _origSuite.only(...args);
+  }
+  if (typeof _origSuite.skip === 'function') {
+    _wrappedSuite.skip = (...args) => _origSuite.skip(...args);
+  }
+  window.suite = _wrappedSuite;
+}
+
+const _resolveTestFile = (test) => {
+  for (let node = test && test.parent; node; node = node.parent) {
+    if (node.__nxFile) {
+      return node.__nxFile;
+    }
+  }
+  return '(unknown file)';
+};
+
+// Fire-and-forget breadcrumb to the Node side. `keepalive` lets the browser process finish sending
+// even if the page's JS thread blocks immediately afterwards (the synchronous-hang case). A monotonic
+// sequence number lets the Node side tolerate out-of-order delivery (a late `done` from one test must
+// not clear a later test's breadcrumb).
+let _breadcrumbSeq = 0;
+const _sendBreadcrumb = (query) => {
+  try {
+    if (typeof fetch === 'function') {
+      fetch(`/__nx-breadcrumb?${query}`, { method: 'GET', keepalive: true }).catch(() => {});
+    }
+  } catch (_) {
+    /* diagnostics only */
+  }
+};
+
+if (typeof window.setup === 'function') {
+  window.setup(function _recordCurrentTestBreadcrumb() {
+    const test = this && this.currentTest;
+    const file = _resolveTestFile(test);
+    const label = `${file} :: ${test ? test.fullTitle() : '(unknown test)'}`;
+    _breadcrumbSeq += 1;
+    _sendBreadcrumb(`t=${encodeURIComponent(label)}&seq=${_breadcrumbSeq}`);
+  });
+}
+
+// Signal completion once the test (and its teardown chain) finishes. If a test hangs, this never runs
+// for that sequence number, so the Node side reports it on exit.
+if (typeof window.teardown === 'function') {
+  window.teardown(function _clearCurrentTestBreadcrumb() {
+    _sendBreadcrumb(`done=1&seq=${_breadcrumbSeq}`);
+  });
+}
+
 const _shouldSuppressStrayAsyncFailure = () => _mochaStarted && !_testRunning;
 
 const _isBenignNuxeoNetworkFailure = (info) => {

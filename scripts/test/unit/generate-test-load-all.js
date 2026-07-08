@@ -29,10 +29,36 @@ const banner = (pkg) => `/**
  * Sole Web Test Runner entry for the "${pkg}" package (selected via NX_PACKAGE in
  * web-test-runner.config.mjs). Web Test Runner progress shows "1/1 test files"; pass/fail
  * lines are individual Mocha tests. This module imports the shared setup.js then every
- * suite *.test.js in one static graph — see scripts/test/unit/generate-test-load-all.js.
+ * suite *.test.js — see scripts/test/unit/generate-test-load-all.js.
+ *
+ * Test files are imported sequentially (never in parallel) via top-level await, so Mocha registers
+ * every suite in a stable order before the run starts — Web Test Runner's mocha autorun awaits this
+ * module before calling mocha.run(). Each import is wrapped in try/catch: a single file that fails to
+ * import (syntax / bad import) is logged with its path via [test-load] and no longer takes down the
+ * whole package suite — the remaining files still load and run. Before each import the file path is
+ * published on globalThis.__NX_CURRENT_TEST_FILE__ so test/setup.js can attribute each suite (and any
+ * hang) to it.
  */
 
 import '../../test/setup.js';
+`;
+
+const loader = (imports) => `const testFiles = [
+${imports.map((p) => `  './${p}',`).join('\n')}
+];
+
+/* eslint-disable no-await-in-loop */
+for (const testFile of testFiles) {
+  globalThis.__NX_CURRENT_TEST_FILE__ = testFile;
+  try {
+    await import(testFile);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(\`[test-load] FAILED to import \${testFile}:\`, (error && error.stack) || error);
+  }
+}
+globalThis.__NX_CURRENT_TEST_FILE__ = undefined;
+/* eslint-enable no-await-in-loop */
 `;
 
 let total = 0;
@@ -48,12 +74,10 @@ for (const pkg of PACKAGES) {
     seen.add(file.replace(/\\/g, '/'));
   }
 
-  const lines = Array.from(seen)
-    .sort()
-    .map((p) => `import './${p}';`);
+  const lines = Array.from(seen).sort();
 
   const outFile = path.join(testDir, 'load-all-tests.js');
-  fs.writeFileSync(outFile, `${banner(pkg)}${lines.join('\n')}\n`, 'utf8');
+  fs.writeFileSync(outFile, `${banner(pkg)}${loader(lines)}`, 'utf8');
   total += lines.length;
 
   console.log('generate-test-load-all: %d suite imports → %s/test/load-all-tests.js', lines.length, pkg);
