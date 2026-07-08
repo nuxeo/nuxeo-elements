@@ -1,7 +1,7 @@
 # Unit Test Migration: Karma → Web Test Runner
 
 **JIRA**: ELEMENTS-1972 (mirrors WEBUI-2038 in `nuxeo-web-ui`)
-**Branch**: `maintenance-3.1.x` (LTS-2023)
+**Branch**: `lts-2025` (LTS-2025)
 **Reference**: `nuxeo-web-ui` PRs #3209 (LTS-2023) / #3210 (LTS-2025)
 
 ---
