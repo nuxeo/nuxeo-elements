@@ -73,6 +73,64 @@ suite('nuxeo-group-management', () => {
     });
   });
 
+  suite('_computeMissingUsers', () => {
+    test('returns empty array when there are no member ids', () => {
+      expect(el._computeMissingUsers([], [], '', [])).to.deep.equal([]);
+      expect(el._computeMissingUsers(undefined, [], '', [])).to.deep.equal([]);
+    });
+
+    test('returns empty array when the @users response is not loaded', () => {
+      expect(el._computeMissingUsers(['jack'], undefined, '', [])).to.deep.equal([]);
+    });
+
+    test('flags member ids missing from the resolved entries', () => {
+      el.memberUsers = { pageSize: 50, currentPageIndex: 0 };
+      const missing = el._computeMissingUsers(['Administrator', 'jack'], [{ id: 'Administrator' }], '', []);
+      expect(missing).to.have.lengthOf(1);
+      expect(missing[0]).to.include({ id: 'jack', 'entity-type': 'user', _missing: true });
+    });
+
+    test('matches resolved users by properties.username as well as id', () => {
+      el.memberUsers = { pageSize: 50, currentPageIndex: 0 };
+      const missing = el._computeMissingUsers(
+        ['jdoe', 'jack'],
+        [{ id: 'internal-uid', properties: { username: 'jdoe' } }],
+        '',
+        [],
+      );
+      expect(missing.map((u) => u.id)).to.deep.equal(['jack']);
+    });
+
+    test('restricts detection to the current page slice', () => {
+      el.memberUsers = { pageSize: 2, currentPageIndex: 1 };
+      // page 2 covers ids at index 2 and 3: 'ghost' (missing) and 'real2' (resolved)
+      const missing = el._computeMissingUsers(['real0', 'real1', 'ghost', 'real2'], [{ id: 'real2' }], '', []);
+      expect(missing.map((u) => u.id)).to.deep.equal(['ghost']);
+    });
+
+    test('is skipped when a users filter is active', () => {
+      el.memberUsers = { pageSize: 50, currentPageIndex: 0 };
+      expect(el._computeMissingUsers(['Administrator', 'jack'], [{ id: 'Administrator' }], 'ja', [])).to.deep.equal([]);
+    });
+
+    test('is skipped when a column sort is active', () => {
+      el.memberUsers = { pageSize: 50, currentPageIndex: 0 };
+      expect(
+        el._computeMissingUsers(['Administrator', 'jack'], [{ id: 'Administrator' }], '', [
+          { path: 'lastName', direction: 'asc' },
+        ]),
+      ).to.deep.equal([]);
+    });
+  });
+
+  suite('_noMemberUsers', () => {
+    test('true only when there are neither resolved nor missing users', () => {
+      expect(el._noMemberUsers([], [])).to.be.true;
+      expect(el._noMemberUsers([], [{ id: 'jack' }])).to.be.false;
+      expect(el._noMemberUsers([{ id: 'a' }], [])).to.be.false;
+    });
+  });
+
   suite('_fetch', () => {
     test('loads group context when groupname set', async () => {
       sinon.stub(el.$.request, 'get').returns(Promise.resolve());
@@ -233,6 +291,21 @@ suite('nuxeo-group-management', () => {
       expect(el.$.editRequest.put).to.have.been.calledOnce;
       expect(el._fetchUsers).to.have.been.calledOnce;
       expect(el._fromDelete).to.be.true;
+      el.$.editRequest.put.restore();
+      el._fetchUsers.restore();
+    });
+
+    test('does not trigger the previous-page heuristic when removing a missing user', async () => {
+      sinon.stub(el.$.editRequest, 'put').returns(Promise.resolve());
+      sinon.spy(el, '_fetchUsers');
+      el.group = { memberUsers: ['Administrator', 'jack'], memberGroups: [] };
+      el._removedMember = { id: 'jack', 'entity-type': 'user', _missing: true };
+      el._removeMember();
+      await flush();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(el.group.memberUsers).to.deep.equal(['Administrator']);
+      expect(el._fromDelete).to.be.false;
+      expect(el._fetchUsers).to.have.been.calledOnce;
       el.$.editRequest.put.restore();
       el._fetchUsers.restore();
     });
