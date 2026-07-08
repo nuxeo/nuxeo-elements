@@ -186,7 +186,7 @@ import '../nuxeo-icons.js';
           if (parts.length <= 1) {
             return parts[0] ? parts[0].charAt(0) : '';
           }
-          return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`;
+          return `${parts[0].charAt(0)}${parts.at(-1).charAt(0)}`;
         }
       }
       const parts = (this._name(user) || '')
@@ -196,7 +196,7 @@ import '../nuxeo-icons.js';
       if (parts.length <= 1) {
         return parts[0] ? parts[0].charAt(0) : '';
       }
-      return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`;
+      return `${parts[0].charAt(0)}${parts.at(-1).charAt(0)}`;
     }
 
     _email(user) {
