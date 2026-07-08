@@ -69,6 +69,62 @@ const suppressStrayUncaught = !verbose && !singleFileRun;
 // and the runner uses concurrency: 1.
 let suppressNextStrayUncaught = false;
 
+// Hang diagnostics. test/setup.js pushes a breadcrumb to /__nx-breadcrumb at each test boundary:
+// `t=<label>&seq=<n>` when a test starts, `done=1&seq=<n>` when it finishes. These fire-and-forget
+// requests can arrive out of order, so a monotonic per-test sequence number is used instead of raw
+// arrival order: the started test with the highest seq that has no matching (or later) `done` is the
+// one that never finished — the hang culprit. Browser console logs cannot be used here: Web Test
+// Runner buffers them and only flushes on session finish, which never happens during a hang. The
+// dev-server endpoint records each breadcrumb the moment the browser process sends it, even when the
+// page's JS thread is blocked in a synchronous loop.
+let latestStartedSeq = -1;
+let latestStartedLabel = null;
+let maxFinishedSeq = -1;
+
+// Set true only when Web Test Runner reports that a session hit testsStartTimeout / testsFinishTimeout
+// (the error surfaces on session.errors in the reporter hooks below, for both synchronous-loop and
+// never-resolving-await hangs). Gating the exit report on this avoids a false positive when the very
+// last test's fire-and-forget `done` beacon is lost as the browser page is torn down on a clean run.
+let timedOut = false;
+
+const sessionsTimedOut = (sessions) =>
+  (sessions || []).some((session) =>
+    (session.errors || []).some((error) => /did not finish within|did not start after/.test((error && error.message) || '')),
+  );
+
+// Dev-server endpoint that receives the hang-diagnostics breadcrumbs (see test/setup.js).
+const breadcrumbPlugin = {
+  name: 'nuxeo-hang-breadcrumb',
+  serve(context) {
+    if (context.path !== '/__nx-breadcrumb') {
+      return undefined;
+    }
+    const seq = Number(context.query && context.query.seq);
+    if (Number.isFinite(seq)) {
+      if (context.query.done != null) {
+        maxFinishedSeq = Math.max(maxFinishedSeq, seq);
+      } else if (typeof context.query.t === 'string' && seq > latestStartedSeq) {
+        latestStartedSeq = seq;
+        latestStartedLabel = context.query.t;
+      }
+    }
+    return { body: '', type: 'js' };
+  },
+};
+
+// Backstop hang reporter. Runs on process exit (after all Web Test Runner output) so the hint is the
+// last thing shown. Reports only on an actual timeout and when a test started but never finished (its
+// seq is higher than the highest finished seq), so clean runs print nothing.
+process.on('exit', () => {
+  if (timedOut && latestStartedLabel != null && latestStartedSeq > maxFinishedSeq) {
+    console.error(
+      `\n[hang-watchdog] The run timed out. The last test that STARTED but never completed was:\n` +
+        `    ${latestStartedLabel}\n` +
+        `This is the most likely cause of the hang/timeout — fix or quarantine that test file, then re-run.\n`,
+    );
+  }
+});
+
 /**
  * Wraps the default WTR reporter to suppress the built-in "Code coverage: X %" line.
  * Our inject-zero-coverage.js post-run script prints the authoritative number instead.
@@ -100,6 +156,24 @@ function noCoverageSummaryReporter() {
     getTestProgress(args) {
       const lines = inner.getTestProgress(args);
       return lines.filter((line) => !/Code coverage:|coverage report at/.test(line));
+    },
+    onTestRunFinished(args) {
+      if (sessionsTimedOut(args && args.sessions)) {
+        timedOut = true;
+      }
+      if (typeof inner.onTestRunFinished === 'function') {
+        return inner.onTestRunFinished(args);
+      }
+      return undefined;
+    },
+    stop(args) {
+      if (sessionsTimedOut(args && args.sessions)) {
+        timedOut = true;
+      }
+      if (typeof inner.stop === 'function') {
+        return inner.stop(args);
+      }
+      return undefined;
     },
   };
 }
@@ -133,6 +207,7 @@ export default {
   rootDir: process.cwd(),
   plugins: [
     nuxeoTestFallbackPlugin(),
+    breadcrumbPlugin,
     // Istanbul instrumentation (only when --coverage) — instruments app source files so function
     // bodies get accurate hit/miss counting (unlike V8 which inflates coverage for Polymer declarations).
     ...(coverageEnabled
