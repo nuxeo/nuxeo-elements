@@ -178,6 +178,17 @@ suite('nuxeo-user-avatar extras', () => {
     });
   });
 
+  suite('_lastPart', () => {
+    test('returns the only part for a single-element array', () => {
+      expect(el._lastPart(['John'])).to.equal('John');
+    });
+
+    test('returns the last part for multiple elements', () => {
+      expect(el._lastPart(['John', 'Paul'])).to.equal('Paul');
+      expect(el._lastPart(['First', 'Middle', 'Last'])).to.equal('Last');
+    });
+  });
+
   suite('_initials', () => {
     test('returns first and last name initials for multi-part names', () => {
       const u = {
