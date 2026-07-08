@@ -211,6 +211,7 @@
   "groupManagement.removedUserFromGroup": "{0} was removed from the group.",
   "groupManagement.removeFrom": "Remove from '{0}' group",
   "groupManagement.removeUserFromGroup.confirm": "Do you really want to remove {0} from this group?",
+  "groupManagement.userNotFound": "This user no longer exists in the user directory.",
   "groupManagement.users.heading": "Users",
   "htmlEditor.align.center": "Align center",
   "htmlEditor.align.left": "Align left",
