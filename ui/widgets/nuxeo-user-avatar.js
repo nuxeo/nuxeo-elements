@@ -174,6 +174,9 @@ import '../nuxeo-icons.js';
     }
 
     _lastPart(parts) {
+      if (!parts.length) {
+        return undefined;
+      }
       let last = parts[0];
       for (let i = 1; i < parts.length; i++) {
         last = parts[i];
