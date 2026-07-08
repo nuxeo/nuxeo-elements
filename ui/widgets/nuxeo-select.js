@@ -269,11 +269,25 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
         this._resizeObserver = new ResizeObserver(() => this._resize());
       }
       this._resizeObserver.observe(this);
+      if (!this._ariaLabelObserver) {
+        this._ariaLabelObserver = new MutationObserver((mutations) => {
+          if (mutations.some((mutation) => mutation.attributeName === 'aria-label')) {
+            this._syncAriaLabel();
+          }
+        });
+      }
+      this._ariaLabelObserver.observe(this, {
+        attributes: true,
+        attributeFilter: ['aria-label'],
+      });
     }
 
     disconnectedCallback() {
       super.disconnectedCallback();
       this._resizeObserver.unobserve(this);
+      if (this._ariaLabelObserver) {
+        this._ariaLabelObserver.disconnect();
+      }
       this._detachDropdownTabHandler();
     }
 

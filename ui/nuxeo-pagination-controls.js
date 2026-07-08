@@ -134,7 +134,7 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
             disabled$="[[_isFirst(page)]]"
           >
           </paper-icon-button>
-          <div class="controls" aria-label$="[[i18n('paginationControls.pageInfo', page, numberOfPages)]]">
+          <div class="controls" role="group" aria-label$="[[i18n('paginationControls.pageInfo', page, numberOfPages)]]">
             <div class="sr-only" role="status" aria-live="polite" aria-atomic="true">
               [[i18n('paginationControls.pageInfo', page, numberOfPages)]]
             </div>
@@ -162,7 +162,7 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
             title="[[i18n('paginationControls.nextPage')]]"
             aria-label$="[[i18n('paginationControls.nextPage')]]"
             on-click="_next"
-            disabled$="[[_isLast(page, numberOfPages)]]"
+            disabled$="[[_isLast(page)]]"
           >
           </paper-icon-button>
           <paper-icon-button
@@ -171,7 +171,7 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
             title="[[i18n('paginationControls.lastPage')]]"
             aria-label$="[[i18n('paginationControls.lastPage')]]"
             on-click="_last"
-            disabled$="[[_isLast(page, numberOfPages)]]"
+            disabled$="[[_isLast(page)]]"
           >
           </paper-icon-button>
         </nav>
