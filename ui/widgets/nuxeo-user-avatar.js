@@ -186,7 +186,7 @@ import '../nuxeo-icons.js';
           if (parts.length <= 1) {
             return parts[0] ? parts[0].charAt(0) : '';
           }
-          const last = parts.slice(-1)[0];
+          const last = parts[parts.length - 1]; // NOSONAR - avoid Array.at() for older browsers
           return `${parts[0].charAt(0)}${last.charAt(0)}`;
         }
       }
@@ -197,7 +197,7 @@ import '../nuxeo-icons.js';
       if (parts.length <= 1) {
         return parts[0] ? parts[0].charAt(0) : '';
       }
-      const last = parts.slice(-1)[0];
+      const last = parts[parts.length - 1]; // NOSONAR - avoid Array.at() for older browsers
       return `${parts[0].charAt(0)}${last.charAt(0)}`;
     }
 
