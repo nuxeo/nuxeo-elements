@@ -6,7 +6,8 @@ applyTo: "**/test/**/*.test.js,**/test/**/*.js,test/**"
 
 ## Framework
 
-Karma + Mocha + Chai + Sinon with `@nuxeo/testing-helpers`.
+`@web/test-runner` + Mocha + Chai + Sinon with `@nuxeo/testing-helpers`. Runs in a bundled
+Puppeteer Chromium (installed by the `pretest` hook).
 
 ## Globals
 
@@ -43,8 +44,14 @@ suite('nuxeo-my-element', () => {
 ## Running
 
 ```bash
-npm test              # All packages
+npm test              # All packages (core, ui, dataviz)
 npm run test:core     # Core only
 npm run test:ui       # UI only
 npm run test:dataviz  # Dataviz only
 ```
+
+Each package runs separately via the `NX_PACKAGE` env var. `web-test-runner` loads one
+generated barrel per package — `<package>/test/load-all-tests.js` (gitignored). After adding a
+new test file, run `npm run update-test-load-all` (or `npm test`) to refresh the barrel.
+Coverage (Istanbul via `rollup-plugin-istanbul`) is written to `coverage/<package>/lcov.info`;
+`scripts/test/unit/inject-zero-coverage.js` appends 0% records for sources no test loaded.

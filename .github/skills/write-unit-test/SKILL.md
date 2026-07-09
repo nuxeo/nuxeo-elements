@@ -2,14 +2,14 @@
 name: write-unit-test
 description: Generate unit tests for Nuxeo Elements Polymer components. Use this skill when
   the user wants to write tests, add test coverage, create test files, or test a web
-  component. Generates Karma + Mocha + Chai + Sinon test suites using @nuxeo/testing-helpers
+  component. Generates @web/test-runner + Mocha + Chai + Sinon test suites using @nuxeo/testing-helpers
   with proper fixtures, mocks, and assertions. Also use when the user mentions testing
   an element, verifying behavior, or checking component functionality.
 ---
 
 # Write Unit Test
 
-Generate unit test files for Nuxeo Elements Polymer components using Karma + Mocha + Chai + Sinon.
+Generate unit test files for Nuxeo Elements Polymer components using @web/test-runner + Mocha + Chai + Sinon.
 
 ## Workflow
 
@@ -17,6 +17,10 @@ Generate unit test files for Nuxeo Elements Polymer components using Karma + Moc
 2. Determine what to test: properties, methods, events, DOM rendering, user interactions
 3. Generate the test file following the patterns below
 4. Run `npm test` to verify (or `npm run test:core`, `npm run test:ui`, `npm run test:dataviz`)
+
+> The test runner loads one generated barrel per package (`<package>/test/load-all-tests.js`).
+> After creating a new test file, run `npm run update-test-load-all` (or `npm test`, which
+> regenerates it automatically) so the new suite is picked up.
 
 ## File Location
 
