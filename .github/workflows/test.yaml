@@ -47,8 +47,6 @@ jobs:
           npm run bootstrap
 
       - name: Test
-        # Disabling SauceLabs. Karma is not compatible with SauceLabs v4
-        # env:
-        #   SAUCE_USERNAME: nuxeo-elements
-        #   SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+        # Unit tests run on @web/test-runner with a bundled Puppeteer Chromium
+        # (installed by the `pretest` npm hook). No SauceLabs / system Chrome needed.
         run: npm run test
