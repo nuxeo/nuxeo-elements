@@ -138,7 +138,9 @@ const FOCUS_SUPPRESSION_MS = 200;
 
         /**
          * When true, hides the format placeholder shown inside the date input field.
-         * Can be controlled via the `nuxeo.ui.date.picker.hide.placeholder` property in nuxeo.conf.
+         * This property is typically set by the parent `nuxeo-date-picker`, which reads
+         * it from `Nuxeo.UI.config.datePicker.hidePlaceholder` (driven by the
+         * `nuxeo.ui.date.picker.hide.placeholder` property in nuxeo.conf).
          */
         hidePlaceholder: {
           type: Boolean,
