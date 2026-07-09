@@ -6969,4 +6969,55 @@ suite('custom-date-picker accessibility', () => {
       closeStub.restore();
     });
   });
+
+  suite('window keydown capture listener lifecycle', () => {
+    let el;
+    let addSpy;
+    let removeSpy;
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+      addSpy = sinon.spy(window, 'addEventListener');
+      removeSpy = sinon.spy(window, 'removeEventListener');
+    });
+
+    teardown(() => {
+      addSpy.restore();
+      removeSpy.restore();
+      if (el._isCalendarOpen) {
+        el._closeCalendar();
+      }
+    });
+
+    test('_openCalendar registers the keydown capture listener on window', async () => {
+      el._openCalendar();
+      await flush();
+      const call = addSpy.getCalls().find((c) => c.args[0] === 'keydown' && c.args[2] === true);
+      expect(call, 'window.addEventListener("keydown", ..., true) should be called').to.exist;
+      expect(call.args[1]).to.equal(el._boundEscapeCapture);
+    });
+
+    test('_closeCalendar removes the keydown capture listener from window', async () => {
+      el._openCalendar();
+      await flush();
+      removeSpy.resetHistory();
+      el._closeCalendar();
+      const call = removeSpy.getCalls().find((c) => c.args[0] === 'keydown' && c.args[2] === true);
+      expect(call, 'window.removeEventListener("keydown", ..., true) should be called').to.exist;
+      expect(call.args[1]).to.equal(el._boundEscapeCapture);
+    });
+
+    test('disconnectedCallback removes the keydown capture listener when calendar is open', async () => {
+      el._openCalendar();
+      await flush();
+      removeSpy.resetHistory();
+      el.disconnectedCallback();
+      const call = removeSpy.getCalls().find((c) => c.args[0] === 'keydown' && c.args[2] === true);
+      expect(call, 'disconnectedCallback should remove window keydown capture listener').to.exist;
+      expect(call.args[1]).to.equal(el._boundEscapeCapture);
+    });
+  });
 });
