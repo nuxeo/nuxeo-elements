@@ -26,15 +26,18 @@ import '../nuxeo-user-group-management/nuxeo-user-management.js';
 
 suite('nuxeo-user-management', () => {
   let el;
+  let groupTagSandbox;
 
   suiteSetup(() => {
-    sinon.stub(Nuxeo.GroupTag.prototype, '_name').callsFake(() => '');
-    sinon.stub(Nuxeo.GroupTag.prototype, '_label').callsFake(() => '');
+    // Use a dedicated sandbox so these cross-test prototype stubs survive the global
+    // `sinon.restore()` that the shared test/setup.js runs after every test.
+    groupTagSandbox = sinon.createSandbox();
+    groupTagSandbox.stub(Nuxeo.GroupTag.prototype, '_name').callsFake(() => '');
+    groupTagSandbox.stub(Nuxeo.GroupTag.prototype, '_label').callsFake(() => '');
   });
 
   suiteTeardown(() => {
-    Nuxeo.GroupTag.prototype._name.restore();
-    Nuxeo.GroupTag.prototype._label.restore();
+    groupTagSandbox.restore();
   });
 
   setup(async () => {

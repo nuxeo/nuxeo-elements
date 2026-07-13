@@ -97,7 +97,6 @@ export const RoutingBehavior = {
             return baseUrl + route;
           }
           if (!this.router[route]) {
-            console.error(`Could not generate a url for route ${route}`);
             return;
           }
           path = this._generateUrl(baseUrl, this.router[route].apply(this, params));

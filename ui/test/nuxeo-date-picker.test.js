@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, html } from '@nuxeo/testing-helpers';
+import { fixture, flush, html } from '@nuxeo/testing-helpers';
 import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import '../widgets/nuxeo-date-picker.js';
 
@@ -270,6 +270,68 @@ suite('nuxeo-date-picker – extra branches', () => {
       el.required = true;
       el.value = '2024-06-15T00:00:00.000Z';
       expect(el._getValidity()).to.be.true;
+    });
+  });
+});
+// Covers the staged accessible-name work in ui/widgets/nuxeo-date-picker.js:
+//   - new _computeDateAriaLabel(label) helper
+//   - aria-label on the inner <custom-date-picker> bound from the trimmed label
+//     (replaces the previous aria-labelledby="date_label" which could not be
+//     resolved across the inner element's shadow boundary).
+suite('nuxeo-date-picker accessibility', () => {
+  suite('_computeDateAriaLabel', () => {
+    let el;
+
+    setup(async () => {
+      el = await fixture(html`
+        <nuxeo-date-picker></nuxeo-date-picker>
+      `);
+    });
+
+    test('returns the trimmed label', () => {
+      expect(el._computeDateAriaLabel('Created at')).to.equal('Created at');
+      expect(el._computeDateAriaLabel('  Created at  ')).to.equal('Created at');
+    });
+
+    test('returns null when the label is empty, missing, or whitespace', () => {
+      expect(el._computeDateAriaLabel('')).to.be.null;
+      expect(el._computeDateAriaLabel('   ')).to.be.null;
+      expect(el._computeDateAriaLabel(null)).to.be.null;
+      expect(el._computeDateAriaLabel(undefined)).to.be.null;
+    });
+  });
+
+  suite('aria-label on the inner picker', () => {
+    test('sets aria-label from the label property', async () => {
+      const el = await fixture(html`
+        <nuxeo-date-picker label="Created at"></nuxeo-date-picker>
+      `);
+      await flush();
+
+      expect(el.$.date.getAttribute('aria-label')).to.equal('Created at');
+    });
+
+    test('omits aria-label when no label is provided', async () => {
+      const el = await fixture(html`
+        <nuxeo-date-picker></nuxeo-date-picker>
+      `);
+      await flush();
+
+      // Polymer drops the attribute when the bound value is null.
+      expect(el.$.date.hasAttribute('aria-label')).to.be.false;
+    });
+
+    test('updates aria-label when the label changes', async () => {
+      const el = await fixture(html`
+        <nuxeo-date-picker label="Initial"></nuxeo-date-picker>
+      `);
+      await flush();
+      expect(el.$.date.getAttribute('aria-label')).to.equal('Initial');
+
+      el.label = 'Updated';
+      await flush();
+
+      expect(el.$.date.getAttribute('aria-label')).to.equal('Updated');
     });
   });
 });
