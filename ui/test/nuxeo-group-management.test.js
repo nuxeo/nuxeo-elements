@@ -310,6 +310,22 @@ suite('nuxeo-group-management', () => {
       el._fetchUsers.restore();
     });
 
+    test('does not splice when the removed id is absent (guards against dropping the last member)', async () => {
+      sinon.stub(el.$.editRequest, 'put').returns(Promise.resolve());
+      el.group = { memberUsers: ['a', 'b'], memberGroups: ['x', 'y'] };
+      el._removedMember = { id: 'missing', 'entity-type': 'user' };
+      el._removeMember();
+      await flush();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(el.group.memberUsers).to.deep.equal(['a', 'b']);
+      el._removedMember = { id: 'missing', 'entity-type': 'group' };
+      el._removeMember();
+      await flush();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(el.group.memberGroups).to.deep.equal(['x', 'y']);
+      el.$.editRequest.put.restore();
+    });
+
     test('removes group reference', async () => {
       sinon.stub(el.$.editRequest, 'put').returns(Promise.resolve());
       sinon.spy(el, '_fetchGroups');

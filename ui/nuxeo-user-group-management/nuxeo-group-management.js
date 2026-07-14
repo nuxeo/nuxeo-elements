@@ -871,13 +871,17 @@ import '../nuxeo-sort-styles.js';
         case 'user':
           if (this.group.memberUsers) {
             idx = this.group.memberUsers.indexOf(this._removedMember.id);
-            this.group.memberUsers.splice(idx, 1);
+            if (idx > -1) {
+              this.group.memberUsers.splice(idx, 1);
+            }
           }
           break;
         case 'group':
           if (this.group.memberGroups) {
             idx = this.group.memberGroups.indexOf(this._removedMember.id);
-            this.group.memberGroups.splice(idx, 1);
+            if (idx > -1) {
+              this.group.memberGroups.splice(idx, 1);
+            }
           }
           break;
         default:
