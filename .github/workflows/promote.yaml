@@ -41,9 +41,9 @@ jobs:
       # Extract VERSION from the new format 2025.x.0-rc.y to get 2025.x.0
       - run: echo "VERSION=$(echo '${{ github.event.inputs.version }}' | sed -E 's/-rc\.[0-9]+//')" >> $GITHUB_ENV
 
-      - env:
+      - name: Update Nuxeo Elements version to ${{ env.VERSION }}
+        env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-        name: Update Nuxeo Elements version to ${{ env.VERSION }}
         run: |
           npm version $VERSION --no-git-tag-version
           npx ${{ env.LERNA }} version $VERSION --no-push --force-publish --no-git-tag-version --yes
@@ -93,9 +93,9 @@ jobs:
       - if: ${{ github.event.inputs.referenceBranch != 'master' }}
         run: echo "NEW_VERSION=$(npx semver -i minor $VERSION)-SNAPSHOT" >> $GITHUB_ENV
 
-      - env:
+      - name: Align ${{ github.event.inputs.referenceBranch }} branch on next version ${{ env.NEW_VERSION }}
+        env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-        name: Align ${{ github.event.inputs.referenceBranch }} branch on next version ${{ env.NEW_VERSION }}
         run: |
           npm version $NEW_VERSION --no-git-tag-version
           npx ${{ env.LERNA }} version $NEW_VERSION --no-push --force-publish --no-git-tag-version --yes
