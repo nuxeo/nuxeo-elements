@@ -12,6 +12,7 @@ export default [
     ignores: [
       '**/node_modules/**',
       '**/coverage/**',
+      '**/test/load-all-tests.js',
       'ui/import-href.js',
       'ui/widgets/nuxeo-selectivity.js',
       'ui/viewers/pdfjs/**',
@@ -43,7 +44,14 @@ export default [
       'import/no-extraneous-dependencies': [
         'error',
         {
-          devDependencies: ['**/test/**/*.js', '**/stories/**/*.js', '**/*.config.js', '**/*.config.mjs', '**/*.conf.js'],
+          devDependencies: [
+            '**/test/**/*.js',
+            '**/stories/**/*.js',
+            '**/*.config.js',
+            '**/*.config.mjs',
+            '**/*.conf.js',
+            'scripts/**',
+          ],
         },
       ],
     },
@@ -160,9 +168,9 @@ export default [
     },
   },
 
-  // CommonJS config files (Node.js context)
+  // CommonJS scripts and config files (Node.js context)
   {
-    files: ['karma.conf.js', 'prettier.config.js', 'scripts/**/*.js'],
+    files: ['prettier.config.js', 'scripts/**/*.js'],
     languageOptions: {
       sourceType: 'commonjs',
       globals: {
@@ -171,6 +179,22 @@ export default [
     },
     rules: {
       strict: 'off',
+      'no-console': 'off',
+    },
+  },
+
+  // ESM config files / dev-server plugins (Node.js context)
+  {
+    files: ['web-test-runner.config.mjs', 'scripts/**/*.mjs'],
+    languageOptions: {
+      sourceType: 'module',
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      strict: 'off',
+      'no-console': 'off',
     },
   },
 
