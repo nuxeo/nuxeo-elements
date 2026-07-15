@@ -9,6 +9,7 @@ You may obtain a copy of the License at
     http://www.apache.org/licenses/LICENSE-2.0
 */
 import { fixture, html } from '@nuxeo/testing-helpers';
+import { flush } from '@polymer/polymer/lib/utils/flush.js';
 import '../nuxeo-document-permissions/nuxeo-document-permissions.js';
 
 suite('nuxeo-document-permissions extras', () => {
@@ -194,6 +195,28 @@ suite('nuxeo-document-permissions extras', () => {
       el.unblockInheritance();
       expect(opSpy).to.have.been.called;
       opSpy.restore();
+    });
+  });
+
+  suite('inheritance action aria labels', () => {
+    setup(() => {
+      el.doc = { uid: 'doc-1', contextParameters: { permissions: ['Read', 'WriteSecurity'] } };
+    });
+
+    test('block button binds the block aria label', () => {
+      el.inheritedAces = [{ id: 'ace-1' }];
+      flush();
+      const blockButton = el.shadowRoot.querySelector('#block');
+      expect(blockButton).to.exist;
+      expect(blockButton.getAttribute('aria-label')).to.equal(el.i18n('documentPermissions.block.ariaLabel'));
+    });
+
+    test('unblock button binds the unblock aria label', () => {
+      el.inheritedAces = [];
+      flush();
+      const unblockButton = el.shadowRoot.querySelector('#unblock');
+      expect(unblockButton).to.exist;
+      expect(unblockButton.getAttribute('aria-label')).to.equal(el.i18n('documentPermissions.unblock.ariaLabel'));
     });
   });
 });
