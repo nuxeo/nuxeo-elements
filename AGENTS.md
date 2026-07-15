@@ -127,9 +127,14 @@ Push to `lts-2025` triggers: **lint → test → storybook → build (tag + publ
 
 PRs run lint and test workflows automatically.
 
+- CI uses `npm ci --ignore-scripts` for the main deterministic, lockfile-based install. `--ignore-scripts` skips dependency lifecycle hooks for supply-chain safety; the browser for unit tests is provisioned separately by the `pretest` hook, and native deps (rollup, nx, esbuild) resolve via `optionalDependencies`. (The `sonar.yaml` workflow additionally runs a targeted `npm install --no-package-lock --no-save --ignore-scripts` to pull the latest `@nuxeo` RC packages for analysis.)
+- `package-lock.json` is committed and must be kept in sync with `package.json`.
+- The version-bump workflows (`main.yaml`, `promote.yaml`) run `npm install --package-lock-only` after bumping versions so the committed lockfile stays consistent.
+
 ## Common Pitfalls
 
 - This is a **library** repo — there is no bundler or dev server. Components are consumed via npm by `nuxeo-web-ui`.
+- Always commit `package-lock.json` changes when dependencies change. CI relies on it for `npm ci`.
 - `@nuxeo` npm packages come from `https://packages.nuxeo.com/repository/npm-public/`, not npmjs.org.
 - The `ui/` package has its own `eslint.config.mjs` in addition to the root config.
 - `ui/viewers/pdfjs/` and `ui/js-interpreter/` are vendored/forked — do not modify.

@@ -226,6 +226,8 @@ GitHub Actions run on every push to `lts-2025` and on PRs:
 3. **Storybook** — Build documentation
 4. **Publish** — Publish packages to npm registry (only after all above pass)
 
+CI workflows use `npm ci --ignore-scripts` for deterministic, lockfile-based installs from `package-lock.json` (the `--ignore-scripts` flag hardens against supply-chain risks; the unit-test browser is installed via the `pretest` hook). Always commit lockfile changes when dependencies are added or updated.
+
 ## npm Registry
 
 `@nuxeo` scoped packages are published to and installed from:

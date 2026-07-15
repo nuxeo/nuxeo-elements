@@ -42,9 +42,7 @@ jobs:
       - name: Install
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-        run: |
-          npm install --no-package-lock
-          npm run bootstrap
+        run: npm ci --ignore-scripts
 
       - name: Test
         # Unit tests run on @web/test-runner with a bundled Puppeteer Chromium
