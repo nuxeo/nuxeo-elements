@@ -199,6 +199,52 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     expect(provider.uploader).to.be.null;
   });
 
+  test('cancelBatch() returns a Promise that resolves after uploader.cancel() completes', async () => {
+    const cancel = sinon.stub().resolves();
+    provider.uploader = { _batchId: 'b1', cancel };
+    provider.batchId = 'b1';
+    const result = provider.cancelBatch();
+    expect(result).to.be.an.instanceof(Promise);
+    // uploader / batchId are detached synchronously so a fresh batch can start immediately
+    expect(provider.uploader).to.be.null;
+    expect(provider.batchId).to.be.null;
+    await result;
+    expect(cancel).to.have.been.calledOnce;
+  });
+
+  test('cancelBatch() returns a resolved Promise when there is no active uploader', async () => {
+    provider.uploader = null;
+    const result = provider.cancelBatch();
+    expect(result).to.be.an.instanceof(Promise);
+    await result;
+  });
+
+  test('cancelBatch() defers uploader.cancel() until in-flight per-blob POSTs settle', async () => {
+    let resolveInflight;
+    const inflight = new Promise((r) => {
+      resolveInflight = r;
+    });
+    const cancel = sinon.stub().resolves();
+    provider.uploader = { _batchId: 'b1', _promises: [inflight], cancel };
+    provider.batchId = 'b1';
+    const done = provider.cancelBatch();
+    // cancel must NOT be issued while the POST is still in flight
+    await flushAll();
+    expect(cancel).not.to.have.been.called;
+    resolveInflight();
+    await done;
+    expect(cancel).to.have.been.calledOnce;
+  });
+
+  test('cancelBatch() still cancels when an in-flight per-blob POST rejects', async () => {
+    const rejected = Promise.reject(new Error('nope'));
+    const cancel = sinon.stub().resolves();
+    provider.uploader = { _batchId: 'b1', _promises: [rejected], cancel };
+    provider.batchId = 'b1';
+    await provider.cancelBatch();
+    expect(cancel).to.have.been.calledOnce;
+  });
+
   test('upload does nothing when files is null', () => {
     provider.upload(null, sinon.spy());
   });
@@ -229,6 +275,86 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     };
     connection.batchUpload.resolves(uploader);
     provider.upload([fakeFile()], 'not-a-function');
+  });
+
+  test('upload waits for every per-blob POST to settle before calling uploader.done()', async () => {
+    const cb = sinon.spy();
+    let resolveA;
+    let resolveB;
+    const upload = sinon.stub();
+    upload.onCall(0).returns(
+      new Promise((r) => {
+        resolveA = r;
+      }),
+    );
+    upload.onCall(1).returns(
+      new Promise((r) => {
+        resolveB = r;
+      }),
+    );
+    const done = sinon.stub().resolves({ batch: { _batchId: 'b' } });
+    const uploader = { _batchId: 'b', upload, done };
+    connection.batchUpload.resolves(uploader);
+    provider.upload([fakeFile('a.txt'), fakeFile('b.txt')], cb);
+    await flushAll();
+    resolveA({ batch: { _batchId: 'b' }, blob: { fileIdx: 0 } });
+    await flushAll();
+    expect(done).not.to.have.been.called;
+    resolveB({ batch: { _batchId: 'b' }, blob: { fileIdx: 1 } });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(done).to.have.been.calledOnce;
+    expect(cb).to.have.been.calledWith(sinon.match({ type: 'batchFinished', batchId: 'b' }));
+  });
+
+  test('upload emits batchFailed and skips uploader.done() when a per-blob POST rejects', async () => {
+    const cb = sinon.spy();
+    const err = new Error('bad');
+    const upload = sinon.stub();
+    upload.onCall(0).resolves({ batch: { _batchId: 'b' }, blob: { fileIdx: 0 } });
+    upload.onCall(1).rejects(err);
+    const done = sinon.stub().resolves({ batch: { _batchId: 'b' } });
+    const uploader = { _batchId: 'b', upload, done };
+    connection.batchUpload.resolves(uploader);
+    provider.upload([fakeFile('a.txt'), fakeFile('b.txt')], cb);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(cb).to.have.been.calledWith(sinon.match({ type: 'uploadInterrupted', error: err }));
+    expect(cb).to.have.been.calledWith(sinon.match({ type: 'batchFailed', error: err, batchId: 'b' }));
+    expect(done).not.to.have.been.called;
+  });
+
+  test('upload skips batchFinished when the uploader is cleared mid-flight', async () => {
+    const cb = sinon.spy();
+    let resolveUpload;
+    const upload = sinon.stub().returns(
+      new Promise((r) => {
+        resolveUpload = r;
+      }),
+    );
+    const done = sinon.stub().resolves({ batch: { _batchId: 'b' } });
+    const uploader = { _batchId: 'b', upload, done };
+    connection.batchUpload.resolves(uploader);
+    provider.upload([fakeFile()], cb);
+    await flushAll();
+    // Simulate cancelBatch() detaching the uploader while the POST is still pending
+    provider.uploader = null;
+    resolveUpload({ batch: { _batchId: 'b' }, blob: { fileIdx: 0 } });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(done).not.to.have.been.called;
+    expect(cb).not.to.have.been.calledWith(sinon.match({ type: 'batchFinished' }));
+  });
+
+  test('upload emits batchFailed when uploader.done() itself rejects', async () => {
+    const cb = sinon.spy();
+    const doneErr = new Error('done failed');
+    const uploader = {
+      _batchId: 'b',
+      upload: sinon.stub().resolves({ batch: { _batchId: 'b' }, blob: { fileIdx: 0 } }),
+      done: sinon.stub().rejects(doneErr),
+    };
+    connection.batchUpload.resolves(uploader);
+    provider.upload([fakeFile()], cb);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(cb).to.have.been.calledWith(sinon.match({ type: 'batchFailed', error: doneErr, batchId: 'b' }));
   });
 
   test('accepts returns false when file has no mime and no extension match', () => {

@@ -51,25 +51,48 @@ DefaultUploadProvider.prototype._newBatch = function() {
  * when progress is updated, when a file upload ends, and when an upload batch is complete
  * */
 DefaultUploadProvider.prototype.upload = function(files, callback) {
-  if (files) {
-    this._ensureBatch().then(() => {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const blob = new Nuxeo.Blob({ content: file });
-        if (typeof callback === 'function') {
-          callback({ type: 'uploadStarted', file });
-        }
-        this.uploader
-          .upload(blob)
-          .then((result) => {
-            if (!this.batchId) {
-              callback({ type: 'batchStart', batchId: result.batch._batchId });
-            }
-            callback({ type: 'uploadCompleted', fileIdx: result.blob.fileIdx });
-          })
-          .catch((error) => {
-            callback({ type: 'uploadInterrupted', file, error });
-          });
+  if (!files) {
+    return;
+  }
+  this._ensureBatch().then(() => {
+    const uploadPromises = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const blob = new Nuxeo.Blob({ content: file });
+      if (typeof callback === 'function') {
+        callback({ type: 'uploadStarted', file });
+      }
+      const p = this.uploader
+        .upload(blob)
+        .then((result) => {
+          if (!this.batchId) {
+            callback({ type: 'batchStart', batchId: result.batch._batchId });
+          }
+          callback({ type: 'uploadCompleted', fileIdx: result.blob.fileIdx });
+          return { ok: true };
+        })
+        .catch((error) => {
+          callback({ type: 'uploadInterrupted', file, error });
+          // Return (don't re-throw) so the aggregate below waits for every request to
+          // settle instead of short-circuiting on the first failure.
+          return { ok: false, error };
+        });
+      uploadPromises.push(p);
+    }
+    // Wait for every per-blob request to settle (success or failure) BEFORE emitting the
+    // terminal batch event. This prevents callers -- notably cancelBatch() -- from tearing
+    // down the batch while POST /upload/{batchId}/{index} requests are still in flight,
+    // which would otherwise race and produce a server-side NPE in Batch.addFile().
+    Promise.all(uploadPromises).then((results) => {
+      const failure = results.find((r) => !r.ok);
+      const batchId = this.uploader && this.uploader._batchId;
+      if (failure) {
+        callback({ type: 'batchFailed', error: failure.error, batchId });
+        return;
+      }
+      if (!this.uploader) {
+        // Batch was cancelled between the last upload settling and this callback; nothing to finish.
+        return;
       }
       this.uploader
         .done()
@@ -77,23 +100,42 @@ DefaultUploadProvider.prototype.upload = function(files, callback) {
           callback({ type: 'batchFinished', batchId: result.batch._batchId });
         })
         .catch((error) => {
-          callback({ type: 'batchFailed', error, batchId: this.uploader._batchId });
+          callback({ type: 'batchFailed', error, batchId: this.uploader && this.uploader._batchId });
         });
     });
-  }
+  });
 };
 
 /**
  * Cancels the current batch.
+ *
+ * Detaches the local uploader reference immediately (so subsequent uploads start a fresh batch),
+ * but defers the server-side DELETE /upload/{batchId} until every in-flight per-blob POST has
+ * settled. Issuing the DELETE while POSTs are still in flight races them and causes a server-side
+ * NPE in Batch.addFile() when the POSTs arrive after the batch has been dropped.
+ *
+ * @returns {Promise} resolves once the batch DELETE has been issued (or immediately if there is
+ *                    no batch to cancel).
  * */
 DefaultUploadProvider.prototype.cancelBatch = function() {
-  if (this.uploader) {
-    if (this.uploader._batchId) {
-      this.uploader.cancel();
-    }
-    this.uploader = null;
-    this.batchId = null;
+  const uploader = this.uploader;
+  if (!uploader) {
+    return Promise.resolve();
   }
+  this.uploader = null;
+  this.batchId = null;
+  const inFlight =
+    uploader._promises && uploader._promises.length
+      ? Promise.all(
+          uploader._promises.map((p) =>
+            p.then(
+              () => {},
+              () => {},
+            ),
+          ),
+        )
+      : Promise.resolve();
+  return inFlight.then(() => (uploader._batchId ? uploader.cancel() : undefined));
 };
 
 /**
