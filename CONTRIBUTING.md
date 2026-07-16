@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- **Node.js** ≥ 18
+- **Node.js** ≥ 22
 - **npm** (bundled with Node — no yarn or pnpm)
 
 ## Getting Started

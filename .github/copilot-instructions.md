@@ -5,7 +5,7 @@
 Nuxeo Elements is the shared web components library for the Nuxeo content services platform, built with **Polymer 3** (legacy `Polymer({…})` factory pattern and class-based `Nuxeo.Element`). It provides data access, UI, dataviz, and testing components consumed by **Nuxeo Web UI** and third-party applications. Licensed Apache 2.0, owned by Hyland Software.
 
 - **Runtime**: Browser (no server-side JS in production)
-- **Node**: ≥ 18
+- **Node**: ≥ 22
 - **Build**: No bundler (library consumed via npm)
 - **Package manager**: npm (no yarn/pnpm)
 - **Monorepo**: Lerna workspaces (`core`, `ui`, `dataviz`, `testing-helpers`, `storybook`)
