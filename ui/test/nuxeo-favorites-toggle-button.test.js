@@ -144,9 +144,15 @@ suite('nuxeo-favorites-toggle-button extras', () => {
   });
 
   suite('_computeHoverLabel', () => {
-    test('combines doc title and label', () => {
+    test('returns only the action label, not the document title', () => {
       const result = el._computeHoverLabel(false, { title: 'MyDoc' });
-      expect(result).to.include('MyDoc');
+      expect(result).to.not.include('MyDoc');
+      expect(result).to.be.a('string');
+    });
+
+    test('returns the same value as _computeLabel for the given favorite state', () => {
+      expect(el._computeHoverLabel(false, { title: 'MyDoc' })).to.equal(el._computeLabel(false));
+      expect(el._computeHoverLabel(true, { title: 'MyDoc' })).to.equal(el._computeLabel(true));
     });
 
     test('handles null doc gracefully', () => {
@@ -197,5 +203,44 @@ suite('nuxeo-favorites-toggle-button extras', () => {
       });
       window.dispatchEvent(event);
     });
+  });
+});
+
+suite('nuxeo-favorites-toggle-button accessibility', () => {
+  test('host has role="presentation" by default to collapse it out of the a11y tree', async () => {
+    const el = await fixture(
+      html`
+        <nuxeo-favorites-toggle-button></nuxeo-favorites-toggle-button>
+      `,
+    );
+    expect(el.getAttribute('role')).to.equal('presentation');
+  });
+
+  test('host preserves a pre-existing role attribute', async () => {
+    const el = await fixture(
+      html`
+        <nuxeo-favorites-toggle-button role="button"></nuxeo-favorites-toggle-button>
+      `,
+    );
+    expect(el.getAttribute('role')).to.equal('button');
+  });
+
+  test('inner .action wrapper has role="presentation"', async () => {
+    const doc = {
+      'entity-type': 'document',
+      uid: '1',
+      contextParameters: { favorites: { isFavorite: false } },
+      facets: ['CollectionMember'],
+      type: 'File',
+      isVersion: false,
+    };
+    const el = await fixture(
+      html`
+        <nuxeo-favorites-toggle-button .document=${doc}></nuxeo-favorites-toggle-button>
+      `,
+    );
+    const action = el.shadowRoot.querySelector('.action');
+    expect(action).to.exist;
+    expect(action.getAttribute('role')).to.equal('presentation');
   });
 });
