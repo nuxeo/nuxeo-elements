@@ -41,6 +41,12 @@ suite('nuxeo-pdf-viewer', () => {
       expect(iframe.src).to.include('pdfjs/web/viewer.html');
     });
 
+    test('should set a non-empty title attribute on the iframe', () => {
+      const iframe = element.shadowRoot.querySelector('iframe');
+      expect(iframe.hasAttribute('title')).to.be.true;
+      expect(iframe.getAttribute('title')).to.have.length.above(0);
+    });
+
     test('should render with no src without throwing', async () => {
       const elem = await fixture(
         html`
