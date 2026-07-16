@@ -68,6 +68,7 @@ suite('nuxeo-pdf-viewer', () => {
           delete window.nuxeo.I18n.en;
         }
       }
+    });
 
     test('should render with no src without throwing', async () => {
       const elem = await fixture(
