@@ -28,9 +28,6 @@ function DefaultUploadProvider(connection, accept, batchAppend) {
   this.batchAppend = batchAppend;
   this.uploader = null;
   this.batchId = null;
-  // In-flight per-blob upload promises tracked on the provider itself so cancelBatch()
-  // can await them without depending on internal fields of the Nuxeo client uploader.
-  this._inFlight = [];
 }
 
 DefaultUploadProvider.prototype._ensureBatch = function() {
@@ -61,14 +58,25 @@ DefaultUploadProvider.prototype.upload = function(files, callback) {
   // omits the callback or passes a non-function value.
   const cb = typeof callback === 'function' ? callback : () => {};
   this._ensureBatch().then(() => {
+    // Capture the uploader we are about to upload against. If the batch is cancelled
+    // (or replaced) while these POSTs are in flight, `this.uploader` will change and
+    // `isActive()` will return false -- we then silently drop the per-file / terminal
+    // callbacks so the caller does not see spurious `uploadInterrupted` / `batchFailed`
+    // events (e.g. a 408 raised by the server timing out a slow POST after the user
+    // clicked cancel) for a batch they themselves cancelled.
+    const currentUploader = this.uploader;
+    const isActive = () => this.uploader === currentUploader;
     const uploadPromises = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const blob = new Nuxeo.Blob({ content: file });
       cb({ type: 'uploadStarted', file });
-      const p = this.uploader
+      const p = currentUploader
         .upload(blob)
         .then((result) => {
+          if (!isActive()) {
+            return { ok: true, cancelled: true };
+          }
           if (!this.batchId) {
             cb({ type: 'batchStart', batchId: result.batch._batchId });
           }
@@ -76,45 +84,45 @@ DefaultUploadProvider.prototype.upload = function(files, callback) {
           return { ok: true };
         })
         .catch((error) => {
+          if (!isActive()) {
+            // Batch was cancelled while this POST was in flight; do not surface the error.
+            return { ok: false, cancelled: true };
+          }
           cb({ type: 'uploadInterrupted', file, error });
           // Return (don't re-throw) so the aggregate below waits for every request to
           // settle instead of short-circuiting on the first failure.
           return { ok: false, error };
         });
       uploadPromises.push(p);
-      // Track the per-blob request on the provider itself so cancelBatch() can await it
-      // without depending on internal fields of the Nuxeo client uploader. Remove the entry
-      // once it settles so the list does not grow unbounded across successive uploads.
-      this._inFlight.push(p);
-      p.then(() => {
-        const idx = this._inFlight.indexOf(p);
-        if (idx !== -1) {
-          this._inFlight.splice(idx, 1);
-        }
-      });
     }
     // Wait for every per-blob request to settle (success or failure) BEFORE emitting the
     // terminal batch event. This prevents callers -- notably cancelBatch() -- from tearing
     // down the batch while POST /upload/{batchId}/{index} requests are still in flight,
     // which would otherwise race and produce a server-side NPE in Batch.addFile().
     Promise.all(uploadPromises).then((results) => {
+      if (!isActive()) {
+        // Batch was cancelled; suppress terminal events -- cancelBatch() owns the teardown.
+        return;
+      }
       const failure = results.find((r) => !r.ok);
-      const batchId = this.uploader && this.uploader._batchId;
+      const batchId = currentUploader._batchId;
       if (failure) {
         cb({ type: 'batchFailed', error: failure.error, batchId });
         return;
       }
-      if (!this.uploader) {
-        // Batch was cancelled between the last upload settling and this callback; nothing to finish.
-        return;
-      }
-      this.uploader
+      currentUploader
         .done()
         .then((result) => {
+          if (!isActive()) {
+            return;
+          }
           cb({ type: 'batchFinished', batchId: result.batch._batchId });
         })
         .catch((error) => {
-          cb({ type: 'batchFailed', error, batchId: this.uploader && this.uploader._batchId });
+          if (!isActive()) {
+            return;
+          }
+          cb({ type: 'batchFailed', error, batchId: currentUploader._batchId });
         });
     });
   });
@@ -138,19 +146,17 @@ DefaultUploadProvider.prototype.cancelBatch = function() {
   }
   this.uploader = null;
   this.batchId = null;
-  // Snapshot the currently-in-flight per-blob promises so a fresh upload() call after
-  // cancel does not extend what we wait on here.
-  const pending = this._inFlight.slice();
-  const inFlight = pending.length
-    ? Promise.all(
-        pending.map((p) =>
-          p.then(
-            () => {},
-            () => {},
+  const inFlight =
+    uploader._promises && uploader._promises.length
+      ? Promise.all(
+          uploader._promises.map((p) =>
+            p.then(
+              () => {},
+              () => {},
+            ),
           ),
-        ),
-      )
-    : Promise.resolve();
+        )
+      : Promise.resolve();
   return inFlight.then(() => (uploader._batchId ? uploader.cancel() : undefined));
 };
 
@@ -530,7 +536,7 @@ export const UploaderBehavior = {
 
   _dragleave() {
     this.toggleClass('hover', false, this._dropZone);
- `` },
+  },
 
   _drop(e) {
     this.toggleClass('hover', false, this._dropZone);
