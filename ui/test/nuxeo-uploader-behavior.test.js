@@ -199,7 +199,7 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     expect(provider.uploader).to.be.null;
   });
 
-  test('cancelBatch() returns a Promise that resolves after uploader.cancel() completes', async () => {
+  test('cancelBatch() returns a Promise that resolves immediately (uploader.cancel() runs in the background)', async () => {
     const cancel = sinon.stub().resolves();
     provider.uploader = { _batchId: 'b1', cancel };
     provider.batchId = 'b1';
@@ -209,6 +209,8 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     expect(provider.uploader).to.be.null;
     expect(provider.batchId).to.be.null;
     await result;
+    // Background cleanup fires uploader.cancel() shortly after -- give it a microtask flush.
+    await flushAll();
     expect(cancel).to.have.been.calledOnce;
   });
 
@@ -219,7 +221,10 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     await result;
   });
 
-  test('cancelBatch() defers uploader.cancel() until in-flight per-blob POSTs settle', async () => {
+  test('cancelBatch() resolves immediately even while an in-flight per-blob POST is still pending', async () => {
+    // Regression: on a slow network we must NOT make the caller wait for the in-flight POST
+    // to complete before returning -- that would freeze the UI for the entire duration of the
+    // slow request the user just cancelled.
     let resolveInflight;
     const inflight = new Promise((r) => {
       resolveInflight = r;
@@ -227,21 +232,31 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     const cancel = sinon.stub().resolves();
     provider.uploader = { _batchId: 'b1', _promises: [inflight], cancel };
     provider.batchId = 'b1';
-    const done = provider.cancelBatch();
-    // cancel must NOT be issued while the POST is still in flight
-    await flushAll();
+    // Should resolve promptly regardless of the pending inflight promise.
+    await provider.cancelBatch();
+    // Local state is detached; DELETE has NOT been issued yet.
+    expect(provider.uploader).to.be.null;
     expect(cancel).not.to.have.been.called;
+    // Once the POST settles, the background cleanup issues the DELETE.
     resolveInflight();
-    await done;
+    await flushAll();
+    await flushAll();
     expect(cancel).to.have.been.calledOnce;
   });
 
-  test('cancelBatch() still cancels when an in-flight per-blob POST rejects', async () => {
+  test('cancelBatch() still issues the background DELETE when an in-flight per-blob POST rejects', async () => {
     const rejected = Promise.reject(new Error('nope'));
+    // Attach a noop handler at creation time so the runner never sees an
+    // unhandled-rejection warning if cancelBatch()'s own handler happens to be
+    // attached in a later microtask.
+    rejected.catch(() => {});
     const cancel = sinon.stub().resolves();
     provider.uploader = { _batchId: 'b1', _promises: [rejected], cancel };
     provider.batchId = 'b1';
     await provider.cancelBatch();
+    // Background cleanup runs after the rejected promise settles.
+    await flushAll();
+    await flushAll();
     expect(cancel).to.have.been.calledOnce;
   });
 
@@ -384,6 +399,15 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     await new Promise((r) => setTimeout(r, 20));
     expect(cb).not.to.have.been.calledWith(sinon.match({ type: 'uploadInterrupted' }));
     expect(cb).not.to.have.been.calledWith(sinon.match({ type: 'batchFailed' }));
+  });
+
+  test('upload emits batchFailed when _ensureBatch() rejects (batch creation fails)', async () => {
+    const cb = sinon.spy();
+    const err = new Error('network down');
+    connection.batchUpload.rejects(err);
+    provider.upload([fakeFile()], cb);
+    await new Promise((r) => setTimeout(r, 20));
+    expect(cb).to.have.been.calledWith(sinon.match({ type: 'batchFailed', error: err }));
   });
 
   test('accepts returns false when file has no mime and no extension match', () => {
