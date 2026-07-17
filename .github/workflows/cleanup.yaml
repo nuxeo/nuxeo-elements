@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     if: (github.event.action == 'unlabeled' && github.event.label.name == 'webui-preview') || contains(github.event.pull_request.labels.*.name, 'webui-preview')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Prepare environment
         run: |
