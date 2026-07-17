@@ -278,7 +278,8 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     connection.batchUpload.resolves(uploader);
     const files = [fakeFile()];
     provider.upload(files, cb);
-    await new Promise((r) => setTimeout(r, 50));
+    await flushAll();
+    await flushAll();
     expect(cb).to.have.been.calledWith(sinon.match({ type: 'uploadStarted' }));
   });
 
@@ -316,7 +317,8 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     await flushAll();
     expect(done).not.to.have.been.called;
     resolveB({ batch: { _batchId: 'b' }, blob: { fileIdx: 1 } });
-    await new Promise((r) => setTimeout(r, 20));
+    await flushAll();
+    await flushAll();
     expect(done).to.have.been.calledOnce;
     expect(cb).to.have.been.calledWith(sinon.match({ type: 'batchFinished', batchId: 'b' }));
   });
@@ -331,7 +333,8 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     const uploader = { _batchId: 'b', upload, done };
     connection.batchUpload.resolves(uploader);
     provider.upload([fakeFile('a.txt'), fakeFile('b.txt')], cb);
-    await new Promise((r) => setTimeout(r, 50));
+    await flushAll();
+    await flushAll();
     expect(cb).to.have.been.calledWith(sinon.match({ type: 'uploadInterrupted', error: err }));
     expect(cb).to.have.been.calledWith(sinon.match({ type: 'batchFailed', error: err, batchId: 'b' }));
     expect(done).not.to.have.been.called;
@@ -353,7 +356,8 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     // Simulate cancelBatch() detaching the uploader while the POST is still pending
     provider.uploader = null;
     resolveUpload({ batch: { _batchId: 'b' }, blob: { fileIdx: 0 } });
-    await new Promise((r) => setTimeout(r, 20));
+    await flushAll();
+    await flushAll();
     expect(done).not.to.have.been.called;
     expect(cb).not.to.have.been.calledWith(sinon.match({ type: 'batchFinished' }));
   });
@@ -368,7 +372,8 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     };
     connection.batchUpload.resolves(uploader);
     provider.upload([fakeFile()], cb);
-    await new Promise((r) => setTimeout(r, 50));
+    await flushAll();
+    await flushAll();
     expect(cb).to.have.been.calledWith(sinon.match({ type: 'batchFailed', error: doneErr, batchId: 'b' }));
   });
 
@@ -396,7 +401,8 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     provider.batchId = null;
     // Server later returns 408 for the timed-out POST.
     rejectUpload(new Error('408 Request Timeout'));
-    await new Promise((r) => setTimeout(r, 20));
+    await flushAll();
+    await flushAll();
     expect(cb).not.to.have.been.calledWith(sinon.match({ type: 'uploadInterrupted' }));
     expect(cb).not.to.have.been.calledWith(sinon.match({ type: 'batchFailed' }));
   });
@@ -406,7 +412,8 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     const err = new Error('network down');
     connection.batchUpload.rejects(err);
     provider.upload([fakeFile()], cb);
-    await new Promise((r) => setTimeout(r, 20));
+    await flushAll();
+    await flushAll();
     expect(cb).to.have.been.calledWith(sinon.match({ type: 'batchFailed', error: err }));
   });
 
