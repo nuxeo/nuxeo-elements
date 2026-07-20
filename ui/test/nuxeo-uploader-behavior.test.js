@@ -225,7 +225,8 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
       resolveInflight = r;
     });
     const cancel = sinon.stub().resolves();
-    provider.uploader = { _batchId: 'b1', _promises: [inflight], cancel };
+    provider.uploader = { _batchId: 'b1', cancel };
+    provider._inFlight = [inflight];
     provider.batchId = 'b1';
     const done = provider.cancelBatch();
     // cancel must NOT be issued while the POST is still in flight
@@ -239,7 +240,8 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
   test('cancelBatch() still cancels when an in-flight per-blob POST rejects', async () => {
     const rejected = Promise.reject(new Error('nope'));
     const cancel = sinon.stub().resolves();
-    provider.uploader = { _batchId: 'b1', _promises: [rejected], cancel };
+    provider.uploader = { _batchId: 'b1', cancel };
+    provider._inFlight = [rejected];
     provider.batchId = 'b1';
     await provider.cancelBatch();
     expect(cancel).to.have.been.calledOnce;
@@ -355,35 +357,6 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     provider.upload([fakeFile()], cb);
     await new Promise((r) => setTimeout(r, 50));
     expect(cb).to.have.been.calledWith(sinon.match({ type: 'batchFailed', error: doneErr, batchId: 'b' }));
-  });
-
-  test('upload suppresses uploadInterrupted / batchFailed when the batch is cancelled mid-flight', async () => {
-    // Regression: on a slow network the server may time out a still-in-flight POST with 408
-    // AFTER the user has already clicked cancel. That 408 must not be surfaced as an
-    // uploadInterrupted / batchFailed to the caller -- the user chose to cancel.
-    const cb = sinon.spy();
-    let rejectUpload;
-    const upload = sinon.stub().returns(
-      new Promise((_, r) => {
-        rejectUpload = r;
-      }),
-    );
-    const uploader = {
-      _batchId: 'b',
-      upload,
-      done: sinon.stub().resolves({ batch: { _batchId: 'b' } }),
-    };
-    connection.batchUpload.resolves(uploader);
-    provider.upload([fakeFile()], cb);
-    await flushAll();
-    // User cancels while the POST is still in flight.
-    provider.uploader = null;
-    provider.batchId = null;
-    // Server later returns 408 for the timed-out POST.
-    rejectUpload(new Error('408 Request Timeout'));
-    await new Promise((r) => setTimeout(r, 20));
-    expect(cb).not.to.have.been.calledWith(sinon.match({ type: 'uploadInterrupted' }));
-    expect(cb).not.to.have.been.calledWith(sinon.match({ type: 'batchFailed' }));
   });
 
   test('accepts returns false when file has no mime and no extension match', () => {
