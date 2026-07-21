@@ -125,19 +125,26 @@ DefaultUploadProvider.prototype.upload = function(files, callback) {
           cb({ type: 'batchFailed', error, batchId: currentUploader._batchId });
         });
     });
+  }).catch((error) => {
+    // `_ensureBatch()` failed (e.g. `connection.batchUpload()` rejected on network / auth).
+    // Surface it as a `batchFailed` so the caller sees a terminal event instead of a silent
+    // unhandled rejection. `this.batchId` is null here because the batch was never created.
+    cb({ type: 'batchFailed', error, batchId: this.batchId });
   });
 };
 
 /**
  * Cancels the current batch.
  *
- * Detaches the local uploader reference immediately (so subsequent uploads start a fresh batch),
- * but defers the server-side DELETE /upload/{batchId} until every in-flight per-blob POST has
- * settled. Issuing the DELETE while POSTs are still in flight races them and causes a server-side
- * NPE in Batch.addFile() when the POSTs arrive after the batch has been dropped.
+ * Detaches the local uploader reference immediately (so subsequent uploads start a fresh batch)
+ * and returns right away so the UI stays responsive on slow networks. The server-side DELETE
+ * /upload/{batchId} is deferred to a background task that waits for every in-flight per-blob POST
+ * to settle before issuing it -- otherwise the DELETE races the POSTs and causes a server-side
+ * NPE in Batch.addFile(). If the POSTs never settle (stalled connection), the DELETE never
+ * fires and the server GCs the abandoned batch on its own idle timeout.
  *
- * @returns {Promise} resolves once the batch DELETE has been issued (or immediately if there is
- *                    no batch to cancel).
+ * @returns {Promise} resolves immediately once the local state has been detached; the DELETE
+ *                    cleanup runs in the background.
  * */
 DefaultUploadProvider.prototype.cancelBatch = function() {
   const uploader = this.uploader;
@@ -146,6 +153,10 @@ DefaultUploadProvider.prototype.cancelBatch = function() {
   }
   this.uploader = null;
   this.batchId = null;
+  // Fire-and-forget: wait for any in-flight per-blob POSTs to settle, then issue the DELETE.
+  // We do NOT return this chain to the caller -- awaiting it would freeze the UI whenever a
+  // slow POST is in flight (the very thing the user just cancelled). Failures are swallowed
+  // because the batch is already detached client-side and the server will GC it on its own.
   const inFlight =
     uploader._promises && uploader._promises.length
       ? Promise.all(
@@ -157,7 +168,10 @@ DefaultUploadProvider.prototype.cancelBatch = function() {
           ),
         )
       : Promise.resolve();
-  return inFlight.then(() => (uploader._batchId ? uploader.cancel() : undefined));
+  inFlight
+    .then(() => (uploader._batchId ? uploader.cancel() : undefined))
+    .catch(() => {});
+  return Promise.resolve();
 };
 
 /**
