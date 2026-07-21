@@ -310,6 +310,30 @@ suite('nuxeo-group-management', () => {
       el._fetchUsers.restore();
     });
 
+    test('does not page back when the last resolved user is removed while missing users remain', async () => {
+      sinon.stub(el.$.editRequest, 'put').returns(Promise.resolve());
+      sinon.spy(el, '_fetchUsers');
+      el.memberUsers = {
+        pageSize: 50,
+        currentPageIndex: 0,
+        currentPageSize: 1,
+        entries: [{ id: 'Administrator', 'entity-type': 'user', properties: { username: 'Administrator' } }],
+      };
+      el.group = { memberUsers: ['Administrator', 'ghost'], memberGroups: [] };
+      el.usersCurrentPage = 1;
+      await flush();
+      // sanity: 'ghost' is an unresolved (missing) member still shown on the current page
+      expect(el._missingUsers).to.have.lengthOf(1);
+      el._removedMember = { id: 'Administrator', 'entity-type': 'user' };
+      el._removeMember();
+      await flush();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(el._fromDelete).to.be.false;
+      expect(el.usersCurrentPage).to.equal(1);
+      el.$.editRequest.put.restore();
+      el._fetchUsers.restore();
+    });
+
     test('does not splice when the removed id is absent (guards against dropping the last member)', async () => {
       sinon.stub(el.$.editRequest, 'put').returns(Promise.resolve());
       el.group = { memberUsers: ['a', 'b'], memberGroups: ['x', 'y'] };
