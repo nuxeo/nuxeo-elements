@@ -489,8 +489,8 @@ import '../nuxeo-sort-styles.js';
                 <template>
                   <div class="table-row" role="row">
                     <div class="flex-4" role="columnheader">
-                      <div class="missing-user">
-                        <iron-icon icon="icons:error-outline" class="missing-icon"></iron-icon>
+                      <div class="missing-user" tabindex="0" title="[[i18n('groupManagement.userNotFound')]]">
+                        <iron-icon icon="icons:error-outline" class="missing-icon" aria-hidden="true"></iron-icon>
                         <span class="missing-name preserve-white-space">[[item.id]]</span>
                         <nuxeo-tooltip>[[i18n('groupManagement.userNotFound')]]</nuxeo-tooltip>
                       </div>
