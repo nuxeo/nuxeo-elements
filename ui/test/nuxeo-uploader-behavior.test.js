@@ -225,7 +225,8 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
       resolveInflight = r;
     });
     const cancel = sinon.stub().resolves();
-    provider.uploader = { _batchId: 'b1', _promises: [inflight], cancel };
+    provider.uploader = { _batchId: 'b1', cancel };
+    provider._inFlight = [inflight];
     provider.batchId = 'b1';
     const done = provider.cancelBatch();
     // cancel must NOT be issued while the POST is still in flight
@@ -239,7 +240,8 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
   test('cancelBatch() still cancels when an in-flight per-blob POST rejects', async () => {
     const rejected = Promise.reject(new Error('nope'));
     const cancel = sinon.stub().resolves();
-    provider.uploader = { _batchId: 'b1', _promises: [rejected], cancel };
+    provider.uploader = { _batchId: 'b1', cancel };
+    provider._inFlight = [rejected];
     provider.batchId = 'b1';
     await provider.cancelBatch();
     expect(cancel).to.have.been.calledOnce;

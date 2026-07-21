@@ -28,6 +28,9 @@ function DefaultUploadProvider(connection, accept, batchAppend) {
   this.batchAppend = batchAppend;
   this.uploader = null;
   this.batchId = null;
+  // In-flight per-blob upload promises tracked on the provider itself so cancelBatch()
+  // can await them without depending on internal fields of the Nuxeo client uploader.
+  this._inFlight = [];
 }
 
 DefaultUploadProvider.prototype._ensureBatch = function() {
@@ -54,30 +57,41 @@ DefaultUploadProvider.prototype.upload = function(files, callback) {
   if (!files) {
     return;
   }
+  // Normalize the callback once so every emission site below is safe when the caller
+  // omits the callback or passes a non-function value.
+  const cb = typeof callback === 'function' ? callback : () => {};
   this._ensureBatch().then(() => {
     const uploadPromises = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const blob = new Nuxeo.Blob({ content: file });
-      if (typeof callback === 'function') {
-        callback({ type: 'uploadStarted', file });
-      }
+      cb({ type: 'uploadStarted', file });
       const p = this.uploader
         .upload(blob)
         .then((result) => {
           if (!this.batchId) {
-            callback({ type: 'batchStart', batchId: result.batch._batchId });
+            cb({ type: 'batchStart', batchId: result.batch._batchId });
           }
-          callback({ type: 'uploadCompleted', fileIdx: result.blob.fileIdx });
+          cb({ type: 'uploadCompleted', fileIdx: result.blob.fileIdx });
           return { ok: true };
         })
         .catch((error) => {
-          callback({ type: 'uploadInterrupted', file, error });
+          cb({ type: 'uploadInterrupted', file, error });
           // Return (don't re-throw) so the aggregate below waits for every request to
           // settle instead of short-circuiting on the first failure.
           return { ok: false, error };
         });
       uploadPromises.push(p);
+      // Track the per-blob request on the provider itself so cancelBatch() can await it
+      // without depending on internal fields of the Nuxeo client uploader. Remove the entry
+      // once it settles so the list does not grow unbounded across successive uploads.
+      this._inFlight.push(p);
+      p.then(() => {
+        const idx = this._inFlight.indexOf(p);
+        if (idx !== -1) {
+          this._inFlight.splice(idx, 1);
+        }
+      });
     }
     // Wait for every per-blob request to settle (success or failure) BEFORE emitting the
     // terminal batch event. This prevents callers -- notably cancelBatch() -- from tearing
@@ -87,7 +101,7 @@ DefaultUploadProvider.prototype.upload = function(files, callback) {
       const failure = results.find((r) => !r.ok);
       const batchId = this.uploader && this.uploader._batchId;
       if (failure) {
-        callback({ type: 'batchFailed', error: failure.error, batchId });
+        cb({ type: 'batchFailed', error: failure.error, batchId });
         return;
       }
       if (!this.uploader) {
@@ -97,10 +111,10 @@ DefaultUploadProvider.prototype.upload = function(files, callback) {
       this.uploader
         .done()
         .then((result) => {
-          callback({ type: 'batchFinished', batchId: result.batch._batchId });
+          cb({ type: 'batchFinished', batchId: result.batch._batchId });
         })
         .catch((error) => {
-          callback({ type: 'batchFailed', error, batchId: this.uploader && this.uploader._batchId });
+          cb({ type: 'batchFailed', error, batchId: this.uploader && this.uploader._batchId });
         });
     });
   });
@@ -124,17 +138,19 @@ DefaultUploadProvider.prototype.cancelBatch = function() {
   }
   this.uploader = null;
   this.batchId = null;
-  const inFlight =
-    uploader._promises && uploader._promises.length
-      ? Promise.all(
-          uploader._promises.map((p) =>
-            p.then(
-              () => {},
-              () => {},
-            ),
+  // Snapshot the currently-in-flight per-blob promises so a fresh upload() call after
+  // cancel does not extend what we wait on here.
+  const pending = this._inFlight.slice();
+  const inFlight = pending.length
+    ? Promise.all(
+        pending.map((p) =>
+          p.then(
+            () => {},
+            () => {},
           ),
-        )
-      : Promise.resolve();
+        ),
+      )
+    : Promise.resolve();
   return inFlight.then(() => (uploader._batchId ? uploader.cancel() : undefined));
 };
 
@@ -514,7 +530,7 @@ export const UploaderBehavior = {
 
   _dragleave() {
     this.toggleClass('hover', false, this._dropZone);
-  },
+ `` },
 
   _drop(e) {
     this.toggleClass('hover', false, this._dropZone);
