@@ -43,9 +43,14 @@ suite('nuxeo-download-button extras', () => {
   });
 
   suite('_computeHoverLabel', () => {
-    test('combines title and label', () => {
+    test('returns only the action label, not the document title', () => {
       const result = el._computeHoverLabel({ title: 'MyFile' });
-      expect(result).to.include('MyFile');
+      expect(result).to.not.include('MyFile');
+      expect(result).to.be.a('string');
+    });
+
+    test('returns the same value as _computeLabel', () => {
+      expect(el._computeHoverLabel({ title: 'MyFile' })).to.equal(el._computeLabel());
     });
 
     test('handles null doc', () => {
@@ -75,5 +80,43 @@ suite('nuxeo-download-button extras', () => {
       const obj = { a: { b: 1 } };
       expect(el._deepFind(obj, 'a/c/d')).to.be.undefined;
     });
+  });
+});
+
+suite('nuxeo-download-button accessibility', () => {
+  test('host has role="presentation" by default to collapse it out of the a11y tree', async () => {
+    const el = await fixture(
+      html`
+        <nuxeo-download-button></nuxeo-download-button>
+      `,
+    );
+    expect(el.getAttribute('role')).to.equal('presentation');
+  });
+
+  test('host preserves a pre-existing role attribute', async () => {
+    const el = await fixture(
+      html`
+        <nuxeo-download-button role="button"></nuxeo-download-button>
+      `,
+    );
+    expect(el.getAttribute('role')).to.equal('button');
+  });
+
+  test('inner .action wrapper has role="presentation"', async () => {
+    const doc = {
+      'entity-type': 'document',
+      uid: '1',
+      properties: {
+        'file:content': { name: 'file.pdf', data: 'http://example/file.pdf' },
+      },
+    };
+    const el = await fixture(
+      html`
+        <nuxeo-download-button .document=${doc}></nuxeo-download-button>
+      `,
+    );
+    const action = el.shadowRoot.querySelector('.action');
+    expect(action).to.exist;
+    expect(action.getAttribute('role')).to.equal('presentation');
   });
 });

@@ -2,10 +2,11 @@
 /**
  * Build script: writes `test/coverage-imports-data.js` (gitignored).
  *
- * Istanbul only records modules loaded in the browser. Files never imported by tests are
- * omitted from local HTML/LCOV when `skipFilesWithNoCoverage` is true — while SonarQube
- * still lists every file under sonar.sources at 0%. This script lists all product `.js`
- * paths; `test/setup.js` bulk-imports them in a coverage-only suiteTeardown.
+ * Istanbul (via rollup-plugin-istanbul under Web Test Runner) only records modules actually
+ * loaded in the browser. Files never imported by any test are omitted from the WTR lcov, while
+ * SonarQube still lists every file under sonar.sources at 0%. This script lists all product
+ * `.js` paths; after the run, `scripts/test/unit/inject-zero-coverage.js` uses this manifest
+ * to add 0% lcov records for any paths that were not loaded during tests.
  *
  * Scope mirrors sonar-project.properties (core, ui, dataviz + sonar.exclusions), minus
  * package barrel entry files (nuxeo-elements.js, nuxeo-ui-elements.js, nuxeo-dataviz-elements.js).
@@ -15,20 +16,23 @@
 const fs = require('fs');
 const path = require('path');
 
-const root = path.join(__dirname, '..');
+const root = path.join(__dirname, '../../..');
 const outFile = path.join(root, 'test', 'coverage-imports-data.js');
 
 const SOURCE_PACKAGES = ['core', 'ui', 'dataviz'];
 
-const EXCLUDE_DIR_NAMES = new Set(['test', 'storybook', 'testing-helpers', 'node_modules', 'coverage']);
+// Keep in sync with sonar.coverage.exclusions in sonar-project.properties.
+// `demo` dirs are development-only (matches Sonar's **/demo/**).
+const EXCLUDE_DIR_NAMES = new Set(['test', 'demo', 'storybook', 'testing-helpers', 'node_modules', 'coverage']);
 
 const EXCLUDE_PREFIXES = ['ui/viewers/pdfjs/', 'ui/js-interpreter/', 'storybook/', 'testing-helpers/'];
 
-// Package entry barrels (re-export only). Sonar treats them as generated bundles.
+// Package entry barrels (re-export only) + non-instrumentable files. Sonar excludes these from coverage.
 const EXCLUDE_BARRELS = new Set([
   'core/nuxeo-elements.js',
   'dataviz/nuxeo-dataviz-elements.js',
   'ui/nuxeo-ui-elements.js',
+  'ui/import-href.js',
 ]);
 
 const shouldSkipDir = (name) => EXCLUDE_DIR_NAMES.has(name);
@@ -86,9 +90,9 @@ const banner = `/**
  * AUTO-GENERATED — do not edit. Regenerate: npm run update-coverage-imports (runs in npm test).
  *
  * Exports \`coverageModulePaths\`: every source module under core/, ui/, and dataviz/
- * (mirroring sonar.sources, minus excludes in generate-coverage-imports.js). Used only for
- * Istanbul: test/setup.js imports these after all tests in coverage mode so local reports
- * match Sonar (untested files appear at 0% instead of being hidden).
+ * (mirroring sonar.sources, minus excludes in generate-coverage-imports.js). Used after the
+ * test run by scripts/test/unit/inject-zero-coverage.js to add 0% lcov records for any path
+ * that no test loaded (so local reports match Sonar instead of hiding untested files).
  */
 `;
 
@@ -96,5 +100,4 @@ const content = `${banner}export const coverageModulePaths = ${JSON.stringify(re
 `;
 
 fs.writeFileSync(outFile, content, 'utf8');
-// eslint-disable-next-line no-console
 console.log('generate-coverage-imports: wrote %d module paths to test/coverage-imports-data.js', relImports.length);

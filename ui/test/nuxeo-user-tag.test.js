@@ -281,16 +281,11 @@ suite('nuxeo-user-tag extras', () => {
 
   suite('_href', () => {
     test('returns a URL based on user id', () => {
-      const urlForSpy = sinon.spy((type, id) => `/ui/#!/${type}/${id}`);
-      const context = {
-        _id: (user) => user.id,
-        urlFor: urlForSpy,
-      };
-
-      const href = Nuxeo.UserTag.prototype._href.call(context, { id: 'jdoe' });
-
-      expect(urlForSpy).to.have.been.calledWith('user', 'jdoe');
-      expect(href).to.equal('/ui/#!/user/jdoe');
+      const stub = sinon.stub().returns('/url/jdoe');
+      Object.defineProperty(el, 'urlFor', { value: stub, writable: true, configurable: true });
+      const href = el._href({ id: 'jdoe' });
+      expect(stub).to.have.been.calledWith('user', 'jdoe');
+      expect(href).to.equal('/url/jdoe');
     });
   });
 
