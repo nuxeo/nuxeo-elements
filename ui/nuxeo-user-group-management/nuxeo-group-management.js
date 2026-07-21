@@ -889,12 +889,16 @@ import '../nuxeo-sort-styles.js';
       }
       this.$.editRequest.data = this.group;
       this.$.editRequest.put().then(() => {
-        // Removing a missing/unresolved user does not change the resolved page size, so the
-        // "go to previous page when the last entry is deleted" heuristic must not kick in.
-        this._fromDelete = !member._missing;
         if (member['entity-type'] === 'user') {
+          // The "go to previous page when the last entry is deleted" heuristic keys off the resolved
+          // page size (`memberUsers.currentPageSize`). Skip it when the removed row was itself a
+          // missing user (removing it does not change the resolved page size), or when missing users
+          // are still shown on the current page — deleting the last resolved user must not page away
+          // from the unresolved ones that remain visible.
+          this._fromDelete = !member._missing && this._noMissingUsers();
           this._fetchUsers();
         } else {
+          this._fromDelete = true;
           this._fetchGroups();
         }
         this._removeRecent(this._removedMember.id);
@@ -1008,6 +1012,10 @@ import '../nuxeo-sort-styles.js';
 
     _noMemberUsers(entries, missingUsers) {
       return this._empty(entries) && (!missingUsers || missingUsers.length === 0);
+    }
+
+    _noMissingUsers() {
+      return !this._missingUsers || this._missingUsers.length === 0;
     }
 
     _goHome() {
