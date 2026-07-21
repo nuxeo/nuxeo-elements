@@ -69,9 +69,14 @@ jobs:
         echo "VERSION=$(npx semver -i prerelease --preid rc ${RC_VERSION:-$PACKAGE_VERSION}  | tr -d '\n')" >> $GITHUB_ENV
 
     - name: Set version to ${{ env.VERSION }}
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
       run: |
         npm version $VERSION --no-git-tag-version
         npx ${{ env.LERNA }} version $VERSION --no-push --force-publish --no-git-tag-version --yes
+
+        # Sync lockfile after the version bumps so package-lock.json stays consistent
+        npm install --package-lock-only --ignore-scripts
 
     - name: Tag
       run: |

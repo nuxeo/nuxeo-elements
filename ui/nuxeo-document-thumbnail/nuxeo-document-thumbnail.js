@@ -38,6 +38,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior';
           :host {
             height: 32px;
             width: 32px;
+            display: inline-block;
             position: relative;
             flex: none;
           }
@@ -63,7 +64,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior';
           }
         </style>
 
-        <img id="img" src="[[_thumbnail(document)]]" on-error="_error" />
+        <img id="img" src="[[_thumbnail(document)]]" on-error="_error" alt$="[[alt]]" />
       `;
     }
 
@@ -74,6 +75,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior';
     static get properties() {
       return {
         document: Object,
+        alt: {
+          type: String,
+          value: '',
+        },
       };
     }
 
