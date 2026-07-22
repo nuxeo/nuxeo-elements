@@ -183,7 +183,16 @@ suite('nuxeo-user-profile', () => {
       expect(el._userDisplayName(undefined)).to.equal('');
     });
 
-    test('prefers properties.username over user.name to avoid showing UUID', () => {
+    test('returns username even when firstName and lastName are present', () => {
+      expect(
+        el._userDisplayName({
+          name: 'some-uuid',
+          properties: { username: 'jdoe', firstName: 'Jane', lastName: 'Doe' },
+        }),
+      ).to.equal('jdoe');
+    });
+
+    test('returns username when firstName and lastName are absent', () => {
       expect(el._userDisplayName({ name: 'some-uuid', properties: { username: 'jdoe' } })).to.equal('jdoe');
     });
 
@@ -197,6 +206,43 @@ suite('nuxeo-user-profile', () => {
 
     test('returns empty string when user.properties is absent', () => {
       expect(el._userDisplayName({ id: 'some-uuid' })).to.equal('');
+    });
+  });
+
+  suite('_userFullName', () => {
+    test('returns empty string when user is null or undefined', () => {
+      expect(el._userFullName(null)).to.equal('');
+      expect(el._userFullName(undefined)).to.equal('');
+    });
+
+    test('returns firstName + lastName when both are present', () => {
+      expect(
+        el._userFullName({
+          name: 'some-uuid',
+          properties: { username: 'jdoe', firstName: 'Jane', lastName: 'Doe' },
+        }),
+      ).to.equal('Jane Doe');
+    });
+
+    test('falls back to username when firstName and lastName are absent', () => {
+      expect(el._userFullName({ name: 'some-uuid', properties: { username: 'jdoe' } })).to.equal('jdoe');
+    });
+  });
+
+  suite('_userPrincipal', () => {
+    test('returns empty string when user is null or undefined', () => {
+      expect(el._userPrincipal(null)).to.equal('');
+      expect(el._userPrincipal(undefined)).to.equal('');
+    });
+
+    test('returns username even when firstName and lastName are present', () => {
+      expect(
+        el._userPrincipal({ name: 'some-uuid', properties: { username: 'jdoe', firstName: 'Jane', lastName: 'Doe' } }),
+      ).to.equal('jdoe');
+    });
+
+    test('falls back to user.name when properties.username is absent', () => {
+      expect(el._userPrincipal({ name: 'jdoe', properties: {} })).to.equal('jdoe');
     });
   });
 

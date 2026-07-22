@@ -20,6 +20,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-flex-layout/iron-flex-layout-classes.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
+import '@nuxeo/nuxeo-elements/nuxeo-resource.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
@@ -28,6 +29,7 @@ import moment from '@nuxeo/moment';
 import '../nuxeo-pagination-controls.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-tag.js';
+import '../widgets/nuxeo-user-tag.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-button-styles.js';
 
@@ -146,6 +148,7 @@ import '../nuxeo-button-styles.js';
 
         <nuxeo-operation id="permissions" op="Repository.Query" enrichers="acls"></nuxeo-operation>
         <nuxeo-operation id="rmPermission" op="Document.RemovePermission"></nuxeo-operation>
+        <nuxeo-resource id="userResource" path="/user"></nuxeo-resource>
 
         <dom-if if="[[label]]">
           <template>
@@ -187,7 +190,10 @@ import '../nuxeo-button-styles.js';
                             <div class="flex-2" role="columnheader">
                               <dom-if if="[[ace.creator]]">
                                 <template>
-                                  <nuxeo-tag icon="nuxeo:group">[[ace.creator]]</nuxeo-tag>
+                                  <nuxeo-user-tag
+                                    user="[[_resolvedCreator(ace.creator, _creatorEntities, _creatorsLoading)]]"
+                                    disabled
+                                  ></nuxeo-user-tag>
                                 </template>
                               </dom-if>
                             </div>
@@ -297,6 +303,16 @@ import '../nuxeo-button-styles.js';
         captionText: {
           type: String,
         },
+        _creatorEntities: {
+          type: Object,
+          value: () => {
+            return {};
+          },
+        },
+        _creatorsLoading: {
+          type: Boolean,
+          value: false,
+        },
       };
     }
 
@@ -393,6 +409,37 @@ import '../nuxeo-button-styles.js';
       });
       this.documents = entries;
       this.empty = this.documents.length === 0;
+      this._fetchCreators(entries);
+    }
+
+    async _fetchCreators(entries) {
+      const creators = new Set();
+      entries.forEach((entry) => {
+        (entry.aces || []).forEach((ace) => {
+          if (ace.creator && typeof ace.creator === 'string') {
+            creators.add(ace.creator);
+          }
+        });
+      });
+      if (!creators.size) return;
+      this._creatorsLoading = true;
+      const entities = {};
+      for (const creator of creators) {
+        try {
+          this.$.userResource.path = `/user/${creator}`;
+          const user = await this.$.userResource.get();
+          entities[creator] = user;
+        } catch (_) {
+          // keep the raw username if the fetch fails (e.g. system users)
+        }
+      }
+      this._creatorEntities = entities;
+      this._creatorsLoading = false;
+    }
+
+    _resolvedCreator(creator, entities, loading) {
+      if (loading) return null;
+      return (entities && entities[creator]) || creator;
     }
 
     _aceBelongsToEntity(ace) {

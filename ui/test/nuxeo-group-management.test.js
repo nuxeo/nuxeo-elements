@@ -479,17 +479,17 @@ suite('nuxeo-group-management', () => {
       expect(el._userDisplayName(undefined)).to.equal('');
     });
 
-    test('prefers properties.username over user.name to avoid showing UUID', () => {
+    test('returns firstName + lastName when both are present', () => {
       expect(
         el._userDisplayName({
           id: 'internal-uid',
           name: 'some-uuid',
           properties: { username: 'login', firstName: 'A', lastName: 'B' },
         }),
-      ).to.equal('login');
+      ).to.equal('A B');
     });
 
-    test('falls back to properties.username when name is absent', () => {
+    test('falls back to properties.username when name fields are absent', () => {
       expect(
         el._userDisplayName({
           id: 'uid-1',
@@ -498,22 +498,79 @@ suite('nuxeo-group-management', () => {
       ).to.equal('jdoe');
     });
 
-    test('falls back to id when name and username are absent', () => {
+    test('falls back to user.id when username is also absent', () => {
       expect(
         el._userDisplayName({
-          id: 'only-id',
+          id: 'jdoe',
+          name: 'fallback-name',
           properties: {},
         }),
-      ).to.equal('only-id');
+      ).to.equal('jdoe');
     });
 
-    test('returns empty string when user.properties is absent', () => {
-      expect(el._userDisplayName({ id: 'some-uuid' })).to.equal('some-uuid');
+    test('falls back to user.name when username and id are both absent', () => {
+      expect(
+        el._userDisplayName({
+          name: 'fallback-name',
+          properties: {},
+        }),
+      ).to.equal('fallback-name');
+    });
+
+    test('returns empty string when user has no displayable fields', () => {
+      expect(el._userDisplayName({ properties: {} })).to.equal('');
+    });
+  });
+
+  suite('_userPrincipal', () => {
+    test('returns empty string when user is null or undefined', () => {
+      expect(el._userPrincipal(null)).to.equal('');
+      expect(el._userPrincipal(undefined)).to.equal('');
+    });
+
+    test('returns username even when firstName and lastName are present', () => {
+      expect(
+        el._userPrincipal({
+          id: 'internal-uid',
+          name: 'some-uuid',
+          properties: { username: 'login', firstName: 'A', lastName: 'B' },
+        }),
+      ).to.equal('login');
+    });
+
+    test('falls back to user.id when properties.username is absent', () => {
+      expect(
+        el._userPrincipal({
+          id: 'jdoe',
+          name: 'some-name',
+          properties: {},
+        }),
+      ).to.equal('jdoe');
+    });
+
+    test('falls back to user.name when properties.username and user.id are absent', () => {
+      expect(
+        el._userPrincipal({
+          name: 'jdoe',
+          properties: {},
+        }),
+      ).to.equal('jdoe');
     });
   });
 
   suite('_removedMemberDisplayName computed property', () => {
-    test('reflects _userDisplayName of _removedMember using properties.username', async () => {
+    test('shows username even when firstName + lastName are available', async () => {
+      el._removedMember = {
+        id: 'some-uuid',
+        name: 'some-uuid',
+        'entity-type': 'user',
+        properties: { username: 'jdoe', firstName: 'Jane', lastName: 'Doe' },
+      };
+      await flush();
+      expect(el._removedMemberDisplayName).to.equal('jdoe');
+    });
+
+    test('falls back to username when name fields are absent', async () => {
       el._removedMember = {
         id: 'some-uuid',
         name: 'some-uuid',
@@ -524,8 +581,14 @@ suite('nuxeo-group-management', () => {
       expect(el._removedMemberDisplayName).to.equal('jdoe');
     });
 
-    test('falls back to user.name when properties.username is absent', async () => {
-      el._removedMember = { id: 'some-uuid', name: 'jdoe', 'entity-type': 'user', properties: {} };
+    test('falls back to user.id when properties.username is absent', async () => {
+      el._removedMember = { id: 'jdoe', name: 'some-name', 'entity-type': 'user', properties: {} };
+      await flush();
+      expect(el._removedMemberDisplayName).to.equal('jdoe');
+    });
+
+    test('falls back to user.name when properties.username and user.id are absent', async () => {
+      el._removedMember = { name: 'jdoe', 'entity-type': 'user', properties: {} };
       await flush();
       expect(el._removedMemberDisplayName).to.equal('jdoe');
     });

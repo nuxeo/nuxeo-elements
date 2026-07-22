@@ -21,10 +21,12 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-operation.js';
+import '@nuxeo/nuxeo-elements/nuxeo-resource.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import { FormatBehavior } from '../nuxeo-format-behavior.js';
+import '../widgets/nuxeo-user-tag.js';
 import './nuxeo-popup-confirm.js';
 import './nuxeo-popup-permission.js';
 
@@ -134,9 +136,10 @@ import './nuxeo-popup-permission.js';
                     </div>
                     <div class="flex-2" role="columnheader"><span>{{formatTimeFrame(ace)}}</span></div>
                     <div class="flex-2" role="columnheader">
-                      <span class$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">
-                        [[entityDisplay(ace.creator)]]
-                      </span>
+                      <nuxeo-user-tag
+                        user="[[_resolvedCreator(ace.creator, _creatorEntities, _creatorsLoading)]]"
+                        disabled
+                      ></nuxeo-user-tag>
                     </div>
                     <dom-if if="[[showActions]]">
                       <template>
@@ -205,9 +208,10 @@ import './nuxeo-popup-permission.js';
                                     <span>{{formatTimeFrame(ace)}}</span>
                                   </div>
                                   <div class="flex-2" role="columnheader">
-                                    <span class$="[[entityClass(ace.creator)]]" title="[[entityTooltip(ace.creator)]]">
-                                      [[entityDisplay(ace.creator)]]
-                                    </span>
+                                    <nuxeo-user-tag
+                                      user="[[_resolvedCreator(ace.creator, _creatorEntities, _creatorsLoading)]]"
+                                      disabled
+                                    ></nuxeo-user-tag>
                                   </div>
                                 </div>
                               </div>
@@ -230,6 +234,7 @@ import './nuxeo-popup-permission.js';
           input="{{doc.uid}}"
         >
         </nuxeo-operation>
+        <nuxeo-resource id="userResource" path="/user"></nuxeo-resource>
       `;
     }
 
@@ -267,6 +272,16 @@ import './nuxeo-popup-permission.js';
         },
         captionText: {
           type: String,
+        },
+        _creatorEntities: {
+          type: Object,
+          value: () => {
+            return {};
+          },
+        },
+        _creatorsLoading: {
+          type: Boolean,
+          value: false,
         },
       };
     }
@@ -310,6 +325,36 @@ import './nuxeo-popup-permission.js';
       });
 
       this.aces = aces.sort(this._sortAces);
+      this._fetchCreators(this.aces);
+    }
+
+    async _fetchCreators(aces) {
+      if (!aces || !aces.length) return;
+      const creators = new Set();
+      aces.forEach((ace) => {
+        if (ace.creator && typeof ace.creator === 'string') {
+          creators.add(ace.creator);
+        }
+      });
+      if (!creators.size) return;
+      this._creatorsLoading = true;
+      const entities = {};
+      for (const creator of creators) {
+        try {
+          this.$.userResource.path = `/user/${creator}`;
+          const user = await this.$.userResource.get();
+          entities[creator] = user;
+        } catch (_) {
+          // keep the raw username if the fetch fails (e.g. system users)
+        }
+      }
+      this._creatorEntities = entities;
+      this._creatorsLoading = false;
+    }
+
+    _resolvedCreator(creator, entities, loading) {
+      if (loading) return null;
+      return (entities && entities[creator]) || creator;
     }
 
     _aclFilter(acl) {
