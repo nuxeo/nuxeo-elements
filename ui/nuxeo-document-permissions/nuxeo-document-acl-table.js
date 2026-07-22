@@ -329,7 +329,7 @@ import './nuxeo-popup-permission.js';
     }
 
     async _fetchCreators(aces) {
-      if (!aces || !aces.length) return;
+      if (!aces?.length) return;
       const creators = new Set();
       aces.forEach((ace) => {
         if (ace.creator && typeof ace.creator === 'string') {
@@ -345,7 +345,7 @@ import './nuxeo-popup-permission.js';
           const user = await this.$.userResource.get();
           entities[creator] = user;
         } catch (_) {
-          // keep the raw username if the fetch fails (e.g. system users)
+          void _; // system/deleted users — keep raw username as fallback
         }
       }
       this._creatorEntities = entities;
@@ -354,7 +354,7 @@ import './nuxeo-popup-permission.js';
 
     _resolvedCreator(creator, entities, loading) {
       if (loading) return null;
-      return (entities && entities[creator]) || creator;
+      return entities?.[creator] || creator;
     }
 
     _aclFilter(acl) {
