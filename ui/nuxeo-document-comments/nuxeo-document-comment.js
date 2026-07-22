@@ -30,7 +30,6 @@ import '@nuxeo/nuxeo-elements/nuxeo-resource.js';
 import { NotifyBehavior } from '@nuxeo/nuxeo-elements/nuxeo-notify-behavior.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-tooltip.js';
-import '../widgets/nuxeo-user-tag.js';
 
 import './nuxeo-document-comment-thread.js';
 import './nuxeo-document-comments-styles.js';
@@ -59,6 +58,15 @@ import '../nuxeo-button-styles.js';
         <style include="nuxeo-document-comments-styles nuxeo-button-styles">
           :host {
             margin-top: 5px;
+          }
+
+          .author {
+            font-weight: bold;
+            margin-right: 5px;
+          }
+
+          :host([dir='rtl']) .author {
+            margin-left: 5px;
           }
 
           .info {
@@ -155,10 +163,18 @@ import '../nuxeo-button-styles.js';
         <dom-if if="[[comment]]">
           <template>
             <div id="content" class="horizontal">
+              <nuxeo-user-avatar
+                user="[[comment.author]]"
+                height="[[_computeAvatarDimensions(level)]]"
+                width="[[_computeAvatarDimensions(level)]]"
+                border-radius="50"
+                font-size="[[_computeAvatarFontSize(level)]]"
+              >
+              </nuxeo-user-avatar>
               <div class="info">
                 <div id="body">
                   <div id="header" class="horizontal">
-                    <nuxeo-user-tag class="author" user="[[comment.author]]" disabled></nuxeo-user-tag>
+                    <span class="author">[[comment.author]]</span>
                     <span class="smaller opaque"
                       >[[_computeDateLabel(comment, comment.creationDate, comment.modificationDate, i18n)]]</span
                     >
