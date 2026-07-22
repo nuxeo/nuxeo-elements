@@ -439,7 +439,7 @@ import '../nuxeo-button-styles.js';
 
     _resolvedCreator(creator, entities, loading) {
       if (loading) return null;
-      return entities?.[creator] || creator;
+      return (entities && entities[creator]) || creator;
     }
 
     _aceBelongsToEntity(ace) {

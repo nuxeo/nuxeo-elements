@@ -329,7 +329,7 @@ import './nuxeo-popup-permission.js';
     }
 
     async _fetchCreators(aces) {
-      if (!aces?.length) return;
+      if (!aces || !aces.length) return;
       const creators = new Set();
       aces.forEach((ace) => {
         if (ace.creator && typeof ace.creator === 'string') {
@@ -354,7 +354,7 @@ import './nuxeo-popup-permission.js';
 
     _resolvedCreator(creator, entities, loading) {
       if (loading) return null;
-      return entities?.[creator] || creator;
+      return (entities && entities[creator]) || creator;
     }
 
     _aclFilter(acl) {
