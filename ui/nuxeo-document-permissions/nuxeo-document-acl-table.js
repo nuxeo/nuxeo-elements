@@ -345,7 +345,7 @@ import './nuxeo-popup-permission.js';
           const user = await this.$.userResource.get();
           entities[creator] = user;
         } catch (_) {
-          void _; // system/deleted users — keep raw username as fallback
+          entities[creator] = creator; // fallback: keep raw username for system/deleted users
         }
       }
       this._creatorEntities = entities;
