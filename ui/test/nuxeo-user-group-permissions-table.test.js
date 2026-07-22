@@ -372,7 +372,7 @@ suite('nuxeo-user-group-permissions-table', () => {
     test('should handle fetch failure gracefully', async () => {
       sinon.stub(el.$.userResource, 'get').rejects(new Error('not found'));
       await el._fetchCreators([{ aces: [mkAce({ creator: 'unknown' })] }]);
-      expect(el._creatorEntities).to.not.have.property('unknown');
+      expect(el._creatorEntities).to.have.property('unknown', 'unknown');
       el.$.userResource.get.restore();
     });
   });
