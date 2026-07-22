@@ -158,7 +158,7 @@ import '../nuxeo-button-styles.js';
               <div class="info">
                 <div id="body">
                   <div id="header" class="horizontal">
-                    <nuxeo-user-tag user="[[comment.author]]" disabled></nuxeo-user-tag>
+                    <nuxeo-user-tag class="author" user="[[comment.author]]" disabled></nuxeo-user-tag>
                     <span class="smaller opaque"
                       >[[_computeDateLabel(comment, comment.creationDate, comment.modificationDate, i18n)]]</span
                     >
