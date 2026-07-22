@@ -30,6 +30,7 @@ import '../nuxeo-pagination-controls.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-tag.js';
 import '../widgets/nuxeo-user-tag.js';
+import { fetchUserEntities, resolveUser } from './nuxeo-user-display.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-button-styles.js';
 
@@ -423,23 +424,13 @@ import '../nuxeo-button-styles.js';
       });
       if (!creators.size) return;
       this._creatorsLoading = true;
-      const entities = {};
-      for (const creator of creators) {
-        try {
-          this.$.userResource.path = `/user/${creator}`;
-          const user = await this.$.userResource.get();
-          entities[creator] = user;
-        } catch (_) {
-          entities[creator] = creator; // fallback: keep raw username for system/deleted users
-        }
-      }
-      this._creatorEntities = entities;
+      this._creatorEntities = await fetchUserEntities(creators, this.$.userResource);
       this._creatorsLoading = false;
     }
 
     _resolvedCreator(creator, entities, loading) {
       if (loading) return null;
-      return (entities && entities[creator]) || creator;
+      return resolveUser(creator, entities);
     }
 
     _aceBelongsToEntity(ace) {
