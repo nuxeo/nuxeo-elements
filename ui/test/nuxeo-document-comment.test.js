@@ -1095,5 +1095,92 @@ suite('nuxeo-document-comment extras', () => {
         el._handleRepliesChange(evt);
       });
     });
+
+    suite('_fetchAuthorEntity', () => {
+      test('should fetch and set author entity on success', async () => {
+        const userEntity = {
+          'entity-type': 'user',
+          id: 'jdoe',
+          properties: { firstName: 'John', lastName: 'Doe', username: 'jdoe' },
+        };
+        sinon.stub(el.$.authorResource, 'get').resolves(userEntity);
+        await el._fetchAuthorEntity('jdoe');
+        expect(el._authorEntity).to.deep.equal(userEntity);
+        expect(el._authorLoading).to.be.false;
+        expect(el.$.authorResource.path).to.equal('/user/jdoe');
+        el.$.authorResource.get.restore();
+      });
+
+      test('should set entity to null on 404 error', async () => {
+        const error = new Error('not found');
+        error.status = 404;
+        sinon.stub(el.$.authorResource, 'get').rejects(error);
+        const warnSpy = sinon.spy(console, 'warn');
+        await el._fetchAuthorEntity('deleted');
+        expect(el._authorEntity).to.be.null;
+        expect(el._authorLoading).to.be.false;
+        expect(warnSpy).to.not.have.been.called;
+        warnSpy.restore();
+        el.$.authorResource.get.restore();
+      });
+
+      test('should warn on unexpected non-404 errors', async () => {
+        const error = new Error('server error');
+        error.status = 500;
+        sinon.stub(el.$.authorResource, 'get').rejects(error);
+        const warnSpy = sinon.spy(console, 'warn');
+        await el._fetchAuthorEntity('baduser');
+        expect(el._authorEntity).to.be.null;
+        expect(el._authorLoading).to.be.false;
+        expect(warnSpy).to.have.been.calledOnce;
+        warnSpy.restore();
+        el.$.authorResource.get.restore();
+      });
+
+      test('should do nothing when author is empty', async () => {
+        el._authorEntity = 'unchanged';
+        await el._fetchAuthorEntity('');
+        expect(el._authorEntity).to.equal('unchanged');
+      });
+
+      test('should do nothing when author is not a string', async () => {
+        el._authorEntity = 'unchanged';
+        await el._fetchAuthorEntity(null);
+        expect(el._authorEntity).to.equal('unchanged');
+      });
+    });
+
+    suite('_authorDisplayName', () => {
+      test('should return full name from entity', () => {
+        const entity = {
+          'entity-type': 'user',
+          id: 'jdoe',
+          properties: { firstName: 'John', lastName: 'Doe', username: 'jdoe' },
+        };
+        expect(el._authorDisplayName('jdoe', entity, false)).to.equal('John Doe');
+      });
+
+      test('should return author when entity is null', () => {
+        expect(el._authorDisplayName('jdoe', null, false)).to.equal('jdoe');
+      });
+
+      test('should return author when loading', () => {
+        const entity = {
+          'entity-type': 'user',
+          id: 'jdoe',
+          properties: { firstName: 'John', lastName: 'Doe', username: 'jdoe' },
+        };
+        expect(el._authorDisplayName('jdoe', entity, true)).to.equal('jdoe');
+      });
+
+      test('should return author when entity has no properties', () => {
+        const entity = { id: 'jdoe' };
+        expect(el._authorDisplayName('jdoe', entity, false)).to.equal('jdoe');
+      });
+
+      test('should return empty string when author is empty', () => {
+        expect(el._authorDisplayName('', null, false)).to.equal('');
+      });
+    });
   });
 });
