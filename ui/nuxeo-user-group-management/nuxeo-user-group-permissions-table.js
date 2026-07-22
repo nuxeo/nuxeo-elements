@@ -430,7 +430,7 @@ import '../nuxeo-button-styles.js';
           const user = await this.$.userResource.get();
           entities[creator] = user;
         } catch (_) {
-          // keep the raw username if the fetch fails (e.g. system users)
+          void _; // system/deleted users — keep raw username as fallback
         }
       }
       this._creatorEntities = entities;
@@ -439,7 +439,7 @@ import '../nuxeo-button-styles.js';
 
     _resolvedCreator(creator, entities, loading) {
       if (loading) return null;
-      return (entities && entities[creator]) || creator;
+      return entities?.[creator] || creator;
     }
 
     _aceBelongsToEntity(ace) {
