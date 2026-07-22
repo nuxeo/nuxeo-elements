@@ -38,3 +38,32 @@ export function formatUserPrincipal(user) {
   const props = user.properties || {};
   return props.username || props['user:username'] || user.id || user.name || '';
 }
+
+/**
+ * Fetches user entities for a set of usernames using a nuxeo-resource element.
+ * Returns a map of username → user entity (or raw username string on failure).
+ */
+export async function fetchUserEntities(usernames, resourceElement) {
+  const entities = {};
+  for (const username of usernames) {
+    try {
+      resourceElement.path = `/user/${username}`;
+      const user = await resourceElement.get();
+      entities[username] = user;
+    } catch (error) {
+      if (error.status && error.status !== 404) {
+        console.warn(`Unexpected error resolving user "${username}":`, error.message);
+      }
+      entities[username] = username;
+    }
+  }
+  return entities;
+}
+
+/**
+ * Resolves a username to its entity from the entities map, falling back to raw username.
+ */
+export function resolveUser(username, entities) {
+  if (!entities) return username;
+  return entities[username] || username;
+}
