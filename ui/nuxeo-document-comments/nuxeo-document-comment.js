@@ -439,7 +439,10 @@ import '../nuxeo-button-styles.js';
     }
 
     _authorDisplayName(author, entity, loading) {
-      if (entity && entity.properties && !loading) {
+      if (!entity || loading) {
+        return author || '';
+      }
+      if (entity.properties) {
         return formatUserDisplayName(entity);
       }
       return author || '';
