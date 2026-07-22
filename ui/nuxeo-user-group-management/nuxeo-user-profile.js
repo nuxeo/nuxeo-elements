@@ -18,6 +18,7 @@ limitations under the License.
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import { formatUserDisplayName, formatUserPrincipal } from './nuxeo-user-display.js';
 import '@polymer/iron-flex-layout/iron-flex-layout-classes.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-form/iron-form.js';
@@ -228,7 +229,8 @@ import '../nuxeo-button-styles.js';
         <!-- local permissions -->
         <nuxeo-card heading="[[i18n('userManagement.localPermissions.heading')]]">
           <nuxeo-user-group-permissions-table
-            entity="[[_userDisplayName(user)]]"
+            entity="[[_userPrincipal(user)]]"
+            entity-label="[[_userFullName(user)]]"
             caption-text="[[i18n('userManagement.localPermissions.heading')]]"
             readonly
           ></nuxeo-user-group-permissions-table>
@@ -315,6 +317,14 @@ import '../nuxeo-button-styles.js';
       }
       const props = user.properties || {};
       return props.username || user.name || '';
+    }
+
+    _userFullName(user) {
+      return formatUserDisplayName(user);
+    }
+
+    _userPrincipal(user) {
+      return formatUserPrincipal(user);
     }
 
     _openChangePasswordDialog() {
