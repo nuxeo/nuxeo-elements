@@ -40,10 +40,17 @@ export function formatUserPrincipal(user) {
 }
 
 /**
- * Fetches user entities for a set of usernames using a nuxeo-resource element.
+ * Tracks the in-flight fetch chain for each shared resource element so that
+ * concurrent callers are serialized rather than racing on the same element.
+ */
+const resourceQueues = new WeakMap();
+
+/**
+ * Resolves a set of usernames to user entities by mutating and querying the
+ * shared nuxeo-resource element sequentially.
  * Returns a map of username → user entity (or raw username string on failure).
  */
-export async function fetchUserEntities(usernames, resourceElement) {
+async function resolveUserEntities(usernames, resourceElement) {
   const entities = {};
   for (const username of usernames) {
     try {
@@ -58,6 +65,22 @@ export async function fetchUserEntities(usernames, resourceElement) {
     }
   }
   return entities;
+}
+
+/**
+ * Fetches user entities for a set of usernames using a nuxeo-resource element.
+ * Returns a map of username → user entity (or raw username string on failure).
+ *
+ * Because `nuxeo-resource` mutates a shared `path` and aborts in-flight
+ * requests when a new one starts, concurrent callers using the same resource
+ * element would abort each other's requests. Invocations are therefore
+ * serialized per resource element via a promise chain.
+ */
+export function fetchUserEntities(usernames, resourceElement) {
+  const previous = resourceQueues.get(resourceElement) || Promise.resolve();
+  const run = previous.catch(() => {}).then(() => resolveUserEntities(usernames, resourceElement));
+  resourceQueues.set(resourceElement, run);
+  return run;
 }
 
 /**
