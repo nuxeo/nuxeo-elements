@@ -664,10 +664,36 @@ import '../nuxeo-button-styles.js';
     /** Visibility Methods * */
 
     _areExtendedOptionsAvailable(author, currentUser) {
+      const username = this._authorUsername(author);
       return (
         currentUser &&
-        ((currentUser.properties && currentUser.properties.username === author) || currentUser.isAdministrator)
+        ((currentUser.properties && currentUser.properties.username === username) || currentUser.isAdministrator)
       );
+    }
+
+    _isAuthorEntity(author) {
+      if (author == null || typeof author !== 'object') {
+        return false;
+      }
+      return author['entity-type'] === 'user' || (author['entity-type'] === 'document' && author.type === 'user');
+    }
+
+    _authorStringFallback(author) {
+      if (typeof author === 'string') {
+        return author;
+      }
+      if (author && typeof author === 'object') {
+        return author.id || author.uid || '';
+      }
+      return '';
+    }
+
+    _authorUsername(author) {
+      if (this._isAuthorEntity(author)) {
+        const props = author.properties || {};
+        return props.username || props['user:username'] || author.id || author.uid || '';
+      }
+      return this._authorStringFallback(author);
     }
 
     _isBlank(text) {
