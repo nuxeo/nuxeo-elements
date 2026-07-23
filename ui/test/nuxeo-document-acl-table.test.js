@@ -17,6 +17,7 @@ limitations under the License.
 */
 import { fixture, html } from '@nuxeo/testing-helpers';
 import '../nuxeo-document-permissions/nuxeo-document-acl-table.js';
+import { fetchUserEntities } from '../nuxeo-user-group-management/nuxeo-user-display.js';
 
 suite('nuxeo-document-acl-table', () => {
   test('should return the element name', () => {
@@ -249,6 +250,32 @@ suite('nuxeo-document-acl-table extras', () => {
       expect(warnSpy).to.not.have.been.called;
       warnSpy.restore();
       el.$.userResource.get.restore();
+    });
+  });
+
+  suite('fetchUserEntities serialization', () => {
+    test('serializes concurrent calls sharing the same resource element', async () => {
+      const order = [];
+      const fakeResource = {
+        path: '',
+        get() {
+          const requestedPath = this.path;
+          order.push(requestedPath);
+          const username = requestedPath.split('/').pop();
+          return Promise.resolve({ 'entity-type': 'user', properties: { username } });
+        },
+      };
+
+      // Fire two overlapping calls on the SAME resource element.
+      const callA = fetchUserEntities(['a1', 'a2'], fakeResource);
+      const callB = fetchUserEntities(['b1'], fakeResource);
+      const [resultA, resultB] = await Promise.all([callA, callB]);
+
+      // With serialization, all of call A's requests complete before call B's,
+      // so the order is deterministic (never interleaved).
+      expect(order).to.deep.equal(['/user/a1', '/user/a2', '/user/b1']);
+      expect(resultA).to.have.all.keys('a1', 'a2');
+      expect(resultB).to.have.all.keys('b1');
     });
   });
 });
