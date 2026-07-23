@@ -441,7 +441,7 @@ import '../nuxeo-button-styles.js';
       } catch (error) {
         if (requestId !== this._authorRequestId) return;
         if (error.status && error.status !== 404) {
-          console.warn(`Unexpected error resolving comment author "${author}":`, error.message);
+          console.warn(`Unexpected error resolving comment author "${author}":`, error);
         }
         this._authorEntity = null;
       }
@@ -449,13 +449,14 @@ import '../nuxeo-button-styles.js';
     }
 
     _authorDisplayName(author, entity, loading) {
+      if (!author) return '';
       if (!entity || loading) {
-        return author || '';
+        return author;
       }
       if (entity.properties) {
         return formatUserDisplayName(entity);
       }
-      return author || '';
+      return author;
     }
 
     _checkForEnter(e) {
