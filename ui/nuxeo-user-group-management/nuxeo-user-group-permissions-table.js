@@ -28,7 +28,6 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
 import moment from '@nuxeo/moment';
 import '../nuxeo-pagination-controls.js';
 import '../widgets/nuxeo-dialog.js';
-import '../widgets/nuxeo-tag.js';
 import '../widgets/nuxeo-user-tag.js';
 import { fetchUserEntities, resolveUser } from './nuxeo-user-display.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
