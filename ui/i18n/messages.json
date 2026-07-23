@@ -291,6 +291,7 @@
   "paginationControls.pageInfo": "Page {0} of {1}",
   "paginationControls.paginationNavigation": "Pagination",
   "paginationControls.previousPage": "Go to previous page",
+  "pdfViewer.title": "PDF preview",
   "popupPermission.addPermission": "Add a Permission",
   "popupPermission.cancel": "Cancel",
   "popupPermission.create": "Create",
