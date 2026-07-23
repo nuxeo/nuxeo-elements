@@ -204,8 +204,8 @@ suite('nuxeo-user-profile', () => {
       expect(el._userDisplayName({ properties: {} })).to.equal('');
     });
 
-    test('returns empty string when user.properties is absent', () => {
-      expect(el._userDisplayName({ id: 'some-uuid' })).to.equal('');
+    test('falls back to user.id when user.properties is absent', () => {
+      expect(el._userDisplayName({ id: 'some-uuid' })).to.equal('some-uuid');
     });
   });
 

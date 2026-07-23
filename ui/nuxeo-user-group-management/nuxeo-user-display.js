@@ -47,7 +47,7 @@ export async function fetchUserEntities(usernames, resourceElement) {
   const entities = {};
   for (const username of usernames) {
     try {
-      resourceElement.path = `/user/${username}`;
+      resourceElement.path = `/user/${encodeURIComponent(username)}`;
       const user = await resourceElement.get();
       entities[username] = user;
     } catch (error) {

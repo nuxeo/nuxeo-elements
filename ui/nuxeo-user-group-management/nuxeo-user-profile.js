@@ -312,11 +312,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _userDisplayName(user) {
-      if (!user) {
-        return '';
-      }
-      const props = user.properties || {};
-      return props.username || user.name || '';
+      return formatUserPrincipal(user);
     }
 
     _userFullName(user) {

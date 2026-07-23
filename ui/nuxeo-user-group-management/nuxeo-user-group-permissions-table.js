@@ -314,6 +314,11 @@ import '../nuxeo-button-styles.js';
           type: Boolean,
           value: false,
         },
+
+        _creatorsRequestId: {
+          type: Number,
+          value: 0,
+        },
       };
     }
 
@@ -423,13 +428,16 @@ import '../nuxeo-button-styles.js';
         });
       });
       if (!creators.size) return;
+      const requestId = ++this._creatorsRequestId;
       this._creatorsLoading = true;
-      this._creatorEntities = await fetchUserEntities(creators, this.$.userResource);
+      const entities = await fetchUserEntities(creators, this.$.userResource);
+      if (requestId !== this._creatorsRequestId) return;
+      this._creatorEntities = entities;
       this._creatorsLoading = false;
     }
 
     _resolvedCreator(creator, entities, loading) {
-      if (loading) return null;
+      if (loading) return creator;
       return resolveUser(creator, entities);
     }
 

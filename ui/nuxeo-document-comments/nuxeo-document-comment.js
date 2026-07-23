@@ -378,6 +378,12 @@ import '../nuxeo-button-styles.js';
           type: Boolean,
           value: false,
         },
+
+        /** Monotonic counter to discard stale author fetch responses. */
+        _authorRequestId: {
+          type: Number,
+          value: 0,
+        },
       };
     }
 
@@ -425,11 +431,15 @@ import '../nuxeo-button-styles.js';
 
     async _fetchAuthorEntity(author) {
       if (!author || typeof author !== 'string') return;
+      const requestId = ++this._authorRequestId;
       this._authorLoading = true;
       try {
-        this.$.authorResource.path = `/user/${author}`;
-        this._authorEntity = await this.$.authorResource.get();
+        this.$.authorResource.path = `/user/${encodeURIComponent(author)}`;
+        const entity = await this.$.authorResource.get();
+        if (requestId !== this._authorRequestId) return;
+        this._authorEntity = entity;
       } catch (error) {
+        if (requestId !== this._authorRequestId) return;
         if (error.status && error.status !== 404) {
           console.warn(`Unexpected error resolving comment author "${author}":`, error.message);
         }
