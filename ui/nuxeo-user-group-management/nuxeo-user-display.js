@@ -58,7 +58,7 @@ async function resolveUserEntities(usernames, resourceElement) {
       const user = await resourceElement.get();
       entities[username] = user;
     } catch (error) {
-      if (error.status && error.status !== 404) {
+      if (error.status !== 404) {
         console.warn(`Unexpected error resolving user "${username}":`, error);
       }
       entities[username] = username;

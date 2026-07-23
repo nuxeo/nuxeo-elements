@@ -444,7 +444,7 @@ import '../nuxeo-button-styles.js';
         this._authorEntity = entity;
       } catch (error) {
         if (requestId !== this._authorRequestId) return;
-        if (error.status && error.status !== 404) {
+        if (error.status !== 404) {
           console.warn(`Unexpected error resolving comment author "${author}":`, error);
         }
         this._authorEntity = null;
