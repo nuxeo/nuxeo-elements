@@ -430,7 +430,11 @@ import '../nuxeo-button-styles.js';
     }
 
     async _fetchAuthorEntity(author) {
-      if (!author || typeof author !== 'string') return;
+      if (!author || typeof author !== 'string') {
+        this._authorEntity = null;
+        this._authorLoading = false;
+        return;
+      }
       const requestId = ++this._authorRequestId;
       this._authorLoading = true;
       try {
@@ -450,6 +454,12 @@ import '../nuxeo-button-styles.js';
 
     _authorDisplayName(author, entity, loading) {
       if (!author) return '';
+      if (this._isAuthorEntity(author)) {
+        return formatUserDisplayName(author);
+      }
+      if (typeof author !== 'string') {
+        return this._authorStringFallback(author);
+      }
       if (!entity || loading) {
         return author;
       }

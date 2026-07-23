@@ -1201,16 +1201,20 @@ suite('nuxeo-document-comment extras', () => {
         el.$.authorResource.get.restore();
       });
 
-      test('should do nothing when author is empty', async () => {
-        el._authorEntity = 'unchanged';
+      test('should reset state when author is empty', async () => {
+        el._authorEntity = 'stale';
+        el._authorLoading = true;
         await el._fetchAuthorEntity('');
-        expect(el._authorEntity).to.equal('unchanged');
+        expect(el._authorEntity).to.be.null;
+        expect(el._authorLoading).to.be.false;
       });
 
-      test('should do nothing when author is not a string', async () => {
-        el._authorEntity = 'unchanged';
+      test('should reset state when author is not a string', async () => {
+        el._authorEntity = 'stale';
+        el._authorLoading = true;
         await el._fetchAuthorEntity(null);
-        expect(el._authorEntity).to.equal('unchanged');
+        expect(el._authorEntity).to.be.null;
+        expect(el._authorLoading).to.be.false;
       });
     });
 
@@ -1244,6 +1248,20 @@ suite('nuxeo-document-comment extras', () => {
 
       test('should return empty string when author is empty', () => {
         expect(el._authorDisplayName('', null, false)).to.equal('');
+      });
+
+      test('should format entity author directly when comment.author is a user entity', () => {
+        const authorEntity = {
+          'entity-type': 'user',
+          id: 'jdoe',
+          properties: { firstName: 'John', lastName: 'Doe', username: 'jdoe' },
+        };
+        expect(el._authorDisplayName(authorEntity, null, false)).to.equal('John Doe');
+      });
+
+      test('should return id for non-entity object author', () => {
+        const obj = { id: 'some-id' };
+        expect(el._authorDisplayName(obj, null, false)).to.equal('some-id');
       });
     });
   });
