@@ -380,7 +380,7 @@ suite('nuxeo-user-group-permissions-table', () => {
       const error = new Error('internal error');
       error.status = 500;
       sinon.stub(el.$.userResource, 'get').rejects(error);
-      const warnSpy = sinon.spy(console, 'warn');
+      const warnSpy = sinon.stub(console, 'warn');
       await el._fetchCreators([{ aces: [mkAce({ creator: 'baduser' })] }]);
       expect(el._creatorEntities).to.have.property('baduser', 'baduser');
       expect(warnSpy).to.have.been.calledOnce;
@@ -392,7 +392,7 @@ suite('nuxeo-user-group-permissions-table', () => {
       const error = new Error('not found');
       error.status = 404;
       sinon.stub(el.$.userResource, 'get').rejects(error);
-      const warnSpy = sinon.spy(console, 'warn');
+      const warnSpy = sinon.stub(console, 'warn');
       await el._fetchCreators([{ aces: [mkAce({ creator: 'deleted' })] }]);
       expect(el._creatorEntities).to.have.property('deleted', 'deleted');
       expect(warnSpy).to.not.have.been.called;

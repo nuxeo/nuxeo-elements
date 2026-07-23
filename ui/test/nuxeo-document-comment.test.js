@@ -1115,7 +1115,7 @@ suite('nuxeo-document-comment extras', () => {
         const error = new Error('not found');
         error.status = 404;
         sinon.stub(el.$.authorResource, 'get').rejects(error);
-        const warnSpy = sinon.spy(console, 'warn');
+        const warnSpy = sinon.stub(console, 'warn');
         await el._fetchAuthorEntity('deleted');
         expect(el._authorEntity).to.be.null;
         expect(el._authorLoading).to.be.false;
@@ -1128,7 +1128,7 @@ suite('nuxeo-document-comment extras', () => {
         const error = new Error('server error');
         error.status = 500;
         sinon.stub(el.$.authorResource, 'get').rejects(error);
-        const warnSpy = sinon.spy(console, 'warn');
+        const warnSpy = sinon.stub(console, 'warn');
         await el._fetchAuthorEntity('baduser');
         expect(el._authorEntity).to.be.null;
         expect(el._authorLoading).to.be.false;
