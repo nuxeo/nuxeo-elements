@@ -190,10 +190,21 @@ suite('nuxeo-document-acl-table extras', () => {
   });
 
   suite('_fetchCreators', () => {
-    test('should skip when aces is empty', async () => {
+    test('should skip and reset loading when aces is empty', async () => {
       const getSpy = sinon.spy(el.$.userResource, 'get');
+      el._creatorsLoading = true;
       await el._fetchCreators([]);
       expect(getSpy).to.not.have.been.called;
+      expect(el._creatorsLoading).to.be.false;
+      getSpy.restore();
+    });
+
+    test('should skip and reset loading when no creators are present', async () => {
+      const getSpy = sinon.spy(el.$.userResource, 'get');
+      el._creatorsLoading = true;
+      await el._fetchCreators([{ username: 'Admin', permission: 'Read' }]);
+      expect(getSpy).to.not.have.been.called;
+      expect(el._creatorsLoading).to.be.false;
       getSpy.restore();
     });
 
