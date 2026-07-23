@@ -417,7 +417,7 @@ import '../nuxeo-button-styles.js';
       this._fetchCreators(entries);
     }
 
-    async _fetchCreators(entries) {
+    async _fetchCreators(entries = []) {
       const creators = new Set();
       entries.forEach((entry) => {
         (entry.aces || []).forEach((ace) => {
@@ -426,7 +426,10 @@ import '../nuxeo-button-styles.js';
           }
         });
       });
-      if (!creators.size) return;
+      if (!creators.size) {
+        this._creatorsLoading = false;
+        return;
+      }
       const requestId = ++this._creatorsRequestId;
       this._creatorsLoading = true;
       const entities = await fetchUserEntities(creators, this.$.userResource);

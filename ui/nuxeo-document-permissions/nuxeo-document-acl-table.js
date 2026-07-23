@@ -335,14 +335,16 @@ import './nuxeo-popup-permission.js';
     }
 
     async _fetchCreators(aces = []) {
-      if (!aces.length) return;
       const creators = new Set();
       aces.forEach((ace) => {
         if (ace.creator && typeof ace.creator === 'string') {
           creators.add(ace.creator);
         }
       });
-      if (!creators.size) return;
+      if (!creators.size) {
+        this._creatorsLoading = false;
+        return;
+      }
       const requestId = ++this._creatorsRequestId;
       this._creatorsLoading = true;
       const entities = await fetchUserEntities(creators, this.$.userResource);

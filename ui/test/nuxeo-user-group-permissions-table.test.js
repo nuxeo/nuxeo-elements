@@ -353,10 +353,21 @@ suite('nuxeo-user-group-permissions-table', () => {
   });
 
   suite('_fetchCreators', () => {
-    test('should skip when entries have no aces with creators', async () => {
+    test('should skip and reset loading when entries have no aces with creators', async () => {
       const getSpy = sinon.spy(el.$.userResource, 'get');
+      el._creatorsLoading = true;
       await el._fetchCreators([{ aces: [] }]);
       expect(getSpy).to.not.have.been.called;
+      expect(el._creatorsLoading).to.be.false;
+      getSpy.restore();
+    });
+
+    test('should skip and reset loading when called with no entries', async () => {
+      const getSpy = sinon.spy(el.$.userResource, 'get');
+      el._creatorsLoading = true;
+      await el._fetchCreators();
+      expect(getSpy).to.not.have.been.called;
+      expect(el._creatorsLoading).to.be.false;
       getSpy.restore();
     });
 
