@@ -223,8 +223,12 @@ suite('nuxeo-document-acl-table extras', () => {
 
     test('should handle fetch failure gracefully', async () => {
       sinon.stub(el.$.userResource, 'get').rejects(new Error('not found'));
+      const warnSpy = sinon.stub(console, 'warn');
       await el._fetchCreators([{ creator: 'unknown', username: 'Admin', permission: 'Read' }]);
       expect(el._creatorEntities).to.have.property('unknown', 'unknown');
+      // A statusless (e.g. network/transport) error is unexpected and should be logged.
+      expect(warnSpy).to.have.been.calledOnce;
+      warnSpy.restore();
       el.$.userResource.get.restore();
     });
 
