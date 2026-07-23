@@ -115,11 +115,11 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
           }
         </style>
 
-        <nav class="container">
+        <nav class="container" aria-label$="[[i18n('paginationControls.paginationNavigation')]]">
           <paper-icon-button
             id="firstPage"
             icon="av:skip-previous"
-            title="First Page"
+            title="[[i18n('paginationControls.firstPage')]]"
             aria-label$="[[i18n('paginationControls.firstPage')]]"
             on-click="_first"
             disabled$="[[_isFirst(page)]]"
@@ -128,7 +128,7 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
           <paper-icon-button
             id="previousPage"
             icon="icons:chevron-left"
-            title="Previous Page"
+            title="[[i18n('paginationControls.previousPage')]]"
             aria-label$="[[i18n('paginationControls.previousPage')]]"
             on-click="_previous"
             disabled$="[[_isFirst(page)]]"
@@ -150,7 +150,7 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
             <span
               class="currentPage"
               hidden$="[[_computeLimitForOptions(numberOfPages)]]"
-              aria-label$="[[i18n('paginationControls.pageInfo', page, numberOfPages)]]"
+              aria-label$="[[i18n('paginationControls.currentPage', page)]]"
             >
               [[page]]
             </span>
@@ -159,7 +159,7 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
           <paper-icon-button
             id="nextPage"
             icon="icons:chevron-right"
-            title="Next Page"
+            title="[[i18n('paginationControls.nextPage')]]"
             aria-label$="[[i18n('paginationControls.nextPage')]]"
             on-click="_next"
             disabled$="[[_isLast(page, numberOfPages)]]"
@@ -168,7 +168,7 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
           <paper-icon-button
             id="lastPage"
             icon="av:skip-next"
-            title="Last Page"
+            title="[[i18n('paginationControls.lastPage')]]"
             aria-label$="[[i18n('paginationControls.lastPage')]]"
             on-click="_last"
             disabled$="[[_isLast(page, numberOfPages)]]"
