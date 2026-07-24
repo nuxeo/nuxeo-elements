@@ -20,6 +20,12 @@ on:
 permissions:
   contents: read
 
+# Cancel a stale in-flight cross-repo check (and its poller) for the same PR when a newer commit
+# is pushed, so superseded ~1h ftest runs don't keep consuming runners.
+concurrency:
+  group: web-ui-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 env:
   BRANCH_NAME: ${{ github.head_ref || inputs.branch || github.base_ref }}
 
