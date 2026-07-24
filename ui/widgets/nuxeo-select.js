@@ -269,11 +269,25 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
         this._resizeObserver = new ResizeObserver(() => this._resize());
       }
       this._resizeObserver.observe(this);
+      if (!this._ariaLabelObserver) {
+        this._ariaLabelObserver = new MutationObserver((mutations) => {
+          if (mutations.some((mutation) => mutation.attributeName === 'aria-label')) {
+            this._syncAriaLabel();
+          }
+        });
+      }
+      this._ariaLabelObserver.observe(this, {
+        attributes: true,
+        attributeFilter: ['aria-label'],
+      });
     }
 
     disconnectedCallback() {
       super.disconnectedCallback();
       this._resizeObserver.unobserve(this);
+      if (this._ariaLabelObserver) {
+        this._ariaLabelObserver.disconnect();
+      }
       this._detachDropdownTabHandler();
     }
 
@@ -323,7 +337,7 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
     _applyAriaLabel() {
       const pdm = this.$ && this.$.paperDropdownMenu;
       if (!pdm) return;
-      const ariaLabel = (this.label || '').trim() || null;
+      const ariaLabel = (this.getAttribute('aria-label') || '').trim() || (this.label || '').trim() || null;
 
       // paper-dropdown-menu exposes its paper-input trigger as $.input.
       const paperInput = (pdm.$ && pdm.$.input) || (pdm.shadowRoot && pdm.shadowRoot.querySelector('paper-input'));
