@@ -199,7 +199,7 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     expect(provider.uploader).to.be.null;
   });
 
-  test('cancelBatch() returns a Promise that resolves immediately (uploader.cancel() runs in the background)', async () => {
+  test('cancelBatch() resolves immediately (uploader.cancel() runs in the background)', async () => {
     const cancel = sinon.stub().resolves();
     provider.uploader = { _batchId: 'b1', cancel };
     provider.batchId = 'b1';
