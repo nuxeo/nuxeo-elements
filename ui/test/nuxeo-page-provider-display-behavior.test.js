@@ -209,11 +209,39 @@ suite('PageProviderDisplayBehavior', () => {
   });
 
   suite('_updateResults', () => {
-    test('sets size to items length when provider exists', () => {
+    // Table-driven fetch: items are populated by the fetch handler, so _updateResults only syncs size.
+    test('sets size to items length for a table-initiated fetch', () => {
       host.nxProvider = makeProvider();
       host.items = items(5);
+      host._pendingTableFetches = 1;
       host._updateResults();
       expect(host.size).to.equal(5);
+    });
+
+    // Provider-driven fetch (e.g. `auto`): results must be synced from the provider into the table. (WEBUI-2121)
+    test('loads results from the provider for a provider-initiated fetch (auto)', () => {
+      host.nxProvider = makeProvider({ auto: true, currentPage: items(3), resultsCount: 3 });
+      host.items = [];
+      host._pendingTableFetches = 0;
+      const spy = sinon.spy(host, '_displayProviderResults');
+      host._updateResults();
+      expect(spy).to.have.been.calledOnce;
+      expect(host.items).to.have.lengthOf(3);
+      expect(host._isEmpty).to.be.false;
+      spy.restore();
+    });
+
+    // Guards against a superseded fetch: an earlier aborted fetch decrements the counter, but while a
+    // newer table-initiated fetch is still in flight (counter > 0) its update must NOT be treated as
+    // provider-initiated. A single boolean would be wrongly cleared here. (WEBUI-2121 review)
+    test('keeps a provider update table-initiated while another table fetch is still pending', () => {
+      host.nxProvider = makeProvider({ currentPage: items(3), resultsCount: 3 });
+      host.items = items(3);
+      host._pendingTableFetches = 1;
+      const spy = sinon.spy(host, '_displayProviderResults');
+      host._updateResults();
+      expect(spy).to.not.have.been.called;
+      spy.restore();
     });
 
     test('does nothing without provider', () => {
@@ -221,6 +249,46 @@ suite('PageProviderDisplayBehavior', () => {
       host.nxProvider = null;
       host._updateResults();
       expect(host.size).not.to.equal(5);
+    });
+  });
+
+  suite('_displayProviderResults', () => {
+    test('fills items from the provider currentPage (non-paginable)', () => {
+      host.nxProvider = makeProvider({ currentPage: items(3), resultsCount: 3 });
+      host.paginable = false;
+      host.items = [];
+      host._displayProviderResults();
+      expect(host.items).to.have.lengthOf(3);
+      expect(host.size).to.equal(3);
+    });
+
+    test('fills items from the provider currentPage (paginable)', () => {
+      host.nxProvider = makeProvider({ currentPage: items(2), resultsCount: 2 });
+      host.paginable = true;
+      host.items = [];
+      host._displayProviderResults();
+      expect(host.items).to.have.lengthOf(2);
+      expect(host._last).to.equal(1);
+    });
+
+    test('reuses the items array when the count is unchanged', () => {
+      host.nxProvider = makeProvider({ currentPage: items(3), resultsCount: 3 });
+      host.paginable = false;
+      host.items = items(3);
+      const resetSpy = sinon.spy(host, 'reset');
+      host._displayProviderResults();
+      expect(resetSpy).to.not.have.been.called;
+      expect(host.items).to.have.lengthOf(3);
+      resetSpy.restore();
+    });
+
+    test('handles an empty provider currentPage', () => {
+      host.nxProvider = makeProvider({ resultsCount: 0 });
+      host.paginable = false;
+      host.items = items(2);
+      host._displayProviderResults();
+      expect(host.items).to.have.lengthOf(0);
+      expect(host._isEmpty).to.be.true;
     });
   });
 
@@ -2241,14 +2309,27 @@ suite('PageProviderDisplayBehavior extras', () => {
   });
 
   suite('_updateResults', () => {
-    test('sets size from items when has provider', () => {
+    test('sets size from items for a table-initiated fetch', () => {
       const ctx = {
         _hasPageProvider: () => true,
+        _pendingTableFetches: 1,
         items: [1, 2, 3],
         size: 0,
       };
       b._updateResults.call(ctx);
       expect(ctx.size).to.equal(3);
+    });
+
+    test('delegates to _displayProviderResults for a provider-initiated fetch', () => {
+      const ctx = {
+        _hasPageProvider: () => true,
+        _pendingTableFetches: 0,
+        _displayProviderResults: sinon.stub(),
+        items: [1, 2, 3],
+        size: 0,
+      };
+      b._updateResults.call(ctx);
+      expect(ctx._displayProviderResults).to.have.been.calledOnce;
     });
 
     test('no-op without provider', () => {
