@@ -134,15 +134,23 @@ import '../nuxeo-icons.js';
 
     _tap(fromKeyboard = false) {
       if (!this.disabled) {
+        this._fromKeyboard = fromKeyboard;
         this.checked = !this.checked;
-        if (!fromKeyboard && !this.checked) {
-          this.blur();
-        }
       }
     }
 
     _ariaChecked() {
       this.setAttribute('aria-checked', this.checked);
+      // Drop focus when the checkmark is unchecked so the tick icon does not
+      // linger after deselection (WEBUI-2056). This runs from the `checked`
+      // observer so it also covers deselections driven through data binding
+      // (e.g. table rows / select-all), not just direct mouse taps. Keyboard
+      // toggles keep focus so keyboard navigation is preserved (ELEMENTS-1851).
+      const fromKeyboard = this._fromKeyboard;
+      this._fromKeyboard = false;
+      if (!this.checked && !fromKeyboard) {
+        this.blur();
+      }
     }
   }
 
