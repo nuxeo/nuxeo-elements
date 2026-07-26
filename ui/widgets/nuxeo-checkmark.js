@@ -132,9 +132,13 @@ import '../nuxeo-icons.js';
       }
     }
 
-    _tap(fromKeyboard = false) {
+    _tap(fromKeyboard) {
       if (!this.disabled) {
-        this._fromKeyboard = fromKeyboard;
+        // `_tap` is also the `on-click` handler, so a mouse click invokes it with a
+        // `MouseEvent` argument. Only an explicit `true` (from `_onKeyDown`) counts as
+        // a keyboard toggle; an event object or `undefined` is a pointer interaction
+        // that must still blur on deselect (WEBUI-2056).
+        this._fromKeyboard = fromKeyboard === true;
         this.checked = !this.checked;
       }
     }

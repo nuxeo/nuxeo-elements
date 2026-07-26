@@ -60,6 +60,18 @@ suite('nuxeo-checkmark extras', () => {
       blurSpy.restore();
     });
 
+    // `on-click="_tap"` passes a MouseEvent, not a boolean. Guards against the
+    // WEBUI-2056 regression where the event was mistaken for a keyboard toggle
+    // and blur() was skipped, leaving the tick visible after a mouse deselect.
+    test('blurs when toggled off via a real click event (on-click wiring)', () => {
+      el.checked = true;
+      const blurSpy = sinon.spy(el, 'blur');
+      el._tap(new MouseEvent('click'));
+      expect(el.checked).to.be.false;
+      expect(blurSpy).to.have.been.called;
+      blurSpy.restore();
+    });
+
     test('does not blur when toggled via keyboard', () => {
       el.checked = true;
       const blurSpy = sinon.spy(el, 'blur');
