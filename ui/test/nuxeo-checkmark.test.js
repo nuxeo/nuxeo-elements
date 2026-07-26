@@ -118,5 +118,22 @@ suite('nuxeo-checkmark extras', () => {
       el.checked = false;
       expect(el.getAttribute('aria-checked')).to.equal('false');
     });
+
+    test('blurs when unchecked through data binding (e.g. table/select-all deselect)', () => {
+      el.checked = true;
+      const blurSpy = sinon.spy(el, 'blur');
+      // Simulate a deselection propagated via binding rather than a mouse tap.
+      el.checked = false;
+      expect(blurSpy).to.have.been.called;
+      blurSpy.restore();
+    });
+
+    test('does not blur when checked through data binding', () => {
+      el.checked = false;
+      const blurSpy = sinon.spy(el, 'blur');
+      el.checked = true;
+      expect(blurSpy).to.not.have.been.called;
+      blurSpy.restore();
+    });
   });
 });
