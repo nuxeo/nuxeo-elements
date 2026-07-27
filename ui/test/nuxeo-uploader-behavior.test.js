@@ -260,6 +260,26 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     expect(cancel).to.have.been.calledOnce;
   });
 
+  test('cancelBatch() reads uploader._promises to sequence the background DELETE after in-flight POSTs', async () => {
+    // Regression guard for review feedback on PR #1516: the ELEMENTS-1992 fix depends on the
+    // Nuxeo client's private `_promises` field. If a future client upgrade renames or removes
+    // it, this test fails loudly -- otherwise the ternary in cancelBatch() silently falls
+    // through to `Promise.resolve()`, the DELETE fires immediately again, and the Batch.addFile
+    // NPE regresses server-side. Uses a promise-like stub so we can spy on `.then()` and prove
+    // cancelBatch() actually iterated `_promises` (rather than just relying on the timing
+    // side-effect asserted by the sibling tests above).
+    const thenSpy = sinon.stub().returns(Promise.resolve());
+    const promiseLike = { then: thenSpy };
+    const cancel = sinon.stub().resolves();
+    provider.uploader = { _batchId: 'b1', _promises: [promiseLike], cancel };
+    provider.batchId = 'b1';
+    await provider.cancelBatch();
+    await flushAll();
+    await flushAll();
+    expect(thenSpy, 'cancelBatch() must consume uploader._promises').to.have.been.called;
+    expect(cancel).to.have.been.calledOnce;
+  });
+
   test('upload does nothing when files is null', () => {
     provider.upload(null, sinon.spy());
   });
