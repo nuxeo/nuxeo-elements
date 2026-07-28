@@ -282,6 +282,11 @@ suite('nuxeo-operation-button', () => {
         expected: 'my file.pdf',
       },
       {
+        name: 'keeps a semicolon that belongs to a quoted filename',
+        header: 'attachment; filename="draft; final.pdf"',
+        expected: 'draft; final.pdf',
+      },
+      {
         name: 'returns an empty name when the header carries no filename',
         header: 'attachment',
         expected: '',
