@@ -70,9 +70,10 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
               white-space: nowrap;
               direction: rtl;
               text-align: left;
-              @apply --nuxeo-path-suggestion-result;
               background-color: var(--nuxeo-dropdown-list-background, #fff);
               color: var(--nuxeo-text-default, #3a3a54);
+              /* Keep @apply last so consumers can still override the defaults above via the mixin. */
+              @apply --nuxeo-path-suggestion-result;
             }
 
             /* Selected row: use the theme token if set, else a neutral translucent tint that stays
