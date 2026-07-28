@@ -98,7 +98,7 @@ import './nuxeo-tooltip.js';
         >
           <paper-icon-button
             id="iconButton"
-            icon="icons:more-vert"
+            icon="nuxeo:more-vert"
             slot="dropdown-trigger"
             aria-labelledby="iconButtonTooltip"
             on-keydown="_onDropdownTriggerKeydown"
