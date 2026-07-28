@@ -75,13 +75,15 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
               color: var(--nuxeo-text-default, #3a3a54);
             }
 
+            /* Selected row: use the theme token if set, else a neutral translucent tint that stays
+               readable on both light and dark surfaces (no color-mix, so it works in every browser). */
             --paper-typeahead-result-selected-background: var(
               --hyland-path-suggestion-result-selected-background,
-              #e8eaf6
+              rgba(128, 128, 128, 0.2)
             );
 
             --paper-typeahead-result-selected: {
-              color: var(--nuxeo-button-primary-text, #3a3a54);
+              color: var(--hyland-path-suggestion-result-selected-text, var(--nuxeo-text-default, #3a3a54));
             }
 
             --paper-input-container-underline: {
