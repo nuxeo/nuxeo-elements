@@ -90,7 +90,7 @@ import './nuxeo-tooltip.js';
         <paper-menu-button id="dropdownButton" close-on-activate no-overlap horizontal-align="right">
           <paper-icon-button
             id="iconButton"
-            icon="icons:more-vert"
+            icon="nuxeo:more-vert"
             slot="dropdown-trigger"
             aria-labelledby="iconButtonTooltip"
           ></paper-icon-button>
