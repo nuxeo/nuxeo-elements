@@ -41,6 +41,35 @@ suite('nuxeo-pdf-viewer', () => {
       expect(iframe.src).to.include('pdfjs/web/viewer.html');
     });
 
+    test('should set the iframe title from the pdfViewer.title i18n key', async () => {
+      const originalLanguage = window.nuxeo.I18n.language;
+      const hadEnDict = window.nuxeo.I18n.en !== undefined;
+      const dict = (window.nuxeo.I18n.en = window.nuxeo.I18n.en || {});
+      const originalValue = dict['pdfViewer.title'];
+      window.nuxeo.I18n.language = 'en';
+      dict['pdfViewer.title'] = 'PDF preview';
+      try {
+        const elem = await fixture(
+          html`
+            <nuxeo-pdf-viewer src="sample.pdf"></nuxeo-pdf-viewer>
+          `,
+        );
+        const iframe = elem.shadowRoot.querySelector('iframe');
+        expect(iframe.hasAttribute('title')).to.be.true;
+        expect(iframe.getAttribute('title')).to.equal('PDF preview');
+      } finally {
+        window.nuxeo.I18n.language = originalLanguage;
+        if (originalValue === undefined) {
+          delete dict['pdfViewer.title'];
+        } else {
+          dict['pdfViewer.title'] = originalValue;
+        }
+        if (!hadEnDict) {
+          delete window.nuxeo.I18n.en;
+        }
+      }
+    });
+
     test('should render with no src without throwing', async () => {
       const elem = await fixture(
         html`

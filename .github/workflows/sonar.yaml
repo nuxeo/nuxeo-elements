@@ -62,7 +62,7 @@ jobs:
       - name: Install npm dependencies
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-        run: npm install --no-package-lock --ignore-scripts
+        run: npm ci --ignore-scripts
         working-directory: ${{ github.workspace }}
 
       - name: Ensure latest @nuxeo RC packages
@@ -75,7 +75,7 @@ jobs:
             | sort -V | tail -n1)
           echo "Resolved latest nuxeo-elements RC: $ELEMENTS_VERSION"
 
-          npm install \
+          npm install --no-package-lock --no-save --ignore-scripts \
             @nuxeo/nuxeo-elements@"$ELEMENTS_VERSION" \
             @nuxeo/nuxeo-ui-elements@"$ELEMENTS_VERSION" \
             @nuxeo/nuxeo-dataviz-elements@"$ELEMENTS_VERSION" \

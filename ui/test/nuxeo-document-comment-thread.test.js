@@ -91,6 +91,15 @@ suite('nuxeo-document-comment-thread', () => {
     });
 
     suite('Listing Comments', () => {
+      test('Should request comments with author and repliesSummary fetch headers', async () => {
+        element._refresh();
+        await flush();
+
+        const request = server.getLastRequest('get', '/api/v1/id/doc-id/@comment/');
+        expect(request).to.exist;
+        expect(request.headers['fetch-comment']).to.equal('repliesSummary,author');
+      });
+
       test('Should not display any comment when thread has an empty array of comments', () => {
         expect(element.shadowRoot.querySelectorAll('nuxeo-document-comment').length).to.equal(0);
       });
@@ -286,7 +295,7 @@ suite('nuxeo-document-comment-thread', () => {
         const request = server.getLastRequest('post', '/api/v1/id/doc-id/@comment/');
 
         expect(request).to.exist;
-        expect(request.headers).to.not.have.property('fetch-comment', 'repliesSummary');
+        expect(request.headers['fetch-comment']).to.equal('author');
         expect(request.body).to.deep.equal({
           'entity-type': 'comment',
           parentId: 'doc-id',
@@ -303,7 +312,7 @@ suite('nuxeo-document-comment-thread', () => {
         const request = server.getLastRequest('post', '/api/v1/id/doc-id/@comment/');
 
         expect(request).to.exist;
-        expect(request.headers).to.not.have.property('fetch.comment', 'repliesSummary');
+        expect(request.headers['fetch-comment']).to.equal('author');
         expect(request.body).to.deep.equal({
           'entity-type': 'comment',
           parentId: 'doc-id',
