@@ -380,7 +380,7 @@ import './nuxeo-search-results-layout.js';
     }
 
     _search() {
-      if (this.deferInitialSearch && !this._searched) {
+      if (this.deferInitialSearch && !this._searched && !this.auto) {
         return;
       }
       if (this.results) {

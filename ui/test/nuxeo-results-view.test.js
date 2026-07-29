@@ -268,6 +268,14 @@ suite('nuxeo-results-view', () => {
       expect(results.fetch).to.have.been.calledTwice;
     });
 
+    test('_search fetches on an automatic view even while the initial search is deferred', () => {
+      element.deferInitialSearch = true;
+      element.auto = true;
+      results.fetch.resetHistory();
+      element._search();
+      expect(results.fetch).to.have.been.calledOnce;
+    });
+
     test('_clear does not search while the initial search is deferred', () => {
       element.deferInitialSearch = true;
       element.auto = false;
