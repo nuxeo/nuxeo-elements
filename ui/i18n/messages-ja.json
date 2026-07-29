@@ -88,6 +88,7 @@
   "customDatePicker.december": "12月",
   "customDatePicker.february": "2 月",
   "customDatePicker.incorrectFormat": "不正な日付形式",
+  "customDatePicker.incorrectFormatExpected": "不正な日付形式です。想定される形式：{format}",
   "customDatePicker.invalidDate": "無効な日付です。有効な日付を入力してください。",
   "customDatePicker.january": "1月",
   "customDatePicker.july": "7月",
