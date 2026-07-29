@@ -137,7 +137,7 @@ import './nuxeo-search-results-layout.js';
                 [[i18n('command.clear')]]
               </paper-button>
               <div class="horizontal layout flex end-justified">
-                <paper-button noink class="primary search" on-tap="_search" hidden$="[[auto]]" disabled$="[[loading]]">
+                <paper-button noink class="primary search" on-tap="search" hidden$="[[auto]]" disabled$="[[loading]]">
                   [[i18n('command.search')]]
                   <template is="dom-if" if="[[loading]]">
                     <paper-spinner-lite active></paper-spinner-lite>
@@ -261,6 +261,14 @@ import './nuxeo-search-results-layout.js';
           value: false,
         },
         /**
+         * If `true`, no search is performed until the user explicitly triggers one, so loading the
+         * page does not execute the initial query. Has no effect when `auto` is `true`.
+         */
+        deferInitialSearch: {
+          type: Boolean,
+          value: false,
+        },
+        /**
          * If `true`, opens the collapsible top filtering panel.
          */
         opened: {
@@ -288,6 +296,10 @@ import './nuxeo-search-results-layout.js';
         hrefBase: String,
         _params: Object,
         _paramsCount: Number,
+        _searched: {
+          type: Boolean,
+          value: false,
+        },
         _nxProvider: HTMLElement,
         _hideCounter: {
           type: String,
@@ -359,7 +371,18 @@ import './nuxeo-search-results-layout.js';
       }
     }
 
+    /**
+     * Runs the search on an explicit user action, lifting any `deferInitialSearch` suppression.
+     */
+    search() {
+      this._searched = true;
+      this._search();
+    }
+
     _search() {
+      if (this.deferInitialSearch && !this._searched) {
+        return;
+      }
       if (this.results) {
         this.results.reset();
         this.results.fetch();
@@ -409,7 +432,7 @@ import './nuxeo-search-results-layout.js';
       form.addEventListener('skip-aggregates-changed', (evt) => {
         this.notifyPath('skipAggregates', evt.detail.value);
       });
-      form.addEventListener('trigger-search', this._search.bind(this));
+      form.addEventListener('trigger-search', this.search.bind(this));
       this._search();
     }
 
