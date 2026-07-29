@@ -136,7 +136,7 @@ suite('nuxeo-move-documents-up-button extras', () => {
     });
 
     test('dispatches clear-selected-items on sort error', (done) => {
-      el.addEventListener('clear-selected-items', () => done());
+      el.addEventListener('clear-selected-items', () => done(), { once: true });
       el.documents = [{ uid: 'a' }];
       el.selectedDocuments = [{ uid: 'b' }, { uid: 'c' }];
       el._isAvailable();

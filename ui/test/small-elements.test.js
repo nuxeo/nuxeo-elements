@@ -218,7 +218,7 @@ suite('nuxeo-user-avatar', () => {
         <nuxeo-user-avatar></nuxeo-user-avatar>
       `,
     );
-    expect(el._username({ 'entity-type': 'user', properties: { username: 'alov' } })).to.equal('alov');
+    expect(el._username({ 'entity-type': 'user', id: 'alov', properties: { username: 'alov' } })).to.equal('alov');
     expect(el._username('alov')).to.equal('alov');
     expect(el._username(null)).to.be.undefined;
   });
