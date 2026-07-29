@@ -297,8 +297,8 @@ import './marked-element.js';
       this._insertPreview(previewerWith(this.xpath === 'file:content' ? 'unsupported' : 'server-preview'));
     }
 
-    _computeNotAvailableMessage() {
-      return this.i18n('documentPreview.notAvailable');
+    _computeNotAvailableMessage(i18n) {
+      return i18n('documentPreview.notAvailable');
     }
 
     _deepFind(obj, props) {
