@@ -771,6 +771,69 @@ suite('nuxeo-data-table', () => {
       await flush();
       expect(indicator.hasAttribute('hidden')).to.be.true;
     });
+
+    test('renders the indicator next to the filter input when the column is filterable', async () => {
+      const table = await multivaluedFixture(
+        html`
+          <nuxeo-data-table-column name="Stringlist" filter-by="stringlist">
+            <template>[[item]]</template>
+          </nuxeo-data-table-column>
+        `,
+        html`
+          <input name="stringlist" required />
+        `,
+      );
+      await flush();
+      const filter = table
+        .querySelector('nuxeo-data-table-cell[header]')
+        .querySelector('nuxeo-data-table-column-filter');
+      expect(filter.required).to.be.true;
+      const indicator = filter.shadowRoot.querySelector('.required-indicator');
+      expect(indicator).to.not.be.null;
+      expect(indicator.hasAttribute('hidden')).to.be.false;
+    });
+
+    test('clears a derived required flag once the form no longer requires the column', async () => {
+      const table = await multivaluedFixture(
+        html`
+          <nuxeo-data-table-column name="Firstname"><template>[[item.firstname]]</template></nuxeo-data-table-column>
+          <nuxeo-data-table-column name="Lastname"><template>[[item.lastname]]</template></nuxeo-data-table-column>
+        `,
+        html`
+          <input name="firstname" required />
+          <input name="lastname" />
+        `,
+      );
+      expect(table.columns.map((c) => c.required)).to.deep.equal([true, false]);
+
+      const form = table.getContentChildren('#form')[0];
+      (form.shadowRoot || form).querySelector('[name="firstname"]').removeAttribute('required');
+      (form.shadowRoot || form).querySelector('[name="lastname"]').setAttribute('required', '');
+      table._updateRequiredColumns();
+      await flush();
+      expect(table.columns.map((c) => c.required)).to.deep.equal([false, true]);
+    });
+
+    test('never clears a required flag that was set explicitly on the column', async () => {
+      const table = await multivaluedFixture(
+        html`
+          <nuxeo-data-table-column name="Firstname" required>
+            <template>[[item.firstname]]</template>
+          </nuxeo-data-table-column>
+          <nuxeo-data-table-column name="Lastname"><template>[[item.lastname]]</template></nuxeo-data-table-column>
+        `,
+        html`
+          <input name="lastname" required />
+        `,
+      );
+      expect(table.columns.map((c) => c.required)).to.deep.equal([true, true]);
+
+      const form = table.getContentChildren('#form')[0];
+      (form.shadowRoot || form).querySelector('[name="lastname"]').removeAttribute('required');
+      table._updateRequiredColumns();
+      await flush();
+      expect(table.columns.map((c) => c.required)).to.deep.equal([true, false]);
+    });
   });
 
   suite('Accessibility', () => {

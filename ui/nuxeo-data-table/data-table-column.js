@@ -12,6 +12,7 @@ import './data-table-column-filter.js';
           <nuxeo-data-table-column-filter
             label="[[column.name]]"
             value="{{column.filterValue}}"
+            required="[[column.required]]"
             hidden$="[[!column.filterBy]]"
             role="columnheader"
           >
@@ -22,6 +23,7 @@ import './data-table-column-filter.js';
             [[column.name]]<span
               class="required-indicator"
               style="margin-inline-start: 4px; color: var(--paper-input-container-invalid-color, #de350b)"
+              aria-hidden="true"
               hidden$="[[!column.required]]"
               >*</span
             >
