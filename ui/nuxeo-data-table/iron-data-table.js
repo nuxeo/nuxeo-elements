@@ -649,6 +649,7 @@ import '../nuxeo-button-styles.js';
       slot.addEventListener('slotchange', () => {
         const form = this.getContentChildren('#form')[0];
         form.disabled = true;
+        this._updateRequiredColumns();
       });
 
       this.setAttribute('role', 'table');
@@ -776,7 +777,39 @@ import '../nuxeo-button-styles.js';
           column.table = this;
           this.listen(column, 'filter-value-changed', '_onColumnFilterChanged');
         });
+        this._updateRequiredColumns();
       }
+    }
+
+    /**
+     * Flags columns as required from the `required` widgets of the row form.
+     *
+     * Layouts generated for a multivalued property flag the entry widget inside
+     * `nuxeo-data-table-form` as required, but not the table or its columns, so the required
+     * indicator only showed up in the entry dialog and never on the layout itself (ELEMENTS-1891).
+     * Columns are matched to entry widgets by name; a table with a single column always holds the
+     * entries of a scalar multivalued property, where the column name is the field label.
+     */
+    _updateRequiredColumns() {
+      if (!this.columns || this.columns.length === 0) {
+        return;
+      }
+      const form = this.getContentChildren('#form')[0];
+      if (!form) {
+        return;
+      }
+      const requiredNames = Array.from((form.shadowRoot || form).querySelectorAll('[required]'))
+        .map((widget) => (widget.getAttribute('name') || '').toLowerCase())
+        .filter(Boolean);
+      if (requiredNames.length === 0) {
+        return;
+      }
+      this.columns.forEach((column) => {
+        const name = (column.field || column.name || '').toLowerCase();
+        if (this.columns.length === 1 || requiredNames.includes(name)) {
+          column.required = true;
+        }
+      });
     }
 
     _resizeCellContainers() {
