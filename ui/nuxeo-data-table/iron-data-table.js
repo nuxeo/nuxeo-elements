@@ -789,25 +789,34 @@ import '../nuxeo-button-styles.js';
      * indicator only showed up in the entry dialog and never on the layout itself (ELEMENTS-1891).
      * Columns are matched to entry widgets by name; a table with a single column always holds the
      * entries of a scalar multivalued property, where the column name is the field label.
+     *
+     * Re-runs whenever the columns or the form slot change, so it keeps track of the columns it
+     * flagged and clears them once they no longer match. A `required` set explicitly on a column is
+     * never cleared, since it was not derived here.
      */
     _updateRequiredColumns() {
       if (!this.columns || this.columns.length === 0) {
         return;
       }
       const form = this.getContentChildren('#form')[0];
-      if (!form) {
-        return;
+      const requiredNames = form
+        ? Array.from((form.shadowRoot || form).querySelectorAll('[required]'))
+            .map((widget) => (widget.getAttribute('name') || '').toLowerCase())
+            .filter(Boolean)
+        : [];
+      if (!this._derivedRequiredColumns) {
+        this._derivedRequiredColumns = new Set();
       }
-      const requiredNames = Array.from((form.shadowRoot || form).querySelectorAll('[required]'))
-        .map((widget) => (widget.getAttribute('name') || '').toLowerCase())
-        .filter(Boolean);
-      if (requiredNames.length === 0) {
-        return;
-      }
+      const derived = this._derivedRequiredColumns;
+      const singleColumn = this.columns.length === 1;
       this.columns.forEach((column) => {
         const name = (column.field || column.name || '').toLowerCase();
-        if (this.columns.length === 1 || requiredNames.includes(name)) {
+        if (singleColumn ? requiredNames.length > 0 : requiredNames.includes(name)) {
+          derived.add(column);
           column.required = true;
+        } else if (derived.has(column)) {
+          derived.delete(column);
+          column.required = false;
         }
       });
     }
