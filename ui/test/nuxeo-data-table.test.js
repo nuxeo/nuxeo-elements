@@ -687,6 +687,92 @@ suite('nuxeo-data-table', () => {
     });
   });
 
+  suite('required indicator on multivalued layouts (ELEMENTS-1891)', () => {
+    // mirrors the create/edit layout generated for a multivalued property flagged as required:
+    // only the entry widget carries `required`, neither the table nor the column does
+    async function multivaluedFixture(columns, formWidgets) {
+      const table = await fixture(html`
+        <nuxeo-data-table editable items='["alpha"]'>
+          ${columns}
+          <nuxeo-data-table-form>
+            <template>
+              ${formWidgets}
+            </template>
+          </nuxeo-data-table-form>
+        </nuxeo-data-table>
+      `);
+      await flush();
+      return table;
+    }
+
+    test('flags the single column of a scalar multivalued property', async () => {
+      const table = await multivaluedFixture(
+        html`
+          <nuxeo-data-table-column name="Stringlist"><template>[[item]]</template></nuxeo-data-table-column>
+        `,
+        html`
+          <input name="stringlist" required />
+        `,
+      );
+      expect(table.columns.map((c) => c.required)).to.deep.equal([true]);
+    });
+
+    test('flags only the columns whose name matches a required entry widget', async () => {
+      const table = await multivaluedFixture(
+        html`
+          <nuxeo-data-table-column name="Firstname"><template>[[item.firstname]]</template></nuxeo-data-table-column>
+          <nuxeo-data-table-column name="Lastname"><template>[[item.lastname]]</template></nuxeo-data-table-column>
+        `,
+        html`
+          <input name="firstname" required />
+          <input name="lastname" />
+        `,
+      );
+      expect(table.columns.map((c) => c.required)).to.deep.equal([true, false]);
+    });
+
+    test('leaves columns untouched when no entry widget is required', async () => {
+      const table = await multivaluedFixture(
+        html`
+          <nuxeo-data-table-column name="Stringlist"><template>[[item]]</template></nuxeo-data-table-column>
+        `,
+        html`
+          <input name="stringlist" />
+        `,
+      );
+      expect(table.columns.map((c) => c.required)).to.deep.equal([false]);
+    });
+
+    test('leaves result tables without an entry form untouched', async () => {
+      await setupServer(1, 4);
+      const table = await tableFixture();
+      table.fetch();
+      await waitForEvent(table, 'nuxeo-page-loaded', 1);
+      await flush();
+      expect(table.columns.some((c) => c.required)).to.be.false;
+    });
+
+    test('renders the indicator in the header cell only when the column is required', async () => {
+      const table = await multivaluedFixture(
+        html`
+          <nuxeo-data-table-column name="Stringlist"><template>[[item]]</template></nuxeo-data-table-column>
+        `,
+        html`
+          <input name="stringlist" required />
+        `,
+      );
+      await flush();
+      const headerCell = table.querySelector('nuxeo-data-table-cell[header]');
+      const indicator = headerCell.querySelector('.required-indicator');
+      expect(indicator).to.not.be.null;
+      expect(indicator.hasAttribute('hidden')).to.be.false;
+
+      table.columns[0].required = false;
+      await flush();
+      expect(indicator.hasAttribute('hidden')).to.be.true;
+    });
+  });
+
   suite('Accessibility', () => {
     let table;
     setup(async () => {
