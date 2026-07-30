@@ -208,3 +208,37 @@ suite('nuxeo-textarea accessibility', () => {
     });
   });
 });
+
+// Covers WEBUI-493: the `autocomplete` property declared in ui/widgets/nuxeo-textarea.js is
+// forwarded to the rendered native <textarea> so a layout can identify the purpose of the field
+// (WCAG 2.1 SC 1.3.5, technique H98).
+suite('nuxeo-textarea autocomplete', () => {
+  test('declares the property and defaults it to off', async () => {
+    const el = await fixture(html`
+      <nuxeo-textarea label="Address"></nuxeo-textarea>
+    `);
+    await flush();
+    expect(el.autocomplete).to.equal('off');
+    expect(getPaperTextarea(el).autocomplete).to.equal('off');
+    expect(getNativeTextarea(el).getAttribute('autocomplete')).to.equal('off');
+  });
+
+  test('forwards a token configured on the element to the native textarea', async () => {
+    const el = await fixture(html`
+      <nuxeo-textarea label="Address" autocomplete="street-address"></nuxeo-textarea>
+    `);
+    await flush();
+    expect(el.autocomplete).to.equal('street-address');
+    expect(getNativeTextarea(el).getAttribute('autocomplete')).to.equal('street-address');
+  });
+
+  test('forwards a token set at runtime to the native textarea', async () => {
+    const el = await fixture(html`
+      <nuxeo-textarea label="Address"></nuxeo-textarea>
+    `);
+    await flush();
+    el.autocomplete = 'street-address';
+    await flush();
+    expect(getNativeTextarea(el).getAttribute('autocomplete')).to.equal('street-address');
+  });
+});

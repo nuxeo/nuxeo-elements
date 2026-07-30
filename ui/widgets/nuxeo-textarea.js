@@ -72,6 +72,7 @@ import '@polymer/paper-input/paper-textarea.js';
           value="{{value}}"
           rows$="[[rows]]"
           aria-label$="[[_computeAriaLabel(label, placeholder)]]"
+          autocomplete="[[autocomplete]]"
           required$="[[required]]"
           disabled$="[[disabled]]"
           readonly$="[[readonly]]"
@@ -129,6 +130,17 @@ import '@polymer/paper-input/paper-textarea.js';
          * Error message to show when `invalid` is true.
          */
         errorMessage: String,
+
+        /**
+         * The HTML autofill token exposed on the native textarea, e.g. `street-address`. Lets a layout
+         * declare the purpose of the field so that browsers and assistive technology can identify it
+         * (WCAG 2.1 SC 1.3.5, technique H98). `off` opts out of autofill and is the default, matching
+         * the underlying `paper-textarea`.
+         */
+        autocomplete: {
+          type: String,
+          value: 'off',
+        },
 
         /**
          * Read only.

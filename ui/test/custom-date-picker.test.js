@@ -7021,3 +7021,29 @@ suite('custom-date-picker accessibility', () => {
     });
   });
 });
+
+// Covers WEBUI-493: `autocomplete` is a declared property instead of a hardcoded `off` attribute,
+// so nuxeo-date-picker (and therefore a layout) can identify the purpose of the field
+// (WCAG 2.1 SC 1.3.5, technique H98).
+suite('custom-date-picker autocomplete', () => {
+  function getDateInput(el) {
+    return el.shadowRoot.querySelector('#dateInput');
+  }
+
+  test('defaults to off, preserving the previously hardcoded value', async () => {
+    const el = await newPicker();
+    await flush();
+    expect(el.autocomplete).to.equal('off');
+    expect(getDateInput(el).getAttribute('autocomplete')).to.equal('off');
+  });
+
+  test('exposes a configured token on the native input', async () => {
+    const el = await newPicker(
+      html`
+        <custom-date-picker autocomplete="bday"></custom-date-picker>
+      `,
+    );
+    await flush();
+    expect(getDateInput(el).getAttribute('autocomplete')).to.equal('bday');
+  });
+});
