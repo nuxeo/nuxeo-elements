@@ -502,4 +502,33 @@ suite('nuxeo-user-tag extras', () => {
       expect(tag.shadowRoot.innerHTML).to.not.include('...');
     });
   });
+
+  suite('accessible text spacing', () => {
+    /* WCAG 2.1 AA 1.4.12 requires no loss of content when the user overrides text spacing. */
+    const nameContainerOf = (tag) => tag.shadowRoot.querySelector('.username-container');
+
+    test('wraps a long name instead of clipping it with an ellipsis', async () => {
+      const user = { id: 'a.user.with.a.very.long.email@example.com' };
+      const tag = await fixture(html`
+        <nuxeo-user-tag disabled .user="${user}"></nuxeo-user-tag>
+      `);
+      const container = nameContainerOf(tag);
+      const { textOverflow, whiteSpace, overflow } = getComputedStyle(container);
+      expect(textOverflow).to.equal('clip');
+      expect(whiteSpace).to.equal('normal');
+      expect(overflow).to.equal('visible');
+    });
+
+    test('keeps the whole name visible in a container narrower than the name', async () => {
+      const user = { id: 'a.user.with.a.very.long.email@example.com' };
+      const wrapper = await fixture(html`
+        <div style="width: 140px;">
+          <nuxeo-user-tag disabled .user="${user}"></nuxeo-user-tag>
+        </div>
+      `);
+      const container = nameContainerOf(wrapper.querySelector('nuxeo-user-tag'));
+      expect(container.scrollWidth).to.be.at.most(container.clientWidth);
+      expect(container.scrollHeight).to.be.at.most(container.clientHeight);
+    });
+  });
 });
