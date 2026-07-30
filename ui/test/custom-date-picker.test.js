@@ -7020,4 +7020,100 @@ suite('custom-date-picker accessibility', () => {
       expect(call.args[1]).to.equal(el._boundEscapeCapture);
     });
   });
+
+  suite('accessible text spacing (WCAG 2.1 SC 1.4.12)', () => {
+    // the spacing a user agent / user stylesheet is allowed to force on the page
+    const TEXT_SPACING_OVERRIDE =
+      '* { line-height: 1.5 !important; letter-spacing: 0.12em !important; word-spacing: 0.16em !important; }';
+
+    let el;
+
+    const q = (selector) => el.shadowRoot.querySelector(selector);
+    const qa = (selector) => Array.from(el.shadowRoot.querySelectorAll(selector));
+
+    // the override has to be injected into the shadow root: a page-level stylesheet
+    // (or the usual text-spacing bookmarklet) cannot reach the calendar internals
+    const overrideTextSpacing = async () => {
+      const style = document.createElement('style');
+      style.textContent = TEXT_SPACING_OVERRIDE;
+      el.shadowRoot.appendChild(style);
+      await flush();
+    };
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+      el._openCalendar();
+      await flush();
+    });
+
+    teardown(() => {
+      if (el._isCalendarOpen) {
+        el._closeCalendar();
+      }
+    });
+
+    test('the calendar is sized by its content instead of a fixed width', async () => {
+      const popover = q('#calendarPopover');
+      expect(getComputedStyle(popover).minWidth).to.equal('280px');
+      expect(popover.scrollWidth).to.be.at.most(popover.clientWidth);
+      await overrideTextSpacing();
+      expect(popover.getBoundingClientRect().width).to.be.at.least(280);
+      expect(popover.scrollWidth, 'the calendar must not overflow its own box').to.be.at.most(popover.clientWidth);
+    });
+
+    test('week names and dates share the same column tracks', async () => {
+      const columns = () => [
+        getComputedStyle(q('.weekday-headers')).gridTemplateColumns,
+        getComputedStyle(q('.calendar-grid')).gridTemplateColumns,
+      ];
+      const [headers, grid] = columns();
+      expect(headers).to.equal(grid);
+      await overrideTextSpacing();
+      const [overriddenHeaders, overriddenGrid] = columns();
+      expect(overriddenHeaders).to.equal(overriddenGrid);
+    });
+
+    test('week names stay inside the calendar when text spacing is overridden', async () => {
+      await overrideTextSpacing();
+      const row = q('.weekday-headers');
+      expect(row.scrollWidth, 'week-name row must not overflow').to.be.at.most(row.clientWidth);
+      const limit = q('#calendarPopover').getBoundingClientRect().right;
+      const escaping = qa('.weekday-header')
+        .filter((header) => header.getBoundingClientRect().right > limit + 0.5)
+        .map((header) => header.textContent.trim());
+      expect(escaping, 'no week name may render outside the calendar').to.deep.equal([]);
+    });
+
+    test('dates are not clipped when text spacing is overridden', async () => {
+      const day = q('.calendar-day');
+      expect(getComputedStyle(day).minWidth).to.equal('36px');
+      expect(getComputedStyle(day).minHeight).to.equal('36px');
+      await overrideTextSpacing();
+      const clipped = qa('.calendar-day')
+        .filter((cell) => cell.scrollWidth > cell.clientWidth + 1 || cell.scrollHeight > cell.clientHeight + 1)
+        .map((cell) => cell.textContent.trim());
+      expect(clipped, 'no date may be clipped by its cell').to.deep.equal([]);
+      const grid = q('.calendar-grid');
+      expect(grid.scrollWidth).to.be.at.most(grid.clientWidth);
+    });
+
+    test('the month/year header and the footer stay inside the calendar', async () => {
+      await overrideTextSpacing();
+      const limit = q('#calendarPopover').getBoundingClientRect().right;
+      ['.month-text', '.year-text', '.calendar-footer'].forEach((selector) => {
+        expect(q(selector).getBoundingClientRect().right, `${selector} must stay inside the calendar`).to.be.at.most(
+          limit + 0.5,
+        );
+      });
+    });
+
+    test('the date input is not clipped by its wrapper', async () => {
+      await overrideTextSpacing();
+      const wrapper = q('.input-wrapper');
+      expect(wrapper.scrollWidth).to.be.at.most(wrapper.clientWidth);
+    });
+  });
 });
