@@ -7046,4 +7046,12 @@ suite('custom-date-picker autocomplete', () => {
     await flush();
     expect(getDateInput(el).getAttribute('autocomplete')).to.equal('bday');
   });
+
+  test('exposes a token set at runtime on the native input', async () => {
+    const el = await newPicker();
+    await flush();
+    el.autocomplete = 'bday';
+    await flush();
+    expect(getDateInput(el).getAttribute('autocomplete')).to.equal('bday');
+  });
 });
