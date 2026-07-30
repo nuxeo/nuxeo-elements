@@ -7026,6 +7026,10 @@ suite('custom-date-picker accessibility', () => {
     const TEXT_SPACING_OVERRIDE =
       '* { line-height: 1.5 !important; letter-spacing: 0.12em !important; word-spacing: 0.16em !important; }';
 
+    // scrollWidth/clientWidth are rounded to integers, so a sub-pixel layout can report a 1px
+    // difference with nothing actually overflowing. The regression this guards against is ~4px.
+    const ROUNDING_TOLERANCE_PX = 1;
+
     let el;
 
     const q = (selector) => el.shadowRoot.querySelector(selector);
@@ -7058,10 +7062,12 @@ suite('custom-date-picker accessibility', () => {
     test('the calendar is sized by its content instead of a fixed width', async () => {
       const popover = q('#calendarPopover');
       expect(getComputedStyle(popover).minWidth).to.equal('280px');
-      expect(popover.scrollWidth).to.be.at.most(popover.clientWidth);
+      expect(popover.scrollWidth).to.be.at.most(popover.clientWidth + ROUNDING_TOLERANCE_PX);
       await overrideTextSpacing();
       expect(popover.getBoundingClientRect().width).to.be.at.least(280);
-      expect(popover.scrollWidth, 'the calendar must not overflow its own box').to.be.at.most(popover.clientWidth);
+      expect(popover.scrollWidth, 'the calendar must not overflow its own box').to.be.at.most(
+        popover.clientWidth + ROUNDING_TOLERANCE_PX,
+      );
     });
 
     test('week names and dates share the same column tracks', async () => {
@@ -7079,7 +7085,7 @@ suite('custom-date-picker accessibility', () => {
     test('week names stay inside the calendar when text spacing is overridden', async () => {
       await overrideTextSpacing();
       const row = q('.weekday-headers');
-      expect(row.scrollWidth, 'week-name row must not overflow').to.be.at.most(row.clientWidth);
+      expect(row.scrollWidth, 'week-name row must not overflow').to.be.at.most(row.clientWidth + ROUNDING_TOLERANCE_PX);
       const limit = q('#calendarPopover').getBoundingClientRect().right;
       const escaping = qa('.weekday-header')
         .filter((header) => header.getBoundingClientRect().right > limit + 0.5)
@@ -7093,11 +7099,15 @@ suite('custom-date-picker accessibility', () => {
       expect(getComputedStyle(day).minHeight).to.equal('36px');
       await overrideTextSpacing();
       const clipped = qa('.calendar-day')
-        .filter((cell) => cell.scrollWidth > cell.clientWidth + 1 || cell.scrollHeight > cell.clientHeight + 1)
+        .filter(
+          (cell) =>
+            cell.scrollWidth > cell.clientWidth + ROUNDING_TOLERANCE_PX ||
+            cell.scrollHeight > cell.clientHeight + ROUNDING_TOLERANCE_PX,
+        )
         .map((cell) => cell.textContent.trim());
       expect(clipped, 'no date may be clipped by its cell').to.deep.equal([]);
       const grid = q('.calendar-grid');
-      expect(grid.scrollWidth).to.be.at.most(grid.clientWidth);
+      expect(grid.scrollWidth).to.be.at.most(grid.clientWidth + ROUNDING_TOLERANCE_PX);
     });
 
     test('the month/year header and the footer stay inside the calendar', async () => {
@@ -7113,7 +7123,7 @@ suite('custom-date-picker accessibility', () => {
     test('the date input is not clipped by its wrapper', async () => {
       await overrideTextSpacing();
       const wrapper = q('.input-wrapper');
-      expect(wrapper.scrollWidth).to.be.at.most(wrapper.clientWidth);
+      expect(wrapper.scrollWidth).to.be.at.most(wrapper.clientWidth + ROUNDING_TOLERANCE_PX);
     });
   });
 });
