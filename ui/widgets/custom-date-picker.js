@@ -374,6 +374,12 @@ const FOCUS_SUPPRESSION_MS = 200;
             font-family: 'Inter', Arial, sans-serif;
             background: transparent;
             color: #666;
+            /*
+             * WCAG 2.1 SC 1.4.12: the UA stylesheet resets text spacing on form controls, and this
+             * input lives in a shadow root a user text-spacing stylesheet cannot reach, so opt back in.
+             */
+            letter-spacing: inherit;
+            word-spacing: inherit;
           }
 
           .input-field::placeholder {

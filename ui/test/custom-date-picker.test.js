@@ -7020,4 +7020,24 @@ suite('custom-date-picker accessibility', () => {
       expect(call.args[1]).to.equal(el._boundEscapeCapture);
     });
   });
+
+  suite('text spacing', () => {
+    // WCAG 2.1 AA, SC 1.4.12 (Text Spacing). The date input sits in a shadow root, so a user
+    // text-spacing stylesheet applied at document level can only reach it by inheritance, and
+    // the UA's form-control reset pins letter-spacing and word-spacing at `normal` unless the
+    // input opts back in.
+    test('should inherit text spacing so user stylesheets can reach the input', async () => {
+      const container = await fixture(html`
+        <div style="letter-spacing: 3px; word-spacing: 5px;">
+          <custom-date-picker></custom-date-picker>
+        </div>
+      `);
+      await flush();
+
+      const input = container.querySelector('custom-date-picker').shadowRoot.querySelector('.input-field');
+      const style = getComputedStyle(input);
+      expect(style.letterSpacing, 'letter-spacing must follow the ancestor').to.equal('3px');
+      expect(style.wordSpacing, 'word-spacing must follow the ancestor').to.equal('5px');
+    });
+  });
 });
