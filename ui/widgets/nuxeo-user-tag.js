@@ -50,11 +50,11 @@ import './nuxeo-tooltip.js';
             margin: 0 0 0 0.5rem;
           }
           nuxeo-tag {
-            padding: 0 6px 0 0;
+            padding: 0 0.6em 0 0;
             max-width: 100%;
           }
           :host([dir='rtl']) nuxeo-tag {
-            padding: 0 0 0 6px;
+            padding: 0 0 0 0.6em;
           }
           .tag {
             @apply --layout-horizontal;
@@ -68,25 +68,18 @@ import './nuxeo-tooltip.js';
             @apply --nuxeo-link-hover;
           }
 
-          .user-tag {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
-
-          .user-tag-nowrap {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: inline-block;
-          }
+          /*
+           * The name wraps rather than being clipped with an ellipsis, so that no characters are
+           * lost when the user overrides text spacing (WCAG 2.1 AA 1.4.12) or enlarges the
+           * browser font and the name no longer fits on a single line. Both variants wrap the
+           * same way: at word boundaries when the name contains whitespace, and inside the word
+           * only when it cannot fit otherwise (long usernames or e-mail addresses).
+           */
+          .user-tag-nowrap,
           .user-tag-wrap {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            word-break: break-all;
+            display: inline-block;
+            max-width: 100%;
+            overflow-wrap: break-word;
           }
           .user-tag-link-disabled {
             cursor: default;

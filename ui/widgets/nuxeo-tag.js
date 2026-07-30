@@ -36,16 +36,24 @@ import '../nuxeo-i18n-behavior.js';
     static get template() {
       return html`
         <style>
+          /*
+           * Sizes are expressed in em and the line height is inherited so that tags grow with
+           * user text-spacing overrides (WCAG 2.1 AA 1.4.12) and browser font-size changes,
+           * instead of clipping their label.
+           */
           :host {
             display: inline-block;
+            box-sizing: border-box;
+            max-width: 100%;
             background-color: var(--nuxeo-tag-background, transparent);
             color: var(--nuxeo-default-text, #000);
-            padding: 4px 6px;
+            padding: 0.4em 0.6em;
             font-size: 0.8rem;
             margin-bottom: 0.3em;
             border-radius: 2em;
-            line-height: initial;
+            min-height: 1.55em;
             text-decoration: none;
+            overflow-wrap: break-word;
 
             @apply --nuxeo-tag;
           }
@@ -54,8 +62,8 @@ import '../nuxeo-i18n-behavior.js';
           }
 
           iron-icon {
-            width: 14px;
-            height: 14px;
+            width: 1.1em;
+            height: 1.1em;
             margin: 0;
             padding: 0;
           }
