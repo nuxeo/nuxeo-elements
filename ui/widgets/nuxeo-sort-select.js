@@ -65,9 +65,15 @@ import './nuxeo-tooltip.js';
             padding: 0;
             margin: 0 16px;
           }
+
+          /* The label sits above the select, so keep the order toggle level with the input. */
+          :host([has-label]) paper-icon-button {
+            align-self: flex-end;
+            margin-bottom: 12px;
+          }
         </style>
 
-        <nuxeo-select attr-for-selected="option" selected="{{selected}}">
+        <nuxeo-select label="[[label]]" attr-for-selected="option" selected="{{selected}}">
           <dom-if if="[[options]]">
             <template>
               <dom-repeat items="[[options]]" as="item">
@@ -97,6 +103,24 @@ import './nuxeo-tooltip.js';
 
     static get properties() {
       return {
+        /**
+         * Label of the sort field selector. Rendered as an always visible label and used as the
+         * accessible name of the underlying combobox.
+         */
+        label: {
+          type: String,
+          value: null,
+        },
+
+        /**
+         * Mirrors the presence of `label` so the order toggle can be realigned in CSS.
+         */
+        hasLabel: {
+          type: Boolean,
+          computed: '_computeHasLabel(label)',
+          reflectToAttribute: true,
+        },
+
         options: {
           type: Array,
           value: [],
@@ -114,6 +138,10 @@ import './nuxeo-tooltip.js';
           value: 'asc',
         },
       };
+    }
+
+    _computeHasLabel(label) {
+      return !!(label && label.trim());
     }
 
     _optionsChanged() {
