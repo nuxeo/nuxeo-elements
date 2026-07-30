@@ -690,8 +690,11 @@ import '../nuxeo-button-styles.js';
      * never get associated with the body cells (WEBUI-1557).
      */
     _hideListItemsWrapperFromA11yTree() {
-      const list = this.$.list;
-      const items = list.shadowRoot && list.shadowRoot.querySelector('#items');
+      const listRoot = this.$.list.shadowRoot;
+      if (!listRoot) {
+        return;
+      }
+      const items = listRoot.querySelector('#items');
       if (items) {
         items.setAttribute('role', 'presentation');
       }
