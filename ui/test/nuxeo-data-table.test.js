@@ -754,6 +754,20 @@ suite('nuxeo-data-table', () => {
       });
     });
 
+    // WEBUI-1557: the list wrapper lives in `iron-list`'s shadow root, so it may not be reachable yet.
+    test('leaves the list wrapper alone when it cannot be reached', () => {
+      const list = table.$.list;
+      try {
+        table.$.list = document.createElement('div');
+        expect(() => table._hideListItemsWrapperFromA11yTree()).to.not.throw();
+        table.$.list = document.createElement('div');
+        table.$.list.attachShadow({ mode: 'open' });
+        expect(() => table._hideListItemsWrapperFromA11yTree()).to.not.throw();
+      } finally {
+        table.$.list = list;
+      }
+    });
+
     // WEBUI-1557: `wrapper-height` (used by the Home page tables) injects a scroll wrapper between
     // the table and its row group, which must not appear in the accessibility tree.
     test('the wrapper-height scroll wrapper is presentational', () => {

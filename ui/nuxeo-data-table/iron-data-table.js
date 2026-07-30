@@ -655,13 +655,7 @@ import '../nuxeo-button-styles.js';
       this.setAttribute('role', 'table');
       this.setAttribute('aria-multiselectable', this.multiSelection);
       this.setAttribute('aria-label', this.captionText);
-      // `iron-list` wraps the stamped rows in its own `#items` div. Left as-is it sits between the
-      // row group and the rows, which stops browsers from building the table model, so the column
-      // headers never get associated with the body cells (WEBUI-1557).
-      const items = this.$.list.shadowRoot && this.$.list.shadowRoot.querySelector('#items');
-      if (items) {
-        items.setAttribute('role', 'presentation');
-      }
+      this._hideListItemsWrapperFromA11yTree();
       const wrapperHeight = this.getAttribute('wrapper-height');
       if (wrapperHeight) {
         this._wrapperHeight = wrapperHeight;
@@ -688,6 +682,19 @@ import '../nuxeo-button-styles.js';
 
       // Reset transient resize state
       this._resizing = null;
+    }
+
+    /**
+     * `iron-list` wraps the stamped rows in its own `#items` div. Left as-is it sits between the row
+     * group and the rows, which stops browsers from building the table model, so the column headers
+     * never get associated with the body cells (WEBUI-1557).
+     */
+    _hideListItemsWrapperFromA11yTree() {
+      const list = this.$.list;
+      const items = list.shadowRoot && list.shadowRoot.querySelector('#items');
+      if (items) {
+        items.setAttribute('role', 'presentation');
+      }
     }
 
     _getHeaderCells() {
