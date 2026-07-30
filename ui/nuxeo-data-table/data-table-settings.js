@@ -113,7 +113,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _columnDisplayChanged(change) {
-      // A full reset emits a single `reset` event of its own once every column is back to its default.
+      // A full reset emits one settings-changed with source 'reset' once every column is back to its default.
       if (this._resetting) {
         return;
       }
