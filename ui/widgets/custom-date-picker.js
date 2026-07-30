@@ -3929,22 +3929,13 @@ const FOCUS_SUPPRESSION_MS = 200;
       // ARIA Grid pattern: Only one cell should be tabbable, others use arrow keys
       if (dayObj.isEmpty || !dayObj.isCurrentMonth) return '-1';
 
-      // Determine which date should be tabbable (tab stop)
-      let shouldBeTabbable = false;
-
-      if (focusedDate && this._isSameDay(dayObj.date, focusedDate)) {
-        // Currently focused date
-        shouldBeTabbable = true;
-      } else if (!focusedDate && dayObj.isSelected) {
-        // Selected date when no focus is set
-        shouldBeTabbable = true;
-      } else if (!focusedDate && !this._selectedDate && dayObj.isToday) {
-        // Today when no selection and no focus
-        shouldBeTabbable = true;
-      } else if (!focusedDate && !this._selectedDate && !this._isTodayInCurrentMonth() && dayObj.date.getDate() === 1) {
-        // First day of month as fallback
-        shouldBeTabbable = true;
-      }
+      // Determine which date should be tabbable (tab stop): the focused date if there is one,
+      // otherwise the selection, otherwise today, otherwise the 1st when today is not in view.
+      const shouldBeTabbable = focusedDate
+        ? this._isSameDay(dayObj.date, focusedDate)
+        : dayObj.isSelected ||
+          (!this._selectedDate && dayObj.isToday) ||
+          (!this._selectedDate && !this._isTodayInCurrentMonth() && dayObj.date.getDate() === 1);
 
       return shouldBeTabbable ? '0' : '-1';
     }
