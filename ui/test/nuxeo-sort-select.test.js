@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, html, waitForEvent } from '@nuxeo/testing-helpers';
+import { fixture, flush, html, waitForEvent } from '@nuxeo/testing-helpers';
 import '../widgets/nuxeo-sort-select.js';
 
 suite('nuxeo-sort-select', () => {
@@ -33,6 +33,29 @@ suite('nuxeo-sort-select', () => {
 
   test('should default _sortOrder to asc', () => {
     expect(el._sortOrder).to.equal('asc');
+  });
+
+  suite('label', () => {
+    test('defaults to no label', () => {
+      expect(el.label).to.be.null;
+      expect(el.shadowRoot.querySelector('nuxeo-select').label).to.be.null;
+      expect(el.hasAttribute('has-label')).to.be.false;
+    });
+
+    test('forwards the label to the underlying select', async () => {
+      el.label = 'Sort by';
+      await flush();
+      const select = el.shadowRoot.querySelector('nuxeo-select');
+      expect(select.label).to.equal('Sort by');
+      expect(select.shadowRoot.querySelector('label').textContent.trim()).to.equal('Sort by');
+      expect(el.hasAttribute('has-label')).to.be.true;
+    });
+
+    test('does not flag a blank label', async () => {
+      el.label = '  ';
+      await flush();
+      expect(el.hasAttribute('has-label')).to.be.false;
+    });
   });
 
   suite('_sortOrderIcon', () => {
