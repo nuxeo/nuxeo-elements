@@ -707,5 +707,61 @@ suite('nuxeo-data-table', () => {
       sortIconButton.click();
       assert.equal(sortIconButton.getAttribute('aria-label'), 'command.sort.descend');
     });
+
+    // WEBUI-1557
+    test('every header cell is exposed as a column header', () => {
+      const headerCells = Array.from(table.querySelectorAll('nuxeo-data-table-cell[header]'));
+      expect(headerCells).to.have.length.above(0);
+      headerCells.forEach((cell) => {
+        expect(cell.getAttribute('role')).to.equal('columnheader');
+        expect(cell.getAttribute('scope')).to.equal('col');
+      });
+    });
+
+    // WEBUI-1557
+    test('body cells stay exposed as cells', () => {
+      const bodyCells = Array.from(table.querySelectorAll('nuxeo-data-table-row:not([header]) nuxeo-data-table-cell'));
+      expect(bodyCells).to.have.length.above(0);
+      bodyCells.forEach((cell) => expect(cell.getAttribute('role')).to.equal('cell'));
+    });
+
+    // WEBUI-1557: rows must be owned by a row group and every intermediate wrapper must be
+    // presentational, otherwise the browser cannot build the table model and the column headers
+    // are never associated with the body cells.
+    test('rows are grouped and intermediate wrappers are presentational', () => {
+      const { shadowRoot } = table;
+      expect(shadowRoot.querySelector('#container').getAttribute('role')).to.equal('presentation');
+      expect(shadowRoot.querySelector('#header').getAttribute('role')).to.equal('rowgroup');
+      expect(shadowRoot.querySelector('#list').getAttribute('role')).to.equal('rowgroup');
+      expect(
+        shadowRoot
+          .querySelector('#list')
+          .shadowRoot.querySelector('#items')
+          .getAttribute('role'),
+      ).to.equal('presentation');
+      shadowRoot.querySelectorAll('#list .item').forEach((item) => {
+        expect(item.getAttribute('role')).to.equal('presentation');
+      });
+    });
+
+    // WEBUI-1557: exactly one column header per column — no nested duplicate from the header template.
+    test('does not expose nested duplicate column headers', () => {
+      const columnHeaders = Array.from(table.querySelectorAll('[role="columnheader"]'));
+      expect(columnHeaders).to.have.length.above(0);
+      columnHeaders.forEach((header) => {
+        expect(header.tagName.toLowerCase()).to.equal('nuxeo-data-table-cell');
+        expect(header.querySelector('[role="columnheader"]')).to.be.null;
+      });
+    });
+
+    // WEBUI-1557: `wrapper-height` (used by the Home page tables) injects a scroll wrapper between
+    // the table and its row group, which must not appear in the accessibility tree.
+    test('the wrapper-height scroll wrapper is presentational', () => {
+      table._wrapperHeight = '350px';
+      table._onWrapperHeightChanged();
+      const wrapper = table.shadowRoot.querySelector('.table-wrapper');
+      expect(wrapper).to.not.be.null;
+      expect(wrapper.getAttribute('role')).to.equal('presentation');
+    });
   });
 });
