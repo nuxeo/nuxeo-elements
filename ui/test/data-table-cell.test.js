@@ -242,6 +242,17 @@ suite('nuxeo-data-table-cell extras', () => {
       );
       expect(cell.getAttribute('scope')).to.equal('col');
     });
+
+    // WEBUI-1557: a custom element cannot be a native `th`, so the header cell must carry the
+    // ARIA equivalent for screen readers to announce it as a column header.
+    test('header cell gets role=columnheader', async () => {
+      const cell = await fixture(
+        html`
+          <nuxeo-data-table-cell header></nuxeo-data-table-cell>
+        `,
+      );
+      expect(cell.getAttribute('role')).to.equal('columnheader');
+    });
   });
 
   suite('connectedCallback (header)', () => {
