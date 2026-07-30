@@ -89,7 +89,7 @@
   "customDatePicker.december": "ديسمبر",
   "customDatePicker.february": "فبراير",
   "customDatePicker.incorrectFormat": "تنسيق التاريخ غير صحيح.",
-  "customDatePicker.incorrectFormatExpected": "Incorrect date format. Expected format: {format}",
+  "customDatePicker.incorrectFormatExpected": "تنسيق التاريخ غير صحيح. التنسيق المتوقع: {format}",
   "customDatePicker.invalidDate": "تاريخ غير صالح. الرجاء إدخال تاريخ صحيح.",
   "customDatePicker.january": "يناير",
   "customDatePicker.july": "يوليو",
