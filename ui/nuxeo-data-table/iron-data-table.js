@@ -812,8 +812,12 @@ import '../nuxeo-button-styles.js';
       this.columns.forEach((column) => {
         const name = (column.field || column.name || '').toLowerCase();
         if (singleColumn ? requiredNames.length > 0 : requiredNames.includes(name)) {
-          derived.add(column);
-          column.required = true;
+          // only claim a column when actually turning it on: one that is already required was set
+          // explicitly, and clearing it later would override the markup
+          if (!column.required) {
+            derived.add(column);
+            column.required = true;
+          }
         } else if (derived.has(column)) {
           derived.delete(column);
           column.required = false;

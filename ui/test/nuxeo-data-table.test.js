@@ -834,6 +834,32 @@ suite('nuxeo-data-table', () => {
       await flush();
       expect(table.columns.map((c) => c.required)).to.deep.equal([true, false]);
     });
+
+    test('never clears an explicitly required column that the form also required', async () => {
+      // the column is required in markup *and* matched by a required entry widget, so the
+      // derivation must not claim ownership of it and clear it once the form stops requiring it
+      const table = await multivaluedFixture(
+        html`
+          <nuxeo-data-table-column name="Firstname" required>
+            <template>[[item.firstname]]</template>
+          </nuxeo-data-table-column>
+          <nuxeo-data-table-column name="Lastname"><template>[[item.lastname]]</template></nuxeo-data-table-column>
+        `,
+        html`
+          <input name="firstname" required />
+          <input name="lastname" required />
+        `,
+      );
+      expect(table.columns.map((c) => c.required)).to.deep.equal([true, true]);
+
+      const form = table.getContentChildren('#form')[0];
+      (form.shadowRoot || form).querySelector('[name="firstname"]').removeAttribute('required');
+      (form.shadowRoot || form).querySelector('[name="lastname"]').removeAttribute('required');
+      table._updateRequiredColumns();
+      await flush();
+      // Firstname keeps the markup value; Lastname was derived here, so it is cleared
+      expect(table.columns.map((c) => c.required)).to.deep.equal([true, false]);
+    });
   });
 
   suite('Accessibility', () => {
