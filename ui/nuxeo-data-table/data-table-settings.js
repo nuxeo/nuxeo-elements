@@ -113,6 +113,10 @@ import '../nuxeo-button-styles.js';
     }
 
     _columnDisplayChanged(change) {
+      // A full reset emits a single `reset` event of its own once every column is back to its default.
+      if (this._resetting) {
+        return;
+      }
       if (change.path.endsWith('hidden')) {
         this.dispatchEvent(
           new CustomEvent('settings-changed', {
@@ -123,15 +127,51 @@ import '../nuxeo-button-styles.js';
       }
     }
 
+    /**
+     * Restores visibility, width and order to the values declared in the layout, and signals the
+     * reset so the host can drop any stored preferences for this table (WEBUI-2086).
+     */
     _resetSettings() {
+      this._resetting = true;
+      try {
+        this.columns.forEach((column, idx) => {
+          this.set(`columns.${idx}.hidden`, column.hiddenBack);
+          this.set(`columns.${idx}.order`, idx);
+          this.set(`columns.${idx}.width`, this._declaredWidth(column));
+          this.set(`columns.${idx}.resized`, false);
+        });
+      } finally {
+        this._resetting = false;
+      }
+      this.dispatchEvent(
+        new CustomEvent('settings-changed', {
+          composed: true,
+          bubbles: true,
+          detail: { source: 'reset' },
+        }),
+      );
+    }
+
+    _resetVisibility() {
       this.columns.forEach((column, idx) => {
         this.set(`columns.${idx}.hidden`, column.hiddenBack);
       });
     }
 
+    /**
+     * The width declared in the layout markup, captured once. `width` is not reflected to the
+     * attribute, so the attribute still holds the original value after a resize changed the property.
+     */
+    _declaredWidth(column) {
+      if (column._declaredWidth === undefined) {
+        column._declaredWidth = typeof column.getAttribute === 'function' ? column.getAttribute('width') : null;
+      }
+      return column._declaredWidth;
+    }
+
     _onSettingsClosed() {
       if (this.columns.every((column) => column.hidden)) {
-        this._resetSettings();
+        this._resetVisibility();
       }
     }
 
