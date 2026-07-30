@@ -122,6 +122,21 @@ suite('nuxeo-selectivity keyboard accessibility (Tab)', () => {
       expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
     });
 
+    // WCAG 2.1 AA, SC 1.4.12 (Text Spacing). The input sits in a shadow root, so a user
+    // text-spacing stylesheet applied at document level can only reach it by inheritance.
+    // The `font` shorthand the input uses does not carry letter-spacing or word-spacing, so
+    // without an explicit opt-in the UA's form-control reset pins both at `normal`.
+    test('should inherit text spacing so user stylesheets can reach the input', async () => {
+      container.style.letterSpacing = '3px';
+      container.style.wordSpacing = '5px';
+      await flush();
+
+      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
+      const style = getComputedStyle(input);
+      expect(style.letterSpacing, 'letter-spacing must follow the ancestor').to.equal('3px');
+      expect(style.wordSpacing, 'word-spacing must follow the ancestor').to.equal('5px');
+    });
+
     test('Tab while open closes the dropdown', async () => {
       const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
       selectivityWidget._selectivity.open();
