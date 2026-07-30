@@ -89,7 +89,7 @@
   "customDatePicker.december": "דצמבר",
   "customDatePicker.february": "פברואר",
   "customDatePicker.incorrectFormat": "פורמט תאריך שגוי.",
-  "customDatePicker.incorrectFormatExpected": "Incorrect date format. Expected format: {format}",
+  "customDatePicker.incorrectFormatExpected": "פורמט תאריך שגוי. הפורמט הצפוי: {format}",
   "customDatePicker.invalidDate": "התאריך אינו חוקי. אנא הזן תאריך חוקי.",
   "customDatePicker.january": "ינואר",
   "customDatePicker.july": "יולי",
