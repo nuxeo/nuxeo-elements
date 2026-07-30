@@ -226,13 +226,13 @@ import '../nuxeo-button-styles.js';
           }
         </style>
 
-        <div id="container">
+        <div id="container" role="presentation">
           <slot name="nuxeo-selection-toolbar"></slot>
 
           <label>[[label]]</label>
           <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
 
-          <div id="header">
+          <div id="header" role="rowgroup">
             <nuxeo-data-table-row header>
               <nuxeo-data-table-checkbox
                 style$="[[_computeSelectAllVisibility(selectionEnabled, selectAllEnabled, multiSelection)]]"
@@ -283,6 +283,7 @@ import '../nuxeo-button-styles.js';
 
           <iron-list
             id="list"
+            role="rowgroup"
             items="[[items]]"
             as="item"
             selected-items="{{selectedItems}}"
@@ -290,7 +291,7 @@ import '../nuxeo-button-styles.js';
             on-scroll="_scroll"
           >
             <template>
-              <div class="item">
+              <div class="item" role="presentation">
                 <nuxeo-data-table-row
                   on-click="_onRowClick"
                   before-bind="[[beforeRowBind]]"
@@ -654,6 +655,13 @@ import '../nuxeo-button-styles.js';
       this.setAttribute('role', 'table');
       this.setAttribute('aria-multiselectable', this.multiSelection);
       this.setAttribute('aria-label', this.captionText);
+      // `iron-list` wraps the stamped rows in its own `#items` div. Left as-is it sits between the
+      // row group and the rows, which stops browsers from building the table model, so the column
+      // headers never get associated with the body cells (WEBUI-1557).
+      const items = this.$.list.shadowRoot && this.$.list.shadowRoot.querySelector('#items');
+      if (items) {
+        items.setAttribute('role', 'presentation');
+      }
       const wrapperHeight = this.getAttribute('wrapper-height');
       if (wrapperHeight) {
         this._wrapperHeight = wrapperHeight;
@@ -691,6 +699,9 @@ import '../nuxeo-button-styles.js';
       if (list && this._wrapperHeight && !list.parentElement.classList.contains('table-wrapper')) {
         const wrapper = document.createElement('div');
         wrapper.classList.add('table-wrapper');
+        // Keep the scroll wrapper out of the accessibility tree so it does not sit between the
+        // table and its row groups (WEBUI-1557).
+        wrapper.setAttribute('role', 'presentation');
         wrapper.setAttribute('style', `height: ${this._wrapperHeight}`);
         list.parentElement.insertBefore(wrapper, list);
         wrapper.appendChild(list);
