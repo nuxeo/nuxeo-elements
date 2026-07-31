@@ -403,19 +403,24 @@ suite('nuxeo-checkbox-aggregation', () => {
       expect(button.matches(':disabled')).to.be.false;
     });
 
-    test('Should expand and collapse when the header button is focused and Enter is pressed', async () => {
+    test('Should expand and collapse when the focused header button is activated', async () => {
       const nuxeoCheckboxAggregation = await fixture(
         html`
           <nuxeo-checkbox-aggregation .data=${data} collapsible label="Some label"> </nuxeo-checkbox-aggregation>
         `,
       );
 
-      const button = nuxeoCheckboxAggregation.shadowRoot.querySelector('button');
+      // Selected by its disclosure semantics rather than by tag name, so the check
+      // below is meaningful: the control has to be a native <button>, which is what
+      // makes the browser activate it on Enter and Space. A div with a click handler
+      // would satisfy the activation assertions yet stay unreachable by keyboard.
+      const button = nuxeoCheckboxAggregation.shadowRoot.querySelector('[aria-expanded]');
+      expect(button.tagName).to.equal('BUTTON');
+
       button.focus();
       expect(nuxeoCheckboxAggregation.shadowRoot.activeElement).to.equal(button);
       expect(button.getAttribute('aria-expanded')).to.equal('false');
 
-      // Enter on a native button is dispatched by the browser as a click.
       button.click();
       await waitForAnimationToEnd();
       expect(nuxeoCheckboxAggregation.opened).to.be.true;
