@@ -73,7 +73,7 @@ import './nuxeo-tooltip.js';
           }
         </style>
 
-        <nuxeo-select label="[[label]]" attr-for-selected="option" selected="{{selected}}">
+        <nuxeo-select label="[[_normalizeLabel(label)]]" attr-for-selected="option" selected="{{selected}}">
           <dom-if if="[[options]]">
             <template>
               <dom-repeat items="[[options]]" as="item">
@@ -140,8 +140,16 @@ import './nuxeo-tooltip.js';
       };
     }
 
+    /**
+     * Single source of truth for the label: a blank one becomes `null`, so what the select renders
+     * and what `has-label` reflects can never disagree.
+     */
+    _normalizeLabel(label) {
+      return (typeof label === 'string' ? label.trim() : label) || null;
+    }
+
     _computeHasLabel(label) {
-      return !!(label && label.trim());
+      return this._normalizeLabel(label) !== null;
     }
 
     _optionsChanged() {
