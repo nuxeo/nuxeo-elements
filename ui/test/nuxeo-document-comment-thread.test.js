@@ -90,6 +90,28 @@ suite('nuxeo-document-comment-thread', () => {
       });
     });
 
+    suite('Input Label', () => {
+      test('Should display an always visible label naming the comment input', () => {
+        const input = element.root.querySelector('#inputContainer');
+        expect(input.label).to.equal(element._computeTextLabel(1, 'label'));
+        expect(input.label).to.not.be.empty;
+        expect(input.alwaysFloatLabel).to.be.true;
+        expect(isElementVisible(input.shadowRoot.querySelector('label'))).to.be.true;
+      });
+
+      test('Should name replies with the reply label', async () => {
+        element.set('level', 2);
+        await flush();
+
+        expect(element.root.querySelector('#inputContainer').label).to.equal(element._computeTextLabel(2, 'label'));
+      });
+
+      test('Should expose the visible label as the accessible name of the textarea', () => {
+        const input = element.root.querySelector('#inputContainer');
+        expect(input.inputElement.label).to.equal(input.label);
+      });
+    });
+
     suite('Listing Comments', () => {
       test('Should request comments with author and repliesSummary fetch headers', async () => {
         element._refresh();

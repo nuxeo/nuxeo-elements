@@ -679,22 +679,39 @@ suite('nuxeo-selectivity', () => {
       expect(input.getAttribute('placeholder')).to.equal('Select cities');
     });
 
-    test('label takes precedence over placeholder for aria-label', async () => {
+    test('the visible label names the input instead of the placeholder', async () => {
       selectivityWidget = await fixture(html`
         <nuxeo-selectivity label="Authors" placeholder="Select authors" .data=${data}></nuxeo-selectivity>
       `);
       const input = selectivityWidget.shadowRoot.querySelector('.selectivity-single-select-input');
-      expect(input.getAttribute('aria-label')).to.equal('Authors');
+      const label = selectivityWidget.shadowRoot.querySelector('#label');
+      expect(label.hidden).to.be.false;
+      expect(label.textContent).to.equal('Authors');
+      expect(input.getAttribute('aria-labelledby')).to.equal('label');
+      expect(label.getAttribute('for')).to.equal(input.id);
+      expect(input.hasAttribute('aria-label')).to.be.false;
     });
 
-    test('changing the label updates the aria-label on the input', async () => {
+    test('setting a label switches the input from the placeholder to the visible label', async () => {
       selectivityWidget = await fixture(html`
         <nuxeo-selectivity placeholder="Pick one" .data=${data}></nuxeo-selectivity>
       `);
       const input = selectivityWidget.shadowRoot.querySelector('.selectivity-single-select-input');
       expect(input.getAttribute('aria-label')).to.equal('Pick one');
+      expect(input.hasAttribute('aria-labelledby')).to.be.false;
       selectivityWidget.label = 'New Label';
-      expect(input.getAttribute('aria-label')).to.equal('New Label');
+      expect(input.hasAttribute('aria-label')).to.be.false;
+      expect(input.getAttribute('aria-labelledby')).to.equal('label');
+    });
+
+    test('clearing the label restores the placeholder as the accessible name', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity label="Authors" placeholder="Select authors" .data=${data}></nuxeo-selectivity>
+      `);
+      const input = selectivityWidget.shadowRoot.querySelector('.selectivity-single-select-input');
+      selectivityWidget.label = '';
+      expect(input.hasAttribute('aria-labelledby')).to.be.false;
+      expect(input.getAttribute('aria-label')).to.equal('Select authors');
     });
 
     test('aria-label is removed when both label and placeholder are empty', async () => {
