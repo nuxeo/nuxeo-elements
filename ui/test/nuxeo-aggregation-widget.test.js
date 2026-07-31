@@ -435,8 +435,10 @@ suite('nuxeo-checkbox-aggregation', () => {
       );
 
       const styles = nuxeoCheckboxAggregation.shadowRoot.querySelector('style').textContent;
-      expect(styles).to.contain('button:focus-visible');
-      expect(styles.replace(/\s+/g, ' ')).to.contain('button:focus-visible { outline: auto; }');
+      expect(styles).to.match(/button:focus\s*\{[^}]*outline:\s*auto/);
+      // The ring is dropped only for pointer focus, so a browser without
+      // :focus-visible keeps it instead of hiding it.
+      expect(styles).to.match(/button:focus:not\(:focus-visible\)\s*\{[^}]*outline:\s*none/);
     });
   });
 });

@@ -101,13 +101,15 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
           button:active {
             color: inherit;
           }
-          /* No ring on pointer interaction, but keyboard focus must stay visible
-             on the header button since it is the only tab stop of the filter. */
+          /* The header button is the only tab stop of the filter, so keyboard
+             focus must stay visible on it. Ring by default, dropped only for
+             pointer focus: a browser without :focus-visible fails to parse the
+             second rule and keeps the ring rather than hiding it. */
           button:focus {
-            outline: none;
-          }
-          button:focus-visible {
             outline: auto;
+          }
+          button:focus:not(:focus-visible) {
+            outline: none;
           }
           .heading {
             width: calc(100% - 20px);
