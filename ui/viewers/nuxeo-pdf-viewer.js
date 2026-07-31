@@ -104,8 +104,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // options — waiting for the iframe's own load event would be too late.
       this._webViewerLoadedHandler = (e) => {
         const viewerWindow = e && e.detail && e.detail.source;
-        const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
-        if (!viewerWindow || !iframe || viewerWindow !== iframe.contentWindow) {
+        if (!this._isCurrentViewerWindow(viewerWindow)) {
           return;
         }
         this._configureExternalLinks(viewerWindow);
@@ -167,6 +166,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
      * through this code path in pdf.js, so intra-document links keep scrolling the
      * viewer instead of navigating.
      */
+    /**
+     * Whether the given window is the one the iframe is showing right now. The element is
+     * reused across documents, so a viewer from a previous `src` can still be running.
+     */
+    _isCurrentViewerWindow(viewerWindow) {
+      const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
+      return Boolean(viewerWindow) && Boolean(iframe) && viewerWindow === iframe.contentWindow;
+    }
+
     _configureExternalLinks(viewerWindow) {
       const options = viewerWindow.PDFViewerApplicationOptions;
       if (!options) {
@@ -190,10 +198,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
       app.initializedPromise.then(
         () => {
-          // The element can be detached while the viewer is still initialising, in which
-          // case disconnectedCallback() has already run and would never see this
-          // subscription.
-          if (!this.isConnected || !app.eventBus) {
+          // The element can be detached, or the iframe moved on to another document,
+          // while this viewer was still initialising. Subscribing then would either leak
+          // a listener disconnectedCallback() has already run past, or let a stale viewer
+          // take over the subscription that belongs to the one now on screen.
+          if (!this.isConnected || !this._isCurrentViewerWindow(viewerWindow) || !app.eventBus) {
             return;
           }
           this._unsubscribeFromAnnotationLayer();
