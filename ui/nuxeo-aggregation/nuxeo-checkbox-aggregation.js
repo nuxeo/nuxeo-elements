@@ -101,9 +101,9 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
           button:active {
             color: inherit;
           }
-          /* The header button is the only tab stop of the filter, so keyboard
-             focus must stay visible on it. Ring by default, dropped only for
-             pointer focus: a browser without :focus-visible fails to parse the
+          /* While collapsed the header button is the filter's only tab stop, so
+             keyboard focus must stay visible on it. Ring by default, dropped only
+             for pointer focus: a browser without :focus-visible fails to parse the
              second rule and keeps the ring rather than hiding it. */
           button:focus {
             outline: auto;
