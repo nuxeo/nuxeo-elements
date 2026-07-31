@@ -117,11 +117,26 @@ suite('nuxeo-document-comment-thread', () => {
         const native = nativeTextarea(input);
 
         expect(native).to.exist;
-        // Assert on the native control, not on the `label` property: `paper-textarea` points
-        // `aria-labelledby` at a `<label>` in another shadow root, so a property-level check
-        // would still pass while the field is left unnamed for assistive technologies.
+        // Assert on the native control rather than the `label` property: that property is what
+        // the fix sets, so checking it would pass even if nothing reached the element that
+        // assistive technologies actually read.
         expect(native.getAttribute('aria-label')).to.equal(input.label);
-        expect(native.hasAttribute('aria-labelledby')).to.be.false;
+        expect(native.getAttribute('aria-label')).to.not.be.empty;
+      });
+
+      test('Should not let the dangling aria-labelledby name the textarea', async () => {
+        await flush();
+        const native = nativeTextarea(element.root.querySelector('#inputContainer'));
+        const labelledby = native.getAttribute('aria-labelledby');
+
+        // paper-textarea points this at a <label> in its own shadow root, one level above the
+        // textarea, so it can never resolve and browsers discard it as an invalid name source,
+        // falling through to aria-label. It is left in place deliberately: removing it fights
+        // paper-input-behavior, which re-applies it.
+        if (labelledby) {
+          const root = native.getRootNode();
+          expect(root.getElementById(labelledby)).to.not.exist;
+        }
       });
 
       test('Should re-name the native textarea when the thread becomes a reply', async () => {
@@ -129,10 +144,7 @@ suite('nuxeo-document-comment-thread', () => {
         await flush();
 
         const input = element.root.querySelector('#inputContainer');
-        const native = nativeTextarea(input);
-
-        expect(native.getAttribute('aria-label')).to.equal(element._computeTextLabel(2, 'label'));
-        expect(native.hasAttribute('aria-labelledby')).to.be.false;
+        expect(nativeTextarea(input).getAttribute('aria-label')).to.equal(element._computeTextLabel(2, 'label'));
       });
     });
 
