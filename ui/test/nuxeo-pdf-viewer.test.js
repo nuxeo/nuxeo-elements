@@ -569,6 +569,8 @@ suite('nuxeo-pdf-viewer', () => {
         elem._labelExternalLinks({ querySelectorAll: () => [link] });
 
         expect(link.title).to.equal('https://example.com/ (opens in a new tab)');
+        // The anchor has no text, so the warning has to be the accessible name.
+        expect(link.getAttribute('aria-label')).to.equal('https://example.com/ (opens in a new tab)');
       } finally {
         window.nuxeo.I18n.language = originalLanguage;
         if (originalValue === undefined) {

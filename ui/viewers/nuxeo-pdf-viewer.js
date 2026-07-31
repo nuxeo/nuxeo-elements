@@ -232,10 +232,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _labelExternalLinks(root) {
       root.querySelectorAll(EXTERNAL_LINK_SELECTOR).forEach((link) => {
         link.setAttribute(LABELLED_ATTRIBUTE, '');
-        // pdf.js renders link annotations as empty anchors overlaying the page, so
-        // `title` is both the tooltip and the accessible name. Warning there reaches
-        // pointer and assistive-technology users alike.
-        link.title = this.i18n('pdfViewer.externalLinkNewTab', link.href);
+        // pdf.js renders link annotations as empty anchors overlaying the page, so there
+        // is no text to carry the warning. `title` shows it on hover; `aria-label` is what
+        // makes it the accessible name, since assistive technologies treat `title` as a
+        // description they may skip.
+        const warning = this.i18n('pdfViewer.externalLinkNewTab', link.href);
+        link.title = warning;
+        link.setAttribute('aria-label', warning);
       });
     }
 
