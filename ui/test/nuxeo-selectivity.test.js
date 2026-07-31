@@ -710,10 +710,13 @@ suite('nuxeo-selectivity', () => {
         <nuxeo-selectivity label="Authors" placeholder="Select authors" .data=${data}></nuxeo-selectivity>
       `);
       const input = selectivityWidget.shadowRoot.querySelector('.selectivity-single-select-input');
+      const label = selectivityWidget.shadowRoot.querySelector('#label');
       selectivityWidget.label = '';
       await flush();
       expect(input.hasAttribute('aria-labelledby')).to.be.false;
       expect(input.getAttribute('aria-label')).to.equal('Select authors');
+      // no stale association left behind by the label that is no longer rendered
+      expect(label.hasAttribute('for')).to.be.false;
     });
 
     test('aria-label is removed when both label and placeholder are empty', async () => {

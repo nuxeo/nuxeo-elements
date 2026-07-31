@@ -7712,6 +7712,11 @@ typedArrayTags[weakMapTag] = false;
         input.removeAttribute('aria-label');
       } else {
         input.removeAttribute('aria-labelledby');
+        // Drop the `for` as well, otherwise the now-empty label keeps a stale association
+        // with the input and the placeholder-only fallback is not what it claims to be.
+        if (labelElement) {
+          labelElement.removeAttribute('for');
+        }
         if (placeholder) {
           input.setAttribute('aria-label', placeholder);
         } else {
