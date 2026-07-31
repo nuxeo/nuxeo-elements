@@ -540,9 +540,11 @@ const FOCUS_SUPPRESSION_MS = 200;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             /* Sized to its content rather than a fixed width so week names, dates and the
                month/year header stay inside the calendar when the user overrides text
-               spacing (WCAG 2.1 SC 1.4.12). 280px remains the design floor. */
+               spacing (WCAG 2.1 SC 1.4.12). 280px remains the design floor, but a minimum
+               larger than the maximum would win over it, so the floor itself yields to the
+               viewport below 296px (reached at 400% zoom, SC 1.4.10). */
             width: max-content;
-            min-width: 280px;
+            min-width: min(280px, calc(100vw - 16px));
             max-width: calc(100vw - 16px);
             display: none;
             animation: fadeIn 0.15s ease-out;

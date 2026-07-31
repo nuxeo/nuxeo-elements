@@ -7125,5 +7125,43 @@ suite('custom-date-picker accessibility', () => {
       const wrapper = q('.input-wrapper');
       expect(wrapper.scrollWidth).to.be.at.most(wrapper.clientWidth + ROUNDING_TOLERANCE_PX);
     });
+
+    // A minimum width larger than the maximum wins over it, so the 280px design floor has to yield
+    // to the viewport once there is less room than that (400% zoom on a 1024px screen, SC 1.4.10).
+    test('the 280px floor never exceeds the width the viewport allows', () => {
+      const { minWidth, maxWidth } = getComputedStyle(q('#calendarPopover'));
+      const available = document.documentElement.clientWidth - 16;
+      expect(parseFloat(maxWidth)).to.be.closeTo(available, ROUNDING_TOLERANCE_PX);
+      expect(parseFloat(minWidth)).to.equal(Math.min(280, available));
+      expect(parseFloat(minWidth)).to.be.at.most(parseFloat(maxWidth));
+    });
+
+    // min-width/max-width resolve against the viewport, which the test page cannot resize, so give
+    // the calendar a real 280px viewport of its own.
+    test('the calendar stays inside a viewport narrower than the 280px floor', async () => {
+      const frame = document.createElement('iframe');
+      frame.style.cssText = 'width: 280px; height: 600px; border: 0;';
+      const moduleUrl = new URL('../widgets/custom-date-picker.js', import.meta.url).href;
+      frame.srcdoc = `<!doctype html><html><body style="margin:0"><custom-date-picker></custom-date-picker>
+        <script type="module">import '${moduleUrl}';</script></body></html>`;
+      document.body.appendChild(frame);
+      try {
+        await new Promise((resolve) => {
+          frame.addEventListener('load', resolve, { once: true });
+        });
+        const frameWindow = frame.contentWindow;
+        await frameWindow.customElements.whenDefined('custom-date-picker');
+        const picker = frame.contentDocument.querySelector('custom-date-picker');
+        picker._openCalendar();
+        await new Promise((resolve) => {
+          frameWindow.requestAnimationFrame(() => frameWindow.requestAnimationFrame(resolve));
+        });
+        const popover = picker.shadowRoot.querySelector('#calendarPopover');
+        expect(parseFloat(frameWindow.getComputedStyle(popover).minWidth)).to.be.at.most(frameWindow.innerWidth - 16);
+        expect(popover.getBoundingClientRect().right).to.be.at.most(frameWindow.innerWidth);
+      } finally {
+        frame.remove();
+      }
+    });
   });
 });
