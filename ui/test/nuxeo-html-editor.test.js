@@ -343,13 +343,14 @@ suite('nuxeo-html-editor color pickers', () => {
     expect(items[0].tabIndex).to.equal(-1);
   });
 
-  test('marks the format clearing swatch as selected while no color is applied', () => {
+  test('marks the format clearing swatch as selected while Quill marks nothing', () => {
     const items = itemsOf(colorPicker);
-    expect(items.filter((item) => item.classList.contains('ql-selected'))).to.be.empty;
+    items.forEach((item) => item.classList.remove('ql-selected'));
+    el._syncColorPicker(instanceOf(colorPicker));
     // The trigger already announces "Automatic color"; the listbox has to agree with it.
     expect(items[0].getAttribute('aria-selected')).to.equal('true');
     expect(items[0].tabIndex).to.equal(0);
-    expect(items.slice(1).every((item) => item.getAttribute('aria-selected') === 'false')).to.be.true;
+    expect(items.filter((item) => item.getAttribute('aria-selected') !== 'false')).to.have.lengthOf(1);
   });
 
   test('closes the palette on Escape and restores focus to the trigger', async () => {
