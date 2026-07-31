@@ -413,6 +413,17 @@ suite('nuxeo-pdf-viewer', () => {
 
     let element;
 
+    /**
+     * Makes `win` the viewer window the element's iframe is currently showing. The stand-in
+     * carries the listener API too, because disconnectedCallback() detaches from the iframe.
+     */
+    const showInIframe = (win) =>
+      sinon.stub(element.shadowRoot, 'querySelector').returns({
+        contentWindow: win,
+        addEventListener: sinon.spy(),
+        removeEventListener: sinon.spy(),
+      });
+
     setup(async () => {
       element = await fixture(
         html`
@@ -472,6 +483,7 @@ suite('nuxeo-pdf-viewer', () => {
 
     test('should subscribe to annotation layer rendering once the viewer is initialized', async () => {
       const win = createViewerWindow();
+      showInIframe(win);
       element._configureExternalLinks(win);
       await win.PDFViewerApplication.initializedPromise;
 
@@ -480,6 +492,7 @@ suite('nuxeo-pdf-viewer', () => {
 
     test('should not subscribe when the element is detached while the viewer initializes', async () => {
       const win = createViewerWindow();
+      showInIframe(win);
       element._configureExternalLinks(win);
       element.remove();
       await win.PDFViewerApplication.initializedPromise;
@@ -487,8 +500,21 @@ suite('nuxeo-pdf-viewer', () => {
       expect(win.PDFViewerApplication.eventBus.on).to.not.have.been.called;
     });
 
+    test('should not let a viewer left behind by a previous src take over the subscription', async () => {
+      const previous = createViewerWindow();
+      const current = createViewerWindow();
+      // The iframe has already moved on to `current` by the time `previous` initializes.
+      showInIframe(current);
+
+      element._configureExternalLinks(previous);
+      await previous.PDFViewerApplication.initializedPromise;
+
+      expect(previous.PDFViewerApplication.eventBus.on).to.not.have.been.called;
+    });
+
     test('should drop a previous subscription instead of stacking a second one', async () => {
       const win = createViewerWindow();
+      showInIframe(win);
       element._configureExternalLinks(win);
       await win.PDFViewerApplication.initializedPromise;
       const first = element._annotationLayerHandler;
@@ -503,6 +529,7 @@ suite('nuxeo-pdf-viewer', () => {
     test('should label only the page that just rendered', async () => {
       const win = createViewerWindow();
       const pageDiv = { querySelectorAll: sinon.stub().returns([]) };
+      showInIframe(win);
       element._configureExternalLinks(win);
       await win.PDFViewerApplication.initializedPromise;
 
@@ -514,6 +541,7 @@ suite('nuxeo-pdf-viewer', () => {
 
     test('should fall back to the whole document when the event carries no page', async () => {
       const win = createViewerWindow();
+      showInIframe(win);
       element._configureExternalLinks(win);
       await win.PDFViewerApplication.initializedPromise;
 
@@ -565,6 +593,7 @@ suite('nuxeo-pdf-viewer', () => {
 
     test('should stop listening for annotation layer rendering on disconnect', async () => {
       const win = createViewerWindow();
+      showInIframe(win);
       element._configureExternalLinks(win);
       await win.PDFViewerApplication.initializedPromise;
 
