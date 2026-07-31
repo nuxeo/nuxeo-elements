@@ -51,10 +51,13 @@ suite('nuxeo-sort-select', () => {
       expect(el.hasAttribute('has-label')).to.be.true;
     });
 
-    test('does not flag a blank label', async () => {
+    test('does not flag a blank label, nor forward it to the select', async () => {
       el.label = '  ';
       await flush();
+      const select = el.shadowRoot.querySelector('nuxeo-select');
       expect(el.hasAttribute('has-label')).to.be.false;
+      expect(select.label).to.be.null;
+      expect(select.shadowRoot.querySelector('label').textContent).to.be.empty;
     });
   });
 
