@@ -90,6 +90,11 @@ suite('nuxeo-document-comment-thread', () => {
       });
     });
 
+    /** Resolves the native `<textarea>` that `paper-textarea` wraps. */
+    const nativeTextarea = (paperTextarea) =>
+      (paperTextarea.shadowRoot && paperTextarea.shadowRoot.querySelector('textarea')) ||
+      (paperTextarea.$ && paperTextarea.$.input && paperTextarea.$.input.textarea);
+
     suite('Input Label', () => {
       test('Should display an always visible label naming the comment input', () => {
         const input = element.root.querySelector('#inputContainer');
@@ -106,9 +111,28 @@ suite('nuxeo-document-comment-thread', () => {
         expect(element.root.querySelector('#inputContainer').label).to.equal(element._computeTextLabel(2, 'label'));
       });
 
-      test('Should expose the visible label as the accessible name of the textarea', () => {
+      test('Should expose the visible label as the accessible name of the native textarea', async () => {
+        await flush();
         const input = element.root.querySelector('#inputContainer');
-        expect(input.inputElement.label).to.equal(input.label);
+        const native = nativeTextarea(input);
+
+        expect(native).to.exist;
+        // Assert on the native control, not on the `label` property: `paper-textarea` points
+        // `aria-labelledby` at a `<label>` in another shadow root, so a property-level check
+        // would still pass while the field is left unnamed for assistive technologies.
+        expect(native.getAttribute('aria-label')).to.equal(input.label);
+        expect(native.hasAttribute('aria-labelledby')).to.be.false;
+      });
+
+      test('Should re-name the native textarea when the thread becomes a reply', async () => {
+        element.set('level', 2);
+        await flush();
+
+        const input = element.root.querySelector('#inputContainer');
+        const native = nativeTextarea(input);
+
+        expect(native.getAttribute('aria-label')).to.equal(element._computeTextLabel(2, 'label'));
+        expect(native.hasAttribute('aria-labelledby')).to.be.false;
       });
     });
 
