@@ -190,11 +190,18 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
       app.initializedPromise.then(
         () => {
-          if (!app.eventBus) {
+          // The element can be detached while the viewer is still initialising, in which
+          // case disconnectedCallback() has already run and would never see this
+          // subscription.
+          if (!this.isConnected || !app.eventBus) {
             return;
           }
+          this._unsubscribeFromAnnotationLayer();
           this._pdfEventBus = app.eventBus;
-          this._annotationLayerHandler = () => this._labelExternalLinks(viewerWindow.document);
+          // Scope the lookup to the page that just rendered rather than rescanning the
+          // whole document on every layer render.
+          this._annotationLayerHandler = (e) =>
+            this._labelExternalLinks((e && e.source && e.source.div) || viewerWindow.document);
           this._pdfEventBus.on('annotationlayerrendered', this._annotationLayerHandler);
         },
         (err) => {
@@ -205,8 +212,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       );
     }
 
-    _labelExternalLinks(viewerDocument) {
-      viewerDocument.querySelectorAll(EXTERNAL_LINK_SELECTOR).forEach((link) => {
+    _unsubscribeFromAnnotationLayer() {
+      if (this._pdfEventBus && this._annotationLayerHandler) {
+        this._pdfEventBus.off('annotationlayerrendered', this._annotationLayerHandler);
+      }
+      this._pdfEventBus = null;
+      this._annotationLayerHandler = null;
+    }
+
+    _labelExternalLinks(root) {
+      root.querySelectorAll(EXTERNAL_LINK_SELECTOR).forEach((link) => {
         link.setAttribute(LABELLED_ATTRIBUTE, '');
         // pdf.js renders link annotations as empty anchors overlaying the page, so
         // `title` is both the tooltip and the accessible name. Warning there reaches
@@ -225,11 +240,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         document.removeEventListener('webviewerloaded', this._webViewerLoadedHandler);
         this._webViewerLoadedHandler = null;
       }
-      if (this._pdfEventBus && this._annotationLayerHandler) {
-        this._pdfEventBus.off('annotationlayerrendered', this._annotationLayerHandler);
-        this._pdfEventBus = null;
-        this._annotationLayerHandler = null;
-      }
+      this._unsubscribeFromAnnotationLayer();
       if (this._blockedIframeWindow && this._keydownBlocker) {
         try {
           this._blockedIframeWindow.removeEventListener('keydown', this._keydownBlocker, true);
