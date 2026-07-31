@@ -286,11 +286,36 @@ suite('nuxeo-html-editor extras', () => {
       expect(el.shadowRoot.activeElement).to.not.equal(el.$.toolbar.querySelector('button.ql-link'));
     });
 
-    test('labels the popup for the video mode', () => {
+    test('labels the popup and all of its controls for the video mode', () => {
       tooltip.root.setAttribute('data-mode', 'video');
+      tooltip.root.classList.remove('ql-editing');
       el._updateTooltipLabels();
+      const labelOf = (selector) => tooltip.root.querySelector(selector).getAttribute('aria-label');
       expect(tooltip.root.getAttribute('aria-label')).to.equal(el.i18n('htmlEditor.video.dialog'));
       expect(tooltip.textbox.getAttribute('aria-label')).to.equal(el.i18n('htmlEditor.video.url'));
+      expect(labelOf('a.ql-action')).to.equal(el.i18n('htmlEditor.video.edit'));
+      expect(labelOf('a.ql-remove')).to.equal(el.i18n('htmlEditor.video.remove'));
+      expect(labelOf('a.ql-preview')).to.equal(el.i18n('htmlEditor.video.visit'));
+    });
+
+    test('never announces the video popup controls with the link wording', () => {
+      tooltip.root.setAttribute('data-mode', 'video');
+      tooltip.root.classList.remove('ql-editing');
+      el._updateTooltipLabels();
+      const names = ['a.ql-action', 'a.ql-remove', 'a.ql-preview'].map((selector) =>
+        tooltip.root.querySelector(selector).getAttribute('aria-label'),
+      );
+      ['htmlEditor.link.edit', 'htmlEditor.link.remove', 'htmlEditor.link.visit'].forEach((key) => {
+        expect(names).to.not.contain(el.i18n(key));
+      });
+    });
+
+    test('gives focus back to the video toolbar button when the video popup is dismissed', () => {
+      el._editor.setSelection(0, 0);
+      el.$.toolbar.querySelector('button.ql-video').click();
+      keydown(tooltip.textbox, 'Escape');
+      expect(tooltip.root.classList.contains('ql-hidden')).to.be.true;
+      expect(el.shadowRoot.activeElement).to.equal(el.$.toolbar.querySelector('button.ql-video'));
     });
 
     test('stops observing the popup while detached and resumes once reattached', () => {
