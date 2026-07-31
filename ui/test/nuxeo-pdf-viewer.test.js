@@ -394,6 +394,157 @@ suite('nuxeo-pdf-viewer', () => {
     });
   });
 
+  suite('external links', () => {
+    const LINK_TARGET_BLANK = 2;
+
+    /** Minimal stand-in for the pdf.js viewer window's public integration surface. */
+    const createViewerWindow = (overrides = {}) => {
+      return {
+        PDFViewerApplicationOptions: { set: sinon.spy() },
+        PDFViewerApplicationConstants: { LinkTarget: { NONE: 0, SELF: 1, BLANK: 2, PARENT: 3, TOP: 4 } },
+        PDFViewerApplication: {
+          initializedPromise: Promise.resolve(),
+          eventBus: { on: sinon.spy(), off: sinon.spy() },
+        },
+        document: { querySelectorAll: sinon.stub().returns([]) },
+        ...overrides,
+      };
+    };
+
+    let element;
+
+    setup(async () => {
+      element = await fixture(
+        html`
+          <nuxeo-pdf-viewer src="sample.pdf"></nuxeo-pdf-viewer>
+        `,
+      );
+    });
+
+    teardown(() => {
+      sinon.restore();
+    });
+
+    test('should ask pdfjs to open external links in a new tab', () => {
+      const win = createViewerWindow();
+      element._configureExternalLinks(win);
+      expect(win.PDFViewerApplicationOptions.set).to.have.been.calledWith('externalLinkTarget', LINK_TARGET_BLANK);
+    });
+
+    test('should keep the opener isolated from the linked page', () => {
+      const win = createViewerWindow();
+      element._configureExternalLinks(win);
+      expect(win.PDFViewerApplicationOptions.set).to.have.been.calledWith(
+        'externalLinkRel',
+        'noopener noreferrer nofollow',
+      );
+    });
+
+    test('should fall back to the BLANK literal when the viewer exposes no constants', () => {
+      const win = createViewerWindow({ PDFViewerApplicationConstants: undefined });
+      element._configureExternalLinks(win);
+      expect(win.PDFViewerApplicationOptions.set).to.have.been.calledWith('externalLinkTarget', LINK_TARGET_BLANK);
+    });
+
+    test('should not throw when the viewer exposes no options', () => {
+      const win = createViewerWindow({ PDFViewerApplicationOptions: undefined });
+      expect(() => element._configureExternalLinks(win)).to.not.throw();
+    });
+
+    test('should configure the viewer when webviewerloaded comes from its own iframe', () => {
+      const win = createViewerWindow();
+      sinon.stub(element.shadowRoot, 'querySelector').returns({ contentWindow: win });
+
+      document.dispatchEvent(new CustomEvent('webviewerloaded', { detail: { source: win } }));
+
+      expect(win.PDFViewerApplicationOptions.set).to.have.been.calledWith('externalLinkTarget', LINK_TARGET_BLANK);
+    });
+
+    test('should ignore webviewerloaded coming from another viewer', () => {
+      const own = createViewerWindow();
+      const foreign = createViewerWindow();
+      sinon.stub(element.shadowRoot, 'querySelector').returns({ contentWindow: own });
+
+      document.dispatchEvent(new CustomEvent('webviewerloaded', { detail: { source: foreign } }));
+
+      expect(foreign.PDFViewerApplicationOptions.set).to.not.have.been.called;
+    });
+
+    test('should subscribe to annotation layer rendering once the viewer is initialized', async () => {
+      const win = createViewerWindow();
+      element._configureExternalLinks(win);
+      await win.PDFViewerApplication.initializedPromise;
+
+      expect(win.PDFViewerApplication.eventBus.on).to.have.been.calledWith('annotationlayerrendered');
+    });
+
+    test('should warn that an external link opens in a new tab', async () => {
+      const originalLanguage = window.nuxeo.I18n.language;
+      const hadEnDict = window.nuxeo.I18n.en !== undefined;
+      const dict = (window.nuxeo.I18n.en = window.nuxeo.I18n.en || {});
+      const originalValue = dict['pdfViewer.externalLinkNewTab'];
+      window.nuxeo.I18n.language = 'en';
+      dict['pdfViewer.externalLinkNewTab'] = '{0} (opens in a new tab)';
+      try {
+        const elem = await fixture(
+          html`
+            <nuxeo-pdf-viewer src="sample.pdf"></nuxeo-pdf-viewer>
+          `,
+        );
+        const link = document.createElement('a');
+        link.href = 'https://example.com/';
+
+        elem._labelExternalLinks({ querySelectorAll: () => [link] });
+
+        expect(link.title).to.equal('https://example.com/ (opens in a new tab)');
+      } finally {
+        window.nuxeo.I18n.language = originalLanguage;
+        if (originalValue === undefined) {
+          delete dict['pdfViewer.externalLinkNewTab'];
+        } else {
+          dict['pdfViewer.externalLinkNewTab'] = originalValue;
+        }
+        if (!hadEnDict) {
+          delete window.nuxeo.I18n.en;
+        }
+      }
+    });
+
+    test('should mark a labelled link so the warning is not applied twice', () => {
+      const link = document.createElement('a');
+      link.href = 'https://example.com/';
+
+      element._labelExternalLinks({ querySelectorAll: () => [link] });
+
+      expect(link.hasAttribute('data-nuxeo-external-link')).to.be.true;
+    });
+
+    test('should stop listening for annotation layer rendering on disconnect', async () => {
+      const win = createViewerWindow();
+      element._configureExternalLinks(win);
+      await win.PDFViewerApplication.initializedPromise;
+
+      const handler = element._annotationLayerHandler;
+      element.disconnectedCallback();
+
+      expect(win.PDFViewerApplication.eventBus.off).to.have.been.calledWith('annotationlayerrendered', handler);
+    });
+
+    test('should stop configuring viewers after disconnect', () => {
+      const win = createViewerWindow();
+      sinon.stub(element.shadowRoot, 'querySelector').returns({
+        contentWindow: win,
+        addEventListener: sinon.spy(),
+        removeEventListener: sinon.spy(),
+      });
+
+      element.disconnectedCallback();
+      document.dispatchEvent(new CustomEvent('webviewerloaded', { detail: { source: win } }));
+
+      expect(win.PDFViewerApplicationOptions.set).to.not.have.been.called;
+    });
+  });
+
   suite('keydown blocker', () => {
     let element;
 
