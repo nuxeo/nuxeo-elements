@@ -283,7 +283,7 @@ import '../nuxeo-button-styles.js';
 
           <iron-list
             id="list"
-            role="rowgroup"
+            role$="[[_computeListRole(items.length)]]"
             items="[[items]]"
             as="item"
             selected-items="{{selectedItems}}"
@@ -682,6 +682,15 @@ import '../nuxeo-button-styles.js';
 
       // Reset transient resize state
       this._resizing = null;
+    }
+
+    /**
+     * A row group is required to own at least one row, so an empty list must stay out of the
+     * accessibility tree rather than advertise itself as an empty row group (WEBUI-1557). The header
+     * row group alone then satisfies the table.
+     */
+    _computeListRole(itemCount) {
+      return itemCount > 0 ? 'rowgroup' : 'presentation';
     }
 
     /**
