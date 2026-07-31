@@ -20,38 +20,6 @@ import '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-input/paper-textarea.js';
 
-/**
- * Names the native `<textarea>` that `paper-textarea` wraps.
- *
- * `paper-textarea` binds `aria-labelledby` on the inner textarea to its own internal
- * `<label>`, which lives in a different shadow root and therefore never resolves. Chrome
- * discards that dangling reference and falls through to `aria-label`, but the reference is
- * still an invalid name source, so clear it and name the control directly.
- *
- * @param {!Element} paperTextarea the `paper-textarea` whose inner control should be named
- * @param {?string} ariaLabel the accessible name to apply, or a falsy value to clear it
- */
-export function applyNativeTextareaAriaLabel(paperTextarea, ariaLabel) {
-  if (!paperTextarea) {
-    return;
-  }
-
-  let nativeTextarea = paperTextarea.shadowRoot && paperTextarea.shadowRoot.querySelector('textarea');
-  if (!nativeTextarea && paperTextarea.$ && paperTextarea.$.input && paperTextarea.$.input.textarea) {
-    nativeTextarea = paperTextarea.$.input.textarea;
-  }
-  if (!nativeTextarea) {
-    return;
-  }
-
-  if (ariaLabel) {
-    nativeTextarea.setAttribute('aria-label', ariaLabel);
-  } else {
-    nativeTextarea.removeAttribute('aria-label');
-  }
-  nativeTextarea.removeAttribute('aria-labelledby');
-}
-
 {
   /**
    * An element for generic textarea input in forms
@@ -230,10 +198,28 @@ export function applyNativeTextareaAriaLabel(paperTextarea, ariaLabel) {
     }
 
     _applyNativeTextareaAriaLabel() {
-      applyNativeTextareaAriaLabel(
-        this.$ && this.$.paperTextarea,
-        this._computeAriaLabel(this.label, this.placeholder),
-      );
+      const paperTextarea = this.$ && this.$.paperTextarea;
+      if (!paperTextarea) {
+        return;
+      }
+
+      const ariaLabel = this._computeAriaLabel(this.label, this.placeholder);
+
+      let nativeTextarea = paperTextarea.shadowRoot && paperTextarea.shadowRoot.querySelector('textarea');
+      if (!nativeTextarea && paperTextarea.$ && paperTextarea.$.input && paperTextarea.$.input.textarea) {
+        nativeTextarea = paperTextarea.$.input.textarea;
+      }
+      if (nativeTextarea) {
+        if (ariaLabel) {
+          nativeTextarea.setAttribute('aria-label', ariaLabel);
+        } else {
+          nativeTextarea.removeAttribute('aria-label');
+        }
+        // paper-textarea binds aria-labelledby on the inner textarea to its own
+        // internal (empty) <label>, which would otherwise win over aria-label
+        // and leave the field unnamed for assistive technologies.
+        nativeTextarea.removeAttribute('aria-labelledby');
+      }
     }
   }
 

@@ -23,7 +23,6 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-resource.js';
 import { NotifyBehavior } from '@nuxeo/nuxeo-elements/nuxeo-notify-behavior.js';
 import '../widgets/nuxeo-tooltip.js';
-import { applyNativeTextareaAriaLabel } from '../widgets/nuxeo-textarea.js';
 
 import './nuxeo-document-comment.js';
 import './nuxeo-document-comments-styles.js';
@@ -209,26 +208,19 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
     /**
      * `paper-textarea` renders its `<label>` one shadow root above the `<textarea>` it names, so the
-     * `aria-labelledby` reference it sets cannot resolve. Name the native control directly, the same
-     * way `nuxeo-textarea` does, so assistive technologies announce the visible label instead of
-     * falling back to the placeholder.
+     * `aria-labelledby` it sets dangles and Chrome discards it as an invalid name source. Mirroring
+     * the label onto `iron-autogrow-textarea` puts it on the native control as `aria-label`, which
+     * is what ends up naming the field.
+     *
+     * The dangling `aria-labelledby` is deliberately left in place: stripping it here (as
+     * `nuxeo-textarea` can afford to do) fights `paper-input-behavior`, which re-applies it, and the
+     * resulting loop hangs the renderer whenever the `dom-if` restamps this input.
      */
     _syncInputAccessibleName() {
       const input = this.$$('#inputContainer');
-      if (!input) {
-        return;
+      if (input && input.inputElement) {
+        input.inputElement.label = this._computeTextLabel(this.level, 'label');
       }
-      const label = this._computeTextLabel(this.level, 'label');
-      if (input.inputElement) {
-        input.inputElement.label = label;
-      }
-      // The attribute to clear only exists once iron-autogrow-textarea has wired up its
-      // inner textarea, which can happen after this runs.
-      if (!this._nativeAriaLabelBound) {
-        this._nativeAriaLabelBound = true;
-        input.addEventListener('iron-input-ready', () => this._syncInputAccessibleName());
-      }
-      applyNativeTextareaAriaLabel(input, label);
     }
 
     _checkForEnter(e) {
