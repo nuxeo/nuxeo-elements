@@ -317,15 +317,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const { label, options } = picker;
       const { name, fallback } = this._colorPickerLabels(picker);
       const items = Array.from(options.children);
-      const selected = options.querySelector('.ql-picker-item.ql-selected');
+      // Until a color is applied Quill can leave the palette unmarked, in which case the first
+      // swatch — the one that clears the format, and the one the trigger names — is in effect.
+      const selected = options.querySelector('.ql-picker-item.ql-selected') || items[0];
       items.forEach((item) => {
         item.setAttribute('aria-selected', String(item === selected));
         // Roving tabindex: the listbox is entered once, then navigated with the arrow keys.
         item.tabIndex = item === selected ? 0 : -1;
       });
-      if (!selected && items.length > 0) {
-        items[0].tabIndex = 0;
-      }
       const current = this._colorName(selected && selected.getAttribute('data-value'), fallback);
       label.setAttribute('aria-label', this.i18n('htmlEditor.colorPicker.selected', name, current));
     }
