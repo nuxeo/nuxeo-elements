@@ -700,6 +700,7 @@ suite('nuxeo-selectivity', () => {
       expect(input.getAttribute('aria-label')).to.equal('Pick one');
       expect(input.hasAttribute('aria-labelledby')).to.be.false;
       selectivityWidget.label = 'New Label';
+      await flush();
       expect(input.hasAttribute('aria-label')).to.be.false;
       expect(input.getAttribute('aria-labelledby')).to.equal('label');
     });
@@ -710,6 +711,7 @@ suite('nuxeo-selectivity', () => {
       `);
       const input = selectivityWidget.shadowRoot.querySelector('.selectivity-single-select-input');
       selectivityWidget.label = '';
+      await flush();
       expect(input.hasAttribute('aria-labelledby')).to.be.false;
       expect(input.getAttribute('aria-label')).to.equal('Select authors');
     });
