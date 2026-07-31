@@ -388,4 +388,55 @@ suite('nuxeo-checkbox-aggregation', () => {
       checkElementsVisibility(checkboxes, 8, true);
     });
   });
+
+  suite('Keyboard navigation', () => {
+    test('Should not make the host a tab stop, so the header button is the only one', async () => {
+      const nuxeoCheckboxAggregation = await fixture(
+        html`
+          <nuxeo-checkbox-aggregation .data=${data} collapsible label="Some label"> </nuxeo-checkbox-aggregation>
+        `,
+      );
+
+      expect(nuxeoCheckboxAggregation.hasAttribute('tabindex')).to.be.false;
+      const button = nuxeoCheckboxAggregation.shadowRoot.querySelector('button');
+      expect(button.hasAttribute('tabindex')).to.be.false;
+      expect(button.matches(':disabled')).to.be.false;
+    });
+
+    test('Should expand and collapse when the header button is focused and Enter is pressed', async () => {
+      const nuxeoCheckboxAggregation = await fixture(
+        html`
+          <nuxeo-checkbox-aggregation .data=${data} collapsible label="Some label"> </nuxeo-checkbox-aggregation>
+        `,
+      );
+
+      const button = nuxeoCheckboxAggregation.shadowRoot.querySelector('button');
+      button.focus();
+      expect(nuxeoCheckboxAggregation.shadowRoot.activeElement).to.equal(button);
+      expect(button.getAttribute('aria-expanded')).to.equal('false');
+
+      // Enter on a native button is dispatched by the browser as a click.
+      button.click();
+      await waitForAnimationToEnd();
+      expect(nuxeoCheckboxAggregation.opened).to.be.true;
+      expect(button.getAttribute('aria-expanded')).to.equal('true');
+
+      button.click();
+      await waitForAnimationToEnd();
+      expect(nuxeoCheckboxAggregation.opened).to.be.false;
+      expect(button.getAttribute('aria-expanded')).to.equal('false');
+    });
+
+    test('Should keep a visible focus ring on the header button when focused by keyboard', async () => {
+      const nuxeoCheckboxAggregation = await fixture(
+        html`
+          <nuxeo-checkbox-aggregation .data=${data} collapsible label="Some label"> </nuxeo-checkbox-aggregation>
+        `,
+      );
+
+      const styles = nuxeoCheckboxAggregation.shadowRoot.querySelector('style').textContent;
+      expect(styles).to.contain('button:focus-visible');
+      expect(styles.replace(/\s+/g, ' ')).to.contain('button:focus-visible { outline: auto; }');
+    });
+  });
 });

@@ -101,9 +101,13 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
           button:active {
             color: inherit;
           }
-          /* XXX - while we define our default focus state */
+          /* No ring on pointer interaction, but keyboard focus must stay visible
+             on the header button since it is the only tab stop of the filter. */
           button:focus {
             outline: none;
+          }
+          button:focus-visible {
+            outline: auto;
           }
           .heading {
             width: calc(100% - 20px);
@@ -250,11 +254,6 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
           computed: '_computeVisibleBuckets(buckets, visibleItems, _showAll)',
         },
       };
-    }
-
-    ready() {
-      super.ready();
-      this.setAttribute('tabindex', 0);
     }
 
     _formatDocCount(docCount) {
