@@ -21,6 +21,21 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
 {
+  // `LinkTarget.BLANK` from pdf.js. The viewer exposes the enum as
+  // `PDFViewerApplicationConstants`; this literal is only the fallback for a build that
+  // stops publishing it, so external links keep opening in a new tab either way.
+  const LINK_TARGET_BLANK = 2;
+
+  // Opening a link in a new browsing context must never leak the opener to the target
+  // page, so pin the relationship rather than relying on the pdf.js default.
+  const EXTERNAL_LINK_REL = 'noopener noreferrer nofollow';
+
+  // Marks the links we have already labelled, so re-rendering a page (zoom, scroll)
+  // cannot append the warning twice.
+  const LABELLED_ATTRIBUTE = 'data-nuxeo-external-link';
+
+  const EXTERNAL_LINK_SELECTOR = `.annotationLayer a[target="_blank"]:not([${LABELLED_ATTRIBUTE}])`;
+
   /**
    * An element for viewing PDF files.
    *
@@ -84,6 +99,18 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     connectedCallback() {
       super.connectedCallback();
+      // pdf.js dispatches `webviewerloaded` on the embedder's document immediately
+      // before it builds the viewer, which is the supported point to override its
+      // options — waiting for the iframe's own load event would be too late.
+      this._webViewerLoadedHandler = (e) => {
+        const viewerWindow = e && e.detail && e.detail.source;
+        const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
+        if (!viewerWindow || !iframe || viewerWindow !== iframe.contentWindow) {
+          return;
+        }
+        this._configureExternalLinks(viewerWindow);
+      };
+      document.addEventListener('webviewerloaded', this._webViewerLoadedHandler);
       this._iframeLoadHandler = () => {
         try {
           const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
@@ -129,11 +156,79 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
     }
 
+    /**
+     * Make links that point outside the document open in a new tab.
+     *
+     * pdf.js defaults `externalLinkTarget` to `LinkTarget.NONE` and then, on detecting
+     * that it is embedded in a frame, promotes it to `LinkTarget.TOP`. Because this
+     * viewer always runs inside an iframe, every external link would otherwise be
+     * rendered with `target="_top"` and replace the whole Web UI tab, throwing the user
+     * out of the document they were reading. Only links carrying a URL action go
+     * through this code path in pdf.js, so intra-document links keep scrolling the
+     * viewer instead of navigating.
+     */
+    _configureExternalLinks(viewerWindow) {
+      const options = viewerWindow.PDFViewerApplicationOptions;
+      if (!options) {
+        return;
+      }
+      const constants = viewerWindow.PDFViewerApplicationConstants;
+      const blank = (constants && constants.LinkTarget && constants.LinkTarget.BLANK) || LINK_TARGET_BLANK;
+      options.set('externalLinkTarget', blank);
+      options.set('externalLinkRel', EXTERNAL_LINK_REL);
+      this._announceExternalLinks(viewerWindow);
+    }
+
+    /**
+     * Opening a new tab is a change of context, which WCAG 3.2.5 asks us to announce in
+     * advance, so label the links as they are rendered.
+     */
+    _announceExternalLinks(viewerWindow) {
+      const app = viewerWindow.PDFViewerApplication;
+      if (!app || !app.initializedPromise) {
+        return;
+      }
+      app.initializedPromise.then(
+        () => {
+          if (!app.eventBus) {
+            return;
+          }
+          this._pdfEventBus = app.eventBus;
+          this._annotationLayerHandler = () => this._labelExternalLinks(viewerWindow.document);
+          this._pdfEventBus.on('annotationlayerrendered', this._annotationLayerHandler);
+        },
+        (err) => {
+          // Intentionally swallowed: the viewer failed to initialise, which it already
+          // reports to the user. There is no link to label in that case.
+          void err;
+        },
+      );
+    }
+
+    _labelExternalLinks(viewerDocument) {
+      viewerDocument.querySelectorAll(EXTERNAL_LINK_SELECTOR).forEach((link) => {
+        link.setAttribute(LABELLED_ATTRIBUTE, '');
+        // pdf.js renders link annotations as empty anchors overlaying the page, so
+        // `title` is both the tooltip and the accessible name. Warning there reaches
+        // pointer and assistive-technology users alike.
+        link.title = this.i18n('pdfViewer.externalLinkNewTab', link.href);
+      });
+    }
+
     disconnectedCallback() {
       super.disconnectedCallback();
       const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
       if (iframe && this._iframeLoadHandler) {
         iframe.removeEventListener('load', this._iframeLoadHandler);
+      }
+      if (this._webViewerLoadedHandler) {
+        document.removeEventListener('webviewerloaded', this._webViewerLoadedHandler);
+        this._webViewerLoadedHandler = null;
+      }
+      if (this._pdfEventBus && this._annotationLayerHandler) {
+        this._pdfEventBus.off('annotationlayerrendered', this._annotationLayerHandler);
+        this._pdfEventBus = null;
+        this._annotationLayerHandler = null;
       }
       if (this._blockedIframeWindow && this._keydownBlocker) {
         try {
