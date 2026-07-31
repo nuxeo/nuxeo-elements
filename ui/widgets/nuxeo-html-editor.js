@@ -31,10 +31,25 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
   // Controls rendered inside Quill's link tooltip, in DOM order.
   const TOOLTIP_CONTROLS = 'a.ql-preview, input[type="text"], a.ql-action, a.ql-remove';
 
-  // The tooltip is shared by the link and video buttons, so its labels depend on the mode.
-  const TOOLTIP_LABELS = {
-    link: { dialog: 'htmlEditor.link.dialog', url: 'htmlEditor.link.url' },
-    video: { dialog: 'htmlEditor.video.dialog', url: 'htmlEditor.video.url' },
+  // The tooltip is shared by the link and video buttons, so everything it exposes — its own
+  // name, the name of each control and the toolbar button focus goes back to — follows the mode.
+  const TOOLTIP_MODES = {
+    link: {
+      dialog: 'htmlEditor.link.dialog',
+      url: 'htmlEditor.link.url',
+      edit: 'htmlEditor.link.edit',
+      remove: 'htmlEditor.link.remove',
+      visit: 'htmlEditor.link.visit',
+      button: 'button.ql-link',
+    },
+    video: {
+      dialog: 'htmlEditor.video.dialog',
+      url: 'htmlEditor.video.url',
+      edit: 'htmlEditor.video.edit',
+      remove: 'htmlEditor.video.remove',
+      visit: 'htmlEditor.video.visit',
+      button: 'button.ql-video',
+    },
   };
 
   /**
@@ -330,27 +345,29 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._tooltipEditing = editing;
     }
 
+    _tooltipMode() {
+      return TOOLTIP_MODES[this._tooltip.root.getAttribute('data-mode')] || TOOLTIP_MODES.link;
+    }
+
     _updateTooltipLabels() {
       const { root } = this._tooltip;
-      const labels = TOOLTIP_LABELS[root.getAttribute('data-mode')] || TOOLTIP_LABELS.link;
-      root.setAttribute('aria-label', this.i18n(labels.dialog));
-      this._tooltip.textbox.setAttribute('aria-label', this.i18n(labels.url));
+      const mode = this._tooltipMode();
+      root.setAttribute('aria-label', this.i18n(mode.dialog));
+      this._tooltip.textbox.setAttribute('aria-label', this.i18n(mode.url));
       const action = root.querySelector('a.ql-action');
       const remove = root.querySelector('a.ql-remove');
       const preview = root.querySelector('a.ql-preview');
       if (action) {
         action.setAttribute(
           'aria-label',
-          root.classList.contains('ql-editing')
-            ? this.i18n('htmlEditor.tooltip.save')
-            : this.i18n('htmlEditor.link.edit'),
+          root.classList.contains('ql-editing') ? this.i18n('htmlEditor.tooltip.save') : this.i18n(mode.edit),
         );
       }
       if (remove) {
-        remove.setAttribute('aria-label', this.i18n('htmlEditor.link.remove'));
+        remove.setAttribute('aria-label', this.i18n(mode.remove));
       }
       if (preview) {
-        preview.setAttribute('aria-label', this.i18n('htmlEditor.link.visit'));
+        preview.setAttribute('aria-label', this.i18n(mode.visit));
       }
     }
 
@@ -392,11 +409,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _closeTooltip() {
       const editing = this._tooltip.root.classList.contains('ql-editing');
-      const linkButton = editing && this.$.toolbar.querySelector('button.ql-link');
+      // Back to whichever toolbar button opened the popup, so Escape is not a one-way trip.
+      const button = editing && this.$.toolbar.querySelector(this._tooltipMode().button);
       // Move focus out before hiding: the browser resets focus to the body when the
       // focused control disappears, which would strand a keyboard user at the top of the page.
-      if (linkButton) {
-        linkButton.focus();
+      if (button) {
+        button.focus();
       } else {
         this._editor.focus();
       }
