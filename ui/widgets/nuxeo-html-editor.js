@@ -22,6 +22,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/quill/dist/quill.js';
 import '../nuxeo-document-picker/nuxeo-document-picker.js';
 import './quill/quill-snow.js';
+import { COLOR_NAMES, COLOR_PICKER_COLUMNS } from './quill/quill-color-names.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
@@ -189,6 +190,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const { placeholder, readOnly } = this;
       const modules = { toolbar: '#toolbar' };
       this._editor = new Quill(this.$.editor, { theme: 'snow', modules, placeholder, readOnly });
+      this._setupColorPickers();
       if (this.getAttribute('dir') === 'rtl') {
         this._editor.format('align', 'right');
         this._editor.format('direction', 'rtl');
@@ -236,6 +238,170 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           .map((doc) => `<img src="${doc.properties['file:content'].data}">`)
           .join('\n');
         this._editor.clipboard.dangerouslyPasteHTML(this._editor.getSelection(true).index, templateToInsert);
+      }
+    }
+
+    /**
+     * Quill replaces the color `<select>`s with a palette of bare `<span>`s whose only
+     * distinguishing feature is an inline background color: nothing names the trigger or the
+     * swatches, and the only key the palette answers to is Enter on the trigger itself. Turn each
+     * palette into a listbox of named options and give it the roving focus that pattern implies.
+     */
+    _setupColorPickers() {
+      const { theme } = this._editor;
+      const pickers = (theme && theme.pickers) || [];
+      pickers
+        .filter((picker) => picker.container.classList.contains('ql-color-picker'))
+        .forEach((picker) => this._setupColorPicker(picker));
+    }
+
+    _setupColorPicker(picker) {
+      const { container, label, options } = picker;
+      const { name, fallback } = this._colorPickerLabels(picker);
+      label.setAttribute('aria-haspopup', 'listbox');
+      options.setAttribute('role', 'listbox');
+      options.setAttribute('aria-label', name);
+      Array.from(options.children).forEach((item) => {
+        const colorName = this._colorName(item.getAttribute('data-value'), fallback);
+        item.setAttribute('role', 'option');
+        item.setAttribute('aria-label', colorName);
+        // The swatch conveys its color by fill alone; a tooltip gives sighted users the name too.
+        item.setAttribute('title', colorName);
+      });
+
+      const { selectItem, togglePicker } = picker;
+      picker.selectItem = (item, trigger) => {
+        // Quill closes the palette on selection but leaves focus on the now hidden swatch.
+        const restoreFocus = trigger && this._hasColorItemFocus(picker);
+        selectItem.call(picker, item, trigger);
+        this._syncColorPicker(picker);
+        if (restoreFocus) {
+          label.focus();
+        }
+      };
+      picker.togglePicker = () => {
+        togglePicker.call(picker);
+        this._syncColorPicker(picker);
+      };
+
+      label.addEventListener('keydown', (e) => this._onColorLabelKeydown(picker, e));
+      options.addEventListener('keydown', (e) => this._onColorOptionKeydown(picker, e));
+      // A palette left open once focus has moved on hides whatever comes after it.
+      container.addEventListener('focusout', (e) => {
+        if (container.classList.contains('ql-expanded') && !container.contains(e.relatedTarget)) {
+          picker.close();
+        }
+      });
+
+      this._syncColorPicker(picker);
+    }
+
+    _colorPickerLabels(picker) {
+      const background = picker.container.classList.contains('ql-background');
+      return {
+        name: this.i18n(background ? 'htmlEditor.backgroundColor' : 'htmlEditor.color'),
+        // The first swatch of each palette clears the format rather than applying a color.
+        fallback: this.i18n(background ? 'htmlEditor.colorPicker.noBackground' : 'htmlEditor.colorPicker.automatic'),
+      };
+    }
+
+    _colorName(value, fallback) {
+      if (!value) {
+        return fallback;
+      }
+      const key = COLOR_NAMES[value.toLowerCase()];
+      return key ? this.i18n(key) : value;
+    }
+
+    _syncColorPicker(picker) {
+      const { label, options } = picker;
+      const { name, fallback } = this._colorPickerLabels(picker);
+      const items = Array.from(options.children);
+      const selected = options.querySelector('.ql-picker-item.ql-selected');
+      items.forEach((item) => {
+        item.setAttribute('aria-selected', String(item === selected));
+        // Roving tabindex: the listbox is entered once, then navigated with the arrow keys.
+        item.tabIndex = item === selected ? 0 : -1;
+      });
+      if (!selected && items.length > 0) {
+        items[0].tabIndex = 0;
+      }
+      const current = this._colorName(selected && selected.getAttribute('data-value'), fallback);
+      label.setAttribute('aria-label', this.i18n('htmlEditor.colorPicker.selected', name, current));
+    }
+
+    _hasColorItemFocus(picker) {
+      const active = this.shadowRoot && this.shadowRoot.activeElement;
+      return !!active && picker.options.contains(active);
+    }
+
+    _focusColorItem(items, index) {
+      const item = items[index];
+      if (!item) {
+        return;
+      }
+      items.forEach((candidate) => {
+        candidate.tabIndex = candidate === item ? 0 : -1;
+      });
+      item.focus();
+    }
+
+    _onColorLabelKeydown(picker, e) {
+      if (!['Enter', ' ', 'ArrowDown', 'ArrowUp'].includes(e.key)) {
+        return;
+      }
+      // Quill's own listener already toggled the palette on Enter.
+      if (e.key !== 'Enter') {
+        e.preventDefault();
+        if (!picker.container.classList.contains('ql-expanded')) {
+          picker.togglePicker();
+        }
+      }
+      if (!picker.container.classList.contains('ql-expanded')) {
+        return;
+      }
+      const items = Array.from(picker.options.children);
+      this._focusColorItem(items, Math.max(0, items.indexOf(picker.options.querySelector('.ql-selected'))));
+    }
+
+    _onColorOptionKeydown(picker, e) {
+      const items = Array.from(picker.options.children);
+      const index = items.indexOf(e.target);
+      if (index < 0) {
+        return;
+      }
+      const columns = Math.min(COLOR_PICKER_COLUMNS, items.length);
+      const forward = this.getAttribute('dir') === 'rtl' ? -1 : 1;
+      let next;
+      switch (e.key) {
+        case 'ArrowRight':
+          next = index + forward;
+          break;
+        case 'ArrowLeft':
+          next = index - forward;
+          break;
+        case 'ArrowDown':
+          next = index + columns;
+          break;
+        case 'ArrowUp':
+          next = index - columns;
+          break;
+        case 'Home':
+          next = 0;
+          break;
+        case 'End':
+          next = items.length - 1;
+          break;
+        case ' ':
+          e.preventDefault();
+          items[index].click();
+          return;
+        default:
+          return;
+      }
+      e.preventDefault();
+      if (next >= 0 && next < items.length) {
+        this._focusColorItem(items, next);
       }
     }
   }
