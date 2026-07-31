@@ -156,6 +156,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     /**
+     * Whether the given window is the one the iframe is showing right now. The element is
+     * reused across documents, so a viewer from a previous `src` can still be running.
+     */
+    _isCurrentViewerWindow(viewerWindow) {
+      const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
+      return Boolean(viewerWindow) && Boolean(iframe) && viewerWindow === iframe.contentWindow;
+    }
+
+    /**
      * Make links that point outside the document open in a new tab.
      *
      * pdf.js defaults `externalLinkTarget` to `LinkTarget.NONE` and then, on detecting
@@ -166,15 +175,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
      * through this code path in pdf.js, so intra-document links keep scrolling the
      * viewer instead of navigating.
      */
-    /**
-     * Whether the given window is the one the iframe is showing right now. The element is
-     * reused across documents, so a viewer from a previous `src` can still be running.
-     */
-    _isCurrentViewerWindow(viewerWindow) {
-      const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
-      return Boolean(viewerWindow) && Boolean(iframe) && viewerWindow === iframe.contentWindow;
-    }
-
     _configureExternalLinks(viewerWindow) {
       const options = viewerWindow.PDFViewerApplicationOptions;
       if (!options) {
