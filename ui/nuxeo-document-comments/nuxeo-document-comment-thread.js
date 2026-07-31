@@ -23,6 +23,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-resource.js';
 import { NotifyBehavior } from '@nuxeo/nuxeo-elements/nuxeo-notify-behavior.js';
 import '../widgets/nuxeo-tooltip.js';
+import { applyNativeTextareaAriaLabel } from '../widgets/nuxeo-textarea.js';
 
 import './nuxeo-document-comment.js';
 import './nuxeo-document-comments-styles.js';
@@ -208,14 +209,26 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
     /**
      * `paper-textarea` renders its `<label>` one shadow root above the `<textarea>` it names, so the
-     * `aria-labelledby` reference it sets cannot resolve. Mirror the visible label onto the inner
-     * control so assistive technologies announce it instead of falling back to the placeholder.
+     * `aria-labelledby` reference it sets cannot resolve. Name the native control directly, the same
+     * way `nuxeo-textarea` does, so assistive technologies announce the visible label instead of
+     * falling back to the placeholder.
      */
     _syncInputAccessibleName() {
       const input = this.$$('#inputContainer');
-      if (input && input.inputElement) {
-        input.inputElement.label = this._computeTextLabel(this.level, 'label');
+      if (!input) {
+        return;
       }
+      const label = this._computeTextLabel(this.level, 'label');
+      if (input.inputElement) {
+        input.inputElement.label = label;
+      }
+      // The attribute to clear only exists once iron-autogrow-textarea has wired up its
+      // inner textarea, which can happen after this runs.
+      if (!this._nativeAriaLabelBound) {
+        this._nativeAriaLabelBound = true;
+        input.addEventListener('iron-input-ready', () => this._syncInputAccessibleName());
+      }
+      applyNativeTextareaAriaLabel(input, label);
     }
 
     _checkForEnter(e) {
