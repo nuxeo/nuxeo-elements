@@ -63,15 +63,16 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
           </template>
         </dom-repeat>
 
-        <dom-if if="[[_allowReplies(level)]]">
+        <dom-if if="[[_allowReplies(level)]]" on-dom-change="_syncInputAccessibleName">
           <template>
             <div class="input-area">
               <paper-textarea
                 id="inputContainer"
+                label="[[_computeTextLabel(level, 'label', null, i18n)]]"
+                always-float-label
                 placeholder="[[_computeTextLabel(level, 'writePlaceholder', null, i18n)]]"
                 value="{{text}}"
                 max-rows="[[_computeMaxRows()]]"
-                no-label-float
                 on-keydown="_checkForEnter"
               >
               </paper-textarea>
@@ -109,6 +110,10 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
     static get is() {
       return 'nuxeo-document-comment-thread';
+    }
+
+    static get observers() {
+      return ['_syncInputAccessibleName(level, i18n)'];
     }
 
     static get properties() {
@@ -199,6 +204,18 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
      */
     focusInput() {
       this.$$('#inputContainer').focus();
+    }
+
+    /**
+     * `paper-textarea` renders its `<label>` one shadow root above the `<textarea>` it names, so the
+     * `aria-labelledby` reference it sets cannot resolve. Mirror the visible label onto the inner
+     * control so assistive technologies announce it instead of falling back to the placeholder.
+     */
+    _syncInputAccessibleName() {
+      const input = this.$$('#inputContainer');
+      if (input && input.inputElement) {
+        input.inputElement.label = this._computeTextLabel(this.level, 'label');
+      }
     }
 
     _checkForEnter(e) {
