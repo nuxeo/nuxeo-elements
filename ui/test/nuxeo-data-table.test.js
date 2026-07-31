@@ -754,6 +754,18 @@ suite('nuxeo-data-table', () => {
       });
     });
 
+    // WEBUI-1557: a row group must own at least one row, so an empty list has to stay out of the
+    // accessibility tree instead of advertising itself as an empty row group. The Home page cards
+    // render empty tables, and axe reports the empty row group as an incomplete table structure.
+    test('does not expose an empty list as a row group', async () => {
+      const list = table.shadowRoot.querySelector('#list');
+      expect(list.getAttribute('role')).to.equal('rowgroup');
+      table.items = [];
+      await flush();
+      expect(list.getAttribute('role')).to.equal('presentation');
+      expect(table.shadowRoot.querySelector('#header').getAttribute('role')).to.equal('rowgroup');
+    });
+
     // WEBUI-1557: the list wrapper lives in `iron-list`'s shadow root, so it may not be reachable yet.
     test('leaves the list wrapper alone when it cannot be reached', () => {
       const list = table.$.list;
