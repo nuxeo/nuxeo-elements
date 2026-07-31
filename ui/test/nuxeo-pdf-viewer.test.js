@@ -478,6 +478,50 @@ suite('nuxeo-pdf-viewer', () => {
       expect(win.PDFViewerApplication.eventBus.on).to.have.been.calledWith('annotationlayerrendered');
     });
 
+    test('should not subscribe when the element is detached while the viewer initializes', async () => {
+      const win = createViewerWindow();
+      element._configureExternalLinks(win);
+      element.remove();
+      await win.PDFViewerApplication.initializedPromise;
+
+      expect(win.PDFViewerApplication.eventBus.on).to.not.have.been.called;
+    });
+
+    test('should drop a previous subscription instead of stacking a second one', async () => {
+      const win = createViewerWindow();
+      element._configureExternalLinks(win);
+      await win.PDFViewerApplication.initializedPromise;
+      const first = element._annotationLayerHandler;
+
+      element._configureExternalLinks(win);
+      await win.PDFViewerApplication.initializedPromise;
+
+      expect(win.PDFViewerApplication.eventBus.off).to.have.been.calledWith('annotationlayerrendered', first);
+      expect(win.PDFViewerApplication.eventBus.on).to.have.been.calledTwice;
+    });
+
+    test('should label only the page that just rendered', async () => {
+      const win = createViewerWindow();
+      const pageDiv = { querySelectorAll: sinon.stub().returns([]) };
+      element._configureExternalLinks(win);
+      await win.PDFViewerApplication.initializedPromise;
+
+      element._annotationLayerHandler({ source: { div: pageDiv } });
+
+      expect(pageDiv.querySelectorAll).to.have.been.called;
+      expect(win.document.querySelectorAll).to.not.have.been.called;
+    });
+
+    test('should fall back to the whole document when the event carries no page', async () => {
+      const win = createViewerWindow();
+      element._configureExternalLinks(win);
+      await win.PDFViewerApplication.initializedPromise;
+
+      element._annotationLayerHandler({});
+
+      expect(win.document.querySelectorAll).to.have.been.called;
+    });
+
     test('should warn that an external link opens in a new tab', async () => {
       const originalLanguage = window.nuxeo.I18n.language;
       const hadEnDict = window.nuxeo.I18n.en !== undefined;
