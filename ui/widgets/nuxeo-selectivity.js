@@ -7325,7 +7325,6 @@ typedArrayTags[weakMapTag] = false;
               display: none;
           }
 
-          :host([invalid]) .label,
           .error {
               color: var(--paper-input-container-invalid-color, #de350b);
           }
@@ -7561,9 +7560,29 @@ typedArrayTags[weakMapTag] = false;
 
     _getValidity() {
       if (!this.required) {
+        this._clearDefaultRequiredError();
         return true;
       }
-      return this.multiple ? !!this.value && this.value.length > 0 : !!this.value;
+      const valid = this.multiple ? !!this.value && this.value.length > 0 : !!this.value;
+      if (!valid) {
+        // Surface a per-field reason for required widgets, consistent with single-value inputs
+        // (e.g. dc:title). Only default when the layout did not supply its own message.
+        if (!this.errorMessage || this._defaultRequiredError) {
+          this.errorMessage = this.i18n('widget.required');
+          this._defaultRequiredError = true;
+        }
+      } else {
+        this._clearDefaultRequiredError();
+      }
+      return valid;
+    }
+
+    // Clear only the message we defaulted, so a layout-supplied errorMessage is never lost.
+    _clearDefaultRequiredError() {
+      if (this._defaultRequiredError) {
+        this.errorMessage = '';
+        this._defaultRequiredError = false;
+      }
     }
 
     _initSelection(value, callback) {
