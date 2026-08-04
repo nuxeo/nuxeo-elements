@@ -42,9 +42,7 @@ jobs:
       - name: Install
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-        run: |
-          npm install --no-package-lock
-          npm run bootstrap
+        run: npm ci --ignore-scripts
 
       - name: Run analysis
         run: npx lerna run analysis --parallel

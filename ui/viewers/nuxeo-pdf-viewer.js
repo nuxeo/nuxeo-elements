@@ -16,7 +16,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
+import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
 {
   /**
@@ -39,7 +41,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-pdf-viewer/index.html
    */
-  class PDFViewer extends Nuxeo.Element {
+  class PDFViewer extends mixinBehaviors([I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style>
@@ -57,7 +59,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
           }
         </style>
 
-        <iframe src$="[[_path(src)]]"></iframe>
+        <iframe src$="[[_path(src)]]" title$="[[i18n('pdfViewer.title')]]"></iframe>
       `;
     }
 

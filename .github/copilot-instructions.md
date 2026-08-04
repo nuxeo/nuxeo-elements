@@ -50,7 +50,7 @@ test/                → Shared test setup
 | Install | `npm install` | Installs all workspace packages |
 | Lint | `npm run lint` | ESLint + Prettier check + Polymer lint |
 | Format | `npm run format` | Polymer lint fix → Prettier write → ESLint fix |
-| All tests | `npm test` | Karma + Chrome headless, all packages |
+| All tests | `npm test` | @web/test-runner + bundled Puppeteer Chromium, all packages (core, ui, dataviz) |
 | Core tests | `npm run test:core` | Tests for `core/` only |
 | UI tests | `npm run test:ui` | Tests for `ui/` only |
 | Dataviz tests | `npm run test:dataviz` | Tests for `dataviz/` only |
@@ -87,10 +87,12 @@ test/                → Shared test setup
 
 ## Testing
 
-- Framework: Karma + Mocha + Chai + Sinon (globals: `expect`, `assert`, `sinon`)
+- Framework: `@web/test-runner` + Mocha + Chai + Sinon (globals: `expect`, `assert`, `sinon`)
 - Helpers: `@nuxeo/testing-helpers` for fixtures, mock client, and event utilities
-- Setup: `test/setup.js` configures chai with sinon-chai
-- Browser: ChromeHeadlessNoSandbox
+- Setup: `test/setup.js` configures chai with sinon-chai, plus error suppression and sinon cleanup
+- Per-package: each package runs separately via the `NX_PACKAGE` env var (`test:core` / `test:ui` / `test:dataviz`). `web-test-runner` loads one generated barrel per package — `<package>/test/load-all-tests.js` (gitignored; run `npm run update-test-load-all` after adding a test). The barrel imports `test/setup.js` then every `<package>/test/*.test.js`.
+- Coverage: Istanbul via `rollup-plugin-istanbul` (no Babel); `scripts/test/unit/inject-zero-coverage.js` appends 0% records for unloaded sources. Output: `coverage/<package>/lcov.info`.
+- Browser: bundled Puppeteer Chromium (installed by the `pretest` hook) — no system Chrome needed
 - Test pattern: Use `suite`/`test` (Mocha TDD), not `describe`/`it`
 - Do NOT use `.only` in test files
 
@@ -98,6 +100,7 @@ test/                → Shared test setup
 
 - **Workflows**: lint → test → storybook → build (tag + publish) (sequential gates)
 - **Node version**: 22 in CI
+- **Installs**: CI uses `npm ci --ignore-scripts` for deterministic, lockfile-based installs (the `--ignore-scripts` flag skips dependency lifecycle hooks for supply-chain safety; the unit-test browser is installed via the `pretest` hook). `package-lock.json` is committed and must stay in sync with `package.json`.
 - **Registry**: `@nuxeo` packages come from `https://packages.nuxeo.com/repository/npm-public/`
 - **Cross-repo**: Changes can trigger nuxeo-web-ui builds
 - **Translations**: Crowdin sync runs daily

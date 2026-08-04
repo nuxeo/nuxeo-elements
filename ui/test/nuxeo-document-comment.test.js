@@ -692,6 +692,126 @@ suite('nuxeo-document-comment extras', () => {
       const user = { isAdministrator: false };
       expect(el._areExtendedOptionsAvailable('jdoe', user)).to.be.false;
     });
+
+    test('returns true when author is a fetched user entity', () => {
+      const author = {
+        'entity-type': 'user',
+        properties: { username: 'nco-admin', firstName: 'NCO', lastName: 'Admin' },
+      };
+      const user = { isAdministrator: false, properties: { username: 'nco-admin' } };
+      expect(el._areExtendedOptionsAvailable(author, user)).to.be.true;
+    });
+
+    test('returns true when author uses prefixed username property', () => {
+      const author = {
+        'entity-type': 'user',
+        properties: { 'user:username': 'nco-admin', 'user:firstName': 'NCO', 'user:lastName': 'Admin' },
+      };
+      const user = { isAdministrator: false, properties: { username: 'nco-admin' } };
+      expect(el._areExtendedOptionsAvailable(author, user)).to.be.true;
+    });
+
+    test('returns true when author is a user entity without properties', () => {
+      const author = { 'entity-type': 'user', id: 'nco-admin' };
+      const user = { isAdministrator: false, properties: { username: 'nco-admin' } };
+      expect(el._areExtendedOptionsAvailable(author, user)).to.be.true;
+    });
+  });
+
+  suite('_authorLabel', () => {
+    test('returns username when author is a string', () => {
+      expect(el._authorLabel('nco-admin')).to.equal('nco-admin');
+    });
+
+    test('returns full name from fetched user entity', () => {
+      expect(
+        el._authorLabel({
+          'entity-type': 'user',
+          properties: { firstName: 'NCO', lastName: 'Admin', username: 'nco-admin' },
+        }),
+      ).to.equal('NCO Admin');
+    });
+
+    test('returns username when user entity has no first or last name', () => {
+      expect(
+        el._authorLabel({
+          'entity-type': 'user',
+          properties: { username: 'Administrator' },
+        }),
+      ).to.equal('Administrator');
+    });
+
+    test('returns full name from prefixed user property keys', () => {
+      expect(
+        el._authorLabel({
+          'entity-type': 'user',
+          properties: { 'user:firstName': 'NCO', 'user:lastName': 'Admin', 'user:username': 'nco-admin' },
+        }),
+      ).to.equal('NCO Admin');
+    });
+
+    test('returns full name for document user entity', () => {
+      expect(
+        el._authorLabel({
+          'entity-type': 'document',
+          type: 'user',
+          properties: { firstName: 'NCO', lastName: 'Admin', username: 'nco-admin' },
+        }),
+      ).to.equal('NCO Admin');
+    });
+
+    test('returns id when user entity has no properties', () => {
+      expect(
+        el._authorLabel({
+          'entity-type': 'user',
+          id: 'nco-admin',
+        }),
+      ).to.equal('nco-admin');
+    });
+
+    test('returns id for non-entity object author', () => {
+      expect(el._authorLabel({ id: 'nco-admin' })).to.equal('nco-admin');
+    });
+  });
+
+  suite('_authorUsername', () => {
+    test('returns username from user entity', () => {
+      const author = {
+        'entity-type': 'user',
+        properties: { firstName: 'NCO', lastName: 'Admin', username: 'nco-admin' },
+      };
+      expect(el._authorUsername(author)).to.equal('nco-admin');
+    });
+
+    test('returns string author as-is', () => {
+      expect(el._authorUsername('nco-admin')).to.equal('nco-admin');
+    });
+
+    test('returns username from prefixed user property key', () => {
+      expect(
+        el._authorUsername({
+          'entity-type': 'user',
+          properties: { 'user:username': 'nco-admin' },
+        }),
+      ).to.equal('nco-admin');
+    });
+
+    test('returns id when user entity has no properties', () => {
+      expect(
+        el._authorUsername({
+          'entity-type': 'user',
+          id: 'nco-admin',
+        }),
+      ).to.equal('nco-admin');
+    });
+
+    test('returns id for non-entity object author', () => {
+      expect(el._authorUsername({ id: 'nco-admin' })).to.equal('nco-admin');
+    });
+
+    test('returns empty string for malformed object author', () => {
+      expect(el._authorUsername({})).to.equal('');
+    });
   });
 
   suite('_isBlank', () => {
