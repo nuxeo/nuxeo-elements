@@ -89,7 +89,7 @@
   "customDatePicker.december": "Dezember",
   "customDatePicker.february": "Februar",
   "customDatePicker.incorrectFormat": "Ungültiges Datumsformat.",
-  "customDatePicker.incorrectFormatExpected": "Incorrect date format. Expected format: {format}",
+  "customDatePicker.incorrectFormatExpected": "Falsches Datumsformat. Erwartetes Format: {format}",
   "customDatePicker.invalidDate": "Ungültiges Datum. Bitte geben Sie ein gültiges Datum ein.",
   "customDatePicker.january": "Januar",
   "customDatePicker.july": "Juli",
