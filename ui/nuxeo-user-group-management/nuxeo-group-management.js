@@ -19,6 +19,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-form/iron-form.js';
 import '@polymer/iron-icon/iron-icon.js';
+import '@polymer/iron-icons/iron-icons.js';
 import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-resource.js';
@@ -229,6 +230,24 @@ import '../nuxeo-sort-styles.js';
 
           .preserve-white-space {
             white-space: pre;
+          }
+
+          .missing-user {
+            @apply --layout-horizontal;
+            @apply --layout-center;
+          }
+
+          .missing-icon {
+            width: 1.1rem;
+            height: 1.1rem;
+            margin-right: 0.4rem;
+            color: var(--nuxeo-warn-text, #ff9800);
+            flex-shrink: 0;
+          }
+
+          .missing-name {
+            font-style: italic;
+            opacity: 0.75;
           }
         </style>
 
@@ -465,7 +484,36 @@ import '../nuxeo-sort-styles.js';
                   </dom-repeat>
                 </template>
               </dom-if>
-              <dom-if if="[[_empty(memberUsers.entries)]]">
+              <!-- members whose account no longer exists in the user directory (e.g. removed/disabled LDAP users) -->
+              <dom-repeat items="[[_missingUsers]]">
+                <template>
+                  <div class="table-row" role="row">
+                    <div class="flex-4" role="columnheader">
+                      <div class="missing-user" tabindex="0">
+                        <iron-icon icon="icons:error-outline" class="missing-icon" aria-hidden="true"></iron-icon>
+                        <span class="missing-name preserve-white-space">[[item.id]]</span>
+                        <nuxeo-tooltip>[[i18n('groupManagement.userNotFound')]]</nuxeo-tooltip>
+                      </div>
+                    </div>
+                    <div class="flex-4 preserve-white-space" role="columnheader">[[item.id]]</div>
+                    <div class="flex-4" role="columnheader"></div>
+                    <div class="table-actions" role="columnheader">
+                      <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
+                        <template>
+                          <paper-icon-button
+                            icon="nuxeo:clear"
+                            noink
+                            title="[[i18n('groupManagement.removeFrom', groupname)]]"
+                            on-click="_toggleDeleteDialog"
+                          >
+                          </paper-icon-button>
+                        </template>
+                      </dom-if>
+                    </div>
+                  </div>
+                </template>
+              </dom-repeat>
+              <dom-if if="[[_noMemberUsers(memberUsers.entries, _missingUsers)]]">
                 <template>
                   <div class="table-row" role="row">
                     <div class="emptyResult" role="columnheader">[[i18n('groupManagement.noSearchResults')]]</div>
@@ -595,6 +643,13 @@ import '../nuxeo-sort-styles.js';
         },
 
         memberUsers: Object,
+
+        // Members listed in group.memberUsers but not resolvable in the user directory
+        // (e.g. LDAP users removed/disabled after being added to a local group).
+        _missingUsers: {
+          type: Array,
+          computed: '_computeMissingUsers(group.memberUsers, memberUsers.entries, usersFilter, _memberUserSortOrder)',
+        },
 
         memberGroups: Object,
 
@@ -816,13 +871,17 @@ import '../nuxeo-sort-styles.js';
         case 'user':
           if (this.group.memberUsers) {
             idx = this.group.memberUsers.indexOf(this._removedMember.id);
-            this.group.memberUsers.splice(idx, 1);
+            if (idx > -1) {
+              this.group.memberUsers.splice(idx, 1);
+            }
           }
           break;
         case 'group':
           if (this.group.memberGroups) {
             idx = this.group.memberGroups.indexOf(this._removedMember.id);
-            this.group.memberGroups.splice(idx, 1);
+            if (idx > -1) {
+              this.group.memberGroups.splice(idx, 1);
+            }
           }
           break;
         default:
@@ -830,10 +889,16 @@ import '../nuxeo-sort-styles.js';
       }
       this.$.editRequest.data = this.group;
       this.$.editRequest.put().then(() => {
-        this._fromDelete = true;
         if (member['entity-type'] === 'user') {
+          // The "go to previous page when the last entry is deleted" heuristic keys off the resolved
+          // page size (`memberUsers.currentPageSize`). Skip it when the removed row was itself a
+          // missing user (removing it does not change the resolved page size), or when missing users
+          // are still shown on the current page — deleting the last resolved user must not page away
+          // from the unresolved ones that remain visible.
+          this._fromDelete = !member._missing && this._noMissingUsers();
           this._fetchUsers();
         } else {
+          this._fromDelete = true;
           this._fetchGroups();
         }
         this._removeRecent(this._removedMember.id);
@@ -909,6 +974,48 @@ import '../nuxeo-sort-styles.js';
 
     _empty(entries) {
       return entries && entries.length === 0;
+    }
+
+    /**
+     * Computes the group members that are present in `group.memberUsers` but cannot be resolved by the
+     * `@users` endpoint (e.g. LDAP users removed/disabled after being added to a local group). These
+     * users are otherwise invisible on the group page and cannot be removed. They are matched to the
+     * current page by replicating the server-side slice of `group.memberUsers`, so this only applies
+     * when the list is neither filtered nor sorted (unresolved users have no name/email to match on).
+     */
+    _computeMissingUsers(memberUserIds, entries, usersFilter, memberUserSortOrder) {
+      if (!memberUserIds || memberUserIds.length === 0 || !entries) {
+        return [];
+      }
+      // A name/email filter or a column sort reorders/limits the server result, so the positional
+      // mapping used below no longer holds; skip the augmentation in those cases.
+      if (usersFilter || (memberUserSortOrder && memberUserSortOrder.length > 0)) {
+        return [];
+      }
+      const resolved = new Set();
+      entries.forEach((entry) => {
+        resolved.add(entry.id);
+        if (entry.properties && entry.properties.username) {
+          resolved.add(entry.properties.username);
+        }
+      });
+      const pageSize = (this.memberUsers && this.memberUsers.pageSize) || memberUserIds.length;
+      const pageIndex = (this.memberUsers && this.memberUsers.currentPageIndex) || 0;
+      const offset = pageIndex * pageSize;
+      return memberUserIds
+        .slice(offset, offset + pageSize)
+        .filter((id) => !resolved.has(id))
+        .map((id) => {
+          return { id, name: id, 'entity-type': 'user', properties: {}, _missing: true };
+        });
+    }
+
+    _noMemberUsers(entries, missingUsers) {
+      return this._empty(entries) && (!missingUsers || missingUsers.length === 0);
+    }
+
+    _noMissingUsers() {
+      return !this._missingUsers || this._missingUsers.length === 0;
     }
 
     _goHome() {
