@@ -30,6 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pull-requests: write
 
     steps:
       - uses: catchpoint/workflow-telemetry-action@v2
@@ -95,6 +96,114 @@ jobs:
             github.event.pull_request.head.ref,
             github.event.pull_request.base.ref)
             || format('-Dsonar.branch.name={0}', steps.project_meta.outputs.branch) }}
+
+      - name: Report analysis summary on PR
+        # The SonarQube Cloud GitHub App does not decorate this repository, so PRs never get the
+        # analysis summary that nuxeo-web-ui gets automatically. Rebuild it from the API instead.
+        # Self-disabling: skipped as soon as the App starts posting its own comment.
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v9
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- sonarqube-pr-report -->';
+            const { owner, repo } = context.repo;
+            const prKey = context.issue.number;
+
+            try {
+              const comments = await github.paginate(github.rest.issues.listComments, {
+                owner,
+                repo,
+                issue_number: prKey,
+                per_page: 100,
+              });
+              if (comments.some((c) => c.user && c.user.login === 'sonarqubecloud[bot]')) {
+                core.info('Native SonarQube Cloud decoration detected — skipping fallback report.');
+                return;
+              }
+
+              const projectKey = fs
+                .readFileSync('sonar-project.properties', 'utf8')
+                .split('\n')
+                .find((line) => line.startsWith('sonar.projectKey='))
+                ?.split('=')[1]
+                .trim();
+              if (!projectKey) {
+                core.warning('Could not read sonar.projectKey — skipping fallback report.');
+                return;
+              }
+              core.info(`projectKey=${projectKey} pullRequest=${prKey}`);
+
+              const api = async (path) => {
+                const res = await fetch(`https://sonarcloud.io/api/${path}`, {
+                  headers: { Authorization: `Bearer ${process.env.SONAR_TOKEN}` },
+                });
+                if (!res.ok) {
+                  throw new Error(`GET /api/${path} responded ${res.status}`);
+                }
+                return res.json();
+              };
+              const scope = `pullRequest=${prKey}`;
+
+              const [gate, open, accepted, hotspots] = await Promise.all([
+                api(`qualitygates/project_status?projectKey=${projectKey}&${scope}`),
+                api(`issues/search?componentKeys=${projectKey}&${scope}&resolved=false&ps=1`),
+                api(`issues/search?componentKeys=${projectKey}&${scope}&issueStatuses=ACCEPTED&ps=1`),
+                api(`hotspots/search?projectKey=${projectKey}&${scope}&ps=1`),
+              ]);
+
+              const passed = gate.projectStatus.status === 'OK';
+              const conditions = Object.fromEntries(
+                gate.projectStatus.conditions.map((c) => [c.metricKey, c]),
+              );
+              core.info(
+                `gate=${gate.projectStatus.status} newIssues=${open.total} accepted=${accepted.total} ` +
+                  `hotspots=${hotspots.paging.total}`,
+              );
+
+              const icon = (ok) => (ok ? ':white_check_mark:' : ':x:');
+              const metric = (key, label) => {
+                const c = conditions[key];
+                if (!c) {
+                  return null;
+                }
+                return `${icon(c.status === 'OK')} ${Number(c.actualValue).toFixed(1)}% ${label}`;
+              };
+              const dashboard = `https://sonarcloud.io/dashboard?id=${projectKey}&pullRequest=${prKey}`;
+
+              const body = [
+                marker,
+                `## ${icon(passed)} Quality Gate ${passed ? 'passed' : 'failed'}`,
+                '',
+                '**Issues**',
+                `${icon(open.total === 0)} ${open.total} New issues`,
+                `${icon(true)} ${accepted.total} Accepted issues`,
+                '',
+                '**Measures**',
+                `${icon(hotspots.paging.total === 0)} ${hotspots.paging.total} Security Hotspots`,
+                metric('new_coverage', 'Coverage on New Code'),
+                metric('new_duplicated_lines_density', 'Duplication on New Code'),
+                '',
+                `[See analysis details on SonarQube Cloud](${dashboard})`,
+              ]
+                .filter((line) => line !== null)
+                .join('\n');
+
+              const previous = comments.find((c) => c.body && c.body.includes(marker));
+              if (previous) {
+                await github.rest.issues.updateComment({ owner, repo, comment_id: previous.id, body });
+                core.info(`Updated existing report comment ${previous.id}.`);
+              } else {
+                await github.rest.issues.createComment({ owner, repo, issue_number: prKey, body });
+                core.info('Created report comment.');
+              }
+            } catch (error) {
+              // Never fail the build on reporting problems; the Quality Gate step below is what gates.
+              core.warning(`Could not publish the analysis summary: ${error.message}`);
+            }
 
       - name: Enforce Quality Gate
         # Fails if sonar scan was skipped (e.g. prior step failed) or gate not passed.
