@@ -574,6 +574,38 @@ suite('nuxeo-selectivity', () => {
       selectivityWidget.value = ['Berlin'];
       expect(selectivityWidget._getValidity()).to.be.true;
     });
+
+    test('defaults a required error message when empty and clears it once a value is set', async () => {
+      selectivityWidget = await fixture(
+        html`
+          <nuxeo-selectivity .data=${data} required></nuxeo-selectivity>
+        `,
+      );
+      selectivityWidget.value = null;
+      expect(selectivityWidget._getValidity()).to.be.false;
+      // an empty required field surfaces a per-field message (consistent with single-value inputs)
+      expect(selectivityWidget.errorMessage).to.be.ok;
+      // providing a value clears the message we defaulted
+      selectivityWidget.value = 'Berlin';
+      expect(selectivityWidget._getValidity()).to.be.true;
+      expect(selectivityWidget.errorMessage).to.equal('');
+    });
+
+    test('never clobbers or clears a layout-supplied error message', async () => {
+      selectivityWidget = await fixture(
+        html`
+          <nuxeo-selectivity .data=${data} required error-message="Custom error"></nuxeo-selectivity>
+        `,
+      );
+      selectivityWidget.value = null;
+      expect(selectivityWidget._getValidity()).to.be.false;
+      // the layout's own message is preserved, not overwritten with the default
+      expect(selectivityWidget.errorMessage).to.equal('Custom error');
+      // and it survives becoming valid again (only the defaulted message is cleared)
+      selectivityWidget.value = 'Berlin';
+      expect(selectivityWidget._getValidity()).to.be.true;
+      expect(selectivityWidget.errorMessage).to.equal('Custom error');
+    });
   });
 
   // --------------------------------------------------------------------------
