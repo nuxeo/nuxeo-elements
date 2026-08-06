@@ -156,6 +156,7 @@
   "documentPermissions.permissionUpdated": "Permission updated",
   "documentPermissions.unblock": "Unblock",
   "documentPermissions.unblock.ariaLabel": "Unblock permissions inherited from upper levels",
+  "documentPreview.notAvailable": "No preview is available for this file type.",
   "documentSearchForm.layoutNotFound": "Failed to find search layout for {0}.",
   "downloadButton.tooltip": "Download",
   "dropdownAggregation.noResults": "No available results",
