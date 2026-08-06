@@ -262,7 +262,11 @@ import './nuxeo-search-results-layout.js';
         },
         /**
          * If `true`, no search is performed until the user explicitly triggers one, so loading the
-         * page does not execute the initial query. Has no effect when `auto` is `true`.
+         * page does not execute the initial query. Clearing the filters returns to that state
+         * instead of searching again. Has no effect when `auto` is `true`.
+         *
+         * Requires `showFilters`, since the Search button that lifts the suppression lives in the
+         * filtering panel; without it the view would have no way to ever run a search.
          */
         deferInitialSearch: {
           type: Boolean,
@@ -296,10 +300,6 @@ import './nuxeo-search-results-layout.js';
         hrefBase: String,
         _params: Object,
         _paramsCount: Number,
-        _searched: {
-          type: Boolean,
-          value: false,
-        },
         _nxProvider: HTMLElement,
         _hideCounter: {
           type: String,
@@ -310,6 +310,13 @@ import './nuxeo-search-results-layout.js';
 
     static get observers() {
       return ['_visibilityOrAutoChanged(visible, auto)'];
+    }
+
+    constructor() {
+      super();
+      // whether an explicit search has already lifted the `deferInitialSearch` suppression
+      this._searched = false;
+      this._searchOnTrigger = () => this.search();
     }
 
     ready() {
@@ -409,6 +416,15 @@ import './nuxeo-search-results-layout.js';
       if (!this.auto) {
         this.aggregations = {};
       }
+      // clearing the filters is not a request to search, so a deferred view goes back to its
+      // pristine state rather than re-running the query the deferral is there to avoid
+      if (this.deferInitialSearch && !this.auto) {
+        this._searched = false;
+        if (this.results) {
+          this.results.reset();
+        }
+        return;
+      }
       if (!this.auto && this.visible) {
         this._search();
       }
@@ -432,7 +448,10 @@ import './nuxeo-search-results-layout.js';
       form.addEventListener('skip-aggregates-changed', (evt) => {
         this.notifyPath('skipAggregates', evt.detail.value);
       });
-      form.addEventListener('trigger-search', this.search.bind(this));
+      // re-attaching a single bound handler keeps listeners from accumulating if the same form
+      // layout fires more than once
+      form.removeEventListener('trigger-search', this._searchOnTrigger);
+      form.addEventListener('trigger-search', this._searchOnTrigger);
       this._search();
     }
 
