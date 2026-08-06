@@ -665,6 +665,23 @@ suite('iron-data-table extras', () => {
       expect(result).to.equal('001234');
       expect(result).to.be.a('string');
     });
+
+    test('single-column: does not apply entry coercion to subfields of a complex entry', async () => {
+      const el = await newTable();
+      el.columns = [{}]; // single column, one-subfield complex
+      const result = el._normalizeItem({ address: '007' });
+
+      expect(result).to.deep.equal({ address: '007' });
+      expect(result.address).to.be.a('string');
+    });
+
+    test('single-column: still coerces subfields that round-trip as numbers', async () => {
+      const el = await newTable();
+      el.columns = [{}];
+      const result = el._normalizeItem({ address: '42' });
+
+      expect(result).to.deep.equal({ address: 42 });
+    });
   });
 
   // ------------------------------------------------------------------
@@ -1054,11 +1071,140 @@ suite('iron-data-table extras', () => {
   });
 
   // ------------------------------------------------------------------
+  // _isComplexEntry
+  // ------------------------------------------------------------------
+  suite('_isComplexEntry', () => {
+    function formWith(markup) {
+      const template = document.createElement('template');
+      template.innerHTML = markup;
+      return { queryEffectiveChildren: () => template };
+    }
+
+    // Mirrors what a form looks like once Polymer has parsed and stamped its template: the markup
+    // has been moved out and the binding annotations survive only in the parsed template info.
+    function stampedFormWith(...sources) {
+      const template = document.createElement('template');
+      const parts = sources.map((source) => {
+        return { source };
+      });
+      template._templateInfo = { nodeInfoList: [{ bindings: [{ target: 'value', parts }] }] };
+      return { queryEffectiveChildren: () => template };
+    }
+
+    test('treats sub-property bindings as complex entries', async () => {
+      const el = await newTable();
+      el.columns = [{ name: 'Address' }];
+
+      expect(el._isComplexEntry(formWith('<nuxeo-input value="{{item.address}}"></nuxeo-input>'))).to.be.true;
+    });
+
+    test('treats whole-value bindings as primitive entries', async () => {
+      const el = await newTable();
+      el.columns = [{ name: 'Value' }];
+
+      expect(el._isComplexEntry(formWith('<nuxeo-input value="{{item}}"></nuxeo-input>'))).to.be.false;
+    });
+
+    test('treats event-annotated whole-value bindings as primitive entries', async () => {
+      const el = await newTable();
+      el.columns = [{ name: 'Value' }];
+
+      expect(el._isComplexEntry(formWith('<input value="{{item::input}}">'))).to.be.false;
+    });
+
+    test('detects sub-properties inside computed bindings', async () => {
+      const el = await newTable();
+      el.columns = [{ name: 'Date' }];
+
+      expect(el._isComplexEntry(formWith('<span>[[formatDate(item.date)]]</span>'))).to.be.true;
+    });
+
+    test('does not mistake an "items" reference for a sub-property', async () => {
+      const el = await newTable();
+      el.columns = [{ name: 'Value' }];
+
+      expect(el._isComplexEntry(formWith('<span>[[items.length]]</span><input value="{{item}}">'))).to.be.false;
+    });
+
+    test('falls back to the shape of existing entries when no template is available', async () => {
+      const el = await newTable();
+      el.columns = [{ name: 'Only' }];
+
+      el.items = [{ address: 'a' }];
+      expect(el._isComplexEntry(null)).to.be.true;
+
+      el.items = ['a'];
+      expect(el._isComplexEntry(null)).to.be.false;
+    });
+
+    test('skips null and undefined entries when sampling existing entries', async () => {
+      const el = await newTable();
+      el.columns = [{ name: 'Only' }];
+      el.items = [null, undefined, { address: 'a' }];
+
+      expect(el._isComplexEntry(null)).to.be.true;
+    });
+
+    test('falls back to column count for an empty list with no template', async () => {
+      const el = await newTable();
+      el.items = [];
+
+      el.columns = [{ name: 'Only' }];
+      expect(el._isComplexEntry(null)).to.be.false;
+
+      el.columns = [{ name: 'A' }, { name: 'B' }];
+      expect(el._isComplexEntry(null)).to.be.true;
+    });
+
+    test('reads the entry shape from a stamped template whose markup is gone', async () => {
+      const el = await newTable();
+      el.columns = [{ name: 'Address' }];
+      el.items = [];
+
+      expect(el._isComplexEntry(stampedFormWith('item.address'))).to.be.true;
+    });
+
+    test('reads primitive entries from a stamped template whose markup is gone', async () => {
+      const el = await newTable();
+      el.columns = [{ name: 'Value' }];
+      el.items = [];
+
+      expect(el._isComplexEntry(stampedFormWith('item'))).to.be.false;
+    });
+
+    test('reads the entry shape from a template parsed by the templatizer', async () => {
+      const el = await newTable();
+      el.columns = [{ name: 'Address' }];
+      el.items = [];
+
+      const template = document.createElement('template');
+      template.__templateInfo = {
+        nodeInfoList: [{ bindings: [{ target: 'value', parts: [{ source: 'item.address' }] }] }],
+      };
+
+      expect(el._isComplexEntry({ queryEffectiveChildren: () => template })).to.be.true;
+    });
+
+    test('ignores binding parts that carry no property path', async () => {
+      const el = await newTable();
+      el.columns = [{ name: 'Only' }];
+      el.items = [{ address: 'a' }];
+
+      expect(el._isComplexEntry(stampedFormWith(undefined))).to.be.true;
+    });
+  });
+
+  // ------------------------------------------------------------------
   // _toggleEditDialog
   // ------------------------------------------------------------------
   suite('_toggleEditDialog', () => {
-    function makeMockForm(el) {
+    function makeMockForm(el, markup) {
       const form = { index: -1, item: null };
+      if (typeof markup === 'string') {
+        const template = document.createElement('template');
+        template.innerHTML = markup;
+        form.queryEffectiveChildren = () => template;
+      }
       sinon.stub(el, 'getContentChildren').returns([form]);
       sinon.stub(el.$.dialog, 'toggle');
       return form;
@@ -1101,7 +1247,7 @@ suite('iron-data-table extras', () => {
       expect(form.item).to.equal('');
     });
 
-    test('sets form to empty string when single column', async () => {
+    test('sets form to empty object when a single column holds complex items', async () => {
       const el = await newTable();
       el.items = [{ a: 1 }, { b: 2 }];
       el.columns = [{ name: 'Only' }];
@@ -1110,7 +1256,53 @@ suite('iron-data-table extras', () => {
       el._toggleEditDialog();
 
       expect(form.index).to.equal(-1);
+      expect(form.item).to.deep.equal({});
+    });
+
+    test('sets form to empty object for an empty single-column complex field', async () => {
+      const el = await newTable();
+      el.items = [];
+      el.columns = [{ name: 'Address' }];
+      const form = makeMockForm(el, '<nuxeo-input value="{{item.address}}" name="address"></nuxeo-input>');
+
+      el._toggleEditDialog();
+
+      expect(form.index).to.equal(-1);
+      expect(form.item).to.deep.equal({});
+    });
+
+    test('sets form to empty string for an empty single-column primitive field', async () => {
+      const el = await newTable();
+      el.items = [];
+      el.columns = [{ name: 'Multi String' }];
+      const form = makeMockForm(el, '<nuxeo-input value="{{item}}" name="string"></nuxeo-input>');
+
+      el._toggleEditDialog();
+
+      expect(form.index).to.equal(-1);
       expect(form.item).to.equal('');
+    });
+
+    // WEBUI-1443: a complex type with a single subfield renders one column, exactly like a list of
+    // primitives. Once the form has been stamped its markup is empty, so the shape has to come from
+    // the parsed binding info, otherwise the entry is seeded as '' and the typed value is dropped.
+    test('seeds an object for a stamped single-column complex form', async () => {
+      const el = await newTable();
+      el.items = [];
+      el.columns = [{ name: 'Address' }];
+
+      const template = document.createElement('template');
+      template._templateInfo = {
+        nodeInfoList: [{ bindings: [{ target: 'value', parts: [{ source: 'item.address' }] }] }],
+      };
+      const form = { index: -1, item: null, queryEffectiveChildren: () => template };
+      sinon.stub(el, 'getContentChildren').returns([form]);
+      sinon.stub(el.$.dialog, 'toggle');
+
+      el._toggleEditDialog();
+
+      expect(template.innerHTML).to.equal('');
+      expect(form.item).to.deep.equal({});
     });
 
     test('handles index 0 as a valid itemIndex', async () => {

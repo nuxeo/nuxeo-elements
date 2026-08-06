@@ -1257,9 +1257,9 @@ import '../nuxeo-button-styles.js';
       this._fieldTypeHints = this._computeFieldTypeHintsFromStats(this._fieldTypeStats);
     }
 
-    _normalizeItem(item, typeHints) {
+    _normalizeItem(item, typeHints, isEntry = true) {
       if (Array.isArray(item)) {
-        return item.map((v) => this._normalizeItem(v, typeHints));
+        return item.map((v) => this._normalizeItem(v, typeHints, false));
       }
 
       if (item !== null && typeof item === 'object') {
@@ -1273,13 +1273,15 @@ import '../nuxeo-button-styles.js';
             // Keep string columns as strings (for ID-like values such as "00123").
             item[key] = typeof item[key] === 'number' ? String(item[key]) : item[key];
           } else {
-            item[key] = this._normalizeItem(item[key]);
+            item[key] = this._normalizeItem(item[key], undefined, false);
           }
         });
         return item;
       }
 
-      if (this.columns && this.columns.length === 1 && typeof item === 'string' && item.trim() !== '') {
+      // Only the entry itself can be the value of a single-column table; subfields of a complex entry
+      // must not inherit that assumption, or a one-subfield complex would coerce "007" to 7.
+      if (isEntry && this.columns && this.columns.length === 1 && typeof item === 'string' && item.trim() !== '') {
         const num = Number(item.trim());
         if (Number.isFinite(num)) {
           return num;
@@ -1339,6 +1341,73 @@ import '../nuxeo-button-styles.js';
       return result;
     }
 
+    _getFormTemplate(dtform) {
+      if (!dtform || typeof dtform.queryEffectiveChildren !== 'function') {
+        return null;
+      }
+      return dtform.queryEffectiveChildren('template');
+    }
+
+    /**
+     * Lists the property paths a template binds to, e.g. `item.address` or `item`.
+     *
+     * Polymer moves a template's content out when it is stamped and strips binding annotations
+     * while parsing, so by the time the edit dialog opens the markup is empty. The parsed template
+     * info it leaves behind is the only remaining record of what the form writes to.
+     */
+    _getTemplateBindingSources(template) {
+      const templateInfo = template && (template._templateInfo || template.__templateInfo);
+      if (!templateInfo || !templateInfo.nodeInfoList) {
+        return [];
+      }
+      const sources = [];
+      templateInfo.nodeInfoList.forEach((nodeInfo) => {
+        (nodeInfo.bindings || []).forEach((binding) => {
+          (binding.parts || []).forEach((part) => {
+            if (part && typeof part.source === 'string') {
+              sources.push(part.source);
+            }
+          });
+        });
+      });
+      return sources;
+    }
+
+    /**
+     * Decides whether a new entry is a complex object or a primitive value.
+     *
+     * Column count cannot be used on its own: a complex type declaring a single subfield produces a
+     * one-column table just like a list of primitives does. The form template disambiguates the two,
+     * since sub-property bindings (`{{item.address}}`) can only target an object while whole-value
+     * bindings (`{{item}}`) can only target a primitive.
+     */
+    _isComplexEntry(dtform) {
+      const template = this._getFormTemplate(dtform);
+
+      const sources = this._getTemplateBindingSources(template);
+      if (sources.some((source) => source.startsWith('item.'))) {
+        return true;
+      }
+      if (sources.some((source) => source === 'item')) {
+        return false;
+      }
+
+      // Templates Polymer has not parsed yet still carry their annotations in the markup.
+      const markup = (template && template.innerHTML) || '';
+      if (/\bitem\s*\./.test(markup)) {
+        return true;
+      }
+      if (/(\[\[|\{\{)\s*!?\s*item\s*(::[^\]}]*)?\s*(\]\]|\}\})/.test(markup)) {
+        return false;
+      }
+      // Without a usable template, mirror the entries already in the list, then fall back to columns.
+      const existing = (this.items || []).find((item) => item !== null && item !== undefined);
+      if (existing !== undefined) {
+        return typeof existing === 'object';
+      }
+      return this.columns.length > 1;
+    }
+
     _toggleEditDialog(itemIndex) {
       const dtform = this.getContentChildren('#form')[0];
       if (typeof itemIndex !== 'undefined') {
@@ -1346,12 +1415,7 @@ import '../nuxeo-button-styles.js';
         dtform.item = this._deepCopy(this.items[itemIndex]);
       } else {
         dtform.index = -1;
-        if ((this.items.length > 1 && typeof this.items[0] !== 'object') || this.columns.length === 1) {
-          // dirty but will work with primitive such as string, number, etc.
-          dtform.item = '';
-        } else {
-          dtform.item = {};
-        }
+        dtform.item = this._isComplexEntry(dtform) ? {} : '';
       }
       this.$.dialog.toggle();
     }
