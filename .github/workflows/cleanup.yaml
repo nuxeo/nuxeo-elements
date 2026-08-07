@@ -6,38 +6,10 @@ on:
     branches:
       - maintenance-3.1.x
 
-env:
-  GKE_CLUSTER: jx-prod
-  GKE_ZONE: us-east1-b
-
 permissions:
   contents: read
 
 jobs:
-  cleanup:
-    name: Preview
-    if: (github.event.action == 'unlabeled' && github.event.label.name == 'preview') || contains(github.event.pull_request.labels.*.name, 'preview')
-    runs-on: ubuntu-latest
-    steps:
-
-    - name: Prepare environment
-      run: |
-        BRANCH_NAME=${GITHUB_HEAD_REF##*/}
-        echo "PREVIEW_NAMESPACE=storybook-$(echo $BRANCH_NAME | sed 's/[^[:alnum:]-]/-/g' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-
-    - name: Get GKE credentials
-      uses: google-github-actions/get-gke-credentials@v3.0.0
-      with:
-        cluster_name: ${{ env.GKE_CLUSTER }}
-        location: ${{ env.GKE_ZONE }}
-        project_id: ${{ secrets.GKE_PROJECT }}
-        credentials: ${{ secrets.GKE_SA_KEY }}
-
-    - name: Cleanup preview namespace
-      continue-on-error: true
-      run: |
-        kubectl delete ns ${PREVIEW_NAMESPACE}
-
   webui-cleanup:
     runs-on: ubuntu-latest
     if: (github.event.action == 'unlabeled' && github.event.label.name == 'webui-preview') || contains(github.event.pull_request.labels.*.name, 'webui-preview')
