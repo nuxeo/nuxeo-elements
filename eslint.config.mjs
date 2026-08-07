@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 import html from 'eslint-plugin-html';
 import importPlugin from 'eslint-plugin-import';
+import wc from 'eslint-plugin-wc';
 import prettier from 'eslint-config-prettier';
 import globals from 'globals';
 import uiConfig from './ui/eslint.config.mjs';
@@ -120,6 +121,38 @@ export default [
     },
   },
 
+  // Web component rules, covering the same packages `polymer lint -i {core,dataviz,ui}/**/*.js` did.
+  // They recover part of what `polymer lint` checked; it was dropped in ELEMENTS-2018 because
+  // polymer-linter depends on babel-traverse 6.x, which no fixed version of GHSA-67hx-6x53-jw92
+  // exists for. Rules the codebase already satisfies are errors; the rest report as warnings so
+  // pre-existing violations stay visible without failing the build.
+  {
+    files: ['core/**/*.js', 'dataviz/**/*.js', 'ui/**/*.js'],
+    plugins: { wc },
+    rules: {
+      ...wc.configs['flat/recommended'].rules,
+      'wc/file-name-matches-element': 'error',
+      'wc/guard-super-call': 'error',
+      'wc/max-elements-per-file': 'error',
+      'wc/no-child-traversal-in-attributechangedcallback': 'error',
+      'wc/no-child-traversal-in-connectedcallback': 'error',
+      'wc/no-closed-shadow-root': 'error',
+      'wc/no-constructor': 'error',
+      'wc/no-constructor-params': 'error',
+      'wc/no-customized-built-in-elements': 'error',
+      'wc/no-exports-with-element': 'error',
+      'wc/no-invalid-extends': 'error',
+      'wc/no-method-prefixed-with-on': 'error',
+      'wc/no-typos': 'error',
+      'wc/attach-shadow-constructor': 'warn',
+      'wc/define-tag-after-class-definition': 'warn',
+      'wc/expose-class-on-global': 'warn',
+      'wc/guard-define-call': 'warn',
+      'wc/require-listener-teardown': 'warn',
+      'wc/tag-name-matches-class': 'warn',
+    },
+  },
+
   // HTML files
   {
     files: ['**/*.html'],
@@ -185,7 +218,7 @@ export default [
 
   // ESM config files / dev-server plugins (Node.js context)
   {
-    files: ['web-test-runner.config.mjs', 'scripts/**/*.mjs'],
+    files: ['web-dev-server.config.mjs', 'web-test-runner.config.mjs', 'scripts/**/*.mjs'],
     languageOptions: {
       sourceType: 'module',
       globals: {
