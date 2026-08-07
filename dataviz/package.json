@@ -13,15 +13,14 @@
   "author": "Nuxeo",
   "license": "Apache-2.0",
   "scripts": {
-    "docs": "polymer analyze . > analysis.json && npm run serve",
-    "serve": "polymer serve --npm -c ../node_modules"
+    "docs": "node ../scripts/analyze.js analysis.json && npm run serve",
+    "serve": "web-dev-server --config ../web-dev-server.config.mjs"
   },
   "devDependencies": {
     "@nuxeo/testing-helpers": "^3.1.34-SNAPSHOT",
     "@polymer/iron-component-page": "^4.0.0",
     "@polymer/test-fixture": "^4.0.2",
-    "@webcomponents/webcomponentsjs": "^2.0.0",
-    "polymer-cli": "^1.8.0"
+    "@webcomponents/webcomponentsjs": "^2.0.0"
   },
   "resolutions": {
     "inherits": "2.0.3",
