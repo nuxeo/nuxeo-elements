@@ -83,7 +83,7 @@ import '../nuxeo-icons.js';
           :host([checked]) {
             border: 2px solid var(--nuxeo-checkmark-border-color-checked, var(--nuxeo-primary-color, blue));
             background-color: var(--nuxeo-checkmark-background-color-checked, var(--nuxeo-primary-color, blue));
-            color: var(--nuxeo-icon-color-checked, white);
+            color: var(--nuxeo-checkmark-tick-color, white);
           }
 
           iron-icon {
