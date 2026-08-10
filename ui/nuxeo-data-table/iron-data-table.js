@@ -1389,23 +1389,25 @@ import '../nuxeo-button-styles.js';
     _isComplexEntry(dtform) {
       const template = this._getFormTemplate(dtform);
 
-      const sources = this._getTemplateBindingSources(template);
-      if (sources.some((source) => source.startsWith('item.'))) {
-        return true;
-      }
-      if (sources.includes('item')) {
-        return false;
-      }
+      if (template) {
+        const sources = this._getTemplateBindingSources(template);
+        if (sources.some((source) => source.startsWith('item.'))) {
+          return true;
+        }
+        if (sources.includes('item')) {
+          return false;
+        }
 
-      // Templates Polymer has not parsed yet still carry their annotations in the markup.
-      const markup = (template || {}).innerHTML || '';
-      if (/\bitem\s*\./.test(markup)) {
-        return true;
-      }
-      // `[\s!]*` rather than `\s*!?\s*`: adjacent optional whitespace groups make the match ambiguous
-      // and backtrack super-linearly on long inputs.
-      if (/(?:\[\[|\{\{)[\s!]*item\s*(?:::[^\]}]*)?(?:\]\]|\}\})/.test(markup)) {
-        return false;
+        // Templates Polymer has not parsed yet still carry their annotations in the markup.
+        const markup = template.innerHTML || '';
+        if (/\bitem\s*\./.test(markup)) {
+          return true;
+        }
+        // `[\s!]*` rather than `\s*!?\s*`: adjacent optional whitespace groups make the match
+        // ambiguous and backtrack super-linearly on long inputs.
+        if (/(?:\[\[|\{\{)[\s!]*item\s*(?:::[^\]}]*)?(?:\]\]|\}\})/.test(markup)) {
+          return false;
+        }
       }
       // Without a usable template, mirror the entries already in the list, then fall back to columns.
       const existing = (this.items || []).find((item) => item !== null && item !== undefined);
