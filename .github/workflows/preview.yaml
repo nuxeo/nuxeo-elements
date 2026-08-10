@@ -111,5 +111,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `:star: Web UI preview available [here](${{ steps.main.outputs.message }})`
+              body: `:star: Web UI preview image published: \`${{ steps.main.outputs.message }}\`\nFlux will deploy it to the Web UI preview environment (allow ~5-10 min).`
             })
