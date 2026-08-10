@@ -1259,7 +1259,9 @@ import '../nuxeo-button-styles.js';
 
     _normalizeItem(item, typeHints, isEntry = true) {
       if (Array.isArray(item)) {
-        return item.map((v) => this._normalizeItem(v, typeHints, false));
+        // The elements of a list of entries are themselves entries; a nested array reaches here with
+        // isEntry already false, so propagating keeps the entry-only coercion correct either way.
+        return item.map((v) => this._normalizeItem(v, typeHints, isEntry));
       }
 
       if (item !== null && typeof item === 'object') {
@@ -1281,7 +1283,7 @@ import '../nuxeo-button-styles.js';
 
       // Only the entry itself can be the value of a single-column table; subfields of a complex entry
       // must not inherit that assumption, or a one-subfield complex would coerce "007" to 7.
-      if (isEntry && this.columns && this.columns.length === 1 && typeof item === 'string' && item.trim() !== '') {
+      if (isEntry && this.columns?.length === 1 && typeof item === 'string' && item.trim() !== '') {
         const num = Number(item.trim());
         if (Number.isFinite(num)) {
           return num;
@@ -1357,7 +1359,7 @@ import '../nuxeo-button-styles.js';
      */
     _getTemplateBindingSources(template) {
       const templateInfo = template && (template._templateInfo || template.__templateInfo);
-      if (!templateInfo || !templateInfo.nodeInfoList) {
+      if (!templateInfo?.nodeInfoList) {
         return [];
       }
       const sources = [];
@@ -1388,16 +1390,18 @@ import '../nuxeo-button-styles.js';
       if (sources.some((source) => source.startsWith('item.'))) {
         return true;
       }
-      if (sources.some((source) => source === 'item')) {
+      if (sources.includes('item')) {
         return false;
       }
 
       // Templates Polymer has not parsed yet still carry their annotations in the markup.
-      const markup = (template && template.innerHTML) || '';
+      const markup = template?.innerHTML || '';
       if (/\bitem\s*\./.test(markup)) {
         return true;
       }
-      if (/(\[\[|\{\{)\s*!?\s*item\s*(::[^\]}]*)?\s*(\]\]|\}\})/.test(markup)) {
+      // `[\s!]*` rather than `\s*!?\s*`: adjacent optional whitespace groups make the match ambiguous
+      // and backtrack super-linearly on long inputs.
+      if (/(?:\[\[|\{\{)[\s!]*item\s*(?:::[^\]}]*)?(?:\]\]|\}\})/.test(markup)) {
         return false;
       }
       // Without a usable template, mirror the entries already in the list, then fall back to columns.
