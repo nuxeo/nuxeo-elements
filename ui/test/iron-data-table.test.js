@@ -682,6 +682,22 @@ suite('iron-data-table extras', () => {
 
       expect(result).to.deep.equal({ address: 42 });
     });
+
+    test('single-column: applies entry coercion to each element of a list of entries', async () => {
+      const el = await newTable();
+      el.columns = [{}];
+      const result = el._normalizeItem(['007', '42']);
+
+      expect(result).to.deep.equal([7, 42]);
+    });
+
+    test('single-column: does not apply entry coercion inside an array subfield', async () => {
+      const el = await newTable();
+      el.columns = [{}];
+      const result = el._normalizeItem({ codes: ['007', '42'] });
+
+      expect(result).to.deep.equal({ codes: ['007', 42] });
+    });
   });
 
   // ------------------------------------------------------------------
