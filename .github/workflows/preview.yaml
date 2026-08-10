@@ -32,12 +32,8 @@ jobs:
       # Image version <version-without-snapshot>-preview.<run_id> so Flux detects it by semver and deploys to EKS.
       run: |
         BASE_VERSION="$(node -p 'require("./package.json").version')"
-        if echo "$BASE_VERSION" | grep -qiE 'snapshot'; then
-          IMAGE_VERSION="$(echo "$BASE_VERSION" | sed -E 's/-?snapshot/-preview/I')"
-        else
-          IMAGE_VERSION="${BASE_VERSION}-snapshot"
-        fi
-        echo "VERSION=${IMAGE_VERSION}.${{ github.run_id }}" >> "$GITHUB_ENV"
+        VERSION_BASE="$(echo "$BASE_VERSION" | sed -E 's/-SNAPSHOT$//I')"
+        echo "VERSION=${VERSION_BASE}-preview.${{ github.run_id }}" >> "$GITHUB_ENV"
 
     - name: Install
       env:
