@@ -1283,7 +1283,7 @@ import '../nuxeo-button-styles.js';
 
       // Only the entry itself can be the value of a single-column table; subfields of a complex entry
       // must not inherit that assumption, or a one-subfield complex would coerce "007" to 7.
-      if (isEntry && this.columns && this.columns.length === 1 && typeof item === 'string' && item.trim() !== '') {
+      if (isEntry && this.columns.length === 1 && typeof item === 'string' && item.trim() !== '') {
         const num = Number(item.trim());
         if (Number.isFinite(num)) {
           return num;
@@ -1358,13 +1358,15 @@ import '../nuxeo-button-styles.js';
      * info it leaves behind is the only remaining record of what the form writes to.
      */
     _getTemplateBindingSources(template) {
-      const templateInfo = template && (template._templateInfo || template.__templateInfo);
-      // Not optional chaining: polymer lint's parser predates it and fails to load the file.
-      if (!templateInfo || !templateInfo.nodeInfoList) {
+      // Defaulted rather than optional-chained: polymer lint's parser predates `?.` and fails to
+      // load the file when it appears.
+      const templateInfo = (template && (template._templateInfo || template.__templateInfo)) || {};
+      const { nodeInfoList } = templateInfo;
+      if (!nodeInfoList) {
         return [];
       }
       const sources = [];
-      templateInfo.nodeInfoList.forEach((nodeInfo) => {
+      nodeInfoList.forEach((nodeInfo) => {
         (nodeInfo.bindings || []).forEach((binding) => {
           (binding.parts || []).forEach((part) => {
             if (part && typeof part.source === 'string') {
@@ -1396,7 +1398,7 @@ import '../nuxeo-button-styles.js';
       }
 
       // Templates Polymer has not parsed yet still carry their annotations in the markup.
-      const markup = (template && template.innerHTML) || '';
+      const markup = (template || {}).innerHTML || '';
       if (/\bitem\s*\./.test(markup)) {
         return true;
       }
