@@ -1283,7 +1283,7 @@ import '../nuxeo-button-styles.js';
 
       // Only the entry itself can be the value of a single-column table; subfields of a complex entry
       // must not inherit that assumption, or a one-subfield complex would coerce "007" to 7.
-      if (isEntry && this.columns?.length === 1 && typeof item === 'string' && item.trim() !== '') {
+      if (isEntry && this.columns && this.columns.length === 1 && typeof item === 'string' && item.trim() !== '') {
         const num = Number(item.trim());
         if (Number.isFinite(num)) {
           return num;
@@ -1359,7 +1359,8 @@ import '../nuxeo-button-styles.js';
      */
     _getTemplateBindingSources(template) {
       const templateInfo = template && (template._templateInfo || template.__templateInfo);
-      if (!templateInfo?.nodeInfoList) {
+      // Not optional chaining: polymer lint's parser predates it and fails to load the file.
+      if (!templateInfo || !templateInfo.nodeInfoList) {
         return [];
       }
       const sources = [];
@@ -1395,7 +1396,7 @@ import '../nuxeo-button-styles.js';
       }
 
       // Templates Polymer has not parsed yet still carry their annotations in the markup.
-      const markup = template?.innerHTML || '';
+      const markup = (template && template.innerHTML) || '';
       if (/\bitem\s*\./.test(markup)) {
         return true;
       }
