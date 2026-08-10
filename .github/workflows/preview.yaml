@@ -45,7 +45,8 @@ jobs:
 
     - name: Build storybook
       working-directory: ./storybook
-      run: npx storybook build -o dist
+      run: |
+        npx storybook build -o dist
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v4
