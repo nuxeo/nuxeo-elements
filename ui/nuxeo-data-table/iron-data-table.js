@@ -1283,7 +1283,7 @@ import '../nuxeo-button-styles.js';
 
       // Only the entry itself can be the value of a single-column table; subfields of a complex entry
       // must not inherit that assumption, or a one-subfield complex would coerce "007" to 7.
-      if (isEntry && this.columns.length === 1 && typeof item === 'string' && item.trim() !== '') {
+      if (isEntry && (this.columns || []).length === 1 && typeof item === 'string' && item.trim() !== '') {
         const num = Number(item.trim());
         if (Number.isFinite(num)) {
           return num;
@@ -1361,7 +1361,14 @@ import '../nuxeo-button-styles.js';
       // Defaulted rather than optional-chained: polymer lint's parser predates `?.` and fails to
       // load the file when it appears.
       const templateInfo = (template && (template._templateInfo || template.__templateInfo)) || {};
-      const { nodeInfoList } = templateInfo;
+      return this._collectBindingSources(templateInfo);
+    }
+
+    /**
+     * Walks parsed template info, including nested templates, collecting every property path bound.
+     */
+    _collectBindingSources(templateInfo) {
+      const { nodeInfoList } = templateInfo || {};
       if (!nodeInfoList) {
         return [];
       }
@@ -1369,11 +1376,28 @@ import '../nuxeo-button-styles.js';
       nodeInfoList.forEach((nodeInfo) => {
         (nodeInfo.bindings || []).forEach((binding) => {
           (binding.parts || []).forEach((part) => {
-            if (part && typeof part.source === 'string') {
+            if (!part || part.hostProp) {
+              // A host-prop part only records that a nested template forwards `item` down from its
+              // host; the paths the form really binds live in that nested template. Treating it as a
+              // binding would make every `dom-if`-wrapped form look like a whole-value binding.
+              return;
+            }
+            if (typeof part.source === 'string') {
               sources.push(part.source);
             }
+            // For a computed binding `source` is the whole expression, e.g. `i18n('x', item.address)`,
+            // so the argument paths are only reachable through the dependencies.
+            (part.dependencies || []).forEach((dependency) => {
+              if (dependency && typeof dependency.name === 'string') {
+                sources.push(dependency.name);
+              }
+            });
           });
         });
+        // A nested `<template>` (`dom-if`, `dom-repeat`) carries its own parsed bindings.
+        if (nodeInfo.templateInfo) {
+          this._collectBindingSources(nodeInfo.templateInfo).forEach((source) => sources.push(source));
+        }
       });
       return sources;
     }
@@ -1414,7 +1438,7 @@ import '../nuxeo-button-styles.js';
       if (existing !== undefined) {
         return typeof existing === 'object';
       }
-      return this.columns.length > 1;
+      return (this.columns || []).length > 1;
     }
 
     _toggleEditDialog(itemIndex) {
