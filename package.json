@@ -138,5 +138,8 @@
     "@polymer/test-fixture": "^4.0.2",
     "marked": "^4.0.17",
     "nuxeo": "^4.0.3"
+  },
+  "overrides": {
+    "axios": "1.18.0"
   }
 }
