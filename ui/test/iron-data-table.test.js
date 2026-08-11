@@ -698,6 +698,14 @@ suite('iron-data-table extras', () => {
 
       expect(result).to.deep.equal({ codes: ['007', 42] });
     });
+
+    test('does not throw when columns is explicitly null', async () => {
+      const el = await newTable();
+      el.columns = null;
+
+      expect(() => el._normalizeItem('007')).to.not.throw();
+      expect(el._normalizeItem('007')).to.equal('007');
+    });
   });
 
   // ------------------------------------------------------------------
@@ -1128,7 +1136,9 @@ suite('iron-data-table extras', () => {
       expect(el._isComplexEntry(formWith('<input value="{{item::input}}">'))).to.be.false;
     });
 
-    test('detects sub-properties inside computed bindings', async () => {
+    // Covers the raw-markup path only. The parsed-template equivalent is asserted further down
+    // against a real stamped form, where `source` is the whole expression rather than a path.
+    test('detects sub-properties inside computed bindings in unparsed markup', async () => {
       const el = await newTable();
       el.columns = [{ name: 'Date' }];
 
@@ -1207,6 +1217,124 @@ suite('iron-data-table extras', () => {
       el.items = [{ address: 'a' }];
 
       expect(el._isComplexEntry(stampedFormWith(undefined))).to.be.true;
+    });
+
+    test('ignores host-prop parts that only forward the entry to a nested template', async () => {
+      const el = await newTable();
+      el.columns = [{ name: 'Address' }];
+      el.items = [];
+
+      // The shape Polymer produces for `<template is="dom-if">`: a host-prop part on the outer node
+      // naming `item`, with the real binding held in that node's nested template info.
+      const template = document.createElement('template');
+      template._templateInfo = {
+        nodeInfoList: [
+          {
+            bindings: [{ target: '_host_item', parts: [{ source: 'item', hostProp: true }] }],
+            templateInfo: {
+              nodeInfoList: [{ bindings: [{ target: 'value', parts: [{ source: 'item.address' }] }] }],
+            },
+          },
+        ],
+      };
+
+      expect(el._isComplexEntry({ queryEffectiveChildren: () => template })).to.be.true;
+    });
+
+    test('falls back safely when columns is explicitly null', async () => {
+      const el = await newTable();
+      el.columns = null;
+      el.items = [];
+
+      expect(() => el._isComplexEntry(null)).to.not.throw();
+      expect(el._isComplexEntry(null)).to.be.false;
+    });
+
+    // The suites above pin behaviour against hand-built template info. These mount a real
+    // <nuxeo-data-table-form> so Polymer itself parses and stamps the template, which is what
+    // guarantees the assumed shape actually matches the one in production.
+    suite('against templates parsed by Polymer', () => {
+      const mounted = [];
+
+      async function parsedForm(markup) {
+        const form = document.createElement('nuxeo-data-table-form');
+        const template = document.createElement('template');
+        template.innerHTML = markup;
+        form.appendChild(template);
+        document.body.appendChild(form);
+        mounted.push(form);
+        await flush();
+        return form;
+      }
+
+      teardown(() => {
+        while (mounted.length) {
+          mounted.pop().remove();
+        }
+      });
+
+      test('reads the entry shape once Polymer has consumed the markup', async () => {
+        const el = await newTable();
+        el.columns = [{ name: 'Address' }];
+        el.items = [];
+
+        const form = await parsedForm('<input value="{{item.address}}">');
+        const template = form.queryEffectiveChildren('template');
+
+        // Parsing strips the annotation, so the markup regex cannot be what answers this.
+        expect(template.innerHTML).to.not.contain('item.address');
+        expect(el._isComplexEntry(form)).to.be.true;
+      });
+
+      test('reads primitive entries once Polymer has consumed the markup', async () => {
+        const el = await newTable();
+        el.columns = [{ name: 'Value' }];
+        el.items = [];
+
+        expect(el._isComplexEntry(await parsedForm('<input value="{{item}}">'))).to.be.false;
+      });
+
+      test('detects sub-properties bound inside a dom-if', async () => {
+        const el = await newTable();
+        el.columns = [{ name: 'Address' }];
+        el.items = [];
+
+        const form = await parsedForm(
+          '<template is="dom-if" if="[[show]]"><input value="{{item.address}}"></template>',
+        );
+
+        expect(el._isComplexEntry(form)).to.be.true;
+      });
+
+      test('detects a multi-column complex form wrapped in a dom-if', async () => {
+        const el = await newTable();
+        el.columns = [{ name: 'Address' }, { name: 'City' }];
+        el.items = [];
+
+        const form = await parsedForm(
+          '<template is="dom-if" if="[[show]]"><input value="{{item.address}}"><input value="{{item.city}}"></template>',
+        );
+
+        expect(el._isComplexEntry(form)).to.be.true;
+      });
+
+      test('treats a dom-if around a whole-value binding as a primitive entry', async () => {
+        const el = await newTable();
+        el.columns = [{ name: 'Value' }];
+        el.items = [];
+
+        const form = await parsedForm('<template is="dom-if" if="[[show]]"><input value="{{item}}"></template>');
+
+        expect(el._isComplexEntry(form)).to.be.false;
+      });
+
+      test('detects sub-properties reached only through a computed binding', async () => {
+        const el = await newTable();
+        el.columns = [{ name: 'Date' }];
+        el.items = [];
+
+        expect(el._isComplexEntry(await parsedForm('<span>[[formatDate(item.date)]]</span>'))).to.be.true;
+      });
     });
   });
 
