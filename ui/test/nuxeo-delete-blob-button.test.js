@@ -371,9 +371,6 @@ suite('nuxeo-delete-blob-button extras', () => {
           ></nuxeo-delete-blob-button>
         `,
       );
-      sinon.stub(button, 'isImmutable').returns(false);
-      sinon.stub(button, 'hasType').returns(false);
-      sinon.stub(button, 'isTrashed').returns(false);
       await flush();
       const iconButton = button.shadowRoot.querySelector('paper-icon-button');
       expect(iconButton).to.exist;
