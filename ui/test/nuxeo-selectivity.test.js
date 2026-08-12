@@ -606,6 +606,35 @@ suite('nuxeo-selectivity', () => {
       expect(selectivityWidget._getValidity()).to.be.true;
       expect(selectivityWidget.errorMessage).to.equal('Custom error');
     });
+
+    test('auto-clears a shown required error as soon as a value is selected (WEBUI-180 AC-4)', async () => {
+      selectivityWidget = await fixture(
+        html`
+          <nuxeo-selectivity .data=${data} multiple required></nuxeo-selectivity>
+        `,
+      );
+      selectivityWidget.value = [];
+      // simulate a submit that surfaces the required error
+      selectivityWidget.validate();
+      expect(selectivityWidget.invalid).to.be.true;
+      expect(selectivityWidget.errorMessage).to.be.ok;
+      // selecting a value must clear the error immediately, without another submit
+      selectivityWidget.value = ['Berlin'];
+      expect(selectivityWidget.invalid).to.be.false;
+      expect(selectivityWidget.errorMessage).to.equal('');
+    });
+
+    test('does not surface a required error on selection before the field was ever submitted', async () => {
+      selectivityWidget = await fixture(
+        html`
+          <nuxeo-selectivity .data=${data} multiple required></nuxeo-selectivity>
+        `,
+      );
+      // no prior validate(): setting a value must not flip the widget into an invalid state
+      selectivityWidget.value = ['Berlin'];
+      expect(selectivityWidget.invalid).to.be.not.ok;
+      expect(selectivityWidget.errorMessage || '').to.equal('');
+    });
   });
 
   // --------------------------------------------------------------------------
