@@ -710,7 +710,7 @@ suite('nuxeo-data-table', () => {
 
     // ELEMENTS-2005
     test('every rendered header-row child has table semantics', () => {
-      const headerRow = table.shadowRoot.querySelector('#header nuxeo-data-table-row');
+      const headerRow = table.querySelector('nuxeo-data-table-row[header]');
       const headerChildren = Array.from(headerRow.children).filter((child) => child.localName !== 'dom-repeat');
       expect(headerChildren).to.have.length.above(0);
       headerChildren.forEach((child) => {
@@ -729,7 +729,7 @@ suite('nuxeo-data-table', () => {
       expect(bodyCells).to.have.length.above(0);
       bodyCells.forEach((cell) => expect(cell.getAttribute('role')).to.equal('cell'));
       const bodyCheckboxes = Array.from(
-        table.shadowRoot.querySelectorAll('#list nuxeo-data-table-row nuxeo-data-table-checkbox'),
+        table.querySelectorAll('nuxeo-data-table-row:not([header]) nuxeo-data-table-checkbox'),
       );
       expect(bodyCheckboxes).to.have.length.above(0);
       bodyCheckboxes.forEach((checkbox) => expect(checkbox.getAttribute('role')).to.equal('cell'));

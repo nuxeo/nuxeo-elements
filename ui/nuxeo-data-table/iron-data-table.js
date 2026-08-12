@@ -239,7 +239,12 @@ import '../nuxeo-button-styles.js';
           <label>[[label]]</label>
           <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
 
-          <div id="table" role="table" aria-label$="[[captionText]]" aria-multiselectable$="[[multiSelection]]">
+          <div
+            id="table"
+            role="table"
+            aria-label$="[[captionText]]"
+            aria-multiselectable$="[[_computeAriaBoolean(multiSelection)]]"
+          >
             <div id="header" role="rowgroup">
               <nuxeo-data-table-row header>
                 <nuxeo-data-table-checkbox
@@ -704,6 +709,10 @@ import '../nuxeo-button-styles.js';
      */
     _computeListRole(items) {
       return (items || []).length > 0 ? 'rowgroup' : 'presentation';
+    }
+
+    _computeAriaBoolean(value) {
+      return String(Boolean(value));
     }
 
     /**
