@@ -204,7 +204,6 @@ const RESIZE_ZONE = 8;
         // the cell rather than on the header template so that columns providing their own
         // `<template is="header">` keep the header semantics.
         this.setAttribute('role', 'columnheader');
-        this.setAttribute('scope', 'col');
       } else {
         this.setAttribute('role', 'cell');
       }

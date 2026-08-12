@@ -708,29 +708,46 @@ suite('nuxeo-data-table', () => {
       assert.equal(sortIconButton.getAttribute('aria-label'), 'command.sort.descend');
     });
 
-    // WEBUI-1557
-    test('every header cell is exposed as a column header', () => {
-      const headerCells = Array.from(table.querySelectorAll('nuxeo-data-table-cell[header]'));
-      expect(headerCells).to.have.length.above(0);
-      headerCells.forEach((cell) => {
-        expect(cell.getAttribute('role')).to.equal('columnheader');
-        expect(cell.getAttribute('scope')).to.equal('col');
+    // ELEMENTS-2005
+    test('every rendered header-row child has table semantics', () => {
+      const headerRow = table.shadowRoot.querySelector('#header nuxeo-data-table-row');
+      const headerChildren = Array.from(headerRow.children).filter((child) => child.localName !== 'dom-repeat');
+      expect(headerChildren).to.have.length.above(0);
+      headerChildren.forEach((child) => {
+        expect(['columnheader', 'presentation']).to.include(child.getAttribute('role'));
+        if (child.getAttribute('role') === 'presentation') {
+          expect(child.querySelector('[role="columnheader"]')).to.be.ok;
+        }
       });
+      expect(headerRow.querySelector('nuxeo-data-table-checkbox').getAttribute('role')).to.equal('columnheader');
+      expect(headerRow.querySelector('nuxeo-data-table-settings').getAttribute('role')).to.equal('columnheader');
     });
 
-    // WEBUI-1557
+    // ELEMENTS-2005
     test('body cells stay exposed as cells', () => {
       const bodyCells = Array.from(table.querySelectorAll('nuxeo-data-table-row:not([header]) nuxeo-data-table-cell'));
       expect(bodyCells).to.have.length.above(0);
       bodyCells.forEach((cell) => expect(cell.getAttribute('role')).to.equal('cell'));
+      const bodyCheckboxes = Array.from(
+        table.shadowRoot.querySelectorAll('#list nuxeo-data-table-row nuxeo-data-table-checkbox'),
+      );
+      expect(bodyCheckboxes).to.have.length.above(0);
+      bodyCheckboxes.forEach((checkbox) => expect(checkbox.getAttribute('role')).to.equal('cell'));
     });
 
-    // WEBUI-1557: rows must be owned by a row group and every intermediate wrapper must be
+    // ELEMENTS-2005: rows must be owned by a row group and every intermediate wrapper must be
     // presentational, otherwise the browser cannot build the table model and the column headers
     // are never associated with the body cells.
-    test('rows are grouped and intermediate wrappers are presentational', () => {
+    test('rows are grouped and non-table content stays outside the table role', () => {
       const { shadowRoot } = table;
-      expect(shadowRoot.querySelector('#container').getAttribute('role')).to.equal('presentation');
+      const semanticTable = shadowRoot.querySelector('#table');
+      expect(table.hasAttribute('role')).to.be.false;
+      expect(shadowRoot.querySelector('#container').hasAttribute('role')).to.be.false;
+      expect(semanticTable.getAttribute('role')).to.equal('table');
+      expect(semanticTable.getAttribute('aria-label')).to.equal(table.captionText);
+      expect(semanticTable.getAttribute('aria-multiselectable')).to.equal(String(table.multiSelection));
+      expect(semanticTable.contains(shadowRoot.querySelector('label'))).to.be.false;
+      expect(semanticTable.contains(shadowRoot.querySelector('slot[name="nuxeo-selection-toolbar"]'))).to.be.false;
       expect(shadowRoot.querySelector('#header').getAttribute('role')).to.equal('rowgroup');
       expect(shadowRoot.querySelector('#list').getAttribute('role')).to.equal('rowgroup');
       expect(
@@ -744,29 +761,32 @@ suite('nuxeo-data-table', () => {
       });
     });
 
-    // WEBUI-1557: exactly one column header per column — no nested duplicate from the header template.
+    // ELEMENTS-2005: exactly one column header per column — no nested duplicate from the header template.
     test('does not expose nested duplicate column headers', () => {
       const columnHeaders = Array.from(table.querySelectorAll('[role="columnheader"]'));
       expect(columnHeaders).to.have.length.above(0);
       columnHeaders.forEach((header) => {
-        expect(header.tagName.toLowerCase()).to.equal('nuxeo-data-table-cell');
         expect(header.querySelector('[role="columnheader"]')).to.be.null;
       });
     });
 
-    // WEBUI-1557: a row group must own at least one row, so an empty list has to stay out of the
+    // ELEMENTS-2005: a row group must own at least one row, so an empty list has to stay out of the
     // accessibility tree instead of advertising itself as an empty row group. The Home page cards
-    // render empty tables, and axe reports the empty row group as an incomplete table structure.
-    test('does not expose an empty list as a row group', async () => {
+    // render empty tables, and the empty-state message is represented as a valid table row.
+    test('uses valid table semantics for the empty state', async () => {
       const list = table.shadowRoot.querySelector('#list');
       expect(list.getAttribute('role')).to.equal('rowgroup');
       table.items = [];
       await flush();
       expect(list.getAttribute('role')).to.equal('presentation');
       expect(table.shadowRoot.querySelector('#header').getAttribute('role')).to.equal('rowgroup');
+      const emptyResult = table.shadowRoot.querySelector('.emptyResult');
+      expect(emptyResult.getAttribute('role')).to.equal('cell');
+      expect(emptyResult.parentElement.getAttribute('role')).to.equal('row');
+      expect(emptyResult.parentElement.parentElement.getAttribute('role')).to.equal('rowgroup');
     });
 
-    // WEBUI-1557: the list wrapper lives in `iron-list`'s shadow root, so it may not be reachable yet.
+    // ELEMENTS-2005: the list wrapper lives in `iron-list`'s shadow root, so it may not be reachable yet.
     test('leaves the list wrapper alone when it cannot be reached', () => {
       const list = table.$.list;
       try {
@@ -780,7 +800,7 @@ suite('nuxeo-data-table', () => {
       }
     });
 
-    // WEBUI-1557: `wrapper-height` (used by the Home page tables) injects a scroll wrapper between
+    // ELEMENTS-2005: `wrapper-height` (used by the Home page tables) injects a scroll wrapper between
     // the table and its row group, which must not appear in the accessibility tree.
     test('the wrapper-height scroll wrapper is presentational', () => {
       table._wrapperHeight = '350px';

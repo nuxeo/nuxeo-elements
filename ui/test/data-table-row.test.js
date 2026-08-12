@@ -53,7 +53,7 @@ suite('nuxeo-data-table-row extras', () => {
     });
   });
 
-  // WEBUI-1557: the wrapper between the row and its cells must stay out of the accessibility
+  // ELEMENTS-2005: the wrapper between the row and its cells must stay out of the accessibility
   // tree, otherwise browsers cannot build the table model and column headers are never
   // associated with the body cells.
   suite('accessibility structure', () => {

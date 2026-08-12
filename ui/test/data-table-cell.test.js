@@ -234,16 +234,16 @@ suite('nuxeo-data-table-cell extras', () => {
       expect(cell.hasAttribute('scope')).to.be.false;
     });
 
-    test('header cell gets scope=col', async () => {
+    test('header cell does not use native-table scope', async () => {
       const cell = await fixture(
         html`
           <nuxeo-data-table-cell header></nuxeo-data-table-cell>
         `,
       );
-      expect(cell.getAttribute('scope')).to.equal('col');
+      expect(cell.hasAttribute('scope')).to.be.false;
     });
 
-    // WEBUI-1557: a custom element cannot be a native `th`, so the header cell must carry the
+    // ELEMENTS-2005: a custom element cannot be a native `th`, so the header cell must carry the
     // ARIA equivalent for screen readers to announce it as a column header.
     test('header cell gets role=columnheader', async () => {
       const cell = await fixture(

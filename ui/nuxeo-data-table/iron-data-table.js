@@ -177,6 +177,13 @@ import '../nuxeo-button-styles.js';
             flex-direction: column;
           }
 
+          #table {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            min-height: 0;
+          }
+
           #header {
             box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
             padding-inline-start: 2px;
@@ -226,138 +233,146 @@ import '../nuxeo-button-styles.js';
           }
         </style>
 
-        <div id="container" role="presentation">
+        <div id="container">
           <slot name="nuxeo-selection-toolbar"></slot>
 
           <label>[[label]]</label>
           <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
 
-          <div id="header" role="rowgroup">
-            <nuxeo-data-table-row header>
-              <nuxeo-data-table-checkbox
-                style$="[[_computeSelectAllVisibility(selectionEnabled, selectAllEnabled, multiSelection)]]"
-                checked="[[_isChecked(selectAllActive, _excludedItems, _excludedItems.*)]]"
-                on-click="_toggleSelectAll"
-              ></nuxeo-data-table-checkbox>
-              <dom-repeat items="[[columns]]" as="column">
-                <template>
-                  <nuxeo-data-table-cell
-                    header
-                    align-right="[[column.alignRight]]"
-                    before-bind="[[beforeCellBind]]"
-                    column="[[column]]"
-                    flex="[[column.flex]]"
-                    hidden="[[column.hidden]]"
-                    order="[[column.order]]"
-                    resized="[[column.resized]]"
-                    table="[[_this]]"
-                    template="[[column.headerTemplate]]"
-                    width="[[column.width]]"
-                    overflow="[[column.overflow]]"
-                  >
-                    <nuxeo-data-table-column-sort
-                      sort-order="[[sortOrder]]"
-                      path="[[column.sortBy]]"
-                      on-sort-direction-changed="_sort"
-                      hidden$="[[!column.sortBy]]"
-                    >
-                    </nuxeo-data-table-column-sort>
-                  </nuxeo-data-table-cell>
-                </template>
-              </dom-repeat>
-              <div style$="[[_computeActionsStyle(editable, orderable)]]">
-                <nuxeo-data-table-cell></nuxeo-data-table-cell>
-              </div>
-              <nuxeo-data-table-settings
-                columns="{{columns}}"
-                hidden$="[[!settingsEnabled]]"
-              ></nuxeo-data-table-settings>
-            </nuxeo-data-table-row>
-          </div>
-
-          <dom-if if="[[_isEmpty]]">
-            <template>
-              <div class="emptyResult" aria-live="polite">[[_computedEmptyLabel]]</div>
-            </template>
-          </dom-if>
-
-          <iron-list
-            id="list"
-            role$="[[_computeListRole(items.length)]]"
-            items="[[items]]"
-            as="item"
-            selected-items="{{selectedItems}}"
-            selected-item="{{selectedItem}}"
-            on-scroll="_scroll"
-          >
-            <template>
-              <div class="item" role="presentation">
-                <nuxeo-data-table-row
-                  on-click="_onRowClick"
-                  before-bind="[[beforeRowBind]]"
-                  even$="[[!_isEven(index)]]"
-                  expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
-                  index="[[index]]"
-                  item="[[item]]"
-                  tabindex="-1"
-                  selected="[[_isSelected(item, selectedItems, selectedItems.*, _excludedItems, _excludedItems.*)]]"
-                >
-                  <nuxeo-data-table-checkbox
-                    hidden$="[[!selectionEnabled]]"
-                    checked$="[[_isSelected(item, selectedItems, selectedItems.*, _excludedItems, _excludedItems.*)]]"
-                    on-click="_onCheckBoxTap"
-                    on-keydown="_onCheckBoxKeydown"
-                  ></nuxeo-data-table-checkbox>
-                  <dom-repeat items="[[columns]]" as="column" index-as="colIndex">
-                    <template>
-                      <nuxeo-data-table-cell
-                        template="[[column.template]]"
-                        table="[[_this]]"
-                        align-right="[[column.alignRight]]"
-                        column="[[column]]"
-                        expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
-                        flex="[[column.flex]]"
-                        hidden="[[column.hidden]]"
-                        index="[[index]]"
-                        item="[[item]]"
-                        order="[[column.order]]"
-                        resized="[[column.resized]]"
-                        selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
-                        width="[[column.width]]"
-                        before-bind="[[beforeCellBind]]"
-                        overflow="[[column.overflow]]"
-                      ></nuxeo-data-table-cell>
-                    </template>
-                  </dom-repeat>
-                  <dom-if if="[[_isExpanded(item, _expandedItems)]]" on-dom-change="_updateSizeForItem">
-                    <template>
-                      <nuxeo-data-table-row-detail
-                        index="[[index]]"
-                        item="[[item]]"
-                        expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
-                        selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
-                        before-bind="[[beforeDetailsBind]]"
-                        table="[[_this]]"
-                        template="[[rowDetail]]"
-                      ></nuxeo-data-table-row-detail>
-                    </template>
-                  </dom-if>
-                  <div style$="[[_computeActionsStyle(editable, orderable)]]">
-                    <nuxeo-data-table-row-actions
-                      index="[[index]]"
-                      editable="[[editable]]"
-                      orderable="[[orderable]]"
-                      template="[[rowForm]]"
-                      item="[[item]]"
-                      size="[[items.length]]"
+          <div id="table" role="table" aria-label$="[[captionText]]" aria-multiselectable$="[[multiSelection]]">
+            <div id="header" role="rowgroup">
+              <nuxeo-data-table-row header>
+                <nuxeo-data-table-checkbox
+                  header
+                  style$="[[_computeSelectAllVisibility(selectionEnabled, selectAllEnabled, multiSelection)]]"
+                  checked="[[_isChecked(selectAllActive, _excludedItems, _excludedItems.*)]]"
+                  on-click="_toggleSelectAll"
+                ></nuxeo-data-table-checkbox>
+                <dom-repeat items="[[columns]]" as="column">
+                  <template>
+                    <nuxeo-data-table-cell
+                      header
+                      align-right="[[column.alignRight]]"
+                      before-bind="[[beforeCellBind]]"
+                      column="[[column]]"
+                      flex="[[column.flex]]"
+                      hidden="[[column.hidden]]"
+                      order="[[column.order]]"
+                      resized="[[column.resized]]"
                       table="[[_this]]"
+                      template="[[column.headerTemplate]]"
+                      width="[[column.width]]"
+                      overflow="[[column.overflow]]"
                     >
-                    </nuxeo-data-table-row-actions>
+                      <nuxeo-data-table-column-sort
+                        sort-order="[[sortOrder]]"
+                        path="[[column.sortBy]]"
+                        on-sort-direction-changed="_sort"
+                        hidden$="[[!column.sortBy]]"
+                      >
+                      </nuxeo-data-table-column-sort>
+                    </nuxeo-data-table-cell>
+                  </template>
+                </dom-repeat>
+                <div role="presentation" style$="[[_computeActionsStyle(editable, orderable)]]">
+                  <nuxeo-data-table-cell header></nuxeo-data-table-cell>
+                </div>
+                <nuxeo-data-table-settings
+                  role="columnheader"
+                  columns="{{columns}}"
+                  hidden$="[[!settingsEnabled]]"
+                ></nuxeo-data-table-settings>
+              </nuxeo-data-table-row>
+            </div>
+
+            <dom-if if="[[_isEmpty]]">
+              <template>
+                <div role="rowgroup">
+                  <div role="row">
+                    <div class="emptyResult" role="cell" aria-live="polite">[[_computedEmptyLabel]]</div>
                   </div>
-                </nuxeo-data-table-row>
-              </div>
-            </template>
-          </iron-list>
+                </div>
+              </template>
+            </dom-if>
+
+            <iron-list
+              id="list"
+              role$="[[_computeListRole(items)]]"
+              items="[[items]]"
+              as="item"
+              selected-items="{{selectedItems}}"
+              selected-item="{{selectedItem}}"
+              on-scroll="_scroll"
+            >
+              <template>
+                <div class="item" role="presentation">
+                  <nuxeo-data-table-row
+                    on-click="_onRowClick"
+                    before-bind="[[beforeRowBind]]"
+                    even$="[[!_isEven(index)]]"
+                    expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                    index="[[index]]"
+                    item="[[item]]"
+                    tabindex="-1"
+                    selected="[[_isSelected(item, selectedItems, selectedItems.*, _excludedItems, _excludedItems.*)]]"
+                  >
+                    <nuxeo-data-table-checkbox
+                      hidden$="[[!selectionEnabled]]"
+                      checked$="[[_isSelected(item, selectedItems, selectedItems.*, _excludedItems, _excludedItems.*)]]"
+                      on-click="_onCheckBoxTap"
+                      on-keydown="_onCheckBoxKeydown"
+                    ></nuxeo-data-table-checkbox>
+                    <dom-repeat items="[[columns]]" as="column" index-as="colIndex">
+                      <template>
+                        <nuxeo-data-table-cell
+                          template="[[column.template]]"
+                          table="[[_this]]"
+                          align-right="[[column.alignRight]]"
+                          column="[[column]]"
+                          expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                          flex="[[column.flex]]"
+                          hidden="[[column.hidden]]"
+                          index="[[index]]"
+                          item="[[item]]"
+                          order="[[column.order]]"
+                          resized="[[column.resized]]"
+                          selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                          width="[[column.width]]"
+                          before-bind="[[beforeCellBind]]"
+                          overflow="[[column.overflow]]"
+                        ></nuxeo-data-table-cell>
+                      </template>
+                    </dom-repeat>
+                    <dom-if if="[[_isExpanded(item, _expandedItems)]]" on-dom-change="_updateSizeForItem">
+                      <template>
+                        <nuxeo-data-table-row-detail
+                          index="[[index]]"
+                          item="[[item]]"
+                          expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                          selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                          before-bind="[[beforeDetailsBind]]"
+                          table="[[_this]]"
+                          template="[[rowDetail]]"
+                        ></nuxeo-data-table-row-detail>
+                      </template>
+                    </dom-if>
+                    <div style$="[[_computeActionsStyle(editable, orderable)]]">
+                      <nuxeo-data-table-row-actions
+                        index="[[index]]"
+                        editable="[[editable]]"
+                        orderable="[[orderable]]"
+                        template="[[rowForm]]"
+                        item="[[item]]"
+                        size="[[items.length]]"
+                        table="[[_this]]"
+                      >
+                      </nuxeo-data-table-row-actions>
+                    </div>
+                  </nuxeo-data-table-row>
+                </div>
+              </template>
+            </iron-list>
+          </div>
 
           <dom-if if="[[editable]]">
             <template>
@@ -652,9 +667,6 @@ import '../nuxeo-button-styles.js';
         form.disabled = true;
       });
 
-      this.setAttribute('role', 'table');
-      this.setAttribute('aria-multiselectable', this.multiSelection);
-      this.setAttribute('aria-label', this.captionText);
       this._hideListItemsWrapperFromA11yTree();
       const wrapperHeight = this.getAttribute('wrapper-height');
       if (wrapperHeight) {
@@ -667,6 +679,7 @@ import '../nuxeo-button-styles.js';
       this._boundDocumentMouseUp = this._documentMouseUp.bind(this);
 
       afterNextRender(this, () => {
+        this._hideListItemsWrapperFromA11yTree();
         this._resizeCellContainers();
       });
     }
@@ -686,17 +699,17 @@ import '../nuxeo-button-styles.js';
 
     /**
      * A row group is required to own at least one row, so an empty list must stay out of the
-     * accessibility tree rather than advertise itself as an empty row group (WEBUI-1557). The header
+     * accessibility tree rather than advertise itself as an empty row group (ELEMENTS-2005). The header
      * row group alone then satisfies the table.
      */
-    _computeListRole(itemCount) {
-      return itemCount > 0 ? 'rowgroup' : 'presentation';
+    _computeListRole(items) {
+      return (items || []).length > 0 ? 'rowgroup' : 'presentation';
     }
 
     /**
      * `iron-list` wraps the stamped rows in its own `#items` div. Left as-is it sits between the row
      * group and the rows, which stops browsers from building the table model, so the column headers
-     * never get associated with the body cells (WEBUI-1557).
+     * never get associated with the body cells (ELEMENTS-2005).
      */
     _hideListItemsWrapperFromA11yTree() {
       const listRoot = this.$.list.shadowRoot;
@@ -719,7 +732,7 @@ import '../nuxeo-button-styles.js';
         const wrapper = document.createElement('div');
         wrapper.classList.add('table-wrapper');
         // Keep the scroll wrapper out of the accessibility tree so it does not sit between the
-        // table and its row groups (WEBUI-1557).
+        // table and its row groups (ELEMENTS-2005).
         wrapper.setAttribute('role', 'presentation');
         wrapper.setAttribute('style', `height: ${this._wrapperHeight}`);
         list.parentElement.insertBefore(wrapper, list);
