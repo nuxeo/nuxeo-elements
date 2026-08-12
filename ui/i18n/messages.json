@@ -109,7 +109,7 @@
   "customDatePicker.today": "Today",
   "customDatePicker.yearChanged": "Year changed to {year}.",
   "customDatePicker.yearOptions": "Year options",
-  "deleteBlobButton.ariaLabel": "Remove the document",
+  "deleteBlobButton.ariaLabel": "Remove the file",
   "deleteBlobButton.deleted": "File deleted",
   "deleteBlobButton.dialog.heading": "Remove File",
   "deleteBlobButton.dialog.message": "Do you really want to remove this file?",
