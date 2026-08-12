@@ -87,7 +87,7 @@ import '../nuxeo-button-styles.js';
         <dom-if if="[[_isAvailable(document)]]">
           <template>
             <div class="action" on-click="_toggleDialog">
-              <paper-icon-button icon="[[icon]]" noink aria-labelledby="label"></paper-icon-button>
+              <paper-icon-button icon="[[icon]]" noink aria-label$="[[_computeAriaLabel(i18n)]]"></paper-icon-button>
               <span class="label" hidden$="[[!showLabel]]" id="label">[[_label]]</span>
               <nuxeo-tooltip>[[_label]]</nuxeo-tooltip>
             </div>
@@ -162,6 +162,10 @@ import '../nuxeo-button-styles.js';
 
     _computeLabel() {
       return this.i18n('previewButton.tooltip');
+    }
+
+    _computeAriaLabel() {
+      return this.i18n('previewButton.ariaLabel');
     }
 
     _toggleDialog() {
