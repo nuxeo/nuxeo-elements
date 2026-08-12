@@ -7663,6 +7663,16 @@ typedArrayTags[weakMapTag] = false;
           }
         }
       }
+      // Once a value is provided, re-validate so an already-shown required error clears
+      // immediately on selection, matching single-value inputs (e.g. dc:title). Only re-validate
+      // while an error is displayed, so we never surface errors before the user submits.
+      if (this.invalid) {
+        const v = this.value;
+        const hasValue = Array.isArray(v) ? v.length > 0 : v != null && v !== '';
+        if (hasValue) {
+          this.validate();
+        }
+      }
     }
 
     _dataChanged() {
