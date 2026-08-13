@@ -218,7 +218,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
      */
     _syncInputAccessibleName() {
       const input = this.$$('#inputContainer');
-      if (input && input.inputElement) {
+      if (input?.inputElement) {
         input.inputElement.label = this._computeTextLabel(this.level, 'label');
       }
     }
