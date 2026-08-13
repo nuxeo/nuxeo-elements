@@ -218,9 +218,13 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
      */
     _syncInputAccessibleName() {
       const input = this.$$('#inputContainer');
-      if (input?.inputElement) {
-        input.inputElement.label = this._computeTextLabel(this.level, 'label');
+      if (!input) {
+        return;
       }
+      if (!input.inputElement) {
+        return;
+      }
+      input.inputElement.label = this._computeTextLabel(this.level, 'label');
     }
 
     _checkForEnter(e) {
