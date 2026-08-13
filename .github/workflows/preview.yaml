@@ -24,7 +24,7 @@ jobs:
 
       - name: Web UI preview
         id: main
-        uses: nuxeo/ui-team-gh-actions/trigger-workflow@a5b89f35e0d1f3a912f528d7f1c3acdb73c60549
+        uses: nuxeo/ui-team-gh-actions/trigger-workflow@46f1ea323a97203402dbc57d0537bd5b6a6099eb
         with:
           owner: nuxeo
           repo: nuxeo-web-ui
