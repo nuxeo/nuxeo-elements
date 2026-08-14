@@ -784,6 +784,7 @@ suite('nuxeo-data-table', () => {
     test('does not expose an empty list as a row group', async () => {
       const list = table.shadowRoot.querySelector('#list');
       expect(list.getAttribute('role')).to.equal('rowgroup');
+      expect(table._computeListRole(undefined)).to.equal('presentation');
       table.items = [];
       await flush();
       expect(list.getAttribute('role')).to.equal('presentation');

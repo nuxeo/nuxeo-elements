@@ -300,7 +300,7 @@ import '../nuxeo-button-styles.js';
 
             <iron-list
               id="list"
-              role$="[[_computeListRole(items.length)]]"
+              role$="[[_computeListRole(items)]]"
               items="[[items]]"
               as="item"
               selected-items="{{selectedItems}}"
@@ -705,8 +705,8 @@ import '../nuxeo-button-styles.js';
      * accessibility tree rather than advertise itself as an empty row group (ELEMENTS-2005). The header
      * row group alone then satisfies the table.
      */
-    _computeListRole(itemCount) {
-      return itemCount > 0 ? 'rowgroup' : 'presentation';
+    _computeListRole(items) {
+      return (items || []).length > 0 ? 'rowgroup' : 'presentation';
     }
 
     _computeAriaMultiselectable(multiSelection) {
