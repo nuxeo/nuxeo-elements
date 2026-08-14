@@ -7144,11 +7144,14 @@ suite('custom-date-picker accessibility', () => {
       const moduleUrl = new URL('../widgets/custom-date-picker.js', import.meta.url).href;
       frame.srcdoc = `<!doctype html><html><body style="margin:0"><custom-date-picker></custom-date-picker>
         <script type="module">import '${moduleUrl}';</script></body></html>`;
+      // The listener has to exist before the iframe is inserted, since insertion is what
+      // starts the load and a srcdoc document can finish it before the next statement runs.
+      const loaded = new Promise((resolve) => {
+        frame.addEventListener('load', resolve, { once: true });
+      });
       document.body.appendChild(frame);
       try {
-        await new Promise((resolve) => {
-          frame.addEventListener('load', resolve, { once: true });
-        });
+        await loaded;
         const frameWindow = frame.contentWindow;
         await frameWindow.customElements.whenDefined('custom-date-picker');
         const picker = frame.contentDocument.querySelector('custom-date-picker');
