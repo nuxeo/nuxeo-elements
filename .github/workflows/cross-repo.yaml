@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Web UI cross repo check
-        uses: nuxeo/ui-team-gh-actions/trigger-workflow@dcf8be425447c7fb9cdd1e048585a6df905ed878
+        uses: nuxeo/ui-team-gh-actions/trigger-workflow@46f1ea323a97203402dbc57d0537bd5b6a6099eb
         with:
           owner: nuxeo
           repo: nuxeo-web-ui

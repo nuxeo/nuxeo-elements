@@ -158,7 +158,7 @@ import '../nuxeo-icons.js';
         </style>
 
         <div id="canvas">
-          <img id="image" src$="[[src]]" on-load="_init" alt$="[[alt]]" />
+          <img id="image" crossorigin="anonymous" src$="[[src]]" on-load="_init" alt$="[[alt]]" />
           <dom-if if="[[_isToolbarVisible(controls, src, _el)]]">
             <template>
               <div id="toolbar">
