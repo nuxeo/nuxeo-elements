@@ -103,7 +103,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // before it builds the viewer, which is the supported point to override its
       // options — waiting for the iframe's own load event would be too late.
       this._webViewerLoadedHandler = (e) => {
-        const viewerWindow = e && e.detail && e.detail.source;
+        const viewerWindow = e?.detail?.source;
         if (!this._isCurrentViewerWindow(viewerWindow)) {
           return;
         }
@@ -160,7 +160,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
      * reused across documents, so a viewer from a previous `src` can still be running.
      */
     _isCurrentViewerWindow(viewerWindow) {
-      const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
+      const iframe = this.shadowRoot?.querySelector('iframe');
       return Boolean(viewerWindow) && Boolean(iframe) && viewerWindow === iframe.contentWindow;
     }
 
@@ -181,7 +181,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         return;
       }
       const constants = viewerWindow.PDFViewerApplicationConstants;
-      const blank = (constants && constants.LinkTarget && constants.LinkTarget.BLANK) || LINK_TARGET_BLANK;
+      const blank = constants?.LinkTarget?.BLANK || LINK_TARGET_BLANK;
       options.set('externalLinkTarget', blank);
       options.set('externalLinkRel', EXTERNAL_LINK_REL);
       this._announceExternalLinks(viewerWindow);
@@ -193,7 +193,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
      */
     _announceExternalLinks(viewerWindow) {
       const app = viewerWindow.PDFViewerApplication;
-      if (!app || !app.initializedPromise) {
+      if (!app?.initializedPromise) {
         return;
       }
       app.initializedPromise.then(
@@ -209,14 +209,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           this._pdfEventBus = app.eventBus;
           // Scope the lookup to the page that just rendered rather than rescanning the
           // whole document on every layer render.
-          this._annotationLayerHandler = (e) =>
-            this._labelExternalLinks((e && e.source && e.source.div) || viewerWindow.document);
+          this._annotationLayerHandler = (e) => this._labelExternalLinks(e?.source?.div || viewerWindow.document);
           this._pdfEventBus.on('annotationlayerrendered', this._annotationLayerHandler);
         },
-        (err) => {
+        () => {
           // Intentionally swallowed: the viewer failed to initialise, which it already
           // reports to the user. There is no link to label in that case.
-          void err;
         },
       );
     }
