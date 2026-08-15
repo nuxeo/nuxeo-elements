@@ -481,6 +481,22 @@ suite('nuxeo-pdf-viewer', () => {
       expect(foreign.PDFViewerApplicationOptions.set).to.not.have.been.called;
     });
 
+    test('should ignore webviewerloaded events without viewer details', () => {
+      expect(() => element._webViewerLoadedHandler()).to.not.throw();
+      expect(() => element._webViewerLoadedHandler({})).to.not.throw();
+    });
+
+    test('should reject a viewer when no shadow root is available', () => {
+      expect(element._isCurrentViewerWindow.call({ shadowRoot: null }, createViewerWindow())).to.be.false;
+    });
+
+    test('should not subscribe before the viewer application is ready', () => {
+      expect(() =>
+        element._announceExternalLinks(createViewerWindow({ PDFViewerApplication: undefined })),
+      ).to.not.throw();
+      expect(() => element._announceExternalLinks(createViewerWindow({ PDFViewerApplication: {} }))).to.not.throw();
+    });
+
     test('should subscribe to annotation layer rendering once the viewer is initialized', async () => {
       const win = createViewerWindow();
       showInIframe(win);
