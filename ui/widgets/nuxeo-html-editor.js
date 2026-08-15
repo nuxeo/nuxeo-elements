@@ -249,8 +249,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
      */
     _setupColorPickers() {
       const { theme } = this._editor;
-      const pickers = theme?.pickers || [];
-      pickers
+      const { pickers } = theme || {};
+      (pickers || [])
         .filter((picker) => picker.container.classList.contains('ql-color-picker'))
         .forEach((picker) => this._setupColorPicker(picker));
     }
@@ -325,12 +325,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Roving tabindex: the listbox is entered once, then navigated with the arrow keys.
         item.tabIndex = item === selected ? 0 : -1;
       });
-      const current = this._colorName(selected?.dataset.value, fallback);
+      const { dataset = {} } = selected || {};
+      const current = this._colorName(dataset.value, fallback);
       label.setAttribute('aria-label', this.i18n('htmlEditor.colorPicker.selected', name, current));
     }
 
     _hasColorItemFocus(picker) {
-      const active = this.shadowRoot?.activeElement;
+      const { activeElement: active } = this.shadowRoot || {};
       return !!active && picker.options.contains(active);
     }
 
