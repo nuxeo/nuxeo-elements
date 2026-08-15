@@ -302,8 +302,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
      * semantics, keep focus inside the popup while it is open and honour Enter/Escape.
      */
     _setupTooltipAccessibility() {
-      const tooltip = this._editor.theme?.tooltip;
-      if (!tooltip?.root) {
+      const { theme } = this._editor;
+      if (!theme) {
+        return;
+      }
+      const { tooltip } = theme;
+      if (!tooltip) {
+        return;
+      }
+      const { root } = tooltip;
+      if (!root) {
         return;
       }
       this._tooltip = tooltip;
@@ -391,11 +399,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         return;
       }
       const target = e.composedPath()[0];
+      const isTooltipAction = target instanceof Element && target.matches('a.ql-action, a.ql-remove');
       if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
         this._closeTooltip();
-      } else if ((e.key === 'Enter' || e.key === ' ') && target.matches?.('a.ql-action, a.ql-remove')) {
+      } else if ((e.key === 'Enter' || e.key === ' ') && isTooltipAction) {
         e.preventDefault();
         target.click();
       } else if (e.key === 'Tab' && this._isTooltipEditing()) {
