@@ -249,7 +249,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
      */
     _setupColorPickers() {
       const { theme } = this._editor;
-      const pickers = (theme && theme.pickers) || [];
+      const pickers = theme?.pickers || [];
       pickers
         .filter((picker) => picker.container.classList.contains('ql-color-picker'))
         .forEach((picker) => this._setupColorPicker(picker));
@@ -262,7 +262,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       options.setAttribute('role', 'listbox');
       options.setAttribute('aria-label', name);
       Array.from(options.children).forEach((item) => {
-        const colorName = this._colorName(item.getAttribute('data-value'), fallback);
+        const colorName = this._colorName(item.dataset.value, fallback);
         item.setAttribute('role', 'option');
         item.setAttribute('aria-label', colorName);
         // The swatch conveys its color by fill alone; a tooltip gives sighted users the name too.
@@ -325,12 +325,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Roving tabindex: the listbox is entered once, then navigated with the arrow keys.
         item.tabIndex = item === selected ? 0 : -1;
       });
-      const current = this._colorName(selected && selected.getAttribute('data-value'), fallback);
+      const current = this._colorName(selected?.dataset.value, fallback);
       label.setAttribute('aria-label', this.i18n('htmlEditor.colorPicker.selected', name, current));
     }
 
     _hasColorItemFocus(picker) {
-      const active = this.shadowRoot && this.shadowRoot.activeElement;
+      const active = this.shadowRoot?.activeElement;
       return !!active && picker.options.contains(active);
     }
 
