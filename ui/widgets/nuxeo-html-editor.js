@@ -26,7 +26,17 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
 {
-  const EMAIL_PATTERN = /^\S+@\S+\.\S+$/;
+  const isEmail = (value) => {
+    if (/\s/.test(value)) {
+      return false;
+    }
+    const atIndex = value.indexOf('@', 1);
+    if (atIndex === -1) {
+      return false;
+    }
+    const dotIndex = value.indexOf('.', atIndex + 2);
+    return dotIndex !== -1 && dotIndex < value.length - 1;
+  };
 
   // Controls rendered inside Quill's link tooltip, in DOM order.
   const TOOLTIP_CONTROLS = 'a.ql-preview, input[type="text"], a.ql-action, a.ql-remove';
@@ -280,7 +290,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
       this._linkInsertRange = range.length === 0 ? range : null;
       let preview = range.length > 0 ? this._editor.getText(range) : '';
-      if (EMAIL_PATTERN.test(preview) && preview.indexOf('mailto:') !== 0) {
+      if (isEmail(preview) && preview.indexOf('mailto:') !== 0) {
         preview = `mailto:${preview}`;
       }
       this._tooltip.edit('link', preview);
@@ -292,8 +302,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
      * semantics, keep focus inside the popup while it is open and honour Enter/Escape.
      */
     _setupTooltipAccessibility() {
-      const tooltip = this._editor.theme && this._editor.theme.tooltip;
-      if (!tooltip || !tooltip.root) {
+      const tooltip = this._editor.theme?.tooltip;
+      if (!tooltip?.root) {
         return;
       }
       this._tooltip = tooltip;
@@ -312,7 +322,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const url = tooltip.textbox.value;
         const range = this._linkInsertRange;
         this._linkInsertRange = null;
-        if (range && url && tooltip.root.getAttribute('data-mode') === 'link') {
+        if (range && url && tooltip.root.dataset.mode === 'link') {
           this._editor.insertText(range.index, url, 'link', url, Quill.sources.USER);
           this._editor.setSelection(range.index + url.length, Quill.sources.SILENT);
           tooltip.textbox.value = '';
@@ -346,7 +356,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _tooltipMode() {
-      return TOOLTIP_MODES[this._tooltip.root.getAttribute('data-mode')] || TOOLTIP_MODES.link;
+      return TOOLTIP_MODES[this._tooltip.root.dataset.mode] || TOOLTIP_MODES.link;
     }
 
     _updateTooltipLabels() {
@@ -385,7 +395,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         e.preventDefault();
         e.stopPropagation();
         this._closeTooltip();
-      } else if ((e.key === 'Enter' || e.key === ' ') && target.matches && target.matches('a.ql-action, a.ql-remove')) {
+      } else if ((e.key === 'Enter' || e.key === ' ') && target.matches?.('a.ql-action, a.ql-remove')) {
         e.preventDefault();
         target.click();
       } else if (e.key === 'Tab' && this._isTooltipEditing()) {

@@ -233,11 +233,18 @@ suite('nuxeo-html-editor extras', () => {
       expect(el._editor.getText().trim()).to.equal('Nuxeo home');
     });
 
-    test('prefixes a selected email address with mailto:', () => {
-      el.value = '<p>john@nuxeo.com</p>';
-      el._editor.setSelection(0, 14);
-      el._onLinkAction(true);
-      expect(tooltip.textbox.value).to.equal('mailto:john@nuxeo.com');
+    test('prefixes only selected email addresses with mailto:', () => {
+      [
+        ['john@nuxeo.com', 'mailto:john@nuxeo.com'],
+        ['john@sub@nuxeo.com', 'mailto:john@sub@nuxeo.com'],
+        ['john @nuxeo.com', 'john @nuxeo.com'],
+        ['john@nuxeo', 'john@nuxeo'],
+      ].forEach(([text, expected]) => {
+        el.value = `<p>${text}</p>`;
+        el._editor.setSelection(0, text.length);
+        el._onLinkAction(true);
+        expect(tooltip.textbox.value).to.equal(expected);
+      });
     });
 
     test('removes the link when the toolbar button is toggled off', () => {
