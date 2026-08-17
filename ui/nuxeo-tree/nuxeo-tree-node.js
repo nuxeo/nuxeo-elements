@@ -135,6 +135,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const direction = document.documentElement.getAttribute('dir');
         this.setAttribute('dir', direction);
       }
+      if (!this.hasAttribute('role')) {
+        this.setAttribute('role', 'none');
+      }
     }
 
     static get observers() {
@@ -198,6 +201,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         const content = document.createElement('div');
         content.id = 'content';
+        // The node host and this wrapper are layout-only: leaving them untyped puts generic nodes
+        // between role="tree" and the stamped role="treeitem", which is not a valid tree structure.
+        content.setAttribute('role', 'none');
         dom(content).appendChild(this._instance.root);
         dom(this).appendChild(content);
 
@@ -206,6 +212,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         children.opened = this.opened;
         children.loading = this.loading;
         children.noAnimation = 'true';
+        // WEBUI-1877: without a group role this collapse is an untyped node between the tree and its
+        // treeitems, which invalidates the tree structure and can suppress state announcements.
+        children.setAttribute('role', 'group');
         dom(this).appendChild(children);
 
         flush();
