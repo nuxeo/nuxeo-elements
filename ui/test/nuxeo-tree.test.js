@@ -112,5 +112,16 @@ suite('nuxeo-tree', () => {
       expect(node.getAttribute('role')).to.equal('treeitem');
       node.remove();
     });
+
+    // A blank role exposes no role at all, so honouring it would leave the untyped wrapper the
+    // default is meant to remove.
+    test('a blank role is treated as unset', async () => {
+      const node = document.createElement('nuxeo-tree-node');
+      node.setAttribute('role', '  ');
+      tree.appendChild(node);
+      await flush();
+      expect(node.getAttribute('role')).to.equal('none');
+      node.remove();
+    });
   });
 });

@@ -135,7 +135,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const direction = document.documentElement.getAttribute('dir');
         this.setAttribute('dir', direction);
       }
-      if (!this.hasAttribute('role')) {
+      // An empty or whitespace-only role exposes no role at all, so it is treated as unset rather
+      // than as a consumer-supplied one that must be preserved.
+      const role = this.getAttribute('role');
+      if (role === null || role.trim() === '') {
         this.setAttribute('role', 'none');
       }
     }
