@@ -94,5 +94,23 @@ suite('nuxeo-tree', () => {
       expect(removeSpy).to.have.been.called;
       removeSpy.restore();
     });
+
+    // WEBUI-1877: a consumer puts role="tree"/role="treeitem" around these nodes, so the layout-only
+    // wrappers must not sit in the accessibility tree as untyped nodes.
+    test('the node wrappers are presentational and children form a group', () => {
+      const root = tree.querySelector('nuxeo-tree-node');
+      expect(root.getAttribute('role')).to.equal('none');
+      expect(root.querySelector('#content').getAttribute('role')).to.equal('none');
+      expect(root.querySelector('#children').getAttribute('role')).to.equal('group');
+    });
+
+    test('an explicit role on a node is preserved', async () => {
+      const node = document.createElement('nuxeo-tree-node');
+      node.setAttribute('role', 'treeitem');
+      tree.appendChild(node);
+      await flush();
+      expect(node.getAttribute('role')).to.equal('treeitem');
+      node.remove();
+    });
   });
 });
