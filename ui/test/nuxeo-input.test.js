@@ -203,3 +203,37 @@ suite('nuxeo-input accessibility', () => {
     });
   });
 });
+
+// Covers WEBUI-493: the `autocomplete` property declared in ui/widgets/nuxeo-input.js is
+// forwarded to the rendered native <input> so a layout can identify the purpose of the field
+// (WCAG 2.1 SC 1.3.5, technique H98).
+suite('nuxeo-input autocomplete', () => {
+  test('declares the property and defaults it to off', async () => {
+    const el = await fixture(html`
+      <nuxeo-input label="Email"></nuxeo-input>
+    `);
+    await flush();
+    expect(el.autocomplete).to.equal('off');
+    expect(getPaperInput(el).autocomplete).to.equal('off');
+    expect(getNativeInput(el).getAttribute('autocomplete')).to.equal('off');
+  });
+
+  test('forwards a token configured on the element to the native input', async () => {
+    const el = await fixture(html`
+      <nuxeo-input label="Email" autocomplete="email"></nuxeo-input>
+    `);
+    await flush();
+    expect(el.autocomplete).to.equal('email');
+    expect(getNativeInput(el).getAttribute('autocomplete')).to.equal('email');
+  });
+
+  test('forwards a token set at runtime to the native input', async () => {
+    const el = await fixture(html`
+      <nuxeo-input label="Password" type="password"></nuxeo-input>
+    `);
+    await flush();
+    el.autocomplete = 'current-password';
+    await flush();
+    expect(getNativeInput(el).getAttribute('autocomplete')).to.equal('current-password');
+  });
+});
