@@ -14,10 +14,9 @@ import './data-table-column-filter.js';
             value="{{column.filterValue}}"
             required="[[column.required]]"
             hidden$="[[!column.filterBy]]"
-            role="columnheader"
           >
           </nuxeo-data-table-column-filter>
-          <div id="columnHeader" title="[[column.name]]" hidden$="[[column.filterBy]]" role="columnheader">
+          <div id="columnHeader" title="[[column.name]]" hidden$="[[column.filterBy]]">
             <!-- this template is stamped into nuxeo-data-table-cell, outside this element's style
                  scope, so the indicator is styled inline rather than from a stylesheet rule -->
             [[column.name]]<span
