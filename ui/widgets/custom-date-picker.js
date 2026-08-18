@@ -58,6 +58,16 @@ const FOCUS_SUPPRESSION_MS = 200;
           type: String,
         },
 
+        /**
+         * The HTML autofill token exposed on the native input, e.g. `bday`. Lets a layout declare the
+         * purpose of the field so that browsers and assistive technology can identify it
+         * (WCAG 2.1 SC 1.3.5, technique H98). `off` opts out of autofill and is the default.
+         */
+        autocomplete: {
+          type: String,
+          value: 'off',
+        },
+
         /*
          * The default time of the selected date. Format is HH:mm:ss e.g. 12:45:23. Default is 00:00:00 (midnight).
          */
@@ -1107,7 +1117,7 @@ const FOCUS_SUPPRESSION_MS = 200;
               aria-label$="[[ariaLabel]]"
               aria-expanded$="[[_isCalendarOpen]]"
               aria-haspopup="grid"
-              autocomplete="off"
+              autocomplete$="[[autocomplete]]"
               on-focus="_onInputFocus"
               on-click="_onInputClick"
               on-blur="_onInputBlur"
