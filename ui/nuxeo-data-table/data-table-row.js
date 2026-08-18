@@ -78,7 +78,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
           }
         </style>
 
-        <div class="cells">
+        <div class="cells" role="presentation">
           <slot name="checkbox"></slot>
           <slot></slot>
           <slot name="settings"></slot>

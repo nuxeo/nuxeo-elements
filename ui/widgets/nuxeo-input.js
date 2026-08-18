@@ -75,6 +75,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           placeholder$="[[placeholder]]"
           aria-label$="[[_computeAriaLabel(label, placeholder)]]"
           error-message="[[errorMessage]]"
+          autocomplete="[[autocomplete]]"
           autofocus$="[[autofocus]]"
           readonly$="[[readonly]]"
           disabled$="[[disabled]]"
@@ -138,6 +139,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
          * Error message to show when `invalid` is true.
          */
         errorMessage: String,
+
+        /**
+         * The HTML autofill token exposed on the native input, e.g. `email`, `username` or
+         * `current-password`. Lets a layout declare the purpose of the field so that browsers and
+         * assistive technology can identify it (WCAG 2.1 SC 1.3.5, technique H98). `off` opts out of
+         * autofill and is the default, matching the underlying `paper-input`.
+         */
+        autocomplete: {
+          type: String,
+          value: 'off',
+        },
 
         /**
          * Autofocus.
