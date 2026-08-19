@@ -38,14 +38,8 @@ import './nuxeo-group-tag.js';
     static get template() {
       return html`
         <style>
-          /*
-           * Capping the width lets the tags wrap onto additional lines rather than run out of
-           * their container when they need more room because the user overrode text spacing
-           * (WCAG 2.1 AA 1.4.12) or enlarged the browser font.
-           */
           :host {
             display: inline-block;
-            max-width: 100%;
           }
         </style>
         <dom-repeat items="[[items]]" as="item">

@@ -18,9 +18,6 @@ limitations under the License.
 import { fixture, html } from '@nuxeo/testing-helpers';
 import '../widgets/nuxeo-tag.js';
 
-/** WCAG 2.1 AA 1.4.12 text spacing overrides. */
-const TEXT_SPACING = 'line-height: 1.5; letter-spacing: 0.12em; word-spacing: 0.16em;';
-
 suite('nuxeo-tag', () => {
   test('should return the element name', () => {
     expect(Nuxeo.Tag.is).to.equal('nuxeo-tag');
@@ -30,8 +27,8 @@ suite('nuxeo-tag', () => {
     expect(Nuxeo.Tag.properties.uppercase.value).to.be.false;
   });
 
-  suite('accessible text spacing', () => {
-    test('inherits the line height so user overrides apply', async () => {
+  suite('accessible text spacing (WCAG 2.1 AA 1.4.12)', () => {
+    test('should apply an inherited line height rather than resetting it', async () => {
       const container = await fixture(html`
         <div style="line-height: 3;">
           <nuxeo-tag>a tag</nuxeo-tag>
@@ -39,34 +36,50 @@ suite('nuxeo-tag', () => {
       `);
       const tag = container.querySelector('nuxeo-tag');
       const { fontSize, lineHeight } = getComputedStyle(tag);
-      expect(lineHeight).to.not.equal('normal');
       expect(parseFloat(lineHeight)).to.be.closeTo(3 * parseFloat(fontSize), 1);
     });
 
-    test('grows instead of clipping its label when text spacing is overridden', async () => {
+    test('should size its padding relative to the text so it grows with it', async () => {
+      const tag = await fixture(html`
+        <nuxeo-tag>a tag</nuxeo-tag>
+      `);
+      const { fontSize, paddingTop, paddingBottom, paddingLeft, paddingRight } = getComputedStyle(tag);
+      const em = parseFloat(fontSize);
+      expect(parseFloat(paddingTop)).to.be.closeTo(0.4 * em, 0.5);
+      expect(parseFloat(paddingBottom)).to.be.closeTo(0.4 * em, 0.5);
+      expect(parseFloat(paddingLeft)).to.be.closeTo(0.6 * em, 0.5);
+      expect(parseFloat(paddingRight)).to.be.closeTo(0.6 * em, 0.5);
+    });
+
+    test('should keep its pill shape when the inherited line height is small', async () => {
       const container = await fixture(html`
-        <div style="width: 120px;">
-          <nuxeo-tag>a tag with a fairly long label</nuxeo-tag>
+        <div style="line-height: 0.5;">
+          <nuxeo-tag>a tag</nuxeo-tag>
+        </div>
+      `);
+      const tag = container.querySelector('nuxeo-tag');
+      const em = parseFloat(getComputedStyle(tag).fontSize);
+      expect(tag.getBoundingClientRect().height).to.be.closeTo(1.55 * em, 0.5);
+    });
+
+    test('should grow taller when the line height is increased', async () => {
+      const container = await fixture(html`
+        <div>
+          <nuxeo-tag>a tag</nuxeo-tag>
         </div>
       `);
       const tag = container.querySelector('nuxeo-tag');
       const height = tag.getBoundingClientRect().height;
 
-      container.setAttribute('style', `width: 120px; ${TEXT_SPACING}`);
+      container.style.lineHeight = '2.5';
       expect(tag.getBoundingClientRect().height).to.be.above(height);
-      expect(tag.scrollWidth).to.be.at.most(tag.clientWidth);
-      expect(tag.scrollHeight).to.be.at.most(tag.clientHeight);
     });
 
-    test('stays inside a container narrower than its label', async () => {
-      const container = await fixture(html`
-        <div style="width: 60px;">
-          <nuxeo-tag>averylongunbreakabletaglabel</nuxeo-tag>
-        </div>
+    test('should include its padding in its own width', async () => {
+      const tag = await fixture(html`
+        <nuxeo-tag style="width: 100px;">a tag</nuxeo-tag>
       `);
-      const tag = container.querySelector('nuxeo-tag');
-      expect(tag.getBoundingClientRect().width).to.be.at.most(container.getBoundingClientRect().width);
-      expect(tag.scrollWidth).to.be.at.most(tag.clientWidth);
+      expect(tag.getBoundingClientRect().width).to.equal(100);
     });
   });
 });

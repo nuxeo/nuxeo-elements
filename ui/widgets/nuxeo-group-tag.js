@@ -49,13 +49,8 @@ import './nuxeo-tag.js';
             @apply --nuxeo-link-hover;
           }
 
-          /*
-           * pre-wrap keeps the label's own whitespace while still allowing it to wrap, so the
-           * label is not pushed out of the tag when text spacing is overridden (WCAG 1.4.12).
-           */
           .preserve-white-space {
-            white-space: pre-wrap;
-            overflow-wrap: break-word;
+            white-space: pre;
           }
         </style>
         <nuxeo-tag icon="nuxeo:group">
