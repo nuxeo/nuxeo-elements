@@ -33,17 +33,6 @@ const RESIZE_ZONE = 8;
             box-sizing: border-box;
           }
 
-          /*
-           * Body cells let their content wrap onto additional lines instead of being cut off, so
-           * that tags stay fully visible when they need more room because the user overrode text
-           * spacing (WCAG 2.1 AA 1.4.12) or enlarged the browser font. The min-height above keeps
-           * the default row height whenever the content still fits on a single line.
-           */
-          :host(:not([header])) {
-            flex-wrap: wrap;
-            align-content: center;
-          }
-
           /* header cells need relative positioning for the resizer */
           :host([header]) {
             position: relative;
