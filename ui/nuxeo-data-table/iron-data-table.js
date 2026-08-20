@@ -668,6 +668,7 @@ import '../nuxeo-button-styles.js';
       slot.addEventListener('slotchange', () => {
         const form = this.getContentChildren('#form')[0];
         form.disabled = true;
+        this._updateRequiredColumns();
       });
 
       this._hideListItemsWrapperFromA11yTree();
@@ -826,7 +827,52 @@ import '../nuxeo-button-styles.js';
           column.table = this;
           this.listen(column, 'filter-value-changed', '_onColumnFilterChanged');
         });
+        this._updateRequiredColumns();
       }
+    }
+
+    /**
+     * Flags columns as required from the `required` widgets of the row form.
+     *
+     * Layouts generated for a multivalued property flag the entry widget inside
+     * `nuxeo-data-table-form` as required, but not the table or its columns, so the required
+     * indicator only showed up in the entry dialog and never on the layout itself (ELEMENTS-1891).
+     * Columns are matched to entry widgets by name; a table with a single column always holds the
+     * entries of a scalar multivalued property, where the column name is the field label.
+     *
+     * Re-runs whenever the columns or the form slot change, so it keeps track of the columns it
+     * flagged and clears them once they no longer match. A `required` set explicitly on a column is
+     * never cleared, since it was not derived here.
+     */
+    _updateRequiredColumns() {
+      if (!this.columns || this.columns.length === 0) {
+        return;
+      }
+      const form = this.getContentChildren('#form')[0];
+      const requiredNames = form
+        ? Array.from((form.shadowRoot || form).querySelectorAll('[required]'))
+            .map((widget) => (widget.getAttribute('name') || '').toLowerCase())
+            .filter(Boolean)
+        : [];
+      if (!this._derivedRequiredColumns) {
+        this._derivedRequiredColumns = new Set();
+      }
+      const derived = this._derivedRequiredColumns;
+      const singleColumn = this.columns.length === 1;
+      this.columns.forEach((column) => {
+        const name = (column.field || column.name || '').toLowerCase();
+        if (singleColumn ? requiredNames.length > 0 : requiredNames.includes(name)) {
+          // only claim a column when actually turning it on: one that is already required was set
+          // explicitly, and clearing it later would override the markup
+          if (!column.required) {
+            derived.add(column);
+            column.required = true;
+          }
+        } else if (derived.has(column)) {
+          derived.delete(column);
+          column.required = false;
+        }
+      });
     }
 
     _resizeCellContainers() {

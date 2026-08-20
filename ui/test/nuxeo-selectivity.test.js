@@ -574,6 +574,67 @@ suite('nuxeo-selectivity', () => {
       selectivityWidget.value = ['Berlin'];
       expect(selectivityWidget._getValidity()).to.be.true;
     });
+
+    test('defaults a required error message when empty and clears it once a value is set', async () => {
+      selectivityWidget = await fixture(
+        html`
+          <nuxeo-selectivity .data=${data} required></nuxeo-selectivity>
+        `,
+      );
+      selectivityWidget.value = null;
+      expect(selectivityWidget._getValidity()).to.be.false;
+      // an empty required field surfaces a per-field message (consistent with single-value inputs)
+      expect(selectivityWidget.errorMessage).to.be.ok;
+      // providing a value clears the message we defaulted
+      selectivityWidget.value = 'Berlin';
+      expect(selectivityWidget._getValidity()).to.be.true;
+      expect(selectivityWidget.errorMessage).to.equal('');
+    });
+
+    test('never clobbers or clears a layout-supplied error message', async () => {
+      selectivityWidget = await fixture(
+        html`
+          <nuxeo-selectivity .data=${data} required error-message="Custom error"></nuxeo-selectivity>
+        `,
+      );
+      selectivityWidget.value = null;
+      expect(selectivityWidget._getValidity()).to.be.false;
+      // the layout's own message is preserved, not overwritten with the default
+      expect(selectivityWidget.errorMessage).to.equal('Custom error');
+      // and it survives becoming valid again (only the defaulted message is cleared)
+      selectivityWidget.value = 'Berlin';
+      expect(selectivityWidget._getValidity()).to.be.true;
+      expect(selectivityWidget.errorMessage).to.equal('Custom error');
+    });
+
+    test('auto-clears a shown required error as soon as a value is selected (WEBUI-180 AC-4)', async () => {
+      selectivityWidget = await fixture(
+        html`
+          <nuxeo-selectivity .data=${data} multiple required></nuxeo-selectivity>
+        `,
+      );
+      selectivityWidget.value = [];
+      // simulate a submit that surfaces the required error
+      selectivityWidget.validate();
+      expect(selectivityWidget.invalid).to.be.true;
+      expect(selectivityWidget.errorMessage).to.be.ok;
+      // selecting a value must clear the error immediately, without another submit
+      selectivityWidget.value = ['Berlin'];
+      expect(selectivityWidget.invalid).to.be.false;
+      expect(selectivityWidget.errorMessage).to.equal('');
+    });
+
+    test('does not surface a required error on selection before the field was ever submitted', async () => {
+      selectivityWidget = await fixture(
+        html`
+          <nuxeo-selectivity .data=${data} multiple required></nuxeo-selectivity>
+        `,
+      );
+      // no prior validate(): setting a value must not flip the widget into an invalid state
+      selectivityWidget.value = ['Berlin'];
+      expect(selectivityWidget.invalid).to.be.not.ok;
+      expect(selectivityWidget.errorMessage || '').to.equal('');
+    });
   });
 
   // --------------------------------------------------------------------------

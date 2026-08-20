@@ -432,6 +432,7 @@
   "videoViewLayout.width": "Width",
   "viewUser.company": "Company",
   "viewUser.email": "Email",
+  "widget.required": "This field is required.",
   "workflowButton.dialog.close": "Close",
   "workflowButton.dialog.heading": "Start Process",
   "workflowButton.dialog.placeholder": "Choose process",
