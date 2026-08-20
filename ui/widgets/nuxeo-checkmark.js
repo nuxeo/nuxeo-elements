@@ -132,17 +132,29 @@ import '../nuxeo-icons.js';
       }
     }
 
-    _tap(fromKeyboard = false) {
+    _tap(fromKeyboard) {
       if (!this.disabled) {
+        // `_tap` is also the `on-click` handler, so a mouse click invokes it with a
+        // `MouseEvent` argument. Only an explicit `true` (from `_onKeyDown`) counts as
+        // a keyboard toggle; an event object or `undefined` is a pointer interaction
+        // that must still blur on deselect (WEBUI-2056).
+        this._fromKeyboard = fromKeyboard === true;
         this.checked = !this.checked;
-        if (!fromKeyboard && !this.checked) {
-          this.blur();
-        }
       }
     }
 
     _ariaChecked() {
       this.setAttribute('aria-checked', this.checked);
+      // Drop focus when the checkmark is unchecked so the tick icon does not
+      // linger after deselection (WEBUI-2056). This runs from the `checked`
+      // observer so it also covers deselections driven through data binding
+      // (e.g. table rows / select-all), not just direct mouse taps. Keyboard
+      // toggles keep focus so keyboard navigation is preserved (ELEMENTS-1851).
+      const fromKeyboard = this._fromKeyboard;
+      this._fromKeyboard = false;
+      if (!this.checked && !fromKeyboard) {
+        this.blur();
+      }
     }
   }
 
