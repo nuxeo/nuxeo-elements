@@ -396,6 +396,37 @@ async function tableFixture(canSelectAll = false) {
   return table;
 }
 
+async function autoTableFixture() {
+  const table = (
+    await fixture(
+      html`
+        <div>
+          <nuxeo-page-provider
+            id="cvProvider"
+            auto
+            auto-delay="0"
+            offset="0"
+            provider="default_search"
+            page-size="40"
+            params='{"ecm_path": ["/default-domain/workspaces"]}'
+          >
+          </nuxeo-page-provider>
+
+          <nuxeo-data-table nx-provider="cvProvider">
+            <nuxeo-data-table-column name="Title" field="dc:title" flex="100" sort-by="dc:title">
+              <template>
+                <a class="title ellipsis">[[item.title]]</a>
+              </template>
+            </nuxeo-data-table-column>
+          </nuxeo-data-table>
+        </div>
+      `,
+      true,
+    )
+  ).querySelector('nuxeo-data-table');
+  return table;
+}
+
 // Tracks the last fake server created via login() so the outer suite teardown can restore it.
 // Without this, sinon.fakeServer.create() (called inside login()) leaks the global XHR fake
 // after this file's last test, which silently kills every suite registered after it.
@@ -448,6 +479,21 @@ suite('nuxeo-data-table', () => {
       await waitForEvent(table, 'nuxeo-page-loaded', 1);
       await flush();
       assert.equal(4, table.$.list.items.length);
+    });
+  });
+
+  // WEBUI-2121: a data table bound to a page provider with `auto` must render the results of the
+  // provider's own initial fetch, without requiring an explicit table.fetch() or user interaction.
+  suite('auto page provider', () => {
+    setup(async () => setupServer(1, 4));
+
+    test('populates the table on the provider auto-fetch', async () => {
+      const table = await autoTableFixture();
+      // Intentionally do NOT call table.fetch(): the provider `auto` drives the initial fetch.
+      await waitForEvent(table, 'nuxeo-page-loaded', 1);
+      await flush();
+      assert.equal(table.items.length, 4);
+      assert.isFalse(table._isEmpty);
     });
   });
 
