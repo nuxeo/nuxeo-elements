@@ -59,7 +59,8 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
           paper-typeahead {
             --paper-typeahead-results: {
-              background-color: white;
+              background-color: var(--nuxeo-dropdown-list-background, #fff);
+              color: var(--nuxeo-text-default, #3a3a54);
               z-index: 100;
               @apply --nuxeo-path-suggestion-results;
             }
@@ -68,7 +69,15 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
               display: block;
               overflow: hidden;
               white-space: nowrap;
+              background-color: var(--nuxeo-dropdown-list-background, #fff);
+              color: var(--nuxeo-text-default, #3a3a54);
               @apply --nuxeo-path-suggestion-result;
+            }
+
+            --paper-typeahead-result-selected-background: var(--sat-path-suggestion-result-selected-background);
+
+            --paper-typeahead-result-selected: {
+              color: var(--nuxeo-button-primary-text, #fff);
             }
 
             :host([dir='rtl']) {
