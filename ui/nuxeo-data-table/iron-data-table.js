@@ -574,6 +574,18 @@ import '../nuxeo-button-styles.js';
       return selectAllActive && _excludedItems.length === 0;
     }
 
+    /**
+     * Polymer maps any non-null boolean attribute to `true`, so `multi-selection="false"` would
+     * otherwise enable the property and leave no way to disable it from markup (ELEMENTS-1664).
+     * Treat the literal string `false` as `false` so boolean attributes can be turned off.
+     */
+    _deserializeValue(value, type) {
+      if (type === Boolean && value === 'false') {
+        return false;
+      }
+      return super._deserializeValue(value, type);
+    }
+
     static get observers() {
       return ['_alignHeaderRow(items.length)', '_invalidateFieldTypeCacheFromItems(items)'];
     }
