@@ -71,7 +71,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
           selection-formatter="[[selectionFormatter]]"
           result-formatter="[[resultFormatter]]"
           required="[[required]]"
-          invalid="[[invalid]]"
+          invalid="{{invalid}}"
           init-selection="[[initSelection]]"
           id-function="[[_idFunction]]"
           stay-open-on-select="[[stayOpenOnSelect]]"

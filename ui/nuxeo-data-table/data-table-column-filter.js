@@ -44,8 +44,16 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
               padding: 0;
             }
           }
+          .required-indicator {
+            margin-inline-start: 4px;
+            color: var(--paper-input-container-invalid-color, #de350b);
+          }
+          .required-indicator[hidden] {
+            display: none;
+          }
         </style>
         <paper-input no-label-float label="[[label]]" value="[[value]]" on-value-changed="_valueChanged"></paper-input>
+        <span class="required-indicator" aria-hidden="true" hidden$="[[!required]]">*</span>
       `;
     }
 
@@ -62,6 +70,14 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
           observer: '_valuePropertyChanged',
         },
         hidden: Boolean,
+        /**
+         * If `true`, a required indicator is displayed next to the filter input, so a required
+         * column still shows it when filtering replaces the plain header (ELEMENTS-1891).
+         */
+        required: {
+          type: Boolean,
+          value: false,
+        },
       };
     }
 

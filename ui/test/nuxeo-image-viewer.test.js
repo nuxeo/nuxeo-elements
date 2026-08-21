@@ -51,6 +51,18 @@ suite('nuxeo-image-viewer', () => {
       }
     });
 
+    // ELEMENTS-1616: the viewer needs crossorigin so its canvas (Cropper.js /
+    // toolbar contrast sampling) is not tainted for cross-origin (S3) images and
+    // so the response is cached with CORS headers.
+    test('Should render the image with crossorigin="anonymous"', async () => {
+      const viewer = await fixture(
+        html`
+          <nuxeo-image-viewer></nuxeo-image-viewer>
+        `,
+      );
+      expect(viewer.$.image.getAttribute('crossorigin')).to.equal('anonymous');
+    });
+
     test('Should not render image content when a nonexistent source image is provided', async () => {
       const viewer = await fixture(
         html`

@@ -66,7 +66,7 @@ import './nuxeo-user-group-formatter.js';
           selected-items="{{selectedItems}}"
           selected-item="{{selectedItem}}"
           required="[[required]]"
-          invalid="[[invalid]]"
+          invalid="{{invalid}}"
           selection-formatter="[[selectionFormatter]]"
           result-formatter="[[resultFormatter]]"
           resolve-entry="[[resolveEntry]]"
