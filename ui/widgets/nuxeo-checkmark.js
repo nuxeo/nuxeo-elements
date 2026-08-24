@@ -54,7 +54,8 @@ import '../nuxeo-icons.js';
             width: var(--nuxeo-checkmark-width, 18px);
             height: var(--nuxeo-checkmark-height, 18px);
             cursor: pointer;
-            border-radius: 50%;
+            /* Make the checkmark a square for consistent click target size, common change for all themes */
+            border-radius: 2px;
             border: 2px solid var(--nuxeo-checkmark-border-color, var(--nuxeo-text-default, gray));
             background-color: var(--nuxeo-checkmark-background-color, transparent);
             color: var(--nuxeo-icon-color, transparent);
@@ -82,7 +83,7 @@ import '../nuxeo-icons.js';
           :host([checked]) {
             border: 2px solid var(--nuxeo-checkmark-border-color-checked, var(--nuxeo-primary-color, blue));
             background-color: var(--nuxeo-checkmark-background-color-checked, var(--nuxeo-primary-color, blue));
-            color: var(--nuxeo-icon-color-checked, white);
+            color: var(--nuxeo-checkmark-tick-color, white);
           }
 
           iron-icon {
