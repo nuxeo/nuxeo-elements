@@ -29,10 +29,6 @@ const template = html`
           padding-bottom: 0;
         }
 
-        --iron-data-table-row: {
-          border-bottom: 1px solid var(--nuxeo-border, #e3e3e3);
-        }
-
         --iron-data-table-row-hover: {
           background-color: var(--nuxeo-container-hover, #eee);
         }
