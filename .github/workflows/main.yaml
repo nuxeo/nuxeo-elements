@@ -8,9 +8,6 @@ on:
   # Manually trigger the workflow
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 # This chages has been changed due to some version issue we will be removed it once we will resolve WEBUI-1266 and WEBUI-1267
 env:
   LERNA: lerna@9.0.7
@@ -18,11 +15,15 @@ env:
 jobs:
   lint:
     uses: ./.github/workflows/lint.yaml
+    permissions:
+      contents: read
     secrets:
       NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
 
   test:
     uses: ./.github/workflows/test.yaml
+    permissions:
+      contents: read
     secrets:
       NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
@@ -31,6 +32,8 @@ jobs:
 
   storybook:
     uses: ./.github/workflows/storybook.yaml
+    permissions:
+      contents: write
     secrets:
       NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
       GIT_ADMIN_TOKEN: ${{ secrets.GIT_ADMIN_TOKEN }}
@@ -39,6 +42,8 @@ jobs:
 
   sonar:
     uses: ./.github/workflows/sonar.yaml
+    permissions:
+      contents: read
     secrets:
       NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -48,6 +53,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: [ lint, test, storybook, sonar ]
+    permissions:
+      contents: write
     steps:
     - uses: actions/checkout@v6
 
@@ -60,7 +67,7 @@ jobs:
     - name: Prepare environment
       run: |
         git config user.name "nuxeo-webui-jx-bot" && git config user.email "webui@hyland.com"
-        echo "PACKAGE_VERSION=$(npx -c 'echo "$npm_package_version"')" >> $GITHUB_ENV
+        echo "PACKAGE_VERSION=$(npx --ignore-scripts -c 'echo "$npm_package_version"')" >> $GITHUB_ENV
 
     - name: Get prerelease version
       run: |
