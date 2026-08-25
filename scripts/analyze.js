@@ -8,7 +8,7 @@
  * now depended on directly. This script reproduces the wrapper byte for byte:
  *
  *   - `polymer analyze .` expands `.` to every file under the package (globby auto-expands
- *     directory patterns), which `glob('**\/*')` matches exactly.
+ *     directory patterns), which the recursive `glob.sync` call below matches exactly.
  *   - the analyzer is built the same way `ProjectConfig#initializeAnalyzer` builds it, with the
  *     package root as both loader root and `packageDir`, and node module resolution.
  *   - `generateAnalysis` is given the same filter, which drops anything under a `test/` segment.

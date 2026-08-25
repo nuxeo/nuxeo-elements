@@ -20,7 +20,19 @@ export default {
   middleware: [
     (ctx, next) => {
       if (ctx.url.startsWith('/components/')) {
-        ctx.url = `/node_modules/${ctx.url.slice('/components/'.length)}`;
+        const specifier = ctx.url.slice('/components/'.length);
+        // Only rewrite plain package specifiers. Skip anything containing a `..` segment (raw or
+        // percent-encoded) so a request like `/components/../../etc` can't be mapped into an
+        // arbitrary path outside the hoisted node_modules.
+        let decoded = specifier;
+        try {
+          decoded = decodeURIComponent(specifier);
+        } catch {
+          // Malformed encoding — leave as-is; the traversal check below still applies.
+        }
+        if (!decoded.split(/[/\\]/).includes('..')) {
+          ctx.url = `/node_modules/${specifier}`;
+        }
       }
       return next();
     },
