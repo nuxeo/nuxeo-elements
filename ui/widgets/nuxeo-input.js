@@ -21,6 +21,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-input/paper-input.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
 {
   /**
@@ -31,7 +32,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-input/index.html
    */
-  class Input extends mixinBehaviors([IronFormElementBehavior, IronValidatableBehavior], Nuxeo.Element) {
+  class Input extends mixinBehaviors([I18nBehavior, IronFormElementBehavior, IronValidatableBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style>
@@ -74,6 +75,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
           placeholder$="[[placeholder]]"
           aria-label$="[[_computeAriaLabel(label, placeholder)]]"
           error-message="[[errorMessage]]"
+          autocomplete="[[autocomplete]]"
           autofocus$="[[autofocus]]"
           readonly$="[[readonly]]"
           disabled$="[[disabled]]"
@@ -137,6 +139,17 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
          * Error message to show when `invalid` is true.
          */
         errorMessage: String,
+
+        /**
+         * The HTML autofill token exposed on the native input, e.g. `email`, `username` or
+         * `current-password`. Lets a layout declare the purpose of the field so that browsers and
+         * assistive technology can identify it (WCAG 2.1 SC 1.3.5, technique H98). `off` opts out of
+         * autofill and is the default, matching the underlying `paper-input`.
+         */
+        autocomplete: {
+          type: String,
+          value: 'off',
+        },
 
         /**
          * Autofocus.
@@ -235,7 +248,32 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 
     /* Override method from Polymer.IronValidatableBehavior. */
     _getValidity() {
-      return this.$.paperInput.validate();
+      const valid = this.$.paperInput.validate();
+      this._applyDefaultRequiredError(valid);
+      return valid;
+    }
+
+    // Surface a per-field reason for required inputs (string and number), consistent with the
+    // multivalued and date widgets. Only default when the field is empty and the layout supplied
+    // no message, so pattern/min/max errors and layout-supplied messages are never clobbered.
+    _applyDefaultRequiredError(valid) {
+      const isEmpty = this.value == null || this.value === '';
+      if (this.required && !valid && isEmpty) {
+        if (!this.errorMessage || this._defaultRequiredError) {
+          this.errorMessage = this.i18n('widget.required');
+          this._defaultRequiredError = true;
+        }
+      } else {
+        this._clearDefaultRequiredError();
+      }
+    }
+
+    // Clear only the message we defaulted, so a layout-supplied errorMessage is never lost.
+    _clearDefaultRequiredError() {
+      if (this._defaultRequiredError) {
+        this.errorMessage = '';
+        this._defaultRequiredError = false;
+      }
     }
 
     _computeAriaLabel(label, placeholder) {

@@ -396,6 +396,37 @@ async function tableFixture(canSelectAll = false) {
   return table;
 }
 
+async function autoTableFixture() {
+  const table = (
+    await fixture(
+      html`
+        <div>
+          <nuxeo-page-provider
+            id="cvProvider"
+            auto
+            auto-delay="0"
+            offset="0"
+            provider="default_search"
+            page-size="40"
+            params='{"ecm_path": ["/default-domain/workspaces"]}'
+          >
+          </nuxeo-page-provider>
+
+          <nuxeo-data-table nx-provider="cvProvider">
+            <nuxeo-data-table-column name="Title" field="dc:title" flex="100" sort-by="dc:title">
+              <template>
+                <a class="title ellipsis">[[item.title]]</a>
+              </template>
+            </nuxeo-data-table-column>
+          </nuxeo-data-table>
+        </div>
+      `,
+      true,
+    )
+  ).querySelector('nuxeo-data-table');
+  return table;
+}
+
 // Tracks the last fake server created via login() so the outer suite teardown can restore it.
 // Without this, sinon.fakeServer.create() (called inside login()) leaks the global XHR fake
 // after this file's last test, which silently kills every suite registered after it.
@@ -448,6 +479,21 @@ suite('nuxeo-data-table', () => {
       await waitForEvent(table, 'nuxeo-page-loaded', 1);
       await flush();
       assert.equal(4, table.$.list.items.length);
+    });
+  });
+
+  // WEBUI-2121: a data table bound to a page provider with `auto` must render the results of the
+  // provider's own initial fetch, without requiring an explicit table.fetch() or user interaction.
+  suite('auto page provider', () => {
+    setup(async () => setupServer(1, 4));
+
+    test('populates the table on the provider auto-fetch', async () => {
+      const table = await autoTableFixture();
+      // Intentionally do NOT call table.fetch(): the provider `auto` drives the initial fetch.
+      await waitForEvent(table, 'nuxeo-page-loaded', 1);
+      await flush();
+      assert.equal(table.items.length, 4);
+      assert.isFalse(table._isEmpty);
     });
   });
 
@@ -687,6 +733,181 @@ suite('nuxeo-data-table', () => {
     });
   });
 
+  suite('required indicator on multivalued layouts (ELEMENTS-1891)', () => {
+    // mirrors the create/edit layout generated for a multivalued property flagged as required:
+    // only the entry widget carries `required`, neither the table nor the column does
+    async function multivaluedFixture(columns, formWidgets) {
+      const table = await fixture(html`
+        <nuxeo-data-table editable items='["alpha"]'>
+          ${columns}
+          <nuxeo-data-table-form>
+            <template>
+              ${formWidgets}
+            </template>
+          </nuxeo-data-table-form>
+        </nuxeo-data-table>
+      `);
+      await flush();
+      return table;
+    }
+
+    test('flags the single column of a scalar multivalued property', async () => {
+      const table = await multivaluedFixture(
+        html`
+          <nuxeo-data-table-column name="Stringlist"><template>[[item]]</template></nuxeo-data-table-column>
+        `,
+        html`
+          <input name="stringlist" required />
+        `,
+      );
+      expect(table.columns.map((c) => c.required)).to.deep.equal([true]);
+    });
+
+    test('flags only the columns whose name matches a required entry widget', async () => {
+      const table = await multivaluedFixture(
+        html`
+          <nuxeo-data-table-column name="Firstname"><template>[[item.firstname]]</template></nuxeo-data-table-column>
+          <nuxeo-data-table-column name="Lastname"><template>[[item.lastname]]</template></nuxeo-data-table-column>
+        `,
+        html`
+          <input name="firstname" required />
+          <input name="lastname" />
+        `,
+      );
+      expect(table.columns.map((c) => c.required)).to.deep.equal([true, false]);
+    });
+
+    test('leaves columns untouched when no entry widget is required', async () => {
+      const table = await multivaluedFixture(
+        html`
+          <nuxeo-data-table-column name="Stringlist"><template>[[item]]</template></nuxeo-data-table-column>
+        `,
+        html`
+          <input name="stringlist" />
+        `,
+      );
+      expect(table.columns.map((c) => c.required)).to.deep.equal([false]);
+    });
+
+    test('leaves result tables without an entry form untouched', async () => {
+      await setupServer(1, 4);
+      const table = await tableFixture();
+      table.fetch();
+      await waitForEvent(table, 'nuxeo-page-loaded', 1);
+      await flush();
+      expect(table.columns.some((c) => c.required)).to.be.false;
+    });
+
+    test('renders the indicator in the header cell only when the column is required', async () => {
+      const table = await multivaluedFixture(
+        html`
+          <nuxeo-data-table-column name="Stringlist"><template>[[item]]</template></nuxeo-data-table-column>
+        `,
+        html`
+          <input name="stringlist" required />
+        `,
+      );
+      await flush();
+      const headerCell = table.querySelector('nuxeo-data-table-cell[header]');
+      const indicator = headerCell.querySelector('.required-indicator');
+      expect(indicator).to.not.be.null;
+      expect(indicator.hasAttribute('hidden')).to.be.false;
+
+      table.columns[0].required = false;
+      await flush();
+      expect(indicator.hasAttribute('hidden')).to.be.true;
+    });
+
+    test('renders the indicator next to the filter input when the column is filterable', async () => {
+      const table = await multivaluedFixture(
+        html`
+          <nuxeo-data-table-column name="Stringlist" filter-by="stringlist">
+            <template>[[item]]</template>
+          </nuxeo-data-table-column>
+        `,
+        html`
+          <input name="stringlist" required />
+        `,
+      );
+      await flush();
+      const filter = table
+        .querySelector('nuxeo-data-table-cell[header]')
+        .querySelector('nuxeo-data-table-column-filter');
+      expect(filter.required).to.be.true;
+      const indicator = filter.shadowRoot.querySelector('.required-indicator');
+      expect(indicator).to.not.be.null;
+      expect(indicator.hasAttribute('hidden')).to.be.false;
+    });
+
+    test('clears a derived required flag once the form no longer requires the column', async () => {
+      const table = await multivaluedFixture(
+        html`
+          <nuxeo-data-table-column name="Firstname"><template>[[item.firstname]]</template></nuxeo-data-table-column>
+          <nuxeo-data-table-column name="Lastname"><template>[[item.lastname]]</template></nuxeo-data-table-column>
+        `,
+        html`
+          <input name="firstname" required />
+          <input name="lastname" />
+        `,
+      );
+      expect(table.columns.map((c) => c.required)).to.deep.equal([true, false]);
+
+      const form = table.getContentChildren('#form')[0];
+      (form.shadowRoot || form).querySelector('[name="firstname"]').removeAttribute('required');
+      (form.shadowRoot || form).querySelector('[name="lastname"]').setAttribute('required', '');
+      table._updateRequiredColumns();
+      await flush();
+      expect(table.columns.map((c) => c.required)).to.deep.equal([false, true]);
+    });
+
+    test('never clears a required flag that was set explicitly on the column', async () => {
+      const table = await multivaluedFixture(
+        html`
+          <nuxeo-data-table-column name="Firstname" required>
+            <template>[[item.firstname]]</template>
+          </nuxeo-data-table-column>
+          <nuxeo-data-table-column name="Lastname"><template>[[item.lastname]]</template></nuxeo-data-table-column>
+        `,
+        html`
+          <input name="lastname" required />
+        `,
+      );
+      expect(table.columns.map((c) => c.required)).to.deep.equal([true, true]);
+
+      const form = table.getContentChildren('#form')[0];
+      (form.shadowRoot || form).querySelector('[name="lastname"]').removeAttribute('required');
+      table._updateRequiredColumns();
+      await flush();
+      expect(table.columns.map((c) => c.required)).to.deep.equal([true, false]);
+    });
+
+    test('never clears an explicitly required column that the form also required', async () => {
+      // the column is required in markup *and* matched by a required entry widget, so the
+      // derivation must not claim ownership of it and clear it once the form stops requiring it
+      const table = await multivaluedFixture(
+        html`
+          <nuxeo-data-table-column name="Firstname" required>
+            <template>[[item.firstname]]</template>
+          </nuxeo-data-table-column>
+          <nuxeo-data-table-column name="Lastname"><template>[[item.lastname]]</template></nuxeo-data-table-column>
+        `,
+        html`
+          <input name="firstname" required />
+          <input name="lastname" required />
+        `,
+      );
+      expect(table.columns.map((c) => c.required)).to.deep.equal([true, true]);
+
+      const form = table.getContentChildren('#form')[0];
+      (form.shadowRoot || form).querySelector('[name="firstname"]').removeAttribute('required');
+      (form.shadowRoot || form).querySelector('[name="lastname"]').removeAttribute('required');
+      table._updateRequiredColumns();
+      await flush();
+      // Firstname keeps the markup value; Lastname was derived here, so it is cleared
+      expect(table.columns.map((c) => c.required)).to.deep.equal([true, false]);
+    });
+  });
+
   suite('Accessibility', () => {
     let table;
     setup(async () => {
@@ -706,6 +927,116 @@ suite('nuxeo-data-table', () => {
       assert.equal(sortIconButton.getAttribute('aria-label'), 'command.sort.ascend');
       sortIconButton.click();
       assert.equal(sortIconButton.getAttribute('aria-label'), 'command.sort.descend');
+    });
+
+    // ELEMENTS-2005
+    test('every header cell is exposed as a column header', () => {
+      const headerCells = Array.from(table.querySelectorAll('nuxeo-data-table-cell[header]'));
+      expect(headerCells).to.have.length.above(0);
+      headerCells.forEach((cell) => {
+        expect(cell.getAttribute('role')).to.equal('columnheader');
+        expect(cell.hasAttribute('scope')).to.be.false;
+      });
+    });
+
+    // ELEMENTS-2005
+    test('every direct header-row child has table-header semantics', () => {
+      const headerRow = table.querySelector('nuxeo-data-table-row[header]');
+      const headerChildren = Array.from(headerRow.children);
+      expect(headerChildren).to.have.length.above(0);
+      headerChildren.forEach((child) => {
+        expect(['columnheader', 'presentation']).to.include(child.getAttribute('role'));
+      });
+      expect(headerRow.querySelector('nuxeo-data-table-checkbox').getAttribute('role')).to.equal('columnheader');
+      expect(headerRow.querySelector('nuxeo-data-table-settings').getAttribute('role')).to.equal('columnheader');
+    });
+
+    // ELEMENTS-2005
+    test('body cells stay exposed as cells', () => {
+      const bodyCells = Array.from(table.querySelectorAll('nuxeo-data-table-row:not([header]) nuxeo-data-table-cell'));
+      expect(bodyCells).to.have.length.above(0);
+      bodyCells.forEach((cell) => expect(cell.getAttribute('role')).to.equal('cell'));
+      const bodyCheckboxes = Array.from(
+        table.querySelectorAll('nuxeo-data-table-row:not([header]) nuxeo-data-table-checkbox'),
+      );
+      expect(bodyCheckboxes).to.have.length.above(0);
+      bodyCheckboxes.forEach((checkbox) => expect(checkbox.getAttribute('role')).to.equal('cell'));
+    });
+
+    // ELEMENTS-2005: rows must be owned by a row group and every intermediate wrapper must be
+    // presentational, otherwise the browser cannot build the table model and the column headers
+    // are never associated with the body cells.
+    test('rows are grouped and intermediate wrappers are presentational', () => {
+      const { shadowRoot } = table;
+      const semanticTable = shadowRoot.querySelector('#table');
+      expect(table.hasAttribute('role')).to.be.false;
+      expect(semanticTable.getAttribute('role')).to.equal('table');
+      expect(semanticTable.getAttribute('aria-multiselectable')).to.equal('true');
+      expect(semanticTable.contains(shadowRoot.querySelector('#header'))).to.be.true;
+      expect(semanticTable.contains(shadowRoot.querySelector('#list'))).to.be.true;
+      expect(semanticTable.contains(shadowRoot.querySelector('label'))).to.be.false;
+      expect(shadowRoot.querySelector('#header').getAttribute('role')).to.equal('rowgroup');
+      expect(shadowRoot.querySelector('#list').getAttribute('role')).to.equal('rowgroup');
+      expect(
+        shadowRoot
+          .querySelector('#list')
+          .shadowRoot.querySelector('#items')
+          .getAttribute('role'),
+      ).to.equal('presentation');
+      shadowRoot.querySelectorAll('#list .item').forEach((item) => {
+        expect(item.getAttribute('role')).to.equal('presentation');
+      });
+    });
+
+    // ELEMENTS-2005: exactly one column header per column — no nested duplicate from the header template.
+    test('does not expose nested duplicate column headers', () => {
+      const columnHeaders = Array.from(table.querySelectorAll('[role="columnheader"]'));
+      expect(columnHeaders).to.have.length.above(0);
+      columnHeaders.forEach((header) => {
+        expect(header.querySelector('[role="columnheader"]')).to.be.null;
+      });
+      expect(columnHeaders.some((header) => header.tagName.toLowerCase() === 'nuxeo-data-table-cell')).to.be.true;
+      expect(columnHeaders.some((header) => header.tagName.toLowerCase() === 'nuxeo-data-table-checkbox')).to.be.true;
+    });
+
+    // ELEMENTS-2005: a row group must own at least one row, so an empty list has to stay out of the
+    // accessibility tree instead of advertising itself as an empty row group. The Home page cards
+    // render empty tables, and axe reports the empty row group as an incomplete table structure.
+    test('does not expose an empty list as a row group', async () => {
+      const list = table.shadowRoot.querySelector('#list');
+      expect(list.getAttribute('role')).to.equal('rowgroup');
+      expect(table._computeListRole(undefined)).to.equal('presentation');
+      table.items = [];
+      await flush();
+      expect(list.getAttribute('role')).to.equal('presentation');
+      expect(table.shadowRoot.querySelector('#header').getAttribute('role')).to.equal('rowgroup');
+      const emptyResult = table.shadowRoot.querySelector('.emptyResult');
+      expect(emptyResult.getAttribute('role')).to.equal('rowgroup');
+      expect(emptyResult.querySelector('[role="row"] [role="cell"]')).to.not.be.null;
+    });
+
+    // ELEMENTS-2005: the list wrapper lives in `iron-list`'s shadow root, so it may not be reachable yet.
+    test('leaves the list wrapper alone when it cannot be reached', () => {
+      const list = table.$.list;
+      try {
+        table.$.list = document.createElement('div');
+        expect(() => table._hideListItemsWrapperFromA11yTree()).to.not.throw();
+        table.$.list = document.createElement('div');
+        table.$.list.attachShadow({ mode: 'open' });
+        expect(() => table._hideListItemsWrapperFromA11yTree()).to.not.throw();
+      } finally {
+        table.$.list = list;
+      }
+    });
+
+    // ELEMENTS-2005: `wrapper-height` (used by the Home page tables) injects a scroll wrapper between
+    // the table and its row group, which must not appear in the accessibility tree.
+    test('the wrapper-height scroll wrapper is presentational', () => {
+      table._wrapperHeight = '350px';
+      table._onWrapperHeightChanged();
+      const wrapper = table.shadowRoot.querySelector('.table-wrapper');
+      expect(wrapper).to.not.be.null;
+      expect(wrapper.getAttribute('role')).to.equal('presentation');
     });
   });
 });
