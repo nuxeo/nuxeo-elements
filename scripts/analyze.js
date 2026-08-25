@@ -45,11 +45,16 @@ async function main() {
     process.stdout.write(json);
     return;
   }
-  // Write via a temp file so a failed run cannot leave a truncated analysis.json behind for
-  // Storybook to import.
-  const tmp = `${out}.tmp`;
+  // Write via a temp file next to the destination so a failed run cannot leave a truncated
+  // analysis.json behind for Storybook to import. Resolve the output to an absolute path first so
+  // the temp file lands alongside it (not in the CWD) even when `out` points elsewhere, and drop
+  // any existing destination before renaming so the overwrite also works on Windows, where
+  // fs.renameSync onto an existing file throws.
+  const dest = path.resolve(out);
+  const tmp = `${dest}.tmp`;
   fs.writeFileSync(tmp, json);
-  fs.renameSync(tmp, path.resolve(out));
+  fs.rmSync(dest, { force: true });
+  fs.renameSync(tmp, dest);
 }
 
 main().catch((err) => {

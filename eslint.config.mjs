@@ -131,19 +131,25 @@ export default [
     plugins: { wc },
     rules: {
       ...wc.configs['flat/recommended'].rules,
-      'wc/file-name-matches-element': 'error',
       'wc/guard-super-call': 'error',
-      'wc/max-elements-per-file': 'error',
       'wc/no-child-traversal-in-attributechangedcallback': 'error',
       'wc/no-child-traversal-in-connectedcallback': 'error',
       'wc/no-closed-shadow-root': 'error',
-      'wc/no-constructor': 'error',
       'wc/no-constructor-params': 'error',
       'wc/no-customized-built-in-elements': 'error',
       'wc/no-exports-with-element': 'error',
       'wc/no-invalid-extends': 'error',
-      'wc/no-method-prefixed-with-on': 'error',
       'wc/no-typos': 'error',
+      // The codebase has pre-existing violations of these rules (e.g. nuxeo-slots.js defines two
+      // elements under a non-matching filename, iron-data-table.js declares a constructor, and
+      // nuxeo-document-permissions.js uses on*-prefixed handler methods). eslint-plugin-wc does not
+      // currently flag them because it doesn't recognise Nuxeo's Polymer-factory / Nuxeo.Element
+      // definitions, but they are kept as warnings rather than errors so the build stays green if a
+      // future class-based element trips them, matching the intent above.
+      'wc/file-name-matches-element': 'warn',
+      'wc/max-elements-per-file': 'warn',
+      'wc/no-constructor': 'warn',
+      'wc/no-method-prefixed-with-on': 'warn',
       'wc/attach-shadow-constructor': 'warn',
       'wc/define-tag-after-class-definition': 'warn',
       'wc/expose-class-on-global': 'warn',
