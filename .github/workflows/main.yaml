@@ -17,12 +17,12 @@ env:
 
 jobs:
   lint:
-    uses: nuxeo/nuxeo-elements/.github/workflows/lint.yaml@lts-2025
+    uses: ./.github/workflows/lint.yaml
     secrets:
       NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
 
   test:
-    uses: nuxeo/nuxeo-elements/.github/workflows/test.yaml@lts-2025
+    uses: ./.github/workflows/test.yaml
     secrets:
       NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
@@ -30,7 +30,7 @@ jobs:
       branch: lts-2025
 
   storybook:
-    uses: nuxeo/nuxeo-elements/.github/workflows/storybook.yaml@lts-2025
+    uses: ./.github/workflows/storybook.yaml
     secrets:
       NPM_PACKAGES_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
       GIT_ADMIN_TOKEN: ${{ secrets.GIT_ADMIN_TOKEN }}
