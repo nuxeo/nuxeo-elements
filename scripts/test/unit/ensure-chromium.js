@@ -34,4 +34,9 @@ async function isChromiumInstalled() {
   // Use npx so the puppeteer CLI resolves whether or not node_modules/.bin is on PATH
   // (e.g. when this script is invoked directly via `node` rather than through an npm script).
   execSync('npx --no-install puppeteer browsers install chrome', { stdio: 'inherit' });
-})();
+})().catch((err) => {
+  // Surface a failed install (e.g. execSync throwing) explicitly with a clean non-zero exit,
+  // rather than letting it bubble up as an unhandled promise rejection.
+  console.error(err);
+  process.exit(1);
+});
