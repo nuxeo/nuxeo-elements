@@ -45,12 +45,12 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Run analysis
-        run: npx --ignore-scripts lerna@9.0.7 run analysis --parallel
+        run: npx --no-install --ignore-scripts lerna@9.0.7 run analysis --parallel
 
       - name: Build storybook
         working-directory: storybook
         run: |
-          npx --ignore-scripts storybook@10.5.0 build -o dist
+          npx --no-install --ignore-scripts storybook@10.5.0 build -o dist
 
       - name: Deploy
         if: ${{ env.BRANCH_NAME == 'maintenance-3.1.x' }}
