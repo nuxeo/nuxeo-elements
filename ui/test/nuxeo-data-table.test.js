@@ -497,7 +497,7 @@ suite('nuxeo-data-table', () => {
     });
   });
 
-  suite('table selection', async () => {
+  suite('table selection', () => {
     setup(async () => setupServer(1, 4));
 
     test('single selection', async () => {
