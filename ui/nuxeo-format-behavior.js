@@ -36,10 +36,10 @@ export const FormatBehavior = [
         return '';
       }
       if (size > 1048576) {
-        return `${parseFloat(size / 1048576).toFixed(2)} MB`;
+        return `${Number.parseFloat(size / 1048576).toFixed(2)} MB`;
       }
       if (size > 1024) {
-        return `${parseFloat(size / 1024).toFixed(2)} KB`;
+        return `${Number.parseFloat(size / 1024).toFixed(2)} KB`;
       }
       return `${size.toString()} Bytes`;
     },
@@ -181,7 +181,7 @@ export const FormatBehavior = [
      * Returns sanitized fulltext
      */
     formatFulltext(text) {
-      return text.replace(/-/g, ' ');
+      return text.replaceAll(/-/g, ' ');
     },
 
     _languageCode() {

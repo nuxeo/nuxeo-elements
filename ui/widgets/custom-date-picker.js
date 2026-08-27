@@ -1523,7 +1523,7 @@ const FOCUS_SUPPRESSION_MS = 200;
       const expectedFormat = this._getDatePlaceholder(this.format);
       const combined = this.i18n('customDatePicker.incorrectFormatExpected');
       if (this._hasTranslation('incorrectFormatExpected', combined)) {
-        return combined.replace(/\{format\}/g, expectedFormat);
+        return combined.replaceAll(/\{format\}/g, expectedFormat);
       }
       const base = this.i18n('customDatePicker.incorrectFormat');
       const baseText = this._hasTranslation('incorrectFormat', base) ? base : 'Incorrect date format.';
@@ -1572,9 +1572,9 @@ const FOCUS_SUPPRESSION_MS = 200;
         if (typeof value === 'string') {
           const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
           if (m) {
-            const year = parseInt(m[1], 10);
-            const month = parseInt(m[2], 10) - 1;
-            const day = parseInt(m[3], 10);
+            const year = Number.parseInt(m[1], 10);
+            const month = Number.parseInt(m[2], 10) - 1;
+            const day = Number.parseInt(m[3], 10);
             const d = new Date(year, month, day);
             d.setHours(0, 0, 0, 0);
             return Number.isNaN(d.getTime()) ? null : d;
@@ -1598,9 +1598,9 @@ const FOCUS_SUPPRESSION_MS = 200;
         const match = isoString.match(/^(\d{4})-(\d{2})-(\d{2})$/);
         if (!match) return null;
 
-        const year = parseInt(match[1], 10);
-        const month = parseInt(match[2], 10);
-        const day = parseInt(match[3], 10);
+        const year = Number.parseInt(match[1], 10);
+        const month = Number.parseInt(match[2], 10);
+        const day = Number.parseInt(match[3], 10);
 
         // Validate ranges
         if (year < 1000 || year > 9999) return null;
@@ -3094,7 +3094,7 @@ const FOCUS_SUPPRESSION_MS = 200;
     }
 
     _changeYear(e) {
-      const newYear = parseInt(e.target.value, 10);
+      const newYear = Number.parseInt(e.target.value, 10);
       const newDate = new Date(this._viewDate);
       newDate.setFullYear(newYear);
       this._viewDate = newDate;
@@ -3819,7 +3819,7 @@ const FOCUS_SUPPRESSION_MS = 200;
         const rawLocale = this._getUserLocale();
 
         // Normalize: replace underscore with hyphen
-        let normalizedLocale = rawLocale.replace(/_/g, '-');
+        let normalizedLocale = rawLocale.replaceAll(/_/g, '-');
 
         try {
           // Canonicalize locale (handles casing, region format, etc.)
@@ -4810,7 +4810,7 @@ const FOCUS_SUPPRESSION_MS = 200;
         e.stopPropagation();
       }
       const button = e.target.closest('.year-option');
-      const year = button ? parseInt(button.dataset.year, 10) : null;
+      const year = button ? Number.parseInt(button.dataset.year, 10) : null;
       if (year && this._viewDate) {
         // Create new date with proper month/day preservation
         const currentMonth = this._viewDate.getMonth();
@@ -5045,12 +5045,12 @@ const FOCUS_SUPPRESSION_MS = 200;
       if (!format) return format;
 
       return format
-        .replace(/yyyy/g, 'YYYY')
-        .replace(/yy/g, 'YY')
-        .replace(/dd/g, 'DD')
-        .replace(/d(?![a-zA-Z])/g, 'D')
-        .replace(/mm/g, 'MM') // ⚠ careful: mm = minutes, MM = month
-        .replace(/m(?![a-zA-Z])/g, 'M');
+        .replaceAll(/yyyy/g, 'YYYY')
+        .replaceAll(/yy/g, 'YY')
+        .replaceAll(/dd/g, 'DD')
+        .replaceAll(/d(?![a-zA-Z])/g, 'D')
+        .replaceAll(/mm/g, 'MM') // ⚠ careful: mm = minutes, MM = month
+        .replaceAll(/m(?![a-zA-Z])/g, 'M');
     }
 
     // Professional date parser for user input with comprehensive format support
