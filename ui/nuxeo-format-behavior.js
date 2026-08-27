@@ -181,7 +181,7 @@ export const FormatBehavior = [
      * Returns sanitized fulltext
      */
     formatFulltext(text) {
-      return text.replaceAll(/-/g, ' ');
+      return text.replaceAll('-', ' ');
     },
 
     _languageCode() {
