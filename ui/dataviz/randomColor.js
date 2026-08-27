@@ -19,7 +19,7 @@ export function randomColor (options) {
 
   // Check if there is a seed and ensure it's an
   // integer. Otherwise, reset the seed value.
-  if (options.seed !== undefined && options.seed !== null && options.seed === parseInt(options.seed, 10)) {
+  if (options.seed !== undefined && options.seed !== null && options.seed === Number.parseInt(options.seed, 10)) {
     seed = options.seed;
 
   // A string was passed as a seed
@@ -85,7 +85,7 @@ function pickHue(options) {
     //Each of colorRanges.length ranges has a length equal approximatelly one step
     var step = (hueRange[1] - hueRange[0]) / colorRanges.length
 
-    var j = parseInt((hue - hueRange[0]) / step)
+    var j = Number.parseInt((hue - hueRange[0]) / step)
 
     //Check if the range j is taken
     if (colorRanges[j] === true) {
@@ -241,9 +241,9 @@ function getMinimumBrightness(H, S) {
 
 function getHueRange (colorInput) {
 
-  if (typeof parseInt(colorInput) === 'number') {
+  if (typeof Number.parseInt(colorInput) === 'number') {
 
-    var number = parseInt(colorInput);
+    var number = Number.parseInt(colorInput);
 
     if (number < 360 && number > 0) {
       return [number, number];
@@ -428,9 +428,9 @@ function HexToHSB (hex) {
   hex = hex.replace(/^#/, '');
   hex = hex.length === 3 ? hex.replace(/(.)/g, '$1$1') : hex;
 
-  var red = parseInt(hex.substr(0, 2), 16) / 255,
-        green = parseInt(hex.substr(2, 2), 16) / 255,
-        blue = parseInt(hex.substr(4, 2), 16) / 255;
+  var red = Number.parseInt(hex.substr(0, 2), 16) / 255,
+        green = Number.parseInt(hex.substr(2, 2), 16) / 255,
+        blue = Number.parseInt(hex.substr(4, 2), 16) / 255;
 
   var cMax = Math.max(red, green, blue),
         delta = cMax - Math.min(red, green, blue),
@@ -460,15 +460,17 @@ function stringToInteger (string) {
   var total = 0
   for (var i = 0; i !== string.length; i++) {
     if (total >= Number.MAX_SAFE_INTEGER) break;
-    total += string.charCodeAt(i)
+    total += string.codePointAt(i)
   }
   return total
 }
 
 // get The range of given hue when options.count!=0
+// colorHue may be a number, a numeric string, a colour name or a hex string, so it must be
+// coerced before the NaN check to keep named/hex colours out of the numeric branch below.
 function getRealHueRange(colorHue)
-{ if (!isNaN(colorHue)) {
-  var number = parseInt(colorHue);
+{ if (!Number.isNaN(Number(colorHue))) {
+  var number = Number.parseInt(colorHue);
 
   if (number < 360 && number > 0) {
     return getColorInfo(colorHue).hueRange
