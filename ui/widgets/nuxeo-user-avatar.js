@@ -241,7 +241,10 @@ import '../nuxeo-icons.js';
     }
 
     __obsBorderRadius() {
-      if (this.borderRadius === '' || this.borderRadius == null) {
+      // borderRadius is declared as a Number, so anything non-finite (missing, blank
+      // or non-numeric input deserialized to NaN) must fall back to 0. A falsy check
+      // would be wrong here because 0 is a legitimate value.
+      if (!Number.isFinite(this.borderRadius)) {
         this.borderRadius = 0;
       }
       this.$.container.style.borderRadius = `${this.borderRadius}%`;
