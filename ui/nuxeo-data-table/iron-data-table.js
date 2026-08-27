@@ -1132,7 +1132,7 @@ import '../nuxeo-button-styles.js';
               // Set provider param
               if (entry.expression) {
                 // Use a function replacement to prevent $ in user values being treated as back-references (ELEMENTS-1966)
-                this.nxProvider.params[effectiveFilterBy] = entry.expression.replaceAll(/\$term/g, () => entry.value);
+                this.nxProvider.params[effectiveFilterBy] = entry.expression.replaceAll('$term', () => entry.value);
               } else {
                 this.nxProvider.params[effectiveFilterBy] = entry.value;
               }

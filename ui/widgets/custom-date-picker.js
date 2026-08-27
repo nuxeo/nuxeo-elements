@@ -1523,7 +1523,7 @@ const FOCUS_SUPPRESSION_MS = 200;
       const expectedFormat = this._getDatePlaceholder(this.format);
       const combined = this.i18n('customDatePicker.incorrectFormatExpected');
       if (this._hasTranslation('incorrectFormatExpected', combined)) {
-        return combined.replaceAll(/\{format\}/g, expectedFormat);
+        return combined.replaceAll('{format}', expectedFormat);
       }
       const base = this.i18n('customDatePicker.incorrectFormat');
       const baseText = this._hasTranslation('incorrectFormat', base) ? base : 'Incorrect date format.';
@@ -3819,7 +3819,7 @@ const FOCUS_SUPPRESSION_MS = 200;
         const rawLocale = this._getUserLocale();
 
         // Normalize: replace underscore with hyphen
-        let normalizedLocale = rawLocale.replaceAll(/_/g, '-');
+        let normalizedLocale = rawLocale.replaceAll('_', '-');
 
         try {
           // Canonicalize locale (handles casing, region format, etc.)
@@ -5045,11 +5045,11 @@ const FOCUS_SUPPRESSION_MS = 200;
       if (!format) return format;
 
       return format
-        .replaceAll(/yyyy/g, 'YYYY')
-        .replaceAll(/yy/g, 'YY')
-        .replaceAll(/dd/g, 'DD')
+        .replaceAll('yyyy', 'YYYY')
+        .replaceAll('yy', 'YY')
+        .replaceAll('dd', 'DD')
         .replaceAll(/d(?![a-zA-Z])/g, 'D')
-        .replaceAll(/mm/g, 'MM') // ⚠ careful: mm = minutes, MM = month
+        .replaceAll('mm', 'MM') // ⚠ careful: mm = minutes, MM = month
         .replaceAll(/m(?![a-zA-Z])/g, 'M');
     }
 
