@@ -197,7 +197,109 @@ suite('nuxeo-document-comment-thread', () => {
       });
 
       suite('Reconciliation', () => {
-        // TODO
+        // The server returns entries newest first, while the element keeps `comments` oldest first.
+        const buildComment = (id, creationDate) => {
+          return {
+            'entity-type': 'comment',
+            parentId: 'doc-id',
+            id,
+            numberOfReplies: 0,
+            author: 'John Doe',
+            creationDate,
+            text: `This is comment ${id}`,
+          };
+        };
+
+        const newest = buildComment('comment-id-5', '2019-12-05');
+        const newer = buildComment('comment-id-4', '2019-12-04');
+        const oldestLoaded = buildComment('comment-id-3', '2019-12-03');
+        const older = buildComment('comment-id-2', '2019-12-02');
+        const oldest = buildComment('comment-id-1', '2019-12-01');
+
+        const respondWith = (entries, totalSize) => {
+          server.respondWith('get', '/api/v1/id/doc-id/@comment/', {
+            'entity-type': 'comments',
+            entries,
+            totalSize,
+          });
+        };
+
+        const loadedIds = () => element.comments.map((entry) => entry.id);
+
+        test('Should prepend every entry, oldest first, when no comment is loaded yet', async () => {
+          respondWith([newest, newer, oldestLoaded], 3);
+
+          element._refresh();
+          await flush();
+
+          expect(loadedIds()).to.deep.equal(['comment-id-3', 'comment-id-4', 'comment-id-5']);
+        });
+
+        test('Should only prepend the entries older than the oldest loaded comment', async () => {
+          respondWith([newest, newer, oldestLoaded], 5);
+          element._refresh();
+          await flush();
+          expect(loadedIds()).to.deep.equal(['comment-id-3', 'comment-id-4', 'comment-id-5']);
+
+          // "Load all" replays the page already held plus the two older comments.
+          respondWith([newest, newer, oldestLoaded, older, oldest], 5);
+          element._loadMore();
+          await flush();
+
+          expect(loadedIds()).to.deep.equal([
+            'comment-id-1',
+            'comment-id-2',
+            'comment-id-3',
+            'comment-id-4',
+            'comment-id-5',
+          ]);
+          expect(element.allCommentsLoaded).to.be.true;
+        });
+
+        test('Should not duplicate comments when every entry is already loaded', async () => {
+          respondWith([newest, newer, oldestLoaded], 3);
+          element._refresh();
+          await flush();
+
+          element._loadMore();
+          await flush();
+
+          expect(loadedIds()).to.deep.equal(['comment-id-3', 'comment-id-4', 'comment-id-5']);
+        });
+
+        test('Should keep an entry sharing the creation date of the oldest loaded comment but not its id', async () => {
+          respondWith([oldestLoaded], 2);
+          element._refresh();
+          await flush();
+
+          respondWith([oldestLoaded, buildComment('comment-id-3-bis', '2019-12-03')], 2);
+          element._loadMore();
+          await flush();
+
+          expect(loadedIds()).to.deep.equal(['comment-id-3-bis', 'comment-id-3']);
+        });
+
+        test('Should not mutate the entries of the server response', async () => {
+          element.set('comments', [oldestLoaded]);
+          const response = {
+            'entity-type': 'comments',
+            entries: [newest, newer, oldestLoaded, older],
+            totalSize: 4,
+          };
+          const get = sinon.stub(element.$.commentRequest, 'get').returns(Promise.resolve(response));
+
+          element._fetchComments(true);
+          await flush();
+
+          expect(response.entries.map((entry) => entry.id)).to.deep.equal([
+            'comment-id-5',
+            'comment-id-4',
+            'comment-id-3',
+            'comment-id-2',
+          ]);
+          expect(loadedIds()).to.deep.equal(['comment-id-2', 'comment-id-3']);
+          get.restore();
+        });
       });
     });
   });

@@ -229,17 +229,20 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
       this.$.commentRequest
         .get()
         .then((response) => {
-          /* Reconciliation of local and server comments */
-          const olderComment = this.comments.length > 0 ? this.comments[0] : null;
-          const newComments = response.entries;
-          while (
-            newComments.length > 0 &&
-            !!olderComment &&
-            (newComments[0].creationDate > olderComment.creationDate || newComments[0].id === olderComment.id)
-          ) {
-            newComments.shift();
-          }
-          response.entries.forEach((entry) => {
+          /*
+           * Reconciliation of local and server comments.
+           * The server returns entries newest first, while `comments` is kept oldest first, so
+           * `comments[0]` is the oldest comment already loaded. Every leading server entry down to
+           * and including that one is therefore already held locally: skip them and prepend only
+           * the genuinely older entries, keeping the list oldest first.
+           */
+          const oldestLoadedComment = this.comments.length > 0 ? this.comments[0] : null;
+          const isAlreadyLoaded = (entry) =>
+            !!oldestLoadedComment &&
+            (entry.creationDate > oldestLoadedComment.creationDate || entry.id === oldestLoadedComment.id);
+          const firstNewIndex = response.entries.findIndex((entry) => !isAlreadyLoaded(entry));
+          const newComments = firstNewIndex === -1 ? [] : response.entries.slice(firstNewIndex);
+          newComments.forEach((entry) => {
             this.unshift('comments', entry);
           });
           this._setTotal(response.totalSize);
