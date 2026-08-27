@@ -39,7 +39,13 @@ suite('nuxeo-share-button extras', () => {
   suite('_buildPermalink', () => {
     test('builds permalink for document', () => {
       const result = el._buildPermalink({ uid: 'doc1' });
-      expect(result).to.include('#!/doc/doc1');
+      expect(result).to.include('doc?id=doc1');
+      expect(result).to.not.include('#!');
+    });
+
+    test('encodes the document id', () => {
+      const result = el._buildPermalink({ uid: 'a b/c' });
+      expect(result).to.include(`doc?id=${encodeURIComponent('a b/c')}`);
     });
 
     test('returns empty string for null document', () => {
