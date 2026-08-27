@@ -2047,10 +2047,14 @@ suite('PageProviderDisplayBehavior extras', () => {
       return ctx._lastQuickFiltersSnapshot;
     };
 
+    // 'É' (U+00C9) sorts after 'z' by code unit but next to 'e' under locale collation, so these
+    // suites fail if the comparator is ever swapped for a locale aware one.
+    const accentedKey = 'É';
+
     test('orders the snapshot by code unit, whatever the ambient locale', () => {
       const snapshot = snapshotOf({
         b: { active: true },
-        É: { active: false },
+        [accentedKey]: { active: false },
         A: { active: true },
         a: { active: false },
       });
@@ -2058,14 +2062,14 @@ suite('PageProviderDisplayBehavior extras', () => {
     });
 
     test('produces the same snapshot whatever the key order', () => {
-      const first = snapshotOf({ a: { active: true }, É: { active: false }, b: { active: true } });
-      const second = snapshotOf({ b: { active: true }, a: { active: true }, É: { active: false } });
+      const first = snapshotOf({ a: { active: true }, [accentedKey]: { active: false }, b: { active: true } });
+      const second = snapshotOf({ b: { active: true }, a: { active: true }, [accentedKey]: { active: false } });
       expect(first).to.equal(second);
     });
 
     test('does not call _quickFilterChanged when the same quick filters are re-evaluated', () => {
       const ctx = {
-        quickFilters: { a: { active: true }, É: { active: false } },
+        quickFilters: { a: { active: true }, [accentedKey]: { active: false } },
         _lastQuickFiltersSnapshot: null,
         paginable: true,
         _quickFilterChanged: sinon.stub(),
@@ -2079,13 +2083,13 @@ suite('PageProviderDisplayBehavior extras', () => {
 
     test('calls _quickFilterChanged when an active state flips', () => {
       const ctx = {
-        quickFilters: { a: { active: true }, É: { active: false } },
+        quickFilters: { a: { active: true }, [accentedKey]: { active: false } },
         _lastQuickFiltersSnapshot: null,
         paginable: true,
         _quickFilterChanged: sinon.stub(),
       };
       b._quickFiltersChangedDeep.call(ctx);
-      ctx.quickFilters.É.active = true;
+      ctx.quickFilters[accentedKey].active = true;
       b._quickFiltersChangedDeep.call(ctx);
       expect(ctx._quickFilterChanged).to.have.been.calledTwice;
     });
