@@ -241,7 +241,7 @@ function getMinimumBrightness(H, S) {
 
 function getHueRange (colorInput) {
 
-  if (typeof Number.parseInt(colorInput) === 'number') {
+  if (!Number.isNaN(Number.parseInt(colorInput))) {
 
     var number = Number.parseInt(colorInput);
 
@@ -456,11 +456,12 @@ function HSVtoHSL (hsv) {
   ];
 }
 
+// Iterates by code point, not by UTF-16 index, so a surrogate pair is counted once.
 function stringToInteger (string) {
   var total = 0
-  for (var i = 0; i !== string.length; i++) {
+  for (const character of string) {
     if (total >= Number.MAX_SAFE_INTEGER) break;
-    total += string.codePointAt(i)
+    total += character.codePointAt(0)
   }
   return total
 }

@@ -262,10 +262,12 @@ import '../nuxeo-icons.js';
     __generateHue() {
       let hash = 0;
       const userId = this._id(this.user);
-      Object.keys(userId).forEach((user) => {
+      // Iterate by code point, not by UTF-16 index, so a surrogate pair is hashed once.
+      for (const character of userId) {
+        // Truncates the running hash back to int32 before the next round.
         hash &= hash;
-        hash = userId.codePointAt(user) + ((hash << 5) - hash);
-      });
+        hash = character.codePointAt(0) + ((hash << 5) - hash);
+      }
       return Math.abs(hash % 360);
     }
 
