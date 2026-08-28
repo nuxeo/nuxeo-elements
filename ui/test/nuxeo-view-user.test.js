@@ -59,6 +59,8 @@ const LABELS = { 'viewUser.email': 'Email', 'viewUser.company': 'Company' };
 suite('nuxeo-view-user template accessibility', () => {
   let el;
   let originalLanguage;
+  let createdEnDict;
+  let originalLabels;
 
   suiteSetup(async () => {
     if (!customElements.get(TAG)) {
@@ -74,15 +76,36 @@ suite('nuxeo-view-user template accessibility', () => {
         },
       });
     }
-    // Add only the two keys under test to the shared bundle, so no other suite's messages are lost.
+    // Add only the two keys under test to the shared bundle, remembering the prior state of the `en`
+    // dict and of each key so the teardown restores it exactly. This matters because another suite may
+    // have loaded a real i18n bundle already; blindly deleting these keys would clobber its messages.
     originalLanguage = window.nuxeo.I18n.language;
     window.nuxeo.I18n.language = 'en';
+    createdEnDict = !window.nuxeo.I18n.en;
     window.nuxeo.I18n.en = window.nuxeo.I18n.en || {};
+    originalLabels = Object.keys(LABELS).map((key) => {
+      return {
+        key,
+        existed: Object.prototype.hasOwnProperty.call(window.nuxeo.I18n.en, key),
+        value: window.nuxeo.I18n.en[key],
+      };
+    });
     Object.assign(window.nuxeo.I18n.en, LABELS);
   });
 
   suiteTeardown(() => {
-    Object.keys(LABELS).forEach((key) => delete window.nuxeo.I18n.en[key]);
+    // Restore each key to its prior state rather than deleting unconditionally, and drop the `en`
+    // dict only if this suite created it, so the shared dictionary is left exactly as we found it.
+    originalLabels.forEach(({ key, existed, value }) => {
+      if (existed) {
+        window.nuxeo.I18n.en[key] = value;
+      } else {
+        delete window.nuxeo.I18n.en[key];
+      }
+    });
+    if (createdEnDict) {
+      delete window.nuxeo.I18n.en;
+    }
     window.nuxeo.I18n.language = originalLanguage;
   });
 
