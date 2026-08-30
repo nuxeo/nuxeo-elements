@@ -29,7 +29,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
 {
   // A JS `.` never matches a line terminator, so the original `/(.+)\/$/` only stripped a trailing
   // slash when a non-line-terminator character preceded it: '/' and '<LF>/' were left untouched.
-  const LINE_TERMINATORS = ['\n', '\r', '\u2028', '\u2029'];
+  const LINE_TERMINATORS = new Set(['\n', '\r', '\u2028', '\u2029']);
 
   /**
    * Removes a single trailing slash, matching the previous `value.replace(/(.+)\/$/, '$1')` exactly
@@ -40,7 +40,8 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
     if (typeof value !== 'string' || value.length < 2 || !value.endsWith('/')) {
       return value;
     }
-    return LINE_TERMINATORS.includes(value.charAt(value.length - 2)) ? value : value.slice(0, -1);
+    const stripped = value.slice(0, -1);
+    return LINE_TERMINATORS.has(stripped.slice(-1)) ? value : stripped;
   };
 
   /**
