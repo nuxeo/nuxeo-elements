@@ -17,7 +17,17 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '../../..');
-const pkg = process.env.NX_PACKAGE || 'core';
+const VALID_PACKAGES = ['core', 'ui', 'dataviz'];
+
+// Selected out of the allow-list instead of used as given, so the name is provably one of the three
+// known packages before it reaches a filesystem path or an output line. The rejected value is
+// deliberately not echoed — it is untrusted input, and Veracode reports it as CWE-312 in a log sink.
+const requested = process.env.NX_PACKAGE || 'core';
+const pkg = VALID_PACKAGES.find((name) => name === requested);
+if (!pkg) {
+  throw new Error(`Unknown NX_PACKAGE — expected one of: ${VALID_PACKAGES.join(', ')}`);
+}
+
 const lcovFile = path.join(root, 'coverage', pkg, 'lcov.info');
 const manifestFile = path.join(root, 'test', 'coverage-imports-data.js');
 
