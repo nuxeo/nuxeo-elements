@@ -19,7 +19,7 @@ import { html, fixture, flush, isElementVisible } from '@nuxeo/testing-helpers';
 import '../widgets/nuxeo-tooltip.js';
 import { ensureClonedContentStyles } from '../widgets/nuxeo-tooltip.js';
 
-suite('nuxeo-tooltip', async () => {
+suite('nuxeo-tooltip', () => {
   test('Should not add paper-tooltip to the dom when hidden attribute is set', async () => {
     const tooltip = await fixture(
       html`
