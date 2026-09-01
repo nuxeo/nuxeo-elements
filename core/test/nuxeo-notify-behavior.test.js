@@ -47,7 +47,7 @@ suite('nuxeo-notify-behavior', () => {
     },
   );
 
-  suite('When notify is called', async () => {
+  suite('When notify is called', () => {
     test('Should fire "notify" event', async () => {
       const message = 'message';
       const outer = await fixture(html`
