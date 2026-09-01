@@ -68,7 +68,7 @@ import './nuxeo-tooltip.js';
         </style>
 
         <template is="dom-if" if="[[hasLabel]]">
-          <span>[[label]]</span>
+          <span>[[_normalizeLabel(label)]]</span>
         </template>
         <nuxeo-select aria-label="[[_normalizeLabel(label)]]" attr-for-selected="option" selected="{{selected}}">
           <dom-if if="[[options]]">

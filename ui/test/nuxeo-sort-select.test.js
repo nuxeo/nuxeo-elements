@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, html, waitForEvent } from '@nuxeo/testing-helpers';
+import { fixture, flush, html, waitForEvent } from '@nuxeo/testing-helpers';
 import '../widgets/nuxeo-sort-select.js';
 
 suite('nuxeo-sort-select', () => {
@@ -35,6 +35,32 @@ suite('nuxeo-sort-select', () => {
 
   test('should default _sortOrder to asc', () => {
     expect(el._sortOrder).to.equal('asc');
+  });
+
+  suite('label', () => {
+    test('defaults to no label', async () => {
+      await flush();
+      expect(el.label).to.be.null;
+      expect(el.hasLabel).to.be.false;
+      expect(el.shadowRoot.querySelector('span')).to.be.null;
+      expect(el.shadowRoot.querySelector('nuxeo-select').getAttribute('aria-label')).to.be.null;
+    });
+
+    test('renders a span and forwards the label as aria-label to the select', async () => {
+      el.label = 'Sort by';
+      await flush();
+      expect(el.hasLabel).to.be.true;
+      expect(el.shadowRoot.querySelector('span').textContent.trim()).to.equal('Sort by');
+      expect(el.shadowRoot.querySelector('nuxeo-select').getAttribute('aria-label')).to.equal('Sort by');
+    });
+
+    test('does not flag a blank label, nor render a span for it', async () => {
+      el.label = '  ';
+      await flush();
+      expect(el.hasLabel).to.be.false;
+      expect(el.shadowRoot.querySelector('span')).to.be.null;
+      expect(el.shadowRoot.querySelector('nuxeo-select').getAttribute('aria-label')).to.be.null;
+    });
   });
 
   suite('_sortOrderIcon', () => {
