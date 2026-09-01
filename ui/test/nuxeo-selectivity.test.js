@@ -1217,6 +1217,74 @@ suite('nuxeo-selectivity', () => {
       const items = dropdown.querySelectorAll('.selectivity-result-item');
       expect(items.length).to.be.at.least(1);
     });
+
+    // ELEMENTS-1746: MultipleSelectivity.filterResults() rebuilds each result item, and used to
+    // drop `depth`. The padding-left expression then evaluated to NaN, the inline style was
+    // discarded and every nested entry collapsed onto the single 17px stylesheet indent — so a
+    // grandchild looked like a sibling of its own parent.
+    const deepTree = [
+      {
+        id: 'documents-pca',
+        displayLabel: 'Documents PCA',
+        children: [
+          {
+            id: 'dtc',
+            displayLabel: 'Directives techniques',
+            children: [{ id: 'dtc-detail', displayLabel: 'Detail' }],
+          },
+          { id: 'modification', displayLabel: 'Modification' },
+        ],
+      },
+    ];
+
+    const openAndReadPadding = async (widget) => {
+      widget._selectivity.open();
+      await flush();
+      await new Promise((r) => setTimeout(r, 50));
+      const dropdown = findDropdown(widget);
+      expect(dropdown).to.not.be.null;
+      const rows = {};
+      dropdown.querySelectorAll('.selectivity-result-item').forEach((row) => {
+        rows[row.textContent.trim()] = row.style.paddingLeft;
+      });
+      return rows;
+    };
+
+    test('indents nested result items by depth when multiple is true', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity .data=${deepTree} multiple min-chars="0" frequency="0"></nuxeo-selectivity>
+      `);
+      const padding = await openAndReadPadding(selectivityWidget);
+      expect(padding['Documents PCA']).to.equal('7px');
+      expect(padding['Directives techniques']).to.equal('17px');
+      expect(padding.Detail).to.equal('27px');
+      // A child of the root must not be indented like a grandchild.
+      expect(padding.Modification).to.equal('17px');
+    });
+
+    test('indents nested result items identically in single and multiple mode', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity .data=${deepTree} min-chars="0" frequency="0"></nuxeo-selectivity>
+      `);
+      const single = await openAndReadPadding(selectivityWidget);
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity .data=${deepTree} multiple min-chars="0" frequency="0"></nuxeo-selectivity>
+      `);
+      const multiple = await openAndReadPadding(selectivityWidget);
+      expect(multiple).to.deep.equal(single);
+    });
+
+    test('_resultPadding falls back to the root indent for a non-numeric depth', async () => {
+      selectivityWidget = await fixture(
+        html`
+          <nuxeo-selectivity .data=${deepTree}></nuxeo-selectivity>
+        `,
+      );
+      expect(selectivityWidget._resultPadding(0)).to.equal(7);
+      expect(selectivityWidget._resultPadding(2)).to.equal(27);
+      expect(selectivityWidget._resultPadding(undefined)).to.equal(7);
+      expect(selectivityWidget._resultPadding(NaN)).to.equal(7);
+    });
   });
 
   // --------------------------------------------------------------------------
