@@ -2,8 +2,16 @@
 name: Crowdin Sync
 
 on:
-  # Make workflow reusable, to be called by the scheduled crowdin workflow in the default branch
+  # Make workflow reusable, to be called by the scheduled crowdin workflow in the default branch.
+  # Declare the secrets it consumes so callers can pass only what is required (no `secrets: inherit`).
   workflow_call:
+    secrets:
+      CROWDIN_PROJECT_ID:
+        required: false
+      CROWDIN_PERSONAL_TOKEN:
+        required: false
+      WEBUI_JX_BOT_GITHUB_ACTIONS_TOKEN:
+        required: false
 
   # Sync when a commit is done on the reference branches
   push:
