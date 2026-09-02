@@ -26,6 +26,42 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
 {
+  const isEmail = (value) => {
+    if (/\s/.test(value)) {
+      return false;
+    }
+    const atIndex = value.indexOf('@', 1);
+    if (atIndex === -1) {
+      return false;
+    }
+    const dotIndex = value.indexOf('.', atIndex + 2);
+    return dotIndex !== -1 && dotIndex < value.length - 1;
+  };
+
+  // Controls rendered inside Quill's link tooltip, in DOM order.
+  const TOOLTIP_CONTROLS = 'a.ql-preview, input[type="text"], a.ql-action, a.ql-remove';
+
+  // The tooltip is shared by the link and video buttons, so everything it exposes — its own
+  // name, the name of each control and the toolbar button focus goes back to — follows the mode.
+  const TOOLTIP_MODES = {
+    link: {
+      dialog: 'htmlEditor.link.dialog',
+      url: 'htmlEditor.link.url',
+      edit: 'htmlEditor.link.edit',
+      remove: 'htmlEditor.link.remove',
+      visit: 'htmlEditor.link.visit',
+      button: 'button.ql-link',
+    },
+    video: {
+      dialog: 'htmlEditor.video.dialog',
+      url: 'htmlEditor.video.url',
+      edit: 'htmlEditor.video.edit',
+      remove: 'htmlEditor.video.remove',
+      visit: 'htmlEditor.video.visit',
+      button: 'button.ql-video',
+    },
+  };
+
   /**
    * `nuxeo-html-editor`
    * @memberof Nuxeo
@@ -187,7 +223,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
       // init editor
       const { placeholder, readOnly } = this;
-      const modules = { toolbar: '#toolbar' };
+      const modules = {
+        toolbar: { container: '#toolbar', handlers: { link: (value) => this._onLinkAction(value) } },
+      };
       this._editor = new Quill(this.$.editor, { theme: 'snow', modules, placeholder, readOnly });
       if (this.getAttribute('dir') === 'rtl') {
         this._editor.format('align', 'right');
@@ -197,6 +235,20 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._editor.on('text-change', () => {
         this._debouncer = Debouncer.debounce(this._debouncer, timeOut.after(200), () => this._updateValue());
       });
+      this._setupTooltipAccessibility();
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      this._observeTooltip();
+    }
+
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      if (this._tooltipObserver) {
+        this._tooltipObserver.disconnect();
+        this._tooltipObserver = null;
+      }
     }
 
     _updateValue() {
@@ -218,6 +270,175 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         this._editor.enable(!this.readOnly);
         this._editor.getModule('toolbar').container.style.display = this.readOnly ? 'none' : '';
       }
+    }
+
+    /**
+     * Toolbar handler for the link button.
+     *
+     * Quill's own handler returns early when the selection is empty, which leaves the button
+     * inert for anyone who reaches it with the keyboard without having selected text first.
+     * Here the popup always opens, and a collapsed caret inserts the URL as its own link.
+     */
+    _onLinkAction(value) {
+      if (!value) {
+        this._editor.format('link', false, Quill.sources.USER);
+        return;
+      }
+      const range = this._editor.getSelection(true);
+      if (!range || !this._tooltip) {
+        return;
+      }
+      this._linkInsertRange = range.length === 0 ? range : null;
+      let preview = range.length > 0 ? this._editor.getText(range) : '';
+      if (isEmail(preview) && preview.indexOf('mailto:') !== 0) {
+        preview = `mailto:${preview}`;
+      }
+      this._tooltip.edit('link', preview);
+    }
+
+    /**
+     * Quill's link tooltip ships as a bare `<input>` flanked by two anchors with no `href`,
+     * so its Save/Edit/Remove controls are neither focusable nor named. Give them button
+     * semantics, keep focus inside the popup while it is open and honour Enter/Escape.
+     */
+    _setupTooltipAccessibility() {
+      const { theme } = this._editor;
+      if (!theme) {
+        return;
+      }
+      const { tooltip } = theme;
+      if (!tooltip) {
+        return;
+      }
+      const { root } = tooltip;
+      if (!root) {
+        return;
+      }
+      this._tooltip = tooltip;
+      tooltip.root.setAttribute('role', 'dialog');
+      tooltip.root.querySelectorAll('a.ql-action, a.ql-remove').forEach((control) => {
+        control.setAttribute('role', 'button');
+        control.setAttribute('tabindex', '0');
+      });
+      // Capture phase: Quill's own handler hides the popup on Escape, and once it is hidden
+      // there is nothing left to hand focus back from.
+      tooltip.root.addEventListener('keydown', (e) => this._onTooltipKeydown(e), true);
+
+      // Quill only formats an existing selection, so nothing is linked when the caret is collapsed.
+      const { save } = tooltip;
+      tooltip.save = () => {
+        const url = tooltip.textbox.value;
+        const range = this._linkInsertRange;
+        this._linkInsertRange = null;
+        if (range && url && tooltip.root.dataset.mode === 'link') {
+          this._editor.insertText(range.index, url, 'link', url, Quill.sources.USER);
+          this._editor.setSelection(range.index + url.length, Quill.sources.SILENT);
+          tooltip.textbox.value = '';
+          tooltip.hide();
+          return;
+        }
+        save.call(tooltip);
+      };
+
+      this._updateTooltipLabels();
+      this._observeTooltip();
+    }
+
+    _observeTooltip() {
+      if (!this._tooltip || this._tooltipObserver) {
+        return;
+      }
+      this._tooltipObserver = new MutationObserver(() => this._onTooltipStateChanged());
+      this._tooltipObserver.observe(this._tooltip.root, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    _onTooltipStateChanged() {
+      this._updateTooltipLabels();
+      const editing = this._isTooltipEditing();
+      // Entering edit mode is the point where the user is expected to type, so take focus there.
+      if (editing && !this._tooltipEditing) {
+        this._tooltip.textbox.focus();
+        this._tooltip.textbox.select();
+      }
+      this._tooltipEditing = editing;
+    }
+
+    _tooltipMode() {
+      return TOOLTIP_MODES[this._tooltip.root.dataset.mode] || TOOLTIP_MODES.link;
+    }
+
+    _updateTooltipLabels() {
+      const { root } = this._tooltip;
+      const mode = this._tooltipMode();
+      root.setAttribute('aria-label', this.i18n(mode.dialog));
+      this._tooltip.textbox.setAttribute('aria-label', this.i18n(mode.url));
+      const action = root.querySelector('a.ql-action');
+      const remove = root.querySelector('a.ql-remove');
+      const preview = root.querySelector('a.ql-preview');
+      if (action) {
+        action.setAttribute(
+          'aria-label',
+          root.classList.contains('ql-editing') ? this.i18n('htmlEditor.tooltip.save') : this.i18n(mode.edit),
+        );
+      }
+      if (remove) {
+        remove.setAttribute('aria-label', this.i18n(mode.remove));
+      }
+      if (preview) {
+        preview.setAttribute('aria-label', this.i18n(mode.visit));
+      }
+    }
+
+    _isTooltipEditing() {
+      const { classList } = this._tooltip.root;
+      return !classList.contains('ql-hidden') && classList.contains('ql-editing');
+    }
+
+    _onTooltipKeydown(e) {
+      if (this._tooltip.root.classList.contains('ql-hidden')) {
+        return;
+      }
+      const target = e.composedPath()[0];
+      const isTooltipAction = target instanceof Element && target.matches('a.ql-action, a.ql-remove');
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        this._closeTooltip();
+      } else if ((e.key === 'Enter' || e.key === ' ') && isTooltipAction) {
+        e.preventDefault();
+        target.click();
+      } else if (e.key === 'Tab' && this._isTooltipEditing()) {
+        // While editing, the popup behaves as a dialog: Tab must not escape it.
+        const controls = this._visibleTooltipControls();
+        const index = controls.indexOf(target);
+        if (controls.length === 0 || index < 0) {
+          return;
+        }
+        e.preventDefault();
+        const next = (index + (e.shiftKey ? -1 : 1) + controls.length) % controls.length;
+        controls[next].focus();
+      }
+    }
+
+    _visibleTooltipControls() {
+      return Array.from(this._tooltip.root.querySelectorAll(TOOLTIP_CONTROLS)).filter(
+        (control) => control.getClientRects().length > 0,
+      );
+    }
+
+    _closeTooltip() {
+      const editing = this._tooltip.root.classList.contains('ql-editing');
+      // Back to whichever toolbar button opened the popup, so Escape is not a one-way trip.
+      const button = editing && this.$.toolbar.querySelector(this._tooltipMode().button);
+      // Move focus out before hiding: the browser resets focus to the body when the
+      // focused control disappears, which would strand a keyboard user at the top of the page.
+      if (button) {
+        button.focus();
+      } else {
+        this._editor.focus();
+      }
+      this._tooltip.hide();
+      this._linkInsertRange = null;
     }
 
     _onImageUpload() {
