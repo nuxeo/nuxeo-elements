@@ -46,4 +46,72 @@ suite('nuxeo-share-button extras', () => {
       expect(el._buildPermalink(null)).to.equal('');
     });
   });
+
+  suite('copy link control accessibility', () => {
+    test('is a button that keyboard users can reach', () => {
+      const button = el.$.permalinkIcon;
+      expect(button.tagName).to.equal('PAPER-ICON-BUTTON');
+      expect(button.getAttribute('role')).to.equal('button');
+      expect(button.tabIndex).to.equal(0);
+    });
+
+    test('exposes an accessible name', () => {
+      expect(el.$.permalinkIcon.getAttribute('aria-label')).to.equal(el.i18n('shareButton.operation.copy'));
+    });
+
+    test('has a polite live region for the copy confirmation', () => {
+      const status = el.$.copyStatus;
+      expect(status.getAttribute('role')).to.equal('status');
+      expect(status.getAttribute('aria-live')).to.equal('polite');
+    });
+  });
+
+  suite('_copyLink', () => {
+    let execCommand;
+
+    teardown(() => {
+      if (execCommand) {
+        execCommand.restore();
+        execCommand = null;
+      }
+    });
+
+    test('announces the confirmation when the copy succeeds', () => {
+      execCommand = sinon.stub(window.document, 'execCommand').returns(true);
+      el._copyLink();
+      expect(el._copyStatus).to.equal(el.i18n('shareButton.operation.copied'));
+      expect(el.$.permalinkIcon.icon).to.equal('check');
+    });
+
+    test('stays silent when the copy command fails', () => {
+      execCommand = sinon.stub(window.document, 'execCommand').returns(false);
+      el._copyLink();
+      expect(el._copyStatus).to.equal('');
+      expect(el.$.permalinkIcon.icon).to.equal('link');
+    });
+
+    test('hands focus back to the button when activated from the keyboard', () => {
+      execCommand = sinon.stub(window.document, 'execCommand').returns(true);
+      const focus = sinon.spy(el.$.permalinkIcon, 'focus');
+      // Clicks synthesized from Enter/Space carry a detail of 0.
+      el._copyLink({ detail: 0 });
+      expect(focus.called).to.be.true;
+      focus.restore();
+    });
+
+    test('leaves focus alone when activated with a pointer', () => {
+      execCommand = sinon.stub(window.document, 'execCommand').returns(true);
+      const focus = sinon.spy(el.$.permalinkIcon, 'focus');
+      el._copyLink({ detail: 1 });
+      expect(focus.called).to.be.false;
+      focus.restore();
+    });
+
+    test('ignores a repeat activation while the confirmation is showing', () => {
+      execCommand = sinon.stub(window.document, 'execCommand').returns(true);
+      el._copyLink({ detail: 0 });
+      el._copyLink({ detail: 0 });
+      expect(execCommand.callCount).to.equal(1);
+    });
+  });
 });
