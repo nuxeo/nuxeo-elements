@@ -101,7 +101,7 @@ import './nuxeo-tooltip.js';
             id="iconButton"
             icon="nuxeo:more-vert"
             slot="dropdown-trigger"
-            aria-labelledby="iconButtonTooltip"
+            aria-label$="[[i18n('actionsMenu.ariaLabel')]]"
             on-keydown="_onDropdownTriggerKeydown"
           ></paper-icon-button>
           <paper-listbox slot="dropdown-content" role="list">

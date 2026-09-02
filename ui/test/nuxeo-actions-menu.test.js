@@ -585,3 +585,19 @@ suite('nuxeo-actions-menu', () => {
     });
   });
 });
+
+suite('nuxeo-actions-menu accessible name', () => {
+  test('the overflow trigger is named after what it opens', async () => {
+    const menu = await fixture(
+      html`
+        <nuxeo-actions-menu></nuxeo-actions-menu>
+      `,
+    );
+    await flush();
+    const trigger = menu.shadowRoot.querySelector('#iconButton');
+    expect(trigger).to.exist;
+    expect(trigger.getAttribute('aria-label')).to.equal(menu.i18n('actionsMenu.ariaLabel'));
+    // aria-labelledby would win over aria-label, so the old tooltip reference must be gone.
+    expect(trigger.hasAttribute('aria-labelledby')).to.be.false;
+  });
+});
