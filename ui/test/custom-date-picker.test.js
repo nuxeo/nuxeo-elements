@@ -7021,6 +7021,153 @@ suite('custom-date-picker accessibility', () => {
     });
   });
 
+  suite('accessible text spacing (WCAG 2.1 SC 1.4.12)', () => {
+    // the spacing a user agent / user stylesheet is allowed to force on the page
+    const TEXT_SPACING_OVERRIDE =
+      '* { line-height: 1.5 !important; letter-spacing: 0.12em !important; word-spacing: 0.16em !important; }';
+
+    // scrollWidth/clientWidth are rounded to integers, so a sub-pixel layout can report a 1px
+    // difference with nothing actually overflowing. The regression this guards against is ~4px.
+    const ROUNDING_TOLERANCE_PX = 1;
+
+    let el;
+
+    const q = (selector) => el.shadowRoot.querySelector(selector);
+    const qa = (selector) => Array.from(el.shadowRoot.querySelectorAll(selector));
+
+    // the override has to be injected into the shadow root: a page-level stylesheet
+    // (or the usual text-spacing bookmarklet) cannot reach the calendar internals
+    const overrideTextSpacing = async () => {
+      const style = document.createElement('style');
+      style.textContent = TEXT_SPACING_OVERRIDE;
+      el.shadowRoot.appendChild(style);
+      await flush();
+    };
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+      el._openCalendar();
+      await flush();
+    });
+
+    teardown(() => {
+      if (el._isCalendarOpen) {
+        el._closeCalendar();
+      }
+    });
+
+    test('the calendar is sized by its content instead of a fixed width', async () => {
+      const popover = q('#calendarPopover');
+      expect(getComputedStyle(popover).minWidth).to.equal('280px');
+      expect(popover.scrollWidth).to.be.at.most(popover.clientWidth + ROUNDING_TOLERANCE_PX);
+      await overrideTextSpacing();
+      expect(popover.getBoundingClientRect().width).to.be.at.least(280);
+      expect(popover.scrollWidth, 'the calendar must not overflow its own box').to.be.at.most(
+        popover.clientWidth + ROUNDING_TOLERANCE_PX,
+      );
+    });
+
+    test('week names and dates share the same column tracks', async () => {
+      const columns = () => [
+        getComputedStyle(q('.weekday-headers')).gridTemplateColumns,
+        getComputedStyle(q('.calendar-grid')).gridTemplateColumns,
+      ];
+      const [headers, grid] = columns();
+      expect(headers).to.equal(grid);
+      await overrideTextSpacing();
+      const [overriddenHeaders, overriddenGrid] = columns();
+      expect(overriddenHeaders).to.equal(overriddenGrid);
+    });
+
+    test('week names stay inside the calendar when text spacing is overridden', async () => {
+      await overrideTextSpacing();
+      const row = q('.weekday-headers');
+      expect(row.scrollWidth, 'week-name row must not overflow').to.be.at.most(row.clientWidth + ROUNDING_TOLERANCE_PX);
+      const limit = q('#calendarPopover').getBoundingClientRect().right;
+      const escaping = qa('.weekday-header')
+        .filter((header) => header.getBoundingClientRect().right > limit + 0.5)
+        .map((header) => header.textContent.trim());
+      expect(escaping, 'no week name may render outside the calendar').to.deep.equal([]);
+    });
+
+    test('dates are not clipped when text spacing is overridden', async () => {
+      const day = q('.calendar-day');
+      expect(getComputedStyle(day).minWidth).to.equal('36px');
+      expect(getComputedStyle(day).minHeight).to.equal('36px');
+      await overrideTextSpacing();
+      const clipped = qa('.calendar-day')
+        .filter(
+          (cell) =>
+            cell.scrollWidth > cell.clientWidth + ROUNDING_TOLERANCE_PX ||
+            cell.scrollHeight > cell.clientHeight + ROUNDING_TOLERANCE_PX,
+        )
+        .map((cell) => cell.textContent.trim());
+      expect(clipped, 'no date may be clipped by its cell').to.deep.equal([]);
+      const grid = q('.calendar-grid');
+      expect(grid.scrollWidth).to.be.at.most(grid.clientWidth + ROUNDING_TOLERANCE_PX);
+    });
+
+    test('the month/year header and the footer stay inside the calendar', async () => {
+      await overrideTextSpacing();
+      const limit = q('#calendarPopover').getBoundingClientRect().right;
+      ['.month-text', '.year-text', '.calendar-footer'].forEach((selector) => {
+        expect(q(selector).getBoundingClientRect().right, `${selector} must stay inside the calendar`).to.be.at.most(
+          limit + 0.5,
+        );
+      });
+    });
+
+    test('the date input is not clipped by its wrapper', async () => {
+      await overrideTextSpacing();
+      const wrapper = q('.input-wrapper');
+      expect(wrapper.scrollWidth).to.be.at.most(wrapper.clientWidth + ROUNDING_TOLERANCE_PX);
+    });
+
+    // A minimum width larger than the maximum wins over it, so the 280px design floor has to yield
+    // to the viewport once there is less room than that (400% zoom on a 1024px screen, SC 1.4.10).
+    test('the 280px floor never exceeds the width the viewport allows', () => {
+      const { minWidth, maxWidth } = getComputedStyle(q('#calendarPopover'));
+      const available = document.documentElement.clientWidth - 16;
+      expect(parseFloat(maxWidth)).to.be.closeTo(available, ROUNDING_TOLERANCE_PX);
+      expect(parseFloat(minWidth)).to.equal(Math.min(280, available));
+      expect(parseFloat(minWidth)).to.be.at.most(parseFloat(maxWidth));
+    });
+
+    // min-width/max-width resolve against the viewport, which the test page cannot resize, so give
+    // the calendar a real 280px viewport of its own.
+    test('the calendar stays inside a viewport narrower than the 280px floor', async () => {
+      const frame = document.createElement('iframe');
+      frame.style.cssText = 'width: 280px; height: 600px; border: 0;';
+      const moduleUrl = new URL('../widgets/custom-date-picker.js', import.meta.url).href;
+      frame.srcdoc = `<!doctype html><html><body style="margin:0"><custom-date-picker></custom-date-picker>
+        <script type="module">import '${moduleUrl}';</script></body></html>`;
+      // The listener has to exist before the iframe is inserted, since insertion is what
+      // starts the load and a srcdoc document can finish it before the next statement runs.
+      const loaded = new Promise((resolve) => {
+        frame.addEventListener('load', resolve, { once: true });
+      });
+      document.body.appendChild(frame);
+      try {
+        await loaded;
+        const frameWindow = frame.contentWindow;
+        await frameWindow.customElements.whenDefined('custom-date-picker');
+        const picker = frame.contentDocument.querySelector('custom-date-picker');
+        picker._openCalendar();
+        await new Promise((resolve) => {
+          frameWindow.requestAnimationFrame(() => frameWindow.requestAnimationFrame(resolve));
+        });
+        const popover = picker.shadowRoot.querySelector('#calendarPopover');
+        expect(parseFloat(frameWindow.getComputedStyle(popover).minWidth)).to.be.at.most(frameWindow.innerWidth - 16);
+        expect(popover.getBoundingClientRect().right).to.be.at.most(frameWindow.innerWidth);
+      } finally {
+        frame.remove();
+      }
+    });
+  });
+
   suite('text spacing', () => {
     // WCAG 2.1 AA, SC 1.4.12 (Text Spacing). The date input sits in a shadow root, so a user
     // text-spacing stylesheet applied at document level can only reach it by inheritance, and
@@ -7039,5 +7186,39 @@ suite('custom-date-picker accessibility', () => {
       expect(style.letterSpacing, 'letter-spacing must follow the ancestor').to.equal('3px');
       expect(style.wordSpacing, 'word-spacing must follow the ancestor').to.equal('5px');
     });
+  });
+});
+
+// Covers WEBUI-493: `autocomplete` is a declared property instead of a hardcoded `off` attribute,
+// so nuxeo-date-picker (and therefore a layout) can identify the purpose of the field
+// (WCAG 2.1 SC 1.3.5, technique H98).
+suite('custom-date-picker autocomplete', () => {
+  function getDateInput(el) {
+    return el.shadowRoot.querySelector('#dateInput');
+  }
+
+  test('defaults to off, preserving the previously hardcoded value', async () => {
+    const el = await newPicker();
+    await flush();
+    expect(el.autocomplete).to.equal('off');
+    expect(getDateInput(el).getAttribute('autocomplete')).to.equal('off');
+  });
+
+  test('exposes a configured token on the native input', async () => {
+    const el = await newPicker(
+      html`
+        <custom-date-picker autocomplete="bday"></custom-date-picker>
+      `,
+    );
+    await flush();
+    expect(getDateInput(el).getAttribute('autocomplete')).to.equal('bday');
+  });
+
+  test('exposes a token set at runtime on the native input', async () => {
+    const el = await newPicker();
+    await flush();
+    el.autocomplete = 'bday';
+    await flush();
+    expect(getDateInput(el).getAttribute('autocomplete')).to.equal('bday');
   });
 });

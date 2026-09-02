@@ -6,129 +6,11 @@ on:
     branches:
       - maintenance-3.1.x
 
-env:
-  DOCKER_REGISTRY: us-east1-docker.pkg.dev
-  DOCKER_IMAGE: ${{ secrets.GKE_PROJECT }}/webui/nuxeo-elements/storybook
-  GKE_CLUSTER: jx-prod
-  GKE_ZONE: us-east1-b
-
 permissions:
   contents: read
   pull-requests: write
 
 jobs:
-  storybook:
-    name: Storybook
-    if: (github.event.action == 'labeled' && github.event.label.name == 'preview') || contains(github.event.pull_request.labels.*.name, 'preview')
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v6
-
-    - uses: actions/setup-node@v6
-      with:
-        node-version: 22
-        registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
-        scope: '@nuxeo'
-
-    - name: Prepare environment
-      run: |
-        BRANCH_NAME=${GITHUB_HEAD_REF}
-        BRANCH_NAME_SANITIZED=$(echo $BRANCH_NAME | sed 's/[^[:alnum:]-]/-/g' | tr '[:upper:]' '[:lower:]')
-        echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-        echo "VERSION=$(npx -c 'echo "$npm_package_version"')-$BRANCH_NAME_SANITIZED" >> $GITHUB_ENV
-        echo "PREVIEW_NAMESPACE=storybook-$BRANCH_NAME_SANITIZED" >> $GITHUB_ENV
-
-    - name: Install
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-      run: npm ci --ignore-scripts
-
-    - name: Run analysis
-      run: npx lerna run analysis --parallel
-
-    - name: Build storybook
-      working-directory: ./storybook
-      run: |
-        npx storybook build -o dist
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v4
-
-    - name: Login to Docker registry
-      uses: docker/login-action@v4
-      with:
-        registry: ${{ env.DOCKER_REGISTRY }}
-        username: _json_key
-        password: ${{ secrets.GKE_SA_KEY }}
-
-    - name: Build and push image
-      uses: docker/build-push-action@v7
-      with:
-        context: ./storybook
-        push: true
-        tags: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
-
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v3
-      with:
-        credentials_json: ${{ secrets.GKE_SA_KEY }}
-
-    - name: Get GKE credentials
-      uses: google-github-actions/get-gke-credentials@v3.0.0
-      with:
-        cluster_name: ${{ env.GKE_CLUSTER }}
-        location: ${{ env.GKE_ZONE }}
-        project_id: ${{ secrets.GKE_PROJECT }}
-
-    - name: Check preview namespace
-      id: preview_ns
-      run: |
-        echo ::set-output name=exists::$(kubectl get namespace ${PREVIEW_NAMESPACE})
-
-    # Previous preview deployment needs to be scaled to 0 to be replaced correctly
-    # - name: Cleanup preview namespace
-    #   if: ${{ steps.preview_ns.outputs.exists }}
-    #   continue-on-error: true
-    #   run: |
-    #     kubectl -n ${PREVIEW_NAMESPACE} scale deployment preview --replicas=0
-
-    - name: Create preview namespace
-      if: ${{ !steps.preview_ns.outputs.exists }}
-      run: |
-        kubectl create namespace ${PREVIEW_NAMESPACE}
-
-    - name: Install preview
-      id: preview
-      working-directory: ./storybook/charts/preview
-      run: |
-        # install Helm
-        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash -
-        helm repo add jx https://jenkins-x-charts.github.io/v2/
-
-        # substitute env variables in values.yaml
-        mv values.yaml values.yaml.tosubst
-        envsubst < values.yaml.tosubst > values.yaml
-
-        # update helm deps
-        helm dependency update .
-
-        # install
-        helm upgrade --install --namespace ${PREVIEW_NAMESPACE} preview .
-
-        echo "PREVIEW_URL=https://preview-${PREVIEW_NAMESPACE}.webui.dev.nuxeo.com" >> $GITHUB_ENV
-
-    - uses: actions/github-script@v9
-      if: github.event_name == 'pull_request'
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: `:star: Storybook preview available [here](${process.env.PREVIEW_URL})`
-          })
-
   webui-preview:
     name: Web UI
     runs-on: ubuntu-latest
@@ -142,7 +24,7 @@ jobs:
 
       - name: Web UI preview
         id: main
-        uses: nuxeo/ui-team-gh-actions/trigger-workflow@a5b89f35e0d1f3a912f528d7f1c3acdb73c60549
+        uses: nuxeo/ui-team-gh-actions/trigger-workflow@46f1ea323a97203402dbc57d0537bd5b6a6099eb
         with:
           owner: nuxeo
           repo: nuxeo-web-ui
@@ -153,6 +35,10 @@ jobs:
             branch_name: ${{ env.BRANCH_NAME }}
 
       - uses: actions/github-script@v9
+        env:
+          # Fixed per-LTS Flux preview env (LTS-2025 uses nuxeo-web-ui-25)
+          WEBUI_PREVIEW_URL: https://nuxeo-web-ui-23.build.nuxeo.com
+          WEBUI_PREVIEW_IMAGE: ${{ steps.main.outputs.message }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -160,5 +46,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `:star: Web UI preview available [here](${{ steps.main.outputs.message }})`
+              body: `:star: Web UI preview will be available [here](${process.env.WEBUI_PREVIEW_URL}) once Flux rolls out the image (~5-10 min).\n\nImage: \`${process.env.WEBUI_PREVIEW_IMAGE}\``
             })

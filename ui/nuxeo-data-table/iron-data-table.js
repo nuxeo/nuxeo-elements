@@ -177,6 +177,13 @@ import '../nuxeo-button-styles.js';
             flex-direction: column;
           }
 
+          #table {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            min-height: 0;
+          }
+
           #header {
             box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
             padding-inline-start: 2px;
@@ -232,131 +239,143 @@ import '../nuxeo-button-styles.js';
           <label>[[label]]</label>
           <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
 
-          <div id="header">
-            <nuxeo-data-table-row header>
-              <nuxeo-data-table-checkbox
-                style$="[[_computeSelectAllVisibility(selectionEnabled, selectAllEnabled, multiSelection)]]"
-                checked="[[_isChecked(selectAllActive, _excludedItems, _excludedItems.*)]]"
-                on-click="_toggleSelectAll"
-              ></nuxeo-data-table-checkbox>
-              <dom-repeat items="[[columns]]" as="column">
-                <template>
-                  <nuxeo-data-table-cell
-                    header
-                    align-right="[[column.alignRight]]"
-                    before-bind="[[beforeCellBind]]"
-                    column="[[column]]"
-                    flex="[[column.flex]]"
-                    hidden="[[column.hidden]]"
-                    order="[[column.order]]"
-                    resized="[[column.resized]]"
-                    table="[[_this]]"
-                    template="[[column.headerTemplate]]"
-                    width="[[column.width]]"
-                    overflow="[[column.overflow]]"
-                  >
-                    <nuxeo-data-table-column-sort
-                      sort-order="[[sortOrder]]"
-                      path="[[column.sortBy]]"
-                      on-sort-direction-changed="_sort"
-                      hidden$="[[!column.sortBy]]"
-                    >
-                    </nuxeo-data-table-column-sort>
-                  </nuxeo-data-table-cell>
-                </template>
-              </dom-repeat>
-              <div style$="[[_computeActionsStyle(editable, orderable)]]">
-                <nuxeo-data-table-cell></nuxeo-data-table-cell>
-              </div>
-              <nuxeo-data-table-settings
-                columns="{{columns}}"
-                hidden$="[[!settingsEnabled]]"
-              ></nuxeo-data-table-settings>
-            </nuxeo-data-table-row>
-          </div>
-
-          <dom-if if="[[_isEmpty]]">
-            <template>
-              <div class="emptyResult" aria-live="polite">[[_computedEmptyLabel]]</div>
-            </template>
-          </dom-if>
-
-          <iron-list
-            id="list"
-            items="[[items]]"
-            as="item"
-            selected-items="{{selectedItems}}"
-            selected-item="{{selectedItem}}"
-            on-scroll="_scroll"
+          <div
+            id="table"
+            role="table"
+            aria-multiselectable$="[[_computeAriaMultiselectable(multiSelection)]]"
+            aria-label$="[[captionText]]"
           >
-            <template>
-              <div class="item">
-                <nuxeo-data-table-row
-                  on-click="_onRowClick"
-                  before-bind="[[beforeRowBind]]"
-                  even$="[[!_isEven(index)]]"
-                  expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
-                  index="[[index]]"
-                  item="[[item]]"
-                  tabindex="-1"
-                  selected="[[_isSelected(item, selectedItems, selectedItems.*, _excludedItems, _excludedItems.*)]]"
-                >
-                  <nuxeo-data-table-checkbox
-                    hidden$="[[!selectionEnabled]]"
-                    checked$="[[_isSelected(item, selectedItems, selectedItems.*, _excludedItems, _excludedItems.*)]]"
-                    on-click="_onCheckBoxTap"
-                    on-keydown="_onCheckBoxKeydown"
-                  ></nuxeo-data-table-checkbox>
-                  <dom-repeat items="[[columns]]" as="column" index-as="colIndex">
-                    <template>
-                      <nuxeo-data-table-cell
-                        template="[[column.template]]"
-                        table="[[_this]]"
-                        align-right="[[column.alignRight]]"
-                        column="[[column]]"
-                        expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
-                        flex="[[column.flex]]"
-                        hidden="[[column.hidden]]"
-                        index="[[index]]"
-                        item="[[item]]"
-                        order="[[column.order]]"
-                        resized="[[column.resized]]"
-                        selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
-                        width="[[column.width]]"
-                        before-bind="[[beforeCellBind]]"
-                        overflow="[[column.overflow]]"
-                      ></nuxeo-data-table-cell>
-                    </template>
-                  </dom-repeat>
-                  <dom-if if="[[_isExpanded(item, _expandedItems)]]" on-dom-change="_updateSizeForItem">
-                    <template>
-                      <nuxeo-data-table-row-detail
-                        index="[[index]]"
-                        item="[[item]]"
-                        expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
-                        selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
-                        before-bind="[[beforeDetailsBind]]"
-                        table="[[_this]]"
-                        template="[[rowDetail]]"
-                      ></nuxeo-data-table-row-detail>
-                    </template>
-                  </dom-if>
-                  <div style$="[[_computeActionsStyle(editable, orderable)]]">
-                    <nuxeo-data-table-row-actions
-                      index="[[index]]"
-                      editable="[[editable]]"
-                      orderable="[[orderable]]"
-                      template="[[rowForm]]"
-                      item="[[item]]"
-                      size="[[items.length]]"
+            <div id="header" role="rowgroup">
+              <nuxeo-data-table-row header>
+                <nuxeo-data-table-checkbox
+                  header
+                  style$="[[_computeSelectAllVisibility(selectionEnabled, selectAllEnabled, multiSelection)]]"
+                  checked="[[_isChecked(selectAllActive, _excludedItems, _excludedItems.*)]]"
+                  on-click="_toggleSelectAll"
+                ></nuxeo-data-table-checkbox>
+                <dom-repeat items="[[columns]]" as="column" role="presentation">
+                  <template>
+                    <nuxeo-data-table-cell
+                      header
+                      align-right="[[column.alignRight]]"
+                      before-bind="[[beforeCellBind]]"
+                      column="[[column]]"
+                      flex="[[column.flex]]"
+                      hidden="[[column.hidden]]"
+                      order="[[column.order]]"
+                      resized="[[column.resized]]"
                       table="[[_this]]"
+                      template="[[column.headerTemplate]]"
+                      width="[[column.width]]"
+                      overflow="[[column.overflow]]"
                     >
-                    </nuxeo-data-table-row-actions>
+                      <nuxeo-data-table-column-sort
+                        sort-order="[[sortOrder]]"
+                        path="[[column.sortBy]]"
+                        on-sort-direction-changed="_sort"
+                        hidden$="[[!column.sortBy]]"
+                      >
+                      </nuxeo-data-table-column-sort>
+                    </nuxeo-data-table-cell>
+                  </template>
+                </dom-repeat>
+                <div role="columnheader" style$="[[_computeActionsStyle(editable, orderable)]]"></div>
+                <nuxeo-data-table-settings
+                  role="columnheader"
+                  columns="{{columns}}"
+                  hidden$="[[!settingsEnabled]]"
+                ></nuxeo-data-table-settings>
+              </nuxeo-data-table-row>
+            </div>
+
+            <dom-if if="[[_isEmpty]]">
+              <template>
+                <div class="emptyResult" role="rowgroup">
+                  <div role="row">
+                    <div role="cell" aria-live="polite">[[_computedEmptyLabel]]</div>
                   </div>
-                </nuxeo-data-table-row>
-              </div>
-            </template>
-          </iron-list>
+                </div>
+              </template>
+            </dom-if>
+
+            <iron-list
+              id="list"
+              role$="[[_computeListRole(items)]]"
+              items="[[items]]"
+              as="item"
+              selected-items="{{selectedItems}}"
+              selected-item="{{selectedItem}}"
+              on-scroll="_scroll"
+            >
+              <template>
+                <div class="item" role="presentation">
+                  <nuxeo-data-table-row
+                    on-click="_onRowClick"
+                    before-bind="[[beforeRowBind]]"
+                    even$="[[!_isEven(index)]]"
+                    expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                    index="[[index]]"
+                    item="[[item]]"
+                    tabindex="-1"
+                    selected="[[_isSelected(item, selectedItems, selectedItems.*, _excludedItems, _excludedItems.*)]]"
+                  >
+                    <nuxeo-data-table-checkbox
+                      hidden$="[[!selectionEnabled]]"
+                      checked$="[[_isSelected(item, selectedItems, selectedItems.*, _excludedItems, _excludedItems.*)]]"
+                      on-click="_onCheckBoxTap"
+                      on-keydown="_onCheckBoxKeydown"
+                    ></nuxeo-data-table-checkbox>
+                    <dom-repeat items="[[columns]]" as="column" index-as="colIndex">
+                      <template>
+                        <nuxeo-data-table-cell
+                          template="[[column.template]]"
+                          table="[[_this]]"
+                          align-right="[[column.alignRight]]"
+                          column="[[column]]"
+                          expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                          flex="[[column.flex]]"
+                          hidden="[[column.hidden]]"
+                          index="[[index]]"
+                          item="[[item]]"
+                          order="[[column.order]]"
+                          resized="[[column.resized]]"
+                          selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                          width="[[column.width]]"
+                          before-bind="[[beforeCellBind]]"
+                          overflow="[[column.overflow]]"
+                        ></nuxeo-data-table-cell>
+                      </template>
+                    </dom-repeat>
+                    <dom-if if="[[_isExpanded(item, _expandedItems)]]" on-dom-change="_updateSizeForItem">
+                      <template>
+                        <nuxeo-data-table-row-detail
+                          index="[[index]]"
+                          item="[[item]]"
+                          expanded="[[_isExpanded(item, _expandedItems, _expandedItems.*)]]"
+                          selected="[[_isSelected(item, selectedItems, selectedItems.*)]]"
+                          before-bind="[[beforeDetailsBind]]"
+                          table="[[_this]]"
+                          template="[[rowDetail]]"
+                        ></nuxeo-data-table-row-detail>
+                      </template>
+                    </dom-if>
+                    <div style$="[[_computeActionsStyle(editable, orderable)]]">
+                      <nuxeo-data-table-row-actions
+                        index="[[index]]"
+                        editable="[[editable]]"
+                        orderable="[[orderable]]"
+                        template="[[rowForm]]"
+                        item="[[item]]"
+                        size="[[items.length]]"
+                        table="[[_this]]"
+                      >
+                      </nuxeo-data-table-row-actions>
+                    </div>
+                  </nuxeo-data-table-row>
+                </div>
+              </template>
+            </iron-list>
+          </div>
 
           <dom-if if="[[editable]]">
             <template>
@@ -649,11 +668,10 @@ import '../nuxeo-button-styles.js';
       slot.addEventListener('slotchange', () => {
         const form = this.getContentChildren('#form')[0];
         form.disabled = true;
+        this._updateRequiredColumns();
       });
 
-      this.setAttribute('role', 'table');
-      this.setAttribute('aria-multiselectable', this.multiSelection);
-      this.setAttribute('aria-label', this.captionText);
+      this._hideListItemsWrapperFromA11yTree();
       const wrapperHeight = this.getAttribute('wrapper-height');
       if (wrapperHeight) {
         this._wrapperHeight = wrapperHeight;
@@ -665,6 +683,7 @@ import '../nuxeo-button-styles.js';
       this._boundDocumentMouseUp = this._documentMouseUp.bind(this);
 
       afterNextRender(this, () => {
+        this._hideListItemsWrapperFromA11yTree();
         this._resizeCellContainers();
       });
     }
@@ -682,6 +701,35 @@ import '../nuxeo-button-styles.js';
       this._resizing = null;
     }
 
+    /**
+     * A row group is required to own at least one row, so an empty list must stay out of the
+     * accessibility tree rather than advertise itself as an empty row group (ELEMENTS-2005). The header
+     * row group alone then satisfies the table.
+     */
+    _computeListRole(items) {
+      return (items || []).length > 0 ? 'rowgroup' : 'presentation';
+    }
+
+    _computeAriaMultiselectable(multiSelection) {
+      return multiSelection ? 'true' : 'false';
+    }
+
+    /**
+     * `iron-list` wraps the stamped rows in its own `#items` div. Left as-is it sits between the row
+     * group and the rows, which stops browsers from building the table model, so the column headers
+     * never get associated with the body cells (ELEMENTS-2005).
+     */
+    _hideListItemsWrapperFromA11yTree() {
+      const listRoot = this.$.list.shadowRoot;
+      if (!listRoot) {
+        return;
+      }
+      const items = listRoot.querySelector('#items');
+      if (items) {
+        items.setAttribute('role', 'presentation');
+      }
+    }
+
     _getHeaderCells() {
       return this.querySelectorAll('nuxeo-data-table-cell[header]');
     }
@@ -691,6 +739,9 @@ import '../nuxeo-button-styles.js';
       if (list && this._wrapperHeight && !list.parentElement.classList.contains('table-wrapper')) {
         const wrapper = document.createElement('div');
         wrapper.classList.add('table-wrapper');
+        // Keep the scroll wrapper out of the accessibility tree so it does not sit between the
+        // table and its row groups (ELEMENTS-2005).
+        wrapper.setAttribute('role', 'presentation');
         wrapper.setAttribute('style', `height: ${this._wrapperHeight}`);
         list.parentElement.insertBefore(wrapper, list);
         wrapper.appendChild(list);
@@ -776,7 +827,52 @@ import '../nuxeo-button-styles.js';
           column.table = this;
           this.listen(column, 'filter-value-changed', '_onColumnFilterChanged');
         });
+        this._updateRequiredColumns();
       }
+    }
+
+    /**
+     * Flags columns as required from the `required` widgets of the row form.
+     *
+     * Layouts generated for a multivalued property flag the entry widget inside
+     * `nuxeo-data-table-form` as required, but not the table or its columns, so the required
+     * indicator only showed up in the entry dialog and never on the layout itself (ELEMENTS-1891).
+     * Columns are matched to entry widgets by name; a table with a single column always holds the
+     * entries of a scalar multivalued property, where the column name is the field label.
+     *
+     * Re-runs whenever the columns or the form slot change, so it keeps track of the columns it
+     * flagged and clears them once they no longer match. A `required` set explicitly on a column is
+     * never cleared, since it was not derived here.
+     */
+    _updateRequiredColumns() {
+      if (!this.columns || this.columns.length === 0) {
+        return;
+      }
+      const form = this.getContentChildren('#form')[0];
+      const requiredNames = form
+        ? Array.from((form.shadowRoot || form).querySelectorAll('[required]'))
+            .map((widget) => (widget.getAttribute('name') || '').toLowerCase())
+            .filter(Boolean)
+        : [];
+      if (!this._derivedRequiredColumns) {
+        this._derivedRequiredColumns = new Set();
+      }
+      const derived = this._derivedRequiredColumns;
+      const singleColumn = this.columns.length === 1;
+      this.columns.forEach((column) => {
+        const name = (column.field || column.name || '').toLowerCase();
+        if (singleColumn ? requiredNames.length > 0 : requiredNames.includes(name)) {
+          // only claim a column when actually turning it on: one that is already required was set
+          // explicitly, and clearing it later would override the markup
+          if (!column.required) {
+            derived.add(column);
+            column.required = true;
+          }
+        } else if (derived.has(column)) {
+          derived.delete(column);
+          column.required = false;
+        }
+      });
     }
 
     _resizeCellContainers() {
@@ -1257,9 +1353,11 @@ import '../nuxeo-button-styles.js';
       this._fieldTypeHints = this._computeFieldTypeHintsFromStats(this._fieldTypeStats);
     }
 
-    _normalizeItem(item, typeHints) {
+    _normalizeItem(item, typeHints, isEntry = true) {
       if (Array.isArray(item)) {
-        return item.map((v) => this._normalizeItem(v, typeHints));
+        // The elements of a list of entries are themselves entries; a nested array reaches here with
+        // isEntry already false, so propagating keeps the entry-only coercion correct either way.
+        return item.map((v) => this._normalizeItem(v, typeHints, isEntry));
       }
 
       if (item !== null && typeof item === 'object') {
@@ -1273,13 +1371,15 @@ import '../nuxeo-button-styles.js';
             // Keep string columns as strings (for ID-like values such as "00123").
             item[key] = typeof item[key] === 'number' ? String(item[key]) : item[key];
           } else {
-            item[key] = this._normalizeItem(item[key]);
+            item[key] = this._normalizeItem(item[key], undefined, false);
           }
         });
         return item;
       }
 
-      if (this.columns && this.columns.length === 1 && typeof item === 'string' && item.trim() !== '') {
+      // Only the entry itself can be the value of a single-column table; subfields of a complex entry
+      // must not inherit that assumption, or a one-subfield complex would coerce "007" to 7.
+      if (isEntry && (this.columns || []).length === 1 && typeof item === 'string' && item.trim() !== '') {
         const num = Number(item.trim());
         if (Number.isFinite(num)) {
           return num;
@@ -1339,6 +1439,104 @@ import '../nuxeo-button-styles.js';
       return result;
     }
 
+    _getFormTemplate(dtform) {
+      if (!dtform || typeof dtform.queryEffectiveChildren !== 'function') {
+        return null;
+      }
+      return dtform.queryEffectiveChildren('template');
+    }
+
+    /**
+     * Lists the property paths a template binds to, e.g. `item.address` or `item`.
+     *
+     * Polymer moves a template's content out when it is stamped and strips binding annotations
+     * while parsing, so by the time the edit dialog opens the markup is empty. The parsed template
+     * info it leaves behind is the only remaining record of what the form writes to.
+     */
+    _getTemplateBindingSources(template) {
+      // Defaulted rather than optional-chained: polymer lint's parser predates `?.` and fails to
+      // load the file when it appears.
+      const templateInfo = (template && (template._templateInfo || template.__templateInfo)) || {};
+      return this._collectBindingSources(templateInfo);
+    }
+
+    /**
+     * Walks parsed template info, including nested templates, collecting every property path bound.
+     */
+    _collectBindingSources(templateInfo) {
+      const { nodeInfoList } = templateInfo || {};
+      if (!nodeInfoList) {
+        return [];
+      }
+      const sources = [];
+      nodeInfoList.forEach((nodeInfo) => {
+        (nodeInfo.bindings || []).forEach((binding) => {
+          (binding.parts || []).forEach((part) => {
+            if (!part || part.hostProp) {
+              // A host-prop part only records that a nested template forwards `item` down from its
+              // host; the paths the form really binds live in that nested template. Treating it as a
+              // binding would make every `dom-if`-wrapped form look like a whole-value binding.
+              return;
+            }
+            if (typeof part.source === 'string') {
+              sources.push(part.source);
+            }
+            // For a computed binding `source` is the whole expression, e.g. `i18n('x', item.address)`,
+            // so the argument paths are only reachable through the dependencies.
+            (part.dependencies || []).forEach((dependency) => {
+              if (dependency && typeof dependency.name === 'string') {
+                sources.push(dependency.name);
+              }
+            });
+          });
+        });
+        // A nested `<template>` (`dom-if`, `dom-repeat`) carries its own parsed bindings.
+        if (nodeInfo.templateInfo) {
+          this._collectBindingSources(nodeInfo.templateInfo).forEach((source) => sources.push(source));
+        }
+      });
+      return sources;
+    }
+
+    /**
+     * Decides whether a new entry is a complex object or a primitive value.
+     *
+     * Column count cannot be used on its own: a complex type declaring a single subfield produces a
+     * one-column table just like a list of primitives does. The form template disambiguates the two,
+     * since sub-property bindings (`{{item.address}}`) can only target an object while whole-value
+     * bindings (`{{item}}`) can only target a primitive.
+     */
+    _isComplexEntry(dtform) {
+      const template = this._getFormTemplate(dtform);
+
+      if (template) {
+        const sources = this._getTemplateBindingSources(template);
+        if (sources.some((source) => source.startsWith('item.'))) {
+          return true;
+        }
+        if (sources.includes('item')) {
+          return false;
+        }
+
+        // Templates Polymer has not parsed yet still carry their annotations in the markup.
+        const markup = template.innerHTML || '';
+        if (/\bitem\s*\./.test(markup)) {
+          return true;
+        }
+        // `[\s!]*` rather than `\s*!?\s*`: adjacent optional whitespace groups make the match
+        // ambiguous and backtrack super-linearly on long inputs.
+        if (/(?:\[\[|\{\{)[\s!]*item\s*(?:::[^\]}]*)?(?:\]\]|\}\})/.test(markup)) {
+          return false;
+        }
+      }
+      // Without a usable template, mirror the entries already in the list, then fall back to columns.
+      const existing = (this.items || []).find((item) => item !== null && item !== undefined);
+      if (existing !== undefined) {
+        return typeof existing === 'object';
+      }
+      return (this.columns || []).length > 1;
+    }
+
     _toggleEditDialog(itemIndex) {
       const dtform = this.getContentChildren('#form')[0];
       if (typeof itemIndex !== 'undefined') {
@@ -1346,12 +1544,7 @@ import '../nuxeo-button-styles.js';
         dtform.item = this._deepCopy(this.items[itemIndex]);
       } else {
         dtform.index = -1;
-        if ((this.items.length > 1 && typeof this.items[0] !== 'object') || this.columns.length === 1) {
-          // dirty but will work with primitive such as string, number, etc.
-          dtform.item = '';
-        } else {
-          dtform.item = {};
-        }
+        dtform.item = this._isComplexEntry(dtform) ? {} : '';
       }
       this.$.dialog.toggle();
     }

@@ -203,3 +203,94 @@ suite('nuxeo-input accessibility', () => {
     });
   });
 });
+
+// Covers the per-field required message parity added in ui/widgets/nuxeo-input.js:
+//   a required, empty input surfaces a default "required" message (like multivalued
+//   widgets and dc:title), without ever clobbering a layout-supplied errorMessage.
+suite('nuxeo-input _getValidity required message', () => {
+  test('defaults a required error message when empty and clears it once a value is set', async () => {
+    const el = await fixture(
+      html`
+        <nuxeo-input required></nuxeo-input>
+      `,
+    );
+    el.value = '';
+    expect(el._getValidity()).to.be.false;
+    expect(el.errorMessage).to.be.ok;
+    // providing a value clears the message we defaulted
+    el.value = 'hello';
+    expect(el._getValidity()).to.be.true;
+    expect(el.errorMessage).to.equal('');
+  });
+
+  test('applies to numeric inputs as well', async () => {
+    const el = await fixture(
+      html`
+        <nuxeo-input type="number" required></nuxeo-input>
+      `,
+    );
+    el.value = '';
+    expect(el._getValidity()).to.be.false;
+    expect(el.errorMessage).to.be.ok;
+  });
+
+  test('never clobbers or clears a layout-supplied error message', async () => {
+    const el = await fixture(
+      html`
+        <nuxeo-input required error-message="Custom error"></nuxeo-input>
+      `,
+    );
+    el.value = '';
+    expect(el._getValidity()).to.be.false;
+    expect(el.errorMessage).to.equal('Custom error');
+    // and it survives becoming valid again (only the defaulted message is cleared)
+    el.value = 'hello';
+    expect(el._getValidity()).to.be.true;
+    expect(el.errorMessage).to.equal('Custom error');
+  });
+
+  test('does not set a required message when the field is not required', async () => {
+    const el = await fixture(
+      html`
+        <nuxeo-input></nuxeo-input>
+      `,
+    );
+    el.value = '';
+    expect(el._getValidity()).to.be.true;
+    expect(el.errorMessage || '').to.equal('');
+  });
+});
+
+// Covers WEBUI-493: the `autocomplete` property declared in ui/widgets/nuxeo-input.js is
+// forwarded to the rendered native <input> so a layout can identify the purpose of the field
+// (WCAG 2.1 SC 1.3.5, technique H98).
+suite('nuxeo-input autocomplete', () => {
+  test('declares the property and defaults it to off', async () => {
+    const el = await fixture(html`
+      <nuxeo-input label="Email"></nuxeo-input>
+    `);
+    await flush();
+    expect(el.autocomplete).to.equal('off');
+    expect(getPaperInput(el).autocomplete).to.equal('off');
+    expect(getNativeInput(el).getAttribute('autocomplete')).to.equal('off');
+  });
+
+  test('forwards a token configured on the element to the native input', async () => {
+    const el = await fixture(html`
+      <nuxeo-input label="Email" autocomplete="email"></nuxeo-input>
+    `);
+    await flush();
+    expect(el.autocomplete).to.equal('email');
+    expect(getNativeInput(el).getAttribute('autocomplete')).to.equal('email');
+  });
+
+  test('forwards a token set at runtime to the native input', async () => {
+    const el = await fixture(html`
+      <nuxeo-input label="Password" type="password"></nuxeo-input>
+    `);
+    await flush();
+    el.autocomplete = 'current-password';
+    await flush();
+    expect(getNativeInput(el).getAttribute('autocomplete')).to.equal('current-password');
+  });
+});

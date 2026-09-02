@@ -32,7 +32,7 @@ jobs:
       contents: read
 
     steps:
-      - uses: catchpoint/workflow-telemetry-action@v2
+      - uses: catchpoint/workflow-telemetry-action@94c3c3d9567a0205de6da68a76c428ce4e769af1 # v2
         with:
           comment_on_pr: false
 
@@ -65,23 +65,6 @@ jobs:
         run: npm ci --ignore-scripts
         working-directory: ${{ github.workspace }}
 
-      - name: Ensure latest @nuxeo RC packages
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-        run: |
-          ELEMENTS_VERSION=$(npm view @nuxeo/nuxeo-ui-elements versions --json \
-            | jq -r '.[]' \
-            | grep -E "3\.1\.[0-9]+-rc\.[0-9]+$" \
-            | sort -V | tail -n1)
-          echo "Resolved latest nuxeo-elements RC: $ELEMENTS_VERSION"
-
-          npm install --no-package-lock --no-save --ignore-scripts \
-            @nuxeo/nuxeo-elements@"$ELEMENTS_VERSION" \
-            @nuxeo/nuxeo-ui-elements@"$ELEMENTS_VERSION" \
-            @nuxeo/nuxeo-dataviz-elements@"$ELEMENTS_VERSION" \
-            @nuxeo/testing-helpers@"$ELEMENTS_VERSION"
-        working-directory: ${{ github.workspace }}
-
       - name: Run unit tests with coverage
         run: npm test
         working-directory: ${{ github.workspace }}
@@ -99,7 +82,7 @@ jobs:
         id: sonar_scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        uses: SonarSource/sonarqube-scan-action@v8.0.0
+        uses: SonarSource/sonarqube-scan-action@59db25f34e16620e48ab4bb9e4a5dce155cb5432 # v8.0.0
         with:
           projectBaseDir: ${{ github.workspace }}
           args: >
