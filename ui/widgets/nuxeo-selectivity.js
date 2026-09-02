@@ -7182,6 +7182,13 @@ typedArrayTags[weakMapTag] = false;
             border: none;
             float: left;
             font: inherit;
+            /*
+             * WCAG 2.1 SC 1.4.12: the font shorthand above does not cover letter-spacing or
+             * word-spacing, so the UA stylesheet's form-control reset keeps them at normal, and
+             * this input sits in a shadow root a user text-spacing stylesheet cannot reach.
+             */
+            letter-spacing: inherit;
+            word-spacing: inherit;
             width: 100%;
             outline: 0;
             padding: 0;
