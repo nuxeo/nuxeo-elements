@@ -19,7 +19,9 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-tooltip/paper-tooltip.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { microTask } from '@polymer/polymer/lib/utils/async.js';
+import { TooltipA11yBehavior } from './nuxeo-tooltip-a11y-behavior.js';
 
 const CLONED_CONTENT_STYLES_ID = 'nuxeo-tooltip-cloned-content-styles';
 
@@ -68,10 +70,18 @@ ensureClonedContentStyles();
    * set `data-nx-tooltip-role` on this element (copied onto the cloned root) and add matching
    * rules in the cloned-content stylesheet above (see `ensureClonedContentStyles`).
    *
+   * ### Accessibility
+   *
+   * `Nuxeo.TooltipA11yBehavior` provides the WCAG 2.1 AA 1.4.13 "Content on Hover or Focus"
+   * behaviour — Escape dismisses the tooltip, the pointer can move onto the tooltip without it
+   * disappearing, and nothing else hides it — plus the `role="tooltip"` / `aria-describedby`
+   * wiring that exposes the text to assistive technologies.
+   *
+   * @appliesMixin Nuxeo.TooltipA11yBehavior
    * @memberof Nuxeo
    * @demo demo/nuxeo-tooltip/index.html
    */
-  class Tooltip extends Nuxeo.Element {
+  class Tooltip extends mixinBehaviors([TooltipA11yBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style>
@@ -116,7 +126,10 @@ ensureClonedContentStyles();
       // reference is used in addEventListener and removeEventListener (and prevent potential memory leaks)
       this._showListener = this.show.bind(this);
       this._hideListener = this.hide.bind(this);
-      this._keyListener = this.keydown.bind(this);
+      // WCAG 1.4.13: leaving the trigger with the pointer only *schedules* the teardown, so the
+      // pointer can still reach the tooltip; leaving it with the keyboard tears down at once.
+      this._pointerLeaveListener = this._onTriggerPointerLeave.bind(this);
+      this._blurListener = this._onTriggerBlur.bind(this);
     }
 
     connectedCallback() {
@@ -125,10 +138,9 @@ ensureClonedContentStyles();
       if (this._target) {
         this._target.addEventListener('mouseenter', this._showListener);
         this._target.addEventListener('focus', this._showListener);
-        this._target.addEventListener('mouseleave', this._hideListener);
-        this._target.addEventListener('blur', this._hideListener);
+        this._target.addEventListener('mouseleave', this._pointerLeaveListener);
+        this._target.addEventListener('blur', this._blurListener);
         this._target.addEventListener('tap', this._hideListener);
-        window.addEventListener('keydown', this._keyListener);
       }
     }
 
@@ -138,15 +150,20 @@ ensureClonedContentStyles();
         this.hide();
         this._target.removeEventListener('mouseenter', this._showListener);
         this._target.removeEventListener('focus', this._showListener);
-        this._target.removeEventListener('mouseleave', this._hideListener);
-        this._target.removeEventListener('blur', this._hideListener);
+        this._target.removeEventListener('mouseleave', this._pointerLeaveListener);
+        this._target.removeEventListener('blur', this._blurListener);
         this._target.removeEventListener('tap', this._hideListener);
-        window.removeEventListener('keydown', this._keyListener);
       }
       this._target = null;
     }
 
     show() {
+      // Re-entering the trigger during the pointer grace period keeps the existing tooltip.
+      this._cancelTooltipHide();
+      if (this.isTooltipDismissed()) {
+        return;
+      }
+      this._syncTooltipDescription();
       if (!this._tooltip && !this.hidden) {
         // create a paper tooltip and append to body
         this._tooltip = document.createElement('paper-tooltip');
@@ -168,6 +185,7 @@ ensureClonedContentStyles();
         this._tooltip.offset = this.offset;
         this._tooltip.position = this.position;
         this._tooltip.fitToVisibleBounds = true;
+        this._prepareRenderedTooltip(this._tooltip);
         microTask.run(() => {
           // hide() may have nulled this._tooltip between scheduling and execution
           // (e.g., focus + immediate disconnect during a pointer interaction).
@@ -179,6 +197,7 @@ ensureClonedContentStyles();
     }
 
     hide() {
+      this._onTooltipTornDown();
       if (this._tooltip) {
         this._tooltip.hide();
         this._tooltip.remove();
@@ -202,8 +221,21 @@ ensureClonedContentStyles();
       }
     }
 
-    keydown() {
-      this.hide();
+    /**
+     * Dismisses the tooltip for a keyboard event.
+     *
+     * Only the dismissal keys act on it: WCAG 1.4.13 requires hover/focus content to stay visible
+     * until its trigger moves away or the user dismisses it, so an unrelated keystroke must not
+     * destroy it. Called without an event it dismisses unconditionally.
+     *
+     * @param {KeyboardEvent} [event]
+     */
+    keydown(event) {
+      if (!event) {
+        this._dismissTooltip();
+        return;
+      }
+      this._onTooltipDismissKey(event);
     }
 
     /**
