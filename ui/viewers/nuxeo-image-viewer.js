@@ -26,6 +26,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import Cropper from 'cropperjs/dist/cropper.esm.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-icons.js';
+import '../widgets/nuxeo-tooltip.js';
 
 {
   /**
@@ -163,65 +164,75 @@ import '../nuxeo-icons.js';
             <template>
               <div id="toolbar">
                 <paper-icon-button
+                  id="zoomOut"
                   on-click="_click"
                   icon="zoom-out"
                   alt=""
                   data-action="zoom-out"
                   aria-label$="[[i18n('imagePreviewer.zoom.out')]]"
-                  title$="[[i18n('imagePreviewer.zoom.out')]]"
                 ></paper-icon-button>
+                <nuxeo-tooltip for="zoomOut" position="top">[[i18n('imagePreviewer.zoom.out')]]</nuxeo-tooltip>
                 <dom-if if="[[!_fitToRealSize]]">
                   <template>
                     <paper-icon-button
+                      id="fitToRealSize"
                       on-click="_click"
                       icon="nuxeo:fit-to-real-size"
                       alt=""
                       data-action="fit-to-real-size"
                       aria-label$="[[i18n('imagePreviewer.fitToRealSize')]]"
-                      title$="[[i18n('imagePreviewer.fitToRealSize')]]"
                     >
                     </paper-icon-button>
+                    <nuxeo-tooltip for="fitToRealSize" position="top">
+                      [[i18n('imagePreviewer.fitToRealSize')]]
+                    </nuxeo-tooltip>
                   </template>
                 </dom-if>
                 <dom-if if="[[_fitToRealSize]]">
                   <template>
                     <paper-icon-button
+                      id="fitToViewer"
                       on-click="_click"
                       icon="nuxeo:fit-to-viewer"
                       alt=""
                       data-action="fit-to-viewer"
                       aria-label$="[[i18n('imagePreviewer.fitToViewer')]]"
-                      title$="[[i18n('imagePreviewer.fitToViewer')]]"
                     >
                     </paper-icon-button>
+                    <nuxeo-tooltip for="fitToViewer" position="top">
+                      [[i18n('imagePreviewer.fitToViewer')]]
+                    </nuxeo-tooltip>
                   </template>
                 </dom-if>
                 <paper-icon-button
+                  id="zoomIn"
                   on-click="_click"
                   icon="zoom-in"
                   alt=""
                   data-action="zoom-in"
                   aria-label$="[[i18n('imagePreviewer.zoom.in')]]"
-                  title$="[[i18n('imagePreviewer.zoom.in')]]"
                 ></paper-icon-button>
+                <nuxeo-tooltip for="zoomIn" position="top">[[i18n('imagePreviewer.zoom.in')]]</nuxeo-tooltip>
                 <paper-icon-button
+                  id="rotateLeft"
                   on-click="_click"
                   icon="image:rotate-left"
                   alt=""
                   data-action="rotate-left"
                   aria-label$="[[i18n('imagePreviewer.rotate.left')]]"
-                  title$="[[i18n('imagePreviewer.rotate.left')]]"
                 >
                 </paper-icon-button>
+                <nuxeo-tooltip for="rotateLeft" position="top">[[i18n('imagePreviewer.rotate.left')]]</nuxeo-tooltip>
                 <paper-icon-button
+                  id="rotateRight"
                   on-click="_click"
                   icon="image:rotate-right"
                   alt=""
                   data-action="rotate-right"
                   aria-label$="[[i18n('imagePreviewer.rotate.right')]]"
-                  title$="[[i18n('imagePreviewer.rotate.right')]]"
                 >
                 </paper-icon-button>
+                <nuxeo-tooltip for="rotateRight" position="top">[[i18n('imagePreviewer.rotate.right')]]</nuxeo-tooltip>
               </div>
             </template>
           </dom-if>
