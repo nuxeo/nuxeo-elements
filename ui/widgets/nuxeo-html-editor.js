@@ -59,7 +59,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         <nuxeo-document-picker
           id="picker"
-          dialog-label="[[i18n('htmlEditor.insert.imagesFromDocuments')]]"
           provider="document_picker"
           page-size="40"
           schemas="dublincore,file"
@@ -121,11 +120,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             <button on-tap="_onImageUpload" title$="[[i18n('htmlEditor.insert.image')]]">
               <iron-icon icon="nuxeo:picture"></iron-icon>
             </button>
-            <button
-              on-tap="_onSearchImage"
-              title$="[[i18n('htmlEditor.insert.imagesFromDocuments')]]"
-              aria-haspopup="dialog"
-            >
+            <button on-tap="_onSearchImage" title$="[[i18n('htmlEditor.insert.imagesFromDocuments')]]">
               <iron-icon icon="nuxeo:search-picture"></iron-icon>
             </button>
             <button class="ql-video" title$="[[i18n('htmlEditor.insert.video')]]"></button>
@@ -241,9 +236,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           .map((doc) => `<img src="${doc.properties['file:content'].data}">`)
           .join('\n');
         this._editor.clipboard.dangerouslyPasteHTML(this._editor.getSelection(true).index, templateToInsert);
-        // Carry on in the document instead of being sent back to the toolbar: the picker only
-        // restores focus to the button that opened it while focus is still inside its dialog.
-        this._editor.focus();
       }
     }
   }

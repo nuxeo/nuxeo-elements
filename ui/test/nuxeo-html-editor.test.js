@@ -177,28 +177,6 @@ suite('nuxeo-html-editor extras', () => {
     });
   });
 
-  suite('image controls keyboard accessibility', () => {
-    const buttonFor = (icon) =>
-      Array.from(el.$.toolbar.querySelectorAll('button')).find((button) =>
-        button.querySelector(`iron-icon[icon="${icon}"]`),
-      );
-
-    test('announces that the repository button opens a dialog', () => {
-      expect(buttonFor('nuxeo:search-picture').getAttribute('aria-haspopup')).to.equal('dialog');
-    });
-
-    test('names the picker dialog after the button that opens it', () => {
-      expect(el.$.picker.dialogLabel).to.equal(el.i18n('htmlEditor.insert.imagesFromDocuments'));
-    });
-
-    test('carries on in the document once an image has been inserted', () => {
-      el._onPickerSelected({
-        detail: { selectedItems: [{ properties: { 'file:content': { data: 'http://img.png' } } }] },
-      });
-      expect(el._editor.hasFocus()).to.be.true;
-    });
-  });
-
   suite('ready (RTL handling)', () => {
     test('sets dir attribute from document if not already set', async () => {
       const origDir = document.documentElement.getAttribute('dir');
