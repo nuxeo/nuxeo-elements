@@ -24,6 +24,7 @@ import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import {I18nBehavior} from "../nuxeo-i18n-behavior";
+import { WidgetValidationBehavior } from './nuxeo-widget-validation-behavior.js';
 import '@polymer/iron-icon/iron-icon.js';
 
 /**
@@ -6820,13 +6821,17 @@ typedArrayTags[weakMapTag] = false;
    *                   params='{"directoryName": "subject"}'
    *                   value="{{value}}">
    *
-   * @appliesMixin Polymer.IronFormElementBehavior
-   * @appliesMixin Polymer.IronValidatableBehavior
-   * @memberof Nuxeo
-   * @demo demo/nuxeo-selectivity/index.html
-   */
+ * @appliesMixin Polymer.IronFormElementBehavior
+ * @appliesMixin Polymer.IronValidatableBehavior
+ * @appliesMixin Nuxeo.WidgetValidationBehavior
+ * @memberof Nuxeo
+ * @demo demo/nuxeo-selectivity/index.html
+ */
   class SelectivityElement
-    extends mixinBehaviors([I18nBehavior, IronFormElementBehavior, IronValidatableBehavior], Nuxeo.Element) {
+    extends mixinBehaviors(
+      [I18nBehavior, IronFormElementBehavior, IronValidatableBehavior, WidgetValidationBehavior],
+      Nuxeo.Element,
+    ) {
 
     static get is() {
       return 'nuxeo-selectivity';
@@ -7542,10 +7547,15 @@ typedArrayTags[weakMapTag] = false;
         threshold: 0
       });
       this._visibilityObserver.observe(this);
+      // Selectivity re-renders the input whenever the selection changes, so re-apply the aria state
+      // it drops rather than setting it once here.
+      this._observeAriaValidationControl(this.$.input);
+      this._syncAriaValidationState();
       this._readonlyChanged();
     }
 
     disconnectedCallback() {
+      this._disconnectAriaValidationObserver();
       this.$.input.removeEventListener('selectivity-change', this._updateSelectionHandler);
       this._updateSelectionHandler = null;
       this._selectivity.destroy();
@@ -7571,25 +7581,14 @@ typedArrayTags[weakMapTag] = false;
         return true;
       }
       const valid = this.multiple ? !!this.value && this.value.length > 0 : !!this.value;
-      if (!valid) {
-        // Surface a per-field reason for required widgets, consistent with single-value inputs
-        // (e.g. dc:title). Only default when the layout did not supply its own message.
-        if (!this.errorMessage || this._defaultRequiredError) {
-          this.errorMessage = this.i18n('widget.required');
-          this._defaultRequiredError = true;
-        }
-      } else {
+      // Surface a per-field reason for required widgets, consistent with single-value inputs
+      // (e.g. dc:title).
+      if (valid) {
         this._clearDefaultRequiredError();
+      } else {
+        this._applyDefaultRequiredError();
       }
       return valid;
-    }
-
-    // Clear only the message we defaulted, so a layout-supplied errorMessage is never lost.
-    _clearDefaultRequiredError() {
-      if (this._defaultRequiredError) {
-        this.errorMessage = '';
-        this._defaultRequiredError = false;
-      }
     }
 
     _initSelection(value, callback) {
@@ -7726,8 +7725,26 @@ typedArrayTags[weakMapTag] = false;
       this._syncInputAriaLabel();
     }
 
+    /* Override method from Nuxeo.WidgetValidationBehavior. */
+    _ariaValidationControl() {
+      return this._getSelectivityInput();
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. Selectivity rebuilds its input on every
+       selection change, which drops the aria-label too, so restore both from the same place. */
+    _applyAriaValidationState() {
+      super._applyAriaValidationState();
+      this._syncInputAriaLabel();
+    }
+
+    _getSelectivityInput() {
+      return this.shadowRoot
+        ? this.shadowRoot.querySelector('.selectivity-single-select-input, .selectivity-multiple-input')
+        : null;
+    }
+
     _syncInputAriaLabel() {
-      const input = this.shadowRoot && this.shadowRoot.querySelector('.selectivity-single-select-input, .selectivity-multiple-input');
+      const input = this._getSelectivityInput();
       if (!input) {
         return;
       }

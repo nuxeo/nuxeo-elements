@@ -36,6 +36,7 @@ import { microTask, timeOut } from '@polymer/polymer/lib/utils/async.js';
 import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import '../widgets/nuxeo-dialog.js';
+import { WidgetValidationBehavior } from '../widgets/nuxeo-widget-validation-behavior.js';
 import './data-table-column.js';
 import './data-table-column-sort.js';
 import './data-table-column-filter.js';
@@ -102,6 +103,7 @@ import '../nuxeo-button-styles.js';
    * @appliesMixin Polymer.IronValidatableBehavior
    * @appliesMixin Nuxeo.PageProviderDisplayBehavior
    * @appliesMixin Nuxeo.DraggableListBehavior
+   * @appliesMixin Nuxeo.WidgetValidationBehavior
    * @memberof Nuxeo
    * @demo demo/nuxeo-data-table/index.html
    */
@@ -112,6 +114,7 @@ import '../nuxeo-button-styles.js';
       IronValidatableBehavior,
       PageProviderDisplayBehavior,
       DraggableListBehavior,
+      WidgetValidationBehavior,
     ],
     Nuxeo.Element,
   ) {
@@ -832,7 +835,7 @@ import '../nuxeo-button-styles.js';
     }
 
     /**
-     * Flags columns as required from the `required` widgets of the row form.
+     * Flags the table and its columns as required from the `required` widgets of the row form.
      *
      * Layouts generated for a multivalued property flag the entry widget inside
      * `nuxeo-data-table-form` as required, but not the table or its columns, so the required
@@ -840,20 +843,29 @@ import '../nuxeo-button-styles.js';
      * Columns are matched to entry widgets by name; a table with a single column always holds the
      * entries of a scalar multivalued property, where the column name is the field label.
      *
+     * The same signal makes the table itself required: the entries are the property's value, so a
+     * table with no row leaves a required property empty. Without it the layout reported no failure
+     * at all and the save was refused with no reason given (WEBUI-180). It is kept apart from the
+     * public `required` so markup that never set it keeps rendering as before.
+     *
      * Re-runs whenever the columns or the form slot change, so it keeps track of the columns it
      * flagged and clears them once they no longer match. A `required` set explicitly on a column is
      * never cleared, since it was not derived here.
      */
     _updateRequiredColumns() {
+      const form = this.getContentChildren('#form')[0];
+      const requiredWidgets = form ? Array.from((form.shadowRoot || form).querySelectorAll('[required]')) : [];
+      const formRequired = requiredWidgets.length > 0;
+      if (this._formRequired !== formRequired) {
+        this._formRequired = formRequired;
+        this._syncAriaValidationState();
+      }
       if (!this.columns || this.columns.length === 0) {
         return;
       }
-      const form = this.getContentChildren('#form')[0];
-      const requiredNames = form
-        ? Array.from((form.shadowRoot || form).querySelectorAll('[required]'))
-            .map((widget) => (widget.getAttribute('name') || '').toLowerCase())
-            .filter(Boolean)
-        : [];
+      const requiredNames = requiredWidgets
+        .map((widget) => (widget.getAttribute('name') || '').toLowerCase())
+        .filter(Boolean);
       if (!this._derivedRequiredColumns) {
         this._derivedRequiredColumns = new Set();
       }
@@ -1631,7 +1643,46 @@ import '../nuxeo-button-styles.js';
 
     /* Override method from Polymer.IronValidatableBehavior. */
     _getValidity() {
-      return this.required ? this.items && this.items.length > 0 : true;
+      const valid = !this._isWidgetRequired() || !!(this.items && this.items.length > 0);
+      if (valid) {
+        this._clearDefaultRequiredError();
+      } else {
+        this._applyDefaultRequiredError();
+      }
+      return valid;
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. A required multivalued complex property
+       is empty when it has no row, so the state belongs on the table that holds them. */
+    _ariaValidationControl() {
+      return this.$.table;
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. A layout generated for a multivalued
+       property flags the entry widget of the row form rather than the table (see
+       `_updateRequiredColumns`), so honour that too. */
+    _isWidgetRequired() {
+      return !!this.required || !!this._formRequired;
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. */
+    _isEmptyWidgetValue() {
+      return !this.items || this.items.length === 0;
+    }
+
+    /**
+     * The name a layout should use for this table in an error summary. A generated multivalued
+     * layout leaves the table unlabelled and carries the property label on the column instead, so
+     * fall back to the required column rather than leaving the failure unnamed.
+     *
+     * @return {string} The label, empty when there is none.
+     */
+    _validationLabel() {
+      if (this.label) {
+        return this.label;
+      }
+      const column = (this.columns || []).find((c) => c.required);
+      return (column && (column.name || column.field)) || '';
     }
 
     draggableFilter(el) {
