@@ -15,21 +15,27 @@ on:
   # Manually trigger the workflow
   workflow_dispatch:
   
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
   # in uses, cannot use environment variable for {owner}/{repo} nor matrix strategy variable for {ref}
   # thus hardcoding them
   call-workflow-in-lts-2025:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     uses: nuxeo/nuxeo-elements/.github/workflows/crowdin.yaml@lts-2025
-    secrets: inherit
+    permissions:
+      contents: write
+      pull-requests: write
+    # Pass only the secrets the reusable workflow needs instead of `secrets: inherit`.
+    secrets:
+      CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+      CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+      WEBUI_JX_BOT_GITHUB_ACTIONS_TOKEN: ${{ secrets.WEBUI_JX_BOT_GITHUB_ACTIONS_TOKEN }}
     needs: crowdin
 
   crowdin:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout
