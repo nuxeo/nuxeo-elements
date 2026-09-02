@@ -20,6 +20,13 @@ on:
 permissions:
   contents: read
 
+# Cancel a stale in-flight cross-repo check (and its poller) for the same PR when a newer commit
+# is pushed, so superseded ~1h ftest runs don't keep consuming runners. `github.ref` is unique per
+# PR (refs/pull/<n>/merge) and per branch, avoiding collisions between PRs that share a head branch name.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   BRANCH_NAME: ${{ github.head_ref || inputs.branch || github.base_ref }}
 
@@ -28,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Web UI cross repo check
-        uses: nuxeo/ui-team-gh-actions/trigger-workflow@dcf8be425447c7fb9cdd1e048585a6df905ed878
+        uses: nuxeo/ui-team-gh-actions/trigger-workflow@46f1ea323a97203402dbc57d0537bd5b6a6099eb
         with:
           owner: nuxeo
           repo: nuxeo-web-ui

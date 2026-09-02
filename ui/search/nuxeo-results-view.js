@@ -137,7 +137,7 @@ import './nuxeo-search-results-layout.js';
                 [[i18n('command.clear')]]
               </paper-button>
               <div class="horizontal layout flex end-justified">
-                <paper-button noink class="primary search" on-tap="_search" hidden$="[[auto]]" disabled$="[[loading]]">
+                <paper-button noink class="primary search" on-tap="search" hidden$="[[auto]]" disabled$="[[loading]]">
                   [[i18n('command.search')]]
                   <template is="dom-if" if="[[loading]]">
                     <paper-spinner-lite active></paper-spinner-lite>
@@ -261,6 +261,18 @@ import './nuxeo-search-results-layout.js';
           value: false,
         },
         /**
+         * If `true`, no search is performed until the user explicitly triggers one, so loading the
+         * page does not execute the initial query. Clearing the filters returns to that state
+         * instead of searching again. Has no effect when `auto` is `true`.
+         *
+         * Requires `showFilters`, since the Search button that lifts the suppression lives in the
+         * filtering panel; without it the view would have no way to ever run a search.
+         */
+        deferInitialSearch: {
+          type: Boolean,
+          value: false,
+        },
+        /**
          * If `true`, opens the collapsible top filtering panel.
          */
         opened: {
@@ -298,6 +310,13 @@ import './nuxeo-search-results-layout.js';
 
     static get observers() {
       return ['_visibilityOrAutoChanged(visible, auto)'];
+    }
+
+    constructor() {
+      super();
+      // whether an explicit search has already lifted the `deferInitialSearch` suppression
+      this._searched = false;
+      this._searchOnTrigger = () => this.search();
     }
 
     ready() {
@@ -359,7 +378,18 @@ import './nuxeo-search-results-layout.js';
       }
     }
 
+    /**
+     * Runs the search on an explicit user action, lifting any `deferInitialSearch` suppression.
+     */
+    search() {
+      this._searched = true;
+      this._search();
+    }
+
     _search() {
+      if (this.deferInitialSearch && !this._searched && !this.auto) {
+        return;
+      }
       if (this.results) {
         this.results.reset();
         this.results.fetch();
@@ -386,6 +416,15 @@ import './nuxeo-search-results-layout.js';
       if (!this.auto) {
         this.aggregations = {};
       }
+      // clearing the filters is not a request to search, so a deferred view goes back to its
+      // pristine state rather than re-running the query the deferral is there to avoid
+      if (this.deferInitialSearch && !this.auto) {
+        this._searched = false;
+        if (this.results) {
+          this.results.reset();
+        }
+        return;
+      }
       if (!this.auto && this.visible) {
         this._search();
       }
@@ -409,7 +448,10 @@ import './nuxeo-search-results-layout.js';
       form.addEventListener('skip-aggregates-changed', (evt) => {
         this.notifyPath('skipAggregates', evt.detail.value);
       });
-      form.addEventListener('trigger-search', this._search.bind(this));
+      // re-attaching a single bound handler keeps listeners from accumulating if the same form
+      // layout fires more than once
+      form.removeEventListener('trigger-search', this._searchOnTrigger);
+      form.addEventListener('trigger-search', this._searchOnTrigger);
       this._search();
     }
 

@@ -58,6 +58,16 @@ const FOCUS_SUPPRESSION_MS = 200;
           type: String,
         },
 
+        /**
+         * The HTML autofill token exposed on the native input, e.g. `bday`. Lets a layout declare the
+         * purpose of the field so that browsers and assistive technology can identify it
+         * (WCAG 2.1 SC 1.3.5, technique H98). `off` opts out of autofill and is the default.
+         */
+        autocomplete: {
+          type: String,
+          value: 'off',
+        },
+
         /*
          * The default time of the selected date. Format is HH:mm:ss e.g. 12:45:23. Default is 00:00:00 (midnight).
          */
@@ -366,6 +376,9 @@ const FOCUS_SUPPRESSION_MS = 200;
 
           .input-field {
             flex: 1;
+            /* an input's automatic minimum size is its intrinsic width, which the
+               wrapper would otherwise clip away with overflow: hidden */
+            min-width: 0;
             border: none;
             outline: none;
             padding: 6px 48px 6px 8px;
@@ -541,7 +554,14 @@ const FOCUS_SUPPRESSION_MS = 200;
             border: 1px solid #d1d5db;
             border-radius: 0; /* Remove rounded corners for Nuxeo theme */
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            width: 280px; /* Reduced from 320px to be proportional */
+            /* Sized to its content rather than a fixed width so week names, dates and the
+               month/year header stay inside the calendar when the user overrides text
+               spacing (WCAG 2.1 SC 1.4.12). 280px remains the design floor, but a minimum
+               larger than the maximum would win over it, so the floor itself yields to the
+               viewport below 296px (reached at 400% zoom, SC 1.4.10). */
+            width: max-content;
+            min-width: min(280px, calc(100vw - 16px));
+            max-width: calc(100vw - 16px);
             display: none;
             animation: fadeIn 0.15s ease-out;
             pointer-events: auto;
@@ -588,6 +608,10 @@ const FOCUS_SUPPRESSION_MS = 200;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            /* wrap instead of pushing the month/year out of the calendar when its text
+               grows (WCAG 2.1 SC 1.4.12) */
+            flex-wrap: wrap;
+            gap: 8px;
             padding: 16px;
             border-bottom: 1px solid #e5e7eb;
             background-color: #ffffff;
@@ -596,6 +620,8 @@ const FOCUS_SUPPRESSION_MS = 200;
           .month-year-display {
             display: flex;
             align-items: center;
+            flex-wrap: wrap;
+            min-width: 0;
             gap: 1px;
             font-weight: 600;
             color: #111827;
@@ -618,6 +644,7 @@ const FOCUS_SUPPRESSION_MS = 200;
           .navigation {
             display: flex;
             align-items: center;
+            flex-shrink: 0;
             gap: 8px;
           }
 
@@ -807,16 +834,19 @@ const FOCUS_SUPPRESSION_MS = 200;
             color: #ffffff;
           }
 
+          /* The week-name row and the date grid must declare identical tracks so the two
+             always line up, and the tracks must be able to grow past 36px when text
+             spacing is overridden (WCAG 2.1 SC 1.4.12). */
           .weekday-headers {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
+            grid-template-columns: repeat(7, minmax(36px, 1fr));
             gap: 1px;
             padding: 8px 16px 0;
             background: #f9fafb;
           }
 
           .weekday-header {
-            padding: 8px 4px;
+            padding: 8px 2px;
             text-align: center;
             font-size: 12px;
             font-weight: 600;
@@ -827,7 +857,7 @@ const FOCUS_SUPPRESSION_MS = 200;
 
           .calendar-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
+            grid-template-columns: repeat(7, minmax(36px, 1fr));
             gap: 1px;
             padding: 8px 16px 8px;
             role: grid;
@@ -838,8 +868,10 @@ const FOCUS_SUPPRESSION_MS = 200;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 36px;
-            height: 36px;
+            /* minimums rather than fixed dimensions, so a date never gets clipped when
+               letter/word/line spacing is increased (WCAG 2.1 SC 1.4.12) */
+            min-width: 36px;
+            min-height: 36px;
             border: none;
             background: transparent;
             color: #111827;
@@ -930,6 +962,8 @@ const FOCUS_SUPPRESSION_MS = 200;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
             padding: 12px 16px;
             border-top: 1px solid #e5e7eb;
             background: #f9fafb;
@@ -1113,7 +1147,7 @@ const FOCUS_SUPPRESSION_MS = 200;
               aria-label$="[[ariaLabel]]"
               aria-expanded$="[[_isCalendarOpen]]"
               aria-haspopup="grid"
-              autocomplete="off"
+              autocomplete$="[[autocomplete]]"
               on-focus="_onInputFocus"
               on-click="_onInputClick"
               on-blur="_onInputBlur"

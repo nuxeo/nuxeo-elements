@@ -24,6 +24,11 @@ import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 
+// Locale independent ordering, matching the default `Array.prototype.sort()` comparison of UTF-16
+// code units. Used to build signatures that are compared across invocations, so the resulting order
+// must never depend on the environment locale. Yields -1, 0 or 1 from the two comparisons.
+const compareKeys = (a, b) => Number(a > b) - Number(a < b);
+
 /**
  * @polymerBehavior Nuxeo.PageProviderDisplayBehavior
  */
@@ -225,6 +230,19 @@ export const PageProviderDisplayBehavior = [
         value: () => [],
         notify: true,
       },
+
+      /**
+       * Number of in-flight page provider fetches this display element initiated (via
+       * `fetch`/`_fetchRange`/`_fetchPage`), as opposed to the provider fetching on its own (e.g.
+       * when it has the `auto` attribute). Used on the provider `update` event to decide whether the
+       * results still need to be synced into the table. A counter (rather than a single boolean) so
+       * that a superseded fetch's abort handler cannot clear the flag while a newer table-initiated
+       * fetch is still in flight and misclassify its `update` as provider-initiated. (WEBUI-2121)
+       */
+      _pendingTableFetches: {
+        type: Number,
+        value: 0,
+      },
     },
 
     observers: [
@@ -278,9 +296,52 @@ export const PageProviderDisplayBehavior = [
     },
 
     _updateResults() {
-      if (this._hasPageProvider()) {
-        this.size = this.items.length;
+      if (!this._hasPageProvider()) {
+        return;
       }
+      // A table-driven fetch (`fetch`/`_fetchRange`/`_fetchPage`) populates `items` in its own
+      // promise handler, so here we only refresh the size. When the provider fetches on its own
+      // (e.g. it has the `auto` attribute) nothing else loads the results into the table, so we
+      // sync them here from the data already held by the provider. (WEBUI-2121)
+      if (this._pendingTableFetches > 0) {
+        this.size = this.items.length;
+      } else {
+        this._displayProviderResults();
+      }
+    },
+
+    /**
+     * Populates the table from results already fetched by the page provider itself
+     * (e.g. when the provider has the `auto` attribute), without issuing another request. (WEBUI-2121)
+     */
+    _displayProviderResults() {
+      // Only reached through `_updateResults`, which guarantees a page provider is set.
+      const provider = this.nxProvider;
+      const response = {
+        entries: provider.currentPage || [],
+        resultsCount: provider.resultsCount,
+        currentPageSize: provider.currentPageSize,
+        aggregations: provider.aggregations,
+      };
+
+      if (this.paginable) {
+        this.set('items', [...response.entries]);
+        this._first = 0;
+        this._last = this.items.length - 1;
+      } else {
+        const count = this._computeRangeCount(response);
+        if (this.items.length !== count) {
+          this.reset(count);
+        }
+        // Keep the backing array sized to `count` (virtual placeholders for not-yet-loaded rows),
+        // but only fill the rows we actually fetched to avoid O(resultsCount) work on large results.
+        this._fillItemsRange(response, 0, response.entries.length - 1);
+      }
+
+      this._updateQuickFiltersAndBuckets(response);
+      this._updateFlags();
+      this.notifyResize();
+      this.fire('nuxeo-page-loaded');
     },
 
     _itemsChanged() {
@@ -587,7 +648,7 @@ export const PageProviderDisplayBehavior = [
       // Build a stable signature based only on active states
       const snapshot = this.quickFilters
         ? Object.keys(this.quickFilters)
-            .sort()
+            .sort(compareKeys)
             .map((key) => `${key}:${Boolean(this.quickFilters[key].active)}`)
             .join('|')
         : '';
@@ -726,34 +787,42 @@ export const PageProviderDisplayBehavior = [
         };
 
         // ✅ ALWAYS return the Promise
-        return this.nxProvider
-          .fetch(options)
-          .then((response) => {
-            if (!response) {
-              return response; // still a resolved Promise
-            }
-            if (idx === 1) {
-              this.set('items', [...response.entries]);
-            } else {
-              response.entries.forEach((entry) => this.push('items', entry));
-            }
+        this._pendingTableFetches += 1;
+        return (
+          this.nxProvider
+            .fetch(options)
+            .then((response) => {
+              if (!response) {
+                return response; // still a resolved Promise
+              }
+              if (idx === 1) {
+                this.set('items', [...response.entries]);
+              } else {
+                response.entries.forEach((entry) => this.push('items', entry));
+              }
 
-            this._first = 0;
-            this._last = this.items.length - 1;
-            this._updateQuickFiltersAndBuckets(response);
+              this._first = 0;
+              this._last = this.items.length - 1;
+              this._updateQuickFiltersAndBuckets(response);
 
-            this.notifyResize();
-            this.fire('nuxeo-page-loaded');
+              this.notifyResize();
+              this.fire('nuxeo-page-loaded');
 
-            return response;
-          })
-          .catch((err) => {
-            // Prevent Debouncer crashes on aborted requests
-            if (err && err.name === 'AbortError') {
-              return;
-            }
-            throw err;
-          });
+              return response;
+            })
+            .catch((err) => {
+              // Prevent Debouncer crashes on aborted requests
+              if (err && err.name === 'AbortError') {
+                return;
+              }
+              throw err;
+            })
+            // Decrement exactly once per fetch, regardless of fulfilment/rejection,
+            // so the in-flight counter can never drift negative.
+            .finally(() => {
+              this._pendingTableFetches -= 1;
+            })
+        );
       }
     },
 
@@ -800,36 +869,44 @@ export const PageProviderDisplayBehavior = [
         const options = {
           skipAggregates: firstIndex !== 0,
         };
-        return this.nxProvider
-          .fetch(options)
-          .then((response) => {
-            if (!response) {
-              return;
-            }
+        this._pendingTableFetches += 1;
+        return (
+          this.nxProvider
+            .fetch(options)
+            .then((response) => {
+              if (!response) {
+                return;
+              }
 
-            // reset the array if the results count differs from the current array length
-            const count = this._computeRangeCount(response);
-            if (clear || this.items.length !== count) {
-              this.reset(count);
-            }
+              // reset the array if the results count differs from the current array length
+              const count = this._computeRangeCount(response);
+              if (clear || this.items.length !== count) {
+                this.reset(count);
+              }
 
-            this._fillItemsRange(response, firstIndex, lastIndex);
+              this._fillItemsRange(response, firstIndex, lastIndex);
 
-            // quick filters
-            this._updateQuickFiltersAndBuckets(response);
+              // quick filters
+              this._updateQuickFiltersAndBuckets(response);
 
-            this.fire('nuxeo-page-loaded');
-          })
-          .catch((err) => {
-            // Prevent unhandled rejection noise on intentionally aborted requests:
-            // cancelable nuxeo-resource/nuxeo-operation aborts the previous in-flight
-            // fetch when a newer one supersedes it (navigation, rapid filter/sort/refresh,
-            // component detach). Same guard as _fetchPage.
-            if (err && err.name === 'AbortError') {
-              return;
-            }
-            throw err;
-          });
+              this.fire('nuxeo-page-loaded');
+            })
+            .catch((err) => {
+              // Prevent unhandled rejection noise on intentionally aborted requests:
+              // cancelable nuxeo-resource/nuxeo-operation aborts the previous in-flight
+              // fetch when a newer one supersedes it (navigation, rapid filter/sort/refresh,
+              // component detach). Same guard as _fetchPage.
+              if (err && err.name === 'AbortError') {
+                return;
+              }
+              throw err;
+            })
+            // Decrement exactly once per fetch, regardless of fulfilment/rejection,
+            // so the in-flight counter can never drift negative.
+            .finally(() => {
+              this._pendingTableFetches -= 1;
+            })
+        );
       }
     },
 
