@@ -1732,8 +1732,7 @@ import '../nuxeo-button-styles.js';
       const { column } = this._resizing;
 
       const cells = this._getHeaderCells();
-      for (let i = 0; i < cells.length; i++) {
-        const cell = cells[i];
+      for (const cell of cells) {
         if (cell.column === column) {
           cell.classList.remove('resizing');
           cell.style.cursor = '';
@@ -1961,8 +1960,8 @@ import '../nuxeo-button-styles.js';
 
     _clearDropIndicators() {
       const cells = this._getHeaderCells();
-      for (let i = 0; i < cells.length; i++) {
-        cells[i].classList.remove('drop-left', 'drop-right');
+      for (const cell of cells) {
+        cell.classList.remove('drop-left', 'drop-right');
       }
     }
 
@@ -1978,9 +1977,9 @@ import '../nuxeo-button-styles.js';
       this._clearDropIndicators();
 
       const cells = this._getHeaderCells();
-      for (let i = 0; i < cells.length; i++) {
-        if (cells[i].column === column) {
-          cells[i].classList.add('drop-right');
+      for (const cell of cells) {
+        if (cell.column === column) {
+          cell.classList.add('drop-right');
           break;
         }
       }

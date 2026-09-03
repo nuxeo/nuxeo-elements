@@ -384,8 +384,7 @@ import '../nuxeo-sort-styles.js';
         return;
       }
       this._sortedLatest = entries.slice().sort((a, b) => {
-        for (let i = 0; i < cols.length; i++) {
-          const { path, direction } = cols[i];
+        for (const { path, direction } of cols) {
           const valA = this._getLatestSortValue(a, path);
           const valB = this._getLatestSortValue(b, path);
           const cmp = valA.localeCompare(valB, undefined, { sensitivity: 'base' });
