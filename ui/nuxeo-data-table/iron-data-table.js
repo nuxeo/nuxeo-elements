@@ -290,10 +290,8 @@ import '../nuxeo-button-styles.js';
 
             <dom-if if="[[_isEmpty]]">
               <template>
-                <div class="emptyResult" role="rowgroup">
-                  <div role="row">
-                    <div role="cell" aria-live="polite">[[_computedEmptyLabel]]</div>
-                  </div>
+                <div class="emptyResult" role="presentation">
+                  <div role="presentation" aria-live="polite">[[_computedEmptyLabel]]</div>
                 </div>
               </template>
             </dom-if>
