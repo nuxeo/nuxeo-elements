@@ -3715,9 +3715,9 @@ const VALID_MOMENT_TOKENS = new Set([
         this._logRecoveredError('_safeSetValue', error);
         try {
           this.value = newValue;
-        } catch (_) {
-          // Direct assignment failed too. Nothing further can be done without breaking the
-          // field, and the cause was already logged above.
+        } catch (fallbackError) {
+          // Direct assignment failed too — log separately so both root causes are visible.
+          this._logRecoveredError('_safeSetValue (direct assignment)', fallbackError);
         }
       }
     }
