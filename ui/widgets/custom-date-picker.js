@@ -32,6 +32,30 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 // collapsing the popover during month navigation.
 const FOCUS_SUPPRESSION_MS = 200;
 
+// Moment tokens accepted in the `format` property (extend if needed). A Set because it is
+// only ever used for membership tests; hoisted to module scope so it is built once.
+const VALID_MOMENT_TOKENS = new Set([
+  'D',
+  'DD',
+  'Do',
+  'M',
+  'MM',
+  'MMM',
+  'MMMM',
+  'YY',
+  'YYYY',
+  'H',
+  'HH',
+  'h',
+  'hh',
+  'm',
+  'mm',
+  's',
+  'ss',
+  'A',
+  'a',
+]);
+
 {
   class CustomDatePicker extends mixinBehaviors(
     [I18nBehavior, IronFormElementBehavior, IronValidatableBehavior],
@@ -1507,7 +1531,7 @@ const FOCUS_SUPPRESSION_MS = 200;
       // Replace placeholders
       Object.keys(placeholders).forEach((placeholder) => {
         const value = placeholders[placeholder];
-        text = text.replace(new RegExp(`\\{${placeholder}\\}`, 'g'), value);
+        text = text.replace(new RegExp(String.raw`\{${placeholder}\}`, 'g'), value);
       });
 
       return text;
@@ -1576,7 +1600,7 @@ const FOCUS_SUPPRESSION_MS = 200;
       if (!value) return null;
       try {
         if (typeof value === 'string') {
-          const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+          const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
           if (m) {
             const year = parseInt(m[1], 10);
             const month = parseInt(m[2], 10) - 1;
@@ -1601,7 +1625,7 @@ const FOCUS_SUPPRESSION_MS = 200;
 
       try {
         // Strict ISO format validation: YYYY-MM-DD
-        const match = isoString.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoString);
         if (!match) return null;
 
         const year = parseInt(match[1], 10);
@@ -2993,8 +3017,7 @@ const FOCUS_SUPPRESSION_MS = 200;
         }
       }
       if (popover) {
-        popover.classList.remove('open');
-        popover.classList.remove('open-up');
+        popover.classList.remove('open', 'open-up');
         popover.style.left = '';
         popover.style.right = '';
         popover.style.top = '';
@@ -4191,9 +4214,10 @@ const FOCUS_SUPPRESSION_MS = 200;
         const popHeight = popRect.height || 320;
         const popWidth = popRect.width || 280;
 
-        // Position using fixed positioning for modal-like behavior
-        let { left } = rect;
-        let top = rect.bottom + 4; // 4px margin
+        // Position using fixed positioning for modal-like behavior.
+        // Both coordinates are assigned on every branch below, so they start unset.
+        let left;
+        let top;
         const minVerticalPadding = 8; // Minimum padding from viewport edges
 
         // Smart vertical positioning with better edge handling
@@ -4771,34 +4795,11 @@ const FOCUS_SUPPRESSION_MS = 200;
     _isValidMomentFormat(format) {
       if (!format || typeof format !== 'string') return false;
 
-      // Allowed moment tokens (extend if needed)
-      const validTokens = [
-        'D',
-        'DD',
-        'Do',
-        'M',
-        'MM',
-        'MMM',
-        'MMMM',
-        'YY',
-        'YYYY',
-        'H',
-        'HH',
-        'h',
-        'hh',
-        'm',
-        'mm',
-        's',
-        'ss',
-        'A',
-        'a',
-      ];
-
       // Extract tokens from format string
       const tokens = format.match(/[A-Za-z]+/g) || [];
 
       // Check if every token is valid
-      return tokens.every((token) => validTokens.includes(token));
+      return tokens.every((token) => VALID_MOMENT_TOKENS.has(token));
     }
 
     _selectYear(e) {
@@ -5129,8 +5130,8 @@ const FOCUS_SUPPRESSION_MS = 200;
           'MM-DD',
         ];
 
-        for (let i = 0; i < commonFormats.length; i++) {
-          momentDate = this._moment(trimmedInput, commonFormats[i], true);
+        for (const commonFormat of commonFormats) {
+          momentDate = this._moment(trimmedInput, commonFormat, true);
           if (momentDate.isValid()) {
             const date = momentDate.toDate();
             date.setHours(0, 0, 0, 0);
@@ -5163,8 +5164,7 @@ const FOCUS_SUPPRESSION_MS = 200;
       // Try multiple sources for locale detection
       const sources = [navigator.languages && navigator.languages[0], navigator.language, this._locale, 'en-US'];
 
-      for (let i = 0; i < sources.length; i++) {
-        const locale = sources[i];
+      for (const locale of sources) {
         if (locale && typeof locale === 'string') {
           return locale;
         }
@@ -5209,8 +5209,7 @@ const FOCUS_SUPPRESSION_MS = 200;
           'YYYY.MM.DD',
         ];
 
-        for (let i = 0; i < commonFormats.length; i++) {
-          const format = commonFormats[i];
+        for (const format of commonFormats) {
           const testDate = this._moment(inputString, format, true);
           if (testDate.isValid()) {
             results.parsed = true;
