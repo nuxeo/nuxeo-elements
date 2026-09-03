@@ -292,6 +292,7 @@
   "operationButton.bulk.poll.error": "Error while executing {0}",
   "operationButton.bulk.poll.running": "{0} is running ({1}/{2})",
   "operationButton.bulk.poll.scheduled": "{0} is scheduled. You will be notified when it starts.",
+  "pdfViewer.externalLinkNewTab": "{0} (opens in a new tab)",
   "pdfViewer.title": "PDF preview",
   "paginationControls.currentPage": "Page {0}",
   "paginationControls.firstPage": "Go to first page",
