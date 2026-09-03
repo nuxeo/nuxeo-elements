@@ -130,7 +130,7 @@ suite('nuxeo-image-viewer', () => {
         expect(isToolbarVisible(viewer)).to.be.true;
       });
 
-      test('Should display five options when the toolbar is displayed', async () => {
+      test('Should display nine options when the toolbar is displayed', async () => {
         const viewer = await fixture(
           html`
             <nuxeo-image-viewer src="${base}/resources/sample.png" controls></nuxeo-image-viewer>
@@ -142,9 +142,10 @@ suite('nuxeo-image-viewer', () => {
 
         // The toolbar uses two <dom-if> templates to swap fit-to-real-size / fit-to-viewer; those
         // template placeholders also show up under `toolbar.children`. The user-visible buttons
-        // are the <paper-icon-button> elements only.
+        // are the <paper-icon-button> elements only: zoom out, fit, zoom in, rotate left/right and
+        // the four panning controls.
         const options = toolbar.querySelectorAll('paper-icon-button');
-        expect(options).to.have.lengthOf(5);
+        expect(options).to.have.lengthOf(9);
       });
 
       suite('Options', () => {
@@ -226,6 +227,51 @@ suite('nuxeo-image-viewer', () => {
           expect(rotateRightOption.getAttribute('data-action')).to.equal('rotate-right');
           expect(rotateRightOption.icon).to.equal('image:rotate-right');
         });
+
+        /**
+         * WEBUI-2145: dragging used to be the only pointer gesture that could move a zoomed image,
+         * which fails WCAG 2.1 SC 2.5.7 (Dragging Movements). The toolbar now ends with four
+         * single-activation panning controls, laid out as a flattened d-pad (left, up, down, right).
+         */
+        suite('Panning controls', () => {
+          const panButtons = [
+            { action: 'pan-left', icon: 'arrow-back', id: 'panLeft' },
+            { action: 'pan-up', icon: 'arrow-upward', id: 'panUp' },
+            { action: 'pan-down', icon: 'arrow-downward', id: 'panDown' },
+            { action: 'pan-right', icon: 'arrow-forward', id: 'panRight' },
+          ];
+
+          panButtons.forEach(({ action, icon, id }, index) => {
+            test(`Should display the ${action} option after the rotation options`, () => {
+              const option = buttons()[5 + index];
+              expect(isElementVisible(option)).to.be.true;
+              expect(option.getAttribute('data-action')).to.equal(action);
+              expect(option.icon).to.equal(icon);
+              expect(option.id).to.equal(id);
+            });
+          });
+
+          test('Should give every panning control an accessible name and a tooltip on focus', () => {
+            panButtons.forEach(({ action, id }) => {
+              const option = toolbar.querySelector(`paper-icon-button[data-action="${action}"]`);
+              expect(option.getAttribute('aria-label'), `missing aria-label on ${action}`).to.be.a('string').and.not.to
+                .be.empty;
+              const tooltip = toolbar.querySelector(`nuxeo-tooltip[for="${id}"]`);
+              expect(tooltip, `no nuxeo-tooltip for #${id}`).to.exist;
+              // Targeting the button itself is what makes the tooltip open on focus, since `focus`
+              // does not bubble.
+              expect(tooltip.target).to.equal(option);
+            });
+          });
+
+          test('Should keep the panning controls reachable with the keyboard', () => {
+            panButtons.forEach(({ action }) => {
+              const option = toolbar.querySelector(`paper-icon-button[data-action="${action}"]`);
+              expect(option.getAttribute('tabindex')).to.equal('0');
+              expect(option.disabled).to.be.false;
+            });
+          });
+        });
       });
     });
   });
@@ -304,6 +350,49 @@ suite('nuxeo-image-viewer', () => {
         sinon.spy(viewer._el, 'rotate');
         tap(rotateRightOption);
         expect(viewer._el.rotate.withArgs(90).calledOnce).to.be.true;
+      });
+
+      /**
+       * WEBUI-2145: a single activation of a panning control has to move the image, so that panning
+       * no longer requires a dragging movement.
+       */
+      suite('Panning controls', () => {
+        // The canvas moves opposite to the direction the viewport travels, so panning left moves the
+        // canvas right — see PAN_DIRECTIONS in nuxeo-image-viewer.js.
+        const expectations = [
+          { action: 'pan-left', axis: 'x', sign: 1 },
+          { action: 'pan-right', axis: 'x', sign: -1 },
+          { action: 'pan-up', axis: 'y', sign: 1 },
+          { action: 'pan-down', axis: 'y', sign: -1 },
+        ];
+
+        expectations.forEach(({ action, axis, sign }) => {
+          test(`Should move the image when the ${action} button is pressed`, () => {
+            const option = toolbar.querySelector(`paper-icon-button[data-action="${action}"]`);
+            expect(option).to.exist;
+
+            sinon.spy(viewer._el, 'move');
+            tap(option);
+
+            expect(viewer._el.move.calledOnce).to.be.true;
+            const [offsetX, offsetY] = viewer._el.move.firstCall.args;
+            const along = axis === 'x' ? offsetX : offsetY;
+            const across = axis === 'x' ? offsetY : offsetX;
+            expect(Math.sign(along)).to.equal(sign);
+            expect(Math.abs(along)).to.be.at.least(24);
+            expect(across).to.equal(0);
+          });
+        });
+
+        test('Should pan without any dragging movement', () => {
+          // `tap` dispatches a down/up pair on the same coordinates: no pointer movement while a
+          // button is held, which is what WCAG 2.1 SC 2.5.7 asks for.
+          const option = toolbar.querySelector('paper-icon-button[data-action="pan-right"]');
+          const before = viewer._el.getCanvasData();
+          tap(option);
+          const after = viewer._el.getCanvasData();
+          expect(after.left).to.be.lessThan(before.left);
+        });
       });
     });
 
@@ -647,6 +736,7 @@ suite('nuxeo-image-viewer extras', () => {
         zoom: sinon.spy(),
         zoomTo: sinon.spy(),
         rotate: sinon.spy(),
+        move: sinon.spy(),
         initialCanvasData: { width: 500, naturalWidth: 1000 },
       };
       el._el = mockEl;
@@ -683,11 +773,40 @@ suite('nuxeo-image-viewer extras', () => {
       expect(mockEl.rotate).to.have.been.calledWith(90);
     });
 
+    test('pan-left moves the canvas towards the right', () => {
+      el._click({ target: { dataset: { action: 'pan-left' }, parentNode: { dataset: {} } } });
+      const [offsetX, offsetY] = mockEl.move.firstCall.args;
+      expect(offsetX).to.be.greaterThan(0);
+      expect(offsetY).to.equal(0);
+    });
+
+    test('pan-right moves the canvas towards the left', () => {
+      el._click({ target: { dataset: { action: 'pan-right' }, parentNode: { dataset: {} } } });
+      const [offsetX, offsetY] = mockEl.move.firstCall.args;
+      expect(offsetX).to.be.lessThan(0);
+      expect(offsetY).to.equal(0);
+    });
+
+    test('pan-up moves the canvas downwards', () => {
+      el._click({ target: { dataset: { action: 'pan-up' }, parentNode: { dataset: {} } } });
+      const [offsetX, offsetY] = mockEl.move.firstCall.args;
+      expect(offsetX).to.equal(0);
+      expect(offsetY).to.be.greaterThan(0);
+    });
+
+    test('pan-down moves the canvas upwards', () => {
+      el._click({ target: { dataset: { action: 'pan-down' }, parentNode: { dataset: {} } } });
+      const [offsetX, offsetY] = mockEl.move.firstCall.args;
+      expect(offsetX).to.equal(0);
+      expect(offsetY).to.be.lessThan(0);
+    });
+
     test('unknown action does not call any method', () => {
       el._click({ target: { dataset: { action: 'unknown' }, parentNode: { dataset: {} } } });
       expect(mockEl.zoom).not.to.have.been.called;
       expect(mockEl.zoomTo).not.to.have.been.called;
       expect(mockEl.rotate).not.to.have.been.called;
+      expect(mockEl.move).not.to.have.been.called;
     });
 
     test('falls back to parentNode dataset when target has no action', () => {
@@ -698,6 +817,41 @@ suite('nuxeo-image-viewer extras', () => {
     test('always calls _scheduleToolbarContrastUpdate', () => {
       el._click({ target: { dataset: { action: 'zoom-in' }, parentNode: { dataset: {} } } });
       expect(el._scheduleToolbarContrastUpdate).to.have.been.calledOnce;
+    });
+  });
+
+  suite('_pan', () => {
+    let mockEl;
+
+    setup(() => {
+      mockEl = { move: sinon.spy() };
+      el._el = mockEl;
+    });
+
+    test('does nothing when _el is not set', () => {
+      el._el = null;
+      el._pan('pan-left');
+    });
+
+    test('does nothing for an unknown direction', () => {
+      el._pan('pan-sideways');
+      expect(mockEl.move).not.to.have.been.called;
+    });
+
+    test('scales the step with the size of the viewer', () => {
+      sandbox.stub(el.$.canvas, 'offsetWidth').value(1000);
+      sandbox.stub(el.$.canvas, 'offsetHeight').value(500);
+      el._pan('pan-right');
+      const [offsetX] = mockEl.move.firstCall.args;
+      expect(offsetX).to.equal(-200);
+    });
+
+    test('falls back to a minimum step in a very small viewer', () => {
+      sandbox.stub(el.$.canvas, 'offsetWidth').value(10);
+      sandbox.stub(el.$.canvas, 'offsetHeight').value(10);
+      el._pan('pan-down');
+      const [, offsetY] = mockEl.move.firstCall.args;
+      expect(offsetY).to.equal(-24);
     });
   });
 
