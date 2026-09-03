@@ -1,0 +1,44 @@
+<!--
+`nuxeo-picture-edit-layout`
+@group Nuxeo UI
+@element nuxeo-picture-edit-layout
+-->
+<dom-module id="nuxeo-picture-edit-layout">
+  <template>
+    <style>
+      *[role='widget'] {
+        @apply --nuxeo-widget;
+      }
+    </style>
+
+    <nuxeo-input role="widget" id="title" label="Title" value="{{document.properties.dc:title}}" autofocus required>
+    </nuxeo-input>
+
+    <nuxeo-textarea role="widget" id="description" label="Description" value="{{document.properties.dc:description}}">
+    </nuxeo-textarea>
+
+    <nuxeo-date-picker role="widget" label="Expire date" value="{{document.properties.dc:expired}}">
+    </nuxeo-date-picker>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-picture-edit-layout',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        /**
+         * @doctype Picture
+         */
+        document: Object,
+      },
+
+      validate() {
+        if (this.document.properties['dc:description'] === this.document.properties['dc:title']) {
+          alert('title and description cannot have the same value');
+          return false;
+        }
+        return true;
+      },
+    });
+  </script>
+</dom-module>
