@@ -68,8 +68,10 @@ DefaultUploadProvider.prototype.upload = function(files, callback) {
       const currentUploader = this.uploader;
       const isActive = () => this.uploader === currentUploader;
       const uploadPromises = [];
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      // Normalize first: `files` is documented as `Object[]` but callers may pass anything
+      // array-like (a raw `FileList`, or `{ 0: file, length: 1 }`). Bare `for-of` would require a
+      // true iterable and silently narrow that contract.
+      for (const file of Array.from(files)) {
         const blob = new Nuxeo.Blob({ content: file });
         cb({ type: 'uploadStarted', file });
         const p = currentUploader
@@ -464,8 +466,11 @@ export const UploaderBehavior = {
       return false;
     }
     if (files.length) {
-      for (let i = 0; i < files.length; i++) {
-        if (!this._accepts(files[i])) {
+      // Normalize first, as in `upload()` above. `accepts()` is public surface -- the
+      // amazon-s3-online-storage addon re-exports it -- so keep it tolerant of any array-like
+      // input rather than narrowing it to iterables only.
+      for (const file of Array.from(files)) {
+        if (!this._accepts(file)) {
           return false;
         }
       }
