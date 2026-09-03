@@ -27,6 +27,23 @@ import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron
 import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
 {
+  // A JS `.` never matches a line terminator, so the original `/(.+)\/$/` only stripped a trailing
+  // slash when a non-line-terminator character preceded it: '/' and '<LF>/' were left untouched.
+  const LINE_TERMINATORS = new Set(['\n', '\r', '\u2028', '\u2029']);
+
+  /**
+   * Removes a single trailing slash, matching the previous `value.replace(/(.+)\/$/, '$1')` exactly
+   * but in linear time. That regex combined an unbounded greedy group with an anchored literal, so
+   * it backtracked super-linearly over user-typed input (SonarCloud javascript:S8786).
+   */
+  const stripTrailingSlash = (value) => {
+    if (typeof value !== 'string' || value.length < 2 || !value.endsWith('/')) {
+      return value;
+    }
+    const stripped = value.slice(0, -1);
+    return LINE_TERMINATORS.has(stripped.slice(-1)) ? value : stripped;
+  };
+
   /**
    * An element that provides path auto completion to nuxeo folderish documents.
    *
@@ -304,11 +321,15 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
     /* Override method from Polymer.IronValidatableBehavior. */
     _getValidity() {
       // XXX - paper-typeahead doesn't implement the IronValidatableBehavior, so there is no validate() method.
-      const valid =
-        (this.value && this.value === '/') ||
-        (this.parent ? this.value.replace(/(.+)\/$/, '$1') === this.parent.path : false) ||
-        (this.children ? this.children.some((child) => this.value.replace(/(.+)\/$/, '$1') === child.path) : false);
-      return valid;
+      if (this.value === '/') {
+        return true;
+      }
+      // Normalised once instead of once per child - the previous code re-ran the regex inside some().
+      const path = stripTrailingSlash(this.value);
+      return (
+        (this.parent ? path === this.parent.path : false) ||
+        (this.children ? this.children.some((child) => path === child.path) : false)
+      );
     }
   }
 

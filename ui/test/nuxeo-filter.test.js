@@ -543,4 +543,71 @@ suite('nuxeo-filter', () => {
       expect(span[0].innerHTML).to.be.equal(' ');
     });
   });
+  // ELEMENTS-2048 - pin the csv-splitting semantics of `check()` for `multiple` filters. The
+  // original `v.trim().split(/\s*,\s*/)` had ambiguous adjacent quantifiers around the comma
+  // (SonarCloud javascript:S8786); these cover the whitespace shapes it used to absorb.
+  suite('multiple-value splitting (S8786 rewrite)', () => {
+    test('absorbs whitespace of every kind around the separators', async () => {
+      const filter = await fixture(html`
+        <div>
+          <nuxeo-filter document='{"facets":["Versionable"]}' facet="Folderish ,  Versionable">
+            <template><div class="ok"></div></template>
+          </nuxeo-filter>
+          <nuxeo-filter document='{"facets":["Versionable"]}' facet="Folderish,${'\t'}Versionable">
+            <template><div class="ok"></div></template>
+          </nuxeo-filter>
+          <nuxeo-filter document='{"facets":["Versionable"]}' facet="${'  Folderish , Versionable  '}">
+            <template><div class="ok"></div></template>
+          </nuxeo-filter>
+        </div>
+      `);
+      expect(stamped(filter, '.ok').length).to.be.equal(3);
+    });
+
+    test('keeps empty segments so a stray comma never matches', async () => {
+      const filter = await fixture(html`
+        <div>
+          <!-- 'Folderish' still matches even with an empty segment in the list -->
+          <nuxeo-filter document='{"facets":["Folderish"]}' facet="Folderish,,Versionable">
+            <template><div class="ok"></div></template>
+          </nuxeo-filter>
+          <!-- a whitespace-only value must not become an empty list that matches everything -->
+          <nuxeo-filter document='{"facets":["Folderish"]}' facet="${'   '}">
+            <template><div class="notok"></div></template>
+          </nuxeo-filter>
+          <nuxeo-filter document='{"facets":["Folderish"]}' facet=",">
+            <template><div class="notok"></div></template>
+          </nuxeo-filter>
+        </div>
+      `);
+      expect(stamped(filter, '.ok').length).to.be.equal(1);
+      expect(stamped(filter, '.notok')).to.be.empty;
+    });
+
+    test('preserves whitespace inside a value', async () => {
+      // wrapped in a div: _render() stamps into the filter's parent node, not into the filter
+      const filter = await fixture(html`
+        <div>
+          <nuxeo-filter document='{"facets":["Two Words"]}' facet="One, Two Words">
+            <template><div class="ok"></div></template>
+          </nuxeo-filter>
+        </div>
+      `);
+      expect(stamped(filter, '.ok').length).to.be.equal(1);
+    });
+
+    test('checks a pathological whitespace run without super-linear backtracking', async () => {
+      const filter = await fixture(html`
+        <nuxeo-filter document='{"facets":["Folderish"]}'>
+          <template><div class="ok"></div></template>
+        </nuxeo-filter>
+      `);
+      filter.facet = `a${' '.repeat(100000)}b`;
+      const started = performance.now();
+      const result = filter.check();
+      const elapsed = performance.now() - started;
+      expect(result).to.be.false;
+      expect(elapsed).to.be.below(1000);
+    });
+  });
 });
