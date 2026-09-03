@@ -125,7 +125,17 @@ npm run test:dataviz  # Dataviz only
 
 Push to `maintenance-3.1.x` triggers: **lint → test → storybook → build (tag + publish)** (all must pass).
 
-PRs run lint and test workflows automatically.
+PRs run lint and test workflows automatically (both `maintenance-3.1.x` and `lts-2025`).
+
+### Dependabot Auto-Fix
+
+Dependabot creates weekly PRs for both branches. The `dependabot-auto-fix.yaml` workflow:
+1. Runs lint and tests on Dependabot PRs
+2. Auto-approves and enables auto-merge on success
+3. Assigns Copilot coding agent and labels PR on failure
+
+Use the `dependabot-fixer` agent mode in VS Code for manual review/fixing of Dependabot PRs.
+See `.github/skills/fix-dependabot-pr/SKILL.md` for detailed fixing instructions.
 
 - CI uses `npm ci --ignore-scripts` for the main deterministic, lockfile-based install. `--ignore-scripts` skips dependency lifecycle hooks for supply-chain safety; the browser for unit tests is provisioned separately by the `pretest` hook, and native deps (rollup, nx, esbuild) resolve via `optionalDependencies`. (The `sonar.yaml` workflow additionally runs a targeted `npm install --no-package-lock --no-save --ignore-scripts` to pull the latest `@nuxeo` RC packages for analysis.)
 - `package-lock.json` is committed and must be kept in sync with `package.json`.

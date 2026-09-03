@@ -1,0 +1,199 @@
+name: Dependabot Auto-Fix
+
+on:
+  pull_request:
+    branches:
+      - maintenance-3.1.x
+      - lts-2025
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+env:
+  BRANCH_NAME: ${{ github.head_ref }}
+
+jobs:
+  # Gate: only run for Dependabot PRs
+  check-author:
+    runs-on: ubuntu-latest
+    outputs:
+      is-dependabot: ${{ steps.check.outputs.is-dependabot }}
+    steps:
+      - name: Check if PR is from Dependabot
+        id: check
+        run: |
+          if [[ "${{ github.actor }}" == "dependabot[bot]" || "${{ github.actor }}" == "dependabot" ]]; then
+            echo "is-dependabot=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is-dependabot=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  lint:
+    needs: check-author
+    if: needs.check-author.outputs.is-dependabot == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.lint.outcome }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
+          scope: '@nuxeo'
+
+      - name: Install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+        run: |
+          npm install --no-package-lock
+          npm run bootstrap
+
+      - name: Lint
+        id: lint
+        run: npm run lint
+
+  test:
+    needs: check-author
+    if: needs.check-author.outputs.is-dependabot == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.test.outcome }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
+          scope: '@nuxeo'
+
+      - name: Install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+        run: |
+          npm install --no-package-lock
+          npm run bootstrap
+
+      - name: Test
+        id: test
+        run: npm run test
+
+  # When both lint and test pass, auto-approve and enable auto-merge
+  auto-approve:
+    needs: [check-author, lint, test]
+    if: |
+      needs.check-author.outputs.is-dependabot == 'true' &&
+      needs.lint.result == 'success' &&
+      needs.test.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto-approve Dependabot PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr review "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
+            --approve \
+            --body "✅ **Dependabot Auto-Fix**: Lint and tests passed. Auto-approved. A human reviewer must still merge this PR."
+
+  # When lint or test fails, assign Copilot coding agent to fix the PR
+  assign-copilot:
+    needs: [check-author, lint, test]
+    if: |
+      always() &&
+      needs.check-author.outputs.is-dependabot == 'true' &&
+      (needs.lint.result == 'failure' || needs.test.result == 'failure')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment failure details on PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LINT_STATUS="${{ needs.lint.result }}"
+          TEST_STATUS="${{ needs.test.result }}"
+
+          BODY="## 🔧 Dependabot Auto-Fix: CI Failure Detected
+
+          | Check | Status |
+          |-------|--------|
+          | Lint  | ${LINT_STATUS} |
+          | Test  | ${TEST_STATUS} |
+
+          **Branch**: \`${{ env.BRANCH_NAME }}\`
+          **Base**: \`${{ github.base_ref }}\`
+
+          ### Next Steps
+          The Copilot coding agent has been assigned to fix the breaking changes.
+          If automatic fixing fails, manually run the \`dependabot-fixer\` agent mode in VS Code:
+          1. Switch to the \`dependabot-fixer\` agent mode
+          2. Ask: *Fix the Dependabot PR #${{ github.event.pull_request.number }}*
+          "
+
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
+            --body "$BODY"
+
+      - name: Create fix issue for Copilot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_BRANCH="${{ env.BRANCH_NAME }}"
+          BASE_BRANCH="${{ github.base_ref }}"
+          LINT_STATUS="${{ needs.lint.result }}"
+          TEST_STATUS="${{ needs.test.result }}"
+
+          ISSUE_BODY="## Fix Dependabot PR #${PR_NUMBER}
+
+          The Dependabot PR [#${PR_NUMBER}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${PR_NUMBER}) has CI failures.
+
+          **PR**: ${PR_TITLE}
+          **Branch**: \`${PR_BRANCH}\` → \`${BASE_BRANCH}\`
+          **Lint**: ${LINT_STATUS}
+          **Test**: ${TEST_STATUS}
+
+          ### Instructions
+
+          1. Check out branch \`${PR_BRANCH}\`
+          2. Run \`npm install --no-package-lock && npm run bootstrap\`
+          3. Run \`npm run lint\` — fix any lint errors
+          4. Run \`npm test\` — fix any test failures
+          5. Common fixes for dependency upgrades:
+             - API changes: update call sites to match new API
+             - Import path changes: update import statements
+             - Config changes: update eslint/karma/polymer config
+             - Type changes: update property types or default values
+          6. Run \`npm run format\` before committing
+          7. Push fixes to the \`${PR_BRANCH}\` branch
+
+          ### Context
+          - This is a Polymer 3 monorepo (core, ui, dataviz, testing-helpers, storybook)
+          - Use \`npm run lint\` for linting and \`npm test\` for all tests
+          - Do NOT modify vendored code in \`ui/viewers/pdfjs/\` or \`ui/js-interpreter/\`
+          - Do NOT edit translated i18n files (only \`ui/i18n/messages.json\`)
+          "
+
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "Fix CI failures in Dependabot PR #${PR_NUMBER}: ${PR_TITLE}" \
+            --body "$ISSUE_BODY" \
+            --label "dependencies,copilot" \
+            --assignee "@me" || true
+
+      - name: Label PR as needing fixes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr edit "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
+            --add-label "ci-failure,needs-fix" || true

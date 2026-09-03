@@ -104,3 +104,5 @@ test/                → Shared test setup
 - **Registry**: `@nuxeo` packages come from `https://packages.nuxeo.com/repository/npm-public/`
 - **Cross-repo**: Changes can trigger nuxeo-web-ui builds
 - **Translations**: Crowdin sync runs daily
+- **Dependabot**: Weekly version update PRs for both `maintenance-3.1.x` and `lts-2025` branches; auto-fix workflow runs lint/tests and assigns Copilot on failure
+- **Agent mode**: Use `dependabot-fixer` agent to manually review/fix Dependabot PRs

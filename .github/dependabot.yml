@@ -5,11 +5,19 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    labels:
+      - "dependencies"
+      - "maintenance-3.1.x"
+    reviewers:
+      - "nuxeo/ui"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    labels:
+      - "dependencies"
+      - "github-actions"
     groups:
       gha:
         patterns:
@@ -23,6 +31,11 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "[lts-2025]"
+    labels:
+      - "dependencies"
+      - "lts-2025"
+    reviewers:
+      - "nuxeo/ui"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -31,6 +44,9 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "[lts-2025]"
+    labels:
+      - "dependencies"
+      - "github-actions"
     groups:
       gha:
         patterns:
