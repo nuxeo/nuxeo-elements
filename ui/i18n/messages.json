@@ -52,6 +52,8 @@
   "comments.edition.error.reply": "An error occurred while editing the reply.",
   "comments.fetch.error.comment": "An error occurred while editing comments.",
   "comments.fetch.error.reply": "An error occurred while editing replies.",
+  "comments.label.comment": "Comment",
+  "comments.label.reply": "Reply",
   "comments.lastReply": "Last reply {0}",
   "comments.loadAll.comment": "View all {0} comments",
   "comments.loadAll.reply": "View all {0} replies",
