@@ -99,6 +99,7 @@ Always use Nuxeo Elements for API calls, never `fetch()`:
 - ESLint: flat config in `eslint.config.mjs`
 - Max line length: 120 characters
 - `Nuxeo` global is `writable`
+- **Do not use optional chaining (`?.`)** in `core/`, `ui/`, or `dataviz/` source files. The Polymer linter/analyzer (`polymer lint`, `polymer analyze`) uses a parser that predates `?.`; it fails to parse the file or drops elements from `analysis.json` (consumed by Storybook and other tooling). Use explicit guards instead — e.g. `(obj && obj.prop)` or `(template && template._templateInfo) || {}`. Vendored code (`ui/viewers/pdfjs/`, `ui/js-interpreter/`) is exempt — do not modify it.
 
 ## Testing
 
@@ -134,6 +135,7 @@ PRs run lint and test workflows automatically.
 ## Common Pitfalls
 
 - This is a **library** repo — there is no bundler or dev server. Components are consumed via npm by `nuxeo-web-ui`.
+- **Do not use optional chaining (`?.`)** in element source — see Style Rules above. Polymer analyze feeds `analysis.json`; `?.` causes elements to go missing from that output.
 - Always commit `package-lock.json` changes when dependencies change. CI relies on it for `npm ci`.
 - `@nuxeo` npm packages come from `https://packages.nuxeo.com/repository/npm-public/`, not npmjs.org.
 - The `ui/` package has its own `eslint.config.mjs` in addition to the root config.
