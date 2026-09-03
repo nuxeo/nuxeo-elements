@@ -117,6 +117,44 @@ suite('nuxeo-select', () => {
     });
   });
 
+  // WEBUI-482: the invalid/required state must be exposed on the focusable control, because
+  // paper-dropdown-menu otherwise conveys it with colour and a thicker underline only.
+  suite('accessibility – aria-invalid / aria-required on inner trigger', () => {
+    test('mirrors the required flag onto the native input', async () => {
+      const select = await fixture(html`
+        <nuxeo-select label="Format" required .options="${['HTML', 'XML']}"></nuxeo-select>
+      `);
+      await flush();
+      await waitForAriaSync();
+
+      const nativeInput = select._getNativeInput();
+      expect(nativeInput).to.not.be.null;
+      expect(nativeInput.getAttribute('aria-required')).to.equal('true');
+      expect(nativeInput.getAttribute('aria-invalid')).to.equal('false');
+    });
+
+    test('mirrors the invalid state and clears aria-required when optional', async () => {
+      el.invalid = true;
+      await waitForAriaSync();
+
+      const nativeInput = el._getNativeInput();
+      expect(nativeInput.getAttribute('aria-invalid')).to.equal('true');
+      expect(nativeInput.hasAttribute('aria-required')).to.be.false;
+
+      el.invalid = false;
+      await waitForAriaSync();
+      expect(nativeInput.getAttribute('aria-invalid')).to.equal('false');
+    });
+
+    test('returns silently when the trigger input cannot be found', () => {
+      const saved = el.$.paperDropdownMenu;
+      el.$.paperDropdownMenu = null;
+      expect(() => el._applyAriaState()).to.not.throw();
+      expect(() => el._applyAriaLabel()).to.not.throw();
+      el.$.paperDropdownMenu = saved;
+    });
+  });
+
   suite('_computeAttrForSelected', () => {
     test('returns "option" when options array is provided', () => {
       expect(el._computeAttrForSelected(null, ['a', 'b'])).to.equal('option');

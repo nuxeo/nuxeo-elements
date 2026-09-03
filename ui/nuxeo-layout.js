@@ -22,9 +22,14 @@ import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { flush } from '@polymer/polymer/lib/utils/flush.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { importHref } from './import-href.js';
+import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 import './nuxeo-error.js';
 
 {
+  // Fallback validation messages injected by `_reportValidation`, so a message configured by
+  // the layout is never overwritten and a fallback that no longer applies gets recomputed.
+  const fallbackErrorMessages = new WeakMap();
+
   /**
    * An element to import and stamp layout elements.
    *
@@ -35,7 +40,7 @@ import './nuxeo-error.js';
    * @appliesMixin Polymer.IronResizableBehavior
    * @memberof Nuxeo
    */
-  class Layout extends mixinBehaviors([IronResizableBehavior], Nuxeo.Element) {
+  class Layout extends mixinBehaviors([IronResizableBehavior, I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <nuxeo-error id="error" code="404" url="[[href]]" message="[[error]]" hidden></nuxeo-error>
@@ -116,24 +121,104 @@ import './nuxeo-error.js';
       return model;
     }
 
+    /**
+     * Fired once every `validate` run has settled, carrying the errors that made it fail.
+     *
+     * @event layout-validation-errors
+     * @param {Array<object>} errors One `{ element, label, message }` entry per invalid widget, or a
+     * single form level entry when the layout's own `validate` rejected the form. Empty when valid.
+     */
+
     // Trigger the layout validation if it exists.
     validate() {
-      // workaroud for https://github.com/PolymerElements/iron-form/issues/218, adapted from iron-form.html
+      // workaround for https://github.com/PolymerElements/iron-form/issues/218, adapted from iron-form.html
       let valid = true;
+      const invalidElements = [];
       if (this.element) {
         const elements = this._getValidatableElements(this.element.root);
         for (let el, i = 0; i < elements.length; i++) {
           el = elements[i];
-          valid = (el.validate ? el.validate() : el.checkValidity()) && valid;
+          const elementValid = this._validateElement(el);
+          if (!elementValid) {
+            invalidElements.push(el);
+          }
+          valid = elementValid && valid;
         }
       }
       if (!valid) {
+        this._reportValidation(false, invalidElements);
         return false;
       }
       if (this.element && typeof this.element.validate === 'function') {
-        return this.element.validate();
+        // The layout runs its own, possibly asynchronous, validation. Report only once it settles,
+        // so the errors we publish always match the validity we return.
+        const validated = this.element.validate();
+        if (validated && typeof validated.then === 'function') {
+          return validated.then((customValid) => {
+            this._reportValidation(customValid, invalidElements);
+            return customValid;
+          });
+        }
+        this._reportValidation(validated, invalidElements);
+        return validated;
       }
+      this._reportValidation(true, invalidElements);
       return true;
+    }
+
+    _validateElement(element) {
+      return element.validate ? element.validate() : element.checkValidity();
+    }
+
+    /**
+     * Widgets flag validation failures with colour and a thicker underline only, which is not
+     * enough on its own (WCAG 2.1 SC 1.4.1 Use of Color, SC 3.3.3 Error Suggestion). Give every
+     * invalid widget a visible message naming the field when its layout did not provide one, and
+     * publish the list so hosts can also render a form level error summary.
+     */
+    _reportValidation(valid, elements) {
+      const errors = elements.map((element) => {
+        const label = this._fieldLabel(element);
+        let message = element.errorMessage;
+        // A widget that validates itself may already have defaulted to the generic `widget.required`
+        // text and flagged it via `_defaultRequiredError`. That default only exists for widgets used
+        // outside a layout, so treat it as replaceable here and name the field instead. A message the
+        // author set on the widget carries no such flag and is still preserved.
+        if (!message || message === fallbackErrorMessages.get(element) || element._defaultRequiredError) {
+          message = this._defaultErrorMessage(element, label);
+          fallbackErrorMessages.set(element, message);
+          if ('errorMessage' in element) {
+            element.errorMessage = message;
+          }
+        }
+        return { element, label, message };
+      });
+      if (!valid && errors.length === 0) {
+        // The layout's own validation rejected the form without pointing at a widget. Report a form
+        // level message anyway, so a host never clears its summary while the form is still invalid.
+        errors.push({ element: this.element, label: '', message: this.i18n('layout.validation.invalidForm') });
+      }
+      this.dispatchEvent(
+        new CustomEvent('layout-validation-errors', { bubbles: true, composed: true, detail: { errors } }),
+      );
+    }
+
+    _defaultErrorMessage(element, label) {
+      const key = this._isEmptyValue(element) ? 'layout.validation.requiredField' : 'layout.validation.invalidField';
+      return label ? this.i18n(`${key}.named`, label) : this.i18n(key);
+    }
+
+    _fieldLabel(element) {
+      // A widget whose label does not live on the element itself - a data table carries the property
+      // label on its column - names itself through `_validationLabel`.
+      const own = typeof element._validationLabel === 'function' ? element._validationLabel() : '';
+      const label = own || element.label || element.getAttribute('aria-label') || element.getAttribute('label') || '';
+      return label.trim();
+    }
+
+    _isEmptyValue(element) {
+      const value = 'value' in element ? element.value : element.selected;
+      return value == null || value === '' || (Array.isArray(value) && value.length === 0);
     }
 
     _getValidatableElements(parent) {
