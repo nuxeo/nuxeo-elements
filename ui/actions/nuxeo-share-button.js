@@ -64,19 +64,38 @@ import '../nuxeo-button-styles.js';
             pointer-events: none;
           }
 
-          iron-icon {
+          /* Offsets compensate for paper-icon-button's 8px padding so the glyph keeps
+             its previous position next to the permalink field. */
+          #permalinkIcon {
             cursor: pointer;
-            margin: 20px 0 0 10px;
+            margin: 12px 0 0 2px;
           }
 
-          iron-icon:hover {
+          #permalinkIcon:hover {
             color: var(--nuxeo-primary-color, #0066ff);
+          }
+
+          #permalinkIcon:focus-visible {
+            outline: 2px solid var(--nuxeo-primary-color, #0066ff);
+            outline-offset: 2px;
           }
 
           nuxeo-input {
             cursor: text;
             overflow: hidden;
             @apply --layout-flex;
+          }
+
+          .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
           }
         </style>
 
@@ -102,8 +121,21 @@ import '../nuxeo-button-styles.js';
               readonly
             >
             </nuxeo-input>
-            <iron-icon id="permalinkIcon" name="permalinkIcon" icon="link" on-tap="_copyLink"></iron-icon>
+            <paper-icon-button
+              id="permalinkIcon"
+              name="permalinkIcon"
+              icon="link"
+              on-click="_copyLink"
+              aria-label$="[[i18n('shareButton.operation.copy')]]"
+            ></paper-icon-button>
+            <!-- No title attribute: nuxeo-tooltip already provides the visible hint on
+                 hover and on focus, and a native tooltip would render on top of it. -->
             <nuxeo-tooltip id="tooltip" for="permalinkIcon">[[i18n('shareButton.operation.copy')]]</nuxeo-tooltip>
+            <!-- The dialog is aria-modal, so the app-level toast raised by notify() is
+                 outside the subtree assistive technology exposes. Announce the copy here. -->
+            <div id="copyStatus" class="sr-only" role="status" aria-live="polite" aria-atomic="true">
+              [[_copyStatus]]
+            </div>
           </div>
 
           <div class="buttons">
@@ -144,6 +176,14 @@ import '../nuxeo-button-styles.js';
           type: String,
           computed: '_computeLabel(i18n)',
         },
+
+        /**
+         * Message announced by the dialog's live region once the link is copied.
+         */
+        _copyStatus: {
+          type: String,
+          value: '',
+        },
       };
     }
 
@@ -164,8 +204,18 @@ import '../nuxeo-button-styles.js';
     }
 
     _copyLink(e) {
-      const shareButton = e.currentTarget;
-      const link = shareButton.previousElementSibling;
+      // While the confirmation shows, the button is inert to pointers; keep keyboard
+      // activation consistent with that rather than copying again in the same window.
+      if (this._copyDebouncer?.isActive()) {
+        return;
+      }
+
+      const copyButton = this.$.permalinkIcon;
+      const link = this.$.permalink;
+      // Selecting the field moves focus off the button, so keyboard users would lose
+      // their place after activating it. Clicks synthesized from Enter/Space carry a
+      // detail of 0, which is what tells them apart from a real pointer click.
+      const activatedFromKeyboard = !!e && e.detail === 0;
 
       // Select Link
       link.$.paperInput.$.nativeInput.select();
@@ -173,16 +223,23 @@ import '../nuxeo-button-styles.js';
         return;
       }
 
-      shareButton._debouncer = Debouncer.debounce(shareButton._debouncer, timeOut.after(2000), () => {
+      // Kept on this element rather than on the button, so it cannot collide with
+      // paper-icon-button's own internals.
+      this._copyDebouncer = Debouncer.debounce(this._copyDebouncer, timeOut.after(2000), () => {
         // Unselect Link
         link.$.paperInput.$.nativeInput.setSelectionRange(0, 0);
         link.$.paperInput.blur();
-        shareButton.set('icon', 'link');
-        shareButton.classList.remove('selected');
+        copyButton.set('icon', 'link');
+        copyButton.classList.remove('selected');
+        this._copyStatus = '';
       });
 
-      shareButton.set('icon', 'check');
-      shareButton.classList.add('selected');
+      copyButton.set('icon', 'check');
+      copyButton.classList.add('selected');
+      if (activatedFromKeyboard) {
+        copyButton.focus();
+      }
+      this._copyStatus = this.i18n('shareButton.operation.copied');
       this.notify({ message: this.i18n('shareButton.operation.copied'), duration: 2000 });
     }
   }
