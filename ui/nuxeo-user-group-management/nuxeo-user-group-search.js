@@ -426,6 +426,15 @@ import '../nuxeo-sort-styles.js';
       return identifier || '';
     }
 
+    _userIdentifier(user) {
+      if (!user) {
+        return '';
+      }
+      const props = user.properties || {};
+      const identifier = (props && props.username) || user.name || user.id || user.uid;
+      return identifier || '';
+    }
+
     _showResults() {
       return this.searchTerm.length === 0;
     }
