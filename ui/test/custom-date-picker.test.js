@@ -7402,17 +7402,21 @@ suite('custom-date-picker error recovery (ELEMENTS-2077)', () => {
   });
 
   test('pickerI18n.parseDate falls back to the current date', async () => {
-    const el = await newPicker();
-    const realMoment = el._moment.bind(el);
-    // Only the parsing call throws; the fallback's no-arg _moment() must still work.
-    sinon.stub(el, '_moment').callsFake((...args) => (args.length ? boom() : realMoment()));
-    const today = new Date();
-    expect(el.pickerI18n.parseDate('12/04/2024')).to.deep.equal({
-      day: today.getDate(),
-      month: today.getMonth(),
-      year: today.getFullYear(),
-    });
-    expectLogged('pickerI18n.parseDate');
+    const clock = sinon.useFakeTimers(new Date(2024, 3, 12).getTime());
+    try {
+      const el = await newPicker();
+      const realMoment = el._moment.bind(el);
+      // Only the parsing call throws; the fallback's no-arg _moment() must still work.
+      sinon.stub(el, '_moment').callsFake((...args) => (args.length ? boom() : realMoment()));
+      expect(el.pickerI18n.parseDate('12/04/2024')).to.deep.equal({
+        day: 12,
+        month: 3,
+        year: 2024,
+      });
+      expectLogged('pickerI18n.parseDate');
+    } finally {
+      clock.restore();
+    }
   });
 
   test('_formatAriaDate falls back to toDateString on a broken locale', async () => {
