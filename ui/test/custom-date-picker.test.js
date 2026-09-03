@@ -2838,6 +2838,109 @@ suite('custom-date-picker extras', () => {
     });
   });
 
+  // ELEMENTS-2077: characterisation tests for _positionPopover's horizontal placement. The two
+  // viewport-edge branches ran byte-identical centering blocks (SonarCloud S1871) and were merged
+  // into one `||` condition; the `left`/`top` dead initialisers were dropped (S1854). These pin the
+  // computed geometry so both changes - and the later extraction of the placement helpers - are
+  // provably behaviour-preserving. Rects are stubbed because the test page cannot be resized.
+  suite('_positionPopover horizontal placement (ELEMENTS-2077)', () => {
+    const POP_W = 280;
+    const POP_H = 320;
+    const MIN_PADDING = 8;
+
+    const viewport = () => {
+      return {
+        w: window.innerWidth || document.documentElement.clientWidth,
+        h: window.innerHeight || document.documentElement.clientHeight,
+      };
+    };
+
+    // Opens the calendar, then replaces the trigger/popover rects with fixed geometry so the
+    // assertions do not depend on the real layout of the test page.
+    const openWithStubbedRects = async (triggerRect) => {
+      const el = await newPicker();
+      el._openCalendar();
+      flush();
+      const popover = el.shadowRoot.querySelector('#calendarPopover');
+      const trigger = el.shadowRoot.querySelector('.input-wrapper');
+      expect(popover, '#calendarPopover').to.exist;
+      expect(trigger, '.input-wrapper').to.exist;
+      popover.getBoundingClientRect = () => {
+        return { width: POP_W, height: POP_H };
+      };
+      trigger.getBoundingClientRect = () => triggerRect;
+      return { el, popover };
+    };
+
+    const rect = (left, right) => {
+      return { top: 100, bottom: 130, left, right, width: right - left, height: 30 };
+    };
+
+    test('aligns with the trigger when it sits comfortably inside the viewport', async () => {
+      const { el, popover } = await openWithStubbedRects(rect(40, 240));
+      el._positionPopover();
+      expect(popover.style.position).to.equal('fixed');
+      expect(popover.style.left).to.equal('40px');
+      expect(popover.style.top).to.equal('134px'); // rect.bottom + 4
+    });
+
+    test('centers when clamped to the left edge and the trigger overflows to the left', async () => {
+      const { w } = viewport();
+      const maxLeft = w - POP_W - MIN_PADDING;
+      const centerLeft = (w - POP_W) / 2;
+      const { el, popover } = await openWithStubbedRects(rect(-50, 150));
+      el._positionPopover();
+      // Clamped to minLeft, and the trigger is also past that edge, so the popover is centered.
+      // Asserted as a precondition so a narrow runner viewport fails loudly instead of silently
+      // making this test vacuous.
+      expect(centerLeft, 'needs a runner viewport wider than ~576px').to.be.within(MIN_PADDING, maxLeft);
+      expect(popover.style.left).to.equal(`${centerLeft}px`);
+    });
+
+    test('centers when clamped to the right edge and the trigger overflows to the right', async () => {
+      const { w } = viewport();
+      const maxLeft = w - POP_W - MIN_PADDING;
+      const centerLeft = (w - POP_W) / 2;
+      const { el, popover } = await openWithStubbedRects(rect(w, w + 100));
+      el._positionPopover();
+      expect(centerLeft, 'needs a runner viewport wider than ~576px').to.be.within(MIN_PADDING, maxLeft);
+      expect(popover.style.left).to.equal(`${centerLeft}px`);
+    });
+
+    test('right-aligns with the trigger in RTL', async () => {
+      const { w } = viewport();
+      const maxLeft = w - POP_W - MIN_PADDING;
+      const { el, popover } = await openWithStubbedRects(rect(400, 600));
+      el._isRTL = true;
+      el._positionPopover();
+      // preferredLeft = inputRight - popWidth = 600 - 280 = 320, clamped into [8, maxLeft].
+      const preferred = Math.min(Math.max(600 - POP_W, MIN_PADDING), maxLeft);
+      expect(popover.style.left).to.equal(`${preferred}px`);
+    });
+
+    test('flips above the trigger when there is no room below', async () => {
+      const { h } = viewport();
+      // bottom close to the viewport floor => not enough space below, plenty above.
+      const { el, popover } = await openWithStubbedRects({
+        top: h - 40,
+        bottom: h - 10,
+        left: 40,
+        right: 240,
+        width: 200,
+        height: 30,
+      });
+      el._positionPopover();
+      const spaceAbove = h - 40;
+      if (spaceAbove >= POP_H + MIN_PADDING) {
+        expect(popover.classList.contains('open-up'), 'open-up').to.be.true;
+        expect(popover.style.top).to.equal(`${h - 40 - POP_H - 4}px`);
+      } else {
+        // Very short viewport: falls through to the "more space above" clamp.
+        expect(popover.style.top).to.equal(`${MIN_PADDING}px`);
+      }
+    });
+  });
+
   suite('_positionPopover branch coverage', () => {
     test('positions below when enough space', async () => {
       const el = await newPicker();
@@ -4892,6 +4995,35 @@ suite('custom-date-picker extras', () => {
       });
       expect(spy).to.have.been.called;
       spy.restore();
+    });
+
+    // ELEMENTS-2077: the Enter/Space and ArrowDown/F4 branches of _handleCalendarIconKeydown were
+    // merged into a single condition (SonarCloud S1871). Enter/Space activate the icon and
+    // ArrowDown/F4 are the WAI-ARIA combobox shortcuts, so all four must still open the calendar
+    // *and* swallow the event - otherwise the keystroke also scrolls the page or reaches a parent
+    // list/dialog handler. _openCalendar suppresses the event a second time, hence `at.least(1)`.
+    ['Enter', ' ', 'ArrowDown', 'F4'].forEach((key) => {
+      test(`opens the calendar and suppresses the event for "${key}"`, async () => {
+        const el = await newPicker();
+        const preventDefault = sinon.spy();
+        const stopPropagation = sinon.spy();
+        el._handleCalendarIconKeydown({ key, preventDefault, stopPropagation });
+        expect(el._isCalendarOpen, 'calendar open').to.be.true;
+        expect(preventDefault.callCount, 'preventDefault').to.be.at.least(1);
+        expect(stopPropagation.callCount, 'stopPropagation').to.be.at.least(1);
+      });
+    });
+
+    ['Escape', 'Tab', 'ArrowUp', 'ArrowLeft', 'F2', 'a'].forEach((key) => {
+      test(`leaves the calendar closed and the event untouched for "${key}"`, async () => {
+        const el = await newPicker();
+        const preventDefault = sinon.spy();
+        const stopPropagation = sinon.spy();
+        el._handleCalendarIconKeydown({ key, preventDefault, stopPropagation });
+        expect(el._isCalendarOpen, 'calendar open').to.be.false;
+        expect(preventDefault.callCount, 'preventDefault').to.equal(0);
+        expect(stopPropagation.callCount, 'stopPropagation').to.equal(0);
+      });
     });
 
     test('does nothing on unrelated key', async () => {

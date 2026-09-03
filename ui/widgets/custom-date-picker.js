@@ -4270,15 +4270,12 @@ const VALID_MOMENT_TOKENS = new Set([
           left = Math.max(minLeft, Math.min(maxLeft, preferredLeft));
         }
 
-        // Additional adjustment for extreme edge cases
-        if (left === minLeft && rect.left < minLeft) {
-          // If we're at minimum left and trigger is also at edge, try to center
-          const centerLeft = (viewportW - popWidth) / 2;
-          if (centerLeft >= minLeft && centerLeft <= maxLeft) {
-            left = centerLeft;
-          }
-        } else if (left === maxLeft && rect.right > viewportW - minPadding) {
-          // If we're at maximum right and trigger is also at edge, try to center
+        // Additional adjustment for extreme edge cases: the popover was clamped to a
+        // viewport edge *and* the trigger itself sits at (or past) that same edge. Left and
+        // right both centre the popover, so the two cases share one branch.
+        const clampedAtLeftEdge = left === minLeft && rect.left < minLeft;
+        const clampedAtRightEdge = left === maxLeft && rect.right > viewportW - minPadding;
+        if (clampedAtLeftEdge || clampedAtRightEdge) {
           const centerLeft = (viewportW - popWidth) / 2;
           if (centerLeft >= minLeft && centerLeft <= maxLeft) {
             left = centerLeft;
@@ -4855,11 +4852,10 @@ const VALID_MOMENT_TOKENS = new Set([
     }
 
     _handleCalendarIconKeydown(e) {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        e.stopPropagation();
-        this._openCalendar(e, true); // Opened via keyboard
-      } else if (e.key === 'ArrowDown' || e.key === 'F4') {
+      // Enter / Space activate the icon; ArrowDown / F4 are the WAI-ARIA combobox
+      // shortcuts for opening the popup. All four open the calendar in keyboard mode.
+      const opensCalendar = e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'F4';
+      if (opensCalendar) {
         e.preventDefault();
         e.stopPropagation();
         this._openCalendar(e, true); // Opened via keyboard
