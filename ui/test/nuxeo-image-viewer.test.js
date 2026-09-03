@@ -227,6 +227,92 @@ suite('nuxeo-image-viewer', () => {
           expect(rotateRightOption.icon).to.equal('image:rotate-right');
         });
       });
+
+      /**
+       * WEBUI-2148: the toolbar is icon-only, so each button must expose an accessible name for
+       * screen readers *and* reveal a visible label to a sighted keyboard-only user. A native
+       * `title` only ever appears on pointer hover, so the label is carried by <nuxeo-tooltip>,
+       * which also opens on `focus`.
+       */
+      suite('Accessible labelling', () => {
+        let viewer;
+        let toolbar;
+        const buttons = () => Array.from(toolbar.querySelectorAll('paper-icon-button'));
+        const tooltips = () => Array.from(toolbar.querySelectorAll('nuxeo-tooltip'));
+
+        setup(async () => {
+          viewer = await fixture(
+            html`
+              <nuxeo-image-viewer src="${base}/resources/sample.png" controls></nuxeo-image-viewer>
+            `,
+          );
+          await viewerLoad(viewer);
+          toolbar = viewer.$$('#toolbar');
+        });
+
+        test('Should give every toolbar button a non-empty aria-label', () => {
+          buttons().forEach((button) => {
+            expect(
+              button.getAttribute('aria-label'),
+              `missing aria-label on ${button.getAttribute('data-action')}`,
+            ).to.be.a('string').and.not.to.be.empty;
+          });
+        });
+
+        test('Should not rely on a hover-only title attribute', () => {
+          buttons().forEach((button) => {
+            expect(button.hasAttribute('title'), `unexpected title on ${button.getAttribute('data-action')}`).to.be
+              .false;
+          });
+        });
+
+        test('Should anchor a nuxeo-tooltip to each toolbar button', () => {
+          const allButtons = buttons();
+          expect(tooltips()).to.have.lengthOf(allButtons.length);
+          allButtons.forEach((button) => {
+            expect(button.id, 'toolbar buttons need an id so a tooltip can target them').to.not.be.empty;
+            const tooltip = tooltips().find((t) => t.getAttribute('for') === button.id);
+            expect(tooltip, `no nuxeo-tooltip for #${button.id}`).to.exist;
+            // Targeting the button itself (not a wrapper) is what makes the tooltip open on focus,
+            // since `focus` does not bubble.
+            expect(tooltip.target).to.equal(button);
+          });
+        });
+
+        test('Should show the tooltip when a toolbar button receives keyboard focus', async () => {
+          const zoomIn = toolbar.querySelector('paper-icon-button[data-action="zoom-in"]');
+          const tooltip = toolbar.querySelector('nuxeo-tooltip[for="zoomIn"]');
+          expect(tooltip.isShowing()).to.be.false;
+          zoomIn.focus();
+          flush();
+          await timePasses(1);
+          expect(tooltip.isShowing()).to.be.true;
+          tooltip.hide();
+        });
+
+        test('Should keep the tooltip on the fit button after the fit-to-viewer dom-if swap', async () => {
+          // Applying zoom swaps the second button from fit-to-real-size to fit-to-viewer. The
+          // replacement is stamped by a different <dom-if>, so its tooltip has to re-resolve its
+          // target — that is the path most likely to silently lose the label.
+          viewer.setProperties({ _fitToRealSize: true });
+          viewer.shadowRoot.querySelectorAll('dom-if').forEach((domIf) => domIf.render && domIf.render());
+          flush();
+
+          const fitToViewer = toolbar.querySelector('paper-icon-button[data-action="fit-to-viewer"]');
+          const tooltip = toolbar.querySelector('nuxeo-tooltip[for="fitToViewer"]');
+          expect(fitToViewer).to.exist;
+          expect(tooltip, 'no nuxeo-tooltip for the swapped-in fit-to-viewer button').to.exist;
+          expect(tooltip.target).to.equal(fitToViewer);
+          expect(fitToViewer.hasAttribute('title')).to.be.false;
+
+          expect(tooltip.isShowing()).to.be.false;
+          fitToViewer.focus();
+          flush();
+          await timePasses(1);
+          expect(tooltip.isShowing()).to.be.true;
+          tooltip.hide();
+        });
+      });
     });
   });
 
