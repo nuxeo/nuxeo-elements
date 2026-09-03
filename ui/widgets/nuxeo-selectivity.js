@@ -7731,7 +7731,7 @@ typedArrayTags[weakMapTag] = false;
       if (!input) {
         return;
       }
-
+ 
       const label = (this.label || '').trim();
       const placeholder = (this.placeholder || '').trim();
       const labelElement = this.shadowRoot.querySelector('#label');
