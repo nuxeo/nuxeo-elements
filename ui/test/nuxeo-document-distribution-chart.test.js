@@ -192,11 +192,9 @@ suite.skip('nuxeo-document-distribution-chart', () => {
 suite('nuxeo-document-distribution-chart data transformation', () => {
   let chart;
 
-  setup(async () => {
-    chart = await fixture(html`
-      <nuxeo-document-distribution-chart index="nuxeo" path="/default-domain" chart-hue="blue" chart-luminosity="light">
-      </nuxeo-document-distribution-chart>
-    `);
+  setup(() => {
+    // Instantiate without fixture so ready() -> execute() does not fire a real request.
+    chart = document.createElement('nuxeo-document-distribution-chart');
   });
 
   test('_transformSubBuckets renames key to name and doc_count to size in count mode', () => {
