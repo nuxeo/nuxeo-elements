@@ -1378,6 +1378,31 @@ const VALID_MOMENT_TOKENS = new Set([
       this._today.setHours(0, 0, 0, 0); // Normalize to start of day
       this._viewDate = new Date();
       this._focusedDate = null;
+      // Call sites already reported by _logRecoveredError (see there).
+      this._loggedRecoveries = new Set();
+    }
+
+    /**
+     * Surfaces an exception that a recovery path would otherwise discard (SonarCloud S2486).
+     *
+     * Every `catch` in this element recovers rather than rethrows, deliberately: a malformed
+     * value, an unsupported format string or an unexpected locale must degrade to a sensible
+     * default instead of breaking the field. Until now none of them logged anything, which made
+     * a field report of "the date picker just clears my input" undiagnosable. Warnings are
+     * de-duplicated per element instance and per call site, so a persistently broken locale
+     * cannot flood the console from a path that runs once per rendered day cell.
+     *
+     * @param {string} context Call site, used both as the log label and as the dedupe key.
+     * @param {*} error The caught error.
+     */
+    _logRecoveredError(context, error) {
+      if (this._loggedRecoveries && this._loggedRecoveries.has(context)) {
+        return;
+      }
+      if (this._loggedRecoveries) {
+        this._loggedRecoveries.add(context);
+      }
+      console.warn(`[custom-date-picker] recovered from an error in ${context}:`, error);
     }
 
     ready() {
@@ -1415,6 +1440,7 @@ const VALID_MOMENT_TOKENS = new Set([
           try {
             return this._formatDateForDisplay(date);
           } catch (error) {
+            this._logRecoveredError('pickerI18n.formatDate', error);
             return date ? date.toLocaleDateString() : '';
           }
         },
@@ -1440,6 +1466,7 @@ const VALID_MOMENT_TOKENS = new Set([
             };
           } catch (error) {
             // Return current date instead of hardcoded values
+            this._logRecoveredError('pickerI18n.parseDate', error);
             const fallbackDate = this._moment();
             return {
               day: fallbackDate.get('D'),
@@ -1584,7 +1611,8 @@ const VALID_MOMENT_TOKENS = new Set([
           month: 'long',
           day: 'numeric',
         }).format(date);
-      } catch (_) {
+      } catch (error) {
+        this._logRecoveredError('_formatAriaDate', error);
         return date && date.toDateString ? date.toDateString() : '';
       }
     }
@@ -1614,7 +1642,9 @@ const VALID_MOMENT_TOKENS = new Set([
         if (Number.isNaN(d.getTime())) return null;
         d.setHours(0, 0, 0, 0);
         return d;
-      } catch (_) {
+      } catch (error) {
+        // A value we cannot read is reported as "no date"; log why so the cause is diagnosable.
+        this._logRecoveredError('_parseDateOnly', error);
         return null;
       }
     }
@@ -1648,6 +1678,8 @@ const VALID_MOMENT_TOKENS = new Set([
 
         return date;
       } catch (error) {
+        // An ISO string we cannot read is reported as "no date"; log why.
+        this._logRecoveredError('_parseDateFromISO', error);
         return null;
       }
     }
@@ -2361,7 +2393,8 @@ const VALID_MOMENT_TOKENS = new Set([
         return new Intl.DateTimeFormat(locale, {
           month: 'long',
         }).format(date);
-      } catch (e) {
+      } catch (error) {
+        this._logRecoveredError('_getMonthName', error);
         // ⚠️ Fallback: Use i18n for English months
         const lang = locale.split('-')[0];
         const monthIndex = date.getMonth();
@@ -3532,7 +3565,9 @@ const VALID_MOMENT_TOKENS = new Set([
         }
 
         return null;
-      } catch (e) {
+      } catch (error) {
+        // Unparseable input is reported as "no date"; log why.
+        this._logRecoveredError('_parseWithFormat', error);
         return null;
       }
     }
@@ -3676,12 +3711,13 @@ const VALID_MOMENT_TOKENS = new Set([
           this.notifyPath('value');
         }
       } catch (error) {
-        // Error setting value safely - using fallback
-        // Last resort - try direct assignment
+        // Error setting value safely - last resort is direct assignment.
+        this._logRecoveredError('_safeSetValue', error);
         try {
           this.value = newValue;
-        } catch (fallbackError) {
-          // Failed to set value with fallback - silent error
+        } catch (_) {
+          // Direct assignment failed too. Nothing further can be done without breaking the
+          // field, and the cause was already logged above.
         }
       }
     }
@@ -3854,8 +3890,9 @@ const VALID_MOMENT_TOKENS = new Set([
           // Canonicalize locale (handles casing, region format, etc.)
           const [canonicalLocale] = Intl.getCanonicalLocales(normalizedLocale);
           normalizedLocale = canonicalLocale;
-        } catch (e) {
+        } catch (error) {
           // Fallback safely
+          this._logRecoveredError('_getDatePlaceholder (locale canonicalisation)', error);
           normalizedLocale = 'en-US';
         }
 
@@ -3895,8 +3932,9 @@ const VALID_MOMENT_TOKENS = new Set([
             return part.value; // keep separators like "/", "-", "."
           })
           .join('');
-      } catch (e) {
+      } catch (error) {
         // Safe fallback (still respects locale order)
+        this._logRecoveredError('_getDatePlaceholder', error);
         try {
           const locale = navigator.language;
 
@@ -3910,6 +3948,7 @@ const VALID_MOMENT_TOKENS = new Set([
             })
             .join('');
         } catch (error) {
+          this._logRecoveredError('_getDatePlaceholder (locale fallback)', error);
           return 'dd/mm/yyyy';
         }
       }
@@ -4125,6 +4164,7 @@ const VALID_MOMENT_TOKENS = new Set([
         // Reset the flag after all updates are done
         this._preventInputUpdate = false;
       } catch (error) {
+        this._logRecoveredError('_valueChanged', error);
         this._selectedDate = null;
         // Don't clear input if there are persistent errors - preserve user input
         if (!this._userIsTyping && !this._errorPersists) {
@@ -5023,6 +5063,7 @@ const VALID_MOMENT_TOKENS = new Set([
         return this._moment(date).format(format);
       } catch (error) {
         // Safe fallback using Intl.DateTimeFormat
+        this._logRecoveredError('_formatDateForDisplay', error);
         return new Intl.DateTimeFormat(navigator.language).format(date);
       }
     }
@@ -5151,6 +5192,8 @@ const VALID_MOMENT_TOKENS = new Set([
 
         return null;
       } catch (error) {
+        // Unparseable input is reported as "no date"; log why.
+        this._logRecoveredError('_parseUserInput', error);
         return null;
       }
     }
