@@ -7435,13 +7435,14 @@ suite('custom-date-picker error recovery (ELEMENTS-2077)', () => {
 
   test('_parseDateFromISO returns null when date construction fails', async () => {
     const el = await newPicker();
-    const originalSetHours = Date.prototype.setHours;
-    // The body is otherwise unthrowable for a string input, so break the one call it makes.
-    Date.prototype.setHours = boom;
+    // Unlike _parseDateOnly, this method rejects non-strings before its try/catch, so a
+    // throwing toString/valueOf object cannot reach the recovery path. For a valid ISO
+    // string the only throwable step inside the try is date.setHours(0, 0, 0, 0).
+    const setHoursStub = sinon.stub(Date.prototype, 'setHours').callsFake(boom);
     try {
       expect(el._parseDateFromISO('2024-04-12')).to.be.null;
     } finally {
-      Date.prototype.setHours = originalSetHours;
+      setHoursStub.restore();
     }
     expectLogged('_parseDateFromISO');
   });
