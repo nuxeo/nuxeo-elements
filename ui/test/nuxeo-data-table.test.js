@@ -1011,8 +1011,9 @@ suite('nuxeo-data-table', () => {
       expect(list.getAttribute('role')).to.equal('presentation');
       expect(table.shadowRoot.querySelector('#header').getAttribute('role')).to.equal('rowgroup');
       const emptyResult = table.shadowRoot.querySelector('.emptyResult');
-      expect(emptyResult.getAttribute('role')).to.equal('rowgroup');
-      expect(emptyResult.querySelector('[role="row"] [role="cell"]')).to.not.be.null;
+      expect(emptyResult.getAttribute('role')).to.equal('presentation');
+      expect(emptyResult.querySelector('[role="row"]')).to.be.null;
+      expect(emptyResult.querySelector('[aria-live="polite"]')).to.not.be.null;
     });
 
     // ELEMENTS-2005: the list wrapper lives in `iron-list`'s shadow root, so it may not be reachable yet.
