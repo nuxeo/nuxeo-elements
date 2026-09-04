@@ -52,6 +52,19 @@ import { PageProviderDisplayBehavior } from '../nuxeo-page-provider-display-beha
 import { DraggableListBehavior } from '../nuxeo-draggable-list-behavior.js';
 import '../nuxeo-button-styles.js';
 
+function hasDataTableColumn(node) {
+  return node.nodeType === Node.ELEMENT_NODE && node instanceof Nuxeo.DataTableColumn;
+}
+
+function hasRowDetailTemplate(node) {
+  return (
+    node.nodeType === Node.ELEMENT_NODE &&
+    node.tagName === 'TEMPLATE' &&
+    node.hasAttribute('is') &&
+    node.getAttribute('is') === 'row-detail'
+  );
+}
+
 {
   /**
    * An element to display a page provider result within a table with infinite scrolling.
@@ -585,30 +598,20 @@ import '../nuxeo-button-styles.js';
       this._fieldTypeStats = null;
       this._fieldTypeHints = null;
       this._observer = dom(this).observeNodes((info) => {
-        const hasColumns = function(node) {
-          return node.nodeType === Node.ELEMENT_NODE && node instanceof Nuxeo.DataTableColumn;
-        };
-
-        const hasDetails = function(node) {
-          return (
-            node.nodeType === Node.ELEMENT_NODE &&
-            node.tagName === 'TEMPLATE' &&
-            node.hasAttribute('is') &&
-            node.getAttribute('is') === 'row-detail'
-          );
-        };
-
         if (this._reorderingColumns) {
           return;
         }
 
-        if (info.addedNodes.filter(hasColumns).length > 0 || info.removedNodes.filter(hasColumns).length > 0) {
-          this.set('columns', this.$.columns.assignedNodes().filter(hasColumns));
+        if (
+          info.addedNodes.filter(hasDataTableColumn).length > 0 ||
+          info.removedNodes.filter(hasDataTableColumn).length > 0
+        ) {
+          this.set('columns', this.$.columns.assignedNodes().filter(hasDataTableColumn));
           this._backupColumnsState();
           this.notifyResize();
         }
 
-        if (info.addedNodes.filter(hasDetails).length > 0) {
+        if (info.addedNodes.filter(hasRowDetailTemplate).length > 0) {
           this.set('rowDetail', this.getContentChildren('[select="template[is=row-detail]"]')[0]);
 
           // assuming parent element is always a Polymer element.
