@@ -140,7 +140,7 @@ export const DraggableListBehavior = {
       this.style.pointerEvents = '';
       bodyEl.style.cursor = '';
       if (proxy) {
-        bodyEl.removeChild(proxy);
+        proxy.remove();
         proxy = null;
       }
       // cleanup listeners
