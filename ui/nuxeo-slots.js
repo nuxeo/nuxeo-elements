@@ -215,18 +215,14 @@ window.nuxeo.slots.setSharedModel = (model) => {
      * native HTML slot, in which case parentSlot is null.
      */
     _effectiveParent() {
-      let parent = null;
-      let parentSlot = null;
       if (!this.assignedSlot) {
-        parent = this.parentNode;
-      } else {
-        parentSlot = this;
-        while (parentSlot.assignedSlot) {
-          parentSlot = parentSlot.assignedSlot;
-        }
-        parent = parentSlot.getRootNode().host;
+        return { parent: this.parentNode, parentSlot: null };
       }
-      return { parent, parentSlot };
+      let slot = this.assignedSlot;
+      while (slot.assignedSlot) {
+        slot = slot.assignedSlot;
+      }
+      return { parent: slot.getRootNode().host, parentSlot: this };
     }
 
     _render() {
