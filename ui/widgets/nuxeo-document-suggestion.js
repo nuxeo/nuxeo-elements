@@ -288,18 +288,15 @@ import { escapeHTML } from './nuxeo-selectivity.js';
     }
 
     _computeParams() {
-      return Object.assign(
-        {},
-        {
-          documentSchemas: this.schemas,
-          repository: this.repository,
-          providerName: this.pageProvider,
-          pageProviderName: this.pageProvider,
-          page: 0,
-          pageSize: 20,
-        },
-        this.params,
-      );
+      return {
+        documentSchemas: this.schemas,
+        repository: this.repository,
+        providerName: this.pageProvider,
+        pageProviderName: this.pageProvider,
+        page: 0,
+        pageSize: 20,
+        ...this.params,
+      };
     }
 
     _selectionFormatter(doc) {

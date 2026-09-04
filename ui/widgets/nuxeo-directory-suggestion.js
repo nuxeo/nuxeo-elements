@@ -258,17 +258,14 @@ import { escapeHTML } from './nuxeo-selectivity.js';
     }
 
     _computeParams() {
-      return Object.assign(
-        {},
-        {
-          directoryName: this.directoryName,
-          dbl10n: this.dbl10n,
-          canSelectParent: this.canSelectParent,
-          localize: true,
-          lang: window.nuxeo.I18n.language ? window.nuxeo.I18n.language.split('-')[0] : 'en',
-        },
-        this.params,
-      );
+      return {
+        directoryName: this.directoryName,
+        dbl10n: this.dbl10n,
+        canSelectParent: this.canSelectParent,
+        localize: true,
+        lang: window.nuxeo.I18n.language ? window.nuxeo.I18n.language.split('-')[0] : 'en',
+        ...this.params,
+      };
     }
 
     _getItemKey(item) {
