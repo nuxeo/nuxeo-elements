@@ -216,10 +216,12 @@ export const FormatBehavior = [
      * @param {string} text the NXQL string literal to be escaped
      */
     escapeNxqlStringLiteral(text) {
+      // These values are the escape sequences themselves, so String.raw (S7780) must not be
+      // applied here: String.raw`'` drops the backslash and yields an unescaped quote.
       const replaceMap = {
-        "'": String.raw`'`,
-        '\\': String.raw`\\`,
-        '"': String.raw`"`,
+        "'": "\\'",
+        '\\': '\\\\',
+        '"': '\\"',
       };
 
       return text && text.replace(/["'\\]/g, (match) => replaceMap[match]);
