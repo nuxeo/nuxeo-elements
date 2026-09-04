@@ -173,4 +173,73 @@ suite('nuxeo-document-acl-table extras', () => {
       expect(el.entityTooltip(entity)).to.equal('admins');
     });
   });
+
+  suite('_updateAces', () => {
+    const ace = (id, begin, extra) => {
+      return { id, begin, granted: true, status: 'effective', ...extra };
+    };
+
+    test('leaves aces untouched when the document carries no acls', () => {
+      el.aces = ['untouched'];
+      el.doc = { contextParameters: {} };
+      el._updateAces();
+      expect(el.aces).to.deep.equal(['untouched']);
+    });
+
+    test('collects granted aces from non-inherited acls, sorted by begin date', () => {
+      el.doc = {
+        contextParameters: {
+          acls: [
+            {
+              name: 'local',
+              aces: [ace('later', '2024-06-01'), ace('earlier', '2024-01-01')],
+            },
+            {
+              name: 'inherited',
+              aces: [ace('from-inherited-acl', '2023-01-01')],
+            },
+          ],
+        },
+      };
+
+      el._updateAces();
+
+      expect(el.aces.map((a) => a.id)).to.deep.equal(['earlier', 'later']);
+      expect(el.aces.every((a) => a.aclName === 'local')).to.be.true;
+    });
+
+    test('drops aces that are denied or neither pending nor effective', () => {
+      el.doc = {
+        contextParameters: {
+          acls: [
+            {
+              name: 'local',
+              aces: [
+                ace('kept-effective', '2024-01-01'),
+                ace('kept-pending', '2024-02-01', { status: 'pending' }),
+                ace('denied', '2024-03-01', { granted: false }),
+                ace('archived', '2024-04-01', { status: 'archived' }),
+              ],
+            },
+          ],
+        },
+      };
+
+      el._updateAces();
+
+      expect(el.aces.map((a) => a.id)).to.deep.equal(['kept-effective', 'kept-pending']);
+    });
+
+    test('sorts open-ended aces (begin === null) ahead of dated ones', () => {
+      el.doc = {
+        contextParameters: {
+          acls: [{ name: 'local', aces: [ace('dated', '2024-01-01'), ace('open-ended', null)] }],
+        },
+      };
+
+      el._updateAces();
+
+      expect(el.aces[0].id).to.equal('open-ended');
+    });
+  });
 });
