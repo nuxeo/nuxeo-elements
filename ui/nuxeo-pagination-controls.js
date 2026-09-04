@@ -238,9 +238,15 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
         Nuxeo.UI.config.pagination.nuxeoSelectOptions.listingMaxItems
           ? Nuxeo.UI.config.pagination.nuxeoSelectOptions.listingMaxItems
           : 1000;
-      // Negated rather than `<=` so that undefined (before the page provider first binds) and NaN
-      // keep the original `if (numberOfPages > max) { return false; } return true;` behaviour.
-      return !(numberOfPages > maxItemsForNuxeoSelectPagination);
+      // Deliberately an explicit if/return; do not collapse it. `numberOfPages <= max` is not
+      // equivalent: numberOfPages is undefined before the page provider first binds and can be
+      // NaN, and while `NaN > max` is false — so the select stays enabled — `NaN <= max` is false
+      // too and would disable it. Rewriting as `!(numberOfPages > max)` preserves that behaviour
+      // but reports S1940, whose only suggested fix is the broken `<=`; S1126 is accepted here.
+      if (numberOfPages > maxItemsForNuxeoSelectPagination) {
+        return false;
+      }
+      return true;
     }
   }
 
