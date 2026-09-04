@@ -72,12 +72,11 @@ ensureClonedContentStyles();
    *
    * ### Accessibility
    *
-   * `Nuxeo.TooltipA11yBehavior` provides the WCAG 2.1 AA 1.4.13 "Content on Hover or Focus"
-   * behaviour — Escape dismisses the tooltip, the pointer can move onto the tooltip without it
-   * disappearing, and nothing else hides it — plus the `role="tooltip"` / `aria-describedby`
-   * wiring that exposes the text to assistive technologies.
+   * The tooltip's private accessibility behavior provides the WCAG 2.1 AA 1.4.13 "Content on
+   * Hover or Focus" behavior — Escape dismisses the tooltip, the pointer can move onto the tooltip
+   * without it disappearing, and nothing else hides it — plus the `role="tooltip"` /
+   * `aria-describedby` wiring that exposes the text to assistive technologies.
    *
-   * @appliesMixin Nuxeo.TooltipA11yBehavior
    * @memberof Nuxeo
    * @demo demo/nuxeo-tooltip/index.html
    */
@@ -129,7 +128,7 @@ ensureClonedContentStyles();
       // WCAG 1.4.13: leaving the trigger with the pointer only *schedules* the teardown, so the
       // pointer can still reach the tooltip; leaving it with the keyboard tears down at once.
       this._pointerLeaveListener = this._onTriggerPointerLeave.bind(this);
-      this._blurListener = this._onTriggerBlur.bind(this);
+      this._focusOutListener = this._onTriggerBlur.bind(this);
     }
 
     connectedCallback() {
@@ -137,9 +136,9 @@ ensureClonedContentStyles();
       this._target = this.target;
       if (this._target) {
         this._target.addEventListener('mouseenter', this._showListener);
-        this._target.addEventListener('focus', this._showListener);
+        this._target.addEventListener('focusin', this._showListener);
         this._target.addEventListener('mouseleave', this._pointerLeaveListener);
-        this._target.addEventListener('blur', this._blurListener);
+        this._target.addEventListener('focusout', this._focusOutListener);
         this._target.addEventListener('tap', this._hideListener);
       }
     }
@@ -149,9 +148,9 @@ ensureClonedContentStyles();
       if (this._target) {
         this.hide();
         this._target.removeEventListener('mouseenter', this._showListener);
-        this._target.removeEventListener('focus', this._showListener);
+        this._target.removeEventListener('focusin', this._showListener);
         this._target.removeEventListener('mouseleave', this._pointerLeaveListener);
-        this._target.removeEventListener('blur', this._blurListener);
+        this._target.removeEventListener('focusout', this._focusOutListener);
         this._target.removeEventListener('tap', this._hideListener);
       }
       this._target = null;

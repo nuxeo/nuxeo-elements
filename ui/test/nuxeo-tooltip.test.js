@@ -45,6 +45,10 @@ function pressKeyWithPropagationStopped(key) {
 
 const enter = (node) => node.dispatchEvent(new MouseEvent('mouseenter'));
 const leave = (node) => node.dispatchEvent(new MouseEvent('mouseleave'));
+const focusIn = (node, relatedTarget = null) =>
+  node.dispatchEvent(new FocusEvent('focusin', { bubbles: true, relatedTarget }));
+const focusOut = (node, relatedTarget = null) =>
+  node.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget }));
 
 suite('nuxeo-tooltip', () => {
   test('Should not add paper-tooltip to the dom when hidden attribute is set', async () => {
@@ -350,16 +354,53 @@ suite('nuxeo-tooltip', () => {
 
       test('blur clears the dismissal so focusing the trigger again shows the tooltip', async () => {
         const { target, tooltip } = await triggerFixture();
-        target.dispatchEvent(new FocusEvent('focus'));
+        focusIn(target);
         await flush();
         pressKey('Escape');
         await flush();
         expect(tooltip.isTooltipDismissed()).to.be.true;
 
-        target.dispatchEvent(new FocusEvent('blur'));
+        focusOut(target);
         await flush();
         expect(tooltip.isTooltipDismissed()).to.be.false;
-        target.dispatchEvent(new FocusEvent('focus'));
+        focusIn(target);
+        await flush();
+        expect(tooltip.isShowing()).to.be.true;
+      });
+
+      test('focus moving within a wrapper keeps an Escape dismissal latched', async () => {
+        const host = await fixture(html`
+          <div>
+            <div id="wrapper">
+              <button id="first">First</button>
+              <button id="second">Second</button>
+              <nuxeo-tooltip>Tooltip text</nuxeo-tooltip>
+            </div>
+          </div>
+        `);
+        const wrapper = host.querySelector('#wrapper');
+        const first = host.querySelector('#first');
+        const second = host.querySelector('#second');
+        const tooltip = host.querySelector('nuxeo-tooltip');
+        expect(tooltip.target).to.equal(wrapper);
+
+        focusIn(first);
+        await flush();
+        expect(tooltip.isShowing()).to.be.true;
+        pressKey('Escape');
+        await flush();
+        expect(tooltip.isTooltipDismissed()).to.be.true;
+
+        focusOut(first, second);
+        focusIn(second, first);
+        await flush();
+        expect(tooltip.isTooltipDismissed()).to.be.true;
+        expect(tooltip.isShowing()).to.be.false;
+
+        focusOut(second, document.body);
+        await flush();
+        expect(tooltip.isTooltipDismissed()).to.be.false;
+        focusIn(first, document.body);
         await flush();
         expect(tooltip.isShowing()).to.be.true;
       });
@@ -570,6 +611,23 @@ suite('nuxeo-tooltip', () => {
         tooltip.remove();
         await flush();
         expect(target.getAttribute('aria-describedby')).to.equal('other-hint');
+      });
+
+      test('an empty aria-describedby is preserved on disconnect', async () => {
+        const host = await fixture(html`
+          <div>
+            <span id="described-target" aria-describedby="">Target</span>
+            <nuxeo-tooltip for="described-target">Tooltip text</nuxeo-tooltip>
+          </div>
+        `);
+        const target = host.querySelector('#described-target');
+        const tooltip = host.querySelector('nuxeo-tooltip');
+        expect(target.getAttribute('aria-describedby')).to.equal(tooltip.id);
+
+        tooltip.remove();
+        await flush();
+        expect(target.hasAttribute('aria-describedby')).to.be.true;
+        expect(target.getAttribute('aria-describedby')).to.equal('');
       });
 
       test('aria-describedby is removed from the trigger on disconnect', async () => {
