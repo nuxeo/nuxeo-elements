@@ -2838,6 +2838,109 @@ suite('custom-date-picker extras', () => {
     });
   });
 
+  // ELEMENTS-2077: characterisation tests for _positionPopover's horizontal placement. The two
+  // viewport-edge branches ran byte-identical centering blocks (SonarCloud S1871) and were merged
+  // into one `||` condition; the `left`/`top` dead initialisers were dropped (S1854). These pin the
+  // computed geometry so both changes - and the later extraction of the placement helpers - are
+  // provably behaviour-preserving. Rects are stubbed because the test page cannot be resized.
+  suite('_positionPopover horizontal placement (ELEMENTS-2077)', () => {
+    const POP_W = 280;
+    const POP_H = 320;
+    const MIN_PADDING = 8;
+
+    const viewport = () => {
+      return {
+        w: window.innerWidth || document.documentElement.clientWidth,
+        h: window.innerHeight || document.documentElement.clientHeight,
+      };
+    };
+
+    // Opens the calendar, then replaces the trigger/popover rects with fixed geometry so the
+    // assertions do not depend on the real layout of the test page.
+    const openWithStubbedRects = async (triggerRect) => {
+      const el = await newPicker();
+      el._openCalendar();
+      flush();
+      const popover = el.shadowRoot.querySelector('#calendarPopover');
+      const trigger = el.shadowRoot.querySelector('.input-wrapper');
+      expect(popover, '#calendarPopover').to.exist;
+      expect(trigger, '.input-wrapper').to.exist;
+      popover.getBoundingClientRect = () => {
+        return { width: POP_W, height: POP_H };
+      };
+      trigger.getBoundingClientRect = () => triggerRect;
+      return { el, popover };
+    };
+
+    const rect = (left, right) => {
+      return { top: 100, bottom: 130, left, right, width: right - left, height: 30 };
+    };
+
+    test('aligns with the trigger when it sits comfortably inside the viewport', async () => {
+      const { el, popover } = await openWithStubbedRects(rect(40, 240));
+      el._positionPopover();
+      expect(popover.style.position).to.equal('fixed');
+      expect(popover.style.left).to.equal('40px');
+      expect(popover.style.top).to.equal('134px'); // rect.bottom + 4
+    });
+
+    test('centers when clamped to the left edge and the trigger overflows to the left', async () => {
+      const { w } = viewport();
+      const maxLeft = w - POP_W - MIN_PADDING;
+      const centerLeft = (w - POP_W) / 2;
+      const { el, popover } = await openWithStubbedRects(rect(-50, 150));
+      el._positionPopover();
+      // Clamped to minLeft, and the trigger is also past that edge, so the popover is centered.
+      // Asserted as a precondition so a narrow runner viewport fails loudly instead of silently
+      // making this test vacuous.
+      expect(centerLeft, 'needs a runner viewport wider than ~576px').to.be.within(MIN_PADDING, maxLeft);
+      expect(popover.style.left).to.equal(`${centerLeft}px`);
+    });
+
+    test('centers when clamped to the right edge and the trigger overflows to the right', async () => {
+      const { w } = viewport();
+      const maxLeft = w - POP_W - MIN_PADDING;
+      const centerLeft = (w - POP_W) / 2;
+      const { el, popover } = await openWithStubbedRects(rect(w, w + 100));
+      el._positionPopover();
+      expect(centerLeft, 'needs a runner viewport wider than ~576px').to.be.within(MIN_PADDING, maxLeft);
+      expect(popover.style.left).to.equal(`${centerLeft}px`);
+    });
+
+    test('right-aligns with the trigger in RTL', async () => {
+      const { w } = viewport();
+      const maxLeft = w - POP_W - MIN_PADDING;
+      const { el, popover } = await openWithStubbedRects(rect(400, 600));
+      el._isRTL = true;
+      el._positionPopover();
+      // preferredLeft = inputRight - popWidth = 600 - 280 = 320, clamped into [8, maxLeft].
+      const preferred = Math.min(Math.max(600 - POP_W, MIN_PADDING), maxLeft);
+      expect(popover.style.left).to.equal(`${preferred}px`);
+    });
+
+    test('flips above the trigger when there is no room below', async () => {
+      const { h } = viewport();
+      // bottom close to the viewport floor => not enough space below, plenty above.
+      const { el, popover } = await openWithStubbedRects({
+        top: h - 40,
+        bottom: h - 10,
+        left: 40,
+        right: 240,
+        width: 200,
+        height: 30,
+      });
+      el._positionPopover();
+      const spaceAbove = h - 40;
+      if (spaceAbove >= POP_H + MIN_PADDING) {
+        expect(popover.classList.contains('open-up'), 'open-up').to.be.true;
+        expect(popover.style.top).to.equal(`${h - 40 - POP_H - 4}px`);
+      } else {
+        // Very short viewport: falls through to the "more space above" clamp.
+        expect(popover.style.top).to.equal(`${MIN_PADDING}px`);
+      }
+    });
+  });
+
   suite('_positionPopover branch coverage', () => {
     test('positions below when enough space', async () => {
       const el = await newPicker();
@@ -4892,6 +4995,35 @@ suite('custom-date-picker extras', () => {
       });
       expect(spy).to.have.been.called;
       spy.restore();
+    });
+
+    // ELEMENTS-2077: the Enter/Space and ArrowDown/F4 branches of _handleCalendarIconKeydown were
+    // merged into a single condition (SonarCloud S1871). Enter/Space activate the icon and
+    // ArrowDown/F4 are the WAI-ARIA combobox shortcuts, so all four must still open the calendar
+    // *and* swallow the event - otherwise the keystroke also scrolls the page or reaches a parent
+    // list/dialog handler. _openCalendar suppresses the event a second time, hence `at.least(1)`.
+    ['Enter', ' ', 'ArrowDown', 'F4'].forEach((key) => {
+      test(`opens the calendar and suppresses the event for "${key}"`, async () => {
+        const el = await newPicker();
+        const preventDefault = sinon.spy();
+        const stopPropagation = sinon.spy();
+        el._handleCalendarIconKeydown({ key, preventDefault, stopPropagation });
+        expect(el._isCalendarOpen, 'calendar open').to.be.true;
+        expect(preventDefault.callCount, 'preventDefault').to.be.at.least(1);
+        expect(stopPropagation.callCount, 'stopPropagation').to.be.at.least(1);
+      });
+    });
+
+    ['Escape', 'Tab', 'ArrowUp', 'ArrowLeft', 'F2', 'a'].forEach((key) => {
+      test(`leaves the calendar closed and the event untouched for "${key}"`, async () => {
+        const el = await newPicker();
+        const preventDefault = sinon.spy();
+        const stopPropagation = sinon.spy();
+        el._handleCalendarIconKeydown({ key, preventDefault, stopPropagation });
+        expect(el._isCalendarOpen, 'calendar open').to.be.false;
+        expect(preventDefault.callCount, 'preventDefault').to.equal(0);
+        expect(stopPropagation.callCount, 'stopPropagation').to.equal(0);
+      });
     });
 
     test('does nothing on unrelated key', async () => {
@@ -7220,5 +7352,230 @@ suite('custom-date-picker autocomplete', () => {
     el.autocomplete = 'bday';
     await flush();
     expect(getDateInput(el).getAttribute('autocomplete')).to.equal('bday');
+  });
+});
+
+// ELEMENTS-2077: every `catch` in custom-date-picker.js recovers rather than rethrows, but until
+// now none of them inspected the caught error (SonarCloud S2486) - a malformed value, an
+// unsupported format string or an unexpected locale was indistinguishable from "no value" and
+// nothing reached the log. Each recovery path now routes through _logRecoveredError. One test per
+// site: force the throw, assert the documented fallback is still what comes out, and assert the
+// cause is surfaced. These are also the branches that were previously uncovered, which is why
+// branch coverage for the file was the weak spot.
+suite('custom-date-picker error recovery (ELEMENTS-2077)', () => {
+  const newPicker = () =>
+    fixture(html`
+      <custom-date-picker></custom-date-picker>
+    `);
+
+  const BOOM = 'forced failure';
+  const boom = () => {
+    throw new Error(BOOM);
+  };
+
+  let warn;
+
+  setup(() => {
+    warn = sinon.stub(console, 'warn');
+  });
+
+  teardown(() => {
+    if (warn && warn.restore) {
+      warn.restore();
+    }
+  });
+
+  // Asserts the caught error reached the console, labelled with its call site.
+  const expectLogged = (site) => {
+    expect(warn.callCount, `console.warn for ${site}`).to.be.at.least(1);
+    const labels = warn.getCalls().map((call) => String(call.args[0]));
+    expect(labels.join('\n'), `log label for ${site}`).to.contain(site);
+    expect(labels.join('\n'), 'log prefix').to.contain('[custom-date-picker]');
+  };
+
+  test('pickerI18n.formatDate falls back to toLocaleDateString', async () => {
+    const el = await newPicker();
+    const date = new Date(2024, 3, 12);
+    sinon.stub(el, '_formatDateForDisplay').callsFake(boom);
+    expect(el.pickerI18n.formatDate(date)).to.equal(date.toLocaleDateString());
+    expectLogged('pickerI18n.formatDate');
+  });
+
+  test('pickerI18n.parseDate falls back to the current date', async () => {
+    const el = await newPicker();
+    const clock = sinon.useFakeTimers(new Date(2024, 3, 12).getTime());
+    try {
+      const realMoment = el._moment.bind(el);
+      // Only the parsing call throws; the fallback's no-arg _moment() must still work.
+      sinon.stub(el, '_moment').callsFake((...args) => (args.length ? boom() : realMoment()));
+      expect(el.pickerI18n.parseDate('12/04/2024')).to.deep.equal({
+        day: 12,
+        month: 3,
+        year: 2024,
+      });
+      expectLogged('pickerI18n.parseDate');
+    } finally {
+      clock.restore();
+    }
+  });
+
+  test('_formatAriaDate falls back to toDateString on a broken locale', async () => {
+    const el = await newPicker();
+    const date = new Date(2024, 3, 12);
+    el._locale = 'not a locale';
+    expect(el._formatAriaDate(date)).to.equal(date.toDateString());
+    expectLogged('_formatAriaDate');
+  });
+
+  test('_parseDateOnly returns null for a value it cannot read', async () => {
+    const el = await newPicker();
+    const unreadable = {
+      valueOf: boom,
+      toString: boom,
+    };
+    expect(el._parseDateOnly(unreadable)).to.be.null;
+    expectLogged('_parseDateOnly');
+  });
+
+  test('_parseDateFromISO returns null when date construction fails', async () => {
+    const el = await newPicker();
+    // Unlike _parseDateOnly, this method rejects non-strings before its try/catch, so a
+    // throwing toString/valueOf object cannot reach the recovery path. For a valid ISO
+    // string the only throwable step inside the try is date.setHours(0, 0, 0, 0).
+    const setHoursStub = sinon.stub(Date.prototype, 'setHours').callsFake(boom);
+    try {
+      expect(el._parseDateFromISO('2024-04-12')).to.be.null;
+    } finally {
+      setHoursStub.restore();
+    }
+    expectLogged('_parseDateFromISO');
+  });
+
+  test('_getMonthName falls back to the i18n month names on a broken en locale', async () => {
+    const el = await newPicker();
+    // Malformed enough for Intl to reject, but still resolves to the "en" language branch.
+    el._locale = 'en-';
+    expect(el._getMonthName(new Date(2024, 0, 15))).to.not.equal('');
+    expectLogged('_getMonthName');
+  });
+
+  test('_getMonthName returns an empty name for a broken non-en locale', async () => {
+    const el = await newPicker();
+    el._locale = 'not a locale';
+    expect(el._getMonthName(new Date(2024, 0, 15))).to.equal('');
+    expectLogged('_getMonthName');
+  });
+
+  test('_parseWithFormat returns null when moment throws', async () => {
+    const el = await newPicker();
+    sinon.stub(el, '_moment').callsFake(boom);
+    expect(el._parseWithFormat('12/04/2024', 'DD/MM/YYYY')).to.be.null;
+    expectLogged('_parseWithFormat');
+  });
+
+  test('_safeSetValue falls back to direct assignment when set() throws', async () => {
+    const el = await newPicker();
+    sinon.stub(el, 'set').callsFake(boom);
+    el._safeSetValue('2024-04-12');
+    expect(el.value).to.equal('2024-04-12');
+    expectLogged('_safeSetValue');
+  });
+
+  test('_getDatePlaceholder falls back to en-US when the locale cannot be canonicalised', async () => {
+    const el = await newPicker();
+    sinon.stub(el, '_getUserLocale').returns('!!!');
+    expect(el._getDatePlaceholder('')).to.match(/dd|mm|yyyy/);
+    expectLogged('_getDatePlaceholder (locale canonicalisation)');
+  });
+
+  test('_getDatePlaceholder falls back to the navigator locale when locale lookup throws', async () => {
+    const el = await newPicker();
+    sinon.stub(el, '_getUserLocale').callsFake(boom);
+    expect(el._getDatePlaceholder('')).to.match(/dd|mm|yyyy/);
+    expectLogged('_getDatePlaceholder');
+  });
+
+  test('_getDatePlaceholder falls back to dd/mm/yyyy when Intl is unusable', async () => {
+    const el = await newPicker();
+    sinon.stub(el, '_getUserLocale').callsFake(boom);
+    const OriginalDateTimeFormat = Intl.DateTimeFormat;
+    Intl.DateTimeFormat = boom;
+    try {
+      expect(el._getDatePlaceholder('')).to.equal('dd/mm/yyyy');
+    } finally {
+      Intl.DateTimeFormat = OriginalDateTimeFormat;
+    }
+    expectLogged('_getDatePlaceholder (locale fallback)');
+  });
+
+  test('_valueChanged clears the selection when the value cannot be parsed at all', async () => {
+    const el = await newPicker();
+    el._userIsTyping = false;
+    el._errorPersists = false;
+    el.value = '2024-04-12';
+    await flush();
+    sinon.stub(el, '_moment').callsFake(boom);
+    el._preventInputUpdate = false;
+    el._valueChanged();
+    expect(el._selectedDate).to.be.null;
+    expect(el._inputValue).to.equal('');
+    expect(el._preventInputUpdate, 'reentrancy guard must be released').to.be.false;
+    expectLogged('_valueChanged');
+  });
+
+  test('_formatDateForDisplay falls back to the navigator locale', async () => {
+    const el = await newPicker();
+    sinon.stub(el, '_getUserLocale').callsFake(boom);
+    const date = new Date(2024, 3, 12);
+    expect(el._formatDateForDisplay(date)).to.equal(new Intl.DateTimeFormat(navigator.language).format(date));
+    expectLogged('_formatDateForDisplay');
+  });
+
+  test('_parseUserInput returns null when locale lookup throws', async () => {
+    const el = await newPicker();
+    sinon.stub(el, '_getUserLocale').callsFake(boom);
+    expect(el._parseUserInput('12/04/2024')).to.be.null;
+    expectLogged('_parseUserInput');
+  });
+
+  // Guards against the flip side of the S2486 fix: a recovery path that fires during *normal*
+  // use would now turn into console noise on every interaction.
+  test('an ordinary interaction logs nothing', async () => {
+    const el = await newPicker();
+    await flush();
+    el.value = '2024-04-12';
+    await flush();
+    el._openCalendar();
+    await flush();
+    el._selectDate(new Date(2024, 3, 15));
+    await flush();
+    el._closeCalendar();
+    await flush();
+    el._inputValue = '20/04/2024';
+    el._validateAndParseInput();
+    await flush();
+    el.validate();
+    await flush();
+    const ours = warn.getCalls().filter((call) => String(call.args[0]).includes('[custom-date-picker]'));
+    expect(ours.map((call) => call.args[0]).join('\n'), 'no recovery path should fire').to.equal('');
+  });
+
+  test('repeated failures at the same site are logged once per element', async () => {
+    const el = await newPicker();
+    sinon.stub(el, '_getUserLocale').callsFake(boom);
+    el._parseUserInput('12/04/2024');
+    el._parseUserInput('13/04/2024');
+    el._parseUserInput('14/04/2024');
+    expect(warn.callCount, 'de-duplicated per call site').to.equal(1);
+  });
+
+  test('a fresh element logs again', async () => {
+    const first = await newPicker();
+    sinon.stub(first, '_getUserLocale').callsFake(boom);
+    first._parseUserInput('12/04/2024');
+    const second = await newPicker();
+    sinon.stub(second, '_getUserLocale').callsFake(boom);
+    second._parseUserInput('12/04/2024');
+    expect(warn.callCount, 'dedupe is per element instance').to.equal(2);
   });
 });
