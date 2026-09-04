@@ -175,7 +175,9 @@ suite('nuxeo-document-acl-table extras', () => {
   });
 
   suite('_updateAces', () => {
-    const ace = (id, begin, extra) => Object.assign({ id, begin, granted: true, status: 'effective' }, extra);
+    const ace = (id, begin, extra) => {
+      return { id, begin, granted: true, status: 'effective', ...extra };
+    };
 
     test('leaves aces untouched when the document carries no acls', () => {
       el.aces = ['untouched'];

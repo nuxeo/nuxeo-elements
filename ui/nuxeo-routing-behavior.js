@@ -67,8 +67,11 @@ export const RoutingBehavior = {
   },
 
   _generateUrl(baseUrl, path) {
-    const hashbang = this.router.useHashbang ? (baseUrl.endsWith('/') ? '#!' : '/#!') : '';
-    const base = `${baseUrl}${hashbang}`;
+    let base = baseUrl;
+    if (this.router.useHashbang) {
+      const separator = baseUrl.endsWith('/') ? '' : '/';
+      base = `${baseUrl}${separator}#!`;
+    }
     return `${base}${base.endsWith('/') || path.startsWith('/') ? '' : '/'}${path}`;
   },
 
