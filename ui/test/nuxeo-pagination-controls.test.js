@@ -108,4 +108,10 @@ suite('nuxeo-pagination-controls', () => {
     expect(element._computeLimitForOptions(5)).to.be.true;
     expect(element._computeLimitForOptions(6)).to.be.false;
   });
+
+  test('should allow the page select before numberOfPages is bound', () => {
+    // numberOfPages is undefined until the page provider first reports a result set.
+    expect(element._computeLimitForOptions(undefined)).to.be.true;
+    expect(element._computeLimitForOptions(null)).to.be.true;
+  });
 });
