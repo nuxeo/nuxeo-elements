@@ -480,7 +480,7 @@ export const PageProviderDisplayBehavior = [
         return !this._excludedItems.includes(item.uid);
       }
       return this.multiSelection
-        ? !!(this.selectedItems && this.selectedItems.length && this.selectedItems.indexOf(item) > -1)
+        ? !!(this.selectedItems && this.selectedItems.length && this.selectedItems.includes(item))
         : !!(this.selectedItem && this.selectedItem === item);
     },
 
@@ -492,7 +492,7 @@ export const PageProviderDisplayBehavior = [
             this.items &&
             this.items.length > index &&
             this.items[index] &&
-            this.selectedItems.indexOf(this.items[index]) > -1 &&
+            this.selectedItems.includes(this.items[index]) &&
             !this._excludedItems.includes(this.items[index].uid)
           ) ||
             !!(
