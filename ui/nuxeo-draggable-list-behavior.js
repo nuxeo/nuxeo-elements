@@ -91,7 +91,7 @@ export const DraggableListBehavior = {
     // mouse move handler
     const moveFn = (e) => {
       // ELEMENTS-723: prevent dragging from beginning too early, which can interfere with other mouse events
-      if (new Date().getTime() - this._mouseDownStarted <= 150) {
+      if (Date.now() - this._mouseDownStarted <= 150) {
         return;
       }
       // block list pointer events while dragging and apply grabbing cursor
@@ -160,7 +160,7 @@ export const DraggableListBehavior = {
       if (this.draggable && e.target && this.draggableFilter(e.target)) {
         // prevent default behavior to make sure cursors are applied across all browsers
         e.preventDefault();
-        this._mouseDownStarted = this._mouseDownStarted || new Date().getTime();
+        this._mouseDownStarted = this._mouseDownStarted || Date.now();
         // setup listeners when drag starts
         document.addEventListener('mousemove', moveFn);
         document.addEventListener('mouseup', upFn);
