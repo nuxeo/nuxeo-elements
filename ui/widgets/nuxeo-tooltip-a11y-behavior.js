@@ -74,7 +74,8 @@ function unregisterRenderedTooltip(tooltip) {
 /**
  * WCAG 2.1 AA 1.4.13 "Content on Hover or Focus" support for a tooltip host, plus the ARIA
  * wiring assistive technologies need. Designed for `nuxeo-tooltip`, which renders its content
- * in a `paper-tooltip` clone attached to `document.body`.
+ * in a `paper-tooltip` clone attached to `document.body`. This behavior is private to
+ * `nuxeo-tooltip`; it is exported only for that component's module import.
  *
  * The host must provide `show()`, `hide()` and a `target` getter; this behavior owns:
  *
@@ -206,7 +207,7 @@ export const TooltipA11yBehavior = {
     if (!target.setAttribute) {
       return;
     }
-    if (this._previousDescribedBy) {
+    if (this._previousDescribedBy !== null) {
       target.setAttribute('aria-describedby', this._previousDescribedBy);
     } else {
       target.removeAttribute('aria-describedby');
@@ -297,8 +298,11 @@ export const TooltipA11yBehavior = {
     this._scheduleTooltipHide();
   },
 
-  /** Focus left the trigger: nothing to reach with the pointer, so tear down immediately. */
-  _onTriggerBlur() {
+  /** Focus left the trigger: tear down unless it only moved between trigger descendants. */
+  _onTriggerBlur(event) {
+    if (event && event.relatedTarget && this._target && this._target.contains(event.relatedTarget)) {
+      return;
+    }
     this._resetTooltipDismissal();
     this.hide();
   },
@@ -334,5 +338,3 @@ export const TooltipA11yBehavior = {
     unregisterRenderedTooltip(this);
   },
 };
-
-Nuxeo.TooltipA11yBehavior = TooltipA11yBehavior;
