@@ -206,7 +206,7 @@ export const FormatBehavior = [
      * @param {string} text the RegExp to be escaped
      */
     escapeRegExp(text) {
-      return text && text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+      return text && text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, String.raw`\$&`);
     },
 
     /**
@@ -217,9 +217,9 @@ export const FormatBehavior = [
      */
     escapeNxqlStringLiteral(text) {
       const replaceMap = {
-        "'": "\\'",
-        '\\': '\\\\',
-        '"': '\\"',
+        "'": String.raw`'`,
+        '\\': String.raw`\\`,
+        '"': String.raw`"`,
       };
 
       return text && text.replace(/["'\\]/g, (match) => replaceMap[match]);
