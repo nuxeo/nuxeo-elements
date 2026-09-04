@@ -150,7 +150,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       for (i = 0; i < els.length; i++) {
         el = els[i];
         if (el.root) {
-          children = children.concat(Array.from(dom(el.root).querySelectorAll('*')));
+          children = [].concat.apply(children, children.concat(dom(el.root).querySelectorAll('*')));
         }
       }
       return this._grabResults(children);
