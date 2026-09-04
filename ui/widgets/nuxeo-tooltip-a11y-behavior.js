@@ -300,7 +300,7 @@ export const TooltipA11yBehavior = {
 
   /** Focus left the trigger: tear down unless it only moved between trigger descendants. */
   _onTriggerBlur(event) {
-    if (event && event.relatedTarget && this._target && this._target.contains(event.relatedTarget)) {
+    if (event?.relatedTarget && this._target?.contains(event.relatedTarget)) {
       return;
     }
     this._resetTooltipDismissal();
