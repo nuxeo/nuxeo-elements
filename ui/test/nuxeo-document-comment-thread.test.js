@@ -90,6 +90,64 @@ suite('nuxeo-document-comment-thread', () => {
       });
     });
 
+    /** Resolves the native `<textarea>` that `paper-textarea` wraps. */
+    const nativeTextarea = (paperTextarea) =>
+      (paperTextarea.shadowRoot && paperTextarea.shadowRoot.querySelector('textarea')) ||
+      (paperTextarea.$ && paperTextarea.$.input && paperTextarea.$.input.textarea);
+
+    suite('Input Label', () => {
+      test('Should display an always visible label naming the comment input', () => {
+        const input = element.root.querySelector('#inputContainer');
+        expect(input.label).to.equal(element._computeTextLabel(1, 'label'));
+        expect(input.label).to.not.be.empty;
+        expect(input.alwaysFloatLabel).to.be.true;
+        expect(isElementVisible(input.shadowRoot.querySelector('label'))).to.be.true;
+      });
+
+      test('Should name replies with the reply label', async () => {
+        element.set('level', 2);
+        await flush();
+
+        expect(element.root.querySelector('#inputContainer').label).to.equal(element._computeTextLabel(2, 'label'));
+      });
+
+      test('Should expose the visible label as the accessible name of the native textarea', async () => {
+        await flush();
+        const input = element.root.querySelector('#inputContainer');
+        const native = nativeTextarea(input);
+
+        expect(native).to.exist;
+        // Assert on the native control rather than the `label` property: that property is what
+        // the fix sets, so checking it would pass even if nothing reached the element that
+        // assistive technologies actually read.
+        expect(native.getAttribute('aria-label')).to.equal(input.label);
+        expect(native.getAttribute('aria-label')).to.not.be.empty;
+      });
+
+      test('Should not let the dangling aria-labelledby name the textarea', async () => {
+        await flush();
+        const native = nativeTextarea(element.root.querySelector('#inputContainer'));
+        const labelledby = native.getAttribute('aria-labelledby');
+
+        // paper-textarea points this at a <label> in its own shadow root, one level above the
+        // textarea, so it can never resolve and browsers discard it as an invalid name source,
+        // falling through to aria-label. It is left in place deliberately: removing it fights
+        // paper-input-behavior, which re-applies it.
+        if (labelledby) {
+          const root = native.getRootNode();
+          expect(root.getElementById(labelledby)).to.not.exist;
+        }
+      });
+
+      test('Should re-name the native textarea when the thread becomes a reply', async () => {
+        element.set('level', 2);
+        await flush();
+
+        const input = element.root.querySelector('#inputContainer');
+        expect(nativeTextarea(input).getAttribute('aria-label')).to.equal(element._computeTextLabel(2, 'label'));
+      });
+    });
+
     suite('Listing Comments', () => {
       test('Should request comments with author and repliesSummary fetch headers', async () => {
         element._refresh();
