@@ -943,7 +943,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _isExpanded(item, items) {
-      return items && items.indexOf(item) > -1;
+      return items && items.includes(item);
     }
 
     _isFocusable(target) {
@@ -1424,7 +1424,7 @@ import '../nuxeo-button-styles.js';
       const result = JSON.parse(
         JSON.stringify(obj, (key, value) => {
           if (typeof value === 'object' && value !== null) {
-            if (cache.indexOf(value) !== -1) {
+            if (cache.includes(value)) {
               // Circular reference found, discard key
               return;
             }
