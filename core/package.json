@@ -11,8 +11,8 @@
   "author": "Nuxeo",
   "license": "Apache-2.0",
   "scripts": {
-    "docs": "polymer analyze . > analysis.json && npm run serve",
-    "serve": "polymer serve --npm -c ../node_modules"
+    "docs": "node ../scripts/analyze.js analysis.json && npm run serve",
+    "serve": "web-dev-server --config ../web-dev-server.config.mjs"
   },
   "dependencies": {
     "@polymer/polymer": "^3.0.0",
@@ -22,8 +22,7 @@
   "devDependencies": {
     "@nuxeo/moment": "2.30.1-nx.1",
     "@nuxeo/testing-helpers": "^3.1.35-SNAPSHOT",
-    "@polymer/iron-component-page": "^4.0.0",
-    "polymer-cli": "^1.8.0"
+    "@polymer/iron-component-page": "^4.0.0"
   },
   "main": "nuxeo-elements.js"
 }

@@ -7377,7 +7377,7 @@ typedArrayTags[weakMapTag] = false;
 
         <nuxeo-operation id="op" op="[[operation]]" enrichers="[[enrichers]]" headers="[[headers]]"></nuxeo-operation>
 
-        <label class="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
+        <label id="label" class="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
 
         <div id="input" readonly$="[[readonly]]"></div>
 
@@ -7734,12 +7734,30 @@ typedArrayTags[weakMapTag] = false;
 
       const label = (this.label || '').trim();
       const placeholder = (this.placeholder || '').trim();
-      const ariaLabel = label || placeholder;
+      const labelElement = this.shadowRoot.querySelector('#label');
 
-      if (ariaLabel) {
-        input.setAttribute('aria-label', ariaLabel);
-      } else {
+      // When a label is set it is rendered as always visible text, so bind the field to it
+      // (WCAG 3.3.2 / 1.3.1). Without a label there is nothing visible to reference and the
+      // placeholder remains the only available name.
+      if (label && labelElement) {
+        if (!input.id) {
+          input.id = `${this.constructor.is}-input`;
+        }
+        labelElement.setAttribute('for', input.id);
+        input.setAttribute('aria-labelledby', labelElement.id);
         input.removeAttribute('aria-label');
+      } else {
+        input.removeAttribute('aria-labelledby');
+        // Drop the `for` as well, otherwise the now-empty label keeps a stale association
+        // with the input and the placeholder-only fallback is not what it claims to be.
+        if (labelElement) {
+          labelElement.removeAttribute('for');
+        }
+        if (placeholder) {
+          input.setAttribute('aria-label', placeholder);
+        } else {
+          input.removeAttribute('aria-label');
+        }
       }
     }
 
@@ -7749,6 +7767,8 @@ typedArrayTags[weakMapTag] = false;
           readOnly: this.readonly,
           placeholder: this.placeholder,
         });
+        // selectivity re-renders its input, so the label association has to be re-applied
+        this._syncInputAriaLabel();
       }
     }
 
