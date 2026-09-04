@@ -166,24 +166,27 @@ import '../nuxeo-button-styles.js';
     _copyLink(e) {
       const shareButton = e.currentTarget;
       const link = shareButton.previousElementSibling;
+      const input = link.$.paperInput.$.nativeInput;
 
-      // Select Link
-      link.$.paperInput.$.nativeInput.select();
-      if (!window.document.execCommand('copy')) {
+      const onCopied = () => {
+        shareButton._debouncer = Debouncer.debounce(shareButton._debouncer, timeOut.after(2000), () => {
+          input.setSelectionRange(0, 0);
+          link.$.paperInput.blur();
+          shareButton.set('icon', 'link');
+          shareButton.classList.remove('selected');
+        });
+        shareButton.set('icon', 'check');
+        shareButton.classList.add('selected');
+        this.notify({ message: this.i18n('shareButton.operation.copied'), duration: 2000 });
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(input.value).then(onCopied);
         return;
       }
 
-      shareButton._debouncer = Debouncer.debounce(shareButton._debouncer, timeOut.after(2000), () => {
-        // Unselect Link
-        link.$.paperInput.$.nativeInput.setSelectionRange(0, 0);
-        link.$.paperInput.blur();
-        shareButton.set('icon', 'link');
-        shareButton.classList.remove('selected');
-      });
-
-      shareButton.set('icon', 'check');
-      shareButton.classList.add('selected');
-      this.notify({ message: this.i18n('shareButton.operation.copied'), duration: 2000 });
+      input.select();
+      onCopied();
     }
   }
 
