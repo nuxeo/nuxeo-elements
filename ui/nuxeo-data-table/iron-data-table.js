@@ -602,16 +602,13 @@ function hasRowDetailTemplate(node) {
           return;
         }
 
-        if (
-          info.addedNodes.filter(hasDataTableColumn).length > 0 ||
-          info.removedNodes.filter(hasDataTableColumn).length > 0
-        ) {
+        if (info.addedNodes.some(hasDataTableColumn) || info.removedNodes.some(hasDataTableColumn)) {
           this.set('columns', this.$.columns.assignedNodes().filter(hasDataTableColumn));
           this._backupColumnsState();
           this.notifyResize();
         }
 
-        if (info.addedNodes.filter(hasRowDetailTemplate).length > 0) {
+        if (info.addedNodes.some(hasRowDetailTemplate)) {
           this.set('rowDetail', this.getContentChildren('[select="template[is=row-detail]"]')[0]);
 
           // assuming parent element is always a Polymer element.
