@@ -99,7 +99,11 @@ Always use Nuxeo Elements for API calls, never `fetch()`:
 - ESLint: flat config in `eslint.config.mjs`
 - Max line length: 120 characters
 - `Nuxeo` global is `writable`
-- **Do not use optional chaining (`?.`)** in `core/`, `ui/`, or `dataviz/` source files. The Polymer linter/analyzer (`polymer lint`, `polymer analyze`) uses a parser that predates `?.`; it fails to parse the file or drops elements from `analysis.json` (consumed by Storybook and other tooling). Use explicit guards instead — e.g. `(obj && obj.prop)` or `(template && template._templateInfo) || {}`. Vendored code (`ui/viewers/pdfjs/`, `ui/js-interpreter/`) is exempt — do not modify it.
+- **Do not use optional chaining (`?.`)** in `core/`, `ui/`, or `dataviz/` source files. The Polymer
+  linter/analyzer (`polymer lint`, `polymer analyze`) uses a parser that predates `?.`; it fails to
+  parse the file or drops elements from `analysis.json` (consumed by Storybook and other tooling). Use
+  explicit guards instead — e.g. `(obj && obj.prop)` or `(template && template._templateInfo) || {}`.
+  Vendored code (`ui/viewers/pdfjs/`, `ui/js-interpreter/`) is exempt — do not modify it.
 
 ## Testing
 
