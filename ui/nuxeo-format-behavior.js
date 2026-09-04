@@ -206,7 +206,7 @@ export const FormatBehavior = [
      * @param {string} text the RegExp to be escaped
      */
     escapeRegExp(text) {
-      return text && text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+      return text && text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, String.raw`\$&`);
     },
 
     /**
@@ -216,6 +216,8 @@ export const FormatBehavior = [
      * @param {string} text the NXQL string literal to be escaped
      */
     escapeNxqlStringLiteral(text) {
+      // These values are the escape sequences themselves, so String.raw (S7780) must not be
+      // applied here: String.raw`'` drops the backslash and yields an unescaped quote.
       const replaceMap = {
         "'": "\\'",
         '\\': '\\\\',
