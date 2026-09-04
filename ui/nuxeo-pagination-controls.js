@@ -238,7 +238,9 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
         Nuxeo.UI.config.pagination.nuxeoSelectOptions.listingMaxItems
           ? Nuxeo.UI.config.pagination.nuxeoSelectOptions.listingMaxItems
           : 1000;
-      return numberOfPages <= maxItemsForNuxeoSelectPagination;
+      // numberOfPages is undefined until the page provider first binds; keep the original
+      // `numberOfPages > max ? false : true` behaviour of returning true in that case.
+      return numberOfPages == null || numberOfPages <= maxItemsForNuxeoSelectPagination;
     }
   }
 
