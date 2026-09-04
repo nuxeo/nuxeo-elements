@@ -579,6 +579,44 @@ suite('nuxeo-tooltip', () => {
       });
     });
 
+    suite('keyboard focus', () => {
+      /**
+       * A tooltip anchored to a non-focusable wrapper whose focusable control is a descendant,
+       * as the shared viewer action row does with its `<div role="presentation">`. These drive
+       * real focus rather than synthetic events, so they also cover the browser's own
+       * `focusin`/`focusout` dispatch.
+       */
+      async function wrapperFixture() {
+        const host = await fixture(html`
+          <div>
+            <div id="wrapper" role="presentation">
+              <button id="inner">Download</button>
+            </div>
+            <nuxeo-tooltip for="wrapper">Download</nuxeo-tooltip>
+          </div>
+        `);
+        return { inner: host.querySelector('#inner'), tooltip: host.querySelector('nuxeo-tooltip') };
+      }
+
+      test('shows when a descendant of a non-focusable wrapper really takes focus', async () => {
+        const { inner, tooltip } = await wrapperFixture();
+        inner.focus();
+        await flush();
+        expect(tooltip.isShowing()).to.be.true;
+      });
+
+      test('hides once focus really leaves the wrapper', async () => {
+        const { inner, tooltip } = await wrapperFixture();
+        inner.focus();
+        await flush();
+        expect(tooltip.isShowing()).to.be.true;
+
+        inner.blur();
+        await flush();
+        expect(tooltip.isShowing()).to.be.false;
+      });
+    });
+
     suite('accessible description', () => {
       test('the tooltip gets role="tooltip" and an id, and describes its trigger', async () => {
         const { target, tooltip } = await triggerFixture();
