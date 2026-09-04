@@ -7402,9 +7402,9 @@ suite('custom-date-picker error recovery (ELEMENTS-2077)', () => {
   });
 
   test('pickerI18n.parseDate falls back to the current date', async () => {
+    const el = await newPicker();
     const clock = sinon.useFakeTimers(new Date(2024, 3, 12).getTime());
     try {
-      const el = await newPicker();
       const realMoment = el._moment.bind(el);
       // Only the parsing call throws; the fallback's no-arg _moment() must still work.
       sinon.stub(el, '_moment').callsFake((...args) => (args.length ? boom() : realMoment()));
