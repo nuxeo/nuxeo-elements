@@ -32,6 +32,30 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 // collapsing the popover during month navigation.
 const FOCUS_SUPPRESSION_MS = 200;
 
+// Moment tokens accepted in the `format` property (extend if needed). A Set because it is
+// only ever used for membership tests; hoisted to module scope so it is built once.
+const VALID_MOMENT_TOKENS = new Set([
+  'D',
+  'DD',
+  'Do',
+  'M',
+  'MM',
+  'MMM',
+  'MMMM',
+  'YY',
+  'YYYY',
+  'H',
+  'HH',
+  'h',
+  'hh',
+  'm',
+  'mm',
+  's',
+  'ss',
+  'A',
+  'a',
+]);
+
 {
   class CustomDatePicker extends mixinBehaviors(
     [I18nBehavior, IronFormElementBehavior, IronValidatableBehavior],
@@ -1354,6 +1378,31 @@ const FOCUS_SUPPRESSION_MS = 200;
       this._today.setHours(0, 0, 0, 0); // Normalize to start of day
       this._viewDate = new Date();
       this._focusedDate = null;
+      // Call sites already reported by _logRecoveredError (see there).
+      this._loggedRecoveries = new Set();
+    }
+
+    /**
+     * Surfaces an exception that a recovery path would otherwise discard (SonarCloud S2486).
+     *
+     * Every `catch` in this element recovers rather than rethrows, deliberately: a malformed
+     * value, an unsupported format string or an unexpected locale must degrade to a sensible
+     * default instead of breaking the field. Until now none of them logged anything, which made
+     * a field report of "the date picker just clears my input" undiagnosable. Warnings are
+     * de-duplicated per element instance and per call site, so a persistently broken locale
+     * cannot flood the console from a path that runs once per rendered day cell.
+     *
+     * @param {string} context Call site, used both as the log label and as the dedupe key.
+     * @param {*} error The caught error.
+     */
+    _logRecoveredError(context, error) {
+      if (this._loggedRecoveries && this._loggedRecoveries.has(context)) {
+        return;
+      }
+      if (this._loggedRecoveries) {
+        this._loggedRecoveries.add(context);
+      }
+      console.warn(`[custom-date-picker] recovered from an error in ${context}:`, error);
     }
 
     ready() {
@@ -1391,6 +1440,7 @@ const FOCUS_SUPPRESSION_MS = 200;
           try {
             return this._formatDateForDisplay(date);
           } catch (error) {
+            this._logRecoveredError('pickerI18n.formatDate', error);
             return date ? date.toLocaleDateString() : '';
           }
         },
@@ -1416,6 +1466,7 @@ const FOCUS_SUPPRESSION_MS = 200;
             };
           } catch (error) {
             // Return current date instead of hardcoded values
+            this._logRecoveredError('pickerI18n.parseDate', error);
             const fallbackDate = this._moment();
             return {
               day: fallbackDate.get('D'),
@@ -1507,7 +1558,7 @@ const FOCUS_SUPPRESSION_MS = 200;
       // Replace placeholders
       Object.keys(placeholders).forEach((placeholder) => {
         const value = placeholders[placeholder];
-        text = text.replace(new RegExp(`\\{${placeholder}\\}`, 'g'), value);
+        text = text.replace(new RegExp(String.raw`\{${placeholder}\}`, 'g'), value);
       });
 
       return text;
@@ -1560,7 +1611,8 @@ const FOCUS_SUPPRESSION_MS = 200;
           month: 'long',
           day: 'numeric',
         }).format(date);
-      } catch (_) {
+      } catch (error) {
+        this._logRecoveredError('_formatAriaDate', error);
         return date && date.toDateString ? date.toDateString() : '';
       }
     }
@@ -1576,7 +1628,7 @@ const FOCUS_SUPPRESSION_MS = 200;
       if (!value) return null;
       try {
         if (typeof value === 'string') {
-          const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+          const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
           if (m) {
             const year = parseInt(m[1], 10);
             const month = parseInt(m[2], 10) - 1;
@@ -1590,7 +1642,9 @@ const FOCUS_SUPPRESSION_MS = 200;
         if (Number.isNaN(d.getTime())) return null;
         d.setHours(0, 0, 0, 0);
         return d;
-      } catch (_) {
+      } catch (error) {
+        // A value we cannot read is reported as "no date"; log why so the cause is diagnosable.
+        this._logRecoveredError('_parseDateOnly', error);
         return null;
       }
     }
@@ -1601,7 +1655,7 @@ const FOCUS_SUPPRESSION_MS = 200;
 
       try {
         // Strict ISO format validation: YYYY-MM-DD
-        const match = isoString.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoString);
         if (!match) return null;
 
         const year = parseInt(match[1], 10);
@@ -1624,6 +1678,8 @@ const FOCUS_SUPPRESSION_MS = 200;
 
         return date;
       } catch (error) {
+        // An ISO string we cannot read is reported as "no date"; log why.
+        this._logRecoveredError('_parseDateFromISO', error);
         return null;
       }
     }
@@ -2337,7 +2393,8 @@ const FOCUS_SUPPRESSION_MS = 200;
         return new Intl.DateTimeFormat(locale, {
           month: 'long',
         }).format(date);
-      } catch (e) {
+      } catch (error) {
+        this._logRecoveredError('_getMonthName', error);
         // ⚠️ Fallback: Use i18n for English months
         const lang = locale.split('-')[0];
         const monthIndex = date.getMonth();
@@ -2993,8 +3050,7 @@ const FOCUS_SUPPRESSION_MS = 200;
         }
       }
       if (popover) {
-        popover.classList.remove('open');
-        popover.classList.remove('open-up');
+        popover.classList.remove('open', 'open-up');
         popover.style.left = '';
         popover.style.right = '';
         popover.style.top = '';
@@ -3509,7 +3565,9 @@ const FOCUS_SUPPRESSION_MS = 200;
         }
 
         return null;
-      } catch (e) {
+      } catch (error) {
+        // Unparseable input is reported as "no date"; log why.
+        this._logRecoveredError('_parseWithFormat', error);
         return null;
       }
     }
@@ -3653,12 +3711,13 @@ const FOCUS_SUPPRESSION_MS = 200;
           this.notifyPath('value');
         }
       } catch (error) {
-        // Error setting value safely - using fallback
-        // Last resort - try direct assignment
+        // Error setting value safely - last resort is direct assignment.
+        this._logRecoveredError('_safeSetValue', error);
         try {
           this.value = newValue;
         } catch (fallbackError) {
-          // Failed to set value with fallback - silent error
+          // Direct assignment failed too — log separately so both root causes are visible.
+          this._logRecoveredError('_safeSetValue (direct assignment)', fallbackError);
         }
       }
     }
@@ -3831,8 +3890,9 @@ const FOCUS_SUPPRESSION_MS = 200;
           // Canonicalize locale (handles casing, region format, etc.)
           const [canonicalLocale] = Intl.getCanonicalLocales(normalizedLocale);
           normalizedLocale = canonicalLocale;
-        } catch (e) {
+        } catch (error) {
           // Fallback safely
+          this._logRecoveredError('_getDatePlaceholder (locale canonicalisation)', error);
           normalizedLocale = 'en-US';
         }
 
@@ -3872,8 +3932,9 @@ const FOCUS_SUPPRESSION_MS = 200;
             return part.value; // keep separators like "/", "-", "."
           })
           .join('');
-      } catch (e) {
+      } catch (error) {
         // Safe fallback (still respects locale order)
+        this._logRecoveredError('_getDatePlaceholder', error);
         try {
           const locale = navigator.language;
 
@@ -3887,6 +3948,7 @@ const FOCUS_SUPPRESSION_MS = 200;
             })
             .join('');
         } catch (error) {
+          this._logRecoveredError('_getDatePlaceholder (locale fallback)', error);
           return 'dd/mm/yyyy';
         }
       }
@@ -4102,6 +4164,7 @@ const FOCUS_SUPPRESSION_MS = 200;
         // Reset the flag after all updates are done
         this._preventInputUpdate = false;
       } catch (error) {
+        this._logRecoveredError('_valueChanged', error);
         this._selectedDate = null;
         // Don't clear input if there are persistent errors - preserve user input
         if (!this._userIsTyping && !this._errorPersists) {
@@ -4191,9 +4254,10 @@ const FOCUS_SUPPRESSION_MS = 200;
         const popHeight = popRect.height || 320;
         const popWidth = popRect.width || 280;
 
-        // Position using fixed positioning for modal-like behavior
-        let { left } = rect;
-        let top = rect.bottom + 4; // 4px margin
+        // Position using fixed positioning for modal-like behavior.
+        // Both coordinates are assigned on every branch below, so they start unset.
+        let left;
+        let top;
         const minVerticalPadding = 8; // Minimum padding from viewport edges
 
         // Smart vertical positioning with better edge handling
@@ -4246,15 +4310,12 @@ const FOCUS_SUPPRESSION_MS = 200;
           left = Math.max(minLeft, Math.min(maxLeft, preferredLeft));
         }
 
-        // Additional adjustment for extreme edge cases
-        if (left === minLeft && rect.left < minLeft) {
-          // If we're at minimum left and trigger is also at edge, try to center
-          const centerLeft = (viewportW - popWidth) / 2;
-          if (centerLeft >= minLeft && centerLeft <= maxLeft) {
-            left = centerLeft;
-          }
-        } else if (left === maxLeft && rect.right > viewportW - minPadding) {
-          // If we're at maximum right and trigger is also at edge, try to center
+        // Additional adjustment for extreme edge cases: the popover was clamped to a
+        // viewport edge *and* the trigger itself sits at (or past) that same edge. Left and
+        // right both centre the popover, so the two cases share one branch.
+        const clampedAtLeftEdge = left === minLeft && rect.left < minLeft;
+        const clampedAtRightEdge = left === maxLeft && rect.right > viewportW - minPadding;
+        if (clampedAtLeftEdge || clampedAtRightEdge) {
           const centerLeft = (viewportW - popWidth) / 2;
           if (centerLeft >= minLeft && centerLeft <= maxLeft) {
             left = centerLeft;
@@ -4771,34 +4832,11 @@ const FOCUS_SUPPRESSION_MS = 200;
     _isValidMomentFormat(format) {
       if (!format || typeof format !== 'string') return false;
 
-      // Allowed moment tokens (extend if needed)
-      const validTokens = [
-        'D',
-        'DD',
-        'Do',
-        'M',
-        'MM',
-        'MMM',
-        'MMMM',
-        'YY',
-        'YYYY',
-        'H',
-        'HH',
-        'h',
-        'hh',
-        'm',
-        'mm',
-        's',
-        'ss',
-        'A',
-        'a',
-      ];
-
       // Extract tokens from format string
       const tokens = format.match(/[A-Za-z]+/g) || [];
 
       // Check if every token is valid
-      return tokens.every((token) => validTokens.includes(token));
+      return tokens.every((token) => VALID_MOMENT_TOKENS.has(token));
     }
 
     _selectYear(e) {
@@ -4854,11 +4892,10 @@ const FOCUS_SUPPRESSION_MS = 200;
     }
 
     _handleCalendarIconKeydown(e) {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        e.stopPropagation();
-        this._openCalendar(e, true); // Opened via keyboard
-      } else if (e.key === 'ArrowDown' || e.key === 'F4') {
+      // Enter / Space activate the icon; ArrowDown / F4 are the WAI-ARIA combobox
+      // shortcuts for opening the popup. All four open the calendar in keyboard mode.
+      const opensCalendar = e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'F4';
+      if (opensCalendar) {
         e.preventDefault();
         e.stopPropagation();
         this._openCalendar(e, true); // Opened via keyboard
@@ -5026,6 +5063,7 @@ const FOCUS_SUPPRESSION_MS = 200;
         return this._moment(date).format(format);
       } catch (error) {
         // Safe fallback using Intl.DateTimeFormat
+        this._logRecoveredError('_formatDateForDisplay', error);
         return new Intl.DateTimeFormat(navigator.language).format(date);
       }
     }
@@ -5129,8 +5167,8 @@ const FOCUS_SUPPRESSION_MS = 200;
           'MM-DD',
         ];
 
-        for (let i = 0; i < commonFormats.length; i++) {
-          momentDate = this._moment(trimmedInput, commonFormats[i], true);
+        for (const commonFormat of commonFormats) {
+          momentDate = this._moment(trimmedInput, commonFormat, true);
           if (momentDate.isValid()) {
             const date = momentDate.toDate();
             date.setHours(0, 0, 0, 0);
@@ -5154,6 +5192,8 @@ const FOCUS_SUPPRESSION_MS = 200;
 
         return null;
       } catch (error) {
+        // Unparseable input is reported as "no date"; log why.
+        this._logRecoveredError('_parseUserInput', error);
         return null;
       }
     }
@@ -5163,8 +5203,7 @@ const FOCUS_SUPPRESSION_MS = 200;
       // Try multiple sources for locale detection
       const sources = [navigator.languages && navigator.languages[0], navigator.language, this._locale, 'en-US'];
 
-      for (let i = 0; i < sources.length; i++) {
-        const locale = sources[i];
+      for (const locale of sources) {
         if (locale && typeof locale === 'string') {
           return locale;
         }
@@ -5209,8 +5248,7 @@ const FOCUS_SUPPRESSION_MS = 200;
           'YYYY.MM.DD',
         ];
 
-        for (let i = 0; i < commonFormats.length; i++) {
-          const format = commonFormats[i];
+        for (const format of commonFormats) {
           const testDate = this._moment(inputString, format, true);
           if (testDate.isValid()) {
             results.parsed = true;
