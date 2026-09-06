@@ -19,6 +19,11 @@ npm test                   # @web/test-runner unit tests (all packages) — must
 - `npm run format` runs Polymer lint fix first, then Prettier write, then ESLint fix.
 - Always run `npm run format` before committing.
 - Do NOT commit `.only` in test files.
+
+## CLA-safe commits
+
+`license/cla` fails if any commit or `Co-authored-by` trailer names `cursoragent@cursor.com`. Never add `Co-authored-by: Cursor` and never commit as the Cursor agent user. Husky runs `scripts/git/commit-msg-cla.sh` on every commit to block those trailers. If a PR branch is already polluted, squash on the PR base and rewrite with `git commit-tree` + a message file (agent `git commit` may re-inject Cursor trailers).
+
 - To test a single package: `npm run test:core`, `npm run test:ui`, or `npm run test:dataviz`.
 
 ## Project Structure
