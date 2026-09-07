@@ -478,7 +478,7 @@ suite('nuxeo-data-table', () => {
 
       await waitForEvent(table, 'nuxeo-page-loaded', 1);
       await flush();
-      assert.equal(4, table.$.list.items.length);
+      assert.equal(table.$.list.items.length, 4);
     });
   });
 
@@ -508,7 +508,7 @@ suite('nuxeo-data-table', () => {
 
       await waitForEvent(table, 'nuxeo-page-loaded', 1);
       await flush();
-      assert.equal(4, table.$.list.items.length);
+      assert.equal(table.$.list.items.length, 4);
 
       const checkboxes = Array.from(
         table.querySelectorAll('nuxeo-data-table-checkbox:not([style*="visibility: hidden;"])'),
@@ -539,7 +539,7 @@ suite('nuxeo-data-table', () => {
 
       await waitForEvent(table, 'nuxeo-page-loaded', 1);
       await flush();
-      assert.equal(4, table.$.list.items.length);
+      assert.equal(table.$.list.items.length, 4);
 
       // select 2 out of 4 items
       const checkboxes = Array.from(
@@ -566,7 +566,7 @@ suite('nuxeo-data-table', () => {
 
       await waitForEvent(table, 'nuxeo-page-loaded', 1);
       await flush();
-      assert.equal(4, table.$.list.items.length);
+      assert.equal(table.$.list.items.length, 4);
 
       const checkboxes = Array.from(
         table.querySelectorAll('nuxeo-data-table-checkbox:not([style*="visibility: hidden;"])'),
@@ -600,7 +600,7 @@ suite('nuxeo-data-table', () => {
 
       await waitForEvent(table, 'nuxeo-page-loaded', 1);
       await flush();
-      assert.equal(4, table.$.list.items.length);
+      assert.equal(table.$.list.items.length, 4);
 
       const checkboxes = Array.from(
         table.querySelectorAll('nuxeo-data-table-checkbox:not([style*="visibility: hidden;"])'),

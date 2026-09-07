@@ -44,7 +44,7 @@ suite('nuxeo-tooltip', () => {
     await flush();
     const paperTooltip = document.body.querySelector('paper-tooltip');
     expect(paperTooltip.innerHTML).to.equal('Hello');
-    expect(isElementVisible(paperTooltip));
+    expect(isElementVisible(paperTooltip)).to.be.true;
   });
 
   test('hide removes only this instance paper-tooltip', async () => {
