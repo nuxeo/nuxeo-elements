@@ -857,5 +857,44 @@ suite('nuxeo-image-viewer extras', () => {
       Object.defineProperty(el.$.image, 'naturalWidth', { value: 0, configurable: true });
       expect(el._getToolbarBackgroundLuminance()).to.be.null;
     });
+
+    // The catch is only reachable once every geometry guard above it has passed, so the toolbar
+    // lookup, the image dimensions and both bounding rectangles describe a toolbar that fully
+    // overlaps the canvas. getImageData then throws the way it does once the canvas has been
+    // tainted by a cross-origin image, which is the repeating failure the warn-once guard exists
+    // for: the method runs from a requestAnimationFrame loop, so it must stay quiet after the
+    // first warning.
+    test('returns null and warns only once when reading the canvas throws', () => {
+      const warn = sandbox.stub(console, 'warn');
+      const querySelector = sandbox.stub(el.shadowRoot, 'querySelector');
+      querySelector.callThrough();
+      querySelector.withArgs('#toolbar').returns({
+        getBoundingClientRect: () => {
+          return { left: 0, top: 0, width: 100, height: 100 };
+        },
+      });
+      Object.defineProperty(el.$.image, 'naturalWidth', { value: 100, configurable: true });
+      Object.defineProperty(el.$.image, 'naturalHeight', { value: 100, configurable: true });
+      sandbox.stub(el.$.canvas, 'getBoundingClientRect').returns({ left: 0, top: 0, width: 100, height: 100 });
+      el._el = {
+        getCanvasData: () => {
+          return { left: 0, top: 0, width: 100, height: 100 };
+        },
+      };
+      const context = {
+        clearRect: sandbox.spy(),
+        drawImage: sandbox.spy(),
+        getImageData: sandbox.stub().throws(new Error('SecurityError: the canvas has been tainted')),
+      };
+      el.__contrastCanvas = document.createElement('canvas');
+      sandbox.stub(el.__contrastCanvas, 'getContext').returns(context);
+
+      expect(el._getToolbarBackgroundLuminance()).to.be.null;
+      expect(el._getToolbarBackgroundLuminance()).to.be.null;
+
+      expect(context.getImageData).to.have.been.calledTwice;
+      expect(warn).to.have.been.calledOnce;
+      expect(warn.firstCall.args[0]).to.contain('failed to compute average toolbar luminance');
+    });
   });
 });
