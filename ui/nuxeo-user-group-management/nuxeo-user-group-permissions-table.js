@@ -28,7 +28,9 @@ import moment from '@nuxeo/moment';
 import '../nuxeo-pagination-controls.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-tag.js';
+import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { momentTimezone } from '../nuxeo-timezone.js';
 import '../nuxeo-button-styles.js';
 
 {
@@ -385,6 +387,7 @@ import '../nuxeo-button-styles.js';
 
     _formatTimeFrame(ace) {
       const now = moment();
+      const m = momentTimezone(config.get('timezone'));
       const begin = ace.begin || null;
       const end = ace.end || null;
       const format = 'D MMM YYYY';
@@ -393,17 +396,14 @@ import '../nuxeo-button-styles.js';
       const untilStr = `${this.i18n('userGroupPermissions.until')} `;
       const untilMiddleStr = ` ${this.i18n('userGroupPermissions.untilMiddle')} `;
       if (begin !== null && end === null) {
-        return (now.isAfter(begin) ? sinceStr : fromStr) + moment(begin).format(format);
+        return (now.isAfter(begin) ? sinceStr : fromStr) + m(begin).format(format);
       }
       if (begin === null && end !== null) {
-        return untilStr + moment(end).format(format);
+        return untilStr + m(end).format(format);
       }
       if (begin !== null && end !== null) {
         return (
-          (now.isAfter(begin) ? sinceStr : fromStr) +
-          moment(begin).format(format) +
-          untilMiddleStr +
-          moment(end).format(format)
+          (now.isAfter(begin) ? sinceStr : fromStr) + m(begin).format(format) + untilMiddleStr + m(end).format(format)
         );
       }
       return this.i18n('userGroupPermissions.permanent');

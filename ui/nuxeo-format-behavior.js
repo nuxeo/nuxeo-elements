@@ -19,6 +19,7 @@ import moment from '@nuxeo/moment/min/moment-with-locales.js';
 
 import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from './nuxeo-i18n-behavior.js';
+import { momentTimezone } from './nuxeo-timezone.js';
 
 /**
  * `Nuxeo.FormatBehavior` provides a set of helpers to format values.
@@ -47,7 +48,7 @@ export const FormatBehavior = [
     _formatDate(date, fmt, timezone) {
       if (!date) return;
       moment.locale(this._languageCode());
-      const fn = timezone === 'Etc/UTC' ? moment.utc : moment;
+      const fn = momentTimezone(timezone);
       if (fmt && fmt === 'relative') {
         return fn().to(date);
       }
@@ -61,9 +62,11 @@ export const FormatBehavior = [
      * @param {string} date the date
      * @param {string} format the format, falls back on Nuxeo.UI.config.dateFormat or 'MMM D, YYYY' if null.
      * @param {string} timezone the name of the timezone of the date, according to the IANA tz database.
-     *     Currently valid values are:
+     *     Valid values are:
      *     - empty: local time will be used, as read from the browser (this is the default)
      *     - Etc/UTC: time specified by the user is assumed to be in UTC
+     *     - any IANA zone (e.g. Europe/Paris, Asia/Kolkata): the date is displayed in that zone, honoring DST
+     *       and sub-hour offsets; an unknown zone falls back to the browser's local time
      */
     formatDate(date, format, timezone) {
       return this._formatDate(date, format || config.get('dateFormat', 'LL'), timezone || config.get('timezone'));
@@ -76,9 +79,11 @@ export const FormatBehavior = [
      * @param {string} date the date
      * @param {string} format the format, falls back on Nuxeo.UI.config.dateFormat or 'MMMM D, YYYY HH:mm' if null.
      * @param {string} timezone the name of the timezone of the date, according to the IANA tz database.
-     *     Currently valid values are:
+     *     Valid values are:
      *     - empty: local time will be used, as read from the browser (this is the default)
      *     - Etc/UTC: time specified by the user is assumed to be in UTC
+     *     - any IANA zone (e.g. Europe/Paris, Asia/Kolkata): the date is displayed in that zone, honoring DST
+     *       and sub-hour offsets; an unknown zone falls back to the browser's local time
      */
     formatDateTime(date, format, timezone) {
       return this._formatDate(date, format || config.get('dateTimeFormat', 'LLL'), timezone || config.get('timezone'));
