@@ -248,7 +248,7 @@ import '../nuxeo-button-styles.js';
           value: {
             'fetch-acls': 'username,creator,extended',
             depth: 'children',
-            time: new Date().getTime(),
+            time: Date.now(),
           },
         },
         visible: {
@@ -289,7 +289,7 @@ import '../nuxeo-button-styles.js';
     refresh() {
       if (this.visible) {
         this.doc = null;
-        this.params.time = new Date().getTime();
+        this.params.time = Date.now();
         this.$.doc.get().then(() => {
           this.dispatchEvent(
             new CustomEvent('iron-resize', {
