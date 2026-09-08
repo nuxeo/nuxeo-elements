@@ -75,9 +75,11 @@ import './nuxeo-tooltip.js';
 
         /**
          * The name of the timezone where the user is considered to be, according to the IANA tz database.
-         * Currently valid values are:
+         * Valid values are:
          * - empty: local time will be used, as read from the browser (this is the default)
          * - Etc/UTC: time specified by the user is assumed to be in UTC
+         * - any IANA zone (e.g. Europe/Paris, Asia/Kolkata): the date is displayed in that zone, honoring DST
+         *   and sub-hour offsets; an unknown zone falls back to the browser's local time
          */
         timezone: {
           type: String,
