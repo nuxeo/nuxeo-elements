@@ -98,6 +98,45 @@ suite('Nuxeo.FormatBehavior', () => {
     });
   });
 
+  suite('formatDate / formatDateTime timezone support', () => {
+    // Fixed instants so the assertions never depend on the machine running the tests.
+    const winter = '2024-01-15T12:00:00.000Z';
+    const summer = '2024-07-15T12:00:00.000Z';
+
+    test('renders the date time in a named IANA zone', () => {
+      // Asia/Kolkata is UTC+5:30 all year round.
+      expect(host.formatDateTime(winter, 'YYYY-MM-DD HH:mm', 'Asia/Kolkata')).to.equal('2024-01-15 17:30');
+    });
+
+    test('honors DST transitions in both directions', () => {
+      // Europe/Paris: CET (UTC+1) in winter, CEST (UTC+2) in summer.
+      expect(host.formatDateTime(winter, 'YYYY-MM-DD HH:mm', 'Europe/Paris')).to.equal('2024-01-15 13:00');
+      expect(host.formatDateTime(summer, 'YYYY-MM-DD HH:mm', 'Europe/Paris')).to.equal('2024-07-15 14:00');
+    });
+
+    test('supports sub-hour offset zones', () => {
+      // Pacific/Chatham is UTC+13:45 in January.
+      expect(host.formatDateTime(winter, 'YYYY-MM-DD HH:mm', 'Pacific/Chatham')).to.equal('2024-01-16 01:45');
+    });
+
+    test('reads the timezone from the Nuxeo.UI config when none is passed', () => {
+      config.set('dateTimeFormat', 'YYYY-MM-DD HH:mm');
+      config.set('timezone', 'Asia/Kolkata');
+      expect(host.formatDateTime(winter)).to.equal('2024-01-15 17:30');
+    });
+
+    test('falls back to the browser local time for an unknown zone', () => {
+      const warn = sinon.stub(console, 'warn');
+      try {
+        expect(host.formatDateTime(winter, 'YYYY-MM-DD HH:mm', 'Totally/Bogus')).to.equal(
+          host.formatDateTime(winter, 'YYYY-MM-DD HH:mm'),
+        );
+      } finally {
+        warn.restore();
+      }
+    });
+  });
+
   suite('formatMimeType / formatRendition', () => {
     test('returns undefined for empty input', () => {
       expect(host.formatMimeType('')).to.be.undefined;
