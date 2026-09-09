@@ -3402,89 +3402,60 @@ const VALID_MOMENT_TOKENS = new Set([
       }, 50);
     }
 
+    /**
+     * Focuses the day button for `date`, but only when the rendered month actually has a focusable
+     * button for it.
+     *
+     * Extracted from _findAndFocusNearestValidDate (SonarCloud S3776), which repeated this block
+     * five times. The inline `${year}-${padded month}-${padded day}` construction is replaced by
+     * the existing _dateToISO helper, which builds the identical string; for an invalid date it
+     * returns '' instead of "NaN-NaN-NaN", and neither selector matches anything.
+     *
+     * @param {?Date} date Candidate date; a falsy value simply fails the attempt.
+     * @returns {boolean} True when the button was found and focused.
+     */
+    _tryFocusDayButton(date) {
+      if (!date) {
+        return false;
+      }
+      const button = this.shadowRoot.querySelector(`[data-date="${this._dateToISO(date)}"]`);
+      if (!button || button.disabled || button.classList.contains('empty')) {
+        return false;
+      }
+      this._focusedDate = new Date(date);
+      button.focus();
+      return true;
+    }
+
     _findAndFocusNearestValidDate(targetDate) {
       // Find the first valid date in the current month
       const year = this._viewDate.getFullYear();
       const month = this._viewDate.getMonth();
+      const isInViewedMonth = (date) => !!date && date.getMonth() === month && date.getFullYear() === year;
 
-      // If targetDate is provided and it's in the current month, try to use it
-      if (targetDate && targetDate.getMonth() === month && targetDate.getFullYear() === year) {
-        const targetYear = targetDate.getFullYear();
-        const targetMonth = String(targetDate.getMonth() + 1).padStart(2, '0');
-        const targetDay = String(targetDate.getDate()).padStart(2, '0');
-        const dateISO = `${targetYear}-${targetMonth}-${targetDay}`;
-
-        const button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
-        if (button && !button.disabled && !button.classList.contains('empty')) {
-          this._focusedDate = new Date(targetDate);
-          button.focus();
-          return;
-        }
-      }
-
-      // Try the selected date first if it's in the current month
-      if (this._selectedDate && this._selectedDate.getMonth() === month && this._selectedDate.getFullYear() === year) {
-        // Use local date formatting to avoid timezone issues
-        const selYear = this._selectedDate.getFullYear();
-        const selMonth = String(this._selectedDate.getMonth() + 1).padStart(2, '0');
-        const selDay = String(this._selectedDate.getDate()).padStart(2, '0');
-        const dateISO = `${selYear}-${selMonth}-${selDay}`;
-
-        const button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
-        if (button && !button.disabled && !button.classList.contains('empty')) {
-          this._focusedDate = new Date(this._selectedDate);
-          button.focus();
-          return;
-        }
-      }
-
-      // Try today if it's in the current month
-      if (this._today.getMonth() === month && this._today.getFullYear() === year) {
-        // Use local date formatting to avoid timezone issues
-        const todayYear = this._today.getFullYear();
-        const todayMonth = String(this._today.getMonth() + 1).padStart(2, '0');
-        const todayDay = String(this._today.getDate()).padStart(2, '0');
-        const dateISO = `${todayYear}-${todayMonth}-${todayDay}`;
-
-        const button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
-        if (button && !button.disabled && !button.classList.contains('empty')) {
-          this._focusedDate = new Date(this._today);
-          button.focus();
-          return;
-        }
-      }
-
-      // Try the first day of the month
-      const firstValidDate = new Date(year, month, 1);
-      // Use local date formatting to avoid timezone issues
-      const firstYear = firstValidDate.getFullYear();
-      const firstMonth = String(firstValidDate.getMonth() + 1).padStart(2, '0');
-      const firstDay = String(firstValidDate.getDate()).padStart(2, '0');
-      let dateISO = `${firstYear}-${firstMonth}-${firstDay}`;
-
-      let button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
-
-      if (button && !button.disabled && !button.classList.contains('empty')) {
-        this._focusedDate = firstValidDate;
-        button.focus();
+      /*
+       * Preference order, unchanged from the five sequential blocks this replaces: the requested
+       * target, then the current selection, then today, then the 1st of the month. The first three
+       * are tried only when they fall inside the month on screen; `some` short-circuits on the
+       * first success exactly as the original's early returns did.
+       */
+      const preferred = [
+        isInViewedMonth(targetDate) ? targetDate : null,
+        isInViewedMonth(this._selectedDate) ? this._selectedDate : null,
+        isInViewedMonth(this._today) ? this._today : null,
+        new Date(year, month, 1),
+      ];
+      if (preferred.some((date) => this._tryFocusDayButton(date))) {
         return;
       }
 
-      // Otherwise, find any valid date in the current month
+      // Otherwise, find any valid date in the current month. The 1st is retried here, which is a
+      // no-op: it has just failed above.
       for (let day = 1; day <= 31; day++) {
-        const testDate = new Date(year, month, day);
-        if (testDate.getMonth() !== month) break; // Gone past the end of the month
+        const candidate = new Date(year, month, day);
+        if (candidate.getMonth() !== month) break; // Gone past the end of the month
 
-        // Use local date formatting to avoid timezone issues
-        const testYear = testDate.getFullYear();
-        const testMonth = String(testDate.getMonth() + 1).padStart(2, '0');
-        const testDay = String(testDate.getDate()).padStart(2, '0');
-        dateISO = `${testYear}-${testMonth}-${testDay}`;
-
-        button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
-        if (button && !button.disabled && !button.classList.contains('empty')) {
-          this._focusedDate = testDate;
-          button.focus();
+        if (this._tryFocusDayButton(candidate)) {
           return;
         }
       }
