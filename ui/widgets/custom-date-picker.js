@@ -4888,76 +4888,111 @@ const VALID_MOMENT_TOKENS = new Set([
       }
     }
 
+    /**
+     * Moves focus `delta` options within the open year list, clamped at both ends, keeping the
+     * roving tabindex in sync and scrolling the new option into view.
+     *
+     * Hoisted verbatim out of _handleYearDropdownKeydown, where it was a local closure and the
+     * single largest contributor to that function's cognitive complexity (SonarCloud S3776). It
+     * captured nothing but `this`, so the move is mechanical.
+     *
+     * @param {number} delta Options to move by; Home/End pass a value large enough to saturate
+     *   the clamp.
+     */
+    _moveYearOptionFocus(delta) {
+      const yearOptions = this.shadowRoot.querySelector('#yearOptions');
+      if (!yearOptions || !yearOptions.classList.contains('open')) return;
+      const buttons = Array.from(yearOptions.querySelectorAll('.year-option'));
+      if (!buttons.length) return;
+      let current = buttons.findIndex((b) => b.tabIndex === 0);
+      if (current < 0) current = 0;
+      let next = current + delta;
+      if (next < 0) next = 0;
+      if (next > buttons.length - 1) next = buttons.length - 1;
+      buttons.forEach((btn, idx) => {
+        btn.tabIndex = idx === next ? 0 : -1;
+      });
+      const btn = buttons[next];
+      btn.focus();
+      if (typeof btn.scrollIntoView === 'function') {
+        btn.scrollIntoView({ block: 'nearest' });
+      }
+    }
+
+    /**
+     * Enter / Space on the year trigger: open the list when it is closed, otherwise activate the
+     * option that currently holds focus, falling back to the one carrying the roving tabindex.
+     *
+     * Extracted from _handleYearDropdownKeydown (SonarCloud S3776) unchanged.
+     */
+    _activateFocusedYearOption() {
+      if (!this._isYearDropdownOpen) {
+        this._toggleYearDropdown();
+        return;
+      }
+      // Select currently focused option
+      const active = this.shadowRoot.activeElement;
+      const focused =
+        active && active.classList.contains('year-option')
+          ? active
+          : this.shadowRoot.querySelector('#yearOptions .year-option[tabindex="0"]');
+      if (focused) {
+        focused.click();
+      }
+    }
+
     _handleYearDropdownKeydown(e) {
-      const moveWithinOptions = (delta) => {
-        const yearOptions = this.shadowRoot.querySelector('#yearOptions');
-        if (!yearOptions || !yearOptions.classList.contains('open')) return;
-        const buttons = Array.from(yearOptions.querySelectorAll('.year-option'));
-        if (!buttons.length) return;
-        let current = buttons.findIndex((b) => b.tabIndex === 0);
-        if (current < 0) current = 0;
-        let next = current + delta;
-        if (next < 0) next = 0;
-        if (next > buttons.length - 1) next = buttons.length - 1;
-        buttons.forEach((btn, idx) => {
-          btn.tabIndex = idx === next ? 0 : -1;
-        });
-        const btn = buttons[next];
-        btn.focus();
-        if (typeof btn.scrollIntoView === 'function') {
-          btn.scrollIntoView({ block: 'nearest' });
+      /*
+       * The key handling below is a reordering of an eight-branch `else if` chain (SonarCloud
+       * S3776). Reordering is safe because the branches are mutually exclusive on `e.key`, and
+       * each branch keeps its own preventDefault/stopPropagation behaviour verbatim — including
+       * Escape's conditional one and Tab's deliberate absence.
+       *
+       * Maps rather than object literals so an unrelated `e.key` such as "toString" cannot match
+       * through Object.prototype, and without needing Object.hasOwn, which is ES2022 and above
+       * this repo's runtime floor (see S6653 on ELEMENTS-2077).
+       */
+
+      // Keys that jump within the options list. Home/End saturate the clamp in
+      // _moveYearOptionFocus; PageUp/PageDown move by ten.
+      const jumpDeltas = new Map([
+        ['Home', -9999],
+        ['End', 9999],
+        ['PageUp', -10],
+        ['PageDown', 10],
+      ]);
+      // Arrow keys step by one when the list is open, and otherwise open it.
+      const stepDeltas = new Map([
+        ['ArrowDown', 1],
+        ['ArrowUp', -1],
+      ]);
+
+      if (jumpDeltas.has(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        this._moveYearOptionFocus(jumpDeltas.get(e.key));
+        return;
+      }
+
+      if (stepDeltas.has(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (this._isYearDropdownOpen) {
+          this._moveYearOptionFocus(stepDeltas.get(e.key));
+        } else {
+          this._toggleYearDropdown();
         }
-      };
+        return;
+      }
 
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         e.stopPropagation();
-        if (!this._isYearDropdownOpen) {
-          this._toggleYearDropdown();
-        } else {
-          // Select currently focused option
-          // max-len: break into multiple lines
-          const focused =
-            this.shadowRoot.activeElement && this.shadowRoot.activeElement.classList.contains('year-option')
-              ? this.shadowRoot.activeElement
-              : this.shadowRoot.querySelector('#yearOptions .year-option[tabindex="0"]');
-          if (focused) {
-            focused.click();
-          }
-        }
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        e.stopPropagation();
-        if (this._isYearDropdownOpen) {
-          moveWithinOptions(+1);
-        } else {
-          this._toggleYearDropdown();
-        }
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        e.stopPropagation();
-        if (this._isYearDropdownOpen) {
-          moveWithinOptions(-1);
-        } else {
-          this._toggleYearDropdown();
-        }
-      } else if (e.key === 'Home') {
-        e.preventDefault();
-        e.stopPropagation();
-        moveWithinOptions(-9999);
-      } else if (e.key === 'End') {
-        e.preventDefault();
-        e.stopPropagation();
-        moveWithinOptions(9999);
-      } else if (e.key === 'PageUp') {
-        e.preventDefault();
-        e.stopPropagation();
-        moveWithinOptions(-10);
-      } else if (e.key === 'PageDown') {
-        e.preventDefault();
-        e.stopPropagation();
-        moveWithinOptions(10);
-      } else if (e.key === 'Escape') {
+        this._activateFocusedYearOption();
+        return;
+      }
+
+      if (e.key === 'Escape') {
         // Only consume Escape when the year-options panel is actually open so
         // it just collapses the dropdown. Otherwise let the event bubble up so
         // the popover/document Escape handlers can close the whole calendar
@@ -4967,12 +5002,15 @@ const VALID_MOMENT_TOKENS = new Set([
           e.stopPropagation();
           this._closeYearDropdown();
         }
-      } else if (e.key === 'Tab') {
-        // Close dropdown when user tabs away
-        this._closeYearDropdown();
-        // Don't prevent default - allow normal tab navigation
+        return;
       }
-      // Tab navigation is handled by central focus management
+
+      if (e.key === 'Tab') {
+        // Close dropdown when user tabs away.
+        // Don't prevent default - allow normal tab navigation.
+        this._closeYearDropdown();
+      }
+      // Any other key: Tab navigation is handled by central focus management
     }
 
     // Helper to get focusable element by name
