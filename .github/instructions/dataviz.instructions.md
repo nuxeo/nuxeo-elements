@@ -21,6 +21,10 @@ Dataviz elements use the `AggregateDataBehavior` for shared query logic:
 - Depends on `@nuxeo/nuxeo-elements` (core) for server communication
 - Uses `@nuxeo/moment` for date handling
 
+## Style
+
+- Do not use optional chaining (`?.`) — Polymer lint/analyze predates it and drops elements from `analysis.json`. Use explicit `&&` guards instead.
+
 ## Testing
 
 - Test files: `dataviz/test/nuxeo-<element-name>.test.js`

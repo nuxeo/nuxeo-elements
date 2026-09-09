@@ -139,14 +139,14 @@ suite.skip('nuxeo-document-distribution-chart', () => {
     await flush();
 
     // check data transformation
-    assert.equal(4, distribution._chartData.children.length);
-    assert.equal('root', distribution._chartData.name);
-    assert.equal(3, distribution._chartData.children[0].children.length);
-    assert.equal(62, distribution._chartData.children[0].size);
-    assert.equal('workspaces', distribution._chartData.children[0].name);
+    assert.equal(distribution._chartData.children.length, 4);
+    assert.equal(distribution._chartData.name, 'root');
+    assert.equal(distribution._chartData.children[0].children.length, 3);
+    assert.equal(distribution._chartData.children[0].size, 62);
+    assert.equal(distribution._chartData.children[0].name, 'workspaces');
 
     // check chart
-    assert.equal(10, dom(distribution.root).querySelectorAll('path').length);
+    assert.equal(dom(distribution.root).querySelectorAll('path').length, 10);
   });
 
   test('includeAllSize', async () => {
@@ -175,13 +175,13 @@ suite.skip('nuxeo-document-distribution-chart', () => {
     await flush();
 
     // check data transformation
-    assert.equal(4, distribution._chartData.children.length);
-    assert.equal('root', distribution._chartData.name);
-    assert.equal(3, distribution._chartData.children[0].children.length);
-    assert.equal(28650901, distribution._chartData.children[0].size);
-    assert.equal('workspaces', distribution._chartData.children[0].name);
+    assert.equal(distribution._chartData.children.length, 4);
+    assert.equal(distribution._chartData.name, 'root');
+    assert.equal(distribution._chartData.children[0].children.length, 3);
+    assert.equal(distribution._chartData.children[0].size, 28650901);
+    assert.equal(distribution._chartData.children[0].name, 'workspaces');
 
     // check chart
-    assert.equal(5, dom(distribution.root).querySelectorAll('path').length);
+    assert.equal(dom(distribution.root).querySelectorAll('path').length, 5);
   });
 });

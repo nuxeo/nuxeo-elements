@@ -441,7 +441,13 @@ import '../nuxeo-icons.js';
           total += this._relativeLuminanceFromRgb(imageData[index], imageData[index + 1], imageData[index + 2]);
         }
         return pixels > 0 ? total / pixels : null;
-      } catch (_) {
+      } catch (error) {
+        // Reached from a requestAnimationFrame loop, so warn only once per instance: getImageData
+        // throws on every call once the canvas is tainted by a cross-origin image.
+        if (!this.__toolbarLuminanceWarned) {
+          this.__toolbarLuminanceWarned = true;
+          console.warn('nuxeo-image-viewer: failed to compute average toolbar luminance', error);
+        }
         return null;
       }
     }
