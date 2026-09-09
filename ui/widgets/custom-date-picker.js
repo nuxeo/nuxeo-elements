@@ -2444,62 +2444,62 @@ const VALID_MOMENT_TOKENS = new Set([
       return date.getFullYear();
     }
 
+    /**
+     * True when a document-level click originated inside this element: on the popover, the input
+     * wrapper or the field wrapper (or any descendant), anywhere along the event's composed path,
+     * or anywhere inside the shadow root.
+     *
+     * Extracted from _handleDocumentClick (SonarCloud S3776). The five checks and their order are
+     * unchanged; the sequential `if (!isInsideComponent && ...)` chain is just expressed as
+     * short-circuiting returns, which is equivalent because none of the checks has a side effect.
+     * The composed-path walk switches from `forEach` to `some` for the same reason.
+     *
+     * @param {Event} e
+     * @returns {boolean}
+     */
+    _isClickInsideComponent(e) {
+      const { target } = e;
+
+      // Elements this component owns and that a click may legitimately land on.
+      const owned = [
+        this.shadowRoot.querySelector('#calendarPopover'),
+        this.shadowRoot.querySelector('.input-wrapper'),
+        this.shadowRoot.querySelector('.field-wrapper'),
+      ];
+
+      // First to third check: the popover, the input wrapper, the field wrapper.
+      if (owned.some((node) => node && (target === node || node.contains(target)))) {
+        return true;
+      }
+
+      // Fourth check: walk the composed path, which sees through shadow boundaries that the
+      // target alone does not.
+      const path = e.composedPath ? e.composedPath() : [target];
+      if (
+        path.some((element) => element === this || (element.host && element.host === this) || owned.includes(element))
+      ) {
+        return true;
+      }
+
+      // Fifth check: anywhere inside our shadow root.
+      return !!this.shadowRoot && this.shadowRoot.contains(target);
+    }
+
     _handleDocumentClick(e) {
       if (!this._isCalendarOpen) return;
 
-      // Check if click target is within this element's shadow DOM or calendar popover
-      const { target } = e;
-      let isInsideComponent = false;
-
-      // Get all relevant elements
-      const calendarPopover = this.shadowRoot.querySelector('#calendarPopover');
-      const inputWrapper = this.shadowRoot.querySelector('.input-wrapper');
-      const fieldWrapper = this.shadowRoot.querySelector('.field-wrapper');
-
-      // First check: Is it within the calendar popover specifically?
-      if (calendarPopover && (target === calendarPopover || calendarPopover.contains(target))) {
-        isInsideComponent = true;
-      }
-
-      // Second check: Is it within the input wrapper area?
-      if (!isInsideComponent && inputWrapper && (target === inputWrapper || inputWrapper.contains(target))) {
-        isInsideComponent = true;
-      }
-
-      // Third check: Is it within the field wrapper?
-      if (!isInsideComponent && fieldWrapper && (target === fieldWrapper || fieldWrapper.contains(target))) {
-        isInsideComponent = true;
-      }
-
-      // Fourth check: Walk up the composed path to check for our component
-      if (!isInsideComponent) {
-        const path = e.composedPath ? e.composedPath() : [target];
-        path.forEach((element) => {
-          if (element === this || (element.host && element.host === this)) {
-            isInsideComponent = true;
-          }
-          // Also check specific elements
-          if (element === calendarPopover || element === inputWrapper || element === fieldWrapper) {
-            isInsideComponent = true;
-          }
-        });
-      }
-
-      // Fifth check: Is it within our shadow root?
-      if (!isInsideComponent && this.shadowRoot && this.shadowRoot.contains(target)) {
-        isInsideComponent = true;
-      }
-
       // Only close if we're absolutely sure it's outside and not during active interaction
-      if (!isInsideComponent && !this._interactingWithCalendar) {
-        this._closeCalendar();
+      if (this._isClickInsideComponent(e) || this._interactingWithCalendar) {
+        return;
+      }
 
-        // Also close year dropdown if open
-        const yearOptions = this.shadowRoot.querySelector('#yearOptions');
-        if (yearOptions) {
-          yearOptions.classList.remove('open');
-          this._isYearDropdownOpen = false;
-        }
+      this._closeCalendar();
+
+      // Also close year dropdown if open
+      const yearOptions = this.shadowRoot.querySelector('#yearOptions');
+      if (yearOptions) {
+        yearOptions.classList.remove('open');
+        this._isYearDropdownOpen = false;
       }
     }
 
