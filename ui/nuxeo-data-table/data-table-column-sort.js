@@ -81,7 +81,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         },
         path: String,
         order: {
-          type: Number,
+          type: String,
           computed: '_order(path, sortOrder, sortOrder.length)',
         },
         sortOrder: Array,
@@ -93,26 +93,26 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _order(path, sortOrder, length) {
-      if (length <= 1) {
+      // `sortOrder` is still unset during the initial property flush, and the sequence badge is
+      // only meaningful while several columns are sorted at once.
+      if (!sortOrder || length <= 1) {
         return '';
       }
 
-      for (let i = 0; i < length; i++) {
-        if (sortOrder[i].path === path) {
-          return i + 1;
-        }
-      }
+      const index = sortOrder.findIndex((entry) => entry.path === path);
+      return index === -1 ? '' : `${index + 1}`;
     }
 
     _sortOrderChanged(sortOrder) {
-      // TODO: if sortOrder for this column has been removed from outside, direction is not updated.
-      if (sortOrder.base) {
-        sortOrder.base.forEach((sort) => {
-          if (sort.path === this.path) {
-            this.direction = sort.direction;
-          }
-        });
+      if (!sortOrder.base) {
+        return;
       }
+
+      // `sortOrder` may be replaced from outside the element, for instance when a saved content
+      // view is restored, so the direction has to be cleared when this column is no longer part
+      // of it. Leaving it stale would keep both the arrow and the aria-label out of sync.
+      const sort = sortOrder.base.find((entry) => entry.path === this.path);
+      this.direction = sort ? sort.direction : null;
     }
 
     _sort() {

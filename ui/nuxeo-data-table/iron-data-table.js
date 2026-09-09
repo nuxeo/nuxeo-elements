@@ -901,12 +901,10 @@ function hasRowDetailTemplate(node) {
         // notifyResize() doesn't do anything on iOS if the viewport size hasn't changed
         // so calling updateSizeForItem(item) is more reliable.
 
-        // TODO: However, since we're reusing the same items array in most cases,
-        // the _collection item map inside <iron-list> gets out of sync and
-        // that breaks things like selection and updateSizeForItem.
-        // To mitigate the issue, we'll update height of every row element.
-        // Can be optimized later if needed to update only the row that has
-        // expanded or collapsed.
+        // However, since we're reusing the same items array in most cases, the _collection
+        // item map inside <iron-list> gets out of sync and that breaks things like selection
+        // and updateSizeForItem. Every row element is therefore re-measured, rather than only
+        // the row that has expanded or collapsed.
         const itemSet = [];
         for (let i = 0; i < this.$.list._physicalItems.length; i++) {
           itemSet.push(i);
