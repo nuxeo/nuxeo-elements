@@ -4514,55 +4514,66 @@ const VALID_MOMENT_TOKENS = new Set([
       return this._getLocalizedText('required');
     }
 
+    /**
+     * Which of the `min`/`max` bounds `currentDate` violates, or null when it is in range.
+     *
+     * Extracted from _getValidity (SonarCloud S3776). Both of the original's blocks set an
+     * identical errorReason and errorMessage, so the caller does not need to know which bound it
+     * was; the min check still runs first, and each bound is still only tested when set.
+     *
+     * @param {Object} currentDate A moment instance.
+     * @returns {?string} 'min', 'max' or null.
+     */
+    _getViolatedBound(currentDate) {
+      if (this.min && currentDate.isBefore(this._moment(this._parseDateOnly(this.min)), 'day')) {
+        return 'min';
+      }
+      if (this.max && currentDate.isAfter(this._moment(this._parseDateOnly(this.max)), 'day')) {
+        return 'max';
+      }
+      return null;
+    }
+
     _getValidity() {
+      const isEmpty = !this.value || this.value.trim() === '';
+
       // Check required field first
-      if (this.required && (!this.value || this.value.trim() === '')) {
+      if (this.required && isEmpty) {
         this.errorReason = 'required';
         // Generate dynamic error message using field label
         this.errorMessage = this._generateRequiredMessage();
         return false;
       }
 
-      // If field is not required and empty, it's valid
-      if (!this.required && (!this.value || this.value.trim() === '')) {
+      // If field is not required and empty, it's valid. Reaching here already rules out
+      // `required && isEmpty`, so isEmpty on its own implies the original's `!this.required`.
+      if (isEmpty) {
         this.errorReason = '';
         this.errorMessage = '';
         return true;
       }
 
-      // If we have a value, check if it's a valid date
-      if (this.value) {
-        const currentDate = this._moment(this.value);
+      // Past the guards above, this.value is necessarily a non-blank string, so the original's
+      // `if (this.value)` wrapper could never be false here and has been dropped.
+      const currentDate = this._moment(this.value);
 
-        // Check if the date itself is valid
-        if (!currentDate.isValid()) {
-          this.errorReason = 'invalidDate';
-          this.errorMessage = this._getLocalizedText('invalidDate');
-          return false;
-        }
+      // Check if the date itself is valid
+      if (!currentDate.isValid()) {
+        this.errorReason = 'invalidDate';
+        this.errorMessage = this._getLocalizedText('invalidDate');
+        return false;
+      }
 
-        // Get current locale format for error messages
-        const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
-        moment.locale(userLocale);
-        // Check min constraint
-        if (this.min) {
-          const minDate = this._moment(this._parseDateOnly(this.min));
-          if (currentDate.isBefore(minDate, 'day')) {
-            this.errorReason = 'outOfRange';
-            this.errorMessage = this._buildOutOfRangeMessage(currentDate.toDate());
-            return false;
-          }
-        }
+      // Get current locale format for error messages. This must stay ahead of the bound check
+      // below: _buildOutOfRangeMessage formats against moment's active locale.
+      const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
+      moment.locale(userLocale);
 
-        // Check max constraint
-        if (this.max) {
-          const maxDate = this._moment(this._parseDateOnly(this.max));
-          if (currentDate.isAfter(maxDate, 'day')) {
-            this.errorReason = 'outOfRange';
-            this.errorMessage = this._buildOutOfRangeMessage(currentDate.toDate());
-            return false;
-          }
-        }
+      // Check min/max constraints
+      if (this._getViolatedBound(currentDate)) {
+        this.errorReason = 'outOfRange';
+        this.errorMessage = this._buildOutOfRangeMessage(currentDate.toDate());
+        return false;
       }
 
       // If we reach here, the date is valid - clear any error state
