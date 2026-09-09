@@ -4416,37 +4416,61 @@ const VALID_MOMENT_TOKENS = new Set([
     /**
      * Update error display in DOM
      */
+    /**
+     * What #errorText should do for the given validity: show a message, clear itself, or be left
+     * exactly as it is.
+     *
+     * Extracted from _updateErrorDisplay (SonarCloud S3776). Reaching past the first check means
+     * `!isValid && this._showErrors`, which is precisely the original's outer condition, so the
+     * two message branches below are unchanged and in the same order.
+     *
+     * The 'keep' case is not an oversight. A field that is invalid and showing errors but has
+     * neither a required-field violation nor an `errorMessage` fell through both inner branches
+     * and kept whatever was already on screen. That is behaviour, and it is preserved here.
+     *
+     * @param {boolean} isValid
+     * @returns {{action: string, message: (string|undefined)}} action is 'show', 'clear' or 'keep'.
+     */
+    _getErrorDisplayAction(isValid) {
+      // Clear errors when valid OR when _showErrors is false (i.e. before the first submit)
+      if (isValid || !this._showErrors) {
+        return { action: 'clear' };
+      }
+      if (this.required && (!this.value || this.value.trim() === '')) {
+        // Use dynamic error message for required fields
+        return { action: 'show', message: this._generateRequiredMessage() };
+      }
+      if (this.errorMessage) {
+        // Use the current error message for other validation errors
+        return { action: 'show', message: this.errorMessage };
+      }
+      return { action: 'keep' };
+    }
+
     _updateErrorDisplay(isValid) {
       const errorEl = this.shadowRoot.querySelector('#errorText');
+      // Both of the original's branches were guarded on errorEl, so a missing element did nothing.
+      if (!errorEl) {
+        return;
+      }
 
-      if (!isValid && this._showErrors && errorEl) {
-        // Show error message only if _showErrors is true (after form submit)
-        if (this.required && (!this.value || this.value.trim() === '')) {
-          // Use dynamic error message for required fields
-          errorEl.textContent = this._generateRequiredMessage();
-          errorEl.hidden = false;
+      const { action, message } = this._getErrorDisplayAction(isValid);
 
-          // Ensure invalid attribute is set on host
-          if (!this.hasAttribute('invalid')) {
-            this.setAttribute('invalid', '');
-          }
-        } else if (this.errorMessage) {
-          // Use the current error message for other validation errors
-          errorEl.textContent = this.errorMessage;
-          errorEl.hidden = false;
+      if (action === 'show') {
+        errorEl.textContent = message;
+        errorEl.hidden = false;
 
-          // Ensure invalid attribute is set on host
-          if (!this.hasAttribute('invalid')) {
-            this.setAttribute('invalid', '');
-          }
+        // Ensure invalid attribute is set on host
+        if (!this.hasAttribute('invalid')) {
+          this.setAttribute('invalid', '');
         }
-      } else if ((isValid || !this._showErrors) && errorEl) {
-        // Clear errors when valid OR when _showErrors is false
+      } else if (action === 'clear') {
         errorEl.hidden = true;
         if (this.hasAttribute('invalid')) {
           this.removeAttribute('invalid');
         }
       }
+      // action === 'keep': leave the element exactly as it is.
     }
 
     /**
