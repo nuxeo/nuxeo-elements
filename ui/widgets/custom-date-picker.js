@@ -32,6 +32,35 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 // collapsing the popover during month navigation.
 const FOCUS_SUPPRESSION_MS = 200;
 
+// Formats tried, in order, when the primary (property or locale) format does not match what the
+// user typed. Hoisted to module scope so the list is not rebuilt on every keystroke; the contents
+// and their order are unchanged from the array that lived inside _parseUserInput.
+const COMMON_INPUT_FORMATS = [
+  'DD/MM/YYYY',
+  'DD-MM-YYYY',
+  'DD.MM.YYYY',
+  'DD/MM/YY',
+  'DD-MM-YY',
+  'DD.MM.YY',
+  'MM/DD/YYYY',
+  'MM-DD-YYYY',
+  'MM.DD.YYYY',
+  'MM/DD/YY',
+  'MM-DD-YY',
+  'MM.DD.YY',
+  'YYYY-MM-DD',
+  'YYYY/MM/DD',
+  'YYYY.MM.DD',
+  'DD MMM YYYY',
+  'DD MMMM YYYY',
+  'MMM DD, YYYY',
+  'MMMM DD, YYYY',
+  'DD/MM',
+  'MM/DD',
+  'DD-MM',
+  'MM-DD',
+];
+
 // Moment tokens accepted in the `format` property (extend if needed). A Set because it is
 // only ever used for membership tests; hoisted to module scope so it is built once.
 const VALID_MOMENT_TOKENS = new Set([
@@ -5112,6 +5141,56 @@ const VALID_MOMENT_TOKENS = new Set([
         .replace(/m(?![a-zA-Z])/g, 'M');
     }
 
+    /**
+     * The format to try first for user input: the explicit `format` property when it is a usable
+     * moment pattern, otherwise the active locale's short date format.
+     *
+     * Extracted from _parseUserInput (SonarCloud S3776). The side effect of flagging an unusable
+     * `format` is kept here rather than lifted out, because the original set `invalid` and
+     * `errorMessage` while still falling back to the locale format, and both halves matter.
+     *
+     * @returns {string} A moment format string.
+     */
+    _resolvePrimaryInputFormat() {
+      const localeFormat = moment.localeData().longDateFormat('L');
+      // No format, or a mixed-case one we cannot trust: use the locale format as fallback.
+      if (!this.format || this._isMixedCaseFormat(this.format)) {
+        return localeFormat;
+      }
+      const normalizedFormat = this._normalizeFormat(this.format);
+      if (this._isValidMomentFormat(normalizedFormat)) {
+        return normalizedFormat;
+      }
+      this.invalid = true;
+      this.errorMessage = `Invalid date format "${this.format}"`;
+      return localeFormat;
+    }
+
+    /**
+     * Turns a moment parse result into a start-of-day `Date`, or null when it is unusable.
+     *
+     * Extracted from _parseUserInput (SonarCloud S3776), where this block appeared four times.
+     * `requirePlausibleYear` exists because the four copies were not identical: the strict
+     * primary-format path returned whatever moment produced, while the three recovery paths also
+     * required the year to fall inside 1900-2200.
+     *
+     * @param {Object} momentDate A moment instance.
+     * @param {boolean} requirePlausibleYear Apply the 1900-2200 sanity window.
+     * @returns {?Date}
+     */
+    _momentToStartOfDay(momentDate, requirePlausibleYear) {
+      if (!momentDate.isValid()) {
+        return null;
+      }
+      const date = momentDate.toDate();
+      date.setHours(0, 0, 0, 0);
+      // Verify it's a logical date
+      if (requirePlausibleYear && (date.getFullYear() < 1900 || date.getFullYear() > 2200)) {
+        return null;
+      }
+      return date;
+    }
+
     // Professional date parser for user input with comprehensive format support
     _parseUserInput(inputString) {
       if (!inputString || typeof inputString !== 'string') return null;
@@ -5121,95 +5200,33 @@ const VALID_MOMENT_TOKENS = new Set([
 
       try {
         // Get user's locale with better fallback
-        const userLocale = this._getUserLocale();
-        moment.locale(userLocale);
+        moment.locale(this._getUserLocale());
 
-        let primaryFormat = moment.localeData().longDateFormat('L');
+        const primaryFormat = this._resolvePrimaryInputFormat();
 
-        if (this.format) {
-          // Check for mixed case format and fallback to locale format if detected
-          if (this._isMixedCaseFormat(this.format)) {
-            // Mixed format detected, use locale format as fallback
-            primaryFormat = moment.localeData().longDateFormat('L');
-          } else {
-            const normalizedFormat = this._normalizeFormat(this.format);
-
-            if (this._isValidMomentFormat(normalizedFormat)) {
-              primaryFormat = normalizedFormat;
-            } else {
-              this.invalid = true;
-              this.errorMessage = `Invalid date format "${this.format}"`;
-            }
-          }
+        // Strict parsing with primary format. The input is already in the expected shape, so it is
+        // kept verbatim rather than reformatted, and the plausible-year window is deliberately not
+        // applied here - matching the original, which only checked the year on the recovery paths.
+        const exact = this._momentToStartOfDay(this._moment(trimmedInput, primaryFormat, true), false);
+        if (exact) {
+          return { date: exact, isExactFormat: true };
         }
 
-        // Strict parsing with primary format
-        let momentDate = this._moment(trimmedInput, primaryFormat, true);
-
-        if (momentDate.isValid()) {
-          const date = momentDate.toDate();
-          date.setHours(0, 0, 0, 0);
-          return { date, isExactFormat: true };
-        }
-
-        // Lenient parsing with primary format
-        momentDate = this._moment(trimmedInput, primaryFormat, false);
-
-        if (momentDate.isValid()) {
-          const date = momentDate.toDate();
-          date.setHours(0, 0, 0, 0);
-          // Verify it's a logical date
-          if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
-            return { date, isExactFormat: false };
-          }
-        }
-
-        // Fallback: Try common date formats if locale parsing fails
-        const commonFormats = [
-          'DD/MM/YYYY',
-          'DD-MM-YYYY',
-          'DD.MM.YYYY',
-          'DD/MM/YY',
-          'DD-MM-YY',
-          'DD.MM.YY',
-          'MM/DD/YYYY',
-          'MM-DD-YYYY',
-          'MM.DD.YYYY',
-          'MM/DD/YY',
-          'MM-DD-YY',
-          'MM.DD.YY',
-          'YYYY-MM-DD',
-          'YYYY/MM/DD',
-          'YYYY.MM.DD',
-          'DD MMM YYYY',
-          'DD MMMM YYYY',
-          'MMM DD, YYYY',
-          'MMMM DD, YYYY',
-          'DD/MM',
-          'MM/DD',
-          'DD-MM',
-          'MM-DD',
+        /*
+         * Everything below is a recovery attempt, in the original's order: lenient parsing with the
+         * primary format, then each common format strictly, then moment's own natural-language
+         * parsing. All of them get reformatted for display, so none counts as an exact-format
+         * match, and all apply the 1900-2200 plausible-year window.
+         */
+        const attempts = [
+          () => this._moment(trimmedInput, primaryFormat, false),
+          ...COMMON_INPUT_FORMATS.map((format) => () => this._moment(trimmedInput, format, true)),
+          () => this._moment(trimmedInput),
         ];
 
-        for (const commonFormat of commonFormats) {
-          momentDate = this._moment(trimmedInput, commonFormat, true);
-          if (momentDate.isValid()) {
-            const date = momentDate.toDate();
-            date.setHours(0, 0, 0, 0);
-
-            if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
-              return { date, isExactFormat: false };
-            }
-          }
-        }
-
-        // Last resort: Try moment's natural language parsing
-        momentDate = this._moment(trimmedInput);
-        if (momentDate.isValid()) {
-          const date = momentDate.toDate();
-          date.setHours(0, 0, 0, 0);
-          // Verify it's a logical date
-          if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
+        for (const attempt of attempts) {
+          const date = this._momentToStartOfDay(attempt(), true);
+          if (date) {
             return { date, isExactFormat: false };
           }
         }
