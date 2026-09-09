@@ -1761,31 +1761,42 @@ const VALID_MOMENT_TOKENS = new Set([
     }
 
     /**
+     * A `min`/`max` bound as a Date, or null when it is absent or unparseable.
+     *
+     * Collapsing "unset" and "invalid" to null is what lets callers drop the Number.isNaN guards:
+     * the original ignored an unparseable bound (its NaN comparisons were false either way), and a
+     * null bound is ignored the same way.
+     *
+     * @param {?string} value
+     * @returns {?Date}
+     */
+    _parseBoundDate(value) {
+      if (!value) {
+        return null;
+      }
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    /**
      * The 1900-2099 year span, narrowed to whatever `min`/`max` allow.
      *
-     * Extracted from _generateMonthYearOptions (SonarCloud S3776). The body is moved verbatim: an
-     * unparseable `min`/`max` is still ignored via the Number.isNaN guard rather than collapsing
-     * the range to nothing.
+     * Extracted from _generateMonthYearOptions (SonarCloud S3776).
      *
+     * @param {?Date} minDate
+     * @param {?Date} maxDate
      * @returns {{startYear: number, endYear: number}}
      */
-    _getMonthYearRange() {
+    _getMonthYearRange(minDate, maxDate) {
       let startYear = 1900;
       let endYear = 2099;
 
       // Apply min/max constraints if specified
-      if (this.min) {
-        const minDate = new Date(this.min);
-        if (!Number.isNaN(minDate.getTime())) {
-          startYear = Math.max(startYear, minDate.getFullYear());
-        }
+      if (minDate) {
+        startYear = Math.max(startYear, minDate.getFullYear());
       }
-
-      if (this.max) {
-        const maxDate = new Date(this.max);
-        if (!Number.isNaN(maxDate.getTime())) {
-          endYear = Math.min(endYear, maxDate.getFullYear());
-        }
+      if (maxDate) {
+        endYear = Math.min(endYear, maxDate.getFullYear());
       }
 
       return { startYear, endYear };
@@ -1797,31 +1808,38 @@ const VALID_MOMENT_TOKENS = new Set([
      *
      * Extracted from _generateMonthYearOptions (SonarCloud S3776). Equivalent to the two inline
      * checks it replaces: the original's `this.max && isValidMonthYear` guard only short-circuited
-     * the max test once min had already failed, which the early return here does directly. An
-     * invalid `min`/`max` yields a NaN comparison, which is false either way, so such a bound is
-     * ignored exactly as before.
+     * the max test once min had already failed, which the early return here does directly.
+     *
+     * The bounds are passed in already parsed. This runs up to 2400 times per call, and building
+     * them here meant re-parsing `min` and `max` on every one of those iterations - which the
+     * original did too, so this is a straight saving rather than a behaviour change.
      *
      * @param {number} year
      * @param {number} month Zero-based, as Date uses.
+     * @param {?Date} minDate
+     * @param {?Date} maxDate
      * @returns {boolean}
      */
-    _isMonthYearInRange(year, month) {
+    _isMonthYearInRange(year, month, minDate, maxDate) {
       // Last day of the month, i.e. day 0 of the next one.
-      if (this.min && new Date(year, month + 1, 0) < new Date(this.min)) {
+      if (minDate && new Date(year, month + 1, 0) < minDate) {
         return false;
       }
-      return !(this.max && new Date(year, month, 1) > new Date(this.max));
+      return !(maxDate && new Date(year, month, 1) > maxDate);
     }
 
     _generateMonthYearOptions() {
-      // Use 1900-2099 range but respect min/max constraints
-      const { startYear, endYear } = this._getMonthYearRange();
+      // Use 1900-2099 range but respect min/max constraints. Both bounds are parsed once here
+      // rather than inside the loop below.
+      const minDate = this._parseBoundDate(this.min);
+      const maxDate = this._parseBoundDate(this.max);
+      const { startYear, endYear } = this._getMonthYearRange(minDate, maxDate);
 
       this._monthYearOptions = [];
       for (let year = startYear; year <= endYear; year++) {
         for (let month = 0; month < 12; month++) {
           // Check if this month-year combination is within min/max range
-          if (this._isMonthYearInRange(year, month)) {
+          if (this._isMonthYearInRange(year, month, minDate, maxDate)) {
             this._monthYearOptions.push({
               label: new Intl.DateTimeFormat(this._locale, {
                 month: 'long',
@@ -4443,9 +4461,6 @@ const VALID_MOMENT_TOKENS = new Set([
     }
 
     /**
-     * Update error display in DOM
-     */
-    /**
      * What #errorText should do for the given validity: show a message, clear itself, or be left
      * exactly as it is.
      *
@@ -4476,6 +4491,11 @@ const VALID_MOMENT_TOKENS = new Set([
       return { action: 'keep' };
     }
 
+    /**
+     * Update error display in DOM, applying whatever _getErrorDisplayAction decides.
+     *
+     * @param {boolean} isValid
+     */
     _updateErrorDisplay(isValid) {
       const errorEl = this.shadowRoot.querySelector('#errorText');
       // Both of the original's branches were guarded on errorEl, so a missing element did nothing.

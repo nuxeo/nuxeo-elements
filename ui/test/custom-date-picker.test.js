@@ -2299,32 +2299,6 @@ suite('custom-date-picker extras', () => {
     });
   });
 
-  suite('_handleCalendarIconKeydown', () => {
-    test('opens calendar on Enter', async () => {
-      const el = await newPicker();
-      el._handleCalendarIconKeydown({ key: 'Enter', preventDefault() {}, stopPropagation() {} });
-      expect(el._isCalendarOpen).to.be.true;
-    });
-
-    test('opens calendar on Space', async () => {
-      const el = await newPicker();
-      el._handleCalendarIconKeydown({ key: ' ', preventDefault() {}, stopPropagation() {} });
-      expect(el._isCalendarOpen).to.be.true;
-    });
-
-    test('opens calendar on ArrowDown', async () => {
-      const el = await newPicker();
-      el._handleCalendarIconKeydown({ key: 'ArrowDown', preventDefault() {}, stopPropagation() {} });
-      expect(el._isCalendarOpen).to.be.true;
-    });
-
-    test('opens calendar on F4', async () => {
-      const el = await newPicker();
-      el._handleCalendarIconKeydown({ key: 'F4', preventDefault() {}, stopPropagation() {} });
-      expect(el._isCalendarOpen).to.be.true;
-    });
-  });
-
   suite('resetErrorState', () => {
     test('clears all error flags and DOM', async () => {
       const el = await newPicker();
@@ -4949,54 +4923,6 @@ suite('custom-date-picker extras', () => {
   });
 
   suite('_handleCalendarIconKeydown', () => {
-    test('opens calendar on Enter', async () => {
-      const el = await newPicker();
-      const spy = sinon.spy(el, '_openCalendar');
-      el._handleCalendarIconKeydown({
-        key: 'Enter',
-        preventDefault() {},
-        stopPropagation() {},
-      });
-      expect(spy).to.have.been.called;
-      spy.restore();
-    });
-
-    test('opens calendar on Space', async () => {
-      const el = await newPicker();
-      const spy = sinon.spy(el, '_openCalendar');
-      el._handleCalendarIconKeydown({
-        key: ' ',
-        preventDefault() {},
-        stopPropagation() {},
-      });
-      expect(spy).to.have.been.called;
-      spy.restore();
-    });
-
-    test('opens calendar on ArrowDown', async () => {
-      const el = await newPicker();
-      const spy = sinon.spy(el, '_openCalendar');
-      el._handleCalendarIconKeydown({
-        key: 'ArrowDown',
-        preventDefault() {},
-        stopPropagation() {},
-      });
-      expect(spy).to.have.been.called;
-      spy.restore();
-    });
-
-    test('opens calendar on F4', async () => {
-      const el = await newPicker();
-      const spy = sinon.spy(el, '_openCalendar');
-      el._handleCalendarIconKeydown({
-        key: 'F4',
-        preventDefault() {},
-        stopPropagation() {},
-      });
-      expect(spy).to.have.been.called;
-      spy.restore();
-    });
-
     // ELEMENTS-2077: the Enter/Space and ArrowDown/F4 branches of _handleCalendarIconKeydown were
     // merged into a single condition (SonarCloud S1871). Enter/Space activate the icon and
     // ArrowDown/F4 are the WAI-ARIA combobox shortcuts, so all four must still open the calendar
@@ -5024,18 +4950,6 @@ suite('custom-date-picker extras', () => {
         expect(preventDefault.callCount, 'preventDefault').to.equal(0);
         expect(stopPropagation.callCount, 'stopPropagation').to.equal(0);
       });
-    });
-
-    test('does nothing on unrelated key', async () => {
-      const el = await newPicker();
-      const spy = sinon.spy(el, '_openCalendar');
-      el._handleCalendarIconKeydown({
-        key: 'a',
-        preventDefault() {},
-        stopPropagation() {},
-      });
-      expect(spy).not.to.have.been.called;
-      spy.restore();
     });
   });
 
