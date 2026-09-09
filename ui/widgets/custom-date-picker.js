@@ -3251,6 +3251,28 @@ const VALID_MOMENT_TOKENS = new Set([
       }
     }
 
+    // True when `date` falls inside the month currently rendered in the grid. Extracted from
+    // _handleGridKeydown (SonarCloud S3776), where this pair of comparisons appeared seven times.
+    _isInViewedMonth(date) {
+      return date.getMonth() === this._viewDate.getMonth() && date.getFullYear() === this._viewDate.getFullYear();
+    }
+
+    /**
+     * Applies a focus move that must not cross a month boundary: the move lands only when the
+     * target day is still inside the month on screen, otherwise nothing happens.
+     *
+     * Extracted from _handleGridKeydown (SonarCloud S3776), where the six arrow/Home/End cases
+     * repeated this block verbatim.
+     *
+     * @param {Date} targetDate
+     */
+    _focusDateWithinViewedMonth(targetDate) {
+      // Only navigate within current month - don't allow month transitions
+      if (this._isInViewedMonth(targetDate)) {
+        this._focusDate(targetDate, false);
+      }
+    }
+
     _handleGridKeydown(e) {
       const currentButton = e.target;
       if (!currentButton.classList.contains('calendar-day')) return;
@@ -3258,106 +3280,48 @@ const VALID_MOMENT_TOKENS = new Set([
       const currentDate = new Date(currentButton.dataset.date);
       const targetDate = new Date(currentDate);
 
+      /*
+       * Day offsets for the keys that move focus inside the month on screen. Replaces six
+       * switch cases that differed only by this number (SonarCloud S3776) — the offsets are
+       * exactly those the cases used, and every one of them ran the same
+       * "move, then focus if still in the viewed month" block that
+       * _focusDateWithinViewedMonth now holds.
+       *
+       * Home/End are relative to the focused day's weekday, so the table is rebuilt per event
+       * rather than hoisted. A Map (not an object literal) so an unrelated `e.key` such as
+       * "toString" cannot match through Object.prototype, and without needing Object.hasOwn,
+       * which is ES2022 and above this repo's runtime floor (see S6653 on ELEMENTS-2077).
+       */
+      const dayOffsets = new Map([
+        ['ArrowLeft', -1],
+        ['ArrowRight', 1],
+        ['ArrowUp', -7],
+        ['ArrowDown', 7],
+        ['Home', -currentDate.getDay()],
+        ['End', 6 - currentDate.getDay()],
+      ]);
+
       // Stop bubbling so parent lists (e.g. iron-list in nuxeo-data-table) do not handle
       // Arrow keys / Enter and steal focus while the calendar is open (WEBUI-1986 follow-up).
+      if (dayOffsets.has(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        targetDate.setDate(currentDate.getDate() + dayOffsets.get(e.key));
+        this._focusDateWithinViewedMonth(targetDate);
+        return;
+      }
+
       switch (e.key) {
         case 'Enter':
         case ' ':
           e.preventDefault();
           e.stopPropagation();
-          // Allow selection of any current month date, not just non-empty
-          if (!currentButton.disabled && currentButton.classList.contains('calendar-day')) {
-            // Check if it's a valid current month date
-            const isCurrentMonth =
-              currentDate.getMonth() === this._viewDate.getMonth() &&
-              currentDate.getFullYear() === this._viewDate.getFullYear();
-            if (isCurrentMonth) {
-              this._selectDate(currentDate);
-            }
+          // Allow selection of any current month date, not just non-empty.
+          // The classList re-check the original had here is guaranteed by the guard above.
+          if (!currentButton.disabled && this._isInViewedMonth(currentDate)) {
+            this._selectDate(currentDate);
           }
           break;
-
-        case 'ArrowLeft':
-          e.preventDefault();
-          e.stopPropagation();
-          targetDate.setDate(currentDate.getDate() - 1);
-          // Only navigate within current month - don't allow month transitions
-          if (
-            targetDate.getMonth() === this._viewDate.getMonth() &&
-            targetDate.getFullYear() === this._viewDate.getFullYear()
-          ) {
-            this._focusDate(targetDate, false);
-          }
-          break;
-
-        case 'ArrowRight':
-          e.preventDefault();
-          e.stopPropagation();
-          targetDate.setDate(currentDate.getDate() + 1);
-          // Only navigate within current month - don't allow month transitions
-          if (
-            targetDate.getMonth() === this._viewDate.getMonth() &&
-            targetDate.getFullYear() === this._viewDate.getFullYear()
-          ) {
-            this._focusDate(targetDate, false);
-          }
-          break;
-
-        case 'ArrowUp':
-          e.preventDefault();
-          e.stopPropagation();
-          targetDate.setDate(currentDate.getDate() - 7);
-          // Only navigate within current month - don't allow month transitions
-          if (
-            targetDate.getMonth() === this._viewDate.getMonth() &&
-            targetDate.getFullYear() === this._viewDate.getFullYear()
-          ) {
-            this._focusDate(targetDate, false);
-          }
-          break;
-
-        case 'ArrowDown':
-          e.preventDefault();
-          e.stopPropagation();
-          targetDate.setDate(currentDate.getDate() + 7);
-          // Only navigate within current month - don't allow month transitions
-          if (
-            targetDate.getMonth() === this._viewDate.getMonth() &&
-            targetDate.getFullYear() === this._viewDate.getFullYear()
-          ) {
-            this._focusDate(targetDate, false);
-          }
-          break;
-
-        case 'Home': {
-          e.preventDefault();
-          e.stopPropagation();
-          const dayOfWeek = currentDate.getDay();
-          targetDate.setDate(currentDate.getDate() - dayOfWeek);
-          // Only navigate within current month - don't allow month transitions
-          if (
-            targetDate.getMonth() === this._viewDate.getMonth() &&
-            targetDate.getFullYear() === this._viewDate.getFullYear()
-          ) {
-            this._focusDate(targetDate, false);
-          }
-          break;
-        }
-
-        case 'End': {
-          e.preventDefault();
-          e.stopPropagation();
-          const daysToEnd = 6 - currentDate.getDay();
-          targetDate.setDate(currentDate.getDate() + daysToEnd);
-          // Only navigate within current month - don't allow month transitions
-          if (
-            targetDate.getMonth() === this._viewDate.getMonth() &&
-            targetDate.getFullYear() === this._viewDate.getFullYear()
-          ) {
-            this._focusDate(targetDate, false);
-          }
-          break;
-        }
 
         case 'PageUp':
           e.preventDefault();
