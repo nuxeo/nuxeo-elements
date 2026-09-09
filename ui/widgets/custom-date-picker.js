@@ -1731,8 +1731,16 @@ const VALID_MOMENT_TOKENS = new Set([
       }
     }
 
-    _generateMonthYearOptions() {
-      // Use 1900-2099 range but respect min/max constraints
+    /**
+     * The 1900-2099 year span, narrowed to whatever `min`/`max` allow.
+     *
+     * Extracted from _generateMonthYearOptions (SonarCloud S3776). The body is moved verbatim: an
+     * unparseable `min`/`max` is still ignored via the Number.isNaN guard rather than collapsing
+     * the range to nothing.
+     *
+     * @returns {{startYear: number, endYear: number}}
+     */
+    _getMonthYearRange() {
       let startYear = 1900;
       let endYear = 2099;
 
@@ -1751,37 +1759,45 @@ const VALID_MOMENT_TOKENS = new Set([
         }
       }
 
+      return { startYear, endYear };
+    }
+
+    /**
+     * True when any day of `year`/`month` is still selectable: the month's last day is on or after
+     * `min`, and its first day is on or before `max`.
+     *
+     * Extracted from _generateMonthYearOptions (SonarCloud S3776). Equivalent to the two inline
+     * checks it replaces: the original's `this.max && isValidMonthYear` guard only short-circuited
+     * the max test once min had already failed, which the early return here does directly. An
+     * invalid `min`/`max` yields a NaN comparison, which is false either way, so such a bound is
+     * ignored exactly as before.
+     *
+     * @param {number} year
+     * @param {number} month Zero-based, as Date uses.
+     * @returns {boolean}
+     */
+    _isMonthYearInRange(year, month) {
+      // Last day of the month, i.e. day 0 of the next one.
+      if (this.min && new Date(year, month + 1, 0) < new Date(this.min)) {
+        return false;
+      }
+      return !(this.max && new Date(year, month, 1) > new Date(this.max));
+    }
+
+    _generateMonthYearOptions() {
+      // Use 1900-2099 range but respect min/max constraints
+      const { startYear, endYear } = this._getMonthYearRange();
+
       this._monthYearOptions = [];
       for (let year = startYear; year <= endYear; year++) {
         for (let month = 0; month < 12; month++) {
-          const date = new Date(year, month, 1);
-
           // Check if this month-year combination is within min/max range
-          let isValidMonthYear = true;
-
-          if (this.min) {
-            const minDate = new Date(this.min);
-            const endOfMonth = new Date(year, month + 1, 0); // Last day of the month
-            if (endOfMonth < minDate) {
-              isValidMonthYear = false;
-            }
-          }
-
-          if (this.max && isValidMonthYear) {
-            const maxDate = new Date(this.max);
-            if (date > maxDate) {
-              isValidMonthYear = false;
-            }
-          }
-
-          if (isValidMonthYear) {
-            const label = new Intl.DateTimeFormat(this._locale, {
-              month: 'long',
-              year: 'numeric',
-            }).format(date);
-
+          if (this._isMonthYearInRange(year, month)) {
             this._monthYearOptions.push({
-              label,
+              label: new Intl.DateTimeFormat(this._locale, {
+                month: 'long',
+                year: 'numeric',
+              }).format(new Date(year, month, 1)),
               value: `${year}-${month}`,
               year,
               month,
