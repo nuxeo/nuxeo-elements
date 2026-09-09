@@ -7579,3 +7579,485 @@ suite('custom-date-picker error recovery (ELEMENTS-2077)', () => {
     expect(warn.callCount, 'dedupe is per element instance').to.equal(2);
   });
 });
+
+/*
+ * Characterisation tests for the code paths touched by ELEMENTS-2077's S3776 refactors.
+ *
+ * These exist because the refactored functions had branches that no test exercised - most
+ * starkly _moveYearOptionFocus, where only 2 of 15 lines ran. A green suite therefore said
+ * nothing about whether those extractions preserved behaviour.
+ *
+ * Every test below drives a PRE-EXISTING entry point (_handleGridKeydown,
+ * _handleYearDropdownKeydown, _updateErrorDisplay, _parseUserInput) rather than any newly
+ * extracted helper, so this file runs unchanged against both the refactored code and the
+ * commit before it. Green on both is the actual evidence of equivalence.
+ */
+suite('custom-date-picker characterisation (ELEMENTS-2077 S3776)', () => {
+  // A minimal keydown stand-in: the handlers only ever read `key` and `target`, and call
+  // preventDefault/stopPropagation. Mirrors makeEscapeEvent() above.
+  function keyEvent(key, target) {
+    let prevented = false;
+    let stopped = false;
+    return {
+      key,
+      target,
+      preventDefault() {
+        prevented = true;
+      },
+      stopPropagation() {
+        stopped = true;
+      },
+      wasPrevented: () => prevented,
+      wasStopped: () => stopped,
+    };
+  }
+
+  suite('year dropdown roving focus', () => {
+    // min/max narrow _generateYearOptions to 2020..2029, so index arithmetic is assertable.
+    let el;
+    let buttons;
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker min="2020-01-01" max="2029-12-31"></custom-date-picker>
+      `);
+      await flush();
+      el._viewDate = new Date(2024, 0, 1);
+      el._openCalendar();
+      await flush();
+
+      const panel = el.shadowRoot.querySelector('#yearOptions');
+      panel.classList.add('open');
+      el._isYearDropdownOpen = true;
+
+      buttons = Array.from(el.shadowRoot.querySelectorAll('.year-option'));
+      buttons.forEach((b, i) => {
+        b.tabIndex = i === 0 ? 0 : -1;
+      });
+    });
+
+    const focusedIndex = () => buttons.findIndex((b) => b.tabIndex === 0);
+
+    test('renders one option per year in the min/max range', () => {
+      expect(buttons.length).to.equal(10);
+      expect(buttons[0].textContent.trim()).to.equal('2020');
+      expect(buttons[9].textContent.trim()).to.equal('2029');
+    });
+
+    test('ArrowDown moves the roving tabindex forward one option', () => {
+      el._handleYearDropdownKeydown(keyEvent('ArrowDown'));
+      expect(focusedIndex()).to.equal(1);
+    });
+
+    test('ArrowUp moves the roving tabindex back one option', () => {
+      buttons[0].tabIndex = -1;
+      buttons[3].tabIndex = 0;
+      el._handleYearDropdownKeydown(keyEvent('ArrowUp'));
+      expect(focusedIndex()).to.equal(2);
+    });
+
+    test('ArrowUp clamps at the first option instead of wrapping', () => {
+      el._handleYearDropdownKeydown(keyEvent('ArrowUp'));
+      expect(focusedIndex()).to.equal(0);
+    });
+
+    test('ArrowDown clamps at the last option instead of wrapping', () => {
+      buttons[0].tabIndex = -1;
+      buttons[9].tabIndex = 0;
+      el._handleYearDropdownKeydown(keyEvent('ArrowDown'));
+      expect(focusedIndex()).to.equal(9);
+    });
+
+    test('Home jumps to the first option', () => {
+      buttons[0].tabIndex = -1;
+      buttons[7].tabIndex = 0;
+      el._handleYearDropdownKeydown(keyEvent('Home'));
+      expect(focusedIndex()).to.equal(0);
+    });
+
+    test('End jumps to the last option', () => {
+      el._handleYearDropdownKeydown(keyEvent('End'));
+      expect(focusedIndex()).to.equal(9);
+    });
+
+    test('PageDown moves ten options, clamped to the last', () => {
+      el._handleYearDropdownKeydown(keyEvent('PageDown'));
+      expect(focusedIndex()).to.equal(9);
+    });
+
+    test('PageUp moves ten options back, clamped to the first', () => {
+      buttons[0].tabIndex = -1;
+      buttons[5].tabIndex = 0;
+      el._handleYearDropdownKeydown(keyEvent('PageUp'));
+      expect(focusedIndex()).to.equal(0);
+    });
+
+    test('exactly one option carries tabindex 0 after a move', () => {
+      el._handleYearDropdownKeydown(keyEvent('ArrowDown'));
+      expect(buttons.filter((b) => b.tabIndex === 0).length).to.equal(1);
+    });
+
+    test('moves focus as well as the tabindex', () => {
+      el._handleYearDropdownKeydown(keyEvent('ArrowDown'));
+      expect(el.shadowRoot.activeElement).to.equal(buttons[1]);
+    });
+
+    test('Enter activates the option holding the roving tabindex', () => {
+      buttons[0].tabIndex = -1;
+      buttons[6].tabIndex = 0; // 2026
+      el._handleYearDropdownKeydown(keyEvent('Enter'));
+      expect(el._viewDate.getFullYear()).to.equal(2026);
+    });
+
+    test('Space activates the focused option too', () => {
+      buttons[0].tabIndex = -1;
+      buttons[2].tabIndex = 0; // 2022
+      el._handleYearDropdownKeydown(keyEvent(' '));
+      expect(el._viewDate.getFullYear()).to.equal(2022);
+    });
+
+    test('ArrowDown opens the dropdown instead of moving when it is closed', () => {
+      el.shadowRoot.querySelector('#yearOptions').classList.remove('open');
+      el._isYearDropdownOpen = false;
+      el._handleYearDropdownKeydown(keyEvent('ArrowDown'));
+      expect(el._isYearDropdownOpen).to.be.true;
+      expect(focusedIndex()).to.equal(0);
+    });
+
+    test('Enter opens the dropdown when it is closed', () => {
+      el.shadowRoot.querySelector('#yearOptions').classList.remove('open');
+      el._isYearDropdownOpen = false;
+      el._handleYearDropdownKeydown(keyEvent('Enter'));
+      expect(el._isYearDropdownOpen).to.be.true;
+    });
+
+    test('Home still consumes the event when the panel is closed, but moves nothing', () => {
+      el.shadowRoot.querySelector('#yearOptions').classList.remove('open');
+      buttons[0].tabIndex = -1;
+      buttons[4].tabIndex = 0;
+      const event = keyEvent('Home');
+      el._handleYearDropdownKeydown(event);
+      expect(event.wasPrevented()).to.be.true;
+      expect(focusedIndex()).to.equal(4);
+    });
+  });
+
+  suite('day grid navigation within the viewed month', () => {
+    // April 2024: the 1st is a Monday and the month has 30 days, so every boundary case
+    // below is reachable inside one month.
+    let el;
+    let focusDate;
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+      el._openCalendar();
+      el._viewDate = new Date(2024, 3, 1);
+      el._generateCalendar();
+      await flush();
+      focusDate = sinon.spy(el, '_focusDate');
+    });
+
+    teardown(() => {
+      focusDate.restore();
+    });
+
+    const dayButton = (iso) => el.shadowRoot.querySelector(`[data-date="${iso}"]`);
+    const movedTo = () => focusDate.getCall(0).args[0];
+
+    test('ArrowLeft moves back one day', () => {
+      el._handleGridKeydown(keyEvent('ArrowLeft', dayButton('2024-04-15')));
+      expect(focusDate.calledOnce).to.be.true;
+      expect(movedTo().getDate()).to.equal(14);
+    });
+
+    test('ArrowRight moves forward one day', () => {
+      el._handleGridKeydown(keyEvent('ArrowRight', dayButton('2024-04-15')));
+      expect(movedTo().getDate()).to.equal(16);
+    });
+
+    test('ArrowUp moves back one week', () => {
+      el._handleGridKeydown(keyEvent('ArrowUp', dayButton('2024-04-15')));
+      expect(movedTo().getDate()).to.equal(8);
+    });
+
+    test('ArrowDown moves forward one week', () => {
+      el._handleGridKeydown(keyEvent('ArrowDown', dayButton('2024-04-15')));
+      expect(movedTo().getDate()).to.equal(22);
+    });
+
+    test('Home moves to the start of the focused week', () => {
+      // The 15th is a Monday, so the week starts on Sunday the 14th.
+      el._handleGridKeydown(keyEvent('Home', dayButton('2024-04-15')));
+      expect(movedTo().getDate()).to.equal(14);
+    });
+
+    test('End moves to the end of the focused week', () => {
+      el._handleGridKeydown(keyEvent('End', dayButton('2024-04-15')));
+      expect(movedTo().getDate()).to.equal(20);
+    });
+
+    test('ArrowLeft does not cross into the previous month', () => {
+      el._handleGridKeydown(keyEvent('ArrowLeft', dayButton('2024-04-01')));
+      expect(focusDate.called).to.be.false;
+    });
+
+    test('ArrowRight does not cross into the next month', () => {
+      el._handleGridKeydown(keyEvent('ArrowRight', dayButton('2024-04-30')));
+      expect(focusDate.called).to.be.false;
+    });
+
+    test('ArrowUp does not cross into the previous month', () => {
+      el._handleGridKeydown(keyEvent('ArrowUp', dayButton('2024-04-01')));
+      expect(focusDate.called).to.be.false;
+    });
+
+    test('ArrowDown does not cross into the next month', () => {
+      el._handleGridKeydown(keyEvent('ArrowDown', dayButton('2024-04-30')));
+      expect(focusDate.called).to.be.false;
+    });
+
+    test('Home does not cross into the previous month', () => {
+      // The 1st is a Monday, so its week starts on 31 March.
+      el._handleGridKeydown(keyEvent('Home', dayButton('2024-04-01')));
+      expect(focusDate.called).to.be.false;
+    });
+
+    test('End does not cross into the next month', () => {
+      // The 30th is a Tuesday, so its week ends on 4 May.
+      el._handleGridKeydown(keyEvent('End', dayButton('2024-04-30')));
+      expect(focusDate.called).to.be.false;
+    });
+
+    test('every navigation key consumes the event', () => {
+      ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].forEach((key) => {
+        const event = keyEvent(key, dayButton('2024-04-15'));
+        el._handleGridKeydown(event);
+        expect(event.wasPrevented(), `${key} preventDefault`).to.be.true;
+        expect(event.wasStopped(), `${key} stopPropagation`).to.be.true;
+      });
+    });
+
+    test('Enter selects the focused day', () => {
+      const selectDate = sinon.spy(el, '_selectDate');
+      el._handleGridKeydown(keyEvent('Enter', dayButton('2024-04-15')));
+      expect(selectDate.calledOnce).to.be.true;
+      expect(selectDate.getCall(0).args[0].getDate()).to.equal(15);
+      selectDate.restore();
+    });
+
+    test('an unhandled key neither moves nor selects', () => {
+      const selectDate = sinon.spy(el, '_selectDate');
+      el._handleGridKeydown(keyEvent('a', dayButton('2024-04-15')));
+      expect(focusDate.called).to.be.false;
+      expect(selectDate.called).to.be.false;
+      selectDate.restore();
+    });
+  });
+
+  suite('error display: show / clear / keep', () => {
+    let el;
+    let errorEl;
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+      errorEl = el.shadowRoot.querySelector('#errorText');
+    });
+
+    test('shows the required message for an empty required field', () => {
+      el.required = true;
+      el.value = '';
+      el._showErrors = true;
+      // _getValidity sets errorMessage before _updateErrorDisplay runs in the real flow.
+      // It matters: setAttribute('invalid') fires _invalidChanged, which recomputes the
+      // element's hidden state from errorMessage, and an empty one re-hides the row.
+      el.errorMessage = el._generateRequiredMessage();
+      el._updateErrorDisplay(false);
+      expect(errorEl.hidden).to.be.false;
+      expect(errorEl.textContent).to.not.equal('');
+      expect(el.hasAttribute('invalid')).to.be.true;
+    });
+
+    test('shows errorMessage for a non-required validation failure', () => {
+      el.required = false;
+      el.value = 'nonsense';
+      el.errorMessage = 'Incorrect date format';
+      el._showErrors = true;
+      el._updateErrorDisplay(false);
+      expect(errorEl.textContent).to.equal('Incorrect date format');
+      expect(errorEl.hidden).to.be.false;
+    });
+
+    test('KEEPS the existing message when invalid but there is nothing new to say', () => {
+      // The load-bearing third case: invalid, errors are showing, but the field is neither
+      // an empty-required nor carrying an errorMessage. The previous text must survive.
+      el.required = false;
+      el.value = 'something';
+      el.errorMessage = '';
+      el._showErrors = true;
+      errorEl.textContent = 'Previously shown error';
+      errorEl.hidden = false;
+
+      el._updateErrorDisplay(false);
+
+      expect(errorEl.textContent).to.equal('Previously shown error');
+      expect(errorEl.hidden).to.be.false;
+    });
+
+    test('clears when the field is valid', () => {
+      el.setAttribute('invalid', '');
+      errorEl.hidden = false;
+      el._showErrors = true;
+      el._updateErrorDisplay(true);
+      expect(errorEl.hidden).to.be.true;
+      expect(el.hasAttribute('invalid')).to.be.false;
+    });
+
+    test('clears when errors are not being shown yet, even if invalid', () => {
+      el.setAttribute('invalid', '');
+      errorEl.hidden = false;
+      el._showErrors = false;
+      el._updateErrorDisplay(false);
+      expect(errorEl.hidden).to.be.true;
+      expect(el.hasAttribute('invalid')).to.be.false;
+    });
+  });
+
+  suite('outside-click dismissal', () => {
+    let el;
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+      el._openCalendar();
+      await flush();
+      el._interactingWithCalendar = false;
+    });
+
+    test('a click on the calendar popover leaves it open', () => {
+      const popover = el.shadowRoot.querySelector('#calendarPopover');
+      el._handleDocumentClick({ target: popover, composedPath: () => [popover] });
+      expect(el._isCalendarOpen).to.be.true;
+    });
+
+    test('a click reaching the host only via the composed path leaves it open', () => {
+      // The path sees through shadow boundaries that the retargeted target does not, which
+      // is the whole reason that fourth check exists.
+      el._handleDocumentClick({ target: document.body, composedPath: () => [document.body, el] });
+      expect(el._isCalendarOpen).to.be.true;
+    });
+
+    test('a click genuinely outside closes the calendar', () => {
+      el._handleDocumentClick({ target: document.body, composedPath: () => [document.body] });
+      expect(el._isCalendarOpen).to.be.false;
+    });
+
+    test('a click outside is ignored while interacting with the calendar', () => {
+      el._interactingWithCalendar = true;
+      el._handleDocumentClick({ target: document.body, composedPath: () => [document.body] });
+      expect(el._isCalendarOpen).to.be.true;
+    });
+
+    test('closing via an outside click also closes an open year dropdown', () => {
+      el.shadowRoot.querySelector('#yearOptions').classList.add('open');
+      el._isYearDropdownOpen = true;
+      el._handleDocumentClick({ target: document.body, composedPath: () => [document.body] });
+      expect(el._isCalendarOpen).to.be.false;
+      expect(el._isYearDropdownOpen).to.be.false;
+    });
+  });
+
+  suite('input parsing: format resolution and the plausible-year window', () => {
+    let el;
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+    });
+
+    test('an exact match on the primary format is kept verbatim', () => {
+      el.format = 'DD MMMM YYYY';
+      const result = el._parseUserInput('12 April 2024');
+      expect(result).to.not.be.null;
+      expect(result.isExactFormat).to.be.true;
+      expect(result.date.getFullYear()).to.equal(2024);
+      expect(result.date.getMonth()).to.equal(3);
+      expect(result.date.getDate()).to.equal(12);
+    });
+
+    test('the strict path does NOT apply the 1900-2200 window', () => {
+      // Deliberate asymmetry, and the reason _momentToStartOfDay is parameterised: an input
+      // that matches the primary format exactly is taken at face value, however odd the year.
+      el.format = 'YYYY-MM-DD';
+      const result = el._parseUserInput('1850-12-04');
+      expect(result).to.not.be.null;
+      expect(result.isExactFormat).to.be.true;
+      expect(result.date.getFullYear()).to.equal(1850);
+    });
+
+    test('the strict path accepts a year above 2200 as well', () => {
+      el.format = 'YYYY-MM-DD';
+      const result = el._parseUserInput('2500-12-04');
+      expect(result).to.not.be.null;
+      expect(result.isExactFormat).to.be.true;
+      expect(result.date.getFullYear()).to.equal(2500);
+    });
+
+    test('a recovery path rejects a year below 1900', () => {
+      // Numeric primary format, so the ISO input reaches the recovery attempts, which do
+      // apply the window.
+      el.format = 'MM/DD/YYYY';
+      expect(el._parseUserInput('1850-12-04')).to.be.null;
+      expect(el._parseUserInput('1899-12-31')).to.be.null;
+    });
+
+    test('a recovery path rejects a year above 2200', () => {
+      el.format = 'MM/DD/YYYY';
+      expect(el._parseUserInput('2500-12-04')).to.be.null;
+      expect(el._parseUserInput('2201-01-01')).to.be.null;
+    });
+
+    test('a recovery path inside the window is accepted and marked non-exact', () => {
+      el.format = 'MM/DD/YYYY';
+      const result = el._parseUserInput('2024-04-12');
+      expect(result).to.not.be.null;
+      expect(result.isExactFormat).to.be.false;
+      expect(result.date.getFullYear()).to.equal(2024);
+      expect(result.date.getMonth()).to.equal(3);
+      expect(result.date.getDate()).to.equal(12);
+    });
+
+    test('an unusable format flags the field and still falls back to the locale format', () => {
+      el.format = 'qqqq';
+      el.invalid = false;
+      el.errorMessage = '';
+      const result = el._parseUserInput('2024-04-12');
+      expect(el.invalid).to.be.true;
+      expect(el.errorMessage).to.contain('Invalid date format');
+      expect(result).to.not.be.null;
+      expect(result.date.getFullYear()).to.equal(2024);
+    });
+
+    test('start of day is normalised on every accepted path', () => {
+      el.format = 'DD MMMM YYYY';
+      const exact = el._parseUserInput('12 April 2024');
+      el.format = 'MM/DD/YYYY';
+      const recovered = el._parseUserInput('2024-04-12');
+      [exact, recovered].forEach((r) => {
+        expect(r.date.getHours()).to.equal(0);
+        expect(r.date.getMinutes()).to.equal(0);
+        expect(r.date.getSeconds()).to.equal(0);
+        expect(r.date.getMilliseconds()).to.equal(0);
+      });
+    });
+  });
+});
