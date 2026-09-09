@@ -5191,6 +5191,26 @@ const VALID_MOMENT_TOKENS = new Set([
       return date;
     }
 
+    /**
+     * Tries each format in COMMON_INPUT_FORMATS strictly, in order, and returns the first that
+     * yields a plausible start-of-day date.
+     *
+     * Extracted from _parseUserInput (SonarCloud S3776) to keep the recovery chain there flat.
+     * The order is the original's, and `return` on the first hit matches its early return.
+     *
+     * @param {string} trimmedInput
+     * @returns {?Date}
+     */
+    _parseWithCommonFormats(trimmedInput) {
+      for (const format of COMMON_INPUT_FORMATS) {
+        const date = this._momentToStartOfDay(this._moment(trimmedInput, format, true), true);
+        if (date) {
+          return date;
+        }
+      }
+      return null;
+    }
+
     // Professional date parser for user input with comprehensive format support
     _parseUserInput(inputString) {
       if (!inputString || typeof inputString !== 'string') return null;
@@ -5217,18 +5237,19 @@ const VALID_MOMENT_TOKENS = new Set([
          * primary format, then each common format strictly, then moment's own natural-language
          * parsing. All of them get reformatted for display, so none counts as an exact-format
          * match, and all apply the 1900-2200 plausible-year window.
+         *
+         * `||` short-circuits, so each stage runs only if the previous one produced nothing -
+         * exactly like the original's sequential `if (...) return` blocks. Written as a chain
+         * rather than an array of thunks so that this path, which runs on every keystroke,
+         * allocates nothing per call.
          */
-        const attempts = [
-          () => this._moment(trimmedInput, primaryFormat, false),
-          ...COMMON_INPUT_FORMATS.map((format) => () => this._moment(trimmedInput, format, true)),
-          () => this._moment(trimmedInput),
-        ];
+        const recovered =
+          this._momentToStartOfDay(this._moment(trimmedInput, primaryFormat, false), true) ||
+          this._parseWithCommonFormats(trimmedInput) ||
+          this._momentToStartOfDay(this._moment(trimmedInput), true);
 
-        for (const attempt of attempts) {
-          const date = this._momentToStartOfDay(attempt(), true);
-          if (date) {
-            return { date, isExactFormat: false };
-          }
+        if (recovered) {
+          return { date: recovered, isExactFormat: false };
         }
 
         return null;
