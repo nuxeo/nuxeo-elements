@@ -81,7 +81,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+      "pre-commit": "lint-staged",
+      "commit-msg": "scripts/git/commit-msg-cla.sh"
     }
   },
   "lint-staged": {
