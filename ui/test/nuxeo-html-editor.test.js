@@ -339,6 +339,16 @@ suite('nuxeo-html-editor extras', () => {
       });
     });
 
+    test('updates the popup labels when its mode changes without a class mutation', async () => {
+      tooltip.root.setAttribute('data-mode', 'link');
+      tooltip.root.classList.remove('ql-editing');
+      el._updateTooltipLabels();
+      tooltip.root.setAttribute('data-mode', 'video');
+      await timePasses(0);
+      expect(tooltip.root.getAttribute('aria-label')).to.equal(el.i18n('htmlEditor.video.dialog'));
+      expect(tooltip.textbox.getAttribute('aria-label')).to.equal(el.i18n('htmlEditor.video.url'));
+    });
+
     test('gives focus back to the video toolbar button when the video popup is dismissed', () => {
       el._editor.setSelection(0, 0);
       el.$.toolbar.querySelector('button.ql-video').click();
