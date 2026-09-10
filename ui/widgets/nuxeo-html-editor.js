@@ -354,7 +354,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         return;
       }
       this._tooltipObserver = new MutationObserver(() => this._onTooltipStateChanged());
-      this._tooltipObserver.observe(this._tooltip.root, { attributes: true, attributeFilter: ['class'] });
+      this._tooltipObserver.observe(this._tooltip.root, {
+        attributes: true,
+        attributeFilter: ['class', 'data-mode'],
+      });
     }
 
     _onTooltipStateChanged() {
