@@ -400,6 +400,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         case 'End':
           next = items.length - 1;
           break;
+        case 'Enter':
         case ' ':
           e.preventDefault();
           items[index].click();
