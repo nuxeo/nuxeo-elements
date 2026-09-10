@@ -354,6 +354,18 @@ suite('nuxeo-html-editor color pickers', () => {
     expect(el.shadowRoot.activeElement).to.equal(labelOf(colorPicker));
   });
 
+  test('applies the focused color with Enter and hands focus back to the trigger', () => {
+    el._editor.setText('Hello');
+    el._editor.setSelection(0, 5);
+    openPalette(colorPicker);
+    const items = itemsOf(colorPicker);
+    press(items[0], 'ArrowRight');
+    press(items[1], 'Enter');
+    expect(el._editor.getFormat(0, 5).color).to.equal('#e60000');
+    expect(colorPicker.classList.contains('ql-expanded')).to.be.false;
+    expect(el.shadowRoot.activeElement).to.equal(labelOf(colorPicker));
+  });
+
   test('marks the applied color as the selected option', () => {
     el._editor.setText('Hello');
     el._editor.setSelection(0, 5);
