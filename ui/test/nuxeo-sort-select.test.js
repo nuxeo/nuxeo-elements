@@ -22,9 +22,11 @@ suite('nuxeo-sort-select', () => {
   let el;
 
   setup(async () => {
-    el = await fixture(html`
-      <nuxeo-sort-select></nuxeo-sort-select>
-    `);
+    el = await fixture(
+      html`
+        <nuxeo-sort-select></nuxeo-sort-select>
+      `,
+    );
   });
 
   test('should return the element name', () => {
@@ -36,28 +38,28 @@ suite('nuxeo-sort-select', () => {
   });
 
   suite('label', () => {
-    test('defaults to no label', () => {
+    test('defaults to no label', async () => {
+      await flush();
       expect(el.label).to.be.null;
-      expect(el.shadowRoot.querySelector('nuxeo-select').label).to.be.null;
-      expect(el.hasAttribute('has-label')).to.be.false;
+      expect(el.hasLabel).to.be.false;
+      expect(el.shadowRoot.querySelector('span')).to.be.null;
+      expect(el.shadowRoot.querySelector('nuxeo-select').getAttribute('aria-label')).to.be.null;
     });
 
-    test('forwards the label to the underlying select', async () => {
+    test('renders a span and forwards the label as aria-label to the select', async () => {
       el.label = 'Sort by';
       await flush();
-      const select = el.shadowRoot.querySelector('nuxeo-select');
-      expect(select.label).to.equal('Sort by');
-      expect(select.shadowRoot.querySelector('label').textContent.trim()).to.equal('Sort by');
-      expect(el.hasAttribute('has-label')).to.be.true;
+      expect(el.hasLabel).to.be.true;
+      expect(el.shadowRoot.querySelector('span').textContent.trim()).to.equal('Sort by');
+      expect(el.shadowRoot.querySelector('nuxeo-select').getAttribute('aria-label')).to.equal('Sort by');
     });
 
-    test('does not flag a blank label, nor forward it to the select', async () => {
+    test('does not flag a blank label, nor render a span for it', async () => {
       el.label = '  ';
       await flush();
-      const select = el.shadowRoot.querySelector('nuxeo-select');
-      expect(el.hasAttribute('has-label')).to.be.false;
-      expect(select.label).to.be.null;
-      expect(select.shadowRoot.querySelector('label').textContent).to.be.empty;
+      expect(el.hasLabel).to.be.false;
+      expect(el.shadowRoot.querySelector('span')).to.be.null;
+      expect(el.shadowRoot.querySelector('nuxeo-select').getAttribute('aria-label')).to.be.null;
     });
   });
 
