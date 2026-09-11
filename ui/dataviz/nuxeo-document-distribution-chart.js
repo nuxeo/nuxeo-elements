@@ -732,7 +732,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Then highlight only those that are an ancestor of the current segment.
       vis
         .selectAll('#chart path')
-        .filter((node) => sequenceArray.indexOf(node) >= 0)
+        .filter((node) => sequenceArray.includes(node))
         .style('opacity', 1);
     }
 
