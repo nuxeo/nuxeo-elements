@@ -136,6 +136,75 @@ suite('nuxeo-path-suggestion', () => {
       el.children = [{ path: '/parent/child' }];
       expect(el._getValidity()).to.be.false;
     });
+
+    // ELEMENTS-2048 - these pin the exact trailing-slash semantics of the original
+    // `value.replace(/(.+)\/$/, '$1')` so the S8786 rewrite provably cannot drift.
+
+    test('strips a single trailing slash before comparing with the parent path', () => {
+      el.value = '/parent/';
+      el.parent = { path: '/parent' };
+      el.children = null;
+      expect(el._getValidity()).to.be.true;
+    });
+
+    test('strips only the last slash, so "//" normalises to "/"', () => {
+      el.value = '//';
+      el.parent = { path: '/' };
+      el.children = null;
+      expect(el._getValidity()).to.be.true;
+    });
+
+    test('accepts "/" through the explicit root branch even without a parent', () => {
+      el.value = '/';
+      el.parent = null;
+      el.children = null;
+      expect(el._getValidity()).to.be.true;
+    });
+
+    test('returns false for an empty value instead of throwing', () => {
+      el.value = '';
+      el.parent = { path: '/parent' };
+      el.children = null;
+      expect(el._getValidity()).to.be.false;
+    });
+
+    test('matches a child when the typed value carries a trailing slash', () => {
+      el.value = '/a/b/';
+      el.parent = { path: '/a' };
+      el.children = [{ path: '/a/x' }, { path: '/a/b' }];
+      expect(el._getValidity()).to.be.true;
+    });
+
+    test('does not strip a trailing slash preceded by a line terminator', () => {
+      // `.` never matches a line terminator, so `/(.+)\/$/` could not match here and the
+      // value was compared unstripped. A naive `replace(/\/$/, '')` would strip it and flip
+      // both assertions below, so this is the guard against that rewrite.
+      el.parent = { path: '/a\n/' };
+      el.children = null;
+      el.value = '/a\n/';
+      expect(el._getValidity()).to.be.true;
+
+      el.parent = { path: '/a\n' };
+      el.value = '/a\n/';
+      expect(el._getValidity()).to.be.false;
+    });
+
+    test('validates a pathological value without super-linear backtracking', () => {
+      // The old regex was quadratic and re-ran once per child, so ~20k chars x 20 children
+      // blocked the main thread for seconds.
+      el.$.typeahead.tryDisplayResults = sinon.spy();
+      const long = `/${'a'.repeat(20000)}`;
+      el.parent = { path: '/parent' };
+      el.children = Array.from({ length: 20 }, (_, i) => {
+        return { path: `/parent/child${i}` };
+      });
+      el.value = long;
+      const started = performance.now();
+      const valid = el._getValidity();
+      const elapsed = performance.now() - started;
+      expect(valid).to.be.false;
+      expect(elapsed).to.be.below(1000);
+    });
   });
 
   suite('_disabledChanged', () => {
