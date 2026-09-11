@@ -297,11 +297,8 @@ import Interpreter from './js-interpreter/interpreter.js';
       if (this._instance) {
         const c$ = this._instance.children;
         if (c$ && c$.length) {
-          // use first child parent, for case when dom-if may have been detached
-          const parent = dom(dom(c$[0]).parentNode);
-
           for (let i = 0, n; i < c$.length && (n = c$[i]); i++) {
-            parent.removeChild(n);
+            n.remove();
           }
         }
         this._instance = null;
