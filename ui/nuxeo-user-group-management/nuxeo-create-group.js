@@ -316,8 +316,8 @@ import '../nuxeo-button-styles.js';
     }
 
     _resultsFilter(entry) {
-      for (let i = 0; i < this.selectedUsers.length; i++) {
-        if (entry.id === this.selectedUsers[i].id) {
+      for (const selectedUser of this.selectedUsers) {
+        if (entry.id === selectedUser.id) {
           return false;
         }
       }

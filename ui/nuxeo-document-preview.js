@@ -274,8 +274,7 @@ import './marked-element.js';
         return;
       }
 
-      for (let i = 0; i < previewers.length; i++) {
-        const previewer = previewers[i];
+      for (const previewer of previewers) {
         const mimetype = previewer.getAttribute('mime-pattern');
         const hasMimetype =
           mimetype &&

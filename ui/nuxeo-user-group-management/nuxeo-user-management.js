@@ -755,8 +755,8 @@ import '../nuxeo-button-styles.js';
     }
 
     _resultsFilter(entry) {
-      for (let i = 0; i < this.groups.length; i++) {
-        if (entry.id === this.groups[i].name) {
+      for (const group of this.groups) {
+        if (entry.id === group.name) {
           return false;
         }
       }
