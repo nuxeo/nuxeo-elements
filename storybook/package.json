@@ -20,7 +20,7 @@
     "nuxeo": "^4.0.3",
     "storybook": "^10.3.5",
     "uuid": "^14.0.1",
-    "vite": "^6.0.0"
+    "vite": "^8.2.2"
   },
   "scripts": {
     "start": "storybook dev -p 6006",
