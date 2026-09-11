@@ -947,14 +947,9 @@ function hasRowDetailTemplate(node) {
     }
 
     _isFocusable(target) {
-      // eslint-disable-next-line no-constant-condition
-      if (false) {
-        // https://nemisj.com/focusable/
-        // tabIndex is not reliable in IE.
-        return target.tabIndex >= 0;
-      }
-      // unreliable with Shadow, document.activeElement doesn't go inside
-      // the shadow root.
+      // tabIndex is not used to decide this (see https://nemisj.com/focusable/); it was never
+      // reliable in IE, and document.activeElement is unreliable with Shadow DOM because it
+      // does not go inside the shadow root.
       return (
         target.contains(dom(document.activeElement).node) ||
         target instanceof Nuxeo.DataTableCheckbox ||
