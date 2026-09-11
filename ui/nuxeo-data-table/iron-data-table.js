@@ -1134,7 +1134,7 @@ function hasRowDetailTemplate(node) {
               // Set provider param
               if (entry.expression) {
                 // Use a function replacement to prevent $ in user values being treated as back-references (ELEMENTS-1966)
-                this.nxProvider.params[effectiveFilterBy] = entry.expression.replace(/\$term/g, () => entry.value);
+                this.nxProvider.params[effectiveFilterBy] = entry.expression.replaceAll('$term', () => entry.value);
               } else {
                 this.nxProvider.params[effectiveFilterBy] = entry.value;
               }
@@ -1693,7 +1693,7 @@ function hasRowDetailTemplate(node) {
 
       let minWidth = 10;
       if (column && column.minWidth != null) {
-        const parsed = parseInt(column.minWidth, 10);
+        const parsed = Number.parseInt(column.minWidth, 10);
         if (!Number.isNaN(parsed)) {
           minWidth = parsed;
         }
