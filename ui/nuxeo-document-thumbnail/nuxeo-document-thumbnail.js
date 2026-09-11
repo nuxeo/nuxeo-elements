@@ -99,7 +99,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior';
         doc.contextParameters.thumbnail.url
       ) {
         if (!this.isFollowRedirectEnabled()) {
-          const splitter = doc.contextParameters.thumbnail.url.indexOf('?') > -1 ? '&' : '?';
+          const splitter = doc.contextParameters.thumbnail.url.includes('?') ? '&' : '?';
           doc.contextParameters.thumbnail.url = `${doc.contextParameters.thumbnail.url}${splitter}clientReason=view`;
         }
         return doc.contextParameters.thumbnail.url;

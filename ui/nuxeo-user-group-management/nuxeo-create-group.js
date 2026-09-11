@@ -236,7 +236,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _observeSelectedUser() {
-      if (this.selectedUser && this.selectedUsers.indexOf(this.selectedUser) === -1) {
+      if (this.selectedUser && !this.selectedUsers.includes(this.selectedUser)) {
         this.push('selectedUsers', this.selectedUser);
       }
       this.selectedUser = null;

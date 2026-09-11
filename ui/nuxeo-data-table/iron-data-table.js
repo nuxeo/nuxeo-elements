@@ -943,7 +943,7 @@ function hasRowDetailTemplate(node) {
     }
 
     _isExpanded(item, items) {
-      return items && items.indexOf(item) > -1;
+      return items && items.includes(item);
     }
 
     _isFocusable(target) {
@@ -1426,7 +1426,7 @@ function hasRowDetailTemplate(node) {
       const result = JSON.parse(
         JSON.stringify(obj, (key, value) => {
           if (typeof value === 'object' && value !== null) {
-            if (cache.indexOf(value) !== -1) {
+            if (cache.includes(value)) {
               // Circular reference found, discard key
               return;
             }
