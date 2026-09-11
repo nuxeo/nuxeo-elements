@@ -358,8 +358,8 @@ export const PageProviderDisplayBehavior = [
           }
 
           const last = this._lastSelectedIndex;
-          const start = index > last ? last : index;
-          const end = index > last ? index : last;
+          const start = Math.min(index, last);
+          const end = Math.max(index, last);
 
           // check if all items in the range are loaded
           const valid = this.items.slice(start, end).every((item) => item && item.uid);
