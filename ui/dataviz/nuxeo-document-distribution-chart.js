@@ -533,8 +533,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         if (bucket.children.length === 0) {
           return;
         }
-        for (let j = 0; j < bucket.children.length; j++) {
-          this._transformSubBuckets(bucket.children[j]);
+        for (const child of bucket.children) {
+          this._transformSubBuckets(child);
         }
       }
     }
@@ -547,8 +547,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       delete aggregations.buckets;
       delete aggregations.doc_count_error_upper_bound;
       delete aggregations.sum_other_doc_count;
-      for (let i = 0; i < aggregations.children.length; i++) {
-        this._transformSubBuckets(aggregations.children[i]);
+      for (const child of aggregations.children) {
+        this._transformSubBuckets(child);
       }
 
       this._chartData = aggregations;
