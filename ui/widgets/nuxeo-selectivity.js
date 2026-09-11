@@ -3202,6 +3202,9 @@ typedArrayTags[weakMapTag] = false;
               id: item.id,
               text: item.text,
               item: item.item,
+              // `depth` drives the indentation of hierarchical entries in the result templates;
+              // rebuilding the item without it would flatten the tree to a single indent level.
+              depth: item.depth,
             };
             if (item.children) {
               result.children = this.filterResults(item.children);
@@ -6812,6 +6815,11 @@ typedArrayTags[weakMapTag] = false;
   }, {}, [75]))(75);
 }));
 {
+  // Indentation of hierarchical result rows: the root level padding and the extra padding
+  // added per nesting level. Kept in sync with the .selectivity-result-item stylesheet rule.
+  const RESULT_BASE_PADDING = 7;
+  const RESULT_DEPTH_PADDING = 10;
+
   /**
    * An element wrapping selectivity.js and relying on an operation for suggestions
    *
@@ -7428,14 +7436,14 @@ typedArrayTags[weakMapTag] = false;
             const itemId = `selectivity-option-${escapeHTML(opts.id)}`;
             return `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
                   id="${itemId}"
-                  style="padding-left: ${7 + (10 * opts.depth)}px"
+                  style="padding-left: ${this._resultPadding(opts.depth)}px"
                   data-item-id="${escapeHTML(opts.id)}"
                   aria-selected="false">${this.resultFormatter(opts.item)}</div>`;
           },
 
           resultLabel: (opts) => (
             `<div class="preserve-white-space selectivity-result-label"
-                  style="padding-left: ${7 + (10 * opts.depth)}px">${escapeHTML(opts.text)}</div>`
+                  style="padding-left: ${this._resultPadding(opts.depth)}px">${escapeHTML(opts.text)}</div>`
           ),
 
           singleSelectedItem: (opts) => (
@@ -7790,6 +7798,14 @@ typedArrayTags[weakMapTag] = false;
 
     _resultFormatter(item) {
       return escapeHTML(item.displayLabel || item.title || item.text || item);
+    }
+
+    /**
+     * Left padding, in pixels, that indents a hierarchical result row at the given depth.
+     * A non-numeric depth falls back to the root level so the inline style stays valid CSS.
+     */
+    _resultPadding(depth) {
+      return RESULT_BASE_PADDING + RESULT_DEPTH_PADDING * (Number.isFinite(depth) ? depth : 0);
     }
 
     _wrap(value) {
