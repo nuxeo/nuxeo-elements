@@ -118,6 +118,38 @@ suite('iron-data-table extras', () => {
   });
 
   // ------------------------------------------------------------------
+  // multiSelection attribute (ELEMENTS-1664)
+  // ------------------------------------------------------------------
+  suite('multiSelection attribute', () => {
+    test('defaults to true when the attribute is absent', async () => {
+      const el = await fixture(
+        html`
+          <nuxeo-data-table></nuxeo-data-table>
+        `,
+      );
+      expect(el.multiSelection).to.be.true;
+    });
+
+    test('is true when the attribute is present without a value', async () => {
+      const el = await fixture(
+        html`
+          <nuxeo-data-table multi-selection></nuxeo-data-table>
+        `,
+      );
+      expect(el.multiSelection).to.be.true;
+    });
+
+    test('is false when the attribute is set to "false"', async () => {
+      const el = await fixture(
+        html`
+          <nuxeo-data-table multi-selection="false"></nuxeo-data-table>
+        `,
+      );
+      expect(el.multiSelection).to.be.false;
+    });
+  });
+
+  // ------------------------------------------------------------------
   // _isEven
   // ------------------------------------------------------------------
   suite('_isEven', () => {
