@@ -261,8 +261,7 @@ import './nuxeo-resource.js';
       if (this.documentData) {
         if (this.documentData.contextParameters) {
           const documentContextParams = this.documentData.contextParameters;
-          documentProps.push(documentContextParams.preview);
-          documentProps.push(documentContextParams.renditions);
+          documentProps.push(documentContextParams.preview, documentContextParams.renditions);
         }
 
         if (this.documentData.properties) {
