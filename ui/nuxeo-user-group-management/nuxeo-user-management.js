@@ -17,6 +17,7 @@ limitations under the License.
 */
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import { formatUserDisplayName, formatUserPrincipal } from './nuxeo-user-display.js';
 import '@polymer/iron-form/iron-form.js';
 import '@polymer/iron-icon/iron-icon.js';
 import config from '@nuxeo/nuxeo-elements/config.js';
@@ -219,7 +220,7 @@ import '../nuxeo-button-styles.js';
           <div class="horizontal layout center header">
             <iron-icon icon="nuxeo:user" class="user-icon"></iron-icon>
             <div class="layout vertical">
-              <div class="user heading" name="userHeading">[[_userDisplayName(user)]]</div>
+              <div class="user heading" name="userHeading">[[_userPrincipal(user)]]</div>
               <div>[[user.properties.firstName]] [[user.properties.lastName]]</div>
             </div>
 
@@ -365,7 +366,11 @@ import '../nuxeo-button-styles.js';
 
         <!-- local permissions -->
         <nuxeo-card heading="[[i18n('userManagement.localPermissions.heading')]]">
-          <nuxeo-user-group-permissions-table entity="[[_userDisplayName(user)]]" readonly="[[readonly]]">
+          <nuxeo-user-group-permissions-table
+            entity="[[_userPrincipal(user)]]"
+            entity-label="[[_userDisplayName(user)]]"
+            readonly="[[readonly]]"
+          >
           </nuxeo-user-group-permissions-table>
         </nuxeo-card>
 
@@ -507,7 +512,7 @@ import '../nuxeo-button-styles.js';
 
         _displayName: {
           type: String,
-          computed: '_userDisplayName(user)',
+          computed: '_userPrincipal(user)',
         },
       };
     }
@@ -539,11 +544,11 @@ import '../nuxeo-button-styles.js';
     }
 
     _userDisplayName(user) {
-      if (!user) {
-        return '';
-      }
-      const props = user.properties || {};
-      return props.username || user.name || '';
+      return formatUserDisplayName(user);
+    }
+
+    _userPrincipal(user) {
+      return formatUserPrincipal(user);
     }
 
     _fetch() {
@@ -627,7 +632,7 @@ import '../nuxeo-button-styles.js';
         this.$.request.path = `user/${this.user.id}/group/${group.id || group.name}`;
         this.$.request.post().then((response) => {
           this.user = response;
-          this._toast(this.i18n('userManagement.addedUserToGroup', this._userDisplayName(this.user), group.name));
+          this._toast(this.i18n('userManagement.addedUserToGroup', this._userPrincipal(this.user), group.name));
         });
       }
       this.selectedGroup = null;
@@ -639,7 +644,7 @@ import '../nuxeo-button-styles.js';
       return this.$.request.remove().then(() => {
         this._removeRecent(group.name);
         this._removeFromGroup(group.name);
-        this._toast(this.i18n('userManagement.removedUserFromGroup', this._userDisplayName(this.user), group.name));
+        this._toast(this.i18n('userManagement.removedUserFromGroup', this._userPrincipal(this.user), group.name));
       });
     }
 

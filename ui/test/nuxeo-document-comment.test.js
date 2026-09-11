@@ -718,62 +718,6 @@ suite('nuxeo-document-comment extras', () => {
     });
   });
 
-  suite('_authorLabel', () => {
-    test('returns username when author is a string', () => {
-      expect(el._authorLabel('nco-admin')).to.equal('nco-admin');
-    });
-
-    test('returns full name from fetched user entity', () => {
-      expect(
-        el._authorLabel({
-          'entity-type': 'user',
-          properties: { firstName: 'NCO', lastName: 'Admin', username: 'nco-admin' },
-        }),
-      ).to.equal('NCO Admin');
-    });
-
-    test('returns username when user entity has no first or last name', () => {
-      expect(
-        el._authorLabel({
-          'entity-type': 'user',
-          properties: { username: 'Administrator' },
-        }),
-      ).to.equal('Administrator');
-    });
-
-    test('returns full name from prefixed user property keys', () => {
-      expect(
-        el._authorLabel({
-          'entity-type': 'user',
-          properties: { 'user:firstName': 'NCO', 'user:lastName': 'Admin', 'user:username': 'nco-admin' },
-        }),
-      ).to.equal('NCO Admin');
-    });
-
-    test('returns full name for document user entity', () => {
-      expect(
-        el._authorLabel({
-          'entity-type': 'document',
-          type: 'user',
-          properties: { firstName: 'NCO', lastName: 'Admin', username: 'nco-admin' },
-        }),
-      ).to.equal('NCO Admin');
-    });
-
-    test('returns id when user entity has no properties', () => {
-      expect(
-        el._authorLabel({
-          'entity-type': 'user',
-          id: 'nco-admin',
-        }),
-      ).to.equal('nco-admin');
-    });
-
-    test('returns id for non-entity object author', () => {
-      expect(el._authorLabel({ id: 'nco-admin' })).to.equal('nco-admin');
-    });
-  });
-
   suite('_authorUsername', () => {
     test('returns username from user entity', () => {
       const author = {
@@ -1213,6 +1157,111 @@ suite('nuxeo-document-comment extras', () => {
         });
         evt.stopPropagation = sinon.stub();
         el._handleRepliesChange(evt);
+      });
+    });
+
+    suite('_fetchAuthorEntity', () => {
+      test('should fetch and set author entity on success', async () => {
+        const userEntity = {
+          'entity-type': 'user',
+          id: 'jdoe',
+          properties: { firstName: 'John', lastName: 'Doe', username: 'jdoe' },
+        };
+        sinon.stub(el.$.authorResource, 'get').resolves(userEntity);
+        await el._fetchAuthorEntity('jdoe');
+        expect(el._authorEntity).to.deep.equal(userEntity);
+        expect(el._authorLoading).to.be.false;
+        expect(el.$.authorResource.path).to.equal('/user/jdoe');
+        el.$.authorResource.get.restore();
+      });
+
+      test('should set entity to null on 404 error', async () => {
+        const error = new Error('not found');
+        error.status = 404;
+        sinon.stub(el.$.authorResource, 'get').rejects(error);
+        const warnSpy = sinon.stub(console, 'warn');
+        await el._fetchAuthorEntity('deleted');
+        expect(el._authorEntity).to.be.null;
+        expect(el._authorLoading).to.be.false;
+        expect(warnSpy).to.not.have.been.called;
+        warnSpy.restore();
+        el.$.authorResource.get.restore();
+      });
+
+      test('should warn on unexpected non-404 errors', async () => {
+        const error = new Error('server error');
+        error.status = 500;
+        sinon.stub(el.$.authorResource, 'get').rejects(error);
+        const warnSpy = sinon.stub(console, 'warn');
+        await el._fetchAuthorEntity('baduser');
+        expect(el._authorEntity).to.be.null;
+        expect(el._authorLoading).to.be.false;
+        expect(warnSpy).to.have.been.calledOnce;
+        warnSpy.restore();
+        el.$.authorResource.get.restore();
+      });
+
+      test('should reset state when author is empty', async () => {
+        el._authorEntity = 'stale';
+        el._authorLoading = true;
+        await el._fetchAuthorEntity('');
+        expect(el._authorEntity).to.be.null;
+        expect(el._authorLoading).to.be.false;
+      });
+
+      test('should reset state when author is not a string', async () => {
+        el._authorEntity = 'stale';
+        el._authorLoading = true;
+        await el._fetchAuthorEntity(null);
+        expect(el._authorEntity).to.be.null;
+        expect(el._authorLoading).to.be.false;
+      });
+    });
+
+    suite('_authorDisplayName', () => {
+      test('should return full name from entity', () => {
+        const entity = {
+          'entity-type': 'user',
+          id: 'jdoe',
+          properties: { firstName: 'John', lastName: 'Doe', username: 'jdoe' },
+        };
+        expect(el._authorDisplayName('jdoe', entity, false)).to.equal('John Doe');
+      });
+
+      test('should return author when entity is null', () => {
+        expect(el._authorDisplayName('jdoe', null, false)).to.equal('jdoe');
+      });
+
+      test('should return author when loading', () => {
+        const entity = {
+          'entity-type': 'user',
+          id: 'jdoe',
+          properties: { firstName: 'John', lastName: 'Doe', username: 'jdoe' },
+        };
+        expect(el._authorDisplayName('jdoe', entity, true)).to.equal('jdoe');
+      });
+
+      test('should return author when entity has no properties', () => {
+        const entity = { id: 'jdoe' };
+        expect(el._authorDisplayName('jdoe', entity, false)).to.equal('jdoe');
+      });
+
+      test('should return empty string when author is empty', () => {
+        expect(el._authorDisplayName('', null, false)).to.equal('');
+      });
+
+      test('should format entity author directly when comment.author is a user entity', () => {
+        const authorEntity = {
+          'entity-type': 'user',
+          id: 'jdoe',
+          properties: { firstName: 'John', lastName: 'Doe', username: 'jdoe' },
+        };
+        expect(el._authorDisplayName(authorEntity, null, false)).to.equal('John Doe');
+      });
+
+      test('should return id for non-entity object author', () => {
+        const obj = { id: 'some-id' };
+        expect(el._authorDisplayName(obj, null, false)).to.equal('some-id');
       });
     });
   });
