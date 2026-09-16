@@ -334,11 +334,35 @@ suite('nuxeo-user-avatar extras', () => {
       el.borderRadius = null;
       el.__obsBorderRadius();
       expect(el.borderRadius).to.equal(0);
+      expect(el.$.container.style.borderRadius).to.equal('0%');
+    });
+
+    test('__obsBorderRadius defaults to 0 when undefined', () => {
+      el.borderRadius = undefined;
+      el.__obsBorderRadius();
+      expect(el.borderRadius).to.equal(0);
+      expect(el.$.container.style.borderRadius).to.equal('0%');
+    });
+
+    test('__obsBorderRadius defaults to 0 for non-numeric input and never emits NaN', () => {
+      el.borderRadius = NaN;
+      el.__obsBorderRadius();
+      expect(el.borderRadius).to.equal(0);
+      expect(el.$.container.style.borderRadius).to.equal('0%');
+      expect(el.$.container.style.borderRadius).to.not.contain('NaN');
+    });
+
+    test('__obsBorderRadius keeps 0 as a valid value', () => {
+      el.borderRadius = 0;
+      el.__obsBorderRadius();
+      expect(el.borderRadius).to.equal(0);
+      expect(el.$.container.style.borderRadius).to.equal('0%');
     });
 
     test('__obsBorderRadius sets value when numeric', () => {
       el.borderRadius = 50;
       el.__obsBorderRadius();
+      expect(el.borderRadius).to.equal(50);
       expect(el.$.container.style.borderRadius).to.equal('50%');
     });
 

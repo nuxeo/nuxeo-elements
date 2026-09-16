@@ -59,7 +59,8 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
           paper-typeahead {
             --paper-typeahead-results: {
-              background-color: white;
+              background-color: var(--nuxeo-dropdown-list-background, #fff);
+              color: var(--nuxeo-text-default, #3a3a54);
               z-index: 100;
               @apply --nuxeo-path-suggestion-results;
             }
@@ -68,7 +69,21 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
               display: block;
               overflow: hidden;
               white-space: nowrap;
+              background-color: var(--nuxeo-dropdown-list-background, #fff);
+              color: var(--nuxeo-text-default, #3a3a54);
+              /* Keep @apply last so consumers can still override the defaults above via the mixin. */
               @apply --nuxeo-path-suggestion-result;
+            }
+
+            /* Selected row: use the theme token if set, else a neutral translucent tint that stays
+               readable on both light and dark surfaces (no color-mix, so it works in every browser). */
+            --paper-typeahead-result-selected-background: var(
+              --hyland-path-suggestion-result-selected-background,
+              rgba(128, 128, 128, 0.2)
+            );
+
+            --paper-typeahead-result-selected: {
+              color: var(--hyland-path-suggestion-result-selected-text, var(--nuxeo-text-default, #3a3a54));
             }
 
             :host([dir='rtl']) {

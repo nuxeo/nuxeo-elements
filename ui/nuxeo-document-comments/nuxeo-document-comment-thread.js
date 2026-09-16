@@ -63,15 +63,16 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
           </template>
         </dom-repeat>
 
-        <dom-if if="[[_allowReplies(level)]]">
+        <dom-if if="[[_allowReplies(level)]]" on-dom-change="_syncInputAccessibleName">
           <template>
             <div class="input-area">
               <paper-textarea
                 id="inputContainer"
+                label="[[_computeTextLabel(level, 'label', null, i18n)]]"
+                always-float-label
                 placeholder="[[_computeTextLabel(level, 'writePlaceholder', null, i18n)]]"
                 value="{{text}}"
                 max-rows="[[_computeMaxRows()]]"
-                no-label-float
                 on-keydown="_checkForEnter"
               >
               </paper-textarea>
@@ -109,6 +110,10 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
     static get is() {
       return 'nuxeo-document-comment-thread';
+    }
+
+    static get observers() {
+      return ['_syncInputAccessibleName(level, i18n)'];
     }
 
     static get properties() {
@@ -201,6 +206,27 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
       this.$$('#inputContainer').focus();
     }
 
+    /**
+     * `paper-textarea` renders its `<label>` one shadow root above the `<textarea>` it names, so the
+     * `aria-labelledby` it sets dangles and Chrome discards it as an invalid name source. Mirroring
+     * the label onto `iron-autogrow-textarea` puts it on the native control as `aria-label`, which
+     * is what ends up naming the field.
+     *
+     * The dangling `aria-labelledby` is deliberately left in place: stripping it here (as
+     * `nuxeo-textarea` can afford to do) fights `paper-input-behavior`, which re-applies it, and the
+     * resulting loop hangs the renderer whenever the `dom-if` restamps this input.
+     */
+    _syncInputAccessibleName() {
+      const input = this.$$('#inputContainer');
+      if (!input) {
+        return;
+      }
+      if (!input.inputElement) {
+        return;
+      }
+      input.inputElement.label = this._computeTextLabel(this.level, 'label');
+    }
+
     _checkForEnter(e) {
       if (e.keyCode === 13 && e.ctrlKey && !this._isBlank(this.text)) {
         this._submitComment();
@@ -229,17 +255,20 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
       this.$.commentRequest
         .get()
         .then((response) => {
-          /* Reconciliation of local and server comments */
-          const olderComment = this.comments.length > 0 ? this.comments[0] : null;
-          const newComments = response.entries;
-          while (
-            newComments.length > 0 &&
-            !!olderComment &&
-            (newComments[0].creationDate > olderComment.creationDate || newComments[0].id === olderComment.id)
-          ) {
-            newComments.shift();
-          }
-          response.entries.forEach((entry) => {
+          /*
+           * Reconciliation of local and server comments.
+           * The server returns entries newest first, while `comments` is kept oldest first, so
+           * `comments[0]` is the oldest comment already loaded. Every leading server entry down to
+           * and including that one is therefore already held locally: skip them and prepend only
+           * the genuinely older entries, keeping the list oldest first.
+           */
+          const oldestLoadedComment = this.comments.length > 0 ? this.comments[0] : null;
+          const isAlreadyLoaded = (entry) =>
+            !!oldestLoadedComment &&
+            (entry.creationDate > oldestLoadedComment.creationDate || entry.id === oldestLoadedComment.id);
+          const firstNewIndex = response.entries.findIndex((entry) => !isAlreadyLoaded(entry));
+          const newComments = firstNewIndex === -1 ? [] : response.entries.slice(firstNewIndex);
+          newComments.forEach((entry) => {
             this.unshift('comments', entry);
           });
           this._setTotal(response.totalSize);

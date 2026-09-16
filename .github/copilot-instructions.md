@@ -71,6 +71,7 @@ test/                → Shared test setup
 - **ESLint**: Flat config (`eslint.config.mjs`), `eslint-plugin-html` for `.html` files
 - **Max line length**: 120 characters
 - **`Nuxeo` global**: Declared as `writable` in ESLint
+- **No optional chaining (`?.`)** in `core/`, `ui/`, or `dataviz/` source — Polymer lint/analyze cannot parse it and elements go missing from `analysis.json`. Use `(obj && obj.prop)` or similar explicit guards instead.
 - Always run `npm run format` before committing
 
 ### Naming
