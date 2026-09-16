@@ -52,6 +52,10 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
             color: var(--paper-input-container-invalid-color, #de350b);
           }
 
+          :host([invalid]) label {
+            color: var(--paper-input-container-invalid-color, #de350b);
+          }
+
           paper-input {
             --paper-input-container: {
               margin-top: 5px;

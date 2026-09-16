@@ -45,4 +45,32 @@ suite('nuxeo-file', () => {
       expect(element._isDropzoneVisible(document)).to.eql(false);
     });
   });
+
+  suite('validation styling', () => {
+    test('adds the required marker to the upload label', async () => {
+      element.required = true;
+      await element.updateComplete;
+
+      const label = element.shadowRoot.querySelector('#label');
+      expect(label).to.exist;
+      expect(label.parentElement.id).to.equal('button');
+      expect(element.hasAttribute('required')).to.be.true;
+      expect(element.shadowRoot.querySelector('style').textContent).to.include(':host([required]) #label::after');
+    });
+
+    test('reflects invalid state on the upload label and error message', async () => {
+      element.invalid = true;
+      element.errorMessage = 'A file is required';
+      await element.updateComplete;
+
+      expect(element.hasAttribute('invalid')).to.be.true;
+      expect(element.shadowRoot.querySelector('#label')).to.exist;
+      expect(element.shadowRoot.querySelector('.error')).to.exist;
+      expect(element.shadowRoot.querySelector('.error').textContent).to.equal('A file is required');
+      expect(element.shadowRoot.querySelector('#dropZone .underline')).to.exist;
+      const styles = element.shadowRoot.querySelector('style').textContent;
+      expect(styles).to.include(':host([invalid]) #label');
+      expect(styles).to.include(':host([invalid]) .underline');
+    });
+  });
 });

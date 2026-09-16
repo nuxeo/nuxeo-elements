@@ -1428,4 +1428,73 @@ suite('nuxeo-selectivity', () => {
       destroySpy.restore();
     });
   });
+
+  // --------------------------------------------------------------------------
+  // Unit/Integration: invalid state error highlighting (ELEMENTS-1887)
+  // --------------------------------------------------------------------------
+  suite('invalid state', () => {
+    const invalidColor = 'rgb(222, 53, 11)';
+
+    test('reflects the invalid property to the host attribute', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity label="Authors" .data=${data}></nuxeo-selectivity>
+      `);
+      expect(selectivityWidget.hasAttribute('invalid')).to.be.false;
+      selectivityWidget.invalid = true;
+      await flush();
+      expect(selectivityWidget.hasAttribute('invalid')).to.be.true;
+    });
+
+    test('highlights the label in red when invalid', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity label="Authors" .data=${data}></nuxeo-selectivity>
+      `);
+      const label = selectivityWidget.shadowRoot.querySelector('.label');
+      selectivityWidget.invalid = true;
+      await flush();
+      expect(getComputedStyle(label).color).to.equal(invalidColor);
+    });
+
+    test('shows a red underline under the single-select input when invalid', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity .data=${data}></nuxeo-selectivity>
+      `);
+      const underline = selectivityWidget.shadowRoot.querySelector('.underline');
+      expect(underline).to.not.be.null;
+      selectivityWidget.invalid = true;
+      await flush();
+      expect(getComputedStyle(underline).backgroundColor).to.equal(invalidColor);
+    });
+
+    test('shows a red underline under the multiple-select input when invalid', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity .data=${data} multiple></nuxeo-selectivity>
+      `);
+      const underline = selectivityWidget.shadowRoot.querySelector('.underline');
+      expect(underline).to.not.be.null;
+      selectivityWidget.invalid = true;
+      await flush();
+      expect(getComputedStyle(underline).backgroundColor).to.equal(invalidColor);
+    });
+
+    test('does not highlight the label or underline when valid', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity label="Authors" .data=${data}></nuxeo-selectivity>
+      `);
+      const label = selectivityWidget.shadowRoot.querySelector('.label');
+      const underline = selectivityWidget.shadowRoot.querySelector('.underline');
+      expect(getComputedStyle(label).color).to.not.equal(invalidColor);
+      expect(getComputedStyle(underline).backgroundColor).to.not.equal(invalidColor);
+    });
+
+    test('shows a red asterisk after the label when required', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity label="Authors" required .data=${data}></nuxeo-selectivity>
+      `);
+      const label = selectivityWidget.shadowRoot.querySelector('.label');
+      const after = getComputedStyle(label, '::after');
+      expect(after.content.replace(/"/g, '')).to.equal('*');
+      expect(after.color).to.equal(invalidColor);
+    });
+  });
 });

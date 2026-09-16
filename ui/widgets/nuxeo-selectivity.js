@@ -7170,6 +7170,11 @@ typedArrayTags[weakMapTag] = false;
             height: 2px;
             background-color: var(--nuxeo-primary-color, #0066ff);
           }
+
+          :host([invalid]) .underline {
+            height: 2px;
+            background-color: var(--paper-input-container-invalid-color, #de350b);
+          }
         </style>
 
         <nuxeo-operation id="op" op="[[operation]]" enrichers="[[enrichers]]" headers="[[headers]]"></nuxeo-operation>

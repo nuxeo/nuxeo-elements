@@ -60,6 +60,11 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
             @apply --nuxeo-drop-zone-hover;
           }
 
+          #dropZone {
+            position: relative;
+            padding-bottom: 8px;
+          }
+
           a {
             @apply --nuxeo-link;
           }
@@ -68,16 +73,15 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
             @apply --nuxeo-link-hover;
           }
 
-          :host([required]) #button::after {
+          :host([required]) #label::after {
             display: inline-block;
             content: '*';
             margin-left: 4px;
             color: var(--paper-input-container-invalid-color, #de350b);
           }
 
-          :host([invalid]) paper-button {
+          :host([invalid]) #label {
             color: var(--paper-input-container-invalid-color, #de350b);
-            margin-bottom: 5px;
           }
 
           :host([invalid]) .error {
@@ -86,6 +90,20 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
 
           #button {
             margin-bottom: 5px;
+          }
+
+          .underline {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            height: 1px;
+            background-color: #3a3a54;
+          }
+
+          :host([invalid]) .underline {
+            height: 2px;
+            background-color: var(--paper-input-container-invalid-color, #de350b);
           }
 
           iron-icon {
@@ -114,6 +132,7 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
               </paper-button>
             </template>
           </dom-if>
+          <div class="underline"></div>
         </div>
 
         <label class="error" hidden$="[[!invalid]]">[[errorMessage]]</label>
