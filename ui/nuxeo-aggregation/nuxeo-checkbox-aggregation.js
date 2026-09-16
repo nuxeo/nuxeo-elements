@@ -96,6 +96,7 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
             cursor: pointer;
             text-decoration: none;
             font-size: 1rem;
+            color: inherit;
           }
           /* to fix a blinking default style on safari */
           button:active {

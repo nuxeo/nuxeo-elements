@@ -3,13 +3,22 @@
  * Prints a short explanation before Web Test Runner starts for a given package.
  * WTR progress shows "1/1 test files" even though dozens of Mocha tests run — this clarifies that.
  *
- * Usage: node scripts/test/unit/print-test-runner-notice.js <package>
+ * Usage: node scripts/test/unit/print-test-runner-notice.js <core|ui|dataviz>
  */
 const glob = require('glob');
 const path = require('path');
 
 const root = path.join(__dirname, '../../..');
-const pkg = process.argv[2] || process.env.NX_PACKAGE || 'core';
+const VALID_PACKAGES = ['core', 'ui', 'dataviz'];
+
+// Selected out of the allow-list instead of used as given, so the name is provably one of the three
+// known packages before it reaches a filesystem path or an output line. The rejected value is
+// deliberately not echoed — it is untrusted input, and Veracode reports it as CWE-312 in a log sink.
+const requested = process.argv[2] || process.env.NX_PACKAGE || 'core';
+const pkg = VALID_PACKAGES.find((name) => name === requested);
+if (!pkg) {
+  throw new Error(`Unknown package requested — expected one of: ${VALID_PACKAGES.join(', ')}`);
+}
 
 const suiteFiles = new Set();
 for (const file of glob.sync('**/*.test.js', { cwd: path.join(root, pkg, 'test'), nodir: true })) {
