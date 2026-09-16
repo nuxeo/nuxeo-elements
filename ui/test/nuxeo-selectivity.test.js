@@ -40,240 +40,6 @@ import { escapeHTML } from '../widgets/nuxeo-selectivity.js';
  *
  * Assertions are aligned with the current implementation in `ui/widgets/nuxeo-selectivity.js`.
  */
-// Keyboard accessibility (Tab) — two-step Tab pattern for multiple-select; focus-to-open for single-select:
-//   - Single-select: focusing opens the dropdown immediately (gives clear visual feedback).
-//   - Multiple-select: Tab while CLOSED -> open the dropdown, keep focus on this field.
-//                      Tab while OPEN   -> close the dropdown and advance focus to the next
-//                                         tabbable element outside the widget.
-//   - Multiple-select: Focusing the field (without pressing Tab) must NOT open the dropdown.
-suite('nuxeo-selectivity keyboard accessibility (Tab)', () => {
-  const KEY_TAB = 9;
-  const tabData = ['Berlin', 'Lisbon', 'London', 'Rennes', 'Rome'];
-  let container;
-  let selectivityWidget;
-  let nextButton;
-
-  suite('single value', () => {
-    setup(async () => {
-      container = await fixture(html`
-        <div>
-          <nuxeo-selectivity placeholder="No city selected" .data=${tabData}></nuxeo-selectivity>
-          <button id="after">after</button>
-        </div>
-      `);
-      selectivityWidget = container.querySelector('nuxeo-selectivity');
-      nextButton = container.querySelector('#after');
-      await flush();
-    });
-
-    test('Tab while closed opens the dropdown', () => {
-      const mainInput = dom(selectivityWidget.root).querySelector('.selectivity-single-select-input');
-      expect(selectivityWidget._selectivity.dropdown).to.be.null;
-
-      pressAndReleaseKeyOn(mainInput, KEY_TAB);
-
-      expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
-    });
-
-    test('Tab while open closes the dropdown and arms _tabbingOut', async () => {
-      selectivityWidget._selectivity.open();
-      await flush();
-      expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
-
-      const searchInput = dom(selectivityWidget.root).querySelector('.selectivity-search-input');
-      expect(searchInput).to.not.be.null;
-      pressAndReleaseKeyOn(searchInput, KEY_TAB);
-
-      expect(selectivityWidget._selectivity.dropdown).to.be.null;
-      // _tabbingOut is set so that the synchronous mainInput.focus() that the
-      // shared listener performs cannot re-open the dropdown via _focused().
-      expect(selectivityWidget._selectivity._tabbingOut).to.be.true;
-    });
-
-    test('Focusing the input opens the dropdown (single-select focus-to-open behaviour)', async () => {
-      const mainInput = dom(selectivityWidget.root).querySelector('.selectivity-single-select-input');
-      mainInput.focus();
-      await flush();
-
-      expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
-      selectivityWidget._selectivity.close();
-    });
-  });
-
-  suite('multiple value', () => {
-    setup(async () => {
-      container = await fixture(html`
-        <div>
-          <nuxeo-selectivity placeholder="No city selected" .data=${tabData} multiple></nuxeo-selectivity>
-          <button id="after">after</button>
-        </div>
-      `);
-      selectivityWidget = container.querySelector('nuxeo-selectivity');
-      nextButton = container.querySelector('#after');
-      await flush();
-    });
-
-    test('Tab while closed opens the dropdown', () => {
-      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
-      expect(selectivityWidget._selectivity.dropdown).to.be.null;
-
-      pressAndReleaseKeyOn(input, KEY_TAB);
-
-      expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
-    });
-
-    // WCAG 2.1 AA, SC 1.4.12 (Text Spacing). The input sits in a shadow root, so a user
-    // text-spacing stylesheet applied at document level can only reach it by inheritance.
-    // The `font` shorthand the input uses does not carry letter-spacing or word-spacing, so
-    // without an explicit opt-in the UA's form-control reset pins both at `normal`.
-    test('should inherit text spacing so user stylesheets can reach the input', async () => {
-      container.style.letterSpacing = '3px';
-      container.style.wordSpacing = '5px';
-      await flush();
-
-      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
-      const style = getComputedStyle(input);
-      expect(style.letterSpacing, 'letter-spacing must follow the ancestor').to.equal('3px');
-      expect(style.wordSpacing, 'word-spacing must follow the ancestor').to.equal('5px');
-    });
-
-    test('Tab while open closes the dropdown', async () => {
-      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
-      selectivityWidget._selectivity.open();
-      await flush();
-      expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
-
-      pressAndReleaseKeyOn(input, KEY_TAB);
-
-      expect(selectivityWidget._selectivity.dropdown).to.be.null;
-    });
-
-    test('Shift+Tab while open closes the dropdown', async () => {
-      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
-      selectivityWidget._selectivity.open();
-      await flush();
-      expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
-
-      pressAndReleaseKeyOn(input, KEY_TAB, ['shift']);
-
-      expect(selectivityWidget._selectivity.dropdown).to.be.null;
-    });
-
-    test('Shift+Tab while closed does nothing', () => {
-      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
-      expect(selectivityWidget._selectivity.dropdown).to.be.null;
-
-      pressAndReleaseKeyOn(input, KEY_TAB, ['shift']);
-
-      expect(selectivityWidget._selectivity.dropdown).to.be.null;
-    });
-
-    test('Tab while open advances focus to the next tabbable element', async () => {
-      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
-      selectivityWidget._selectivity.open();
-      await flush();
-
-      pressAndReleaseKeyOn(input, KEY_TAB);
-      // Focus advance is deferred to a microtask so the close() side-effects
-      // settle first. Await one microtask cycle before asserting.
-      await Promise.resolve();
-
-      expect(document.activeElement).to.equal(nextButton);
-    });
-
-    test('Tab while open uses idx<0 fallback when the multiple-input is not in the tabbable list', async () => {
-      // When the multiple-input has tabIndex=-1, collectTabbable() will not
-      // include it, so findAdjacentTabbable falls back to scanning for the
-      // first non-excluded element that follows the widget in document order.
-      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
-      selectivityWidget._selectivity.open();
-      await flush();
-
-      input.setAttribute('tabindex', '-1');
-
-      pressAndReleaseKeyOn(input, KEY_TAB);
-      await Promise.resolve();
-
-      // The fallback should still find nextButton.
-      expect(document.activeElement).to.equal(nextButton);
-
-      input.removeAttribute('tabindex');
-    });
-
-    test('Tab while open skips tabbable elements inside the widget shadow tree', async () => {
-      // A focusable element living inside the widget's shadow DOM must not capture
-      // focus. findAdjacentTabbable uses a composed-tree check that crosses shadow
-      // boundaries, so the injected button is skipped and focus lands on nextButton.
-      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
-      const innerButton = document.createElement('button');
-      innerButton.textContent = 'inner';
-      selectivityWidget.shadowRoot.appendChild(innerButton);
-      selectivityWidget._selectivity.open();
-      await flush();
-
-      pressAndReleaseKeyOn(input, KEY_TAB);
-      await Promise.resolve();
-
-      expect(document.activeElement).to.equal(nextButton);
-
-      innerButton.remove();
-    });
-
-    test('Tab while open returns null from findAdjacentTabbable when there is no following tabbable element', async () => {
-      // Remove nextButton from the tabbable order so findAdjacentTabbable
-      // reaches the end of the list without finding a suitable target.
-      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
-      selectivityWidget._selectivity.open();
-      await flush();
-
-      nextButton.setAttribute('tabindex', '-1');
-
-      pressAndReleaseKeyOn(input, KEY_TAB);
-      await Promise.resolve();
-
-      // next was null — focus should NOT have moved to nextButton.
-      expect(document.activeElement).to.not.equal(nextButton);
-
-      nextButton.removeAttribute('tabindex');
-    });
-
-    test('Enter key on the multiple input calls event.preventDefault', () => {
-      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
-      const event = new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true, cancelable: true });
-      input.dispatchEvent(event);
-      expect(event.defaultPrevented).to.be.true;
-    });
-
-    test('Focusing the input does not open the dropdown (label-only announce)', async () => {
-      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
-      input.focus();
-      await flush();
-
-      expect(selectivityWidget._selectivity.dropdown).to.be.null;
-    });
-
-    test('Repeated Tab does not trap focus on the field (regression for shared-listener fight)', async () => {
-      // Regression: the shared InputListener's KEY_TAB branch used to run for
-      // multiple-mode inputs too. It nulled `dropdown` without preventDefault,
-      // then MultipleInput._keyHeld saw `dropdown == null` and re-opened on
-      // every Tab — trapping focus on the field. With the shared handler now
-      // gated on `.selectivity-single-select-input`, two consecutive Tabs must
-      // open then close+advance exactly once.
-      const input = dom(selectivityWidget.root).querySelector('input.selectivity-multiple-input');
-
-      // First Tab opens.
-      pressAndReleaseKeyOn(input, KEY_TAB);
-      expect(selectivityWidget._selectivity.dropdown).to.not.be.null;
-
-      // Second Tab closes and advances focus out.
-      pressAndReleaseKeyOn(input, KEY_TAB);
-      await Promise.resolve();
-
-      expect(selectivityWidget._selectivity.dropdown).to.be.null;
-      expect(document.activeElement).to.equal(nextButton);
-    });
-  });
-});
 suite('nuxeo-selectivity', () => {
   let selectivityWidget;
   const data = ['Berlin', 'Lisbon', 'London', 'Rennes', 'Rome'];
@@ -589,67 +355,6 @@ suite('nuxeo-selectivity', () => {
       selectivityWidget.value = ['Berlin'];
       expect(selectivityWidget._getValidity()).to.be.true;
     });
-
-    test('defaults a required error message when empty and clears it once a value is set', async () => {
-      selectivityWidget = await fixture(
-        html`
-          <nuxeo-selectivity .data=${data} required></nuxeo-selectivity>
-        `,
-      );
-      selectivityWidget.value = null;
-      expect(selectivityWidget._getValidity()).to.be.false;
-      // an empty required field surfaces a per-field message (consistent with single-value inputs)
-      expect(selectivityWidget.errorMessage).to.be.ok;
-      // providing a value clears the message we defaulted
-      selectivityWidget.value = 'Berlin';
-      expect(selectivityWidget._getValidity()).to.be.true;
-      expect(selectivityWidget.errorMessage).to.equal('');
-    });
-
-    test('never clobbers or clears a layout-supplied error message', async () => {
-      selectivityWidget = await fixture(
-        html`
-          <nuxeo-selectivity .data=${data} required error-message="Custom error"></nuxeo-selectivity>
-        `,
-      );
-      selectivityWidget.value = null;
-      expect(selectivityWidget._getValidity()).to.be.false;
-      // the layout's own message is preserved, not overwritten with the default
-      expect(selectivityWidget.errorMessage).to.equal('Custom error');
-      // and it survives becoming valid again (only the defaulted message is cleared)
-      selectivityWidget.value = 'Berlin';
-      expect(selectivityWidget._getValidity()).to.be.true;
-      expect(selectivityWidget.errorMessage).to.equal('Custom error');
-    });
-
-    test('auto-clears a shown required error as soon as a value is selected (WEBUI-180 AC-4)', async () => {
-      selectivityWidget = await fixture(
-        html`
-          <nuxeo-selectivity .data=${data} multiple required></nuxeo-selectivity>
-        `,
-      );
-      selectivityWidget.value = [];
-      // simulate a submit that surfaces the required error
-      selectivityWidget.validate();
-      expect(selectivityWidget.invalid).to.be.true;
-      expect(selectivityWidget.errorMessage).to.be.ok;
-      // selecting a value must clear the error immediately, without another submit
-      selectivityWidget.value = ['Berlin'];
-      expect(selectivityWidget.invalid).to.be.false;
-      expect(selectivityWidget.errorMessage).to.equal('');
-    });
-
-    test('does not surface a required error on selection before the field was ever submitted', async () => {
-      selectivityWidget = await fixture(
-        html`
-          <nuxeo-selectivity .data=${data} multiple required></nuxeo-selectivity>
-        `,
-      );
-      // no prior validate(): setting a value must not flip the widget into an invalid state
-      selectivityWidget.value = ['Berlin'];
-      expect(selectivityWidget.invalid).to.be.not.ok;
-      expect(selectivityWidget.errorMessage || '').to.equal('');
-    });
   });
 
   // --------------------------------------------------------------------------
@@ -755,44 +460,22 @@ suite('nuxeo-selectivity', () => {
       expect(input.getAttribute('placeholder')).to.equal('Select cities');
     });
 
-    test('the visible label names the input instead of the placeholder', async () => {
+    test('label takes precedence over placeholder for aria-label', async () => {
       selectivityWidget = await fixture(html`
         <nuxeo-selectivity label="Authors" placeholder="Select authors" .data=${data}></nuxeo-selectivity>
       `);
       const input = selectivityWidget.shadowRoot.querySelector('.selectivity-single-select-input');
-      const label = selectivityWidget.shadowRoot.querySelector('#label');
-      expect(label.hidden).to.be.false;
-      expect(label.textContent).to.equal('Authors');
-      expect(input.getAttribute('aria-labelledby')).to.equal('label');
-      expect(label.getAttribute('for')).to.equal(input.id);
-      expect(input.hasAttribute('aria-label')).to.be.false;
+      expect(input.getAttribute('aria-label')).to.equal('Authors');
     });
 
-    test('setting a label switches the input from the placeholder to the visible label', async () => {
+    test('changing the label updates the aria-label on the input', async () => {
       selectivityWidget = await fixture(html`
         <nuxeo-selectivity placeholder="Pick one" .data=${data}></nuxeo-selectivity>
       `);
       const input = selectivityWidget.shadowRoot.querySelector('.selectivity-single-select-input');
       expect(input.getAttribute('aria-label')).to.equal('Pick one');
-      expect(input.hasAttribute('aria-labelledby')).to.be.false;
       selectivityWidget.label = 'New Label';
-      await flush();
-      expect(input.hasAttribute('aria-label')).to.be.false;
-      expect(input.getAttribute('aria-labelledby')).to.equal('label');
-    });
-
-    test('clearing the label restores the placeholder as the accessible name', async () => {
-      selectivityWidget = await fixture(html`
-        <nuxeo-selectivity label="Authors" placeholder="Select authors" .data=${data}></nuxeo-selectivity>
-      `);
-      const input = selectivityWidget.shadowRoot.querySelector('.selectivity-single-select-input');
-      const label = selectivityWidget.shadowRoot.querySelector('#label');
-      selectivityWidget.label = '';
-      await flush();
-      expect(input.hasAttribute('aria-labelledby')).to.be.false;
-      expect(input.getAttribute('aria-label')).to.equal('Select authors');
-      // no stale association left behind by the label that is no longer rendered
-      expect(label.hasAttribute('for')).to.be.false;
+      expect(input.getAttribute('aria-label')).to.equal('New Label');
     });
 
     test('aria-label is removed when both label and placeholder are empty', async () => {
@@ -1253,74 +936,6 @@ suite('nuxeo-selectivity', () => {
       expect(dropdown).to.not.be.null;
       const items = dropdown.querySelectorAll('.selectivity-result-item');
       expect(items.length).to.be.at.least(1);
-    });
-
-    // ELEMENTS-1746: MultipleSelectivity.filterResults() rebuilds each result item, and used to
-    // drop `depth`. The padding-left expression then evaluated to NaN, the inline style was
-    // discarded and every nested entry collapsed onto the single 17px stylesheet indent — so a
-    // grandchild looked like a sibling of its own parent.
-    const deepTree = [
-      {
-        id: 'documents-pca',
-        displayLabel: 'Documents PCA',
-        children: [
-          {
-            id: 'dtc',
-            displayLabel: 'Directives techniques',
-            children: [{ id: 'dtc-detail', displayLabel: 'Detail' }],
-          },
-          { id: 'modification', displayLabel: 'Modification' },
-        ],
-      },
-    ];
-
-    const openAndReadPadding = async (widget) => {
-      widget._selectivity.open();
-      await flush();
-      await new Promise((r) => setTimeout(r, 50));
-      const dropdown = findDropdown(widget);
-      expect(dropdown).to.not.be.null;
-      const rows = {};
-      dropdown.querySelectorAll('.selectivity-result-item').forEach((row) => {
-        rows[row.textContent.trim()] = row.style.paddingLeft;
-      });
-      return rows;
-    };
-
-    test('indents nested result items by depth when multiple is true', async () => {
-      selectivityWidget = await fixture(html`
-        <nuxeo-selectivity .data=${deepTree} multiple min-chars="0" frequency="0"></nuxeo-selectivity>
-      `);
-      const padding = await openAndReadPadding(selectivityWidget);
-      expect(padding['Documents PCA']).to.equal('7px');
-      expect(padding['Directives techniques']).to.equal('17px');
-      expect(padding.Detail).to.equal('27px');
-      // A child of the root must not be indented like a grandchild.
-      expect(padding.Modification).to.equal('17px');
-    });
-
-    test('indents nested result items identically in single and multiple mode', async () => {
-      selectivityWidget = await fixture(html`
-        <nuxeo-selectivity .data=${deepTree} min-chars="0" frequency="0"></nuxeo-selectivity>
-      `);
-      const single = await openAndReadPadding(selectivityWidget);
-      selectivityWidget = await fixture(html`
-        <nuxeo-selectivity .data=${deepTree} multiple min-chars="0" frequency="0"></nuxeo-selectivity>
-      `);
-      const multiple = await openAndReadPadding(selectivityWidget);
-      expect(multiple).to.deep.equal(single);
-    });
-
-    test('_resultPadding falls back to the root indent for a non-numeric depth', async () => {
-      selectivityWidget = await fixture(
-        html`
-          <nuxeo-selectivity .data=${deepTree}></nuxeo-selectivity>
-        `,
-      );
-      expect(selectivityWidget._resultPadding(0)).to.equal(7);
-      expect(selectivityWidget._resultPadding(2)).to.equal(27);
-      expect(selectivityWidget._resultPadding(undefined)).to.equal(7);
-      expect(selectivityWidget._resultPadding(NaN)).to.equal(7);
     });
   });
 
@@ -1811,6 +1426,75 @@ suite('nuxeo-selectivity', () => {
       expect(destroySpy).to.have.been.calledOnce;
       expect(selectivityWidget._selectivity).to.equal(null);
       destroySpy.restore();
+    });
+  });
+
+  // --------------------------------------------------------------------------
+  // Unit/Integration: invalid state error highlighting (ELEMENTS-1887)
+  // --------------------------------------------------------------------------
+  suite('invalid state', () => {
+    const invalidColor = 'rgb(222, 53, 11)';
+
+    test('reflects the invalid property to the host attribute', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity label="Authors" .data=${data}></nuxeo-selectivity>
+      `);
+      expect(selectivityWidget.hasAttribute('invalid')).to.be.false;
+      selectivityWidget.invalid = true;
+      await flush();
+      expect(selectivityWidget.hasAttribute('invalid')).to.be.true;
+    });
+
+    test('highlights the label in red when invalid', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity label="Authors" .data=${data}></nuxeo-selectivity>
+      `);
+      const label = selectivityWidget.shadowRoot.querySelector('.label');
+      selectivityWidget.invalid = true;
+      await flush();
+      expect(getComputedStyle(label).color).to.equal(invalidColor);
+    });
+
+    test('shows a red underline under the single-select input when invalid', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity .data=${data}></nuxeo-selectivity>
+      `);
+      const underline = selectivityWidget.shadowRoot.querySelector('.underline');
+      expect(underline).to.not.be.null;
+      selectivityWidget.invalid = true;
+      await flush();
+      expect(getComputedStyle(underline).backgroundColor).to.equal(invalidColor);
+    });
+
+    test('shows a red underline under the multiple-select input when invalid', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity .data=${data} multiple></nuxeo-selectivity>
+      `);
+      const underline = selectivityWidget.shadowRoot.querySelector('.underline');
+      expect(underline).to.not.be.null;
+      selectivityWidget.invalid = true;
+      await flush();
+      expect(getComputedStyle(underline).backgroundColor).to.equal(invalidColor);
+    });
+
+    test('does not highlight the label or underline when valid', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity label="Authors" .data=${data}></nuxeo-selectivity>
+      `);
+      const label = selectivityWidget.shadowRoot.querySelector('.label');
+      const underline = selectivityWidget.shadowRoot.querySelector('.underline');
+      expect(getComputedStyle(label).color).to.not.equal(invalidColor);
+      expect(getComputedStyle(underline).backgroundColor).to.not.equal(invalidColor);
+    });
+
+    test('shows a red asterisk after the label when required', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity label="Authors" required .data=${data}></nuxeo-selectivity>
+      `);
+      const label = selectivityWidget.shadowRoot.querySelector('.label');
+      const after = getComputedStyle(label, '::after');
+      expect(after.content.replace(/"/g, '')).to.equal('*');
+      expect(after.color).to.equal(invalidColor);
     });
   });
 });

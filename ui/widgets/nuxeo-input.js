@@ -21,7 +21,6 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-input/paper-input.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
 {
   /**
@@ -32,7 +31,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-input/index.html
    */
-  class Input extends mixinBehaviors([I18nBehavior, IronFormElementBehavior, IronValidatableBehavior], Nuxeo.Element) {
+  class Input extends mixinBehaviors([IronFormElementBehavior, IronValidatableBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style>
@@ -50,6 +49,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             display: inline-block;
             content: '*';
             margin-left: 4px;
+            color: var(--paper-input-container-invalid-color, #de350b);
+          }
+
+          :host([invalid]) label {
             color: var(--paper-input-container-invalid-color, #de350b);
           }
 
@@ -73,9 +76,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           name="[[name]]"
           value="{{value}}"
           placeholder$="[[placeholder]]"
-          aria-label$="[[_computeAriaLabel(label, placeholder)]]"
           error-message="[[errorMessage]]"
-          autocomplete="[[autocomplete]]"
           autofocus$="[[autofocus]]"
           readonly$="[[readonly]]"
           disabled$="[[disabled]]"
@@ -104,10 +105,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         /**
          * Label.
          */
-        label: {
-          type: String,
-          observer: '_syncNativeInputAriaLabel',
-        },
+        label: String,
 
         /**
          * Type.
@@ -130,26 +128,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         /**
          * Placeholder.
          */
-        placeholder: {
-          type: String,
-          observer: '_syncNativeInputAriaLabel',
-        },
+        placeholder: String,
 
         /**
          * Error message to show when `invalid` is true.
          */
         errorMessage: String,
-
-        /**
-         * The HTML autofill token exposed on the native input, e.g. `email`, `username` or
-         * `current-password`. Lets a layout declare the purpose of the field so that browsers and
-         * assistive technology can identify it (WCAG 2.1 SC 1.3.5, technique H98). `off` opts out of
-         * autofill and is the default, matching the underlying `paper-input`.
-         */
-        autocomplete: {
-          type: String,
-          value: 'off',
-        },
 
         /**
          * Autofocus.
@@ -236,87 +220,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this.$.paperInput.focus();
     }
 
-    ready() {
-      super.ready();
-      // Re-sync once the inner native <input> is actually wired up by iron-input;
-      // before that event the aria-labelledby we need to clear may not be present.
-      if (this.$ && this.$.paperInput) {
-        this.$.paperInput.addEventListener('iron-input-ready', () => this._syncNativeInputAriaLabel());
-      }
-      this._syncNativeInputAriaLabel();
-    }
-
     /* Override method from Polymer.IronValidatableBehavior. */
     _getValidity() {
-      const valid = this.$.paperInput.validate();
-      this._applyDefaultRequiredError(valid);
-      return valid;
-    }
-
-    // Surface a per-field reason for required inputs (string and number), consistent with the
-    // multivalued and date widgets. Only default when the field is empty and the layout supplied
-    // no message, so pattern/min/max errors and layout-supplied messages are never clobbered.
-    _applyDefaultRequiredError(valid) {
-      const isEmpty = this.value == null || this.value === '';
-      if (this.required && !valid && isEmpty) {
-        if (!this.errorMessage || this._defaultRequiredError) {
-          this.errorMessage = this.i18n('widget.required');
-          this._defaultRequiredError = true;
-        }
-      } else {
-        this._clearDefaultRequiredError();
-      }
-    }
-
-    // Clear only the message we defaulted, so a layout-supplied errorMessage is never lost.
-    _clearDefaultRequiredError() {
-      if (this._defaultRequiredError) {
-        this.errorMessage = '';
-        this._defaultRequiredError = false;
-      }
-    }
-
-    _computeAriaLabel(label, placeholder) {
-      const normalizedLabel = (label || '').trim();
-      if (normalizedLabel) {
-        return normalizedLabel;
-      }
-      const normalizedPlaceholder = (placeholder || '').trim();
-      return normalizedPlaceholder || null;
-    }
-
-    _syncNativeInputAriaLabel() {
-      // paper-input wraps a native input; keep both in sync for AT compatibility.
-      setTimeout(() => this._applyNativeInputAriaLabel(), 0);
-    }
-
-    _applyNativeInputAriaLabel() {
-      const paperInput = this.$ && this.$.paperInput;
-      if (!paperInput) {
-        return;
-      }
-
-      const ariaLabel = this._computeAriaLabel(this.label, this.placeholder);
-
-      let nativeInput = (paperInput.inputElement && paperInput.inputElement._inputElement) || paperInput.$.nativeInput;
-      if (!nativeInput && paperInput.inputElement) {
-        // iron-input wraps the native input in its light DOM
-        nativeInput = paperInput.inputElement.querySelector && paperInput.inputElement.querySelector('input');
-      }
-      if (!nativeInput && paperInput.shadowRoot) {
-        nativeInput = paperInput.shadowRoot.querySelector('input');
-      }
-      if (nativeInput) {
-        if (ariaLabel) {
-          nativeInput.setAttribute('aria-label', ariaLabel);
-        } else {
-          nativeInput.removeAttribute('aria-label');
-        }
-        // paper-input binds aria-labelledby to its own internal (empty) <label>,
-        // which would otherwise win over aria-label and leave the field unnamed
-        // for assistive technologies. Drop it so our aria-label is announced.
-        nativeInput.removeAttribute('aria-labelledby');
-      }
+      return this.$.paperInput.validate();
     }
   }
 
