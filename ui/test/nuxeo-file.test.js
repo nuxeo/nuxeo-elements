@@ -59,6 +59,41 @@ suite('nuxeo-file (extras)', () => {
     );
   });
 
+  // WEBUI-482: an empty required file widget only turned its button red, which conveys nothing as
+  // text and nothing programmatically.
+  suite('required validation clues', () => {
+    const settled = () => new Promise((resolve) => setTimeout(resolve, 20));
+
+    test('conveys the failure as text and as state on the upload button', async () => {
+      element.required = true;
+
+      expect(element.validate()).to.be.false;
+      await settled();
+
+      const button = element.$.dropZone.querySelector('#button');
+      const error = element.shadowRoot.querySelector('.error');
+      expect(element.errorMessage).to.be.ok;
+      expect(error.textContent.trim()).to.equal(element.errorMessage);
+      expect(button.getAttribute('aria-required')).to.equal('true');
+      expect(button.getAttribute('aria-invalid')).to.equal('true');
+      expect(button.getAttribute('aria-describedby')).to.equal(error.id);
+    });
+
+    test('clears the failure once a blob is set', async () => {
+      element.required = true;
+      element.validate();
+      await settled();
+
+      element.value = { data: '/file.pdf' };
+      expect(element.validate()).to.be.true;
+      await settled();
+
+      const button = element.$.dropZone.querySelector('#button');
+      expect(element.errorMessage).to.equal('');
+      expect(button.getAttribute('aria-invalid')).to.equal('false');
+    });
+  });
+
   suite('_fileName', () => {
     test('returns file.name when present', () => {
       expect(element._fileName({ name: 'report.pdf', _name: 'fallback.pdf' })).to.equal('report.pdf');

@@ -653,6 +653,87 @@ suite('nuxeo-selectivity', () => {
   });
 
   // --------------------------------------------------------------------------
+  // Unit: aria validation state (WEBUI-482 / WEBUI-180)
+  // --------------------------------------------------------------------------
+  // The widget renders its error as a coloured label next to the control, which conveys nothing
+  // programmatically. The state has to reach the control itself, and survive selectivity rebuilding
+  // that control on every selection change.
+  suite('aria validation state', () => {
+    const settled = () => new Promise((resolve) => setTimeout(resolve, 20));
+    const controlOf = (widget) =>
+      widget.shadowRoot.querySelector('.selectivity-single-select-input, .selectivity-multiple-input');
+
+    test('marks a required control as required', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity .data=${data} required></nuxeo-selectivity>
+      `);
+      await settled();
+
+      const control = controlOf(selectivityWidget);
+      expect(control.getAttribute('aria-required')).to.equal('true');
+      expect(control.getAttribute('aria-invalid')).to.equal('false');
+      expect(control.hasAttribute('aria-describedby')).to.be.false;
+    });
+
+    test('marks the control invalid and points it at the error message', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity .data=${data} required></nuxeo-selectivity>
+      `);
+      selectivityWidget.value = null;
+      selectivityWidget.validate();
+      await settled();
+
+      const control = controlOf(selectivityWidget);
+      const error = selectivityWidget.shadowRoot.querySelector('.error');
+      expect(control.getAttribute('aria-invalid')).to.equal('true');
+      expect(control.getAttribute('aria-describedby')).to.equal(error.id);
+      expect(error.id).to.be.ok;
+      expect(error.textContent.trim()).to.equal(selectivityWidget.errorMessage);
+    });
+
+    test('clears the invalid state once a value is selected', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity .data=${data} multiple required></nuxeo-selectivity>
+      `);
+      selectivityWidget.value = [];
+      selectivityWidget.validate();
+      await settled();
+      expect(controlOf(selectivityWidget).getAttribute('aria-invalid')).to.equal('true');
+
+      selectivityWidget.value = ['Berlin'];
+      await settled();
+
+      const control = controlOf(selectivityWidget);
+      expect(control.getAttribute('aria-invalid')).to.equal('false');
+      expect(control.hasAttribute('aria-describedby')).to.be.false;
+    });
+
+    // Adding or removing an entry makes selectivity re-render the selection, which drops the
+    // attributes we set on the control; the state has to come back with it.
+    test('re-applies the state when selectivity re-renders', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity .data=${data} multiple required label="Subjects"></nuxeo-selectivity>
+      `);
+      selectivityWidget.value = [];
+      selectivityWidget.validate();
+      await settled();
+
+      // stand in for the attributes selectivity discards while re-rendering
+      const stale = controlOf(selectivityWidget);
+      ['aria-invalid', 'aria-required', 'aria-label'].forEach((attr) => stale.removeAttribute(attr));
+      selectivityWidget.value = ['Berlin'];
+      selectivityWidget.value = [];
+      selectivityWidget.validate();
+      await settled();
+
+      const control = controlOf(selectivityWidget);
+      expect(control.getAttribute('aria-invalid')).to.equal('true');
+      expect(control.getAttribute('aria-required')).to.equal('true');
+      expect(control.getAttribute('aria-label')).to.equal('Subjects');
+    });
+  });
+
+  // --------------------------------------------------------------------------
   // Unit: formatters
   // --------------------------------------------------------------------------
   suite('formatters', () => {
