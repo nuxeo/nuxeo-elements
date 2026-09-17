@@ -102,7 +102,7 @@ suite('nuxeo-share-button extras', () => {
 
       el._copyLink({ currentTarget: icon });
 
-      expect(nativeInput.value).to.contain('#!/doc/doc1');
+      expect(nativeInput.value).to.contain('doc?id=doc1');
       expect(nativeInput.selectionStart).to.equal(0);
       expect(nativeInput.selectionEnd).to.equal(nativeInput.value.length);
       expect(icon.icon).to.equal('check');
