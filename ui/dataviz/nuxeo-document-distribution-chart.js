@@ -783,12 +783,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     // Generate a string that describes the points of a breadcrumb polygon.
     _breadcrumbPoints(d, i) {
-      const points = [];
-      points.push('0,0');
-      points.push(`${b.w},0`);
-      points.push(`${b.w + b.t},${b.h / 2}`);
-      points.push(`${b.w},${b.h}`);
-      points.push(`0,${b.h}`);
+      const points = ['0,0', `${b.w},0`, `${b.w + b.t},${b.h / 2}`, `${b.w},${b.h}`, `0,${b.h}`];
       if (i > 0) {
         // Leftmost breadcrumb; don't include 6th vertex.
         points.push(`${b.t},${b.h / 2}`);
