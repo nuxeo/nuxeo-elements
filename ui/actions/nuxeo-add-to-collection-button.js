@@ -237,7 +237,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _resultsFilter(entry) {
-      return entry.id && entry.id.indexOf('-999999') === -1;
+      return entry.id && !entry.id.includes('-999999');
     }
 
     _resultFormatter(item) {
