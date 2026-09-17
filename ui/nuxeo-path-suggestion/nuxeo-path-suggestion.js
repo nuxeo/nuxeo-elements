@@ -206,7 +206,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
         allowedPattern: {
           type: String,
-          value: '[^()\\+*%]',
+          value: String.raw`[^()\+*%]`,
         },
 
         disabled: {
