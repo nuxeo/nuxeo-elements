@@ -720,16 +720,19 @@ suite('nuxeo-selectivity', () => {
 
       // stand in for the attributes selectivity discards while re-rendering
       const stale = controlOf(selectivityWidget);
-      ['aria-invalid', 'aria-required', 'aria-label'].forEach((attr) => stale.removeAttribute(attr));
+      ['aria-invalid', 'aria-required', 'aria-labelledby'].forEach((attr) => stale.removeAttribute(attr));
       selectivityWidget.value = ['Berlin'];
       selectivityWidget.value = [];
       selectivityWidget.validate();
       await settled();
 
       const control = controlOf(selectivityWidget);
+      const labelElement = selectivityWidget.shadowRoot.querySelector('#label');
       expect(control.getAttribute('aria-invalid')).to.equal('true');
       expect(control.getAttribute('aria-required')).to.equal('true');
-      expect(control.getAttribute('aria-label')).to.equal('Subjects');
+      // a visible label names the control through aria-labelledby, so that is what has to come back
+      expect(control.getAttribute('aria-labelledby')).to.equal(labelElement.id);
+      expect(labelElement.textContent.trim()).to.equal('Subjects');
     });
   });
 
