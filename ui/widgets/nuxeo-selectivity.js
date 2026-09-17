@@ -7739,7 +7739,7 @@ typedArrayTags[weakMapTag] = false;
     }
 
     /* Override method from Nuxeo.WidgetValidationBehavior. Selectivity rebuilds its input on every
-       selection change, which drops the aria-label too, so restore both from the same place. */
+       selection change, which drops its label association too, so restore both from the same place. */
     _applyAriaValidationState() {
       super._applyAriaValidationState();
       this._syncInputAriaLabel();
