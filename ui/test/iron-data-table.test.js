@@ -118,6 +118,38 @@ suite('iron-data-table extras', () => {
   });
 
   // ------------------------------------------------------------------
+  // multiSelection attribute (ELEMENTS-1664)
+  // ------------------------------------------------------------------
+  suite('multiSelection attribute', () => {
+    test('defaults to true when the attribute is absent', async () => {
+      const el = await fixture(
+        html`
+          <nuxeo-data-table></nuxeo-data-table>
+        `,
+      );
+      expect(el.multiSelection).to.be.true;
+    });
+
+    test('is true when the attribute is present without a value', async () => {
+      const el = await fixture(
+        html`
+          <nuxeo-data-table multi-selection></nuxeo-data-table>
+        `,
+      );
+      expect(el.multiSelection).to.be.true;
+    });
+
+    test('is false when the attribute is set to "false"', async () => {
+      const el = await fixture(
+        html`
+          <nuxeo-data-table multi-selection="false"></nuxeo-data-table>
+        `,
+      );
+      expect(el.multiSelection).to.be.false;
+    });
+  });
+
+  // ------------------------------------------------------------------
   // _isEven
   // ------------------------------------------------------------------
   suite('_isEven', () => {
@@ -892,6 +924,33 @@ suite('iron-data-table extras', () => {
       el.required = true;
       el.items = null;
       expect(el._getValidity()).to.not.be.ok;
+    });
+
+    // WEBUI-482 / WEBUI-180: a required multivalued complex property that is left empty must say so,
+    // and say it where assistive technologies can find it, not with a coloured label alone.
+    test('conveys an empty required table as text and as state on the table', async () => {
+      const el = await newTable();
+      el.label = 'Contributors';
+      el.required = true;
+      el.items = [];
+
+      expect(el.validate()).to.be.false;
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      const error = el.shadowRoot.querySelector('.error');
+      expect(el.errorMessage).to.be.ok;
+      expect(error.textContent.trim()).to.equal(el.errorMessage);
+      expect(el.$.table.getAttribute('aria-required')).to.equal('true');
+      expect(el.$.table.getAttribute('aria-invalid')).to.equal('true');
+      expect(el.$.table.getAttribute('aria-describedby')).to.equal(error.id);
+
+      el.items = [{ id: 1 }];
+      expect(el.validate()).to.be.true;
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      expect(el.errorMessage).to.equal('');
+      expect(el.$.table.getAttribute('aria-invalid')).to.equal('false');
+      expect(el.$.table.hasAttribute('aria-describedby')).to.be.false;
     });
   });
 

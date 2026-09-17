@@ -102,8 +102,14 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
           button:active {
             color: inherit;
           }
-          /* XXX - while we define our default focus state */
+          /* While collapsed the header button is the filter's only tab stop, so
+             keyboard focus must stay visible on it. Ring by default, dropped only
+             for pointer focus: a browser without :focus-visible fails to parse the
+             second rule and keeps the ring rather than hiding it. */
           button:focus {
+            outline: auto;
+          }
+          button:focus:not(:focus-visible) {
             outline: none;
           }
           .heading {
@@ -251,11 +257,6 @@ import { AggregationBehavior } from './nuxeo-aggregation-behavior.js';
           computed: '_computeVisibleBuckets(buckets, visibleItems, _showAll)',
         },
       };
-    }
-
-    ready() {
-      super.ready();
-      this.setAttribute('tabindex', 0);
     }
 
     _formatDocCount(docCount) {
