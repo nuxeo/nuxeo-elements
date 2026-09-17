@@ -2299,32 +2299,6 @@ suite('custom-date-picker extras', () => {
     });
   });
 
-  suite('_handleCalendarIconKeydown', () => {
-    test('opens calendar on Enter', async () => {
-      const el = await newPicker();
-      el._handleCalendarIconKeydown({ key: 'Enter', preventDefault() {}, stopPropagation() {} });
-      expect(el._isCalendarOpen).to.be.true;
-    });
-
-    test('opens calendar on Space', async () => {
-      const el = await newPicker();
-      el._handleCalendarIconKeydown({ key: ' ', preventDefault() {}, stopPropagation() {} });
-      expect(el._isCalendarOpen).to.be.true;
-    });
-
-    test('opens calendar on ArrowDown', async () => {
-      const el = await newPicker();
-      el._handleCalendarIconKeydown({ key: 'ArrowDown', preventDefault() {}, stopPropagation() {} });
-      expect(el._isCalendarOpen).to.be.true;
-    });
-
-    test('opens calendar on F4', async () => {
-      const el = await newPicker();
-      el._handleCalendarIconKeydown({ key: 'F4', preventDefault() {}, stopPropagation() {} });
-      expect(el._isCalendarOpen).to.be.true;
-    });
-  });
-
   suite('resetErrorState', () => {
     test('clears all error flags and DOM', async () => {
       const el = await newPicker();
@@ -2835,6 +2809,109 @@ suite('custom-date-picker extras', () => {
       el._openCalendar();
       flush();
       expect(() => el.disconnectedCallback()).to.not.throw();
+    });
+  });
+
+  // ELEMENTS-2077: characterisation tests for _positionPopover's horizontal placement. The two
+  // viewport-edge branches ran byte-identical centering blocks (SonarCloud S1871) and were merged
+  // into one `||` condition; the `left`/`top` dead initialisers were dropped (S1854). These pin the
+  // computed geometry so both changes - and the later extraction of the placement helpers - are
+  // provably behaviour-preserving. Rects are stubbed because the test page cannot be resized.
+  suite('_positionPopover horizontal placement (ELEMENTS-2077)', () => {
+    const POP_W = 280;
+    const POP_H = 320;
+    const MIN_PADDING = 8;
+
+    const viewport = () => {
+      return {
+        w: window.innerWidth || document.documentElement.clientWidth,
+        h: window.innerHeight || document.documentElement.clientHeight,
+      };
+    };
+
+    // Opens the calendar, then replaces the trigger/popover rects with fixed geometry so the
+    // assertions do not depend on the real layout of the test page.
+    const openWithStubbedRects = async (triggerRect) => {
+      const el = await newPicker();
+      el._openCalendar();
+      flush();
+      const popover = el.shadowRoot.querySelector('#calendarPopover');
+      const trigger = el.shadowRoot.querySelector('.input-wrapper');
+      expect(popover, '#calendarPopover').to.exist;
+      expect(trigger, '.input-wrapper').to.exist;
+      popover.getBoundingClientRect = () => {
+        return { width: POP_W, height: POP_H };
+      };
+      trigger.getBoundingClientRect = () => triggerRect;
+      return { el, popover };
+    };
+
+    const rect = (left, right) => {
+      return { top: 100, bottom: 130, left, right, width: right - left, height: 30 };
+    };
+
+    test('aligns with the trigger when it sits comfortably inside the viewport', async () => {
+      const { el, popover } = await openWithStubbedRects(rect(40, 240));
+      el._positionPopover();
+      expect(popover.style.position).to.equal('fixed');
+      expect(popover.style.left).to.equal('40px');
+      expect(popover.style.top).to.equal('134px'); // rect.bottom + 4
+    });
+
+    test('centers when clamped to the left edge and the trigger overflows to the left', async () => {
+      const { w } = viewport();
+      const maxLeft = w - POP_W - MIN_PADDING;
+      const centerLeft = (w - POP_W) / 2;
+      const { el, popover } = await openWithStubbedRects(rect(-50, 150));
+      el._positionPopover();
+      // Clamped to minLeft, and the trigger is also past that edge, so the popover is centered.
+      // Asserted as a precondition so a narrow runner viewport fails loudly instead of silently
+      // making this test vacuous.
+      expect(centerLeft, 'needs a runner viewport wider than ~576px').to.be.within(MIN_PADDING, maxLeft);
+      expect(popover.style.left).to.equal(`${centerLeft}px`);
+    });
+
+    test('centers when clamped to the right edge and the trigger overflows to the right', async () => {
+      const { w } = viewport();
+      const maxLeft = w - POP_W - MIN_PADDING;
+      const centerLeft = (w - POP_W) / 2;
+      const { el, popover } = await openWithStubbedRects(rect(w, w + 100));
+      el._positionPopover();
+      expect(centerLeft, 'needs a runner viewport wider than ~576px').to.be.within(MIN_PADDING, maxLeft);
+      expect(popover.style.left).to.equal(`${centerLeft}px`);
+    });
+
+    test('right-aligns with the trigger in RTL', async () => {
+      const { w } = viewport();
+      const maxLeft = w - POP_W - MIN_PADDING;
+      const { el, popover } = await openWithStubbedRects(rect(400, 600));
+      el._isRTL = true;
+      el._positionPopover();
+      // preferredLeft = inputRight - popWidth = 600 - 280 = 320, clamped into [8, maxLeft].
+      const preferred = Math.min(Math.max(600 - POP_W, MIN_PADDING), maxLeft);
+      expect(popover.style.left).to.equal(`${preferred}px`);
+    });
+
+    test('flips above the trigger when there is no room below', async () => {
+      const { h } = viewport();
+      // bottom close to the viewport floor => not enough space below, plenty above.
+      const { el, popover } = await openWithStubbedRects({
+        top: h - 40,
+        bottom: h - 10,
+        left: 40,
+        right: 240,
+        width: 200,
+        height: 30,
+      });
+      el._positionPopover();
+      const spaceAbove = h - 40;
+      if (spaceAbove >= POP_H + MIN_PADDING) {
+        expect(popover.classList.contains('open-up'), 'open-up').to.be.true;
+        expect(popover.style.top).to.equal(`${h - 40 - POP_H - 4}px`);
+      } else {
+        // Very short viewport: falls through to the "more space above" clamp.
+        expect(popover.style.top).to.equal(`${MIN_PADDING}px`);
+      }
     });
   });
 
@@ -4846,64 +4923,33 @@ suite('custom-date-picker extras', () => {
   });
 
   suite('_handleCalendarIconKeydown', () => {
-    test('opens calendar on Enter', async () => {
-      const el = await newPicker();
-      const spy = sinon.spy(el, '_openCalendar');
-      el._handleCalendarIconKeydown({
-        key: 'Enter',
-        preventDefault() {},
-        stopPropagation() {},
+    // ELEMENTS-2077: the Enter/Space and ArrowDown/F4 branches of _handleCalendarIconKeydown were
+    // merged into a single condition (SonarCloud S1871). Enter/Space activate the icon and
+    // ArrowDown/F4 are the WAI-ARIA combobox shortcuts, so all four must still open the calendar
+    // *and* swallow the event - otherwise the keystroke also scrolls the page or reaches a parent
+    // list/dialog handler. _openCalendar suppresses the event a second time, hence `at.least(1)`.
+    ['Enter', ' ', 'ArrowDown', 'F4'].forEach((key) => {
+      test(`opens the calendar and suppresses the event for "${key}"`, async () => {
+        const el = await newPicker();
+        const preventDefault = sinon.spy();
+        const stopPropagation = sinon.spy();
+        el._handleCalendarIconKeydown({ key, preventDefault, stopPropagation });
+        expect(el._isCalendarOpen, 'calendar open').to.be.true;
+        expect(preventDefault.callCount, 'preventDefault').to.be.at.least(1);
+        expect(stopPropagation.callCount, 'stopPropagation').to.be.at.least(1);
       });
-      expect(spy).to.have.been.called;
-      spy.restore();
     });
 
-    test('opens calendar on Space', async () => {
-      const el = await newPicker();
-      const spy = sinon.spy(el, '_openCalendar');
-      el._handleCalendarIconKeydown({
-        key: ' ',
-        preventDefault() {},
-        stopPropagation() {},
+    ['Escape', 'Tab', 'ArrowUp', 'ArrowLeft', 'F2', 'a'].forEach((key) => {
+      test(`leaves the calendar closed and the event untouched for "${key}"`, async () => {
+        const el = await newPicker();
+        const preventDefault = sinon.spy();
+        const stopPropagation = sinon.spy();
+        el._handleCalendarIconKeydown({ key, preventDefault, stopPropagation });
+        expect(el._isCalendarOpen, 'calendar open').to.be.false;
+        expect(preventDefault.callCount, 'preventDefault').to.equal(0);
+        expect(stopPropagation.callCount, 'stopPropagation').to.equal(0);
       });
-      expect(spy).to.have.been.called;
-      spy.restore();
-    });
-
-    test('opens calendar on ArrowDown', async () => {
-      const el = await newPicker();
-      const spy = sinon.spy(el, '_openCalendar');
-      el._handleCalendarIconKeydown({
-        key: 'ArrowDown',
-        preventDefault() {},
-        stopPropagation() {},
-      });
-      expect(spy).to.have.been.called;
-      spy.restore();
-    });
-
-    test('opens calendar on F4', async () => {
-      const el = await newPicker();
-      const spy = sinon.spy(el, '_openCalendar');
-      el._handleCalendarIconKeydown({
-        key: 'F4',
-        preventDefault() {},
-        stopPropagation() {},
-      });
-      expect(spy).to.have.been.called;
-      spy.restore();
-    });
-
-    test('does nothing on unrelated key', async () => {
-      const el = await newPicker();
-      const spy = sinon.spy(el, '_openCalendar');
-      el._handleCalendarIconKeydown({
-        key: 'a',
-        preventDefault() {},
-        stopPropagation() {},
-      });
-      expect(spy).not.to.have.been.called;
-      spy.restore();
     });
   });
 
@@ -7220,5 +7266,712 @@ suite('custom-date-picker autocomplete', () => {
     el.autocomplete = 'bday';
     await flush();
     expect(getDateInput(el).getAttribute('autocomplete')).to.equal('bday');
+  });
+});
+
+// ELEMENTS-2077: every `catch` in custom-date-picker.js recovers rather than rethrows, but until
+// now none of them inspected the caught error (SonarCloud S2486) - a malformed value, an
+// unsupported format string or an unexpected locale was indistinguishable from "no value" and
+// nothing reached the log. Each recovery path now routes through _logRecoveredError. One test per
+// site: force the throw, assert the documented fallback is still what comes out, and assert the
+// cause is surfaced. These are also the branches that were previously uncovered, which is why
+// branch coverage for the file was the weak spot.
+suite('custom-date-picker error recovery (ELEMENTS-2077)', () => {
+  const newPicker = () =>
+    fixture(html`
+      <custom-date-picker></custom-date-picker>
+    `);
+
+  const BOOM = 'forced failure';
+  const boom = () => {
+    throw new Error(BOOM);
+  };
+
+  let warn;
+
+  setup(() => {
+    warn = sinon.stub(console, 'warn');
+  });
+
+  teardown(() => {
+    if (warn && warn.restore) {
+      warn.restore();
+    }
+  });
+
+  // Asserts the caught error reached the console, labelled with its call site.
+  const expectLogged = (site) => {
+    expect(warn.callCount, `console.warn for ${site}`).to.be.at.least(1);
+    const labels = warn.getCalls().map((call) => String(call.args[0]));
+    expect(labels.join('\n'), `log label for ${site}`).to.contain(site);
+    expect(labels.join('\n'), 'log prefix').to.contain('[custom-date-picker]');
+  };
+
+  test('pickerI18n.formatDate falls back to toLocaleDateString', async () => {
+    const el = await newPicker();
+    const date = new Date(2024, 3, 12);
+    sinon.stub(el, '_formatDateForDisplay').callsFake(boom);
+    expect(el.pickerI18n.formatDate(date)).to.equal(date.toLocaleDateString());
+    expectLogged('pickerI18n.formatDate');
+  });
+
+  test('pickerI18n.parseDate falls back to the current date', async () => {
+    const el = await newPicker();
+    const clock = sinon.useFakeTimers(new Date(2024, 3, 12).getTime());
+    try {
+      const realMoment = el._moment.bind(el);
+      // Only the parsing call throws; the fallback's no-arg _moment() must still work.
+      sinon.stub(el, '_moment').callsFake((...args) => (args.length ? boom() : realMoment()));
+      expect(el.pickerI18n.parseDate('12/04/2024')).to.deep.equal({
+        day: 12,
+        month: 3,
+        year: 2024,
+      });
+      expectLogged('pickerI18n.parseDate');
+    } finally {
+      clock.restore();
+    }
+  });
+
+  test('_formatAriaDate falls back to toDateString on a broken locale', async () => {
+    const el = await newPicker();
+    const date = new Date(2024, 3, 12);
+    el._locale = 'not a locale';
+    expect(el._formatAriaDate(date)).to.equal(date.toDateString());
+    expectLogged('_formatAriaDate');
+  });
+
+  test('_parseDateOnly returns null for a value it cannot read', async () => {
+    const el = await newPicker();
+    const unreadable = {
+      valueOf: boom,
+      toString: boom,
+    };
+    expect(el._parseDateOnly(unreadable)).to.be.null;
+    expectLogged('_parseDateOnly');
+  });
+
+  test('_parseDateFromISO returns null when date construction fails', async () => {
+    const el = await newPicker();
+    // Unlike _parseDateOnly, this method rejects non-strings before its try/catch, so a
+    // throwing toString/valueOf object cannot reach the recovery path. For a valid ISO
+    // string the only throwable step inside the try is date.setHours(0, 0, 0, 0).
+    const setHoursStub = sinon.stub(Date.prototype, 'setHours').callsFake(boom);
+    try {
+      expect(el._parseDateFromISO('2024-04-12')).to.be.null;
+    } finally {
+      setHoursStub.restore();
+    }
+    expectLogged('_parseDateFromISO');
+  });
+
+  test('_getMonthName falls back to the i18n month names on a broken en locale', async () => {
+    const el = await newPicker();
+    // Malformed enough for Intl to reject, but still resolves to the "en" language branch.
+    el._locale = 'en-';
+    expect(el._getMonthName(new Date(2024, 0, 15))).to.not.equal('');
+    expectLogged('_getMonthName');
+  });
+
+  test('_getMonthName returns an empty name for a broken non-en locale', async () => {
+    const el = await newPicker();
+    el._locale = 'not a locale';
+    expect(el._getMonthName(new Date(2024, 0, 15))).to.equal('');
+    expectLogged('_getMonthName');
+  });
+
+  test('_parseWithFormat returns null when moment throws', async () => {
+    const el = await newPicker();
+    sinon.stub(el, '_moment').callsFake(boom);
+    expect(el._parseWithFormat('12/04/2024', 'DD/MM/YYYY')).to.be.null;
+    expectLogged('_parseWithFormat');
+  });
+
+  test('_safeSetValue falls back to direct assignment when set() throws', async () => {
+    const el = await newPicker();
+    sinon.stub(el, 'set').callsFake(boom);
+    el._safeSetValue('2024-04-12');
+    expect(el.value).to.equal('2024-04-12');
+    expectLogged('_safeSetValue');
+  });
+
+  test('_getDatePlaceholder falls back to en-US when the locale cannot be canonicalised', async () => {
+    const el = await newPicker();
+    sinon.stub(el, '_getUserLocale').returns('!!!');
+    expect(el._getDatePlaceholder('')).to.match(/dd|mm|yyyy/);
+    expectLogged('_getDatePlaceholder (locale canonicalisation)');
+  });
+
+  test('_getDatePlaceholder falls back to the navigator locale when locale lookup throws', async () => {
+    const el = await newPicker();
+    sinon.stub(el, '_getUserLocale').callsFake(boom);
+    expect(el._getDatePlaceholder('')).to.match(/dd|mm|yyyy/);
+    expectLogged('_getDatePlaceholder');
+  });
+
+  test('_getDatePlaceholder falls back to dd/mm/yyyy when Intl is unusable', async () => {
+    const el = await newPicker();
+    sinon.stub(el, '_getUserLocale').callsFake(boom);
+    const OriginalDateTimeFormat = Intl.DateTimeFormat;
+    Intl.DateTimeFormat = boom;
+    try {
+      expect(el._getDatePlaceholder('')).to.equal('dd/mm/yyyy');
+    } finally {
+      Intl.DateTimeFormat = OriginalDateTimeFormat;
+    }
+    expectLogged('_getDatePlaceholder (locale fallback)');
+  });
+
+  test('_valueChanged clears the selection when the value cannot be parsed at all', async () => {
+    const el = await newPicker();
+    el._userIsTyping = false;
+    el._errorPersists = false;
+    el.value = '2024-04-12';
+    await flush();
+    sinon.stub(el, '_moment').callsFake(boom);
+    el._preventInputUpdate = false;
+    el._valueChanged();
+    expect(el._selectedDate).to.be.null;
+    expect(el._inputValue).to.equal('');
+    expect(el._preventInputUpdate, 'reentrancy guard must be released').to.be.false;
+    expectLogged('_valueChanged');
+  });
+
+  test('_formatDateForDisplay falls back to the navigator locale', async () => {
+    const el = await newPicker();
+    sinon.stub(el, '_getUserLocale').callsFake(boom);
+    const date = new Date(2024, 3, 12);
+    expect(el._formatDateForDisplay(date)).to.equal(new Intl.DateTimeFormat(navigator.language).format(date));
+    expectLogged('_formatDateForDisplay');
+  });
+
+  test('_parseUserInput returns null when locale lookup throws', async () => {
+    const el = await newPicker();
+    sinon.stub(el, '_getUserLocale').callsFake(boom);
+    expect(el._parseUserInput('12/04/2024')).to.be.null;
+    expectLogged('_parseUserInput');
+  });
+
+  // Guards against the flip side of the S2486 fix: a recovery path that fires during *normal*
+  // use would now turn into console noise on every interaction.
+  test('an ordinary interaction logs nothing', async () => {
+    const el = await newPicker();
+    await flush();
+    el.value = '2024-04-12';
+    await flush();
+    el._openCalendar();
+    await flush();
+    el._selectDate(new Date(2024, 3, 15));
+    await flush();
+    el._closeCalendar();
+    await flush();
+    el._inputValue = '20/04/2024';
+    el._validateAndParseInput();
+    await flush();
+    el.validate();
+    await flush();
+    const ours = warn.getCalls().filter((call) => String(call.args[0]).includes('[custom-date-picker]'));
+    expect(ours.map((call) => call.args[0]).join('\n'), 'no recovery path should fire').to.equal('');
+  });
+
+  test('repeated failures at the same site are logged once per element', async () => {
+    const el = await newPicker();
+    sinon.stub(el, '_getUserLocale').callsFake(boom);
+    el._parseUserInput('12/04/2024');
+    el._parseUserInput('13/04/2024');
+    el._parseUserInput('14/04/2024');
+    expect(warn.callCount, 'de-duplicated per call site').to.equal(1);
+  });
+
+  test('a fresh element logs again', async () => {
+    const first = await newPicker();
+    sinon.stub(first, '_getUserLocale').callsFake(boom);
+    first._parseUserInput('12/04/2024');
+    const second = await newPicker();
+    sinon.stub(second, '_getUserLocale').callsFake(boom);
+    second._parseUserInput('12/04/2024');
+    expect(warn.callCount, 'dedupe is per element instance').to.equal(2);
+  });
+});
+
+/*
+ * Characterisation tests for the code paths touched by ELEMENTS-2077's S3776 refactors.
+ *
+ * These exist because the refactored functions had branches that no test exercised - most
+ * starkly _moveYearOptionFocus, where only 2 of 15 lines ran. A green suite therefore said
+ * nothing about whether those extractions preserved behaviour.
+ *
+ * Every test below drives a PRE-EXISTING entry point (_handleGridKeydown,
+ * _handleYearDropdownKeydown, _updateErrorDisplay, _parseUserInput) rather than any newly
+ * extracted helper, so this file runs unchanged against both the refactored code and the
+ * commit before it. Green on both is the actual evidence of equivalence.
+ */
+suite('custom-date-picker characterisation (ELEMENTS-2077 S3776)', () => {
+  // A minimal keydown stand-in: the handlers only ever read `key` and `target`, and call
+  // preventDefault/stopPropagation. Mirrors makeEscapeEvent() above.
+  function keyEvent(key, target) {
+    let prevented = false;
+    let stopped = false;
+    return {
+      key,
+      target,
+      preventDefault() {
+        prevented = true;
+      },
+      stopPropagation() {
+        stopped = true;
+      },
+      wasPrevented: () => prevented,
+      wasStopped: () => stopped,
+    };
+  }
+
+  suite('year dropdown roving focus', () => {
+    // min/max narrow _generateYearOptions to 2020..2029, so index arithmetic is assertable.
+    let el;
+    let buttons;
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker min="2020-01-01" max="2029-12-31"></custom-date-picker>
+      `);
+      await flush();
+      el._viewDate = new Date(2024, 0, 1);
+      el._openCalendar();
+      await flush();
+
+      const panel = el.shadowRoot.querySelector('#yearOptions');
+      panel.classList.add('open');
+      el._isYearDropdownOpen = true;
+
+      buttons = Array.from(el.shadowRoot.querySelectorAll('.year-option'));
+      buttons.forEach((b, i) => {
+        b.tabIndex = i === 0 ? 0 : -1;
+      });
+    });
+
+    const focusedIndex = () => buttons.findIndex((b) => b.tabIndex === 0);
+
+    test('renders one option per year in the min/max range', () => {
+      expect(buttons.length).to.equal(10);
+      expect(buttons[0].textContent.trim()).to.equal('2020');
+      expect(buttons[9].textContent.trim()).to.equal('2029');
+    });
+
+    test('ArrowDown moves the roving tabindex forward one option', () => {
+      el._handleYearDropdownKeydown(keyEvent('ArrowDown'));
+      expect(focusedIndex()).to.equal(1);
+    });
+
+    test('ArrowUp moves the roving tabindex back one option', () => {
+      buttons[0].tabIndex = -1;
+      buttons[3].tabIndex = 0;
+      el._handleYearDropdownKeydown(keyEvent('ArrowUp'));
+      expect(focusedIndex()).to.equal(2);
+    });
+
+    test('ArrowUp clamps at the first option instead of wrapping', () => {
+      el._handleYearDropdownKeydown(keyEvent('ArrowUp'));
+      expect(focusedIndex()).to.equal(0);
+    });
+
+    test('ArrowDown clamps at the last option instead of wrapping', () => {
+      buttons[0].tabIndex = -1;
+      buttons[9].tabIndex = 0;
+      el._handleYearDropdownKeydown(keyEvent('ArrowDown'));
+      expect(focusedIndex()).to.equal(9);
+    });
+
+    test('Home jumps to the first option', () => {
+      buttons[0].tabIndex = -1;
+      buttons[7].tabIndex = 0;
+      el._handleYearDropdownKeydown(keyEvent('Home'));
+      expect(focusedIndex()).to.equal(0);
+    });
+
+    test('End jumps to the last option', () => {
+      el._handleYearDropdownKeydown(keyEvent('End'));
+      expect(focusedIndex()).to.equal(9);
+    });
+
+    test('PageDown moves ten options, clamped to the last', () => {
+      el._handleYearDropdownKeydown(keyEvent('PageDown'));
+      expect(focusedIndex()).to.equal(9);
+    });
+
+    test('PageUp moves ten options back, clamped to the first', () => {
+      buttons[0].tabIndex = -1;
+      buttons[5].tabIndex = 0;
+      el._handleYearDropdownKeydown(keyEvent('PageUp'));
+      expect(focusedIndex()).to.equal(0);
+    });
+
+    test('exactly one option carries tabindex 0 after a move', () => {
+      el._handleYearDropdownKeydown(keyEvent('ArrowDown'));
+      expect(buttons.filter((b) => b.tabIndex === 0).length).to.equal(1);
+    });
+
+    test('moves focus as well as the tabindex', () => {
+      el._handleYearDropdownKeydown(keyEvent('ArrowDown'));
+      expect(el.shadowRoot.activeElement).to.equal(buttons[1]);
+    });
+
+    test('Enter activates the option holding the roving tabindex', () => {
+      buttons[0].tabIndex = -1;
+      buttons[6].tabIndex = 0; // 2026
+      el._handleYearDropdownKeydown(keyEvent('Enter'));
+      expect(el._viewDate.getFullYear()).to.equal(2026);
+    });
+
+    test('Space activates the focused option too', () => {
+      buttons[0].tabIndex = -1;
+      buttons[2].tabIndex = 0; // 2022
+      el._handleYearDropdownKeydown(keyEvent(' '));
+      expect(el._viewDate.getFullYear()).to.equal(2022);
+    });
+
+    test('ArrowDown opens the dropdown instead of moving when it is closed', () => {
+      el.shadowRoot.querySelector('#yearOptions').classList.remove('open');
+      el._isYearDropdownOpen = false;
+      el._handleYearDropdownKeydown(keyEvent('ArrowDown'));
+      expect(el._isYearDropdownOpen).to.be.true;
+      expect(focusedIndex()).to.equal(0);
+    });
+
+    test('Enter opens the dropdown when it is closed', () => {
+      el.shadowRoot.querySelector('#yearOptions').classList.remove('open');
+      el._isYearDropdownOpen = false;
+      el._handleYearDropdownKeydown(keyEvent('Enter'));
+      expect(el._isYearDropdownOpen).to.be.true;
+    });
+
+    test('Home still consumes the event when the panel is closed, but moves nothing', () => {
+      el.shadowRoot.querySelector('#yearOptions').classList.remove('open');
+      buttons[0].tabIndex = -1;
+      buttons[4].tabIndex = 0;
+      const event = keyEvent('Home');
+      el._handleYearDropdownKeydown(event);
+      expect(event.wasPrevented()).to.be.true;
+      expect(focusedIndex()).to.equal(4);
+    });
+  });
+
+  suite('day grid navigation within the viewed month', () => {
+    // April 2024: the 1st is a Monday and the month has 30 days, so every boundary case
+    // below is reachable inside one month.
+    let el;
+    let focusDate;
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+      el._openCalendar();
+      el._viewDate = new Date(2024, 3, 1);
+      el._generateCalendar();
+      await flush();
+      focusDate = sinon.spy(el, '_focusDate');
+    });
+
+    teardown(() => {
+      focusDate.restore();
+    });
+
+    const dayButton = (iso) => el.shadowRoot.querySelector(`[data-date="${iso}"]`);
+    const movedTo = () => focusDate.getCall(0).args[0];
+
+    test('ArrowLeft moves back one day', () => {
+      el._handleGridKeydown(keyEvent('ArrowLeft', dayButton('2024-04-15')));
+      expect(focusDate.calledOnce).to.be.true;
+      expect(movedTo().getDate()).to.equal(14);
+    });
+
+    test('ArrowRight moves forward one day', () => {
+      el._handleGridKeydown(keyEvent('ArrowRight', dayButton('2024-04-15')));
+      expect(movedTo().getDate()).to.equal(16);
+    });
+
+    test('ArrowUp moves back one week', () => {
+      el._handleGridKeydown(keyEvent('ArrowUp', dayButton('2024-04-15')));
+      expect(movedTo().getDate()).to.equal(8);
+    });
+
+    test('ArrowDown moves forward one week', () => {
+      el._handleGridKeydown(keyEvent('ArrowDown', dayButton('2024-04-15')));
+      expect(movedTo().getDate()).to.equal(22);
+    });
+
+    test('Home moves to the start of the focused week', () => {
+      // The 15th is a Monday, so the week starts on Sunday the 14th.
+      el._handleGridKeydown(keyEvent('Home', dayButton('2024-04-15')));
+      expect(movedTo().getDate()).to.equal(14);
+    });
+
+    test('End moves to the end of the focused week', () => {
+      el._handleGridKeydown(keyEvent('End', dayButton('2024-04-15')));
+      expect(movedTo().getDate()).to.equal(20);
+    });
+
+    test('ArrowLeft does not cross into the previous month', () => {
+      el._handleGridKeydown(keyEvent('ArrowLeft', dayButton('2024-04-01')));
+      expect(focusDate.called).to.be.false;
+    });
+
+    test('ArrowRight does not cross into the next month', () => {
+      el._handleGridKeydown(keyEvent('ArrowRight', dayButton('2024-04-30')));
+      expect(focusDate.called).to.be.false;
+    });
+
+    test('ArrowUp does not cross into the previous month', () => {
+      el._handleGridKeydown(keyEvent('ArrowUp', dayButton('2024-04-01')));
+      expect(focusDate.called).to.be.false;
+    });
+
+    test('ArrowDown does not cross into the next month', () => {
+      el._handleGridKeydown(keyEvent('ArrowDown', dayButton('2024-04-30')));
+      expect(focusDate.called).to.be.false;
+    });
+
+    test('Home does not cross into the previous month', () => {
+      // The 1st is a Monday, so its week starts on 31 March.
+      el._handleGridKeydown(keyEvent('Home', dayButton('2024-04-01')));
+      expect(focusDate.called).to.be.false;
+    });
+
+    test('End does not cross into the next month', () => {
+      // The 30th is a Tuesday, so its week ends on 4 May.
+      el._handleGridKeydown(keyEvent('End', dayButton('2024-04-30')));
+      expect(focusDate.called).to.be.false;
+    });
+
+    test('every navigation key consumes the event', () => {
+      ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].forEach((key) => {
+        const event = keyEvent(key, dayButton('2024-04-15'));
+        el._handleGridKeydown(event);
+        expect(event.wasPrevented(), `${key} preventDefault`).to.be.true;
+        expect(event.wasStopped(), `${key} stopPropagation`).to.be.true;
+      });
+    });
+
+    test('Enter selects the focused day', () => {
+      const selectDate = sinon.spy(el, '_selectDate');
+      el._handleGridKeydown(keyEvent('Enter', dayButton('2024-04-15')));
+      expect(selectDate.calledOnce).to.be.true;
+      expect(selectDate.getCall(0).args[0].getDate()).to.equal(15);
+      selectDate.restore();
+    });
+
+    test('an unhandled key neither moves nor selects', () => {
+      const selectDate = sinon.spy(el, '_selectDate');
+      el._handleGridKeydown(keyEvent('a', dayButton('2024-04-15')));
+      expect(focusDate.called).to.be.false;
+      expect(selectDate.called).to.be.false;
+      selectDate.restore();
+    });
+  });
+
+  suite('error display: show / clear / keep', () => {
+    let el;
+    let errorEl;
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+      errorEl = el.shadowRoot.querySelector('#errorText');
+    });
+
+    test('shows the required message for an empty required field', () => {
+      el.required = true;
+      el.value = '';
+      el._showErrors = true;
+      // _getValidity sets errorMessage before _updateErrorDisplay runs in the real flow.
+      // It matters: setAttribute('invalid') fires _invalidChanged, which recomputes the
+      // element's hidden state from errorMessage, and an empty one re-hides the row.
+      el.errorMessage = el._generateRequiredMessage();
+      el._updateErrorDisplay(false);
+      expect(errorEl.hidden).to.be.false;
+      expect(errorEl.textContent).to.not.equal('');
+      expect(el.hasAttribute('invalid')).to.be.true;
+    });
+
+    test('shows errorMessage for a non-required validation failure', () => {
+      el.required = false;
+      el.value = 'nonsense';
+      el.errorMessage = 'Incorrect date format';
+      el._showErrors = true;
+      el._updateErrorDisplay(false);
+      expect(errorEl.textContent).to.equal('Incorrect date format');
+      expect(errorEl.hidden).to.be.false;
+    });
+
+    test('KEEPS the existing message when invalid but there is nothing new to say', () => {
+      // The load-bearing third case: invalid, errors are showing, but the field is neither
+      // an empty-required nor carrying an errorMessage. The previous text must survive.
+      el.required = false;
+      el.value = 'something';
+      el.errorMessage = '';
+      el._showErrors = true;
+      errorEl.textContent = 'Previously shown error';
+      errorEl.hidden = false;
+
+      el._updateErrorDisplay(false);
+
+      expect(errorEl.textContent).to.equal('Previously shown error');
+      expect(errorEl.hidden).to.be.false;
+    });
+
+    test('clears when the field is valid', () => {
+      el.setAttribute('invalid', '');
+      errorEl.hidden = false;
+      el._showErrors = true;
+      el._updateErrorDisplay(true);
+      expect(errorEl.hidden).to.be.true;
+      expect(el.hasAttribute('invalid')).to.be.false;
+    });
+
+    test('clears when errors are not being shown yet, even if invalid', () => {
+      el.setAttribute('invalid', '');
+      errorEl.hidden = false;
+      el._showErrors = false;
+      el._updateErrorDisplay(false);
+      expect(errorEl.hidden).to.be.true;
+      expect(el.hasAttribute('invalid')).to.be.false;
+    });
+  });
+
+  suite('outside-click dismissal', () => {
+    let el;
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+      el._openCalendar();
+      await flush();
+      el._interactingWithCalendar = false;
+    });
+
+    test('a click on the calendar popover leaves it open', () => {
+      const popover = el.shadowRoot.querySelector('#calendarPopover');
+      el._handleDocumentClick({ target: popover, composedPath: () => [popover] });
+      expect(el._isCalendarOpen).to.be.true;
+    });
+
+    test('a click reaching the host only via the composed path leaves it open', () => {
+      // The path sees through shadow boundaries that the retargeted target does not, which
+      // is the whole reason that fourth check exists.
+      el._handleDocumentClick({ target: document.body, composedPath: () => [document.body, el] });
+      expect(el._isCalendarOpen).to.be.true;
+    });
+
+    test('a click genuinely outside closes the calendar', () => {
+      el._handleDocumentClick({ target: document.body, composedPath: () => [document.body] });
+      expect(el._isCalendarOpen).to.be.false;
+    });
+
+    test('a click outside is ignored while interacting with the calendar', () => {
+      el._interactingWithCalendar = true;
+      el._handleDocumentClick({ target: document.body, composedPath: () => [document.body] });
+      expect(el._isCalendarOpen).to.be.true;
+    });
+
+    test('closing via an outside click also closes an open year dropdown', () => {
+      el.shadowRoot.querySelector('#yearOptions').classList.add('open');
+      el._isYearDropdownOpen = true;
+      el._handleDocumentClick({ target: document.body, composedPath: () => [document.body] });
+      expect(el._isCalendarOpen).to.be.false;
+      expect(el._isYearDropdownOpen).to.be.false;
+    });
+  });
+
+  suite('input parsing: format resolution and the plausible-year window', () => {
+    let el;
+
+    setup(async () => {
+      el = await fixture(html`
+        <custom-date-picker></custom-date-picker>
+      `);
+      await flush();
+    });
+
+    test('an exact match on the primary format is kept verbatim', () => {
+      el.format = 'DD MMMM YYYY';
+      const result = el._parseUserInput('12 April 2024');
+      expect(result).to.not.be.null;
+      expect(result.isExactFormat).to.be.true;
+      expect(result.date.getFullYear()).to.equal(2024);
+      expect(result.date.getMonth()).to.equal(3);
+      expect(result.date.getDate()).to.equal(12);
+    });
+
+    test('the strict path does NOT apply the 1900-2200 window', () => {
+      // Deliberate asymmetry, and the reason _momentToStartOfDay is parameterised: an input
+      // that matches the primary format exactly is taken at face value, however odd the year.
+      el.format = 'YYYY-MM-DD';
+      const result = el._parseUserInput('1850-12-04');
+      expect(result).to.not.be.null;
+      expect(result.isExactFormat).to.be.true;
+      expect(result.date.getFullYear()).to.equal(1850);
+    });
+
+    test('the strict path accepts a year above 2200 as well', () => {
+      el.format = 'YYYY-MM-DD';
+      const result = el._parseUserInput('2500-12-04');
+      expect(result).to.not.be.null;
+      expect(result.isExactFormat).to.be.true;
+      expect(result.date.getFullYear()).to.equal(2500);
+    });
+
+    test('a recovery path rejects a year below 1900', () => {
+      // Numeric primary format, so the ISO input reaches the recovery attempts, which do
+      // apply the window.
+      el.format = 'MM/DD/YYYY';
+      expect(el._parseUserInput('1850-12-04')).to.be.null;
+      expect(el._parseUserInput('1899-12-31')).to.be.null;
+    });
+
+    test('a recovery path rejects a year above 2200', () => {
+      el.format = 'MM/DD/YYYY';
+      expect(el._parseUserInput('2500-12-04')).to.be.null;
+      expect(el._parseUserInput('2201-01-01')).to.be.null;
+    });
+
+    test('a recovery path inside the window is accepted and marked non-exact', () => {
+      el.format = 'MM/DD/YYYY';
+      const result = el._parseUserInput('2024-04-12');
+      expect(result).to.not.be.null;
+      expect(result.isExactFormat).to.be.false;
+      expect(result.date.getFullYear()).to.equal(2024);
+      expect(result.date.getMonth()).to.equal(3);
+      expect(result.date.getDate()).to.equal(12);
+    });
+
+    test('an unusable format flags the field and still falls back to the locale format', () => {
+      el.format = 'qqqq';
+      el.invalid = false;
+      el.errorMessage = '';
+      const result = el._parseUserInput('2024-04-12');
+      expect(el.invalid).to.be.true;
+      expect(el.errorMessage).to.contain('Invalid date format');
+      expect(result).to.not.be.null;
+      expect(result.date.getFullYear()).to.equal(2024);
+    });
+
+    test('start of day is normalised on every accepted path', () => {
+      el.format = 'DD MMMM YYYY';
+      const exact = el._parseUserInput('12 April 2024');
+      el.format = 'MM/DD/YYYY';
+      const recovered = el._parseUserInput('2024-04-12');
+      [exact, recovered].forEach((r) => {
+        expect(r.date.getHours()).to.equal(0);
+        expect(r.date.getMinutes()).to.equal(0);
+        expect(r.date.getSeconds()).to.equal(0);
+        expect(r.date.getMilliseconds()).to.equal(0);
+      });
+    });
   });
 });
