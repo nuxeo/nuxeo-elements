@@ -26,8 +26,31 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import Cropper from 'cropperjs/dist/cropper.esm.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-icons.js';
+import '../widgets/nuxeo-tooltip.js';
 
 {
+  /**
+   * Share of the visible viewer travelled by a single pan activation. Small enough to stay
+   * predictable, large enough that reaching the far side of a zoomed image does not need dozens of
+   * clicks.
+   */
+  const PAN_STEP_RATIO = 0.2;
+
+  /** Never pan by less than this, so the controls still work in a very small viewer. */
+  const MIN_PAN_STEP = 24;
+
+  /**
+   * How the Cropper canvas has to move for each panning action. Panning follows the scrolling
+   * convention: "pan left" moves the viewport towards the left of the image, which means the canvas
+   * itself travels to the right — exactly what the user gets today by dragging the image rightwards.
+   */
+  const PAN_DIRECTIONS = {
+    'pan-left': { x: 1, y: 0 },
+    'pan-right': { x: -1, y: 0 },
+    'pan-up': { x: 0, y: 1 },
+    'pan-down': { x: 0, y: -1 },
+  };
+
   /**
    * An element for viewing images.
    *
@@ -130,11 +153,15 @@ import '../nuxeo-icons.js';
           #toolbar {
             position: absolute;
             bottom: 16px;
-            max-width: 300px;
+            /* Holds the nine 34px controls on a single row; they wrap instead of overflowing a narrow viewer. */
+            max-width: 320px;
             left: 50%;
             transform: translateX(-50%);
             color: var(--nuxeo-image-viewer-toolbar-color);
             z-index: 25;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
             text-align: center;
             padding: 4px;
             border-radius: 6px;
@@ -143,6 +170,7 @@ import '../nuxeo-icons.js';
           }
 
           paper-icon-button {
+            flex: none;
             width: 34px;
             height: 34px;
             color: var(--nuxeo-image-viewer-toolbar-color) !important;
@@ -222,6 +250,42 @@ import '../nuxeo-icons.js';
                   title$="[[i18n('imagePreviewer.rotate.right')]]"
                 >
                 </paper-icon-button>
+                <paper-icon-button
+                  id="panLeft"
+                  on-click="_click"
+                  icon="arrow-back"
+                  alt=""
+                  data-action="pan-left"
+                  aria-label$="[[i18n('imagePreviewer.pan.left')]]"
+                ></paper-icon-button>
+                <nuxeo-tooltip for="panLeft" position="top">[[i18n('imagePreviewer.pan.left')]]</nuxeo-tooltip>
+                <paper-icon-button
+                  id="panUp"
+                  on-click="_click"
+                  icon="arrow-upward"
+                  alt=""
+                  data-action="pan-up"
+                  aria-label$="[[i18n('imagePreviewer.pan.up')]]"
+                ></paper-icon-button>
+                <nuxeo-tooltip for="panUp" position="top">[[i18n('imagePreviewer.pan.up')]]</nuxeo-tooltip>
+                <paper-icon-button
+                  id="panDown"
+                  on-click="_click"
+                  icon="arrow-downward"
+                  alt=""
+                  data-action="pan-down"
+                  aria-label$="[[i18n('imagePreviewer.pan.down')]]"
+                ></paper-icon-button>
+                <nuxeo-tooltip for="panDown" position="top">[[i18n('imagePreviewer.pan.down')]]</nuxeo-tooltip>
+                <paper-icon-button
+                  id="panRight"
+                  on-click="_click"
+                  icon="arrow-forward"
+                  alt=""
+                  data-action="pan-right"
+                  aria-label$="[[i18n('imagePreviewer.pan.right')]]"
+                ></paper-icon-button>
+                <nuxeo-tooltip for="panRight" position="top">[[i18n('imagePreviewer.pan.right')]]</nuxeo-tooltip>
               </div>
             </template>
           </dom-if>
@@ -284,10 +348,32 @@ import '../nuxeo-icons.js';
         case 'rotate-right':
           this._el.rotate(90);
           break;
+        case 'pan-left':
+        case 'pan-right':
+        case 'pan-up':
+        case 'pan-down':
+          this._pan(action);
+          break;
         default:
         // do nothing
       }
       this._scheduleToolbarContrastUpdate();
+    }
+
+    /**
+     * Moves the image by one step for one of the `pan-*` actions. Each activation is a single
+     * pointer click or key press, so panning no longer needs a dragging movement (WCAG 2.1
+     * SC 2.5.7). The step scales with the viewer so it feels the same at any size.
+     */
+    _pan(action) {
+      const direction = PAN_DIRECTIONS[action];
+      if (!this._el || !direction) {
+        return;
+      }
+      const { canvas } = this.$;
+      const stepX = Math.max(MIN_PAN_STEP, canvas.offsetWidth * PAN_STEP_RATIO);
+      const stepY = Math.max(MIN_PAN_STEP, canvas.offsetHeight * PAN_STEP_RATIO);
+      this._el.move(direction.x * stepX, direction.y * stepY);
     }
 
     _getOriginalZoomRatio() {
