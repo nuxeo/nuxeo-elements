@@ -196,11 +196,8 @@ window.nuxeo.slots.setSharedModel = (model) => {
       this._instances.forEach((instance) => {
         const c$ = instance.children;
         if (c$ && c$.length) {
-          // use first child parent, for case when dom-if may have been detached
-          const p = dom(dom(c$[0]).parentNode);
-
           for (let i = 0, n; i < c$.length && (n = c$[i]); i++) {
-            p.removeChild(n);
+            n.remove();
           }
         }
       });
