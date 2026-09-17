@@ -559,6 +559,21 @@ suite('nuxeo-selectivity', () => {
       expect(input.getAttribute('aria-label')).to.equal('New Label');
     });
 
+    test('uses a unique input id for each labelled instance', async () => {
+      const first = await fixture(html`
+        <nuxeo-selectivity label="Authors" .data=${data}></nuxeo-selectivity>
+      `);
+      const second = await fixture(html`
+        <nuxeo-selectivity label="Contributors" .data=${data}></nuxeo-selectivity>
+      `);
+      const firstInput = first.shadowRoot.querySelector('.selectivity-single-select-input');
+      const secondInput = second.shadowRoot.querySelector('.selectivity-single-select-input');
+
+      expect(firstInput.id).to.match(/^nuxeo-selectivity-input-\d+$/);
+      expect(secondInput.id).to.match(/^nuxeo-selectivity-input-\d+$/);
+      expect(firstInput.id).to.not.equal(secondInput.id);
+    });
+
     test('aria-label is removed when both label and placeholder are empty', async () => {
       selectivityWidget = await fixture(html`
         <nuxeo-selectivity placeholder=" " .data=${data}></nuxeo-selectivity>

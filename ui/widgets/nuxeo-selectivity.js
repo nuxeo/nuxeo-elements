@@ -27,6 +27,8 @@ import {I18nBehavior} from "../nuxeo-i18n-behavior";
 import { WidgetValidationBehavior } from './nuxeo-widget-validation-behavior.js';
 import '@polymer/iron-icon/iron-icon.js';
 
+let selectivityInputId = 0;
+
 /**
  * @license
  * Selectivity.js 3.0.5 <https://arendjr.github.io/selectivity/>
@@ -7765,8 +7767,16 @@ typedArrayTags[weakMapTag] = false;
       // (WCAG 3.3.2 / 1.3.1). Without a label there is nothing visible to reference and the
       // placeholder remains the only available name.
       if (label && labelElement) {
+        if (!this._inputId) {
+          if (input.id) {
+            this._inputId = input.id;
+          } else {
+            selectivityInputId += 1;
+            this._inputId = `${this.constructor.is}-input-${selectivityInputId}`;
+          }
+        }
         if (!input.id) {
-          input.id = `${this.constructor.is}-input`;
+          input.id = this._inputId;
         }
         labelElement.setAttribute('for', input.id);
         input.setAttribute('aria-labelledby', labelElement.id);

@@ -85,6 +85,16 @@ suite('nuxeo-select', () => {
       expect(paperInput.getAttribute('aria-label')).to.equal('Second Aria Label');
     });
 
+    test('forwards host aria-labelledby to the trigger and native input', async () => {
+      el.setAttribute('aria-labelledby', 'external-label');
+      await waitForAriaSync();
+
+      const paperInput = getPaperInput(el);
+      const nativeInput = el._getNativeInput();
+      expect(paperInput.getAttribute('aria-labelledby')).to.equal('external-label');
+      expect(nativeInput.getAttribute('aria-labelledby')).to.equal('external-label');
+    });
+
     test('ignores non aria-label attribute mutations', async () => {
       const syncSpy = sinon.spy(el, '_syncAriaLabel');
 
@@ -94,6 +104,17 @@ suite('nuxeo-select', () => {
       expect(syncSpy).to.not.have.been.called;
       syncSpy.restore();
       el.removeAttribute('data-test-attribute');
+    });
+
+    test('updates when host aria-labelledby attribute changes', async () => {
+      el.setAttribute('aria-labelledby', 'first-label');
+      await waitForAriaSync();
+
+      el.setAttribute('aria-labelledby', 'second-label');
+      await waitForAriaSync();
+
+      expect(getPaperInput(el).getAttribute('aria-labelledby')).to.equal('second-label');
+      expect(el._getNativeInput().getAttribute('aria-labelledby')).to.equal('second-label');
     });
 
     test('removes aria-label when label is cleared', async () => {

@@ -217,6 +217,9 @@ import './nuxeo-error.js';
     }
 
     _isEmptyValue(element) {
+      if (typeof element._isEmptyWidgetValue === 'function') {
+        return element._isEmptyWidgetValue();
+      }
       const value = 'value' in element ? element.value : element.selected;
       return value == null || value === '' || (Array.isArray(value) && value.length === 0);
     }

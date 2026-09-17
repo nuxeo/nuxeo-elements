@@ -27,6 +27,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import './nuxeo-select.js';
 import './nuxeo-tooltip.js';
 
+let sortSelectLabelId = 0;
+
 {
   /**
    * An element to select sort field and sort order.
@@ -68,9 +70,14 @@ import './nuxeo-tooltip.js';
         </style>
 
         <template is="dom-if" if="[[hasLabel]]">
-          <span>[[_normalizeLabel(label)]]</span>
+          <span id$="[[_labelId]]">[[_normalizeLabel(label)]]</span>
         </template>
-        <nuxeo-select aria-label="[[_normalizeLabel(label)]]" attr-for-selected="option" selected="{{selected}}">
+        <nuxeo-select
+          aria-label="[[_normalizeLabel(label)]]"
+          aria-labelledby="[[_computeAriaLabelledBy(hasLabel, _labelId)]]"
+          attr-for-selected="option"
+          selected="{{selected}}"
+        >
           <dom-if if="[[options]]">
             <template>
               <dom-repeat items="[[options]]" as="item">
@@ -117,6 +124,8 @@ import './nuxeo-tooltip.js';
           computed: '_computeHasLabel(label)',
         },
 
+        _labelId: String,
+
         options: {
           type: Array,
           value: [],
@@ -136,6 +145,12 @@ import './nuxeo-tooltip.js';
       };
     }
 
+    constructor() {
+      super();
+      sortSelectLabelId += 1;
+      this._labelId = `${this.constructor.is}-label-${sortSelectLabelId}`;
+    }
+
     /**
      * Single source of truth for the label: a blank one becomes `null`, so the visible span and the
      * combobox's accessible name can never disagree.
@@ -146,6 +161,10 @@ import './nuxeo-tooltip.js';
 
     _computeHasLabel(label) {
       return this._normalizeLabel(label) !== null;
+    }
+
+    _computeAriaLabelledBy(hasLabel, labelId) {
+      return hasLabel ? labelId : null;
     }
 
     _optionsChanged() {

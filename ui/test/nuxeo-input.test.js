@@ -395,4 +395,18 @@ suite('nuxeo-input autocomplete', () => {
     await flush();
     expect(getNativeInput(el).getAttribute('autocomplete')).to.equal('current-password');
   });
+
+  test('keeps autocomplete on the native input after synced label updates', async () => {
+    const el = await fixture(html`
+      <nuxeo-input label="Email" autocomplete="email"></nuxeo-input>
+    `);
+    await flush();
+    await tick();
+
+    el.label = 'Updated email';
+    await flush();
+    await tick();
+
+    expect(getNativeInput(el).getAttribute('autocomplete')).to.equal('email');
+  });
 });

@@ -50,8 +50,12 @@ suite('nuxeo-sort-select', () => {
       el.label = 'Sort by';
       await flush();
       expect(el.hasLabel).to.be.true;
-      expect(el.shadowRoot.querySelector('span').textContent.trim()).to.equal('Sort by');
-      expect(el.shadowRoot.querySelector('nuxeo-select').getAttribute('aria-label')).to.equal('Sort by');
+      const label = el.shadowRoot.querySelector('span');
+      const select = el.shadowRoot.querySelector('nuxeo-select');
+      expect(label.textContent.trim()).to.equal('Sort by');
+      expect(select.getAttribute('aria-label')).to.equal('Sort by');
+      expect(select.getAttribute('aria-labelledby')).to.equal(label.id);
+      expect(label.id).to.match(/^nuxeo-sort-select-label-\d+$/);
     });
 
     test('does not flag a blank label, nor render a span for it', async () => {

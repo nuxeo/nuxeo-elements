@@ -271,14 +271,18 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
       this._resizeObserver.observe(this);
       if (!this._ariaLabelObserver) {
         this._ariaLabelObserver = new MutationObserver((mutations) => {
-          if (mutations.some((mutation) => mutation.attributeName === 'aria-label')) {
+          if (
+            mutations.some(
+              (mutation) => mutation.attributeName === 'aria-label' || mutation.attributeName === 'aria-labelledby',
+            )
+          ) {
             this._syncAriaLabel();
           }
         });
       }
       this._ariaLabelObserver.observe(this, {
         attributes: true,
-        attributeFilter: ['aria-label'],
+        attributeFilter: ['aria-label', 'aria-labelledby'],
       });
     }
 
@@ -385,24 +389,33 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
     }
 
     _applyAriaLabel() {
+      const ariaLabelledBy = (this.getAttribute('aria-labelledby') || '').trim() || null;
       const ariaLabel = (this.getAttribute('aria-label') || '').trim() || (this.label || '').trim() || null;
 
       const paperInput = this._getTriggerInput();
       if (!paperInput) return;
 
+      if (ariaLabelledBy) {
+        paperInput.setAttribute('aria-labelledby', ariaLabelledBy);
+      } else {
+        paperInput.removeAttribute('aria-labelledby');
+      }
       if (ariaLabel) {
         paperInput.setAttribute('aria-label', ariaLabel);
       } else {
         paperInput.removeAttribute('aria-label');
       }
 
-      // Set aria-label on the native <input> and remove aria-labelledby so the
-      // screen reader uses our label instead of Polymer's auto-generated one.
+      // Keep the native <input> aligned with the outer paper-input trigger.
       const nativeInput = this._getNativeInput();
       if (nativeInput) {
+        if (ariaLabelledBy) {
+          nativeInput.setAttribute('aria-labelledby', ariaLabelledBy);
+        } else if (ariaLabel) {
+          nativeInput.removeAttribute('aria-labelledby');
+        }
         if (ariaLabel) {
           nativeInput.setAttribute('aria-label', ariaLabel);
-          nativeInput.removeAttribute('aria-labelledby');
         } else {
           nativeInput.removeAttribute('aria-label');
         }
