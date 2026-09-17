@@ -262,8 +262,8 @@ export const PageProviderDisplayBehavior = [
     detached() {
       this.unlisten(this.nxProvider, 'update', '_updateResults');
       this.unlisten(this.nxProvider, 'loading-changed', '_updateLoading');
-      this.$.list.unlisten.call(this.$.list, this.$.list, 'selected', '_selectionHandler');
-      this.$.list.unlisten.call(this.$.list, this.$.list, 'tap', '_selectionHandler');
+      this.$.list.unlisten(this.$.list, 'selected', '_selectionHandler');
+      this.$.list.unlisten(this.$.list, 'tap', '_selectionHandler');
     },
 
     _nxProviderChanged(nxProvider) {
@@ -514,10 +514,10 @@ export const PageProviderDisplayBehavior = [
     _selectionEnabledChanged() {
       this.$.list.selectionEnabled = this.selectionEnabled;
       this.$.list.multiSelection = this.multiSelection;
-      this.$.list.unlisten.call(this.$.list, this.$.list, 'selected', '_selectionHandler');
+      this.$.list.unlisten(this.$.list, 'selected', '_selectionHandler');
       if (this.selectionEnabled && !this.selectOnTap) {
-        this.$.list.unlisten.call(this.$.list, this.$.list, 'tap', '_selectionHandler');
-        this.$.list.listen.call(this.$.list, this.$.list, 'selected', '_selectionHandler');
+        this.$.list.unlisten(this.$.list, 'tap', '_selectionHandler');
+        this.$.list.listen(this.$.list, 'selected', '_selectionHandler');
       }
     },
 
