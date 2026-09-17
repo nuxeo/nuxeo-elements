@@ -24,6 +24,7 @@ import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import {I18nBehavior} from "../nuxeo-i18n-behavior";
+import { WidgetValidationBehavior } from './nuxeo-widget-validation-behavior.js';
 import '@polymer/iron-icon/iron-icon.js';
 
 /**
@@ -3018,9 +3019,81 @@ typedArrayTags[weakMapTag] = false;
       const KEY_BACKSPACE = 8;
       const KEY_DELETE = 46;
       const KEY_ENTER = 13;
+      const KEY_TAB = 9;
 
       const INPUT_SELECTOR = '.selectivity-multiple-input';
       const SELECTED_ITEM_SELECTOR = '.selectivity-multiple-selected-item';
+
+      // Walks the composed tree (descending through any open shadow roots) and
+      // collects all sequentially tabbable elements under document.body.
+      function collectTabbable() {
+        const all = [];
+        (function collect(root) {
+          let node = root.firstElementChild;
+          while (node) {
+            const ti = node.tabIndex;
+            if (
+              ti >= 0 &&
+              !node.disabled &&
+              node.offsetParent !== null &&
+              node.getClientRects().length > 0
+            ) {
+              all.push(node);
+            }
+            if (node.shadowRoot) collect(node.shadowRoot);
+            collect(node);
+            node = node.nextElementSibling;
+          }
+        })(document.body);
+        return all;
+      }
+
+      // True when `node` is `host` itself or lives anywhere inside its (possibly
+      // nested) shadow tree. Unlike Node.contains(), this walks up through shadow
+      // roots via ShadowRoot.host, so it reliably matches every element that
+      // belongs to a custom element — including content in its shadow DOM.
+      function composedContains(host, node) {
+        let current = node;
+        while (current) {
+          if (current === host) {
+            return true;
+          }
+          current = current.parentNode || current.host;
+        }
+        return false;
+      }
+
+      // Returns the next sequentially focusable element after `current`, skipping
+      // any element that is a descendant of `excludeRoot` (including itself).
+      // Used to advance focus out of a multiple-mode selectivity widget when the
+      // browser's default Tab handling fails to leave the field.
+      function findAdjacentTabbable(current, excludeRoot) {
+        const all = collectTabbable();
+        const idx = all.indexOf(current);
+        if (idx < 0) {
+          // current is not in the list — fall back to the first tabbable element
+          // strictly after excludeRoot in document order.
+          if (excludeRoot) {
+            for (let i = 0; i < all.length; i++) {
+              if (
+                !composedContains(excludeRoot, all[i]) &&
+                excludeRoot.compareDocumentPosition(all[i]) & Node.DOCUMENT_POSITION_FOLLOWING
+              ) {
+                return all[i];
+              }
+            }
+          }
+          return null;
+        }
+        let i = idx + 1;
+        while (i < all.length) {
+          if (!composedContains(excludeRoot, all[i])) {
+            return all[i];
+          }
+          i++;
+        }
+        return null;
+      }
 
       const hasTouch = 'ontouchstart' in window;
 
@@ -3130,6 +3203,9 @@ typedArrayTags[weakMapTag] = false;
               id: item.id,
               text: item.text,
               item: item.item,
+              // `depth` drives the indentation of hierarchical entries in the result templates;
+              // rebuilding the item without it would flatten the tree to a single indent level.
+              depth: item.depth,
             };
             if (item.children) {
               result.children = this.filterResults(item.children);
@@ -3412,9 +3488,74 @@ typedArrayTags[weakMapTag] = false;
         _keyHeld(event) {
           this._originalValue = this.input.value;
 
-          if (getKeyCode(event) === KEY_ENTER && !event.ctrlKey) {
+          const keyCode = getKeyCode(event);
+          if (keyCode === KEY_ENTER && !event.ctrlKey) {
             event.preventDefault();
+          } else if (keyCode === KEY_TAB && !event.shiftKey && !event.ctrlKey && !event.altKey) {
+            this._handleForwardTab(event);
+          } else if (keyCode === KEY_TAB && event.shiftKey && !event.ctrlKey && !event.altKey) {
+            this._handleBackwardTab();
           }
+        },
+
+        /**
+     * @private
+     * Two-step keyboard model: Tab while CLOSED opens the dropdown; Tab while
+     * OPEN closes it and advances focus to the next tabbable element outside
+     * the widget. Focus is moved manually because surrounding Polymer/iron-form
+     * wrappers can intercept the default Tab action and trap focus on the input.
+     */
+        _handleForwardTab(event) {
+          if (this.dropdown) {
+            event.preventDefault();
+            const inputEl = this.input;
+            // Exclude the whole host element (including its shadow content), not just
+            // this.el (the inner `#input` div). this.el lives inside the widget's shadow
+            // tree, so excluding only it lets findAdjacentTabbable land on a sibling
+            // element still inside the widget — trapping focus. Climbing to the shadow
+            // host makes focus advance past the entire widget.
+            const wrapperEl = this.el.getRootNode().host;
+            this._beginTabbingOut();
+            this.close();
+            // Defer the focus advance to a microtask so any synchronous focus
+            // side-effects from close() settle before we move focus.
+            queueMicrotask(() => {
+              const next = findAdjacentTabbable(inputEl, wrapperEl);
+              if (next && typeof next.focus === 'function') {
+                next.focus();
+              }
+            });
+          } else if (this.enabled && this.options.showDropdown !== false) {
+            event.preventDefault();
+            this.open();
+          }
+        },
+
+        /**
+     * @private
+     * Shift+Tab while the dropdown is OPEN closes it so focus can leave the
+     * field backwards. The browser's default Shift+Tab handles the focus
+     * movement; only the dropdown needs to be closed here.
+     */
+        _handleBackwardTab() {
+          if (this.dropdown) {
+            this._beginTabbingOut();
+            this.close();
+          }
+        },
+
+        /**
+     * @private
+     * Arms _tabbingOut and schedules its reset, suppressing any focus-driven
+     * reopen of the dropdown during the Tab / Shift+Tab transition.
+     */
+        _beginTabbingOut() {
+          clearTimeout(this._tabbingOutTimeout);
+          this._tabbingOut = true;
+          this._tabbingOutTimeout = setTimeout(() => {
+            this._tabbingOut = false;
+            this._tabbingOutTimeout = 0;
+          }, 300);
         },
 
         /**
@@ -3706,10 +3847,15 @@ typedArrayTags[weakMapTag] = false;
      * @private
      */
         _focused() {
+          // Single-select opens the dropdown as soon as the field receives focus, giving a clear
+          // visual indication that the field is focused (ELEMENTS-1953). The two-step "Tab to open"
+          // model is kept only for multiple-select. `_tabbingOut` guards against the close()/focus
+          // side-effects re-opening the dropdown while focus is leaving the field via Tab/Shift+Tab.
           if (
             this.enabled &&
             !this._closing &&
             !this._opening &&
+            !this._tabbingOut &&
             this.options.showDropdown !== false
           ) {
             this.open();
@@ -4869,9 +5015,32 @@ typedArrayTags[weakMapTag] = false;
             } else if (keyCode === KEY_UP_ARROW) {
               moveHighlight(dropdown, -1);
             } else if (keyCode === KEY_TAB) {
-              setTimeout(() => {
+              // SingleInput-only Tab handling: synchronously move focus back to the
+              // widget's main input, then close the dropdown, and let the browser's
+              // default Tab action proceed from that stable element. MultipleInput
+              // manages Tab entirely in its own _keyHeld (see line ~3470), so we MUST
+              // skip this branch for multiple-mode widgets — otherwise we'd close the
+              // dropdown and clear _tabbingOut here, while MultipleInput._keyHeld then
+              // sees this.dropdown == null and re-opens it on every keystroke, trapping
+              // focus on the field.
+              const mainInput = selectivity.el.querySelector('.selectivity-single-select-input');
+              if (mainInput) {
+                // _tabbingOut is set so that the focus event fired by the synchronous
+                // `mainInput.focus()` does NOT re-open the dropdown via _focused(). It
+                // is also checked by open() as a belt-and-braces guard. The flag is
+                // per-instance, so it does NOT block sibling selectivity widgets from
+                // opening on their own focus event.
+                clearTimeout(selectivity._tabbingOutTimeout);
+                selectivity._tabbingOut = true;
+                if (typeof mainInput.focus === 'function') {
+                  mainInput.focus();
+                }
                 selectivity.close();
-              }, 1);
+                selectivity._tabbingOutTimeout = setTimeout(() => {
+                  selectivity._tabbingOut = false;
+                  selectivity._tabbingOutTimeout = 0;
+                }, 300);
+              }
             } else if (keyCode === KEY_ENTER) {
               event.preventDefault(); // don't submit forms on keydown
             }
@@ -4912,6 +5081,9 @@ typedArrayTags[weakMapTag] = false;
             selectivity.close();
 
             event.preventDefault();
+          } else if (keyCode === KEY_TAB) {
+            // Let the browser advance focus naturally on Tab without
+            // re-opening the dropdown from the catch-all `else` below.
           } else if (keyCode === KEY_DOWN_ARROW || keyCode === KEY_UP_ARROW) {
             // handled in keyHeld() because the response feels faster and it works with repeated
             // events if the user holds the key for a longer period
@@ -5384,7 +5556,11 @@ typedArrayTags[weakMapTag] = false;
           this.setData(options.data || null, { triggerChange: false });
         }
 
-        this.el.setAttribute('tabindex', options.tabIndex || 0);
+        // Keep the wrapper out of the natural tab order by default. The actual input
+        // inside the widget is the stable sequential focus target; making the wrapper
+        // tabbable creates an extra tab stop and causes Tab to cycle through wrapper,
+        // input, and dropdown state instead of leaving the field cleanly.
+        this.el.setAttribute('tabindex', options.tabIndex !== undefined ? options.tabIndex : -1);
 
         this.events = new EventListener(this.el, this);
         this.events.on({
@@ -5569,7 +5745,7 @@ typedArrayTags[weakMapTag] = false;
      * Opens the dropdown.
      */
         open() {
-          if (this._opening || this.dropdown || !this.triggerEvent('selectivity-opening')) {
+          if (this._opening || this.dropdown || this._tabbingOut || !this.triggerEvent('selectivity-opening')) {
             return;
           }
 
@@ -5911,6 +6087,24 @@ typedArrayTags[weakMapTag] = false;
        _keydown(event) {
         if ((event.key === 'Backspace' || event.keyCode === 8) && this.constructor.name === 'SingleInput') {
           this.clear();
+      } else if (
+        (event.key === 'Tab' || event.keyCode === 9) &&
+        !event.shiftKey &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !this._tabbingOut
+      ) {
+        // Two-step keyboard model so screen readers can announce the field's
+        // label before any options are revealed:
+        //   - Tab while CLOSED -> open the dropdown, keep focus on this field.
+        //   - Tab while OPEN   -> handled by the search input's keyHeld listener
+        //                         (close + advance focus). _tabbingOut, set there,
+        //                         prevents this handler from re-opening on the
+        //                         bubble pass.
+        if (!this.dropdown && this.enabled && this.options.showDropdown !== false) {
+          event.preventDefault();
+          this.open();
+        }
       }
     },
 
@@ -6203,6 +6397,13 @@ typedArrayTags[weakMapTag] = false;
             extraClass += ' has-search-input';
 
             const placeholder = options.searchInputPlaceholder;
+            // The search input keeps its natural tab order (no tabindex attribute)
+            // so that when the dropdown is open and the user presses Tab, the browser
+            // advances focus past the widget to the next tabbable element in the
+            // document — instead of falling back to the wrapper's main input (which
+            // is what happens with tabindex="-1" because Chrome's sequential focus
+            // navigation skips tabindex="-1" and resolves to the next tabbable inside
+            // the same shadow scope, trapping focus on the same widget).
             searchInput =
                 `${'<div class="selectivity-search-input-container">' +
                 '<input type="text" class="selectivity-search-input"'}${
@@ -6615,6 +6816,11 @@ typedArrayTags[weakMapTag] = false;
   }, {}, [75]))(75);
 }));
 {
+  // Indentation of hierarchical result rows: the root level padding and the extra padding
+  // added per nesting level. Kept in sync with the .selectivity-result-item stylesheet rule.
+  const RESULT_BASE_PADDING = 7;
+  const RESULT_DEPTH_PADDING = 10;
+
   /**
    * An element wrapping selectivity.js and relying on an operation for suggestions
    *
@@ -6623,13 +6829,17 @@ typedArrayTags[weakMapTag] = false;
    *                   params='{"directoryName": "subject"}'
    *                   value="{{value}}">
    *
-   * @appliesMixin Polymer.IronFormElementBehavior
-   * @appliesMixin Polymer.IronValidatableBehavior
-   * @memberof Nuxeo
-   * @demo demo/nuxeo-selectivity/index.html
-   */
+ * @appliesMixin Polymer.IronFormElementBehavior
+ * @appliesMixin Polymer.IronValidatableBehavior
+ * @appliesMixin Nuxeo.WidgetValidationBehavior
+ * @memberof Nuxeo
+ * @demo demo/nuxeo-selectivity/index.html
+ */
   class SelectivityElement
-    extends mixinBehaviors([I18nBehavior, IronFormElementBehavior, IronValidatableBehavior], Nuxeo.Element) {
+    extends mixinBehaviors(
+      [I18nBehavior, IronFormElementBehavior, IronValidatableBehavior, WidgetValidationBehavior],
+      Nuxeo.Element,
+    ) {
 
     static get is() {
       return 'nuxeo-selectivity';
@@ -6985,6 +7195,13 @@ typedArrayTags[weakMapTag] = false;
             border: none;
             float: left;
             font: inherit;
+            /*
+             * WCAG 2.1 SC 1.4.12: the font shorthand above does not cover letter-spacing or
+             * word-spacing, so the UA stylesheet's form-control reset keeps them at normal, and
+             * this input sits in a shadow root a user text-spacing stylesheet cannot reach.
+             */
+            letter-spacing: inherit;
+            word-spacing: inherit;
             width: 100%;
             outline: 0;
             padding: 0;
@@ -7128,7 +7345,6 @@ typedArrayTags[weakMapTag] = false;
               display: none;
           }
 
-          :host([invalid]) .label,
           .error {
               color: var(--paper-input-container-invalid-color, #de350b);
           }
@@ -7170,16 +7386,11 @@ typedArrayTags[weakMapTag] = false;
             height: 2px;
             background-color: var(--nuxeo-primary-color, #0066ff);
           }
-
-          :host([invalid]) .underline {
-            height: 2px;
-            background-color: var(--paper-input-container-invalid-color, #de350b);
-          }
         </style>
 
         <nuxeo-operation id="op" op="[[operation]]" enrichers="[[enrichers]]" headers="[[headers]]"></nuxeo-operation>
 
-        <label class="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
+        <label id="label" class="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
 
         <div id="input" readonly$="[[readonly]]"></div>
 
@@ -7230,14 +7441,14 @@ typedArrayTags[weakMapTag] = false;
             const itemId = `selectivity-option-${escapeHTML(opts.id)}`;
             return `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
                   id="${itemId}"
-                  style="padding-left: ${7 + (10 * opts.depth)}px"
+                  style="padding-left: ${this._resultPadding(opts.depth)}px"
                   data-item-id="${escapeHTML(opts.id)}"
                   aria-selected="false">${this.resultFormatter(opts.item)}</div>`;
           },
 
           resultLabel: (opts) => (
             `<div class="preserve-white-space selectivity-result-label"
-                  style="padding-left: ${7 + (10 * opts.depth)}px">${escapeHTML(opts.text)}</div>`
+                  style="padding-left: ${this._resultPadding(opts.depth)}px">${escapeHTML(opts.text)}</div>`
           ),
 
           singleSelectedItem: (opts) => (
@@ -7344,10 +7555,15 @@ typedArrayTags[weakMapTag] = false;
         threshold: 0
       });
       this._visibilityObserver.observe(this);
+      // Selectivity re-renders the input whenever the selection changes, so re-apply the aria state
+      // it drops rather than setting it once here.
+      this._observeAriaValidationControl(this.$.input);
+      this._syncAriaValidationState();
       this._readonlyChanged();
     }
 
     disconnectedCallback() {
+      this._disconnectAriaValidationObserver();
       this.$.input.removeEventListener('selectivity-change', this._updateSelectionHandler);
       this._updateSelectionHandler = null;
       this._selectivity.destroy();
@@ -7369,9 +7585,18 @@ typedArrayTags[weakMapTag] = false;
 
     _getValidity() {
       if (!this.required) {
+        this._clearDefaultRequiredError();
         return true;
       }
-      return this.multiple ? !!this.value && this.value.length > 0 : !!this.value;
+      const valid = this.multiple ? !!this.value && this.value.length > 0 : !!this.value;
+      // Surface a per-field reason for required widgets, consistent with single-value inputs
+      // (e.g. dc:title).
+      if (valid) {
+        this._clearDefaultRequiredError();
+      } else {
+        this._applyDefaultRequiredError();
+      }
+      return valid;
     }
 
     _initSelection(value, callback) {
@@ -7452,6 +7677,16 @@ typedArrayTags[weakMapTag] = false;
           }
         }
       }
+      // Once a value is provided, re-validate so an already-shown required error clears
+      // immediately on selection, matching single-value inputs (e.g. dc:title). Only re-validate
+      // while an error is displayed, so we never surface errors before the user submits.
+      if (this.invalid) {
+        const v = this.value;
+        const hasValue = Array.isArray(v) ? v.length > 0 : v != null && v !== '';
+        if (hasValue) {
+          this.validate();
+        }
+      }
     }
 
     _dataChanged() {
@@ -7498,20 +7733,56 @@ typedArrayTags[weakMapTag] = false;
       this._syncInputAriaLabel();
     }
 
+    /* Override method from Nuxeo.WidgetValidationBehavior. */
+    _ariaValidationControl() {
+      return this._getSelectivityInput();
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. Selectivity rebuilds its input on every
+       selection change, which drops the aria-label too, so restore both from the same place. */
+    _applyAriaValidationState() {
+      super._applyAriaValidationState();
+      this._syncInputAriaLabel();
+    }
+
+    _getSelectivityInput() {
+      return this.shadowRoot
+        ? this.shadowRoot.querySelector('.selectivity-single-select-input, .selectivity-multiple-input')
+        : null;
+    }
+
     _syncInputAriaLabel() {
-      const input = this.shadowRoot && this.shadowRoot.querySelector('.selectivity-single-select-input, .selectivity-multiple-input');
+      const input = this._getSelectivityInput();
       if (!input) {
         return;
       }
 
       const label = (this.label || '').trim();
       const placeholder = (this.placeholder || '').trim();
-      const ariaLabel = label || placeholder;
+      const labelElement = this.shadowRoot.querySelector('#label');
 
-      if (ariaLabel) {
-        input.setAttribute('aria-label', ariaLabel);
-      } else {
+      // When a label is set it is rendered as always visible text, so bind the field to it
+      // (WCAG 3.3.2 / 1.3.1). Without a label there is nothing visible to reference and the
+      // placeholder remains the only available name.
+      if (label && labelElement) {
+        if (!input.id) {
+          input.id = `${this.constructor.is}-input`;
+        }
+        labelElement.setAttribute('for', input.id);
+        input.setAttribute('aria-labelledby', labelElement.id);
         input.removeAttribute('aria-label');
+      } else {
+        input.removeAttribute('aria-labelledby');
+        // Drop the `for` as well, otherwise the now-empty label keeps a stale association
+        // with the input and the placeholder-only fallback is not what it claims to be.
+        if (labelElement) {
+          labelElement.removeAttribute('for');
+        }
+        if (placeholder) {
+          input.setAttribute('aria-label', placeholder);
+        } else {
+          input.removeAttribute('aria-label');
+        }
       }
     }
 
@@ -7521,6 +7792,8 @@ typedArrayTags[weakMapTag] = false;
           readOnly: this.readonly,
           placeholder: this.placeholder,
         });
+        // selectivity re-renders its input, so the label association has to be re-applied
+        this._syncInputAriaLabel();
       }
     }
 
@@ -7542,6 +7815,14 @@ typedArrayTags[weakMapTag] = false;
 
     _resultFormatter(item) {
       return escapeHTML(item.displayLabel || item.title || item.text || item);
+    }
+
+    /**
+     * Left padding, in pixels, that indents a hierarchical result row at the given depth.
+     * A non-numeric depth falls back to the root level so the inline style stays valid CSS.
+     */
+    _resultPadding(depth) {
+      return RESULT_BASE_PADDING + RESULT_DEPTH_PADDING * (Number.isFinite(depth) ? depth : 0);
     }
 
     _wrap(value) {

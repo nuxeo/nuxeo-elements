@@ -30,6 +30,8 @@ window.Polymer = Polymer;
 window.nuxeo.I18n.language = 'en';
 window.nuxeo.I18n.en = window.nuxeo.I18n.en || {};
 window.nuxeo.I18n.en['documentLayout.notFound'] = 'Failed to find {0} layout for {1}.';
+window.nuxeo.I18n.en['layout.validation.requiredField.named'] = '{0} is required.';
+window.nuxeo.I18n.en['layout.validation.invalidForm'] = 'The form contains invalid values, please review your entries.';
 
 Nuxeo = Nuxeo || {};
 Nuxeo.LayoutBehavior = LayoutBehavior;
@@ -198,6 +200,74 @@ suite('nuxeo-document-layout', () => {
     // assert that validation passes if required fields are filled
     expect(documentLayout.document.properties['dc:title']).to.equal(myTitle);
     expect(documentLayout.validate()).to.be.true;
+  });
+
+  // WEBUI-482: the failing field names must also be conveyed as text, not only by the widget colour.
+  test('Should list the fields that failed validation in the error summary', async () => {
+    documentLayout = await buildLayout();
+    expect(documentLayout.validate()).to.be.false;
+    await flush();
+
+    const { error } = documentLayout.$;
+    expect(isElementVisible(error)).to.be.true;
+    expect(error.getAttribute('role')).to.equal('alert');
+    const errors = documentLayout.shadowRoot.querySelectorAll('span.error');
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0].textContent).to.equal('Title is required.');
+
+    // the summary is cleared once the required field is filled in
+    getWidgetFromLayout('Title', documentLayout).value = 'My Title';
+    expect(documentLayout.validate()).to.be.true;
+    await flush();
+    expect(documentLayout.shadowRoot.querySelectorAll('span.error')).to.be.empty;
+    expect(isElementVisible(error)).to.be.false;
+  });
+
+  test('Should ignore validation errors reported by a layout nested inside its own', async () => {
+    documentLayout = await buildLayout();
+    expect(documentLayout.validate()).to.be.false;
+    await flush();
+    expect(documentLayout.shadowRoot.querySelectorAll('span.error')).to.have.lengthOf(1);
+
+    // `layout-validation-errors` bubbles, so an inner layout must not take over the summary
+    documentLayout.element.dispatchEvent(
+      new CustomEvent('layout-validation-errors', {
+        bubbles: true,
+        composed: true,
+        detail: { errors: [{ element: null, label: 'Inner', message: 'Inner is required.' }] },
+      }),
+    );
+    await flush();
+
+    const errors = documentLayout.shadowRoot.querySelectorAll('span.error');
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0].textContent).to.equal('Title is required.');
+  });
+
+  // WEBUI-482: the summary must never go empty while the form is still invalid, which happens when
+  // the layout's own validation is what rejected the form.
+  test('Should keep the summary populated when the layout rejects an otherwise valid form', async () => {
+    documentLayout = await buildLayout(
+      buildDoc({
+        'dc:title': 'My Title',
+        'dc:description': 'My Title',
+      }),
+    );
+    expect(documentLayout.validate()).to.be.false;
+    await flush();
+
+    const { error } = documentLayout.$;
+    expect(isElementVisible(error)).to.be.true;
+    const errors = documentLayout.shadowRoot.querySelectorAll('span.error');
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0].textContent).to.equal('The form contains invalid values, please review your entries.');
+
+    // the summary is cleared once the custom validation passes
+    getWidgetFromLayout('Description', documentLayout).value = 'My Description';
+    expect(documentLayout.validate()).to.be.true;
+    await flush();
+    expect(documentLayout.shadowRoot.querySelectorAll('span.error')).to.be.empty;
+    expect(isElementVisible(error)).to.be.false;
   });
 
   test('Should do custom input validation when a "validate" method is available on the layout', async () => {
