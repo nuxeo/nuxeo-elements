@@ -144,8 +144,8 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
       if (this._entries && e.detail && e.detail.value) {
         const tmp = [];
         const tmpIds = [];
-        for (let i = 0; i < e.detail.value.length; i++) {
-          const item = this._entries[e.detail.value[i].dataIndex];
+        for (const selected of e.detail.value) {
+          const item = this._entries[selected.dataIndex];
           tmp.push(item);
           tmpIds.push(this.idFunction(item));
         }

@@ -139,8 +139,7 @@ import './nuxeo-error.js';
     _getValidatableElements(parent) {
       const nodes = dom(parent).querySelectorAll('*');
       const submittable = [];
-      for (let i = 0; i < nodes.length; i++) {
-        const node = nodes[i];
+      for (const node of nodes) {
         if (!node.disabled && this._isVisible(node)) {
           if (node.validate || node.checkValidity) {
             submittable.push(node);
