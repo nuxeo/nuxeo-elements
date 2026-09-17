@@ -102,7 +102,8 @@ export function XHRLocaleResolver(msgFolder) {
         };
         xhr.send();
       }
-      const url = `${msgFolder}/messages${language === 'en' ? '' : `-${language}`}.json`;
+      const languageSuffix = language === 'en' ? '' : `-${language}`;
+      const url = `${msgFolder}/messages${languageSuffix}.json`;
       loadLang(url);
     });
   };
