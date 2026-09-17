@@ -395,7 +395,7 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
     }
 
     _isIndexSelected(index) {
-      return this.selectedItems.indexOf(this.items[index]) > -1;
+      return this.selectedItems.includes(this.items[index]);
     }
 
     /**

@@ -312,7 +312,7 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
         document.retainedProperties &&
         document.retainedProperties.length > 0
       ) {
-        if (document.retainedProperties.indexOf(this.xpath) !== -1) {
+        if (document.retainedProperties.includes(this.xpath)) {
           return true;
         }
       }
