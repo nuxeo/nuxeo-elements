@@ -221,7 +221,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           // clear <iron-collapse> content in case we are re-rendering
           const children = dom(this).querySelector('#children');
           while (children.lastChild) {
-            children.removeChild(children.lastChild);
+            children.lastChild.remove();
           }
 
           const items = this._children || [];
@@ -305,9 +305,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _teardownInstance() {
       const { children } = this._instance;
       if (children && children.length) {
-        const parent = dom(dom(children[0]).parentNode);
         for (let i = 0; i < children.length; i++) {
-          parent.removeChild(children[i]);
+          children[i].remove();
         }
       }
       this._instance = null;
