@@ -267,8 +267,9 @@ import './nuxeo-tooltip.js';
 
     _calculateElementWidth(element) {
       const currrentElement = getComputedStyle(element);
-      const paddingX = parseFloat(currrentElement.paddingLeft) + parseFloat(currrentElement.paddingRight);
-      const borderX = parseFloat(currrentElement.borderLeftWidth) + parseFloat(currrentElement.borderRightWidth);
+      const paddingX = Number.parseFloat(currrentElement.paddingLeft) + Number.parseFloat(currrentElement.paddingRight);
+      const borderX =
+        Number.parseFloat(currrentElement.borderLeftWidth) + Number.parseFloat(currrentElement.borderRightWidth);
       const scrollBarWidth = element.offsetWidth - element.clientWidth;
       const elementWidth = element.offsetWidth - paddingX - borderX - scrollBarWidth;
       return elementWidth;
@@ -300,11 +301,10 @@ import './nuxeo-tooltip.js';
 
     _layout() {
       if (this && this.parentNode) {
-        const selectedElement = this;
-        const parentElement = this._getHTMLRootNode(selectedElement);
+        const parentElement = this._getHTMLRootNode(this);
         let elementWidth = this._calculateElementWidth(parentElement);
         const childNodes = Array.from(parentElement.children);
-        const userAvatar = Array.from(selectedElement.shadowRoot.querySelectorAll('.user-avatar'));
+        const userAvatar = Array.from(this.shadowRoot.querySelectorAll('.user-avatar'));
         const userAvatarWidth = userAvatar[0].offsetWidth;
         const totalAvatarWidth = userAvatar.length * userAvatarWidth;
         const otherElementWidth = childNodes.reduce((totalWidth, currentValue) => {

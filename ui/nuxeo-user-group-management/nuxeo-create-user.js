@@ -201,7 +201,7 @@ import '../nuxeo-button-styles.js';
       if (
         !this._isAdministrator(this._currentUser) &&
         this.user.groups &&
-        this.user.groups.indexOf('administrators') !== -1
+        this.user.groups.includes('administrators')
       ) {
         this.errors = this.i18n('createUser.errorAdministratorsGroup');
         return;
