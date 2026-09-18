@@ -16,7 +16,7 @@ To install the project's dependencies:
 npm install
 npm run bootstrap
 ```
-Note: This version of Nuxeo Elements requires node version >=14.0.0.
+Note: This version of Nuxeo Elements requires node version ^22.13.0 || >=24.0.0.
 
 ## Quickstart
 
