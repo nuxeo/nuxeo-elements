@@ -309,7 +309,7 @@ import './nuxeo-popup-permission.js';
         });
       });
 
-      this.aces = aces.sort(this._sortAces);
+      this.aces = [...aces].sort(this._sortAces);
     }
 
     _aclFilter(acl) {

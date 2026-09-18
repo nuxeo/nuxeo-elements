@@ -300,11 +300,10 @@ import './nuxeo-tooltip.js';
 
     _layout() {
       if (this && this.parentNode) {
-        const selectedElement = this;
-        const parentElement = this._getHTMLRootNode(selectedElement);
+        const parentElement = this._getHTMLRootNode(this);
         let elementWidth = this._calculateElementWidth(parentElement);
         const childNodes = Array.from(parentElement.children);
-        const userAvatar = Array.from(selectedElement.shadowRoot.querySelectorAll('.user-avatar'));
+        const userAvatar = Array.from(this.shadowRoot.querySelectorAll('.user-avatar'));
         const userAvatarWidth = userAvatar[0].offsetWidth;
         const totalAvatarWidth = userAvatar.length * userAvatarWidth;
         const otherElementWidth = childNodes.reduce((totalWidth, currentValue) => {
