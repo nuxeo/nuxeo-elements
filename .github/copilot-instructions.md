@@ -5,7 +5,7 @@
 Nuxeo Elements is the shared web components library for the Nuxeo content services platform, built with **Polymer 3** (legacy `Polymer({…})` factory pattern and class-based `Nuxeo.Element`). It provides data access, UI, dataviz, and testing components consumed by **Nuxeo Web UI** and third-party applications. Licensed Apache 2.0, owned by Hyland Software.
 
 - **Runtime**: Browser (no server-side JS in production)
-- **Node**: ≥ 22.13 (CI runs 24)
+- **Node**: 22.13+ or 24+, not 23 (CI runs 24)
 - **Build**: No bundler (library consumed via npm)
 - **Package manager**: npm (no yarn/pnpm)
 - **Monorepo**: Lerna workspaces (`core`, `ui`, `dataviz`, `testing-helpers`, `storybook`)
@@ -100,7 +100,7 @@ test/                → Shared test setup
 ## CI / GitHub Actions
 
 - **Workflows**: lint → test → storybook → build (tag + publish) (sequential gates)
-- **Node version**: 22 in CI
+- **Node version**: 24 in CI; lint and test also run on the 22.13.0 floor via a matrix
 - **Installs**: CI uses `npm ci --ignore-scripts` for deterministic, lockfile-based installs (the `--ignore-scripts` flag skips dependency lifecycle hooks for supply-chain safety; the unit-test browser is installed via the `pretest` hook). `package-lock.json` is committed and must stay in sync with `package.json`.
 - **Registry**: `@nuxeo` packages come from `https://packages.nuxeo.com/repository/npm-public/`
 - **Cross-repo**: Changes can trigger nuxeo-web-ui builds

@@ -29,11 +29,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
-      # 24 is the CI runtime; 22 is the floor declared in engines.node and must
-      # keep passing, otherwise the declared minimum is never actually exercised.
+      # 24 is the CI runtime; 22.13.0 is the exact floor declared in
+      # engines.node and must keep passing. Pinned to the patch version on
+      # purpose — `22` resolves to the newest 22.x, which would leave the
+      # version we actually promise untested.
       fail-fast: false
       matrix:
-        node-version: [22, 24]
+        node-version: ['22.13.0', 24]
     steps:
       - uses: actions/checkout@v6
         with:
