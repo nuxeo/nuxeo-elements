@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- **Node.js** ≥ 18
+- **Node.js** 22.13+ or 24+, not 23 (`.nvmrc` pins 24 — run `nvm use` or `fnm use` in the repo root)
 - **npm** (bundled with Node — no yarn or pnpm)
 
 ## Getting Started
