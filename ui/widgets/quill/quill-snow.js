@@ -971,6 +971,15 @@ const template = html`
         .ql-snow .ql-tooltip a {
           line-height: 26px;
         }
+        .ql-snow .ql-tooltip a.ql-action,
+        .ql-snow .ql-tooltip a.ql-remove {
+          cursor: pointer;
+        }
+        .ql-snow .ql-tooltip a:focus-visible,
+        .ql-snow .ql-tooltip input[type='text']:focus-visible {
+          outline: 2px solid #06c;
+          outline-offset: 1px;
+        }
         .ql-snow .ql-tooltip.ql-editing a.ql-preview,
         .ql-snow .ql-tooltip.ql-editing a.ql-remove {
           display: none;
