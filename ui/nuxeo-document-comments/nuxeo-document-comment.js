@@ -37,6 +37,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { FormatBehavior } from '../nuxeo-format-behavior.js';
+import { formatUserDisplayName } from '../nuxeo-user-group-management/nuxeo-user-display.js';
 import '../nuxeo-button-styles.js';
 
 /**
@@ -146,6 +147,7 @@ import '../nuxeo-button-styles.js';
 
         <nuxeo-connection id="nxcon" user="{{currentUser}}"></nuxeo-connection>
         <nuxeo-resource id="commentRequest" path="/id/[[comment.parentId]]/@comment/[[comment.id]]"></nuxeo-resource>
+        <nuxeo-resource id="authorResource"></nuxeo-resource>
 
         <nuxeo-dialog id="dialog" with-backdrop>
           <h2>[[i18n('comments.deletion.dialog.heading')]]</h2>
@@ -174,7 +176,7 @@ import '../nuxeo-button-styles.js';
               <div class="info">
                 <div id="body">
                   <div id="header" class="horizontal">
-                    <span class="author">[[_authorLabel(comment.author)]]</span>
+                    <span class="author">[[_authorDisplayName(comment.author, _authorEntity, _authorLoading)]]</span>
                     <span class="smaller opaque"
                       >[[_computeDateLabel(comment, comment.creationDate, comment.modificationDate, i18n)]]</span
                     >
@@ -364,7 +366,29 @@ import '../nuxeo-button-styles.js';
           reflectToAttribute: true,
           value: false,
         },
+
+        /** Resolved author user entity. */
+        _authorEntity: {
+          type: Object,
+          value: null,
+        },
+
+        /** Whether the author entity is being fetched. */
+        _authorLoading: {
+          type: Boolean,
+          value: false,
+        },
+
+        /** Monotonic counter to discard stale author fetch responses. */
+        _authorRequestId: {
+          type: Number,
+          value: 0,
+        },
       };
+    }
+
+    static get observers() {
+      return ['_fetchAuthorEntity(comment.author)'];
     }
 
     /**
@@ -403,6 +427,46 @@ import '../nuxeo-button-styles.js';
     disconnectedCallback() {
       this.removeEventListener('number-of-replies', this._handleRepliesChange);
       super.disconnectedCallback();
+    }
+
+    async _fetchAuthorEntity(author) {
+      if (!author || typeof author !== 'string') {
+        this._authorEntity = null;
+        this._authorLoading = false;
+        return;
+      }
+      const requestId = ++this._authorRequestId;
+      this._authorLoading = true;
+      try {
+        this.$.authorResource.path = `/user/${encodeURIComponent(author)}`;
+        const entity = await this.$.authorResource.get();
+        if (requestId !== this._authorRequestId) return;
+        this._authorEntity = entity;
+      } catch (error) {
+        if (requestId !== this._authorRequestId) return;
+        if (error.status !== 404) {
+          console.warn(`Unexpected error resolving comment author "${author}":`, error);
+        }
+        this._authorEntity = null;
+      }
+      this._authorLoading = false;
+    }
+
+    _authorDisplayName(author, entity, loading) {
+      if (!author) return '';
+      if (this._isAuthorEntity(author)) {
+        return formatUserDisplayName(author);
+      }
+      if (typeof author !== 'string') {
+        return this._authorStringFallback(author);
+      }
+      if (!entity || loading) {
+        return author;
+      }
+      if (entity.properties) {
+        return formatUserDisplayName(entity);
+      }
+      return author;
     }
 
     _checkForEnter(e) {
@@ -632,29 +696,6 @@ import '../nuxeo-button-styles.js';
         return author.id || author.uid || '';
       }
       return '';
-    }
-
-    _authorLabel(author) {
-      if (!author) {
-        return '';
-      }
-      if (this._isAuthorEntity(author)) {
-        const props = author.properties || {};
-        const firstName = props.firstName || props['user:firstName'];
-        const lastName = props.lastName || props['user:lastName'];
-        const username = props.username || props['user:username'];
-        return (
-          [firstName, lastName]
-            .filter(Boolean)
-            .join(' ')
-            .trim() ||
-          username ||
-          author.id ||
-          author.uid ||
-          ''
-        );
-      }
-      return this._authorStringFallback(author);
     }
 
     _authorUsername(author) {
