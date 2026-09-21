@@ -45,7 +45,7 @@ the `nuxeo-web-ui` migration apply here.
 | **Istanbul coverage (no Babel)** | `rollup-plugin-istanbul` instruments sources at serve time; fast and accurate.                                |
 | **Puppeteer Chromium**           | Bundled browser avoids system Chrome version mismatches in CI.                                                |
 | **Single config**                | One `web-test-runner.config.mjs`, parametrized per package, replaces the Karma config + plugins + ESM config. |
-| **Node ≥ 22.13 native**             | No legacy providers or hacks.                                                                                 |
+| **Node ≥ 22 native**             | No legacy providers or hacks.                                                                                 |
 
 ---
 
@@ -291,7 +291,7 @@ open coverage/ui/lcov-report/index.html
 | ESM support      | @open-wc/karma-esm + Babel        | Native (WTR dev server)                     |
 | Coverage engine  | Istanbul (Babel source transform) | Istanbul (rollup-plugin-istanbul, no Babel) |
 | Browser          | System / SauceLabs Chrome         | Bundled Puppeteer Chromium                  |
-| Node requirement | ≥ 18 (with legacy provider)       | ≥ 22.13 (no hacks)                             |
+| Node requirement | ≥ 18 (with legacy provider)       | ≥ 22 (no hacks)                             |
 | Karma plugins    | 12 packages                       | 0                                           |
 | WTR plugins      | —                                 | 1 custom (fallback) + Istanbul              |
 | Packages tested  | core, ui, dataviz (Karma each)    | core, ui, dataviz (`NX_PACKAGE`)            |
