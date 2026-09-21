@@ -28,6 +28,10 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # Branch protection requires a check named exactly "test", so the Node 24
+    # leg must keep that name. Without this the matrix would report only the
+    # suffixed names and the required check would wait forever.
+    name: ${{ matrix.node-version == 24 && 'test' || format('test (node {0})', matrix.node-version) }}
     strategy:
       # 24 is the CI runtime; 22.13.0 is the exact floor declared in
       # engines.node and must keep passing. Pinned to the patch version on
