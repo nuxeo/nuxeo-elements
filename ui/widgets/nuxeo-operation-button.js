@@ -361,7 +361,7 @@ import '../actions/nuxeo-action-button-styles.js';
       a.href = url;
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
+      a.remove();
     }
 
     _computeTooltip(tooltip, label) {
