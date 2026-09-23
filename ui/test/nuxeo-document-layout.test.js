@@ -223,6 +223,21 @@ suite('nuxeo-document-layout', () => {
     expect(isElementVisible(error)).to.be.false;
   });
 
+  test('Should report a required description textarea in the file create flow', async () => {
+    documentLayout = await buildLayout(buildDoc({ 'dc:title': 'My Title' }));
+    const description = getWidgetFromLayout('Description', documentLayout);
+    description.required = true;
+
+    expect(documentLayout.validate()).to.be.false;
+    await flush();
+
+    expect(description.invalid).to.be.true;
+    expect(description.errorMessage).to.equal('Description is required.');
+    const errors = documentLayout.shadowRoot.querySelectorAll('span.error');
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0].textContent).to.equal('Description is required.');
+  });
+
   test('Should ignore validation errors reported by a layout nested inside its own', async () => {
     documentLayout = await buildLayout();
     expect(documentLayout.validate()).to.be.false;

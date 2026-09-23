@@ -262,6 +262,20 @@ suite('nuxeo-textarea accessibility', () => {
   });
 });
 
+suite('nuxeo-textarea validation', () => {
+  test('participates in required validation', async () => {
+    const el = await fixture(html`
+      <nuxeo-textarea label="Description" required></nuxeo-textarea>
+    `);
+    await flush();
+
+    expect(typeof el.validate).to.equal('function');
+    expect(el.validate()).to.be.false;
+    expect(el.invalid).to.be.true;
+    expect(el.errorMessage).to.be.ok;
+  });
+});
+
 // Covers WEBUI-493: the `autocomplete` property declared in ui/widgets/nuxeo-textarea.js is
 // forwarded to the rendered native <textarea> so a layout can identify the purpose of the field
 // (WCAG 2.1 SC 1.3.5, technique H98).

@@ -15,10 +15,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
+import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
+import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@polymer/paper-input/paper-textarea.js';
+import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { WidgetValidationBehavior } from './nuxeo-widget-validation-behavior.js';
 
 {
   /**
@@ -27,7 +31,10 @@ import '@polymer/paper-input/paper-textarea.js';
    * @memberof Nuxeo
    * @demo demo/nuxeo-textarea/index.html
    */
-  class Textarea extends Nuxeo.Element {
+  class Textarea extends mixinBehaviors(
+    [I18nBehavior, IronFormElementBehavior, IronValidatableBehavior, WidgetValidationBehavior],
+    Nuxeo.Element,
+  ) {
     static get template() {
       return html`
         <style>
@@ -169,24 +176,18 @@ import '@polymer/paper-input/paper-textarea.js';
           reflectToAttribute: true,
         },
 
-        /**
-         * Invalid.
-         */
-        invalid: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true,
-        },
       };
-    }
-
-    static get observers() {
-      return ['_syncNativeTextareaAriaState(invalid, required)'];
     }
 
     /* Override method from Polymer.IronValidatableBehavior. */
     _getValidity() {
-      return this.$.paperTextarea.validate();
+      const valid = this.$.paperTextarea.validate();
+      if (valid) {
+        this._clearDefaultRequiredError();
+      } else {
+        this._applyDefaultRequiredError();
+      }
+      return valid;
     }
 
     ready() {
@@ -196,11 +197,23 @@ import '@polymer/paper-input/paper-textarea.js';
       if (this.$ && this.$.paperTextarea) {
         this.$.paperTextarea.addEventListener('iron-input-ready', () => {
           this._syncNativeTextareaAriaLabel();
-          this._syncNativeTextareaAriaState();
+          this._syncAriaValidationState();
         });
       }
       this._syncNativeTextareaAriaLabel();
-      this._syncNativeTextareaAriaState();
+      this._syncAriaValidationState();
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. paper-textarea signals the error with
+       colour and a thicker underline only, so the state has to reach the native textarea it wraps. */
+    _ariaValidationControl() {
+      return this._getNativeTextarea();
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. paper-textarea already points the textarea
+       at its own paper-input-error, so we must not replace that reference. */
+    _ariaValidationMessageElement() {
+      return null;
     }
 
     _computeAriaLabel(label, placeholder) {
@@ -215,26 +228,6 @@ import '@polymer/paper-input/paper-textarea.js';
     _syncNativeTextareaAriaLabel() {
       // paper-textarea wraps a native textarea; keep both in sync for AT compatibility.
       setTimeout(() => this._applyNativeTextareaAriaLabel(), 0);
-    }
-
-    _syncNativeTextareaAriaState() {
-      // Deferred like the aria-label sync: the native <textarea> only exists once paper-textarea rendered.
-      setTimeout(() => this._applyNativeTextareaAriaState(), 0);
-    }
-
-    _applyNativeTextareaAriaState() {
-      const nativeTextarea = this._getNativeTextarea();
-      if (!nativeTextarea) {
-        return;
-      }
-      // paper-textarea signals the error with colour and a thicker underline only; assistive
-      // technologies need the state on the focusable control (WCAG 2.1 SC 1.4.1).
-      nativeTextarea.setAttribute('aria-invalid', this.invalid ? 'true' : 'false');
-      if (this.required) {
-        nativeTextarea.setAttribute('aria-required', 'true');
-      } else {
-        nativeTextarea.removeAttribute('aria-required');
-      }
     }
 
     _getNativeTextarea() {
