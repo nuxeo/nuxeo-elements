@@ -317,7 +317,7 @@ import './nuxeo-tooltip.js';
           dropdownElements.map((list) => list.removeAttribute('tabindex'));
         }, 0);
       }
-      if (e && e.type && e.composedPath().find((el) => el.id === 'reparent' || el.id === 'dropdownButton')) {
+      if (e && e.type && e.composedPath().some((el) => el.id === 'reparent' || el.id === 'dropdownButton')) {
         return; // skip events from within reparented actions
       }
       this.__layoutDebouncer = Debouncer.debounce(this.__layoutDebouncer, microTask, () => {
