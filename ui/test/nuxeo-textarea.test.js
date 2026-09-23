@@ -274,6 +274,19 @@ suite('nuxeo-textarea validation', () => {
     expect(el.invalid).to.be.true;
     expect(el.errorMessage).to.be.ok;
   });
+
+  test('preserves a non-required validation message for non-empty values', async () => {
+    const el = await fixture(html`
+      <nuxeo-textarea label="Description" required value="abc"></nuxeo-textarea>
+    `);
+    await flush();
+
+    el.errorMessage = 'Use at least 5 characters';
+    sinon.stub(el.$.paperTextarea, 'validate').returns(false);
+
+    expect(el.validate()).to.be.false;
+    expect(el.errorMessage).to.equal('Use at least 5 characters');
+  });
 });
 
 // Covers WEBUI-493: the `autocomplete` property declared in ui/widgets/nuxeo-textarea.js is

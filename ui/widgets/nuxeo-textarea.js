@@ -184,8 +184,10 @@ import { WidgetValidationBehavior } from './nuxeo-widget-validation-behavior.js'
       const valid = this.$.paperTextarea.validate();
       if (valid) {
         this._clearDefaultRequiredError();
-      } else {
+      } else if (this._isWidgetRequired() && this._isEmptyWidgetValue()) {
         this._applyDefaultRequiredError();
+      } else {
+        this._clearDefaultRequiredError();
       }
       return valid;
     }
