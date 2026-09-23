@@ -241,6 +241,7 @@ suite('nuxeo-document-layout', () => {
     expect(documentLayout.validate()).to.be.true;
     await flush();
     expect(description.invalid).to.be.false;
+    expect(description.errorMessage).to.equal('');
     expect(documentLayout.shadowRoot.querySelectorAll('span.error')).to.be.empty;
     expect(isElementVisible(documentLayout.$.error)).to.be.false;
   });
