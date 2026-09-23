@@ -236,6 +236,13 @@ suite('nuxeo-document-layout', () => {
     const errors = documentLayout.shadowRoot.querySelectorAll('span.error');
     expect(errors).to.have.lengthOf(1);
     expect(errors[0].textContent).to.equal('Description is required.');
+
+    description.value = 'My Description';
+    expect(documentLayout.validate()).to.be.true;
+    await flush();
+    expect(description.invalid).to.be.false;
+    expect(documentLayout.shadowRoot.querySelectorAll('span.error')).to.be.empty;
+    expect(isElementVisible(documentLayout.$.error)).to.be.false;
   });
 
   test('Should ignore validation errors reported by a layout nested inside its own', async () => {
