@@ -1897,4 +1897,40 @@ suite('nuxeo-selectivity', () => {
       destroySpy.restore();
     });
   });
+
+  // --------------------------------------------------------------------------
+  // ELEMENTS-1887: harmonize error highlighting across form widgets — the label and the
+  // underline turn red when the widget is invalid (matching nuxeo-input's red underline).
+  // --------------------------------------------------------------------------
+  suite('invalid highlighting', () => {
+    const INVALID_COLOR = 'rgb(222, 53, 11)'; // #de350b
+
+    test('renders the label in the invalid color when invalid', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity label="City" .data=${data} invalid></nuxeo-selectivity>
+      `);
+      await flush();
+      const label = selectivityWidget.shadowRoot.querySelector('.label');
+      expect(getComputedStyle(label).color).to.equal(INVALID_COLOR);
+    });
+
+    test('does not apply the invalid color to the label when valid', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity label="City" .data=${data}></nuxeo-selectivity>
+      `);
+      await flush();
+      const label = selectivityWidget.shadowRoot.querySelector('.label');
+      expect(getComputedStyle(label).color).to.not.equal(INVALID_COLOR);
+    });
+
+    test('renders the underline in the invalid color when invalid', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity label="City" .data=${data} invalid></nuxeo-selectivity>
+      `);
+      await flush();
+      const underline = selectivityWidget.shadowRoot.querySelector('.underline');
+      expect(underline).to.not.be.null;
+      expect(getComputedStyle(underline).backgroundColor).to.equal(INVALID_COLOR);
+    });
+  });
 });

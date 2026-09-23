@@ -68,6 +68,10 @@ import { WidgetValidationBehavior } from './nuxeo-widget-validation-behavior.js'
           label {
             @apply --nuxeo-label;
           }
+
+          :host([invalid]) label {
+            color: var(--paper-input-container-invalid-color, #de350b);
+          }
         </style>
 
         <label>[[label]]</label>
