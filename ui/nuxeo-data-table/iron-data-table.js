@@ -1799,8 +1799,7 @@ function hasRowDetailTemplate(node) {
       const { column } = this._resizing;
 
       const cells = this._getHeaderCells();
-      for (let i = 0; i < cells.length; i++) {
-        const cell = cells[i];
+      for (const cell of cells) {
         if (cell.column === column) {
           cell.classList.remove('resizing');
           cell.style.cursor = '';
@@ -2028,8 +2027,8 @@ function hasRowDetailTemplate(node) {
 
     _clearDropIndicators() {
       const cells = this._getHeaderCells();
-      for (let i = 0; i < cells.length; i++) {
-        cells[i].classList.remove('drop-left', 'drop-right');
+      for (const cell of cells) {
+        cell.classList.remove('drop-left', 'drop-right');
       }
     }
 
@@ -2045,9 +2044,9 @@ function hasRowDetailTemplate(node) {
       this._clearDropIndicators();
 
       const cells = this._getHeaderCells();
-      for (let i = 0; i < cells.length; i++) {
-        if (cells[i].column === column) {
-          cells[i].classList.add('drop-right');
+      for (const cell of cells) {
+        if (cell.column === column) {
+          cell.classList.add('drop-right');
           break;
         }
       }
