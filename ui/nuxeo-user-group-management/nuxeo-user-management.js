@@ -606,7 +606,7 @@ import '../nuxeo-button-styles.js';
 
     _computeGroups() {
       if (this.user && this.user.extendedGroups && this.user.properties && this.user.properties.groups) {
-        return this.user.extendedGroups.filter((group) => this.user.properties.groups.indexOf(group.name) > -1);
+        return this.user.extendedGroups.filter((group) => this.user.properties.groups.includes(group.name));
       }
       return [];
     }
@@ -755,8 +755,8 @@ import '../nuxeo-button-styles.js';
     }
 
     _resultsFilter(entry) {
-      for (let i = 0; i < this.groups.length; i++) {
-        if (entry.id === this.groups[i].name) {
+      for (const group of this.groups) {
+        if (entry.id === group.name) {
           return false;
         }
       }
