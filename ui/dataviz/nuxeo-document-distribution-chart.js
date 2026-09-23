@@ -533,8 +533,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         if (bucket.children.length === 0) {
           return;
         }
-        for (let j = 0; j < bucket.children.length; j++) {
-          this._transformSubBuckets(bucket.children[j]);
+        for (const child of bucket.children) {
+          this._transformSubBuckets(child);
         }
       }
     }
@@ -547,8 +547,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       delete aggregations.buckets;
       delete aggregations.doc_count_error_upper_bound;
       delete aggregations.sum_other_doc_count;
-      for (let i = 0; i < aggregations.children.length; i++) {
-        this._transformSubBuckets(aggregations.children[i]);
+      for (const child of aggregations.children) {
+        this._transformSubBuckets(child);
       }
 
       this._chartData = aggregations;
@@ -569,7 +569,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const svg = this.$.chart.querySelector('svg');
       const textContainer = this.$.chart.querySelector('#ex');
       if (svg) {
-        svg.parentNode.removeChild(svg);
+        svg.remove();
       }
 
       vis = select(this.$.chart)
@@ -732,7 +732,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Then highlight only those that are an ancestor of the current segment.
       vis
         .selectAll('#chart path')
-        .filter((node) => sequenceArray.indexOf(node) >= 0)
+        .filter((node) => sequenceArray.includes(node))
         .style('opacity', 1);
     }
 
@@ -762,7 +762,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _initializeBreadcrumbTrail() {
       while (this.$.sequence.firstChild) {
-        this.$.sequence.removeChild(this.$.sequence.firstChild);
+        this.$.sequence.firstChild.remove();
       }
 
       // Add the svg area.
@@ -783,12 +783,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     // Generate a string that describes the points of a breadcrumb polygon.
     _breadcrumbPoints(d, i) {
-      const points = [];
-      points.push('0,0');
-      points.push(`${b.w},0`);
-      points.push(`${b.w + b.t},${b.h / 2}`);
-      points.push(`${b.w},${b.h}`);
-      points.push(`0,${b.h}`);
+      const points = ['0,0', `${b.w},0`, `${b.w + b.t},${b.h / 2}`, `${b.w},${b.h}`, `0,${b.h}`];
       if (i > 0) {
         // Leftmost breadcrumb; don't include 6th vertex.
         points.push(`${b.t},${b.h / 2}`);
