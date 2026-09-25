@@ -78,8 +78,9 @@ suite('nuxeo-path-suggestion', () => {
       expect(style.direction).to.equal('rtl');
       expect(style.overflow).to.equal('hidden');
       expect(style.whiteSpace).to.equal('nowrap');
-      // Drawn at the content edge, so a row that only just overflows still lines up with the rest.
-      expect(style.textOverflow).to.equal('ellipsis');
+      // Plain clip, not an ellipsis: an ellipsis lands on a character boundary, so every clipped
+      // row would start at a different offset and the list would look ragged.
+      expect(style.textOverflow).to.equal('clip');
     });
 
     test('keeps the RTL layout for an RTL reading direction', async () => {
