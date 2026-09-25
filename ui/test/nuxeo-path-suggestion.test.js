@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, html } from '@nuxeo/testing-helpers';
+import { fixture, flush, html } from '@nuxeo/testing-helpers';
 import '../nuxeo-path-suggestion/nuxeo-path-suggestion.js';
 
 suite('nuxeo-path-suggestion', () => {
@@ -42,6 +42,63 @@ suite('nuxeo-path-suggestion', () => {
 
   test('connectedCallback sets dir attribute when missing', () => {
     expect(el.hasAttribute('dir')).to.be.true;
+  });
+
+  test('connectedCallback falls back to ltr when the document declares no direction', () => {
+    // The document under test has no dir, so the mirrored value must not be the string "null".
+    expect(el.getAttribute('dir')).to.equal('ltr');
+  });
+
+  test('connectedCallback keeps an explicitly set dir', async () => {
+    const rtl = await fixture(html`
+      <nuxeo-path-suggestion dir="rtl" disabled></nuxeo-path-suggestion>
+    `);
+    expect(rtl.getAttribute('dir')).to.equal('rtl');
+  });
+
+  suite('long path truncation', () => {
+    const token = (host, name) =>
+      window
+        .getComputedStyle(host)
+        .getPropertyValue(name)
+        .trim();
+
+    const firstResult = async (host) => {
+      host.$.typeahead.typedValue = '/default-domain/';
+      host.$.typeahead.data = ['/default-domain/workspaces/a workspace with a very long name/'];
+      host.$.typeahead.tryDisplayResults();
+      await flush();
+      return host.$.typeahead.shadowRoot.querySelector('paper-item');
+    };
+
+    // Rows are clipped at their inline end, so they are laid out RTL to keep the tail of the path -
+    // the container name that tells two suggestions apart - on screen (ELEMENTS-2076).
+    test('lays a result row out RTL so the end of the path stays visible', async () => {
+      const style = window.getComputedStyle(await firstResult(el));
+      expect(style.direction).to.equal('rtl');
+      expect(style.overflow).to.equal('hidden');
+      expect(style.whiteSpace).to.equal('nowrap');
+      // Drawn at the content edge, so a row that only just overflows still lines up with the rest.
+      expect(style.textOverflow).to.equal('ellipsis');
+    });
+
+    test('keeps the RTL layout for an RTL reading direction', async () => {
+      const rtl = await fixture(html`
+        <nuxeo-path-suggestion dir="rtl" disabled></nuxeo-path-suggestion>
+      `);
+      expect(window.getComputedStyle(await firstResult(rtl)).direction).to.equal('rtl');
+    });
+
+    test('aligns rows that fit with the reading direction', async () => {
+      expect(token(el, '--nuxeo-path-suggestion-result-text-align')).to.equal('left');
+      expect(window.getComputedStyle(await firstResult(el)).textAlign).to.equal('left');
+
+      const rtl = await fixture(html`
+        <nuxeo-path-suggestion dir="rtl" disabled></nuxeo-path-suggestion>
+      `);
+      expect(token(rtl, '--nuxeo-path-suggestion-result-text-align')).to.equal('right');
+      expect(window.getComputedStyle(await firstResult(rtl)).textAlign).to.equal('right');
+    });
   });
 
   suite('displayResults / hideResults', () => {

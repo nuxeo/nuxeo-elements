@@ -55,6 +55,13 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
           :host {
             display: block;
             padding-bottom: 8px;
+            /* Alignment of a suggestion row that fits; rows that do not fit are handled by the
+               direction flip in --paper-typeahead-result below. */
+            --nuxeo-path-suggestion-result-text-align: left;
+          }
+
+          :host([dir='rtl']) {
+            --nuxeo-path-suggestion-result-text-align: right;
           }
 
           paper-typeahead {
@@ -69,6 +76,16 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
               display: block;
               overflow: hidden;
               white-space: nowrap;
+              /* An over-long row is clipped at its inline end. Laying the row out RTL puts that
+                 clipped end at the start of the path, so the tail - the container name that actually
+                 tells two suggestions apart - stays on screen. Paths are overwhelmingly written in a
+                 left-to-right script, so this flip is not conditional on the UI reading direction;
+                 only the alignment of rows that do fit follows it. The ellipsis marks the cut; it is
+                 drawn at the content edge, so clipped rows line up with rows that fit instead of
+                 bleeding a few pixels into the item padding. */
+              direction: rtl;
+              text-overflow: ellipsis;
+              text-align: var(--nuxeo-path-suggestion-result-text-align, left);
               background-color: var(--nuxeo-dropdown-list-background, #fff);
               color: var(--nuxeo-text-default, #3a3a54);
               /* Keep @apply last so consumers can still override the defaults above via the mixin. */
@@ -84,18 +101,6 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
 
             --paper-typeahead-result-selected: {
               color: var(--hyland-path-suggestion-result-selected-text, var(--nuxeo-text-default, #3a3a54));
-            }
-
-            :host([dir='rtl']) {
-              --paper-typeahead-result: {
-                text-align: right;
-              }
-            }
-
-            :host(:not([dir='rtl'])) {
-              --paper-typeahead-result: {
-                text-align: left;
-              }
             }
 
             --paper-input-container-underline: {
@@ -203,7 +208,7 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
     connectedCallback() {
       super.connectedCallback();
       if (!this.hasAttribute('dir')) {
-        const direction = document.documentElement.getAttribute('dir');
+        const direction = document.documentElement.getAttribute('dir') || 'ltr';
         this.setAttribute('dir', direction);
       }
     }
