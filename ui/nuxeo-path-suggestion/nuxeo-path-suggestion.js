@@ -80,11 +80,8 @@ import { FormatBehavior } from '../nuxeo-format-behavior.js';
                  clipped end at the start of the path, so the tail - the container name that actually
                  tells two suggestions apart - stays on screen. Paths are overwhelmingly written in a
                  left-to-right script, so this flip is not conditional on the UI reading direction;
-                 only the alignment of rows that do fit follows it. The ellipsis marks the cut; it is
-                 drawn at the content edge, so clipped rows line up with rows that fit instead of
-                 bleeding a few pixels into the item padding. */
+                 only the alignment of rows that do fit follows it. */
               direction: rtl;
-              text-overflow: ellipsis;
               text-align: var(--nuxeo-path-suggestion-result-text-align, left);
               background-color: var(--nuxeo-dropdown-list-background, #fff);
               color: var(--nuxeo-text-default, #3a3a54);
