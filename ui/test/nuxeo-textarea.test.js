@@ -295,3 +295,72 @@ suite('nuxeo-textarea autocomplete', () => {
     expect(getNativeTextarea(el).getAttribute('autocomplete')).to.equal('street-address');
   });
 });
+
+// ELEMENTS-1887: harmonize error highlighting across form widgets — the label turns red when
+// the widget is invalid (complementing the existing red required asterisk).
+suite('nuxeo-textarea invalid highlighting', () => {
+  const INVALID_COLOR = 'rgb(222, 53, 11)'; // #de350b
+
+  test('renders the label in the invalid color when invalid', async () => {
+    const el = await fixture(html`
+      <nuxeo-textarea label="Description" invalid></nuxeo-textarea>
+    `);
+    await flush();
+    const label = el.shadowRoot.querySelector('label');
+    expect(getComputedStyle(label).color).to.equal(INVALID_COLOR);
+  });
+
+  test('does not apply the invalid color to the label when valid', async () => {
+    const el = await fixture(html`
+      <nuxeo-textarea label="Description"></nuxeo-textarea>
+    `);
+    await flush();
+    const label = el.shadowRoot.querySelector('label');
+    expect(getComputedStyle(label).color).to.not.equal(INVALID_COLOR);
+  });
+});
+
+// ELEMENTS-1887: nuxeo-textarea must take part in layout validation like nuxeo-input. Mixing in
+// IronValidatableBehavior gives it validate(), which sets `invalid` (driving the inline error message
+// and the red label) and lets nuxeo-layout's _getValidatableElements discover the widget.
+suite('nuxeo-textarea validation', () => {
+  test('exposes a validate() method so the layout can discover it', async () => {
+    const el = await fixture(html`
+      <nuxeo-textarea label="Description" required></nuxeo-textarea>
+    `);
+    await flush();
+    expect(el.validate).to.be.a('function');
+  });
+
+  test('validate() flags a required empty field as invalid', async () => {
+    const el = await fixture(html`
+      <nuxeo-textarea label="Description" required></nuxeo-textarea>
+    `);
+    await flush();
+    expect(el.validate()).to.be.false;
+    expect(el.invalid).to.be.true;
+    expect(el.errorMessage).to.equal(el.i18n('widget.required'));
+  });
+
+  test('clears the default required error when a value is provided', async () => {
+    const el = await fixture(html`
+      <nuxeo-textarea label="Description" required></nuxeo-textarea>
+    `);
+    await flush();
+    expect(el.validate()).to.be.false;
+    expect(el.errorMessage).to.equal(el.i18n('widget.required'));
+
+    el.value = 'hello';
+    expect(el.validate()).to.be.true;
+    expect(el.errorMessage).to.equal('');
+  });
+
+  test('validate() passes when a required field has a value', async () => {
+    const el = await fixture(html`
+      <nuxeo-textarea label="Description" required value="hello"></nuxeo-textarea>
+    `);
+    await flush();
+    expect(el.validate()).to.be.true;
+    expect(el.invalid).to.be.false;
+  });
+});
