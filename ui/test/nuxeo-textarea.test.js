@@ -339,7 +339,7 @@ suite('nuxeo-textarea validation', () => {
     await flush();
     expect(el.validate()).to.be.false;
     expect(el.invalid).to.be.true;
-    expect(el.errorMessage).to.equal('This field is required.');
+    expect(el.errorMessage).to.equal(el.i18n('widget.required'));
   });
 
   test('clears the default required error when a value is provided', async () => {
@@ -348,7 +348,7 @@ suite('nuxeo-textarea validation', () => {
     `);
     await flush();
     expect(el.validate()).to.be.false;
-    expect(el.errorMessage).to.equal('This field is required.');
+    expect(el.errorMessage).to.equal(el.i18n('widget.required'));
 
     el.value = 'hello';
     expect(el.validate()).to.be.true;
