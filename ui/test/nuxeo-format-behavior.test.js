@@ -126,12 +126,15 @@ suite('Nuxeo.FormatBehavior', () => {
     });
 
     test('falls back to the browser local time for an unknown zone', () => {
+      const previousTimezone = config.get('timezone');
       const warn = sinon.stub(console, 'warn');
       try {
+        config.set('timezone');
         expect(host.formatDateTime(winter, 'YYYY-MM-DD HH:mm', 'Totally/Bogus')).to.equal(
           host.formatDateTime(winter, 'YYYY-MM-DD HH:mm'),
         );
       } finally {
+        config.set('timezone', previousTimezone);
         warn.restore();
       }
     });
