@@ -73,6 +73,64 @@ suite('nuxeo-group-management', () => {
     });
   });
 
+  suite('_computeMissingUsers', () => {
+    test('returns empty array when there are no member ids', () => {
+      expect(el._computeMissingUsers([], [], '', [])).to.deep.equal([]);
+      expect(el._computeMissingUsers(undefined, [], '', [])).to.deep.equal([]);
+    });
+
+    test('returns empty array when the @users response is not loaded', () => {
+      expect(el._computeMissingUsers(['jack'], undefined, '', [])).to.deep.equal([]);
+    });
+
+    test('flags member ids missing from the resolved entries', () => {
+      el.memberUsers = { pageSize: 50, currentPageIndex: 0 };
+      const missing = el._computeMissingUsers(['Administrator', 'jack'], [{ id: 'Administrator' }], '', []);
+      expect(missing).to.have.lengthOf(1);
+      expect(missing[0]).to.include({ id: 'jack', 'entity-type': 'user', _missing: true });
+    });
+
+    test('matches resolved users by properties.username as well as id', () => {
+      el.memberUsers = { pageSize: 50, currentPageIndex: 0 };
+      const missing = el._computeMissingUsers(
+        ['jdoe', 'jack'],
+        [{ id: 'internal-uid', properties: { username: 'jdoe' } }],
+        '',
+        [],
+      );
+      expect(missing.map((u) => u.id)).to.deep.equal(['jack']);
+    });
+
+    test('restricts detection to the current page slice', () => {
+      el.memberUsers = { pageSize: 2, currentPageIndex: 1 };
+      // page 2 covers ids at index 2 and 3: 'ghost' (missing) and 'real2' (resolved)
+      const missing = el._computeMissingUsers(['real0', 'real1', 'ghost', 'real2'], [{ id: 'real2' }], '', []);
+      expect(missing.map((u) => u.id)).to.deep.equal(['ghost']);
+    });
+
+    test('is skipped when a users filter is active', () => {
+      el.memberUsers = { pageSize: 50, currentPageIndex: 0 };
+      expect(el._computeMissingUsers(['Administrator', 'jack'], [{ id: 'Administrator' }], 'ja', [])).to.deep.equal([]);
+    });
+
+    test('is skipped when a column sort is active', () => {
+      el.memberUsers = { pageSize: 50, currentPageIndex: 0 };
+      expect(
+        el._computeMissingUsers(['Administrator', 'jack'], [{ id: 'Administrator' }], '', [
+          { path: 'lastName', direction: 'asc' },
+        ]),
+      ).to.deep.equal([]);
+    });
+  });
+
+  suite('_noMemberUsers', () => {
+    test('true only when there are neither resolved nor missing users', () => {
+      expect(el._noMemberUsers([], [])).to.be.true;
+      expect(el._noMemberUsers([], [{ id: 'jack' }])).to.be.false;
+      expect(el._noMemberUsers([{ id: 'a' }], [])).to.be.false;
+    });
+  });
+
   suite('_fetch', () => {
     test('loads group context when groupname set', async () => {
       sinon.stub(el.$.request, 'get').returns(Promise.resolve());
@@ -235,6 +293,61 @@ suite('nuxeo-group-management', () => {
       expect(el._fromDelete).to.be.true;
       el.$.editRequest.put.restore();
       el._fetchUsers.restore();
+    });
+
+    test('does not trigger the previous-page heuristic when removing a missing user', async () => {
+      sinon.stub(el.$.editRequest, 'put').returns(Promise.resolve());
+      sinon.spy(el, '_fetchUsers');
+      el.group = { memberUsers: ['Administrator', 'jack'], memberGroups: [] };
+      el._removedMember = { id: 'jack', 'entity-type': 'user', _missing: true };
+      el._removeMember();
+      await flush();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(el.group.memberUsers).to.deep.equal(['Administrator']);
+      expect(el._fromDelete).to.be.false;
+      expect(el._fetchUsers).to.have.been.calledOnce;
+      el.$.editRequest.put.restore();
+      el._fetchUsers.restore();
+    });
+
+    test('does not page back when the last resolved user is removed while missing users remain', async () => {
+      sinon.stub(el.$.editRequest, 'put').returns(Promise.resolve());
+      sinon.spy(el, '_fetchUsers');
+      el.memberUsers = {
+        pageSize: 50,
+        currentPageIndex: 0,
+        currentPageSize: 1,
+        entries: [{ id: 'Administrator', 'entity-type': 'user', properties: { username: 'Administrator' } }],
+      };
+      el.group = { memberUsers: ['Administrator', 'ghost'], memberGroups: [] };
+      el.usersCurrentPage = 1;
+      await flush();
+      // sanity: 'ghost' is an unresolved (missing) member still shown on the current page
+      expect(el._missingUsers).to.have.lengthOf(1);
+      el._removedMember = { id: 'Administrator', 'entity-type': 'user' };
+      el._removeMember();
+      await flush();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(el._fromDelete).to.be.false;
+      expect(el.usersCurrentPage).to.equal(1);
+      el.$.editRequest.put.restore();
+      el._fetchUsers.restore();
+    });
+
+    test('does not splice when the removed id is absent (guards against dropping the last member)', async () => {
+      sinon.stub(el.$.editRequest, 'put').returns(Promise.resolve());
+      el.group = { memberUsers: ['a', 'b'], memberGroups: ['x', 'y'] };
+      el._removedMember = { id: 'missing', 'entity-type': 'user' };
+      el._removeMember();
+      await flush();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(el.group.memberUsers).to.deep.equal(['a', 'b']);
+      el._removedMember = { id: 'missing', 'entity-type': 'group' };
+      el._removeMember();
+      await flush();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(el.group.memberGroups).to.deep.equal(['x', 'y']);
+      el.$.editRequest.put.restore();
     });
 
     test('removes group reference', async () => {
@@ -410,12 +523,29 @@ suite('nuxeo-group-management', () => {
   });
 
   suite('_paths', () => {
-    test('_usersPath and _groupsPath use groupname', () => {
+    test('_usersPath and _groupsPath use group.id when available', () => {
+      el.group = { id: 'admins-id', groupname: 'admins' };
+      expect(el._usersPath()).to.equal('group/admins-id/@users');
+      expect(el._groupsPath()).to.equal('group/admins-id/@groups');
+    });
+
+    test('falls back to group.groupname when id is absent', () => {
+      el.group = { groupname: 'admins' };
+      expect(el._usersPath()).to.equal('group/admins/@users');
+      expect(el._groupsPath()).to.equal('group/admins/@groups');
+    });
+
+    test('falls back to this.groupname when group has neither id nor groupname', () => {
+      el.group = {};
       el.groupname = 'admins';
       expect(el._usersPath()).to.equal('group/admins/@users');
       expect(el._groupsPath()).to.equal('group/admins/@groups');
-      el.groupname = '';
+    });
+
+    test('returns undefined when group is not set', () => {
+      el.group = null;
       expect(el._usersPath()).to.not.be.ok;
+      expect(el._groupsPath()).to.not.be.ok;
     });
   });
 
@@ -453,6 +583,256 @@ suite('nuxeo-group-management', () => {
       expect(ev.defaultPrevented).to.be.true;
       expect(el._saveGroup).to.have.been.calledOnce;
       el._saveGroup.restore();
+    });
+  });
+
+  suite('_userDisplayName', () => {
+    test('returns empty string when user is null or undefined', () => {
+      expect(el._userDisplayName(null)).to.equal('');
+      expect(el._userDisplayName(undefined)).to.equal('');
+    });
+
+    test('prefers properties.username over user.name to avoid showing UUID', () => {
+      expect(
+        el._userDisplayName({
+          id: 'internal-uid',
+          name: 'some-uuid',
+          properties: { username: 'login', firstName: 'A', lastName: 'B' },
+        }),
+      ).to.equal('login');
+    });
+
+    test('falls back to properties.username when name is absent', () => {
+      expect(
+        el._userDisplayName({
+          id: 'uid-1',
+          properties: { username: 'jdoe' },
+        }),
+      ).to.equal('jdoe');
+    });
+
+    test('falls back to id when name and username are absent', () => {
+      expect(
+        el._userDisplayName({
+          id: 'only-id',
+          properties: {},
+        }),
+      ).to.equal('only-id');
+    });
+
+    test('returns empty string when user.properties is absent', () => {
+      expect(el._userDisplayName({ id: 'some-uuid' })).to.equal('some-uuid');
+    });
+  });
+
+  suite('_removedMemberDisplayName computed property', () => {
+    test('reflects _userDisplayName of _removedMember using properties.username', async () => {
+      el._removedMember = {
+        id: 'some-uuid',
+        name: 'some-uuid',
+        'entity-type': 'user',
+        properties: { username: 'jdoe' },
+      };
+      await flush();
+      expect(el._removedMemberDisplayName).to.equal('jdoe');
+    });
+
+    test('falls back to user.name when properties.username is absent', async () => {
+      el._removedMember = { id: 'some-uuid', name: 'jdoe', 'entity-type': 'user', properties: {} };
+      await flush();
+      expect(el._removedMemberDisplayName).to.equal('jdoe');
+    });
+  });
+
+  suite('_applySortDirectionChanged', () => {
+    test('adds path with asc direction when not present', () => {
+      const result = el._applySortDirectionChanged([], 'lastName', 'asc');
+      expect(result).to.deep.equal([{ path: 'lastName', direction: 'asc' }]);
+    });
+
+    test('updates direction when path already present', () => {
+      const result = el._applySortDirectionChanged([{ path: 'lastName', direction: 'asc' }], 'lastName', 'desc');
+      expect(result).to.deep.equal([{ path: 'lastName', direction: 'desc' }]);
+    });
+
+    test('removes path when direction is null', () => {
+      const result = el._applySortDirectionChanged([{ path: 'lastName', direction: 'asc' }], 'lastName', null);
+      expect(result).to.deep.equal([]);
+    });
+
+    test('appends new path without affecting existing ones', () => {
+      const result = el._applySortDirectionChanged([{ path: 'lastName', direction: 'asc' }], 'email', 'asc');
+      expect(result).to.deep.equal([
+        { path: 'lastName', direction: 'asc' },
+        { path: 'email', direction: 'asc' },
+      ]);
+    });
+
+    test('does not mutate the original array', () => {
+      const cols = [{ path: 'lastName', direction: 'asc' }];
+      el._applySortDirectionChanged(cols, 'lastName', null);
+      expect(cols).to.deep.equal([{ path: 'lastName', direction: 'asc' }]);
+    });
+
+    test('does not add entry when direction is null and path is absent', () => {
+      const result = el._applySortDirectionChanged([], 'lastName', null);
+      expect(result).to.deep.equal([]);
+    });
+  });
+
+  suite('_isSortActive', () => {
+    test('returns true when path is active', () => {
+      expect(el._isSortActive([{ path: 'lastName', direction: 'asc' }], 'lastName')).to.be.true;
+    });
+
+    test('returns false when path is not active', () => {
+      expect(el._isSortActive([{ path: 'lastName', direction: 'asc' }], 'email')).to.be.false;
+    });
+
+    test('returns false for empty array', () => {
+      expect(el._isSortActive([], 'lastName')).to.be.false;
+    });
+
+    test('returns falsy for null sortOrder', () => {
+      expect(el._isSortActive(null, 'lastName')).to.not.be.ok;
+    });
+  });
+
+  suite('_ariaSort', () => {
+    test('returns ascending for asc column', () => {
+      expect(el._ariaSort([{ path: 'lastName', direction: 'asc' }], 'lastName')).to.equal('ascending');
+    });
+
+    test('returns descending for desc column', () => {
+      expect(el._ariaSort([{ path: 'lastName', direction: 'desc' }], 'lastName')).to.equal('descending');
+    });
+
+    test('returns none when path is not present', () => {
+      expect(el._ariaSort([], 'lastName')).to.equal('none');
+    });
+  });
+
+  suite('_onMemberUserSortChanged', () => {
+    test('adds column, resets users page to 1, and refetches', () => {
+      el.group = {};
+      el.usersCurrentPage = 4;
+      sinon.spy(el, '_fetchUsers');
+      el._onMemberUserSortChanged({ detail: { path: 'lastName', direction: 'asc' } });
+      expect(el._memberUserSortOrder).to.deep.equal([{ path: 'lastName', direction: 'asc' }]);
+      expect(el.usersCurrentPage).to.equal(1);
+      expect(el._fetchUsers).to.have.been.calledOnce;
+      el._fetchUsers.restore();
+    });
+
+    test('updates direction on second event', () => {
+      el.group = {};
+      sinon.stub(el, '_fetchUsers');
+      el._onMemberUserSortChanged({ detail: { path: 'email', direction: 'asc' } });
+      el._onMemberUserSortChanged({ detail: { path: 'email', direction: 'desc' } });
+      expect(el._memberUserSortOrder).to.deep.equal([{ path: 'email', direction: 'desc' }]);
+      el._fetchUsers.restore();
+    });
+
+    test('removes column when direction is null', () => {
+      el.group = {};
+      sinon.stub(el, '_fetchUsers');
+      el._onMemberUserSortChanged({ detail: { path: 'username', direction: 'asc' } });
+      el._onMemberUserSortChanged({ detail: { path: 'username', direction: null } });
+      expect(el._memberUserSortOrder).to.deep.equal([]);
+      el._fetchUsers.restore();
+    });
+  });
+
+  suite('_onMemberGroupSortChanged', () => {
+    test('adds column, resets groups page to 1, and refetches', () => {
+      el.group = {};
+      el.groupsCurrentPage = 2;
+      sinon.spy(el, '_fetchGroups');
+      el._onMemberGroupSortChanged({ detail: { path: 'grouplabel', direction: 'asc' } });
+      expect(el._memberGroupSortOrder).to.deep.equal([{ path: 'grouplabel', direction: 'asc' }]);
+      expect(el.groupsCurrentPage).to.equal(1);
+      expect(el._fetchGroups).to.have.been.calledOnce;
+      el._fetchGroups.restore();
+    });
+
+    test('updates direction on second event', () => {
+      el.group = {};
+      sinon.stub(el, '_fetchGroups');
+      el._onMemberGroupSortChanged({ detail: { path: 'groupname', direction: 'asc' } });
+      el._onMemberGroupSortChanged({ detail: { path: 'groupname', direction: 'desc' } });
+      expect(el._memberGroupSortOrder).to.deep.equal([{ path: 'groupname', direction: 'desc' }]);
+      el._fetchGroups.restore();
+    });
+
+    test('removes column when direction is null', () => {
+      el.group = {};
+      sinon.stub(el, '_fetchGroups');
+      el._onMemberGroupSortChanged({ detail: { path: 'grouplabel', direction: 'asc' } });
+      el._onMemberGroupSortChanged({ detail: { path: 'grouplabel', direction: null } });
+      expect(el._memberGroupSortOrder).to.deep.equal([]);
+      el._fetchGroups.restore();
+    });
+  });
+
+  suite('_fetchUsers with sort', () => {
+    test('includes sortBy and sortOrder when member user sort columns are set', () => {
+      el.group = {};
+      el.usersFilter = '';
+      el.usersCurrentPage = 1;
+      el._memberUserSortOrder = [
+        { path: 'lastName', direction: 'asc' },
+        { path: 'email', direction: 'desc' },
+      ];
+      el._fetchUsers();
+      expect(el.$.users.params.sortBy).to.equal('lastName,email');
+      expect(el.$.users.params.sortOrder).to.equal('asc,desc');
+    });
+
+    test('omits sortBy and sortOrder when no sort columns', () => {
+      el.group = {};
+      el._memberUserSortOrder = [];
+      el._fetchUsers();
+      expect(el.$.users.params.sortBy).to.be.undefined;
+      expect(el.$.users.params.sortOrder).to.be.undefined;
+    });
+
+    test('applies single-column sort correctly', () => {
+      el.group = {};
+      el._memberUserSortOrder = [{ path: 'username', direction: 'asc' }];
+      el._fetchUsers();
+      expect(el.$.users.params.sortBy).to.equal('username');
+      expect(el.$.users.params.sortOrder).to.equal('asc');
+    });
+  });
+
+  suite('_fetchGroups with sort', () => {
+    test('includes sortBy and sortOrder when member group sort columns are set', () => {
+      el.group = {};
+      el.groupsFilter = '';
+      el.groupsCurrentPage = 1;
+      el._memberGroupSortOrder = [
+        { path: 'grouplabel', direction: 'desc' },
+        { path: 'groupname', direction: 'asc' },
+      ];
+      el._fetchGroups();
+      expect(el.$.groups.params.sortBy).to.equal('grouplabel,groupname');
+      expect(el.$.groups.params.sortOrder).to.equal('desc,asc');
+    });
+
+    test('omits sortBy and sortOrder when no sort columns', () => {
+      el.group = {};
+      el._memberGroupSortOrder = [];
+      el._fetchGroups();
+      expect(el.$.groups.params.sortBy).to.be.undefined;
+      expect(el.$.groups.params.sortOrder).to.be.undefined;
+    });
+
+    test('applies single-column sort correctly', () => {
+      el.group = {};
+      el._memberGroupSortOrder = [{ path: 'grouplabel', direction: 'desc' }];
+      el._fetchGroups();
+      expect(el.$.groups.params.sortBy).to.equal('grouplabel');
+      expect(el.$.groups.params.sortOrder).to.equal('desc');
     });
   });
 });

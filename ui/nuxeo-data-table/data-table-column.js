@@ -12,12 +12,20 @@ import './data-table-column-filter.js';
           <nuxeo-data-table-column-filter
             label="[[column.name]]"
             value="{{column.filterValue}}"
+            required="[[column.required]]"
             hidden$="[[!column.filterBy]]"
-            role="columnheader"
           >
           </nuxeo-data-table-column-filter>
-          <div id="columnHeader" title="[[column.name]]" hidden$="[[column.filterBy]]" role="columnheader">
-            [[column.name]]
+          <div id="columnHeader" title="[[column.name]]" hidden$="[[column.filterBy]]">
+            <!-- this template is stamped into nuxeo-data-table-cell, outside this element's style
+                 scope, so the indicator is styled inline rather than from a stylesheet rule -->
+            [[column.name]]<span
+              class="required-indicator"
+              style="margin-inline-start: 4px; color: var(--paper-input-container-invalid-color, #de350b)"
+              aria-hidden="true"
+              hidden$="[[!column.required]]"
+              >*</span
+            >
           </div>
         </template>
       `;
@@ -43,6 +51,17 @@ import './data-table-column-filter.js';
         name: {
           type: String,
           value: '',
+        },
+
+        /**
+         * If `true`, a required indicator is displayed next to the column name in the header cell.
+         * When not set explicitly, `nuxeo-data-table` derives it from the `required` widgets of its
+         * `nuxeo-data-table-form`, so that multivalued properties flagged as required in the schema
+         * show the indicator on the layout itself and not only in the entry dialog.
+         */
+        required: {
+          type: Boolean,
+          value: false,
         },
 
         /**
@@ -174,6 +193,7 @@ import './data-table-column-filter.js';
         '_alwaysVisibleChanged(table, alwaysVisible)',
         '_nameChanged(table, name)',
         '_orderChanged(table, order)',
+        '_requiredChanged(table, required)',
         '_resizedChanged(table, resized)',
         '_sortByChanged(table, sortBy)',
         '_templateChanged(table, template)',
@@ -235,6 +255,10 @@ import './data-table-column-filter.js';
       this._notifyTable(table, 'order', order);
     }
 
+    _requiredChanged(table, required) {
+      this._notifyTable(table, 'required', required);
+    }
+
     _resizedChanged(table, resized) {
       this._notifyTable(table, 'resized', resized);
     }
@@ -252,13 +276,19 @@ import './data-table-column-filter.js';
     }
 
     _filterValueChanged(table, filterValue, filterBy, filterExpression) {
-      if (table && filterBy && filterValue !== undefined) {
+      // Use filterBy if set, otherwise fall back to field (ELEMENTS-1966)
+      const effectiveFilterBy = filterBy || this.field || null;
+      if (table && filterValue !== undefined) {
         this._notifyTable(table, 'filterValue', filterValue);
+        // Skip event dispatch while the table is restoring settings (ELEMENTS-1966)
+        if (table._suppressFilterEvents) {
+          return;
+        }
         this.dispatchEvent(
           new CustomEvent('column-filter-changed', {
             composed: true,
             bubbles: true,
-            detail: { value: filterValue, filterBy, filterExpression },
+            detail: { value: filterValue, filterBy: effectiveFilterBy, filterExpression, name: this.name },
           }),
         );
       }

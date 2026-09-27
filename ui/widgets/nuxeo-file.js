@@ -30,6 +30,7 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 import '../nuxeo-icons.js';
 import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
+import { WidgetValidationBehavior } from './nuxeo-widget-validation-behavior.js';
 
 {
   /**
@@ -38,11 +39,12 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
    *     <nuxeo-file value="{{document.properties.file:content}}"></nuxeo-file>
    *
    * @appliesMixin Nuxeo.UploaderBehavior
+   * @appliesMixin Nuxeo.WidgetValidationBehavior
    * @memberof Nuxeo
    * @demo demo/nuxeo-file/index.html
    */
   class File extends mixinBehaviors(
-    [UploaderBehavior, I18nBehavior, IronFormElementBehavior, IronValidatableBehavior],
+    [UploaderBehavior, I18nBehavior, IronFormElementBehavior, IronValidatableBehavior, WidgetValidationBehavior],
     Nuxeo.Element,
   ) {
     static get template() {
@@ -237,10 +239,15 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
       this.connection = this.$.nx;
       this.setupDropZone(this.$.dropZone);
       this.addEventListener('batchFinished', this._updateValue);
+      // The upload button is stamped in a dom-if and replaced while uploading, so re-apply the aria
+      // state to whichever button is currently there.
+      this._observeAriaValidationControl(this.$.dropZone);
+      this._syncAriaValidationState();
     }
 
     disconnectedCallback() {
       super.disconnectedCallback();
+      this._disconnectAriaValidationObserver();
       this.teardownDropZone();
     }
 
@@ -298,7 +305,25 @@ import { UploaderBehavior } from './nuxeo-uploader-behavior.js';
     }
 
     _getValidity() {
-      return !this.uploading && (!this.required || this._hasValue());
+      const valid = !this.uploading && (!this.required || this._hasValue());
+      if (valid) {
+        this._clearDefaultRequiredError();
+      } else {
+        this._applyDefaultRequiredError();
+      }
+      return valid;
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. The value is a blob or a batch of them,
+       not a plain property. */
+    _isEmptyWidgetValue() {
+      return !this._hasValue();
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. The hidden native input is not reachable,
+       so the state belongs on the button that opens the file picker. */
+    _ariaValidationControl() {
+      return this.$.dropZone.querySelector('#button');
     }
 
     _hasSingleValue() {

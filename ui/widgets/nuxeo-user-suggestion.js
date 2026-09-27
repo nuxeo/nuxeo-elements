@@ -66,7 +66,7 @@ import './nuxeo-user-group-formatter.js';
           selected-items="{{selectedItems}}"
           selected-item="{{selectedItem}}"
           required="[[required]]"
-          invalid="[[invalid]]"
+          invalid="{{invalid}}"
           selection-formatter="[[selectionFormatter]]"
           result-formatter="[[resultFormatter]]"
           resolve-entry="[[resolveEntry]]"
@@ -241,14 +241,11 @@ import './nuxeo-user-group-formatter.js';
     }
 
     _computeParams() {
-      return Object.assign(
-        {},
-        {
-          searchType: this.searchType,
-          groupRestriction: this.groupRestriction,
-        },
-        this.params,
-      );
+      return {
+        searchType: this.searchType,
+        groupRestriction: this.groupRestriction,
+        ...this.params,
+      };
     }
 
     _selectionFormatter(item) {

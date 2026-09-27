@@ -66,7 +66,7 @@ Scan the codebase to identify what has changed since the context files were last
 - Check git log for recent changes: structural moves, new elements, deleted files
 - Compare directory listings against what's documented
 - Check package.json for dependency changes (versions, new deps, removed deps)
-- Check eslint.config.mjs, karma.conf.js for config changes
+- Check eslint.config.mjs, web-test-runner.config.mjs for config changes
 - Check for new elements, test files
 - Check for renamed or moved files/directories
 ```
@@ -77,7 +77,7 @@ Key things to verify against reality:
 - **Commands** — `npm` scripts in `package.json`
 - **Dependencies** — `@nuxeo/*` package versions, Polymer version
 - **Element list** — new elements added, old ones removed
-- **Test patterns** — any framework changes (Karma config)
+- **Test patterns** — any framework changes (web-test-runner.config.mjs, test/setup.js)
 - **CI workflows** in `.github/workflows/`
 
 ### Step 2: Update Each File

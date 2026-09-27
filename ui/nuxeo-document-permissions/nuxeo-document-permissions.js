@@ -135,7 +135,12 @@ import '../nuxeo-button-styles.js';
               <div class="actions">
                 <dom-if if="[[!_empty(inheritedAces)]]">
                   <template>
-                    <paper-button id="block" on-click="blockInheritance" class="text small">
+                    <paper-button
+                      id="block"
+                      on-click="blockInheritance"
+                      class="text small"
+                      aria-label$="[[i18n('documentPermissions.block.ariaLabel')]]"
+                    >
                       <span>
                         [[i18n('documentPermissions.block')]]
                       </span>
@@ -144,7 +149,12 @@ import '../nuxeo-button-styles.js';
                 </dom-if>
                 <dom-if if="[[_empty(inheritedAces)]]">
                   <template>
-                    <paper-button id="unblock" on-click="unblockInheritance" class="text small">
+                    <paper-button
+                      id="unblock"
+                      on-click="unblockInheritance"
+                      class="text small"
+                      aria-label$="[[i18n('documentPermissions.unblock.ariaLabel')]]"
+                    >
                       <span>
                         [[i18n('documentPermissions.unblock')]]
                       </span>
@@ -238,7 +248,7 @@ import '../nuxeo-button-styles.js';
           value: {
             'fetch-acls': 'username,creator,extended',
             depth: 'children',
-            time: new Date().getTime(),
+            time: Date.now(),
           },
         },
         visible: {
@@ -279,7 +289,7 @@ import '../nuxeo-button-styles.js';
     refresh() {
       if (this.visible) {
         this.doc = null;
-        this.params.time = new Date().getTime();
+        this.params.time = Date.now();
         this.$.doc.get().then(() => {
           this.dispatchEvent(
             new CustomEvent('iron-resize', {

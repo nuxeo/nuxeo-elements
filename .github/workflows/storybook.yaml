@@ -15,6 +15,9 @@ on:
       NPM_PACKAGES_TOKEN:
         description: 'NPM_PACKAGES_TOKEN'
         required: true
+      GIT_ADMIN_TOKEN:
+        description: 'GIT_ADMIN_TOKEN'
+        required: false
 
 permissions:
   contents: write
@@ -39,21 +42,19 @@ jobs:
       - name: Install
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
-        run: |
-          npm install --no-package-lock
-          npm run bootstrap
+        run: npm ci --ignore-scripts
 
       - name: Run analysis
-        run: npx lerna run analysis --parallel
+        run: npx --no-install --ignore-scripts lerna@9.0.7 run analysis --parallel
 
       - name: Build storybook
         working-directory: storybook
         run: |
-          npx storybook build -o dist
+          npx --no-install --ignore-scripts storybook@10.5.0 build -o dist
 
       - name: Deploy
         if: ${{ env.BRANCH_NAME == 'maintenance-3.1.x' }}
         env:
-          GH_TOKEN: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: nuxeo-webui-jx-bot:${{ secrets.GIT_ADMIN_TOKEN }}
         working-directory: storybook
         run: npm run deploy -- --ci --existing-output-dir=dist

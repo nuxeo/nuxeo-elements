@@ -15,8 +15,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import { fixture, html } from '@nuxeo/testing-helpers';
+import { fixture, flush, html } from '@nuxeo/testing-helpers';
 import moment from '@nuxeo/moment/min/moment-with-locales.js';
+import { config } from '@nuxeo/nuxeo-elements';
 import '../widgets/nuxeo-date-picker.js';
 
 function getInput(element) {
@@ -144,5 +145,316 @@ suite('nuxeo-date-picker', () => {
         testValueWithLocale(element, '2003-06-13T00:00:00.000Z', 'ar', conf.timezone);
       });
     });
+  });
+});
+
+suite('nuxeo-date-picker – extra branches', () => {
+  let el;
+  let currentLocale;
+
+  setup(async () => {
+    currentLocale = moment.locale();
+    el = await fixture(
+      html`
+        <nuxeo-date-picker></nuxeo-date-picker>
+      `,
+    );
+  });
+
+  teardown(() => {
+    moment.locale(currentLocale);
+  });
+
+  suite('_moment', () => {
+    test('uses moment.utc when timezone is Etc/UTC', async () => {
+      const utcEl = await fixture(
+        html`
+          <nuxeo-date-picker timezone="Etc/UTC"></nuxeo-date-picker>
+        `,
+      );
+      const m = utcEl._moment('2024-06-15');
+      expect(m.isUTC()).to.be.true;
+    });
+
+    test('uses local moment when timezone is empty', () => {
+      const m = el._moment('2024-06-15');
+      expect(m.isValid()).to.be.true;
+    });
+  });
+
+  suite('_valueChanged', () => {
+    test('sets _inputValue to null when value is falsy', () => {
+      el.value = '';
+      expect(el._inputValue).to.equal(null);
+    });
+
+    test('sets _inputValue to YYYY-MM-DD for valid ISO date', () => {
+      el.value = '2024-03-05T10:30:00.000Z';
+      expect(el._inputValue).to.match(/^\d{4}-\d{2}-\d{2}$/);
+    });
+
+    test('sets _inputValue to empty for invalid date string', () => {
+      el._preventInputUpdate = false;
+      el._inputValue = '2024-01-01';
+      el.value = 'not-a-date';
+      expect(el._inputValue).to.satisfy((v) => v === '' || v === null);
+    });
+
+    test('pads year/month/day correctly', () => {
+      el.value = '0005-01-02T00:00:00.000Z';
+      const parts = el._inputValue.split('-');
+      expect(parts[0]).to.have.length(4);
+      expect(parts[1]).to.have.length(2);
+      expect(parts[2]).to.have.length(2);
+    });
+  });
+
+  suite('_inputValueChanged', () => {
+    test('sets value to null for invalid _inputValue', () => {
+      el._preventInputUpdate = false;
+      el._inputValue = 'invalid';
+      expect(el.value).to.equal(null);
+    });
+
+    test('does nothing when _preventInputUpdate is true', () => {
+      el.value = '2024-06-15T00:00:00.000Z';
+      el._preventInputUpdate = true;
+      el._inputValue = '2020-01-01';
+      expect(el._preventInputUpdate).to.be.false;
+    });
+
+    test('sets value to JSON for valid _inputValue', () => {
+      el._preventInputUpdate = false;
+      el._inputValue = '2024-06-15';
+      expect(el.value).to.be.a('string');
+      expect(moment(el.value).isValid()).to.be.true;
+    });
+
+    test('applies defaultTime when valid', () => {
+      el.defaultTime = '10:30:45';
+      el._preventInputUpdate = false;
+      el._inputValue = '2024-06-15';
+      const parsed = moment(el.value);
+      expect(parsed.isValid()).to.be.true;
+    });
+
+    test('throws for invalid defaultTime', () => {
+      el.defaultTime = 'bad-time';
+      el._preventInputUpdate = false;
+      expect(() => {
+        el._inputValue = '2024-06-15';
+      }).to.throw('Invalid default time');
+    });
+
+    test('skips update when _inputValue is null', () => {
+      el.value = '2024-06-15T00:00:00.000Z';
+      el._preventInputUpdate = false;
+      el._inputValue = null;
+      expect(el.value).to.equal('2024-06-15T00:00:00.000Z');
+    });
+  });
+
+  suite('_getValidity', () => {
+    test('returns true when not required and no value', () => {
+      el.required = false;
+      el.value = null;
+      expect(el._getValidity()).to.be.true;
+    });
+
+    test('returns false when required and no value', () => {
+      el.required = true;
+      el.value = null;
+      expect(el._getValidity()).to.be.false;
+    });
+
+    test('returns true when required and value is set', () => {
+      el.required = true;
+      el.value = '2024-06-15T00:00:00.000Z';
+      expect(el._getValidity()).to.be.true;
+    });
+  });
+});
+// Covers the staged accessible-name work in ui/widgets/nuxeo-date-picker.js:
+//   - new _computeDateAriaLabel(label) helper
+//   - aria-label on the inner <custom-date-picker> bound from the trimmed label
+//     (replaces the previous aria-labelledby="date_label" which could not be
+//     resolved across the inner element's shadow boundary).
+suite('nuxeo-date-picker accessibility', () => {
+  suite('_computeDateAriaLabel', () => {
+    let el;
+
+    setup(async () => {
+      el = await fixture(html`
+        <nuxeo-date-picker></nuxeo-date-picker>
+      `);
+    });
+
+    test('returns the trimmed label', () => {
+      expect(el._computeDateAriaLabel('Created at')).to.equal('Created at');
+      expect(el._computeDateAriaLabel('  Created at  ')).to.equal('Created at');
+    });
+
+    test('returns null when the label is empty, missing, or whitespace', () => {
+      expect(el._computeDateAriaLabel('')).to.be.null;
+      expect(el._computeDateAriaLabel('   ')).to.be.null;
+      expect(el._computeDateAriaLabel(null)).to.be.null;
+      expect(el._computeDateAriaLabel(undefined)).to.be.null;
+    });
+  });
+
+  suite('aria-label on the inner picker', () => {
+    test('sets aria-label from the label property', async () => {
+      const el = await fixture(html`
+        <nuxeo-date-picker label="Created at"></nuxeo-date-picker>
+      `);
+      await flush();
+
+      expect(el.$.date.getAttribute('aria-label')).to.equal('Created at');
+    });
+
+    test('omits aria-label when no label is provided', async () => {
+      const el = await fixture(html`
+        <nuxeo-date-picker></nuxeo-date-picker>
+      `);
+      await flush();
+
+      // Polymer drops the attribute when the bound value is null.
+      expect(el.$.date.hasAttribute('aria-label')).to.be.false;
+    });
+
+    test('updates aria-label when the label changes', async () => {
+      const el = await fixture(html`
+        <nuxeo-date-picker label="Initial"></nuxeo-date-picker>
+      `);
+      await flush();
+      expect(el.$.date.getAttribute('aria-label')).to.equal('Initial');
+
+      el.label = 'Updated';
+      await flush();
+
+      expect(el.$.date.getAttribute('aria-label')).to.equal('Updated');
+    });
+  });
+});
+
+// The placeholder shown inside the date input can be hidden through the
+// `nuxeo.ui.date.picker.hide.placeholder` nuxeo.conf property, surfaced to the
+// client via `Nuxeo.UI.config.datePicker.hidePlaceholder`.
+suite('nuxeo-date-picker placeholder visibility', () => {
+  function getInnerInput(el) {
+    return el.$.date.shadowRoot.querySelector('#dateInput');
+  }
+
+  teardown(() => {
+    // reset the shared config between tests
+    config.set('datePicker.hidePlaceholder', undefined);
+  });
+
+  test('defaults hidePlaceholder to false and shows the placeholder', async () => {
+    const el = await fixture(html`
+      <nuxeo-date-picker></nuxeo-date-picker>
+    `);
+    await flush();
+    expect(el.hidePlaceholder).to.be.false;
+    expect(getInnerInput(el).getAttribute('placeholder')).to.be.ok;
+  });
+
+  test('keeps the placeholder visible when the config property is false', async () => {
+    config.set('datePicker.hidePlaceholder', false);
+    const el = await fixture(html`
+      <nuxeo-date-picker></nuxeo-date-picker>
+    `);
+    await flush();
+    expect(el.hidePlaceholder).to.be.false;
+    expect(getInnerInput(el).getAttribute('placeholder')).to.be.ok;
+  });
+
+  test('hides the placeholder when the config property is the boolean true', async () => {
+    config.set('datePicker.hidePlaceholder', true);
+    const el = await fixture(html`
+      <nuxeo-date-picker></nuxeo-date-picker>
+    `);
+    await flush();
+    expect(el.hidePlaceholder).to.be.true;
+    expect(getInnerInput(el).getAttribute('placeholder') || '').to.equal('');
+  });
+
+  test('hides the placeholder when the config property is the string "true"', async () => {
+    config.set('datePicker.hidePlaceholder', 'true');
+    const el = await fixture(html`
+      <nuxeo-date-picker></nuxeo-date-picker>
+    `);
+    await flush();
+    expect(el.hidePlaceholder).to.be.true;
+    expect(getInnerInput(el).getAttribute('placeholder') || '').to.equal('');
+  });
+
+  test('ignores a null config value and leaves hidePlaceholder untouched', async () => {
+    config.set('datePicker.hidePlaceholder', null);
+    const el = await fixture(html`
+      <nuxeo-date-picker></nuxeo-date-picker>
+    `);
+    await flush();
+    expect(el.hidePlaceholder).to.be.false;
+    expect(getInnerInput(el).getAttribute('placeholder')).to.be.ok;
+  });
+
+  test('lets an explicit hide-placeholder attribute win over the config', async () => {
+    config.set('datePicker.hidePlaceholder', false);
+    const el = await fixture(html`
+      <nuxeo-date-picker hide-placeholder></nuxeo-date-picker>
+    `);
+    await flush();
+    expect(el.hidePlaceholder).to.be.true;
+    expect(getInnerInput(el).getAttribute('placeholder') || '').to.equal('');
+  });
+
+  test('forwards the hidePlaceholder property to the inner picker', async () => {
+    const el = await fixture(html`
+      <nuxeo-date-picker></nuxeo-date-picker>
+    `);
+    await flush();
+    el.hidePlaceholder = true;
+    await flush();
+    expect(el.$.date.hidePlaceholder).to.be.true;
+    expect(getInnerInput(el).getAttribute('placeholder') || '').to.equal('');
+  });
+});
+
+// Covers WEBUI-493: the `autocomplete` property declared in ui/widgets/nuxeo-date-picker.js is
+// forwarded through custom-date-picker to the rendered native <input> so a layout can identify the
+// purpose of the field (WCAG 2.1 SC 1.3.5, technique H98).
+suite('nuxeo-date-picker autocomplete', () => {
+  function getDateInput(el) {
+    return el.$.date.shadowRoot.querySelector('#dateInput');
+  }
+
+  test('declares the property and defaults it to off', async () => {
+    const el = await fixture(html`
+      <nuxeo-date-picker></nuxeo-date-picker>
+    `);
+    await flush();
+    expect(el.autocomplete).to.equal('off');
+    expect(el.$.date.autocomplete).to.equal('off');
+    expect(getDateInput(el).getAttribute('autocomplete')).to.equal('off');
+  });
+
+  test('forwards a token configured on the element to the native input', async () => {
+    const el = await fixture(html`
+      <nuxeo-date-picker autocomplete="bday"></nuxeo-date-picker>
+    `);
+    await flush();
+    expect(el.$.date.autocomplete).to.equal('bday');
+    expect(getDateInput(el).getAttribute('autocomplete')).to.equal('bday');
+  });
+
+  test('forwards a token set at runtime to the native input', async () => {
+    const el = await fixture(html`
+      <nuxeo-date-picker></nuxeo-date-picker>
+    `);
+    await flush();
+    el.autocomplete = 'bday';
+    await flush();
+    expect(getDateInput(el).getAttribute('autocomplete')).to.equal('bday');
   });
 });

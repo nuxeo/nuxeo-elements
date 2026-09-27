@@ -1,0 +1,68 @@
+name: Alpha build
+
+# Manually-triggered build used for rebranding / work-in-progress branches.
+# It is identical to the RC build (main.yaml) but produces `-alpha.N` prereleases
+# instead of `-rc.N`, so it never interferes with the RC pipeline on lts-2025.
+#
+# Dispatch it against the branch you want to build (ref selector in the Actions
+# tab, or: gh workflow run alpha.yaml --ref <your-branch>).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  LERNA: lerna@9.0.7
+  PREID: alpha
+
+jobs:
+  # No lint/test/storybook/sonar gates here on purpose: those already run on
+  # every push to the rebranding PR (each check has an `on: pull_request`
+  # trigger). Re-running them here would just duplicate the same checks on the
+  # same commit. Dispatch this workflow from a commit whose PR checks are green.
+  build:
+    runs-on: ubuntu-latest
+    # Only this job needs write access, to create and push the alpha tag
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: actions/setup-node@v6
+      with:
+        node-version: 22
+        registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
+        scope: '@nuxeo'
+
+    - name: Prepare environment
+      run: |
+        git config user.name "nuxeo-webui-jx-bot" && git config user.email "webui@hyland.com"
+        echo "PACKAGE_VERSION=$(npx --no-install -c 'echo "$npm_package_version"')" >> $GITHUB_ENV
+
+    - name: Get prerelease version
+      run: |
+        git fetch origin --tags
+        # Alpha tags live in their own namespace WITHOUT the leading "v" prefix
+        # (e.g. 2025.18.0-alpha.3) so they never match the rc pipeline's
+        # "v${version}*" tag glob and cannot corrupt rc version numbering.
+        LAST_TAG=$(git tag --list "${PACKAGE_VERSION/-SNAPSHOT}-${PREID}.*" | sort -V | tail -1 | tr -d '\n')
+        echo "VERSION=$(npx semver -i prerelease --preid ${PREID} ${LAST_TAG:-$PACKAGE_VERSION} | tr -d '\n')" >> $GITHUB_ENV
+
+    - name: Set version to ${{ env.VERSION }}
+      run: |
+        npm version $VERSION --no-git-tag-version
+        npx ${{ env.LERNA }} version $VERSION --no-push --force-publish --no-git-tag-version --yes
+
+    - name: Tag
+      run: |
+        git commit -a -m "Alpha release ${VERSION}"
+        # Tag without the "v" prefix to stay out of the rc pipeline's tag namespace
+        git tag -a ${VERSION} -m "Alpha release ${VERSION}"
+        git push origin ${VERSION}
+
+    - name: Publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_PACKAGES_TOKEN }}
+      # Publish under the `alpha` dist-tag so SNAPSHOT consumers are untouched
+      run: npx ${{ env.LERNA }} exec --ignore @nuxeo/nuxeo-elements-storybook -- npm publish --tag ${PREID}

@@ -90,7 +90,74 @@ suite('nuxeo-document-comment-thread', () => {
       });
     });
 
+    /** Resolves the native `<textarea>` that `paper-textarea` wraps. */
+    const nativeTextarea = (paperTextarea) =>
+      (paperTextarea.shadowRoot && paperTextarea.shadowRoot.querySelector('textarea')) ||
+      (paperTextarea.$ && paperTextarea.$.input && paperTextarea.$.input.textarea);
+
+    suite('Input Label', () => {
+      test('Should display an always visible label naming the comment input', () => {
+        const input = element.root.querySelector('#inputContainer');
+        expect(input.label).to.equal(element._computeTextLabel(1, 'label'));
+        expect(input.label).to.not.be.empty;
+        expect(input.alwaysFloatLabel).to.be.true;
+        expect(isElementVisible(input.shadowRoot.querySelector('label'))).to.be.true;
+      });
+
+      test('Should name replies with the reply label', async () => {
+        element.set('level', 2);
+        await flush();
+
+        expect(element.root.querySelector('#inputContainer').label).to.equal(element._computeTextLabel(2, 'label'));
+      });
+
+      test('Should expose the visible label as the accessible name of the native textarea', async () => {
+        await flush();
+        const input = element.root.querySelector('#inputContainer');
+        const native = nativeTextarea(input);
+
+        expect(native).to.exist;
+        // Assert on the native control rather than the `label` property: that property is what
+        // the fix sets, so checking it would pass even if nothing reached the element that
+        // assistive technologies actually read.
+        expect(native.getAttribute('aria-label')).to.equal(input.label);
+        expect(native.getAttribute('aria-label')).to.not.be.empty;
+      });
+
+      test('Should not let the dangling aria-labelledby name the textarea', async () => {
+        await flush();
+        const native = nativeTextarea(element.root.querySelector('#inputContainer'));
+        const labelledby = native.getAttribute('aria-labelledby');
+
+        // paper-textarea points this at a <label> in its own shadow root, one level above the
+        // textarea, so it can never resolve and browsers discard it as an invalid name source,
+        // falling through to aria-label. It is left in place deliberately: removing it fights
+        // paper-input-behavior, which re-applies it.
+        if (labelledby) {
+          const root = native.getRootNode();
+          expect(root.getElementById(labelledby)).to.not.exist;
+        }
+      });
+
+      test('Should re-name the native textarea when the thread becomes a reply', async () => {
+        element.set('level', 2);
+        await flush();
+
+        const input = element.root.querySelector('#inputContainer');
+        expect(nativeTextarea(input).getAttribute('aria-label')).to.equal(element._computeTextLabel(2, 'label'));
+      });
+    });
+
     suite('Listing Comments', () => {
+      test('Should request comments with author and repliesSummary fetch headers', async () => {
+        element._refresh();
+        await flush();
+
+        const request = server.getLastRequest('get', '/api/v1/id/doc-id/@comment/');
+        expect(request).to.exist;
+        expect(request.headers['fetch-comment']).to.equal('repliesSummary,author');
+      });
+
       test('Should not display any comment when thread has an empty array of comments', () => {
         expect(element.shadowRoot.querySelectorAll('nuxeo-document-comment').length).to.equal(0);
       });
@@ -188,7 +255,109 @@ suite('nuxeo-document-comment-thread', () => {
       });
 
       suite('Reconciliation', () => {
-        // TODO
+        // The server returns entries newest first, while the element keeps `comments` oldest first.
+        const buildComment = (id, creationDate) => {
+          return {
+            'entity-type': 'comment',
+            parentId: 'doc-id',
+            id,
+            numberOfReplies: 0,
+            author: 'John Doe',
+            creationDate,
+            text: `This is comment ${id}`,
+          };
+        };
+
+        const newest = buildComment('comment-id-5', '2019-12-05');
+        const newer = buildComment('comment-id-4', '2019-12-04');
+        const oldestLoaded = buildComment('comment-id-3', '2019-12-03');
+        const older = buildComment('comment-id-2', '2019-12-02');
+        const oldest = buildComment('comment-id-1', '2019-12-01');
+
+        const respondWith = (entries, totalSize) => {
+          server.respondWith('get', '/api/v1/id/doc-id/@comment/', {
+            'entity-type': 'comments',
+            entries,
+            totalSize,
+          });
+        };
+
+        const loadedIds = () => element.comments.map((entry) => entry.id);
+
+        test('Should prepend every entry, oldest first, when no comment is loaded yet', async () => {
+          respondWith([newest, newer, oldestLoaded], 3);
+
+          element._refresh();
+          await flush();
+
+          expect(loadedIds()).to.deep.equal(['comment-id-3', 'comment-id-4', 'comment-id-5']);
+        });
+
+        test('Should only prepend the entries older than the oldest loaded comment', async () => {
+          respondWith([newest, newer, oldestLoaded], 5);
+          element._refresh();
+          await flush();
+          expect(loadedIds()).to.deep.equal(['comment-id-3', 'comment-id-4', 'comment-id-5']);
+
+          // "Load all" replays the page already held plus the two older comments.
+          respondWith([newest, newer, oldestLoaded, older, oldest], 5);
+          element._loadMore();
+          await flush();
+
+          expect(loadedIds()).to.deep.equal([
+            'comment-id-1',
+            'comment-id-2',
+            'comment-id-3',
+            'comment-id-4',
+            'comment-id-5',
+          ]);
+          expect(element.allCommentsLoaded).to.be.true;
+        });
+
+        test('Should not duplicate comments when every entry is already loaded', async () => {
+          respondWith([newest, newer, oldestLoaded], 3);
+          element._refresh();
+          await flush();
+
+          element._loadMore();
+          await flush();
+
+          expect(loadedIds()).to.deep.equal(['comment-id-3', 'comment-id-4', 'comment-id-5']);
+        });
+
+        test('Should keep an entry sharing the creation date of the oldest loaded comment but not its id', async () => {
+          respondWith([oldestLoaded], 2);
+          element._refresh();
+          await flush();
+
+          respondWith([oldestLoaded, buildComment('comment-id-3-bis', '2019-12-03')], 2);
+          element._loadMore();
+          await flush();
+
+          expect(loadedIds()).to.deep.equal(['comment-id-3-bis', 'comment-id-3']);
+        });
+
+        test('Should not mutate the entries of the server response', async () => {
+          element.set('comments', [oldestLoaded]);
+          const response = {
+            'entity-type': 'comments',
+            entries: [newest, newer, oldestLoaded, older],
+            totalSize: 4,
+          };
+          const get = sinon.stub(element.$.commentRequest, 'get').returns(Promise.resolve(response));
+
+          element._fetchComments(true);
+          await flush();
+
+          expect(response.entries.map((entry) => entry.id)).to.deep.equal([
+            'comment-id-5',
+            'comment-id-4',
+            'comment-id-3',
+            'comment-id-2',
+          ]);
+          expect(loadedIds()).to.deep.equal(['comment-id-2', 'comment-id-3']);
+          get.restore();
+        });
       });
     });
   });
@@ -286,7 +455,7 @@ suite('nuxeo-document-comment-thread', () => {
         const request = server.getLastRequest('post', '/api/v1/id/doc-id/@comment/');
 
         expect(request).to.exist;
-        expect(request.headers).to.not.have.property('fetch-comment', 'repliesSummary');
+        expect(request.headers['fetch-comment']).to.equal('author');
         expect(request.body).to.deep.equal({
           'entity-type': 'comment',
           parentId: 'doc-id',
@@ -303,7 +472,7 @@ suite('nuxeo-document-comment-thread', () => {
         const request = server.getLastRequest('post', '/api/v1/id/doc-id/@comment/');
 
         expect(request).to.exist;
-        expect(request.headers).to.not.have.property('fetch.comment', 'repliesSummary');
+        expect(request.headers['fetch-comment']).to.equal('author');
         expect(request.body).to.deep.equal({
           'entity-type': 'comment',
           parentId: 'doc-id',
@@ -358,6 +527,258 @@ suite('nuxeo-document-comment-thread', () => {
         expect(event.detail).to.exist.and.to.have.key('message');
         expect(event.detail.message).to.not.be.empty;
       });
+    });
+  });
+});
+
+suite('nuxeo-document-comment-thread extras', () => {
+  let el;
+  let server;
+
+  setup(async () => {
+    server = fakeServer.create();
+    el = await fixture(
+      html`
+        <nuxeo-document-comment-thread uid="doc1"></nuxeo-document-comment-thread>
+      `,
+    );
+  });
+
+  teardown(() => {
+    server.restore();
+  });
+
+  suite('_isBlank', () => {
+    test('returns true for null', () => {
+      expect(el._isBlank(null)).to.be.true;
+    });
+
+    test('returns true for undefined', () => {
+      expect(el._isBlank(undefined)).to.be.true;
+    });
+
+    test('returns true for empty string', () => {
+      expect(el._isBlank('')).to.be.true;
+    });
+
+    test('returns true for whitespace-only string', () => {
+      expect(el._isBlank('   ')).to.be.true;
+    });
+
+    test('returns true for non-string type (number)', () => {
+      expect(el._isBlank(123)).to.be.true;
+    });
+
+    test('returns false for non-blank string', () => {
+      expect(el._isBlank('hello')).to.be.false;
+    });
+  });
+
+  suite('_allowReplies', () => {
+    test('returns true for level 1', () => {
+      expect(el._allowReplies(1)).to.be.true;
+    });
+
+    test('returns true for level 2', () => {
+      expect(el._allowReplies(2)).to.be.true;
+    });
+
+    test('returns false for level 3', () => {
+      expect(el._allowReplies(3)).to.be.false;
+    });
+
+    test('returns false for level 10', () => {
+      expect(el._allowReplies(10)).to.be.false;
+    });
+  });
+
+  suite('_moreAvailable', () => {
+    test('returns true when length < total and not all loaded', () => {
+      expect(el._moreAvailable(5, 10, false)).to.be.true;
+    });
+
+    test('returns false when length >= total', () => {
+      expect(el._moreAvailable(10, 10, false)).to.be.false;
+    });
+
+    test('returns false when allCommentsLoaded is true', () => {
+      expect(el._moreAvailable(5, 10, true)).to.be.false;
+    });
+
+    test('returns false when length > total', () => {
+      expect(el._moreAvailable(15, 10, false)).to.be.false;
+    });
+  });
+
+  suite('_computeTextLabel', () => {
+    test('returns comment key for level 1', () => {
+      const result = el._computeTextLabel(1, 'loadAll', 10);
+      expect(result).to.be.a('string');
+    });
+
+    test('returns reply key for level 2', () => {
+      const result = el._computeTextLabel(2, 'loadAll', 5);
+      expect(result).to.be.a('string');
+    });
+
+    test('returns reply key for level 0', () => {
+      const result = el._computeTextLabel(0, 'writePlaceholder', null);
+      expect(result).to.be.a('string');
+    });
+  });
+
+  suite('_computeMaxRows', () => {
+    test('returns a positive number', () => {
+      const result = el._computeMaxRows();
+      expect(result).to.be.a('number');
+      expect(result).to.be.above(0);
+    });
+
+    test('uses fallback values when CSS vars are NaN', () => {
+      sinon.stub(el, 'getComputedStyleValue').returns('');
+      const result = el._computeMaxRows();
+      expect(result).to.equal(Math.round(80 / 20));
+      el.getComputedStyleValue.restore();
+    });
+
+    test('uses actual values when CSS vars are valid', () => {
+      sinon
+        .stub(el, 'getComputedStyleValue')
+        .withArgs('--nuxeo-comment-line-height')
+        .returns('18')
+        .withArgs('--nuxeo-comment-max-height')
+        .returns('144');
+      const result = el._computeMaxRows();
+      expect(result).to.equal(Math.round(144 / 18));
+      el.getComputedStyleValue.restore();
+    });
+  });
+
+  suite('_checkForEnter', () => {
+    test('submits on ctrl+enter with non-blank text', () => {
+      const stub = sinon.stub(el, '_submitComment');
+      el.text = 'some text';
+      el._checkForEnter({ keyCode: 13, ctrlKey: true });
+      expect(stub).to.have.been.calledOnce;
+      stub.restore();
+    });
+
+    test('does not submit on enter without ctrl', () => {
+      const stub = sinon.stub(el, '_submitComment');
+      el.text = 'text';
+      el._checkForEnter({ keyCode: 13, ctrlKey: false });
+      expect(stub).not.to.have.been.called;
+      stub.restore();
+    });
+
+    test('does not submit when text is blank', () => {
+      const stub = sinon.stub(el, '_submitComment');
+      el.text = '  ';
+      el._checkForEnter({ keyCode: 13, ctrlKey: true });
+      expect(stub).not.to.have.been.called;
+      stub.restore();
+    });
+
+    test('does not submit on other keys', () => {
+      const stub = sinon.stub(el, '_submitComment');
+      el.text = 'text';
+      el._checkForEnter({ keyCode: 65, ctrlKey: true });
+      expect(stub).not.to.have.been.called;
+      stub.restore();
+    });
+  });
+
+  suite('_clearInput', () => {
+    test('resets text to empty string', () => {
+      el.text = 'some value';
+      el._clearInput();
+      expect(el.text).to.equal('');
+    });
+  });
+
+  suite('_handleDeleteEvent', () => {
+    test('removes comment and decrements total', () => {
+      el.comments = [{ id: 'c1' }, { id: 'c2' }];
+      el._setTotal(2);
+      const event = {
+        detail: { commentId: 'c1' },
+        stopPropagation: sinon.spy(),
+      };
+      el._handleDeleteEvent(event);
+      expect(el.comments).to.have.lengthOf(1);
+      expect(el.total).to.equal(1);
+      expect(event.stopPropagation).to.have.been.called;
+    });
+
+    test('does nothing when comment not found', () => {
+      el.comments = [{ id: 'c1' }];
+      el._setTotal(1);
+      const event = {
+        detail: { commentId: 'c99' },
+        stopPropagation: sinon.spy(),
+      };
+      el._handleDeleteEvent(event);
+      expect(el.comments).to.have.lengthOf(1);
+      expect(el.total).to.equal(1);
+    });
+  });
+
+  suite('_handleEditEvent', () => {
+    test('updates comment text and modificationDate', () => {
+      el.comments = [{ id: 'c1', text: 'old', modificationDate: null }];
+      const event = {
+        detail: { commentId: 'c1', text: 'new', modificationDate: '2024-06-01' },
+        stopPropagation: sinon.spy(),
+      };
+      el._handleEditEvent(event);
+      expect(el.comments[0].text).to.equal('new');
+      expect(el.comments[0].modificationDate).to.equal('2024-06-01');
+      expect(event.stopPropagation).to.have.been.called;
+    });
+
+    test('does nothing when comment not found', () => {
+      el.comments = [{ id: 'c1', text: 'old' }];
+      const event = {
+        detail: { commentId: 'c99', text: 'new', modificationDate: 'x' },
+        stopPropagation: sinon.spy(),
+      };
+      el._handleEditEvent(event);
+      expect(el.comments[0].text).to.equal('old');
+    });
+  });
+
+  suite('_handleCommentsChange', () => {
+    test('dispatches number-of-replies when path is comments.length', (done) => {
+      el.comments = [{ id: '1' }];
+      el.addEventListener('number-of-replies', (e) => {
+        expect(e.detail.total).to.equal(1);
+        done();
+      });
+      el._handleCommentsChange({ detail: { path: 'comments.length' } });
+    });
+
+    test('does nothing when path is not comments.length', () => {
+      const spy = sinon.spy();
+      el.addEventListener('number-of-replies', spy);
+      el._handleCommentsChange({ detail: { path: 'comments.0.text' } });
+      expect(spy).not.to.have.been.called;
+    });
+  });
+
+  suite('_submitComment', () => {
+    test('prevents default when event is provided', () => {
+      const e = { preventDefault: sinon.spy() };
+      el._isSubmitting = true;
+      el._submitComment(e);
+      expect(e.preventDefault).to.have.been.called;
+    });
+
+    test('returns early when already submitting', () => {
+      el._isSubmitting = true;
+      const spy = sinon.spy(el, '_clearRequest');
+      el._submitComment();
+      expect(spy).not.to.have.been.called;
+      spy.restore();
     });
   });
 });

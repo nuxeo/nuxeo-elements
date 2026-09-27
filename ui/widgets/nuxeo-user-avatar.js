@@ -143,7 +143,7 @@ import '../nuxeo-icons.js';
     }
 
     _username(user) {
-      return this._isEntity(user) ? user.properties.username || user.properties['user:username'] : this._id(user);
+      return this._isEntity(user) ? user.id : this._id(user);
     }
 
     _isEntity(user) {
@@ -157,7 +157,8 @@ import '../nuxeo-icons.js';
 
     _id(user) {
       if (user) {
-        const id = user.id || user.uid;
+        const id =
+          (user.properties && (user.properties.username || user.properties['user:username'])) || user.id || user.uid;
         return id || user.replace('user:', '');
       }
     }
@@ -166,9 +167,49 @@ import '../nuxeo-icons.js';
       if (this._isEntity(user)) {
         const firstName = user.properties.firstName || user.properties['user:firstName'];
         const lastName = user.properties.lastName || user.properties['user:lastName'];
-        return [firstName, lastName].join(' ').trim() || this._id(user);
+        const username = user.properties.username || user.properties['user:username'];
+        return [firstName, lastName].join(' ').trim() || username || this._id(user);
       }
       return this._id(user);
+    }
+
+    _lastPart(parts) {
+      if (!parts.length) {
+        return undefined;
+      }
+      let last = parts[0];
+      for (let i = 1; i < parts.length; i++) {
+        last = parts[i];
+      }
+      return last;
+    }
+
+    _initials(user) {
+      if (this._isEntity(user)) {
+        const firstName = (user.properties.firstName || user.properties['user:firstName'] || '').trim();
+        const lastName = (user.properties.lastName || user.properties['user:lastName'] || '').trim();
+        if (firstName || lastName) {
+          const parts = [firstName, lastName]
+            .join(' ')
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean);
+          if (parts.length <= 1) {
+            return parts[0] ? parts[0].charAt(0) : '';
+          }
+          const last = this._lastPart(parts);
+          return `${parts[0].charAt(0)}${last.charAt(0)}`;
+        }
+      }
+      const parts = (this._name(user) || '')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+      if (parts.length <= 1) {
+        return parts[0] ? parts[0].charAt(0) : '';
+      }
+      const last = this._lastPart(parts);
+      return `${parts[0].charAt(0)}${last.charAt(0)}`;
     }
 
     _email(user) {
@@ -200,7 +241,10 @@ import '../nuxeo-icons.js';
     }
 
     __obsBorderRadius() {
-      if (this.borderRadius === '' || this.borderRadius == null) {
+      // borderRadius is declared as a Number, so anything non-finite (missing, blank
+      // or non-numeric input deserialized to NaN) must fall back to 0. A falsy check
+      // would be wrong here because 0 is a legitimate value.
+      if (!Number.isFinite(this.borderRadius)) {
         this.borderRadius = 0;
       }
       this.$.container.style.borderRadius = `${this.borderRadius}%`;
@@ -284,12 +328,7 @@ import '../nuxeo-icons.js';
           this.$.container.style.backgroundColor = `hsl(${this.__generateHue()}, 70%, 42%)`;
           this._isInTheAlphabet = alphabetPosition > -1;
           if (this._isInTheAlphabet) {
-            let tempName = '';
-            const splitName = name.split(' ');
-            for (let i = 0; i < splitName.length; i++) {
-              tempName += splitName[i].charAt(0);
-            }
-            this._output = tempName;
+            this._output = this._initials(this.user);
           }
 
           if (this.fetchAvatar) {

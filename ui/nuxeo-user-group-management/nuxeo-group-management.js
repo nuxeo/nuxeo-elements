@@ -19,6 +19,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-form/iron-form.js';
 import '@polymer/iron-icon/iron-icon.js';
+import '@polymer/iron-icons/iron-icons.js';
 import '@nuxeo/nuxeo-elements/nuxeo-connection.js';
 import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/nuxeo-elements/nuxeo-resource.js';
@@ -29,7 +30,10 @@ import '@polymer/polymer/lib/elements/dom-if.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import { FiltersBehavior } from '../nuxeo-filters-behavior.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { SortBehavior } from '../nuxeo-sort-behavior.js';
 import '../nuxeo-pagination-controls.js';
+import '../nuxeo-data-table/data-table-icons.js';
+import '../nuxeo-data-table/data-table-column-sort.js';
 import '../widgets/nuxeo-card.js';
 import '../widgets/nuxeo-dialog.js';
 import '../widgets/nuxeo-group-tag.js';
@@ -40,6 +44,7 @@ import '../widgets/nuxeo-selectivity.js';
 import '../widgets/nuxeo-user-tag.js';
 import './nuxeo-user-group-permissions-table.js';
 import '../nuxeo-button-styles.js';
+import '../nuxeo-sort-styles.js';
 
 {
   /**
@@ -52,12 +57,13 @@ import '../nuxeo-button-styles.js';
    *
    * @appliesMixin Nuxeo.I18nBehavior
    * @appliesMixin Nuxeo.FiltersBehavior
+   * @appliesMixin Nuxeo.SortBehavior
    * @memberof Nuxeo
    */
-  class GroupManagement extends mixinBehaviors([I18nBehavior, FiltersBehavior], Nuxeo.Element) {
+  class GroupManagement extends mixinBehaviors([I18nBehavior, FiltersBehavior, SortBehavior], Nuxeo.Element) {
     static get template() {
       return html`
-        <style include="iron-flex iron-flex-alignment iron-flex-factors nuxeo-button-styles">
+        <style include="iron-flex iron-flex-alignment iron-flex-factors nuxeo-button-styles nuxeo-sort-styles">
           :host {
             display: block;
           }
@@ -225,6 +231,24 @@ import '../nuxeo-button-styles.js';
           .preserve-white-space {
             white-space: pre;
           }
+
+          .missing-user {
+            @apply --layout-horizontal;
+            @apply --layout-center;
+          }
+
+          .missing-icon {
+            width: 1.1rem;
+            height: 1.1rem;
+            margin-right: 0.4rem;
+            color: var(--nuxeo-warn-text, #ff9800);
+            flex-shrink: 0;
+          }
+
+          .missing-name {
+            font-style: italic;
+            opacity: 0.75;
+          }
         </style>
 
         <nuxeo-connection user="{{_currentUser}}"></nuxeo-connection>
@@ -236,8 +260,8 @@ import '../nuxeo-button-styles.js';
           headers='{"fetch-group": "memberUsers,memberGroups"}'
         >
         </nuxeo-resource>
-        <nuxeo-resource id="users" path="[[_usersPath(groupname)]]" response="{{memberUsers}}" auto></nuxeo-resource>
-        <nuxeo-resource id="groups" path="[[_groupsPath(groupname)]]" response="{{memberGroups}}" auto></nuxeo-resource>
+        <nuxeo-resource id="users" path="[[_usersPath(group)]]" response="{{memberUsers}}" auto></nuxeo-resource>
+        <nuxeo-resource id="groups" path="[[_groupsPath(group)]]" response="{{memberGroups}}" auto></nuxeo-resource>
         <nuxeo-resource
           id="editRequest"
           path="group/[[groupname]]"
@@ -259,7 +283,7 @@ import '../nuxeo-button-styles.js';
         </nuxeo-dialog>
 
         <nuxeo-dialog id="rmFromGroupDialog" with-backdrop class="vertical layout">
-          <h2>[[i18n('groupManagement.removeUserFromGroup.confirm', _removedMember.id)]]</h2>
+          <h2>[[i18n('groupManagement.removeUserFromGroup.confirm', _removedMemberDisplayName)]]</h2>
           <div class="buttons horizontal end-justified layout">
             <div class="flex start-justified">
               <paper-button noink dialog-dismiss class="secondary">[[i18n('label.no')]]</paper-button>
@@ -378,9 +402,45 @@ import '../nuxeo-button-styles.js';
             aria-rowcount="[[memberUsers.entries.length]]"
           >
             <div class="table-header" role="row">
-              <div class="flex-4" role="columnheader">[[i18n('groupManagement.name')]]</div>
-              <div class="flex-4" role="columnheader">[[i18n('groupManagement.identifier')]]</div>
-              <div class="flex-4" role="columnheader">[[i18n('label.directories.nature.email')]]</div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isSortActive(_memberUserSortOrder, 'lastName')]]"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_memberUserSortOrder, 'lastName')]]"
+              >
+                [[i18n('groupManagement.name')]]
+                <nuxeo-data-table-column-sort
+                  path="lastName"
+                  sort-order="[[_memberUserSortOrder]]"
+                  on-sort-direction-changed="_onMemberUserSortChanged"
+                ></nuxeo-data-table-column-sort>
+              </div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isSortActive(_memberUserSortOrder, 'username')]]"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_memberUserSortOrder, 'username')]]"
+              >
+                [[i18n('groupManagement.identifier')]]
+                <nuxeo-data-table-column-sort
+                  path="username"
+                  sort-order="[[_memberUserSortOrder]]"
+                  on-sort-direction-changed="_onMemberUserSortChanged"
+                ></nuxeo-data-table-column-sort>
+              </div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isSortActive(_memberUserSortOrder, 'email')]]"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_memberUserSortOrder, 'email')]]"
+              >
+                [[i18n('label.directories.nature.email')]]
+                <nuxeo-data-table-column-sort
+                  path="email"
+                  sort-order="[[_memberUserSortOrder]]"
+                  on-sort-direction-changed="_onMemberUserSortChanged"
+                ></nuxeo-data-table-column-sort>
+              </div>
               <div class="table-actions" role="columnheader"></div>
             </div>
             <div class="table-rows" role="rowgroup">
@@ -396,7 +456,7 @@ import '../nuxeo-button-styles.js';
                             </template>
                           </dom-if>
                         </div>
-                        <div class="flex-4 preserve-white-space" role="columnheader">[[item.id]]</div>
+                        <div class="flex-4 preserve-white-space" role="columnheader">[[_userDisplayName(item)]]</div>
                         <div class="flex-4" role="columnheader">
                           <div class="email-wrapper">
                             <span class="email-text">
@@ -424,7 +484,36 @@ import '../nuxeo-button-styles.js';
                   </dom-repeat>
                 </template>
               </dom-if>
-              <dom-if if="[[_empty(memberUsers.entries)]]">
+              <!-- members whose account no longer exists in the user directory (e.g. removed/disabled LDAP users) -->
+              <dom-repeat items="[[_missingUsers]]">
+                <template>
+                  <div class="table-row" role="row">
+                    <div class="flex-4" role="columnheader">
+                      <div class="missing-user" tabindex="0">
+                        <iron-icon icon="icons:error-outline" class="missing-icon" aria-hidden="true"></iron-icon>
+                        <span class="missing-name preserve-white-space">[[item.id]]</span>
+                        <nuxeo-tooltip>[[i18n('groupManagement.userNotFound')]]</nuxeo-tooltip>
+                      </div>
+                    </div>
+                    <div class="flex-4 preserve-white-space" role="columnheader">[[item.id]]</div>
+                    <div class="flex-4" role="columnheader"></div>
+                    <div class="table-actions" role="columnheader">
+                      <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
+                        <template>
+                          <paper-icon-button
+                            icon="nuxeo:clear"
+                            noink
+                            title="[[i18n('groupManagement.removeFrom', groupname)]]"
+                            on-click="_toggleDeleteDialog"
+                          >
+                          </paper-icon-button>
+                        </template>
+                      </dom-if>
+                    </div>
+                  </div>
+                </template>
+              </dom-repeat>
+              <dom-if if="[[_noMemberUsers(memberUsers.entries, _missingUsers)]]">
                 <template>
                   <div class="table-row" role="row">
                     <div class="emptyResult" role="columnheader">[[i18n('groupManagement.noSearchResults')]]</div>
@@ -456,8 +545,32 @@ import '../nuxeo-button-styles.js';
             aria-rowcount="[[memberGroups.entries.length]]"
           >
             <div class="table-header" role="row">
-              <div class="flex-4" role="columnheader">[[i18n('groupManagement.name')]]</div>
-              <div class="flex-4" role="columnheader">[[i18n('groupManagement.identifier')]]</div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isSortActive(_memberGroupSortOrder, 'grouplabel')]]"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_memberGroupSortOrder, 'grouplabel')]]"
+              >
+                [[i18n('groupManagement.name')]]
+                <nuxeo-data-table-column-sort
+                  path="grouplabel"
+                  sort-order="[[_memberGroupSortOrder]]"
+                  on-sort-direction-changed="_onMemberGroupSortChanged"
+                ></nuxeo-data-table-column-sort>
+              </div>
+              <div
+                class="flex-4 sortable"
+                active$="[[_isSortActive(_memberGroupSortOrder, 'groupname')]]"
+                role="columnheader"
+                aria-sort$="[[_ariaSort(_memberGroupSortOrder, 'groupname')]]"
+              >
+                [[i18n('groupManagement.identifier')]]
+                <nuxeo-data-table-column-sort
+                  path="groupname"
+                  sort-order="[[_memberGroupSortOrder]]"
+                  on-sort-direction-changed="_onMemberGroupSortChanged"
+                ></nuxeo-data-table-column-sort>
+              </div>
               <div class="table-actions" role="columnheader"></div>
             </div>
             <div class="table-rows" role="rowgroup">
@@ -531,6 +644,13 @@ import '../nuxeo-button-styles.js';
 
         memberUsers: Object,
 
+        // Members listed in group.memberUsers but not resolvable in the user directory
+        // (e.g. LDAP users removed/disabled after being added to a local group).
+        _missingUsers: {
+          type: Array,
+          computed: '_computeMissingUsers(group.memberUsers, memberUsers.entries, usersFilter, _memberUserSortOrder)',
+        },
+
         memberGroups: Object,
 
         activity: {
@@ -580,6 +700,23 @@ import '../nuxeo-button-styles.js';
         _currentUser: {
           type: Object,
         },
+
+        _removedMemberDisplayName: {
+          type: String,
+          computed: '_userDisplayName(_removedMember)',
+        },
+
+        // Array of { path, direction } for multi-column sort on member users (nuxeo-data-table-column-sort contract)
+        _memberUserSortOrder: {
+          type: Array,
+          value: () => [],
+        },
+
+        // Array of { path, direction } for multi-column sort on member groups
+        _memberGroupSortOrder: {
+          type: Array,
+          value: () => [],
+        },
       };
     }
 
@@ -617,7 +754,15 @@ import '../nuxeo-button-styles.js';
     }
 
     _userHasName(user) {
-      return user.properties.firstName || user.properties.lastName;
+      return user && (user.properties.firstName || user.properties.lastName || user.properties.username);
+    }
+
+    _userDisplayName(user) {
+      if (!user) {
+        return '';
+      }
+      const props = user.properties || {};
+      return props.username || user.name || user.id || '';
     }
 
     _getEmail(properties) {
@@ -656,6 +801,10 @@ import '../nuxeo-button-styles.js';
           q: this.groupsFilter,
           currentPageIndex: this.groupsCurrentPage - 1,
         };
+        if (this._memberGroupSortOrder.length > 0) {
+          params.sortBy = this._memberGroupSortOrder.map((c) => c.path).join(',');
+          params.sortOrder = this._memberGroupSortOrder.map((c) => c.direction).join(',');
+        }
         this.$.groups.params = params;
       }
     }
@@ -672,6 +821,10 @@ import '../nuxeo-button-styles.js';
           q: this.usersFilter,
           currentPageIndex: this.usersCurrentPage - 1,
         };
+        if (this._memberUserSortOrder.length > 0) {
+          params.sortBy = this._memberUserSortOrder.map((c) => c.path).join(',');
+          params.sortOrder = this._memberUserSortOrder.map((c) => c.direction).join(',');
+        }
         this.$.users.params = params;
       }
     }
@@ -718,13 +871,17 @@ import '../nuxeo-button-styles.js';
         case 'user':
           if (this.group.memberUsers) {
             idx = this.group.memberUsers.indexOf(this._removedMember.id);
-            this.group.memberUsers.splice(idx, 1);
+            if (idx > -1) {
+              this.group.memberUsers.splice(idx, 1);
+            }
           }
           break;
         case 'group':
           if (this.group.memberGroups) {
             idx = this.group.memberGroups.indexOf(this._removedMember.id);
-            this.group.memberGroups.splice(idx, 1);
+            if (idx > -1) {
+              this.group.memberGroups.splice(idx, 1);
+            }
           }
           break;
         default:
@@ -732,14 +889,20 @@ import '../nuxeo-button-styles.js';
       }
       this.$.editRequest.data = this.group;
       this.$.editRequest.put().then(() => {
-        this._fromDelete = true;
         if (member['entity-type'] === 'user') {
+          // The "go to previous page when the last entry is deleted" heuristic keys off the resolved
+          // page size (`memberUsers.currentPageSize`). Skip it when the removed row was itself a
+          // missing user (removing it does not change the resolved page size), or when missing users
+          // are still shown on the current page — deleting the last resolved user must not page away
+          // from the unresolved ones that remain visible.
+          this._fromDelete = !member._missing && this._noMissingUsers();
           this._fetchUsers();
         } else {
+          this._fromDelete = true;
           this._fetchGroups();
         }
         this._removeRecent(this._removedMember.id);
-        this._toast(this.i18n('groupManagement.removedUserFromGroup', this._removedMember.id));
+        this._toast(this.i18n('groupManagement.removedUserFromGroup', this._userDisplayName(this._removedMember)));
       });
     }
 
@@ -813,6 +976,48 @@ import '../nuxeo-button-styles.js';
       return entries && entries.length === 0;
     }
 
+    /**
+     * Computes the group members that are present in `group.memberUsers` but cannot be resolved by the
+     * `@users` endpoint (e.g. LDAP users removed/disabled after being added to a local group). These
+     * users are otherwise invisible on the group page and cannot be removed. They are matched to the
+     * current page by replicating the server-side slice of `group.memberUsers`, so this only applies
+     * when the list is neither filtered nor sorted (unresolved users have no name/email to match on).
+     */
+    _computeMissingUsers(memberUserIds, entries, usersFilter, memberUserSortOrder) {
+      if (!memberUserIds || memberUserIds.length === 0 || !entries) {
+        return [];
+      }
+      // A name/email filter or a column sort reorders/limits the server result, so the positional
+      // mapping used below no longer holds; skip the augmentation in those cases.
+      if (usersFilter || (memberUserSortOrder && memberUserSortOrder.length > 0)) {
+        return [];
+      }
+      const resolved = new Set();
+      entries.forEach((entry) => {
+        resolved.add(entry.id);
+        if (entry.properties && entry.properties.username) {
+          resolved.add(entry.properties.username);
+        }
+      });
+      const pageSize = (this.memberUsers && this.memberUsers.pageSize) || memberUserIds.length;
+      const pageIndex = (this.memberUsers && this.memberUsers.currentPageIndex) || 0;
+      const offset = pageIndex * pageSize;
+      return memberUserIds
+        .slice(offset, offset + pageSize)
+        .filter((id) => !resolved.has(id))
+        .map((id) => {
+          return { id, name: id, 'entity-type': 'user', properties: {}, _missing: true };
+        });
+    }
+
+    _noMemberUsers(entries, missingUsers) {
+      return this._empty(entries) && (!missingUsers || missingUsers.length === 0);
+    }
+
+    _noMissingUsers() {
+      return !this._missingUsers || this._missingUsers.length === 0;
+    }
+
     _goHome() {
       this.dispatchEvent(
         new CustomEvent('goHome', {
@@ -860,14 +1065,40 @@ import '../nuxeo-button-styles.js';
     }
 
     _usersPath() {
-      if (this.groupname) {
-        return `group/${this.groupname}/@users`;
+      if (this.group) {
+        return `group/${this.group.id || this.group.groupname || this.groupname}/@users`;
       }
     }
 
     _groupsPath() {
-      if (this.groupname) {
-        return `group/${this.groupname}/@groups`;
+      if (this.group) {
+        return `group/${this.group.id || this.group.groupname || this.groupname}/@groups`;
+      }
+    }
+
+    _onMemberUserSortChanged(e) {
+      this._memberUserSortOrder = this._applySortDirectionChanged(
+        this._memberUserSortOrder,
+        e.detail.path,
+        e.detail.direction,
+      );
+      if (this.usersCurrentPage === 1) {
+        this._fetchUsers();
+      } else {
+        this.usersCurrentPage = 1;
+      }
+    }
+
+    _onMemberGroupSortChanged(e) {
+      this._memberGroupSortOrder = this._applySortDirectionChanged(
+        this._memberGroupSortOrder,
+        e.detail.path,
+        e.detail.direction,
+      );
+      if (this.groupsCurrentPage === 1) {
+        this._fetchGroups();
+      } else {
+        this.groupsCurrentPage = 1;
       }
     }
   }

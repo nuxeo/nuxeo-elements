@@ -28,6 +28,10 @@ import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
+// A short grace period prevents transient focus reroutes from immediately
+// collapsing the popover during month navigation.
+const FOCUS_SUPPRESSION_MS = 200;
+
 {
   class CustomDatePicker extends mixinBehaviors(
     [I18nBehavior, IronFormElementBehavior, IronValidatableBehavior],
@@ -44,9 +48,24 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         ariaLabelledby: {
           type: String,
         },
+        // Forwarded aria-label to internal input for SRs (works across shadow roots,
+        // unlike aria-labelledby which cannot reference IDs in a different shadow tree)
+        ariaLabel: {
+          type: String,
+        },
         // Optional name forwarding to internal input (helps with form autofill/AT)
         name: {
           type: String,
+        },
+
+        /**
+         * The HTML autofill token exposed on the native input, e.g. `bday`. Lets a layout declare the
+         * purpose of the field so that browsers and assistive technology can identify it
+         * (WCAG 2.1 SC 1.3.5, technique H98). `off` opts out of autofill and is the default.
+         */
+        autocomplete: {
+          type: String,
+          value: 'off',
         },
 
         /*
@@ -125,6 +144,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           type: Boolean,
           value: false,
           reflectToAttribute: true,
+        },
+
+        /**
+         * When true, hides the format placeholder shown inside the date input field.
+         * This property is typically set by the parent `nuxeo-date-picker`, which reads
+         * it from `Nuxeo.UI.config.datePicker.hidePlaceholder` (driven by the
+         * `nuxeo.ui.date.picker.hide.placeholder` property in nuxeo.conf).
+         */
+        hidePlaceholder: {
+          type: Boolean,
+          value: false,
         },
         // Compatibility with vaadin's clear-button-visible attribute
         clearButtonVisible: {
@@ -346,6 +376,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           .input-field {
             flex: 1;
+            /* an input's automatic minimum size is its intrinsic width, which the
+               wrapper would otherwise clip away with overflow: hidden */
+            min-width: 0;
             border: none;
             outline: none;
             padding: 6px 48px 6px 8px;
@@ -354,6 +387,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             font-family: 'Inter', Arial, sans-serif;
             background: transparent;
             color: #666;
+            /*
+             * WCAG 2.1 SC 1.4.12: the UA stylesheet resets text spacing on form controls, and this
+             * input lives in a shadow root a user text-spacing stylesheet cannot reach, so opt back in.
+             */
+            letter-spacing: inherit;
+            word-spacing: inherit;
           }
 
           .input-field::placeholder {
@@ -515,7 +554,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             border: 1px solid #d1d5db;
             border-radius: 0; /* Remove rounded corners for Nuxeo theme */
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            width: 280px; /* Reduced from 320px to be proportional */
+            /* Sized to its content rather than a fixed width so week names, dates and the
+               month/year header stay inside the calendar when the user overrides text
+               spacing (WCAG 2.1 SC 1.4.12). 280px remains the design floor, but a minimum
+               larger than the maximum would win over it, so the floor itself yields to the
+               viewport below 296px (reached at 400% zoom, SC 1.4.10). */
+            width: max-content;
+            min-width: min(280px, calc(100vw - 16px));
+            max-width: calc(100vw - 16px);
             display: none;
             animation: fadeIn 0.15s ease-out;
             pointer-events: auto;
@@ -562,6 +608,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             display: flex;
             align-items: center;
             justify-content: space-between;
+            /* wrap instead of pushing the month/year out of the calendar when its text
+               grows (WCAG 2.1 SC 1.4.12) */
+            flex-wrap: wrap;
+            gap: 8px;
             padding: 16px;
             border-bottom: 1px solid #e5e7eb;
             background-color: #ffffff;
@@ -570,6 +620,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           .month-year-display {
             display: flex;
             align-items: center;
+            flex-wrap: wrap;
+            min-width: 0;
             gap: 1px;
             font-weight: 600;
             color: #111827;
@@ -592,6 +644,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           .navigation {
             display: flex;
             align-items: center;
+            flex-shrink: 0;
             gap: 8px;
           }
 
@@ -781,16 +834,19 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             color: #ffffff;
           }
 
+          /* The week-name row and the date grid must declare identical tracks so the two
+             always line up, and the tracks must be able to grow past 36px when text
+             spacing is overridden (WCAG 2.1 SC 1.4.12). */
           .weekday-headers {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
+            grid-template-columns: repeat(7, minmax(36px, 1fr));
             gap: 1px;
             padding: 8px 16px 0;
             background: #f9fafb;
           }
 
           .weekday-header {
-            padding: 8px 4px;
+            padding: 8px 2px;
             text-align: center;
             font-size: 12px;
             font-weight: 600;
@@ -801,7 +857,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
           .calendar-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
+            grid-template-columns: repeat(7, minmax(36px, 1fr));
             gap: 1px;
             padding: 8px 16px 8px;
             role: grid;
@@ -812,8 +868,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 36px;
-            height: 36px;
+            /* minimums rather than fixed dimensions, so a date never gets clipped when
+               letter/word/line spacing is increased (WCAG 2.1 SC 1.4.12) */
+            min-width: 36px;
+            min-height: 36px;
             border: none;
             background: transparent;
             color: #111827;
@@ -904,6 +962,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
             padding: 12px 16px;
             border-top: 1px solid #e5e7eb;
             background: #f9fafb;
@@ -1077,16 +1137,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               class="input-field"
               type="text"
               value="{{_inputValue::input}}"
-              placeholder$="[[_getDatePlaceholder(format)]]"
+              placeholder$="[[_computePlaceholder(format, hidePlaceholder)]]"
               name$="[[name]]"
               disabled$="[[disabled]]"
               required$="[[required]]"
               aria-invalid$="[[invalid]]"
               aria-describedby$="[[_getAriaDescribedBy(invalid, errorMessage)]]"
               aria-labelledby$="[[ariaLabelledby]]"
+              aria-label$="[[ariaLabel]]"
               aria-expanded$="[[_isCalendarOpen]]"
               aria-haspopup="grid"
-              autocomplete="off"
+              autocomplete$="[[autocomplete]]"
               on-focus="_onInputFocus"
               on-click="_onInputClick"
               on-blur="_onInputBlur"
@@ -1153,6 +1214,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
               class="calendar-popover"
               id="calendarPopover"
               role="dialog"
+              tabindex="-1"
               aria-label="[[i18n('customDatePicker.calendar')]]"
               aria-modal$="[[_isCalendarOpen]]"
             >
@@ -1209,6 +1271,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                     aria-label$="[[_previousMonthAriaLabel]]"
                     title$="[[_previousMonthAriaLabel]]"
                     tabindex="0"
+                    on-mousedown="_preventNavButtonFocus"
                     on-click="_previousMonth"
                     on-keydown="_handleNavButtonKeydown"
                     disabled$="[[_isPreviousMonthDisabled()]]"
@@ -1223,6 +1286,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
                     aria-label$="[[_nextMonthAriaLabel]]"
                     title$="[[_nextMonthAriaLabel]]"
                     tabindex="0"
+                    on-mousedown="_preventNavButtonFocus"
                     on-click="_nextMonth"
                     on-keydown="_handleNavButtonKeydown"
                     disabled$="[[_isNextMonthDisabled()]]"
@@ -1447,6 +1511,29 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       });
 
       return text;
+    }
+
+    // Returns true when a translation key actually resolved to a value, i.e. the i18n
+    // layer did not fall back to returning the key itself or an empty string. This lets
+    // us degrade gracefully when a message key is missing from the active locale bundle.
+    _hasTranslation(key, text) {
+      return !!text && text !== `customDatePicker.${key}` && text !== key;
+    }
+
+    // Builds the "incorrect date format" error message. Prefers the fully localized
+    // combined key (`incorrectFormatExpected`), but falls back to the already-translated
+    // `incorrectFormat` key plus the expected pattern when the combined key is missing from
+    // the active locale bundle (e.g. before Crowdin ships it), so a readable, fully
+    // localized error is always shown instead of a raw key or a mixed-language string.
+    _buildIncorrectFormatError() {
+      const expectedFormat = this._getDatePlaceholder(this.format);
+      const combined = this.i18n('customDatePicker.incorrectFormatExpected');
+      if (this._hasTranslation('incorrectFormatExpected', combined)) {
+        return combined.replace(/\{format\}/g, expectedFormat);
+      }
+      const base = this.i18n('customDatePicker.incorrectFormat');
+      const baseText = this._hasTranslation('incorrectFormat', base) ? base : 'Incorrect date format.';
+      return `${baseText} ${expectedFormat}`;
     }
 
     // Screen reader announcement utility
@@ -1717,18 +1804,85 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const prevButton = this.shadowRoot.querySelector('#prevMonth');
       const nextButton = this.shadowRoot.querySelector('#nextMonth');
 
+      // Track the currently focused nav button before updating disabled state, so that
+      // we can move focus to a safe element if the focused button is about to be disabled.
+      // Without this, the browser blurs the disabled button to <body>, which can trigger
+      // outer focusout listeners (e.g. in nuxeo-date-picker) that end up closing the calendar.
+      const activeElement = this.shadowRoot.activeElement;
+
+      const isPrevDisabled = prevButton ? this._isPreviousMonthDisabled() : false;
+      const isNextDisabled = nextButton ? this._isNextMonthDisabled() : false;
+
       if (prevButton) {
-        const isPrevDisabled = this._isPreviousMonthDisabled();
         prevButton.disabled = isPrevDisabled;
       }
 
       if (nextButton) {
-        const isNextDisabled = this._isNextMonthDisabled();
         nextButton.disabled = isNextDisabled;
+      }
+
+      this._relocateFocusIfNavButtonDisabled({
+        activeElement,
+        prevButton,
+        nextButton,
+        isPrevDisabled,
+        isNextDisabled,
+      });
+    }
+
+    _relocateFocusIfNavButtonDisabled({ activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled }) {
+      // If the currently focused nav button just became disabled, move focus to a
+      // sibling element inside the calendar to keep focus within the popover.
+      if (!this._isCalendarOpen) {
+        return;
+      }
+
+      const focusedDisabledNavButton =
+        (activeElement === prevButton && isPrevDisabled) || (activeElement === nextButton && isNextDisabled);
+      if (!focusedDisabledNavButton) {
+        return;
+      }
+
+      const fallback = this._selectFocusFallback({
+        activeElement,
+        prevButton,
+        nextButton,
+        isPrevDisabled,
+        isNextDisabled,
+      });
+      if (fallback && typeof fallback.focus === 'function') {
+        fallback.focus();
       }
     }
 
+    _selectFocusFallback({ activeElement, prevButton, nextButton, isPrevDisabled, isNextDisabled }) {
+      if (activeElement === prevButton && nextButton && !isNextDisabled) {
+        return nextButton;
+      }
+
+      if (activeElement === nextButton && prevButton && !isPrevDisabled) {
+        return prevButton;
+      }
+
+      return (
+        this.shadowRoot.querySelector('.year-dropdown') ||
+        this.shadowRoot.querySelector('.calendar-day[tabindex="0"]') ||
+        this.shadowRoot.querySelector('.month-year-dropdown') ||
+        this.shadowRoot.querySelector('#calendarPopover')
+      );
+    }
+
     _setupEventListeners() {
+      // Bind a window-level capture handler so we can intercept Escape before
+      // IronOverlayManager's document-level capture listener closes a parent dialog.
+      this._boundEscapeCapture = (e) => {
+        if (this._isCalendarOpen && e.key === 'Escape') {
+          e.stopPropagation();
+          e.preventDefault();
+          this._closeCalendar();
+        }
+      };
+
       // Navigation buttons are now handled by template bindings (on-click)
 
       // Input field events - only validation, no calendar opening on click or focus
@@ -2278,6 +2432,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     // Bug fix: Handle focus moving outside the component
     _handleDocumentFocusIn(e) {
+      // Ignore transient focus changes right after calendar navigation interactions.
+      if (this._suppressInputFocusCloseUntil && Date.now() < this._suppressInputFocusCloseUntil) {
+        return;
+      }
+
       // Handle year dropdown focus outside
       if (this._isYearDropdownOpen) {
         const focusedElement = e.target;
@@ -2424,8 +2583,27 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // Close calendar when user focuses on input to type
       // But not if calendar was just opened via calendar icon
       if (this._isCalendarOpen && !this._openedViaCalendarIcon) {
+        // Ignore transient input refocus that can occur right after calendar
+        // navigation interactions (e.g. when a nav button becomes disabled at
+        // min/max boundaries and outer wrappers momentarily re-route focus).
+        if (this._suppressInputFocusCloseUntil && Date.now() < this._suppressInputFocusCloseUntil) {
+          return;
+        }
+
         // Use async to ensure this happens after any other click handlers
         this.async(() => {
+          if (this._suppressInputFocusCloseUntil && Date.now() < this._suppressInputFocusCloseUntil) {
+            return;
+          }
+
+          // Only close if the input is still the focused element. The wrapper element
+          // (nuxeo-date-picker) re-focuses the host on focusout, which can transiently
+          // route focus through the input even though the user is interacting with the
+          // calendar (e.g. clicking month navigation buttons that become disabled).
+          const dateInput = this.shadowRoot.querySelector('#dateInput');
+          if (dateInput && this.shadowRoot.activeElement !== dateInput) {
+            return;
+          }
           this._closeCalendar();
         }, 1);
       }
@@ -2676,6 +2854,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       this._justOpenedCalendar = true;
       this._isCalendarOpen = true;
 
+      // Register window-level capture listener to intercept Escape before
+      // IronOverlayManager's document-level capture closes the parent dialog.
+      window.addEventListener('keydown', this._boundEscapeCapture, true);
+
       const popover = this.shadowRoot.querySelector('#calendarPopover');
       const backdrop = this.shadowRoot.querySelector('#calendarBackdrop');
       const overlay = this.shadowRoot.querySelector('#calendarOverlay');
@@ -2795,6 +2977,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (!this._isCalendarOpen) return;
 
       this._isCalendarOpen = false;
+      // Remove the window-level capture listener now that the calendar is closing.
+      window.removeEventListener('keydown', this._boundEscapeCapture, true);
       this._justOpenedCalendar = false; // Clear flag when closing
       this._interactingWithCalendar = false; // Clear interaction flag
 
@@ -2878,6 +3062,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           year: this._getYear(this._viewDate),
         }),
       );
+
+      // End nav-key interaction in the same lifecycle as month update.
+      this._interactingWithCalendar = false;
     }
 
     _nextMonth(e) {
@@ -2907,6 +3094,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           year: this._getYear(this._viewDate),
         }),
       );
+
+      // End nav-key interaction in the same lifecycle as month update.
+      this._interactingWithCalendar = false;
     }
 
     _changeYear(e) {
@@ -3361,8 +3551,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Could not parse the date at all - format error (highest priority)
         this.invalid = true;
         this.errorReason = 'format';
-        const expectedFormat = this._getDatePlaceholder(this.format);
-        this.errorMessage = `${this._getLocalizedText('incorrectFormat')} Expected format: ${expectedFormat}`;
+        this.errorMessage = this._buildIncorrectFormatError();
         this._showErrors = true;
         this._errorPersists = true; // Error should persist until resolved
 
@@ -3602,6 +3791,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       return priorities[errorReason] || 0;
     }
 
+    _computePlaceholder(format, hidePlaceholder) {
+      if (hidePlaceholder) {
+        return '';
+      }
+      return this._getDatePlaceholder(format);
+    }
+
     _getDatePlaceholder(format) {
       try {
         if (format) {
@@ -3767,22 +3963,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // ARIA Grid pattern: Only one cell should be tabbable, others use arrow keys
       if (dayObj.isEmpty || !dayObj.isCurrentMonth) return '-1';
 
-      // Determine which date should be tabbable (tab stop)
-      let shouldBeTabbable = false;
-
-      if (focusedDate && this._isSameDay(dayObj.date, focusedDate)) {
-        // Currently focused date
-        shouldBeTabbable = true;
-      } else if (!focusedDate && dayObj.isSelected) {
-        // Selected date when no focus is set
-        shouldBeTabbable = true;
-      } else if (!focusedDate && !this._selectedDate && dayObj.isToday) {
-        // Today when no selection and no focus
-        shouldBeTabbable = true;
-      } else if (!focusedDate && !this._selectedDate && !this._isTodayInCurrentMonth() && dayObj.date.getDate() === 1) {
-        // First day of month as fallback
-        shouldBeTabbable = true;
-      }
+      // Determine which date should be tabbable (tab stop): the focused date if there is one,
+      // otherwise the selection, otherwise today, otherwise the 1st when today is not in view.
+      const shouldBeTabbable = focusedDate
+        ? this._isSameDay(dayObj.date, focusedDate)
+        : dayObj.isSelected ||
+          (!this._selectedDate && dayObj.isToday) ||
+          (!this._selectedDate && !this._isTodayInCurrentMonth() && dayObj.date.getDate() === 1);
 
       return shouldBeTabbable ? '0' : '-1';
     }
@@ -4116,8 +4303,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         if (!parseResult) {
           this.invalid = true;
           this.errorReason = 'format';
-          const expectedFormat = this._getDatePlaceholder(this.format);
-          this.errorMessage = `${this._getLocalizedText('incorrectFormat')} Expected format: ${expectedFormat}`;
+          this.errorMessage = this._buildIncorrectFormatError();
           this._showErrors = true;
           return false;
         }
@@ -4405,6 +4591,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (this._boundReposition) {
         window.removeEventListener('resize', this._boundReposition);
         window.removeEventListener('scroll', this._boundReposition);
+      }
+
+      // Clean up escape capture listener in case element is removed while calendar is open.
+      if (this._boundEscapeCapture) {
+        window.removeEventListener('keydown', this._boundEscapeCapture, true);
       }
     }
 
@@ -4744,9 +4935,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         e.stopPropagation();
         moveWithinOptions(10);
       } else if (e.key === 'Escape') {
-        e.preventDefault();
-        e.stopPropagation();
-        this._closeYearDropdown();
+        // Only consume Escape when the year-options panel is actually open so
+        // it just collapses the dropdown. Otherwise let the event bubble up so
+        // the popover/document Escape handlers can close the whole calendar
+        // (which is the focused element when the calendar is opened via keyboard).
+        if (this._isYearDropdownOpen) {
+          e.preventDefault();
+          e.stopPropagation();
+          this._closeYearDropdown();
+        }
       } else if (e.key === 'Tab') {
         // Close dropdown when user tabs away
         this._closeYearDropdown();
@@ -5047,6 +5244,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         e.preventDefault();
         e.stopPropagation();
 
+        // Mirror mouse behavior: suppress transient wrapper-driven input refocus
+        // while keyboard month navigation is being processed.
+        this._suppressInputFocusCloseUntil = Date.now() + FOCUS_SUPPRESSION_MS;
+
+        // Mark that we're interacting with the calendar to prevent it from closing
+        this._interactingWithCalendar = true;
+
         // Call the appropriate navigation method directly
         if (e.target.id === 'prevMonth') {
           this._previousMonth(e);
@@ -5055,6 +5259,21 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         }
       }
       // Tab navigation is now handled by _handlePopoverKeydown
+    }
+
+    // Prevent the nav buttons from acquiring focus on mouse interaction.
+    // If a nav button gets focused and then becomes disabled (e.g. clicking previous
+    // month at the min-month boundary), the browser blurs it which bubbles a focusout
+    // up to the wrapping nuxeo-date-picker. The wrapper re-focuses the host, which in
+    // turn focuses the inner input and triggers the calendar to close. By preventing
+    // mousedown's default action, focus stays on whatever element previously held it.
+    _preventNavButtonFocus(e) {
+      if (e) {
+        // Keep this short: enough to cover focus hand-off caused by nav updates
+        // without masking legitimate later input focus events.
+        this._suppressInputFocusCloseUntil = Date.now() + FOCUS_SUPPRESSION_MS;
+        e.preventDefault();
+      }
     }
 
     // Grid tab navigation is now handled by central focus management

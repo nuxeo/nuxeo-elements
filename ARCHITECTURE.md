@@ -48,7 +48,7 @@ Nuxeo Elements is a library of reusable web components that forms the foundation
 | Package Manager | npm | ≥ 8 |
 | Node.js | Node.js | ≥ 18 |
 | Monorepo | Lerna | ^9.0.7 |
-| Unit Testing | Karma + Mocha + Chai + Sinon | Various |
+| Unit Testing | @web/test-runner + Mocha + Chai + Sinon | Various |
 | Linting | ESLint 9 (flat config) + Prettier | ^9.0 |
 | Documentation | Storybook 10 (web-components-vite) | ^10.3 |
 
@@ -203,7 +203,7 @@ Workflow orchestration in `.github/workflows/main.yaml`:
 ```
 Push to maintenance-3.1.x triggers:
   lint     → ESLint + Prettier + Polymer lint
-  test     → Karma unit tests (all packages)
+  test     → @web/test-runner unit tests (all packages)
   storybook → Build storybook documentation
   build    → Tag and publish packages to npm registry
 ```

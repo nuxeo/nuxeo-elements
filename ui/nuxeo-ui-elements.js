@@ -7,6 +7,7 @@ import './nuxeo-user-group-management/nuxeo-user-group-latest.js';
 import './widgets/nuxeo-actions-menu.js';
 import './widgets/nuxeo-card.js';
 import './widgets/nuxeo-checkmark.js';
+import './widgets/nuxeo-resize-handle.js';
 import './widgets/nuxeo-date.js';
 import './widgets/nuxeo-date-picker.js';
 import './widgets/nuxeo-dialog.js';

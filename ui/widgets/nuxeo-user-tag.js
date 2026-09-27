@@ -49,12 +49,13 @@ import './nuxeo-tooltip.js';
           :host([dir='rtl']) nuxeo-user-avatar {
             margin: 0 0 0 0.5rem;
           }
+          /* em rather than px so this override scales with the text like nuxeo-tag's own padding */
           nuxeo-tag {
-            padding: 0 6px 0 0;
+            padding: 0 0.6em 0 0;
             max-width: 100%;
           }
           :host([dir='rtl']) nuxeo-tag {
-            padding: 0 0 0 6px;
+            padding: 0 0 0 0.6em;
           }
           .tag {
             @apply --layout-horizontal;
@@ -177,6 +178,16 @@ import './nuxeo-tooltip.js';
         _currentUser: {
           type: Object,
         },
+
+        /**
+         * Maximum number of characters to display for the user name.
+         * When the resolved name exceeds this limit, it is truncated and an ellipsis (`...`) is appended.
+         * Set to `null` (default) to disable truncation.
+         */
+        maxCharacters: {
+          type: Number,
+          value: null,
+        },
       };
     }
 
@@ -191,19 +202,31 @@ import './nuxeo-tooltip.js';
 
     _id(user) {
       if (user) {
-        const id = user.id || user.uid;
+        const id =
+          (user.properties && (user.properties.username || user.properties['user:username'])) || user.id || user.uid;
         return id || user.replace('user:', '');
       }
     }
 
     _name(user) {
+      let name;
+
       if (this._isEntity(user)) {
         const firstName = user.properties.firstName || user.properties['user:firstName'];
         const lastName = user.properties.lastName || user.properties['user:lastName'];
         const email = user.properties.email || user.properties['user:email'];
-        return [firstName, lastName].join(' ').trim() || email || this._id(user);
+        const username = user.properties.username || user.properties['user:username'];
+
+        name = [firstName, lastName].join(' ').trim() || email || username || this._id(user);
+      } else {
+        name = this._id(user);
       }
-      return this._id(user);
+
+      if (this.maxCharacters && name && name.length > this.maxCharacters) {
+        return `${name.substring(0, this.maxCharacters)}...`;
+      }
+
+      return name;
     }
 
     _email(user) {
@@ -223,7 +246,7 @@ import './nuxeo-tooltip.js';
      * if the user is the system user, or if the current user doesn't have administration/power user permissions.
      */
     _hasLink(disabled, user, currentUser) {
-      const systemUser = this._name(user) === 'system';
+      const systemUser = this._id(user) === 'system';
       const userIsAdmin = this.hasAdministrationPermissions(currentUser);
       return !(disabled || systemUser || !userIsAdmin);
     }

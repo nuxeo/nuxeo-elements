@@ -285,4 +285,55 @@ suite('nuxeo-user-group-permissions-table', () => {
       el.disconnectedCallback();
     });
   });
+
+  suite('_computeEntityDisplayName', () => {
+    let localEl;
+
+    setup(async () => {
+      localEl = await fixture(
+        html`
+          <nuxeo-user-group-permissions-table></nuxeo-user-group-permissions-table>
+        `,
+      );
+    });
+
+    test('uses entityLabel when provided', () => {
+      expect(localEl._computeEntityDisplayName('principal-id', 'Human readable')).to.equal('Human readable');
+    });
+
+    test('falls back to entity when entityLabel is missing', () => {
+      expect(localEl._computeEntityDisplayName('members', undefined)).to.equal('members');
+      expect(localEl._computeEntityDisplayName('members', null)).to.equal('members');
+    });
+
+    test('falls back to entity when entityLabel is empty string', () => {
+      expect(localEl._computeEntityDisplayName('members', '')).to.equal('members');
+    });
+
+    test('returns empty string when both are missing', () => {
+      expect(localEl._computeEntityDisplayName(undefined, undefined)).to.equal('');
+      expect(localEl._computeEntityDisplayName(null, null)).to.equal('');
+    });
+  });
+
+  suite('_entityDisplayName computed property', () => {
+    test('reflects entity and entityLabel bindings', async () => {
+      const elLocal = await fixture(html`
+        <nuxeo-user-group-permissions-table
+          entity="uid-1"
+          entity-label="Shown name"
+        ></nuxeo-user-group-permissions-table>
+      `);
+      await flush();
+      expect(elLocal._entityDisplayName).to.equal('Shown name');
+    });
+
+    test('uses entity when entity-label is not set', async () => {
+      const elLocal = await fixture(html`
+        <nuxeo-user-group-permissions-table entity="administrators"></nuxeo-user-group-permissions-table>
+      `);
+      await flush();
+      expect(elLocal._entityDisplayName).to.equal('administrators');
+    });
+  });
 });

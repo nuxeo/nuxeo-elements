@@ -174,7 +174,7 @@ import '../nuxeo-button-styles.js';
               <div class="info">
                 <div id="body">
                   <div id="header" class="horizontal">
-                    <span class="author">[[comment.author]]</span>
+                    <span class="author">[[_authorLabel(comment.author)]]</span>
                     <span class="smaller opaque"
                       >[[_computeDateLabel(comment, comment.creationDate, comment.modificationDate, i18n)]]</span
                     >
@@ -610,10 +610,59 @@ import '../nuxeo-button-styles.js';
     /** Visibility Methods * */
 
     _areExtendedOptionsAvailable(author, currentUser) {
+      const username = this._authorUsername(author);
       return (
         currentUser &&
-        ((currentUser.properties && currentUser.properties.username === author) || currentUser.isAdministrator)
+        ((currentUser.properties && currentUser.properties.username === username) || currentUser.isAdministrator)
       );
+    }
+
+    _isAuthorEntity(author) {
+      if (author == null || typeof author !== 'object') {
+        return false;
+      }
+      return author['entity-type'] === 'user' || (author['entity-type'] === 'document' && author.type === 'user');
+    }
+
+    _authorStringFallback(author) {
+      if (typeof author === 'string') {
+        return author;
+      }
+      if (author && typeof author === 'object') {
+        return author.id || author.uid || '';
+      }
+      return '';
+    }
+
+    _authorLabel(author) {
+      if (!author) {
+        return '';
+      }
+      if (this._isAuthorEntity(author)) {
+        const props = author.properties || {};
+        const firstName = props.firstName || props['user:firstName'];
+        const lastName = props.lastName || props['user:lastName'];
+        const username = props.username || props['user:username'];
+        return (
+          [firstName, lastName]
+            .filter(Boolean)
+            .join(' ')
+            .trim() ||
+          username ||
+          author.id ||
+          author.uid ||
+          ''
+        );
+      }
+      return this._authorStringFallback(author);
+    }
+
+    _authorUsername(author) {
+      if (this._isAuthorEntity(author)) {
+        const props = author.properties || {};
+        return props.username || props['user:username'] || author.id || author.uid || '';
+      }
+      return this._authorStringFallback(author);
     }
 
     _isBlank(text) {

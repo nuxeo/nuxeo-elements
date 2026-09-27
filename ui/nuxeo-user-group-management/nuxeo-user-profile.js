@@ -137,7 +137,7 @@ import '../nuxeo-button-styles.js';
           <div class="horizontal layout center header">
             <iron-icon class="user-icon" icon="nuxeo:user"></iron-icon>
             <div class="layout vertical">
-              <div class="user heading">[[user.id]]</div>
+              <div class="user heading">[[_userDisplayName(user)]]</div>
               <div>[[user.properties.firstName]] [[user.properties.lastName]]</div>
             </div>
 
@@ -228,7 +228,7 @@ import '../nuxeo-button-styles.js';
         <!-- local permissions -->
         <nuxeo-card heading="[[i18n('userManagement.localPermissions.heading')]]">
           <nuxeo-user-group-permissions-table
-            entity="[[username]]"
+            entity="[[_userDisplayName(user)]]"
             caption-text="[[i18n('userManagement.localPermissions.heading')]]"
             readonly
           ></nuxeo-user-group-permissions-table>
@@ -309,6 +309,14 @@ import '../nuxeo-button-styles.js';
       return this.user.extendedGroups.filter((group) => this.user.properties.groups.indexOf(group.name) > -1);
     }
 
+    _userDisplayName(user) {
+      if (!user) {
+        return '';
+      }
+      const props = user.properties || {};
+      return props.username || user.name || '';
+    }
+
     _openChangePasswordDialog() {
       this.$.passwordOld.value = this.$.passwordNew.value = this.$.passwordConfirm.value = '';
       this.$.changePasswordDialog.open();
@@ -331,7 +339,8 @@ import '../nuxeo-button-styles.js';
           this.$.changePasswordDialog.close();
 
           // update connection
-          this.$.nxcon.username = this.user.id;
+          const props = this.user.properties || {};
+          this.$.nxcon.username = props.username || this.user.name;
           this.$.nxcon.password = this.$.passwordNew.value;
           this.$.nxcon.connect();
         })

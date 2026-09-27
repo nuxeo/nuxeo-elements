@@ -98,3 +98,149 @@ suite('nuxeo-favorites-toggle-button', () => {
     });
   });
 });
+
+suite('nuxeo-favorites-toggle-button extras', () => {
+  let el;
+
+  setup(async () => {
+    el = await fixture(
+      html`
+        <nuxeo-favorites-toggle-button></nuxeo-favorites-toggle-button>
+      `,
+    );
+  });
+
+  suite('_isAvailable', () => {
+    test('returns truthy for collection member doc', () => {
+      const doc = { facets: ['CollectionMember'], type: 'File', isVersion: false };
+      expect(el._isAvailable(doc)).to.be.ok;
+    });
+
+    test('returns falsy for null', () => {
+      expect(el._isAvailable(null)).to.not.be.ok;
+    });
+  });
+
+  suite('_computeIcon', () => {
+    test('returns star when favorite', () => {
+      expect(el._computeIcon(true)).to.equal('icons:star');
+    });
+
+    test('returns star-border when not favorite', () => {
+      expect(el._computeIcon(false)).to.equal('icons:star-border');
+    });
+  });
+
+  suite('_computeLabel', () => {
+    test('returns remove label when favorite', () => {
+      const result = el._computeLabel(true);
+      expect(result).to.be.a('string');
+    });
+
+    test('returns add label when not favorite', () => {
+      const result = el._computeLabel(false);
+      expect(result).to.be.a('string');
+    });
+  });
+
+  suite('_computeHoverLabel', () => {
+    test('returns only the action label, not the document title', () => {
+      const result = el._computeHoverLabel(false, { title: 'MyDoc' });
+      expect(result).to.not.include('MyDoc');
+      expect(result).to.be.a('string');
+    });
+
+    test('returns the same value as _computeLabel for the given favorite state', () => {
+      expect(el._computeHoverLabel(false, { title: 'MyDoc' })).to.equal(el._computeLabel(false));
+      expect(el._computeHoverLabel(true, { title: 'MyDoc' })).to.equal(el._computeLabel(true));
+    });
+
+    test('handles null doc gracefully', () => {
+      const result = el._computeHoverLabel(false, null);
+      expect(result).to.be.a('string');
+    });
+  });
+
+  suite('_documentChanged', () => {
+    test('sets favorite from document contextParameters', () => {
+      el.document = {
+        contextParameters: {
+          favorites: { isFavorite: true },
+        },
+      };
+      el._documentChanged();
+    });
+
+    test('handles doc without contextParameters', () => {
+      el.document = {};
+      el._documentChanged();
+    });
+  });
+
+  suite('removeFromFavoritesHandler', () => {
+    test('unsets favorite on matching uid', () => {
+      el.document = { uid: 'doc1' };
+      el._setFavorite(true);
+      const event = new CustomEvent('removed-from-favorites', {
+        detail: { docUid: 'doc1' },
+      });
+      window.dispatchEvent(event);
+    });
+
+    test('ignores non-matching uid', () => {
+      el.document = { uid: 'doc1' };
+      el._setFavorite(true);
+      const event = new CustomEvent('removed-from-favorites', {
+        detail: { docUid: 'doc2' },
+      });
+      window.dispatchEvent(event);
+    });
+
+    test('ignores when no document', () => {
+      el.document = null;
+      const event = new CustomEvent('removed-from-favorites', {
+        detail: { docUid: 'doc1' },
+      });
+      window.dispatchEvent(event);
+    });
+  });
+});
+
+suite('nuxeo-favorites-toggle-button accessibility', () => {
+  test('host has role="presentation" by default to collapse it out of the a11y tree', async () => {
+    const el = await fixture(
+      html`
+        <nuxeo-favorites-toggle-button></nuxeo-favorites-toggle-button>
+      `,
+    );
+    expect(el.getAttribute('role')).to.equal('presentation');
+  });
+
+  test('host preserves a pre-existing role attribute', async () => {
+    const el = await fixture(
+      html`
+        <nuxeo-favorites-toggle-button role="button"></nuxeo-favorites-toggle-button>
+      `,
+    );
+    expect(el.getAttribute('role')).to.equal('button');
+  });
+
+  test('inner .action wrapper has role="presentation"', async () => {
+    const doc = {
+      'entity-type': 'document',
+      uid: '1',
+      contextParameters: { favorites: { isFavorite: false } },
+      facets: ['CollectionMember'],
+      type: 'File',
+      isVersion: false,
+    };
+    const el = await fixture(
+      html`
+        <nuxeo-favorites-toggle-button .document=${doc}></nuxeo-favorites-toggle-button>
+      `,
+    );
+    const action = el.shadowRoot.querySelector('.action');
+    expect(action).to.exist;
+    expect(action.getAttribute('role')).to.equal('presentation');
+  });
+});

@@ -114,7 +114,7 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
           }
         </style>
 
-        <label>[[label]]</label>
+        <label aria-hidden="true">[[label]]</label>
 
         <paper-dropdown-menu
           id="paperDropdownMenu"
@@ -167,6 +167,7 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
         label: {
           type: String,
           value: null,
+          observer: '_syncAriaLabel',
         },
 
         /**
@@ -268,11 +269,39 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
         this._resizeObserver = new ResizeObserver(() => this._resize());
       }
       this._resizeObserver.observe(this);
+      if (!this._ariaLabelObserver) {
+        this._ariaLabelObserver = new MutationObserver((mutations) => {
+          if (mutations.some((mutation) => mutation.attributeName === 'aria-label')) {
+            this._syncAriaLabel();
+          }
+        });
+      }
+      this._ariaLabelObserver.observe(this, {
+        attributes: true,
+        attributeFilter: ['aria-label'],
+      });
     }
 
     disconnectedCallback() {
       super.disconnectedCallback();
       this._resizeObserver.unobserve(this);
+      if (this._ariaLabelObserver) {
+        this._ariaLabelObserver.disconnect();
+      }
+      this._detachDropdownTabHandler();
+    }
+
+    static get observers() {
+      return ['_syncAriaState(invalid, required)'];
+    }
+
+    ready() {
+      super.ready();
+      this._syncAriaLabel();
+      this._syncAriaState();
+      const pdm = this.$.paperDropdownMenu;
+      pdm.addEventListener('paper-dropdown-open', () => this._attachDropdownTabHandler());
+      pdm.addEventListener('paper-dropdown-close', () => this._detachDropdownTabHandler());
     }
 
     close() {
@@ -303,6 +332,123 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
 
     _computeAttrForSelected(attrForSelected, options) {
       return options ? 'option' : attrForSelected;
+    }
+
+    _syncAriaLabel() {
+      // Deferred so Polymer has finished rendering the inner paper-dropdown-menu.
+      setTimeout(() => this._applyAriaLabel(), 0);
+    }
+
+    _syncAriaState() {
+      // Deferred so Polymer has finished rendering the inner paper-dropdown-menu.
+      setTimeout(() => this._applyAriaState(), 0);
+    }
+
+    _applyAriaState() {
+      const nativeInput = this._getNativeInput();
+      if (!nativeInput) return;
+      // paper-dropdown-menu signals the error with colour and a thicker underline only; assistive
+      // technologies need the state on the focusable control (WCAG 2.1 SC 1.4.1).
+      nativeInput.setAttribute('aria-invalid', this.invalid ? 'true' : 'false');
+      if (this.required) {
+        nativeInput.setAttribute('aria-required', 'true');
+      } else {
+        nativeInput.removeAttribute('aria-required');
+      }
+    }
+
+    _getTriggerInput() {
+      const pdm = this.$ && this.$.paperDropdownMenu;
+      if (!pdm) return null;
+      // paper-dropdown-menu exposes its paper-input trigger as $.input.
+      let paperInput;
+      if (pdm.$) {
+        paperInput = pdm.$.input;
+      }
+      if (!paperInput && pdm.shadowRoot) {
+        paperInput = pdm.shadowRoot.querySelector('paper-input');
+      }
+      return paperInput;
+    }
+
+    _getNativeInput() {
+      const paperInput = this._getTriggerInput();
+      if (!paperInput) return null;
+      let nativeInput = (paperInput.inputElement && paperInput.inputElement._inputElement) || paperInput.$.nativeInput;
+      if (!nativeInput && paperInput.inputElement) {
+        nativeInput = paperInput.inputElement.querySelector && paperInput.inputElement.querySelector('input');
+      }
+      if (!nativeInput && paperInput.shadowRoot) {
+        nativeInput = paperInput.shadowRoot.querySelector('input');
+      }
+      return nativeInput;
+    }
+
+    _applyAriaLabel() {
+      const ariaLabel = (this.getAttribute('aria-label') || '').trim() || (this.label || '').trim() || null;
+
+      const paperInput = this._getTriggerInput();
+      if (!paperInput) return;
+
+      if (ariaLabel) {
+        paperInput.setAttribute('aria-label', ariaLabel);
+      } else {
+        paperInput.removeAttribute('aria-label');
+      }
+
+      // Set aria-label on the native <input> and remove aria-labelledby so the
+      // screen reader uses our label instead of Polymer's auto-generated one.
+      const nativeInput = this._getNativeInput();
+      if (nativeInput) {
+        if (ariaLabel) {
+          nativeInput.setAttribute('aria-label', ariaLabel);
+          nativeInput.removeAttribute('aria-labelledby');
+        } else {
+          nativeInput.removeAttribute('aria-label');
+        }
+      }
+    }
+
+    // Attach a Tab handler to the iron-dropdown overlay while it is open.
+    // Standard combobox pattern: Tab closes the dropdown and returns focus to
+    // the trigger input; native Tab then advances focus from that position.
+    // Scoping to the overlay (rather than document) avoids cross-talk between
+    // multiple open selects and keeps the listener's lifetime tightly bounded.
+    _attachDropdownTabHandler() {
+      const pdm = this.$.paperDropdownMenu;
+      // paper-menu-button exposes its iron-dropdown as $.menuButton.$.dropdown.
+      const overlay =
+        pdm.$.menuButton && pdm.$.menuButton.$ && pdm.$.menuButton.$.dropdown ? pdm.$.menuButton.$.dropdown : null;
+      this._dropdownTabOverlay = overlay;
+      this._dropdownTabHandler = (e) => {
+        if (e.key !== 'Tab') return;
+        e.preventDefault();
+        pdm.close();
+        // Focus the trigger input so that the user's next Tab keystroke uses
+        // native focus order starting from the widget's real DOM position.
+        const trigger = (pdm.$ && pdm.$.input) || (pdm.shadowRoot && pdm.shadowRoot.querySelector('paper-input'));
+        if (trigger && typeof trigger.focus === 'function') {
+          trigger.focus();
+        }
+      };
+      if (overlay) {
+        overlay.addEventListener('keydown', this._dropdownTabHandler);
+      } else {
+        // Fallback when overlay reference is unavailable.
+        document.addEventListener('keydown', this._dropdownTabHandler, true);
+      }
+    }
+
+    _detachDropdownTabHandler() {
+      if (this._dropdownTabHandler) {
+        if (this._dropdownTabOverlay) {
+          this._dropdownTabOverlay.removeEventListener('keydown', this._dropdownTabHandler);
+        } else {
+          document.removeEventListener('keydown', this._dropdownTabHandler, true);
+        }
+        this._dropdownTabHandler = null;
+        this._dropdownTabOverlay = null;
+      }
     }
 
     /* Override method from Polymer.IronValidatableBehavior. */

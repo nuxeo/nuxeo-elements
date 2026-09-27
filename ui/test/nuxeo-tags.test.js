@@ -62,6 +62,26 @@ suite('nuxeo-tags', () => {
     expect(userTags.length).to.equal(1);
   });
 
+  test('renders plain-object users with their id', async () => {
+    el.type = 'user';
+    el.items = [{ id: 'plain-user' }];
+    await flush();
+    const userTag = el.shadowRoot.querySelector('nuxeo-user-tag');
+    expect(userTag._name(userTag.user)).to.equal('plain-user');
+  });
+
+  test('renders truncated user names when maxCharacters is set on the child tag', async () => {
+    el.type = 'user';
+    el.items = [{ id: 'verylongusername' }];
+    await flush();
+
+    const userTag = el.shadowRoot.querySelector('nuxeo-user-tag');
+    userTag.maxCharacters = 4;
+    await flush();
+
+    expect(userTag._name(userTag.user)).to.equal('very...');
+  });
+
   test('renders group-tags when type is group', async () => {
     el.type = 'group';
     el.items = [{ 'entity-type': 'group', groupname: 'admins', grouplabel: 'Admins', properties: {} }];

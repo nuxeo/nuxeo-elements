@@ -45,6 +45,8 @@ import '../nuxeo-button-styles.js';
    *
    *     <nuxeo-user-group-permissions-table entity="members"></nuxeo-user-group-permissions-table>
    *
+   * Optional `entity-label` overrides the name shown when there are no permissions (defaults to `entity`).
+   *
    * Used by `nuxeo-user-group-management`
    *
    * @appliesMixin Nuxeo.I18nBehavior
@@ -218,7 +220,7 @@ import '../nuxeo-button-styles.js';
             <template>
               <div class="table-row" role="row">
                 <div class="emptyResult" role="columnheader">
-                  [[i18n('userGroupPermissions.noPermissions', entity)]]
+                  [[i18n('userGroupPermissions.noPermissions', _entityDisplayName)]]
                 </div>
               </div>
             </template>
@@ -252,6 +254,16 @@ import '../nuxeo-button-styles.js';
         label: String,
 
         entity: String,
+
+        /**
+         * Optional human-readable name for messages (for example `user.name`). ACL queries still use `entity`.
+         */
+        entityLabel: String,
+
+        _entityDisplayName: {
+          type: String,
+          computed: '_computeEntityDisplayName(entity, entityLabel)',
+        },
 
         documents: Array,
 
@@ -318,6 +330,10 @@ import '../nuxeo-button-styles.js';
       );
 
       this._intersectionObserver.observe(this);
+    }
+
+    _computeEntityDisplayName(entity, entityLabel) {
+      return entityLabel || entity || '';
     }
 
     _fetchPermissions() {
