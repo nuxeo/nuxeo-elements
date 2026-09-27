@@ -16,6 +16,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import { fixture, html } from '@nuxeo/testing-helpers';
+import moment from '@nuxeo/moment';
+import { config } from '@nuxeo/nuxeo-elements';
 import '../nuxeo-document-permissions/nuxeo-document-acl-table.js';
 
 suite('nuxeo-document-acl-table', () => {
@@ -111,6 +113,64 @@ suite('nuxeo-document-acl-table extras', () => {
     test('returns groupname for group when grouplabel is empty', () => {
       const entity = { 'entity-type': 'group', groupname: 'admins', grouplabel: '' };
       expect(el.entityDisplay(entity)).to.equal('admins');
+    });
+  });
+
+  suite('formatTimeFrame', () => {
+    test('returns "Permanent" when begin and end are both null', () => {
+      expect(el.formatTimeFrame({ begin: null, end: null })).to.equal(el.i18n('documentAclTable.permanent'));
+    });
+
+    test('returns "From <date>" when only begin is set in the future', () => {
+      const begin = moment()
+        .add(1, 'day')
+        .toISOString();
+      expect(el.formatTimeFrame({ begin, end: null })).to.equal(
+        `${el.i18n('documentAclTable.from')} ${moment(begin).format('D MMM YYYY')}`,
+      );
+    });
+
+    test('returns "Since <date>" when only begin is set in the past', () => {
+      const begin = moment()
+        .subtract(1, 'day')
+        .toISOString();
+      expect(el.formatTimeFrame({ begin, end: null })).to.equal(
+        `${el.i18n('documentAclTable.since')} ${moment(begin).format('D MMM YYYY')}`,
+      );
+    });
+
+    test('returns "Until <date>" when only end is set', () => {
+      const end = moment()
+        .add(1, 'day')
+        .toISOString();
+      expect(el.formatTimeFrame({ begin: null, end })).to.equal(
+        `${el.i18n('documentAclTable.until')} ${moment(end).format('D MMM YYYY')}`,
+      );
+    });
+
+    test('returns "Since <date> until <date>" when both begin and end are set', () => {
+      const begin = moment()
+        .subtract(1, 'day')
+        .toISOString();
+      const end = moment()
+        .add(1, 'day')
+        .toISOString();
+      expect(el.formatTimeFrame({ begin, end })).to.equal(
+        `${el.i18n('documentAclTable.since')} ${moment(begin).format('D MMM YYYY')}` +
+          ` ${el.i18n('documentAclTable.untilMiddle')} ${moment(end).format('D MMM YYYY')}`,
+      );
+    });
+
+    test('formats the date using the configured timezone', () => {
+      // A fixed instant so the assertion never depends on the machine running the tests.
+      const begin = '2024-01-15T23:30:00.000Z';
+      try {
+        config.set('timezone', 'Asia/Kolkata');
+        // Asia/Kolkata is UTC+5:30 all year round, so 23:30 UTC on the 15th becomes the 16th locally.
+        expect(el.formatTimeFrame({ begin, end: null })).to.equal(`${el.i18n('documentAclTable.since')} 16 Jan 2024`);
+      } finally {
+        config.set('timezone');
+      }
     });
   });
 
