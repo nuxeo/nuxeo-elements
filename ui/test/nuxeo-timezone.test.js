@@ -20,9 +20,14 @@ import { momentTimezone, isValidTimezone } from '../nuxeo-timezone.js';
 suite('nuxeo-timezone', () => {
   // A fixed instant so results never depend on the machine running the tests.
   const instant = '2024-01-15T12:00:00.000Z';
+  let originalLocale;
+
+  setup(() => {
+    originalLocale = moment.locale();
+  });
 
   teardown(() => {
-    moment.locale('en');
+    moment.locale(originalLocale);
   });
 
   suite('isValidTimezone', () => {
