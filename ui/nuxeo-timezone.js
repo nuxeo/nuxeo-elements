@@ -47,7 +47,7 @@ export function isValidTimezone(timezone) {
  * - an unknown zone: a warning is logged once and the factory falls back to the browser's local time.
  *
  * @param {string} [timezone] the name of the timezone, according to the IANA tz database.
- * @return {function(*=): object} a factory returning `moment` objects bound to the resolved timezone.
+ * @return {function(...*): object} a factory returning `moment` objects bound to the resolved timezone.
  */
 export function momentTimezone(timezone) {
   if (!timezone) {
@@ -56,16 +56,16 @@ export function momentTimezone(timezone) {
   if (timezone === 'Etc/UTC') {
     return moment.utc;
   }
-  if (!isValidTimezone(timezone)) {
+  const zone = momentTz.tz.zone(timezone);
+  if (!zone) {
     if (!_warnedZones.has(timezone)) {
       _warnedZones.add(timezone);
       console.warn(`nuxeo-timezone: unknown timezone "${timezone}", falling back to the browser's local time.`);
     }
     return moment;
   }
-  const zone = momentTz.tz.zone(timezone);
-  return (input) => {
-    const m = moment(input);
+  return (...args) => {
+    const m = moment(...args);
     // `Zone#utcOffset` returns the offset in minutes to add to local time to get UTC (i.e. the negated offset),
     // computed at the given instant so DST and sub-hour offsets are taken into account.
     return m.utcOffset(-zone.utcOffset(m.valueOf()));
