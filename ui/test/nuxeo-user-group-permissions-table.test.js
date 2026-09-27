@@ -1,4 +1,5 @@
 import { fixture, flush, html } from '@nuxeo/testing-helpers';
+import { config } from '@nuxeo/nuxeo-elements';
 import '../nuxeo-user-group-management/nuxeo-user-group-permissions-table.js';
 
 const mkAce = (overrides) =>
@@ -116,6 +117,19 @@ suite('nuxeo-user-group-permissions-table', () => {
       const result = el._formatTimeFrame(mkAce({ begin: '2099-06-01', end: '2099-12-31' }));
       expect(result).to.be.a('string');
       expect(result).to.include('2099');
+    });
+
+    test('formats the date using the configured timezone', () => {
+      // A fixed instant so the assertion never depends on the machine running the tests.
+      const begin = '2020-01-15T23:30:00.000Z';
+      try {
+        config.set('timezone', 'Asia/Kolkata');
+        // Asia/Kolkata is UTC+5:30 all year round, so 23:30 UTC on the 15th becomes the 16th locally.
+        const result = el._formatTimeFrame(mkAce({ begin, end: null }));
+        expect(result).to.include('16 Jan 2020');
+      } finally {
+        config.set('timezone');
+      }
     });
   });
 
