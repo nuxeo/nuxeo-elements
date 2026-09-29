@@ -91,6 +91,10 @@ import { IronResizableBehavior } from '@polymer/iron-resizable-behavior/iron-res
             @apply --nuxeo-label;
           }
 
+          :host([invalid]) label {
+            color: var(--paper-input-container-invalid-color, #de350b);
+          }
+
           ::slotted(paper-item) {
             font-weight: normal !important;
             white-space: nowrap;

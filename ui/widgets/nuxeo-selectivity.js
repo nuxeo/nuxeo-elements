@@ -7358,6 +7358,10 @@ typedArrayTags[weakMapTag] = false;
               @apply --nuxeo-label;
           }
 
+          :host([invalid]) .label {
+              color: var(--paper-input-container-invalid-color, #de350b);
+          }
+
           .label[required]::after {
               display: inline-block;
               content: '*';
@@ -7385,6 +7389,12 @@ typedArrayTags[weakMapTag] = false;
           #input:focus .underline {
             height: 2px;
             background-color: var(--nuxeo-primary-color, #0066ff);
+          }
+
+          :host([invalid]) .underline,
+          :host([invalid]) #input.open .underline,
+          :host([invalid]) #input:focus .underline {
+            background-color: var(--paper-input-container-invalid-color, #de350b);
           }
         </style>
 
