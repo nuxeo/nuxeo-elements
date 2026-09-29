@@ -1932,5 +1932,15 @@ suite('nuxeo-selectivity', () => {
       expect(underline).to.not.be.null;
       expect(getComputedStyle(underline).backgroundColor).to.equal(INVALID_COLOR);
     });
+
+    test('does not apply the invalid color to the underline when valid', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity label="City" .data=${data}></nuxeo-selectivity>
+      `);
+      await flush();
+      const underline = selectivityWidget.shadowRoot.querySelector('.underline');
+      expect(underline).to.not.be.null;
+      expect(getComputedStyle(underline).backgroundColor).to.not.equal(INVALID_COLOR);
+    });
   });
 });
