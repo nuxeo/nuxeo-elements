@@ -103,9 +103,6 @@ saulis.DataTableTemplatizerBehaviorImpl = {
   },
 
   _itemPathChanged(instance, item) {
-    // TODO: hack to avoid: https://github.com/Polymer/polymer/issues/3307
-    this._parentProps = this._parentProps || {};
-
     if (instance) {
       instance.notifyPath(item.path, item.value);
     }

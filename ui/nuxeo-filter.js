@@ -29,6 +29,15 @@ import { FiltersBehavior } from './nuxeo-filters-behavior.js';
 import Interpreter from './js-interpreter/interpreter.js';
 
 {
+  // Splits a csv filter value. Equivalent to the previous regex split on /\s*,\s*/ but linear:
+  // those adjacent `\s*` quantifiers were ambiguous, so a long whitespace run backtracked
+  // super-linearly (SonarCloud javascript:S8786).
+  const splitCsv = (value) =>
+    value
+      .trim()
+      .split(',')
+      .map((part) => part.trim());
+
   /**
    * Stamps the template if and only if all of its conditions are met.
    *
@@ -222,13 +231,13 @@ import Interpreter from './js-interpreter/interpreter.js';
         if (v && filter) {
           const args = filter.ctx.map((arg) => this[arg]);
           // if filter supports multiple values apply the function to each one
-          const values = filter.multiple ? v.trim().split(/\s*,\s*/) : [v];
+          const values = filter.multiple ? splitCsv(v) : [v];
           const fn = this[filter.fn];
 
           // pass if any check returns true, basically Array.some()
           let pass = false;
-          for (let i = 0; i < values.length; i++) {
-            pass = fn.apply(this, args.concat(values[i]));
+          for (const value of values) {
+            pass = fn.apply(this, args.concat(value));
             if (pass) {
               break;
             }
@@ -297,11 +306,8 @@ import Interpreter from './js-interpreter/interpreter.js';
       if (this._instance) {
         const c$ = this._instance.children;
         if (c$ && c$.length) {
-          // use first child parent, for case when dom-if may have been detached
-          const parent = dom(dom(c$[0]).parentNode);
-
           for (let i = 0, n; i < c$.length && (n = c$[i]); i++) {
-            parent.removeChild(n);
+            n.remove();
           }
         }
         this._instance = null;

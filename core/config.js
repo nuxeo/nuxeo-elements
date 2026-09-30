@@ -16,7 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-Nuxeo = Nuxeo || {};
+window.Nuxeo = window.Nuxeo || {};
 Nuxeo.UI = Nuxeo.UI || {};
 Nuxeo.UI.config = Nuxeo.UI.config || {};
 const { config } = Nuxeo.UI;
