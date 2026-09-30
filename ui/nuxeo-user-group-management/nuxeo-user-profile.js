@@ -306,7 +306,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _computeGroups() {
-      return this.user.extendedGroups.filter((group) => this.user.properties.groups.indexOf(group.name) > -1);
+      return this.user.extendedGroups.filter((group) => this.user.properties.groups.includes(group.name));
     }
 
     _userDisplayName(user) {

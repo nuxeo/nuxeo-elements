@@ -229,8 +229,8 @@ import '../nuxeo-button-styles.js';
         }
         return (
           currentUser.isAdministrator ||
-          this.document.contextParameters.permissions.indexOf('Everything') > -1 ||
-          this.document.contextParameters.permissions.indexOf('Write') > -1
+          this.document.contextParameters.permissions.includes('Everything') ||
+          this.document.contextParameters.permissions.includes('Write')
         );
       });
     }
@@ -241,10 +241,10 @@ import '../nuxeo-button-styles.js';
           return false;
         }
         return (
-          (currentUser.isAdministrator || this.document.contextParameters.permissions.indexOf('Everything') > -1
+          (currentUser.isAdministrator || this.document.contextParameters.permissions.includes('Everything')
             ? true
             : currentUser.id === this.document.lockOwner &&
-              this.document.contextParameters.permissions.indexOf('Write') > -1) && !document.isVersion
+              this.document.contextParameters.permissions.includes('Write')) && !document.isVersion
         );
       });
     }

@@ -262,8 +262,8 @@ export const PageProviderDisplayBehavior = [
     detached() {
       this.unlisten(this.nxProvider, 'update', '_updateResults');
       this.unlisten(this.nxProvider, 'loading-changed', '_updateLoading');
-      this.$.list.unlisten.call(this.$.list, this.$.list, 'selected', '_selectionHandler');
-      this.$.list.unlisten.call(this.$.list, this.$.list, 'tap', '_selectionHandler');
+      this.$.list.unlisten(this.$.list, 'selected', '_selectionHandler');
+      this.$.list.unlisten(this.$.list, 'tap', '_selectionHandler');
     },
 
     _nxProviderChanged(nxProvider) {
@@ -358,8 +358,8 @@ export const PageProviderDisplayBehavior = [
           }
 
           const last = this._lastSelectedIndex;
-          const start = index > last ? last : index;
-          const end = index > last ? index : last;
+          const start = Math.min(index, last);
+          const end = Math.max(index, last);
 
           // check if all items in the range are loaded
           const valid = this.items.slice(start, end).every((item) => item && item.uid);
@@ -480,7 +480,7 @@ export const PageProviderDisplayBehavior = [
         return !this._excludedItems.includes(item.uid);
       }
       return this.multiSelection
-        ? !!(this.selectedItems && this.selectedItems.length && this.selectedItems.indexOf(item) > -1)
+        ? !!(this.selectedItems && this.selectedItems.length && this.selectedItems.includes(item))
         : !!(this.selectedItem && this.selectedItem === item);
     },
 
@@ -492,7 +492,7 @@ export const PageProviderDisplayBehavior = [
             this.items &&
             this.items.length > index &&
             this.items[index] &&
-            this.selectedItems.indexOf(this.items[index]) > -1 &&
+            this.selectedItems.includes(this.items[index]) &&
             !this._excludedItems.includes(this.items[index].uid)
           ) ||
             !!(
@@ -514,10 +514,10 @@ export const PageProviderDisplayBehavior = [
     _selectionEnabledChanged() {
       this.$.list.selectionEnabled = this.selectionEnabled;
       this.$.list.multiSelection = this.multiSelection;
-      this.$.list.unlisten.call(this.$.list, this.$.list, 'selected', '_selectionHandler');
+      this.$.list.unlisten(this.$.list, 'selected', '_selectionHandler');
       if (this.selectionEnabled && !this.selectOnTap) {
-        this.$.list.unlisten.call(this.$.list, this.$.list, 'tap', '_selectionHandler');
-        this.$.list.listen.call(this.$.list, this.$.list, 'selected', '_selectionHandler');
+        this.$.list.unlisten(this.$.list, 'tap', '_selectionHandler');
+        this.$.list.listen(this.$.list, 'selected', '_selectionHandler');
       }
     },
 

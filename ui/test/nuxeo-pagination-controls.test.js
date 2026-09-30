@@ -108,4 +108,16 @@ suite('nuxeo-pagination-controls', () => {
     expect(element._computeLimitForOptions(5)).to.be.true;
     expect(element._computeLimitForOptions(6)).to.be.false;
   });
+
+  test('should allow the page select before numberOfPages is bound', () => {
+    // numberOfPages is undefined until the page provider first reports a result set.
+    expect(element._computeLimitForOptions(undefined)).to.be.true;
+    expect(element._computeLimitForOptions(null)).to.be.true;
+  });
+
+  test('should allow the page select for a non-numeric page count', () => {
+    // NaN is never greater than the maximum, so the guard must return true here just as the
+    // original `if (numberOfPages > max) { return false; }` did. A `<=` comparison would not.
+    expect(element._computeLimitForOptions(NaN)).to.be.true;
+  });
 });
