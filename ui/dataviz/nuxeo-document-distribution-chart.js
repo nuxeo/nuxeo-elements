@@ -569,7 +569,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const svg = this.$.chart.querySelector('svg');
       const textContainer = this.$.chart.querySelector('#ex');
       if (svg) {
-        svg.parentNode.removeChild(svg);
+        svg.remove();
       }
 
       vis = select(this.$.chart)
@@ -762,7 +762,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     _initializeBreadcrumbTrail() {
       while (this.$.sequence.firstChild) {
-        this.$.sequence.removeChild(this.$.sequence.firstChild);
+        this.$.sequence.firstChild.remove();
       }
 
       // Add the svg area.

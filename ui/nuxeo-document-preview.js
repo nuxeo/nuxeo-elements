@@ -261,7 +261,7 @@ import './marked-element.js';
     _updatePreview() {
       // clear current previewer
       while (this.$.preview.firstChild) {
-        this.$.preview.removeChild(this.$.preview.firstChild);
+        this.$.preview.firstChild.remove();
       }
 
       // lookup the preview according to the blob's mimetype
