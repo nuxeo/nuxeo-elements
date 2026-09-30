@@ -267,8 +267,9 @@ import './nuxeo-tooltip.js';
 
     _calculateElementWidth(element) {
       const currrentElement = getComputedStyle(element);
-      const paddingX = parseFloat(currrentElement.paddingLeft) + parseFloat(currrentElement.paddingRight);
-      const borderX = parseFloat(currrentElement.borderLeftWidth) + parseFloat(currrentElement.borderRightWidth);
+      const paddingX = Number.parseFloat(currrentElement.paddingLeft) + Number.parseFloat(currrentElement.paddingRight);
+      const borderX =
+        Number.parseFloat(currrentElement.borderLeftWidth) + Number.parseFloat(currrentElement.borderRightWidth);
       const scrollBarWidth = element.offsetWidth - element.clientWidth;
       const elementWidth = element.offsetWidth - paddingX - borderX - scrollBarWidth;
       return elementWidth;

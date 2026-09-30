@@ -580,8 +580,8 @@ import '../nuxeo-button-styles.js';
     }
 
     _computeMaxRows() {
-      const lineHeight = parseFloat(this.getComputedStyleValue('--nuxeo-comment-line-height'));
-      const maxHeight = parseFloat(this.getComputedStyleValue('--nuxeo-comment-max-height'));
+      const lineHeight = Number.parseFloat(this.getComputedStyleValue('--nuxeo-comment-line-height'));
+      const maxHeight = Number.parseFloat(this.getComputedStyleValue('--nuxeo-comment-max-height'));
       return Math.round((Number.isNaN(maxHeight) ? 80 : maxHeight) / (Number.isNaN(lineHeight) ? 20 : lineHeight));
     }
 
