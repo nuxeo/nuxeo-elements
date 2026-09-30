@@ -336,4 +336,83 @@ suite('nuxeo-user-group-permissions-table', () => {
       expect(elLocal._entityDisplayName).to.equal('administrators');
     });
   });
+
+  suite('_resolvedCreator', () => {
+    test('returns entity when present in map', () => {
+      const entity = { 'entity-type': 'user', id: 'jdoe', properties: { firstName: 'Jane', lastName: 'Doe' } };
+      expect(el._resolvedCreator('jdoe', { jdoe: entity })).to.equal(entity);
+    });
+
+    test('falls back to raw creator string when not resolved', () => {
+      expect(el._resolvedCreator('system', {})).to.equal('system');
+    });
+
+    test('falls back to raw creator string when entities is null', () => {
+      expect(el._resolvedCreator('system', null)).to.equal('system');
+    });
+  });
+
+  suite('_fetchCreators', () => {
+    test('should skip and reset loading when entries have no aces with creators', async () => {
+      const getSpy = sinon.spy(el.$.userResource, 'get');
+      el._creatorsLoading = true;
+      await el._fetchCreators([{ aces: [] }]);
+      expect(getSpy).to.not.have.been.called;
+      expect(el._creatorsLoading).to.be.false;
+      getSpy.restore();
+    });
+
+    test('should skip and reset loading when called with no entries', async () => {
+      const getSpy = sinon.spy(el.$.userResource, 'get');
+      el._creatorsLoading = true;
+      await el._fetchCreators();
+      expect(getSpy).to.not.have.been.called;
+      expect(el._creatorsLoading).to.be.false;
+      getSpy.restore();
+    });
+
+    test('should fetch user entity for each unique creator', async () => {
+      const entity = { 'entity-type': 'user', id: 'jdoe', properties: { firstName: 'Jane', lastName: 'Doe' } };
+      sinon.stub(el.$.userResource, 'get').resolves(entity);
+      await el._fetchCreators([{ aces: [mkAce({ creator: 'jdoe' }), mkAce({ creator: 'jdoe' })] }]);
+      expect(el.$.userResource.get).to.have.been.calledOnce;
+      expect(el._creatorEntities).to.have.property('jdoe', entity);
+      el.$.userResource.get.restore();
+    });
+
+    test('should handle fetch failure gracefully', async () => {
+      sinon.stub(el.$.userResource, 'get').rejects(new Error('not found'));
+      const warnSpy = sinon.stub(console, 'warn');
+      await el._fetchCreators([{ aces: [mkAce({ creator: 'unknown' })] }]);
+      expect(el._creatorEntities).to.have.property('unknown', 'unknown');
+      // A statusless (e.g. network/transport) error is unexpected and should be logged.
+      expect(warnSpy).to.have.been.calledOnce;
+      warnSpy.restore();
+      el.$.userResource.get.restore();
+    });
+
+    test('should warn on unexpected non-404 errors', async () => {
+      const error = new Error('internal error');
+      error.status = 500;
+      sinon.stub(el.$.userResource, 'get').rejects(error);
+      const warnSpy = sinon.stub(console, 'warn');
+      await el._fetchCreators([{ aces: [mkAce({ creator: 'baduser' })] }]);
+      expect(el._creatorEntities).to.have.property('baduser', 'baduser');
+      expect(warnSpy).to.have.been.calledOnce;
+      warnSpy.restore();
+      el.$.userResource.get.restore();
+    });
+
+    test('should not warn on 404 errors', async () => {
+      const error = new Error('not found');
+      error.status = 404;
+      sinon.stub(el.$.userResource, 'get').rejects(error);
+      const warnSpy = sinon.stub(console, 'warn');
+      await el._fetchCreators([{ aces: [mkAce({ creator: 'deleted' })] }]);
+      expect(el._creatorEntities).to.have.property('deleted', 'deleted');
+      expect(warnSpy).to.not.have.been.called;
+      warnSpy.restore();
+      el.$.userResource.get.restore();
+    });
+  });
 });

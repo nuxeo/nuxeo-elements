@@ -17,6 +17,7 @@ limitations under the License.
 */
 import { fixture, html } from '@nuxeo/testing-helpers';
 import '../nuxeo-document-permissions/nuxeo-document-acl-table.js';
+import { fetchUserEntities } from '../nuxeo-user-group-management/nuxeo-user-display.js';
 
 suite('nuxeo-document-acl-table', () => {
   test('should return the element name', () => {
@@ -171,6 +172,114 @@ suite('nuxeo-document-acl-table extras', () => {
     test('returns groupname for group entity', () => {
       const entity = { 'entity-type': 'group', groupname: 'admins', grouplabel: 'Administrators' };
       expect(el.entityTooltip(entity)).to.equal('admins');
+    });
+  });
+
+  suite('_resolvedCreator', () => {
+    test('returns entity when present in map', () => {
+      const entity = { 'entity-type': 'user', id: 'jdoe', properties: { firstName: 'Jane', lastName: 'Doe' } };
+      expect(el._resolvedCreator('jdoe', { jdoe: entity })).to.equal(entity);
+    });
+
+    test('falls back to raw creator string when not resolved', () => {
+      expect(el._resolvedCreator('system', {})).to.equal('system');
+    });
+
+    test('falls back to raw creator string when entities is null', () => {
+      expect(el._resolvedCreator('system', null)).to.equal('system');
+    });
+  });
+
+  suite('_fetchCreators', () => {
+    test('should skip and reset loading when aces is empty', async () => {
+      const getSpy = sinon.spy(el.$.userResource, 'get');
+      el._creatorsLoading = true;
+      await el._fetchCreators([]);
+      expect(getSpy).to.not.have.been.called;
+      expect(el._creatorsLoading).to.be.false;
+      getSpy.restore();
+    });
+
+    test('should skip and reset loading when no creators are present', async () => {
+      const getSpy = sinon.spy(el.$.userResource, 'get');
+      el._creatorsLoading = true;
+      await el._fetchCreators([{ username: 'Admin', permission: 'Read' }]);
+      expect(getSpy).to.not.have.been.called;
+      expect(el._creatorsLoading).to.be.false;
+      getSpy.restore();
+    });
+
+    test('should fetch user entity for each unique creator', async () => {
+      const entity = { 'entity-type': 'user', id: 'jdoe', properties: { firstName: 'Jane', lastName: 'Doe' } };
+      sinon.stub(el.$.userResource, 'get').resolves(entity);
+      await el._fetchCreators([
+        { creator: 'jdoe', username: 'Admin', permission: 'Everything' },
+        { creator: 'jdoe', username: 'user1', permission: 'Read' },
+      ]);
+      expect(el.$.userResource.get).to.have.been.calledOnce;
+      expect(el._creatorEntities).to.have.property('jdoe', entity);
+      el.$.userResource.get.restore();
+    });
+
+    test('should handle fetch failure gracefully', async () => {
+      sinon.stub(el.$.userResource, 'get').rejects(new Error('not found'));
+      const warnSpy = sinon.stub(console, 'warn');
+      await el._fetchCreators([{ creator: 'unknown', username: 'Admin', permission: 'Read' }]);
+      expect(el._creatorEntities).to.have.property('unknown', 'unknown');
+      // A statusless (e.g. network/transport) error is unexpected and should be logged.
+      expect(warnSpy).to.have.been.calledOnce;
+      warnSpy.restore();
+      el.$.userResource.get.restore();
+    });
+
+    test('should warn on unexpected non-404 errors', async () => {
+      const error = new Error('internal error');
+      error.status = 500;
+      sinon.stub(el.$.userResource, 'get').rejects(error);
+      const warnSpy = sinon.stub(console, 'warn');
+      await el._fetchCreators([{ creator: 'baduser', username: 'Admin', permission: 'Read' }]);
+      expect(el._creatorEntities).to.have.property('baduser', 'baduser');
+      expect(warnSpy).to.have.been.calledOnce;
+      warnSpy.restore();
+      el.$.userResource.get.restore();
+    });
+
+    test('should not warn on 404 errors', async () => {
+      const error = new Error('not found');
+      error.status = 404;
+      sinon.stub(el.$.userResource, 'get').rejects(error);
+      const warnSpy = sinon.stub(console, 'warn');
+      await el._fetchCreators([{ creator: 'deleted', username: 'Admin', permission: 'Read' }]);
+      expect(el._creatorEntities).to.have.property('deleted', 'deleted');
+      expect(warnSpy).to.not.have.been.called;
+      warnSpy.restore();
+      el.$.userResource.get.restore();
+    });
+  });
+
+  suite('fetchUserEntities serialization', () => {
+    test('serializes concurrent calls sharing the same resource element', async () => {
+      const order = [];
+      const fakeResource = {
+        path: '',
+        get() {
+          const requestedPath = this.path;
+          order.push(requestedPath);
+          const username = requestedPath.split('/').pop();
+          return Promise.resolve({ 'entity-type': 'user', properties: { username } });
+        },
+      };
+
+      // Fire two overlapping calls on the SAME resource element.
+      const callA = fetchUserEntities(['a1', 'a2'], fakeResource);
+      const callB = fetchUserEntities(['b1'], fakeResource);
+      const [resultA, resultB] = await Promise.all([callA, callB]);
+
+      // With serialization, all of call A's requests complete before call B's,
+      // so the order is deterministic (never interleaved).
+      expect(order).to.deep.equal(['/user/a1', '/user/a2', '/user/b1']);
+      expect(resultA).to.have.all.keys('a1', 'a2');
+      expect(resultB).to.have.all.keys('b1');
     });
   });
 });
