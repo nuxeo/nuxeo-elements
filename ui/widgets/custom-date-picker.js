@@ -32,6 +32,59 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 // collapsing the popover during month navigation.
 const FOCUS_SUPPRESSION_MS = 200;
 
+// Formats tried, in order, when the primary (property or locale) format does not match what the
+// user typed. Hoisted to module scope so the list is not rebuilt on every keystroke; the contents
+// and their order are unchanged from the array that lived inside _parseUserInput.
+const COMMON_INPUT_FORMATS = [
+  'DD/MM/YYYY',
+  'DD-MM-YYYY',
+  'DD.MM.YYYY',
+  'DD/MM/YY',
+  'DD-MM-YY',
+  'DD.MM.YY',
+  'MM/DD/YYYY',
+  'MM-DD-YYYY',
+  'MM.DD.YYYY',
+  'MM/DD/YY',
+  'MM-DD-YY',
+  'MM.DD.YY',
+  'YYYY-MM-DD',
+  'YYYY/MM/DD',
+  'YYYY.MM.DD',
+  'DD MMM YYYY',
+  'DD MMMM YYYY',
+  'MMM DD, YYYY',
+  'MMMM DD, YYYY',
+  'DD/MM',
+  'MM/DD',
+  'DD-MM',
+  'MM-DD',
+];
+
+// Moment tokens accepted in the `format` property (extend if needed). A Set because it is
+// only ever used for membership tests; hoisted to module scope so it is built once.
+const VALID_MOMENT_TOKENS = new Set([
+  'D',
+  'DD',
+  'Do',
+  'M',
+  'MM',
+  'MMM',
+  'MMMM',
+  'YY',
+  'YYYY',
+  'H',
+  'HH',
+  'h',
+  'hh',
+  'm',
+  'mm',
+  's',
+  'ss',
+  'A',
+  'a',
+]);
+
 {
   class CustomDatePicker extends mixinBehaviors(
     [I18nBehavior, IronFormElementBehavior, IronValidatableBehavior],
@@ -1354,6 +1407,31 @@ const FOCUS_SUPPRESSION_MS = 200;
       this._today.setHours(0, 0, 0, 0); // Normalize to start of day
       this._viewDate = new Date();
       this._focusedDate = null;
+      // Call sites already reported by _logRecoveredError (see there).
+      this._loggedRecoveries = new Set();
+    }
+
+    /**
+     * Surfaces an exception that a recovery path would otherwise discard (SonarCloud S2486).
+     *
+     * Every `catch` in this element recovers rather than rethrows, deliberately: a malformed
+     * value, an unsupported format string or an unexpected locale must degrade to a sensible
+     * default instead of breaking the field. Until now none of them logged anything, which made
+     * a field report of "the date picker just clears my input" undiagnosable. Warnings are
+     * de-duplicated per element instance and per call site, so a persistently broken locale
+     * cannot flood the console from a path that runs once per rendered day cell.
+     *
+     * @param {string} context Call site, used both as the log label and as the dedupe key.
+     * @param {*} error The caught error.
+     */
+    _logRecoveredError(context, error) {
+      if (this._loggedRecoveries && this._loggedRecoveries.has(context)) {
+        return;
+      }
+      if (this._loggedRecoveries) {
+        this._loggedRecoveries.add(context);
+      }
+      console.warn(`[custom-date-picker] recovered from an error in ${context}:`, error);
     }
 
     ready() {
@@ -1391,6 +1469,7 @@ const FOCUS_SUPPRESSION_MS = 200;
           try {
             return this._formatDateForDisplay(date);
           } catch (error) {
+            this._logRecoveredError('pickerI18n.formatDate', error);
             return date ? date.toLocaleDateString() : '';
           }
         },
@@ -1416,6 +1495,7 @@ const FOCUS_SUPPRESSION_MS = 200;
             };
           } catch (error) {
             // Return current date instead of hardcoded values
+            this._logRecoveredError('pickerI18n.parseDate', error);
             const fallbackDate = this._moment();
             return {
               day: fallbackDate.get('D'),
@@ -1507,7 +1587,7 @@ const FOCUS_SUPPRESSION_MS = 200;
       // Replace placeholders
       Object.keys(placeholders).forEach((placeholder) => {
         const value = placeholders[placeholder];
-        text = text.replace(new RegExp(`\\{${placeholder}\\}`, 'g'), value);
+        text = text.replace(new RegExp(String.raw`\{${placeholder}\}`, 'g'), value);
       });
 
       return text;
@@ -1560,7 +1640,8 @@ const FOCUS_SUPPRESSION_MS = 200;
           month: 'long',
           day: 'numeric',
         }).format(date);
-      } catch (_) {
+      } catch (error) {
+        this._logRecoveredError('_formatAriaDate', error);
         return date && date.toDateString ? date.toDateString() : '';
       }
     }
@@ -1576,7 +1657,7 @@ const FOCUS_SUPPRESSION_MS = 200;
       if (!value) return null;
       try {
         if (typeof value === 'string') {
-          const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+          const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
           if (m) {
             const year = parseInt(m[1], 10);
             const month = parseInt(m[2], 10) - 1;
@@ -1590,7 +1671,9 @@ const FOCUS_SUPPRESSION_MS = 200;
         if (Number.isNaN(d.getTime())) return null;
         d.setHours(0, 0, 0, 0);
         return d;
-      } catch (_) {
+      } catch (error) {
+        // A value we cannot read is reported as "no date"; log why so the cause is diagnosable.
+        this._logRecoveredError('_parseDateOnly', error);
         return null;
       }
     }
@@ -1601,7 +1684,7 @@ const FOCUS_SUPPRESSION_MS = 200;
 
       try {
         // Strict ISO format validation: YYYY-MM-DD
-        const match = isoString.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoString);
         if (!match) return null;
 
         const year = parseInt(match[1], 10);
@@ -1624,6 +1707,8 @@ const FOCUS_SUPPRESSION_MS = 200;
 
         return date;
       } catch (error) {
+        // An ISO string we cannot read is reported as "no date"; log why.
+        this._logRecoveredError('_parseDateFromISO', error);
         return null;
       }
     }
@@ -1675,57 +1760,91 @@ const FOCUS_SUPPRESSION_MS = 200;
       }
     }
 
-    _generateMonthYearOptions() {
-      // Use 1900-2099 range but respect min/max constraints
+    /**
+     * A `min`/`max` bound as a Date, or null when it is absent or unparseable.
+     *
+     * Collapsing "unset" and "invalid" to null is what lets callers drop the Number.isNaN guards:
+     * the original ignored an unparseable bound (its NaN comparisons were false either way), and a
+     * null bound is ignored the same way.
+     *
+     * @param {?string} value
+     * @returns {?Date}
+     */
+    _parseBoundDate(value) {
+      if (!value) {
+        return null;
+      }
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    /**
+     * The 1900-2099 year span, narrowed to whatever `min`/`max` allow.
+     *
+     * Extracted from _generateMonthYearOptions (SonarCloud S3776).
+     *
+     * @param {?Date} minDate
+     * @param {?Date} maxDate
+     * @returns {{startYear: number, endYear: number}}
+     */
+    _getMonthYearRange(minDate, maxDate) {
       let startYear = 1900;
       let endYear = 2099;
 
       // Apply min/max constraints if specified
-      if (this.min) {
-        const minDate = new Date(this.min);
-        if (!Number.isNaN(minDate.getTime())) {
-          startYear = Math.max(startYear, minDate.getFullYear());
-        }
+      if (minDate) {
+        startYear = Math.max(startYear, minDate.getFullYear());
+      }
+      if (maxDate) {
+        endYear = Math.min(endYear, maxDate.getFullYear());
       }
 
-      if (this.max) {
-        const maxDate = new Date(this.max);
-        if (!Number.isNaN(maxDate.getTime())) {
-          endYear = Math.min(endYear, maxDate.getFullYear());
-        }
+      return { startYear, endYear };
+    }
+
+    /**
+     * True when any day of `year`/`month` is still selectable: the month's last day is on or after
+     * `min`, and its first day is on or before `max`.
+     *
+     * Extracted from _generateMonthYearOptions (SonarCloud S3776). Equivalent to the two inline
+     * checks it replaces: the original's `this.max && isValidMonthYear` guard only short-circuited
+     * the max test once min had already failed, which the early return here does directly.
+     *
+     * The bounds are passed in already parsed. This runs up to 2400 times per call, and building
+     * them here meant re-parsing `min` and `max` on every one of those iterations - which the
+     * original did too, so this is a straight saving rather than a behaviour change.
+     *
+     * @param {number} year
+     * @param {number} month Zero-based, as Date uses.
+     * @param {?Date} minDate
+     * @param {?Date} maxDate
+     * @returns {boolean}
+     */
+    _isMonthYearInRange(year, month, minDate, maxDate) {
+      // Last day of the month, i.e. day 0 of the next one.
+      if (minDate && new Date(year, month + 1, 0) < minDate) {
+        return false;
       }
+      return !(maxDate && new Date(year, month, 1) > maxDate);
+    }
+
+    _generateMonthYearOptions() {
+      // Use 1900-2099 range but respect min/max constraints. Both bounds are parsed once here
+      // rather than inside the loop below.
+      const minDate = this._parseBoundDate(this.min);
+      const maxDate = this._parseBoundDate(this.max);
+      const { startYear, endYear } = this._getMonthYearRange(minDate, maxDate);
 
       this._monthYearOptions = [];
       for (let year = startYear; year <= endYear; year++) {
         for (let month = 0; month < 12; month++) {
-          const date = new Date(year, month, 1);
-
           // Check if this month-year combination is within min/max range
-          let isValidMonthYear = true;
-
-          if (this.min) {
-            const minDate = new Date(this.min);
-            const endOfMonth = new Date(year, month + 1, 0); // Last day of the month
-            if (endOfMonth < minDate) {
-              isValidMonthYear = false;
-            }
-          }
-
-          if (this.max && isValidMonthYear) {
-            const maxDate = new Date(this.max);
-            if (date > maxDate) {
-              isValidMonthYear = false;
-            }
-          }
-
-          if (isValidMonthYear) {
-            const label = new Intl.DateTimeFormat(this._locale, {
-              month: 'long',
-              year: 'numeric',
-            }).format(date);
-
+          if (this._isMonthYearInRange(year, month, minDate, maxDate)) {
             this._monthYearOptions.push({
-              label,
+              label: new Intl.DateTimeFormat(this._locale, {
+                month: 'long',
+                year: 'numeric',
+              }).format(new Date(year, month, 1)),
               value: `${year}-${month}`,
               year,
               month,
@@ -2337,7 +2456,8 @@ const FOCUS_SUPPRESSION_MS = 200;
         return new Intl.DateTimeFormat(locale, {
           month: 'long',
         }).format(date);
-      } catch (e) {
+      } catch (error) {
+        this._logRecoveredError('_getMonthName', error);
         // ⚠️ Fallback: Use i18n for English months
         const lang = locale.split('-')[0];
         const monthIndex = date.getMonth();
@@ -2371,62 +2491,62 @@ const FOCUS_SUPPRESSION_MS = 200;
       return date.getFullYear();
     }
 
+    /**
+     * True when a document-level click originated inside this element: on the popover, the input
+     * wrapper or the field wrapper (or any descendant), anywhere along the event's composed path,
+     * or anywhere inside the shadow root.
+     *
+     * Extracted from _handleDocumentClick (SonarCloud S3776). The five checks and their order are
+     * unchanged; the sequential `if (!isInsideComponent && ...)` chain is just expressed as
+     * short-circuiting returns, which is equivalent because none of the checks has a side effect.
+     * The composed-path walk switches from `forEach` to `some` for the same reason.
+     *
+     * @param {Event} e
+     * @returns {boolean}
+     */
+    _isClickInsideComponent(e) {
+      const { target } = e;
+
+      // Elements this component owns and that a click may legitimately land on.
+      const owned = [
+        this.shadowRoot.querySelector('#calendarPopover'),
+        this.shadowRoot.querySelector('.input-wrapper'),
+        this.shadowRoot.querySelector('.field-wrapper'),
+      ];
+
+      // First to third check: the popover, the input wrapper, the field wrapper.
+      if (owned.some((node) => node && (target === node || node.contains(target)))) {
+        return true;
+      }
+
+      // Fourth check: walk the composed path, which sees through shadow boundaries that the
+      // target alone does not.
+      const path = e.composedPath ? e.composedPath() : [target];
+      if (
+        path.some((element) => element === this || (element.host && element.host === this) || owned.includes(element))
+      ) {
+        return true;
+      }
+
+      // Fifth check: anywhere inside our shadow root.
+      return !!this.shadowRoot && this.shadowRoot.contains(target);
+    }
+
     _handleDocumentClick(e) {
       if (!this._isCalendarOpen) return;
 
-      // Check if click target is within this element's shadow DOM or calendar popover
-      const { target } = e;
-      let isInsideComponent = false;
-
-      // Get all relevant elements
-      const calendarPopover = this.shadowRoot.querySelector('#calendarPopover');
-      const inputWrapper = this.shadowRoot.querySelector('.input-wrapper');
-      const fieldWrapper = this.shadowRoot.querySelector('.field-wrapper');
-
-      // First check: Is it within the calendar popover specifically?
-      if (calendarPopover && (target === calendarPopover || calendarPopover.contains(target))) {
-        isInsideComponent = true;
-      }
-
-      // Second check: Is it within the input wrapper area?
-      if (!isInsideComponent && inputWrapper && (target === inputWrapper || inputWrapper.contains(target))) {
-        isInsideComponent = true;
-      }
-
-      // Third check: Is it within the field wrapper?
-      if (!isInsideComponent && fieldWrapper && (target === fieldWrapper || fieldWrapper.contains(target))) {
-        isInsideComponent = true;
-      }
-
-      // Fourth check: Walk up the composed path to check for our component
-      if (!isInsideComponent) {
-        const path = e.composedPath ? e.composedPath() : [target];
-        path.forEach((element) => {
-          if (element === this || (element.host && element.host === this)) {
-            isInsideComponent = true;
-          }
-          // Also check specific elements
-          if (element === calendarPopover || element === inputWrapper || element === fieldWrapper) {
-            isInsideComponent = true;
-          }
-        });
-      }
-
-      // Fifth check: Is it within our shadow root?
-      if (!isInsideComponent && this.shadowRoot && this.shadowRoot.contains(target)) {
-        isInsideComponent = true;
-      }
-
       // Only close if we're absolutely sure it's outside and not during active interaction
-      if (!isInsideComponent && !this._interactingWithCalendar) {
-        this._closeCalendar();
+      if (this._isClickInsideComponent(e) || this._interactingWithCalendar) {
+        return;
+      }
 
-        // Also close year dropdown if open
-        const yearOptions = this.shadowRoot.querySelector('#yearOptions');
-        if (yearOptions) {
-          yearOptions.classList.remove('open');
-          this._isYearDropdownOpen = false;
-        }
+      this._closeCalendar();
+
+      // Also close year dropdown if open
+      const yearOptions = this.shadowRoot.querySelector('#yearOptions');
+      if (yearOptions) {
+        yearOptions.classList.remove('open');
+        this._isYearDropdownOpen = false;
       }
     }
 
@@ -2993,8 +3113,7 @@ const FOCUS_SUPPRESSION_MS = 200;
         }
       }
       if (popover) {
-        popover.classList.remove('open');
-        popover.classList.remove('open-up');
+        popover.classList.remove('open', 'open-up');
         popover.style.left = '';
         popover.style.right = '';
         popover.style.top = '';
@@ -3179,6 +3298,28 @@ const FOCUS_SUPPRESSION_MS = 200;
       }
     }
 
+    // True when `date` falls inside the month currently rendered in the grid. Extracted from
+    // _handleGridKeydown (SonarCloud S3776), where this pair of comparisons appeared seven times.
+    _isInViewedMonth(date) {
+      return date.getMonth() === this._viewDate.getMonth() && date.getFullYear() === this._viewDate.getFullYear();
+    }
+
+    /**
+     * Applies a focus move that must not cross a month boundary: the move lands only when the
+     * target day is still inside the month on screen, otherwise nothing happens.
+     *
+     * Extracted from _handleGridKeydown (SonarCloud S3776), where the six arrow/Home/End cases
+     * repeated this block verbatim.
+     *
+     * @param {Date} targetDate
+     */
+    _focusDateWithinViewedMonth(targetDate) {
+      // Only navigate within current month - don't allow month transitions
+      if (this._isInViewedMonth(targetDate)) {
+        this._focusDate(targetDate, false);
+      }
+    }
+
     _handleGridKeydown(e) {
       const currentButton = e.target;
       if (!currentButton.classList.contains('calendar-day')) return;
@@ -3186,106 +3327,48 @@ const FOCUS_SUPPRESSION_MS = 200;
       const currentDate = new Date(currentButton.dataset.date);
       const targetDate = new Date(currentDate);
 
+      /*
+       * Day offsets for the keys that move focus inside the month on screen. Replaces six
+       * switch cases that differed only by this number (SonarCloud S3776) — the offsets are
+       * exactly those the cases used, and every one of them ran the same
+       * "move, then focus if still in the viewed month" block that
+       * _focusDateWithinViewedMonth now holds.
+       *
+       * Home/End are relative to the focused day's weekday, so the table is rebuilt per event
+       * rather than hoisted. A Map (not an object literal) so an unrelated `e.key` such as
+       * "toString" cannot match through Object.prototype, and without needing Object.hasOwn,
+       * which is ES2022 and above this repo's runtime floor (see S6653 on ELEMENTS-2077).
+       */
+      const dayOffsets = new Map([
+        ['ArrowLeft', -1],
+        ['ArrowRight', 1],
+        ['ArrowUp', -7],
+        ['ArrowDown', 7],
+        ['Home', -currentDate.getDay()],
+        ['End', 6 - currentDate.getDay()],
+      ]);
+
       // Stop bubbling so parent lists (e.g. iron-list in nuxeo-data-table) do not handle
       // Arrow keys / Enter and steal focus while the calendar is open (WEBUI-1986 follow-up).
+      if (dayOffsets.has(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        targetDate.setDate(currentDate.getDate() + dayOffsets.get(e.key));
+        this._focusDateWithinViewedMonth(targetDate);
+        return;
+      }
+
       switch (e.key) {
         case 'Enter':
         case ' ':
           e.preventDefault();
           e.stopPropagation();
-          // Allow selection of any current month date, not just non-empty
-          if (!currentButton.disabled && currentButton.classList.contains('calendar-day')) {
-            // Check if it's a valid current month date
-            const isCurrentMonth =
-              currentDate.getMonth() === this._viewDate.getMonth() &&
-              currentDate.getFullYear() === this._viewDate.getFullYear();
-            if (isCurrentMonth) {
-              this._selectDate(currentDate);
-            }
+          // Allow selection of any current month date, not just non-empty.
+          // The classList re-check the original had here is guaranteed by the guard above.
+          if (!currentButton.disabled && this._isInViewedMonth(currentDate)) {
+            this._selectDate(currentDate);
           }
           break;
-
-        case 'ArrowLeft':
-          e.preventDefault();
-          e.stopPropagation();
-          targetDate.setDate(currentDate.getDate() - 1);
-          // Only navigate within current month - don't allow month transitions
-          if (
-            targetDate.getMonth() === this._viewDate.getMonth() &&
-            targetDate.getFullYear() === this._viewDate.getFullYear()
-          ) {
-            this._focusDate(targetDate, false);
-          }
-          break;
-
-        case 'ArrowRight':
-          e.preventDefault();
-          e.stopPropagation();
-          targetDate.setDate(currentDate.getDate() + 1);
-          // Only navigate within current month - don't allow month transitions
-          if (
-            targetDate.getMonth() === this._viewDate.getMonth() &&
-            targetDate.getFullYear() === this._viewDate.getFullYear()
-          ) {
-            this._focusDate(targetDate, false);
-          }
-          break;
-
-        case 'ArrowUp':
-          e.preventDefault();
-          e.stopPropagation();
-          targetDate.setDate(currentDate.getDate() - 7);
-          // Only navigate within current month - don't allow month transitions
-          if (
-            targetDate.getMonth() === this._viewDate.getMonth() &&
-            targetDate.getFullYear() === this._viewDate.getFullYear()
-          ) {
-            this._focusDate(targetDate, false);
-          }
-          break;
-
-        case 'ArrowDown':
-          e.preventDefault();
-          e.stopPropagation();
-          targetDate.setDate(currentDate.getDate() + 7);
-          // Only navigate within current month - don't allow month transitions
-          if (
-            targetDate.getMonth() === this._viewDate.getMonth() &&
-            targetDate.getFullYear() === this._viewDate.getFullYear()
-          ) {
-            this._focusDate(targetDate, false);
-          }
-          break;
-
-        case 'Home': {
-          e.preventDefault();
-          e.stopPropagation();
-          const dayOfWeek = currentDate.getDay();
-          targetDate.setDate(currentDate.getDate() - dayOfWeek);
-          // Only navigate within current month - don't allow month transitions
-          if (
-            targetDate.getMonth() === this._viewDate.getMonth() &&
-            targetDate.getFullYear() === this._viewDate.getFullYear()
-          ) {
-            this._focusDate(targetDate, false);
-          }
-          break;
-        }
-
-        case 'End': {
-          e.preventDefault();
-          e.stopPropagation();
-          const daysToEnd = 6 - currentDate.getDay();
-          targetDate.setDate(currentDate.getDate() + daysToEnd);
-          // Only navigate within current month - don't allow month transitions
-          if (
-            targetDate.getMonth() === this._viewDate.getMonth() &&
-            targetDate.getFullYear() === this._viewDate.getFullYear()
-          ) {
-            this._focusDate(targetDate, false);
-          }
-          break;
-        }
 
         case 'PageUp':
           e.preventDefault();
@@ -3366,89 +3449,60 @@ const FOCUS_SUPPRESSION_MS = 200;
       }, 50);
     }
 
+    /**
+     * Focuses the day button for `date`, but only when the rendered month actually has a focusable
+     * button for it.
+     *
+     * Extracted from _findAndFocusNearestValidDate (SonarCloud S3776), which repeated this block
+     * five times. The inline `${year}-${padded month}-${padded day}` construction is replaced by
+     * the existing _dateToISO helper, which builds the identical string; for an invalid date it
+     * returns '' instead of "NaN-NaN-NaN", and neither selector matches anything.
+     *
+     * @param {?Date} date Candidate date; a falsy value simply fails the attempt.
+     * @returns {boolean} True when the button was found and focused.
+     */
+    _tryFocusDayButton(date) {
+      if (!date) {
+        return false;
+      }
+      const button = this.shadowRoot.querySelector(`[data-date="${this._dateToISO(date)}"]`);
+      if (!button || button.disabled || button.classList.contains('empty')) {
+        return false;
+      }
+      this._focusedDate = new Date(date);
+      button.focus();
+      return true;
+    }
+
     _findAndFocusNearestValidDate(targetDate) {
       // Find the first valid date in the current month
       const year = this._viewDate.getFullYear();
       const month = this._viewDate.getMonth();
+      const isInViewedMonth = (date) => !!date && date.getMonth() === month && date.getFullYear() === year;
 
-      // If targetDate is provided and it's in the current month, try to use it
-      if (targetDate && targetDate.getMonth() === month && targetDate.getFullYear() === year) {
-        const targetYear = targetDate.getFullYear();
-        const targetMonth = String(targetDate.getMonth() + 1).padStart(2, '0');
-        const targetDay = String(targetDate.getDate()).padStart(2, '0');
-        const dateISO = `${targetYear}-${targetMonth}-${targetDay}`;
-
-        const button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
-        if (button && !button.disabled && !button.classList.contains('empty')) {
-          this._focusedDate = new Date(targetDate);
-          button.focus();
-          return;
-        }
-      }
-
-      // Try the selected date first if it's in the current month
-      if (this._selectedDate && this._selectedDate.getMonth() === month && this._selectedDate.getFullYear() === year) {
-        // Use local date formatting to avoid timezone issues
-        const selYear = this._selectedDate.getFullYear();
-        const selMonth = String(this._selectedDate.getMonth() + 1).padStart(2, '0');
-        const selDay = String(this._selectedDate.getDate()).padStart(2, '0');
-        const dateISO = `${selYear}-${selMonth}-${selDay}`;
-
-        const button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
-        if (button && !button.disabled && !button.classList.contains('empty')) {
-          this._focusedDate = new Date(this._selectedDate);
-          button.focus();
-          return;
-        }
-      }
-
-      // Try today if it's in the current month
-      if (this._today.getMonth() === month && this._today.getFullYear() === year) {
-        // Use local date formatting to avoid timezone issues
-        const todayYear = this._today.getFullYear();
-        const todayMonth = String(this._today.getMonth() + 1).padStart(2, '0');
-        const todayDay = String(this._today.getDate()).padStart(2, '0');
-        const dateISO = `${todayYear}-${todayMonth}-${todayDay}`;
-
-        const button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
-        if (button && !button.disabled && !button.classList.contains('empty')) {
-          this._focusedDate = new Date(this._today);
-          button.focus();
-          return;
-        }
-      }
-
-      // Try the first day of the month
-      const firstValidDate = new Date(year, month, 1);
-      // Use local date formatting to avoid timezone issues
-      const firstYear = firstValidDate.getFullYear();
-      const firstMonth = String(firstValidDate.getMonth() + 1).padStart(2, '0');
-      const firstDay = String(firstValidDate.getDate()).padStart(2, '0');
-      let dateISO = `${firstYear}-${firstMonth}-${firstDay}`;
-
-      let button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
-
-      if (button && !button.disabled && !button.classList.contains('empty')) {
-        this._focusedDate = firstValidDate;
-        button.focus();
+      /*
+       * Preference order, unchanged from the five sequential blocks this replaces: the requested
+       * target, then the current selection, then today, then the 1st of the month. The first three
+       * are tried only when they fall inside the month on screen; `some` short-circuits on the
+       * first success exactly as the original's early returns did.
+       */
+      const preferred = [
+        isInViewedMonth(targetDate) ? targetDate : null,
+        isInViewedMonth(this._selectedDate) ? this._selectedDate : null,
+        isInViewedMonth(this._today) ? this._today : null,
+        new Date(year, month, 1),
+      ];
+      if (preferred.some((date) => this._tryFocusDayButton(date))) {
         return;
       }
 
-      // Otherwise, find any valid date in the current month
+      // Otherwise, find any valid date in the current month. The 1st is retried here, which is a
+      // no-op: it has just failed above.
       for (let day = 1; day <= 31; day++) {
-        const testDate = new Date(year, month, day);
-        if (testDate.getMonth() !== month) break; // Gone past the end of the month
+        const candidate = new Date(year, month, day);
+        if (candidate.getMonth() !== month) break; // Gone past the end of the month
 
-        // Use local date formatting to avoid timezone issues
-        const testYear = testDate.getFullYear();
-        const testMonth = String(testDate.getMonth() + 1).padStart(2, '0');
-        const testDay = String(testDate.getDate()).padStart(2, '0');
-        dateISO = `${testYear}-${testMonth}-${testDay}`;
-
-        button = this.shadowRoot.querySelector(`[data-date="${dateISO}"]`);
-        if (button && !button.disabled && !button.classList.contains('empty')) {
-          this._focusedDate = testDate;
-          button.focus();
+        if (this._tryFocusDayButton(candidate)) {
           return;
         }
       }
@@ -3509,7 +3563,9 @@ const FOCUS_SUPPRESSION_MS = 200;
         }
 
         return null;
-      } catch (e) {
+      } catch (error) {
+        // Unparseable input is reported as "no date"; log why.
+        this._logRecoveredError('_parseWithFormat', error);
         return null;
       }
     }
@@ -3653,12 +3709,13 @@ const FOCUS_SUPPRESSION_MS = 200;
           this.notifyPath('value');
         }
       } catch (error) {
-        // Error setting value safely - using fallback
-        // Last resort - try direct assignment
+        // Error setting value safely - last resort is direct assignment.
+        this._logRecoveredError('_safeSetValue', error);
         try {
           this.value = newValue;
         } catch (fallbackError) {
-          // Failed to set value with fallback - silent error
+          // Direct assignment failed too — log separately so both root causes are visible.
+          this._logRecoveredError('_safeSetValue (direct assignment)', fallbackError);
         }
       }
     }
@@ -3831,8 +3888,9 @@ const FOCUS_SUPPRESSION_MS = 200;
           // Canonicalize locale (handles casing, region format, etc.)
           const [canonicalLocale] = Intl.getCanonicalLocales(normalizedLocale);
           normalizedLocale = canonicalLocale;
-        } catch (e) {
+        } catch (error) {
           // Fallback safely
+          this._logRecoveredError('_getDatePlaceholder (locale canonicalisation)', error);
           normalizedLocale = 'en-US';
         }
 
@@ -3872,8 +3930,9 @@ const FOCUS_SUPPRESSION_MS = 200;
             return part.value; // keep separators like "/", "-", "."
           })
           .join('');
-      } catch (e) {
+      } catch (error) {
         // Safe fallback (still respects locale order)
+        this._logRecoveredError('_getDatePlaceholder', error);
         try {
           const locale = navigator.language;
 
@@ -3887,6 +3946,7 @@ const FOCUS_SUPPRESSION_MS = 200;
             })
             .join('');
         } catch (error) {
+          this._logRecoveredError('_getDatePlaceholder (locale fallback)', error);
           return 'dd/mm/yyyy';
         }
       }
@@ -4102,6 +4162,7 @@ const FOCUS_SUPPRESSION_MS = 200;
         // Reset the flag after all updates are done
         this._preventInputUpdate = false;
       } catch (error) {
+        this._logRecoveredError('_valueChanged', error);
         this._selectedDate = null;
         // Don't clear input if there are persistent errors - preserve user input
         if (!this._userIsTyping && !this._errorPersists) {
@@ -4191,9 +4252,10 @@ const FOCUS_SUPPRESSION_MS = 200;
         const popHeight = popRect.height || 320;
         const popWidth = popRect.width || 280;
 
-        // Position using fixed positioning for modal-like behavior
-        let { left } = rect;
-        let top = rect.bottom + 4; // 4px margin
+        // Position using fixed positioning for modal-like behavior.
+        // Both coordinates are assigned on every branch below, so they start unset.
+        let left;
+        let top;
         const minVerticalPadding = 8; // Minimum padding from viewport edges
 
         // Smart vertical positioning with better edge handling
@@ -4246,15 +4308,12 @@ const FOCUS_SUPPRESSION_MS = 200;
           left = Math.max(minLeft, Math.min(maxLeft, preferredLeft));
         }
 
-        // Additional adjustment for extreme edge cases
-        if (left === minLeft && rect.left < minLeft) {
-          // If we're at minimum left and trigger is also at edge, try to center
-          const centerLeft = (viewportW - popWidth) / 2;
-          if (centerLeft >= minLeft && centerLeft <= maxLeft) {
-            left = centerLeft;
-          }
-        } else if (left === maxLeft && rect.right > viewportW - minPadding) {
-          // If we're at maximum right and trigger is also at edge, try to center
+        // Additional adjustment for extreme edge cases: the popover was clamped to a
+        // viewport edge *and* the trigger itself sits at (or past) that same edge. Left and
+        // right both centre the popover, so the two cases share one branch.
+        const clampedAtLeftEdge = left === minLeft && rect.left < minLeft;
+        const clampedAtRightEdge = left === maxLeft && rect.right > viewportW - minPadding;
+        if (clampedAtLeftEdge || clampedAtRightEdge) {
           const centerLeft = (viewportW - popWidth) / 2;
           if (centerLeft >= minLeft && centerLeft <= maxLeft) {
             left = centerLeft;
@@ -4402,39 +4461,65 @@ const FOCUS_SUPPRESSION_MS = 200;
     }
 
     /**
-     * Update error display in DOM
+     * What #errorText should do for the given validity: show a message, clear itself, or be left
+     * exactly as it is.
+     *
+     * Extracted from _updateErrorDisplay (SonarCloud S3776). Reaching past the first check means
+     * `!isValid && this._showErrors`, which is precisely the original's outer condition, so the
+     * two message branches below are unchanged and in the same order.
+     *
+     * The 'keep' case is not an oversight. A field that is invalid and showing errors but has
+     * neither a required-field violation nor an `errorMessage` fell through both inner branches
+     * and kept whatever was already on screen. That is behaviour, and it is preserved here.
+     *
+     * @param {boolean} isValid
+     * @returns {{action: string, message: (string|undefined)}} action is 'show', 'clear' or 'keep'.
+     */
+    _getErrorDisplayAction(isValid) {
+      // Clear errors when valid OR when _showErrors is false (i.e. before the first submit)
+      if (isValid || !this._showErrors) {
+        return { action: 'clear' };
+      }
+      if (this.required && (!this.value || this.value.trim() === '')) {
+        // Use dynamic error message for required fields
+        return { action: 'show', message: this._generateRequiredMessage() };
+      }
+      if (this.errorMessage) {
+        // Use the current error message for other validation errors
+        return { action: 'show', message: this.errorMessage };
+      }
+      return { action: 'keep' };
+    }
+
+    /**
+     * Update error display in DOM, applying whatever _getErrorDisplayAction decides.
+     *
+     * @param {boolean} isValid
      */
     _updateErrorDisplay(isValid) {
       const errorEl = this.shadowRoot.querySelector('#errorText');
+      // Both of the original's branches were guarded on errorEl, so a missing element did nothing.
+      if (!errorEl) {
+        return;
+      }
 
-      if (!isValid && this._showErrors && errorEl) {
-        // Show error message only if _showErrors is true (after form submit)
-        if (this.required && (!this.value || this.value.trim() === '')) {
-          // Use dynamic error message for required fields
-          errorEl.textContent = this._generateRequiredMessage();
-          errorEl.hidden = false;
+      const { action, message } = this._getErrorDisplayAction(isValid);
 
-          // Ensure invalid attribute is set on host
-          if (!this.hasAttribute('invalid')) {
-            this.setAttribute('invalid', '');
-          }
-        } else if (this.errorMessage) {
-          // Use the current error message for other validation errors
-          errorEl.textContent = this.errorMessage;
-          errorEl.hidden = false;
+      if (action === 'show') {
+        errorEl.textContent = message;
+        errorEl.hidden = false;
 
-          // Ensure invalid attribute is set on host
-          if (!this.hasAttribute('invalid')) {
-            this.setAttribute('invalid', '');
-          }
+        // Ensure invalid attribute is set on host
+        if (!this.hasAttribute('invalid')) {
+          this.setAttribute('invalid', '');
         }
-      } else if ((isValid || !this._showErrors) && errorEl) {
-        // Clear errors when valid OR when _showErrors is false
+      } else if (action === 'clear') {
         errorEl.hidden = true;
         if (this.hasAttribute('invalid')) {
           this.removeAttribute('invalid');
         }
       }
+      // action === 'keep': leave the element exactly as it is.
     }
 
     /**
@@ -4478,55 +4563,66 @@ const FOCUS_SUPPRESSION_MS = 200;
       return this._getLocalizedText('required');
     }
 
+    /**
+     * Which of the `min`/`max` bounds `currentDate` violates, or null when it is in range.
+     *
+     * Extracted from _getValidity (SonarCloud S3776). Both of the original's blocks set an
+     * identical errorReason and errorMessage, so the caller does not need to know which bound it
+     * was; the min check still runs first, and each bound is still only tested when set.
+     *
+     * @param {Object} currentDate A moment instance.
+     * @returns {?string} 'min', 'max' or null.
+     */
+    _getViolatedBound(currentDate) {
+      if (this.min && currentDate.isBefore(this._moment(this._parseDateOnly(this.min)), 'day')) {
+        return 'min';
+      }
+      if (this.max && currentDate.isAfter(this._moment(this._parseDateOnly(this.max)), 'day')) {
+        return 'max';
+      }
+      return null;
+    }
+
     _getValidity() {
+      const isEmpty = !this.value || this.value.trim() === '';
+
       // Check required field first
-      if (this.required && (!this.value || this.value.trim() === '')) {
+      if (this.required && isEmpty) {
         this.errorReason = 'required';
         // Generate dynamic error message using field label
         this.errorMessage = this._generateRequiredMessage();
         return false;
       }
 
-      // If field is not required and empty, it's valid
-      if (!this.required && (!this.value || this.value.trim() === '')) {
+      // If field is not required and empty, it's valid. Reaching here already rules out
+      // `required && isEmpty`, so isEmpty on its own implies the original's `!this.required`.
+      if (isEmpty) {
         this.errorReason = '';
         this.errorMessage = '';
         return true;
       }
 
-      // If we have a value, check if it's a valid date
-      if (this.value) {
-        const currentDate = this._moment(this.value);
+      // Past the guards above, this.value is necessarily a non-blank string, so the original's
+      // `if (this.value)` wrapper could never be false here and has been dropped.
+      const currentDate = this._moment(this.value);
 
-        // Check if the date itself is valid
-        if (!currentDate.isValid()) {
-          this.errorReason = 'invalidDate';
-          this.errorMessage = this._getLocalizedText('invalidDate');
-          return false;
-        }
+      // Check if the date itself is valid
+      if (!currentDate.isValid()) {
+        this.errorReason = 'invalidDate';
+        this.errorMessage = this._getLocalizedText('invalidDate');
+        return false;
+      }
 
-        // Get current locale format for error messages
-        const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
-        moment.locale(userLocale);
-        // Check min constraint
-        if (this.min) {
-          const minDate = this._moment(this._parseDateOnly(this.min));
-          if (currentDate.isBefore(minDate, 'day')) {
-            this.errorReason = 'outOfRange';
-            this.errorMessage = this._buildOutOfRangeMessage(currentDate.toDate());
-            return false;
-          }
-        }
+      // Get current locale format for error messages. This must stay ahead of the bound check
+      // below: _buildOutOfRangeMessage formats against moment's active locale.
+      const userLocale = navigator.languages !== undefined ? navigator.languages[0] : navigator.language;
+      moment.locale(userLocale);
 
-        // Check max constraint
-        if (this.max) {
-          const maxDate = this._moment(this._parseDateOnly(this.max));
-          if (currentDate.isAfter(maxDate, 'day')) {
-            this.errorReason = 'outOfRange';
-            this.errorMessage = this._buildOutOfRangeMessage(currentDate.toDate());
-            return false;
-          }
-        }
+      // Check min/max constraints
+      if (this._getViolatedBound(currentDate)) {
+        this.errorReason = 'outOfRange';
+        this.errorMessage = this._buildOutOfRangeMessage(currentDate.toDate());
+        return false;
       }
 
       // If we reach here, the date is valid - clear any error state
@@ -4771,34 +4867,11 @@ const FOCUS_SUPPRESSION_MS = 200;
     _isValidMomentFormat(format) {
       if (!format || typeof format !== 'string') return false;
 
-      // Allowed moment tokens (extend if needed)
-      const validTokens = [
-        'D',
-        'DD',
-        'Do',
-        'M',
-        'MM',
-        'MMM',
-        'MMMM',
-        'YY',
-        'YYYY',
-        'H',
-        'HH',
-        'h',
-        'hh',
-        'm',
-        'mm',
-        's',
-        'ss',
-        'A',
-        'a',
-      ];
-
       // Extract tokens from format string
       const tokens = format.match(/[A-Za-z]+/g) || [];
 
       // Check if every token is valid
-      return tokens.every((token) => validTokens.includes(token));
+      return tokens.every((token) => VALID_MOMENT_TOKENS.has(token));
     }
 
     _selectYear(e) {
@@ -4854,87 +4927,121 @@ const FOCUS_SUPPRESSION_MS = 200;
     }
 
     _handleCalendarIconKeydown(e) {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        e.stopPropagation();
-        this._openCalendar(e, true); // Opened via keyboard
-      } else if (e.key === 'ArrowDown' || e.key === 'F4') {
+      // Enter / Space activate the icon; ArrowDown / F4 are the WAI-ARIA combobox
+      // shortcuts for opening the popup. All four open the calendar in keyboard mode.
+      const opensCalendar = e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'F4';
+      if (opensCalendar) {
         e.preventDefault();
         e.stopPropagation();
         this._openCalendar(e, true); // Opened via keyboard
       }
     }
 
+    /**
+     * Moves focus `delta` options within the open year list, clamped at both ends, keeping the
+     * roving tabindex in sync and scrolling the new option into view.
+     *
+     * Hoisted verbatim out of _handleYearDropdownKeydown, where it was a local closure and the
+     * single largest contributor to that function's cognitive complexity (SonarCloud S3776). It
+     * captured nothing but `this`, so the move is mechanical.
+     *
+     * @param {number} delta Options to move by; Home/End pass a value large enough to saturate
+     *   the clamp.
+     */
+    _moveYearOptionFocus(delta) {
+      const yearOptions = this.shadowRoot.querySelector('#yearOptions');
+      if (!yearOptions || !yearOptions.classList.contains('open')) return;
+      const buttons = Array.from(yearOptions.querySelectorAll('.year-option'));
+      if (!buttons.length) return;
+      let current = buttons.findIndex((b) => b.tabIndex === 0);
+      if (current < 0) current = 0;
+      let next = current + delta;
+      if (next < 0) next = 0;
+      if (next > buttons.length - 1) next = buttons.length - 1;
+      buttons.forEach((btn, idx) => {
+        btn.tabIndex = idx === next ? 0 : -1;
+      });
+      const btn = buttons[next];
+      btn.focus();
+      if (typeof btn.scrollIntoView === 'function') {
+        btn.scrollIntoView({ block: 'nearest' });
+      }
+    }
+
+    /**
+     * Enter / Space on the year trigger: open the list when it is closed, otherwise activate the
+     * option that currently holds focus, falling back to the one carrying the roving tabindex.
+     *
+     * Extracted from _handleYearDropdownKeydown (SonarCloud S3776) unchanged.
+     */
+    _activateFocusedYearOption() {
+      if (!this._isYearDropdownOpen) {
+        this._toggleYearDropdown();
+        return;
+      }
+      // Select currently focused option
+      const active = this.shadowRoot.activeElement;
+      const focused =
+        active && active.classList.contains('year-option')
+          ? active
+          : this.shadowRoot.querySelector('#yearOptions .year-option[tabindex="0"]');
+      if (focused) {
+        focused.click();
+      }
+    }
+
     _handleYearDropdownKeydown(e) {
-      const moveWithinOptions = (delta) => {
-        const yearOptions = this.shadowRoot.querySelector('#yearOptions');
-        if (!yearOptions || !yearOptions.classList.contains('open')) return;
-        const buttons = Array.from(yearOptions.querySelectorAll('.year-option'));
-        if (!buttons.length) return;
-        let current = buttons.findIndex((b) => b.tabIndex === 0);
-        if (current < 0) current = 0;
-        let next = current + delta;
-        if (next < 0) next = 0;
-        if (next > buttons.length - 1) next = buttons.length - 1;
-        buttons.forEach((btn, idx) => {
-          btn.tabIndex = idx === next ? 0 : -1;
-        });
-        const btn = buttons[next];
-        btn.focus();
-        if (typeof btn.scrollIntoView === 'function') {
-          btn.scrollIntoView({ block: 'nearest' });
+      /*
+       * The key handling below is a reordering of an eight-branch `else if` chain (SonarCloud
+       * S3776). Reordering is safe because the branches are mutually exclusive on `e.key`, and
+       * each branch keeps its own preventDefault/stopPropagation behaviour verbatim — including
+       * Escape's conditional one and Tab's deliberate absence.
+       *
+       * Maps rather than object literals so an unrelated `e.key` such as "toString" cannot match
+       * through Object.prototype, and without needing Object.hasOwn, which is ES2022 and above
+       * this repo's runtime floor (see S6653 on ELEMENTS-2077).
+       */
+
+      // Keys that jump within the options list. Home/End saturate the clamp in
+      // _moveYearOptionFocus; PageUp/PageDown move by ten.
+      const jumpDeltas = new Map([
+        ['Home', -9999],
+        ['End', 9999],
+        ['PageUp', -10],
+        ['PageDown', 10],
+      ]);
+      // Arrow keys step by one when the list is open, and otherwise open it.
+      const stepDeltas = new Map([
+        ['ArrowDown', 1],
+        ['ArrowUp', -1],
+      ]);
+
+      if (jumpDeltas.has(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        this._moveYearOptionFocus(jumpDeltas.get(e.key));
+        return;
+      }
+
+      if (stepDeltas.has(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (this._isYearDropdownOpen) {
+          this._moveYearOptionFocus(stepDeltas.get(e.key));
+        } else {
+          this._toggleYearDropdown();
         }
-      };
+        return;
+      }
 
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         e.stopPropagation();
-        if (!this._isYearDropdownOpen) {
-          this._toggleYearDropdown();
-        } else {
-          // Select currently focused option
-          // max-len: break into multiple lines
-          const focused =
-            this.shadowRoot.activeElement && this.shadowRoot.activeElement.classList.contains('year-option')
-              ? this.shadowRoot.activeElement
-              : this.shadowRoot.querySelector('#yearOptions .year-option[tabindex="0"]');
-          if (focused) {
-            focused.click();
-          }
-        }
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        e.stopPropagation();
-        if (this._isYearDropdownOpen) {
-          moveWithinOptions(+1);
-        } else {
-          this._toggleYearDropdown();
-        }
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        e.stopPropagation();
-        if (this._isYearDropdownOpen) {
-          moveWithinOptions(-1);
-        } else {
-          this._toggleYearDropdown();
-        }
-      } else if (e.key === 'Home') {
-        e.preventDefault();
-        e.stopPropagation();
-        moveWithinOptions(-9999);
-      } else if (e.key === 'End') {
-        e.preventDefault();
-        e.stopPropagation();
-        moveWithinOptions(9999);
-      } else if (e.key === 'PageUp') {
-        e.preventDefault();
-        e.stopPropagation();
-        moveWithinOptions(-10);
-      } else if (e.key === 'PageDown') {
-        e.preventDefault();
-        e.stopPropagation();
-        moveWithinOptions(10);
-      } else if (e.key === 'Escape') {
+        this._activateFocusedYearOption();
+        return;
+      }
+
+      if (e.key === 'Escape') {
         // Only consume Escape when the year-options panel is actually open so
         // it just collapses the dropdown. Otherwise let the event bubble up so
         // the popover/document Escape handlers can close the whole calendar
@@ -4944,12 +5051,15 @@ const FOCUS_SUPPRESSION_MS = 200;
           e.stopPropagation();
           this._closeYearDropdown();
         }
-      } else if (e.key === 'Tab') {
-        // Close dropdown when user tabs away
-        this._closeYearDropdown();
-        // Don't prevent default - allow normal tab navigation
+        return;
       }
-      // Tab navigation is handled by central focus management
+
+      if (e.key === 'Tab') {
+        // Close dropdown when user tabs away.
+        // Don't prevent default - allow normal tab navigation.
+        this._closeYearDropdown();
+      }
+      // Any other key: Tab navigation is handled by central focus management
     }
 
     // Helper to get focusable element by name
@@ -5026,6 +5136,7 @@ const FOCUS_SUPPRESSION_MS = 200;
         return this._moment(date).format(format);
       } catch (error) {
         // Safe fallback using Intl.DateTimeFormat
+        this._logRecoveredError('_formatDateForDisplay', error);
         return new Intl.DateTimeFormat(navigator.language).format(date);
       }
     }
@@ -5050,6 +5161,76 @@ const FOCUS_SUPPRESSION_MS = 200;
         .replace(/m(?![a-zA-Z])/g, 'M');
     }
 
+    /**
+     * The format to try first for user input: the explicit `format` property when it is a usable
+     * moment pattern, otherwise the active locale's short date format.
+     *
+     * Extracted from _parseUserInput (SonarCloud S3776). The side effect of flagging an unusable
+     * `format` is kept here rather than lifted out, because the original set `invalid` and
+     * `errorMessage` while still falling back to the locale format, and both halves matter.
+     *
+     * @returns {string} A moment format string.
+     */
+    _resolvePrimaryInputFormat() {
+      const localeFormat = moment.localeData().longDateFormat('L');
+      // No format, or a mixed-case one we cannot trust: use the locale format as fallback.
+      if (!this.format || this._isMixedCaseFormat(this.format)) {
+        return localeFormat;
+      }
+      const normalizedFormat = this._normalizeFormat(this.format);
+      if (this._isValidMomentFormat(normalizedFormat)) {
+        return normalizedFormat;
+      }
+      this.invalid = true;
+      this.errorMessage = `Invalid date format "${this.format}"`;
+      return localeFormat;
+    }
+
+    /**
+     * Turns a moment parse result into a start-of-day `Date`, or null when it is unusable.
+     *
+     * Extracted from _parseUserInput (SonarCloud S3776), where this block appeared four times.
+     * `requirePlausibleYear` exists because the four copies were not identical: the strict
+     * primary-format path returned whatever moment produced, while the three recovery paths also
+     * required the year to fall inside 1900-2200.
+     *
+     * @param {Object} momentDate A moment instance.
+     * @param {boolean} requirePlausibleYear Apply the 1900-2200 sanity window.
+     * @returns {?Date}
+     */
+    _momentToStartOfDay(momentDate, requirePlausibleYear) {
+      if (!momentDate.isValid()) {
+        return null;
+      }
+      const date = momentDate.toDate();
+      date.setHours(0, 0, 0, 0);
+      // Verify it's a logical date
+      if (requirePlausibleYear && (date.getFullYear() < 1900 || date.getFullYear() > 2200)) {
+        return null;
+      }
+      return date;
+    }
+
+    /**
+     * Tries each format in COMMON_INPUT_FORMATS strictly, in order, and returns the first that
+     * yields a plausible start-of-day date.
+     *
+     * Extracted from _parseUserInput (SonarCloud S3776) to keep the recovery chain there flat.
+     * The order is the original's, and `return` on the first hit matches its early return.
+     *
+     * @param {string} trimmedInput
+     * @returns {?Date}
+     */
+    _parseWithCommonFormats(trimmedInput) {
+      for (const format of COMMON_INPUT_FORMATS) {
+        const date = this._momentToStartOfDay(this._moment(trimmedInput, format, true), true);
+        if (date) {
+          return date;
+        }
+      }
+      return null;
+    }
+
     // Professional date parser for user input with comprehensive format support
     _parseUserInput(inputString) {
       if (!inputString || typeof inputString !== 'string') return null;
@@ -5059,101 +5240,42 @@ const FOCUS_SUPPRESSION_MS = 200;
 
       try {
         // Get user's locale with better fallback
-        const userLocale = this._getUserLocale();
-        moment.locale(userLocale);
+        moment.locale(this._getUserLocale());
 
-        let primaryFormat = moment.localeData().longDateFormat('L');
+        const primaryFormat = this._resolvePrimaryInputFormat();
 
-        if (this.format) {
-          // Check for mixed case format and fallback to locale format if detected
-          if (this._isMixedCaseFormat(this.format)) {
-            // Mixed format detected, use locale format as fallback
-            primaryFormat = moment.localeData().longDateFormat('L');
-          } else {
-            const normalizedFormat = this._normalizeFormat(this.format);
-
-            if (this._isValidMomentFormat(normalizedFormat)) {
-              primaryFormat = normalizedFormat;
-            } else {
-              this.invalid = true;
-              this.errorMessage = `Invalid date format "${this.format}"`;
-            }
-          }
+        // Strict parsing with primary format. The input is already in the expected shape, so it is
+        // kept verbatim rather than reformatted, and the plausible-year window is deliberately not
+        // applied here - matching the original, which only checked the year on the recovery paths.
+        const exact = this._momentToStartOfDay(this._moment(trimmedInput, primaryFormat, true), false);
+        if (exact) {
+          return { date: exact, isExactFormat: true };
         }
 
-        // Strict parsing with primary format
-        let momentDate = this._moment(trimmedInput, primaryFormat, true);
+        /*
+         * Everything below is a recovery attempt, in the original's order: lenient parsing with the
+         * primary format, then each common format strictly, then moment's own natural-language
+         * parsing. All of them get reformatted for display, so none counts as an exact-format
+         * match, and all apply the 1900-2200 plausible-year window.
+         *
+         * `||` short-circuits, so each stage runs only if the previous one produced nothing -
+         * exactly like the original's sequential `if (...) return` blocks. Written as a chain
+         * rather than an array of thunks so that this path, which runs on every keystroke,
+         * allocates nothing per call.
+         */
+        const recovered =
+          this._momentToStartOfDay(this._moment(trimmedInput, primaryFormat, false), true) ||
+          this._parseWithCommonFormats(trimmedInput) ||
+          this._momentToStartOfDay(this._moment(trimmedInput), true);
 
-        if (momentDate.isValid()) {
-          const date = momentDate.toDate();
-          date.setHours(0, 0, 0, 0);
-          return { date, isExactFormat: true };
-        }
-
-        // Lenient parsing with primary format
-        momentDate = this._moment(trimmedInput, primaryFormat, false);
-
-        if (momentDate.isValid()) {
-          const date = momentDate.toDate();
-          date.setHours(0, 0, 0, 0);
-          // Verify it's a logical date
-          if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
-            return { date, isExactFormat: false };
-          }
-        }
-
-        // Fallback: Try common date formats if locale parsing fails
-        const commonFormats = [
-          'DD/MM/YYYY',
-          'DD-MM-YYYY',
-          'DD.MM.YYYY',
-          'DD/MM/YY',
-          'DD-MM-YY',
-          'DD.MM.YY',
-          'MM/DD/YYYY',
-          'MM-DD-YYYY',
-          'MM.DD.YYYY',
-          'MM/DD/YY',
-          'MM-DD-YY',
-          'MM.DD.YY',
-          'YYYY-MM-DD',
-          'YYYY/MM/DD',
-          'YYYY.MM.DD',
-          'DD MMM YYYY',
-          'DD MMMM YYYY',
-          'MMM DD, YYYY',
-          'MMMM DD, YYYY',
-          'DD/MM',
-          'MM/DD',
-          'DD-MM',
-          'MM-DD',
-        ];
-
-        for (let i = 0; i < commonFormats.length; i++) {
-          momentDate = this._moment(trimmedInput, commonFormats[i], true);
-          if (momentDate.isValid()) {
-            const date = momentDate.toDate();
-            date.setHours(0, 0, 0, 0);
-
-            if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
-              return { date, isExactFormat: false };
-            }
-          }
-        }
-
-        // Last resort: Try moment's natural language parsing
-        momentDate = this._moment(trimmedInput);
-        if (momentDate.isValid()) {
-          const date = momentDate.toDate();
-          date.setHours(0, 0, 0, 0);
-          // Verify it's a logical date
-          if (date.getFullYear() >= 1900 && date.getFullYear() <= 2200) {
-            return { date, isExactFormat: false };
-          }
+        if (recovered) {
+          return { date: recovered, isExactFormat: false };
         }
 
         return null;
       } catch (error) {
+        // Unparseable input is reported as "no date"; log why.
+        this._logRecoveredError('_parseUserInput', error);
         return null;
       }
     }
@@ -5163,8 +5285,7 @@ const FOCUS_SUPPRESSION_MS = 200;
       // Try multiple sources for locale detection
       const sources = [navigator.languages && navigator.languages[0], navigator.language, this._locale, 'en-US'];
 
-      for (let i = 0; i < sources.length; i++) {
-        const locale = sources[i];
+      for (const locale of sources) {
         if (locale && typeof locale === 'string') {
           return locale;
         }
@@ -5209,8 +5330,7 @@ const FOCUS_SUPPRESSION_MS = 200;
           'YYYY.MM.DD',
         ];
 
-        for (let i = 0; i < commonFormats.length; i++) {
-          const format = commonFormats[i];
+        for (const format of commonFormats) {
           const testDate = this._moment(inputString, format, true);
           if (testDate.isValid()) {
             results.parsed = true;
