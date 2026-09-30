@@ -56,7 +56,7 @@ export const FiltersBehavior = {
    */
   isTrashed(doc) {
     if (doc) {
-      if (typeof doc.isTrashed === 'undefined') {
+      if (doc.isTrashed === undefined) {
         return this.hasState(doc, 'deleted');
       }
       return doc.isTrashed;
