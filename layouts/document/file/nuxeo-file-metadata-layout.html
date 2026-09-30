@@ -1,0 +1,54 @@
+<!--
+`nuxeo-file-metadata-layout`
+@group Nuxeo UI
+@element nuxeo-file-metadata-layout
+-->
+
+<dom-module id="nuxeo-file-metadata-layout">
+  <template>
+    <style>
+      div[role='widget'] > div.multiline {
+        white-space: pre-line;
+      }
+
+      div[role='widget'] > div {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        hyphens: auto;
+      }
+
+      *[role='widget'] {
+        @apply --nuxeo-widget;
+      }
+    </style>
+
+    <div role="widget">
+      <label>Title:</label>
+      <span>[[document.properties.dc:title]]</span>
+    </div>
+
+    <div role="widget" hidden$="[[!document.properties.dc:description]]">
+      <label>Description:</label>
+      <span class="multiline">[[document.properties.dc:description]]</span>
+    </div>
+
+    <div role="widget" hidden$="[[!document.properties.dc:expired]]">
+      <label>Expire date:</label>
+      <nuxeo-date name="expired" datetime="[[document.properties.dc:expired]]"></nuxeo-date>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-file-metadata-layout',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        /**
+         * @doctype File
+         */
+        document: Object,
+      },
+    });
+  </script>
+</dom-module>

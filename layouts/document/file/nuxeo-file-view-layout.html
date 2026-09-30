@@ -1,0 +1,31 @@
+<!--
+`nuxeo-file-view-layout`
+@group Nuxeo UI
+@element nuxeo-file-view-layout
+-->
+<dom-module id="nuxeo-file-view-layout">
+  <template>
+    <style>
+      *[role='widget'] {
+        @apply --nuxeo-widget;
+      }
+    </style>
+
+    <h1 role="widget">[[document.properties.dc:title]]</h1>
+
+    <img role="widget" src="[[document.properties.file:content.data]]" />
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-file-view-layout',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        /**
+         * @doctype File
+         */
+        document: Object,
+      },
+    });
+  </script>
+</dom-module>

@@ -1,0 +1,34 @@
+<!--
+`nuxeo-file-edit-layout`
+@group Nuxeo UI
+@element nuxeo-file-edit-layout
+-->
+<dom-module id="nuxeo-file-edit-layout">
+  <template>
+    <style>
+      *[role='widget'] {
+        @apply --nuxeo-widget;
+      }
+    </style>
+
+    <nuxeo-input role="widget" label="Title" value="{{document.properties.dc:title}}" autofocus required> </nuxeo-input>
+
+    <nuxeo-textarea role="widget" label="Description" value="{{document.properties.dc:description}}"> </nuxeo-textarea>
+
+    <nuxeo-date-picker role="widget" label="Expire date" value="{{document.properties.dc:expired}}">
+    </nuxeo-date-picker>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'nuxeo-file-edit-layout',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        /**
+         * @doctype File
+         */
+        document: Object,
+      },
+    });
+  </script>
+</dom-module>
