@@ -1567,7 +1567,7 @@ function hasRowDetailTemplate(node) {
 
     _toggleEditDialog(itemIndex) {
       const dtform = this.getContentChildren('#form')[0];
-      if (typeof itemIndex !== 'undefined') {
+      if (itemIndex !== undefined) {
         dtform.index = itemIndex;
         dtform.item = this._deepCopy(this.items[itemIndex]);
       } else {

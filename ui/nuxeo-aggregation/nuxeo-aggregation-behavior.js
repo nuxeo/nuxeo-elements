@@ -137,7 +137,10 @@ export const AggregationBehavior = {
       }
       entry = entry.properties.parent;
     }
-    return labels.reverse().join('/');
+    return labels
+      .slice()
+      .reverse()
+      .join('/');
   },
 
   labelForUserEntry(entry) {
