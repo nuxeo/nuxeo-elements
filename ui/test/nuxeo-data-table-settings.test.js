@@ -81,6 +81,56 @@ suite('nuxeo-data-table-settings', () => {
       expect(element.columns[0].hidden).to.be.false;
       expect(element.columns[1].hidden).to.be.true;
     });
+
+    test('should reset order back to the declared column position (WEBUI-2086)', () => {
+      element.columns = [
+        { name: 'Title', hidden: false, hiddenBack: false, order: 2 },
+        { name: 'Modified', hidden: false, hiddenBack: false, order: 0 },
+        { name: 'Author', hidden: false, hiddenBack: false, order: 1 },
+      ];
+      element._resetSettings();
+      expect(element.columns.map((column) => column.order)).to.deep.equal([0, 1, 2]);
+    });
+
+    test('should reset width to the layout-declared width and clear the resized flag (WEBUI-2086)', () => {
+      const declared = document.createElement('div');
+      declared.setAttribute('width', '150px');
+      declared.name = 'Title';
+      declared.hidden = false;
+      declared.hiddenBack = false;
+      declared.width = '480px';
+      declared.resized = true;
+      element.columns = [declared];
+
+      element._resetSettings();
+
+      expect(element.columns[0].width).to.equal('150px');
+      expect(element.columns[0].resized).to.be.false;
+    });
+
+    test('should reset width to null when the layout declares none (WEBUI-2086)', () => {
+      element.columns = [{ name: 'Title', hidden: false, hiddenBack: false, width: '480px', resized: true }];
+      element._resetSettings();
+      expect(element.columns[0].width).to.be.null;
+      expect(element.columns[0].resized).to.be.false;
+    });
+
+    test('should dispatch a single settings-changed with source reset (WEBUI-2086)', () => {
+      const spy = sinon.spy();
+      element.addEventListener('settings-changed', spy);
+      element.columns = [
+        { name: 'Title', hidden: true, hiddenBack: false, order: 1 },
+        { name: 'Modified', hidden: false, hiddenBack: false, order: 0 },
+      ];
+
+      element._resetSettings();
+
+      expect(spy).to.have.been.calledOnce;
+      const event = spy.firstCall.args[0];
+      expect(event.detail.source).to.equal('reset');
+      expect(event.composed).to.be.true;
+      expect(event.bubbles).to.be.true;
+    });
   });
 
   suite('_onSettingsClosed', () => {
@@ -114,6 +164,20 @@ suite('nuxeo-data-table-settings', () => {
       ];
       element._onSettingsClosed();
       expect(element.columns[1].hidden).to.be.false;
+    });
+
+    test('should restore visibility only, leaving width and order untouched (WEBUI-2086)', () => {
+      element.columns = [
+        { name: 'Title', hidden: true, hiddenBack: false, order: 1, width: '480px', resized: true },
+        { name: 'Modified', hidden: true, hiddenBack: false, order: 0, width: '90px', resized: true },
+      ];
+
+      element._onSettingsClosed();
+
+      expect(element.columns[0].hidden).to.be.false;
+      expect(element.columns[0].width).to.equal('480px');
+      expect(element.columns[0].order).to.equal(1);
+      expect(element.columns[1].resized).to.be.true;
     });
   });
 
