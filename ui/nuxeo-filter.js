@@ -227,8 +227,8 @@ import Interpreter from './js-interpreter/interpreter.js';
 
           // pass if any check returns true, basically Array.some()
           let pass = false;
-          for (let i = 0; i < values.length; i++) {
-            pass = fn.apply(this, args.concat(values[i]));
+          for (const value of values) {
+            pass = fn.apply(this, args.concat(value));
             if (pass) {
               break;
             }
