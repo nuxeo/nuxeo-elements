@@ -21,6 +21,21 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
 {
+  // `LinkTarget.BLANK` from pdf.js. The viewer exposes the enum as
+  // `PDFViewerApplicationConstants`; this literal is only the fallback for a build that
+  // stops publishing it, so external links keep opening in a new tab either way.
+  const LINK_TARGET_BLANK = 2;
+
+  // Opening a link in a new browsing context must never leak the opener to the target
+  // page, so pin the relationship rather than relying on the pdf.js default.
+  const EXTERNAL_LINK_REL = 'noopener noreferrer nofollow';
+
+  // Marks the links we have already labelled, so re-rendering a page (zoom, scroll)
+  // cannot append the warning twice.
+  const LABELLED_ATTRIBUTE = 'data-nuxeo-external-link';
+
+  const EXTERNAL_LINK_SELECTOR = `.annotationLayer a[target="_blank"]:not([${LABELLED_ATTRIBUTE}])`;
+
   /**
    * An element for viewing PDF files.
    *
@@ -84,6 +99,24 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
     connectedCallback() {
       super.connectedCallback();
+      // pdf.js dispatches `webviewerloaded` on the embedder's document immediately
+      // before it builds the viewer, which is the supported point to override its
+      // options — waiting for the iframe's own load event would be too late.
+      this._webViewerLoadedHandler = (e) => {
+        if (!e) {
+          return;
+        }
+        const { detail } = e;
+        if (!detail) {
+          return;
+        }
+        const { source: viewerWindow } = detail;
+        if (!this._isCurrentViewerWindow(viewerWindow)) {
+          return;
+        }
+        this._configureExternalLinks(viewerWindow);
+      };
+      document.addEventListener('webviewerloaded', this._webViewerLoadedHandler);
       this._iframeLoadHandler = () => {
         try {
           const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
@@ -129,12 +162,123 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       }
     }
 
+    /**
+     * Whether the given window is the one the iframe is showing right now. The element is
+     * reused across documents, so a viewer from a previous `src` can still be running.
+     */
+    _isCurrentViewerWindow(viewerWindow) {
+      if (!this.shadowRoot) {
+        return false;
+      }
+      const iframe = this.shadowRoot.querySelector('iframe');
+      return Boolean(viewerWindow) && Boolean(iframe) && viewerWindow === iframe.contentWindow;
+    }
+
+    /**
+     * Make links that point outside the document open in a new tab.
+     *
+     * pdf.js defaults `externalLinkTarget` to `LinkTarget.NONE` and then, on detecting
+     * that it is embedded in a frame, promotes it to `LinkTarget.TOP`. Because this
+     * viewer always runs inside an iframe, every external link would otherwise be
+     * rendered with `target="_top"` and replace the whole Web UI tab, throwing the user
+     * out of the document they were reading. Only links carrying a URL action go
+     * through this code path in pdf.js, so intra-document links keep scrolling the
+     * viewer instead of navigating.
+     */
+    _configureExternalLinks(viewerWindow) {
+      const options = viewerWindow.PDFViewerApplicationOptions;
+      if (!options) {
+        return;
+      }
+      const constants = viewerWindow.PDFViewerApplicationConstants;
+      let blank = LINK_TARGET_BLANK;
+      if (constants) {
+        const { LinkTarget } = constants;
+        if (LinkTarget) {
+          blank = LinkTarget.BLANK || LINK_TARGET_BLANK;
+        }
+      }
+      options.set('externalLinkTarget', blank);
+      options.set('externalLinkRel', EXTERNAL_LINK_REL);
+      this._announceExternalLinks(viewerWindow);
+    }
+
+    /**
+     * Opening a new tab is a change of context, which WCAG 3.2.5 asks us to announce in
+     * advance, so label the links as they are rendered.
+     */
+    _announceExternalLinks(viewerWindow) {
+      const app = viewerWindow.PDFViewerApplication;
+      if (!app) {
+        return;
+      }
+      if (!app.initializedPromise) {
+        return;
+      }
+      app.initializedPromise.then(
+        () => {
+          // The element can be detached, or the iframe moved on to another document,
+          // while this viewer was still initialising. Subscribing then would either leak
+          // a listener disconnectedCallback() has already run past, or let a stale viewer
+          // take over the subscription that belongs to the one now on screen.
+          if (!this.isConnected || !this._isCurrentViewerWindow(viewerWindow) || !app.eventBus) {
+            return;
+          }
+          this._unsubscribeFromAnnotationLayer();
+          this._pdfEventBus = app.eventBus;
+          // Scope the lookup to the page that just rendered rather than rescanning the
+          // whole document on every layer render.
+          this._annotationLayerHandler = (e) => {
+            let root = viewerWindow.document;
+            if (e) {
+              const { source } = e;
+              if (source) {
+                root = source.div || root;
+              }
+            }
+            this._labelExternalLinks(root);
+          };
+          this._pdfEventBus.on('annotationlayerrendered', this._annotationLayerHandler);
+        },
+        () => {
+          // Intentionally swallowed: the viewer failed to initialise, which it already
+          // reports to the user. There is no link to label in that case.
+        },
+      );
+    }
+
+    _unsubscribeFromAnnotationLayer() {
+      if (this._pdfEventBus && this._annotationLayerHandler) {
+        this._pdfEventBus.off('annotationlayerrendered', this._annotationLayerHandler);
+      }
+      this._pdfEventBus = null;
+      this._annotationLayerHandler = null;
+    }
+
+    _labelExternalLinks(root) {
+      root.querySelectorAll(EXTERNAL_LINK_SELECTOR).forEach((link) => {
+        link.setAttribute(LABELLED_ATTRIBUTE, '');
+        // pdf.js renders link annotations as empty anchors overlaying the page, so there
+        // is no text to carry the warning. `title` shows it on hover; `aria-label` is what
+        // makes it the accessible name, since assistive technologies treat `title` as a
+        // description they may skip.
+        const warning = this.i18n('pdfViewer.externalLinkNewTab', link.href);
+        link.title = warning;
+        link.setAttribute('aria-label', warning);
+      });
+    }
+
     disconnectedCallback() {
       super.disconnectedCallback();
       const iframe = this.shadowRoot && this.shadowRoot.querySelector('iframe');
       if (iframe && this._iframeLoadHandler) {
         iframe.removeEventListener('load', this._iframeLoadHandler);
       }
+      if (this._webViewerLoadedHandler) {
+        document.removeEventListener('webviewerloaded', this._webViewerLoadedHandler);
+        this._webViewerLoadedHandler = null;
+      }
+      this._unsubscribeFromAnnotationLayer();
       if (this._blockedIframeWindow && this._keydownBlocker) {
         try {
           this._blockedIframeWindow.removeEventListener('keydown', this._keydownBlocker, true);
