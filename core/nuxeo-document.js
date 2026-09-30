@@ -250,7 +250,7 @@ import './nuxeo-resource.js';
         }
       }
       if (sourceUrl) {
-        const splitter = documentProp[sourceUrl].indexOf('?') > -1 ? '&' : '?';
+        const splitter = documentProp[sourceUrl].includes('?') ? '&' : '?';
         documentProp.viewUrl = `${documentProp[sourceUrl]}${splitter}clientReason=view`;
         documentProp.downloadUrl = `${documentProp[sourceUrl]}${splitter}clientReason=download`;
       }

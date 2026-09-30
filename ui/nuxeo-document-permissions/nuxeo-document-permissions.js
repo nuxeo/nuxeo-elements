@@ -326,7 +326,7 @@ import '../nuxeo-button-styles.js';
 
     _hasPermission() {
       const permissions = this.doc && this.doc.contextParameters && this.doc.contextParameters.permissions;
-      return permissions && permissions.indexOf('WriteSecurity') !== -1;
+      return permissions && permissions.includes('WriteSecurity');
     }
 
     _empty(arr) {

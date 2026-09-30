@@ -71,7 +71,7 @@ export const AggregationBehavior = {
       const buckets = data.extendedBuckets;
       const selectedBuckets = data.selection;
       buckets.forEach((item) => {
-        item.checked = selectedBuckets.indexOf(item.key) >= 0;
+        item.checked = selectedBuckets.includes(item.key);
         item.label = this.labelFormatter(item);
       });
       if (this.sortByLabel) {
@@ -121,7 +121,7 @@ export const AggregationBehavior = {
 
   labelForDirectoryEntry(entry) {
     let lang = window.nuxeo.I18n.language || 'en';
-    if (lang.indexOf('-') > -1) {
+    if (lang.includes('-')) {
       [lang] = lang.split('-');
     }
     const labels = [];

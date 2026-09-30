@@ -48,7 +48,7 @@ export const FiltersBehavior = {
    * Checks if the document can be added to a collection.
    */
   isCollectionMember(doc) {
-    return doc && doc.facets ? doc.facets.indexOf('NotCollectionMember') === -1 : false;
+    return doc && doc.facets ? !doc.facets.includes('NotCollectionMember') : false;
   },
 
   /**
@@ -159,7 +159,7 @@ export const FiltersBehavior = {
    * Checks if the document has the given facet.
    */
   hasFacet(doc, facet) {
-    return doc && doc.facets && doc.facets.indexOf(facet) !== -1;
+    return doc && doc.facets && doc.facets.includes(facet);
   },
 
   /**
@@ -170,7 +170,7 @@ export const FiltersBehavior = {
       doc &&
       doc.contextParameters &&
       doc.contextParameters.permissions &&
-      doc.contextParameters.permissions.indexOf(permission) !== -1
+      doc.contextParameters.permissions.includes(permission)
     );
   },
 
