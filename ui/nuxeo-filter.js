@@ -29,6 +29,15 @@ import { FiltersBehavior } from './nuxeo-filters-behavior.js';
 import Interpreter from './js-interpreter/interpreter.js';
 
 {
+  // Splits a csv filter value. Equivalent to the previous regex split on /\s*,\s*/ but linear:
+  // those adjacent `\s*` quantifiers were ambiguous, so a long whitespace run backtracked
+  // super-linearly (SonarCloud javascript:S8786).
+  const splitCsv = (value) =>
+    value
+      .trim()
+      .split(',')
+      .map((part) => part.trim());
+
   /**
    * Stamps the template if and only if all of its conditions are met.
    *
@@ -222,7 +231,7 @@ import Interpreter from './js-interpreter/interpreter.js';
         if (v && filter) {
           const args = filter.ctx.map((arg) => this[arg]);
           // if filter supports multiple values apply the function to each one
-          const values = filter.multiple ? v.trim().split(/\s*,\s*/) : [v];
+          const values = filter.multiple ? splitCsv(v) : [v];
           const fn = this[filter.fn];
 
           // pass if any check returns true, basically Array.some()
