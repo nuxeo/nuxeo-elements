@@ -164,12 +164,13 @@ suite('nuxeo-document-acl-table extras', () => {
     test('formats the date using the configured timezone', () => {
       // A fixed instant so the assertion never depends on the machine running the tests.
       const begin = '2024-01-15T23:30:00.000Z';
+      const previousTimezone = config.get('timezone');
       try {
         config.set('timezone', 'Asia/Kolkata');
         // Asia/Kolkata is UTC+5:30 all year round, so 23:30 UTC on the 15th becomes the 16th locally.
         expect(el.formatTimeFrame({ begin, end: null })).to.equal(`${el.i18n('documentAclTable.since')} 16 Jan 2024`);
       } finally {
-        config.set('timezone');
+        config.set('timezone', previousTimezone);
       }
     });
   });
