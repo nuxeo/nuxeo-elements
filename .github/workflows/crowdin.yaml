@@ -11,7 +11,7 @@ on:
   push:
     branches: ["develop-2023"]
     paths:
-      - 'i18n/messages.json'
+      - 'ui/i18n/messages.json'
 
   # Manually trigger the workflow
   workflow_dispatch:

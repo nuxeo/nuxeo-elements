@@ -9,7 +9,6 @@ on:
     inputs:
       branch:
         description: 'The current branch'
-        default: maintenance-3.1.x
         type: string
         required: false
     secrets:
