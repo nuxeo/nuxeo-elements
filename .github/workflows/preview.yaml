@@ -4,7 +4,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, labeled]
     branches:
-      - lts-2025
+      - 'lts-20[0-9][0-9]'
       - 'develop-20[0-9][0-9]'
 
 permissions:
