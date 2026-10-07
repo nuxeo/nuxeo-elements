@@ -377,14 +377,55 @@ suite('nuxeo-html-editor color pickers', () => {
     expect(items[0].tabIndex).to.equal(-1);
   });
 
-  test('marks the format clearing swatch as selected while Quill marks nothing', () => {
-    const items = itemsOf(colorPicker);
-    items.forEach((item) => item.classList.remove('ql-selected'));
-    el._syncColorPicker(instanceOf(colorPicker));
-    // The trigger already announces "Automatic color"; the listbox has to agree with it.
-    expect(items[0].getAttribute('aria-selected')).to.equal('true');
-    expect(items[0].tabIndex).to.equal(0);
-    expect(items.filter((item) => item.getAttribute('aria-selected') !== 'false')).to.have.lengthOf(1);
+  // Quill unmarks the palette whenever the editor holds no selection, and the swatch that clears
+  // the format is at a different index in each palette, so both have to be driven through Quill.
+  [
+    ['text', () => colorPicker, 'htmlEditor.color', 'htmlEditor.colorPicker.automatic'],
+    ['background', () => backgroundPicker, 'htmlEditor.backgroundColor', 'htmlEditor.colorPicker.noBackground'],
+  ].forEach(([palette, pickerOf, nameKey, clearKey]) => {
+    test(`names the ${palette} format clearing swatch while Quill marks nothing`, () => {
+      el.i18n = (key, ...args) => (args.length > 0 ? `${key}(${args.join('|')})` : key);
+      const picker = pickerOf();
+      const instance = instanceOf(picker);
+      instance.select.selectedIndex = -1;
+      instance.update();
+      const items = itemsOf(picker);
+      const cleared = items.find((item) => !item.hasAttribute('data-value'));
+      expect(cleared.getAttribute('aria-selected')).to.equal('true');
+      expect(cleared.tabIndex).to.equal(0);
+      expect(items.filter((item) => item.getAttribute('aria-selected') !== 'false')).to.have.lengthOf(1);
+      // The listbox and the trigger have to agree on what is in effect.
+      expect(labelOf(picker).getAttribute('aria-label')).to.equal(
+        `htmlEditor.colorPicker.selected(${nameKey}|${clearKey})`,
+      );
+    });
+  });
+
+  // Opening a palette focuses the swatch already in effect, so re-picking it is the first thing a
+  // keyboard user does. Quill's selectItem returns early in that case and never closes the palette.
+  [['Enter'], [' ', 'Space']].forEach(([key, label = key]) => {
+    test(`closes the palette when ${label} re-picks the color already applied`, () => {
+      el._editor.setText('Hello');
+      el._editor.setSelection(0, 5);
+      const items = itemsOf(colorPicker);
+      items[1].click();
+      openPalette(colorPicker);
+      expect(el.shadowRoot.activeElement).to.equal(items[1]);
+      press(items[1], key);
+      expect(el._editor.getFormat(0, 5).color).to.equal('#e60000');
+      expect(colorPicker.classList.contains('ql-expanded')).to.be.false;
+      expect(el.shadowRoot.activeElement).to.equal(labelOf(colorPicker));
+    });
+  });
+
+  test('rings a focused swatch in a way that does not depend on its own fill', () => {
+    openPalette(colorPicker);
+    const { outlineStyle, outlineWidth, boxShadow } = getComputedStyle(el.shadowRoot.activeElement);
+    expect(outlineStyle).to.equal('solid');
+    expect(parseFloat(outlineWidth)).to.be.at.least(2);
+    expect(boxShadow)
+      .to.contain('inset')
+      .and.to.contain('rgb(255, 255, 255)');
   });
 
   test('closes the palette on Escape and restores focus to the trigger', async () => {

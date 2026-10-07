@@ -56,6 +56,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
             height: 18px;
             color: #444;
           }
+
+          /* A swatch carries no content, so the browser default ring is a hairline against its own
+             fill — invisible on the dark swatches. A dark outer ring plus a light inner edge stays
+             perceivable whether the swatch is black or white. The inner edge is an inset shadow
+             rather than a border color, which Quill already claims for the selected swatch. */
+          .ql-snow .ql-color-picker .ql-picker-item:focus {
+            box-shadow: inset 0 0 0 1px #fff;
+            outline: 2px solid #1a1a1a;
+            outline-offset: 1px;
+          }
         </style>
 
         <nuxeo-document-picker
@@ -325,9 +335,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const { label, options } = picker;
       const { name, fallback } = this._colorPickerLabels(picker);
       const items = Array.from(options.children);
-      // Until a color is applied Quill can leave the palette unmarked, in which case the first
-      // swatch — the one that clears the format, and the one the trigger names — is in effect.
-      const selected = options.querySelector('.ql-picker-item.ql-selected') || items[0];
+      // Whenever the editor holds no selection Quill unmarks the palette entirely, and the swatch
+      // that clears the format is then in effect. It is not at a fixed index: Quill strips `value`
+      // from the palette's default color, which is black for text but white for backgrounds.
+      const selected =
+        options.querySelector('.ql-picker-item.ql-selected') || items.find((item) => !item.dataset.value) || items[0];
       items.forEach((item) => {
         item.setAttribute('aria-selected', String(item === selected));
         // Roving tabindex: the listbox is entered once, then navigated with the arrow keys.
@@ -404,6 +416,13 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         case ' ':
           e.preventDefault();
           items[index].click();
+          // Quill's selectItem returns early when the swatch is already the selected one, so its
+          // own close() never runs and re-picking the current color would strand the user in an
+          // open palette — the first thing a keyboard user does, since opening focuses that swatch.
+          if (picker.container.classList.contains('ql-expanded')) {
+            picker.close();
+            picker.label.focus();
+          }
           return;
         default:
           return;
