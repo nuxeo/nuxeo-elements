@@ -9,7 +9,6 @@ on:
     inputs:
       branch:
         description: 'The current branch'
-        default: lts-2025
         type: string
         required: false
     secrets:

@@ -31,7 +31,7 @@ jobs:
           repo: nuxeo-web-ui
           workflow-id: preview.yaml
           access-token: ${{ secrets.GIT_ADMIN_TOKEN }}
-          branch-name: lts-2025
+          branch-name: ${{ github.base_ref }}
           inputs: |
             branch_name: ${{ env.BRANCH_NAME }}
 
