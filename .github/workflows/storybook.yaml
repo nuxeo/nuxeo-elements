@@ -22,16 +22,15 @@ on:
 permissions:
   contents: write
 
-env:
-  # Falls back to the branch this run is on rather than a hardcoded release branch, so a run
-  # with neither a head ref nor an explicit input cannot silently check out the wrong branch.
-  BRANCH_NAME: ${{ github.head_ref || inputs.branch || github.ref_name }}
-
 jobs:
   storybook:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          # Honour an explicit workflow_call branch. Empty on pull_request, which leaves
+          # checkout on the PR merge commit instead of the head branch.
+          ref: ${{ inputs.branch }}
 
       - uses: actions/setup-node@v6
         with:
@@ -53,9 +52,9 @@ jobs:
           npx --no-install --ignore-scripts storybook@10.5.0 build -o dist
 
       - name: Deploy
-        # Never from a pull request, whatever its head is named. The post-release sync pull
-        # request is headed by a branch tracking the release branch, so matching on
-        # BRANCH_NAME alone would publish Storybook from an unmerged pull request.
+        # Gated on github.ref, not the checked-out ref. The post-release sync pull request is
+        # headed by a branch tracking the release branch, so matching on a branch name alone
+        # would publish Storybook from an unmerged pull request.
         if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/maintenance-3.1.x' }}
         env:
           GH_TOKEN: nuxeo-webui-jx-bot:${{ secrets.GIT_ADMIN_TOKEN }}
