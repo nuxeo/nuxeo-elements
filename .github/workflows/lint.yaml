@@ -20,17 +20,12 @@ permissions:
   contents: read
 
 env:
-  # Falls back to the branch this run is on rather than a hardcoded release branch, so a run
-  # with neither a head ref nor an explicit input cannot silently check out lts-2025.
-  BRANCH_NAME: ${{ github.head_ref || inputs.branch || github.ref_name }}
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-        with:
-          ref: ${{ env.BRANCH_NAME }}
 
       - uses: actions/setup-node@v6
         with:
