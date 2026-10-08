@@ -235,6 +235,11 @@ suite('nuxeo-html-editor color pickers', () => {
   };
   // Quill restores focus from a setTimeout so that the browser applies it after the DOM settles.
   const settle = (ms = 10) => new Promise((resolve) => setTimeout(resolve, ms));
+  // Quill only marks a swatch once it knows what is in effect, which needs an editor selection.
+  const selectAll = (text = 'Hello') => {
+    el._editor.setText(text);
+    el._editor.setSelection(0, text.length);
+  };
 
   setup(async () => {
     el = await fixture(
@@ -281,6 +286,7 @@ suite('nuxeo-html-editor color pickers', () => {
 
   test('never announces the background palette with the text color wording', () => {
     el.i18n = (key, ...args) => (args.length > 0 ? `${key}(${args.join('|')})` : key);
+    selectAll();
     el._syncColorPicker(instanceOf(backgroundPicker));
     expect(labelOf(backgroundPicker).getAttribute('aria-label')).to.equal(
       'htmlEditor.colorPicker.selected(htmlEditor.backgroundColor|htmlEditor.colorPicker.noBackground)',
@@ -289,6 +295,7 @@ suite('nuxeo-html-editor color pickers', () => {
 
   test('announces the picker name and the selected color on the trigger', () => {
     el.i18n = (key, ...args) => (args.length > 0 ? `${key}(${args.join('|')})` : key);
+    selectAll();
     el._syncColorPicker(instanceOf(colorPicker));
     expect(labelOf(colorPicker).getAttribute('aria-label')).to.equal(
       'htmlEditor.colorPicker.selected(htmlEditor.color|htmlEditor.colorPicker.automatic)',
@@ -427,18 +434,17 @@ suite('nuxeo-html-editor color pickers', () => {
     expect(items[0].tabIndex).to.equal(-1);
   });
 
-  // Quill unmarks the palette whenever the editor holds no selection, and the swatch that clears
-  // the format is at a different index in each palette, so both have to be driven through Quill.
+  // The swatch that clears the format is at a different index in each palette, so both have to be
+  // driven through Quill rather than assumed to be the first one.
   [
     ['text', () => colorPicker, 'htmlEditor.color', 'htmlEditor.colorPicker.automatic'],
     ['background', () => backgroundPicker, 'htmlEditor.backgroundColor', 'htmlEditor.colorPicker.noBackground'],
   ].forEach(([palette, pickerOf, nameKey, clearKey]) => {
-    test(`names the ${palette} format clearing swatch while Quill marks nothing`, () => {
+    test(`names the ${palette} format clearing swatch while no color is applied`, () => {
       el.i18n = (key, ...args) => (args.length > 0 ? `${key}(${args.join('|')})` : key);
       const picker = pickerOf();
-      const instance = instanceOf(picker);
-      instance.select.selectedIndex = -1;
-      instance.update();
+      selectAll();
+      el._syncColorPicker(instanceOf(picker));
       const items = itemsOf(picker);
       const cleared = items.find((item) => !item.hasAttribute('data-value'));
       expect(cleared.getAttribute('aria-selected')).to.equal('true');
@@ -448,6 +454,43 @@ suite('nuxeo-html-editor color pickers', () => {
       expect(labelOf(picker).getAttribute('aria-label')).to.equal(
         `htmlEditor.colorPicker.selected(${nameKey}|${clearKey})`,
       );
+    });
+  });
+
+  // Quill unmarks the palette when the selection spans several colors and when its color is not
+  // one of the swatches. Reporting the clear swatch for either would claim a color that is not in
+  // effect. Assertions stay on primitives: a failing chai assertion over DOM nodes hangs the run.
+  const selectedCount = (picker) =>
+    itemsOf(picker).filter((item) => item.getAttribute('aria-selected') === 'true').length;
+
+  [
+    [
+      'the selection spans several colors',
+      () => {
+        el._editor.setText('Hello');
+        // Two explicit colors: leaving part of the range uncolored reads as no color, not mixed.
+        el._editor.formatText(0, 2, 'color', '#e60000');
+        el._editor.formatText(2, 3, 'color', '#0066cc');
+        el._editor.setSelection(0, 5);
+      },
+    ],
+    [
+      'the color is not one of the swatches',
+      () => {
+        el._editor.setText('Hello');
+        el._editor.formatText(0, 5, 'color', '#123456');
+        el._editor.setSelection(0, 5);
+      },
+    ],
+  ].forEach(([state, arrange]) => {
+    test(`reports no selected swatch while ${state}`, () => {
+      el.i18n = (key, ...args) => (args.length > 0 ? `${key}(${args.join('|')})` : key);
+      arrange();
+      el._syncColorPicker(instanceOf(colorPicker));
+      expect(selectedCount(colorPicker)).to.equal(0);
+      expect(labelOf(colorPicker).getAttribute('aria-label')).to.equal('htmlEditor.color');
+      // The listbox still has to be reachable by Tab.
+      expect(itemsOf(colorPicker)[0].tabIndex).to.equal(0);
     });
   });
 
