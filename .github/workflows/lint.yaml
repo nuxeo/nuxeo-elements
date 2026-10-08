@@ -4,11 +4,11 @@ on:
   pull_request:
     branches:
       - maintenance-3.1.x
+      - 'develop-20[0-9][0-9]'
   workflow_call:
     inputs:
       branch:
         description: 'The current branch'
-        default: maintenance-3.1.x
         type: string
         required: false
     secrets:
@@ -19,16 +19,15 @@ on:
 permissions:
   contents: read
 
-env:
-  BRANCH_NAME: ${{ github.head_ref || inputs.branch || 'maintenance-3.1.x' }}
-
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ env.BRANCH_NAME }}
+          # Honour an explicit workflow_call branch. Empty on pull_request, which leaves
+          # checkout on the PR merge commit instead of the head branch.
+          ref: ${{ inputs.branch }}
 
       - uses: actions/setup-node@v6
         with:
