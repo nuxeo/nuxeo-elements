@@ -302,6 +302,39 @@ suite('nuxeo-html-editor color pickers', () => {
     expect(el.shadowRoot.activeElement).to.equal(itemsOf(colorPicker)[0]);
   });
 
+  // A screen reader keeps the arrow keys to itself until focus is on an option, and it activates
+  // the trigger by pointer, so opening has to move focus however it happened.
+  test('moves focus into the palette when it is opened by pointer', async () => {
+    labelOf(colorPicker).dispatchEvent(new MouseEvent('mousedown', { bubbles: true, composed: true }));
+    expect(colorPicker.classList.contains('ql-expanded')).to.be.true;
+    await settle();
+    expect(el.shadowRoot.activeElement).to.equal(itemsOf(colorPicker)[0]);
+  });
+
+  test('leaves focus alone when the palette is closed again by pointer', async () => {
+    const label = labelOf(colorPicker);
+    label.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, composed: true }));
+    label.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, composed: true }));
+    expect(colorPicker.classList.contains('ql-expanded')).to.be.false;
+    await settle();
+    expect(itemsOf(colorPicker)).to.not.contain(el.shadowRoot.activeElement);
+  });
+
+  ['ArrowLeft', 'ArrowRight'].forEach((key) => {
+    test(`opens the palette with ${key} and moves focus onto the selected swatch`, () => {
+      labelOf(colorPicker).focus();
+      press(labelOf(colorPicker), key);
+      expect(colorPicker.classList.contains('ql-expanded')).to.be.true;
+      expect(el.shadowRoot.activeElement).to.equal(itemsOf(colorPicker)[0]);
+    });
+  });
+
+  test('describes the palette as running left to right', () => {
+    [colorPicker, backgroundPicker].forEach((picker) => {
+      expect(optionsOf(picker).getAttribute('aria-orientation')).to.equal('horizontal');
+    });
+  });
+
   test('walks the palette with the arrow keys', () => {
     openPalette(colorPicker);
     const items = itemsOf(colorPicker);
