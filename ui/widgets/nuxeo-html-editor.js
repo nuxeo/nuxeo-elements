@@ -22,6 +22,7 @@ import '@nuxeo/nuxeo-elements/nuxeo-element.js';
 import '@nuxeo/quill/dist/quill.js';
 import '../nuxeo-document-picker/nuxeo-document-picker.js';
 import './quill/quill-snow.js';
+import { COLOR_NAMES, COLOR_PICKER_COLUMNS } from './quill/quill-color-names.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
@@ -54,6 +55,16 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           iron-icon {
             height: 18px;
             color: #444;
+          }
+
+          /* A swatch carries no content, so the browser default ring is a hairline against its own
+             fill — invisible on the dark swatches. A dark outer ring plus a light inner edge stays
+             perceivable whether the swatch is black or white. The inner edge is an inset shadow
+             rather than a border color, which Quill already claims for the selected swatch. */
+          .ql-snow .ql-color-picker .ql-picker-item:focus {
+            box-shadow: inset 0 0 0 1px #fff;
+            outline: 2px solid #1a1a1a;
+            outline-offset: 1px;
           }
         </style>
 
@@ -177,7 +188,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     static get observers() {
-      return ['_valueChanged(value, _editor)', '_readOnlyChanged(readOnly, _editor)'];
+      return [
+        '_valueChanged(value, _editor)',
+        '_readOnlyChanged(readOnly, _editor)',
+        '_colorPickerI18nChanged(i18n, _editor)',
+      ];
     }
 
     static get importMeta() {
@@ -194,6 +209,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const { placeholder, readOnly } = this;
       const modules = { toolbar: '#toolbar' };
       this._editor = new Quill(this.$.editor, { theme: 'snow', modules, placeholder, readOnly });
+      this._setupColorPickers();
       if (this.getAttribute('dir') === 'rtl') {
         this._editor.format('align', 'right');
         this._editor.format('direction', 'rtl');
@@ -244,6 +260,222 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         // Carry on in the document instead of being sent back to the toolbar: the picker only
         // restores focus to the button that opened it while focus is still inside its dialog.
         this._editor.focus();
+      }
+    }
+
+    /**
+     * Quill replaces the color `<select>`s with a palette of bare `<span>`s whose only
+     * distinguishing feature is an inline background color: nothing names the trigger or the
+     * swatches, and the only key the palette answers to is Enter on the trigger itself. Turn each
+     * palette into a listbox of named options and give it the roving focus that pattern implies.
+     */
+    _colorPickers() {
+      const { theme } = this._editor || {};
+      const { pickers } = theme || {};
+      return (pickers || []).filter((picker) => picker.container.classList.contains('ql-color-picker'));
+    }
+
+    _setupColorPickers() {
+      this._colorPickers().forEach((picker) => this._setupColorPicker(picker));
+    }
+
+    // Unlike the template bindings, these names are written straight onto Quill's DOM, so they do
+    // not follow `i18n` when a locale lands after the editor was built.
+    _colorPickerI18nChanged() {
+      this._colorPickers().forEach((picker) => this._labelColorPicker(picker));
+    }
+
+    _labelColorPicker(picker) {
+      const { options } = picker;
+      const { name, fallback } = this._colorPickerLabels(picker);
+      options.setAttribute('aria-label', name);
+      Array.from(options.children).forEach((item) => {
+        const colorName = this._colorName(item.dataset.value, fallback);
+        item.setAttribute('aria-label', colorName);
+        // The swatch conveys its color by fill alone; a tooltip gives sighted users the name too.
+        item.setAttribute('title', colorName);
+      });
+      this._syncColorPicker(picker);
+    }
+
+    _setupColorPicker(picker) {
+      const { container, label, options } = picker;
+      label.setAttribute('aria-haspopup', 'listbox');
+      options.setAttribute('role', 'listbox');
+      // The palette wraps into rows, so consecutive swatches run left to right. Without this a
+      // screen reader applies the listbox default of vertical and maps its own next/previous
+      // option onto Up/Down, which on screen moves sideways.
+      options.setAttribute('aria-orientation', 'horizontal');
+      Array.from(options.children).forEach((item) => item.setAttribute('role', 'option'));
+
+      const { selectItem, togglePicker } = picker;
+      picker.selectItem = (item, trigger) => {
+        // Quill closes the palette on selection but leaves focus on the now hidden swatch.
+        const restoreFocus = trigger && this._hasColorItemFocus(picker);
+        selectItem.call(picker, item, trigger);
+        this._syncColorPicker(picker);
+        if (restoreFocus) {
+          label.focus();
+        }
+      };
+      picker.togglePicker = () => {
+        togglePicker.call(picker);
+        this._syncColorPicker(picker);
+        if (picker.container.classList.contains('ql-expanded')) {
+          // A screen reader only hands the arrow keys to the page once focus is on an option, and
+          // it activates the trigger by pointer, which leaves focus on the trigger. Deferred: the
+          // browser applies its own mousedown focus after this handler returns.
+          setTimeout(() => {
+            if (
+              this.isConnected &&
+              picker.container.classList.contains('ql-expanded') &&
+              !this._hasColorItemFocus(picker)
+            ) {
+              this._focusSelectedColorItem(picker);
+            }
+          });
+        }
+      };
+
+      label.addEventListener('keydown', (e) => this._onColorLabelKeydown(picker, e));
+      options.addEventListener('keydown', (e) => this._onColorOptionKeydown(picker, e));
+      // A palette left open once focus has moved on hides whatever comes after it.
+      container.addEventListener('focusout', (e) => {
+        if (container.classList.contains('ql-expanded') && !container.contains(e.relatedTarget)) {
+          picker.close();
+        }
+      });
+
+      this._labelColorPicker(picker);
+    }
+
+    _colorPickerLabels(picker) {
+      const background = picker.container.classList.contains('ql-background');
+      return {
+        name: this.i18n(background ? 'htmlEditor.backgroundColor' : 'htmlEditor.color'),
+        // The first swatch of each palette clears the format rather than applying a color.
+        fallback: this.i18n(background ? 'htmlEditor.colorPicker.noBackground' : 'htmlEditor.colorPicker.automatic'),
+      };
+    }
+
+    _colorName(value, fallback) {
+      if (!value) {
+        return fallback;
+      }
+      const key = COLOR_NAMES[value.toLowerCase()];
+      return key ? this.i18n(key) : value;
+    }
+
+    _syncColorPicker(picker) {
+      const { label, options } = picker;
+      const { name, fallback } = this._colorPickerLabels(picker);
+      const items = Array.from(options.children);
+      // Quill marks a swatch only when exactly one known color is in effect. It leaves the palette
+      // unmarked when the editor holds no selection, when the selection spans several colors, and
+      // when its color is not one of these swatches — none of which mean the format was cleared,
+      // so nothing may be reported as selected in those states.
+      const selected = options.querySelector('.ql-picker-item.ql-selected');
+      // Roving tabindex: the listbox is entered once, then navigated with the arrow keys. With no
+      // swatch marked the entry point is the first one.
+      const entry = selected || items[0];
+      items.forEach((item) => {
+        item.setAttribute('aria-selected', String(item === selected));
+        item.tabIndex = item === entry ? 0 : -1;
+      });
+      // Naming the trigger after a color that is not in effect would be worse than not naming one,
+      // so while Quill is unmarked the trigger carries just the picker's own name.
+      const current = selected ? this._colorName(selected.dataset.value, fallback) : null;
+      label.setAttribute(
+        'aria-label',
+        current === null ? name : this.i18n('htmlEditor.colorPicker.selected', name, current),
+      );
+    }
+
+    _hasColorItemFocus(picker) {
+      const { activeElement: active } = this.shadowRoot || {};
+      return !!active && picker.options.contains(active);
+    }
+
+    _focusColorItem(items, index) {
+      const item = items[index];
+      if (!item) {
+        return;
+      }
+      items.forEach((candidate) => {
+        candidate.tabIndex = candidate === item ? 0 : -1;
+      });
+      item.focus();
+    }
+
+    _onColorLabelKeydown(picker, e) {
+      if (!['Enter', ' ', 'ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        return;
+      }
+      // Quill's own listener already toggled the palette on Enter.
+      if (e.key !== 'Enter') {
+        e.preventDefault();
+        if (!picker.container.classList.contains('ql-expanded')) {
+          picker.togglePicker();
+        }
+      }
+      if (!picker.container.classList.contains('ql-expanded')) {
+        return;
+      }
+      this._focusSelectedColorItem(picker);
+    }
+
+    _focusSelectedColorItem(picker) {
+      const items = Array.from(picker.options.children);
+      this._focusColorItem(items, Math.max(0, items.indexOf(picker.options.querySelector('.ql-selected'))));
+    }
+
+    _onColorOptionKeydown(picker, e) {
+      const items = Array.from(picker.options.children);
+      const index = items.indexOf(e.target);
+      if (index < 0) {
+        return;
+      }
+      const columns = Math.min(COLOR_PICKER_COLUMNS, items.length);
+      let next;
+      switch (e.key) {
+        // Quill floats every swatch left and has no right to left override, so the palette reads
+        // left to right whatever the editor's direction: the arrows must not be mirrored.
+        case 'ArrowRight':
+          next = index + 1;
+          break;
+        case 'ArrowLeft':
+          next = index - 1;
+          break;
+        case 'ArrowDown':
+          next = index + columns;
+          break;
+        case 'ArrowUp':
+          next = index - columns;
+          break;
+        case 'Home':
+          next = 0;
+          break;
+        case 'End':
+          next = items.length - 1;
+          break;
+        case 'Enter':
+        case ' ':
+          e.preventDefault();
+          items[index].click();
+          // Quill's selectItem returns early when the swatch is already the selected one, so its
+          // own close() never runs and re-picking the current color would strand the user in an
+          // open palette — the first thing a keyboard user does, since opening focuses that swatch.
+          if (picker.container.classList.contains('ql-expanded')) {
+            picker.close();
+            picker.label.focus();
+          }
+          return;
+        default:
+          return;
+      }
+      e.preventDefault();
+      if (next >= 0 && next < items.length) {
+        this._focusColorItem(items, next);
       }
     }
   }
