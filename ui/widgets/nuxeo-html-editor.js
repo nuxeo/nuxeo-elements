@@ -278,6 +278,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const { name, fallback } = this._colorPickerLabels(picker);
       label.setAttribute('aria-haspopup', 'listbox');
       options.setAttribute('role', 'listbox');
+      // The palette wraps into rows, so consecutive swatches run left to right. Without this a
+      // screen reader applies the listbox default of vertical and maps its own next/previous
+      // option onto Up/Down, which on screen moves sideways.
+      options.setAttribute('aria-orientation', 'horizontal');
       options.setAttribute('aria-label', name);
       Array.from(options.children).forEach((item) => {
         const colorName = this._colorName(item.dataset.value, fallback);
@@ -300,6 +304,20 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       picker.togglePicker = () => {
         togglePicker.call(picker);
         this._syncColorPicker(picker);
+        if (picker.container.classList.contains('ql-expanded')) {
+          // A screen reader only hands the arrow keys to the page once focus is on an option, and
+          // it activates the trigger by pointer, which leaves focus on the trigger. Deferred: the
+          // browser applies its own mousedown focus after this handler returns.
+          setTimeout(() => {
+            if (
+              this.isConnected &&
+              picker.container.classList.contains('ql-expanded') &&
+              !this._hasColorItemFocus(picker)
+            ) {
+              this._focusSelectedColorItem(picker);
+            }
+          });
+        }
       };
 
       label.addEventListener('keydown', (e) => this._onColorLabelKeydown(picker, e));
@@ -367,7 +385,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _onColorLabelKeydown(picker, e) {
-      if (!['Enter', ' ', 'ArrowDown', 'ArrowUp'].includes(e.key)) {
+      if (!['Enter', ' ', 'ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
         return;
       }
       // Quill's own listener already toggled the palette on Enter.
@@ -380,6 +398,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       if (!picker.container.classList.contains('ql-expanded')) {
         return;
       }
+      this._focusSelectedColorItem(picker);
+    }
+
+    _focusSelectedColorItem(picker) {
       const items = Array.from(picker.options.children);
       this._focusColorItem(items, Math.max(0, items.indexOf(picker.options.querySelector('.ql-selected'))));
     }
