@@ -4,7 +4,8 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, labeled]
     branches:
-      - lts-2025
+      - 'lts-20[0-9][0-9]'
+      - 'develop-20[0-9][0-9]'
 
 permissions:
   contents: read
@@ -30,7 +31,7 @@ jobs:
           repo: nuxeo-web-ui
           workflow-id: preview.yaml
           access-token: ${{ secrets.GIT_ADMIN_TOKEN }}
-          branch-name: lts-2025
+          branch-name: ${{ github.base_ref }}
           inputs: |
             branch_name: ${{ env.BRANCH_NAME }}
 
