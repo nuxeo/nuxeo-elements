@@ -370,19 +370,25 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const { label, options } = picker;
       const { name, fallback } = this._colorPickerLabels(picker);
       const items = Array.from(options.children);
-      // Whenever the editor holds no selection Quill unmarks the palette entirely, and the swatch
-      // that clears the format is then in effect. It is not at a fixed index: Quill strips `value`
-      // from the palette's default color, which is black for text but white for backgrounds.
-      const selected =
-        options.querySelector('.ql-picker-item.ql-selected') || items.find((item) => !item.dataset.value) || items[0];
+      // Quill marks a swatch only when exactly one known color is in effect. It leaves the palette
+      // unmarked when the editor holds no selection, when the selection spans several colors, and
+      // when its color is not one of these swatches — none of which mean the format was cleared,
+      // so nothing may be reported as selected in those states.
+      const selected = options.querySelector('.ql-picker-item.ql-selected');
+      // Roving tabindex: the listbox is entered once, then navigated with the arrow keys. With no
+      // swatch marked the entry point is the first one.
+      const entry = selected || items[0];
       items.forEach((item) => {
         item.setAttribute('aria-selected', String(item === selected));
-        // Roving tabindex: the listbox is entered once, then navigated with the arrow keys.
-        item.tabIndex = item === selected ? 0 : -1;
+        item.tabIndex = item === entry ? 0 : -1;
       });
-      const { dataset = {} } = selected || {};
-      const current = this._colorName(dataset.value, fallback);
-      label.setAttribute('aria-label', this.i18n('htmlEditor.colorPicker.selected', name, current));
+      // Naming the trigger after a color that is not in effect would be worse than not naming one,
+      // so while Quill is unmarked the trigger carries just the picker's own name.
+      const current = selected ? this._colorName(selected.dataset.value, fallback) : null;
+      label.setAttribute(
+        'aria-label',
+        current === null ? name : this.i18n('htmlEditor.colorPicker.selected', name, current),
+      );
     }
 
     _hasColorItemFocus(picker) {
