@@ -188,7 +188,11 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     static get observers() {
-      return ['_valueChanged(value, _editor)', '_readOnlyChanged(readOnly, _editor)'];
+      return [
+        '_valueChanged(value, _editor)',
+        '_readOnlyChanged(readOnly, _editor)',
+        '_colorPickerI18nChanged(i18n, _editor)',
+      ];
     }
 
     static get importMeta() {
@@ -265,31 +269,44 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
      * swatches, and the only key the palette answers to is Enter on the trigger itself. Turn each
      * palette into a listbox of named options and give it the roving focus that pattern implies.
      */
-    _setupColorPickers() {
-      const { theme } = this._editor;
+    _colorPickers() {
+      const { theme } = this._editor || {};
       const { pickers } = theme || {};
-      (pickers || [])
-        .filter((picker) => picker.container.classList.contains('ql-color-picker'))
-        .forEach((picker) => this._setupColorPicker(picker));
+      return (pickers || []).filter((picker) => picker.container.classList.contains('ql-color-picker'));
+    }
+
+    _setupColorPickers() {
+      this._colorPickers().forEach((picker) => this._setupColorPicker(picker));
+    }
+
+    // Unlike the template bindings, these names are written straight onto Quill's DOM, so they do
+    // not follow `i18n` when a locale lands after the editor was built.
+    _colorPickerI18nChanged() {
+      this._colorPickers().forEach((picker) => this._labelColorPicker(picker));
+    }
+
+    _labelColorPicker(picker) {
+      const { options } = picker;
+      const { name, fallback } = this._colorPickerLabels(picker);
+      options.setAttribute('aria-label', name);
+      Array.from(options.children).forEach((item) => {
+        const colorName = this._colorName(item.dataset.value, fallback);
+        item.setAttribute('aria-label', colorName);
+        // The swatch conveys its color by fill alone; a tooltip gives sighted users the name too.
+        item.setAttribute('title', colorName);
+      });
+      this._syncColorPicker(picker);
     }
 
     _setupColorPicker(picker) {
       const { container, label, options } = picker;
-      const { name, fallback } = this._colorPickerLabels(picker);
       label.setAttribute('aria-haspopup', 'listbox');
       options.setAttribute('role', 'listbox');
       // The palette wraps into rows, so consecutive swatches run left to right. Without this a
       // screen reader applies the listbox default of vertical and maps its own next/previous
       // option onto Up/Down, which on screen moves sideways.
       options.setAttribute('aria-orientation', 'horizontal');
-      options.setAttribute('aria-label', name);
-      Array.from(options.children).forEach((item) => {
-        const colorName = this._colorName(item.dataset.value, fallback);
-        item.setAttribute('role', 'option');
-        item.setAttribute('aria-label', colorName);
-        // The swatch conveys its color by fill alone; a tooltip gives sighted users the name too.
-        item.setAttribute('title', colorName);
-      });
+      Array.from(options.children).forEach((item) => item.setAttribute('role', 'option'));
 
       const { selectItem, togglePicker } = picker;
       picker.selectItem = (item, trigger) => {
@@ -329,7 +346,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         }
       });
 
-      this._syncColorPicker(picker);
+      this._labelColorPicker(picker);
     }
 
     _colorPickerLabels(picker) {
@@ -413,14 +430,15 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         return;
       }
       const columns = Math.min(COLOR_PICKER_COLUMNS, items.length);
-      const forward = this.getAttribute('dir') === 'rtl' ? -1 : 1;
       let next;
       switch (e.key) {
+        // Quill floats every swatch left and has no right to left override, so the palette reads
+        // left to right whatever the editor's direction: the arrows must not be mirrored.
         case 'ArrowRight':
-          next = index + forward;
+          next = index + 1;
           break;
         case 'ArrowLeft':
-          next = index - forward;
+          next = index - 1;
           break;
         case 'ArrowDown':
           next = index + columns;

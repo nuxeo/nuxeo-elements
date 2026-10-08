@@ -335,6 +335,19 @@ suite('nuxeo-html-editor color pickers', () => {
     });
   });
 
+  // These names are written straight onto Quill's DOM, so unlike the template bindings they have
+  // to be rewritten by hand when a locale lands after the editor was built.
+  test('renames the palette when the locale changes', () => {
+    el.i18n = (key) => `xx:${key}`;
+    [colorPicker, backgroundPicker].forEach((picker) => {
+      const items = itemsOf(picker);
+      expect(optionsOf(picker).getAttribute('aria-label')).to.match(/^xx:/);
+      expect(labelOf(picker).getAttribute('aria-label')).to.match(/^xx:/);
+      expect(items[1].getAttribute('aria-label')).to.equal('xx:htmlEditor.colorName.red');
+      expect(items[1].getAttribute('title')).to.equal('xx:htmlEditor.colorName.red');
+    });
+  });
+
   test('walks the palette with the arrow keys', () => {
     openPalette(colorPicker);
     const items = itemsOf(colorPicker);
@@ -366,13 +379,17 @@ suite('nuxeo-html-editor color pickers', () => {
     expect(el.shadowRoot.activeElement).to.equal(items[0]);
   });
 
-  test('reverses the horizontal arrow keys when the editor is right to left', () => {
+  // Quill floats every swatch left and has no right to left override, so the palette keeps its
+  // left to right order and mirroring the arrows would send them the wrong way.
+  test('keeps the horizontal arrow keys unmirrored when the editor is right to left', () => {
     el.setAttribute('dir', 'rtl');
     openPalette(colorPicker);
     const items = itemsOf(colorPicker);
     el._focusColorItem(items, 3);
     press(items[3], 'ArrowRight');
-    expect(el.shadowRoot.activeElement).to.equal(items[2]);
+    expect(el.shadowRoot.activeElement).to.equal(items[4]);
+    press(items[4], 'ArrowLeft');
+    expect(el.shadowRoot.activeElement).to.equal(items[3]);
   });
 
   test('applies the focused color with Space and hands focus back to the trigger', () => {
