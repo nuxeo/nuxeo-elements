@@ -163,6 +163,60 @@ suite('nuxeo-input accessibility', () => {
     });
   });
 
+  // WEBUI-482: the invalid/required state must be exposed on the focusable control, because
+  // paper-input otherwise conveys it with colour and a thicker underline only.
+  suite('aria-invalid / aria-required on the native input', () => {
+    test('mirrors the required flag', async () => {
+      const el = await fixture(html`
+        <nuxeo-input label="Title" required></nuxeo-input>
+      `);
+      await flush();
+      await tick();
+
+      expect(getNativeInput(el).getAttribute('aria-required')).to.equal('true');
+      expect(getNativeInput(el).getAttribute('aria-invalid')).to.equal('false');
+    });
+
+    test('does not set aria-required on an optional input', async () => {
+      const el = await fixture(html`
+        <nuxeo-input label="Title"></nuxeo-input>
+      `);
+      await flush();
+      await tick();
+
+      expect(getNativeInput(el).hasAttribute('aria-required')).to.be.false;
+    });
+
+    test('mirrors the invalid state when validation fails and passes', async () => {
+      const el = await fixture(html`
+        <nuxeo-input label="Title" required></nuxeo-input>
+      `);
+      await flush();
+      await tick();
+
+      expect(el.validate()).to.be.false;
+      await tick();
+      expect(getNativeInput(el).getAttribute('aria-invalid')).to.equal('true');
+
+      el.value = 'A title';
+      expect(el.validate()).to.be.true;
+      await tick();
+      expect(getNativeInput(el).getAttribute('aria-invalid')).to.equal('false');
+    });
+
+    test('returns silently when the native input cannot be found', async () => {
+      const el = await fixture(html`
+        <nuxeo-input label="Title"></nuxeo-input>
+      `);
+      await flush();
+      await tick();
+      const saved = el.$.paperInput;
+      el.$.paperInput = null;
+      expect(() => el._applyAriaValidationState()).to.not.throw();
+      el.$.paperInput = saved;
+    });
+  });
+
   // Defensive-fallback paths inside _applyNativeInputAriaLabel(). These exercise
   // the early-return when paper-input is missing and the shadowRoot.querySelector
   // fallback used when iron-input's wrapped native input cannot be discovered

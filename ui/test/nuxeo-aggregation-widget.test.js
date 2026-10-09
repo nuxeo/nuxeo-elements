@@ -388,4 +388,62 @@ suite('nuxeo-checkbox-aggregation', () => {
       checkElementsVisibility(checkboxes, 8, true);
     });
   });
+
+  suite('Keyboard navigation', () => {
+    test('Should not make the host a tab stop, so the header button is the only one', async () => {
+      const nuxeoCheckboxAggregation = await fixture(
+        html`
+          <nuxeo-checkbox-aggregation .data=${data} collapsible label="Some label"> </nuxeo-checkbox-aggregation>
+        `,
+      );
+
+      expect(nuxeoCheckboxAggregation.hasAttribute('tabindex')).to.be.false;
+      const button = nuxeoCheckboxAggregation.shadowRoot.querySelector('button');
+      expect(button.hasAttribute('tabindex')).to.be.false;
+      expect(button.matches(':disabled')).to.be.false;
+    });
+
+    test('Should expand and collapse when the focused header button is activated', async () => {
+      const nuxeoCheckboxAggregation = await fixture(
+        html`
+          <nuxeo-checkbox-aggregation .data=${data} collapsible label="Some label"> </nuxeo-checkbox-aggregation>
+        `,
+      );
+
+      // Selected by its disclosure semantics rather than by tag name, so the check
+      // below is meaningful: the control has to be a native <button>, which is what
+      // makes the browser activate it on Enter and Space. A div with a click handler
+      // would satisfy the activation assertions yet stay unreachable by keyboard.
+      const button = nuxeoCheckboxAggregation.shadowRoot.querySelector('[aria-expanded]');
+      expect(button.tagName).to.equal('BUTTON');
+
+      button.focus();
+      expect(nuxeoCheckboxAggregation.shadowRoot.activeElement).to.equal(button);
+      expect(button.getAttribute('aria-expanded')).to.equal('false');
+
+      button.click();
+      await waitForAnimationToEnd();
+      expect(nuxeoCheckboxAggregation.opened).to.be.true;
+      expect(button.getAttribute('aria-expanded')).to.equal('true');
+
+      button.click();
+      await waitForAnimationToEnd();
+      expect(nuxeoCheckboxAggregation.opened).to.be.false;
+      expect(button.getAttribute('aria-expanded')).to.equal('false');
+    });
+
+    test('Should keep a visible focus ring on the header button when focused by keyboard', async () => {
+      const nuxeoCheckboxAggregation = await fixture(
+        html`
+          <nuxeo-checkbox-aggregation .data=${data} collapsible label="Some label"> </nuxeo-checkbox-aggregation>
+        `,
+      );
+
+      const styles = nuxeoCheckboxAggregation.shadowRoot.querySelector('style').textContent;
+      expect(styles).to.match(/button:focus\s*\{[^}]*outline:\s*auto/);
+      // The ring is dropped only for pointer focus, so a browser without
+      // :focus-visible keeps it instead of hiding it.
+      expect(styles).to.match(/button:focus:not\(:focus-visible\)\s*\{[^}]*outline:\s*none/);
+    });
+  });
 });
