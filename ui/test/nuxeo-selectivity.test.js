@@ -653,6 +653,90 @@ suite('nuxeo-selectivity', () => {
   });
 
   // --------------------------------------------------------------------------
+  // Unit: aria validation state (WEBUI-482 / WEBUI-180)
+  // --------------------------------------------------------------------------
+  // The widget renders its error as a coloured label next to the control, which conveys nothing
+  // programmatically. The state has to reach the control itself, and survive selectivity rebuilding
+  // that control on every selection change.
+  suite('aria validation state', () => {
+    const settled = () => new Promise((resolve) => setTimeout(resolve, 20));
+    const controlOf = (widget) =>
+      widget.shadowRoot.querySelector('.selectivity-single-select-input, .selectivity-multiple-input');
+
+    test('marks a required control as required', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity .data=${data} required></nuxeo-selectivity>
+      `);
+      await settled();
+
+      const control = controlOf(selectivityWidget);
+      expect(control.getAttribute('aria-required')).to.equal('true');
+      expect(control.getAttribute('aria-invalid')).to.equal('false');
+      expect(control.hasAttribute('aria-describedby')).to.be.false;
+    });
+
+    test('marks the control invalid and points it at the error message', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity .data=${data} required></nuxeo-selectivity>
+      `);
+      selectivityWidget.value = null;
+      selectivityWidget.validate();
+      await settled();
+
+      const control = controlOf(selectivityWidget);
+      const error = selectivityWidget.shadowRoot.querySelector('.error');
+      expect(control.getAttribute('aria-invalid')).to.equal('true');
+      expect(control.getAttribute('aria-describedby')).to.equal(error.id);
+      expect(error.id).to.be.ok;
+      expect(error.textContent.trim()).to.equal(selectivityWidget.errorMessage);
+    });
+
+    test('clears the invalid state once a value is selected', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity .data=${data} multiple required></nuxeo-selectivity>
+      `);
+      selectivityWidget.value = [];
+      selectivityWidget.validate();
+      await settled();
+      expect(controlOf(selectivityWidget).getAttribute('aria-invalid')).to.equal('true');
+
+      selectivityWidget.value = ['Berlin'];
+      await settled();
+
+      const control = controlOf(selectivityWidget);
+      expect(control.getAttribute('aria-invalid')).to.equal('false');
+      expect(control.hasAttribute('aria-describedby')).to.be.false;
+    });
+
+    // Adding or removing an entry makes selectivity re-render the selection, which drops the
+    // attributes we set on the control; the state has to come back with it.
+    test('re-applies the state when selectivity re-renders', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity .data=${data} multiple required label="Subjects"></nuxeo-selectivity>
+      `);
+      selectivityWidget.value = [];
+      selectivityWidget.validate();
+      await settled();
+
+      // stand in for the attributes selectivity discards while re-rendering
+      const stale = controlOf(selectivityWidget);
+      ['aria-invalid', 'aria-required', 'aria-labelledby'].forEach((attr) => stale.removeAttribute(attr));
+      selectivityWidget.value = ['Berlin'];
+      selectivityWidget.value = [];
+      selectivityWidget.validate();
+      await settled();
+
+      const control = controlOf(selectivityWidget);
+      const labelElement = selectivityWidget.shadowRoot.querySelector('#label');
+      expect(control.getAttribute('aria-invalid')).to.equal('true');
+      expect(control.getAttribute('aria-required')).to.equal('true');
+      // a visible label names the control through aria-labelledby, so that is what has to come back
+      expect(control.getAttribute('aria-labelledby')).to.equal(labelElement.id);
+      expect(labelElement.textContent.trim()).to.equal('Subjects');
+    });
+  });
+
+  // --------------------------------------------------------------------------
   // Unit: formatters
   // --------------------------------------------------------------------------
   suite('formatters', () => {
@@ -1253,6 +1337,74 @@ suite('nuxeo-selectivity', () => {
       expect(dropdown).to.not.be.null;
       const items = dropdown.querySelectorAll('.selectivity-result-item');
       expect(items.length).to.be.at.least(1);
+    });
+
+    // ELEMENTS-1746: MultipleSelectivity.filterResults() rebuilds each result item, and used to
+    // drop `depth`. The padding-left expression then evaluated to NaN, the inline style was
+    // discarded and every nested entry collapsed onto the single 17px stylesheet indent — so a
+    // grandchild looked like a sibling of its own parent.
+    const deepTree = [
+      {
+        id: 'documents-pca',
+        displayLabel: 'Documents PCA',
+        children: [
+          {
+            id: 'dtc',
+            displayLabel: 'Directives techniques',
+            children: [{ id: 'dtc-detail', displayLabel: 'Detail' }],
+          },
+          { id: 'modification', displayLabel: 'Modification' },
+        ],
+      },
+    ];
+
+    const openAndReadPadding = async (widget) => {
+      widget._selectivity.open();
+      await flush();
+      await new Promise((r) => setTimeout(r, 50));
+      const dropdown = findDropdown(widget);
+      expect(dropdown).to.not.be.null;
+      const rows = {};
+      dropdown.querySelectorAll('.selectivity-result-item').forEach((row) => {
+        rows[row.textContent.trim()] = row.style.paddingLeft;
+      });
+      return rows;
+    };
+
+    test('indents nested result items by depth when multiple is true', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity .data=${deepTree} multiple min-chars="0" frequency="0"></nuxeo-selectivity>
+      `);
+      const padding = await openAndReadPadding(selectivityWidget);
+      expect(padding['Documents PCA']).to.equal('7px');
+      expect(padding['Directives techniques']).to.equal('17px');
+      expect(padding.Detail).to.equal('27px');
+      // A child of the root must not be indented like a grandchild.
+      expect(padding.Modification).to.equal('17px');
+    });
+
+    test('indents nested result items identically in single and multiple mode', async () => {
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity .data=${deepTree} min-chars="0" frequency="0"></nuxeo-selectivity>
+      `);
+      const single = await openAndReadPadding(selectivityWidget);
+      selectivityWidget = await fixture(html`
+        <nuxeo-selectivity .data=${deepTree} multiple min-chars="0" frequency="0"></nuxeo-selectivity>
+      `);
+      const multiple = await openAndReadPadding(selectivityWidget);
+      expect(multiple).to.deep.equal(single);
+    });
+
+    test('_resultPadding falls back to the root indent for a non-numeric depth', async () => {
+      selectivityWidget = await fixture(
+        html`
+          <nuxeo-selectivity .data=${deepTree}></nuxeo-selectivity>
+        `,
+      );
+      expect(selectivityWidget._resultPadding(0)).to.equal(7);
+      expect(selectivityWidget._resultPadding(2)).to.equal(27);
+      expect(selectivityWidget._resultPadding(undefined)).to.equal(7);
+      expect(selectivityWidget._resultPadding(NaN)).to.equal(7);
     });
   });
 

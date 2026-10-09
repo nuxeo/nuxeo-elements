@@ -1,0 +1,34 @@
+<!--
+Mirrors the create/edit layout generated for a document type with a required multivalued string
+property: `required` sits on the entry widget of the row form, never on the table or its columns
+(WEBUI-180, ELEMENTS-1891).
+-->
+<dom-module id="multivalued-required-layout">
+  <template>
+    <nuxeo-input name="title" label="Title" value="[[title]]" required></nuxeo-input>
+
+    <nuxeo-data-table items="[[items]]" name="multiString" editable>
+      <nuxeo-data-table-column name="Multi String">
+        <template> [[item]] </template>
+      </nuxeo-data-table-column>
+
+      <nuxeo-data-table-form>
+        <template>
+          <nuxeo-input name="string" label="Multi String" value="{{item}}" required></nuxeo-input>
+        </template>
+      </nuxeo-data-table-form>
+    </nuxeo-data-table>
+  </template>
+  <script>
+    Polymer({
+      is: 'multivalued-required-layout',
+      properties: {
+        title: String,
+        items: {
+          type: Array,
+          value: () => [],
+        },
+      },
+    });
+  </script>
+</dom-module>
