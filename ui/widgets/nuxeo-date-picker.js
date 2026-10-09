@@ -219,18 +219,6 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     ready() {
       super.ready();
       moment.locale(navigator.languages !== undefined ? navigator.languages[0] : navigator.language);
-      // added this piece of code to rectify the issue where dates are not applied on first click
-      const datePicker = this.shadowRoot.querySelector('custom-date-picker');
-      const handleclick = () => {
-        datePicker.focus();
-      };
-      datePicker.addEventListener('opened-changed', (e) => {
-        if (e.detail.value) {
-          datePicker.addEventListener('focusout', handleclick);
-        } else {
-          datePicker.removeEventListener('focusout', handleclick);
-        }
-      });
       // tell custom-date-picker how to display dates since default behavior is US locales (MM-DD-YYYY)
       // this way we can take advantage of moment locale and use the date format that is most suitable for the user
       this.$.date.set('i18n.formatDate', (date) => this._moment(date).format(moment.localeData().longDateFormat('L')));
