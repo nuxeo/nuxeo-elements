@@ -458,3 +458,152 @@ suite('nuxeo-date-picker autocomplete', () => {
     expect(getDateInput(el).getAttribute('autocomplete')).to.equal('bday');
   });
 });
+
+// Covers ELEMENTS-2095. This wrapper used to re-focus the inner picker on every `focusout`
+// raised while the calendar was open - a workaround carried over from <vaadin-date-picker>,
+// where it focused a plain wrapper div. Against custom-date-picker it lands on the text
+// input, and focusing the text input is precisely what dismisses the calendar.
+suite('nuxeo-date-picker calendar stays open on focus churn', () => {
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  async function openedPicker() {
+    const el = await fixture(html`
+      <nuxeo-date-picker label="Expires"></nuxeo-date-picker>
+    `);
+    await flush();
+    el.$.date._openCalendar(null, false);
+    await flush();
+    return el;
+  }
+
+  test('a focusout while the calendar is open neither re-focuses the input nor closes it', async () => {
+    const el = await openedPicker();
+    const inner = el.$.date;
+    const focusSpy = sinon.spy(inner, 'focus');
+
+    inner.dispatchEvent(new FocusEvent('focusout', { bubbles: true, composed: true }));
+    await flush();
+    await sleep(120);
+
+    expect(focusSpy.called).to.be.false;
+    expect(inner._isCalendarOpen).to.be.true;
+    expect(inner.shadowRoot.activeElement).to.not.equal(inner.shadowRoot.querySelector('#dateInput'));
+    focusSpy.restore();
+  });
+
+  test('paging to the previous month keeps the calendar open', async () => {
+    const el = await openedPicker();
+    const inner = el.$.date;
+    const prev = inner.shadowRoot.querySelector('#prevMonth');
+
+    prev.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, composed: true }));
+    prev.click();
+    await flush();
+    await sleep(120);
+
+    expect(inner._isCalendarOpen).to.be.true;
+  });
+
+  // The removed workaround existed to make "dates are applied on first click" work with
+  // vaadin-date-picker. Assert that selecting a day still applies the value without it.
+  test('selecting a day on the first click applies the value', async () => {
+    const el = await openedPicker();
+    const inner = el.$.date;
+    const day = inner.shadowRoot.querySelector('.calendar-day:not(.empty):not(.other-month)');
+
+    day.click();
+    await flush();
+
+    expect(inner._isCalendarOpen).to.be.false;
+    expect(el.value).to.be.ok;
+    expect(moment(el.value).format('YYYY-MM-DD')).to.equal(day.dataset.date);
+  });
+});
+
+suite('nuxeo-date-picker nested focus regression (ELEMENTS-2095)', () => {
+  let inner;
+  let sibling;
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 250));
+
+  setup(async () => {
+    const host = await fixture(
+      html`
+        <div></div>
+      `,
+    );
+    const root = host.attachShadow({ mode: 'open' });
+    const picker = document.createElement('nuxeo-date-picker');
+    picker.label = 'Expires';
+    sibling = document.createElement('button');
+    sibling.textContent = 'Outside the picker';
+    root.append(picker, sibling);
+    await flush();
+    inner = picker.$.date;
+    inner._openCalendar(null, true);
+    await flush();
+    await settle();
+  });
+
+  teardown(() => {
+    if (inner._isCalendarOpen) {
+      inner._closeCalendar();
+    }
+  });
+
+  test('focus on navigation inside nested shadow roots keeps the calendar open', async () => {
+    const next = inner.shadowRoot.querySelector('#nextMonth');
+    next.focus();
+    next.dispatchEvent(new FocusEvent('focusin', { bubbles: true, composed: true }));
+    await settle();
+    expect(inner._isCalendarOpen).to.be.true;
+  });
+
+  test('losing day-cell focus after the old grace period keeps the calendar open', async () => {
+    const day = inner.shadowRoot.querySelector('.calendar-day:not(.empty):not(.other-month)');
+    day.focus();
+    await settle();
+    day.blur();
+    await settle();
+    expect(inner._isCalendarOpen).to.be.true;
+    expect(inner.shadowRoot.activeElement).to.not.equal(inner.shadowRoot.querySelector('#dateInput'));
+  });
+
+  test('focusing a sibling under the same outer shadow host closes the calendar', async () => {
+    sibling.focus();
+    sibling.dispatchEvent(new FocusEvent('focusin', { bubbles: true, composed: true }));
+    await settle();
+    expect(inner._isCalendarOpen).to.be.false;
+  });
+
+  test('focusing the text input still closes the calendar for typing', async () => {
+    inner.shadowRoot.querySelector('#dateInput').focus();
+    await settle();
+    expect(inner._isCalendarOpen).to.be.false;
+  });
+
+  for (const key of ['Enter', ' ']) {
+    test(`keyboard ${key === ' ' ? 'Space' : key} pages back repeatedly without dismissing the calendar`, async () => {
+      const previous = inner.shadowRoot.querySelector('#prevMonth');
+      const initial = inner._viewDate.getFullYear() * 12 + inner._viewDate.getMonth();
+      for (let count = 0; count < 3; count++) {
+        previous.focus();
+        previous.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, composed: true, cancelable: true }));
+        await flush();
+        await settle();
+        expect(inner._isCalendarOpen).to.be.true;
+      }
+      expect(inner._viewDate.getFullYear() * 12 + inner._viewDate.getMonth()).to.equal(initial - 3);
+    });
+  }
+
+  test('focus within the year dropdown does not dismiss its options', async () => {
+    inner._isYearDropdownOpen = true;
+    inner.shadowRoot.querySelector('#yearOptions').classList.add('open');
+    const year = inner.shadowRoot.querySelector('.year-option');
+    year.focus();
+    year.dispatchEvent(new FocusEvent('focusin', { bubbles: true, composed: true }));
+    await settle();
+    expect(inner._isCalendarOpen).to.be.true;
+    expect(inner._isYearDropdownOpen).to.be.true;
+  });
+});
