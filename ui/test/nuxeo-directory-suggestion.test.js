@@ -138,4 +138,45 @@ suite('nuxeo-directory-suggestion extras', () => {
       expect(el.getAttribute('dir')).to.be.ok;
     });
   });
+
+  // Regression: the required error must reappear on every submit, even after the user
+  // selects then removes a value. The wrapper binds the inner selectivity's `invalid`
+  // two-way so the parent/child state never desyncs (WEBUI-2190).
+  suite('required error idempotency (WEBUI-2190)', () => {
+    let widget;
+
+    setup(async () => {
+      widget = await fixture(
+        html`
+          <nuxeo-directory-suggestion directory-name="nature" required multiple></nuxeo-directory-suggestion>
+        `,
+      );
+    });
+
+    test('re-shows the required error on a second submit after a select→remove cycle', () => {
+      const inner = widget.$.s2;
+
+      // 1st submit while empty: wrapper and inner both surface the required error
+      expect(widget.validate()).to.be.false;
+      expect(widget.invalid).to.be.true;
+      expect(inner.invalid).to.be.true;
+      expect(inner.errorMessage).to.be.ok;
+
+      // selecting a value clears the error immediately and keeps parent/child in sync
+      widget.value = ['art'];
+      expect(widget.invalid).to.be.false;
+      expect(inner.invalid).to.be.false;
+
+      // removing the value must not prematurely resurface the error
+      widget.value = [];
+      expect(widget.invalid).to.be.false;
+      expect(inner.invalid).to.be.false;
+
+      // 2nd submit while empty again: the error must reappear on both parent and child
+      expect(widget.validate()).to.be.false;
+      expect(widget.invalid).to.be.true;
+      expect(inner.invalid).to.be.true;
+      expect(inner.errorMessage).to.be.ok;
+    });
+  });
 });

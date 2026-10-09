@@ -26,6 +26,7 @@ import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import '../nuxeo-icons.js';
 import './nuxeo-tooltip.js';
 
 {
@@ -98,9 +99,9 @@ import './nuxeo-tooltip.js';
         >
           <paper-icon-button
             id="iconButton"
-            icon="icons:more-vert"
+            icon="nuxeo:more-vert"
             slot="dropdown-trigger"
-            aria-labelledby="iconButtonTooltip"
+            aria-label$="[[i18n('actionsMenu.ariaLabel')]]"
             on-keydown="_onDropdownTriggerKeydown"
           ></paper-icon-button>
           <paper-listbox slot="dropdown-content" role="list">

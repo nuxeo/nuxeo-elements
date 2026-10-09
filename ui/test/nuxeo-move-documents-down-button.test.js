@@ -43,11 +43,11 @@ suite('Given on a Ordered Folder, I have 5 items', () => {
     test('Then clicking "Down" should order items to 2, 3, 4, 5', async () => {
       tap(downButton);
       await waitForEvent(downButton, 'refresh-display');
-      assert.equal(2, downButton.documents[0].uid);
-      assert.equal(1, downButton.documents[1].uid);
-      assert.equal(3, downButton.documents[2].uid);
-      assert.equal(4, downButton.documents[3].uid);
-      assert.equal(5, downButton.documents[4].uid);
+      assert.equal(downButton.documents[0].uid, 2);
+      assert.equal(downButton.documents[1].uid, 1);
+      assert.equal(downButton.documents[2].uid, 3);
+      assert.equal(downButton.documents[3].uid, 4);
+      assert.equal(downButton.documents[4].uid, 5);
     });
   });
 
@@ -63,11 +63,11 @@ suite('Given on a Ordered Folder, I have 5 items', () => {
     test('Then clicking "Down" should order items to 3, 4, 5', () => {
       tap(downButton);
       return waitForEvent(downButton, 'refresh-display').then(() => {
-        assert.equal(1, downButton.documents[0].uid);
-        assert.equal(3, downButton.documents[1].uid);
-        assert.equal(2, downButton.documents[2].uid);
-        assert.equal(4, downButton.documents[3].uid);
-        assert.equal(5, downButton.documents[4].uid);
+        assert.equal(downButton.documents[0].uid, 1);
+        assert.equal(downButton.documents[1].uid, 3);
+        assert.equal(downButton.documents[2].uid, 2);
+        assert.equal(downButton.documents[3].uid, 4);
+        assert.equal(downButton.documents[4].uid, 5);
       });
     });
   });
@@ -84,11 +84,11 @@ suite('Given on a Ordered Folder, I have 5 items', () => {
     test('Then clicking "Down" should order items to 4, 5', async () => {
       tap(downButton);
       await waitForEvent(downButton, 'refresh-display');
-      assert.equal(1, downButton.documents[0].uid);
-      assert.equal(3, downButton.documents[1].uid);
-      assert.equal(5, downButton.documents[2].uid);
-      assert.equal(2, downButton.documents[3].uid);
-      assert.equal(4, downButton.documents[4].uid);
+      assert.equal(downButton.documents[0].uid, 1);
+      assert.equal(downButton.documents[1].uid, 3);
+      assert.equal(downButton.documents[2].uid, 5);
+      assert.equal(downButton.documents[3].uid, 2);
+      assert.equal(downButton.documents[4].uid, 4);
     });
   });
 
@@ -102,7 +102,7 @@ suite('Given on a Ordered Folder, I have 5 items', () => {
     });
 
     test('Then I cannot click "Down"', () => {
-      assert.equal(false, downButton._available);
+      assert.equal(downButton._available, false);
     });
   });
 });

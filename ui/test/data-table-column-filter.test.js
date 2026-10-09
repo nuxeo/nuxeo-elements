@@ -127,4 +127,23 @@ suite('nuxeo-data-table-column-filter (WEBUI-1885)', () => {
       expect(el.value).to.equal('restored');
     });
   });
+
+  suite('required indicator (ELEMENTS-1891)', () => {
+    test('is hidden by default', () => {
+      expect(el.required).to.be.false;
+      expect(el.shadowRoot.querySelector('.required-indicator').hasAttribute('hidden')).to.be.true;
+    });
+
+    test('is shown when required is set, and hidden again when cleared', async () => {
+      el.required = true;
+      await flush();
+      const indicator = el.shadowRoot.querySelector('.required-indicator');
+      expect(indicator.hasAttribute('hidden')).to.be.false;
+      expect(indicator.textContent.trim()).to.equal('*');
+
+      el.required = false;
+      await flush();
+      expect(indicator.hasAttribute('hidden')).to.be.true;
+    });
+  });
 });

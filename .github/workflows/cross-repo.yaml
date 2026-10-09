@@ -20,6 +20,13 @@ on:
 permissions:
   contents: read
 
+# Cancel a stale in-flight cross-repo check (and its poller) for the same PR when a newer commit
+# is pushed, so superseded ~1h ftest runs don't keep consuming runners. `github.ref` is unique per
+# PR (refs/pull/<n>/merge) and per branch, avoiding collisions between PRs that share a head branch name.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   BRANCH_NAME: ${{ github.head_ref || inputs.branch || github.base_ref }}
 

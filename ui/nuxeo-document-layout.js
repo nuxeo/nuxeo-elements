@@ -51,13 +51,20 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
             margin-bottom: 8px;
           }
 
+          /* The summary is focused programmatically, where a focus ring would look like a defect.
+             Keyboard driven focus still shows one. */
+          #error:focus:not(:focus-visible) {
+            outline: none;
+          }
+
           .error {
+            display: block;
             border-left: 4px solid var(--paper-input-container-invalid-color, #de350b);
             color: var(--paper-input-container-invalid-color, #de350b);
             padding-left: 8px;
           }
         </style>
-        <div id="error" hidden$="[[!_hasValidationErrors(_errorMessages.splices)]]">
+        <div id="error" role="alert" tabindex="-1" hidden$="[[!_hasValidationErrors(_errorMessages.splices)]]">
           <dom-repeat items="[[_errorMessages]]">
             <template>
               <span class="error">[[item]]</span>
@@ -151,6 +158,14 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
      * @param {string} layout The document layout.
      * @param {object} element The document layout element.
      */
+
+    ready() {
+      super.ready();
+      // Client side validation failures are otherwise only signalled on the widgets themselves, by
+      // colour and a thicker underline. Mirror them in the error summary above the form so the
+      // failing field names are also conveyed as text (WCAG 2.1 SC 1.4.1 / SC 3.3.3).
+      this.$.layout.addEventListener('layout-validation-errors', (e) => this._onLayoutValidationErrors(e));
+    }
 
     /**
      * Returns the layout element.
@@ -300,8 +315,25 @@ import { I18nBehavior } from './nuxeo-i18n-behavior.js';
       }
     }
 
+    _onLayoutValidationErrors(e) {
+      // The event bubbles, so ignore the ones raised by a layout nested inside our own. `target` is
+      // retargeted to the shadow host once the event leaves that layout, hence the composed path.
+      if (e.composedPath()[0] !== this.$.layout) {
+        return;
+      }
+      this._resetValidationErrors();
+      const { errors } = e.detail;
+      if (errors.length > 0) {
+        this._addValidationErrors(errors.map((error) => error.message));
+      }
+    }
+
     _addValidationError(message) {
-      this.push('_errorMessages', message);
+      this._addValidationErrors([message]);
+    }
+
+    _addValidationErrors(messages) {
+      messages.forEach((message) => this.push('_errorMessages', message));
       this.$.error.scrollIntoView();
       this.$.error.focus();
     }

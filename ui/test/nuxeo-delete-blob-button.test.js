@@ -356,4 +356,26 @@ suite('nuxeo-delete-blob-button extras', () => {
       spy.restore();
     });
   });
+
+  suite('accessible name', () => {
+    test('names what is removed, rather than reusing the bare tooltip', () => {
+      expect(el._computeAriaLabel()).to.equal(el.i18n('deleteBlobButton.ariaLabel'));
+      expect(el._computeAriaLabel()).to.not.equal(el._computeLabel());
+    });
+
+    test('exposes the accessible name on the icon button', async () => {
+      const button = await fixture(
+        html`
+          <nuxeo-delete-blob-button
+            document='{ "entity-type": "document", "facets": [], "contextParameters": { "permissions": ["WriteProperties"] }, "properties": { "file:content": { "name": "file.pdf" } } }'
+          ></nuxeo-delete-blob-button>
+        `,
+      );
+      await flush();
+      const iconButton = button.shadowRoot.querySelector('paper-icon-button');
+      expect(iconButton).to.exist;
+      expect(iconButton.getAttribute('aria-label')).to.equal(button.i18n('deleteBlobButton.ariaLabel'));
+      expect(iconButton.hasAttribute('aria-labelledby')).to.be.false;
+    });
+  });
 });

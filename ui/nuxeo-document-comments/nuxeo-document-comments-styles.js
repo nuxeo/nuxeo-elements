@@ -67,6 +67,7 @@ const template = html`
           padding: 0;
           background-color: transparent;
           border: none;
+          color: inherit;
         }
 
         .opaque {

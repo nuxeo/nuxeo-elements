@@ -401,7 +401,7 @@ Nuxeo.AggregateDataBehavior = {
         const term = {};
         term[key] = this.where[key];
         terms.push({ term });
-      }, this);
+      });
     }
     return { bool: { must: terms } };
   },
