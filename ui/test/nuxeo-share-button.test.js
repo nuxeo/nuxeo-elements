@@ -39,11 +39,37 @@ suite('nuxeo-share-button extras', () => {
   suite('_buildPermalink', () => {
     test('builds permalink for document', () => {
       const result = el._buildPermalink({ uid: 'doc1' });
-      expect(result).to.include('#!/doc/doc1');
+      expect(result).to.include('doc?id=doc1');
+      expect(result).to.not.include('#!');
+    });
+
+    test('encodes the document id', () => {
+      const result = el._buildPermalink({ uid: 'a b/c' });
+      expect(result).to.include(`doc?id=${encodeURIComponent('a b/c')}`);
     });
 
     test('returns empty string for null document', () => {
       expect(el._buildPermalink(null)).to.equal('');
+    });
+
+    test('does not duplicate the separator when the path ends with a slash', () => {
+      const { href, origin, search } = window.location;
+      window.history.replaceState({}, '', `/app/${search}`);
+      try {
+        expect(el._buildPermalink({ uid: 'doc1' })).to.equal(`${origin}/app/doc?id=doc1`);
+      } finally {
+        window.history.replaceState({}, '', href);
+      }
+    });
+
+    test('inserts a separator when the path has no trailing slash', () => {
+      const { href, origin, search } = window.location;
+      window.history.replaceState({}, '', `/app${search}`);
+      try {
+        expect(el._buildPermalink({ uid: 'doc1' })).to.equal(`${origin}/app/doc?id=doc1`);
+      } finally {
+        window.history.replaceState({}, '', href);
+      }
     });
   });
 });

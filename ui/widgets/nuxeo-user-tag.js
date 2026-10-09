@@ -49,12 +49,13 @@ import './nuxeo-tooltip.js';
           :host([dir='rtl']) nuxeo-user-avatar {
             margin: 0 0 0 0.5rem;
           }
+          /* em rather than px so this override scales with the text like nuxeo-tag's own padding */
           nuxeo-tag {
-            padding: 0 6px 0 0;
+            padding: 0 0.6em 0 0;
             max-width: 100%;
           }
           :host([dir='rtl']) nuxeo-tag {
-            padding: 0 0 0 6px;
+            padding: 0 0 0 0.6em;
           }
           .tag {
             @apply --layout-horizontal;

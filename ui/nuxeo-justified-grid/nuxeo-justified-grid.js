@@ -433,7 +433,7 @@ import { RoutingBehavior } from '../nuxeo-routing-behavior.js';
       items
         .filter((item) => Object.keys(item).length !== 0)
         .forEach((item, idx) => {
-          const clone = Object.assign({}, item);
+          const clone = { ...item };
           // fallback to square dimensions if the item doesn't have a size object in it's model
           clone.size = clone.properties['picture:info'] || { width: 1, height: 1 };
           clone.size.width = clone.size.width || 1;

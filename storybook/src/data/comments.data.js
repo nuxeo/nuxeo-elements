@@ -1,4 +1,4 @@
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 
 const randomDate = (start = new Date(new Date().getFullYear(), 0, 1), end = new Date()) =>
   new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));

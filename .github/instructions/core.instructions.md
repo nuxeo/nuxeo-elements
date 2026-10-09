@@ -40,6 +40,10 @@ Do NOT use the legacy `Polymer({…})` factory for core elements.
 - Elements: `nuxeo-<name>` (kebab-case)
 - All elements register on the `Nuxeo` global namespace
 
+## Style
+
+- Do not use optional chaining (`?.`) — Polymer lint/analyze predates it and drops elements from `analysis.json`. Use explicit `&&` guards instead.
+
 ## Testing
 
 - Test files: `core/test/nuxeo-<element-name>.test.js`

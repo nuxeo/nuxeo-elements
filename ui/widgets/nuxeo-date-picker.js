@@ -57,6 +57,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         defaultTime: String,
 
         errorMessage: String,
+
+        /**
+         * The HTML autofill token exposed on the native input, e.g. `bday`. Lets a layout declare the
+         * purpose of the field so that browsers and assistive technology can identify it
+         * (WCAG 2.1 SC 1.3.5, technique H98). `off` opts out of autofill and is the default.
+         */
+        autocomplete: {
+          type: String,
+          value: 'off',
+        },
+
         // Reflect external invalid state and propagate to inner picker
         invalid: {
           type: Boolean,
@@ -193,6 +204,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           value="{{_inputValue}}"
           disabled$="[[disabled]]"
           aria-label$="[[_computeDateAriaLabel(label)]]"
+          autocomplete="[[autocomplete]]"
           min="[[min]]"
           max="[[max]]"
           error-message="[[errorMessage]]"

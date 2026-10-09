@@ -267,7 +267,7 @@ import './nuxeo-resource.js';
             params[key] = value['entity-type'] ? value.uid || value.id : JSON.stringify(value);
           }
         }
-      }, this);
+      });
 
       return params;
     }

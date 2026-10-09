@@ -49,8 +49,9 @@ suite('nuxeo-download-button extras', () => {
       expect(result).to.be.a('string');
     });
 
-    test('returns the same value as _computeLabel', () => {
-      expect(el._computeHoverLabel({ title: 'MyFile' })).to.equal(el._computeLabel());
+    test('returns the dedicated accessible name, not the short tooltip', () => {
+      expect(el._computeHoverLabel({ title: 'MyFile' })).to.equal(el.i18n('downloadButton.ariaLabel'));
+      expect(el._computeHoverLabel({ title: 'MyFile' })).to.not.equal(el._computeLabel());
     });
 
     test('handles null doc', () => {
@@ -118,5 +119,23 @@ suite('nuxeo-download-button accessibility', () => {
     const action = el.shadowRoot.querySelector('.action');
     expect(action).to.exist;
     expect(action.getAttribute('role')).to.equal('presentation');
+  });
+
+  test('names the icon button with the full action, not the short tooltip', async () => {
+    const doc = {
+      'entity-type': 'document',
+      uid: '1',
+      properties: {
+        'file:content': { name: 'file.pdf', data: 'http://example/file.pdf' },
+      },
+    };
+    const el = await fixture(
+      html`
+        <nuxeo-download-button .document=${doc}></nuxeo-download-button>
+      `,
+    );
+    const button = el.shadowRoot.querySelector('paper-icon-button');
+    expect(button).to.exist;
+    expect(button.getAttribute('aria-label')).to.equal(el.i18n('downloadButton.ariaLabel'));
   });
 });

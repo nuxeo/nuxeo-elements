@@ -12,22 +12,31 @@
 const fs = require('fs');
 const { execSync } = require('child_process');
 
-function isChromiumInstalled() {
+async function isChromiumInstalled() {
   try {
     const puppeteer = require('puppeteer');
-    const executablePath = puppeteer.executablePath();
+    // puppeteer 25 changed executablePath() to return a Promise<string>; await handles both
+    // that and the older synchronous string return, so the guard resolves a real path either way.
+    const executablePath = await puppeteer.executablePath();
     return Boolean(executablePath) && fs.existsSync(executablePath);
   } catch (_) {
     return false;
   }
 }
 
-if (isChromiumInstalled()) {
-  console.log('[ensure-chromium] Chromium already installed — skipping install.');
-  process.exit(0);
-}
+(async () => {
+  if (await isChromiumInstalled()) {
+    console.log('[ensure-chromium] Chromium already installed — skipping install.');
+    process.exit(0);
+  }
 
-console.log('[ensure-chromium] Installing Puppeteer Chromium…');
-// Use npx so the puppeteer CLI resolves whether or not node_modules/.bin is on PATH
-// (e.g. when this script is invoked directly via `node` rather than through an npm script).
-execSync('npx --no-install puppeteer browsers install chrome', { stdio: 'inherit' });
+  console.log('[ensure-chromium] Installing Puppeteer Chromium…');
+  // Use npx so the puppeteer CLI resolves whether or not node_modules/.bin is on PATH
+  // (e.g. when this script is invoked directly via `node` rather than through an npm script).
+  execSync('npx --no-install puppeteer browsers install chrome', { stdio: 'inherit' });
+})().catch((err) => {
+  // Surface a failed install (e.g. execSync throwing) explicitly with a clean non-zero exit,
+  // rather than letting it bubble up as an unhandled promise rejection.
+  console.error(err);
+  process.exit(1);
+});

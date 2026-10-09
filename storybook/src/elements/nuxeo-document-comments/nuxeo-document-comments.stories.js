@@ -1,7 +1,7 @@
 import '@nuxeo/nuxeo-ui-elements/nuxeo-document-comments/nuxeo-document-comment';
 import '@nuxeo/nuxeo-ui-elements/nuxeo-document-comments/nuxeo-document-comment-thread';
 import { html } from 'lit';
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import { getCommentsSample } from '../../data/comments.data.js';
 import { analyse } from '../../../.storybook/analysis';
 
