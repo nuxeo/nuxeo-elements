@@ -2511,8 +2511,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
      */
     _deepActiveElement() {
       let active = document.activeElement;
-      while (active && active.shadowRoot && active.shadowRoot.activeElement) {
-        active = active.shadowRoot.activeElement;
+      while (active) {
+        const root = active.shadowRoot;
+        if (!root) break;
+        const nestedActive = root.activeElement;
+        if (!nestedActive) break;
+        active = nestedActive;
       }
       return active;
     }
@@ -5415,7 +5419,7 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       // instead - otherwise any outer focus trap or wrapper closes the calendar.
       if (this._isCalendarOpen) {
         const target =
-          this.shadowRoot.querySelector('.calendar-day[tabindex="0"]') ||
+          this.shadowRoot.querySelector('.calendar-day[tabindex="0"]:not([disabled])') ||
           this.shadowRoot.querySelector('#calendarPopover');
         if (target) {
           target.focus();

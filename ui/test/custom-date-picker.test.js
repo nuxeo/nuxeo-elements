@@ -671,6 +671,20 @@ suite('custom-date-picker focus containment (ELEMENTS-2095)', () => {
       expect(el._deepActiveElement()).to.equal(day);
     });
 
+    test('stops at a focused shadow host with no focused descendant', () => {
+      const host = document.createElement('div');
+      host.tabIndex = 0;
+      host.attachShadow({ mode: 'open' });
+      document.body.appendChild(host);
+      try {
+        host.focus();
+        expect(host.shadowRoot.activeElement).to.be.null;
+        expect(el._deepActiveElement()).to.equal(host);
+      } finally {
+        host.remove();
+      }
+    });
+
     test('returns the document active element when there is no shadow root below it', () => {
       const outside = document.createElement('button');
       document.body.appendChild(outside);
@@ -731,6 +745,18 @@ suite('custom-date-picker focus containment (ELEMENTS-2095)', () => {
       expect(active).to.exist;
       expect(active.id).to.not.equal('dateInput');
       expect(el.shadowRoot.querySelector('#calendarPopover').contains(active)).to.be.true;
+    });
+
+    test('falls back to the popover when the tab stop is a disabled minimum-date cell', async () => {
+      el.min = '2026-10-15';
+      el._viewDate = new Date(2026, 9, 1);
+      await flush();
+      const day = el.shadowRoot.querySelector('.calendar-day[tabindex="0"]');
+      expect(day).to.exist;
+      expect(day.disabled).to.be.true;
+      el.focus();
+      expect(el.shadowRoot.activeElement).to.equal(el.shadowRoot.querySelector('#calendarPopover'));
+      expect(el._isCalendarOpen).to.be.true;
     });
 
     test('focuses the text input once the calendar is closed', () => {
