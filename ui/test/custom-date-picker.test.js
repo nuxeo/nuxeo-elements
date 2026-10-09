@@ -456,7 +456,6 @@ suite('custom-date-picker', () => {
       const evt2 = new MouseEvent('mousedown', { bubbles: true, cancelable: true, composed: true });
       prev.dispatchEvent(evt2);
       expect(evt2.defaultPrevented).to.be.true;
-      expect(el._suppressInputFocusCloseUntil).to.be.greaterThan(Date.now());
     });
 
     test('clicking next then previous keeps the calendar open at the min-month boundary', async () => {
@@ -526,24 +525,12 @@ suite('custom-date-picker', () => {
       expect(el._isCalendarOpen).to.be.true;
     });
 
-    test('_onInputFocus does not close the calendar during suppression window', async () => {
-      expect(el._isCalendarOpen).to.be.true;
-      el._suppressInputFocusCloseUntil = Date.now() + 200;
-      el._onInputFocus();
-      await flush();
-      expect(el._isCalendarOpen).to.be.true;
-    });
-
-    test('_handleDocumentFocusIn exits early during suppression window', () => {
+    test('_handleDocumentFocusIn leaves the calendar alone when the target is the document body', () => {
       el._openCalendar();
       el._isYearDropdownOpen = true;
-      el._suppressInputFocusCloseUntil = Date.now() + 200;
-      const closeYearSpy = sinon.spy(el, '_closeYearDropdown');
       const closeCalendarSpy = sinon.spy(el, '_closeCalendar');
       el._handleDocumentFocusIn({ target: document.body });
-      expect(closeYearSpy.called).to.be.false;
       expect(closeCalendarSpy.called).to.be.false;
-      closeYearSpy.restore();
       closeCalendarSpy.restore();
     });
 
@@ -634,22 +621,198 @@ suite('custom-date-picker', () => {
     });
 
     test('_preventNavButtonFocus is a no-op when called without an event', () => {
-      const before = el._suppressInputFocusCloseUntil;
       expect(() => el._preventNavButtonFocus()).to.not.throw();
-      expect(el._suppressInputFocusCloseUntil).to.equal(before);
     });
 
-    test('_handleDocumentFocusIn proceeds after the suppression window expires', () => {
+    test('_handleDocumentFocusIn still closes a year dropdown whose focus moved outside', () => {
       el._openCalendar();
       el._isYearDropdownOpen = true;
-      // Set a window in the past so the second condition (Date.now() < end) is false.
-      el._suppressInputFocusCloseUntil = Date.now() - 1;
       const asyncSpy = sinon.spy(el, 'async');
       el._handleDocumentFocusIn({ target: document.body });
-      // The early-return guard should not trigger, allowing the year-dropdown
-      // outside-focus branch to schedule its async close.
       expect(asyncSpy.called).to.be.true;
       asyncSpy.restore();
+    });
+  });
+});
+
+// ELEMENTS-2095: paging the calendar must never dismiss it. The regression came from the
+// component reading focus that is genuinely inside its own popover as focus that had left,
+// because document-level focus events are retargeted to the outermost host.
+suite('custom-date-picker focus containment (ELEMENTS-2095)', () => {
+  let el;
+
+  setup(async () => {
+    window.nuxeo = window.nuxeo || {};
+    window.nuxeo.I18n = window.nuxeo.I18n || {};
+    window.nuxeo.I18n.en = window.nuxeo.I18n.en || {};
+    window.nuxeo.I18n.language = 'en';
+    // No `min`/`max`: the Expires field of the Workspace edit layout sets neither, which is
+    // the configuration ELEMENTS-1924's nav-button guards never covered.
+    el = await fixture(
+      html`
+        <custom-date-picker></custom-date-picker>
+      `,
+    );
+    el._openCalendar(null, false);
+    await flush();
+  });
+
+  teardown(() => {
+    if (el._isCalendarOpen) {
+      el._closeCalendar();
+    }
+  });
+
+  suite('_deepActiveElement', () => {
+    test('descends through shadow roots to the node that really holds focus', () => {
+      const day = el.shadowRoot.querySelector('.calendar-day:not(.empty)');
+      day.focus();
+      expect(document.activeElement).to.equal(el);
+      expect(el._deepActiveElement()).to.equal(day);
+    });
+
+    test('stops at a focused shadow host with no focused descendant', () => {
+      const host = document.createElement('div');
+      host.tabIndex = 0;
+      host.attachShadow({ mode: 'open' });
+      document.body.appendChild(host);
+      try {
+        host.focus();
+        expect(host.shadowRoot.activeElement).to.be.null;
+        expect(el._deepActiveElement()).to.equal(host);
+      } finally {
+        host.remove();
+      }
+    });
+
+    test('returns the document active element when there is no shadow root below it', () => {
+      const outside = document.createElement('button');
+      document.body.appendChild(outside);
+      try {
+        outside.focus();
+        expect(el._deepActiveElement()).to.equal(outside);
+      } finally {
+        outside.remove();
+      }
+    });
+  });
+
+  suite('_isShadowIncludingAncestor', () => {
+    test('recognises a host above the component across the shadow boundary', () => {
+      expect(el._isShadowIncludingAncestor(document.body)).to.be.true;
+      expect(el._isShadowIncludingAncestor(el)).to.be.false;
+      expect(el._isShadowIncludingAncestor(document.createElement('div'))).to.be.false;
+    });
+  });
+
+  suite('_isElementInsideComponent', () => {
+    test('counts a control in the popover as inside', () => {
+      expect(el._isElementInsideComponent(el.shadowRoot.querySelector('#prevMonth'))).to.be.true;
+      expect(el._isElementInsideComponent(el)).to.be.true;
+    });
+
+    test('counts an enclosing host as inside while focus really sits in the popover', () => {
+      const day = el.shadowRoot.querySelector('.calendar-day:not(.empty)');
+      day.focus();
+      // This is what a document-level focus listener sees: the outermost host, never the
+      // day cell. Judging it "outside" is what closed the calendar.
+      expect(document.activeElement).to.not.equal(day);
+      expect(el._isElementInsideComponent(document.activeElement)).to.be.true;
+    });
+
+    test('still counts an enclosing host as outside once focus has genuinely left', () => {
+      const outside = document.createElement('button');
+      document.body.appendChild(outside);
+      try {
+        outside.focus();
+        expect(el._isElementInsideComponent(document.body)).to.be.false;
+      } finally {
+        outside.remove();
+      }
+    });
+
+    test('returns false for null and for unrelated elements', () => {
+      expect(el._isElementInsideComponent(null)).to.be.false;
+      expect(el._isElementInsideComponent(document.createElement('span'))).to.be.false;
+    });
+  });
+
+  suite('focus()', () => {
+    test('keeps focus inside the popover while the calendar is open', () => {
+      el.focus();
+      const active = el.shadowRoot.activeElement;
+      expect(el._isCalendarOpen).to.be.true;
+      expect(active).to.exist;
+      expect(active.id).to.not.equal('dateInput');
+      expect(el.shadowRoot.querySelector('#calendarPopover').contains(active)).to.be.true;
+    });
+
+    test('falls back to the popover when the tab stop is a disabled minimum-date cell', async () => {
+      el.min = '2026-10-15';
+      el._viewDate = new Date(2026, 9, 1);
+      await flush();
+      const day = el.shadowRoot.querySelector('.calendar-day[tabindex="0"]');
+      expect(day).to.exist;
+      expect(day.disabled).to.be.true;
+      el.focus();
+      expect(el.shadowRoot.activeElement).to.equal(el.shadowRoot.querySelector('#calendarPopover'));
+      expect(el._isCalendarOpen).to.be.true;
+    });
+
+    test('focuses the text input once the calendar is closed', () => {
+      el._closeCalendar();
+      el.focus();
+      expect(el.shadowRoot.activeElement).to.equal(el.shadowRoot.querySelector('#dateInput'));
+    });
+  });
+
+  suite('month navigation without a min boundary', () => {
+    test('paging back three months keeps the calendar open', async () => {
+      const prev = el.shadowRoot.querySelector('#prevMonth');
+      const startMonth = el._viewDate.getMonth();
+
+      for (let i = 0; i < 3; i++) {
+        prev.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, composed: true }));
+        prev.click();
+
+        await flush();
+        expect(el._isCalendarOpen, `calendar closed after ${i + 1} previous-month click(s)`).to.be.true;
+      }
+
+      expect(el._viewDate.getMonth()).to.equal((startMonth + 9) % 12);
+      expect(prev.disabled).to.be.false;
+    });
+
+    test('paging forward three months keeps the calendar open', async () => {
+      const next = el.shadowRoot.querySelector('#nextMonth');
+      const startMonth = el._viewDate.getMonth();
+
+      for (let i = 0; i < 3; i++) {
+        next.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, composed: true }));
+        next.click();
+
+        await flush();
+        expect(el._isCalendarOpen, `calendar closed after ${i + 1} next-month click(s)`).to.be.true;
+      }
+
+      expect(el._viewDate.getMonth()).to.equal((startMonth + 3) % 12);
+    });
+
+    test('a focus escape while the calendar is open does not dismiss it', async () => {
+      const day = el.shadowRoot.querySelector('.calendar-day:not(.empty)');
+      day.focus();
+      day.blur();
+      await flush();
+      await new Promise((resolve) => setTimeout(resolve, 120));
+      expect(el._isCalendarOpen).to.be.true;
+    });
+
+    test('month navigation does not rebuild the discarded month-year options', () => {
+      const spy = sinon.spy(el, '_generateMonthYearOptions');
+      el._previousMonth({ preventDefault() {}, stopPropagation() {} });
+      el._nextMonth({ preventDefault() {}, stopPropagation() {} });
+      expect(spy.called).to.be.false;
+      spy.restore();
     });
   });
 });
@@ -2226,31 +2389,16 @@ suite('custom-date-picker extras', () => {
       expect(el._isCalendarOpen).to.be.true;
     });
 
-    test('does not close calendar during focus suppression window', async () => {
+    test('does not close the calendar when focus has moved on before the async check runs', async () => {
       const el = await newPicker();
-      el._isCalendarOpen = true;
+      el._openCalendar();
       el._openedViaCalendarIcon = false;
-      el._suppressInputFocusCloseUntil = Date.now() + 200;
+      // Focus is routed through the input transiently but ends up elsewhere in the
+      // popover, so the calendar must survive.
+      el.shadowRoot.querySelector('#nextMonth').focus();
       el._onInputFocus();
       await sleep(10);
       expect(el._isCalendarOpen).to.be.true;
-    });
-
-    test('keeps calendar open when async focus check is suppressed', async () => {
-      const el = await newPicker();
-      el._isCalendarOpen = true;
-      el._openedViaCalendarIcon = false;
-      const originalAsync = el.async;
-      el.async = (callback) => {
-        el._suppressInputFocusCloseUntil = Date.now() + 200;
-        callback();
-      };
-
-      el._onInputFocus();
-      await sleep(10);
-      expect(el._isCalendarOpen).to.be.true;
-
-      el.async = originalAsync;
     });
   });
 
@@ -2937,11 +3085,10 @@ suite('custom-date-picker extras', () => {
       await sleep(100);
     });
 
-    test('returns early during suppression window', async () => {
+    test('does not close when target is the document element', async () => {
       const el = await newPicker();
       el._openCalendar();
       el._justOpenedCalendar = false;
-      el._suppressInputFocusCloseUntil = Date.now() + 200;
       const closeSpy = sinon.spy(el, '_closeCalendar');
       el._handleDocumentFocusIn({ target: document.documentElement });
       await sleep(60);
