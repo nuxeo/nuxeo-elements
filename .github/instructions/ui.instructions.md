@@ -37,6 +37,7 @@ Shared logic uses Polymer behaviors (not mixins):
 
 - Prettier: 120 chars, `arrowParens: 'always'`
 - `Nuxeo` is a writable global
+- Do not use optional chaining (`?.`) — Polymer lint/analyze predates it and drops elements from `analysis.json`. Use explicit `&&` guards instead.
 
 ## Vendored Code
 

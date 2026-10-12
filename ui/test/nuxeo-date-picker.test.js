@@ -420,3 +420,41 @@ suite('nuxeo-date-picker placeholder visibility', () => {
     expect(getInnerInput(el).getAttribute('placeholder') || '').to.equal('');
   });
 });
+
+// Covers WEBUI-493: the `autocomplete` property declared in ui/widgets/nuxeo-date-picker.js is
+// forwarded through custom-date-picker to the rendered native <input> so a layout can identify the
+// purpose of the field (WCAG 2.1 SC 1.3.5, technique H98).
+suite('nuxeo-date-picker autocomplete', () => {
+  function getDateInput(el) {
+    return el.$.date.shadowRoot.querySelector('#dateInput');
+  }
+
+  test('declares the property and defaults it to off', async () => {
+    const el = await fixture(html`
+      <nuxeo-date-picker></nuxeo-date-picker>
+    `);
+    await flush();
+    expect(el.autocomplete).to.equal('off');
+    expect(el.$.date.autocomplete).to.equal('off');
+    expect(getDateInput(el).getAttribute('autocomplete')).to.equal('off');
+  });
+
+  test('forwards a token configured on the element to the native input', async () => {
+    const el = await fixture(html`
+      <nuxeo-date-picker autocomplete="bday"></nuxeo-date-picker>
+    `);
+    await flush();
+    expect(el.$.date.autocomplete).to.equal('bday');
+    expect(getDateInput(el).getAttribute('autocomplete')).to.equal('bday');
+  });
+
+  test('forwards a token set at runtime to the native input', async () => {
+    const el = await fixture(html`
+      <nuxeo-date-picker></nuxeo-date-picker>
+    `);
+    await flush();
+    el.autocomplete = 'bday';
+    await flush();
+    expect(getDateInput(el).getAttribute('autocomplete')).to.equal('bday');
+  });
+});

@@ -71,7 +71,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
           selection-formatter="[[selectionFormatter]]"
           result-formatter="[[resultFormatter]]"
           required="[[required]]"
-          invalid="[[invalid]]"
+          invalid="{{invalid}}"
           init-selection="[[initSelection]]"
           id-function="[[_idFunction]]"
           stay-open-on-select="[[stayOpenOnSelect]]"
@@ -288,18 +288,15 @@ import { escapeHTML } from './nuxeo-selectivity.js';
     }
 
     _computeParams() {
-      return Object.assign(
-        {},
-        {
-          documentSchemas: this.schemas,
-          repository: this.repository,
-          providerName: this.pageProvider,
-          pageProviderName: this.pageProvider,
-          page: 0,
-          pageSize: 20,
-        },
-        this.params,
-      );
+      return {
+        documentSchemas: this.schemas,
+        repository: this.repository,
+        providerName: this.pageProvider,
+        pageProviderName: this.pageProvider,
+        page: 0,
+        pageSize: 20,
+        ...this.params,
+      };
     }
 
     _selectionFormatter(doc) {

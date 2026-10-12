@@ -2,14 +2,23 @@
 name: Crowdin Sync
 
 on:
-  # Make workflow reusable, to be called by the scheduled crowdin workflow in the default branch
+  # Make workflow reusable, to be called by the scheduled crowdin workflow in the default branch.
+  # Declare the secrets it consumes so callers can pass only what is required (no `secrets: inherit`).
   workflow_call:
+    secrets:
+      CROWDIN_PROJECT_ID:
+        required: false
+      CROWDIN_PERSONAL_TOKEN:
+        required: false
+      WEBUI_JX_BOT_GITHUB_ACTIONS_TOKEN:
+        required: false
 
-  # Sync when a commit is done on the reference branches
+  # Sync when a commit is done on develop-2025. New strings now land on the dev branch, so
+  # syncing from lts-2025 would only reach translators at release time.
   push:
-    branches: ["lts-2025"]
+    branches: ["develop-2025"]
     paths:
-      - 'i18n/messages.json'
+      - 'ui/i18n/messages.json'
   
 permissions:
   contents: write
@@ -23,10 +32,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          ref: lts-2025
+          ref: develop-2025
 
       - name: Crowdin Action
-        uses: crowdin/github-action@v2.16.0
+        uses: crowdin/github-action@7ca9c452bfe9197d3bb7fa83a4d7e2b0c9ae835d # v2.16.0
         with:
           # Disable 'git checkout "${GITHUB_REF#refs/heads/}"'
           skip_ref_checkout: true
@@ -43,11 +52,11 @@ jobs:
           auto_approve_imported: true
 
           # Name of the branch where to merge the translations
-          localization_branch_name: crowdin-translations-update-lts-2025
-          pull_request_base_branch_name: lts-2025
+          localization_branch_name: crowdin-translations-update-develop-2025
+          pull_request_base_branch_name: develop-2025
           create_pull_request: true
-          pull_request_title: 'New Crowdin translations by GitHub Action (lts-2025)'
-          pull_request_body: 'New Crowdin pull request with translations lts 2025'
+          pull_request_title: 'New Crowdin translations by GitHub Action (develop-2025)'
+          pull_request_body: 'New Crowdin pull request with translations develop-2025'
 
           # The commit message
           commit_message: 'Automatic update of translations from Crowdin'

@@ -67,7 +67,10 @@ import './nuxeo-tooltip.js';
           }
         </style>
 
-        <nuxeo-select attr-for-selected="option" selected="{{selected}}">
+        <template is="dom-if" if="[[hasLabel]]">
+          <span>[[_normalizeLabel(label)]]</span>
+        </template>
+        <nuxeo-select aria-label="[[_normalizeLabel(label)]]" attr-for-selected="option" selected="{{selected}}">
           <dom-if if="[[options]]">
             <template>
               <dom-repeat items="[[options]]" as="item">
@@ -97,6 +100,23 @@ import './nuxeo-tooltip.js';
 
     static get properties() {
       return {
+        /**
+         * Label of the sort field selector. Rendered inline next to the select and used as the
+         * accessible name of the underlying combobox.
+         */
+        label: {
+          type: String,
+          value: null,
+        },
+
+        /**
+         * Whether a non-blank `label` was provided.
+         */
+        hasLabel: {
+          type: Boolean,
+          computed: '_computeHasLabel(label)',
+        },
+
         options: {
           type: Array,
           value: [],
@@ -114,6 +134,18 @@ import './nuxeo-tooltip.js';
           value: 'asc',
         },
       };
+    }
+
+    /**
+     * Single source of truth for the label: a blank one becomes `null`, so the visible span and the
+     * combobox's accessible name can never disagree.
+     */
+    _normalizeLabel(label) {
+      return (typeof label === 'string' ? label.trim() : label) || null;
+    }
+
+    _computeHasLabel(label) {
+      return this._normalizeLabel(label) !== null;
     }
 
     _optionsChanged() {

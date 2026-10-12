@@ -20,7 +20,7 @@ import moment from '@nuxeo/moment';
 import { config } from '@nuxeo/nuxeo-elements';
 import '../widgets/nuxeo-date.js';
 
-suite('nuxeo-date', async () => {
+suite('nuxeo-date', () => {
   test('Should hide the nuxeo-tooltip when provided format and tooltipFormat are equal', async () => {
     const element = await fixture(
       html`

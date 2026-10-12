@@ -151,7 +151,7 @@ suite('Nuxeo.RoutingBehavior', () => {
       expect(router.document.notCalled).to.be.true;
     });
 
-    suite('with route key for "document" entity-type set to "uid"', async () => {
+    suite('with route key for "document" entity-type set to "uid"', () => {
       setup(async () => {
         setNuxeoRouterKey('document', 'uid');
       });
@@ -170,7 +170,7 @@ suite('Nuxeo.RoutingBehavior', () => {
       });
     });
 
-    suite('with one repository available', async () => {
+    suite('with one repository available', () => {
       setup(async () => {
         Nuxeo.UI.repositories = [{ name: 'repo', href: '/nuxeo/repo/repo/ui/' }];
       });
@@ -194,7 +194,7 @@ suite('Nuxeo.RoutingBehavior', () => {
       });
     });
 
-    suite('with more than one repository available', async () => {
+    suite('with more than one repository available', () => {
       setup(async () => {
         Nuxeo.UI.repositories = [
           { name: 'repo1', href: '/nuxeo/repo/repo1/ui/' },
