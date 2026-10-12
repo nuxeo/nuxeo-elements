@@ -28,6 +28,15 @@ suite('nuxeo-document-thumbnail extras', () => {
     expect(el.hasAttribute('dir')).to.be.true;
   });
 
+  // ELEMENTS-1616: every element rendering the same thumbnail URL must request it
+  // with crossorigin so Chrome does not cache a non-CORS response that later
+  // crossorigin requests cannot reuse (broken images with S3 direct download).
+  test('renders the thumbnail img with crossorigin="anonymous"', () => {
+    const img = el.shadowRoot.querySelector('#img');
+    expect(img).to.be.ok;
+    expect(img.getAttribute('crossorigin')).to.equal('anonymous');
+  });
+
   suite('_thumbnail', () => {
     test('returns empty string when document is missing', () => {
       expect(el._thumbnail(null)).to.equal('');

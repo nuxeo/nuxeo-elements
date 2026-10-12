@@ -17,6 +17,7 @@ limitations under the License.
 */
 import { fixture, flush, html } from '@nuxeo/testing-helpers';
 import moment from '@nuxeo/moment/min/moment-with-locales.js';
+import { config } from '@nuxeo/nuxeo-elements';
 import '../widgets/nuxeo-date-picker.js';
 
 function getInput(element) {
@@ -333,5 +334,127 @@ suite('nuxeo-date-picker accessibility', () => {
 
       expect(el.$.date.getAttribute('aria-label')).to.equal('Updated');
     });
+  });
+});
+
+// The placeholder shown inside the date input can be hidden through the
+// `nuxeo.ui.date.picker.hide.placeholder` nuxeo.conf property, surfaced to the
+// client via `Nuxeo.UI.config.datePicker.hidePlaceholder`.
+suite('nuxeo-date-picker placeholder visibility', () => {
+  function getInnerInput(el) {
+    return el.$.date.shadowRoot.querySelector('#dateInput');
+  }
+
+  teardown(() => {
+    // reset the shared config between tests
+    config.set('datePicker.hidePlaceholder', undefined);
+  });
+
+  test('defaults hidePlaceholder to false and shows the placeholder', async () => {
+    const el = await fixture(html`
+      <nuxeo-date-picker></nuxeo-date-picker>
+    `);
+    await flush();
+    expect(el.hidePlaceholder).to.be.false;
+    expect(getInnerInput(el).getAttribute('placeholder')).to.be.ok;
+  });
+
+  test('keeps the placeholder visible when the config property is false', async () => {
+    config.set('datePicker.hidePlaceholder', false);
+    const el = await fixture(html`
+      <nuxeo-date-picker></nuxeo-date-picker>
+    `);
+    await flush();
+    expect(el.hidePlaceholder).to.be.false;
+    expect(getInnerInput(el).getAttribute('placeholder')).to.be.ok;
+  });
+
+  test('hides the placeholder when the config property is the boolean true', async () => {
+    config.set('datePicker.hidePlaceholder', true);
+    const el = await fixture(html`
+      <nuxeo-date-picker></nuxeo-date-picker>
+    `);
+    await flush();
+    expect(el.hidePlaceholder).to.be.true;
+    expect(getInnerInput(el).getAttribute('placeholder') || '').to.equal('');
+  });
+
+  test('hides the placeholder when the config property is the string "true"', async () => {
+    config.set('datePicker.hidePlaceholder', 'true');
+    const el = await fixture(html`
+      <nuxeo-date-picker></nuxeo-date-picker>
+    `);
+    await flush();
+    expect(el.hidePlaceholder).to.be.true;
+    expect(getInnerInput(el).getAttribute('placeholder') || '').to.equal('');
+  });
+
+  test('ignores a null config value and leaves hidePlaceholder untouched', async () => {
+    config.set('datePicker.hidePlaceholder', null);
+    const el = await fixture(html`
+      <nuxeo-date-picker></nuxeo-date-picker>
+    `);
+    await flush();
+    expect(el.hidePlaceholder).to.be.false;
+    expect(getInnerInput(el).getAttribute('placeholder')).to.be.ok;
+  });
+
+  test('lets an explicit hide-placeholder attribute win over the config', async () => {
+    config.set('datePicker.hidePlaceholder', false);
+    const el = await fixture(html`
+      <nuxeo-date-picker hide-placeholder></nuxeo-date-picker>
+    `);
+    await flush();
+    expect(el.hidePlaceholder).to.be.true;
+    expect(getInnerInput(el).getAttribute('placeholder') || '').to.equal('');
+  });
+
+  test('forwards the hidePlaceholder property to the inner picker', async () => {
+    const el = await fixture(html`
+      <nuxeo-date-picker></nuxeo-date-picker>
+    `);
+    await flush();
+    el.hidePlaceholder = true;
+    await flush();
+    expect(el.$.date.hidePlaceholder).to.be.true;
+    expect(getInnerInput(el).getAttribute('placeholder') || '').to.equal('');
+  });
+});
+
+// Covers WEBUI-493: the `autocomplete` property declared in ui/widgets/nuxeo-date-picker.js is
+// forwarded through custom-date-picker to the rendered native <input> so a layout can identify the
+// purpose of the field (WCAG 2.1 SC 1.3.5, technique H98).
+suite('nuxeo-date-picker autocomplete', () => {
+  function getDateInput(el) {
+    return el.$.date.shadowRoot.querySelector('#dateInput');
+  }
+
+  test('declares the property and defaults it to off', async () => {
+    const el = await fixture(html`
+      <nuxeo-date-picker></nuxeo-date-picker>
+    `);
+    await flush();
+    expect(el.autocomplete).to.equal('off');
+    expect(el.$.date.autocomplete).to.equal('off');
+    expect(getDateInput(el).getAttribute('autocomplete')).to.equal('off');
+  });
+
+  test('forwards a token configured on the element to the native input', async () => {
+    const el = await fixture(html`
+      <nuxeo-date-picker autocomplete="bday"></nuxeo-date-picker>
+    `);
+    await flush();
+    expect(el.$.date.autocomplete).to.equal('bday');
+    expect(getDateInput(el).getAttribute('autocomplete')).to.equal('bday');
+  });
+
+  test('forwards a token set at runtime to the native input', async () => {
+    const el = await fixture(html`
+      <nuxeo-date-picker></nuxeo-date-picker>
+    `);
+    await flush();
+    el.autocomplete = 'bday';
+    await flush();
+    expect(getDateInput(el).getAttribute('autocomplete')).to.equal('bday');
   });
 });

@@ -24,6 +24,7 @@ import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import {I18nBehavior} from "../nuxeo-i18n-behavior";
+import { WidgetValidationBehavior } from './nuxeo-widget-validation-behavior.js';
 import '@polymer/iron-icon/iron-icon.js';
 
 /**
@@ -3202,6 +3203,9 @@ typedArrayTags[weakMapTag] = false;
               id: item.id,
               text: item.text,
               item: item.item,
+              // `depth` drives the indentation of hierarchical entries in the result templates;
+              // rebuilding the item without it would flatten the tree to a single indent level.
+              depth: item.depth,
             };
             if (item.children) {
               result.children = this.filterResults(item.children);
@@ -6812,6 +6816,11 @@ typedArrayTags[weakMapTag] = false;
   }, {}, [75]))(75);
 }));
 {
+  // Indentation of hierarchical result rows: the root level padding and the extra padding
+  // added per nesting level. Kept in sync with the .selectivity-result-item stylesheet rule.
+  const RESULT_BASE_PADDING = 7;
+  const RESULT_DEPTH_PADDING = 10;
+
   /**
    * An element wrapping selectivity.js and relying on an operation for suggestions
    *
@@ -6820,13 +6829,17 @@ typedArrayTags[weakMapTag] = false;
    *                   params='{"directoryName": "subject"}'
    *                   value="{{value}}">
    *
-   * @appliesMixin Polymer.IronFormElementBehavior
-   * @appliesMixin Polymer.IronValidatableBehavior
-   * @memberof Nuxeo
-   * @demo demo/nuxeo-selectivity/index.html
-   */
+ * @appliesMixin Polymer.IronFormElementBehavior
+ * @appliesMixin Polymer.IronValidatableBehavior
+ * @appliesMixin Nuxeo.WidgetValidationBehavior
+ * @memberof Nuxeo
+ * @demo demo/nuxeo-selectivity/index.html
+ */
   class SelectivityElement
-    extends mixinBehaviors([I18nBehavior, IronFormElementBehavior, IronValidatableBehavior], Nuxeo.Element) {
+    extends mixinBehaviors(
+      [I18nBehavior, IronFormElementBehavior, IronValidatableBehavior, WidgetValidationBehavior],
+      Nuxeo.Element,
+    ) {
 
     static get is() {
       return 'nuxeo-selectivity';
@@ -7182,6 +7195,13 @@ typedArrayTags[weakMapTag] = false;
             border: none;
             float: left;
             font: inherit;
+            /*
+             * WCAG 2.1 SC 1.4.12: the font shorthand above does not cover letter-spacing or
+             * word-spacing, so the UA stylesheet's form-control reset keeps them at normal, and
+             * this input sits in a shadow root a user text-spacing stylesheet cannot reach.
+             */
+            letter-spacing: inherit;
+            word-spacing: inherit;
             width: 100%;
             outline: 0;
             padding: 0;
@@ -7325,7 +7345,6 @@ typedArrayTags[weakMapTag] = false;
               display: none;
           }
 
-          :host([invalid]) .label,
           .error {
               color: var(--paper-input-container-invalid-color, #de350b);
           }
@@ -7371,7 +7390,7 @@ typedArrayTags[weakMapTag] = false;
 
         <nuxeo-operation id="op" op="[[operation]]" enrichers="[[enrichers]]" headers="[[headers]]"></nuxeo-operation>
 
-        <label class="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
+        <label id="label" class="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
 
         <div id="input" readonly$="[[readonly]]"></div>
 
@@ -7422,14 +7441,14 @@ typedArrayTags[weakMapTag] = false;
             const itemId = `selectivity-option-${escapeHTML(opts.id)}`;
             return `<div class="selectivity-result-item${opts.disabled ? ' disabled' : ''}"
                   id="${itemId}"
-                  style="padding-left: ${7 + (10 * opts.depth)}px"
+                  style="padding-left: ${this._resultPadding(opts.depth)}px"
                   data-item-id="${escapeHTML(opts.id)}"
                   aria-selected="false">${this.resultFormatter(opts.item)}</div>`;
           },
 
           resultLabel: (opts) => (
             `<div class="preserve-white-space selectivity-result-label"
-                  style="padding-left: ${7 + (10 * opts.depth)}px">${escapeHTML(opts.text)}</div>`
+                  style="padding-left: ${this._resultPadding(opts.depth)}px">${escapeHTML(opts.text)}</div>`
           ),
 
           singleSelectedItem: (opts) => (
@@ -7536,10 +7555,15 @@ typedArrayTags[weakMapTag] = false;
         threshold: 0
       });
       this._visibilityObserver.observe(this);
+      // Selectivity re-renders the input whenever the selection changes, so re-apply the aria state
+      // it drops rather than setting it once here.
+      this._observeAriaValidationControl(this.$.input);
+      this._syncAriaValidationState();
       this._readonlyChanged();
     }
 
     disconnectedCallback() {
+      this._disconnectAriaValidationObserver();
       this.$.input.removeEventListener('selectivity-change', this._updateSelectionHandler);
       this._updateSelectionHandler = null;
       this._selectivity.destroy();
@@ -7561,9 +7585,18 @@ typedArrayTags[weakMapTag] = false;
 
     _getValidity() {
       if (!this.required) {
+        this._clearDefaultRequiredError();
         return true;
       }
-      return this.multiple ? !!this.value && this.value.length > 0 : !!this.value;
+      const valid = this.multiple ? !!this.value && this.value.length > 0 : !!this.value;
+      // Surface a per-field reason for required widgets, consistent with single-value inputs
+      // (e.g. dc:title).
+      if (valid) {
+        this._clearDefaultRequiredError();
+      } else {
+        this._applyDefaultRequiredError();
+      }
+      return valid;
     }
 
     _initSelection(value, callback) {
@@ -7644,6 +7677,16 @@ typedArrayTags[weakMapTag] = false;
           }
         }
       }
+      // Once a value is provided, re-validate so an already-shown required error clears
+      // immediately on selection, matching single-value inputs (e.g. dc:title). Only re-validate
+      // while an error is displayed, so we never surface errors before the user submits.
+      if (this.invalid) {
+        const v = this.value;
+        const hasValue = Array.isArray(v) ? v.length > 0 : v != null && v !== '';
+        if (hasValue) {
+          this.validate();
+        }
+      }
     }
 
     _dataChanged() {
@@ -7690,20 +7733,56 @@ typedArrayTags[weakMapTag] = false;
       this._syncInputAriaLabel();
     }
 
+    /* Override method from Nuxeo.WidgetValidationBehavior. */
+    _ariaValidationControl() {
+      return this._getSelectivityInput();
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. Selectivity rebuilds its input on every
+       selection change, which drops its label association too, so restore both from the same place. */
+    _applyAriaValidationState() {
+      super._applyAriaValidationState();
+      this._syncInputAriaLabel();
+    }
+
+    _getSelectivityInput() {
+      return this.shadowRoot
+        ? this.shadowRoot.querySelector('.selectivity-single-select-input, .selectivity-multiple-input')
+        : null;
+    }
+
     _syncInputAriaLabel() {
-      const input = this.shadowRoot && this.shadowRoot.querySelector('.selectivity-single-select-input, .selectivity-multiple-input');
+      const input = this._getSelectivityInput();
       if (!input) {
         return;
       }
 
       const label = (this.label || '').trim();
       const placeholder = (this.placeholder || '').trim();
-      const ariaLabel = label || placeholder;
+      const labelElement = this.shadowRoot.querySelector('#label');
 
-      if (ariaLabel) {
-        input.setAttribute('aria-label', ariaLabel);
-      } else {
+      // When a label is set it is rendered as always visible text, so bind the field to it
+      // (WCAG 3.3.2 / 1.3.1). Without a label there is nothing visible to reference and the
+      // placeholder remains the only available name.
+      if (label && labelElement) {
+        if (!input.id) {
+          input.id = `${this.constructor.is}-input`;
+        }
+        labelElement.setAttribute('for', input.id);
+        input.setAttribute('aria-labelledby', labelElement.id);
         input.removeAttribute('aria-label');
+      } else {
+        input.removeAttribute('aria-labelledby');
+        // Drop the `for` as well, otherwise the now-empty label keeps a stale association
+        // with the input and the placeholder-only fallback is not what it claims to be.
+        if (labelElement) {
+          labelElement.removeAttribute('for');
+        }
+        if (placeholder) {
+          input.setAttribute('aria-label', placeholder);
+        } else {
+          input.removeAttribute('aria-label');
+        }
       }
     }
 
@@ -7713,6 +7792,8 @@ typedArrayTags[weakMapTag] = false;
           readOnly: this.readonly,
           placeholder: this.placeholder,
         });
+        // selectivity re-renders its input, so the label association has to be re-applied
+        this._syncInputAriaLabel();
       }
     }
 
@@ -7734,6 +7815,14 @@ typedArrayTags[weakMapTag] = false;
 
     _resultFormatter(item) {
       return escapeHTML(item.displayLabel || item.title || item.text || item);
+    }
+
+    /**
+     * Left padding, in pixels, that indents a hierarchical result row at the given depth.
+     * A non-numeric depth falls back to the root level so the inline style stays valid CSS.
+     */
+    _resultPadding(depth) {
+      return RESULT_BASE_PADDING + RESULT_DEPTH_PADDING * (Number.isFinite(depth) ? depth : 0);
     }
 
     _wrap(value) {

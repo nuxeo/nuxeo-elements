@@ -21,7 +21,11 @@ import '../widgets/nuxeo-user-avatar.js';
 
 suite('nuxeo-user-avatar', () => {
   test('should get initial characters based on first and last name', async () => {
-    const element = await fixture(html`<nuxeo-user-avatar></nuxeo-avatar>`);
+    const element = await fixture(
+      html`
+        <nuxeo-user-avatar></nuxeo-user-avatar>
+      `,
+    );
     const character = dom(element.root).querySelector('#character');
     const icon = dom(element.root).querySelector('iron-icon');
     element.user = {
@@ -33,13 +37,38 @@ suite('nuxeo-user-avatar', () => {
         lastName: 'Doe',
       },
     };
+    await flush();
     expect(character.hidden).to.equal(false);
     expect(icon.hidden).to.equal(true);
     expect(character.innerText).to.equal('JD');
   });
 
+  test('should limit initials to first and last name parts', async () => {
+    const element = await fixture(
+      html`
+        <nuxeo-user-avatar></nuxeo-user-avatar>
+      `,
+    );
+    element.user = {
+      'entity-type': 'user',
+      id: 'multi',
+      properties: {
+        username: 'multi',
+        firstName: 'First Middle',
+        lastName: 'Middle Last',
+      },
+    };
+    await flush();
+    const character = dom(element.root).querySelector('#character');
+    expect(character.innerText).to.equal('FL');
+  });
+
   test('should get the user icon if non Latin characters exist on user information', async () => {
-    const element = await fixture(html`<nuxeo-user-avatar></nuxeo-avatar>`);
+    const element = await fixture(
+      html`
+        <nuxeo-user-avatar></nuxeo-user-avatar>
+      `,
+    );
     element.user = {
       'entity-type': 'user',
       id: 'はると',
@@ -149,6 +178,79 @@ suite('nuxeo-user-avatar extras', () => {
     });
   });
 
+  suite('_lastPart', () => {
+    test('returns undefined for an empty array', () => {
+      expect(el._lastPart([])).to.be.undefined;
+    });
+
+    test('returns the only part for a single-element array', () => {
+      expect(el._lastPart(['John'])).to.equal('John');
+    });
+
+    test('returns the last part for multiple elements', () => {
+      expect(el._lastPart(['John', 'Paul'])).to.equal('Paul');
+      expect(el._lastPart(['First', 'Middle', 'Last'])).to.equal('Last');
+    });
+  });
+
+  suite('_initials', () => {
+    test('returns first and last name initials for multi-part names', () => {
+      const u = {
+        'entity-type': 'user',
+        properties: { firstName: 'First Middle', lastName: 'Middle Last' },
+      };
+      expect(el._initials(u)).to.equal('FL');
+    });
+
+    test('returns first and last name initials for simple names', () => {
+      const u = {
+        'entity-type': 'user',
+        properties: { firstName: 'John', lastName: 'Doe' },
+      };
+      expect(el._initials(u)).to.equal('JD');
+    });
+
+    test('falls back to user:firstName / user:lastName', () => {
+      const u = {
+        'entity-type': 'user',
+        properties: { 'user:firstName': 'A B', 'user:lastName': 'C D' },
+      };
+      expect(el._initials(u)).to.equal('AD');
+    });
+
+    test('returns first initial only when last name is empty', () => {
+      const u = {
+        'entity-type': 'user',
+        properties: { firstName: 'John', lastName: '' },
+      };
+      expect(el._initials(u)).to.equal('J');
+    });
+
+    test('returns first and last word initials when one name field is empty', () => {
+      const u = {
+        'entity-type': 'user',
+        properties: { firstName: 'John Paul', lastName: '' },
+      };
+      expect(el._initials(u)).to.equal('JP');
+    });
+
+    test('returns last initial only when first name is empty', () => {
+      const u = {
+        'entity-type': 'user',
+        properties: { firstName: '', lastName: 'Doe' },
+      };
+      expect(el._initials(u)).to.equal('D');
+    });
+
+    test('falls back to first and last word for non-entity', () => {
+      expect(el._initials({ id: 'first middle last' })).to.equal('fl');
+    });
+
+    test('returns single initial for non-entity with one word', () => {
+      expect(el._initials({ id: 'jdoe' })).to.equal('j');
+    });
+  });
+
   suite('_email', () => {
     test('returns email when different from id', () => {
       const u = { 'entity-type': 'user', id: 'j', properties: { email: 'j@d.com' } };
@@ -232,11 +334,35 @@ suite('nuxeo-user-avatar extras', () => {
       el.borderRadius = null;
       el.__obsBorderRadius();
       expect(el.borderRadius).to.equal(0);
+      expect(el.$.container.style.borderRadius).to.equal('0%');
+    });
+
+    test('__obsBorderRadius defaults to 0 when undefined', () => {
+      el.borderRadius = undefined;
+      el.__obsBorderRadius();
+      expect(el.borderRadius).to.equal(0);
+      expect(el.$.container.style.borderRadius).to.equal('0%');
+    });
+
+    test('__obsBorderRadius defaults to 0 for non-numeric input and never emits NaN', () => {
+      el.borderRadius = NaN;
+      el.__obsBorderRadius();
+      expect(el.borderRadius).to.equal(0);
+      expect(el.$.container.style.borderRadius).to.equal('0%');
+      expect(el.$.container.style.borderRadius).to.not.contain('NaN');
+    });
+
+    test('__obsBorderRadius keeps 0 as a valid value', () => {
+      el.borderRadius = 0;
+      el.__obsBorderRadius();
+      expect(el.borderRadius).to.equal(0);
+      expect(el.$.container.style.borderRadius).to.equal('0%');
     });
 
     test('__obsBorderRadius sets value when numeric', () => {
       el.borderRadius = 50;
       el.__obsBorderRadius();
+      expect(el.borderRadius).to.equal(50);
       expect(el.$.container.style.borderRadius).to.equal('50%');
     });
 

@@ -67,7 +67,7 @@ import { escapeHTML } from './nuxeo-selectivity.js';
           value="{{value}}"
           selected-items="{{selectedItems}}"
           required="[[required]]"
-          invalid="[[invalid]]"
+          invalid="{{invalid}}"
           new-entry-formatter="[[newEntryFormatter]]"
           result-formatter="[[resultFormatter]]"
           added-entry-handler="[[addedTagHandler]]"

@@ -199,7 +199,10 @@ const RESIZE_ZONE = 8;
       super.ready();
 
       if (this.header) {
-        this.setAttribute('scope', 'col');
+        // A custom element cannot be a native `th`, so expose the cell through the ARIA table
+        // pattern. The role lives on the cell rather than on the header template so that columns
+        // providing their own `<template is="header">` keep the header semantics.
+        this.setAttribute('role', 'columnheader');
       } else {
         this.setAttribute('role', 'cell');
       }

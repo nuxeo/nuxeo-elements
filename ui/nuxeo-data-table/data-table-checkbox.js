@@ -29,12 +29,6 @@ import '../widgets/nuxeo-checkmark.js';
           :host(:focus) {
             outline: none;
           }
-          /**
-            @deprecated since 3.0.6 we no longer use the header property to control the checkbox visibility 
-           */
-          :host([header]) {
-            visibility: hidden !important;
-          }
         </style>
 
         <nuxeo-checkmark
@@ -63,13 +57,18 @@ import '../widgets/nuxeo-checkmark.js';
           reflectToAttribute: true,
           value: false,
         },
+        header: {
+          type: Boolean,
+          reflectToAttribute: true,
+          value: false,
+        },
       };
     }
 
     ready() {
       super.ready();
-      if (!this.header) {
-        this.setAttribute('scope', 'col');
+      if (this.header) {
+        this.setAttribute('role', 'columnheader');
       } else {
         this.setAttribute('role', 'cell');
       }

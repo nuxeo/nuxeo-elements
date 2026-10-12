@@ -158,6 +158,59 @@ suite('nuxeo-textarea accessibility', () => {
     });
   });
 
+  // WEBUI-482: the invalid/required state must be exposed on the focusable control, because
+  // paper-textarea otherwise conveys it with colour and a thicker underline only.
+  suite('aria-invalid / aria-required on the native textarea', () => {
+    test('mirrors the required flag', async () => {
+      const el = await fixture(html`
+        <nuxeo-textarea label="Description" required></nuxeo-textarea>
+      `);
+      await flush();
+      await tick();
+
+      expect(getNativeTextarea(el).getAttribute('aria-required')).to.equal('true');
+      expect(getNativeTextarea(el).getAttribute('aria-invalid')).to.equal('false');
+    });
+
+    test('does not set aria-required on an optional textarea', async () => {
+      const el = await fixture(html`
+        <nuxeo-textarea label="Description"></nuxeo-textarea>
+      `);
+      await flush();
+      await tick();
+
+      expect(getNativeTextarea(el).hasAttribute('aria-required')).to.be.false;
+    });
+
+    test('mirrors the invalid state', async () => {
+      const el = await fixture(html`
+        <nuxeo-textarea label="Description" required></nuxeo-textarea>
+      `);
+      await flush();
+      await tick();
+
+      el.invalid = true;
+      await tick();
+      expect(getNativeTextarea(el).getAttribute('aria-invalid')).to.equal('true');
+
+      el.invalid = false;
+      await tick();
+      expect(getNativeTextarea(el).getAttribute('aria-invalid')).to.equal('false');
+    });
+
+    test('returns silently when the native textarea cannot be found', async () => {
+      const el = await fixture(html`
+        <nuxeo-textarea label="Description"></nuxeo-textarea>
+      `);
+      await flush();
+      await tick();
+      const saved = el.$.paperTextarea;
+      el.$.paperTextarea = null;
+      expect(() => el._applyNativeTextareaAriaState()).to.not.throw();
+      el.$.paperTextarea = saved;
+    });
+  });
+
   // Defensive-fallback paths inside _applyNativeTextareaAriaLabel() and
   // _getValidity(). These cover the early-return when paper-textarea is missing
   // and the secondary discovery of the inner native <textarea> via
@@ -206,5 +259,39 @@ suite('nuxeo-textarea accessibility', () => {
       expect(fakeNative.hasAttribute('aria-labelledby')).to.be.false;
       el.$.paperTextarea = saved;
     });
+  });
+});
+
+// Covers WEBUI-493: the `autocomplete` property declared in ui/widgets/nuxeo-textarea.js is
+// forwarded to the rendered native <textarea> so a layout can identify the purpose of the field
+// (WCAG 2.1 SC 1.3.5, technique H98).
+suite('nuxeo-textarea autocomplete', () => {
+  test('declares the property and defaults it to off', async () => {
+    const el = await fixture(html`
+      <nuxeo-textarea label="Address"></nuxeo-textarea>
+    `);
+    await flush();
+    expect(el.autocomplete).to.equal('off');
+    expect(getPaperTextarea(el).autocomplete).to.equal('off');
+    expect(getNativeTextarea(el).getAttribute('autocomplete')).to.equal('off');
+  });
+
+  test('forwards a token configured on the element to the native textarea', async () => {
+    const el = await fixture(html`
+      <nuxeo-textarea label="Address" autocomplete="street-address"></nuxeo-textarea>
+    `);
+    await flush();
+    expect(el.autocomplete).to.equal('street-address');
+    expect(getNativeTextarea(el).getAttribute('autocomplete')).to.equal('street-address');
+  });
+
+  test('forwards a token set at runtime to the native textarea', async () => {
+    const el = await fixture(html`
+      <nuxeo-textarea label="Address"></nuxeo-textarea>
+    `);
+    await flush();
+    el.autocomplete = 'street-address';
+    await flush();
+    expect(getNativeTextarea(el).getAttribute('autocomplete')).to.equal('street-address');
   });
 });

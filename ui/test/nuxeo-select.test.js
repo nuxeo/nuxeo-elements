@@ -20,6 +20,12 @@ import '../widgets/nuxeo-select.js';
 
 suite('nuxeo-select', () => {
   let el;
+  const waitForAriaSync = async () => {
+    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  };
 
   setup(async () => {
     el = await fixture(html`
@@ -57,6 +63,39 @@ suite('nuxeo-select', () => {
       expect(paperInput.getAttribute('aria-label')).to.equal('Updated Label');
     });
 
+    test('host aria-label attribute takes precedence over label property', async () => {
+      el.label = 'Label Property';
+      el.setAttribute('aria-label', 'Host Aria Label');
+      await waitForAriaSync();
+      const paperInput = getPaperInput(el);
+      expect(paperInput.getAttribute('aria-label')).to.equal('Host Aria Label');
+    });
+
+    test('updates aria-label when host aria-label attribute changes', async () => {
+      el.setAttribute('aria-label', 'First Aria Label');
+      await waitForAriaSync();
+
+      let paperInput = getPaperInput(el);
+      expect(paperInput.getAttribute('aria-label')).to.equal('First Aria Label');
+
+      el.setAttribute('aria-label', 'Second Aria Label');
+      await waitForAriaSync();
+
+      paperInput = getPaperInput(el);
+      expect(paperInput.getAttribute('aria-label')).to.equal('Second Aria Label');
+    });
+
+    test('ignores non aria-label attribute mutations', async () => {
+      const syncSpy = sinon.spy(el, '_syncAriaLabel');
+
+      el.setAttribute('data-test-attribute', 'x');
+      await waitForAriaSync();
+
+      expect(syncSpy).to.not.have.been.called;
+      syncSpy.restore();
+      el.removeAttribute('data-test-attribute');
+    });
+
     test('removes aria-label when label is cleared', async () => {
       el.label = '';
       await new Promise((resolve) => setTimeout(resolve, 0));
@@ -75,6 +114,44 @@ suite('nuxeo-select', () => {
           paperInput.inputElement.querySelector('input'));
       if (!nativeInput) return; // skip if structure is unavailable in this env
       expect(nativeInput.getAttribute('aria-label')).to.equal('Format');
+    });
+  });
+
+  // WEBUI-482: the invalid/required state must be exposed on the focusable control, because
+  // paper-dropdown-menu otherwise conveys it with colour and a thicker underline only.
+  suite('accessibility – aria-invalid / aria-required on inner trigger', () => {
+    test('mirrors the required flag onto the native input', async () => {
+      const select = await fixture(html`
+        <nuxeo-select label="Format" required .options="${['HTML', 'XML']}"></nuxeo-select>
+      `);
+      await flush();
+      await waitForAriaSync();
+
+      const nativeInput = select._getNativeInput();
+      expect(nativeInput).to.not.be.null;
+      expect(nativeInput.getAttribute('aria-required')).to.equal('true');
+      expect(nativeInput.getAttribute('aria-invalid')).to.equal('false');
+    });
+
+    test('mirrors the invalid state and clears aria-required when optional', async () => {
+      el.invalid = true;
+      await waitForAriaSync();
+
+      const nativeInput = el._getNativeInput();
+      expect(nativeInput.getAttribute('aria-invalid')).to.equal('true');
+      expect(nativeInput.hasAttribute('aria-required')).to.be.false;
+
+      el.invalid = false;
+      await waitForAriaSync();
+      expect(nativeInput.getAttribute('aria-invalid')).to.equal('false');
+    });
+
+    test('returns silently when the trigger input cannot be found', () => {
+      const saved = el.$.paperDropdownMenu;
+      el.$.paperDropdownMenu = null;
+      expect(() => el._applyAriaState()).to.not.throw();
+      expect(() => el._applyAriaLabel()).to.not.throw();
+      el.$.paperDropdownMenu = saved;
     });
   });
 
@@ -190,6 +267,73 @@ suite('nuxeo-select', () => {
       el2.remove();
       expect(el2._dropdownTabHandler).to.be.null;
     });
+
+    test('connectedCallback reuses existing observers when already present', () => {
+      const resizeObserver = el._resizeObserver;
+      const ariaObserver = el._ariaLabelObserver;
+
+      const resizeObserveSpy = sinon.spy(resizeObserver, 'observe');
+      const ariaObserveSpy = sinon.spy(ariaObserver, 'observe');
+
+      el.connectedCallback();
+
+      expect(el._resizeObserver).to.equal(resizeObserver);
+      expect(el._ariaLabelObserver).to.equal(ariaObserver);
+      expect(resizeObserveSpy).to.have.been.called;
+      expect(ariaObserveSpy).to.have.been.called;
+
+      resizeObserveSpy.restore();
+      ariaObserveSpy.restore();
+    });
+
+    test('disconnectedCallback handles missing aria observer', () => {
+      const disconnectSpy = sinon.spy(el, '_detachDropdownTabHandler');
+
+      const savedObserver = el._ariaLabelObserver;
+      el._ariaLabelObserver = null;
+      el.disconnectedCallback();
+
+      expect(disconnectSpy).to.have.been.calledOnce;
+
+      // Keep element state valid for the fixture lifecycle.
+      el._ariaLabelObserver = savedObserver;
+      disconnectSpy.restore();
+    });
+
+    test('mutation callback ignores non aria-label attributes', async () => {
+      const NativeMutationObserver = window.MutationObserver;
+      let callback;
+
+      try {
+        window.MutationObserver = class {
+          constructor(cb) {
+            callback = cb;
+          }
+
+          observe() {}
+
+          disconnect() {}
+
+          takeRecords() {
+            return [];
+          }
+        };
+
+        const el2 = await fixture(html`
+          <nuxeo-select label="Format" .options="${['HTML', 'Plain text', 'XML']}"></nuxeo-select>
+        `);
+
+        const syncSpy = sinon.spy(el2, '_syncAriaLabel');
+        callback([{ attributeName: 'data-test-attribute' }]);
+
+        expect(syncSpy).to.not.have.been.called;
+
+        syncSpy.restore();
+        el2.remove();
+      } finally {
+        window.MutationObserver = NativeMutationObserver;
+      }
+    });
   });
 
   // Defensive-fallback paths inside _applyAriaLabel() and _getValidity().
@@ -210,6 +354,29 @@ suite('nuxeo-select', () => {
         inputElement: null,
         $: { nativeInput: null },
         shadowRoot: { querySelector: (sel) => (sel === 'input' ? fakeNative : null) },
+      };
+      const savedPdm = el.$.paperDropdownMenu;
+      el.$.paperDropdownMenu = {
+        $: { input: fakePaperInput },
+        shadowRoot: null,
+      };
+      el._applyAriaLabel();
+      expect(fakeNative.getAttribute('aria-label')).to.equal('Format');
+      expect(fakeNative.hasAttribute('aria-labelledby')).to.be.false;
+      el.$.paperDropdownMenu = savedPdm;
+    });
+
+    test('_applyAriaLabel uses inputElement.querySelector fallback for native input', () => {
+      const fakeNative = document.createElement('input');
+      fakeNative.setAttribute('aria-labelledby', 'foo');
+      const fakePaperInput = {
+        setAttribute: () => {},
+        removeAttribute: () => {},
+        inputElement: {
+          querySelector: (sel) => (sel === 'input' ? fakeNative : null),
+        },
+        $: { nativeInput: null },
+        shadowRoot: null,
       };
       const savedPdm = el.$.paperDropdownMenu;
       el.$.paperDropdownMenu = {
