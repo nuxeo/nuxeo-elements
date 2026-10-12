@@ -122,6 +122,12 @@ suite('nuxeo-data-table-column extras', () => {
     });
   });
 
+  suite('required indicator (ELEMENTS-1891)', () => {
+    test('is not required by default', () => {
+      expect(el.required).to.be.false;
+    });
+  });
+
   suite('observer delegates', () => {
     test('_alignRightChanged calls _notifyTable', () => {
       const stub = sinon.stub(el, '_notifyTable');
@@ -176,6 +182,13 @@ suite('nuxeo-data-table-column extras', () => {
       const stub = sinon.stub(el, '_notifyTable');
       el._sortByChanged('t', 'dc:title');
       expect(stub).to.have.been.calledWith('t', 'sortBy', 'dc:title');
+      stub.restore();
+    });
+
+    test('_requiredChanged calls _notifyTable', () => {
+      const stub = sinon.stub(el, '_notifyTable');
+      el._requiredChanged('t', true);
+      expect(stub).to.have.been.calledWith('t', 'required', true);
       stub.restore();
     });
 

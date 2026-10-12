@@ -19,6 +19,7 @@ import '@polymer/polymer/polymer-legacy.js';
 import { IronFormElementBehavior } from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';
 import { IronValidatableBehavior } from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { WidgetValidationBehavior } from './nuxeo-widget-validation-behavior.js';
 
 /**
  * `Nuxeo.DirectoryWidgetBehavior` provides helpers to build a widget to select Nuxeo vocabulary entrie(s).
@@ -29,6 +30,7 @@ export const DirectoryWidgetBehavior = [
   I18nBehavior,
   IronFormElementBehavior,
   IronValidatableBehavior,
+  WidgetValidationBehavior,
   {
     properties: {
       /**

@@ -564,6 +564,65 @@ suite('nuxeo-document-preview extras', () => {
     });
   });
 
+  suite('unsupported mime types', () => {
+    const stampedTags = () => Array.from(el.$.preview.children).map((child) => child.tagName.toLowerCase());
+    const notAvailable = () => el.$.preview.querySelector('#preview-not-available');
+
+    test('shows a message instead of the PDF viewer when nothing can preview the main file', () => {
+      el.xpath = 'file:content';
+      el.document = mkDoc({ 'file:content': { 'mime-type': 'application/pkcs7-signature', viewUrl: 'http://v' } });
+      expect(stampedTags()).to.not.include('nuxeo-pdf-viewer');
+      expect(notAvailable()).to.exist;
+      expect(notAvailable().textContent).to.equal(el.i18n('documentPreview.notAvailable'));
+    });
+
+    test('lets the server convert blobs other than the main file', () => {
+      el.xpath = 'files:files/0/file';
+      el.document = mkDoc(
+        {
+          'files:files': [
+            {
+              file: {
+                'mime-type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                viewUrl: 'http://v',
+              },
+            },
+          ],
+        },
+        { preview: { viewUrl: 'http://p/@preview/' } },
+      );
+      expect(stampedTags()).to.eql(['nuxeo-pdf-viewer']);
+      expect(notAvailable()).to.not.exist;
+    });
+
+    test('still uses the pdf rendition when the server offers one', () => {
+      el.xpath = 'file:content';
+      el.document = mkDoc(
+        { 'file:content': { 'mime-type': 'application/msword', viewUrl: 'http://v' } },
+        { renditions: [{ name: 'pdf', viewUrl: 'http://r/v' }] },
+      );
+      expect(stampedTags()).to.eql(['nuxeo-pdf-viewer']);
+      expect(notAvailable()).to.not.exist;
+    });
+
+    test('still uses the blob embed preview when available', () => {
+      el.xpath = 'file:content';
+      el.document = mkDoc(
+        { 'file:content': { 'mime-type': 'application/pkcs7-signature', viewUrl: 'http://v', preview: {} } },
+        { preview: { viewUrl: 'http://p/@preview/' } },
+      );
+      expect(stampedTags()).to.eql(['nuxeo-pdf-viewer']);
+      expect(notAvailable()).to.not.exist;
+    });
+
+    test('keeps previewing supported mime types', () => {
+      el.xpath = 'file:content';
+      el.document = mkDoc({ 'file:content': { 'mime-type': 'image/png', viewUrl: 'http://v' } });
+      expect(stampedTags()).to.eql(['nuxeo-image-viewer']);
+      expect(notAvailable()).to.not.exist;
+    });
+  });
+
   suite('_computeObjectSource - direct calls', () => {
     test('returns preview viewUrl with xpath', () => {
       el.xpath = 'file:content';

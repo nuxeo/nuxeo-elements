@@ -6,40 +6,47 @@ on:
   schedule:
     - cron: '0 0 * * *'
 
-  # Sync when a commit is done on maintenance-3.1.x
+  # Sync when a commit is done on develop-2023. New strings now land on the dev branch, so
+  # syncing from maintenance-3.1.x would only reach translators at release time.
   push:
-    branches: ["maintenance-3.1.x"]
+    branches: ["develop-2023"]
     paths:
-      - 'i18n/messages.json'
+      - 'ui/i18n/messages.json'
 
   # Manually trigger the workflow
   workflow_dispatch:
   
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
   # in uses, cannot use environment variable for {owner}/{repo} nor matrix strategy variable for {ref}
   # thus hardcoding them
   call-workflow-in-lts-2025:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     uses: nuxeo/nuxeo-elements/.github/workflows/crowdin.yaml@lts-2025
-    secrets: inherit
+    permissions:
+      contents: write
+      pull-requests: write
+    # Pass only the secrets the reusable workflow needs instead of `secrets: inherit`.
+    secrets:
+      CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+      CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+      WEBUI_JX_BOT_GITHUB_ACTIONS_TOKEN: ${{ secrets.WEBUI_JX_BOT_GITHUB_ACTIONS_TOKEN }}
     needs: crowdin
 
   crowdin:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          ref: maintenance-3.1.x
+          ref: develop-2023
 
       - name: Crowdin Action
         id: crowdin-sync
-        uses: crowdin/github-action@v2.16.0
+        uses: crowdin/github-action@7ca9c452bfe9197d3bb7fa83a4d7e2b0c9ae835d # v2.16.0
         with:
           # Disable 'git checkout "${GITHUB_REF#refs/heads/}"'
           skip_ref_checkout: true
@@ -57,14 +64,14 @@ jobs:
           auto_approve_imported: true
 
           # Name of the branch where to merge the translations
-          localization_branch_name: crowdin-translations-update-lts-2023
-          pull_request_base_branch_name: maintenance-3.1.x
+          localization_branch_name: crowdin-translations-update-develop-2023
+          pull_request_base_branch_name: develop-2023
           create_pull_request: true
-          pull_request_title: 'New Crowdin translations by GitHub Action (lts-2023)'
-          pull_request_body: 'New Crowdin pull request with translations lts 2023'
+          pull_request_title: 'New Crowdin translations by GitHub Action (develop-2023)'
+          pull_request_body: 'New Crowdin pull request with translations develop-2023'
 
           # The commit message
-          commit_message: 'Automatic update of translations from Crowdin lts 2023'
+          commit_message: 'Automatic update of translations from Crowdin'
 
           # Automatically download all the new translations
           download_translations: true
