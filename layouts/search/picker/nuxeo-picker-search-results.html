@@ -1,0 +1,101 @@
+<!-- XXX: stub for the <nuxeo-results> element because it's still part of the nuxeo/nuxeo-web-ui repo. -->
+<!-- (to be reviewed once ELEMENTS-1321 is handled) -->
+<dom-module id="nuxeo-results">
+  <script>
+    function _createItem(uid, title, imageName) {
+      return {
+        uid,
+        title,
+        type: 'file',
+        contextParameters: {
+          thumbnail: {
+            url: `static/media/${imageName}.jpg`,
+          },
+        },
+      };
+    }
+    Polymer({
+      is: 'nuxeo-results',
+      properties: {
+        _defaultItems: {
+          type: Array,
+          value: [
+            _createItem('uid1', 'Swirl Blue Pink', 'image01.df0ac7ee'),
+            _createItem('uid2', 'Swirl Blue Magenta', 'image02.3c5ae515'),
+            _createItem('uid3', 'Swirl Blue Green', 'image03.7ff16f0f'),
+          ],
+        },
+      },
+      observers: ['_selectedItemsChanged(selectedItems, selectedItems.*)'],
+      fetch() {
+        // simulates a real fetch by populating the items of a table with an array of simplified filtered results
+        const searchTerm = this.nxProvider.params.title;
+        if (!searchTerm) {
+          return this._setItems(this._defaultItems);
+        }
+        const searchTermParts = searchTerm.toLowerCase().split(' ');
+        const results = this._defaultItems
+          // only include documents that contain some search term in the title
+          .filter((item) => searchTermParts.some((part) => item.title.toLowerCase().includes(part)));
+        this._setItems(results);
+      },
+      reset() {
+        // simulates a real reset by clearing the items of a table with an empty array
+        this._setItems([]);
+      },
+      _setItems(value) {
+        this.querySelector('nuxeo-data-table').items = value;
+      },
+      _selectedItemsChanged() {
+        // simulate the event so that it can be listened in the picker
+        this.fire('selected-items-changed');
+      },
+    });
+  </script>
+</dom-module>
+
+<!--
+`nuxeo-picker-search-results`
+@group Nuxeo UI
+@element nuxeo-picker-search-results
+-->
+<dom-module id="nuxeo-picker-search-results">
+  <template>
+    <style include="nuxeo-styles">
+      nuxeo-data-grid {
+        /* required to override the min-height defined by default on <nuxeo-data-grid> */
+        min-height: 200px;
+      }
+    </style>
+    <nuxeo-results nx-provider="[[nxProvider]]" selected-items="{{selectedItems}}">
+      <!-- disable the default actions (eg. CSV export) -->
+      <div slot="actions"></div>
+      <!-- disable the actions that are displayed when results are selected -->
+      <div slot="selectionActions"></div>
+      <nuxeo-data-table
+        class="results"
+        empty-label="[[i18n('searchResults.noResults')]]"
+        selection-enabled
+        icon="nuxeo:view-list"
+        name="table"
+        selected-items="{{selectedItems}}"
+      >
+        <nuxeo-data-table-column name="Title" field="dc:title" sort-by="dc:title" flex="100">
+          <template>
+            <nuxeo-document-thumbnail document="[[item]]"></nuxeo-document-thumbnail>
+            <label>[[item.title]]</label>
+          </template>
+        </nuxeo-data-table-column>
+      </nuxeo-data-table>
+    </nuxeo-results>
+  </template>
+  <script>
+    Polymer({
+      is: 'nuxeo-picker-search-results',
+      behaviors: [Nuxeo.LayoutBehavior],
+      properties: {
+        nxProvider: Object,
+      },
+    });
+  </script>
+</dom-module>
