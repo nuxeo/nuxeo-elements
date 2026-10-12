@@ -21,6 +21,7 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '@polymer/polymer/lib/legacy/polymer.dom.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { Templatizer } from '@polymer/polymer/lib/legacy/templatizer-behavior.js';
+import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 import './viewers/nuxeo-image-viewer.js';
 import './viewers/nuxeo-pdf-viewer.js';
 import './viewers/nuxeo-video-viewer.js';
@@ -36,10 +37,11 @@ import './marked-element.js';
    *
    * @appliesMixin Polymer.Templatizer
    * @appliesMixin Polymer.IronResizableBehavior
+   * @appliesMixin Nuxeo.I18nBehavior
    * @memberof Nuxeo
    * @demo demo/nuxeo-document-preview/index.html
    */
-  class DocumentPreview extends mixinBehaviors([Templatizer, IronResizableBehavior], Nuxeo.Element) {
+  class DocumentPreview extends mixinBehaviors([Templatizer, IronResizableBehavior, I18nBehavior], Nuxeo.Element) {
     static get template() {
       return html`
         <style>
@@ -96,6 +98,16 @@ import './marked-element.js';
           #plain {
             white-space: break-spaces;
           }
+
+          #preview-not-available {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: var(--nuxeo-viewer-min-height, 60vh);
+            padding: 8px;
+            text-align: center;
+            color: var(--nuxeo-text-default, rgba(0, 0, 0, 0.54));
+          }
         </style>
 
         <!-- Our available preview templates. First match will be used -->
@@ -149,8 +161,15 @@ import './marked-element.js';
           <object id="frame" data="[[_computeObjectSource(_blob)]]"></object>
         </template>
 
-        <template mime-pattern=".*">
+        <!-- Preview rendered by the server, either from the blob's embed preview or by converting
+             the blob to PDF. Selected explicitly by _updatePreview, not by a mime pattern. -->
+        <template server-preview>
           <nuxeo-pdf-viewer src="[[_computeObjectSource(_blob)]]"></nuxeo-pdf-viewer>
+        </template>
+
+        <!-- Shown when no previewer supports the blob's mime type. -->
+        <template unsupported>
+          <div id="preview-not-available">[[_notAvailableMessage]]</div>
         </template>
 
         <div id="preview"></div>
@@ -178,6 +197,16 @@ import './marked-element.js';
         },
 
         _blob: Object,
+
+        /**
+         * Message displayed when no previewer supports the blob's mime type. Computed on the host
+         * because `_insertPreview` only forwards the properties declared here to the stamped
+         * instance, so `i18n` is not available inside the previewer templates.
+         */
+        _notAvailableMessage: {
+          type: String,
+          computed: '_computeNotAvailableMessage(i18n)',
+        },
       };
     }
 
@@ -236,12 +265,12 @@ import './marked-element.js';
       }
 
       // lookup the preview according to the blob's mimetype
-      const previewers = dom(this.root).querySelectorAll('template');
+      const previewers = Array.from(dom(this.root).querySelectorAll('template'));
+      const previewerWith = (attribute) => previewers.find((previewer) => previewer.hasAttribute(attribute));
 
       // Use embed preview when available
-      if ('preview' in this._blob) {
-        const fallback = previewers[previewers.length - 1];
-        this._insertPreview(fallback);
+      if (this._blob && 'preview' in this._blob) {
+        this._insertPreview(previewerWith('server-preview'));
         return;
       }
 
@@ -257,9 +286,19 @@ import './marked-element.js';
         if (hasRendition || hasMimetype) {
           // Insert our previewer
           this._insertPreview(previewer);
-          break;
+          return;
         }
       }
+
+      // No previewer supports this mime type. For the main file the document renditions already
+      // told us the server cannot render it as a PDF, so asking it to convert the blob would only
+      // fail and leave PDF.js with an error; show a message instead. Blobs at another xpath carry
+      // no such information, so we still let the server try to convert them (see ELEMENTS-1722).
+      this._insertPreview(previewerWith(this.xpath === 'file:content' ? 'unsupported' : 'server-preview'));
+    }
+
+    _computeNotAvailableMessage(i18n) {
+      return i18n('documentPreview.notAvailable');
     }
 
     _deepFind(obj, props) {

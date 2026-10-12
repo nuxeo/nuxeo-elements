@@ -305,7 +305,7 @@ window.nuxeo.slots.setSharedModel = (model) => {
       }
       this._instances.forEach((instance) => {
         instance.set(prop, value);
-      }, this);
+      });
     }
   }
 

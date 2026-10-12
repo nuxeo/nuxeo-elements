@@ -230,6 +230,127 @@ suite('nuxeo-results-view', () => {
     });
   });
 
+  suite('deferInitialSearch', () => {
+    let results;
+
+    setup(() => {
+      results = { reset: sinon.stub(), fetch: sinon.stub() };
+      sinon.stub(element, '$$').callsFake((sel) => (sel === '#results' ? results : null));
+    });
+
+    teardown(() => {
+      element.$$.restore();
+    });
+
+    test('_search fetches when not deferred', () => {
+      element._search();
+      expect(results.reset).to.have.been.calledOnce;
+      expect(results.fetch).to.have.been.calledOnce;
+    });
+
+    test('_search does not fetch while the initial search is deferred', () => {
+      element.deferInitialSearch = true;
+      element._search();
+      expect(results.reset).to.not.have.been.called;
+      expect(results.fetch).to.not.have.been.called;
+    });
+
+    test('search lifts the deferral and fetches', () => {
+      element.deferInitialSearch = true;
+      element.search();
+      expect(results.fetch).to.have.been.calledOnce;
+    });
+
+    test('_search fetches once an explicit search has run', () => {
+      element.deferInitialSearch = true;
+      element.search();
+      element._search();
+      expect(results.fetch).to.have.been.calledTwice;
+    });
+
+    test('_search fetches on an automatic view even while the initial search is deferred', () => {
+      element.deferInitialSearch = true;
+      element.auto = true;
+      results.fetch.resetHistory();
+      element._search();
+      expect(results.fetch).to.have.been.calledOnce;
+    });
+
+    test('_clear does not search while the initial search is deferred', () => {
+      element.deferInitialSearch = true;
+      element.auto = false;
+      element.visible = true;
+      element._clear();
+      expect(results.fetch).to.not.have.been.called;
+    });
+
+    test('_clear returns to the deferred state after an explicit search', () => {
+      element.deferInitialSearch = true;
+      element.auto = false;
+      element.visible = true;
+      element.search();
+      results.fetch.resetHistory();
+      results.reset.resetHistory();
+
+      element._clear();
+
+      expect(results.fetch).to.not.have.been.called;
+      expect(results.reset).to.have.been.calledOnce;
+    });
+
+    test('_search does not fetch after clearing an explicit search', () => {
+      element.deferInitialSearch = true;
+      element.auto = false;
+      element.visible = true;
+      element.search();
+      element._clear();
+      results.fetch.resetHistory();
+
+      element._search();
+
+      expect(results.fetch).to.not.have.been.called;
+    });
+
+    test('_clear leaves an automatic view alone while the initial search is deferred', () => {
+      element.deferInitialSearch = true;
+      element.auto = true;
+      element.visible = true;
+      element.search();
+      results.fetch.resetHistory();
+      results.reset.resetHistory();
+
+      element._clear();
+
+      // an automatic view searches from its params observer, so _clear neither searches nor drops
+      // back into the deferred state
+      expect(results.fetch).to.not.have.been.called;
+      expect(results.reset).to.not.have.been.called;
+      expect(element._searched).to.be.true;
+    });
+
+    test('_formChanged does not search when the initial search is deferred', () => {
+      element.deferInitialSearch = true;
+      element._formChanged({ detail: { value: document.createElement('div') } });
+      expect(results.fetch).to.not.have.been.called;
+    });
+
+    test('_formChanged attaches a single trigger-search listener per form', () => {
+      const form = document.createElement('div');
+      element._formChanged({ detail: { value: form } });
+      element._formChanged({ detail: { value: form } });
+      results.fetch.resetHistory();
+
+      form.dispatchEvent(new CustomEvent('trigger-search'));
+
+      expect(results.fetch).to.have.been.calledOnce;
+    });
+
+    test('_formChanged searches when not deferred', () => {
+      element._formChanged({ detail: { value: document.createElement('div') } });
+      expect(results.fetch).to.have.been.called;
+    });
+  });
+
   suite('_aggregationsChanged', () => {
     test('sets aggregations on form when form exists', () => {
       const fakeForm = { aggregations: null };

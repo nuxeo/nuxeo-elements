@@ -54,7 +54,8 @@ import '../nuxeo-icons.js';
             width: var(--nuxeo-checkmark-width, 18px);
             height: var(--nuxeo-checkmark-height, 18px);
             cursor: pointer;
-            border-radius: 50%;
+            /* Make the checkmark a square for consistent click target size, common change for all themes */
+            border-radius: 2px;
             border: 2px solid var(--nuxeo-checkmark-border-color, var(--nuxeo-text-default, gray));
             background-color: var(--nuxeo-checkmark-background-color, transparent);
             color: var(--nuxeo-icon-color, transparent);
@@ -82,7 +83,7 @@ import '../nuxeo-icons.js';
           :host([checked]) {
             border: 2px solid var(--nuxeo-checkmark-border-color-checked, var(--nuxeo-primary-color, blue));
             background-color: var(--nuxeo-checkmark-background-color-checked, var(--nuxeo-primary-color, blue));
-            color: var(--nuxeo-icon-color-checked, white);
+            color: var(--nuxeo-checkmark-tick-color, white);
           }
 
           iron-icon {
@@ -132,17 +133,29 @@ import '../nuxeo-icons.js';
       }
     }
 
-    _tap(fromKeyboard = false) {
+    _tap(fromKeyboard) {
       if (!this.disabled) {
+        // `_tap` is also the `on-click` handler, so a mouse click invokes it with a
+        // `MouseEvent` argument. Only an explicit `true` (from `_onKeyDown`) counts as
+        // a keyboard toggle; an event object or `undefined` is a pointer interaction
+        // that must still blur on deselect (WEBUI-2056).
+        this._fromKeyboard = fromKeyboard === true;
         this.checked = !this.checked;
-        if (!fromKeyboard && !this.checked) {
-          this.blur();
-        }
       }
     }
 
     _ariaChecked() {
       this.setAttribute('aria-checked', this.checked);
+      // Drop focus when the checkmark is unchecked so the tick icon does not
+      // linger after deselection (WEBUI-2056). This runs from the `checked`
+      // observer so it also covers deselections driven through data binding
+      // (e.g. table rows / select-all), not just direct mouse taps. Keyboard
+      // toggles keep focus so keyboard navigation is preserved (ELEMENTS-1851).
+      const fromKeyboard = this._fromKeyboard;
+      this._fromKeyboard = false;
+      if (!this.checked && !fromKeyboard) {
+        this.blur();
+      }
     }
   }
 
