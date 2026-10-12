@@ -79,9 +79,12 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
 
         <nuxeo-operation id="op" op="Directory.SuggestEntries"></nuxeo-operation>
 
-        <label class="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
+        <label class="label" id="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
 
         <iron-selector
+          id="selector"
+          role="group"
+          aria-labelledby="label"
           attr-for-selected="name"
           multi
           selected-attribute="checked"
@@ -156,10 +159,19 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
 
     /* Override method from Polymer.IronValidatableBehavior. */
     _getValidity() {
-      if (this.required) {
-        return this.value && this.value.length > 0;
+      const valid = !this.required || !!(this.value && this.value.length > 0);
+      if (valid) {
+        this._clearDefaultRequiredError();
+      } else {
+        this._applyDefaultRequiredError();
       }
-      return true;
+      return valid;
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. The individual checkboxes are stamped from
+       the directory entries, so the state belongs on the group that owns the value. */
+    _ariaValidationControl() {
+      return this.$.selector;
     }
 
     _isChecked(entry) {

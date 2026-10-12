@@ -180,6 +180,10 @@ import '@polymer/paper-input/paper-textarea.js';
       };
     }
 
+    static get observers() {
+      return ['_syncNativeTextareaAriaState(invalid, required)'];
+    }
+
     /* Override method from Polymer.IronValidatableBehavior. */
     _getValidity() {
       return this.$.paperTextarea.validate();
@@ -190,9 +194,13 @@ import '@polymer/paper-input/paper-textarea.js';
       // Re-sync once iron-autogrow-textarea reports its inner native <textarea>
       // is wired up; before that the aria-labelledby we need to clear may not exist.
       if (this.$ && this.$.paperTextarea) {
-        this.$.paperTextarea.addEventListener('iron-input-ready', () => this._syncNativeTextareaAriaLabel());
+        this.$.paperTextarea.addEventListener('iron-input-ready', () => {
+          this._syncNativeTextareaAriaLabel();
+          this._syncNativeTextareaAriaState();
+        });
       }
       this._syncNativeTextareaAriaLabel();
+      this._syncNativeTextareaAriaState();
     }
 
     _computeAriaLabel(label, placeholder) {
@@ -209,6 +217,41 @@ import '@polymer/paper-input/paper-textarea.js';
       setTimeout(() => this._applyNativeTextareaAriaLabel(), 0);
     }
 
+    _syncNativeTextareaAriaState() {
+      // Deferred like the aria-label sync: the native <textarea> only exists once paper-textarea rendered.
+      setTimeout(() => this._applyNativeTextareaAriaState(), 0);
+    }
+
+    _applyNativeTextareaAriaState() {
+      const nativeTextarea = this._getNativeTextarea();
+      if (!nativeTextarea) {
+        return;
+      }
+      // paper-textarea signals the error with colour and a thicker underline only; assistive
+      // technologies need the state on the focusable control (WCAG 2.1 SC 1.4.1).
+      nativeTextarea.setAttribute('aria-invalid', this.invalid ? 'true' : 'false');
+      if (this.required) {
+        nativeTextarea.setAttribute('aria-required', 'true');
+      } else {
+        nativeTextarea.removeAttribute('aria-required');
+      }
+    }
+
+    _getNativeTextarea() {
+      let paperTextarea;
+      if (this.$) {
+        paperTextarea = this.$.paperTextarea;
+      }
+      if (!paperTextarea) {
+        return null;
+      }
+      let nativeTextarea = paperTextarea.shadowRoot && paperTextarea.shadowRoot.querySelector('textarea');
+      if (!nativeTextarea && paperTextarea.$ && paperTextarea.$.input && paperTextarea.$.input.textarea) {
+        nativeTextarea = paperTextarea.$.input.textarea;
+      }
+      return nativeTextarea;
+    }
+
     _applyNativeTextareaAriaLabel() {
       const paperTextarea = this.$ && this.$.paperTextarea;
       if (!paperTextarea) {
@@ -217,10 +260,7 @@ import '@polymer/paper-input/paper-textarea.js';
 
       const ariaLabel = this._computeAriaLabel(this.label, this.placeholder);
 
-      let nativeTextarea = paperTextarea.shadowRoot && paperTextarea.shadowRoot.querySelector('textarea');
-      if (!nativeTextarea && paperTextarea.$ && paperTextarea.$.input && paperTextarea.$.input.textarea) {
-        nativeTextarea = paperTextarea.$.input.textarea;
-      }
+      const nativeTextarea = this._getNativeTextarea();
       if (nativeTextarea) {
         if (ariaLabel) {
           nativeTextarea.setAttribute('aria-label', ariaLabel);

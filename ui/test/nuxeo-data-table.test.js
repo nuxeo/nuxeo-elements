@@ -478,7 +478,7 @@ suite('nuxeo-data-table', () => {
 
       await waitForEvent(table, 'nuxeo-page-loaded', 1);
       await flush();
-      assert.equal(4, table.$.list.items.length);
+      assert.equal(table.$.list.items.length, 4);
     });
   });
 
@@ -497,7 +497,7 @@ suite('nuxeo-data-table', () => {
     });
   });
 
-  suite('table selection', async () => {
+  suite('table selection', () => {
     setup(async () => setupServer(1, 4));
 
     test('single selection', async () => {
@@ -508,7 +508,7 @@ suite('nuxeo-data-table', () => {
 
       await waitForEvent(table, 'nuxeo-page-loaded', 1);
       await flush();
-      assert.equal(4, table.$.list.items.length);
+      assert.equal(table.$.list.items.length, 4);
 
       const checkboxes = Array.from(
         table.querySelectorAll('nuxeo-data-table-checkbox:not([style*="visibility: hidden;"])'),
@@ -539,7 +539,7 @@ suite('nuxeo-data-table', () => {
 
       await waitForEvent(table, 'nuxeo-page-loaded', 1);
       await flush();
-      assert.equal(4, table.$.list.items.length);
+      assert.equal(table.$.list.items.length, 4);
 
       // select 2 out of 4 items
       const checkboxes = Array.from(
@@ -566,7 +566,7 @@ suite('nuxeo-data-table', () => {
 
       await waitForEvent(table, 'nuxeo-page-loaded', 1);
       await flush();
-      assert.equal(4, table.$.list.items.length);
+      assert.equal(table.$.list.items.length, 4);
 
       const checkboxes = Array.from(
         table.querySelectorAll('nuxeo-data-table-checkbox:not([style*="visibility: hidden;"])'),
@@ -600,7 +600,7 @@ suite('nuxeo-data-table', () => {
 
       await waitForEvent(table, 'nuxeo-page-loaded', 1);
       await flush();
-      assert.equal(4, table.$.list.items.length);
+      assert.equal(table.$.list.items.length, 4);
 
       const checkboxes = Array.from(
         table.querySelectorAll('nuxeo-data-table-checkbox:not([style*="visibility: hidden;"])'),
@@ -905,6 +905,111 @@ suite('nuxeo-data-table', () => {
       await flush();
       // Firstname keeps the markup value; Lastname was derived here, so it is cleared
       expect(table.columns.map((c) => c.required)).to.deep.equal([true, false]);
+    });
+  });
+
+  suite('required multivalued property reports why it failed (WEBUI-180 / WEBUI-482)', () => {
+    // A generated multivalued layout flags the entry widget of the row form, never the table, so an
+    // empty required property used to pass client validation and the save was refused with no reason.
+    async function multivaluedFixture(items, columns, formWidgets) {
+      const table = await fixture(html`
+        <nuxeo-data-table editable .items="${items}">
+          ${columns}
+          <nuxeo-data-table-form>
+            <template>
+              ${formWidgets}
+            </template>
+          </nuxeo-data-table-form>
+        </nuxeo-data-table>
+      `);
+      await flush();
+      return table;
+    }
+
+    const scalarColumn = html`
+      <nuxeo-data-table-column name="Multi String"><template>[[item]]</template></nuxeo-data-table-column>
+    `;
+
+    test('fails validation when the row form requires an entry and there is no row', async () => {
+      const table = await multivaluedFixture(
+        [],
+        scalarColumn,
+        html`
+          <input name="stringlist" required />
+        `,
+      );
+      expect(table.required).to.be.false;
+      expect(table._isWidgetRequired()).to.be.true;
+      expect(table.validate()).to.be.false;
+    });
+
+    test('passes once an entry has been added', async () => {
+      const table = await multivaluedFixture(
+        ['alpha'],
+        scalarColumn,
+        html`
+          <input name="stringlist" required />
+        `,
+      );
+      expect(table.validate()).to.be.true;
+    });
+
+    test('stays valid when no entry widget is required', async () => {
+      const table = await multivaluedFixture(
+        [],
+        scalarColumn,
+        html`
+          <input name="stringlist" />
+        `,
+      );
+      expect(table._isWidgetRequired()).to.be.false;
+      expect(table.validate()).to.be.true;
+    });
+
+    test('conveys the failure as text and as state on the table', async () => {
+      const table = await multivaluedFixture(
+        [],
+        scalarColumn,
+        html`
+          <input name="stringlist" required />
+        `,
+      );
+
+      expect(table.validate()).to.be.false;
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      const error = table.shadowRoot.querySelector('.error');
+      expect(table.errorMessage).to.be.ok;
+      expect(error.hasAttribute('hidden')).to.be.false;
+      expect(error.textContent.trim()).to.equal(table.errorMessage);
+      expect(table.$.table.getAttribute('aria-required')).to.equal('true');
+      expect(table.$.table.getAttribute('aria-invalid')).to.equal('true');
+      expect(table.$.table.getAttribute('aria-describedby')).to.equal(error.id);
+    });
+
+    test('names itself from its required column so a layout can name the failing field', async () => {
+      const table = await multivaluedFixture(
+        [],
+        scalarColumn,
+        html`
+          <input name="stringlist" required />
+        `,
+      );
+      expect(table._validationLabel()).to.equal('Multi String');
+
+      table.label = 'Subjects';
+      expect(table._validationLabel()).to.equal('Subjects');
+    });
+
+    test('leaves a table with no row form valid', async () => {
+      const table = await fixture(html`
+        <nuxeo-data-table .items="${[]}">
+          <nuxeo-data-table-column name="Title"><template>[[item.title]]</template></nuxeo-data-table-column>
+        </nuxeo-data-table>
+      `);
+      await flush();
+      expect(table._isWidgetRequired()).to.be.false;
+      expect(table.validate()).to.be.true;
     });
   });
 

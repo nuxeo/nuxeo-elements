@@ -24,6 +24,11 @@ import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from './nuxeo-i18n-behavior.js';
 
+// Locale independent ordering, matching the default `Array.prototype.sort()` comparison of UTF-16
+// code units. Used to build signatures that are compared across invocations, so the resulting order
+// must never depend on the environment locale. Yields -1, 0 or 1 from the two comparisons.
+const compareKeys = (a, b) => Number(a > b) - Number(a < b);
+
 /**
  * @polymerBehavior Nuxeo.PageProviderDisplayBehavior
  */
@@ -643,7 +648,7 @@ export const PageProviderDisplayBehavior = [
       // Build a stable signature based only on active states
       const snapshot = this.quickFilters
         ? Object.keys(this.quickFilters)
-            .sort()
+            .sort(compareKeys)
             .map((key) => `${key}:${Boolean(this.quickFilters[key].active)}`)
             .join('|')
         : '';

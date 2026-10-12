@@ -81,9 +81,14 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
 
         <nuxeo-operation id="op" op="Directory.SuggestEntries"></nuxeo-operation>
 
-        <label class="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
+        <label class="label" id="label" hidden$="[[!label]]" required$="[[required]]">[[label]]</label>
 
-        <paper-radio-group on-selected-item-changed="_updateItem" selected="{{_selected}}">
+        <paper-radio-group
+          id="group"
+          aria-labelledby="label"
+          on-selected-item-changed="_updateItem"
+          selected="{{_selected}}"
+        >
           <dom-repeat items="[[_entries]]">
             <template>
               <paper-radio-button
@@ -147,10 +152,19 @@ import { DirectoryWidgetBehavior } from './nuxeo-directory-widget-behavior.js';
 
     /* Override method from Polymer.IronValidatableBehavior. */
     _getValidity() {
-      if (this.required) {
-        return !!this.value;
+      const valid = !this.required || !!this.value;
+      if (valid) {
+        this._clearDefaultRequiredError();
+      } else {
+        this._applyDefaultRequiredError();
       }
-      return true;
+      return valid;
+    }
+
+    /* Override method from Nuxeo.WidgetValidationBehavior. The radio buttons are stamped from the
+       directory entries, so the state belongs on the group that owns the value. */
+    _ariaValidationControl() {
+      return this.$.group;
     }
 
     _isChecked(entry) {
