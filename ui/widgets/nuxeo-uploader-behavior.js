@@ -218,8 +218,8 @@ DefaultUploadProvider.prototype.accepts = function(file) {
     return true;
   }
   const mimeType = file.type !== '' ? file.type.match(/^[^/]*\//)[0] : null;
-  const fileType = file.name.indexOf('.') !== -1 ? file.name.match(/\.[^.]*$/)[0] : null;
-  return this.accept.indexOf(mimeType) > -1 || this.accept.indexOf(fileType) > -1;
+  const fileType = file.name.includes('.') ? file.name.match(/\.[^.]*$/)[0] : null;
+  return this.accept.includes(mimeType) || this.accept.includes(fileType);
 };
 
 /**

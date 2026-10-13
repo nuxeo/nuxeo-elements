@@ -74,7 +74,7 @@ export const importHref = function(href, onload, onerror, optAsync) {
     // will be automatically created again the next time `importHref` is
     // called.
     if (link.parentNode) {
-      link.parentNode.removeChild(link);
+      link.remove();
     }
     if (onerror) {
       whenImportsReady(() => {
