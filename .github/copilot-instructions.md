@@ -99,8 +99,8 @@ test/                → Shared test setup
 
 ## CI / GitHub Actions
 
-- **Dev branch flow (`develop-2025`, `develop-2023`)**: lint → test → storybook via `develop.yaml`, with no publish step. Ticket PRs target these branches.
-- **Release branch flow (`lts-2025`, `maintenance-3.1.x`)**: lint → test → storybook → build (tag + publish) (sequential gates)
+- **Dev branch flow (`develop-2025`, `develop-2023`)**: `develop.yaml` starts lint, test and storybook in parallel; Sonar and CodeQL trigger themselves on the same push. No publish step. Ticket PRs target these branches.
+- **Release branch flow (`lts-2025`, `maintenance-3.1.x`)**: `main.yaml` starts lint, test, storybook and sonar in parallel, then build (tag + publish), which depends on all four.
 - **Node version**: 22 in CI
 - **Installs**: CI uses `npm ci --ignore-scripts` for deterministic, lockfile-based installs (the `--ignore-scripts` flag skips dependency lifecycle hooks for supply-chain safety; the unit-test browser is installed via the `pretest` hook). `package-lock.json` is committed and must stay in sync with `package.json`.
 - **Registry**: `@nuxeo` packages come from `https://packages.nuxeo.com/repository/npm-public/`

@@ -148,9 +148,9 @@ npm run test:dataviz  # Dataviz only
 
 ## CI Workflow
 
-Push to a dev branch (`develop-2025`, `develop-2023`) runs `develop.yaml`: **lint → test → storybook** (all must pass). Sonar and CodeQL trigger themselves on the same push. Nothing is published to npm, and Storybook builds but does not deploy.
+Push to a dev branch (`develop-2025`, `develop-2023`) runs `develop.yaml`, which starts **lint**, **test** and **storybook** in parallel — all must pass. Sonar and CodeQL trigger themselves on the same push. Nothing is published to npm, and Storybook builds but does not deploy.
 
-Push to a release branch runs `main.yaml` for that line (`maintenance-3.1.x` here, `lts-2025` on the 2025 line): the same checks plus **build (tag + publish)**.
+Push to a release branch runs `main.yaml` for that line: those three plus **sonar**, again in parallel, then **build (tag + publish)**, which depends on all four.
 
 PRs run lint and test workflows automatically.
 
