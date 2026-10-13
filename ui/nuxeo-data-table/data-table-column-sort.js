@@ -93,9 +93,10 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _order(path, sortOrder, length) {
-      // `sortOrder` is still unset during the initial property flush, and the sequence badge is
-      // only meaningful while several columns are sorted at once.
-      if (!sortOrder || length <= 1) {
+      // `sortOrder` is still unset during the initial property flush and `iron-data-table` also
+      // accepts a null or non-array sort order, which means nothing is sorted. The sequence badge
+      // is only meaningful while several columns are sorted at once.
+      if (!Array.isArray(sortOrder) || length <= 1) {
         return '';
       }
 
@@ -104,14 +105,19 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     }
 
     _sortOrderChanged(sortOrder) {
-      if (!sortOrder.base) {
+      // A Polymer wildcard change record always carries a `base` key, so a record without one
+      // was not produced by the observer and says nothing about the current sort order.
+      if (!sortOrder || !('base' in sortOrder)) {
         return;
       }
 
       // `sortOrder` may be replaced from outside the element, for instance when a saved content
       // view is restored, so the direction has to be cleared when this column is no longer part
-      // of it. Leaving it stale would keep both the arrow and the aria-label out of sync.
-      const sort = sortOrder.base.find((entry) => entry.path === this.path);
+      // of it. `iron-data-table` also accepts a null or non-array sort order, which means nothing
+      // is sorted. Leaving the direction stale would keep both the arrow and the aria-label out
+      // of sync.
+      const entries = Array.isArray(sortOrder.base) ? sortOrder.base : [];
+      const sort = entries.find((entry) => entry.path === this.path);
       this.direction = sort ? sort.direction : null;
     }
 
