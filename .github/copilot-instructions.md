@@ -99,7 +99,8 @@ test/                → Shared test setup
 
 ## CI / GitHub Actions
 
-- **Workflows**: lint → test → storybook → build (tag + publish) (sequential gates)
+- **Dev branch flow (`develop-2025`, `develop-2023`)**: lint → test → storybook via `develop.yaml`, with no publish step. Ticket PRs target these branches.
+- **Release branch flow (`lts-2025`, `maintenance-3.1.x`)**: lint → test → storybook → build (tag + publish) (sequential gates)
 - **Node version**: 22 in CI
 - **Installs**: CI uses `npm ci --ignore-scripts` for deterministic, lockfile-based installs (the `--ignore-scripts` flag skips dependency lifecycle hooks for supply-chain safety; the unit-test browser is installed via the `pretest` hook). `package-lock.json` is committed and must stay in sync with `package.json`.
 - **Registry**: `@nuxeo` packages come from `https://packages.nuxeo.com/repository/npm-public/`

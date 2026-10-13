@@ -198,17 +198,20 @@ cd storybook && npm run build   # Production build
 
 ## CI/CD (GitHub Actions)
 
-Workflow orchestration in `.github/workflows/main.yaml`:
+Workflow orchestration in `.github/workflows/main.yaml` (release branches) and `.github/workflows/develop.yaml` (dev branches):
 
 ```
-Push to maintenance-3.1.x triggers:
+Push to a release branch (lts-2025, maintenance-3.1.x) triggers main.yaml:
   lint     → ESLint + Prettier + Polymer lint
   test     → @web/test-runner unit tests (all packages)
   storybook → Build storybook documentation
   build    → Tag and publish packages to npm registry
+
+Push to a dev branch (develop-2025, develop-2023) triggers develop.yaml:
+  the same lint / test / storybook set, without the tag-and-publish step
 ```
 
-Additional workflows: `preview.yaml` (PR preview environments), `cross-repo.yaml` (triggers nuxeo-web-ui builds), `crowdin.yaml` (daily translation sync), `promote.yaml` (release promotion), `cleanup.yaml` (preview namespace cleanup).
+Additional workflows: `preview.yaml` (PR preview environments), `cross-repo.yaml` (triggers nuxeo-web-ui builds), `crowdin.yaml` (daily translation sync), `promote.yaml` (release promotion), `sync-release-to-dev.yaml` (merges a release branch back into its dev branch after promotion), `cleanup.yaml` (preview namespace cleanup).
 
 ## Key Directories Reference
 
