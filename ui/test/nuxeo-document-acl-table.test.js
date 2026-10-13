@@ -17,7 +17,7 @@ limitations under the License.
 */
 import { fixture, html } from '@nuxeo/testing-helpers';
 import '../nuxeo-document-permissions/nuxeo-document-acl-table.js';
-import { fetchUserEntities } from '../nuxeo-user-group-management/nuxeo-user-display.js';
+import { fetchUserEntities, isInternalPrincipal } from '../nuxeo-user-group-management/nuxeo-user-display.js';
 
 suite('nuxeo-document-acl-table', () => {
   test('should return the element name', () => {
@@ -254,6 +254,36 @@ suite('nuxeo-document-acl-table extras', () => {
       expect(warnSpy).to.not.have.been.called;
       warnSpy.restore();
       el.$.userResource.get.restore();
+    });
+
+    test('should not call the server for the internal system principal', async () => {
+      const getSpy = sinon.spy(el.$.userResource, 'get');
+      await el._fetchCreators([{ creator: 'system', username: 'Admin', permission: 'Read' }]);
+      expect(getSpy).to.not.have.been.called;
+      expect(el._creatorEntities).to.have.property('system', 'system');
+      getSpy.restore();
+    });
+
+    test('should resolve real creators while skipping the system principal', async () => {
+      const entity = { 'entity-type': 'user', id: 'jdoe', properties: { firstName: 'Jane', lastName: 'Doe' } };
+      sinon.stub(el.$.userResource, 'get').resolves(entity);
+      await el._fetchCreators([
+        { creator: 'system', username: 'Admin', permission: 'Read' },
+        { creator: 'jdoe', username: 'user1', permission: 'Read' },
+      ]);
+      expect(el.$.userResource.get).to.have.been.calledOnce;
+      expect(el._creatorEntities).to.have.property('system', 'system');
+      expect(el._creatorEntities).to.have.property('jdoe', entity);
+      el.$.userResource.get.restore();
+    });
+  });
+
+  suite('isInternalPrincipal', () => {
+    test('flags the system principal and nothing else', () => {
+      expect(isInternalPrincipal('system')).to.be.true;
+      expect(isInternalPrincipal('jdoe')).to.be.false;
+      expect(isInternalPrincipal('Administrator')).to.be.false;
+      expect(isInternalPrincipal(undefined)).to.be.false;
     });
   });
 

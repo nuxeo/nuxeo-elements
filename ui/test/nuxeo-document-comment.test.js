@@ -1216,6 +1216,31 @@ suite('nuxeo-document-comment extras', () => {
         expect(el._authorEntity).to.be.null;
         expect(el._authorLoading).to.be.false;
       });
+
+      test('should not call the server for the internal system principal', async () => {
+        const getSpy = sinon.spy(el.$.authorResource, 'get');
+        el._authorLoading = true;
+        await el._fetchAuthorEntity('system');
+        expect(getSpy).to.not.have.been.called;
+        expect(el._authorEntity).to.be.null;
+        expect(el._authorLoading).to.be.false;
+        getSpy.restore();
+      });
+
+      test('should discard an in-flight lookup when the author becomes a system principal', async () => {
+        let resolveGet;
+        sinon.stub(el.$.authorResource, 'get').returns(
+          new Promise((resolve) => {
+            resolveGet = resolve;
+          }),
+        );
+        const pending = el._fetchAuthorEntity('jdoe');
+        await el._fetchAuthorEntity('system');
+        resolveGet({ 'entity-type': 'user', id: 'jdoe', properties: { firstName: 'Jane' } });
+        await pending;
+        expect(el._authorEntity).to.be.null;
+        el.$.authorResource.get.restore();
+      });
     });
 
     suite('_authorDisplayName', () => {

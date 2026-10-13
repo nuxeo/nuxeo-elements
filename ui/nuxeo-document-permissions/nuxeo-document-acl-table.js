@@ -331,7 +331,7 @@ import './nuxeo-popup-permission.js';
       });
 
       this.aces = aces.sort(this._sortAces);
-      this._fetchCreators(this.aces);
+      void this._fetchCreators(this.aces);
     }
 
     async _fetchCreators(aces = []) {
