@@ -77,7 +77,25 @@ suite('nuxeo-data-table-column-sort', () => {
       expect(el.direction).to.equal('desc');
     });
 
-    test('does nothing when the change record carries no array', () => {
+    test('clears the direction when the sort order is replaced with null', () => {
+      el.sortOrder = [{ path: 'dc:title', direction: 'asc' }];
+      el.sortOrder = null;
+      expect(el.direction).to.be.null;
+    });
+
+    test('clears the direction when the sort order is replaced with undefined', () => {
+      el.sortOrder = [{ path: 'dc:title', direction: 'desc' }];
+      el.sortOrder = undefined;
+      expect(el.direction).to.be.null;
+    });
+
+    test('clears the direction when the sort order is replaced with a non-array', () => {
+      el.sortOrder = [{ path: 'dc:title', direction: 'asc' }];
+      el.sortOrder = { 'dc:title': 'asc' };
+      expect(el.direction).to.be.null;
+    });
+
+    test('does nothing when the change record carries no base', () => {
       el.direction = 'asc';
       el._sortOrderChanged({});
       expect(el.direction).to.equal('asc');
@@ -92,6 +110,18 @@ suite('nuxeo-data-table-column-sort', () => {
 
       el.sortOrder = [];
       await flush();
+      expect(sortIcon().getAttribute('aria-label')).to.be.null;
+    });
+
+    test('is dropped along with the arrow when the sort order is cleared to null', async () => {
+      el.sortOrder = [{ path: 'dc:title', direction: 'asc' }];
+      await flush();
+      expect(sortIcon().getAttribute('direction')).to.equal('asc');
+      expect(sortIcon().getAttribute('aria-label')).to.equal('command.sort.ascend');
+
+      el.sortOrder = null;
+      await flush();
+      expect(sortIcon().getAttribute('direction')).to.be.null;
       expect(sortIcon().getAttribute('aria-label')).to.be.null;
     });
   });
@@ -115,6 +145,11 @@ suite('nuxeo-data-table-column-sort', () => {
         { path: 'dc:modified', direction: 'asc' },
         { path: 'dc:created', direction: 'desc' },
       ];
+      expect(el.order).to.equal('');
+    });
+
+    test('is empty when the sort order is not an array', () => {
+      el.sortOrder = { 'dc:title': 'asc' };
       expect(el.order).to.equal('');
     });
   });
