@@ -214,7 +214,9 @@ Push to a dev branch (develop-2025, develop-2023) triggers develop.yaml:
   sonar is absent here only because sonar.yaml already has its own push trigger.
 ```
 
-Additional workflows: `preview.yaml` (PR preview environments), `cross-repo.yaml` (triggers nuxeo-web-ui builds), `crowdin.yaml` (daily translation sync), `promote.yaml` (release promotion), and `sync-release-to-dev.yaml`, which merges a release branch back into its dev branch after promotion. That last one lives on the **default branch only** and serves both LTS lines through its `release_branch` choice input, which is why `promote.yaml` dispatches it without a `--ref` and why the file is not present on this branch `cleanup.yaml` handles preview namespace cleanup.
+Additional workflows: `preview.yaml` (PR preview environments), `cross-repo.yaml` (triggers nuxeo-web-ui builds), `crowdin.yaml` (daily translation sync), `promote.yaml` (release promotion), and `cleanup.yaml` (preview namespace cleanup).
+
+After a release is promoted, `sync-release-to-dev.yaml` **opens a pull request** carrying the release branch's version bump, plus any hotfix made directly on it, back into that line's dev branch. It does not merge anything itself. It lives on the **default branch only** and serves both LTS lines through its `release_branch` choice input, so `promote.yaml` dispatches it without a `--ref` — which is also why the file is not on this branch.
 
 ## Key Directories Reference
 
