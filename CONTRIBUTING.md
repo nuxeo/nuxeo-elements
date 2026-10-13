@@ -237,7 +237,7 @@ GitHub Actions run on every push to a dev branch (`develop-2025`, `develop-2023`
 3. **Storybook** — Build documentation
 4. **Publish** — Publish packages to npm registry (only after all above pass)
 
-Steps 1–3 run on a dev branch via `develop.yaml`. Step 4 tags and publishes, so it runs only on a release branch via `main.yaml`; Storybook likewise builds on a dev branch but deploys only from a release branch.
+On a dev branch, steps 1–3 run in parallel via `develop.yaml`, with Sonar on `sonar.yaml`'s own push trigger. Step 4 tags and publishes, so it runs only on a release branch, where `main.yaml` starts lint, test, storybook and sonar in parallel and makes the build depend on all four. Storybook likewise builds on a dev branch but deploys only from a release branch.
 
 CI workflows use `npm ci --ignore-scripts` for deterministic, lockfile-based installs from `package-lock.json` (the `--ignore-scripts` flag hardens against supply-chain risks; the unit-test browser is installed via the `pretest` hook). Always commit lockfile changes when dependencies are added or updated.
 
