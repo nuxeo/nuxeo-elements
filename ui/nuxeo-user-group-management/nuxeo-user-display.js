@@ -40,31 +40,63 @@ export function formatUserPrincipal(user) {
 }
 
 /**
+ * Principals the platform creates internally and never stores in the user directory.
+ * Resolving one via /user/<name> always 404s and makes the server log a warning for
+ * every call, which floods server.log (WEBUI-2309), so we never ask the server for them.
+ */
+const INTERNAL_PRINCIPALS = new Set(['system']);
+
+/**
+ * Returns true when the principal is internal to the platform and therefore has no
+ * user directory entry to resolve.
+ */
+export function isInternalPrincipal(username) {
+  return INTERNAL_PRINCIPALS.has(username);
+}
+
+/**
  * Tracks the in-flight fetch chain for each shared resource element so that
  * concurrent callers are serialized rather than racing on the same element.
  */
 const resourceQueues = new WeakMap();
 
 /**
- * Resolves a set of usernames to user entities by mutating and querying the
- * shared nuxeo-resource element sequentially.
+ * Resolves a single username to its user entity, falling back to the raw username
+ * when the server cannot resolve it.
+ */
+async function resolveUserEntity(username, resourceElement) {
+  if (isInternalPrincipal(username)) {
+    // Never resolvable: skip the request entirely and display the raw name.
+    return username;
+  }
+  try {
+    resourceElement.path = `/user/${encodeURIComponent(username)}`;
+    return await resourceElement.get();
+  } catch (error) {
+    if (error.status !== 404) {
+      console.warn(`Unexpected error resolving user "${username}":`, error);
+    }
+    return username;
+  }
+}
+
+/**
+ * Resolves a set of usernames to user entities by mutating and querying the shared
+ * nuxeo-resource element one username at a time. The lookups are chained rather than
+ * run in parallel because the element aborts an in-flight request when its path changes.
  * Returns a map of username → user entity (or raw username string on failure).
  */
-async function resolveUserEntities(usernames, resourceElement) {
-  const entities = {};
-  for (const username of usernames) {
-    try {
-      resourceElement.path = `/user/${encodeURIComponent(username)}`;
-      const user = await resourceElement.get();
-      entities[username] = user;
-    } catch (error) {
-      if (error.status !== 404) {
-        console.warn(`Unexpected error resolving user "${username}":`, error);
-      }
-      entities[username] = username;
-    }
-  }
-  return entities;
+function resolveUserEntities(usernames, resourceElement) {
+  return Array.from(usernames).reduce(
+    (chain, username) =>
+      chain.then((entities) =>
+        resolveUserEntity(username, resourceElement).then((entity) => {
+          entities[username] = entity;
+          return entities;
+        }),
+      ),
+    Promise.resolve({}),
+  );
 }
 
 /**

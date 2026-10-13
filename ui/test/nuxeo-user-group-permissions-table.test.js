@@ -414,5 +414,23 @@ suite('nuxeo-user-group-permissions-table', () => {
       warnSpy.restore();
       el.$.userResource.get.restore();
     });
+
+    test('should not call the server for the internal system principal', async () => {
+      const getSpy = sinon.spy(el.$.userResource, 'get');
+      await el._fetchCreators([{ aces: [mkAce({ creator: 'system' })] }]);
+      expect(getSpy).to.not.have.been.called;
+      expect(el._creatorEntities).to.have.property('system', 'system');
+      getSpy.restore();
+    });
+
+    test('should resolve real creators while skipping the system principal', async () => {
+      const entity = { 'entity-type': 'user', id: 'jdoe', properties: { firstName: 'Jane', lastName: 'Doe' } };
+      sinon.stub(el.$.userResource, 'get').resolves(entity);
+      await el._fetchCreators([{ aces: [mkAce({ creator: 'system' }), mkAce({ creator: 'jdoe' })] }]);
+      expect(el.$.userResource.get).to.have.been.calledOnce;
+      expect(el._creatorEntities).to.have.property('system', 'system');
+      expect(el._creatorEntities).to.have.property('jdoe', entity);
+      el.$.userResource.get.restore();
+    });
   });
 });

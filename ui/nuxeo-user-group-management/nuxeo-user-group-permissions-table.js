@@ -414,7 +414,7 @@ import '../nuxeo-button-styles.js';
       });
       this.documents = entries;
       this.empty = this.documents.length === 0;
-      this._fetchCreators(entries);
+      void this._fetchCreators(entries);
     }
 
     async _fetchCreators(entries = []) {

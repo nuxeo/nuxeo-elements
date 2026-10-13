@@ -37,7 +37,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { FormatBehavior } from '../nuxeo-format-behavior.js';
-import { formatUserDisplayName } from '../nuxeo-user-group-management/nuxeo-user-display.js';
+import { formatUserDisplayName, isInternalPrincipal } from '../nuxeo-user-group-management/nuxeo-user-display.js';
 import '../nuxeo-button-styles.js';
 
 /**
@@ -430,12 +430,16 @@ import '../nuxeo-button-styles.js';
     }
 
     async _fetchAuthorEntity(author) {
-      if (!author || typeof author !== 'string') {
+      // Bumped before any early return so a request still in flight for a previous
+      // author cannot land on the element after it has been reused for another one.
+      const requestId = ++this._authorRequestId;
+      // Internal principals have no directory entry, so skip the request entirely
+      // and let the template fall back to the raw author string.
+      if (!author || typeof author !== 'string' || isInternalPrincipal(author)) {
         this._authorEntity = null;
         this._authorLoading = false;
         return;
       }
-      const requestId = ++this._authorRequestId;
       this._authorLoading = true;
       try {
         this.$.authorResource.path = `/user/${encodeURIComponent(author)}`;
