@@ -20,6 +20,14 @@ import 'nuxeo/nuxeo.js';
 import sinon from 'sinon';
 
 /**
+ * Builds the default logged in user. A factory, rather than a shared object, so that each
+ * MockClient gets its own instance and cannot be affected by mutations from another test.
+ */
+const defaultUser = () => {
+  return { isAdministrator: true, properties: { username: 'Administrator' } };
+};
+
+/**
  * Helper class to mock and stub Nuxeo Client behaviors.
  *
  * @class MockClient
@@ -30,7 +38,7 @@ class MockClient {
    * @param {Object} user - The logged in user object with its properties
    * @param {string} nuxeoVersion - The expected Nuxeo Platform version
    */
-  constructor(user = { isAdministrator: true, properties: { username: 'Administrator' } }, nuxeoVersion = '11.1') {
+  constructor(user = defaultUser(), nuxeoVersion = '11.1') {
     this._responses = new Map();
     this._sandbox = sinon.createSandbox();
 

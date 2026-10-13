@@ -303,6 +303,29 @@ suite('Nuxeo.UploaderBehavior – DefaultUploadProvider', () => {
     expect(cb).to.have.been.calledWith(sinon.match({ type: 'uploadStarted' }));
   });
 
+  // Same array-like contract as `accepts()` further down this file: `upload(files, cb)` takes the
+  // same deliberately polymorphic argument, so its indexed loop must not be narrowed to iterables
+  // either. See ELEMENTS-2078 for why the S4138 finding here is accepted rather than fixed.
+  test('upload tolerates an array-like files argument that is not iterable', async () => {
+    const cb = sinon.spy();
+    const uploader = {
+      _batchId: 'b',
+      upload: sinon.stub().resolves({ batch: { _batchId: 'b' }, blob: { fileIdx: 0 } }),
+      done: sinon.stub().resolves({ batch: { _batchId: 'b' } }),
+    };
+    connection.batchUpload.resolves(uploader);
+    const arrayLike = { 0: fakeFile(), length: 1 };
+    expect(arrayLike[Symbol.iterator], 'the fixture must not be iterable for this test to mean anything').to.be
+      .undefined;
+
+    provider.upload(arrayLike, cb);
+    await flushAll();
+    await flushAll();
+
+    expect(cb).to.have.been.calledWith(sinon.match({ type: 'uploadStarted' }));
+    expect(uploader.upload).to.have.been.calledOnce;
+  });
+
   test('upload skips uploadStarted callback when callback is not a function', async () => {
     const uploader = {
       _batchId: 'b',
@@ -510,6 +533,32 @@ suite('Nuxeo.UploaderBehavior – host integration', () => {
   test('accepts returns false when no provider instance is available', () => {
     const isolated = { _instance: null, accepts: UploaderBehavior.accepts };
     expect(isolated.accepts({ length: 0 })).to.be.false;
+  });
+
+  // `accepts()` is public surface -- the amazon-s3-online-storage addon re-exports it via
+  // `get accepts()` -- and its documented contract is `@param {Object[]} files`, discriminated
+  // from a single File by `files.length`. That makes it tolerant of anything *array-like*, not
+  // just of iterables. These two tests pin that contract down, and they are why the SonarCloud
+  // S4138 findings on this method and on `upload()` are accepted rather than fixed: rewriting
+  // either indexed loop as a bare `for-of` would throw `TypeError: files is not iterable` on the
+  // inputs below. See ELEMENTS-2078.
+  test('accepts tolerates an array-like files argument that is not iterable', async () => {
+    const el = await fixture(html`
+      <nuxeo-file></nuxeo-file>
+    `);
+    const arrayLike = { 0: fakeFile(), length: 1 };
+    expect(arrayLike[Symbol.iterator], 'the fixture must not be iterable for this test to mean anything').to.be
+      .undefined;
+    expect(el.accepts(arrayLike)).to.be.true;
+  });
+
+  test('accepts rejects a non-matching file given in an array-like argument', async () => {
+    const el = await fixture(html`
+      <nuxeo-file accept="image/"></nuxeo-file>
+    `);
+    const arrayLike = { 0: fakeFile('a.txt', 'text/plain'), length: 1 };
+    expect(arrayLike[Symbol.iterator]).to.be.undefined;
+    expect(el.accepts(arrayLike)).to.be.false;
   });
 
   test('_uploadStarted pushes a file with progress=0 / error=false / complete=false', async () => {
