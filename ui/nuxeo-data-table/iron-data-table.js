@@ -927,12 +927,10 @@ function hasRowDetailTemplate(node) {
         // notifyResize() doesn't do anything on iOS if the viewport size hasn't changed
         // so calling updateSizeForItem(item) is more reliable.
 
-        // TODO: However, since we're reusing the same items array in most cases,
-        // the _collection item map inside <iron-list> gets out of sync and
-        // that breaks things like selection and updateSizeForItem.
-        // To mitigate the issue, we'll update height of every row element.
-        // Can be optimized later if needed to update only the row that has
-        // expanded or collapsed.
+        // However, since we're reusing the same items array in most cases, the _collection
+        // item map inside <iron-list> gets out of sync and that breaks things like selection
+        // and updateSizeForItem. Every row element is therefore re-measured, rather than only
+        // the row that has expanded or collapsed.
         const itemSet = [];
         for (let i = 0; i < this.$.list._physicalItems.length; i++) {
           itemSet.push(i);
@@ -969,18 +967,13 @@ function hasRowDetailTemplate(node) {
     }
 
     _isExpanded(item, items) {
-      return items && items.indexOf(item) > -1;
+      return items && items.includes(item);
     }
 
     _isFocusable(target) {
-      // eslint-disable-next-line no-constant-condition
-      if (false) {
-        // https://nemisj.com/focusable/
-        // tabIndex is not reliable in IE.
-        return target.tabIndex >= 0;
-      }
-      // unreliable with Shadow, document.activeElement doesn't go inside
-      // the shadow root.
+      // tabIndex is not used to decide this (see https://nemisj.com/focusable/); it was never
+      // reliable in IE, and document.activeElement is unreliable with Shadow DOM because it
+      // does not go inside the shadow root.
       return (
         target.contains(dom(document.activeElement).node) ||
         target instanceof Nuxeo.DataTableCheckbox ||
@@ -1160,7 +1153,7 @@ function hasRowDetailTemplate(node) {
               // Set provider param
               if (entry.expression) {
                 // Use a function replacement to prevent $ in user values being treated as back-references (ELEMENTS-1966)
-                this.nxProvider.params[effectiveFilterBy] = entry.expression.replace(/\$term/g, () => entry.value);
+                this.nxProvider.params[effectiveFilterBy] = entry.expression.replaceAll('$term', () => entry.value);
               } else {
                 this.nxProvider.params[effectiveFilterBy] = entry.value;
               }
@@ -1452,7 +1445,7 @@ function hasRowDetailTemplate(node) {
       const result = JSON.parse(
         JSON.stringify(obj, (key, value) => {
           if (typeof value === 'object' && value !== null) {
-            if (cache.indexOf(value) !== -1) {
+            if (cache.includes(value)) {
               // Circular reference found, discard key
               return;
             }
@@ -1567,7 +1560,7 @@ function hasRowDetailTemplate(node) {
 
     _toggleEditDialog(itemIndex) {
       const dtform = this.getContentChildren('#form')[0];
-      if (typeof itemIndex !== 'undefined') {
+      if (itemIndex !== undefined) {
         dtform.index = itemIndex;
         dtform.item = this._deepCopy(this.items[itemIndex]);
       } else {
@@ -1758,7 +1751,7 @@ function hasRowDetailTemplate(node) {
 
       let minWidth = 10;
       if (column && column.minWidth != null) {
-        const parsed = parseInt(column.minWidth, 10);
+        const parsed = Number.parseInt(column.minWidth, 10);
         if (!Number.isNaN(parsed)) {
           minWidth = parsed;
         }
@@ -1799,8 +1792,7 @@ function hasRowDetailTemplate(node) {
       const { column } = this._resizing;
 
       const cells = this._getHeaderCells();
-      for (let i = 0; i < cells.length; i++) {
-        const cell = cells[i];
+      for (const cell of cells) {
         if (cell.column === column) {
           cell.classList.remove('resizing');
           cell.style.cursor = '';
@@ -2028,8 +2020,8 @@ function hasRowDetailTemplate(node) {
 
     _clearDropIndicators() {
       const cells = this._getHeaderCells();
-      for (let i = 0; i < cells.length; i++) {
-        cells[i].classList.remove('drop-left', 'drop-right');
+      for (const cell of cells) {
+        cell.classList.remove('drop-left', 'drop-right');
       }
     }
 
@@ -2045,9 +2037,9 @@ function hasRowDetailTemplate(node) {
       this._clearDropIndicators();
 
       const cells = this._getHeaderCells();
-      for (let i = 0; i < cells.length; i++) {
-        if (cells[i].column === column) {
-          cells[i].classList.add('drop-right');
+      for (const cell of cells) {
+        if (cell.column === column) {
+          cell.classList.add('drop-right');
           break;
         }
       }

@@ -236,7 +236,7 @@ import '../nuxeo-button-styles.js';
     }
 
     _observeSelectedUser() {
-      if (this.selectedUser && this.selectedUsers.indexOf(this.selectedUser) === -1) {
+      if (this.selectedUser && !this.selectedUsers.includes(this.selectedUser)) {
         this.push('selectedUsers', this.selectedUser);
       }
       this.selectedUser = null;
@@ -316,8 +316,8 @@ import '../nuxeo-button-styles.js';
     }
 
     _resultsFilter(entry) {
-      for (let i = 0; i < this.selectedUsers.length; i++) {
-        if (entry.id === this.selectedUsers[i].id) {
+      for (const selectedUser of this.selectedUsers) {
+        if (entry.id === selectedUser.id) {
           return false;
         }
       }

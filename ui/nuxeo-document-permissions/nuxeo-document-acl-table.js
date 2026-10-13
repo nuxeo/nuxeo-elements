@@ -299,8 +299,8 @@ import './nuxeo-popup-permission.js';
     aclFilterChanged(fn) {
       this._aclFilter =
         fn &&
-        function() {
-          return this.__dataHost[fn].apply(this.__dataHost, arguments);
+        function(...args) {
+          return this.__dataHost[fn](...args);
         };
       this._updateAces();
     }
@@ -308,8 +308,8 @@ import './nuxeo-popup-permission.js';
     aceFilterChanged(fn) {
       this._aceFilter =
         fn &&
-        function() {
-          return this.__dataHost[fn].apply(this.__dataHost, arguments);
+        function(...args) {
+          return this.__dataHost[fn](...args);
         };
       this._updateAces();
     }
@@ -330,7 +330,7 @@ import './nuxeo-popup-permission.js';
         });
       });
 
-      this.aces = aces.sort(this._sortAces);
+      this.aces = [...aces].sort(this._sortAces);
       void this._fetchCreators(this.aces);
     }
 
