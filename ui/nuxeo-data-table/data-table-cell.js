@@ -388,8 +388,6 @@ const RESIZE_ZONE = 8;
       }
       // sometimes instance isn't ready to be notified yet and throws an error.
       microTask.run(() => {
-        // TODO: hack to avoid: https://github.com/Polymer/polymer/issues/3307
-        this._parentProps = this._parentProps || {};
         instance.notifyPath(column.path, column.value);
       });
     }
