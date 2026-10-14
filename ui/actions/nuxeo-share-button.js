@@ -212,7 +212,9 @@ import '../nuxeo-button-styles.js';
     _copyLink(e) {
       // While the confirmation shows, the button is inert to pointers; keep keyboard
       // activation consistent with that rather than copying again in the same window.
-      if (this._copyDebouncer?.isActive()) {
+      // Guarded rather than optional-chained: polymer lint's parser predates `?.` and fails to
+      // load the file when it appears.
+      if (this._copyDebouncer && this._copyDebouncer.isActive()) {
         return;
       }
 
