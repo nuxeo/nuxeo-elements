@@ -1028,8 +1028,8 @@ import '../nuxeo-sort-styles.js';
     }
 
     _resultsFilter(entry) {
-      const userInGroup = this.group.memberUsers && this.group.memberUsers.indexOf(entry.id) >= 0;
-      const groupInGroup = this.group.memberGroups && this.group.memberGroups.indexOf(entry.id) >= 0;
+      const userInGroup = this.group.memberUsers && this.group.memberUsers.includes(entry.id);
+      const groupInGroup = this.group.memberGroups && this.group.memberGroups.includes(entry.id);
       return !userInGroup && !groupInGroup && entry.id !== this.group.groupname;
     }
 

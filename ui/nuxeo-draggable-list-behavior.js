@@ -123,7 +123,7 @@ export const DraggableListBehavior = {
       });
       if (this.target) {
         // block DnD if mouse target belongs to the selected items
-        if (this.selectedItems.indexOf(this.modelForElement(this.target).item) > -1) {
+        if (this.selectedItems.includes(this.modelForElement(this.target).item)) {
           this.target = null;
           proxy.hidden = true;
           bodyEl.style.cursor = 'not-allowed';
@@ -140,7 +140,7 @@ export const DraggableListBehavior = {
       this.style.pointerEvents = '';
       bodyEl.style.cursor = '';
       if (proxy) {
-        bodyEl.removeChild(proxy);
+        proxy.remove();
         proxy = null;
       }
       // cleanup listeners
