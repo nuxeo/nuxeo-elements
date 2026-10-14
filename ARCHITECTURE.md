@@ -198,17 +198,25 @@ cd storybook && npm run build   # Production build
 
 ## CI/CD (GitHub Actions)
 
-Workflow orchestration in `.github/workflows/main.yaml`:
+Workflow orchestration in `.github/workflows/main.yaml` (release branches) and `.github/workflows/develop.yaml` (dev branches):
 
 ```
-Push to maintenance-3.1.x triggers:
+Push to a release branch (lts-2025, maintenance-3.1.x) triggers main.yaml.
+These four run in parallel; build depends on all of them:
   lint     → ESLint + Prettier + Polymer lint
   test     → @web/test-runner unit tests (all packages)
   storybook → Build storybook documentation
+  sonar    → SonarCloud quality/security scan
   build    → Tag and publish packages to npm registry
+
+Push to a dev branch (develop-2025, develop-2023) triggers develop.yaml:
+  the same lint / test / storybook set in parallel, without tag-and-publish.
+  sonar is absent here only because sonar.yaml already has its own push trigger.
 ```
 
-Additional workflows: `preview.yaml` (PR preview environments), `cross-repo.yaml` (triggers nuxeo-web-ui builds), `crowdin.yaml` (daily translation sync), `promote.yaml` (release promotion), `cleanup.yaml` (preview namespace cleanup).
+Additional workflows: `preview.yaml` (PR preview environments), `cross-repo.yaml` (triggers nuxeo-web-ui builds), `crowdin.yaml` (daily translation sync), `promote.yaml` (release promotion), and `cleanup.yaml` (preview namespace cleanup).
+
+After a release is promoted, `sync-release-to-dev.yaml` **opens a pull request** carrying the release branch's version bump, plus any hotfix made directly on it, back into that line's dev branch. It does not merge anything itself. It lives on the default branch, which is this one, and serves both LTS lines through its `release_branch` choice input, so `promote.yaml` dispatches it without a `--ref` from either line.
 
 ## Key Directories Reference
 
