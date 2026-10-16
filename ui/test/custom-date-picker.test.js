@@ -748,8 +748,12 @@ suite('custom-date-picker focus containment (ELEMENTS-2095)', () => {
     });
 
     test('falls back to the popover when the tab stop is a disabled minimum-date cell', async () => {
-      el.min = '2026-10-15';
-      el._viewDate = new Date(2026, 9, 1);
+      // View a month that holds neither a selection nor today, so the tab stop is the 1st
+      // (see _getDayTabIndex) rather than today's cell - otherwise whether the tab stop is
+      // disabled would depend on the date the suite happens to run. Setting min last is what
+      // regenerates the grid, via _minChanged.
+      el._viewDate = new Date(2020, 0, 1);
+      el.min = '2020-02-01';
       await flush();
       const day = el.shadowRoot.querySelector('.calendar-day[tabindex="0"]');
       expect(day).to.exist;
