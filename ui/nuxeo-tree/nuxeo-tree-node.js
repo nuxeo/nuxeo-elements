@@ -135,6 +135,12 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         const direction = document.documentElement.getAttribute('dir');
         this.setAttribute('dir', direction);
       }
+      // An empty or whitespace-only role exposes no role at all, so it is treated as unset rather
+      // than as a consumer-supplied one that must be preserved.
+      const role = this.getAttribute('role');
+      if (role === null || role.trim() === '') {
+        this.setAttribute('role', 'none');
+      }
     }
 
     static get observers() {
@@ -198,6 +204,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
 
         const content = document.createElement('div');
         content.id = 'content';
+        // The node host and this wrapper are layout-only: leaving them untyped puts generic nodes
+        // between role="tree" and the stamped role="treeitem", which is not a valid tree structure.
+        content.setAttribute('role', 'none');
         dom(content).appendChild(this._instance.root);
         dom(this).appendChild(content);
 
@@ -206,6 +215,9 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
         children.opened = this.opened;
         children.loading = this.loading;
         children.noAnimation = 'true';
+        // WEBUI-1877: without a group role this collapse is an untyped node between the tree and its
+        // treeitems, which invalidates the tree structure and can suppress state announcements.
+        children.setAttribute('role', 'group');
         dom(this).appendChild(children);
 
         flush();
@@ -221,17 +233,17 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
           // clear <iron-collapse> content in case we are re-rendering
           const children = dom(this).querySelector('#children');
           while (children.lastChild) {
-            children.removeChild(children.lastChild);
+            children.lastChild.remove();
           }
 
           const items = this._children || [];
-          for (let i = 0; i < items.length; i++) {
+          for (const item of items) {
             const el = document.createElement('nuxeo-tree-node');
             el.controller = this.controller;
             el.template = this.template;
             el.nodeKey = this.nodeKey;
             el.dataHost = this._instance._rootDataHost;
-            el.data = items[i];
+            el.data = item;
             children.appendChild(el);
           }
           if (this.isNextAvailable) {
@@ -282,14 +294,14 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
       const selectElts = dom(this)
         .querySelector('#content')
         .querySelectorAll('[select]');
-      for (let i = 0; i < selectElts.length; i++) {
-        this.listen(selectElts[i], 'click', '_selectNode');
+      for (const selectElt of selectElts) {
+        this.listen(selectElt, 'click', '_selectNode');
       }
       const toggleEls = dom(this)
         .querySelector('#content')
         .querySelectorAll('[toggle]');
-      for (let i = 0; i < toggleEls.length; i++) {
-        this.listen(toggleEls[i], 'click', 'toggle');
+      for (const toggleEl of toggleEls) {
+        this.listen(toggleEl, 'click', 'toggle');
       }
     }
 
@@ -305,9 +317,8 @@ import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
     _teardownInstance() {
       const { children } = this._instance;
       if (children && children.length) {
-        const parent = dom(dom(children[0]).parentNode);
-        for (let i = 0; i < children.length; i++) {
-          parent.removeChild(children[i]);
+        for (const child of children) {
+          child.remove();
         }
       }
       this._instance = null;

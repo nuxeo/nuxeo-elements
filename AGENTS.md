@@ -2,14 +2,29 @@
 
 ## Overview
 
-This is a Polymer 3 web components library for the Nuxeo content services platform. It is a monorepo managed by Lerna with five packages: `core`, `ui`, `dataviz`, `testing-helpers`, and `storybook`. Code ownership: `@nuxeo/ui`. The main development branch is `lts-2025`.
+This is a Polymer 3 web components library for the Nuxeo content services platform. It is a monorepo managed by Lerna with five packages: `core`, `ui`, `dataviz`, `testing-helpers`, and `storybook`. Code ownership: `@nuxeo/ui`.
+
+## Branching
+
+Tickets are collected on a permanent dev branch per LTS line. They are never merged straight into a release branch.
+
+| LTS line | Branch from / target | Release branch      |
+| -------- | -------------------- | ------------------- |
+| LTS 2025 | `develop-2025`       | `lts-2025`          |
+| LTS 2023 | `develop-2023`       | `maintenance-3.1.x` |
+
+`develop-2023` is the default branch. Most fixes apply to both lines, so raise one PR per line.
+
+Ticket PRs are squashed. The dev → release merge and the release → dev sync PR must use a **merge commit** — squashing breaks the ancestry the sync check relies on, so the next sync re-proposes the whole release branch. Hotfix work on an already-released version still branches from the release branch.
+
+Cross-repo CI pairs a `nuxeo-web-ui` PR with the branch of the **same name** here. Name an Elements branch exactly like its Web UI counterpart when the two ship together, and delete it once its PR is merged or closed — an abandoned branch can be built in place of the intended one, and the only clue is a single line in a CI log.
 
 ## Build & Validate
 
 Always follow this sequence when making changes:
 
 ```bash
-npm install                # Install all workspace dependencies (Node ≥ 18)
+npm install                # Install all workspace dependencies (Node ≥ 22.13)
 npm run format             # Auto-fix formatting (Polymer lint fix → Prettier → ESLint)
 npm run lint               # ESLint + Prettier + Polymer lint — must pass
 npm test                   # @web/test-runner unit tests (all packages) — must pass
@@ -133,7 +148,9 @@ npm run test:dataviz  # Dataviz only
 
 ## CI Workflow
 
-Push to `lts-2025` triggers: **lint → test → storybook → build (tag + publish)** (all must pass).
+Push to a dev branch (`develop-2025`, `develop-2023`) runs `develop.yaml`, which starts **lint**, **test** and **storybook** in parallel — all must pass. Sonar and CodeQL trigger themselves on the same push. Nothing is published to npm, and Storybook builds but does not deploy.
+
+Push to a release branch runs `main.yaml` for that line: those three plus **sonar**, again in parallel, then **build (tag + publish)**, which depends on all four.
 
 PRs run lint and test workflows automatically.
 
