@@ -24,7 +24,7 @@ Cross-repo CI pairs a `nuxeo-web-ui` PR with the branch of the **same name** her
 Always follow this sequence when making changes:
 
 ```bash
-npm install                # Install all workspace dependencies (Node ≥ 18)
+npm install                # Install all workspace dependencies (Node ≥ 22.13)
 npm run format             # Auto-fix formatting (Polymer lint fix → Prettier → ESLint)
 npm run lint               # ESLint + Prettier + Polymer lint — must pass
 npm test                   # @web/test-runner unit tests (all packages) — must pass
