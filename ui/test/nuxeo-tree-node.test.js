@@ -131,5 +131,70 @@ suite('nuxeo-tree-node', () => {
       const result = await node.open();
       expect(result).to.be.undefined;
     });
+
+    test('changing data tears down every node the previous template instance stamped', async () => {
+      const firstInstance = node._instance;
+      expect(firstInstance).to.not.be.undefined;
+
+      // `_instance.children` is a plain static array built by Polymer's TemplateInstanceBase (it is
+      // only cast to NodeList for the type checker), so snapshotting it here is safe -- removing
+      // the nodes from the DOM does not shrink it.
+      const stamped = Array.from(firstInstance.children);
+      expect(stamped.length, 'the template should have stamped at least one node').to.be.above(0);
+      const stampedParent = stamped[0].parentNode;
+      expect(stampedParent).to.not.be.null;
+
+      // The `_renderNodeContent(data)` observer calls `_teardownInstance()` when an instance
+      // already exists, which removes every stamped node from its parent before re-stamping.
+      node.data = { id: 'root', title: 'Root renamed' };
+      await flush();
+      await new Promise((r) => setTimeout(r, 50));
+
+      expect(node._instance, 'a fresh instance should have replaced the old one').to.not.equal(firstInstance);
+      stamped.forEach((child) => {
+        expect(stampedParent.contains(child), 'every stamped node should have been removed').to.be.false;
+      });
+    });
+  });
+
+  suite('with a toggle element in the template', () => {
+    let tree;
+    let node;
+
+    setup(async () => {
+      tree = await fixture(html`
+        <nuxeo-tree>
+          <template>
+            <span select>[[item.title]]</span>
+            <span toggle class="toggle">+</span>
+          </template>
+        </nuxeo-tree>
+      `);
+      tree.controller = {
+        getChildren: sinon.stub().callsFake((data) => {
+          if (data.id === 'root') {
+            return Promise.resolve([{ id: 'a', title: 'A' }]);
+          }
+          return Promise.resolve([]);
+        }),
+        isLeaf: (data) => data.id !== 'root',
+      };
+      tree.data = { id: 'root', title: 'Root' };
+      await flush();
+      node = tree.querySelector('nuxeo-tree-node');
+      await new Promise((r) => setTimeout(r, 50));
+    });
+
+    test('clicking a [toggle] element in the stamped template toggles the node', async () => {
+      const toggle = node.querySelector('[toggle]');
+      expect(toggle, 'the template should have stamped a [toggle] element').to.not.be.null;
+
+      const before = node.opened;
+      toggle.click();
+      await flush();
+
+      // proves `_setupToggleListener` bound the click handler to the [toggle] element
+      expect(node.opened).to.equal(!before);
+    });
   });
 });

@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- **Node.js** ≥ 18
+- **Node.js** ≥ 22.13 (`.nvmrc` pins 24 — run `nvm use` or `fnm use` in the repo root)
 - **npm** (bundled with Node — no yarn or pnpm)
 
 ## Getting Started
@@ -23,7 +23,7 @@ npm test
 
 ### Making Changes
 
-1. Create a feature branch from `maintenance-3.1.x`
+1. Create a feature branch from the dev branch for the LTS line you are targeting — `develop-2025` or `develop-2023` (see [Branch Strategy](#branch-strategy))
 2. Edit components in the appropriate package (`core/`, `ui/`, `dataviz/`, `testing-helpers/`)
 3. Format and lint before committing:
 
@@ -213,18 +213,31 @@ This symlinks `@nuxeo` packages in Web UI's `node_modules` to the local `nuxeo-e
 
 ## Branch Strategy
 
-- The main development branch is `maintenance-3.1.x`
-- Feature branches are created from and merged back to `maintenance-3.1.x`
+Each LTS line has a permanent **dev branch** that collects work, and a **release branch** that holds released code only:
+
+| LTS line | Dev branch — branch from and target this | Release branch      |
+| -------- | ---------------------------------------- | ------------------- |
+| LTS 2025 | `develop-2025`                           | `lts-2025`          |
+| LTS 2023 | `develop-2023`                           | `maintenance-3.1.x` |
+
+- `develop-2023` is the repository default branch.
+- Create your feature branch from the dev branch for the line you are targeting, and open the PR back against that same dev branch. Most fixes apply to both lines, so raise one PR per line.
+- When the release content is agreed, the dev branch is merged into its release branch, and the release branch is merged back afterwards to pick up the version bump.
+- **Those two merges must use a merge commit.** The sync checks whether anything is outstanding with `git rev-list --count dev..release`, which only reaches zero when the release branch is an ancestor of the dev branch. Squashing copies the content without the ancestry, so every later sync re-proposes the whole release branch. Ordinary ticket PRs are still squashed.
+- Hotfix work on an already-released version branches from the release branch directly. That path is unchanged.
+- **Name an Elements branch exactly like its `nuxeo-web-ui` counterpart** when the two ship together: cross-repo CI pairs a Web UI PR with the Elements branch of the same name. Delete the branch once its PR is merged or closed, or it can be built in place of the branch a later, unrelated PR intended.
 - PRs trigger lint and test workflows automatically
 
 ## CI/CD
 
-GitHub Actions run on every push to `maintenance-3.1.x` and on PRs:
+GitHub Actions run on every push to a dev branch (`develop-2025`, `develop-2023`), on every push to a release branch, and on PRs:
 
 1. **Lint** — ESLint + Prettier + Polymer lint
 2. **Test** — @web/test-runner unit tests (all packages)
 3. **Storybook** — Build documentation
 4. **Publish** — Publish packages to npm registry (only after all above pass)
+
+On a dev branch, steps 1–3 run in parallel via `develop.yaml`, with Sonar on `sonar.yaml`'s own push trigger. Step 4 tags and publishes, so it runs only on a release branch, where `main.yaml` starts lint, test, storybook and sonar in parallel and makes the build depend on all four. Storybook likewise builds on a dev branch but deploys only from a release branch.
 
 CI workflows use `npm ci --ignore-scripts` for deterministic, lockfile-based installs from `package-lock.json` (the `--ignore-scripts` flag hardens against supply-chain risks; the unit-test browser is installed via the `pretest` hook). Always commit lockfile changes when dependencies are added or updated.
 
