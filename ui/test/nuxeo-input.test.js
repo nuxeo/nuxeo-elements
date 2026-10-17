@@ -348,3 +348,27 @@ suite('nuxeo-input autocomplete', () => {
     expect(getNativeInput(el).getAttribute('autocomplete')).to.equal('current-password');
   });
 });
+
+// ELEMENTS-1887: harmonize error highlighting across form widgets — the label turns red when
+// the widget is invalid (complementing the existing red underline and red required asterisk).
+suite('nuxeo-input invalid highlighting', () => {
+  const INVALID_COLOR = 'rgb(222, 53, 11)'; // #de350b
+
+  test('renders the label in the invalid color when invalid', async () => {
+    const el = await fixture(html`
+      <nuxeo-input label="Title" invalid></nuxeo-input>
+    `);
+    await flush();
+    const label = el.shadowRoot.querySelector('label');
+    expect(getComputedStyle(label).color).to.equal(INVALID_COLOR);
+  });
+
+  test('does not apply the invalid color to the label when valid', async () => {
+    const el = await fixture(html`
+      <nuxeo-input label="Title"></nuxeo-input>
+    `);
+    await flush();
+    const label = el.shadowRoot.querySelector('label');
+    expect(getComputedStyle(label).color).to.not.equal(INVALID_COLOR);
+  });
+});
