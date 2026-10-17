@@ -27,6 +27,7 @@ import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import moment from '@nuxeo/moment/min/moment-with-locales.js';
 import { config } from '@nuxeo/nuxeo-elements';
 import { I18nBehavior } from '../nuxeo-i18n-behavior.js';
+import { momentTimezoneParser } from '../nuxeo-timezone.js';
 
 // A short grace period prevents transient focus reroutes from immediately
 // collapsing the popover during month navigation.
@@ -178,9 +179,11 @@ const VALID_MOMENT_TOKENS = new Set([
 
         /**
          * The name of the timezone where the user is considered to be, according to the IANA tz database.
-         * Currently valid values are:
+         * Valid values are:
          * - empty: local time will be used, as read from the browser (this is the default)
          * - Etc/UTC: time specified by the user is assumed to be in UTC
+         * - any IANA zone (e.g. Europe/Paris, Asia/Kolkata): the date is both read and displayed in that zone,
+         *   honoring DST and sub-hour offsets; an unknown zone falls back to the browser's local time
          */
         timezone: {
           type: String,
@@ -1648,8 +1651,7 @@ const VALID_MOMENT_TOKENS = new Set([
 
     // Add _moment method for timezone handling like nuxeo-date-picker
     _moment(...args) {
-      const fn = this.timezone === 'Etc/UTC' ? moment.utc : moment;
-      return fn(...args);
+      return momentTimezoneParser(this.timezone)(...args);
     }
 
     // Robust parser for date-only strings (YYYY-MM-DD) to local Date at start of day
