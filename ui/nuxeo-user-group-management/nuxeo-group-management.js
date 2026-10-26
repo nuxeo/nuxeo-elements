@@ -42,6 +42,7 @@ import '../widgets/nuxeo-tag.js';
 import '../widgets/nuxeo-user-suggestion.js';
 import '../widgets/nuxeo-selectivity.js';
 import '../widgets/nuxeo-user-tag.js';
+import './nuxeo-user-group-export-dialog.js';
 import './nuxeo-user-group-permissions-table.js';
 import '../nuxeo-button-styles.js';
 import '../nuxeo-sort-styles.js';
@@ -271,6 +272,7 @@ import '../nuxeo-sort-styles.js';
         </nuxeo-resource>
 
         <paper-toast id="toast"></paper-toast>
+        <nuxeo-user-group-export-dialog id="exportDialog"></nuxeo-user-group-export-dialog>
 
         <nuxeo-dialog id="deleteGroupDialog" with-backdrop>
           <h2>[[i18n('groupManagement.delete.confirm')]]</h2>
@@ -324,6 +326,16 @@ import '../nuxeo-sort-styles.js';
             <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
               <template>
                 <div class="layout horizontal header-actions">
+                  <paper-button
+                    id="exportMembersButton"
+                    noink
+                    class="flex-end horizontal-button"
+                    on-click="_exportMembers"
+                    aria-labelledby="exportMembersButtonLabel"
+                  >
+                    <iron-icon icon="nuxeo:csv-export"></iron-icon>
+                    <span id="exportMembersButtonLabel">[[i18n('groupManagement.exportMembers')]]</span>
+                  </paper-button>
                   <paper-button
                     id="deleteGroupButton"
                     noink
@@ -961,6 +973,10 @@ import '../nuxeo-sort-styles.js';
       this._removedMember = e.model.item;
       this._removedMember.id = type === 'user' ? e.model.item.id : e.model.item.groupname;
       this.$.rmFromGroupDialog.toggle();
+    }
+
+    _exportMembers() {
+      this.$.exportDialog.open('members', this.groupname);
     }
 
     _toggleEditGroup() {

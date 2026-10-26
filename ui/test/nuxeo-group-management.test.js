@@ -835,4 +835,18 @@ suite('nuxeo-group-management', () => {
       expect(el.$.groups.params.sortOrder).to.equal('desc');
     });
   });
+
+  suite('export members', () => {
+    test('_exportMembers opens the dialog on the members of this group', () => {
+      el.groupname = 'exporters';
+      sinon.stub(el.$.exportDialog, 'open');
+      el._exportMembers();
+      expect(el.$.exportDialog.open).to.have.been.calledWith('members', 'exporters');
+      el.$.exportDialog.open.restore();
+    });
+
+    // As in nuxeo-user-group-management, no assertion stamps the header actions: a render that does not
+    // settle under flush() stalls the whole ui session instead of failing a single test. `_canEditGroup`
+    // already covers the condition, and the button order is verified in the browser.
+  });
 });
