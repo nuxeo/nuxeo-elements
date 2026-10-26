@@ -268,20 +268,8 @@ import '../nuxeo-button-styles.js';
       // every message of this run names what was asked for, not the populations it happens to be split
       // across: "Exporting group members..." rather than member users then member groups
       const label = this._subjectLabel(definition.subject);
-      const outcomes = [];
-      // run the requests one after the other: both share the dialog's resources, and the browser is likelier to
-      // accept consecutive downloads than a burst of simultaneous ones
-      return requests
-        .reduce(
-          (previous, request) =>
-            previous.then(() =>
-              this._isCurrentRun(token)
-                ? this._run(request, token, notification, label).then((outcome) => outcomes.push(outcome))
-                : null,
-            ),
-          Promise.resolve(),
-        )
-        .then(() => {
+      return this._runEach(requests, token, notification, label)
+        .then((outcomes) => {
           if (this._isCurrentRun(token)) {
             this._reportOutcome(outcomes, label, notification);
             this._setExporting(false);
@@ -293,6 +281,19 @@ import '../nuxeo-button-styles.js';
           }
           throw error;
         });
+    }
+
+    /**
+     * Runs the requests one after the other, collecting what each did. Sequential because they share the
+     * dialog's resources, and because the browser is likelier to accept consecutive downloads than a burst
+     * of simultaneous ones.
+     */
+    async _runEach(requests, token, notification, label) {
+      const outcomes = [];
+      for (let i = 0; i < requests.length && this._isCurrentRun(token); i++) {
+        outcomes.push(await this._run(requests[i], token, notification, label));
+      }
+      return outcomes;
     }
 
     /** Submits one export, waits for it, and downloads the file it produced. */
@@ -326,9 +327,9 @@ import '../nuxeo-button-styles.js';
         return;
       }
       let key = 'userGroupExport.completed';
-      if (done.indexOf('failed') > -1) {
+      if (done.includes('failed')) {
         key = 'userGroupExport.error';
-      } else if (done.indexOf('aborted') > -1) {
+      } else if (done.includes('aborted')) {
         key = 'userGroupExport.aborted';
       } else if (done.every((outcome) => outcome === 'empty')) {
         // every population the export covers was empty, so no file was produced at all
