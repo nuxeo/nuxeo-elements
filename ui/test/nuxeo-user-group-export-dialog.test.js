@@ -659,6 +659,33 @@ suite('nuxeo-user-group-export-dialog', () => {
       ).to.be.empty;
     });
 
+    test('puts progress back when the server refuses the abort and the export runs on', async () => {
+      // Web UI removes the snackbar as soon as Abort is clicked, so without this the export would carry
+      // on invisibly, with no way to ask it to stop again
+      serve(
+        status('RUNNING'),
+        status('RUNNING'),
+        status('RUNNING'),
+        status('COMPLETED', { result: { url: 'nxbigblob/key-1' } }),
+      );
+      sinon.stub(el.$.abortRequest, 'put').rejects(new Error('409'));
+      const notifications = [];
+      sinon.stub(el, 'notify').callsFake((o) => notifications.push(o));
+      el.exportType = 'users';
+      const running = el._export();
+      await tick();
+
+      const announced = notifications.filter((n) => n.message === 'userGroupExport.poll');
+      expect(announced, 'announced once to begin with').to.have.lengthOf(1);
+      announced[0].abort();
+      await running;
+
+      const progress = notifications.filter((n) => n.message === 'userGroupExport.poll');
+      expect(progress.length, 'the export says again that it is still going').to.be.greaterThan(1);
+      expect(progress[progress.length - 1].abort, 'and can be asked to stop a second time').to.be.a('function');
+      expect(downloads, 'it was never stopped, so its file arrives').to.have.lengthOf(1);
+    });
+
     test('submits nothing more once a run has been told to stop between its populations', async () => {
       // the request lands with nothing being polled to receive it, so there is no command to stop —
       // the run must still not open the next one
