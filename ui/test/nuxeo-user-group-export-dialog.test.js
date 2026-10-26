@@ -359,6 +359,71 @@ suite('nuxeo-user-group-export-dialog', () => {
     });
   });
 
+  suite('download', () => {
+    test('hands the blob to the browser through a transient anchor', () => {
+      // the only place the file actually reaches the user, so it is exercised for real rather than stubbed
+      el._triggerDownload.restore();
+      const clicked = [];
+      sinon.stub(HTMLAnchorElement.prototype, 'click').callsFake(function record() {
+        clicked.push({ href: this.href, parent: !!this.parentNode });
+      });
+
+      el._triggerDownload('http://localhost:8080/nuxeo/nxbigblob/key-1');
+
+      expect(clicked, 'the anchor was clicked once').to.have.lengthOf(1);
+      expect(clicked[0].href).to.equal('http://localhost:8080/nuxeo/nxbigblob/key-1');
+      expect(clicked[0].parent, 'it has to be in the document to be clickable').to.be.true;
+      expect(document.querySelector('a[href*="nxbigblob"]'), 'and is taken out again').to.not.be.ok;
+    });
+  });
+
+  suite('guards', () => {
+    test('releases the Export button even if the run itself throws', async () => {
+      // nothing is expected to throw here, but a dialog left permanently disabled would be the worst way
+      // to find that out
+      serve(status('COMPLETED', { result: { url: 'nxbigblob/key-1' } }));
+      sinon.stub(el, '_reportOutcome').throws(new Error('boom'));
+      el.exportType = 'users';
+
+      let caught;
+      await el._export().catch((error) => {
+        caught = error;
+      });
+
+      expect(caught && caught.message, 'the failure is not swallowed').to.equal('boom');
+      expect(el.exporting, 'the button is usable again').to.be.false;
+    });
+
+    test('a status that is not there has not failed', () => {
+      expect(el._hasFailed(null)).to.be.false;
+      expect(el._hasFailed(undefined)).to.be.false;
+    });
+
+    test('says nothing when no request produced an outcome', () => {
+      const notifications = [];
+      sinon.stub(el, 'notify').callsFake((o) => notifications.push(o));
+      el._reportOutcome([], 'users', 'ugexport1');
+      expect(notifications).to.be.empty;
+    });
+
+    test('a poll belonging to a superseded run settles without asking the server', async () => {
+      const get = sinon.stub(el.$.status, 'get');
+      // a token the dialog has already moved past
+      const stale = (el._runToken || 0) - 1;
+      expect(await el._poll('cmd-1', 'users', stale, 'ugexport1')).to.be.null;
+      expect(get.called, 'no request goes out for an abandoned run').to.be.false;
+    });
+
+    test('a request that fails after the run was superseded reports nothing', async () => {
+      sinon.stub(el.$.request, 'post').returns(Promise.reject(new Error('boom')));
+      const notifications = [];
+      sinon.stub(el, 'notify').callsFake((o) => notifications.push(o));
+      const stale = (el._runToken || 0) - 1;
+      expect(await el._run({ path: 'user/search/bulk/userCSVExport' }, stale, 'ugexport1', 'users')).to.be.null;
+      expect(notifications).to.be.empty;
+    });
+  });
+
   suite('teardown', () => {
     test('drops a scheduled poll when the dialog is removed', () => {
       el._pollTimeout = window.setTimeout(() => {}, 10000);
