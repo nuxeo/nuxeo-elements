@@ -288,12 +288,20 @@ import '../nuxeo-button-styles.js';
      * dialog's resources, and because the browser is likelier to accept consecutive downloads than a burst
      * of simultaneous ones.
      */
-    async _runEach(requests, token, notification, label) {
+    _runEach(requests, token, notification, label) {
       const outcomes = [];
-      for (let i = 0; i < requests.length && this._isCurrentRun(token); i++) {
-        outcomes.push(await this._run(requests[i], token, notification, label));
-      }
-      return outcomes;
+      // chained rather than looped with `await`: the requests must not overlap, and recursing keeps the
+      // sequence without an await inside a loop or a `then` nested in a `then`
+      const next = (index) => {
+        if (index >= requests.length || !this._isCurrentRun(token)) {
+          return Promise.resolve(outcomes);
+        }
+        return this._run(requests[index], token, notification, label).then((outcome) => {
+          outcomes.push(outcome);
+          return next(index + 1);
+        });
+      };
+      return next(0);
     }
 
     /** Submits one export, waits for it, and downloads the file it produced. */
