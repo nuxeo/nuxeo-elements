@@ -184,24 +184,28 @@ suite('nuxeo-user-group-export-dialog', () => {
       let call = 0;
       sinon.stub(el.$.status, 'get').callsFake(() => {
         call += 1;
-        return call === 1
-          ? Promise.resolve(status('RUNNING', { processed: 1, total: 10 }))
-          : Promise.reject(new Error('network'));
+        // scheduled (quiet), then running (progress), then the poll breaks
+        if (call === 1) return Promise.resolve(status('SCHEDULED'));
+        if (call === 2) return Promise.resolve(status('RUNNING', { processed: 1, total: 10 }));
+        return Promise.reject(new Error('network'));
       });
       const notifications = [];
       sinon.stub(el, 'notify').callsFake((o) => notifications.push(o));
       el.exportType = 'users';
       await el._export();
 
-      const progress = notifications.find((n) => n.message === 'userGroupExport.progress');
+      const progress = notifications.find((n) => n.message === 'userGroupExport.poll');
       const failure = notifications.find((n) => n.message === 'userGroupExport.error');
       expect(progress, 'progress was reported first').to.be.ok;
       expect(failure, 'the failure was reported').to.be.ok;
       expect(failure.commandId, 'the error lands on the progress snackbar').to.equal(progress.commandId);
     });
 
-    test('reports progress while the command is still running', async () => {
+    test('keeps saying it is exporting until the command finishes', async () => {
+      // the same acknowledgement on every poll, replacing itself in one snackbar; the figures only arrive
+      // with the completion message
       serve(
+        status('SCHEDULED'),
         status('RUNNING', { processed: 40, total: 100 }),
         status('COMPLETED', { result: { url: 'nxbigblob/key-1' } }),
       );
@@ -209,10 +213,10 @@ suite('nuxeo-user-group-export-dialog', () => {
       sinon.stub(el, 'notify').callsFake((o) => notifications.push(o));
       el.exportType = 'users';
       await el._export();
-      const progress = notifications.find((n) => n.message === 'userGroupExport.progress');
+      const progress = notifications.find((n) => n.message === 'userGroupExport.poll');
       expect(progress, 'a progress notification').to.be.ok;
-      // keyed by the command so each update replaces the same snackbar
-      expect(progress.commandId).to.equal('cmd-1');
+      // keyed on the run, not the command, so one click owns one snackbar however many commands it runs
+      expect(progress.commandId).to.match(/^ugexport\d+$/);
     });
 
     test('resolves the download against the connection, trailing slash or not', async () => {
@@ -225,6 +229,63 @@ suite('nuxeo-user-group-export-dialog', () => {
   });
 
   suite('outcomes', () => {
+    test('a member export reports once, not once per population', async () => {
+      // both populations are empty, which used to produce four messages for a single click
+      serve(status('COMPLETED', { total: 0 }));
+      const notifications = [];
+      sinon.stub(el, 'notify').callsFake((o) => notifications.push(o));
+      el.exportType = 'members';
+      el.groupname = 'exporters';
+      await el._export();
+
+      const outcomes = notifications.filter((n) => n.message !== 'userGroupExport.poll');
+      expect(outcomes, 'one outcome for the click').to.have.lengthOf(1);
+      expect(outcomes[0].message).to.equal('userGroupExport.empty');
+      // keyed on the run, so progress and outcome share one snackbar rather than opening several
+      expect(outcomes[0].commandId).to.match(/^ugexport\d+$/);
+    });
+
+    test('a member export whose populations differ still reports one success', async () => {
+      let call = 0;
+      sinon.stub(el.$.request, 'post').returns(Promise.resolve(status('SCHEDULED')));
+      sinon.stub(el.$.status, 'get').callsFake(() => {
+        call += 1;
+        // member users produce a file, member groups are empty
+        return Promise.resolve(
+          call === 1 ? status('COMPLETED', { result: { url: 'nxbigblob/key-1' } }) : status('COMPLETED', { total: 0 }),
+        );
+      });
+      const notifications = [];
+      sinon.stub(el, 'notify').callsFake((o) => notifications.push(o));
+      el.exportType = 'members';
+      el.groupname = 'exporters';
+      await el._export();
+
+      const outcomes = notifications.filter((n) => n.message !== 'userGroupExport.poll');
+      expect(outcomes).to.have.lengthOf(1);
+      expect(outcomes[0].message).to.equal('userGroupExport.completed');
+      expect(downloads).to.have.lengthOf(1);
+    });
+
+    test('a failure in either population is what the click reports', async () => {
+      let call = 0;
+      sinon.stub(el.$.request, 'post').returns(Promise.resolve(status('SCHEDULED')));
+      sinon.stub(el.$.status, 'get').callsFake(() => {
+        call += 1;
+        return Promise.resolve(
+          call === 1
+            ? status('COMPLETED', { result: { url: 'nxbigblob/key-1' } })
+            : status('COMPLETED', { errorCount: 2 }),
+        );
+      });
+      const notifications = [];
+      sinon.stub(el, 'notify').callsFake((o) => notifications.push(o.message));
+      el.exportType = 'members';
+      el.groupname = 'exporters';
+      await el._export();
+      expect(notifications.filter((m) => m === 'userGroupExport.error')).to.have.lengthOf(1);
+    });
+
     test('reports an empty population when nothing matched', async () => {
       serve(status('COMPLETED', { total: 0 }));
       const notifications = [];

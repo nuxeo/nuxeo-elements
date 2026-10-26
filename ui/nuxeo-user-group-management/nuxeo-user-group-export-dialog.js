@@ -46,21 +46,24 @@ import '../nuxeo-button-styles.js';
   const EXPORTS = {
     users: {
       titleKey: 'userGroupExport.users.heading',
-      requests: () => [{ path: `user/search/bulk/${USER_ACTION}`, subject: 'users' }],
+      subject: 'users',
+      requests: () => [{ path: `user/search/bulk/${USER_ACTION}` }],
     },
     groups: {
       titleKey: 'userGroupExport.groups.heading',
-      requests: () => [{ path: `group/search/bulk/${GROUP_ACTION}`, subject: 'groups' }],
+      subject: 'groups',
+      requests: () => [{ path: `group/search/bulk/${GROUP_ACTION}` }],
     },
     members: {
       titleKey: 'userGroupExport.members.heading',
+      subject: 'members',
       // the group id is interpolated raw, as every other group path in these screens does: the client
       // percent-encodes the path it is given and puts '/' back, so a group named "managers/webui" keeps its
       // slash (Tomcat rejects %2F) while "mana?gers" still gets its '?' encoded. Encoding here would be
       // applied a second time and every such group would 404.
       requests: (groupname) => [
-        { path: `group/${groupname}/@users/bulk/${USER_ACTION}`, subject: 'memberUsers' },
-        { path: `group/${groupname}/@groups/bulk/${GROUP_ACTION}`, subject: 'memberGroups' },
+        { path: `group/${groupname}/@users/bulk/${USER_ACTION}` },
+        { path: `group/${groupname}/@groups/bulk/${GROUP_ACTION}` },
       ],
     },
   };
@@ -258,15 +261,29 @@ import '../nuxeo-button-styles.js';
       this._setExporting(true);
       const token = (this._runToken || 0) + 1;
       this._runToken = token;
+      // One notification for the whole click. A member export runs two commands, but the user asked for one
+      // thing, so progress and the outcome share a key and replace each other in a single snackbar instead of
+      // announcing each population separately.
+      const notification = `ugexport${token}`;
+      // every message of this run names what was asked for, not the populations it happens to be split
+      // across: "Exporting group members..." rather than member users then member groups
+      const label = this._subjectLabel(definition.subject);
+      const outcomes = [];
       // run the requests one after the other: both share the dialog's resources, and the browser is likelier to
       // accept consecutive downloads than a burst of simultaneous ones
       return requests
         .reduce(
-          (previous, request) => previous.then(() => (this._isCurrentRun(token) ? this._run(request, token) : null)),
+          (previous, request) =>
+            previous.then(() =>
+              this._isCurrentRun(token)
+                ? this._run(request, token, notification, label).then((outcome) => outcomes.push(outcome))
+                : null,
+            ),
           Promise.resolve(),
         )
         .then(() => {
           if (this._isCurrentRun(token)) {
+            this._reportOutcome(outcomes, label, notification);
             this._setExporting(false);
           }
         })
@@ -279,8 +296,7 @@ import '../nuxeo-button-styles.js';
     }
 
     /** Submits one export, waits for it, and downloads the file it produced. */
-    _run(request, token) {
-      const subject = this._subjectLabel(request.subject);
+    _run(request, token, notification, label) {
       // kept so a failure after polling began replaces the progress snackbar instead of opening a second
       // one beside it, leaving "Exporting..." on screen for a run that has already stopped
       let commandId;
@@ -290,21 +306,35 @@ import '../nuxeo-button-styles.js';
         .post()
         .then((status) => {
           commandId = status && status.commandId;
-          return this._isCurrentRun(token) ? this._poll(commandId, subject, token) : null;
+          return this._isCurrentRun(token) ? this._poll(commandId, label, token, notification) : null;
         })
-        .then((status) => {
-          if (status && this._isCurrentRun(token)) {
-            this._onCompleted(status, subject);
-          }
-        })
+        .then((status) => (status && this._isCurrentRun(token) ? this._onCompleted(status) : null))
         .catch((error) => {
           // a run the dialog no longer owns has nobody to report to
           if (!this._isCurrentRun(token)) {
-            return;
+            return null;
           }
           console.warn(`User/group export failed: ${error}`);
-          this.notify({ message: this.i18n('userGroupExport.error', subject), commandId, dismissible: true });
+          return 'failed';
         });
+    }
+
+    /** Sums up what every request of one export did, so the click gets a single answer. */
+    _reportOutcome(outcomes, label, notification) {
+      const done = outcomes.filter(Boolean);
+      if (done.length === 0) {
+        return;
+      }
+      let key = 'userGroupExport.completed';
+      if (done.indexOf('failed') > -1) {
+        key = 'userGroupExport.error';
+      } else if (done.indexOf('aborted') > -1) {
+        key = 'userGroupExport.aborted';
+      } else if (done.every((outcome) => outcome === 'empty')) {
+        // every population the export covers was empty, so no file was produced at all
+        key = 'userGroupExport.empty';
+      }
+      this.notify({ message: this.i18n(key, label), commandId: notification, dismissible: true });
     }
 
     _subjectLabel(subject) {
@@ -315,7 +345,7 @@ import '../nuxeo-button-styles.js';
      * Resolves with the final status of the command, polling until it is no longer in flight. Resolves with
      * `null` instead if the run was cancelled, so the caller settles without acting on a stale response.
      */
-    _poll(commandId, subject, token) {
+    _poll(commandId, label, token, notification) {
       return new Promise((resolve, reject) => {
         const settle = (value) => {
           this._cancelPoll = null;
@@ -343,7 +373,7 @@ import '../nuxeo-button-styles.js';
                 // and polled forever, so it ends the run instead
                 fail(new Error(`Unexpected response polling bulk command ${commandId}`));
               } else if (this._isRunning(status)) {
-                this._notifyProgress(status, subject);
+                this._notifyProgress(label, notification);
                 this._pollTimeout = window.setTimeout(tick, this.pollInterval);
               } else {
                 settle(status);
@@ -356,17 +386,15 @@ import '../nuxeo-button-styles.js';
     }
 
     /**
-     * Reports how far the command has got. Keyed by the command id so every update replaces the same
-     * snackbar rather than stacking one per poll, and so the final outcome lands on it too. Exporting the
-     * whole population can take a while, and a run with no feedback reads as a stalled one.
+     * Says the export is still going. Deliberately carries no numbers: the bulk status leaves `processed`
+     * at 0 until the command finishes, so a fraction would sit frozen and read as a stuck export, and the
+     * size on its own only repeats what the completion message reports a moment later. Keyed on the run so
+     * each update replaces the same snackbar.
      */
-    _notifyProgress(status, subject) {
+    _notifyProgress(label, notification) {
       this.notify({
-        message:
-          status.total > 0
-            ? this.i18n('userGroupExport.progress', subject, status.processed, status.total)
-            : this.i18n('userGroupExport.poll', subject),
-        commandId: status.commandId,
+        message: this.i18n('userGroupExport.poll', label),
+        commandId: notification,
         dismissible: true,
         duration: 0,
       });
@@ -381,27 +409,24 @@ import '../nuxeo-button-styles.js';
       return state !== 'COMPLETED' && state !== 'ABORTED';
     }
 
-    _onCompleted(status, subject) {
+    /** Downloads whatever the command produced and says what happened, for `_reportOutcome` to sum up. */
+    _onCompleted(status) {
       const result = (status && status.result) || {};
-      const commandId = status && status.commandId;
       if (status && status.state === 'ABORTED') {
-        this.notify({ message: this.i18n('userGroupExport.aborted', subject), commandId, dismissible: true });
-        return;
+        return 'aborted';
       }
       // A command reaches COMPLETED even when entries failed, and the blob it assembled is then missing those
       // rows. `nuxeo-operation` rejects on the same fields rather than treating such a status as a success, so
       // the partial file is reported as a failure instead of being handed over as if it were the population.
       if (this._hasFailed(status)) {
-        this.notify({ message: this.i18n('userGroupExport.error', subject), commandId, dismissible: true });
-        return;
+        return 'failed';
       }
       if (!result.url) {
         // nothing matched, so no blob was assembled and there is nothing to download
-        this.notify({ message: this.i18n('userGroupExport.empty', subject), commandId, dismissible: true });
-        return;
+        return 'empty';
       }
-      this.notify({ message: this.i18n('userGroupExport.completed', subject), commandId, dismissible: true });
       this._triggerDownload(this._absoluteUrl(result.url));
+      return 'downloaded';
     }
 
     /**
