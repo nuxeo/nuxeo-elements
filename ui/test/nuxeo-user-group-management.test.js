@@ -134,6 +134,14 @@ suite('nuxeo-user-group-management', () => {
       el.$.exportDialog.open.restore();
     });
 
+    test('keeps the actions row out of the flow when it would hold nothing', () => {
+      // the row reserves a fixed height for its buttons, so an empty one is a blank strip above the search
+      expect(el._hasPageActions(false, { isAdministrator: true }), 'administrator').to.be.ok;
+      expect(el._hasPageActions(true, { isAdministrator: true }), 'read-only admin can still export').to.be.ok;
+      expect(el._hasPageActions(false, { isAdministrator: false }), 'plain user').to.not.be.ok;
+      expect(el._hasPageActions(false, null), 'no user yet').to.not.be.ok;
+    });
+
     // No assertion stamps the toolbar. Satisfying the dom-if renders paper-menu-button too, whose
     // iron-dropdown does not settle under flush() once the whole ui suite is loaded, and a stalled render
     // takes the entire session down rather than failing one test. `_canExport` above covers the condition,

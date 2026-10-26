@@ -39,6 +39,13 @@ import '../nuxeo-button-styles.js';
   const GROUP_ACTION = 'groupCSVExport';
 
   /**
+   * Numbers the snackbar each run owns. Module scope rather than per element: the search screen and the group
+   * details screen each hold a dialog, and a per-element counter gives both their first run the same key, which
+   * Web UI reads as one notification and lets the two runs overwrite each other.
+   */
+  let runCount = 0;
+
+  /**
    * Describes each export offered by the Users & Groups screens: the dialog heading and the bulk endpoints to post
    * to. `members` yields two files because the server exposes the member users and the member groups as two
    * homogeneous populations (`@users` and `@groups`), with no mixed projection.
@@ -108,9 +115,10 @@ import '../nuxeo-button-styles.js';
         <nuxeo-connection id="nx"></nuxeo-connection>
         <nuxeo-resource id="request" content-type="application/json"></nuxeo-resource>
         <nuxeo-resource id="status"></nuxeo-resource>
+        <nuxeo-resource id="abortRequest"></nuxeo-resource>
 
-        <nuxeo-dialog id="dialog" with-backdrop>
-          <h2>[[i18n(_titleKey)]]</h2>
+        <nuxeo-dialog id="dialog" with-backdrop aria-labelledby="exportHeading">
+          <h2 id="exportHeading">[[i18n(_titleKey)]]</h2>
           <div class="format">
             <span class="format-label" id="formatLabel">[[i18n('userGroupExport.format')]]</span>
             <paper-radio-group selected="{{format}}" aria-labelledby="formatLabel">
@@ -205,6 +213,7 @@ import '../nuxeo-button-styles.js';
       // dialog that is no longer on the page. Invalidating the run makes every continuation check that it
       // still owns the dialog first.
       this._cancelRun();
+      this._abortRequested = false;
       this._setExporting(false);
     }
 
@@ -264,14 +273,17 @@ import '../nuxeo-button-styles.js';
       // One notification for the whole click. A member export runs two commands, but the user asked for one
       // thing, so progress and the outcome share a key and replace each other in a single snackbar instead of
       // announcing each population separately.
-      const notification = `ugexport${token}`;
+      runCount += 1;
+      const notification = `ugexport${runCount}`;
+      this._abortRequested = false;
+      this._progressNotified = false;
       // every message of this run names what was asked for, not the populations it happens to be split
       // across: "Exporting group members..." rather than member users then member groups
       const label = this._subjectLabel(definition.subject);
       return this._runEach(requests, token, notification, label)
         .then((outcomes) => {
           if (this._isCurrentRun(token)) {
-            this._reportOutcome(outcomes, label, notification);
+            this._reportOutcome(outcomes, label, notification, this._abortRequested);
             this._setExporting(false);
           }
         })
@@ -293,7 +305,8 @@ import '../nuxeo-button-styles.js';
       // chained rather than looped with `await`: the requests must not overlap, and recursing keeps the
       // sequence without an await inside a loop or a `then` nested in a `then`
       const next = (index) => {
-        if (index >= requests.length || !this._isCurrentRun(token)) {
+        // an abort asks for the export to stop, so a member run must not go on to the second population
+        if (index >= requests.length || !this._isCurrentRun(token) || this._abortRequested) {
           return Promise.resolve(outcomes);
         }
         return this._run(requests[index], token, notification, label).then((outcome) => {
@@ -329,15 +342,17 @@ import '../nuxeo-button-styles.js';
     }
 
     /** Sums up what every request of one export did, so the click gets a single answer. */
-    _reportOutcome(outcomes, label, notification) {
+    _reportOutcome(outcomes, label, notification, aborted) {
       const done = outcomes.filter(Boolean);
-      if (done.length === 0) {
+      if (done.length === 0 && !aborted) {
         return;
       }
       let key = 'userGroupExport.completed';
       if (done.includes('failed')) {
         key = 'userGroupExport.error';
-      } else if (done.includes('aborted')) {
+      } else if (aborted || done.includes('aborted')) {
+        // `aborted` covers the race where the command the user stopped had already finished: they asked for
+        // the export to stop, so that is what the run reports
         key = 'userGroupExport.aborted';
       } else if (done.every((outcome) => outcome === 'empty')) {
         // every population the export covers was empty, so no file was produced at all
@@ -356,16 +371,27 @@ import '../nuxeo-button-styles.js';
      */
     _poll(commandId, label, token, notification) {
       return new Promise((resolve, reject) => {
+        // Only ever disarms its own poll. A response belonging to a run the dialog has already moved past
+        // still settles, and clearing the slot unconditionally would take away the live run's handle: a
+        // later cancellation would then find nothing to settle and leave that export pending for good.
+        const release = () => {
+          if (this._cancelPoll === cancel) {
+            this._cancelPoll = null;
+          }
+        };
         const settle = (value) => {
-          this._cancelPoll = null;
+          release();
           resolve(value);
         };
         const fail = (error) => {
-          this._cancelPoll = null;
+          release();
           reject(error);
         };
         // handed to _cancelRun so a disconnect while the next tick is merely scheduled still ends this poll
-        this._cancelPoll = () => settle(null);
+        const cancel = () => settle(null);
+        this._cancelPoll = cancel;
+        // the one notification of the run outlives each command, so the abort action looks this up
+        this._pollingCommandId = commandId;
         const tick = () => {
           if (!this._isCurrentRun(token)) {
             settle(null);
@@ -382,7 +408,15 @@ import '../nuxeo-button-styles.js';
                 // and polled forever, so it ends the run instead
                 fail(new Error(`Unexpected response polling bulk command ${commandId}`));
               } else if (this._isRunning(status)) {
-                this._notifyProgress(label, notification);
+                // Announced once for the whole run, not once per poll: Web UI re-opens the snackbar and
+                // re-reads it into the screen-reader live region on every notification, so repeating an
+                // unchanged message each second would talk over the user for the length of the export. The
+                // snackbar is sticky, so one notification stays up until the outcome replaces it. An abort
+                // already on its way is not announced at all, its outcome being a moment away.
+                if (!this._abortRequested && !this._progressNotified) {
+                  this._progressNotified = true;
+                  this._notifyProgress(label, notification);
+                }
                 this._pollTimeout = window.setTimeout(tick, this.pollInterval);
               } else {
                 settle(status);
@@ -404,8 +438,30 @@ import '../nuxeo-button-styles.js';
       this.notify({
         message: this.i18n('userGroupExport.poll', label),
         commandId: notification,
+        // Web UI puts an Abort action on the snackbar whenever one is supplied, which is the only way the
+        // user can stop an export of a large directory once it is under way. It reads the command at click
+        // time rather than closing over one: this notification is raised once per run, and a member export
+        // moves on to a second command behind it.
+        abort: () => this._abort(this._pollingCommandId),
         dismissible: true,
         duration: 0,
+      });
+    }
+
+    /**
+     * Asks the server to abort the command. The run is not ended here: the next poll sees the command in
+     * `ABORTED` and settles, which is what reports the outcome and releases the dialog.
+     */
+    _abort(commandId) {
+      this._abortRequested = true;
+      if (!commandId) {
+        // nothing is being polled yet, so there is no command to stop; the run still ends
+        return Promise.resolve();
+      }
+      this.$.abortRequest.path = `bulk/${commandId}/abort`;
+      return this.$.abortRequest.put().catch((error) => {
+        // the poll still governs the outcome, so a failed abort just leaves the export running
+        console.warn(`User/group export abort failed: ${error}`);
       });
     }
 
@@ -413,16 +469,27 @@ import '../nuxeo-button-styles.js';
       return !!status && status['entity-type'] === 'bulkStatus';
     }
 
+    /**
+     * Only the three in-flight states keep the poll going. An allow-list rather than "not COMPLETED and not
+     * ABORTED": a command whose status has expired from the key/value store reports `UNKNOWN`, which the
+     * negative form read as still running and polled for ever.
+     */
     _isRunning(status) {
       const state = status && status.state;
-      return state !== 'COMPLETED' && state !== 'ABORTED';
+      return state === 'SCHEDULED' || state === 'SCROLLING_RUNNING' || state === 'RUNNING';
     }
 
     /** Downloads whatever the command produced and says what happened, for `_reportOutcome` to sum up. */
     _onCompleted(status) {
       const result = (status && status.result) || {};
-      if (status && status.state === 'ABORTED') {
+      const state = status && status.state;
+      if (state === 'ABORTED') {
         return 'aborted';
+      }
+      // UNKNOWN (an expired or unrecognised command), and any terminal state the server may add later, left
+      // no file behind and must not be read as an empty population
+      if (state !== 'COMPLETED') {
+        return 'failed';
       }
       // A command reaches COMPLETED even when entries failed, and the blob it assembled is then missing those
       // rows. `nuxeo-operation` rejects on the same fields rather than treating such a status as a success, so
@@ -463,7 +530,7 @@ import '../nuxeo-button-styles.js';
      */
     _triggerDownload(url) {
       const a = document.createElement('a');
-      a.style = 'display: none';
+      a.style.display = 'none';
       a.href = url;
       document.body.appendChild(a);
       a.click();
