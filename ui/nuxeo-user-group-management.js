@@ -94,18 +94,17 @@ import './nuxeo-button-styles.js';
             height: 48px;
           }
 
-          /* Every page-level action of the search screen shares one row, grouped against its trailing edge
-             by the leading spacer. A flow row rather than an absolutely positioned dropdown, so the
-             controls share a baseline, the search card can take the full width, and the row reflows in RTL
-             without a dir override. */
+          /* The page-level actions share one row, held against its trailing edge by the leading spacer.
+             A flow row rather than an absolutely positioned dropdown, so the controls share a baseline,
+             the search card takes the full width, and RTL reflows without a dir override. */
           .toolbar {
             margin-bottom: 0.5em;
             min-height: 48px;
           }
 
-          /* the row reserves a fixed height for its buttons, so it has to be taken out of the flow entirely
-             when a principal can neither export nor create — otherwise they get a blank strip above the
-             search. The horizontal layout class sets display:flex, which outranks the UA rule for hidden. */
+          /* the row reserves a height for its buttons, so a principal who can neither export nor create
+             would get a blank strip above the search; the layout class sets display:flex, which outranks
+             the UA rule for hidden */
           [hidden] {
             display: none !important;
           }
@@ -114,8 +113,8 @@ import './nuxeo-button-styles.js';
             flex: 1;
           }
 
-          /* the bare paper-button rule stretches the create dropdown's trigger to fill its menu button, so
-             only the export buttons opt out of it and size to their own label */
+          /* the bare paper-button rule stretches the create trigger to fill its menu button; the export
+             buttons opt out and size to their own label */
           .export-action {
             width: auto;
           }
@@ -355,14 +354,14 @@ import './nuxeo-button-styles.js';
     }
 
     /**
-     * Exporting is offered to the users who administer this screen. It is not a security boundary: the server
-     * exposes the exports to any authenticated principal, like the search endpoints listing the same populations.
+     * Offered to the users who administer this screen. Not a security boundary: the server exposes the
+     * exports to any authenticated principal, as it does the searches over the same populations.
      */
     _canExport(currentUser) {
       return this.hasAdministrationPermissions(currentUser);
     }
 
-    /** `true` when the row has at least one action to show, so it is not left reserving empty space. */
+    /** `true` when the row has an action to show, so it is not left reserving empty space. */
     _hasPageActions(readonly, currentUser) {
       return this._canExport(currentUser) || this._canCreateUserGroup(readonly, currentUser);
     }

@@ -20,10 +20,8 @@ suite('nuxeo-user-group-export-dialog', () => {
   let downloads;
 
   setup(async () => {
-    // These tests drive a real polling loop, so they need real timers. Suites that run earlier in the
-    // aggregate barrel install sinon fake timers, and a clock one of them fails to restore would stop
-    // `window.setTimeout` firing here — the awaited export would never settle and Mocha could not time it
-    // out either, because its own timeout uses the same faked timer. Undo any such leak up front.
+    // These drive a real polling loop, so they need real timers. A fake clock leaked by an earlier suite
+    // in the barrel would stop `setTimeout` firing, and Mocha could not time the test out either.
     if (sinon.clock && typeof sinon.clock.restore === 'function') {
       sinon.clock.restore();
     }
@@ -497,6 +495,53 @@ suite('nuxeo-user-group-export-dialog', () => {
 
       const outcome = notifications.filter((n) => n.message !== 'userGroupExport.poll').pop();
       expect(outcome.message).to.equal('userGroupExport.aborted');
+      expect(downloads, 'the file the stopped command left behind is not handed over').to.be.empty;
+    });
+
+    test('sends an abort clicked between the two member populations to the command that follows', async () => {
+      // the click lands while the second command is unnamed; aiming it at the finished first one would
+      // let the second run on and download its file
+      const secondSubmission = deferred();
+      const posts = [];
+      sinon.stub(el.$.request, 'post').callsFake(() => {
+        posts.push(el.$.request.path);
+        return posts.length === 1
+          ? Promise.resolve(Object.assign(status('SCHEDULED'), { commandId: 'cmd-1' }))
+          : secondSubmission.promise;
+      });
+      const put = sinon.stub(el.$.abortRequest, 'put').resolves({});
+      let call = 0;
+      sinon.stub(el.$.status, 'get').callsFake(() => {
+        call += 1;
+        if (call === 1) {
+          return Promise.resolve(status('RUNNING'));
+        }
+        if (call === 2) {
+          return Promise.resolve(status('COMPLETED', { result: { url: 'nxbigblob/key-1' } }));
+        }
+        return Promise.resolve(status('ABORTED'));
+      });
+      const notifications = [];
+      sinon.stub(el, 'notify').callsFake((o) => notifications.push(o));
+      el.exportType = 'members';
+      el.groupname = 'exporters';
+      const running = el._export();
+      await tick();
+      await tick();
+      await tick();
+      expect(posts, 'the second population is being submitted').to.have.lengthOf(2);
+
+      notifications.find((n) => n.message === 'userGroupExport.poll').abort();
+      expect(put.called, 'there is no command to stop yet').to.be.false;
+
+      secondSubmission.settle(Object.assign(status('SCHEDULED'), { commandId: 'cmd-2' }));
+      await running;
+
+      expect(el.$.abortRequest.path, 'the request reaches the command it was meant for').to.equal('bulk/cmd-2/abort');
+      expect(put.calledOnce).to.be.true;
+      expect(downloads, 'only the population that finished before the abort').to.deep.equal([
+        'http://localhost:8080/nuxeo/nxbigblob/key-1',
+      ]);
     });
 
     test('stops advertising progress once an abort is on its way', async () => {
@@ -527,6 +572,91 @@ suite('nuxeo-user-group-export-dialog', () => {
       // the command ran to completion, so the file is still handed over
       expect(downloads).to.have.lengthOf(1);
       expect(el.exporting).to.be.false;
+      const outcome = notifications.filter((n) => n.message !== 'userGroupExport.poll').pop();
+      expect(outcome.message, 'nothing was stopped, so the run reports what it did').to.equal(
+        'userGroupExport.completed',
+      );
+    });
+
+    test('still covers the second member population when the server refuses the abort', async () => {
+      const posts = [];
+      sinon.stub(el.$.request, 'post').callsFake(() => {
+        posts.push(el.$.request.path);
+        return Promise.resolve(Object.assign(status('SCHEDULED'), { commandId: `cmd-${posts.length}` }));
+      });
+      sinon.stub(el.$.abortRequest, 'put').rejects(new Error('409'));
+      let call = 0;
+      sinon.stub(el.$.status, 'get').callsFake(() => {
+        call += 1;
+        return Promise.resolve(
+          call === 1 ? status('RUNNING') : status('COMPLETED', { result: { url: `nxbigblob/key-${call}` } }),
+        );
+      });
+      const notifications = [];
+      sinon.stub(el, 'notify').callsFake((o) => notifications.push(o));
+      el.exportType = 'members';
+      el.groupname = 'exporters';
+      const running = el._export();
+      await tick();
+      notifications.find((n) => n.message === 'userGroupExport.poll').abort();
+      await running;
+
+      expect(posts, 'a refused abort stopped nothing, so both populations still run').to.have.lengthOf(2);
+      expect(downloads).to.have.lengthOf(2);
+      const outcome = notifications.filter((n) => n.message !== 'userGroupExport.poll').pop();
+      expect(outcome.message).to.equal('userGroupExport.completed');
+    });
+
+    test('waits for the abort to be answered before acting on a command that completed', async () => {
+      // the refusal arrives after the last poll, so the run holds the file back until it knows whether
+      // it was stopped rather than guessing
+      let refuse;
+      const refusal = new Promise((resolve, reject) => {
+        refuse = reject;
+      });
+      serve(status('RUNNING'), status('COMPLETED', { result: { url: 'nxbigblob/key-1' } }));
+      sinon.stub(el.$.abortRequest, 'put').returns(refusal);
+      const notifications = [];
+      sinon.stub(el, 'notify').callsFake((o) => notifications.push(o));
+      el.exportType = 'users';
+      const running = el._export();
+      await tick();
+      notifications.find((n) => n.message === 'userGroupExport.poll').abort();
+      await tick();
+      expect(downloads, 'nothing is decided while the abort is unanswered').to.be.empty;
+
+      refuse(new Error('409'));
+      await running;
+
+      expect(downloads, 'refused, so the file the command produced still arrives').to.have.lengthOf(1);
+      const outcome = notifications.filter((n) => n.message !== 'userGroupExport.poll').pop();
+      expect(outcome.message).to.equal('userGroupExport.completed');
+    });
+
+    test('ignores an abort answered after the dialog left the page', async () => {
+      let accept;
+      const answer = new Promise((resolve) => {
+        accept = resolve;
+      });
+      serve(status('RUNNING'), status('COMPLETED', { result: { url: 'nxbigblob/key-1' } }));
+      sinon.stub(el.$.abortRequest, 'put').returns(answer);
+      const notifications = [];
+      sinon.stub(el, 'notify').callsFake((o) => notifications.push(o));
+      el.exportType = 'users';
+      const running = el._export();
+      await tick();
+      notifications.find((n) => n.message === 'userGroupExport.poll').abort();
+      // the command completes, so the run is waiting on the abort when the dialog is taken away
+      await tick();
+      el.disconnectedCallback();
+      accept({});
+      await running;
+
+      expect(downloads, 'nothing is downloaded against a dialog that has left the page').to.be.empty;
+      expect(
+        notifications.filter((n) => n.message !== 'userGroupExport.poll'),
+        'and nothing is reported to a screen that is gone',
+      ).to.be.empty;
     });
   });
 
@@ -607,13 +737,19 @@ suite('nuxeo-user-group-export-dialog', () => {
         posts.push(el.$.request.path);
         return Promise.resolve(Object.assign(status('SCHEDULED'), { commandId: `cmd-${posts.length}` }));
       });
-      sinon.stub(el.$.abortRequest, 'put').resolves({});
+      let stopped = false;
+      sinon.stub(el.$.abortRequest, 'put').callsFake(() => {
+        stopped = true;
+        return Promise.resolve({});
+      });
       let call = 0;
       sinon.stub(el.$.status, 'get').callsFake(() => {
         call += 1;
-        // first population finishes, second one is still running when the user aborts
-        if (call === 1) return Promise.resolve(status('COMPLETED', { result: { url: 'nxbigblob/key-1' } }));
-        return Promise.resolve(status(call === 2 ? 'RUNNING' : 'ABORTED'));
+        // the first population finishes; the second keeps running until the user steps in
+        if (call === 1) {
+          return Promise.resolve(status('COMPLETED', { result: { url: 'nxbigblob/key-1' } }));
+        }
+        return Promise.resolve(status(stopped ? 'ABORTED' : 'RUNNING'));
       });
       const notifications = [];
       sinon.stub(el, 'notify').callsFake((o) => notifications.push(o));
