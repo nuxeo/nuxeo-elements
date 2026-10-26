@@ -112,6 +112,34 @@ suite('nuxeo-user-group-management', () => {
     });
   });
 
+  suite('export', () => {
+    test('_canExport follows the administration permissions of the screen', () => {
+      expect(el._canExport({ isAdministrator: true })).to.be.true;
+      expect(el._canExport({ isAdministrator: false, extendedGroups: [{ name: 'powerusers' }] })).to.be.ok;
+      expect(el._canExport({ isAdministrator: false })).to.not.be.ok;
+      expect(el._canExport(null)).to.not.be.ok;
+    });
+
+    test('_exportUsers opens the dialog on the users export', () => {
+      sinon.stub(el.$.exportDialog, 'open');
+      el._exportUsers();
+      expect(el.$.exportDialog.open).to.have.been.calledWith('users');
+      el.$.exportDialog.open.restore();
+    });
+
+    test('_exportGroups opens the dialog on the groups export', () => {
+      sinon.stub(el.$.exportDialog, 'open');
+      el._exportGroups();
+      expect(el.$.exportDialog.open).to.have.been.calledWith('groups');
+      el.$.exportDialog.open.restore();
+    });
+
+    // No assertion stamps the toolbar. Satisfying the dom-if renders paper-menu-button too, whose
+    // iron-dropdown does not settle under flush() once the whole ui suite is loaded, and a stalled render
+    // takes the entire session down rather than failing one test. `_canExport` above covers the condition,
+    // and the rendered toolbar is verified in the browser instead.
+  });
+
   suite('_toast', () => {
     test('shows message for nuxeo-user-created', () => {
       const event = new CustomEvent('nuxeo-user-created', {
