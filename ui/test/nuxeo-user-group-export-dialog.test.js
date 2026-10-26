@@ -177,6 +177,29 @@ suite('nuxeo-user-group-export-dialog', () => {
       expect(downloads).to.be.empty;
     });
 
+    test('replaces the progress notification when a later poll fails', async () => {
+      // the error has to carry the command id, or Web UI opens a second snackbar and the sticky
+      // "Exporting..." one keeps claiming the run is still going
+      sinon.stub(el.$.request, 'post').returns(Promise.resolve(status('SCHEDULED')));
+      let call = 0;
+      sinon.stub(el.$.status, 'get').callsFake(() => {
+        call += 1;
+        return call === 1
+          ? Promise.resolve(status('RUNNING', { processed: 1, total: 10 }))
+          : Promise.reject(new Error('network'));
+      });
+      const notifications = [];
+      sinon.stub(el, 'notify').callsFake((o) => notifications.push(o));
+      el.exportType = 'users';
+      await el._export();
+
+      const progress = notifications.find((n) => n.message === 'userGroupExport.progress');
+      const failure = notifications.find((n) => n.message === 'userGroupExport.error');
+      expect(progress, 'progress was reported first').to.be.ok;
+      expect(failure, 'the failure was reported').to.be.ok;
+      expect(failure.commandId, 'the error lands on the progress snackbar').to.equal(progress.commandId);
+    });
+
     test('reports progress while the command is still running', async () => {
       serve(
         status('RUNNING', { processed: 40, total: 100 }),
@@ -315,6 +338,27 @@ suite('nuxeo-user-group-export-dialog', () => {
       await running;
 
       expect(polls.callCount, 'no further poll is scheduled').to.equal(1);
+      expect(downloads).to.be.empty;
+    });
+
+    test('settles the export when the dialog is disconnected between two polls', async () => {
+      // the next tick is only scheduled, so cancellation has nothing in flight to notice it; the poll must
+      // be settled by the cancellation itself or this await would never return
+      serve(status('RUNNING', { processed: 1, total: 10 }));
+      el.pollInterval = 10000;
+      el.exportType = 'users';
+      const running = el._export();
+      await tick();
+      expect(el.$.status.get.callCount, 'the first poll went out').to.equal(1);
+
+      el.disconnectedCallback();
+
+      // raced, so a regression fails this test instead of stalling the whole run
+      const outcome = await Promise.race([
+        running.then(() => 'settled'),
+        new Promise((resolve) => setTimeout(() => resolve('pending'), 2000)),
+      ]);
+      expect(outcome, 'the cancelled export must settle').to.equal('settled');
       expect(downloads).to.be.empty;
     });
 

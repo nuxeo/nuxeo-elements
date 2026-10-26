@@ -209,6 +209,14 @@ import '../nuxeo-button-styles.js';
     _cancelRun() {
       this._runToken = (this._runToken || 0) + 1;
       this._stopPolling();
+      // Cancelling between two polls drops the scheduled tick, so nothing is left to notice the run was
+      // invalidated: the poll promise, and the export chain awaiting it, would stay pending for good.
+      // Settling it here is what ends the run.
+      const settleCancelled = this._cancelPoll;
+      this._cancelPoll = null;
+      if (settleCancelled) {
+        settleCancelled();
+      }
     }
 
     _isCurrentRun(token) {
@@ -273,11 +281,17 @@ import '../nuxeo-button-styles.js';
     /** Submits one export, waits for it, and downloads the file it produced. */
     _run(request, token) {
       const subject = this._subjectLabel(request.subject);
+      // kept so a failure after polling began replaces the progress snackbar instead of opening a second
+      // one beside it, leaving "Exporting..." on screen for a run that has already stopped
+      let commandId;
       this.$.request.path = request.path;
       this.$.request.data = {};
       return this.$.request
         .post()
-        .then((status) => (this._isCurrentRun(token) ? this._poll(status.commandId, subject, token) : null))
+        .then((status) => {
+          commandId = status && status.commandId;
+          return this._isCurrentRun(token) ? this._poll(commandId, subject, token) : null;
+        })
         .then((status) => {
           if (status && this._isCurrentRun(token)) {
             this._onCompleted(status, subject);
@@ -289,7 +303,7 @@ import '../nuxeo-button-styles.js';
             return;
           }
           console.warn(`User/group export failed: ${error}`);
-          this.notify({ message: this.i18n('userGroupExport.error', subject), dismissible: true });
+          this.notify({ message: this.i18n('userGroupExport.error', subject), commandId, dismissible: true });
         });
     }
 
@@ -303,9 +317,19 @@ import '../nuxeo-button-styles.js';
      */
     _poll(commandId, subject, token) {
       return new Promise((resolve, reject) => {
+        const settle = (value) => {
+          this._cancelPoll = null;
+          resolve(value);
+        };
+        const fail = (error) => {
+          this._cancelPoll = null;
+          reject(error);
+        };
+        // handed to _cancelRun so a disconnect while the next tick is merely scheduled still ends this poll
+        this._cancelPoll = () => settle(null);
         const tick = () => {
           if (!this._isCurrentRun(token)) {
-            resolve(null);
+            settle(null);
             return;
           }
           this.$.status.path = `bulk/${commandId}`;
@@ -313,19 +337,19 @@ import '../nuxeo-button-styles.js';
             .get()
             .then((status) => {
               if (!this._isCurrentRun(token)) {
-                resolve(null);
+                settle(null);
               } else if (!this._isBulkStatus(status)) {
                 // anything else (an error payload, an unparseable body) would be read as "still running"
                 // and polled forever, so it ends the run instead
-                reject(new Error(`Unexpected response polling bulk command ${commandId}`));
+                fail(new Error(`Unexpected response polling bulk command ${commandId}`));
               } else if (this._isRunning(status)) {
                 this._notifyProgress(status, subject);
                 this._pollTimeout = window.setTimeout(tick, this.pollInterval);
               } else {
-                resolve(status);
+                settle(status);
               }
             })
-            .catch(reject);
+            .catch(fail);
         };
         tick();
       });
