@@ -202,9 +202,22 @@ import '../nuxeo-button-styles.js';
       // dropping the scheduled poll is not enough: a request already in flight would still resolve and
       // restart polling or download a file against a dialog that has left the page
       this._cancelRun();
+      this._closeProgress();
       this._forgetAbort();
       this._pollingCommandId = null;
       this._setExporting(false);
+    }
+
+    /**
+     * Takes down the run's "Exporting..." snackbar. It is sticky, and only the outcome replaces it, so a
+     * run cut short by teardown would otherwise leave it claiming an export that is no longer running.
+     */
+    _closeProgress() {
+      if (this._progressNotified && this._notificationKey) {
+        this.notify({ commandId: this._notificationKey, close: true });
+      }
+      this._progressNotified = false;
+      this._notificationKey = null;
     }
 
     /** Leaves nothing asked for: starts a run clean, and undoes a request the server refused. */
@@ -271,6 +284,8 @@ import '../nuxeo-button-styles.js';
       const notification = `ugexport${runCount}`;
       this._forgetAbort();
       this._progressNotified = false;
+      // held so teardown can take the snackbar down, since only the outcome would otherwise replace it
+      this._notificationKey = notification;
       // names what was asked for, not the populations it is split across: "group members", not member
       // users then member groups
       const label = this._subjectLabel(definition.subject);
@@ -284,12 +299,15 @@ import '../nuxeo-button-styles.js';
         })
         .then((aborted) => {
           if (this._isCurrentRun(token)) {
+            // replaces the progress snackbar, so there is nothing left for teardown to close
             this._reportOutcome(outcomes, label, notification, aborted);
+            this._notificationKey = null;
             this._setExporting(false);
           }
         })
         .catch((error) => {
           if (this._isCurrentRun(token)) {
+            this._notificationKey = null;
             this._setExporting(false);
           }
           throw error;
@@ -314,6 +332,11 @@ import '../nuxeo-button-styles.js';
         }
         return this._run(requests[index], token, notification, label).then((outcome) => {
           outcomes.push(outcome);
+          // a command stopped elsewhere — another tab, or the bulk API — ends the run just as a click
+          // here would; going on would download the second population under an aborted outcome
+          if (outcome === 'aborted') {
+            return outcomes;
+          }
           return next(index + 1);
         });
       };
@@ -430,7 +453,7 @@ import '../nuxeo-button-styles.js';
                 // length of the export. An abort on its way is not announced, its outcome being imminent.
                 if (!this._abortRequested && !this._progressNotified) {
                   this._progressNotified = true;
-                  this._notifyProgress(label, notification);
+                  this._notifyProgress(label, notification, token);
                 }
                 this._pollTimeout = window.setTimeout(tick, this.pollInterval);
               } else {
@@ -447,14 +470,15 @@ import '../nuxeo-button-styles.js';
      * Says the export is still going. Carries no numbers: the bulk status leaves `processed` at 0 until
      * the command finishes, so a fraction would sit frozen and read as a stuck export.
      */
-    _notifyProgress(label, notification) {
+    _notifyProgress(label, notification, token) {
       this.notify({
         message: this.i18n('userGroupExport.poll', label),
         commandId: notification,
         // Web UI puts an Abort action on the snackbar whenever one is supplied. It reads the command at
-        // click time rather than closing over one: a member export moves on to a second command behind
-        // this notification, which is raised once per run.
-        abort: () => this._abort(this._pollingCommandId),
+        // click time rather than closing over one, a member export moving on to a second command behind
+        // this notification — but only for the run that raised it, so a snackbar left over from an
+        // earlier export cannot stop the one running now.
+        abort: () => (this._isCurrentRun(token) ? this._abort(this._pollingCommandId) : Promise.resolve()),
         dismissible: true,
         duration: 0,
       });

@@ -654,9 +654,79 @@ suite('nuxeo-user-group-export-dialog', () => {
 
       expect(downloads, 'nothing is downloaded against a dialog that has left the page').to.be.empty;
       expect(
-        notifications.filter((n) => n.message !== 'userGroupExport.poll'),
+        notifications.filter((n) => n.message && n.message !== 'userGroupExport.poll'),
         'and nothing is reported to a screen that is gone',
       ).to.be.empty;
+    });
+
+    test('submits nothing more once a run has been told to stop between its populations', async () => {
+      // the request lands with nothing being polled to receive it, so there is no command to stop —
+      // the run must still not open the next one
+      const posts = [];
+      sinon.stub(el.$.request, 'post').callsFake(() => {
+        posts.push(el.$.request.path);
+        return Promise.resolve(status('SCHEDULED'));
+      });
+      el._runToken = 1;
+      el._abort();
+
+      const outcomes = await el._runEach(
+        [{ path: 'group/exporters/@groups/bulk/groupCSVExport' }],
+        1,
+        'ugexport1',
+        'groups',
+      );
+      expect(posts).to.be.empty;
+      expect(outcomes).to.be.empty;
+    });
+
+    test('stops a member export whose first command was aborted elsewhere', async () => {
+      // stopped through another tab or the bulk API, so nothing was clicked here; the run must still
+      // not go on to download the second population under an outcome that says it was aborted
+      const posts = [];
+      sinon.stub(el.$.request, 'post').callsFake(() => {
+        posts.push(el.$.request.path);
+        return Promise.resolve(status('SCHEDULED'));
+      });
+      sinon.stub(el.$.status, 'get').resolves(status('ABORTED', { result: { url: 'nxbigblob/key-1' } }));
+      const notifications = [];
+      sinon.stub(el, 'notify').callsFake((o) => notifications.push(o.message));
+      el.exportType = 'members';
+      el.groupname = 'exporters';
+      await el._export();
+
+      expect(posts, 'the second population is never submitted').to.have.lengthOf(1);
+      expect(downloads).to.be.empty;
+      expect(notifications).to.include('userGroupExport.aborted');
+    });
+
+    test('ignores an abort offered by a snackbar left over from an earlier run', async () => {
+      let call = 0;
+      sinon.stub(el.$.request, 'post').resolves(status('SCHEDULED'));
+      sinon.stub(el.$.status, 'get').callsFake(() => {
+        call += 1;
+        // the first run is cut off while polling; the second runs long enough to be interfered with
+        return Promise.resolve(
+          call >= 3 ? status('COMPLETED', { result: { url: 'nxbigblob/key-1' } }) : status('RUNNING'),
+        );
+      });
+      const put = sinon.stub(el.$.abortRequest, 'put').resolves({});
+      const notifications = [];
+      sinon.stub(el, 'notify').callsFake((o) => notifications.push(o));
+      el.exportType = 'users';
+      const abandoned = el._export();
+      await tick();
+      const stale = notifications.find((n) => n.message === 'userGroupExport.poll');
+      el.disconnectedCallback();
+      await abandoned;
+
+      const live = el._export();
+      await tick();
+      stale.abort();
+      await live;
+
+      expect(put.called, 'the old snackbar has no hold over the run that followed it').to.be.false;
+      expect(downloads, 'which therefore runs to completion').to.have.lengthOf(1);
     });
   });
 
@@ -774,6 +844,26 @@ suite('nuxeo-user-group-export-dialog', () => {
       el.disconnectedCallback();
       expect(el._pollTimeout).to.be.null;
       expect(el.exporting).to.be.false;
+    });
+
+    test('takes its sticky progress snackbar down on the way out', async () => {
+      // only the outcome replaces it, and a run cut short by teardown never reports one, so the
+      // snackbar would be left claiming an export that is no longer running
+      serve(status('RUNNING'));
+      const notifications = [];
+      sinon.stub(el, 'notify').callsFake((o) => notifications.push(o));
+      el.exportType = 'users';
+      const running = el._export();
+      await tick();
+      const progress = notifications.find((n) => n.message === 'userGroupExport.poll');
+      expect(progress, 'the export announced itself').to.be.ok;
+
+      el.disconnectedCallback();
+      await running;
+
+      const closed = notifications.find((n) => n.close);
+      expect(closed, 'the run closes its snackbar').to.be.ok;
+      expect(closed.commandId, 'the one it opened').to.equal(progress.commandId);
     });
 
     test('ignores a submission that resolves after the dialog was disconnected', async () => {
