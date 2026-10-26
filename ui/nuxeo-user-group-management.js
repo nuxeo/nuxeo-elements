@@ -103,6 +103,13 @@ import './nuxeo-button-styles.js';
             min-height: 48px;
           }
 
+          /* the row reserves a fixed height for its buttons, so it has to be taken out of the flow entirely
+             when a principal can neither export nor create — otherwise they get a blank strip above the
+             search. The horizontal layout class sets display:flex, which outranks the UA rule for hidden. */
+          [hidden] {
+            display: none !important;
+          }
+
           .toolbar .spacer {
             flex: 1;
           }
@@ -147,7 +154,7 @@ import './nuxeo-button-styles.js';
         <nuxeo-user-group-export-dialog id="exportDialog"></nuxeo-user-group-export-dialog>
         <iron-pages selected="[[page]]" attr-for-selected="name">
           <section name="search">
-            <div class="horizontal layout center toolbar">
+            <div class="horizontal layout center toolbar" hidden$="[[!_hasPageActions(readonly, _currentUser)]]">
               <span class="spacer"></span>
               <dom-if if="[[_canExport(_currentUser)]]">
                 <template>
@@ -353,6 +360,11 @@ import './nuxeo-button-styles.js';
      */
     _canExport(currentUser) {
       return this.hasAdministrationPermissions(currentUser);
+    }
+
+    /** `true` when the row has at least one action to show, so it is not left reserving empty space. */
+    _hasPageActions(readonly, currentUser) {
+      return this._canExport(currentUser) || this._canCreateUserGroup(readonly, currentUser);
     }
 
     _exportUsers() {
