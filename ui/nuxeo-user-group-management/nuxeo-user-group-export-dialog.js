@@ -31,24 +31,19 @@ import '../widgets/nuxeo-dialog.js';
 import '../nuxeo-button-styles.js';
 
 {
-  /**
-   * The bulk actions contributed by `nuxeo-platform-csv-export`, one per population. A population is always fixed by
-   * the resource the action is posted to, never by a client parameter.
-   */
+  /** Bulk actions contributed by `nuxeo-platform-csv-export`, one per population. */
   const USER_ACTION = 'userCSVExport';
   const GROUP_ACTION = 'groupCSVExport';
 
   /**
-   * Numbers the snackbar each run owns. Module scope rather than per element: the search screen and the group
-   * details screen each hold a dialog, and a per-element counter gives both their first run the same key, which
-   * Web UI reads as one notification and lets the two runs overwrite each other.
+   * Numbers the snackbar each run owns. Module scope, not per element: the search screen and the group
+   * details screen each hold a dialog, and a per-element counter would give both the same first key.
    */
   let runCount = 0;
 
   /**
-   * Describes each export offered by the Users & Groups screens: the dialog heading and the bulk endpoints to post
-   * to. `members` yields two files because the server exposes the member users and the member groups as two
-   * homogeneous populations (`@users` and `@groups`), with no mixed projection.
+   * The exports the Users & Groups screens offer. `members` yields two files: the server exposes member
+   * users and member groups as two homogeneous populations, with no mixed projection.
    */
   const EXPORTS = {
     users: {
@@ -64,10 +59,8 @@ import '../nuxeo-button-styles.js';
     members: {
       titleKey: 'userGroupExport.members.heading',
       subject: 'members',
-      // the group id is interpolated raw, as every other group path in these screens does: the client
-      // percent-encodes the path it is given and puts '/' back, so a group named "managers/webui" keeps its
-      // slash (Tomcat rejects %2F) while "mana?gers" still gets its '?' encoded. Encoding here would be
-      // applied a second time and every such group would 404.
+      // raw, like every other group path in these screens: nuxeo-resource percent-encodes the path and
+      // restores '/', so encoding here would be applied twice and any such group would 404
       requests: (groupname) => [
         { path: `group/${groupname}/@users/bulk/${USER_ACTION}` },
         { path: `group/${groupname}/@groups/bulk/${GROUP_ACTION}` },
@@ -78,10 +71,9 @@ import '../nuxeo-button-styles.js';
   /**
    * Used by `nuxeo-user-group-management` and `nuxeo-group-management`.
    *
-   * Asks for the export format and runs the corresponding server-side export, downloading the file it produces. The
-   * exports are bulk actions, so the contract is asynchronous: the endpoint returns a command id, the command is
-   * polled until it completes, and the blob it assembled is then downloaded. A command that matched nothing completes
-   * with no blob at all, which is reported rather than waited on.
+   * Asks for the export format and runs the server-side export, downloading the file it produces. The
+   * exports are bulk actions, so the contract is asynchronous: the endpoint returns a command id, the
+   * command is polled until it completes, and the blob it assembled is then downloaded.
    *
    * Example:
    *
@@ -172,9 +164,8 @@ import '../nuxeo-button-styles.js';
         },
 
         /**
-         * The selected format. It does not parameterise the request: the server exposes one bulk action per
-         * format, and `csvExport` is the only one it contributes today, so the format is carried by the action id
-         * in `EXPORTS` rather than by a command parameter.
+         * The selected format. It does not parameterise the request: the server exposes one bulk action
+         * per format, so the format is carried by the action id in `EXPORTS`, not by a command parameter.
          */
         format: {
           type: String,
@@ -208,22 +199,26 @@ import '../nuxeo-button-styles.js';
 
     disconnectedCallback() {
       super.disconnectedCallback();
-      // Dropping the scheduled poll is not enough: a submission or a status request already in flight will
-      // still resolve, and would restart polling, download a file, or start the next member export against a
-      // dialog that is no longer on the page. Invalidating the run makes every continuation check that it
-      // still owns the dialog first.
+      // dropping the scheduled poll is not enough: a request already in flight would still resolve and
+      // restart polling or download a file against a dialog that has left the page
       this._cancelRun();
-      this._abortRequested = false;
+      this._forgetAbort();
+      this._pollingCommandId = null;
       this._setExporting(false);
+    }
+
+    /** Leaves nothing asked for: starts a run clean, and undoes a request the server refused. */
+    _forgetAbort() {
+      this._abortRequested = false;
+      this._abortPending = null;
     }
 
     /** Invalidates whatever run is in progress, so none of its continuations do any more work. */
     _cancelRun() {
       this._runToken = (this._runToken || 0) + 1;
       this._stopPolling();
-      // Cancelling between two polls drops the scheduled tick, so nothing is left to notice the run was
-      // invalidated: the poll promise, and the export chain awaiting it, would stay pending for good.
-      // Settling it here is what ends the run.
+      // cancelling between two polls drops the scheduled tick, leaving nothing to notice the run was
+      // invalidated; settling the poll promise here is what ends it
       const settleCancelled = this._cancelPoll;
       this._cancelPoll = null;
       if (settleCancelled) {
@@ -270,20 +265,26 @@ import '../nuxeo-button-styles.js';
       this._setExporting(true);
       const token = (this._runToken || 0) + 1;
       this._runToken = token;
-      // One notification for the whole click. A member export runs two commands, but the user asked for one
-      // thing, so progress and the outcome share a key and replace each other in a single snackbar instead of
-      // announcing each population separately.
+      // One snackbar for the whole click: a member export runs two commands, but the user asked for one
+      // thing, so progress and the outcome share a key and replace each other.
       runCount += 1;
       const notification = `ugexport${runCount}`;
-      this._abortRequested = false;
+      this._forgetAbort();
       this._progressNotified = false;
-      // every message of this run names what was asked for, not the populations it happens to be split
-      // across: "Exporting group members..." rather than member users then member groups
+      // names what was asked for, not the populations it is split across: "group members", not member
+      // users then member groups
       const label = this._subjectLabel(definition.subject);
+      // held across the abort being settled, which is what the outcome is reported with
+      let outcomes;
       return this._runEach(requests, token, notification, label)
-        .then((outcomes) => {
+        .then((collected) => {
+          outcomes = collected;
+          // the run calls itself aborted only once the server has agreed to stop it
+          return this._settleAbort(token);
+        })
+        .then((aborted) => {
           if (this._isCurrentRun(token)) {
-            this._reportOutcome(outcomes, label, notification, this._abortRequested);
+            this._reportOutcome(outcomes, label, notification, aborted);
             this._setExporting(false);
           }
         })
@@ -297,17 +298,19 @@ import '../nuxeo-button-styles.js';
 
     /**
      * Runs the requests one after the other, collecting what each did. Sequential because they share the
-     * dialog's resources, and because the browser is likelier to accept consecutive downloads than a burst
-     * of simultaneous ones.
+     * dialog's resources, and because browsers accept consecutive downloads more readily than a burst.
      */
     _runEach(requests, token, notification, label) {
       const outcomes = [];
-      // chained rather than looped with `await`: the requests must not overlap, and recursing keeps the
-      // sequence without an await inside a loop or a `then` nested in a `then`
+      // chained rather than looped: recursing keeps the sequence without an await inside a loop
       const next = (index) => {
-        // an abort asks for the export to stop, so a member run must not go on to the second population
-        if (index >= requests.length || !this._isCurrentRun(token) || this._abortRequested) {
+        if (index >= requests.length || !this._isCurrentRun(token)) {
           return Promise.resolve(outcomes);
+        }
+        // an abort stops a member run short of its second population — but only once the server has
+        // accepted it, since skipping on the click alone would lose half the export for nothing
+        if (this._abortRequested) {
+          return this._settleAbort(token).then((aborted) => (aborted ? outcomes : next(index)));
         }
         return this._run(requests[index], token, notification, label).then((outcome) => {
           outcomes.push(outcome);
@@ -319,18 +322,28 @@ import '../nuxeo-button-styles.js';
 
     /** Submits one export, waits for it, and downloads the file it produced. */
     _run(request, token, notification, label) {
-      // kept so a failure after polling began replaces the progress snackbar instead of opening a second
-      // one beside it, leaving "Exporting..." on screen for a run that has already stopped
       let commandId;
       this.$.request.path = request.path;
       this.$.request.data = {};
+      // nothing is being polled while this is submitted, and an abort clicked now must not go to the
+      // previous population's finished command; `_poll` forwards it once the server names this one
+      this._pollingCommandId = null;
       return this.$.request
         .post()
         .then((status) => {
           commandId = status && status.commandId;
           return this._isCurrentRun(token) ? this._poll(commandId, label, token, notification) : null;
         })
-        .then((status) => (status && this._isCurrentRun(token) ? this._onCompleted(status) : null))
+        .then((status) => {
+          if (!status || !this._isCurrentRun(token)) {
+            return null;
+          }
+          // an abort and the command finishing on its own can cross; only the server's answer says which
+          // won, and so whether the file it assembled is handed over
+          return this._settleAbort(token).then((aborted) =>
+            this._isCurrentRun(token) ? this._onCompleted(status, aborted) : null,
+          );
+        })
         .catch((error) => {
           // a run the dialog no longer owns has nobody to report to
           if (!this._isCurrentRun(token)) {
@@ -351,11 +364,8 @@ import '../nuxeo-button-styles.js';
       if (done.includes('failed')) {
         key = 'userGroupExport.error';
       } else if (aborted || done.includes('aborted')) {
-        // `aborted` covers the race where the command the user stopped had already finished: they asked for
-        // the export to stop, so that is what the run reports
         key = 'userGroupExport.aborted';
       } else if (done.every((outcome) => outcome === 'empty')) {
-        // every population the export covers was empty, so no file was produced at all
         key = 'userGroupExport.empty';
       }
       this.notify({ message: this.i18n(key, label), commandId: notification, dismissible: true });
@@ -371,12 +381,14 @@ import '../nuxeo-button-styles.js';
      */
     _poll(commandId, label, token, notification) {
       return new Promise((resolve, reject) => {
-        // Only ever disarms its own poll. A response belonging to a run the dialog has already moved past
-        // still settles, and clearing the slot unconditionally would take away the live run's handle: a
-        // later cancellation would then find nothing to settle and leave that export pending for good.
+        // Only ever disarms its own poll: a response from a run the dialog has moved past still settles,
+        // and clearing unconditionally would take away the live run's handle, leaving it pending for good.
         const release = () => {
           if (this._cancelPoll === cancel) {
             this._cancelPoll = null;
+          }
+          if (this._pollingCommandId === commandId) {
+            this._pollingCommandId = null;
           }
         };
         const settle = (value) => {
@@ -390,8 +402,13 @@ import '../nuxeo-button-styles.js';
         // handed to _cancelRun so a disconnect while the next tick is merely scheduled still ends this poll
         const cancel = () => settle(null);
         this._cancelPoll = cancel;
-        // the one notification of the run outlives each command, so the abort action looks this up
+        // the run's one notification outlives each command, so the abort action looks this up
         this._pollingCommandId = commandId;
+        // an abort clicked while this command was being submitted had nothing to name; passing it on now
+        // is what stops the command the user meant to stop
+        if (this._abortRequested && !this._abortPending) {
+          this._sendAbort(commandId);
+        }
         const tick = () => {
           if (!this._isCurrentRun(token)) {
             settle(null);
@@ -404,15 +421,13 @@ import '../nuxeo-button-styles.js';
               if (!this._isCurrentRun(token)) {
                 settle(null);
               } else if (!this._isBulkStatus(status)) {
-                // anything else (an error payload, an unparseable body) would be read as "still running"
-                // and polled forever, so it ends the run instead
+                // an error payload or unparseable body would otherwise read as "still running" and be
+                // polled for ever
                 fail(new Error(`Unexpected response polling bulk command ${commandId}`));
               } else if (this._isRunning(status)) {
-                // Announced once for the whole run, not once per poll: Web UI re-opens the snackbar and
-                // re-reads it into the screen-reader live region on every notification, so repeating an
-                // unchanged message each second would talk over the user for the length of the export. The
-                // snackbar is sticky, so one notification stays up until the outcome replaces it. An abort
-                // already on its way is not announced at all, its outcome being a moment away.
+                // Announced once per run, not per poll: Web UI re-reads the snackbar into its live region
+                // on every notification, so repeating it each second would talk over the user for the
+                // length of the export. An abort on its way is not announced, its outcome being imminent.
                 if (!this._abortRequested && !this._progressNotified) {
                   this._progressNotified = true;
                   this._notifyProgress(label, notification);
@@ -429,19 +444,16 @@ import '../nuxeo-button-styles.js';
     }
 
     /**
-     * Says the export is still going. Deliberately carries no numbers: the bulk status leaves `processed`
-     * at 0 until the command finishes, so a fraction would sit frozen and read as a stuck export, and the
-     * size on its own only repeats what the completion message reports a moment later. Keyed on the run so
-     * each update replaces the same snackbar.
+     * Says the export is still going. Carries no numbers: the bulk status leaves `processed` at 0 until
+     * the command finishes, so a fraction would sit frozen and read as a stuck export.
      */
     _notifyProgress(label, notification) {
       this.notify({
         message: this.i18n('userGroupExport.poll', label),
         commandId: notification,
-        // Web UI puts an Abort action on the snackbar whenever one is supplied, which is the only way the
-        // user can stop an export of a large directory once it is under way. It reads the command at click
-        // time rather than closing over one: this notification is raised once per run, and a member export
-        // moves on to a second command behind it.
+        // Web UI puts an Abort action on the snackbar whenever one is supplied. It reads the command at
+        // click time rather than closing over one: a member export moves on to a second command behind
+        // this notification, which is raised once per run.
         abort: () => this._abort(this._pollingCommandId),
         dismissible: true,
         duration: 0,
@@ -449,19 +461,49 @@ import '../nuxeo-button-styles.js';
     }
 
     /**
-     * Asks the server to abort the command. The run is not ended here: the next poll sees the command in
-     * `ABORTED` and settles, which is what reports the outcome and releases the dialog.
+     * Asks the server to stop the command. The run is not ended here: the next poll sees `ABORTED` and
+     * settles, which is what reports the outcome and releases the dialog.
      */
     _abort(commandId) {
       this._abortRequested = true;
-      if (!commandId) {
-        // nothing is being polled yet, so there is no command to stop; the run still ends
-        return Promise.resolve();
+      if (!commandId || this._abortPending) {
+        // either nothing is being polled yet — `_poll` sends the request on once it has an id — or one
+        // is already on its way
+        return this._abortPending || Promise.resolve();
       }
+      return this._sendAbort(commandId);
+    }
+
+    /** Puts the abort to the server, recording it so the run can wait for the answer. */
+    _sendAbort(commandId) {
       this.$.abortRequest.path = `bulk/${commandId}/abort`;
-      return this.$.abortRequest.put().catch((error) => {
-        // the poll still governs the outcome, so a failed abort just leaves the export running
-        console.warn(`User/group export abort failed: ${error}`);
+      this._abortPending = this.$.abortRequest
+        .put()
+        .then(() => true)
+        .catch((error) => {
+          console.warn(`User/group export abort failed: ${error}`);
+          return false;
+        });
+      return this._abortPending;
+    }
+
+    /**
+     * Resolves with whether the run was really stopped — `true` only once the server has taken the abort.
+     * A refusal stopped nothing, so it is withdrawn and the run carries on as if it had never been made.
+     */
+    _settleAbort(token) {
+      if (!this._abortRequested) {
+        return Promise.resolve(false);
+      }
+      // no command was ever submitted to stop, so the request stands unopposed
+      return (this._abortPending || Promise.resolve(true)).then((accepted) => {
+        if (!this._isCurrentRun(token)) {
+          return false;
+        }
+        if (!accepted) {
+          this._forgetAbort();
+        }
+        return accepted;
       });
     }
 
@@ -470,35 +512,38 @@ import '../nuxeo-button-styles.js';
     }
 
     /**
-     * Only the three in-flight states keep the poll going. An allow-list rather than "not COMPLETED and not
-     * ABORTED": a command whose status has expired from the key/value store reports `UNKNOWN`, which the
-     * negative form read as still running and polled for ever.
+     * Only the three in-flight states keep the poll going. An allow-list rather than "not COMPLETED and
+     * not ABORTED": an expired command reports `UNKNOWN`, which the negative form polls for ever.
      */
     _isRunning(status) {
       const state = status && status.state;
       return state === 'SCHEDULED' || state === 'SCROLLING_RUNNING' || state === 'RUNNING';
     }
 
-    /** Downloads whatever the command produced and says what happened, for `_reportOutcome` to sum up. */
-    _onCompleted(status) {
+    /**
+     * Downloads whatever the command produced and says what happened, for `_reportOutcome` to sum up.
+     * `aborted` says the server took an abort for this command, overriding the state the last poll read.
+     */
+    _onCompleted(status, aborted) {
       const result = (status && status.result) || {};
       const state = status && status.state;
-      if (state === 'ABORTED') {
+      if (state === 'ABORTED' || aborted) {
+        // the command may have finished and left a file behind, the abort and the final poll having
+        // crossed; downloading it under a snackbar that says "aborted" is not what was asked for
         return 'aborted';
       }
-      // UNKNOWN (an expired or unrecognised command), and any terminal state the server may add later, left
-      // no file behind and must not be read as an empty population
+      // UNKNOWN, and any terminal state the server may add later, left no file behind and must not be
+      // read as an empty population
       if (state !== 'COMPLETED') {
         return 'failed';
       }
-      // A command reaches COMPLETED even when entries failed, and the blob it assembled is then missing those
-      // rows. `nuxeo-operation` rejects on the same fields rather than treating such a status as a success, so
-      // the partial file is reported as a failure instead of being handed over as if it were the population.
+      // a command reaches COMPLETED even when entries failed, and its blob is then missing those rows;
+      // the partial file is reported as a failure rather than handed over as if it were the population
       if (this._hasFailed(status)) {
         return 'failed';
       }
       if (!result.url) {
-        // nothing matched, so no blob was assembled and there is nothing to download
+        // nothing matched, so no blob was assembled
         return 'empty';
       }
       this._triggerDownload(this._absoluteUrl(result.url));
@@ -506,8 +551,8 @@ import '../nuxeo-button-styles.js';
     }
 
     /**
-     * `true` when the command reported errors, or when it matched entries yet produced no blob — only a
-     * command that matched nothing legitimately completes without one.
+     * `true` when the command reported errors, or matched entries yet produced no blob — only a command
+     * that matched nothing legitimately completes without one.
      */
     _hasFailed(status) {
       if (!status) {
@@ -524,9 +569,9 @@ import '../nuxeo-button-styles.js';
     }
 
     /**
-     * Downloads the assembled blob straight from the server, so an export of the whole population streams rather
-     * than being buffered in the page. The file is named by the server, which serves the blob with
-     * `Content-Disposition: attachment` — that header wins over a `download` attribute, so none is set here.
+     * Downloads the blob straight from the server, so a whole-population export streams rather than
+     * being buffered in the page. The server's `Content-Disposition` names the file and wins over a
+     * `download` attribute, so none is set here.
      */
     _triggerDownload(url) {
       const a = document.createElement('a');
