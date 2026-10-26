@@ -845,8 +845,26 @@ suite('nuxeo-group-management', () => {
       el.$.exportDialog.open.restore();
     });
 
+    test('is offered to anyone who administers the group, read-only mode included', () => {
+      // exporting reads the group rather than changing it, and the search screen already offers its own
+      // exports regardless of readonly; the two screens would otherwise disagree about the same user
+      sinon.stub(el, '_hasAdministrationPermissions').returns(true);
+      expect(el._canExportMembers({}, 'g'), 'export survives read-only mode').to.be.true;
+      expect(el._canEditGroup(true, {}, 'g'), 'while editing does not').to.be.false;
+      el._hasAdministrationPermissions.restore();
+    });
+
+    test('is refused to anyone who does not administer the group', () => {
+      // the administration check is untouched, so a power user still cannot list the administrators
+      const powerUser = { isAdministrator: false, extendedGroups: [{ name: 'powerusers' }] };
+      el.groupname = 'administrators';
+      expect(el._canExportMembers(powerUser, 'administrators')).to.be.false;
+      el.groupname = 'editors';
+      expect(el._canExportMembers(powerUser, 'editors')).to.be.true;
+    });
+
     // As in nuxeo-user-group-management, no assertion stamps the header actions: a render that does not
-    // settle under flush() stalls the whole ui session instead of failing a single test. `_canEditGroup`
-    // already covers the condition, and the button order is verified in the browser.
+    // settle under flush() stalls the whole ui session instead of failing a single test. The conditions
+    // above cover what is shown, and the button order is verified in the browser.
   });
 });

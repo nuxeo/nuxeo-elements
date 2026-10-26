@@ -500,12 +500,21 @@ import '../nuxeo-button-styles.js';
 
     /** Puts the abort to the server, recording it so the run can wait for the answer. */
     _sendAbort(commandId) {
+      const token = this._runToken;
       this.$.abortRequest.path = `bulk/${commandId}/abort`;
       this._abortPending = this.$.abortRequest
         .put()
         .then(() => true)
         .catch((error) => {
           console.warn(`User/group export abort failed: ${error}`);
+          if (this._isCurrentRun(token)) {
+            // Web UI takes the snackbar down the moment Abort is clicked, so an export the server
+            // refused to stop would carry on with nothing on screen and no way to ask again. Withdrawing
+            // the request here, rather than waiting for the command to end, lets the next poll put the
+            // progress notification — and its Abort action — back.
+            this._forgetAbort();
+            this._progressNotified = false;
+          }
           return false;
         });
       return this._abortPending;
