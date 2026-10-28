@@ -426,7 +426,7 @@
   "userGroupExport.format.csv": "CSV",
   "userGroupExport.groups.heading": "Export all groups",
   "userGroupExport.members.heading": "Export group members",
-  "userGroupExport.members.info": "Member users and member groups are downloaded as separate CSV files. If your browser asks, allow multiple downloads.",
+  "userGroupExport.members.info": "Member users and member groups are downloaded as separate CSV files. If prompted by your browser, please allow multiple downloads.",
   "userGroupExport.poll": "Exporting {0}…",
   "userGroupExport.subject.groups": "groups",
   "userGroupExport.subject.members": "group members",
