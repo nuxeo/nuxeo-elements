@@ -95,6 +95,41 @@ suite('nuxeo-user-group-export-dialog', () => {
       expect(dialog.querySelector(`#${labelledBy}`), 'which resolves to its heading').to.be.ok;
     });
 
+    test('tells a member export that it downloads separate files, and describes the dialog with it', async () => {
+      el.exportType = 'members';
+      await flush();
+      const dialog = el.shadowRoot.querySelector('#dialog');
+      const info = el.shadowRoot.querySelector('#exportInfo');
+      expect(info.hidden).to.be.false;
+      expect(info.textContent.trim()).to.equal('userGroupExport.members.info');
+      expect(dialog.getAttribute('aria-describedby')).to.equal('exportInfo');
+      expect(dialog.hasAttribute('with-info'), 'which sizes the dialog for the note').to.be.true;
+    });
+
+    ['users', 'groups'].forEach((exportType) => {
+      test(`shows no note for the ${exportType} export, which downloads a single file`, async () => {
+        el.exportType = 'members';
+        await flush();
+        el.exportType = exportType;
+        await flush();
+        const info = el.shadowRoot.querySelector('#exportInfo');
+        expect(info.hidden).to.be.true;
+        expect(info.textContent.trim(), 'so the dialog description stays empty').to.equal('');
+        expect(el.shadowRoot.querySelector('#dialog').hasAttribute('with-info')).to.be.false;
+      });
+    });
+
+    test('scrolls its content rather than spilling the buttons out when zoomed in', () => {
+      expect(getComputedStyle(el.shadowRoot.querySelector('#dialog')).overflowY).to.equal('auto');
+    });
+
+    test('lays its content out by reading direction, whatever text-align the page hands down', () => {
+      const dialog = el.shadowRoot.querySelector('#dialog');
+      expect(getComputedStyle(dialog).textAlign).to.equal('start');
+      // a flex row, so start-justified keeps Cancel at the start edge in RTL as well as LTR
+      expect(getComputedStyle(dialog.querySelector('.buttons .flex')).display).to.equal('flex');
+    });
+
     test('offers CSV only', () => {
       expect(el.formats).to.deep.equal(['csv']);
       expect(el._formatLabel('csv')).to.equal('userGroupExport.format.csv');

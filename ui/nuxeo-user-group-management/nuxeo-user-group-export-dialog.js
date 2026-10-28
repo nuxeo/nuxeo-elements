@@ -18,6 +18,9 @@ limitations under the License.
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
+import '@polymer/iron-flex-layout/iron-flex-layout-classes.js';
+import '@polymer/iron-icon/iron-icon.js';
+import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-radio-button/paper-radio-button.js';
 import '@polymer/paper-radio-group/paper-radio-group.js';
@@ -58,6 +61,8 @@ import '../nuxeo-button-styles.js';
     },
     members: {
       titleKey: 'userGroupExport.members.heading',
+      // two automatic downloads, which browsers may hold behind a permission prompt, so it is said up front
+      infoKey: 'userGroupExport.members.info',
       subject: 'members',
       // raw, like every other group path in these screens: nuxeo-resource percent-encodes the path and
       // restores '/', so encoding here would be applied twice and any such group would 404
@@ -93,6 +98,47 @@ import '../nuxeo-button-styles.js';
             display: block;
           }
 
+          /* at high zoom the dialog is capped to the viewport; scroll rather than spill the buttons out of it.
+             text-align is reset because the app shell hands an RTL page text-align: end, i.e. left */
+          #dialog {
+            overflow-y: auto;
+            text-align: start;
+          }
+
+          /* sized by the dialog rather than by the note, whose single long line would otherwise widen it; at
+             1024px and below the theme already gives every dialog a relative width, which is left to apply */
+          @media (min-width: 1025px) {
+            #dialog[with-info] {
+              width: 480px;
+            }
+          }
+
+          .info {
+            display: flex;
+            align-items: flex-start;
+            /* the dialog indents its children with padding, which the box needs for itself */
+            margin: 16px 24px 12px;
+            padding: 8px 12px;
+            border-inline-start: 3px solid var(--nuxeo-primary-color);
+            border-radius: 4px;
+            background-color: var(--nuxeo-container-hover);
+            font-size: 0.93em;
+            line-height: 1.45;
+          }
+
+          /* display: flex would otherwise win over the hidden attribute */
+          .info[hidden] {
+            display: none;
+          }
+
+          .info iron-icon {
+            flex: none;
+            --iron-icon-width: 18px;
+            --iron-icon-height: 18px;
+            margin-inline-end: 8px;
+            color: var(--nuxeo-primary-color);
+          }
+
           .format {
             margin: 0.5em 0 1em;
           }
@@ -109,8 +155,18 @@ import '../nuxeo-button-styles.js';
         <nuxeo-resource id="status"></nuxeo-resource>
         <nuxeo-resource id="abortRequest"></nuxeo-resource>
 
-        <nuxeo-dialog id="dialog" with-backdrop aria-labelledby="exportHeading">
+        <nuxeo-dialog
+          id="dialog"
+          with-info$="[[_hasInfo(_infoKey)]]"
+          with-backdrop
+          aria-labelledby="exportHeading"
+          aria-describedby="exportInfo"
+        >
           <h2 id="exportHeading">[[i18n(_titleKey)]]</h2>
+          <div id="exportInfo" class="info" hidden$="[[!_infoKey]]">
+            <iron-icon icon="icons:info-outline" aria-hidden="true"></iron-icon>
+            <span>[[i18n(_infoKey)]]</span>
+          </div>
           <div class="format">
             <span class="format-label" id="formatLabel">[[i18n('userGroupExport.format')]]</span>
             <paper-radio-group selected="{{format}}" aria-labelledby="formatLabel">
@@ -122,7 +178,9 @@ import '../nuxeo-button-styles.js';
             </paper-radio-group>
           </div>
           <div class="buttons horizontal end-justified layout">
-            <div class="flex start-justified">
+            <!-- a flex row, so start-justified applies and follows the reading direction; as a block box it fell
+                 back to the inherited text-align, which pushed Cancel next to Export in RTL -->
+            <div class="flex start-justified layout horizontal">
               <paper-button noink dialog-dismiss class="secondary">[[i18n('command.cancel')]]</paper-button>
             </div>
             <paper-button id="exportConfirmButton" noink class="primary" on-click="_export" disabled$="[[exporting]]">
@@ -194,6 +252,11 @@ import '../nuxeo-button-styles.js';
           type: String,
           computed: '_computeTitleKey(exportType)',
         },
+
+        _infoKey: {
+          type: String,
+          computed: '_computeInfoKey(exportType)',
+        },
       };
     }
 
@@ -261,6 +324,16 @@ import '../nuxeo-button-styles.js';
     _computeTitleKey(exportType) {
       const definition = EXPORTS[exportType];
       return definition ? definition.titleKey : '';
+    }
+
+    /** Empty for the single-file exports, which also leaves the dialog's description empty. */
+    _computeInfoKey(exportType) {
+      const definition = EXPORTS[exportType] || {};
+      return definition.infoKey || '';
+    }
+
+    _hasInfo(infoKey) {
+      return !!infoKey;
     }
 
     _formatLabel(format) {
