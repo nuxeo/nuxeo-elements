@@ -517,7 +517,17 @@ suite('nuxeo-user-management', () => {
       expect(el._userDisplayName(undefined)).to.equal('');
     });
 
-    test('prefers properties.username over user.name to avoid showing UUID', () => {
+    test('returns firstName + lastName when both are present', () => {
+      expect(
+        el._userDisplayName({
+          id: 'internal-uid',
+          name: 'some-uuid',
+          properties: { username: 'loginName', firstName: 'John', lastName: 'Smith' },
+        }),
+      ).to.equal('John Smith');
+    });
+
+    test('falls back to username when firstName and lastName are absent', () => {
       expect(
         el._userDisplayName({
           id: 'internal-uid',
@@ -527,17 +537,26 @@ suite('nuxeo-user-management', () => {
       ).to.equal('loginName');
     });
 
-    test('falls back to user.name when properties.username is absent', () => {
+    test('falls back to user.id when properties.username is absent', () => {
       expect(
         el._userDisplayName({
-          id: 'internal-uid',
+          id: 'jdoe',
+          name: 'some-name',
+          properties: {},
+        }),
+      ).to.equal('jdoe');
+    });
+
+    test('falls back to user.name when properties.username and user.id are absent', () => {
+      expect(
+        el._userDisplayName({
           name: 'jdoe',
           properties: {},
         }),
       ).to.equal('jdoe');
     });
 
-    test('does not use user.id as display name', () => {
+    test('prefers properties.username over user.id', () => {
       expect(
         el._userDisplayName({
           id: 'generated-uuid',
@@ -546,8 +565,48 @@ suite('nuxeo-user-management', () => {
       ).to.equal('jdoe');
     });
 
-    test('returns empty string when user.properties is absent', () => {
-      expect(el._userDisplayName({ id: 'generated-uuid' })).to.equal('');
+    test('returns user.id when user.properties is absent', () => {
+      expect(el._userDisplayName({ id: 'jdoe' })).to.equal('jdoe');
+    });
+
+    test('returns empty string when user has no identifiable fields', () => {
+      expect(el._userDisplayName({})).to.equal('');
+    });
+  });
+
+  suite('_userPrincipal', () => {
+    test('returns empty string when user is null or undefined', () => {
+      expect(el._userPrincipal(null)).to.equal('');
+      expect(el._userPrincipal(undefined)).to.equal('');
+    });
+
+    test('returns username even when firstName and lastName are present', () => {
+      expect(
+        el._userPrincipal({
+          id: 'internal-uid',
+          name: 'some-uuid',
+          properties: { username: 'loginName', firstName: 'John', lastName: 'Smith' },
+        }),
+      ).to.equal('loginName');
+    });
+
+    test('falls back to user.id when properties.username is absent', () => {
+      expect(
+        el._userPrincipal({
+          id: 'jdoe',
+          name: 'some-name',
+          properties: {},
+        }),
+      ).to.equal('jdoe');
+    });
+
+    test('falls back to user.name when properties.username and user.id are absent', () => {
+      expect(
+        el._userPrincipal({
+          name: 'jdoe',
+          properties: {},
+        }),
+      ).to.equal('jdoe');
     });
   });
 });
