@@ -34,7 +34,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           registry-url: 'https://packages.nuxeo.com/repository/npm-public/'
           scope: '@nuxeo'
 
@@ -49,7 +49,7 @@ jobs:
       - name: Build storybook
         working-directory: storybook
         run: |
-          npx --no-install --ignore-scripts storybook@10.5.0 build -o dist
+          npx --no-install --ignore-scripts storybook@10.6.2 build -o dist
 
       - name: Deploy
         # Gated on github.ref, not the checked-out ref. The post-release sync pull request is
