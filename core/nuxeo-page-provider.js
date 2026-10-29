@@ -453,9 +453,9 @@ import config from './config.js';
       // Append quick filters if any
       if (this.quickFilters) {
         const retainedFilters = [];
-        for (let i = 0; i < this.quickFilters.length; i++) {
-          if (this.quickFilters[i].active === true) {
-            retainedFilters.push(this.quickFilters[i].name);
+        for (const quickFilter of this.quickFilters) {
+          if (quickFilter.active === true) {
+            retainedFilters.push(quickFilter.name);
           }
         }
         params.quickFilters = retainedFilters.join(',');
