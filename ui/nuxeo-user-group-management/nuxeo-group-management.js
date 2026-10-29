@@ -42,6 +42,7 @@ import '../widgets/nuxeo-tag.js';
 import '../widgets/nuxeo-user-suggestion.js';
 import '../widgets/nuxeo-selectivity.js';
 import '../widgets/nuxeo-user-tag.js';
+import './nuxeo-user-group-export-dialog.js';
 import './nuxeo-user-group-permissions-table.js';
 import '../nuxeo-button-styles.js';
 import '../nuxeo-sort-styles.js';
@@ -271,6 +272,7 @@ import '../nuxeo-sort-styles.js';
         </nuxeo-resource>
 
         <paper-toast id="toast"></paper-toast>
+        <nuxeo-user-group-export-dialog id="exportDialog"></nuxeo-user-group-export-dialog>
 
         <nuxeo-dialog id="deleteGroupDialog" with-backdrop>
           <h2>[[i18n('groupManagement.delete.confirm')]]</h2>
@@ -321,39 +323,53 @@ import '../nuxeo-sort-styles.js';
               <h5 class="counter">[[_countUsers(group.memberUsers)]] + [[_countGroups(group.memberGroups)]]</h5>
             </div>
 
-            <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
+            <dom-if if="[[_canExportMembers(_currentUser, groupname)]]">
               <template>
                 <div class="layout horizontal header-actions">
                   <paper-button
-                    id="deleteGroupButton"
+                    id="exportMembersButton"
                     noink
                     class="flex-end horizontal-button"
-                    on-click="_toggleDeleteGroup"
-                    aria-labelledby="deleteGroupButtonLabel"
+                    on-click="_exportMembers"
+                    aria-labelledby="exportMembersButtonLabel"
                   >
-                    <iron-icon icon="nuxeo:delete"></iron-icon>
-                    <span id="deleteGroupButtonLabel">[[i18n('command.delete')]]</span>
+                    <iron-icon icon="nuxeo:csv-export"></iron-icon>
+                    <span id="exportMembersButtonLabel">[[i18n('groupManagement.exportMembers')]]</span>
                   </paper-button>
-                  <paper-button
-                    id="addMembersButton"
-                    noink
-                    class="flex-end primary horizontal-button"
-                    on-click="_toggleEditMembers"
-                    aria-labelledby="addMembersButtonLabel"
-                  >
-                    <iron-icon icon="nuxeo:add"></iron-icon>
-                    <span id="addMembersButtonLabel">[[i18n('groupManagement.addMembers')]]</span>
-                  </paper-button>
-                  <paper-button
-                    id="editGroupButton"
-                    noink
-                    on-click="_toggleEditGroup"
-                    class="primary horizontal-button"
-                    aria-labelledby="editGroupButtonLabel"
-                  >
-                    <iron-icon icon="nuxeo:edit"></iron-icon>
-                    <span id="editGroupButtonLabel">[[i18n('groupManagement.editGroup')]]</span>
-                  </paper-button>
+                  <dom-if if="[[_canEditGroup(readonly, _currentUser, groupname)]]">
+                    <template>
+                      <paper-button
+                        id="deleteGroupButton"
+                        noink
+                        class="flex-end horizontal-button"
+                        on-click="_toggleDeleteGroup"
+                        aria-labelledby="deleteGroupButtonLabel"
+                      >
+                        <iron-icon icon="nuxeo:delete"></iron-icon>
+                        <span id="deleteGroupButtonLabel">[[i18n('command.delete')]]</span>
+                      </paper-button>
+                      <paper-button
+                        id="addMembersButton"
+                        noink
+                        class="flex-end primary horizontal-button"
+                        on-click="_toggleEditMembers"
+                        aria-labelledby="addMembersButtonLabel"
+                      >
+                        <iron-icon icon="nuxeo:add"></iron-icon>
+                        <span id="addMembersButtonLabel">[[i18n('groupManagement.addMembers')]]</span>
+                      </paper-button>
+                      <paper-button
+                        id="editGroupButton"
+                        noink
+                        on-click="_toggleEditGroup"
+                        class="primary horizontal-button"
+                        aria-labelledby="editGroupButtonLabel"
+                      >
+                        <iron-icon icon="nuxeo:edit"></iron-icon>
+                        <span id="editGroupButtonLabel">[[i18n('groupManagement.editGroup')]]</span>
+                      </paper-button>
+                    </template>
+                  </dom-if>
                 </div>
               </template>
             </dom-if>
@@ -750,7 +766,16 @@ import '../nuxeo-sort-styles.js';
     }
 
     _canEditGroup(readonly, currentUser, groupname) {
-      return !readonly && this._hasAdministrationPermissions(currentUser, groupname);
+      return !readonly && this._canExportMembers(currentUser, groupname);
+    }
+
+    /**
+     * Exporting reads the group rather than changing it, so read-only mode does not take it away — the
+     * same reasoning the search screen applies to its own exports. The administration check still holds,
+     * so a power user is no more able to list who administers the instance than to manage them.
+     */
+    _canExportMembers(currentUser, groupname) {
+      return this._hasAdministrationPermissions(currentUser, groupname);
     }
 
     _userHasName(user) {
@@ -961,6 +986,10 @@ import '../nuxeo-sort-styles.js';
       this._removedMember = e.model.item;
       this._removedMember.id = type === 'user' ? e.model.item.id : e.model.item.groupname;
       this.$.rmFromGroupDialog.toggle();
+    }
+
+    _exportMembers() {
+      this.$.exportDialog.open('members', this.groupname);
     }
 
     _toggleEditGroup() {
